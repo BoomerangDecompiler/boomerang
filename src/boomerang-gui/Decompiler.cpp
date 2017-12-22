@@ -7,54 +7,20 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "DecompilerThread.h"
+#include "Decompiler.h"
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Signature.h"
-#include "boomerang/db/Module.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/frontend/Frontend.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/proc/LibProc.h"
+#include "boomerang/codegen/ICodeGenerator.h"
 
-#include <QtWidgets>
-#include <QtCore>
 #include <QThread>
-#include <QString>
-#include <QTableWidget>
-#include <sstream>
-
-
-Qt::HANDLE threadToCollect = nullptr;
-
-
-void DecompilerThread::run()
-{
-    threadToCollect = QThread::currentThreadId();
-
-    Boomerang::get()->getSettings()->setOutputDirectory("output");
-
-    m_parent = new Decompiler();
-    m_parent->moveToThread(this);
-
-    Boomerang::get()->addWatcher(m_parent);
-
-    this->setPriority(QThread::LowPriority);
-    this->exec();
-}
-
-
-Decompiler *DecompilerThread::getDecompiler()
-{
-    while (m_parent == nullptr) {
-        msleep(10);
-    }
-
-    return m_parent;
-}
 
 
 void Decompiler::setUseDFTA(bool d)
@@ -87,25 +53,14 @@ void Decompiler::removeEntryPoint(Address a)
 }
 
 
-void Decompiler::changeInputFile(const QString& f)
+void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPath)
 {
-    m_filename = f;
-}
-
-
-void Decompiler::setOutputPath(const QString& path)
-{
-    Boomerang::get()->getSettings()->setOutputDirectory(path);
-}
-
-
-void Decompiler::load()
-{
+    Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
     emit loading();
 
     m_image = Boomerang::get()->getImage();
-    m_prog  = new Prog(QFileInfo(m_filename).baseName());
-    m_fe    = IFrontEnd::create(m_filename, m_prog, Boomerang::get()->getOrCreateProject());
+    m_prog  = new Prog(QFileInfo(inputFile).baseName());
+    m_fe    = IFrontEnd::create(inputFile, m_prog, Boomerang::get()->getOrCreateProject());
 
     if (m_fe == nullptr) {
         emit machineType(QString("Unavailable: Load Failed!"));
@@ -371,7 +326,7 @@ void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
         emit debuggingPoint(p->getName(), description);
 
         while (m_waiting) {
-            thread()->wait(10);
+            QThread::yieldCurrentThread();
         }
     }
 }

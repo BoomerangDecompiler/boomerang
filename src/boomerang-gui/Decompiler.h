@@ -7,26 +7,24 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#pragma once
 
 
-#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Watcher.h"
 
-#include <QThread>
-#include <QString>
+#include <QObject>
 #include <QTableWidget>
+#include <QString>
 
 
-class MainWindow;
-class IFrontEnd;
-class Function;
-class UserProc;
-class Prog;
 class Module;
-class QTableWidget;
-class QObject;
+class IFrontEnd;
+class Prog;
+class IBinaryImage;
 
 
+/**
+ *
+ */
 class Decompiler : public QObject, public IWatcher
 {
     Q_OBJECT
@@ -38,6 +36,7 @@ public:
         , m_waiting(false)
     {}
 
+    /// IWatcher interface
 public:
     virtual void alertDecompileDebugPoint(UserProc *p, const char *description) override;
     virtual void alertConsidering(Function *parent, Function *p) override;
@@ -46,6 +45,18 @@ public:
     virtual void alertRemove(Function *p) override;
     virtual void alertUpdateSignature(Function *p) override;
 
+signals: // Decompiler -> ui
+
+public slots: // ui -> Decompiler
+    void loadInputFile(const QString& inputFile, const QString& outputPath);
+    void decode();
+    void decompile();
+    void generateCode();
+
+    void stopWaiting();
+
+    // todo: provide thread-safe access mechanism
+public:
     bool getRtlForProc(const QString& name, QString& rtl);
     QString getSigFile(const QString& name);
     QString getClusterFile(const QString& name);
@@ -60,14 +71,6 @@ public:
     void addEntryPoint(Address a, const char *nam);
     void removeEntryPoint(Address a);
 
-public slots:
-    void changeInputFile(const QString& f);
-    void setOutputPath(const QString& path);
-    void load();
-    void decode();
-    void decompile();
-    void generateCode();
-    void stopWaiting();
 
 signals:
     void loading();
@@ -105,26 +108,6 @@ protected:
     IFrontEnd *m_fe;
     Prog *m_prog;
     IBinaryImage *m_image;
-    QString m_filename;
 
     std::vector<Address> m_userEntrypoints;
-};
-
-
-class DecompilerThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    DecompilerThread()
-        : QThread()
-        , m_parent(nullptr)
-    {}
-
-    Decompiler *getDecompiler();
-
-protected:
-    void run() override;
-
-    Decompiler *m_parent;
 };

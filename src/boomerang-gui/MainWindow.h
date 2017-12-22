@@ -12,15 +12,18 @@
 #include "boomerang/util/Address.h"
 
 #include <QMainWindow>
+#include <QThread>
+
 #include <vector>
 #include <map>
 #include <set>
 
 
-class DecompilerThread;
 class QToolButton;
 class QTreeWidgetItem;
 class QTableWidgetItem;
+class Decompiler;
+
 
 namespace Ui
 {
@@ -116,15 +119,19 @@ private slots:
     void on_cmb_typeRecoveryEngine_currentIndexChanged(int index);
 
 private:
-    Ui::MainWindow *ui;
-    DecompilerThread *decompilerThread;
+    Ui::MainWindow *ui = nullptr;
 
-    QToolButton *step;
+    QThread m_decompilerThread;
+    Decompiler *m_decompiler = nullptr;
 
-    int decompiledCount, codeGenCount;
+    QToolButton *step = nullptr;
+
+    int decompiledCount = 0;
+    int codeGenCount = 0;
+
     std::map<QWidget *, QString> openFiles;
     std::set<QWidget *> signatureFiles;
 
-    QWidget *structs;
-    bool loadingSettings;
+    QWidget *structs = nullptr;
+    bool loadingSettings = false;
 };

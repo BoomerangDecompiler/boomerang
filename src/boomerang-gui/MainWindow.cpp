@@ -10,17 +10,18 @@
 #include "MainWindow.h"
 
 
-#include "DecompilerThread.h"
-#include "RTLEditor.h"
-#include "LoggingSettingsDlg.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/type/TypeRecovery.h"
+
+#include "boomerang-gui/Decompiler.h"
+#include "boomerang-gui/RTLEditor.h"
+#include "boomerang-gui/LoggingSettingsDlg.h"
+#include "boomerang-gui/ui_boomerang.h"
+#include "boomerang-gui/ui_about.h"
 
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QtWidgets>
 
-
-#include "boomerang-gui/ui_boomerang.h"
-#include "boomerang-gui/ui_about.h"
-#include "boomerang/type/TypeRecovery.h"
 
 
 Q_DECLARE_METATYPE(ITypeRecovery *)
@@ -29,45 +30,44 @@ Q_DECLARE_METATYPE(ITypeRecovery *)
 MainWindow::MainWindow(QWidget *_parent)
     : QMainWindow(_parent)
     , ui(new Ui::MainWindow)
-    , decompilerThread(nullptr)
     , step(nullptr)
 {
     ui->setupUi(this);
 
     qRegisterMetaType<Address>("ADDRESS");
 
-    decompilerThread = new DecompilerThread();
-    decompilerThread->start();
-    Decompiler *d = decompilerThread->getDecompiler();
-    connect(d, &Decompiler::newCluster, this, &MainWindow::showNewCluster);
-    connect(d, &Decompiler::newProcInCluster, this, &MainWindow::showNewProcInCluster);
-    connect(d, &Decompiler::debuggingPoint, this, &MainWindow::showDebuggingPoint);
-    connect(d, &Decompiler::loading, this, &MainWindow::showLoadPage);
-    connect(d, &Decompiler::decoding, this, &MainWindow::showDecodePage);
-    connect(d, &Decompiler::decompiling, this, &MainWindow::showDecompilePage);
-    connect(d, &Decompiler::generatingCode, this, &MainWindow::showGenerateCodePage);
-    connect(d, &Decompiler::loadCompleted, this, &MainWindow::loadComplete);
-    connect(d, &Decompiler::machineType, this, &MainWindow::showMachineType);
-    connect(d, &Decompiler::newEntrypoint, this, &MainWindow::showNewEntrypoint);
-    connect(d, &Decompiler::decodeCompleted, this, &MainWindow::decodeComplete);
-    connect(d, &Decompiler::decompileCompleted, this, &MainWindow::decompileComplete);
-    connect(d, &Decompiler::generateCodeCompleted, this, &MainWindow::generateCodeComplete);
-    // connect(d, &Decompiler::changeProcedureState,this, &MainWindow::changeProcedureState);
-    connect(d, &Decompiler::consideringProc, this, &MainWindow::showConsideringProc);
-    connect(d, &Decompiler::decompilingProc, this, &MainWindow::showDecompilingProc);
-    connect(d, &Decompiler::newUserProc, this, &MainWindow::showNewUserProc);
-    connect(d, &Decompiler::newLibProc, this, &MainWindow::showNewLibProc);
-    connect(d, &Decompiler::removeUserProc, this, &MainWindow::showRemoveUserProc);
-    connect(d, &Decompiler::removeLibProc, this, &MainWindow::showRemoveLibProc);
-    connect(d, &Decompiler::newSection, this, &MainWindow::showNewSection);
-    connect(ui->toLoadButton, SIGNAL(clicked()), d, SLOT(load()));
-    connect(ui->toDecodeButton, SIGNAL(clicked()), d, SLOT(decode()));
-    connect(ui->toDecompileButton, SIGNAL(clicked()), d, SLOT(decompile()));
-    connect(ui->toGenerateCodeButton, SIGNAL(clicked()), d, SLOT(generateCode()));
-    connect(ui->inputFileComboBox, SIGNAL(editTextChanged(const QString&)), d, SLOT(changeInputFile(const QString&)));
-    connect(ui->outputPathComboBox, SIGNAL(editTextChanged(const QString&)), d, SLOT(setOutputPath(const QString&)));
-//     connect(ui->inputFileBrowseButton, SIGNAL(clicked()), this, SLOT(browseForInputFile()));
-//     connect(ui->outputPathBrowseButton, SIGNAL(clicked()), this, SLOT(browseForOutputPath()));
+    m_decompiler = new Decompiler();
+    m_decompiler->moveToThread(&m_decompilerThread);
+    m_decompilerThread.start();
+
+    connect(m_decompiler, &Decompiler::newCluster, this, &MainWindow::showNewCluster);
+    connect(m_decompiler, &Decompiler::newProcInCluster, this, &MainWindow::showNewProcInCluster);
+    connect(m_decompiler, &Decompiler::debuggingPoint, this, &MainWindow::showDebuggingPoint);
+    connect(m_decompiler, &Decompiler::loading, this, &MainWindow::showLoadPage);
+    connect(m_decompiler, &Decompiler::decoding, this, &MainWindow::showDecodePage);
+    connect(m_decompiler, &Decompiler::decompiling, this, &MainWindow::showDecompilePage);
+    connect(m_decompiler, &Decompiler::generatingCode, this, &MainWindow::showGenerateCodePage);
+    connect(m_decompiler, &Decompiler::loadCompleted, this, &MainWindow::loadComplete);
+    connect(m_decompiler, &Decompiler::machineType, this, &MainWindow::showMachineType);
+    connect(m_decompiler, &Decompiler::newEntrypoint, this, &MainWindow::showNewEntrypoint);
+    connect(m_decompiler, &Decompiler::decodeCompleted, this, &MainWindow::decodeComplete);
+    connect(m_decompiler, &Decompiler::decompileCompleted, this, &MainWindow::decompileComplete);
+    connect(m_decompiler, &Decompiler::generateCodeCompleted, this, &MainWindow::generateCodeComplete);
+    connect(m_decompiler, &Decompiler::consideringProc, this, &MainWindow::showConsideringProc);
+    connect(m_decompiler, &Decompiler::decompilingProc, this, &MainWindow::showDecompilingProc);
+    connect(m_decompiler, &Decompiler::newUserProc, this, &MainWindow::showNewUserProc);
+    connect(m_decompiler, &Decompiler::newLibProc, this, &MainWindow::showNewLibProc);
+    connect(m_decompiler, &Decompiler::removeUserProc, this, &MainWindow::showRemoveUserProc);
+    connect(m_decompiler, &Decompiler::removeLibProc, this, &MainWindow::showRemoveLibProc);
+    connect(m_decompiler, &Decompiler::newSection, this, &MainWindow::showNewSection);
+
+    connect(ui->toLoadButton, &QPushButton::clicked, this, [=]() {
+        m_decompiler->loadInputFile(ui->inputFileComboBox->currentText(), ui->outputPathComboBox->currentText());
+    });
+
+    connect(ui->toDecodeButton,         SIGNAL(clicked()),                          m_decompiler, SLOT(decode()));
+    connect(ui->toDecompileButton,      SIGNAL(clicked()),                          m_decompiler, SLOT(decompile()));
+    connect(ui->toGenerateCodeButton,   SIGNAL(clicked()),                          m_decompiler, SLOT(generateCode()));
 
     ui->userProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
     connect(ui->userProcs->horizontalHeader(), &QHeaderView::sectionClicked, this,
@@ -100,7 +100,6 @@ MainWindow::MainWindow(QWidget *_parent)
         int currentIdx = ui->inputFileComboBox->findText(settings.value("inputfile").toString());
         currentIdx = std::max(currentIdx, 0); // if selected input file could not be found, use last one
         ui->inputFileComboBox->setCurrentIndex(currentIdx);
-        d->changeInputFile(ui->inputFileComboBox->currentText());
     }
 
     ui->outputPathComboBox->addItems(settings.value("outputpaths").toStringList());
@@ -109,7 +108,6 @@ MainWindow::MainWindow(QWidget *_parent)
         int currentIdx = ui->outputPathComboBox->findText(settings.value("outputpath").toString());
         currentIdx = std::max(currentIdx, 0); // if selected output path could not be found, use last one
         ui->outputPathComboBox->setCurrentIndex(currentIdx);
-        d->setOutputPath(ui->outputPathComboBox->currentText());
     }
 
     // check for a valid input file and output path
@@ -195,7 +193,6 @@ void MainWindow::on_inputFileBrowseButton_clicked()
     }
 
     ui->inputFileComboBox->setCurrentIndex(existingIdx);
-    decompilerThread->getDecompiler()->changeInputFile(fileName);
 
     // we now have at least one input file
     ui->toLoadButton->setEnabled(ui->outputPathComboBox->count() > 0);
@@ -221,23 +218,20 @@ void MainWindow::on_outputPathBrowseButton_clicked()
     }
 
     ui->outputPathComboBox->setCurrentIndex(existingIdx);
-    decompilerThread->getDecompiler()->setOutputPath(outputDir);
 
     // we now have at least one output directory
     ui->toLoadButton->setEnabled(ui->inputFileComboBox->count() > 0);
 }
 
 
-void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString& text)
+void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString& )
 {
-    decompilerThread->getDecompiler()->changeInputFile(text);
     saveSettings();
 }
 
 
-void MainWindow::on_outputPathComboBox_currentIndexChanged(const QString& text)
+void MainWindow::on_outputPathComboBox_currentIndexChanged(const QString& )
 {
-    decompilerThread->getDecompiler()->setOutputPath(text);
     saveSettings();
 }
 
@@ -314,7 +308,7 @@ void MainWindow::on_actionSave_triggered()
         }
 
         if (signatureFiles.find(ui->tabWidget->currentWidget()) != signatureFiles.end()) {
-            decompilerThread->getDecompiler()->rereadLibSignatures();
+            m_decompiler->rereadLibSignatures();
         }
     }
 }
@@ -714,7 +708,7 @@ void MainWindow::showRTLEditor(const QString& name)
     }
 
     if (n == nullptr) {
-        n = new RTLEditor(decompilerThread->getDecompiler(), name);
+        n = new RTLEditor(m_decompiler, name);
         ui->tabWidget->addTab(n, name);
     }
     else {
@@ -740,7 +734,7 @@ void MainWindow::on_userProcs_cellChanged(int row, int column)
 
     if (column == 1) {
         QString old_name = ui->userProcs->item(row, 1)->data(1).toString();
-        decompilerThread->getDecompiler()->renameProc(old_name, ui->userProcs->item(row, 1)->text());
+        m_decompiler->renameProc(old_name, ui->userProcs->item(row, 1)->text());
         ui->userProcs->item(row, 1)->setData(1, ui->userProcs->item(row, 1)->text());
     }
 }
@@ -768,7 +762,7 @@ void MainWindow::on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column
         n = new QTextEdit();
         QString name = top->text(0);
         name = name.left(name.lastIndexOf("."));
-        QString filename = decompilerThread->getDecompiler()->getClusterFile(name);
+        QString filename = m_decompiler->getClusterFile(name);
         QFile   file(filename);
 
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -797,8 +791,8 @@ void MainWindow::on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *
 
 void MainWindow::on_actionEnable_toggled(bool b)
 {
-    decompilerThread->getDecompiler()->setDebugging(b);
-    decompilerThread->getDecompiler()->stopWaiting();
+    m_decompiler->setDebugging(b);
+    m_decompiler->stopWaiting();
 
     if (b) {
         statusBar()->show();
@@ -825,7 +819,7 @@ void MainWindow::on_actionEnable_toggled(bool b)
 void MainWindow::on_actionStep_triggered()
 {
     ui->actionStep->setEnabled(false);
-    decompilerThread->getDecompiler()->stopWaiting();
+    m_decompiler->stopWaiting();
 }
 
 
@@ -873,7 +867,7 @@ void MainWindow::on_libProcs_cellDoubleClicked(int row, int column)
         name = ui->libProcs->item(row, 0)->text();
     }
 
-    sigFile = decompilerThread->getDecompiler()->getSigFile(name);
+    sigFile = m_decompiler->getSigFile(name);
     QString filename = sigFile;
 
     int lastIndex = sigFile.lastIndexOf(QRegExp("[/\\\\]"));
@@ -1045,7 +1039,7 @@ void MainWindow::on_actionStructs_triggered()
 
 void MainWindow::on_structName_returnPressed()
 {
-    decompilerThread->getDecompiler()->getCompoundMembers(ui->structName->text(), ui->structMembers);
+    m_decompiler->getCompoundMembers(ui->structName->text(), ui->structMembers);
 }
 
 
@@ -1074,7 +1068,7 @@ void MainWindow::on_actionAboutQt_triggered()
 
 void MainWindow::on_enableNoDecodeChildren_toggled(bool b)
 {
-    decompilerThread->getDecompiler()->setNoDecodeChildren(b);
+    m_decompiler->setNoDecodeChildren(b);
 }
 
 
@@ -1099,7 +1093,7 @@ void MainWindow::on_addButton_pressed()
         return;
     }
 
-    decompilerThread->getDecompiler()->addEntryPoint(a, (const char *)qPrintable(ui->nameEdit->text()));
+    m_decompiler->addEntryPoint(a, (const char *)qPrintable(ui->nameEdit->text()));
     int nrows = ui->entrypoints->rowCount();
     ui->entrypoints->setRowCount(nrows + 1);
     ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(ui->addressEdit->text()));
@@ -1118,7 +1112,7 @@ void MainWindow::on_removeButton_pressed()
         return;
     }
 
-    decompilerThread->getDecompiler()->removeEntryPoint(a);
+    m_decompiler->removeEntryPoint(a);
     ui->entrypoints->removeRow(ui->entrypoints->currentRow());
 }
 
@@ -1142,5 +1136,5 @@ void MainWindow::on_cmb_typeRecoveryEngine_currentIndexChanged(int index)
     ITypeRecovery *ptr     = ui->cmb_typeRecoveryEngine->itemData(index).value<ITypeRecovery *>();
 
     // since we only have DFTA now, assume we use DFTA if ptr != nullptr
-    decompilerThread->getDecompiler()->setUseDFTA(ptr != nullptr);
+    m_decompiler->setUseDFTA(ptr != nullptr);
 }

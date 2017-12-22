@@ -23,8 +23,8 @@ set(gui_UI_FILES
 QT5_WRAP_UI(gui_UI_H ${gui_UI_FILES})
 
 SET(boomerang_SRC
-    DecompilerThread.cpp
-    DecompilerThread.h
+    Decompiler.cpp
+    Decompiler.h
     LoggingSettingsDlg.cpp
     LoggingSettingsDlg.h
     Main.cpp

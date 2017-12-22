@@ -10,7 +10,7 @@
 #include "RTLEditor.h"
 
 
-#include "DecompilerThread.h"
+#include "Decompiler.h"
 
 #include <QtWidgets>
 
