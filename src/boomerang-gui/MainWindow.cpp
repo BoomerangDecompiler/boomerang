@@ -7,11 +7,11 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "mainwindow.h"
+#include "MainWindow.h"
 
 
 #include "DecompilerThread.h"
-#include "rtleditor.h"
+#include "RTLEditor.h"
 #include "LoggingSettingsDlg.h"
 
 #include <QtWidgets/QFileDialog>

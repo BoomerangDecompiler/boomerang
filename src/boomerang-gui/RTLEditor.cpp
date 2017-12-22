@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "rtleditor.h"
+#include "RTLEditor.h"
 
 
 #include "DecompilerThread.h"

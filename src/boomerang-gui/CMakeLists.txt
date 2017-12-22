@@ -15,22 +15,26 @@ endif(Qt5Widgets_FOUND)
 
 
 set(gui_UI_FILES
-    boomerang.ui
-    about.ui
+    About.ui
     LoggingSettingsDlg.ui
+    MainWindow.ui
 )
 
 QT5_WRAP_UI(gui_UI_H ${gui_UI_FILES})
 
 SET(boomerang_SRC
-    main.cpp
-    mainwindow
-    rtleditor
-    DecompilerThread
-    LoggingSettingsDlg
+    DecompilerThread.cpp
+    DecompilerThread.h
+    LoggingSettingsDlg.cpp
+    LoggingSettingsDlg.h
+    Main.cpp
+    MainWindow.cpp
+    MainWindow.h
+    RTLEditor.cpp
+    RTLEditor.h
 )
 
-qt5_add_resources(resources_SRC boomerang.qrc)
+qt5_add_resources(resources_SRC Boomerang.qrc)
 add_executable(boomerang-gui ${boomerang_SRC} ${gui_UI_H} ${resources_SRC})
 
 target_link_libraries(boomerang-gui

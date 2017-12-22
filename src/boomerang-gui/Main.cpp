@@ -11,7 +11,7 @@
 
 #include <QApplication>
 
-#include "mainwindow.h"
+#include "MainWindow.h"
 #include "boomerang/util/Log.h"
 
 
