@@ -30,11 +30,7 @@ class Decompiler : public QObject, public IWatcher
     Q_OBJECT
 
 public:
-    Decompiler()
-        : QObject()
-        , m_debugging(false)
-        , m_waiting(false)
-    {}
+    Decompiler();
 
     /// IWatcher interface
 public:
@@ -102,12 +98,12 @@ protected:
     const char *getProcStatus(UserProc *p);
 
 protected:
-    bool m_debugging;
-    bool m_waiting;
+    bool m_debugging = false;
+    bool m_waiting = false;
 
-    IFrontEnd *m_fe;
-    Prog *m_prog;
-    IBinaryImage *m_image;
+    IFrontEnd *m_fe = nullptr;
+    Prog *m_prog = nullptr;
+    IBinaryImage *m_image = nullptr;
 
     std::vector<Address> m_userEntrypoints;
 };

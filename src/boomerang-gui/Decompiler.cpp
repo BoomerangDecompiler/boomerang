@@ -23,6 +23,13 @@
 #include <QThread>
 
 
+Decompiler::Decompiler()
+    : QObject()
+{
+    // create empty project to initialize all relevant data
+    Boomerang::get()->getOrCreateProject();
+}
+
 void Decompiler::setUseDFTA(bool d)
 {
     SETTING(dfaTypeAnalysis) = d;
