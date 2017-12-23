@@ -16,8 +16,8 @@
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/RTLEditor.h"
 #include "boomerang-gui/LoggingSettingsDlg.h"
-#include "boomerang-gui/ui_boomerang.h"
-#include "boomerang-gui/ui_about.h"
+#include "boomerang-gui/ui_MainWindow.h"
+#include "boomerang-gui/ui_About.h"
 
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QtWidgets>
@@ -1061,10 +1061,9 @@ void MainWindow::on_actionBoomerang_Website_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
     QDialog *dlg = new QDialog;
-
     Ui::AboutDialog aboutUi;
     aboutUi.setupUi(dlg);
-    aboutUi.VersionLabel->setText(QString("<h3>").append(Boomerang::getVersionStr()).append("</h3>"));
+    aboutUi.lbVersion->setText(QString("<h3>%1</h3>").arg(Boomerang::getVersionStr()));
     dlg->show();
 }
 
