@@ -28,6 +28,7 @@ Decompiler::Decompiler()
 {
     // create empty project to initialize all relevant data
     Boomerang::get()->getOrCreateProject();
+    Boomerang::get()->addWatcher(this);
 }
 
 
