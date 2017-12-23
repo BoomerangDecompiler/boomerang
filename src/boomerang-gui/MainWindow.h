@@ -55,8 +55,8 @@ public slots:
     void showDecodePage();
     void showDecompilePage();
     void showGenerateCodePage();
-    void on_inputFileBrowseButton_clicked();
-    void on_outputPathBrowseButton_clicked();
+    void on_btnInputFileBrowse_clicked();
+    void on_btnOutputPathBrowse_clicked();
     void on_inputFileComboBox_currentIndexChanged(const QString& text);
     void on_outputPathComboBox_currentIndexChanged(const QString& text);
     void showConsideringProc(const QString& parent, const QString& name);
@@ -73,18 +73,18 @@ public slots:
     void showNewSection(const QString& name, Address start, Address end);
     void showRTLEditor(const QString& name);
 
-    void on_clusters_itemDoubleClicked(QTreeWidgetItem *item, int column);
-    void on_decompileProcsTreeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
-    void on_actionEnable_toggled(bool b);
-    void on_actionStep_triggered();
+    void on_twModuleTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
+    void on_twProcTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
+    void on_actionDebugEnabled_toggled(bool b);
+    void on_actionDebugStep_triggered();
     void onUserProcsHorizontalHeaderSectionClicked(int logicalIndex);
-    void on_userProcs_cellDoubleClicked(int row, int column);
-    void on_userProcs_cellChanged(int row, int column);
-    void on_libProcs_cellDoubleClicked(int row, int column);
-    void on_actionOpen_triggered();
-    void on_actionSave_triggered();
-    void on_actionClose_triggered();
-    void on_actionAbout_triggered();
+    void on_tblUserProcs_cellDoubleClicked(int row, int column);
+    void on_tblUserProcs_cellChanged(int row, int column);
+    void on_tblLibProcs_cellDoubleClicked(int row, int column);
+    void on_actionNewProject_triggered();
+    void on_actionSaveProject_triggered();
+    void on_actionCloseProject_triggered();
+    void on_actionAboutBoomerang_triggered();
     void on_actionAboutQt_triggered();
     void on_tabWidget_currentChanged(int index);
 
@@ -102,15 +102,13 @@ public slots:
     void on_actionDecompile_triggered();
     void on_actionGenerate_Code_triggered();
     void on_actionStructs_triggered();
-    void on_structName_returnPressed();
+    void on_edStructName_returnPressed();
 
     void on_actionBoomerang_Website_triggered();
 
-    void on_enableNoDecodeChildren_toggled(bool b);
-
     void on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
-    void on_addButton_pressed();
-    void on_removeButton_pressed();
+    void on_btnEntryPointAdd_pressed();
+    void on_btnEntryPointRemove_pressed();
 
     void closeCurrentTab();
     void currentTabTextChanged();
@@ -120,8 +118,7 @@ protected:
     void saveSettings();
 
 private slots:
-    void on_actionLoggingOptions_triggered();
-    void on_cmb_typeRecoveryEngine_currentIndexChanged(int index);
+    void on_actionSettings_triggered();
 
 private:
     Ui::MainWindow *ui = nullptr;

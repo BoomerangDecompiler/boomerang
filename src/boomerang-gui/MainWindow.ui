@@ -41,7 +41,7 @@
       <property name="currentIndex">
        <number>0</number>
       </property>
-      <widget class="QWidget" name="tab">
+      <widget class="QWidget" name="tabWorkflow">
        <attribute name="title">
         <string>Workflow</string>
        </attribute>
@@ -62,7 +62,7 @@
          <number>9</number>
         </property>
         <item>
-         <layout class="QVBoxLayout">
+         <layout class="QHBoxLayout" name="hLayout_workflow">
           <property name="spacing">
            <number>6</number>
           </property>
@@ -79,9 +79,60 @@
            <number>0</number>
           </property>
           <item>
-           <layout class="QHBoxLayout">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnToLoad">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>load</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="Boomerang.qrc">
+              <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="vLayout_loadButton">
             <property name="spacing">
-             <number>6</number>
+             <number>0</number>
             </property>
             <property name="leftMargin">
              <number>0</number>
@@ -96,60 +147,7 @@
              <number>0</number>
             </property>
             <item>
-             <widget class="QPushButton" name="toLoadButton">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>load</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-              <property name="icon">
-               <iconset resource="Boomerang.qrc">
-                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>32</width>
-                <height>32</height>
-               </size>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QVBoxLayout">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
+             <layout class="QHBoxLayout" name="hLayout_loadButton">
               <item>
                <widget class="QPushButton" name="loadButton">
                 <property name="enabled">
@@ -188,76 +186,93 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QLabel" name="label">
-                <property name="text">
-                 <string>Load</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="toDecodeButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Decode</string>
-              </property>
+             <widget class="QLabel" name="lbLoad">
               <property name="text">
-               <string/>
+               <string>Load</string>
               </property>
-              <property name="icon">
-               <iconset resource="Boomerang.qrc">
-                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>32</width>
-                <height>32</height>
-               </size>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
              </widget>
             </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnToDecode">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Decode</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="Boomerang.qrc">
+              <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="vLayout_decodeButton">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
-             <layout class="QVBoxLayout">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
+             <layout class="QHBoxLayout" name="hLayout_decodeButton">
               <item>
                <widget class="QPushButton" name="decodeButton">
                 <property name="enabled">
@@ -296,70 +311,87 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>Decode</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="toDecompileButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Decompile</string>
-              </property>
+             <widget class="QLabel" name="lbDecode">
               <property name="text">
-               <string/>
+               <string>Decode</string>
               </property>
-              <property name="icon">
-               <iconset resource="Boomerang.qrc">
-                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>32</width>
-                <height>32</height>
-               </size>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
              </widget>
             </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnToDecompile">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Decompile</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="Boomerang.qrc">
+              <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="vLayout_decompileButton">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
-             <layout class="QVBoxLayout">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
+             <layout class="QHBoxLayout" name="hLayout_decompileButton">
               <item>
                <widget class="QPushButton" name="decompileButton">
                 <property name="enabled">
@@ -398,76 +430,93 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Decompile</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
             <item>
-             <widget class="QPushButton" name="toGenerateCodeButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>38</width>
-                <height>38</height>
-               </size>
-              </property>
-              <property name="toolTip">
-               <string>Generate</string>
-              </property>
+             <widget class="QLabel" name="lbDecompile">
               <property name="text">
-               <string/>
+               <string>Decompile</string>
               </property>
-              <property name="icon">
-               <iconset resource="Boomerang.qrc">
-                <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
-              </property>
-              <property name="iconSize">
-               <size>
-                <width>32</width>
-                <height>32</height>
-               </size>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
               </property>
              </widget>
             </item>
+           </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnToGenerateCode">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>38</width>
+              <height>38</height>
+             </size>
+            </property>
+            <property name="toolTip">
+             <string>Generate</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="Boomerang.qrc">
+              <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>32</width>
+              <height>32</height>
+             </size>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="vLayout_generateCode">
+            <property name="spacing">
+             <number>0</number>
+            </property>
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
             <item>
-             <layout class="QVBoxLayout">
-              <property name="spacing">
-               <number>0</number>
-              </property>
-              <property name="leftMargin">
-               <number>0</number>
-              </property>
-              <property name="topMargin">
-               <number>0</number>
-              </property>
-              <property name="rightMargin">
-               <number>0</number>
-              </property>
-              <property name="bottomMargin">
-               <number>0</number>
-              </property>
+             <layout class="QHBoxLayout" name="hLayout_generateCode">
               <item>
                <widget class="QPushButton" name="generateCodeButton">
                 <property name="enabled">
@@ -506,34 +555,47 @@
                 </property>
                </widget>
               </item>
-              <item>
-               <widget class="QLabel" name="label_4">
-                <property name="text">
-                 <string>Generate Code</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-                <property name="wordWrap">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
+            <item>
+             <widget class="QLabel" name="lbGenerateCode">
+              <property name="text">
+               <string>Generate Code</string>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignCenter</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
            </layout>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
          </layout>
         </item>
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="start">
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
-             <layout class="QHBoxLayout">
+             <layout class="QHBoxLayout" name="hLayout_inputFile">
               <property name="spacing">
                <number>6</number>
               </property>
@@ -550,7 +612,19 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_5">
+               <widget class="QLabel" name="lbInputFile">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>Input file:</string>
                 </property>
@@ -570,7 +644,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="inputFileBrowseButton">
+               <widget class="QPushButton" name="btnInputFileBrowse">
                 <property name="minimumSize">
                  <size>
                   <width>75</width>
@@ -591,7 +665,7 @@
              </layout>
             </item>
             <item>
-             <layout class="QHBoxLayout">
+             <layout class="QHBoxLayout" name="hLayout_outputPath">
               <property name="spacing">
                <number>6</number>
               </property>
@@ -608,7 +682,19 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_8">
+               <widget class="QLabel" name="lbOutputPath">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>Output path:</string>
                 </property>
@@ -628,7 +714,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="outputPathBrowseButton">
+               <widget class="QPushButton" name="btnOutputPathBrowse">
                 <property name="minimumSize">
                  <size>
                   <width>75</width>
@@ -647,63 +733,6 @@
                </widget>
               </item>
              </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="enableDebugCheckBox">
-              <property name="text">
-               <string>Enable Debugging</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <item>
-               <spacer name="horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeType">
-                 <enum>QSizePolicy::Fixed</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>16</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QLabel" name="label_15">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>Type Recovery Engine</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QComboBox" name="cmb_typeRecoveryEngine">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="enableNoDecodeChildren">
-              <property name="text">
-               <string>don't decode child procedures</string>
-              </property>
-             </widget>
             </item>
             <item>
              <spacer>
@@ -755,14 +784,14 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_10">
+               <widget class="QLabel" name="lbSrcArchitecture">
                 <property name="text">
                  <string>Source architecture is</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="machineTypeLabel">
+               <widget class="QLabel" name="lbMachineType">
                 <property name="text">
                  <string>&lt;machine type&gt;</string>
                 </property>
@@ -835,24 +864,11 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLabel" name="label_12">
+                   <widget class="QLabel" name="lbEntryPoints">
                     <property name="text">
                      <string>Found entrypoints:</string>
                     </property>
                    </widget>
-                  </item>
-                  <item>
-                   <spacer>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
                   </item>
                  </layout>
                 </item>
@@ -901,10 +917,10 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="nameEdit"/>
+                   <widget class="QLineEdit" name="edEntryPointName"/>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="addButton">
+                   <widget class="QPushButton" name="btnEntryPointAdd">
                     <property name="enabled">
                      <bool>true</bool>
                     </property>
@@ -920,7 +936,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="removeButton">
+                   <widget class="QPushButton" name="btnEntryPointRemove">
                     <property name="enabled">
                      <bool>false</bool>
                     </property>
@@ -974,24 +990,11 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLabel" name="label_11">
+                   <widget class="QLabel" name="lbSections">
                     <property name="text">
                      <string>Sections:</string>
                     </property>
                    </widget>
-                  </item>
-                  <item>
-                   <spacer>
-                    <property name="orientation">
-                     <enum>Qt::Horizontal</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>40</width>
-                      <height>20</height>
-                     </size>
-                    </property>
-                   </spacer>
                   </item>
                  </layout>
                 </item>
@@ -1075,14 +1078,14 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_7">
+                 <widget class="QLabel" name="lbLibProcs">
                   <property name="text">
                    <string>Library Procedures:</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="libProcs">
+                 <widget class="QTableWidget" name="tblLibProcs">
                   <property name="editTriggers">
                    <set>QAbstractItemView::NoEditTriggers</set>
                   </property>
@@ -1130,14 +1133,14 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="label_6">
+                 <widget class="QLabel" name="lbUserProcs">
                   <property name="text">
                    <string>User Procedures:</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="userProcs">
+                 <widget class="QTableWidget" name="tblUserProcs">
                   <property name="editTriggers">
                    <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
                   </property>
@@ -1208,7 +1211,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_9">
+               <widget class="QLabel" name="lblDecompileStatus">
                 <property name="text">
                  <string>Decompiling... </string>
                 </property>
@@ -1227,7 +1230,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QTreeWidget" name="decompileProcsTreeWidget">
+             <widget class="QTreeWidget" name="twProcTree">
               <property name="editTriggers">
                <set>QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
               </property>
@@ -1278,7 +1281,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="label_13">
+               <widget class="QLabel" name="lbGenerateCodeStatus">
                 <property name="text">
                  <string>Generating code...</string>
                 </property>
@@ -1297,7 +1300,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QTreeWidget" name="clusters">
+             <widget class="QTreeWidget" name="twModuleTree">
               <column>
                <property name="text">
                 <string/>
@@ -1323,10 +1326,10 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="newFileEdit"/>
+               <widget class="QLineEdit" name="edNewFile"/>
               </item>
               <item>
-               <widget class="QPushButton" name="newFileButton">
+               <widget class="QPushButton" name="btnNewFile">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -1343,7 +1346,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="tabStructs">
        <attribute name="title">
         <string>Structs</string>
        </attribute>
@@ -1381,19 +1384,25 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_14">
+           <widget class="QLabel" name="lbStructName">
+            <property name="minimumSize">
+             <size>
+              <width>100</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="text">
-             <string>Name:</string>
+             <string>Structure name:</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="structName"/>
+           <widget class="QLineEdit" name="edStructName"/>
           </item>
          </layout>
         </item>
         <item>
-         <widget class="QTableWidget" name="structMembers">
+         <widget class="QTableWidget" name="tblStructMembers">
           <property name="showGrid">
            <bool>false</bool>
           </property>
@@ -1438,10 +1447,12 @@
     <property name="title">
      <string>Fi&amp;le</string>
     </property>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSave"/>
-    <addaction name="actionClose"/>
+    <addaction name="actionNewProject"/>
+    <addaction name="actionLoadProject"/>
+    <addaction name="actionSaveProject"/>
+    <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
+    <addaction name="actionSave_And_Exit"/>
     <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
@@ -1463,14 +1474,14 @@
     <property name="title">
      <string>Setti&amp;ngs</string>
     </property>
-    <addaction name="actionLoggingOptions"/>
+    <addaction name="actionSettings"/>
    </widget>
-   <widget class="QMenu" name="menuDebug_2">
+   <widget class="QMenu" name="menuDebug">
     <property name="title">
      <string>Deb&amp;ug</string>
     </property>
-    <addaction name="actionEnable"/>
-    <addaction name="actionStep"/>
+    <addaction name="actionDebugEnabled"/>
+    <addaction name="actionDebugStep"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1486,7 +1497,7 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout"/>
+    <addaction name="actionAboutBoomerang"/>
     <addaction name="actionAboutQt"/>
     <addaction name="actionBoomerang_Website"/>
    </widget>
@@ -1494,7 +1505,7 @@
    <addaction name="menuWindow"/>
    <addaction name="menuView"/>
    <addaction name="menuSettings"/>
-   <addaction name="menuDebug_2"/>
+   <addaction name="menuDebug"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -1504,27 +1515,36 @@
    </property>
   </action>
   <action name="actionExit">
-   <property name="text">
-    <string>&amp;Exit</string>
-   </property>
-  </action>
-  <action name="actionOpen">
    <property name="enabled">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Open</string>
+    <string>&amp;Exit</string>
    </property>
   </action>
-  <action name="actionClose">
+  <action name="actionNewProject">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Close</string>
+    <string>&amp;New Project...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="actionStep">
+  <action name="actionCloseProject">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Close Project</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionDebugStep">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1532,7 +1552,7 @@
     <string>&amp;Step</string>
    </property>
   </action>
-  <action name="actionEnable">
+  <action name="actionDebugEnabled">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1540,18 +1560,21 @@
     <string>&amp;Enabled</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionSaveProject">
    <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Save</string>
+    <string>&amp;Save Project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionCut">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Cut</string>
    </property>
@@ -1560,6 +1583,9 @@
    </property>
   </action>
   <action name="actionCopy">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>C&amp;opy</string>
    </property>
@@ -1568,6 +1594,9 @@
    </property>
   </action>
   <action name="actionPaste">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Paste</string>
    </property>
@@ -1576,6 +1605,9 @@
    </property>
   </action>
   <action name="actionDelete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Delete</string>
    </property>
@@ -1584,6 +1616,9 @@
    </property>
   </action>
   <action name="actionFind">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Find...</string>
    </property>
@@ -1592,6 +1627,9 @@
    </property>
   </action>
   <action name="actionFind_Next">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Find &amp;Next</string>
    </property>
@@ -1600,6 +1638,9 @@
    </property>
   </action>
   <action name="actionGo_To">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Go To...</string>
    </property>
@@ -1608,6 +1649,9 @@
    </property>
   </action>
   <action name="actionSelect_All">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>&amp;Select All</string>
    </property>
@@ -1645,9 +1689,9 @@
     <string>&amp;Boomerang Website</string>
    </property>
   </action>
-  <action name="actionLoggingOptions">
+  <action name="actionSettings">
    <property name="text">
-    <string>Configure Boomerang...</string>
+    <string>&amp;Configure Boomerang...</string>
    </property>
   </action>
   <action name="actionDecodeOptions">
@@ -1660,7 +1704,7 @@
     <string>D&amp;ecompile</string>
    </property>
   </action>
-  <action name="actionAbout">
+  <action name="actionAboutBoomerang">
    <property name="text">
     <string>&amp;About Boomerang</string>
    </property>
@@ -1673,6 +1717,25 @@
   <action name="actionDebug">
    <property name="text">
     <string>Debug</string>
+   </property>
+  </action>
+  <action name="actionLoadProject">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Load Project...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSave_And_Exit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Sa&amp;ve And Exit</string>
    </property>
   </action>
  </widget>
@@ -1693,22 +1756,6 @@
     <hint type="destinationlabel">
      <x>450</x>
      <y>354</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>enableDebugCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>actionEnable</receiver>
-   <slot>setChecked(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>111</x>
-     <y>195</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
     </hint>
    </hints>
   </connection>
