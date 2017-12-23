@@ -16,7 +16,7 @@ endif(Qt5Widgets_FOUND)
 
 set(gui_UI_FILES
     About.ui
-    LoggingSettingsDlg.ui
+    SettingsDlg.ui
     MainWindow.ui
 )
 
@@ -25,8 +25,8 @@ QT5_WRAP_UI(gui_UI_H ${gui_UI_FILES})
 SET(boomerang_SRC
     Decompiler.cpp
     Decompiler.h
-    LoggingSettingsDlg.cpp
-    LoggingSettingsDlg.h
+    SettingsDlg.cpp
+    SettingsDlg.h
     Main.cpp
     MainWindow.cpp
     MainWindow.h

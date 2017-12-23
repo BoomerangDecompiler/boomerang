@@ -15,7 +15,7 @@
 
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/RTLEditor.h"
-#include "boomerang-gui/LoggingSettingsDlg.h"
+#include "boomerang-gui/SettingsDlg.h"
 #include "boomerang-gui/ui_MainWindow.h"
 #include "boomerang-gui/ui_About.h"
 
@@ -1127,9 +1127,7 @@ void MainWindow::on_removeButton_pressed()
 
 void MainWindow::on_actionLoggingOptions_triggered()
 {
-    LoggingSettingsDlg dlg;
-
-    dlg.exec();
+    SettingsDlg(m_decompiler).exec();
 }
 
 

@@ -173,7 +173,6 @@ private:
 #define DEBUG_PROOF             (SETTING(debugProof))
 #define DEBUG_UNUSED            (SETTING(debugUnused))
 #define DEBUG_LIVENESS          (SETTING(debugLiveness))
-#define DEBUG_RANGE_ANALYSIS    (SETTING(debugRangeAnalysis))
 #define DEBUG_SWITCH            (SETTING(debugSwitch))
 #define DEBUG_GEN               (SETTING(debugGen))
 #define DEBUG_DECODER           (SETTING(debugDecoder))

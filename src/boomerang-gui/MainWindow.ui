@@ -122,7 +122,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="boomerang.qrc">
+               <iconset resource="Boomerang.qrc">
                 <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
@@ -177,7 +177,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="boomerang.qrc">
+                 <iconset resource="Boomerang.qrc">
                   <normaloff>:/load1.png</normaloff>:/load1.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -230,7 +230,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="boomerang.qrc">
+               <iconset resource="Boomerang.qrc">
                 <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
@@ -285,7 +285,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="boomerang.qrc">
+                 <iconset resource="Boomerang.qrc">
                   <normaloff>:/decode.png</normaloff>:/decode.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -332,7 +332,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="boomerang.qrc">
+               <iconset resource="Boomerang.qrc">
                 <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
@@ -387,7 +387,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="boomerang.qrc">
+                 <iconset resource="Boomerang.qrc">
                   <normaloff>:/decompile.png</normaloff>:/decompile.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -440,7 +440,7 @@
                <string/>
               </property>
               <property name="icon">
-               <iconset resource="boomerang.qrc">
+               <iconset resource="Boomerang.qrc">
                 <normaloff>:/rarrow.png</normaloff>:/rarrow.png</iconset>
               </property>
               <property name="iconSize">
@@ -495,7 +495,7 @@
                  <string/>
                 </property>
                 <property name="icon">
-                 <iconset resource="boomerang.qrc">
+                 <iconset resource="Boomerang.qrc">
                   <normaloff>:/gencode.png</normaloff>:/gencode.png</iconset>
                 </property>
                 <property name="iconSize">
@@ -1431,7 +1431,7 @@
      <x>0</x>
      <y>0</y>
      <width>895</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1446,7 +1446,7 @@
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
-     <string>Edit</string>
+     <string>E&amp;dit</string>
     </property>
     <addaction name="actionCut"/>
     <addaction name="actionCopy"/>
@@ -1464,8 +1464,6 @@
      <string>Setti&amp;ngs</string>
     </property>
     <addaction name="actionLoggingOptions"/>
-    <addaction name="actionDecodeOptions"/>
-    <addaction name="actionDecompileOptions"/>
    </widget>
    <widget class="QMenu" name="menuDebug_2">
     <property name="title">
@@ -1539,7 +1537,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Enable</string>
+    <string>&amp;Enabled</string>
    </property>
   </action>
   <action name="actionSave">
@@ -1649,7 +1647,7 @@
   </action>
   <action name="actionLoggingOptions">
    <property name="text">
-    <string>&amp;Logging</string>
+    <string>Configure Boomerang...</string>
    </property>
   </action>
   <action name="actionDecodeOptions">
@@ -1672,9 +1670,14 @@
     <string>About &amp;Qt</string>
    </property>
   </action>
+  <action name="actionDebug">
+   <property name="text">
+    <string>Debug</string>
+   </property>
+  </action>
  </widget>
  <resources>
-  <include location="boomerang.qrc"/>
+  <include location="Boomerang.qrc"/>
  </resources>
  <connections>
   <connection>
