@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Boomerang Settings</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="vLayout_1">
    <item>
     <layout class="QVBoxLayout" name="vLayout_Settings">
      <item>
@@ -31,7 +31,7 @@
         <attribute name="title">
          <string>Logging</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="vLayout_2">
          <item>
           <layout class="QVBoxLayout" name="vLayout_tabLogging">
            <item>
@@ -114,7 +114,7 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer">
+          <spacer name="vSpacer_1">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -132,7 +132,7 @@
         <attribute name="title">
          <string>Decode</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="vLayout_3">
          <item>
           <layout class="QVBoxLayout" name="vLayout_tabDecode">
            <item>
@@ -173,7 +173,7 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer">
+          <spacer name="vSpacer_2">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -191,7 +191,7 @@
         <attribute name="title">
          <string>Decompile</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_2">
+        <layout class="QVBoxLayout" name="vLayout_4">
          <item>
           <layout class="QVBoxLayout" name="vLayout_tabDecompile">
            <item>
@@ -405,7 +405,7 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer">
+          <spacer name="vSpacer_3">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
