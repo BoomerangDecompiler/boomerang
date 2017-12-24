@@ -26,7 +26,7 @@
 MainWindow::MainWindow(QWidget *_parent)
     : QMainWindow(_parent)
     , ui(new Ui::MainWindow)
-    , step(nullptr)
+    , m_debugStep(nullptr)
 {
     ui->setupUi(this);
 
@@ -86,13 +86,13 @@ MainWindow::MainWindow(QWidget *_parent)
     ui->tabWidget->cornerWidget()->show();
     connect(closeButton, SIGNAL(clicked()), this, SLOT(closeCurrentTab()));
 
-    structs = ui->tabWidget->widget(1);
+    m_structsView = ui->tabWidget->widget(1);
     ui->tabWidget->removeTab(1);
 
     showInitPage();
     setWindowTitle("Boomerang");
 
-    loadingSettings = true;
+    m_loadingSettings = true;
     QSettings settings("Boomerang", "Boomerang");
 
     ui->cbInputFile->addItems(settings.value("inputfiles").toStringList());
@@ -114,7 +114,7 @@ MainWindow::MainWindow(QWidget *_parent)
     // check for a valid input file and output path
     ui->btnToLoad->setEnabled((ui->cbOutputPath->count() > 0) && (ui->cbInputFile->count() > 0));
 
-    loadingSettings = false;
+    m_loadingSettings = false;
 
     ui->cbInputFile->setEditable(false);
     ui->cbOutputPath->setEditable(false);
@@ -135,7 +135,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::saveSettings()
 {
-    if (loadingSettings) {
+    if (m_loadingSettings) {
         return;
     }
 
@@ -240,7 +240,7 @@ void MainWindow::on_cbOutputPath_currentIndexChanged(const QString& )
 
 void MainWindow::closeCurrentTab()
 {
-    if (openFiles.find(ui->tabWidget->currentWidget()) != openFiles.end()) {
+    if (m_openFiles.find(ui->tabWidget->currentWidget()) != m_openFiles.end()) {
         on_actCloseProject_triggered();
     }
     else if (ui->tabWidget->currentIndex() != 0) {
@@ -306,8 +306,8 @@ void MainWindow::showInitPage()
     ui->twProcTree->clear();
     ui->twModuleTree->clear();
 
-    decompiledCount = 0;
-    codeGenCount = 0;
+    m_numDecompiledProcs = 0;
+    m_numCodeGenProcs = 0;
 
     ui->actLoad->setEnabled(false);
     ui->actDecode->setEnabled(false);
@@ -501,12 +501,12 @@ void MainWindow::showDecompilingProc(const QString& name)
     if (!foundit.isEmpty()) {
         ui->twProcTree->setCurrentItem(foundit.first(), 0);
         foundit.first()->setTextColor(0, QColor("blue"));
-        decompiledCount++;
+        m_numDecompiledProcs++;
     }
 
     const int max = ui->tblUserProcs->rowCount();
     ui->prgDecompile->setRange(0, max);
-    ui->prgDecompile->setValue(decompiledCount);
+    ui->prgDecompile->setValue(m_numDecompiledProcs);
 }
 
 
@@ -635,11 +635,11 @@ void MainWindow::showNewProcInCluster(const QString& name, const QString& cluste
         ui->twModuleTree->scrollToItem(n);
         ui->twModuleTree->setCurrentItem(n, 0);
         ui->twModuleTree->expandItem(found.first());
-        codeGenCount++;
+        m_numCodeGenProcs++;
     }
 
     ui->prgGenerateCode->setRange(0, ui->tblUserProcs->rowCount());
-    ui->prgGenerateCode->setValue(codeGenCount);
+    ui->prgGenerateCode->setValue(m_numCodeGenProcs);
 }
 
 
@@ -744,7 +744,7 @@ void MainWindow::on_twModuleTree_itemDoubleClicked(QTreeWidgetItem *item, int co
         QString     contents = in.readAll();
         file.close();
         n->insertPlainText(contents);
-        openFiles[n] = filename;
+        m_openFiles[n] = filename;
         connect(n, SIGNAL(textChanged()), this, SLOT(currentTabTextChanged()));
         ui->tabWidget->addTab(n, top->text(0));
     }
@@ -768,18 +768,18 @@ void MainWindow::on_actDebugEnabled_toggled(bool enabled)
     if (enabled) {
         statusBar()->show();
 
-        if (step == nullptr) {
-            step = new QToolButton();
-            step->setToolButtonStyle(Qt::ToolButtonTextOnly);
-            step->setText("Step");
-            step->setDefaultAction(ui->actDebugStep);
+        if (m_debugStep == nullptr) {
+            m_debugStep = new QToolButton();
+            m_debugStep->setToolButtonStyle(Qt::ToolButtonTextOnly);
+            m_debugStep->setText("Step");
+            m_debugStep->setDefaultAction(ui->actDebugStep);
         }
 
-        statusBar()->addPermanentWidget(step);
+        statusBar()->addPermanentWidget(m_debugStep);
     }
     else {
-        if (step) {
-            statusBar()->removeWidget(step);
+        if (m_debugStep) {
+            statusBar()->removeWidget(m_debugStep);
         }
 
         statusBar()->hide();
@@ -871,8 +871,8 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
         QString     contents = in.readAll();
         file.close();
         n->insertPlainText(contents);
-        openFiles[n] = filename;
-        signatureFiles.insert(n);
+        m_openFiles[n] = filename;
+        m_signatureFiles.insert(n);
         connect(n, SIGNAL(textChanged()), this, SLOT(currentTabTextChanged()));
         ui->tabWidget->addTab(n, sigFile);
     }
@@ -998,13 +998,13 @@ void MainWindow::on_actGenerateCode_triggered()
 void MainWindow::on_actStructs_triggered()
 {
     for (int i = 0; i < ui->tabWidget->count(); i++) {
-        if (ui->tabWidget->widget(i) == structs) {
+        if (ui->tabWidget->widget(i) == m_structsView) {
             return;
         }
     }
 
-    ui->tabWidget->addTab(structs, "Structs");
-    ui->tabWidget->setCurrentWidget(structs);
+    ui->tabWidget->addTab(m_structsView, "Structs");
+    ui->tabWidget->setCurrentWidget(m_structsView);
 }
 
 

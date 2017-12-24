@@ -126,14 +126,13 @@ private:
     QThread m_decompilerThread;
     Decompiler *m_decompiler = nullptr;
 
-    QToolButton *step = nullptr;
+    bool m_loadingSettings = false;
+    int m_numDecompiledProcs = 0;
+    int m_numCodeGenProcs = 0;
 
-    int decompiledCount = 0;
-    int codeGenCount = 0;
+    std::map<QWidget *, QString> m_openFiles;
+    std::set<QWidget *> m_signatureFiles;
 
-    std::map<QWidget *, QString> openFiles;
-    std::set<QWidget *> signatureFiles;
-
-    QWidget *structs = nullptr;
-    bool loadingSettings = false;
+    QToolButton *m_debugStep = nullptr;
+    QWidget *m_structsView = nullptr;
 };
