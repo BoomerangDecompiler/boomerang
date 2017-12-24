@@ -16,7 +16,7 @@
 
 
 /**
- * Settings that affect decompilation and output behavior.
+ * Settings that affect decompilation and output behaviour.
  */
 class Settings
 {
