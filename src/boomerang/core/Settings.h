@@ -14,8 +14,9 @@
 #include <QDir>
 #include <QSettings>
 
+
 /**
- * Settings that affect decompilation and output behavior.
+ * Settings that affect decompilation and output behaviour.
  */
 class Settings
 {
@@ -49,7 +50,6 @@ public:
     bool debugDecoder        = false;
     bool debugProof          = false;
     bool debugUnused         = false;
-    bool debugRangeAnalysis  = false;
     bool printRtl            = false;
     bool noBranchSimplify    = false;
     bool noRemoveNull        = false;

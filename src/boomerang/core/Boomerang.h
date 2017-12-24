@@ -142,7 +142,7 @@ public:
     void alertDecompileAfterPropagate(UserProc *p, int depth);
     void alertDecompileAfterRemoveStmts(UserProc *p, int depth);
     void alertEndDecompile(UserProc *p);
-    void alertConsidering(Function *_parent, Function *p);
+    void alertDiscovered(Function *_parent, Function *p);
     void alertDecompiling(UserProc *p);
     void alertDecompileDebugPoint(UserProc *p, const char *description);
 
@@ -173,7 +173,6 @@ private:
 #define DEBUG_PROOF             (SETTING(debugProof))
 #define DEBUG_UNUSED            (SETTING(debugUnused))
 #define DEBUG_LIVENESS          (SETTING(debugLiveness))
-#define DEBUG_RANGE_ANALYSIS    (SETTING(debugRangeAnalysis))
 #define DEBUG_SWITCH            (SETTING(debugSwitch))
 #define DEBUG_GEN               (SETTING(debugGen))
 #define DEBUG_DECODER           (SETTING(debugDecoder))

@@ -40,7 +40,7 @@ public:
     virtual void alertDecompileAfterRemoveStmts(UserProc *, int depth) { Q_UNUSED(depth); }
     virtual void alertEndDecompile(UserProc *) {}
     virtual void alert_load(Function *) {}
-    virtual void alertConsidering(Function *parent, Function *) { Q_UNUSED(parent); }
+    virtual void alertDiscovered(Function *caller, Function *function) { Q_UNUSED(caller); Q_UNUSED(function); }
     virtual void alertDecompiling(UserProc *) {}
     virtual void alertDecompileDebugPoint(UserProc *, const char *description) { Q_UNUSED(description); }
 };

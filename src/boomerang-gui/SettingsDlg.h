@@ -12,18 +12,24 @@
 
 #include <QDialog>
 
+class Decompiler;
+
 namespace Ui
 {
-class LoggingSettingsDlg;
+class SettingsDlg;
 }
 
-class LoggingSettingsDlg : public QDialog
+/**
+ * Dialog for editing Boomerang settings.
+ * The settings are not (yet) saved across restarts.
+ */
+class SettingsDlg : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit LoggingSettingsDlg(QWidget *parent = nullptr);
-    ~LoggingSettingsDlg();
+    SettingsDlg(Decompiler *decompiler, QWidget *parent = nullptr);
+    ~SettingsDlg();
 
 protected:
     void changeEvent(QEvent *e) override;
@@ -34,5 +40,5 @@ private slots:
     void on_btnOk_clicked();
 
 private:
-    Ui::LoggingSettingsDlg *ui;
+    Ui::SettingsDlg *ui;
 };

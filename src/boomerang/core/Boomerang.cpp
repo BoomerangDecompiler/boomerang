@@ -436,10 +436,10 @@ void Boomerang::alertEndDecompile(UserProc* p)
 }
 
 
-void Boomerang::alertConsidering(Function* _parent, Function* p)
+void Boomerang::alertDiscovered(Function* caller, Function* function)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertConsidering(_parent, p);
+        it->alertDiscovered(caller, function);
     }
 }
 

@@ -8,12 +8,14 @@
 - Fixed: Crash when decompiling library thunks.
 - Fixed: Crash when the instruction at the entry point is a jump instruction.
 - Fixed: Crash when accessing a Phi reference in a removed Basic Block.
+- Fixed: Potential crash after removing unused global variables.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
 - Improved: Log output formatting.
 - Improved: Detection of statically imported library functions.
 - Feature: Added 'replay' console command to read console commands from a file.
-- Changed: Rename 'print-*' console command to a single 'print' command with arguments.
+- Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
+- Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
 - Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
 - Changed: Slight changes to generated C code.
 - Removed: Constraint-based type analysis.
@@ -26,7 +28,7 @@
 - Technical: Allow compilation using GCC, Clang and Visual Studio compilers.
 - Technical: Removed unused files from the repository.
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
-- Technical: Upgraded codebase to C++11.
+- Technical: Upgraded code base to C++11.
 - Technical: Added more regression tests.
 - Technical: Added more unit tests.
 - Numerous other small changes and fixes.
