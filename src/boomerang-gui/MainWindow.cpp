@@ -23,10 +23,6 @@
 #include <QtWidgets/QtWidgets>
 
 
-
-Q_DECLARE_METATYPE(ITypeRecovery *)
-
-
 MainWindow::MainWindow(QWidget *_parent)
     : QMainWindow(_parent)
     , ui(new Ui::MainWindow)

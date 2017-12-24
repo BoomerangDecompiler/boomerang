@@ -16,7 +16,7 @@
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/ui_SettingsDlg.h"
 
-Q_DECLARE_METATYPE(ITypeRecovery *);
+Q_DECLARE_METATYPE(ITypeRecovery *)
 
 
 SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
