@@ -149,7 +149,7 @@
             <item>
              <layout class="QHBoxLayout" name="hLayout_loadButton">
               <item>
-               <widget class="QPushButton" name="loadButton">
+               <widget class="QPushButton" name="btnLoad">
                 <property name="enabled">
                  <bool>true</bool>
                 </property>
@@ -189,7 +189,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="lbLoad">
+             <widget class="QLabel" name="lblLoad">
               <property name="text">
                <string>Load</string>
               </property>
@@ -274,7 +274,7 @@
             <item>
              <layout class="QHBoxLayout" name="hLayout_decodeButton">
               <item>
-               <widget class="QPushButton" name="decodeButton">
+               <widget class="QPushButton" name="btnDecode">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -314,7 +314,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="lbDecode">
+             <widget class="QLabel" name="lblDecode">
               <property name="text">
                <string>Decode</string>
               </property>
@@ -393,7 +393,7 @@
             <item>
              <layout class="QHBoxLayout" name="hLayout_decompileButton">
               <item>
-               <widget class="QPushButton" name="decompileButton">
+               <widget class="QPushButton" name="btnDecompile">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -433,7 +433,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="lbDecompile">
+             <widget class="QLabel" name="lblDecompile">
               <property name="text">
                <string>Decompile</string>
               </property>
@@ -518,7 +518,7 @@
             <item>
              <layout class="QHBoxLayout" name="hLayout_generateCode">
               <item>
-               <widget class="QPushButton" name="generateCodeButton">
+               <widget class="QPushButton" name="btnGenerateCode">
                 <property name="enabled">
                  <bool>false</bool>
                 </property>
@@ -558,7 +558,7 @@
              </layout>
             </item>
             <item>
-             <widget class="QLabel" name="lbGenerateCode">
+             <widget class="QLabel" name="lblGenerateCode">
               <property name="text">
                <string>Generate Code</string>
               </property>
@@ -590,7 +590,7 @@
         <item>
          <widget class="QStackedWidget" name="stackedWidget">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="start">
            <layout class="QVBoxLayout" name="verticalLayout">
@@ -612,7 +612,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="lbInputFile">
+               <widget class="QLabel" name="lblInputFile">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                   <horstretch>0</horstretch>
@@ -631,7 +631,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="inputFileComboBox">
+               <widget class="QComboBox" name="cbInputFile">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -682,7 +682,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="lbOutputPath">
+               <widget class="QLabel" name="lblOutputPath">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                   <horstretch>0</horstretch>
@@ -701,7 +701,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QComboBox" name="outputPathComboBox">
+               <widget class="QComboBox" name="cbOutputPath">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -784,14 +784,14 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="lbSrcArchitecture">
+               <widget class="QLabel" name="lblSrcArchitecture">
                 <property name="text">
                  <string>Source architecture is</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="lbMachineType">
+               <widget class="QLabel" name="lblMachineType">
                 <property name="text">
                  <string>&lt;machine type&gt;</string>
                 </property>
@@ -864,7 +864,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLabel" name="lbEntryPoints">
+                   <widget class="QLabel" name="lblEntryPoints">
                     <property name="text">
                      <string>Found entrypoints:</string>
                     </property>
@@ -873,7 +873,7 @@
                  </layout>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="entrypoints">
+                 <widget class="QTableWidget" name="tblEntryPoints">
                   <property name="showGrid">
                    <bool>false</bool>
                   </property>
@@ -907,7 +907,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLineEdit" name="addressEdit">
+                   <widget class="QLineEdit" name="edtEntryAddress">
                     <property name="sizePolicy">
                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                       <horstretch>0</horstretch>
@@ -917,7 +917,7 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QLineEdit" name="edEntryPointName"/>
+                   <widget class="QLineEdit" name="edtEntryPointName"/>
                   </item>
                   <item>
                    <widget class="QPushButton" name="btnEntryPointAdd">
@@ -990,7 +990,7 @@
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QLabel" name="lbSections">
+                   <widget class="QLabel" name="lblSections">
                     <property name="text">
                      <string>Sections:</string>
                     </property>
@@ -999,7 +999,7 @@
                  </layout>
                 </item>
                 <item>
-                 <widget class="QTableWidget" name="sections">
+                 <widget class="QTableWidget" name="tblSections">
                   <property name="showGrid">
                    <bool>false</bool>
                   </property>
@@ -1078,7 +1078,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="lbLibProcs">
+                 <widget class="QLabel" name="lblLibProcs">
                   <property name="text">
                    <string>Library Procedures:</string>
                   </property>
@@ -1133,7 +1133,7 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <widget class="QLabel" name="lbUserProcs">
+                 <widget class="QLabel" name="lblUserProcs">
                   <property name="text">
                    <string>User Procedures:</string>
                   </property>
@@ -1218,7 +1218,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QProgressBar" name="progressDecompile">
+               <widget class="QProgressBar" name="prgDecompile">
                 <property name="value">
                  <number>24</number>
                 </property>
@@ -1281,14 +1281,14 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLabel" name="lbGenerateCodeStatus">
+               <widget class="QLabel" name="lblGenerateCodeStatus">
                 <property name="text">
                  <string>Generating code...</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QProgressBar" name="progressGenerateCode">
+               <widget class="QProgressBar" name="prgGenerateCode">
                 <property name="value">
                  <number>24</number>
                 </property>
@@ -1326,7 +1326,7 @@
                <number>0</number>
               </property>
               <item>
-               <widget class="QLineEdit" name="edNewFile"/>
+               <widget class="QLineEdit" name="edtNewFile"/>
               </item>
               <item>
                <widget class="QPushButton" name="btnNewFile">
@@ -1384,7 +1384,7 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLabel" name="lbStructName">
+           <widget class="QLabel" name="lblStructName">
             <property name="minimumSize">
              <size>
               <width>100</width>
@@ -1397,7 +1397,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="edStructName"/>
+           <widget class="QLineEdit" name="edtStructName"/>
           </item>
          </layout>
         </item>
@@ -1447,34 +1447,34 @@
     <property name="title">
      <string>Fi&amp;le</string>
     </property>
-    <addaction name="actionNewProject"/>
-    <addaction name="actionLoadProject"/>
-    <addaction name="actionSaveProject"/>
-    <addaction name="actionCloseProject"/>
+    <addaction name="actNewProject"/>
+    <addaction name="actLoadProject"/>
+    <addaction name="actSaveProject"/>
+    <addaction name="actCloseProject"/>
     <addaction name="separator"/>
-    <addaction name="actionSave_And_Exit"/>
-    <addaction name="actionExit"/>
+    <addaction name="actSaveAndExit"/>
+    <addaction name="actExit"/>
    </widget>
    <widget class="QMenu" name="menuWindow">
     <property name="title">
      <string>E&amp;dit</string>
     </property>
-    <addaction name="actionCut"/>
-    <addaction name="actionCopy"/>
-    <addaction name="actionPaste"/>
-    <addaction name="actionDelete"/>
+    <addaction name="actCut"/>
+    <addaction name="actCopy"/>
+    <addaction name="actPaste"/>
+    <addaction name="actDelete"/>
     <addaction name="separator"/>
-    <addaction name="actionFind"/>
-    <addaction name="actionFind_Next"/>
-    <addaction name="actionGo_To"/>
+    <addaction name="actFind"/>
+    <addaction name="actFindNext"/>
+    <addaction name="actGoTo"/>
     <addaction name="separator"/>
-    <addaction name="actionSelect_All"/>
+    <addaction name="actSelectAll"/>
    </widget>
    <widget class="QMenu" name="menuSettings">
     <property name="title">
      <string>Setti&amp;ngs</string>
     </property>
-    <addaction name="actionSettings"/>
+    <addaction name="actSettings"/>
    </widget>
    <widget class="QMenu" name="menuDebug">
     <property name="enabled">
@@ -1483,26 +1483,26 @@
     <property name="title">
      <string>Deb&amp;ug</string>
     </property>
-    <addaction name="actionDebugEnabled"/>
-    <addaction name="actionDebugStep"/>
+    <addaction name="actDebugEnabled"/>
+    <addaction name="actDebugStep"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
      <string>&amp;View</string>
     </property>
-    <addaction name="actionLoad"/>
-    <addaction name="actionDecode"/>
-    <addaction name="actionDecompile"/>
-    <addaction name="actionGenerate_Code"/>
-    <addaction name="actionStructs"/>
+    <addaction name="actLoad"/>
+    <addaction name="actDecode"/>
+    <addaction name="actDecompile"/>
+    <addaction name="actGenerateCode"/>
+    <addaction name="actStructs"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAboutBoomerang"/>
-    <addaction name="actionAboutQt"/>
-    <addaction name="actionBoomerang_Website"/>
+    <addaction name="actAboutBoomerang"/>
+    <addaction name="actAboutQt"/>
+    <addaction name="actBoomerangWebsite"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuWindow"/>
@@ -1517,7 +1517,7 @@
     <string>New</string>
    </property>
   </action>
-  <action name="actionExit">
+  <action name="actExit">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -1525,7 +1525,7 @@
     <string>&amp;Exit</string>
    </property>
   </action>
-  <action name="actionNewProject">
+  <action name="actNewProject">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1536,7 +1536,7 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="actionCloseProject">
+  <action name="actCloseProject">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1547,7 +1547,7 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionDebugStep">
+  <action name="actDebugStep">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1555,7 +1555,7 @@
     <string>&amp;Step</string>
    </property>
   </action>
-  <action name="actionDebugEnabled">
+  <action name="actDebugEnabled">
    <property name="checkable">
     <bool>false</bool>
    </property>
@@ -1563,7 +1563,7 @@
     <string>&amp;Enabled</string>
    </property>
   </action>
-  <action name="actionSaveProject">
+  <action name="actSaveProject">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1574,7 +1574,7 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionCut">
+  <action name="actCut">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1585,7 +1585,7 @@
     <string>Ctrl+X</string>
    </property>
   </action>
-  <action name="actionCopy">
+  <action name="actCopy">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1596,7 +1596,7 @@
     <string>Ctrl+C</string>
    </property>
   </action>
-  <action name="actionPaste">
+  <action name="actPaste">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1607,7 +1607,7 @@
     <string>Ctrl+V</string>
    </property>
   </action>
-  <action name="actionDelete">
+  <action name="actDelete">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1618,7 +1618,7 @@
     <string>Del</string>
    </property>
   </action>
-  <action name="actionFind">
+  <action name="actFind">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1629,7 +1629,7 @@
     <string>Ctrl+F</string>
    </property>
   </action>
-  <action name="actionFind_Next">
+  <action name="actFindNext">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1640,7 +1640,7 @@
     <string>F3</string>
    </property>
   </action>
-  <action name="actionGo_To">
+  <action name="actGoTo">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1651,7 +1651,7 @@
     <string>Ctrl+G</string>
    </property>
   </action>
-  <action name="actionSelect_All">
+  <action name="actSelectAll">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1662,37 +1662,37 @@
     <string>Ctrl+A</string>
    </property>
   </action>
-  <action name="actionStructs">
+  <action name="actStructs">
    <property name="text">
     <string>&amp;Structs</string>
    </property>
   </action>
-  <action name="actionLoad">
+  <action name="actLoad">
    <property name="text">
     <string>&amp;Load</string>
    </property>
   </action>
-  <action name="actionDecode">
+  <action name="actDecode">
    <property name="text">
     <string>&amp;Decode</string>
    </property>
   </action>
-  <action name="actionDecompile">
+  <action name="actDecompile">
    <property name="text">
     <string>D&amp;ecompile</string>
    </property>
   </action>
-  <action name="actionGenerate_Code">
+  <action name="actGenerateCode">
    <property name="text">
     <string>&amp;Generate Code</string>
    </property>
   </action>
-  <action name="actionBoomerang_Website">
+  <action name="actBoomerangWebsite">
    <property name="text">
     <string>&amp;Boomerang Website</string>
    </property>
   </action>
-  <action name="actionSettings">
+  <action name="actSettings">
    <property name="text">
     <string>&amp;Configure Boomerang...</string>
    </property>
@@ -1707,12 +1707,12 @@
     <string>D&amp;ecompile</string>
    </property>
   </action>
-  <action name="actionAboutBoomerang">
+  <action name="actAboutBoomerang">
    <property name="text">
     <string>&amp;About Boomerang</string>
    </property>
   </action>
-  <action name="actionAboutQt">
+  <action name="actAboutQt">
    <property name="text">
     <string>About &amp;Qt</string>
    </property>
@@ -1722,7 +1722,7 @@
     <string>Debug</string>
    </property>
   </action>
-  <action name="actionLoadProject">
+  <action name="actLoadProject">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1733,7 +1733,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionSave_And_Exit">
+  <action name="actSaveAndExit">
    <property name="enabled">
     <bool>false</bool>
    </property>
@@ -1747,7 +1747,7 @@
  </resources>
  <connections>
   <connection>
-   <sender>actionExit</sender>
+   <sender>actExit</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
    <slot>close()</slot>

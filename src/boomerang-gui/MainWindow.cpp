@@ -63,7 +63,7 @@ MainWindow::MainWindow(QWidget *_parent)
     connect(m_decompiler, &Decompiler::sectionAdded, this, &MainWindow::showNewSection);
 
     connect(ui->btnToLoad, &QPushButton::clicked, this, [=]() {
-        m_decompiler->loadInputFile(ui->inputFileComboBox->currentText(), ui->outputPathComboBox->currentText());
+        m_decompiler->loadInputFile(ui->cbInputFile->currentText(), ui->cbOutputPath->currentText());
     });
 
     connect(ui->btnToDecode,         SIGNAL(clicked()), m_decompiler, SLOT(decode()));
@@ -80,8 +80,8 @@ MainWindow::MainWindow(QWidget *_parent)
 
     ui->tblUserProcs->verticalHeader()->hide();
     ui->tblLibProcs->verticalHeader()->hide();
-    ui->sections->verticalHeader()->hide();
-    ui->entrypoints->verticalHeader()->hide();
+    ui->tblSections->verticalHeader()->hide();
+    ui->tblEntryPoints->verticalHeader()->hide();
     ui->tblStructMembers->verticalHeader()->hide();
 
     QPushButton *closeButton = new QPushButton(QIcon(":/closetab.png"), "", ui->tabWidget);
@@ -99,31 +99,31 @@ MainWindow::MainWindow(QWidget *_parent)
     loadingSettings = true;
     QSettings settings("Boomerang", "Boomerang");
 
-    ui->inputFileComboBox->addItems(settings.value("inputfiles").toStringList());
+    ui->cbInputFile->addItems(settings.value("inputfiles").toStringList());
 
-    if (ui->inputFileComboBox->count() > 0) {
-        int currentIdx = ui->inputFileComboBox->findText(settings.value("inputfile").toString());
+    if (ui->cbInputFile->count() > 0) {
+        int currentIdx = ui->cbInputFile->findText(settings.value("inputfile").toString());
         currentIdx = std::max(currentIdx, 0); // if selected input file could not be found, use last one
-        ui->inputFileComboBox->setCurrentIndex(currentIdx);
+        ui->cbInputFile->setCurrentIndex(currentIdx);
     }
 
-    ui->outputPathComboBox->addItems(settings.value("outputpaths").toStringList());
+    ui->cbOutputPath->addItems(settings.value("outputpaths").toStringList());
 
-    if (ui->outputPathComboBox->count() > 0) {
-        int currentIdx = ui->outputPathComboBox->findText(settings.value("outputpath").toString());
+    if (ui->cbOutputPath->count() > 0) {
+        int currentIdx = ui->cbOutputPath->findText(settings.value("outputpath").toString());
         currentIdx = std::max(currentIdx, 0); // if selected output path could not be found, use last one
-        ui->outputPathComboBox->setCurrentIndex(currentIdx);
+        ui->cbOutputPath->setCurrentIndex(currentIdx);
     }
 
     // check for a valid input file and output path
-    ui->btnToLoad->setEnabled((ui->outputPathComboBox->count() > 0) && (ui->inputFileComboBox->count() > 0));
+    ui->btnToLoad->setEnabled((ui->cbOutputPath->count() > 0) && (ui->cbInputFile->count() > 0));
 
     loadingSettings = false;
 
-    ui->inputFileComboBox->setEditable(false);
-    ui->outputPathComboBox->setEditable(false);
-    ui->inputFileComboBox->setMaxCount(15);
-    ui->outputPathComboBox->setMaxCount(10);
+    ui->cbInputFile->setEditable(false);
+    ui->cbOutputPath->setEditable(false);
+    ui->cbInputFile->setMaxCount(15);
+    ui->cbOutputPath->setMaxCount(10);
 }
 
 
@@ -148,22 +148,22 @@ void MainWindow::saveSettings()
     // input files
     QStringList inputfiles;
 
-    for (int n = 0; n < ui->inputFileComboBox->count(); n++) {
-        inputfiles.append(ui->inputFileComboBox->itemText(n));
+    for (int n = 0; n < ui->cbInputFile->count(); n++) {
+        inputfiles.append(ui->cbInputFile->itemText(n));
     }
 
     settings.setValue("inputfiles", inputfiles);
-    settings.setValue("inputfile", ui->inputFileComboBox->currentText());
+    settings.setValue("inputfile", ui->cbInputFile->currentText());
 
     // Output paths
     QStringList outputPaths;
 
-    for (int n = 0; n < ui->outputPathComboBox->count(); n++) {
-        outputPaths.append(ui->outputPathComboBox->itemText(n));
+    for (int n = 0; n < ui->cbOutputPath->count(); n++) {
+        outputPaths.append(ui->cbOutputPath->itemText(n));
     }
 
     settings.setValue("outputpaths", outputPaths);
-    settings.setValue("outputpath", ui->outputPathComboBox->currentText());
+    settings.setValue("outputpath", ui->cbOutputPath->currentText());
 }
 
 
@@ -171,9 +171,9 @@ void MainWindow::on_btnInputFileBrowse_clicked()
 {
     QString openFileDir = ".";
 
-    if (ui->inputFileComboBox->currentIndex() != -1) {
+    if (ui->cbInputFile->currentIndex() != -1) {
         // try to use the directory of the last opened file as starting directory.
-        QString lastUsedFile = ui->inputFileComboBox->itemText(ui->inputFileComboBox->currentIndex());
+        QString lastUsedFile = ui->cbInputFile->itemText(ui->cbInputFile->currentIndex());
 
         if (!lastUsedFile.isEmpty()) {
             QFileInfo fi(lastUsedFile);
@@ -189,19 +189,19 @@ void MainWindow::on_btnInputFileBrowse_clicked()
         return;
     }
 
-    int existingIdx = ui->inputFileComboBox->findText(fileName);
+    int existingIdx = ui->cbInputFile->findText(fileName);
 
     if (existingIdx == -1) {
         // file not in the cache
-        ui->inputFileComboBox->insertItem(0, fileName);
+        ui->cbInputFile->insertItem(0, fileName);
         existingIdx = 0;
         saveSettings();
     }
 
-    ui->inputFileComboBox->setCurrentIndex(existingIdx);
+    ui->cbInputFile->setCurrentIndex(existingIdx);
 
     // we now have at least one input file
-    ui->btnToLoad->setEnabled(ui->outputPathComboBox->count() > 0);
+    ui->btnToLoad->setEnabled(ui->cbOutputPath->count() > 0);
 }
 
 
@@ -214,29 +214,29 @@ void MainWindow::on_btnOutputPathBrowse_clicked()
         return;
     }
 
-    int existingIdx = ui->outputPathComboBox->findText(outputDir);
+    int existingIdx = ui->cbOutputPath->findText(outputDir);
 
     if (existingIdx == -1) {
         // directory not in the cache
-        ui->outputPathComboBox->insertItem(0, outputDir);
+        ui->cbOutputPath->insertItem(0, outputDir);
         existingIdx = 0;
         saveSettings();
     }
 
-    ui->outputPathComboBox->setCurrentIndex(existingIdx);
+    ui->cbOutputPath->setCurrentIndex(existingIdx);
 
     // we now have at least one output directory
-    ui->btnToLoad->setEnabled(ui->inputFileComboBox->count() > 0);
+    ui->btnToLoad->setEnabled(ui->cbInputFile->count() > 0);
 }
 
 
-void MainWindow::on_inputFileComboBox_currentIndexChanged(const QString& )
+void MainWindow::on_cbInputFile_currentIndexChanged(const QString& )
 {
     saveSettings();
 }
 
 
-void MainWindow::on_outputPathComboBox_currentIndexChanged(const QString& )
+void MainWindow::on_cbOutputPath_currentIndexChanged(const QString& )
 {
     saveSettings();
 }
@@ -245,7 +245,7 @@ void MainWindow::on_outputPathComboBox_currentIndexChanged(const QString& )
 void MainWindow::closeCurrentTab()
 {
     if (openFiles.find(ui->tabWidget->currentWidget()) != openFiles.end()) {
-        on_actionCloseProject_triggered();
+        on_actCloseProject_triggered();
     }
     else if (ui->tabWidget->currentIndex() != 0) {
         ui->tabWidget->removeTab(ui->tabWidget->currentIndex());
@@ -263,28 +263,26 @@ void MainWindow::currentTabTextChanged()
 }
 
 
-void MainWindow::on_actionNewProject_triggered()
+void MainWindow::on_actNewProject_triggered()
 {
     // TODO handle action
 }
 
 
-void MainWindow::on_actionSaveProject_triggered()
+void MainWindow::on_actSaveProject_triggered()
 {
     // TODO handle action
 }
 
 
-void MainWindow::on_actionCloseProject_triggered()
+void MainWindow::on_actCloseProject_triggered()
 {
     // TODO handle action
 }
 
 
-void MainWindow::on_tabWidget_currentChanged(int index)
+void MainWindow::on_tabWidget_currentChanged(int)
 {
-    ui->actionSaveProject->setEnabled(openFiles.find(ui->tabWidget->widget(index)) != openFiles.end());
-    ui->actionCloseProject->setEnabled(openFiles.find(ui->tabWidget->widget(index)) != openFiles.end());
 }
 
 
@@ -300,13 +298,13 @@ void MainWindow::showInitPage()
     ui->btnToDecompile->setEnabled(false);
     ui->btnToGenerateCode->setEnabled(false);
 
-    ui->loadButton->setEnabled(false);
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(false);
 
     ui->stackedWidget->setCurrentIndex(0);
-    ui->entrypoints->setRowCount(0);
+    ui->tblEntryPoints->setRowCount(0);
     ui->tblUserProcs->setRowCount(0);
     ui->tblLibProcs->setRowCount(0);
     ui->twProcTree->clear();
@@ -315,10 +313,10 @@ void MainWindow::showInitPage()
     decompiledCount = 0;
     codeGenCount = 0;
 
-    ui->actionLoad->setEnabled(false);
-    ui->actionDecode->setEnabled(false);
-    ui->actionDecompile->setEnabled(false);
-    ui->actionGenerate_Code->setEnabled(false);
+    ui->actLoad->setEnabled(false);
+    ui->actDecode->setEnabled(false);
+    ui->actDecompile->setEnabled(false);
+    ui->actGenerateCode->setEnabled(false);
 }
 
 
@@ -327,13 +325,13 @@ void MainWindow::showLoadPage()
     ui->btnToLoad->setEnabled(false);
     ui->btnToLoad->setEnabled(false);
 
-    ui->loadButton->setEnabled(true);
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(true);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(false);
 
     ui->stackedWidget->setCurrentIndex(1);
-    ui->actionLoad->setEnabled(true);
+    ui->actLoad->setEnabled(true);
 }
 
 
@@ -342,14 +340,14 @@ void MainWindow::showDecodePage()
     ui->btnToLoad->setEnabled(false);
     ui->btnToDecode->setEnabled(false);
 
-    ui->loadButton->setEnabled(false);
-    ui->decodeButton->setEnabled(true);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(true);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(false);
 
     ui->stackedWidget->setCurrentIndex(2);
 
-    if (!ui->actionDebugEnabled->isChecked()) {
+    if (!ui->actDebugEnabled->isChecked()) {
         ui->tblUserProcs->removeColumn(2);
     }
     else {
@@ -357,7 +355,7 @@ void MainWindow::showDecodePage()
         ui->tblUserProcs->setHorizontalHeaderItem(2, new QTableWidgetItem(tr("Debug")));
     }
 
-    ui->actionDecode->setEnabled(true);
+    ui->actDecode->setEnabled(true);
 }
 
 
@@ -365,14 +363,15 @@ void MainWindow::showDecompilePage()
 {
     ui->btnToLoad->setEnabled(false);
     ui->btnToDecompile->setEnabled(false);
-    ui->loadButton->setEnabled(false);
 
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(true);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(true);
+    ui->btnGenerateCode->setEnabled(false);
+
     ui->stackedWidget->setCurrentIndex(3);
 
-    ui->actionDecompile->setEnabled(true);
+    ui->actDecompile->setEnabled(true);
 }
 
 
@@ -381,13 +380,13 @@ void MainWindow::showGenerateCodePage()
     ui->btnToLoad->setEnabled(false);
     ui->btnToGenerateCode->setEnabled(false);
 
-    ui->loadButton->setEnabled(false);
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(true);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(true);
 
     ui->stackedWidget->setCurrentIndex(4);
-    ui->actionGenerate_Code->setEnabled(true);
+    ui->actGenerateCode->setEnabled(true);
 }
 
 
@@ -398,10 +397,10 @@ void MainWindow::loadComplete()
     ui->btnToDecompile->setEnabled(false);
     ui->btnToGenerateCode->setEnabled(false);
 
-    ui->loadButton->setEnabled(true);
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(true);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(false);
 
     ui->stackedWidget->setCurrentIndex(1);
 }
@@ -409,19 +408,19 @@ void MainWindow::loadComplete()
 
 void MainWindow::showMachineType(const QString& machine)
 {
-    ui->lbMachineType->setText(machine);
+    ui->lblMachineType->setText(machine);
 }
 
 
 void MainWindow::showNewEntrypoint(Address addr, const QString& name)
 {
-    int nrows = ui->entrypoints->rowCount();
+    const int nrows = ui->tblEntryPoints->rowCount();
 
-    ui->entrypoints->setRowCount(nrows + 1);
-    ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(addr.toString()));
-    ui->entrypoints->setItem(nrows, 1, new QTableWidgetItem(name));
-    ui->entrypoints->resizeColumnsToContents();
-    ui->entrypoints->resizeRowsToContents();
+    ui->tblEntryPoints->setRowCount(nrows + 1);
+    ui->tblEntryPoints->setItem(nrows, 0, new QTableWidgetItem(addr.toString()));
+    ui->tblEntryPoints->setItem(nrows, 1, new QTableWidgetItem(name));
+    ui->tblEntryPoints->resizeColumnsToContents();
+    ui->tblEntryPoints->resizeRowsToContents();
 }
 
 
@@ -432,10 +431,10 @@ void MainWindow::decodeComplete()
     ui->btnToDecompile->setEnabled(true);
     ui->btnToGenerateCode->setEnabled(false);
 
-    ui->loadButton->setEnabled(false);
-    ui->decodeButton->setEnabled(true);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(true);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(false);
     ui->stackedWidget->setCurrentIndex(2);
 }
 
@@ -447,10 +446,10 @@ void MainWindow::decompileComplete()
     ui->btnToDecompile->setEnabled(false);
     ui->btnToGenerateCode->setEnabled(true);
 
-    ui->loadButton->setEnabled(false);
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(true);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(true);
+    ui->btnGenerateCode->setEnabled(false);
     ui->stackedWidget->setCurrentIndex(3);
 }
 
@@ -462,10 +461,10 @@ void MainWindow::generateCodeComplete()
     ui->btnToDecompile->setEnabled(false);
     ui->btnToGenerateCode->setEnabled(false);
 
-    ui->loadButton->setEnabled(false);
-    ui->decodeButton->setEnabled(false);
-    ui->decompileButton->setEnabled(false);
-    ui->generateCodeButton->setEnabled(false);
+    ui->btnLoad->setEnabled(false);
+    ui->btnDecode->setEnabled(false);
+    ui->btnDecompile->setEnabled(false);
+    ui->btnGenerateCode->setEnabled(false);
 
     ui->stackedWidget->setCurrentIndex(4);
 }
@@ -510,8 +509,8 @@ void MainWindow::showDecompilingProc(const QString& name)
     }
 
     const int max = ui->tblUserProcs->rowCount();
-    ui->progressDecompile->setRange(0, max);
-    ui->progressDecompile->setValue(decompiledCount);
+    ui->prgDecompile->setRange(0, max);
+    ui->prgDecompile->setValue(decompiledCount);
 }
 
 
@@ -538,7 +537,7 @@ void MainWindow::showNewUserProc(const QString& name, Address addr)
     ui->tblUserProcs->setItem(nrows, 1, new QTableWidgetItem(name));
     ui->tblUserProcs->item(nrows, 1)->setData(1, name);
 
-    if (ui->actionDebugEnabled->isChecked()) {
+    if (ui->actDebugEnabled->isChecked()) {
         QTableWidgetItem *d = new QTableWidgetItem("");
         d->setCheckState(Qt::Checked);
         ui->tblUserProcs->setItem(nrows, 2, d);
@@ -605,15 +604,15 @@ void MainWindow::showRemoveLibProc(const QString& name)
 
 void MainWindow::showNewSection(const QString& name, Address start, Address end)
 {
-    const int nrows = ui->sections->rowCount();
+    const int nrows = ui->tblSections->rowCount();
 
-    ui->sections->setRowCount(nrows + 1);
-    ui->sections->setItem(nrows, 0, new QTableWidgetItem(name));
-    ui->sections->setItem(nrows, 1, new QTableWidgetItem(start.toString()));
-    ui->sections->setItem(nrows, 2, new QTableWidgetItem(end.toString()));
-    ui->sections->sortItems(1, Qt::AscendingOrder);
-    ui->sections->resizeColumnsToContents();
-    ui->sections->resizeRowsToContents();
+    ui->tblSections->setRowCount(nrows + 1);
+    ui->tblSections->setItem(nrows, 0, new QTableWidgetItem(name));
+    ui->tblSections->setItem(nrows, 1, new QTableWidgetItem(start.toString()));
+    ui->tblSections->setItem(nrows, 2, new QTableWidgetItem(end.toString()));
+    ui->tblSections->sortItems(1, Qt::AscendingOrder);
+    ui->tblSections->resizeColumnsToContents();
+    ui->tblSections->resizeRowsToContents();
 }
 
 
@@ -643,8 +642,8 @@ void MainWindow::showNewProcInCluster(const QString& name, const QString& cluste
         codeGenCount++;
     }
 
-    ui->progressGenerateCode->setRange(0, ui->tblUserProcs->rowCount());
-    ui->progressGenerateCode->setValue(codeGenCount);
+    ui->prgGenerateCode->setRange(0, ui->tblUserProcs->rowCount());
+    ui->prgGenerateCode->setValue(codeGenCount);
 }
 
 
@@ -657,12 +656,12 @@ void MainWindow::showDebuggingPoint(const QString& name, const QString& descript
     msg.append(description);
 
     statusBar()->showMessage(msg);
-    ui->actionDebugStep->setEnabled(true);
+    ui->actDebugStep->setEnabled(true);
 
     for (int i = 0; i < ui->tblUserProcs->rowCount(); i++) {
         if ((ui->tblUserProcs->item(i, 1)->text() == name) &&
             (ui->tblUserProcs->item(i, 2)->checkState() != Qt::Checked)) {
-            on_actionDebugStep_triggered();
+            on_actDebugStep_triggered();
             return;
         }
     }
@@ -765,7 +764,7 @@ void MainWindow::on_twProcTree_itemDoubleClicked(QTreeWidgetItem *item, int colu
 }
 
 
-void MainWindow::on_actionDebugEnabled_toggled(bool enabled)
+void MainWindow::on_actDebugEnabled_toggled(bool enabled)
 {
     m_decompiler->setDebugEnabled(enabled);
     m_decompiler->stopWaiting();
@@ -777,7 +776,7 @@ void MainWindow::on_actionDebugEnabled_toggled(bool enabled)
             step = new QToolButton();
             step->setToolButtonStyle(Qt::ToolButtonTextOnly);
             step->setText("Step");
-            step->setDefaultAction(ui->actionDebugStep);
+            step->setDefaultAction(ui->actDebugStep);
         }
 
         statusBar()->addPermanentWidget(step);
@@ -792,9 +791,9 @@ void MainWindow::on_actionDebugEnabled_toggled(bool enabled)
 }
 
 
-void MainWindow::on_actionDebugStep_triggered()
+void MainWindow::on_actDebugStep_triggered()
 {
-    ui->actionDebugStep->setEnabled(false);
+    ui->actDebugStep->setEnabled(false);
     m_decompiler->stopWaiting();
 }
 
@@ -900,7 +899,7 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
 }
 
 
-void MainWindow::on_actionCut_triggered()
+void MainWindow::on_actCut_triggered()
 {
     if (ui->tabWidget->currentIndex() != 0) {
         QTextEdit *n = dynamic_cast<QTextEdit *>(ui->tabWidget->currentWidget());
@@ -912,7 +911,7 @@ void MainWindow::on_actionCut_triggered()
 }
 
 
-void MainWindow::on_actionCopy_triggered()
+void MainWindow::on_actCopy_triggered()
 {
     if (ui->tabWidget->currentIndex() != 0) {
         QTextEdit *n = dynamic_cast<QTextEdit *>(ui->tabWidget->currentWidget());
@@ -924,7 +923,7 @@ void MainWindow::on_actionCopy_triggered()
 }
 
 
-void MainWindow::on_actionPaste_triggered()
+void MainWindow::on_actPaste_triggered()
 {
     if (ui->tabWidget->currentIndex() != 0) {
         QTextEdit *n = dynamic_cast<QTextEdit *>(ui->tabWidget->currentWidget());
@@ -936,7 +935,7 @@ void MainWindow::on_actionPaste_triggered()
 }
 
 
-void MainWindow::on_actionDelete_triggered()
+void MainWindow::on_actDelete_triggered()
 {
     if (ui->tabWidget->currentIndex() != 0) {
         QTextEdit *n = dynamic_cast<QTextEdit *>(ui->tabWidget->currentWidget());
@@ -948,22 +947,22 @@ void MainWindow::on_actionDelete_triggered()
 }
 
 
-void MainWindow::on_actionFind_triggered()
+void MainWindow::on_actFind_triggered()
 {
 }
 
 
-void MainWindow::on_actionFind_Next_triggered()
+void MainWindow::on_actFindNext_triggered()
 {
 }
 
 
-void MainWindow::on_actionGo_To_triggered()
+void MainWindow::on_actGoTo_triggered()
 {
 }
 
 
-void MainWindow::on_actionSelect_All_triggered()
+void MainWindow::on_actSelectAll_triggered()
 {
     if (ui->tabWidget->currentIndex() != 0) {
         QTextEdit *n = dynamic_cast<QTextEdit *>(ui->tabWidget->currentWidget());
@@ -975,32 +974,32 @@ void MainWindow::on_actionSelect_All_triggered()
 }
 
 
-void MainWindow::on_actionLoad_triggered()
+void MainWindow::on_actLoad_triggered()
 {
     saveSettings();
     showLoadPage();
 }
 
 
-void MainWindow::on_actionDecode_triggered()
+void MainWindow::on_actDecode_triggered()
 {
     showDecodePage();
 }
 
 
-void MainWindow::on_actionDecompile_triggered()
+void MainWindow::on_actDecompile_triggered()
 {
     showDecompilePage();
 }
 
 
-void MainWindow::on_actionGenerate_Code_triggered()
+void MainWindow::on_actGenerateCode_triggered()
 {
     showGenerateCodePage();
 }
 
 
-void MainWindow::on_actionStructs_triggered()
+void MainWindow::on_actStructs_triggered()
 {
     for (int i = 0; i < ui->tabWidget->count(); i++) {
         if (ui->tabWidget->widget(i) == structs) {
@@ -1013,19 +1012,19 @@ void MainWindow::on_actionStructs_triggered()
 }
 
 
-void MainWindow::on_edStructName_returnPressed()
+void MainWindow::on_edtStructName_returnPressed()
 {
-    m_decompiler->getCompoundMembers(ui->edStructName->text(), ui->tblStructMembers);
+    m_decompiler->getCompoundMembers(ui->edtStructName->text(), ui->tblStructMembers);
 }
 
 
-void MainWindow::on_actionBoomerang_Website_triggered()
+void MainWindow::on_actBoomerangWebsite_triggered()
 {
     QDesktopServices::openUrl(QUrl("http://boomerang.sourceforge.net"));
 }
 
 
-void MainWindow::on_actionAboutBoomerang_triggered()
+void MainWindow::on_actAboutBoomerang_triggered()
 {
     QDialog *dlg = new QDialog;
     Ui::AboutDialog aboutUi;
@@ -1035,13 +1034,13 @@ void MainWindow::on_actionAboutBoomerang_triggered()
 }
 
 
-void MainWindow::on_actionAboutQt_triggered()
+void MainWindow::on_actAboutQt_triggered()
 {
     QApplication::aboutQt();
 }
 
 
-void MainWindow::on_entrypoints_currentItemChanged(QTableWidgetItem *, QTableWidgetItem *)
+void MainWindow::on_tblEntryPoints_currentItemChanged(QTableWidgetItem *, QTableWidgetItem *)
 {
     ui->btnEntryPointRemove->setEnabled(true);
 }
@@ -1049,43 +1048,44 @@ void MainWindow::on_entrypoints_currentItemChanged(QTableWidgetItem *, QTableWid
 
 void MainWindow::on_btnEntryPointAdd_pressed()
 {
-    if ((ui->addressEdit->text() == "") ||
-        (ui->edEntryPointName->text() == "")) {
+    if ((ui->edtEntryAddress->text() == "") ||
+        (ui->edtEntryPointName->text() == "")) {
         return;
     }
 
     bool    ok = false;
-    Address a = Address(ui->addressEdit->text().toInt(&ok, 16));
+    Address a = Address(ui->edtEntryAddress->text().toInt(&ok, 16));
 
     if (!ok) {
         return;
     }
 
-    emit entryPointAdded(a, ui->edEntryPointName->text());
-    int nrows = ui->entrypoints->rowCount();
-    ui->entrypoints->setRowCount(nrows + 1);
-    ui->entrypoints->setItem(nrows, 0, new QTableWidgetItem(ui->addressEdit->text()));
-    ui->entrypoints->setItem(nrows, 1, new QTableWidgetItem(ui->edEntryPointName->text()));
-    ui->addressEdit->clear();
-    ui->edEntryPointName->clear();
+    emit entryPointAdded(a, ui->edtEntryPointName->text());
+    const int nrows = ui->tblEntryPoints->rowCount();
+
+    ui->tblEntryPoints->setRowCount(nrows + 1);
+    ui->tblEntryPoints->setItem(nrows, 0, new QTableWidgetItem(ui->edtEntryAddress->text()));
+    ui->tblEntryPoints->setItem(nrows, 1, new QTableWidgetItem(ui->edtEntryPointName->text()));
+    ui->tblEntryPoints->clear();
+    ui->edtEntryPointName->clear();
 }
 
 
 void MainWindow::on_btnEntryPointRemove_pressed()
 {
     bool    ok = false;
-    Address a = Address(ui->entrypoints->item(ui->entrypoints->currentRow(), 0)->text().toInt(&ok, 16));
+    Address a = Address(ui->tblEntryPoints->item(ui->tblEntryPoints->currentRow(), 0)->text().toInt(&ok, 16));
 
     if (!ok) {
         return;
     }
 
     emit entryPointRemoved(a);
-    ui->entrypoints->removeRow(ui->entrypoints->currentRow());
+    ui->tblEntryPoints->removeRow(ui->tblEntryPoints->currentRow());
 }
 
 
-void MainWindow::on_actionSettings_triggered()
+void MainWindow::on_actSettings_triggered()
 {
     SettingsDlg(m_decompiler).exec();
 }

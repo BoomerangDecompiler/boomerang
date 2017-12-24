@@ -219,7 +219,7 @@
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="hLayou_typeRecoveryEngine">
+            <layout class="QHBoxLayout" name="hLayout_typeRecoveryEngine">
              <item>
               <widget class="QLabel" name="lbTypeRecoveryEngine">
                <property name="sizePolicy">

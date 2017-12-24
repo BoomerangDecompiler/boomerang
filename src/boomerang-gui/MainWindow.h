@@ -57,8 +57,8 @@ public slots:
     void showGenerateCodePage();
     void on_btnInputFileBrowse_clicked();
     void on_btnOutputPathBrowse_clicked();
-    void on_inputFileComboBox_currentIndexChanged(const QString& text);
-    void on_outputPathComboBox_currentIndexChanged(const QString& text);
+    void on_cbInputFile_currentIndexChanged(const QString& text);
+    void on_cbOutputPath_currentIndexChanged(const QString& text);
     void showConsideringProc(const QString& parent, const QString& name);
     void showDecompilingProc(const QString& name);
     void showNewUserProc(const QString& name, Address addr);
@@ -75,38 +75,38 @@ public slots:
 
     void on_twModuleTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
     void on_twProcTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
-    void on_actionDebugEnabled_toggled(bool b);
-    void on_actionDebugStep_triggered();
+    void on_actDebugEnabled_toggled(bool b);
+    void on_actDebugStep_triggered();
     void onUserProcsHorizontalHeaderSectionClicked(int logicalIndex);
     void on_tblUserProcs_cellDoubleClicked(int row, int column);
     void on_tblUserProcs_cellChanged(int row, int column);
     void on_tblLibProcs_cellDoubleClicked(int row, int column);
-    void on_actionNewProject_triggered();
-    void on_actionSaveProject_triggered();
-    void on_actionCloseProject_triggered();
-    void on_actionAboutBoomerang_triggered();
-    void on_actionAboutQt_triggered();
+    void on_actNewProject_triggered();
+    void on_actSaveProject_triggered();
+    void on_actCloseProject_triggered();
+    void on_actAboutBoomerang_triggered();
+    void on_actAboutQt_triggered();
     void on_tabWidget_currentChanged(int index);
 
-    void on_actionCut_triggered();
-    void on_actionCopy_triggered();
-    void on_actionPaste_triggered();
-    void on_actionDelete_triggered();
-    void on_actionFind_triggered();
-    void on_actionFind_Next_triggered();
-    void on_actionGo_To_triggered();
-    void on_actionSelect_All_triggered();
+    void on_actCut_triggered();
+    void on_actCopy_triggered();
+    void on_actPaste_triggered();
+    void on_actDelete_triggered();
+    void on_actFind_triggered();
+    void on_actFindNext_triggered();
+    void on_actGoTo_triggered();
+    void on_actSelectAll_triggered();
 
-    void on_actionLoad_triggered();
-    void on_actionDecode_triggered();
-    void on_actionDecompile_triggered();
-    void on_actionGenerate_Code_triggered();
-    void on_actionStructs_triggered();
-    void on_edStructName_returnPressed();
+    void on_actLoad_triggered();
+    void on_actDecode_triggered();
+    void on_actDecompile_triggered();
+    void on_actGenerateCode_triggered();
+    void on_actStructs_triggered();
+    void on_edtStructName_returnPressed();
 
-    void on_actionBoomerang_Website_triggered();
+    void on_actBoomerangWebsite_triggered();
 
-    void on_entrypoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
+    void on_tblEntryPoints_currentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
     void on_btnEntryPointAdd_pressed();
     void on_btnEntryPointRemove_pressed();
 
@@ -118,7 +118,7 @@ protected:
     void saveSettings();
 
 private slots:
-    void on_actionSettings_triggered();
+    void on_actSettings_triggered();
 
 private:
     Ui::MainWindow *ui = nullptr;
