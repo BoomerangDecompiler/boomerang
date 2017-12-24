@@ -57,7 +57,6 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->chkDecodeChildren->setChecked(!SETTING(noDecodeChildren));
     ui->chkDecodeMain->setChecked(SETTING(decodeMain));
     ui->chkDecodeThruIndirectCall->setChecked(SETTING(decodeThruIndCall));
-    ui->chkFastDecode->setEnabled(false);
     ui->chkGenCallGraph->setChecked(SETTING(generateCallGraph));
 
     // Decompile settings

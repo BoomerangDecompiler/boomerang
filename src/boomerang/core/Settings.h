@@ -14,6 +14,7 @@
 #include <QDir>
 #include <QSettings>
 
+
 /**
  * Settings that affect decompilation and output behavior.
  */
