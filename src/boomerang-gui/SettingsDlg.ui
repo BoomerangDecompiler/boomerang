@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>796</height>
+    <height>767</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -202,16 +202,12 @@
             </widget>
            </item>
            <item>
-            <widget class="QCheckBox" name="chkStopBeforeDecompile">
-             <property name="text">
-              <string>Stop before decompiling</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QCheckBox" name="chkStopAtDebugPoints">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
              <property name="text">
-              <string>Stop at debug points</string>
+              <string>Activate debugger at debug points</string>
              </property>
             </widget>
            </item>
@@ -227,7 +223,7 @@
              <item>
               <widget class="QLabel" name="lbTypeRecoveryEngine">
                <property name="sizePolicy">
-                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                  <horstretch>0</horstretch>
                  <verstretch>0</verstretch>
                 </sizepolicy>
@@ -371,7 +367,7 @@
            <item>
             <widget class="QCheckBox" name="chkGenSymbols">
              <property name="text">
-              <string>Generate symbols</string>
+              <string>Generate symbol header file</string>
              </property>
             </widget>
            </item>

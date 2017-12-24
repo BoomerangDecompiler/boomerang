@@ -61,8 +61,6 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->chkGenCallGraph->setChecked(SETTING(generateCallGraph));
 
     // Decompile settings
-    ui->chkDecompile->setChecked(!SETTING(noDecompile));
-    ui->chkStopBeforeDecompile->setChecked(SETTING(stopBeforeDecompile));
     ui->cbDotFile->addItem(SETTING(dotFile));
     ui->cbDotFile->setEditable(false);
     ui->spbPropMaxDepth->setRange(0, std::numeric_limits<int>::max());
@@ -90,7 +88,6 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->chkRemoveNull->setChecked(!SETTING(noRemoveNull));
     ui->chkRemoveReturns->setChecked(!SETTING(noRemoveReturns));
     ui->chkStopAtDebugPoints->setChecked(SETTING(stopAtDebugPoints));
-    ui->chkStopBeforeDecompile->setChecked(SETTING(stopBeforeDecompile));
     ui->chkUseDataflow->setChecked(!SETTING(noDataflow));
     ui->chkUseGlobals->setChecked(!SETTING(noGlobals));
     ui->chkUseLocals->setChecked(!SETTING(noLocals));
@@ -161,7 +158,6 @@ void SettingsDlg::on_btnApply_clicked()
     SETTING(noRemoveNull)        = !ui->chkRemoveNull->isChecked();
     SETTING(noRemoveReturns)     = !ui->chkRemoveReturns->isChecked();
     SETTING(stopAtDebugPoints)   = ui->chkStopAtDebugPoints->isChecked();
-    SETTING(stopBeforeDecompile) = ui->chkStopBeforeDecompile->isChecked();
     SETTING(noDataflow)          = !ui->chkUseDataflow->isChecked();
     SETTING(noGlobals)           = !ui->chkUseGlobals->isChecked();
     SETTING(noLocals)            = !ui->chkUseLocals->isChecked();
