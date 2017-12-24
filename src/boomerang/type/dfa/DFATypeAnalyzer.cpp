@@ -80,6 +80,7 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
     }
 
     assert(it != defs.end());
+    assert(it->second.getDef());
     SharedType meetOfArgs = it->second.getDef()->getTypeFor(stmt->getLeft());
 
     bool ch = false;
