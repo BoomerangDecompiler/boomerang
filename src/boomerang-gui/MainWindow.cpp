@@ -37,26 +37,26 @@ MainWindow::MainWindow(QWidget *_parent)
 
     m_decompilerThread.start();
 
-    connect(m_decompiler, &Decompiler::moduleCreated, this, &MainWindow::showNewCluster);
-    connect(m_decompiler, &Decompiler::functionAddedToModule, this, &MainWindow::showNewProcInCluster);
-    connect(m_decompiler, &Decompiler::debugPointHit, this, &MainWindow::showDebuggingPoint);
-    connect(m_decompiler, &Decompiler::loadingStarted, this, &MainWindow::showLoadPage);
-    connect(m_decompiler, &Decompiler::decodingStarted, this, &MainWindow::showDecodePage);
-    connect(m_decompiler, &Decompiler::decompilingStarted, this, &MainWindow::showDecompilePage);
-    connect(m_decompiler, &Decompiler::generatingCodeStarted, this, &MainWindow::showGenerateCodePage);
-    connect(m_decompiler, &Decompiler::loadCompleted, this, &MainWindow::loadComplete);
-    connect(m_decompiler, &Decompiler::machineTypeChanged, this, &MainWindow::showMachineType);
-    connect(m_decompiler, &Decompiler::entryPointAdded, this, &MainWindow::showNewEntrypoint);
-    connect(m_decompiler, &Decompiler::decodeCompleted, this, &MainWindow::decodeComplete);
-    connect(m_decompiler, &Decompiler::decompileCompleted, this, &MainWindow::decompileComplete);
-    connect(m_decompiler, &Decompiler::generateCodeCompleted, this, &MainWindow::generateCodeComplete);
-    connect(m_decompiler, &Decompiler::procDiscovered, this, &MainWindow::showConsideringProc);
-    connect(m_decompiler, &Decompiler::procDecompileStarted, this, &MainWindow::showDecompilingProc);
-    connect(m_decompiler, &Decompiler::userProcCreated, this, &MainWindow::showNewUserProc);
-    connect(m_decompiler, &Decompiler::libProcCreated, this, &MainWindow::showNewLibProc);
-    connect(m_decompiler, &Decompiler::userProcRemoved, this, &MainWindow::showRemoveUserProc);
-    connect(m_decompiler, &Decompiler::libProcRemoved, this, &MainWindow::showRemoveLibProc);
-    connect(m_decompiler, &Decompiler::sectionAdded, this, &MainWindow::showNewSection);
+    connect(m_decompiler, &Decompiler::moduleCreated,           this, &MainWindow::showNewCluster);
+    connect(m_decompiler, &Decompiler::functionAddedToModule,   this, &MainWindow::showNewProcInCluster);
+    connect(m_decompiler, &Decompiler::debugPointHit,           this, &MainWindow::showDebuggingPoint);
+    connect(m_decompiler, &Decompiler::loadingStarted,          this, &MainWindow::showLoadPage);
+    connect(m_decompiler, &Decompiler::decodingStarted,         this, &MainWindow::showDecodePage);
+    connect(m_decompiler, &Decompiler::decompilingStarted,      this, &MainWindow::showDecompilePage);
+    connect(m_decompiler, &Decompiler::generatingCodeStarted,   this, &MainWindow::showGenerateCodePage);
+    connect(m_decompiler, &Decompiler::loadCompleted,           this, &MainWindow::loadComplete);
+    connect(m_decompiler, &Decompiler::machineTypeChanged,      this, &MainWindow::showMachineType);
+    connect(m_decompiler, &Decompiler::entryPointAdded,         this, &MainWindow::showNewEntrypoint);
+    connect(m_decompiler, &Decompiler::decodeCompleted,         this, &MainWindow::decodeComplete);
+    connect(m_decompiler, &Decompiler::decompileCompleted,      this, &MainWindow::decompileComplete);
+    connect(m_decompiler, &Decompiler::generateCodeCompleted,   this, &MainWindow::generateCodeComplete);
+    connect(m_decompiler, &Decompiler::procDiscovered,          this, &MainWindow::showConsideringProc);
+    connect(m_decompiler, &Decompiler::procDecompileStarted,    this, &MainWindow::showDecompilingProc);
+    connect(m_decompiler, &Decompiler::userProcCreated,         this, &MainWindow::showNewUserProc);
+    connect(m_decompiler, &Decompiler::libProcCreated,          this, &MainWindow::showNewLibProc);
+    connect(m_decompiler, &Decompiler::userProcRemoved,         this, &MainWindow::showRemoveUserProc);
+    connect(m_decompiler, &Decompiler::libProcRemoved,          this, &MainWindow::showRemoveLibProc);
+    connect(m_decompiler, &Decompiler::sectionAdded,            this, &MainWindow::showNewSection);
 
     connect(ui->btnToLoad, &QPushButton::clicked, this, [=]() {
         m_decompiler->loadInputFile(ui->cbInputFile->currentText(), ui->cbOutputPath->currentText());

@@ -19,6 +19,10 @@ namespace Ui
 class SettingsDlg;
 }
 
+/**
+ * Dialog for editing Boomerang settings.
+ * The settings are not (yet) saved across restarts.
+ */
 class SettingsDlg : public QDialog
 {
     Q_OBJECT

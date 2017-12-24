@@ -23,7 +23,7 @@ class IBinaryImage;
 
 
 /**
- *
+ * Interface between libboomerang and the GUI.
  */
 class Decompiler : public QObject, public IWatcher
 {
