@@ -1054,7 +1054,7 @@ void MainWindow::on_btnEntryPointAdd_pressed()
         return;
     }
 
-    bool    ok;
+    bool    ok = false;
     Address a = Address(ui->addressEdit->text().toInt(&ok, 16));
 
     if (!ok) {
