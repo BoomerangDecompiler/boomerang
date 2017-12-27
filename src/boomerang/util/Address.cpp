@@ -10,6 +10,7 @@
 #include "Address.h"
 
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/util/Log.h"
 
@@ -33,8 +34,10 @@ Address::Address(value_type _value)
     : m_value(_value)
 {
     if ((m_value != (value_type) - 1) && ((_value & ~getSourceMask()) != 0)) {
-        LOG_WARN("Address initialized with invalid value %1",
+        if (VERBOSE) {
+            LOG_WARN("Address initialized with invalid value %1",
                  QString("0x%1").arg(m_value, 2 * sizeof(value_type), 16, QChar('0')));
+        }
     }
 }
 

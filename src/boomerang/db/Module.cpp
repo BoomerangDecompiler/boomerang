@@ -245,7 +245,7 @@ void Module::addWin32DbgInfo(Function *function)
 {
 #if !defined(_WIN32) || defined(__MINGW32__)
     Q_UNUSED(function);
-    LOG_ERROR("Adding debug information for Windows programs is only supported on Windows!");
+    LOG_VERBOSE("Adding debug information for Windows programs is only supported on Windows!");
     return;
 #else
     if (!function) {

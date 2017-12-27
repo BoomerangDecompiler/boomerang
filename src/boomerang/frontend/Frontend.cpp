@@ -650,7 +650,11 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
             // Decode the inst at uAddr.
             if (!decodeInstruction(uAddr, inst)) {
-                LOG_ERROR("Invalid instruction at %1", uAddr.toString());
+                LOG_ERROR("Invalid instruction at %1: 0x%2 0x%3 0x%4 0x%5", uAddr,
+                    QString::number(m_image->readNative1(uAddr + 0), 16),
+                    QString::number(m_image->readNative1(uAddr + 1), 16),
+                    QString::number(m_image->readNative1(uAddr + 2), 16),
+                    QString::number(m_image->readNative1(uAddr + 3), 16));
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", uAddr);
@@ -675,15 +679,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 Boomerang::get()->alertBadDecode(uAddr);
 
                 // An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
-                // Best thing is to emit a INVALID BB, and continue with valid instructions
-                if (VERBOSE) {
-                    LOG_ERROR("Invalid instruction at %1: %2 %3 %4 %5", uAddr,
-                              m_image->readNative1(uAddr + 0),
-                              m_image->readNative1(uAddr + 1),
-                              m_image->readNative1(uAddr + 2),
-                              m_image->readNative1(uAddr + 3));
-                }
-
+                // Best thing is to emit an INVALID BB, and continue with valid instructions
                 // Emit the RTL anyway, so we have the address and maybe some other clues
                 BB_rtls->push_back(new RTL(uAddr));
                 pBB = cfg->createBB(std::move(BB_rtls), BBType::Invalid);
