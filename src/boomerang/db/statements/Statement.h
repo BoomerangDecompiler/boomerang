@@ -62,8 +62,7 @@ enum class StmtType : uint8_t
     Branch,
     Goto,
     Case,       ///< switch statement
-    ImpRef,
-    Junction
+    ImpRef
 };
 
 /**
@@ -96,9 +95,9 @@ enum class BranchType : uint8_t
  * They are akin to "definition" in the Dragon Book.
  * Class hierarchy:
  *                    Statement@            (@ = abstract)
- *                  __/   |   \________________________
- *                 /      |            \               \
- *     GotoStatement  TypingStatement@  ReturnStatement JunctionStatement
+ *                  __/   |   \________
+ *                 /      |            \
+ *     GotoStatement  TypingStatement@  ReturnStatement
  * BranchStatement_/     /          \
  * CaseStatement__/  Assignment@   ImpRefStatement
  * CallStatement_/  /   /    \ \________
@@ -190,9 +189,6 @@ public:
 
     virtual bool isGoto()   { return m_kind == StmtType::Goto; }
     virtual bool isBranch() { return m_kind == StmtType::Branch; }
-
-    /// \returns true if this statement is a junction
-    bool isJunction() const { return m_kind == StmtType::Junction; }
 
     /// \returns true if this statement is a call
     bool isCall() const { return m_kind == StmtType::Call; }

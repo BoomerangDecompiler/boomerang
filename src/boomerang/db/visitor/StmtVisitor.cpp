@@ -75,9 +75,3 @@ bool StmtVisitor::visit(ImpRefStatement* /*stmt*/)
 {
     return true;
 }
-
-
-bool StmtVisitor::visit(JunctionStatement* /*stmt*/)
-{
-    return true;
-}

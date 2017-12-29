@@ -1418,17 +1418,6 @@ void Cfg::structure()
 }
 
 
-void Cfg::removeJunctionStatements()
-{
-    for (BasicBlock *pbb : m_listBB) {
-        if (pbb->getFirstStmt() && pbb->getFirstStmt()->isJunction()) {
-            assert(pbb->getRTLs());
-            pbb->getRTLs()->front()->pop_front();
-        }
-    }
-}
-
-
 void Cfg::removeUnneededLabels(ICodeGenerator *gen)
 {
     gen->removeUnusedLabels(m_ordering.size());

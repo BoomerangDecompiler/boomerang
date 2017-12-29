@@ -20,7 +20,6 @@ class BranchStatement;
 class CaseStatement;
 class CallStatement;
 class ReturnStatement;
-class JunctionStatement;
 class ImpRefStatement;
 
 
@@ -69,7 +68,4 @@ public:
 
     /// \copydoc StmtVisitor::visit
     virtual bool visit(ImpRefStatement *stmt);
-
-    /// \copydoc StmtVisitor::visit
-    virtual bool visit(JunctionStatement *stmt);
 };

@@ -1103,7 +1103,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 case StmtType::BoolAssign:
                 // This is just an ordinary instruction; no control transfer
                 // Fall through
-                case StmtType::Junction:
                 // FIXME: Do we need to do anything here?
                 case StmtType::Assign:
                 case StmtType::PhiAssign:

@@ -347,9 +347,6 @@ public:
     /// Structures the control flow graph
     void structure();
 
-    /// Remove Junction statements
-    void removeJunctionStatements();
-
     /// return a BB given an address
     BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
 
