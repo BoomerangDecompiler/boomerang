@@ -239,7 +239,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
                 // Also don't add an out-edge; setting offset to 0 will do this
                 offset = 0;
                 // But we have already set the number of out-edges to 1
-                callBB->updateType(BBType::Call);
+                callBB->setType(BBType::Call);
             }
 
             // Handle the call (register the destination as a proc) and possibly set the outedge.

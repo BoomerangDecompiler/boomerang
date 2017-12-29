@@ -866,7 +866,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     cfg->addOutEdge(pBB, destAddr, true);
                                 }
 
-                                pBB->updateType(BBType::Nway);
+                                pBB->setType(BBType::Nway);
                             }
                         }
 

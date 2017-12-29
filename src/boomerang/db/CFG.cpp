@@ -149,7 +149,7 @@ BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
                 // Fill in the details, and return it
                 currentBB->setRTLs(std::move(pRtls));
                 currentBB->m_incomplete = false;
-                currentBB->updateType(bbType);
+                currentBB->setType(bbType);
             }
 
             bDone = true;
@@ -246,7 +246,7 @@ void Cfg::addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequires
 
     // special handling for upgrading oneway BBs to twoway BBs
     if ((sourceBB->getType() == BBType::Oneway) && (sourceBB->getSuccessors().size() > 1)) {
-        sourceBB->updateType(BBType::Twoway);
+        sourceBB->setType(BBType::Twoway);
         sourceBB->setJumpRequired();
         destRequiresLabel = true;
     }
@@ -331,7 +331,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 
     // else pNewBB exists and is complete. We don't want to change the complete
     // BB in any way, except to later add one in-edge
-    bb->updateType(BBType::Fall); // Update original ("top") basic block's info and make it a fall-through
+    bb->setType(BBType::Fall); // Update original ("top") basic block's info and make it a fall-through
 
     // Fix the in-edges of pBB's descendants. They are now pNewBB
     // Note: you can't believe m_iNumOutEdges at the time that this function may
@@ -733,7 +733,7 @@ bool Cfg::compressCfg()
             BasicBlock *b = jmpBB->getSuccessor(0);
             a->setSuccessor(i, b);
 
-            for (size_t j = 0; j < b->getNumPredecessors(); j++) {
+            for (int j = 0; j < b->getNumPredecessors(); j++) {
                 if (b->getPredecessor(j) == jmpBB) {
                     b->setPredecessor(j, a);
                     break;
@@ -1751,7 +1751,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
     }
 
     // Change pBB to a FALL bb
-    bb->updateType(BBType::Fall);
+    bb->setType(BBType::Fall);
 
     // Set the first out-edge to be skipBB
     bb->m_successors.erase(bb->m_successors.begin(), bb->m_successors.end());

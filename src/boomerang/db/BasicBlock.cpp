@@ -137,7 +137,7 @@ BasicBlock::BasicBlock(Function *parent, std::unique_ptr<RTLList> pRtls, BBType 
 bool BasicBlock::isCaseOption()
 {
     if (m_caseHead) {
-        for (unsigned int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
+        for (int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
             if (m_caseHead->getSuccessor(i) == this) {
                 return true;
             }
@@ -170,7 +170,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 }
 
 
-void BasicBlock::updateType(BBType bbType)
+void BasicBlock::setType(BBType bbType)
 {
     m_nodeType = bbType;
 }
@@ -316,8 +316,9 @@ void BasicBlock::printToLog()
 }
 
 
-bool BasicBlock::isBackEdge(size_t inEdge) const
+bool BasicBlock::isBackEdge(int inEdge) const
 {
+    assert(Util::inRange(inEdge, 0, getNumPredecessors()));
     const BasicBlock *in = m_predecessors[inEdge];
 
     return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
@@ -399,37 +400,29 @@ const std::vector<BasicBlock *>& BasicBlock::getSuccessors()
 }
 
 
-void BasicBlock::setPredecessor(size_t i, BasicBlock *pNewInEdge)
+void BasicBlock::setPredecessor(int i, BasicBlock *predecessor)
 {
-    assert(i < getNumPredecessors());
-    m_predecessors[i] = pNewInEdge;
+    assert(Util::inRange(i, 0, getNumPredecessors()));
+    m_predecessors[i] = predecessor;
 }
 
 
-void BasicBlock::setSuccessor(size_t i, BasicBlock *pNewOutEdge)
+void BasicBlock::setSuccessor(int i, BasicBlock *successor)
 {
-    assert(i < getNumSuccessors());
-    m_successors[i] = pNewOutEdge;
+    assert(Util::inRange(i, 0, getNumSuccessors()));
+    m_successors[i] = successor;
 }
 
-BasicBlock *BasicBlock::getPredecessor(size_t i)
+
+BasicBlock *BasicBlock::getPredecessor(int i)
 {
-    if (i < m_predecessors.size()) {
-        return m_predecessors[i];
-    }
-    else {
-        return nullptr;
-    }
+    return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
 }
 
-BasicBlock *BasicBlock::getSuccessor(size_t i)
+
+BasicBlock *BasicBlock::getSuccessor(int i)
 {
-    if (i < m_successors.size()) {
-        return m_successors[i];
-    }
-    else {
-        return nullptr;
-    }
+    return Util::inRange(i, 0, getNumSuccessors()) ? m_successors[i] : nullptr;
 }
 
 
@@ -445,27 +438,15 @@ void BasicBlock::addSuccessor(BasicBlock* successor)
 }
 
 
-void BasicBlock::removePredecessor(BasicBlock *edge)
+void BasicBlock::removePredecessor(BasicBlock *pred)
 {
-    for (auto it = m_predecessors.begin(); it != m_predecessors.end(); it++) {
-        if (*it == edge) {
-            it = m_predecessors.erase(it);
-            break;
-        }
-    }
+    m_predecessors.erase(std::remove(m_predecessors.begin(), m_predecessors.end(), pred), m_predecessors.end());
 }
 
 
-void BasicBlock::removeSuccessor(BasicBlock *edge)
+void BasicBlock::removeSuccessor(BasicBlock *succ)
 {
-    edge->removePredecessor(this);
-
-    for (auto it = m_successors.begin(); it != m_successors.end(); it++) {
-        if (*it == edge) {
-            m_successors.erase(it);
-            break;
-        }
-    }
+    m_successors.erase(std::remove(m_successors.begin(), m_successors.end(), succ), m_successors.end());
 }
 
 
@@ -813,19 +794,19 @@ void BasicBlock::simplify()
         assert(m_successors.size() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-            updateType(BBType::Fall);
+            setType(BBType::Fall);
         }
         else {
             RTL *last = m_listOfRTLs->back();
 
             if (last->size() == 0) {
-                updateType(BBType::Fall);
+                setType(BBType::Fall);
             }
             else if (last->back()->isGoto()) {
-                updateType(BBType::Oneway);
+                setType(BBType::Oneway);
             }
             else if (!last->back()->isBranch()) {
-                updateType(BBType::Fall);
+                setType(BBType::Fall);
             }
         }
 
@@ -2014,7 +1995,7 @@ void BasicBlock::processSwitch(UserProc *proc)
     iNum    = iNumOut;
 
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    updateType(BBType::Nway);
+    setType(BBType::Nway);
 
     Prog *prog(proc->getProg());
     Cfg  *cfg(proc->getCFG());
@@ -2104,7 +2085,7 @@ bool BasicBlock::undoComputedBB(Statement *stmt)
 
     for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
         if (*rr == stmt) {
-            updateType(BBType::Call);
+            setType(BBType::Call);
             LOG_MSG("undoComputedBB for statement %1", stmt);
             return true;
         }

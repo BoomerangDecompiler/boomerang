@@ -10,6 +10,7 @@
 include(boomerang-utils)
 
 set(TESTS
+    BasicBlockTest
     RtlTest
     DfaTest
     ParserTest

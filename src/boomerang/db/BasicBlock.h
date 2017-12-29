@@ -151,6 +151,14 @@ public:
     inline BBType getType()         const { return m_nodeType; }
     inline bool isType(BBType type) const { return m_nodeType == type; }
 
+    /**
+     * Update the type and number of out edges.
+     * Used for example where a COMPJUMP type is updated to an
+     * NWAY when a switch idiom is discovered.
+     * \param bbType - the new type
+     */
+    void setType(BBType bbType);
+
     /// \returns enclosing function, nullptr if the BB does not belong to a function.
     inline const Function *getFunction() const { return m_function; }
     inline Function *getFunction()             { return m_function; }
@@ -174,8 +182,8 @@ public:
 
     // predecessor / successor functions
 
-    size_t getNumPredecessors() const { return m_predecessors.size(); }
-    size_t getNumSuccessors()   const { return m_successors.size(); }
+    int getNumPredecessors() const { return m_predecessors.size(); }
+    int getNumSuccessors()   const { return m_successors.size(); }
 
     /// \returns all predecessors of this BB.
     std::vector<BasicBlock *>& getPredecessors();
@@ -183,25 +191,21 @@ public:
     /// \returns all successors of this BB.
     const std::vector<BasicBlock *>& getSuccessors();
 
-    /// Removes all successor BBs.
-    /// Called when noreturn call is found
-    void removeAllSuccessors() { m_successors.clear(); }
-
-    /// Change the \p i-th predecessor of this BB.
-    /// \param i index (0-based)
-    void setPredecessor(size_t i, BasicBlock *newIn);
-
-    /// Change the \p i-th successor of this BB.
-    /// \param i index (0-based)
-    void setSuccessor(size_t i, BasicBlock *newOutEdge);
-
     /// \returns the \p i-th predecessor of this BB.
     /// Returns nullptr if \p i is out of range.
-    BasicBlock *getPredecessor(size_t i);
+    BasicBlock *getPredecessor(int i);
 
     /// \returns the \p i-th successor of this BB.
     /// Returns nullptr if \p i is out of range.
-    BasicBlock *getSuccessor(size_t i);
+    BasicBlock *getSuccessor(int i);
+
+    /// Change the \p i-th predecessor of this BB.
+    /// \param i index (0-based)
+    void setPredecessor(int i, BasicBlock *predecessor);
+
+    /// Change the \p i-th successor of this BB.
+    /// \param i index (0-based)
+    void setSuccessor(int i, BasicBlock *successor);
 
     /// Add a predecessor to this BB.
     void addPredecessor(BasicBlock *predecessor);
@@ -215,9 +219,16 @@ public:
     /// Remove a successor BB
     void removeSuccessor(BasicBlock *successor);
 
+    /// Removes all successor BBs.
+    /// Called when noreturn call is found
+    void removeAllSuccessors() { m_successors.clear(); }
+
+    /// removes all predecessor BBs.
+    void removeAllPredecessors() { m_predecessors.clear(); }
+
     /// Checks if the \p i-th in edge is a back edge, i.e. an edge from a successor BB to this BB.
     /// Can happen e.g. for loops.
-    bool isBackEdge(size_t i) const;
+    bool isBackEdge(int i) const;
 
     bool isCaseOption();
 
@@ -242,14 +253,6 @@ public:
 
     /// Print this BB to stderr
     void dump();
-
-    /**
-     * Update the type and number of out edges.
-     * Used for example where a COMPJUMP type is updated to an
-     * NWAY when a switch idiom is discovered.
-     * \param bbType - the new type
-     */
-    void updateType(BBType bbType);
 
     /**
      * Sets the "jump required" bit. This means that this BB is an orphan
@@ -425,7 +428,7 @@ public:
      * \param results    a list which will have any matching exprs appended to it
      * \returns true if there were any matches
      */
-    bool searchAll(const Exp& search_for, std::list<SharedExp>& results);
+    bool searchAll(const Exp& pattern, std::list<SharedExp>& results);
 
     /**
      * Replace all instances of search with replace.
@@ -434,7 +437,7 @@ public:
      * \param replace the expression with which to replace it
      * \returns true if replacement took place
      */
-    bool searchAndReplace(const Exp& search, SharedExp replace);
+    bool searchAndReplace(const Exp& pattern, SharedExp replace);
 
     bool isLatchNode() { return m_loopHead && m_loopHead->m_latchNode == this; }
     BasicBlock *getLatchNode()  const { return m_latchNode; }

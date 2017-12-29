@@ -1789,11 +1789,19 @@ bool UserProc::branchAnalysis()
                     SharedExp cond =
                         Binary::get(opAnd, Unary::get(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone());
                     branch->setCondExpr(cond->simplify());
-                    assert(fallto->getBB()->getNumPredecessors() == 0);
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    assert(fallto->getBB()->getNumSuccessors() == 0);
-                    m_cfg->removeBB(fallto->getBB());
+
+                    BasicBlock *bb = fallto->getBB();
+                    assert(bb->getNumPredecessors() == 0);
+                    assert(bb->getNumSuccessors() == 2);
+                    BasicBlock *succ1 = fallto->getBB()->getSuccessor(0);
+                    BasicBlock *succ2 = fallto->getBB()->getSuccessor(1);
+
+                    bb->removeSuccessor(succ1);
+                    bb->removeSuccessor(succ2);
+                    succ1->removePredecessor(bb);
+                    succ2->removePredecessor(bb);
+
+                    m_cfg->removeBB(bb);
                     removedBBs = true;
                 }
 
@@ -1808,10 +1816,18 @@ bool UserProc::branchAnalysis()
                 if ((fallto->getTakenBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
                     branch->setFallBB(fallto->getFallBB());
                     branch->setCondExpr(Binary::get(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
-                    assert(fallto->getBB()->getNumPredecessors() == 0);
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    assert(fallto->getBB()->getNumSuccessors() == 0);
+
+                    BasicBlock *bb = fallto->getBB();
+                    assert(bb->getNumPredecessors() == 0);
+                    assert(bb->getNumSuccessors() == 2);
+                    BasicBlock *succ1 = bb->getPredecessor(0);
+                    BasicBlock *succ2 = bb->getPredecessor(1);
+
+                    bb->removeSuccessor(succ1);
+                    bb->removeSuccessor(succ2);
+                    succ1->removePredecessor(bb);
+                    succ2->removePredecessor(bb);
+
                     m_cfg->removeBB(fallto->getBB());
                     removedBBs = true;
                 }

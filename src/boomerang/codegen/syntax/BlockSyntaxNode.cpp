@@ -143,7 +143,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     os << "\"];" << '\n';
 
     if (m_bb) {
-        for (size_t i = 0; i < m_bb->getNumSuccessors(); i++) {
+        for (int i = 0; i < m_bb->getNumSuccessors(); i++) {
             BasicBlock *out = m_bb->getSuccessor(i);
             os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
 
