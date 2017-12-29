@@ -60,7 +60,6 @@ BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> pRtls, Function *
 BasicBlock::BasicBlock(const BasicBlock& bb)
     : m_function(bb.m_function)
     , m_bbType(bb.m_bbType)
-    , m_labelNum(bb.m_labelNum)
     // m_labelNeeded is initialized to false, not copied
     , m_incomplete(bb.m_incomplete)
     , m_jumpRequired(bb.m_jumpRequired)
@@ -192,8 +191,8 @@ void BasicBlock::print(QTextStream& os, bool html)
         os << "<br>";
     }
 
-    if (m_labelNum) {
-        os << "L" << m_labelNum << ": ";
+    if (m_labelNeeded) {
+        os << "L" << getLowAddr().toString() << ": ";
     }
 
     switch (getType())
@@ -273,9 +272,10 @@ void BasicBlock::print(QTextStream& os, bool html)
         os << "Synthetic out edge(s) to ";
 
         // assert(TargetOutEdges == OutEdges.size());
-        for (BasicBlock *outEdge : m_successors) {
-            if (outEdge && outEdge->m_labelNum) {
-                os << "L" << outEdge->m_labelNum << " ";
+        for (BasicBlock *successor : m_successors) {
+            assert(successor != nullptr);
+            if (successor->m_labelNeeded) {
+                os << "L" << successor->getLowAddr() << " ";
             }
         }
 

@@ -524,8 +524,7 @@ protected:
     std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     /* general basic block information */
-    int m_labelNum      = 0;                  ///< Nonzero if start of BB needs label
-    bool m_labelNeeded  = false;
+    bool m_labelNeeded  = false; ///< If true, the start of the BB needs a label in the decompiled code
     bool m_incomplete   = true;               ///< True if not yet complete
     bool m_jumpRequired = false;              ///< True if jump required for "fall through"
 

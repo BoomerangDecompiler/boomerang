@@ -35,7 +35,6 @@ Cfg::Cfg(UserProc *proc)
     , m_wellFormed(false)
     , m_structured(false)
     , m_implicitsDone(false)
-    , m_lastLabel(0)
     , m_entryBB(nullptr)
     , m_exitBB(nullptr)
 {
@@ -63,7 +62,6 @@ void Cfg::clear()
     m_entryBB    = nullptr;
     m_exitBB     = nullptr;
     m_wellFormed = false;
-    m_lastLabel  = 0;
 }
 
 void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
@@ -310,22 +308,19 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         // Put the implicit label into the map. Need to do this before the addOutEdge() below
         m_mapBB[splitAddr] = _newBB;
         // There must be a label here; else would not be splitting. Give it a new label
-        _newBB->m_labelNum = ++m_lastLabel;
+        _newBB->m_labelNeeded = true;
     }
     else if (_newBB->m_incomplete) {
         // We have an existing BB and a map entry, but no details except for
         // in-edges and m_bHasLabel.
         // First save the in-edges and m_iLabelNum
         std::vector<BasicBlock *> ins(_newBB->m_predecessors);
-        int labelNum = _newBB->m_labelNum;
 
         // Copy over the details now, completing the bottom BB
         *_newBB = *bb;              // Assign the BB, copying fields. This will set m_bIncomplete false
                                     // Replace the in edges (likely only one)
         _newBB->m_predecessors  = ins;
-        _newBB->m_labelNum = labelNum;  // Replace the label (must be one, since we are splitting this BB!)
-                                    // The "bottom" BB now starts at the implicit label
-                                    // We need to create a new list of RTLs, as per above
+        _newBB->m_labelNeeded = true;
         _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->m_listOfRTLs->end()));
     }
 
@@ -904,9 +899,7 @@ bool Cfg::searchAll(const Exp& search, std::list<SharedExp>& result)
 
 void Cfg::setLabelRequired(BasicBlock *pBB)
 {
-    if (pBB->m_labelNum == 0) {
-        pBB->m_labelNum = ++m_lastLabel;
-    }
+    pBB->m_labelNeeded = true;
 }
 
 

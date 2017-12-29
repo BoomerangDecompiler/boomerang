@@ -516,7 +516,6 @@ private:
     mutable bool m_wellFormed;
     bool m_structured;
     bool m_implicitsDone;                    ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
-    int m_lastLabel;                         ///< Last label (positive integer) used by any BB this Cfg
 
     std::list<BasicBlock *> m_listBB;        ///< BasicBlock s contained in this CFG
     std::vector<BasicBlock *> m_ordering;    ///< Ordering of BBs for control flow structuring

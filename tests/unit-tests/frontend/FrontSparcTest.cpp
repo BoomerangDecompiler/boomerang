@@ -390,7 +390,7 @@ void FrontSparcTest::testDelaySlot()
     bb = cfg->getNextBB(it);
     QVERIFY(bb);
     bb->print(strm);
-    expected = "L1: Twoway BB:\n"
+    expected = "L0x00010ac8: Twoway BB:\n"
                "  in edges: 0x00010ab0(0x00010aa4) 0x00010ac4(0x00010ac0) \n"
                "  out edges: 0x00010ad8 0x00010ad0 \n"
                "0x00010ac8    0 *32* r8 := 0x11400\n"
