@@ -1396,7 +1396,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
 int BasicBlock::findNumCases()
 {
     // should actually search from the statement to i
-    for (BasicBlock *in : m_predecessors) {          // For each in-edge
+    for (BasicBlock *in : m_predecessors) {     // For each in-edge
         if (!in->isType(BBType::Twoway)) {      // look for a two-way BB
             continue;                           // Ignore all others
         }
@@ -1438,7 +1438,7 @@ int BasicBlock::findNumCases()
     }
 
     LOG_WARN("Could not find number of cases for n-way at address %1", getLowAddr());
-    return 3; // Bald faced guess if all else fails
+    return 1; // Bald faced guess if all else fails
 }
 
 
