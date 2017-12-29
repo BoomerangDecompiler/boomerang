@@ -158,7 +158,7 @@ BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
 
     if (!bDone) {
         // Else add a new BB to the back of the current list.
-        currentBB = new BasicBlock(m_myProc, std::move(pRtls), bbType);
+        currentBB = new BasicBlock(bbType, std::move(pRtls), m_myProc);
         m_listBB.push_back(currentBB);
 
         // Also add the address to the map from native (source) address to

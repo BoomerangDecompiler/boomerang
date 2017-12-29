@@ -40,33 +40,32 @@
 #include <inttypes.h>
 
 
-BasicBlock::BasicBlock(Function *parent)
-    : m_inEdgesVisited(0) // From Doug's code
-    , m_numForwardInEdges(-1)
-    , m_traversed(TravType::Untraversed)
-    , m_immPDom(nullptr)
-    , m_loopHead(nullptr)
-    , m_caseHead(nullptr)
-    , m_condFollow(nullptr)
-    , m_loopFollow(nullptr)
-    , m_latchNode(nullptr)
-    , m_structuringType(StructType::Seq)
-    , m_unstructuredType(UnstructType::Structured)
-    , m_overlappedRegProcessingDone(false) // others
+BasicBlock::BasicBlock(Function *function)
+    : m_function(function)
+    , m_bbType(BBType::Invalid)
 {
-    m_function = parent;
+}
+
+
+BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> pRtls, Function *function)
+    : m_function(function)
+    , m_bbType(bbType)
+    , m_incomplete(false)
+{
+    // Set the RTLs
+    setRTLs(std::move(pRtls));
 }
 
 
 BasicBlock::BasicBlock(const BasicBlock& bb)
     : m_function(bb.m_function)
-    , m_nodeType(bb.m_nodeType)
+    , m_bbType(bb.m_bbType)
     , m_labelNum(bb.m_labelNum)
-    , m_incomplete(bb.m_incomplete) // m_labelNeeded is initialized to false, not copied
+    // m_labelNeeded is initialized to false, not copied
+    , m_incomplete(bb.m_incomplete)
     , m_jumpRequired(bb.m_jumpRequired)
     , m_predecessors(bb.m_predecessors)
     , m_successors(bb.m_successors)
-    // From Doug's code
     , m_ord(bb.m_ord)
     , m_revOrd(bb.m_revOrd)
     , m_inEdgesVisited(bb.m_inEdgesVisited)
@@ -82,6 +81,8 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_latchNode(bb.m_latchNode)
     , m_structuringType(bb.m_structuringType)
     , m_unstructuredType(bb.m_unstructuredType)
+    , m_loopHeaderType(bb.m_loopHeaderType)
+    , m_conditionHeaderType(bb.m_conditionHeaderType)
 {
     // make a deep copy of the RTL list
     std::unique_ptr<RTLList> newList(new RTLList());
@@ -108,29 +109,6 @@ BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
 {
     *this = BasicBlock(bb);
     return *this;
-}
-
-
-BasicBlock::BasicBlock(Function *parent, std::unique_ptr<RTLList> pRtls, BBType bbType)
-    : m_nodeType(bbType)
-    , m_incomplete(false)
-    , m_inEdgesVisited(0) // From Doug's code
-    , m_numForwardInEdges(-1)
-    , m_traversed(TravType::Untraversed)
-    , m_immPDom(nullptr)
-    , m_loopHead(nullptr)
-    , m_caseHead(nullptr)
-    , m_condFollow(nullptr)
-    , m_loopFollow(nullptr)
-    , m_latchNode(nullptr)
-    , m_structuringType(StructType::Seq)
-    , m_unstructuredType(UnstructType::Structured)
-    , m_overlappedRegProcessingDone(false) // Others
-{
-    m_function = parent;
-
-    // Set the RTLs
-    setRTLs(std::move(pRtls));
 }
 
 
@@ -172,7 +150,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 
 void BasicBlock::setType(BBType bbType)
 {
-    m_nodeType = bbType;
+    m_bbType = bbType;
 }
 
 

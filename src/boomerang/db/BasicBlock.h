@@ -137,8 +137,20 @@ public:
     typedef std::list<SharedExp>::iterator        elit;
 
 public:
-    /// \param parent The function this BB belongs to.
-    BasicBlock(Function *parent);
+    /**
+     * Creates an incomplete BB.
+     * \param function Enclosing function
+     */
+    BasicBlock(Function *function);
+
+    /**
+     * Creates a complete BB.
+     * \param bbType   type of BasicBlock
+     * \param rtls     rtl statements that will be contained in this BasicBlock
+     * \param function Function this BasicBlock belongs to.
+     */
+    BasicBlock(BBType bbType, std::unique_ptr<RTLList> rtls, Function *function);
+
     BasicBlock(const BasicBlock& other);
     BasicBlock(BasicBlock&& other) = default;
     ~BasicBlock();
@@ -148,15 +160,8 @@ public:
 
 public:
     /// \returns the type pf the BasicBlock
-    inline BBType getType()         const { return m_nodeType; }
-    inline bool isType(BBType type) const { return m_nodeType == type; }
-
-    /**
-     * Update the type and number of out edges.
-     * Used for example where a COMPJUMP type is updated to an
-     * NWAY when a switch idiom is discovered.
-     * \param bbType - the new type
-     */
+    inline BBType getType()         const { return m_bbType; }
+    inline bool isType(BBType type) const { return m_bbType == type; }
     void setType(BBType bbType);
 
     /// \returns enclosing function, nullptr if the BB does not belong to a function.
@@ -509,13 +514,6 @@ protected:
 
 private:
     /**
-     * \param function Function this BasicBlock belongs to.
-     * \param rtls     rtl statements that will be contained in this BasicBlock
-     * \param bbType type of BasicBlock
-     */
-    BasicBlock(Function *function, std::unique_ptr<RTLList> rtls, BBType bbType);
-
-    /**
      * Update the RTL list of this basic block. Takes ownership of the pointer.
      * \param rtls a list of RTLs
      */
@@ -525,7 +523,7 @@ protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
 
-    BBType m_nodeType = BBType::Invalid;      ///< type of basic block
+    BBType m_bbType = BBType::Invalid;      ///< type of basic block
     std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     /* general basic block information */
@@ -576,7 +574,7 @@ protected:
     BasicBlock *m_latchNode = nullptr;       ///< latching node of a loop header
 
     // Structured type of the node
-    StructType m_structuringType = StructType::Invalid;      ///< the structuring class (Loop, Cond, etc)
+    StructType m_structuringType = StructType::Seq;          ///< the structuring class (Loop, Cond, etc)
     UnstructType m_unstructuredType = UnstructType::Invalid; ///< the restructured type of a conditional header
     LoopType m_loopHeaderType = LoopType::Invalid;           ///< the loop type of a loop header
     CondType m_conditionHeaderType = CondType::Invalid;      ///< the conditional type of a conditional header
