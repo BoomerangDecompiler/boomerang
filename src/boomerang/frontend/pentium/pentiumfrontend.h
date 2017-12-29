@@ -170,6 +170,12 @@ private:
         return m_overlappedRegsProcessed.find(bb) != m_overlappedRegsProcessed.end();
     }
 
+    bool isFloatProcessed(const BasicBlock *bb) const
+    {
+        return m_floatProcessed.find(bb) != m_floatProcessed.end();
+    }
+
 private:
     std::unordered_set<const BasicBlock *> m_overlappedRegsProcessed;
+    std::unordered_set<const BasicBlock *> m_floatProcessed;
 };

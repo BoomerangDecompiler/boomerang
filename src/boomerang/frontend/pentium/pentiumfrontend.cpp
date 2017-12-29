@@ -374,7 +374,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
         }
     }
 
-    bb->setTraversed(true);
+    m_floatProcessed.insert(bb);
 
     // Now recurse to process my out edges, if not already processed
     const std::vector<BasicBlock *>& outs = bb->getSuccessors();
@@ -386,7 +386,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
         for (unsigned o = 0; o < n; o++) {
             BasicBlock *anOut = outs[o];
 
-            if (!anOut->isTraversed()) {
+            if (!isFloatProcessed(anOut)) {
                 processFloatCode(anOut, tos, cfg);
 
                 if (outs.size() != n) {

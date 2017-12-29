@@ -781,8 +781,7 @@ bool Cfg::removeOrphanBBs()
 void Cfg::unTraverse()
 {
     for (BasicBlock *bb : m_listBB) {
-        bb->m_traversedMarker = false;
-        bb->m_traversed       = TravType::Untraversed;
+        bb->m_travType       = TravType::Untraversed;
     }
 }
 
@@ -898,7 +897,7 @@ void Cfg::setTimeStamps()
 {
     // set DFS tag
     for (BasicBlock *it : m_listBB) {
-        it->m_traversed = TravType::DFS_Tag;
+        it->m_travType = TravType::DFS_Tag;
     }
 
     // set the parenthesis for the nodes as well as setting the post-order ordering between the nodes

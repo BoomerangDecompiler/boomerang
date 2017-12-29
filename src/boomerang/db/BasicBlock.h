@@ -233,12 +233,6 @@ public:
 
     bool isCaseOption();
 
-    /// \returns true if this BB has been traversed.
-    bool isTraversed();
-
-    /// Sets the traversed flag
-    void setTraversed(bool bTraversed);
-
     /**
      * Print the whole BB to the given stream
      * \param os   stream to output to
@@ -388,13 +382,14 @@ public:
     BasicBlock *getCondFollow() const { return m_condFollow; }
     BasicBlock *getCaseHead()   const { return m_caseHead; }
 
-    TravType getTravType() const { return m_traversed; }
+    TravType getTravType() const { return m_travType; }
     StructType getStructType() const { return m_structuringType; }
     CondType getCondType() const;
     UnstructType getUnstructType() const;
     LoopType getLoopType() const;
 
-    void setTravType(TravType type) { m_traversed = type; }
+    void setTravType(TravType type) {
+        m_travType = type; }
     void setStructType(StructType s);
 
     int getOrdering() const { return m_ord; }
@@ -472,8 +467,7 @@ protected:
     std::vector<BasicBlock *> m_successors;    ///< Vector of out-edges
 
     /* for traversal */
-    bool m_traversedMarker = false; ///< traversal marker
-    TravType m_traversed = TravType::Untraversed; ///< traversal flag for the numerous DFS's
+    TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
 
     /* Liveness */
     LocationSet m_liveIn;                  ///< Set of locations live at BB start

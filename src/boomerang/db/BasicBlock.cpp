@@ -64,7 +64,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_incomplete(bb.m_incomplete)
     , m_predecessors(bb.m_predecessors)
     , m_successors(bb.m_successors)
-    , m_traversed(bb.m_traversed)
+    , m_travType(bb.m_travType)
     , m_ord(bb.m_ord)
     , m_revOrd(bb.m_revOrd)
     , m_inEdgesVisited(bb.m_inEdgesVisited)
@@ -123,18 +123,6 @@ bool BasicBlock::isCaseOption()
     }
 
     return false;
-}
-
-
-bool BasicBlock::isTraversed()
-{
-    return m_traversedMarker;
-}
-
-
-void BasicBlock::setTraversed(bool bTraversed)
-{
-    m_traversedMarker = bTraversed;
 }
 
 
@@ -755,7 +743,7 @@ bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
 bool BasicBlock::allParentsGenerated()
 {
     for (BasicBlock *pred : m_predecessors) {
-        if (!pred->hasBackEdgeTo(this) && (pred->m_traversed != TravType::DFS_Codegen)) {
+        if (!pred->hasBackEdgeTo(this) && (pred->m_travType != TravType::DFS_Codegen)) {
             return false;
         }
     }
@@ -768,7 +756,7 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 {
     // timestamp the current node with the current time
     // and set its traversed flag
-    m_traversed     = TravType::DFS_LNum;
+    m_travType     = TravType::DFS_LNum;
     m_loopStamps[0] = time;
 
     // recurse on unvisited children and set inedges for all children
@@ -778,7 +766,7 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
         // outEdges[i]->inEdges.Add(this);
 
         // recurse on this child if it hasn't already been visited
-        if (out->m_traversed != TravType::DFS_LNum) {
+        if (out->m_travType != TravType::DFS_LNum) {
             out->setLoopStamps(++time, order);
         }
     }
@@ -795,13 +783,13 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 void BasicBlock::setRevLoopStamps(int& time)
 {
     // timestamp the current node with the current time and set its traversed flag
-    m_traversed        = TravType::DFS_RNum;
+    m_travType        = TravType::DFS_RNum;
     m_revLoopStamps[0] = time;
 
     // recurse on the unvisited children in reverse order
     for (int i = (int)m_successors.size() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
-        if (m_successors[i]->m_traversed != TravType::DFS_RNum) {
+        if (m_successors[i]->m_travType != TravType::DFS_RNum) {
             m_successors[i]->setRevLoopStamps(++time);
         }
     }
@@ -814,11 +802,11 @@ void BasicBlock::setRevLoopStamps(int& time)
 void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
 {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
-    m_traversed = TravType::DFS_PDom;
+    m_travType = TravType::DFS_PDom;
 
     // recurse on unvisited children
     for (BasicBlock *in : m_predecessors) {
-        if (in->m_traversed != TravType::DFS_PDom) {
+        if (in->m_travType != TravType::DFS_PDom) {
             in->setRevOrder(order);
         }
     }
@@ -834,7 +822,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 {
     assert(!m_caseHead);
 
-    m_traversed = TravType::DFS_Case;
+    m_travType = TravType::DFS_Case;
 
     // don't tag this node if it is the case header under investigation
     if (this != head) {
@@ -844,7 +832,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
     // if this is a nested case header, then it's member nodes
     // will already have been tagged so skip straight to its follow
     if (isType(BBType::Nway) && (this != head)) {
-        if (m_condFollow && (m_condFollow->m_traversed != TravType::DFS_Case) && (m_condFollow != follow)) {
+        if (m_condFollow && (m_condFollow->m_travType != TravType::DFS_Case) && (m_condFollow != follow)) {
             m_condFollow->setCaseHead(head, follow);
         }
     }
@@ -854,7 +842,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
         //  ii) hasn't already been traversed in a case tagging traversal and,
         // iii) isn't the follow node.
         for (BasicBlock *out : m_successors) {
-            if (!hasBackEdgeTo(out) && (out->m_traversed != TravType::DFS_Case) && (out != follow)) {
+            if (!hasBackEdgeTo(out) && (out->m_travType != TravType::DFS_Case) && (out != follow)) {
                 out->setCaseHead(head, follow);
             }
         }
