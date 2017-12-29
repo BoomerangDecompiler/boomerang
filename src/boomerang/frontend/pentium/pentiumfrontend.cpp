@@ -733,7 +733,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement *s = *it;
 
-        if (s->getBB()->isOverlappedRegProcessingDone()) { // never redo processing
+        if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
             continue;
         }
 
@@ -910,9 +910,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     }
 
     // set a flag for every BB we've processed so we don't do them again
-    for (BasicBlock *bb : bbs) {
-        bb->setOverlappedRegProcessingDone();
-    }
+    m_overlappedRegsProcessed.insert(bbs.begin(), bbs.end());
 }
 
 

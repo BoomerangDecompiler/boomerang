@@ -332,9 +332,6 @@ public:
      */
     static bool lessLastDFT(BasicBlock *bb1, BasicBlock *bb2);
 
-    bool isOverlappedRegProcessingDone() const { return m_overlappedRegProcessingDone; }
-    void setOverlappedRegProcessingDone() { m_overlappedRegProcessingDone = true; }
-
 
     class LastStatementNotABranchError : public std::exception
     {
@@ -578,8 +575,4 @@ protected:
     UnstructType m_unstructuredType = UnstructType::Invalid; ///< the restructured type of a conditional header
     LoopType m_loopHeaderType = LoopType::Invalid;           ///< the loop type of a loop header
     CondType m_conditionHeaderType = CondType::Invalid;      ///< the conditional type of a conditional header
-
-    /// true if processing for overlapped registers on statements in this BB
-    /// has been completed.
-    bool m_overlappedRegProcessingDone = false;
 };
