@@ -113,11 +113,13 @@ BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
 
 bool BasicBlock::isCaseOption()
 {
-    if (m_caseHead) {
-        for (int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
-            if (m_caseHead->getSuccessor(i) == this) {
-                return true;
-            }
+    if (!m_caseHead) {
+        return false;
+    }
+
+    for (int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
+        if (m_caseHead->getSuccessor(i) == this) {
+            return true;
         }
     }
 
@@ -291,15 +293,6 @@ void BasicBlock::printToLog()
 
     print(ost);
     LOG_MSG(tgt);
-}
-
-
-bool BasicBlock::isBackEdge(int inEdge) const
-{
-    assert(Util::inRange(inEdge, 0, getNumPredecessors()));
-    const BasicBlock *in = m_predecessors[inEdge];
-
-    return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
 }
 
 
@@ -498,7 +491,7 @@ Address BasicBlock::getCallDest()
 
 Function *BasicBlock::getCallDestProc()
 {
-    if (!isType(BBType::Call) || m_listOfRTLs->empty()) {
+    if (!isType(BBType::Call) || !m_listOfRTLs || m_listOfRTLs->empty()) {
         return nullptr;
     }
 
@@ -939,8 +932,8 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
         m_caseHead = head;
     }
 
-    // if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
-    // follow
+    // if this is a nested case header, then it's member nodes
+    // will already have been tagged so skip straight to its follow
     if (isType(BBType::Nway) && (this != head)) {
         if (m_condFollow && (m_condFollow->m_traversed != TravType::DFS_Case) && (m_condFollow != follow)) {
             m_condFollow->setCaseHead(head, follow);

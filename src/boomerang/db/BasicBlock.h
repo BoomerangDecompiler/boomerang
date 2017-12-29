@@ -231,10 +231,6 @@ public:
     /// removes all predecessor BBs.
     void removeAllPredecessors() { m_predecessors.clear(); }
 
-    /// Checks if the \p i-th in edge is a back edge, i.e. an edge from a successor BB to this BB.
-    /// Can happen e.g. for loops.
-    bool isBackEdge(int i) const;
-
     bool isCaseOption();
 
     /// \returns true if this BB has been traversed.

@@ -2583,8 +2583,10 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                 // generate the 'break' statement
                 addCaseCondOptionEnd();
             }
-            else if ((bb->getCaseHead() == nullptr) || (bb->getCaseHead() != child->getCaseHead()) || !child->isCaseOption()) {
-                generateCode(child, latch, followSet, gotoSet, proc);
+            else if ((bb->getCaseHead() == nullptr) ||
+                (bb->getCaseHead() != child->getCaseHead()) ||
+                !child->isCaseOption()) {
+                    generateCode(child, latch, followSet, gotoSet, proc);
             }
         }
 
