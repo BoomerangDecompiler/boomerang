@@ -463,24 +463,6 @@ unsigned BasicBlock::getRevDFTOrder(int& first, int& last)
 }
 
 
-bool BasicBlock::lessAddress(BasicBlock *bb1, BasicBlock *bb2)
-{
-    return bb1->getLowAddr() < bb2->getLowAddr();
-}
-
-
-bool BasicBlock::lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2)
-{
-    return bb1->m_DFTfirst < bb2->m_DFTfirst;
-}
-
-
-bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
-{
-    return bb1->m_DFTlast < bb2->m_DFTlast;
-}
-
-
 Address BasicBlock::getCallDest()
 {
     Function *dest = getCallDestProc();

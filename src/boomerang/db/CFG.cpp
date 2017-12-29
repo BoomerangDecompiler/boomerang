@@ -502,19 +502,25 @@ bool Cfg::isIncomplete(Address uAddr) const
 
 void Cfg::sortByAddress()
 {
-    m_listBB.sort(BasicBlock::lessAddress);
+    m_listBB.sort([] (const BasicBlock *bb1, const BasicBlock *bb2) {
+        return bb1->getLowAddr() < bb2->getLowAddr();
+    });
 }
 
 
 void Cfg::sortByFirstDFT()
 {
-    m_listBB.sort(BasicBlock::lessFirstDFT);
+    m_listBB.sort([] (const BasicBlock *bb1, const BasicBlock *bb2) {
+        return bb1->m_DFTfirst < bb2->m_DFTfirst;
+    });
 }
 
 
 void Cfg::sortByLastDFT()
 {
-    m_listBB.sort(BasicBlock::lessLastDFT);
+    m_listBB.sort([] (const BasicBlock *bb1, const BasicBlock *bb2) {
+        return bb1->m_DFTlast < bb2->m_DFTlast;
+    });
 }
 
 

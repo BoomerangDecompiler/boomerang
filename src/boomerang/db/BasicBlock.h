@@ -304,31 +304,6 @@ public:
      */
     unsigned getRevDFTOrder(int& first, int& last);
 
-    /**
-     * Static comparison function that returns true if the first BB has an
-     * address less than the second BB.
-     *
-     * \param bb1 first BB
-     * \param bb2 last BB
-     * \returns bb1.address < bb2.address
-     */
-    static bool lessAddress(BasicBlock *bb1, BasicBlock *bb2);
-
-    /**
-     * Static comparison function that returns true if the first BB has DFT
-     * first order less than the second BB.
-     * \returns bb1.first_DFS < bb2.first_DFS
-     */
-    static bool lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2);
-
-    /**
-     * Static comparison function that returns true if the first BB has DFT
-     * first order less than the second BB.
-     * \returns bb1.last_DFS < bb2.last_DFS
-     */
-    static bool lessLastDFT(BasicBlock *bb1, BasicBlock *bb2);
-
-
     class LastStatementNotABranchError : public std::exception
     {
     public:
