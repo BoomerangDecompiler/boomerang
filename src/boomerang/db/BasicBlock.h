@@ -231,23 +231,10 @@ public:
     /// removes all predecessor BBs.
     void removeAllPredecessors() { m_predecessors.clear(); }
 
+    /// establish if this bb has a back edge to the given destination
+    bool hasBackEdgeTo(BasicBlock *dest);
+
     bool isCaseOption();
-
-    /**
-     * Print the whole BB to the given stream
-     * \param os   stream to output to
-     * \param html print in html mode
-     */
-    void print(QTextStream& os, bool html = false);
-
-    /// Output this BB to the log.
-    void printToLog();
-
-    /// Print to a static buffer (for debugging)
-    const char *prints();
-
-    /// Print this BB to stderr
-    void dump();
 
     /// \returns all RTLs that are part of this BB.
     RTLList *getRTLs();
@@ -388,8 +375,7 @@ public:
     UnstructType getUnstructType() const;
     LoopType getLoopType() const;
 
-    void setTravType(TravType type) {
-        m_travType = type; }
+    void setTravType(TravType type) { m_travType = type; }
     void setStructType(StructType s);
 
     int getOrdering() const { return m_ord; }
@@ -397,6 +383,23 @@ public:
     /// Return true if every parent (i.e. forward in edge source) of this node has
     /// had its code generated
     bool allParentsGenerated();
+
+public:
+    /**
+     * Print the whole BB to the given stream
+     * \param os   stream to output to
+     * \param html print in html mode
+     */
+    void print(QTextStream& os, bool html = false);
+
+    /// Output this BB to the log.
+    void printToLog();
+
+    /// Print to a static buffer (for debugging)
+    const char *prints();
+
+    /// Print this BB to stderr
+    void dump();
 
 protected:
     void setLoopStamps(int& time, std::vector<BasicBlock *>& order);
@@ -413,9 +416,6 @@ protected:
 
     void setLoopFollow(BasicBlock *other) { m_loopFollow = other; }
     void setCondFollow(BasicBlock *other) { m_condFollow = other; }
-
-    /// establish if this bb has a back edge to the given destination
-    bool hasBackEdgeTo(BasicBlock *dest);
 
     /// establish if this bb has any back edges leading FROM it
     bool hasBackEdge()

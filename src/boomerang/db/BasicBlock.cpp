@@ -641,12 +641,8 @@ BasicBlock *BasicBlock::getLoopBody()
 
 bool BasicBlock::isAncestorOf(BasicBlock *other)
 {
-    return((m_loopStamps[0] < other->m_loopStamps[0] && m_loopStamps[1] > other->m_loopStamps[1]) ||
+    return ((m_loopStamps[0]   < other->m_loopStamps[0]    && m_loopStamps[1] > other->m_loopStamps[1]) ||
            (m_revLoopStamps[0] < other->m_revLoopStamps[0] && m_revLoopStamps[1] > other->m_revLoopStamps[1]));
-
-    /*    return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
-     *  (m_DFTrevlast < other->m_DFTrevlast &&
-     *   m_DFTrevfirst > other->m_DFTrevfirst);*/
 }
 
 
