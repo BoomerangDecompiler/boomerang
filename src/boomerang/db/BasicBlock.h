@@ -255,18 +255,6 @@ public:
     /// Print this BB to stderr
     void dump();
 
-    /**
-     * Sets the "jump required" bit. This means that this BB is an orphan
-     * (not generated from input code), and that the "fall through" out edge
-     * (m_successors[BELSE]) needs to be implemented as a jump. The back end
-     * needs to take heed of this bit
-     */
-    void setJumpRequired();
-
-
-    /// \returns the "jump required" bit. See \ref setJumpRequired for details
-    bool isJumpRequired();
-
     /// \returns all RTLs that are part of this BB.
     RTLList *getRTLs();
     const RTLList *getRTLs() const;
@@ -478,7 +466,6 @@ protected:
     /* general basic block information */
     bool m_labelNeeded  = false; ///< If true, the start of the BB needs a label in the decompiled code
     bool m_incomplete   = true;  ///< True if not yet complete
-    bool m_jumpRequired = false; ///< True if jump required for "fall through"
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_predecessors;  ///< Vector of in-edges

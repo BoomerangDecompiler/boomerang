@@ -62,7 +62,6 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     , m_bbType(bb.m_bbType)
     // m_labelNeeded is initialized to false, not copied
     , m_incomplete(bb.m_incomplete)
-    , m_jumpRequired(bb.m_jumpRequired)
     , m_predecessors(bb.m_predecessors)
     , m_successors(bb.m_successors)
     , m_traversed(bb.m_traversed)
@@ -152,18 +151,6 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 void BasicBlock::setType(BBType bbType)
 {
     m_bbType = bbType;
-}
-
-
-void BasicBlock::setJumpRequired()
-{
-    m_jumpRequired = true;
-}
-
-
-bool BasicBlock::isJumpRequired()
-{
-    return m_jumpRequired;
 }
 
 
@@ -264,24 +251,6 @@ void BasicBlock::print(QTextStream& os, bool html)
         if (html) {
             os << "</table>\n";
         }
-    }
-
-    if (m_jumpRequired) {
-        if (html) {
-            os << "<br>";
-        }
-
-        os << "Synthetic out edge(s) to ";
-
-        // assert(TargetOutEdges == OutEdges.size());
-        for (BasicBlock *successor : m_successors) {
-            assert(successor != nullptr);
-            if (successor->m_labelNeeded) {
-                os << "L" << successor->getLowAddr() << " ";
-            }
-        }
-
-        os << '\n';
     }
 }
 

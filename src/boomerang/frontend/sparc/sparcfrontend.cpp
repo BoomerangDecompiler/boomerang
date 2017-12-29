@@ -212,7 +212,6 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
             cfg->addOutEdge(callBB, returnBB);
             // Put a label on the return BB; indicate that a jump is reqd
             cfg->setLabelRequired(returnBB);
-            callBB->setJumpRequired();
 
             address += inst.numBytes; // For coverage
             // This is a CTI block that doesn't fall through and so must
@@ -388,7 +387,6 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
 
             // Put a label on the return BB; indicate that a jump is reqd
             cfg->setLabelRequired(returnBB);
-            newBB->setJumpRequired();
 
             // Add this call to the list of calls to analyse. We won't be able to analyse its callee(s), of course.
             callList.push_back(call_stmt);
@@ -584,7 +582,7 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
     // Add the "false" leg: point past delay inst. Set a label there (see below)
     cfg->addOutEdge(pBB, address + 8, true);
     // Could need a jump to the following BB, e.g. if uDest is the delay slot instruction itself! e.g. beq,a $+8
-    pBB->setJumpRequired();
+
     address += 8;       // Skip branch and delay
     BB_rtls  = nullptr; // Start new BB return true;
     return true;

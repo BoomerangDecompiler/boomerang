@@ -245,7 +245,6 @@ void Cfg::addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequires
     // special handling for upgrading oneway BBs to twoway BBs
     if ((sourceBB->getType() == BBType::Oneway) && (sourceBB->getSuccessors().size() > 1)) {
         sourceBB->setType(BBType::Twoway);
-        sourceBB->setJumpRequired();
         destRequiresLabel = true;
     }
 
@@ -729,7 +728,6 @@ bool Cfg::compressCfg()
             // which need the successor information.
             jmpBB->removePredecessor(a);
 
-            a->setJumpRequired();
             setLabelRequired(b);
 
             if (jmpBB->getNumPredecessors() == 0) {

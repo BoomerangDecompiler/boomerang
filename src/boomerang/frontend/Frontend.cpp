@@ -1067,7 +1067,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     cfg->addOutEdge(pBB, returnBB);
                                     // Put a label on the return BB (since it's an orphan); a jump will be reqd
                                     cfg->setLabelRequired(returnBB);
-                                    pBB->setJumpRequired();
 
                                     // Mike: do we need to set return locations?
                                     // This ends the function
