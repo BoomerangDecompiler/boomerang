@@ -284,25 +284,6 @@ public:
     /// Get the destination proc
     Function *getDestProc();
 
-    /**
-     * Traverse this node and recurse on its children in a depth first manner.
-     * Records the times at which this node was first visited and last visited
-     *
-     * \param first the number of nodes that have been visited
-     * \param last  the number of nodes that have been visited for the last time during this traversal
-     * \returns the number of nodes (including this one) that were traversed from this node
-     */
-    unsigned getDFTOrder(int& first, int& last);
-
-    /**
-     * Traverse this node and recurse on its parents in a reverse depth first manner.
-     * Records the times at which this node was first visited and last visited
-     *
-     * \param first the number of nodes that have been visited
-     * \param last  the number of nodes that have been visited for the last time during this traversal
-     * \returns the number of nodes (including this one) that were traversed from this node
-     */
-    unsigned getRevDFTOrder(int& first, int& last);
 
     class LastStatementNotABranchError : public std::exception
     {
@@ -509,15 +490,6 @@ protected:
 
     /* Liveness */
     LocationSet m_liveIn;                  ///< Set of locations live at BB start
-
-    /*
-     * Depth first traversal of all bbs, numbering as we go and as we come back, forward and reverse passes.
-     * Use Cfg::establishDFTOrder() and CFG::establishRevDFTOrder to create these values.
-     */
-    int m_DFTfirst = 0; ///< depth-first traversal first visit
-    int m_DFTlast  = 0; ///< depth-first traversal last visit
-    int m_DFTrevfirst = 0;  ///< reverse depth-first traversal first visit
-    int m_DFTrevlast = 0;   ///< reverse depth-first traversal last visit
 
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
     int m_ord = -1;                          ///< node's position within the ordering structure

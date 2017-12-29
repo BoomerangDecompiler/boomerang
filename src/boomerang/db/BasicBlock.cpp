@@ -421,48 +421,6 @@ void BasicBlock::removeSuccessor(BasicBlock *succ)
 }
 
 
-unsigned BasicBlock::getDFTOrder(int& first, int& last)
-{
-    first++;
-    m_DFTfirst = first;
-
-    unsigned numTraversed = 1;
-    m_traversedMarker = true;
-
-    for (BasicBlock *child : m_successors) {
-        if (child->m_traversedMarker == false) {
-            numTraversed = numTraversed + child->getDFTOrder(first, last);
-        }
-    }
-
-    last++;
-    m_DFTlast = last;
-
-    return numTraversed;
-}
-
-
-unsigned BasicBlock::getRevDFTOrder(int& first, int& last)
-{
-    first++;
-    m_DFTrevfirst = first;
-
-    unsigned numTraversed = 1;
-    m_traversedMarker = true;
-
-    for (BasicBlock *parent : m_predecessors) {
-        if (parent->m_traversedMarker == false) {
-            numTraversed = numTraversed + parent->getRevDFTOrder(first, last);
-        }
-    }
-
-    last++;
-    m_DFTrevlast = last;
-
-    return numTraversed;
-}
-
-
 Address BasicBlock::getCallDest()
 {
     Function *dest = getCallDestProc();

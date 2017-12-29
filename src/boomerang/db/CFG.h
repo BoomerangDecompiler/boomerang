@@ -251,12 +251,6 @@ public:
      */
     void sortByAddress();
 
-    /// Sorts the BBs in a cfg by their first DFT numbers.
-    void sortByFirstDFT();
-
-    /// Sorts the BBs in a cfg by their last DFT numbers.
-    void sortByLastDFT();
-
     /**
      * Checks that all BBs are complete, and all out edges are valid;
      * however, Addresses that are interprocedural out edges are not checked or changed.
@@ -285,26 +279,6 @@ public:
      * \returns true iff successful.
      */
     bool compressCfg();
-
-    /**
-     * Given a well-formed cfg graph, a partial ordering is established between the nodes.
-     *
-     * The ordering is based on the final visit to each node during a depth first traversal such that if node n1 was
-     * visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
-     * The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
-     * (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
-     * node.
-     *
-     * \returns all nodes where ordered
-     */
-    bool establishDFTOrder();
-
-    /**
-     * Performs establishDFTOrder on the reverse (flip) of the graph,
-     * assumes: establishDFTOrder has already been called
-     * \returns all nodes where ordered
-     */
-    bool establishRevDFTOrder();
 
     /**
      * Reset all the traversed flags.

@@ -508,22 +508,6 @@ void Cfg::sortByAddress()
 }
 
 
-void Cfg::sortByFirstDFT()
-{
-    m_listBB.sort([] (const BasicBlock *bb1, const BasicBlock *bb2) {
-        return bb1->m_DFTfirst < bb2->m_DFTfirst;
-    });
-}
-
-
-void Cfg::sortByLastDFT()
-{
-    m_listBB.sort([] (const BasicBlock *bb1, const BasicBlock *bb2) {
-        return bb1->m_DFTlast < bb2->m_DFTlast;
-    });
-}
-
-
 bool Cfg::isWellFormed() const
 {
     m_wellFormed = true;
@@ -798,28 +782,10 @@ bool Cfg::removeOrphanBBs()
 
 void Cfg::unTraverse()
 {
-    for (BasicBlock *it : m_listBB) {
-        it->m_traversedMarker = false;
-        it->m_traversed       = TravType::Untraversed;
+    for (BasicBlock *bb : m_listBB) {
+        bb->m_traversedMarker = false;
+        bb->m_traversed       = TravType::Untraversed;
     }
-}
-
-
-bool Cfg::establishDFTOrder()
-{
-    // Must be well formed.
-    if (!m_wellFormed || hasNoEntryBB()) {
-        return false;
-    }
-
-    // Reset all the traversed flags
-    unTraverse();
-
-    int                first        = 0;
-    int                last         = 0;
-    const unsigned int numTraversed = m_entryBB->getDFTOrder(first, last);
-
-    return numTraversed == m_listBB.size();
 }
 
 
@@ -841,35 +807,6 @@ BasicBlock *Cfg::findRetNode()
     }
 
     return retNode;
-}
-
-
-bool Cfg::establishRevDFTOrder()
-{
-    // Must be well formed.
-    if (!m_wellFormed) {
-        return false;
-    }
-
-    // WAS: sort by last dfs and grab the exit node
-    // Why?     This does not seem like a the best way. What we need is the ret node, so let's find it.
-    // If the CFG has more than one ret node then it needs to be fixed.
-    // sortByLastDFT();
-
-    BasicBlock *retNode = findRetNode();
-
-    if (retNode == nullptr) {
-        return false;
-    }
-
-    // Reset all the traversed flags
-    unTraverse();
-
-    int      first        = 0;
-    int      last         = 0;
-    unsigned numTraversed = retNode->getRevDFTOrder(first, last);
-
-    return numTraversed == m_listBB.size();
 }
 
 
