@@ -233,7 +233,7 @@ bool UserProc::containsAddr(Address uAddr) const
     BBIterator it;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-        if (bb->getRTLs() && (bb->getLowAddr() <= uAddr) && (bb->getHiAddr() >= uAddr)) {
+        if (bb->getRTLs() && (uAddr >= bb->getLowAddr()) && (uAddr <= bb->getHiAddr())) {
             return true;
         }
     }

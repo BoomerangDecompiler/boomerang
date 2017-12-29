@@ -650,8 +650,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
         bool    lastRtl = true;
 
         // For each RTL this BB
-        for (std::list<RTL *>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-            RTL *rtl = *rit;
+        for (RTL *rtl : *rtls) {
             prev = addr;
             addr = rtl->getAddress();
 

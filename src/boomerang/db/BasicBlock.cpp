@@ -40,8 +40,9 @@
 #include <inttypes.h>
 
 
-BasicBlock::BasicBlock(Function *function)
+BasicBlock::BasicBlock(Address lowAddr, Function *function)
     : m_function(function)
+    , m_lowAddr(lowAddr)
     , m_bbType(BBType::Invalid)
 {
 }
@@ -52,7 +53,7 @@ BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> pRtls, Function *
     , m_bbType(bbType)
     , m_incomplete(false)
 {
-    // Set the RTLs
+    // Set the RTLs. This also updates the low and the high address of the BB.
     setRTLs(std::move(pRtls));
 }
 
@@ -133,6 +134,8 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
     }
 
     m_listOfRTLs = std::move(rtls);
+
+    updateBBAddress();
 }
 
 
@@ -255,27 +258,7 @@ void BasicBlock::printToLog()
 
 Address BasicBlock::getLowAddr() const
 {
-    if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-        return Address::ZERO;
-    }
-
-    Address a = m_listOfRTLs->front()->getAddress();
-
-    if (a.isZero() && (m_listOfRTLs->size() > 1)) {
-        std::list<RTL *>::iterator it = m_listOfRTLs->begin();
-        Address add2 = (*++it)->getAddress();
-
-        // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
-        // to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
-        if (add2 < Address(0x10)) {
-            // Assume that 0 is the real address
-            return Address::ZERO;
-        }
-
-        return add2;
-    }
-
-    return a;
+    return m_lowAddr;
 }
 
 
@@ -1989,4 +1972,37 @@ bool BasicBlock::searchAndReplace(const Exp& search, SharedExp replace)
     }
 
     return ch;
+}
+
+
+void BasicBlock::updateBBAddress()
+{
+    if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
+        // should not happen
+        assert(false);
+        return;
+    }
+
+    Address a = m_listOfRTLs->front()->getAddress();
+
+    if (a.isZero() && (m_listOfRTLs->size() > 1)) {
+        std::list<RTL *>::iterator it = m_listOfRTLs->begin();
+        Address add2 = (*++it)->getAddress();
+
+        // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
+        // to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
+        if (add2 < Address(0x10)) {
+            // Assume that 0 is the real address
+            m_lowAddr =  Address::ZERO;
+        }
+        else {
+            m_lowAddr = add2;
+        }
+    }
+    else {
+        m_lowAddr = a;
+    }
+
+    assert(m_listOfRTLs != nullptr);
+    m_highAddr = m_listOfRTLs->back()->getAddress();
 }

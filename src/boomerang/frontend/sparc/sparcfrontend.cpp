@@ -383,7 +383,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
             // proc->setEpilogue(new CalleeEpilogue("__dummy",std::list<QString>()));
             // Set the return location; this is now always %o0
             // setReturnLocations(proc->getEpilogue(), 8 /* %o0 */);
-            newBB->getRTLs()->remove(delay_inst.rtl);
+            newBB->removeRTL(delay_inst.rtl);
 
             // Put a label on the return BB; indicate that a jump is reqd
             cfg->setLabelRequired(returnBB);

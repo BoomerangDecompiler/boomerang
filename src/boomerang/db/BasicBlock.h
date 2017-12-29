@@ -141,7 +141,7 @@ public:
      * Creates an incomplete BB.
      * \param function Enclosing function
      */
-    BasicBlock(Function *function);
+    BasicBlock(Address lowAddr, Function *function);
 
     /**
      * Creates a complete BB.
@@ -300,6 +300,13 @@ public:
     RTL *getLastRTL() { return m_listOfRTLs->back(); }
     void getStatements(StatementList& stmts) const;
 
+    void removeRTL(RTL *rtl)
+    {
+        m_listOfRTLs->remove(rtl);
+
+        updateBBAddress();
+    }
+
 public:
     /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
     /// \a proc is the enclosing Proc
@@ -433,15 +440,6 @@ protected:
     bool isAncestorOf(BasicBlock *other);
     bool inLoop(BasicBlock *header, BasicBlock *latch);
 
-    void addRTL(RTL *rtl)
-    {
-        if (m_listOfRTLs == nullptr) {
-            m_listOfRTLs.reset(new RTLList);
-        }
-
-        m_listOfRTLs->push_back(rtl);
-    }
-
     void addLiveIn(SharedExp e) { m_liveIn.insert(e); }
 
 private:
@@ -451,10 +449,16 @@ private:
      */
     void setRTLs(std::unique_ptr<RTLList> rtls);
 
+    /// Update the high and low address of this BB if the RTL list has changed.
+    void updateBBAddress();
+
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
     std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
+
+    Address m_lowAddr = Address::ZERO;
+    Address m_highAddr = Address::INVALID;
 
     BBType m_bbType = BBType::Invalid;      ///< type of basic block
 

@@ -22,7 +22,7 @@ void BasicBlockTest::initTestCase()
 
 void BasicBlockTest::testGetType()
 {
-    BasicBlock bb(nullptr); // incomplete BB
+    BasicBlock bb(Address::ZERO, nullptr); // incomplete BB
 
     QVERIFY(bb.getType() == BBType::Invalid);
     QVERIFY(bb.isType(BBType::Invalid));
@@ -31,10 +31,10 @@ void BasicBlockTest::testGetType()
 
 void BasicBlockTest::testPredecessor()
 {
-    BasicBlock bb(nullptr);
+    BasicBlock bb(Address::ZERO, nullptr);
 
-    BasicBlock pred1(nullptr);
-    BasicBlock pred2(nullptr);
+    BasicBlock pred1(Address::ZERO, nullptr);
+    BasicBlock pred2(Address::ZERO, nullptr);
 
     QCOMPARE(bb.getNumPredecessors(), 0);
 
@@ -72,10 +72,10 @@ void BasicBlockTest::testPredecessor()
 
 void BasicBlockTest::testSuccessor()
 {
-    BasicBlock bb(nullptr);
+    BasicBlock bb(Address::ZERO, nullptr);
 
-    BasicBlock succ1(nullptr);
-    BasicBlock succ2(nullptr);
+    BasicBlock succ1(Address::ZERO, nullptr);
+    BasicBlock succ2(Address::ZERO, nullptr);
 
     QCOMPARE(bb.getNumSuccessors(), 0);
 

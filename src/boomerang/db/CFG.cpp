@@ -227,7 +227,7 @@ BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
 BasicBlock *Cfg::createIncompleteBB(Address addr)
 {
     // Create a new (basically empty) BB
-    BasicBlock *pBB = new BasicBlock(m_myProc);
+    BasicBlock *pBB = new BasicBlock(addr, m_myProc);
 
     // Add it to the list
     m_listBB.push_back(pBB);
