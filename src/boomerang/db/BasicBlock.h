@@ -231,6 +231,7 @@ public:
     /// removes all predecessor BBs.
     void removeAllPredecessors() { m_predecessors.clear(); }
 
+private:
     /// Checks if the \p i-th in edge is a back edge, i.e. an edge from a successor BB to this BB.
     /// Can happen e.g. for loops.
     bool isBackEdge(int i) const;
@@ -519,14 +520,14 @@ private:
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
+    std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     BBType m_bbType = BBType::Invalid;      ///< type of basic block
-    std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
 
     /* general basic block information */
     bool m_labelNeeded  = false; ///< If true, the start of the BB needs a label in the decompiled code
-    bool m_incomplete   = true;               ///< True if not yet complete
-    bool m_jumpRequired = false;              ///< True if jump required for "fall through"
+    bool m_incomplete   = true;  ///< True if not yet complete
+    bool m_jumpRequired = false; ///< True if jump required for "fall through"
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_predecessors;  ///< Vector of in-edges
@@ -534,6 +535,7 @@ protected:
 
     /* for traversal */
     bool m_traversedMarker = false; ///< traversal marker
+    TravType m_traversed = TravType::Untraversed; ///< traversal flag for the numerous DFS's
 
     /* Liveness */
     LocationSet m_liveIn;                  ///< Set of locations live at BB start
@@ -554,8 +556,6 @@ protected:
     int m_numForwardInEdges = 0;             ///< inedges to this node that aren't back edges
     int m_loopStamps[2] = { 0 };
     int m_revLoopStamps[2] = { 0 }; ///< used for structuring analysis
-    TravType m_traversed = TravType::Untraversed; ///< traversal flag for the numerous DFS's
-    QString m_labelStr;                      ///< the high level label for this node (if needed)
 
     /* high level structuring */
     SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
