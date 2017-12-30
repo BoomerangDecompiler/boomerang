@@ -2433,11 +2433,14 @@ bool UserProc::propagateStatements(bool& convert, int pass)
     LOG_VERBOSE("--- Begin propagating statements pass %1 ---", pass);
     StatementList stmts;
     getStatements(stmts);
+
     // propagate any statements that can be
     StatementList::iterator it;
+
     // Find the locations that are used by a live, dominating phi-function
     LocationSet usedByDomPhi;
     findLiveAtDomPhi(usedByDomPhi);
+
     // Next pass: count the number of times each assignment LHS would be propagated somewhere
     std::map<SharedExp, int, lessExpStar> destCounts;
 
@@ -2895,7 +2898,7 @@ void UserProc::fromSSAForm()
                 firstTypes[base] = fte;
             }
             else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
-                if (DEBUG_LIVENESS) {
+                if (SETTING(debugLiveness)) {
                     LOG_MSG("Def of %1 at %2 type %3 is not compatible with first type %4.",
                             base, s->getNumber(), ty, ff->second.first);
                 }
@@ -2918,7 +2921,7 @@ void UserProc::fromSSAForm()
     // FIXME: are these going to be trivially predictable?
     findPhiUnites(pu);
 
-    if (DEBUG_LIVENESS) {
+    if (SETTING(debugLiveness)) {
         LOG_MSG("## ig interference graph:");
 
         for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ii++) {
@@ -2970,7 +2973,7 @@ void UserProc::fromSSAForm()
         SharedType ty    = rename->getDef()->getTypeFor(rename->getSubExp1());
         SharedExp  local = createLocal(ty, rename);
 
-        if (DEBUG_LIVENESS) {
+        if (SETTING(debugLiveness)) {
             LOG_MSG("Renaming %1 to %2", rename, local);
         }
 
@@ -3105,7 +3108,7 @@ void UserProc::fromSSAForm()
         if (phiParamsSame && first) {
             // Is the left of the phi assignment the same base variable as all the operands?
             if (*pa->getLeft() == *first) {
-                if (DEBUG_LIVENESS || DEBUG_UNUSED) {
+                if (SETTING(debugLiveness) || DEBUG_UNUSED) {
                     LOG_MSG("Removing phi: left and all refs same or 0: %1", s);
                 }
 
@@ -3127,7 +3130,7 @@ void UserProc::fromSSAForm()
             // Exp* tempLoc = newLocal(pa->getType());
             SharedExp tempLoc = getSymbolExp(RefExp::get(pa->getLeft(), pa), pa->getType());
 
-            if (DEBUG_LIVENESS) {
+            if (SETTING(debugLiveness)) {
                 LOG_MSG("Phi statement %1 requires local, using %2", s, tempLoc);
             }
 
@@ -5206,6 +5209,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
 
     std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
     m_df.findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
+
     // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
     std::map<SharedExp, PhiAssign *, lessExpStar>::iterator it;
 
@@ -5231,8 +5235,6 @@ void UserProc::setDominanceNumbers()
 
     m_df.setDominanceNums(0, currNum);
 }
-
-
 #endif
 
 

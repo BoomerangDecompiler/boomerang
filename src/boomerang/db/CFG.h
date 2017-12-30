@@ -12,6 +12,7 @@
 
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/db/LivenessAnalyzer.h"
 
 #include <list>
 #include <vector>
@@ -496,4 +497,6 @@ private:
     BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.
     BasicBlock *m_exitBB;                    ///< The CFG exit BasicBlock.
     ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
+
+    LivenessAnalyzer m_livenessAna;
 };

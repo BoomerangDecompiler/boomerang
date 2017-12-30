@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Register.h"
+#include "boomerang/db/LivenessAnalyzer.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -24,7 +25,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/util/Util.h"
-
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -1516,13 +1516,13 @@ void Cfg::findInterferences(ConnectionGraph& cg)
         workList.erase(--workList.end());
         workSet.erase(currBB);
         // Calculate live locations and interferences
-        bool change = currBB->calcLiveness(cg, m_myProc);
+        bool change = m_livenessAna.calcLiveness(currBB, cg, m_myProc);
 
         if (!change) {
             continue;
         }
 
-        if (DEBUG_LIVENESS) {
+        if (SETTING(debugLiveness)) {
             Statement *last = nullptr;
 
             if (!currBB->m_listOfRTLs->empty()) {

@@ -812,9 +812,8 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     BasicBlock::rtlit       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
-    Statement               *S;
 
-    for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+    for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign           *pa = (PhiAssign *)S;

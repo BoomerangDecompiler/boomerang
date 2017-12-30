@@ -313,14 +313,6 @@ public:
     void simplify();
 
 public:
-    // Liveness
-    bool calcLiveness(ConnectionGraph& ig, UserProc *proc);
-
-    /// Locations that are live at the end of this BB are the union of the locations that are live at the start of its
-    /// successors
-    /// liveout gets all the livenesses, and phiLocs gets a subset of these, which are due to phi statements at the top of
-    /// successors
-    void getLiveOut(LocationSet& live, LocationSet& phiLocs);
 
     /// Find indirect jumps and calls
     /// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
@@ -437,8 +429,6 @@ private:
     bool isAncestorOf(const BasicBlock *other) const;
     bool inLoop(BasicBlock *header, BasicBlock *latch);
 
-    void addLiveIn(SharedExp e) { m_liveIn.insert(e); }
-
 private:
     /**
      * Update the RTL list of this basic block. Takes ownership of the pointer.
@@ -469,9 +459,6 @@ protected:
 
     /* for traversal */
     TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
-
-    /* Liveness */
-    LocationSet m_liveIn;                  ///< Set of locations live at BB start
 
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
     int m_ord = -1;                          ///< node's position within the ordering structure
