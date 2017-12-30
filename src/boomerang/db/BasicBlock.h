@@ -33,7 +33,6 @@ struct SwitchInfo;
 enum class TravType
 {
     Untraversed, ///< Initial value
-    DFS_Tag,     ///< Remove redundant nodes pass
     DFS_LNum,    ///< DFS loop stamping pass
     DFS_RNum,    ///< DFS reverse loop stamping pass
     DFS_Case,    ///< DFS case head tagging traversal

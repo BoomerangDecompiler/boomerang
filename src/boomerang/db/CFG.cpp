@@ -895,11 +895,6 @@ void Cfg::printToLog()
 
 void Cfg::setTimeStamps()
 {
-    // set DFS tag
-    for (BasicBlock *it : m_listBB) {
-        it->m_travType = TravType::DFS_Tag;
-    }
-
     // set the parenthesis for the nodes as well as setting the post-order ordering between the nodes
     int time = 1;
     m_ordering.clear();
