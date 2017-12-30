@@ -281,24 +281,6 @@ const RTLList *BasicBlock::getRTLs() const
 }
 
 
-RTL *BasicBlock::getRTLWithStatement(Statement *stmt)
-{
-    if (m_listOfRTLs == nullptr) {
-        return nullptr;
-    }
-
-    for (RTL *rtl : *m_listOfRTLs) {
-        for (Statement *it1 : *rtl) {
-            if (it1 == stmt) {
-                return rtl;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-
 const std::vector<BasicBlock *>& BasicBlock::getPredecessors() const
 {
     return m_predecessors;

@@ -240,8 +240,6 @@ public:
     RTLList *getRTLs();
     const RTLList *getRTLs() const;
 
-    RTL *getRTLWithStatement(Statement *stmt);
-
     /// \returns the address of the call, if this is a call BB.
     /// For all other BB types, returns Address::INVALID.
     Address getCallDest();
