@@ -160,7 +160,7 @@ public:
     /// \returns the type pf the BasicBlock
     inline BBType getType()         const { return m_bbType; }
     inline bool isType(BBType type) const { return m_bbType == type; }
-    void setType(BBType bbType);
+    inline void setType(BBType bbType)    { m_bbType = bbType; }
 
     /// \returns enclosing function, nullptr if the BB does not belong to a function.
     inline const Function *getFunction() const { return m_function; }
@@ -185,8 +185,8 @@ public:
 
     // predecessor / successor functions
 
-    int getNumPredecessors() const { return m_predecessors.size(); }
-    int getNumSuccessors()   const { return m_successors.size(); }
+    inline int getNumPredecessors() const { return m_predecessors.size(); }
+    inline int getNumSuccessors()   const { return m_successors.size(); }
 
     /// \returns all predecessors of this BB.
     const std::vector<BasicBlock *>& getPredecessors() const;
@@ -232,11 +232,43 @@ public:
     /// establish if this bb has a back edge to the given destination
     bool hasBackEdgeTo(const BasicBlock *dest) const;
 
-    bool isCaseOption();
-
+    // RTL and statement related
+public:
     /// \returns all RTLs that are part of this BB.
     RTLList *getRTLs();
     const RTLList *getRTLs() const;
+
+    /**
+     * Get first/next statement this BB
+     * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
+     * code
+     */
+    Statement *getFirstStmt(rtlit& rit, StatementList::iterator& sit);
+    Statement *getNextStmt(rtlit& rit, StatementList::iterator& sit);
+    Statement *getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+    Statement *getFirstStmt();
+    Statement *getLastStmt();
+    Statement *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+
+    inline RTL *getLastRTL() { return m_listOfRTLs->back(); }
+
+    void removeRTL(RTL *rtl)
+    {
+        m_listOfRTLs->remove(rtl);
+
+        updateBBAddress();
+    }
+
+    void getStatements(StatementList& stmts) const;
+
+    /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
+    /// \a proc is the enclosing Proc
+    void prependStmt(Statement *s, UserProc *proc);
+
+
+
+    bool isCaseOption();
+
 
     /// \returns the address of the call, if this is a call BB.
     /// For all other BB types, returns Address::INVALID.
@@ -280,33 +312,7 @@ public:
     /// Simplify all expressions in this BB
     void simplify();
 
-    /**
-     * Get first/next statement this BB
-     * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
-     * code
-     */
-    Statement *getFirstStmt(rtlit& rit, StatementList::iterator& sit);
-    Statement *getNextStmt(rtlit& rit, StatementList::iterator& sit);
-    Statement *getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
-    Statement *getFirstStmt();
-    Statement *getLastStmt();
-    Statement *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
-
-    RTL *getLastRTL() { return m_listOfRTLs->back(); }
-    void getStatements(StatementList& stmts) const;
-
-    void removeRTL(RTL *rtl)
-    {
-        m_listOfRTLs->remove(rtl);
-
-        updateBBAddress();
-    }
-
 public:
-    /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
-    /// \a proc is the enclosing Proc
-    void prependStmt(Statement *s, UserProc *proc);
-
     // Liveness
     bool calcLiveness(ConnectionGraph& ig, UserProc *proc);
 
@@ -399,7 +405,7 @@ public:
     /// Print this BB to stderr
     void dump();
 
-protected:
+private:
     void setLoopStamps(int& time, std::vector<BasicBlock *>& order);
     void setRevLoopStamps(int& time);
     void setRevOrder(std::vector<BasicBlock *>& order);

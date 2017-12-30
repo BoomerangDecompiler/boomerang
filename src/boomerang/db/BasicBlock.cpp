@@ -139,12 +139,6 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 }
 
 
-void BasicBlock::setType(BBType bbType)
-{
-    m_bbType = bbType;
-}
-
-
 const char *BasicBlock::prints()
 {
     QString     tgt;
@@ -909,6 +903,7 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
             rtl->append(s);
+            updateBBAddress();
             return;
         }
     }
@@ -917,6 +912,8 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
     std::list<Statement *> listStmt = { s };
     RTL *rtl = new RTL(Address::ZERO, &listStmt);
     m_listOfRTLs->push_front(rtl);
+
+    updateBBAddress();
 }
 
 
@@ -966,6 +963,7 @@ bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
     // Do the livensses that result from phi statements at successors first.
     // FIXME: document why this is necessary
     checkForOverlap(liveLocs, phiLocs, ig, myProc);
+
     // For each RTL in this BB
     std::list<RTL *>::reverse_iterator rit;
 
