@@ -1751,7 +1751,9 @@ bool Cfg::decodeIndirectJmp(UserProc *proc)
 void Cfg::undoComputedBB(Statement *stmt)
 {
     for (BasicBlock *bb : m_listBB) {
-        if (bb->undoComputedBB(stmt)) {
+        if (bb->hasStatement(stmt)) {
+            LOG_MSG("undoComputedBB for statement %1", stmt);
+            bb->setType(BBType::Call);
             break;
         }
     }

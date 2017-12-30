@@ -1618,9 +1618,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 
 void BasicBlock::processSwitch(UserProc *proc)
 {
-    RTL           *last(m_listOfRTLs->back());
-    CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
-    SwitchInfo   *si(lastStmt->getSwitchInfo());
+    RTL *lastRTL = m_listOfRTLs->back();
+    SwitchInfo *si = ((CaseStatement *)lastRTL->getHlStmt())->getSwitchInfo();
 
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
@@ -1628,15 +1627,15 @@ void BasicBlock::processSwitch(UserProc *proc)
     }
 
     Address switchDestination;
-    int     iNumOut, iNum;
-    iNumOut = si->iUpper - si->iLower + 1;
-    iNum    = iNumOut;
+    int iNumOut = si->iUpper - si->iLower + 1;
+    int iNum    = iNumOut;
 
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
     setType(BBType::Nway);
 
-    Prog *prog(proc->getProg());
-    Cfg  *cfg(proc->getCFG());
+    Prog *prog = proc->getProg();
+    Cfg  *cfg = proc->getCFG();
+
     // Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
     // switch (x) {
     //   case 3: case 5:
@@ -1717,22 +1716,6 @@ void BasicBlock::processSwitch(UserProc *proc)
 }
 
 
-bool BasicBlock::undoComputedBB(Statement *stmt)
-{
-    RTL *last = m_listOfRTLs->back();
-
-    for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
-        if (*rr == stmt) {
-            setType(BBType::Call);
-            LOG_MSG("undoComputedBB for statement %1", stmt);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
 bool BasicBlock::searchAll(const Exp& search_for, std::list<SharedExp>& results)
 {
     bool ch = false;
@@ -1796,4 +1779,22 @@ void BasicBlock::updateBBAddress()
 
     assert(m_listOfRTLs != nullptr);
     m_highAddr = m_listOfRTLs->back()->getAddress();
+}
+
+
+bool BasicBlock::hasStatement(const Statement *stmt) const
+{
+    if (!m_listOfRTLs) {
+        return false;
+    }
+
+    for (const RTL *rtl : *m_listOfRTLs) {
+        for (const Statement *s : *rtl) {
+            if (s == stmt) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }

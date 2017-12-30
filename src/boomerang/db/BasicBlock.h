@@ -265,6 +265,7 @@ public:
     /// \a proc is the enclosing Proc
     void prependStmt(Statement *s, UserProc *proc);
 
+    bool hasStatement(const Statement *stmt) const;
 
 
     bool isCaseOption();
@@ -313,7 +314,6 @@ public:
     void simplify();
 
 public:
-
     /// Find indirect jumps and calls
     /// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
     bool decodeIndirectJmp(UserProc *proc);
@@ -338,9 +338,6 @@ public:
      * code pointers.
      */
     int findNumCases();
-
-    /// Change the BB enclosing stmt to be CALL, not COMPCALL
-    bool undoComputedBB(Statement *stmt);
 
     /**
      * Searches for all instances of "search" and adds them to "result"
