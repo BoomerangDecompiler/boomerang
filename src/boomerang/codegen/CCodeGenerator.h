@@ -15,6 +15,7 @@
 
 #include <string>
 #include <sstream>
+#include <unordered_set>
 
 class BasicBlock;
 class Exp;
@@ -273,7 +274,8 @@ private:
     void writeBB(const BasicBlock *bb);
 
     /// \returns true if all predecessors of this BB have had their code generated.
-    bool allParentsGenerated(const BasicBlock *bb);
+    bool isAllParentsGenerated(const BasicBlock *bb) const;
+    bool isGenerated(const BasicBlock *bb) const;
 
 private:
     /// Dump all generated code to \p os.
@@ -292,4 +294,5 @@ private:
     std::set<int> m_usedLabels;             ///< All used goto labels.
     QStringList m_lines;                    ///< The generated code.
     UserProc *m_proc = nullptr;
+    std::unordered_set<const BasicBlock *> m_generatedBBs;
 };

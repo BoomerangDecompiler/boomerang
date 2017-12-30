@@ -38,7 +38,6 @@ enum class TravType
     DFS_RNum,    ///< DFS reverse loop stamping pass
     DFS_Case,    ///< DFS case head tagging traversal
     DFS_PDom,    ///< DFS post dominator ordering
-    DFS_Codegen  ///< Code generating pass
 };
 
 

@@ -2246,7 +2246,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
     BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
 
     if (Util::isIn(gotoSet, bb) && !bb->isLatchNode() &&
-        ((latch && latch->getLoopHead() && (bb == latch->getLoopHead()->getLoopFollow())) || !allParentsGenerated(bb))) {
+        ((latch && latch->getLoopHead() && (bb == latch->getLoopHead()->getLoopFollow())) || !isAllParentsGenerated(bb))) {
         emitGotoAndLabel(bb, bb);
         return;
     }
@@ -2258,8 +2258,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         return;
     }
 
-    // Has this node already been generated?
-    if (bb->getTravType() == TravType::DFS_Codegen) {
+    if (isGenerated(bb)) {
         // this should only occur for a loop over a single block
         // FIXME: is this true? Perl_list (0x8068028) in the SPEC 2000 perlbmk seems to have a case with sType = Cond,
         // lType == PreTested, and latchNod == 0
@@ -2267,7 +2266,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         return;
     }
     else {
-        bb->setTravType(TravType::DFS_Codegen);
+        m_generatedBBs.insert(bb);
     }
 
     //
@@ -2413,7 +2412,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
                 // emit a goto statement if the first clause has already been
                 // generated or it is the follow of this node's enclosing loop
-                if ((succ->getTravType() == TravType::DFS_Codegen) || (bb->getLoopHead() && (succ == bb->getLoopHead()->getLoopFollow()))) {
+                if (isGenerated(succ) || (bb->getLoopHead() && (succ == bb->getLoopHead()->getLoopFollow()))) {
                     emitGotoAndLabel(bb, succ);
                 }
                 else {
@@ -2429,7 +2428,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
                     // emit a goto statement if the second clause has already
                     // been generated
-                    if (succ->getTravType() == TravType::DFS_Codegen) {
+                    if (isGenerated(succ)) {
                         emitGotoAndLabel(bb, succ);
                     }
                     else {
@@ -2466,7 +2465,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                     BasicBlock *succ = bb->getSuccessor(i);
 
                     // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
-                    if (succ->getTravType() == TravType::DFS_Codegen) {
+                    if (isGenerated(succ)) {
                         emitGotoAndLabel(bb, succ);
                     }
                     else {
@@ -2496,7 +2495,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                     tmpCondFollow = bb->getCondFollow();
                 }
 
-                if (tmpCondFollow->getTravType() == TravType::DFS_Codegen) {
+                if (isGenerated(tmpCondFollow)) {
                     emitGotoAndLabel(bb, tmpCondFollow);
                 }
                 else {
@@ -2556,7 +2555,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             if (cond) {
                 addIfCondHeader(bb->getCond());
 
-                if (other->getTravType() == TravType::DFS_Codegen) {
+                if (isGenerated(other)) {
                     emitGotoAndLabel(bb, other);
                 }
                 else {
@@ -2573,8 +2572,8 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         // generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
         // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
         // the same loop is when it is only reached from this node
-        if ((child->getTravType() == TravType::DFS_Codegen) ||
-            ((child->getLoopHead() != bb->getLoopHead()) && (!allParentsGenerated(child) ||
+        if (isGenerated(child) ||
+            ((child->getLoopHead() != bb->getLoopHead()) && (!isAllParentsGenerated(child) ||
                                                              Util::isIn(followSet, child))) ||
             (latch && latch->getLoopHead() && (latch->getLoopHead()->getLoopFollow() == child)) ||
             !((bb->getCaseHead() == child->getCaseHead()) || (bb->getCaseHead() && (child == bb->getCaseHead()->getCondFollow())))) {
@@ -2629,8 +2628,8 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
         generateCode(loopBody, bb->getLatchNode(), followSet, gotoSet, proc);
 
         // if code has not been generated for the latch node, generate it now
-        if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
-            bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
+        if (!isGenerated(bb->getLatchNode())) {
+            m_generatedBBs.insert(bb->getLatchNode());
             writeBB(bb->getLatchNode());
         }
 
@@ -2667,8 +2666,8 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
 
         if (bb->getLoopType() == LoopType::PostTested) {
             // if code has not been generated for the latch node, generate it now
-            if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
-                bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
+            if (!isGenerated(bb->getLatchNode())) {
+                m_generatedBBs.insert(bb->getLatchNode());
                 writeBB(bb->getLatchNode());
             }
 
@@ -2681,8 +2680,8 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
             assert(bb->getLoopType() == LoopType::Endless);
 
             // if code has not been generated for the latch node, generate it now
-            if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
-                bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
+            if (!isGenerated(bb->getLatchNode())) {
+                m_generatedBBs.insert(bb->getLatchNode());
                 writeBB(bb->getLatchNode());
             }
 
@@ -2696,7 +2695,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
         // remove the follow from the follow set
         followSet.pop_back();
 
-        if (bb->getLoopFollow()->getTravType() != TravType::DFS_Codegen) {
+        if (!isGenerated(bb->getLoopFollow())) {
             generateCode(bb->getLoopFollow(), latch, followSet, gotoSet, proc);
         }
         else {
@@ -2767,13 +2766,19 @@ void CCodeGenerator::appendLine(const QString& s)
 }
 
 
-bool CCodeGenerator::allParentsGenerated(const BasicBlock* bb)
+bool CCodeGenerator::isAllParentsGenerated(const BasicBlock* bb) const
 {
     for (BasicBlock *pred : bb->getPredecessors()) {
-        if (!pred->hasBackEdgeTo(bb) && (pred->getTravType() != TravType::DFS_Codegen)) {
+        if (!pred->hasBackEdgeTo(bb) && !isGenerated(pred)) {
             return false;
         }
     }
 
     return true;
 }
+
+bool CCodeGenerator::isGenerated(const BasicBlock* bb) const
+{
+    return m_generatedBBs.find(bb) != m_generatedBBs.end();
+}
+
