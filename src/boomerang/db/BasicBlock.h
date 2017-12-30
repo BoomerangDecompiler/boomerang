@@ -253,15 +253,6 @@ public:
     /// Get the destination proc
     Function *getDestProc();
 
-
-    class LastStatementNotABranchError : public std::exception
-    {
-    public:
-        Statement *stmt;
-        LastStatementNotABranchError(Statement *_stmt)
-            : stmt(_stmt) {}
-    };
-
     /*
      * Structuring and code generation.
      *
@@ -270,14 +261,22 @@ public:
      *
      * Adapted for Boomerang by Trent Waddington, 20 June 2002.
      */
-    /// Get the condition
-    SharedExp getCond() noexcept (false);
 
-    /// set the condition
-    void setCond(SharedExp e) noexcept (false);
+    /**
+     * Get the condition of a conditional branch.
+     * If the BB does not have a conditional branch statement,
+     * this function returns nullptr.
+     */
+    SharedExp getCond() const;
+
+    /**
+     * Set the condition of a conditional branch BB.
+     * If the BB is not a branch, nothing happens.
+     */
+    void setCond(SharedExp e);
 
     /// Get the destination, if any
-    SharedExp getDest();
+    SharedExp getDest() const;
 
     /// Get the loop body
     BasicBlock *getLoopBody();

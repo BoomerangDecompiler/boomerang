@@ -2551,7 +2551,9 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                 LOG_MSG("Taken branch is first out edge");
             }
 
-            try {
+            SharedExp cond = bb->getCond();
+
+            if (cond) {
                 addIfCondHeader(bb->getCond());
 
                 if (other->getTravType() == TravType::DFS_Codegen) {
@@ -2563,7 +2565,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
                 addIfCondEnd();
             }
-            catch (BasicBlock::LastStatementNotABranchError&) {
+            else {
                 LOG_ERROR("Last statement is not a cond, don't know what to do with this.");
             }
         }

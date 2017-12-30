@@ -545,27 +545,30 @@ void BasicBlock::getStatements(StatementList& stmts) const
 }
 
 
-SharedExp BasicBlock::getCond()
+SharedExp BasicBlock::getCond() const
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
+
     // it should contain a BranchStatement
     BranchStatement *bs = dynamic_cast<BranchStatement *>(last->getHlStmt());
 
-    if (bs && (bs->getKind() == StmtType::Branch)) {
+    if (bs) {
+        assert(bs->getKind() == StmtType::Branch);
         return bs->getCondExpr();
     }
 
-    throw LastStatementNotABranchError(last->getHlStmt());
+    return nullptr;
 }
 
 
-SharedExp BasicBlock::getDest()
+SharedExp BasicBlock::getDest() const
 {
     // The destianation will be in the last rtl
     assert(m_listOfRTLs);
     RTL *lastRtl = m_listOfRTLs->back();
+
     // It should contain a GotoStatement or derived class
     Statement     *lastStmt = lastRtl->getHlStmt();
     CaseStatement *cs       = dynamic_cast<CaseStatement *>(lastStmt);
@@ -591,28 +594,30 @@ SharedExp BasicBlock::getDest()
 }
 
 
-void BasicBlock::setCond(SharedExp e) noexcept (false)
+void BasicBlock::setCond(SharedExp e)
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
-    // it should contain a BranchStatement
     assert(!last->empty());
 
+    // it should contain a BranchStatement
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == StmtType::Branch) {
-            ((BranchStatement *)(*it))->setCondExpr(e);
+            assert(dynamic_cast<BranchStatement *>(*it) != nullptr);
+            static_cast<BranchStatement *>(*it)->setCondExpr(e);
             return;
         }
     }
-
-    throw LastStatementNotABranchError(nullptr);
 }
 
 
 BasicBlock *BasicBlock::getLoopBody()
 {
-    assert(m_structType == SBBType::PreTestLoop || m_structType == SBBType::PostTestLoop || m_structType == SBBType::EndlessLoop);
+    assert(m_structType == SBBType::PreTestLoop
+        || m_structType == SBBType::PostTestLoop
+        || m_structType == SBBType::EndlessLoop);
+
     assert(m_successors.size() == 2);
 
     if (m_successors[0] != m_loopFollow) {
