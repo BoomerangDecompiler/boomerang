@@ -272,6 +272,9 @@ private:
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
     void writeBB(const BasicBlock *bb);
 
+    /// \returns true if all predecessors of this BB have had their code generated.
+    bool allParentsGenerated(const BasicBlock *bb);
+
 private:
     /// Dump all generated code to \p os.
     void print(QTextStream& os);

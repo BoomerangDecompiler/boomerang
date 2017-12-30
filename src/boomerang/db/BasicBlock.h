@@ -191,10 +191,10 @@ public:
     int getNumSuccessors()   const { return m_successors.size(); }
 
     /// \returns all predecessors of this BB.
-    std::vector<BasicBlock *>& getPredecessors();
+    const std::vector<BasicBlock *>& getPredecessors() const;
 
     /// \returns all successors of this BB.
-    const std::vector<BasicBlock *>& getSuccessors();
+    const std::vector<BasicBlock *>& getSuccessors() const;
 
     /// \returns the \p i-th predecessor of this BB.
     /// Returns nullptr if \p i is out of range.
@@ -232,7 +232,7 @@ public:
     void removeAllPredecessors() { m_predecessors.clear(); }
 
     /// establish if this bb has a back edge to the given destination
-    bool hasBackEdgeTo(BasicBlock *dest);
+    bool hasBackEdgeTo(const BasicBlock *dest) const;
 
     bool isCaseOption();
 
@@ -387,10 +387,6 @@ public:
 
     int getOrdering() const { return m_ord; }
 
-    /// Return true if every parent (i.e. forward in edge source) of this node has
-    /// had its code generated
-    bool allParentsGenerated();
-
 public:
     /**
      * Print the whole BB to the given stream
@@ -437,7 +433,7 @@ protected:
     }
 
     /// establish if this bb is an ancestor of another BB
-    bool isAncestorOf(BasicBlock *other);
+    bool isAncestorOf(const BasicBlock *other) const;
     bool inLoop(BasicBlock *header, BasicBlock *latch);
 
     void addLiveIn(SharedExp e) { m_liveIn.insert(e); }

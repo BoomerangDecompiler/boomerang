@@ -1195,11 +1195,7 @@ void Cfg::structLoops()
         //    vi) has a lower ordering than all other suitable candiates
         // If no nodes meet the above criteria, then the current node is not a loop header
 
-        std::vector<BasicBlock *>& iEdges = curNode->getPredecessors();
-
-        for (auto& iEdge : iEdges) {
-            BasicBlock *pred = iEdge;
-
+        for (auto& pred : curNode->getPredecessors()) {
             if ((pred->getCaseHead() == curNode->getCaseHead()) &&                         // ii)
                 (pred->getLoopHead() == curNode->getLoopHead()) &&                         // iii)
                 (!latch || (latch->m_ord > pred->m_ord)) &&                                // vi)

@@ -299,13 +299,13 @@ RTL *BasicBlock::getRTLWithStatement(Statement *stmt)
 }
 
 
-std::vector<BasicBlock *>& BasicBlock::getPredecessors()
+const std::vector<BasicBlock *>& BasicBlock::getPredecessors() const
 {
     return m_predecessors;
 }
 
 
-const std::vector<BasicBlock *>& BasicBlock::getSuccessors()
+const std::vector<BasicBlock *>& BasicBlock::getSuccessors() const
 {
     return m_successors;
 }
@@ -377,9 +377,10 @@ Function *BasicBlock::getCallDestProc()
 
     RTL *lastRtl = m_listOfRTLs->back();
 
+    // search backwards for a CallStatement
     for (auto it = lastRtl->rbegin(); it != lastRtl->rend(); it++) {
         if ((*it)->getKind() == StmtType::Call) {
-            return ((CallStatement *)(*it))->getDestProc();
+            return static_cast<CallStatement *>(*it)->getDestProc();
         }
     }
 
@@ -622,7 +623,7 @@ BasicBlock *BasicBlock::getLoopBody()
 }
 
 
-bool BasicBlock::isAncestorOf(BasicBlock *other)
+bool BasicBlock::isAncestorOf(const BasicBlock *other) const
 {
     return ((m_loopStamps[0]   < other->m_loopStamps[0]    && m_loopStamps[1] > other->m_loopStamps[1]) ||
            (m_revLoopStamps[0] < other->m_revLoopStamps[0] && m_revLoopStamps[1] > other->m_revLoopStamps[1]));
@@ -713,21 +714,9 @@ void BasicBlock::simplify()
 }
 
 
-bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
+bool BasicBlock::hasBackEdgeTo(const BasicBlock *dest) const
 {
     return dest == this || dest->isAncestorOf(this);
-}
-
-
-bool BasicBlock::allParentsGenerated()
-{
-    for (BasicBlock *pred : m_predecessors) {
-        if (!pred->hasBackEdgeTo(this) && (pred->m_travType != TravType::DFS_Codegen)) {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 

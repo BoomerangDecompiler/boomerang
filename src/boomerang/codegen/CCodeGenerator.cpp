@@ -2246,7 +2246,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
     BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
 
     if (Util::isIn(gotoSet, bb) && !bb->isLatchNode() &&
-        ((latch && latch->getLoopHead() && (bb == latch->getLoopHead()->getLoopFollow())) || !bb->allParentsGenerated())) {
+        ((latch && latch->getLoopHead() && (bb == latch->getLoopHead()->getLoopFollow())) || !allParentsGenerated(bb))) {
         emitGotoAndLabel(bb, bb);
         return;
     }
@@ -2572,7 +2572,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
         // the same loop is when it is only reached from this node
         if ((child->getTravType() == TravType::DFS_Codegen) ||
-            ((child->getLoopHead() != bb->getLoopHead()) && (!child->allParentsGenerated() ||
+            ((child->getLoopHead() != bb->getLoopHead()) && (!allParentsGenerated(child) ||
                                                              Util::isIn(followSet, child))) ||
             (latch && latch->getLoopHead() && (latch->getLoopHead()->getLoopFollow() == child)) ||
             !((bb->getCaseHead() == child->getCaseHead()) || (bb->getCaseHead() && (child == bb->getCaseHead()->getCondFollow())))) {
@@ -2762,4 +2762,16 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
 void CCodeGenerator::appendLine(const QString& s)
 {
     m_lines.push_back(s);
+}
+
+
+bool CCodeGenerator::allParentsGenerated(const BasicBlock* bb)
+{
+    for (BasicBlock *pred : bb->getPredecessors()) {
+        if (!pred->hasBackEdgeTo(bb) && (pred->getTravType() != TravType::DFS_Codegen)) {
+            return false;
+        }
+    }
+
+    return true;
 }
