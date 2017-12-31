@@ -15,6 +15,7 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Register.h"
@@ -97,7 +98,7 @@ void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& 
 
     if (dest < hiAddress) {
         tq.visit(cfg, dest, newBB);
-        cfg->addOutEdge(newBB, dest, true);
+        cfg->addEdge(newBB, dest, true);
     }
     else {
         LOG_ERROR("Branch to address %1 is beyond section limits", dest);
@@ -124,7 +125,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
     // Add the out edge if required
     if (offset != 0) {
-        cfg->addOutEdge(callBB, address + offset);
+        cfg->addEdge(callBB, address + offset);
     }
 }
 
@@ -209,7 +210,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
             handleCall(proc, call_stmt->getFixedDest(), callBB, cfg, address);
 
             // Now add the out edge
-            cfg->addOutEdge(callBB, returnBB);
+            cfg->addEdge(callBB, returnBB);
             // Put a label on the return BB; indicate that a jump is reqd
             cfg->setLabelRequired(returnBB);
 
@@ -247,7 +248,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
             if (!inst.forceOutEdge.isZero()) {
                 // There is no need to force a goto to the new out-edge, since we will continue decoding from there.
                 // If other edges exist to the outedge, they will generate the required label
-                cfg->addOutEdge(callBB, inst.forceOutEdge);
+                cfg->addEdge(callBB, inst.forceOutEdge);
                 address = inst.forceOutEdge;
             }
             else {
@@ -352,7 +353,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
             if (pDest == nullptr) { // Happens if already analysed (we are now redecoding)
                 // SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
                 // processSwitch will update the BB type and number of outedges, decode arms, set out edges, etc
-                newBB->processSwitch(proc);
+                IndirectJumpAnalyzer().processSwitch(newBB, proc);
             }
 
             break;
@@ -376,7 +377,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
         BasicBlock    *returnBB  = optimise_CallReturn(call_stmt, inst.rtl, delay_inst.rtl, proc);
 
         if (returnBB != nullptr) {
-            cfg->addOutEdge(newBB, returnBB);
+            cfg->addEdge(newBB, returnBB);
 
             // We have to set the epilogue for the enclosing procedure (all proc's must have an
             // epilogue) and remove the RESTORE in the delay slot that has just been pushed to the list of RTLs
@@ -395,7 +396,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
         }
         else {
             // Instead, add the standard out edge to original address+8 (now just address)
-            cfg->addOutEdge(newBB, address);
+            cfg->addEdge(newBB, address);
         }
 
         // Add this call to the list of calls to analyse. We won't be able to analyse its callee(s), of course.
@@ -432,7 +433,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
 
         handleBranch(uDest, hiAddress, pBB, cfg, tq);
         // Add the "false" leg
-        cfg->addOutEdge(pBB, address + 4);
+        cfg->addEdge(pBB, address + 4);
         address += 4; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
@@ -461,7 +462,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
 
         handleBranch(uDest, hiAddress, pBB, cfg, tq);
         // Add the "false" leg; skips the NCT
-        cfg->addOutEdge(pBB, address + 8);
+        cfg->addEdge(pBB, address + 8);
         // Skip the NCT/NOP instruction
         address += 8;
     }
@@ -477,7 +478,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
 
         handleBranch(uDest - 4, hiAddress, pBB, cfg, tq);
         // Add the "false" leg: point to the delay inst
-        cfg->addOutEdge(pBB, address + 4);
+        cfg->addEdge(pBB, address + 4);
         address += 4; // Skip branch but not delay
     }
     else {            // The CCs are affected, and we can't use the copy delay slot trick
@@ -510,11 +511,13 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         BasicBlock *pOrBB = cfg->createBB(std::move(pOrphan), BBType::Oneway);
 
         // Add an out edge from the orphan as well
-        cfg->addOutEdge(pOrBB, uDest, true);
+        cfg->addEdge(pOrBB, uDest, true);
+
         // Add an out edge from the current RTL to the orphan. Put a label at the orphan
-        cfg->addOutEdge(pBB, pOrBB, true);
+        cfg->addEdge(pBB, pOrBB, true);
+
         // Add the "false" leg to the NCT
-        cfg->addOutEdge(pBB, address + 4);
+        cfg->addEdge(pBB, address + 4);
         // Don't skip the delay instruction, so it will be decoded next.
         address += 4;
     }
@@ -572,15 +575,16 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
         BasicBlock *pOrBB = cfg->createBB(std::move(pOrphan), BBType::Oneway);
 
         // Add an out edge from the orphan as well. Set a label there.
-        cfg->addOutEdge(pOrBB, uDest, true);
+        cfg->addEdge(pOrBB, uDest, true);
+
         // Add an out edge from the current RTL to
         // the orphan. Set a label there.
-        cfg->addOutEdge(pBB, pOrBB, true);
+        cfg->addEdge(pBB, pOrBB, true);
     }
 
     // Both cases (orphan or not)
     // Add the "false" leg: point past delay inst. Set a label there (see below)
-    cfg->addOutEdge(pBB, address + 8, true);
+    cfg->addEdge(pBB, address + 8, true);
     // Could need a jump to the following BB, e.g. if uDest is the delay slot instruction itself! e.g. beq,a $+8
 
     address += 8;       // Skip branch and delay
@@ -1090,7 +1094,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                             Address uDest = stmt_jump->getFixedDest();
                             handleBranch(uDest, m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
                             // Add the "false" leg: point past the delay inst
-                            cfg->addOutEdge(pBB, uAddr + 8);
+                            cfg->addEdge(pBB, uAddr + 8);
                             uAddr  += 8;       // Skip branch and delay
                             BB_rtls = nullptr; // Start new BB
                             break;
@@ -1126,7 +1130,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                     assert(pBB);
                     BB_rtls = nullptr;// Need new list of RTLs
                     // Add an out edge to this address
-                    cfg->addOutEdge(pBB, uAddr);
+                    cfg->addEdge(pBB, uAddr);
                 }
 
                 // Pick a new address to decode from, if the BB is complete

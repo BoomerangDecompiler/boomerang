@@ -125,9 +125,6 @@ using SharedExp = std::shared_ptr<class Exp>;
  */
 class BasicBlock
 {
-    /// Objects of class Cfg can access the internals of a BasicBlock object.
-    friend class Cfg;
-
 public:
     typedef std::vector<BasicBlock *>::iterator   iEdgeIterator;
     typedef RTLList::iterator                     rtlit;
@@ -167,7 +164,7 @@ public:
     inline Function *getFunction()             { return m_function; }
 
     /**
-     * Get the lowest real address associated with this BB.
+     * \returns the lowest real address associated with this BB.
      * \note although this is usually the address of the first RTL, it is not
      * always so. For example, if the BB contains just a delayed branch,and the delay
      * instruction for the branch does not affect the branch, so the delay instruction
@@ -175,13 +172,19 @@ public:
      * UpdateAddress()'ed to 0, since it is "not really there", so the low address
      * for this BB will be the address of the branch.
      *
-     * \returns the lowest real address associated with this BB
+     * \sa updateBBAddress
      */
     Address getLowAddr() const;
 
-    /// Get the highest address associated with this BB.
-    /// This is always the address associated with the last RTL.
+    /**
+     * Get the highest address associated with this BB.
+     * This is always the address associated with the last RTL.
+     * \sa updateBBAddress
+     */
     Address getHiAddr() const;
+
+    /// \returns true if the instructions of this BB have not been decoded yet.
+    inline bool isIncomplete() const { return getHiAddr() == Address::INVALID; }
 
     // predecessor / successor functions
 
@@ -197,10 +200,12 @@ public:
     /// \returns the \p i-th predecessor of this BB.
     /// Returns nullptr if \p i is out of range.
     BasicBlock *getPredecessor(int i);
+    const BasicBlock *getPredecessor(int i) const;
 
     /// \returns the \p i-th successor of this BB.
     /// Returns nullptr if \p i is out of range.
     BasicBlock *getSuccessor(int i);
+    const BasicBlock *getSuccessor(int i) const;
 
     /// Change the \p i-th predecessor of this BB.
     /// \param i index (0-based)
@@ -239,6 +244,12 @@ public:
     const RTLList *getRTLs() const;
 
     /**
+     * Update the RTL list of this basic block. Takes ownership of the pointer.
+     * \param rtls a list of RTLs
+     */
+    void setRTLs(std::unique_ptr<RTLList> rtls);
+
+    /**
      * Get first/next statement this BB
      * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
      * code
@@ -250,7 +261,7 @@ public:
     Statement *getLastStmt();
     Statement *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
 
-    inline RTL *getLastRTL() { return m_listOfRTLs->back(); }
+    inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
 
     void removeRTL(RTL *rtl)
     {
@@ -313,32 +324,9 @@ public:
     /// Simplify all expressions in this BB
     void simplify();
 
+    void setLabelRequired(bool required);
+
 public:
-    /// Find indirect jumps and calls
-    /// Find any BBs of type COMPJUMP or COMPCALL. If found, analyse, and if possible decode extra code and return true
-    bool decodeIndirectJmp(UserProc *proc);
-
-    /**
-     * Called when a switch has been identified. Visits the destinations of the switch,
-     * adds out edges to the BB, etc.
-     * \note    Used to be called as soon as a switch statement is discovered, but this causes decoded but unanalysed
-     *          BBs (statements not numbered, locations not SSA renamed etc) to appear in the CFG. This caused problems
-     *          when there were nested switch statements. Now only called when re-decoding a switch statement
-     * \param   proc - Pointer to the UserProc object for this code
-     */
-    void processSwitch(UserProc *proc);
-
-    /**
-     * Find the number of cases for this switch statement. Assumes that there is a compare and branch around the indirect
-     * branch. Note: fails test/sparc/switchAnd_cc because of the and instruction, and the compare that is outside is not
-     * the compare for the upper bound. Note that you CAN have an and and still a test for an upper bound. So this needs
-     * tightening.
-     * TMN: It also needs to check for and handle the double indirect case; where there is one array (of e.g. ubyte)
-     * that is indexed by the actual switch value, then the value from that array is used as an index into the array of
-     * code pointers.
-     */
-    int findNumCases();
-
     /**
      * Searches for all instances of "search" and adds them to "result"
      * in reverse nesting order. The search is optionally type sensitive.
@@ -359,12 +347,13 @@ public:
      */
     bool searchAndReplace(const Exp& pattern, SharedExp replace);
 
-    bool isLatchNode() { return m_loopHead && m_loopHead->m_latchNode == this; }
-    BasicBlock *getLatchNode()  const { return m_latchNode; }
-    BasicBlock *getLoopHead()   const { return m_loopHead; }
-    BasicBlock *getLoopFollow() const { return m_loopFollow; }
-    BasicBlock *getCondFollow() const { return m_condFollow; }
-    BasicBlock *getCaseHead()   const { return m_caseHead; }
+    inline bool isLatchNode() { return m_loopHead && m_loopHead->getLatchNode() == this; }
+
+    inline BasicBlock *getLatchNode()  const { return m_latchNode; }
+    inline BasicBlock *getLoopHead()   const { return m_loopHead; }
+    inline BasicBlock *getLoopFollow() const { return m_loopFollow; }
+    inline BasicBlock *getCondFollow() const { return m_condFollow; }
+    inline BasicBlock *getCaseHead()   const { return m_caseHead; }
 
     TravType getTravType() const { return m_travType; }
     StructType getStructType() const { return m_structuringType; }
@@ -377,6 +366,8 @@ public:
 
     int getOrdering() const { return m_ord; }
 
+    /// Update the high and low address of this BB if the RTL list has changed.
+    void updateBBAddress();
 public:
     /**
      * Print the whole BB to the given stream
@@ -394,7 +385,7 @@ public:
     /// Print this BB to stderr
     void dump();
 
-private:
+public:
     void setLoopStamps(int& time, std::vector<BasicBlock *>& order);
     void setRevLoopStamps(int& time);
     void setRevOrder(std::vector<BasicBlock *>& order);
@@ -411,30 +402,18 @@ private:
     void setCondFollow(BasicBlock *other) { m_condFollow = other; }
 
     /// establish if this bb has any back edges leading FROM it
-    bool hasBackEdge()
-    {
-        for (auto bb : m_successors) {
-            if (hasBackEdgeTo(bb)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    bool hasBackEdge();
 
     /// establish if this bb is an ancestor of another BB
     bool isAncestorOf(const BasicBlock *other) const;
     bool inLoop(BasicBlock *header, BasicBlock *latch);
 
-private:
-    /**
-     * Update the RTL list of this basic block. Takes ownership of the pointer.
-     * \param rtls a list of RTLs
-     */
-    void setRTLs(std::unique_ptr<RTLList> rtls);
+    int getRevOrd() const { return m_revOrd; }
 
-    /// Update the high and low address of this BB if the RTL list has changed.
-    void updateBBAddress();
+    BasicBlock *getImmPDom() { return m_immPDom; }
+    const BasicBlock *getImmPDom() const { return m_immPDom; }
+
+    void setImmPDom(BasicBlock *bb) { m_immPDom = bb; }
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
@@ -448,7 +427,6 @@ protected:
 
     /* general basic block information */
     bool m_labelNeeded  = false; ///< If true, the start of the BB needs a label in the decompiled code
-    bool m_incomplete   = true;  ///< True if not yet complete
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_predecessors;  ///< Vector of in-edges

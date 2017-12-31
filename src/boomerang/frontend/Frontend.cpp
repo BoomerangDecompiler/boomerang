@@ -12,8 +12,8 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/c/ansi-c-parser.h"
-
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/Register.h"
@@ -777,7 +777,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // procedure
                             if (uDest < m_image->getLimitTextHigh()) {
                                 m_targetQueue.visit(cfg, uDest, pBB);
-                                cfg->addOutEdge(pBB, uDest, true);
+                                cfg->addEdge(pBB, uDest, true);
                             }
                             else {
                                 LOG_WARN("Goto instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
@@ -794,7 +794,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             BB_rtls->push_back(pRtl);
                             pBB = cfg->createBB(std::move(BB_rtls), BBType::Nway); // processSwitch will update num outedges
                             BB_rtls          = nullptr;              // New RTLList for next BB
-                            pBB->processSwitch(pProc);               // decode arms, set out edges, etc
+                            IndirectJumpAnalyzer().processSwitch(pBB, pProc); // decode arms, set out edges, etc
                             sequentialDecode = false;                // Don't decode after the jump
                             break;                                   // Just leave it alone
                         }
@@ -863,7 +863,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     LOG_MSG("  guessed uDest %1", destAddr);
 
                                     m_targetQueue.visit(cfg, destAddr, pBB);
-                                    cfg->addOutEdge(pBB, destAddr, true);
+                                    cfg->addEdge(pBB, destAddr, true);
                                 }
 
                                 pBB->setType(BBType::Nway);
@@ -891,15 +891,15 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // Add the out edge if it is to a destination within the section
                             if (jumpDest < m_image->getLimitTextHigh()) {
                                 m_targetQueue.visit(cfg, jumpDest, pBB);
-                                cfg->addOutEdge(pBB, jumpDest, true);
+                                cfg->addEdge(pBB, jumpDest, true);
                             }
                             else {
                                 LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, jumpDest);
-                                cfg->addOutEdge(pBB, Address::INVALID, false);
+                                cfg->addEdge(pBB, Address::INVALID, false);
                             }
 
                             // Add the fall-through outedge
-                            cfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                            cfg->addEdge(pBB, uAddr + inst.numBytes);
                         }
                     }
                     break;
@@ -984,7 +984,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 sequentialDecode = false;
                             }
                             else {
-                                cfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                                cfg->addEdge(pBB, uAddr + inst.numBytes);
                             }
 
                             // Add this call to the list of calls to analyse. We won't
@@ -1064,7 +1064,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     rtls = nullptr;
 
                                     // Add out edge from call to return
-                                    cfg->addOutEdge(pBB, returnBB);
+                                    cfg->addEdge(pBB, returnBB);
                                     // Put a label on the return BB (since it's an orphan); a jump will be reqd
                                     cfg->setLabelRequired(returnBB);
 
@@ -1076,7 +1076,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     // Add the fall through edge if the block didn't
                                     // already exist
                                     if (pBB != nullptr) {
-                                        cfg->addOutEdge(pBB, uAddr + inst.numBytes);
+                                        cfg->addEdge(pBB, uAddr + inst.numBytes);
                                     }
                                 }
                             }
@@ -1145,7 +1145,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                     // Add an out edge to this address
                     if (bb) {
-                        cfg->addOutEdge(bb, uAddr);
+                        cfg->addEdge(bb, uAddr);
                     }
                 }
 
@@ -1243,7 +1243,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::unique_ptr<RTLLis
             BB_rtls = nullptr;
 
             // if BB already exists but is incomplete, exception is thrown
-            pCfg->addOutEdge(pBB, retAddr, true);
+            pCfg->addEdge(pBB, retAddr, true);
 
             // Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
             // instructions before the return instruction).

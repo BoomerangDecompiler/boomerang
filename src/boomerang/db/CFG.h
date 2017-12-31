@@ -148,7 +148,7 @@ public:
      * \param destAddr  Destination BB of the out edge
      * \param labelRequired if true, set a label at the destination address. Set true on "true" branches of labels
      */
-    void addOutEdge(BasicBlock *sourceBB, Address destAddr, bool labelRequired = false);
+    void addEdge(BasicBlock *sourceBB, Address destAddr, bool labelRequired = false);
 
     /**
      * Add an edge between \p sourceBB and destBB.
@@ -160,7 +160,7 @@ public:
      * \param destBB Start address of the BB reached by the out edge
      * \param labelRequired - indicates that label is required in the destination BB
      */
-    void addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool labelRequired = false);
+    void addEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool labelRequired = false);
 
     /**
      * Adds a label for the given basic block; the label number will be a non-zero integer.
@@ -290,7 +290,7 @@ public:
 
     /// Check if is a BB at the address given
     /// whose first RTL is an orphan, i.e. getAddress() returns 0.
-    bool isOrphan(Address uAddr);
+    bool isOrphan(Address uAddr) const;
 
     /**
      * Amalgamate the RTLs for \p bb1 and  \p bb2, and place the result into \p bb2
