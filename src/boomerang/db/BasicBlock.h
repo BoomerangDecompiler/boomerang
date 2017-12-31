@@ -237,6 +237,14 @@ public:
     /// establish if this bb has a back edge to the given destination
     bool hasBackEdgeTo(const BasicBlock *dest) const;
 
+    /// \returns true if this BB is a (direct) predecessor of \p bb,
+    /// i.e. there is an edge from this BB to \p bb
+    bool isPredecessorOf(const BasicBlock *bb) const;
+
+    /// \returns true if this BB is a (direct) successor of \p bb,
+    /// i.e. there is an edge from \p bb to this BB.
+    bool isSuccessorOf(const BasicBlock *bb) const;
+
     // RTL and statement related
 public:
     /// \returns all RTLs that are part of this BB.

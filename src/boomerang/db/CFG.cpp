@@ -243,7 +243,7 @@ void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequiresLab
     destBB->addPredecessor(sourceBB);
 
     // special handling for upgrading oneway BBs to twoway BBs
-    if ((sourceBB->getType() == BBType::Oneway) && (sourceBB->getSuccessors().size() > 1)) {
+    if ((sourceBB->getType() == BBType::Oneway) && (sourceBB->getNumSuccessors() > 1)) {
         sourceBB->setType(BBType::Twoway);
         destRequiresLabel = true;
     }
@@ -314,13 +314,13 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         // We have an existing BB and a map entry, but no details except for
         // in-edges and m_bHasLabel.
         // First save the in-edges and m_iLabelNum
-        std::vector<BasicBlock *> ins(_newBB->getPredecessors());
+        std::vector<BasicBlock *> oldPredecessors(_newBB->getPredecessors());
 
         // Copy over the details now, completing the bottom BB
-        *_newBB = *bb;              // Assign the BB, copying fields. This will set m_bIncomplete false
-                                    // Replace the in edges (likely only one)
+        *_newBB = *bb;              // Assign the BB, copying fields.
 
-        for (BasicBlock *pred : ins) {
+        // Replace the in edges (likely only one)
+        for (BasicBlock *pred : oldPredecessors) {
             _newBB->addPredecessor(pred);
         }
 
@@ -554,9 +554,7 @@ bool Cfg::isWellFormed() const
                     }
                     else {
                         // Check that there is a corresponding in edge from the child to here
-                        auto ii = std::find(pBB->getPredecessors().begin(), pBB->getPredecessors().end(), elem);
-
-                        if (ii == pBB->getPredecessors().end()) {
+                        if (!pBB->isSuccessorOf(elem)) {
                             LOG_ERROR("No in edge to BB at %1 from successor BB at %2",
                                       (elem)->getLowAddr(), pBB->getLowAddr());
                             m_wellFormed = false;                      // At least one problem
@@ -567,12 +565,8 @@ bool Cfg::isWellFormed() const
 
             // Also check that each in edge has a corresponding out edge to here (could have an extra in-edge, for
             // example)
-            std::vector<BasicBlock *>::iterator ii;
-
             for (BasicBlock *pred : elem->getPredecessors()) {
-                auto oo = std::find(pred->getSuccessors().begin(), pred->getSuccessors().end(), elem);
-
-                if (oo == pred->getSuccessors().end()) {
+                if (!pred->isPredecessorOf(elem)) {
                     LOG_ERROR("No out edge to BB at %1 from predecessor BB at %2",
                               elem->getLowAddr(), pred->getLowAddr());
                     m_wellFormed = false;                // At least one problem
@@ -636,9 +630,7 @@ void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
 bool Cfg::joinBB(BasicBlock *bb1, BasicBlock *bb2)
 {
     // Ensure that the fallthrough case for bb1 is bb2
-    const std::vector<BasicBlock *>& v = bb1->getSuccessors();
-
-    if ((v.size() != 2) || (v[BELSE] != bb2)) {
+    if (bb1->getNumSuccessors() != 2 || bb1->getSuccessor(BELSE) != bb2) {
         return false;
     }
 
@@ -695,7 +687,7 @@ bool Cfg::compressCfg()
     for (iterator it = m_listBB.begin(); it != m_listBB.end(); it++) {
         BasicBlock *a = *it;
 
-        for (size_t i = 0; i < a->getSuccessors().size(); i++) {
+        for (int i = 0; i < a->getNumSuccessors(); i++) {
             BasicBlock *jmpBB = a->getSuccessor(i);
 
             if (jmpBB->getNumSuccessors() != 1) { // only consider oneway jumps
@@ -952,11 +944,8 @@ void Cfg::updateImmedPDom()
     // traverse the nodes in order (i.e from the bottom up)
     for (int i = m_revOrdering.size() - 1; i >= 0; i--) {
         BasicBlock *curNode = m_revOrdering[i];
-        const std::vector<BasicBlock *>& oEdges = curNode->getSuccessors();
 
-        for (auto& oEdge : oEdges) {
-            BasicBlock *succNode = oEdge;
-
+        for (BasicBlock *succNode : curNode->getSuccessors()) {
             if (succNode->getRevOrd() > curNode->getRevOrd()) {
                 curNode->setImmPDom(commonPDom(curNode->getImmPDom(), succNode));
             }
@@ -965,13 +954,11 @@ void Cfg::updateImmedPDom()
 
     // make a second pass but consider the original CFG ordering this time
     for (BasicBlock *curNode : m_ordering) {
-        const std::vector<BasicBlock *>& oEdges = curNode->getSuccessors();
-
-        if (oEdges.size() <= 1) {
+        if (curNode->getNumSuccessors() <= 1) {
             continue;
         }
 
-        for (auto& oEdge : oEdges) {
+        for (auto& oEdge : curNode->getSuccessors()) {
             BasicBlock *succNode = oEdge;
             curNode->setImmPDom(commonPDom(curNode->getImmPDom(), succNode));
         }
@@ -979,13 +966,11 @@ void Cfg::updateImmedPDom()
 
     // one final pass to fix up nodes involved in a loop
     for (BasicBlock *curNode : m_ordering) {
-        const std::vector<BasicBlock *>& oEdges = curNode->getSuccessors();
-
-        if (oEdges.size() > 1) {
-            for (auto& oEdge : oEdges) {
+        if (curNode->getNumSuccessors() > 1) {
+            for (auto& oEdge : curNode->getSuccessors()) {
                 BasicBlock *succNode = oEdge;
 
-                if (curNode->hasBackEdgeTo(succNode) && (curNode->getSuccessors().size() > 1) && succNode->getImmPDom() &&
+                if (curNode->hasBackEdgeTo(succNode) && (curNode->getNumSuccessors() > 1) && succNode->getImmPDom() &&
                     (succNode->getImmPDom()->getOrdering() < curNode->getImmPDom()->getOrdering())) {
                     curNode->setImmPDom(commonPDom(succNode->getImmPDom(), curNode->getImmPDom()));
                 }
@@ -1003,7 +988,7 @@ void Cfg::structConds()
     // Process the nodes in order
     for (BasicBlock *curNode : m_ordering) {
         // does the current node have more than one out edge?
-        if (curNode->getSuccessors().size() > 1) {
+        if (curNode->getNumSuccessors()) {
             // if the current conditional header is a two way node and has a back edge, then it won't have a follow
             if (curNode->hasBackEdge() && (curNode->getType() == BBType::Twoway)) {
                 curNode->setStructType(StructType::Cond);
@@ -1069,20 +1054,20 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
 
     if (lType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop follow
-        if (loopNodes[header->getSuccessors()[0]->getOrdering()]) {
-            header->setLoopFollow(header->getSuccessors()[1]);
+        if (loopNodes[header->getSuccessor(0)->getOrdering()]) {
+            header->setLoopFollow(header->getSuccessor(1));
         }
         else {
-            header->setLoopFollow(header->getSuccessors()[0]);
+            header->setLoopFollow(header->getSuccessor(0));
         }
     }
     else if (lType == LoopType::PostTested) {
         // the follow of a post tested ('repeat') loop is the node on the end of the non-back edge from the latch node
-        if (latch->getSuccessors()[0] == header) {
-            header->setLoopFollow(latch->getSuccessors()[1]);
+        if (latch->getSuccessor(0) == header) {
+            header->setLoopFollow(latch->getSuccessor(1));
         }
         else {
-            header->setLoopFollow(latch->getSuccessors()[0]);
+            header->setLoopFollow(latch->getSuccessor(0));
         }
     }
     else {
@@ -1114,11 +1099,11 @@ void Cfg::findLoopFollow(BasicBlock *header, bool *& loopNodes)
                 }
                 else {
                     // otherwise find the child (if any) of the conditional header that isn't inside the same loop
-                    BasicBlock *succ = desc->getSuccessors()[0];
+                    BasicBlock *succ = desc->getSuccessor(0);
 
                     if (loopNodes[succ->getOrdering()]) {
-                        if (!loopNodes[desc->getSuccessors()[1]->getOrdering()]) {
-                            succ = desc->getSuccessors()[1];
+                        if (!loopNodes[desc->getSuccessor(1)->getOrdering()]) {
+                            succ = desc->getSuccessor(1);
                         }
                         else {
                             succ = nullptr;
@@ -1184,7 +1169,7 @@ void Cfg::structLoops()
         //    vi) has a lower ordering than all other suitable candiates
         // If no nodes meet the above criteria, then the current node is not a loop header
 
-        for (auto& pred : curNode->getPredecessors()) {
+        for (BasicBlock *pred : curNode->getPredecessors()) {
             if ((pred->getCaseHead() == curNode->getCaseHead()) &&                         // ii)
                 (pred->getLoopHead() == curNode->getLoopHead()) &&                         // iii)
                 (!latch || (latch->getOrdering() > pred->getOrdering())) &&                // vi)
@@ -1223,9 +1208,6 @@ void Cfg::structLoops()
 
             // calculate the follow node of this loop
             findLoopFollow(curNode, loopNodes);
-
-            // delete the space taken by the loopnodes map
-            // delete[] loopNodes;
         }
     }
 }
@@ -1235,7 +1217,6 @@ void Cfg::checkConds()
 {
     for (auto& elem : m_ordering) {
         BasicBlock *curNode = elem;
-        const std::vector<BasicBlock *>& oEdges = curNode->getSuccessors();
 
         // consider only conditional headers that have a follow and aren't case headers
         if (((curNode->getStructType() == StructType::Cond) || (curNode->getStructType() == StructType::LoopCond)) && curNode->getCondFollow() &&
@@ -1243,6 +1224,8 @@ void Cfg::checkConds()
             // define convenient aliases for the relevant loop and case heads and the out edges
             BasicBlock *myLoopHead   = (curNode->getStructType() == StructType::LoopCond ? curNode : curNode->getLoopHead());
             BasicBlock *follLoopHead = curNode->getCondFollow()->getLoopHead();
+            BasicBlock *bbThen = curNode->getSuccessor(BTHEN);
+            BasicBlock *bbElse = curNode->getSuccessor(BELSE);
 
             // analyse whether this is a jump into/outof a loop
             if (myLoopHead != follLoopHead) {
@@ -1251,12 +1234,12 @@ void Cfg::checkConds()
                     BasicBlock *myLoopLatch = myLoopHead->getLatchNode();
 
                     // does the then branch goto the loop latch?
-                    if (oEdges[BTHEN]->isAncestorOf(myLoopLatch) || (oEdges[BTHEN] == myLoopLatch)) {
+                    if (bbThen->hasBackEdgeTo(myLoopLatch)) {
                         curNode->setUnstructType(UnstructType::JumpInOutLoop);
                         curNode->setCondType(CondType::IfElse);
                     }
                     // does the else branch goto the loop latch?
-                    else if (oEdges[BELSE]->isAncestorOf(myLoopLatch) || (oEdges[BELSE] == myLoopLatch)) {
+                    else if (bbElse->hasBackEdgeTo(myLoopLatch)) {
                         curNode->setUnstructType(UnstructType::JumpInOutLoop);
                         curNode->setCondType(CondType::IfThen);
                     }
@@ -1267,13 +1250,12 @@ void Cfg::checkConds()
                     // been found, then it will match this one anyway
 
                     // does the else branch goto the loop head?
-                    if (oEdges[BTHEN]->isAncestorOf(follLoopHead) || (oEdges[BTHEN] == follLoopHead)) {
+                    if (bbThen->hasBackEdgeTo(follLoopHead)) {
                         curNode->setUnstructType(UnstructType::JumpInOutLoop);
                         curNode->setCondType(CondType::IfElse);
                     }
-
                     // does the else branch goto the loop head?
-                    else if (oEdges[BELSE]->isAncestorOf(follLoopHead) || (oEdges[BELSE] == follLoopHead)) {
+                    else if (bbElse->hasBackEdgeTo(follLoopHead)) {
                         curNode->setUnstructType(UnstructType::JumpInOutLoop);
                         curNode->setCondType(CondType::IfThen);
                     }
@@ -1282,11 +1264,11 @@ void Cfg::checkConds()
 
             // this is a jump into a case body if either of its children don't have the same same case header as itself
             if ((curNode->getUnstructType() == UnstructType::Structured) &&
-                ((curNode->getCaseHead() != curNode->getSuccessors()[BTHEN]->getCaseHead()) ||
-                 (curNode->getCaseHead() != curNode->getSuccessors()[BELSE]->getCaseHead()))) {
+                ((curNode->getCaseHead() != bbThen->getCaseHead()) ||
+                 (curNode->getCaseHead() != bbElse->getCaseHead()))) {
                 BasicBlock *myCaseHead   = curNode->getCaseHead();
-                BasicBlock *thenCaseHead = curNode->getSuccessors()[BTHEN]->getCaseHead();
-                BasicBlock *elseCaseHead = curNode->getSuccessors()[BELSE]->getCaseHead();
+                BasicBlock *thenCaseHead = bbThen->getCaseHead();
+                BasicBlock *elseCaseHead = bbElse->getCaseHead();
 
                 if ((thenCaseHead == myCaseHead) && (!myCaseHead || (elseCaseHead != myCaseHead->getCondFollow()))) {
                     curNode->setUnstructType(UnstructType::JumpIntoCase);
@@ -1305,13 +1287,13 @@ void Cfg::checkConds()
             (curNode->getUnstructType() == UnstructType::Structured)) {
             // latching nodes will already have been reset to Seq structured type
             if (curNode->hasBackEdge()) {
-                if (curNode->hasBackEdgeTo(curNode->getSuccessors()[BTHEN])) {
+                if (curNode->hasBackEdgeTo(curNode->getSuccessor(BTHEN))) {
                     curNode->setCondType(CondType::IfThen);
-                    curNode->setCondFollow(curNode->getSuccessors()[BELSE]);
+                    curNode->setCondFollow(curNode->getSuccessor(BELSE));
                 }
                 else {
                     curNode->setCondType(CondType::IfElse);
-                    curNode->setCondFollow(curNode->getSuccessors()[BTHEN]);
+                    curNode->setCondFollow(curNode->getSuccessor(BTHEN));
                 }
             }
         }
@@ -1442,10 +1424,9 @@ void Cfg::generateDotFile(QTextStream& of)
 
     // Now the edges
     for (BasicBlock *srcBB : m_listBB) {
-        const std::vector<BasicBlock *>& outEdges = srcBB->getSuccessors();
+        for (int j = 0; j < srcBB->getNumSuccessors(); j++) {
+            BasicBlock *dstBB = srcBB->getSuccessor(j);
 
-        for (unsigned int j = 0; j < outEdges.size(); j++) {
-            BasicBlock *dstBB = outEdges[j];
             of << "       bb" << srcBB->getLowAddr() << " -> ";
             of << "bb" << dstBB->getLowAddr();
 
@@ -1540,21 +1521,15 @@ void Cfg::appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& w
 void dumpBB(BasicBlock *bb)
 {
     LOG_MSG("For BB at %1:", HostAddress(bb).toString());
+
     LOG_MSG("  In edges:");
-
-    std::vector<BasicBlock *> ins = bb->getPredecessors();
-    std::vector<BasicBlock *> outs = bb->getSuccessors();
-    size_t i, n = ins.size();
-
-    for (i = 0; i < n; i++) {
-        LOG_MSG("    %1", HostAddress(ins[i]).toString());
+    for (const BasicBlock *pred : bb->getPredecessors()) {
+        LOG_MSG("    %1", HostAddress(pred).toString());
     }
 
     LOG_MSG("  Out edges:");
-    n = outs.size();
-
-    for (i = 0; i < n; i++) {
-        LOG_MSG("    %1", HostAddress(outs[i]).toString());
+    for (const BasicBlock *succ : bb->getSuccessors()) {
+        LOG_MSG("    %1", HostAddress(succ).toString());
     }
 }
 
@@ -1801,8 +1776,7 @@ Statement *Cfg::findImplicitParamAssign(Parameter *param)
     }
 
     if (it == m_implicitMap.end()) {
-        SharedExp eParam = Location::param(param->getName());
-        it = m_implicitMap.find(eParam);
+        it = m_implicitMap.find(Location::param(param->getName()));
     }
 
     if (it == m_implicitMap.end()) {

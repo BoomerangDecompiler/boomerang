@@ -710,6 +710,18 @@ bool BasicBlock::hasBackEdgeTo(const BasicBlock *dest) const
 }
 
 
+bool BasicBlock::isPredecessorOf(const BasicBlock* bb) const
+{
+    return std::find(m_successors.begin(), m_successors.end(), bb) != m_successors.end();
+}
+
+
+bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
+{
+    return std::find(m_predecessors.begin(), m_predecessors.end(), bb) != m_predecessors.end();
+}
+
+
 void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 {
     // timestamp the current node with the current time

@@ -2446,7 +2446,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             else { // case header
                    // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
                    // generate code for each out branch
-                for (unsigned int i = 0; i < bb->getSuccessors().size(); i++) {
+                for (int i = 0; i < bb->getNumSuccessors(); i++) {
                     // emit a case label
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
@@ -2518,7 +2518,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         }
 
         // return if this doesn't have any out edges (emit a warning)
-        if (bb->getSuccessors().empty()) {
+        if (bb->getNumSuccessors() == 0) {
             LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
 
             if (bb->getType() == BBType::CompJump) {
@@ -2539,7 +2539,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
         child = bb->getSuccessor(0);
 
-        if (bb->getSuccessors().size() > 1) {
+        if (bb->getNumSuccessors() > 1) {
             BasicBlock *other = bb->getSuccessor(1);
             LOG_MSG("Found seq with more than one outedge!");
             auto const_dest = std::static_pointer_cast<Const>(bb->getDest());
@@ -2608,7 +2608,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
     }
 
     if (bb->getLoopType() == LoopType::PreTested) {
-        assert(bb->getLatchNode()->getSuccessors().size() == 1);
+        assert(bb->getLatchNode()->getNumSuccessors() == 1);
 
         // write the body of the block (excluding the predicate)
         writeBB(bb);

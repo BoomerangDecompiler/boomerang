@@ -49,9 +49,8 @@ void DataFlow::dfs(int p, size_t n)
 
         // For each successor w of n
         BasicBlock *bb = m_BBs[n];
-        const std::vector<BasicBlock *>& successors = bb->getSuccessors();
 
-        for (BasicBlock *_bb : successors) {
+        for (BasicBlock *_bb : bb->getSuccessors()) {
             dfs(n, m_indices[_bb]);
         }
     }
@@ -214,9 +213,8 @@ void DataFlow::computeDF(int n)
     /* This loop computes DF_local[n] */
     // for each node y in succ(n)
     BasicBlock *bb = m_BBs[n];
-    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
 
-    for (BasicBlock *b : outEdges) {
+    for (BasicBlock *b : bb->getSuccessors()) {
         int y = m_indices[b];
 
         if (m_idom[y] != n) {
@@ -628,12 +626,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each successor Y of block n
-    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
-    size_t numSucc = outEdges.size();
-
-    for (unsigned succ = 0; succ < numSucc; succ++) {
-        BasicBlock *Ybb = outEdges[succ];
-
+    for (BasicBlock *Ybb : bb->getSuccessors()) {
         // For each phi-function in Y
         for (Statement *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
             PhiAssign *pa = dynamic_cast<PhiAssign *>(St);

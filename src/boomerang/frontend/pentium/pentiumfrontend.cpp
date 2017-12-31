@@ -377,26 +377,25 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
     m_floatProcessed.insert(bb);
 
     // Now recurse to process my out edges, if not already processed
-    const std::vector<BasicBlock *>& outs = bb->getSuccessors();
-    size_t n;
+    int oldNumSuccessors;
 
     do {
-        n = outs.size();
+        oldNumSuccessors = bb->getNumSuccessors();
 
-        for (unsigned o = 0; o < n; o++) {
-            BasicBlock *anOut = outs[o];
+        for (BasicBlock *succ : bb->getSuccessors()) {
+            if (isFloatProcessed(succ)) {
+                continue; // nothing to do
+            }
 
-            if (!isFloatProcessed(anOut)) {
-                processFloatCode(anOut, tos, cfg);
+            processFloatCode(succ, tos, cfg);
 
-                if (outs.size() != n) {
-                    // During the processing, we have added or more likely deleted a BB, and the vector of out edges
-                    // has changed.  It's safe to just start the inner for loop again
-                    break;
-                }
+            if (bb->getNumSuccessors() != oldNumSuccessors) {
+                // During the processing, we have added or more likely deleted a BB, and the vector of out edges
+                // has changed.  It's safe to just start the inner for loop again
+                break;
             }
         }
-    } while (outs.size() != n);
+    } while (bb->getNumSuccessors() != oldNumSuccessors);
 }
 
 
