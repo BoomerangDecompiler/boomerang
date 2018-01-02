@@ -126,10 +126,8 @@ using SharedExp = std::shared_ptr<class Exp>;
 class BasicBlock
 {
 public:
-    typedef std::vector<BasicBlock *>::iterator   iEdgeIterator;
-    typedef RTLList::iterator                     rtlit;
-    typedef RTLList::reverse_iterator             rtlrit;
-    typedef std::list<SharedExp>::iterator        elit;
+    typedef RTLList::iterator                     RTLIterator;
+    typedef RTLList::reverse_iterator             RTLRIterator;
 
 public:
     /**
@@ -251,6 +249,15 @@ public:
     RTLList *getRTLs();
     const RTLList *getRTLs() const;
 
+    inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
+
+    void removeRTL(RTL *rtl)
+    {
+        m_listOfRTLs->remove(rtl);
+
+        updateBBAddress();
+    }
+
     /**
      * Update the RTL list of this basic block. Takes ownership of the pointer.
      * \param rtls a list of RTLs
@@ -262,21 +269,12 @@ public:
      * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
      * code
      */
-    Statement *getFirstStmt(rtlit& rit, StatementList::iterator& sit);
-    Statement *getNextStmt(rtlit& rit, StatementList::iterator& sit);
-    Statement *getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
+    Statement *getFirstStmt(RTLIterator& rit, StatementList::iterator& sit);
+    Statement *getNextStmt(RTLIterator& rit, StatementList::iterator& sit);
+    Statement *getLastStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
     Statement *getFirstStmt();
     Statement *getLastStmt();
-    Statement *getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit);
-
-    inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
-
-    void removeRTL(RTL *rtl)
-    {
-        m_listOfRTLs->remove(rtl);
-
-        updateBBAddress();
-    }
+    Statement *getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
 
     void getStatements(StatementList& stmts) const;
 

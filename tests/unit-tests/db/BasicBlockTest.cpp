@@ -12,6 +12,8 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/statements/BranchStatement.h"
 
 
 void BasicBlockTest::initTestCase()
@@ -20,12 +22,48 @@ void BasicBlockTest::initTestCase()
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
+
 void BasicBlockTest::testGetType()
 {
     BasicBlock bb(Address::ZERO, nullptr); // incomplete BB
 
     QVERIFY(bb.getType() == BBType::Invalid);
     QVERIFY(bb.isType(BBType::Invalid));
+}
+
+
+void BasicBlockTest::testExtent()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QCOMPARE(bb1.getLowAddr(), Address(0x1000));
+    QCOMPARE(bb1.getHiAddr(), Address::INVALID);
+
+    BasicBlock bb2(BBType::Invalid, nullptr, nullptr);
+    QCOMPARE(bb2.getLowAddr().toString(), Address::ZERO.toString());
+    QCOMPARE(bb2.getHiAddr(), Address::INVALID);
+
+    std::unique_ptr<RTLList> rtls(new RTLList({ new RTL(Address(0x1000), { new BranchStatement() }) }));
+
+    BasicBlock bb3(BBType::Twoway, std::move(rtls), nullptr);
+    QCOMPARE(bb3.getLowAddr(), Address(0x1000));
+    QCOMPARE(bb3.getHiAddr(),  Address(0x1000));
+}
+
+
+void BasicBlockTest::testIncomplete()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QCOMPARE(bb1.isIncomplete(), true);
+
+    std::unique_ptr<RTLList> rtls1(new RTLList({ new RTL(Address(0x1000), { new BranchStatement() }) }));
+
+    BasicBlock bb2(BBType::Twoway, std::move(rtls1), nullptr);
+    QCOMPARE(bb2.isIncomplete(), false);
+
+    std::unique_ptr<RTLList> rtls2(new RTLList({ new RTL(Address(0x1000), { new BranchStatement() }) }));
+    BasicBlock bb3(Address(0x1000), nullptr);
+    bb3.setRTLs(std::move(rtls2));
+    QCOMPARE(bb3.isIncomplete(), false);
 }
 
 

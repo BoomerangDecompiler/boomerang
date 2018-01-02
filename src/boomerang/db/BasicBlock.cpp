@@ -389,7 +389,7 @@ Function *BasicBlock::getDestProc()
 }
 
 
-Statement *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
+Statement *BasicBlock::getFirstStmt(RTLIterator& rit, StatementList::iterator& sit)
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         return nullptr;
@@ -412,7 +412,7 @@ Statement *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
 }
 
 
-Statement *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
+Statement *BasicBlock::getNextStmt(RTLIterator& rit, StatementList::iterator& sit)
 {
     if (++sit != (*rit)->end()) {
         return *sit; // End of current RTL not reached, so return next
@@ -430,7 +430,7 @@ Statement *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
 }
 
 
-Statement *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
+Statement *BasicBlock::getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit)
 {
     if (++sit != (*rit)->rend()) {
         return *sit; // Beginning of current RTL not reached, so return next
@@ -448,7 +448,7 @@ Statement *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator&
 }
 
 
-Statement *BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
+Statement *BasicBlock::getLastStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit)
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -493,7 +493,7 @@ Statement *BasicBlock::getLastStmt()
         return nullptr;
     }
 
-    rtlrit rit = m_listOfRTLs->rbegin();
+    RTLRIterator rit = m_listOfRTLs->rbegin();
 
     while (rit != m_listOfRTLs->rend()) {
         RTL *rtl = *rit;
@@ -973,8 +973,8 @@ bool BasicBlock::searchAndReplace(const Exp& pattern, SharedExp replacement)
 void BasicBlock::updateBBAddress()
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-        // should not happen
-        assert(false);
+        m_lowAddr = Address::ZERO;
+        m_highAddr = Address::INVALID;
         return;
     }
 

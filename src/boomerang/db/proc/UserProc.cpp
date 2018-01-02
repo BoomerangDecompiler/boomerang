@@ -685,7 +685,7 @@ void UserProc::initStatements()
 {
     BBIterator it;
 
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb != nullptr; bb = m_cfg->getNextBB(it)) {
@@ -716,7 +716,7 @@ void UserProc::numberStatements()
 {
     BBIterator it;
 
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
@@ -1544,7 +1544,7 @@ void UserProc::remUnusedStmtEtc()
         BBIterator it;
 
         for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-            BasicBlock::rtlit       rtlIt;
+            BasicBlock::RTLIterator       rtlIt;
             StatementList::iterator stmtIt;
 
             for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
@@ -3679,7 +3679,7 @@ bool UserProc::ellipsisProcessing()
 {
     BBIterator it;
 
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
     bool ch = false;
 
@@ -3892,7 +3892,7 @@ void UserProc::updateArguments()
     Boomerang::get()->alertDecompiling(this);
     LOG_VERBOSE("### Update arguments for %1 ###", getName());
     Boomerang::get()->alertDecompileDebugPoint(this, "Before updating arguments");
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *it : *m_cfg) {
@@ -4481,7 +4481,7 @@ void UserProc::fixCallAndPhiRefs()
 
 void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 {
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *m_cfg) {
@@ -4622,7 +4622,7 @@ bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 
 bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited)
 {
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *pb : *m_cfg) {
@@ -5002,7 +5002,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     // Save the old parameters and call liveness
     const size_t oldNumParameters = m_parameters.size();
     std::map<CallStatement *, UseCollector> callLiveness;
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
     BBIterator it;
 
@@ -5096,7 +5096,7 @@ void UserProc::processDecodedICTs()
 {
     BBIterator it;
 
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
@@ -5129,7 +5129,7 @@ void UserProc::eliminateDuplicateArgs()
     LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
 
     BBIterator                      it;
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *m_cfg) {
@@ -5150,7 +5150,7 @@ void UserProc::removeCallLiveness()
     LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
 
     BBIterator                      it;
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {

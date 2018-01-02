@@ -20,6 +20,8 @@ private slots:
     void initTestCase();
 
     void testGetType();
+    void testExtent();
+    void testIncomplete();
     void testPredecessor();
     void testSuccessor();
 };

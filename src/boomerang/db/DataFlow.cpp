@@ -356,7 +356,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     // We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
     // Recreate each call because propagation and other changes make old data invalid
     for (size_t n = 0; n < numBB; n++) {
-        BasicBlock::rtlit       rit;
+        BasicBlock::RTLIterator       rit;
         StatementList::iterator sit;
         BasicBlock              *bb = m_BBs[n];
 
@@ -458,7 +458,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each statement S in block n
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
 
@@ -672,7 +672,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     // NOTE: Because of the need to pop childless calls from the Stacks, it is important in my algorithm to process the
     // statments in the BB *backwards*. (It is not important in Appel's algorithm, since he always pushes a definition
     // for every variable defined on the Stacks).
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
@@ -802,7 +802,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
                                 std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi)
 {
     // For each statement this BB
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
 
