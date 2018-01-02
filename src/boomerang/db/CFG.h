@@ -309,16 +309,6 @@ public:
     /// Completely removes a single BB from this CFG.
     void removeBB(BasicBlock *bb);
 
-    /**
-     * Replace all instances of \p pattern with \p replacement in all BasicBlock's
-     * belonging to this Cfg. Can be type sensitive if required.
-     */
-    void searchAndReplace(const Exp& pattern, const SharedExp& replacement);
-
-    /// Search for all occurrences of \p pattern in this CFG
-    /// and put the results into \p result.
-    bool searchAll(const Exp& pattern, std::list<SharedExp>& result);
-
     /// Structures the control flow graph
     void structure();
 

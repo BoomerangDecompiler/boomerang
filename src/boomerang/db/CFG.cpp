@@ -803,26 +803,6 @@ bool Cfg::isOrphan(Address uAddr) const
 }
 
 
-void Cfg::searchAndReplace(const Exp& search, const SharedExp& replace)
-{
-    for (BasicBlock *bb : m_listBB) {
-        bb->searchAndReplace(search, replace);
-    }
-}
-
-
-bool Cfg::searchAll(const Exp& search, std::list<SharedExp>& result)
-{
-    bool ch = false;
-
-    for (BasicBlock *bb : m_listBB) {
-        ch |= bb->searchAll(search, result);
-    }
-
-    return ch;
-}
-
-
 void Cfg::setLabelRequired(BasicBlock *pBB)
 {
     pBB->setLabelRequired(true);

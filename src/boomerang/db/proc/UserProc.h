@@ -151,7 +151,10 @@ public:
     void deleteCFG() override;
 
     /// simplify the statements in this proc
-    void simplify() { m_cfg->simplify(); }
+    void simplify()
+    {
+        m_cfg->simplify();
+    }
 
     /**
      * Begin the decompile process at this procedure

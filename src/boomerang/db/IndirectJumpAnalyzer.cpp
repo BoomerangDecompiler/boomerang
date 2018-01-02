@@ -798,7 +798,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
-            int numToRemove = iNum - i;
+            int numToRemove = std::max(iNum - i, 0);
 
             // remove all table elements at index i and above
             while (numToRemove > 0) {

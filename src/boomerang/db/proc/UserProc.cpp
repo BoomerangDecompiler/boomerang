@@ -295,7 +295,12 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
 
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     m_locals[newName] = ty;
-    m_cfg->searchAndReplace(*oldLoc, newLoc);
+
+    StatementList stmts;
+    getStatements(stmts);
+    for (Statement *stmt : stmts) {
+        stmt->searchAndReplace(*oldLoc, newLoc);
+    }
 }
 
 

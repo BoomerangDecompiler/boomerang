@@ -596,23 +596,6 @@ void BasicBlock::setCond(SharedExp e)
 }
 
 
-BasicBlock *BasicBlock::getLoopBody()
-{
-    assert(m_structType == SBBType::PreTestLoop
-        || m_structType == SBBType::PostTestLoop
-        || m_structType == SBBType::EndlessLoop);
-
-    assert(m_successors.size() == 2);
-
-    if (m_successors[0] == m_loopFollow) {
-        return m_successors[1];
-    }
-    else {
-        return m_successors[0];
-    }
-}
-
-
 bool BasicBlock::isAncestorOf(const BasicBlock *other) const
 {
     return ((m_loopStamps[0]   < other->m_loopStamps[0]    && m_loopStamps[1] > other->m_loopStamps[1]) ||
@@ -652,7 +635,7 @@ void BasicBlock::simplify()
             // set out edges to be the second one
             LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_successors[0]->getLowAddr(), m_successors[1]->getLowAddr());
 
-            BasicBlock *redundant = m_successors[0];
+            BasicBlock *redundant = getSuccessor(0);
             m_successors[0] = m_successors[1];
             m_successors.resize(1);
             LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
@@ -934,39 +917,6 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
     m_listOfRTLs->push_front(rtl);
 
     updateBBAddress();
-}
-
-
-bool BasicBlock::searchAll(const Exp& search_for, std::list<SharedExp>& results)
-{
-    bool ch = false;
-
-    for (RTL *rtl_it : *m_listOfRTLs) {
-        for (Statement *e : *rtl_it) {
-            SharedExp res; // searchAll can be used here too, would it change anything ?
-
-            if (e->search(search_for, res)) {
-                ch = true;
-                results.push_back(res);
-            }
-        }
-    }
-
-    return ch;
-}
-
-
-bool BasicBlock::searchAndReplace(const Exp& pattern, SharedExp replacement)
-{
-    bool ch = false;
-
-    for (RTL *rtl_it : *m_listOfRTLs) {
-        for (auto& elem : *rtl_it) {
-            ch |= (elem)->searchAndReplace(pattern, replacement);
-        }
-    }
-
-    return ch;
 }
 
 

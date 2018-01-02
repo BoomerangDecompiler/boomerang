@@ -152,7 +152,7 @@ public:
     BasicBlock& operator=(BasicBlock&& other) = default;
 
 public:
-    /// \returns the type pf the BasicBlock
+    /// \returns the type of the BasicBlock
     inline BBType getType()         const { return m_bbType; }
     inline bool isType(BBType type) const { return m_bbType == type; }
     inline void setType(BBType bbType)    { m_bbType = bbType; }
@@ -325,35 +325,12 @@ public:
     /// Get the destination, if any
     SharedExp getDest() const;
 
-    /// Get the loop body
-    BasicBlock *getLoopBody();
-
     /// Simplify all expressions in this BB
     void simplify();
 
     void setLabelRequired(bool required);
 
 public:
-    /**
-     * Searches for all instances of "search" and adds them to "result"
-     * in reverse nesting order. The search is optionally type sensitive.
-     * \note out of date doc, unless type senistivity is a part of \a search_for ?
-     *
-     * \param search_for a location to search for
-     * \param results    a list which will have any matching exprs appended to it
-     * \returns true if there were any matches
-     */
-    bool searchAll(const Exp& pattern, std::list<SharedExp>& results);
-
-    /**
-     * Replace all instances of search with replace.
-     * Can be type sensitive if required.
-     * \param search - ptr to an expression to search for
-     * \param replace the expression with which to replace it
-     * \returns true if replacement took place
-     */
-    bool searchAndReplace(const Exp& pattern, SharedExp replace);
-
     inline bool isLatchNode() { return m_loopHead && m_loopHead->getLatchNode() == this; }
 
     inline BasicBlock *getLatchNode()  const { return m_latchNode; }

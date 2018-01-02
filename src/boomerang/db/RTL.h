@@ -90,7 +90,6 @@ public:
     bool isCall() const;
 
     /// Use this slow function when you can't be sure that the HL Statement is last
-    /// Get the "special" (High Level) Statement this RTL (else nullptr)
     Statement *getHlStmt() const;
 
 protected:
