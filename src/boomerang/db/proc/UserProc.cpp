@@ -93,9 +93,8 @@ SyntaxNode *UserProc::calculateAST() const
 {
     int             numBBs = 0;
     BlockSyntaxNode *init  = new BlockSyntaxNode();
-    BBIterator      it;
 
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+    for (BasicBlock *bb : *m_cfg) {
         BlockSyntaxNode *b = new BlockSyntaxNode();
         b->setBB(bb);
         init->addStatement(b);
@@ -230,9 +229,7 @@ void UserProc::setStatus(ProcStatus s)
 
 bool UserProc::containsAddr(Address uAddr) const
 {
-    BBIterator it;
-
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+    for (BasicBlock *bb : *m_cfg) {
         if (bb->getRTLs() && (uAddr >= bb->getLowAddr()) && (uAddr <= bb->getHiAddr())) {
             return true;
         }
@@ -485,15 +482,8 @@ BasicBlock *UserProc::getEntryBB()
 
 void UserProc::setEntryBB()
 {
-    std::list<BasicBlock *>::iterator bbit;
-    BasicBlock *pBB = m_cfg->getFirstBB(bbit); // Get an iterator to the first BB
-
-    // Usually, but not always, this will be the first BB, or at least in the first few
-    while (pBB && m_entryAddress != pBB->getLowAddr()) {
-        pBB = m_cfg->getNextBB(bbit);
-    }
-
-    m_cfg->setEntryAndExitBB(pBB);
+    BasicBlock *entryBB = m_cfg->getBB(m_entryAddress);
+    m_cfg->setEntryAndExitBB(entryBB);
 }
 
 
@@ -688,12 +678,10 @@ void UserProc::printDFG() const
 
 void UserProc::initStatements()
 {
-    BBIterator it;
-
     BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
 
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb != nullptr; bb = m_cfg->getNextBB(it)) {
+    for (BasicBlock *bb : *m_cfg) {
         for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr; stmt = bb->getNextStmt(rit, sit)) {
             stmt->setProc(this);
             stmt->setBB(bb);
@@ -719,12 +707,9 @@ void UserProc::initStatements()
 
 void UserProc::numberStatements()
 {
-    BBIterator it;
-
-    BasicBlock::RTLIterator       rit;
-    StatementList::iterator sit;
-
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+    for (BasicBlock *bb : *m_cfg) {
+        BasicBlock::RTLIterator rit;
+        StatementList::iterator sit;
         for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
             if (!s->isImplicit() &&      // Don't renumber implicits (remain number 0)
                 (s->getNumber() == 0)) { // Don't renumber existing (or waste numbers)
@@ -737,9 +722,7 @@ void UserProc::numberStatements()
 
 void UserProc::getStatements(StatementList& stmts) const
 {
-    BBCIterator it;
-
-    for (const BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+    for (const BasicBlock *bb : *m_cfg) {
         bb->appendStatementsTo(stmts);
     }
 
@@ -827,11 +810,11 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 
 void UserProc::insertStatementAfter(Statement *s, Statement *a)
 {
-    for (BBIterator bb = m_cfg->begin(); bb != m_cfg->end(); bb++) {
-        std::list<RTL *> *rtls = (*bb)->getRTLs();
+    for (BasicBlock *bb : *m_cfg) {
+        std::list<RTL *> *rtls = bb->getRTLs();
 
         if (rtls == nullptr) {
-            continue; // e.g. *bb is (as yet) invalid
+            continue; // e.g. bb is (as yet) invalid
         }
 
         for (RTL *rr : *rtls) {
@@ -926,10 +909,9 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
     if (!SETTING(noDecodeChildren)) {
         // Recurse to children first, to perform a depth first search
-        BBIterator it;
 
         // Look at each call, to do the DFS
-        for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+        for (BasicBlock *bb : *m_cfg) {
             if (bb->getType() != BBType::Call) {
                 continue;
             }
@@ -1546,9 +1528,7 @@ void UserProc::remUnusedStmtEtc()
 
     if (removedBBs) {
         // recalculate phi assignments of referencing BBs
-        BBIterator it;
-
-        for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+        for (BasicBlock *bb : *m_cfg) {
             BasicBlock::RTLIterator       rtlIt;
             StatementList::iterator stmtIt;
 
@@ -2120,23 +2100,19 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 
 void UserProc::assignProcsToCalls()
 {
-    std::list<BasicBlock *>::iterator it;
-    BasicBlock *pBB = m_cfg->getFirstBB(it);
-
-    while (pBB) {
+    for (BasicBlock *pBB : *m_cfg) {
         std::list<RTL *> *rtls = pBB->getRTLs();
 
         if (rtls == nullptr) {
-            pBB = m_cfg->getNextBB(it);
             continue;
         }
 
-        for (auto& rtl : *rtls) {
-            if (!(rtl)->isCall()) {
+        for (RTL *rtl : *rtls) {
+            if (!rtl->isCall()) {
                 continue;
             }
 
-            CallStatement *call = (CallStatement *)(rtl)->back();
+            CallStatement *call = (CallStatement *)(rtl->back());
 
             if ((call->getDestProc() == nullptr) && !call->isComputed()) {
                 Function *p = m_prog->findFunction(call->getFixedDest());
@@ -2151,35 +2127,27 @@ void UserProc::assignProcsToCalls()
 
             // call->setSigArguments();        // But BBs not set yet; will get done in initStatements()
         }
-
-        pBB = m_cfg->getNextBB(it);
     }
 }
 
 
 void UserProc::finalSimplify()
 {
-    std::list<BasicBlock *>::iterator it;
-    BasicBlock *pBB = m_cfg->getFirstBB(it);
+    for (BasicBlock *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
 
-    while (pBB) {
-        std::list<RTL *> *pRtls = pBB->getRTLs();
-
-        if (pRtls == nullptr) {
-            pBB = m_cfg->getNextBB(it);
+        if (rtls == nullptr) {
             continue;
         }
 
-        for (RTL *rit : *pRtls) {
-            for (Statement *rt : *rit) {
-                rt->simplifyAddr();
+        for (RTL *rtl : *rtls) {
+            for (Statement *stmt : *rtl) {
+                stmt->simplifyAddr();
                 // Also simplify everything; in particular, stack offsets are
                 // often negative, so we at least canonicalise [esp + -8] to [esp-8]
-                rt->simplify();
+                stmt->simplify();
             }
         }
-
-        pBB = m_cfg->getNextBB(it);
     }
 }
 
@@ -3682,14 +3650,12 @@ bool UserProc::isPreserved(SharedExp e)
 
 bool UserProc::ellipsisProcessing()
 {
-    BBIterator it;
-
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
     bool ch = false;
 
-    for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
-        CallStatement *c = dynamic_cast<CallStatement *>((*it)->getLastStmt(rrit, srit));
+    for (BasicBlock *bb : *m_cfg) {
+        BasicBlock::RTLRIterator        rrit;
+        StatementList::reverse_iterator srit;
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {
@@ -3716,8 +3682,8 @@ void UserProc::addImplicitAssigns()
     ImplicitConverter     ic(m_cfg);
     StmtImplicitConverter sm(&ic, m_cfg);
 
-    for (auto it = stmts.begin(); it != stmts.end(); it++) {
-        (*it)->accept(&sm);
+    for (Statement *stmt : stmts) {
+        stmt->accept(&sm);
     }
 
     m_cfg->setImplicitsDone();
@@ -5007,11 +4973,10 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     // Save the old parameters and call liveness
     const size_t oldNumParameters = m_parameters.size();
     std::map<CallStatement *, UseCollector> callLiveness;
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
-    BBIterator it;
 
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+    for (BasicBlock *bb : *m_cfg) {
+        BasicBlock::RTLRIterator        rrit;
+        StatementList::reverse_iterator srit;
         CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
@@ -5099,12 +5064,9 @@ RTL *globalRtl = nullptr;
 
 void UserProc::processDecodedICTs()
 {
-    BBIterator it;
-
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
+    for (BasicBlock *bb : *m_cfg) {
+        BasicBlock::RTLRIterator        rrit;
+        StatementList::reverse_iterator srit;
         Statement *last = bb->getLastStmt(rrit, srit);
 
         if (last == nullptr) {
@@ -5133,7 +5095,6 @@ void UserProc::eliminateDuplicateArgs()
 {
     LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
 
-    BBIterator                      it;
     BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
@@ -5154,12 +5115,11 @@ void UserProc::removeCallLiveness()
 {
     LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
 
-    BBIterator                      it;
     BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
-    for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
-        CallStatement *c = dynamic_cast<CallStatement *>((*it)->getLastStmt(rrit, srit));
+    for (BasicBlock *bb : *m_cfg) {
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
         // Note: we may have removed some statements, so there may no longer be a last statement!
         if (c == nullptr) {

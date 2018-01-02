@@ -59,6 +59,9 @@ class Cfg
 public:
     typedef std::list<BasicBlock *>::iterator                      iterator;
     typedef std::list<BasicBlock *>::const_iterator                const_iterator;
+    typedef std::list<BasicBlock *>::reverse_iterator              reverse_iterator;
+    typedef std::list<BasicBlock *>::const_reverse_iterator        const_reverse_iterator;
+
 
     class BBAlreadyExistsError : public std::exception
     {
@@ -162,33 +165,17 @@ public:
      */
     void addEdge(BasicBlock *sourceBB, BasicBlock *destBB);
 
-    /**
-     * Get the first BB of this CFG.
-     * Gets a pointer to the first BB this cfg. Also initialises `it' so that calling GetNextBB will return the
-     * second BB, etc.  Also, *it is the first BB.  Returns null if there are no BBs this CFG.
-     *
-     * \param       it set to an value that must be passed to getNextBB
-     * \returns     Pointer to the first BB this cfg, or nullptr if none
-     */
-    BasicBlock *getFirstBB(iterator& it);
-    const BasicBlock *getFirstBB(const_iterator& it) const;
+    // The iterators get invalidated when the list of BBs is sorted or
+    // when BBs are added or removed.
+    iterator               begin()        { return m_listBB.begin(); }
+    const_iterator         begin()  const { return m_listBB.begin(); }
+    reverse_iterator       rbegin()       { return m_listBB.rbegin(); }
+    const_reverse_iterator rbegin() const { return m_listBB.rbegin(); }
 
-    /**
-     * Gets a pointer to the next BB this cfg.
-     * \p it must be from a call to GetFirstBB(), or from a subsequent call to GetNextBB().
-     * Also, *it is the current BB. Returns nullptr if there are no more BBs this CFG.
-     *
-     * \param   it - iterator from a call to getFirstBB or getNextBB
-     * \returns pointer to the BB, or nullptr if no more
-     */
-    BasicBlock *getNextBB(iterator& it);
-    const BasicBlock *getNextBB(const_iterator& it) const;
-
-    /*
-     * An alternative to the above is to use begin() and end():
-     */
-    iterator begin() { return m_listBB.begin(); }
-    iterator end()   { return m_listBB.end(); }
+    iterator                end()         { return m_listBB.end(); }
+    const_iterator          end()   const { return m_listBB.end(); }
+    reverse_iterator        rend()        { return m_listBB.rend(); }
+    const_reverse_iterator  rend()  const { return m_listBB.rend(); }
 
     /* Checks whether the given native address is a label (explicit or non explicit) or not.  Explicit labels are
      * addresses that have already been tagged as being labels due to transfers of control to that address.

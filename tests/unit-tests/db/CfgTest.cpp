@@ -67,18 +67,19 @@ void CfgTest::testDominators()
     df->calculateDominators(cfg);
 
     // Find BB "5" (as per Appel, Figure 19.5).
-    BBIterator it;
-    BasicBlock *bb = cfg->getFirstBB(it);
-
-    while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
-        bb = cfg->getNextBB(it);
+    BasicBlock *foundBB = nullptr;
+    for (BasicBlock *bb : *cfg) {
+        if (bb->getLowAddr() == FRONTIER_FIVE) {
+            foundBB = bb;
+            break;
+        }
     }
 
-    QVERIFY(bb);
+    QVERIFY(foundBB);
     QString     actual_st;
     QTextStream actual(&actual_st);
 
-    int n5 = df->pbbToNode(bb);
+    int n5 = df->pbbToNode(foundBB);
     std::set<int>::iterator ii;
     std::set<int>&          DFset = df->getDF(n5);
 
@@ -130,15 +131,16 @@ void CfgTest::testSemiDominators()
     df->calculateDominators(cfg);
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
-    BBIterator it;
-    BasicBlock *bb = cfg->getFirstBB(it);
-
-    while (bb && bb->getLowAddr() != SEMI_L) {
-        bb = cfg->getNextBB(it);
+    BasicBlock *foundBB = nullptr;
+    for (BasicBlock *bb : *cfg) {
+        if (bb->getLowAddr() == SEMI_L) {
+            foundBB = bb;
+            break;
+        }
     }
 
-    QVERIFY(bb);
-    int nL = df->pbbToNode(bb);
+    QVERIFY(foundBB);
+    int nL = df->pbbToNode(foundBB);
 
     // The dominator for L should be B, where the semi dominator is D
     // (book says F)

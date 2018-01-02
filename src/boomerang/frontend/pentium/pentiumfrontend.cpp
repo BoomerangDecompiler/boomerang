@@ -223,9 +223,7 @@ std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
 
 void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 {
-    BBIterator it;
-
-    for (BasicBlock *pBB = cfg->getFirstBB(it); pBB; pBB = cfg->getNextBB(it)) {
+    for (BasicBlock *pBB : *cfg) {
         Statement *st;
 
         // Loop through each RTL this BB
@@ -601,7 +599,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-void toBranches(Address addr, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, BBIterator& it)
+void toBranches(Address addr, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, Cfg::iterator& it)
 {
     BranchStatement *br1 = new BranchStatement;
 

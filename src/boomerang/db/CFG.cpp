@@ -360,48 +360,6 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 }
 
 
-BasicBlock *Cfg::getFirstBB(iterator& it)
-{
-    it = m_listBB.begin();
-
-    if (it == m_listBB.end()) {
-        return nullptr;
-    }
-
-    return *it;
-}
-
-
-const BasicBlock *Cfg::getFirstBB(const_iterator& it) const
-{
-    it = m_listBB.begin();
-
-    if (it == m_listBB.end()) {
-        return nullptr;
-    }
-
-    return *it;
-}
-
-
-BasicBlock *Cfg::getNextBB(iterator& it)
-{
-    if (++it == m_listBB.end()) {
-        return nullptr;
-    }
-
-    return *it;
-}
-
-
-const BasicBlock *Cfg::getNextBB(const_iterator& it) const
-{
-    if (++it == m_listBB.end()) {
-        return nullptr;
-    }
-
-    return *it;
-}
 
 
 bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)

@@ -308,8 +308,10 @@ void FrontSparcTest::testDelaySlot()
 
     QVERIFY(res == 1);
     Cfg        *cfg = pProc->getCFG();
-    BBIterator it;
-    BasicBlock *bb = cfg->getFirstBB(it);
+    Cfg::iterator it = cfg->begin();
+
+    QVERIFY(it != cfg->end());
+    BasicBlock *bb = *it;
     bb->print(strm);
     QString expected("Call BB:\n"
                      "  in edges: \n"
@@ -353,7 +355,8 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    bb = cfg->getNextBB(it);
+    QVERIFY(it != cfg->end());
+    bb = *(++it);
     QVERIFY(bb);
     bb->print(strm);
     expected = "Call BB:\n"
@@ -370,7 +373,8 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    bb = cfg->getNextBB(it);
+    QVERIFY(it != cfg->end());
+    bb = *(++it);
     QVERIFY(bb);
     bb->print(strm);
     expected = "Twoway BB:\n"
@@ -387,7 +391,8 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    bb = cfg->getNextBB(it);
+    QVERIFY(it != cfg->end());
+    bb = *(++it);
     QVERIFY(bb);
     bb->print(strm);
     expected = "Twoway BB:\n"
@@ -399,7 +404,8 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    bb = cfg->getNextBB(it);
+    QVERIFY(it != cfg->end());
+    bb = *(++it);
     QVERIFY(bb);
     bb->print(strm);
     expected = "Call BB:\n"

@@ -45,9 +45,6 @@ enum class BBType
 };
 
 
-typedef std::list<BasicBlock *>::iterator         BBIterator;
-typedef std::list<BasicBlock *>::const_iterator   BBCIterator;
-
 using RTLList   = std::list<RTL *>;
 using SharedExp = std::shared_ptr<class Exp>;
 
