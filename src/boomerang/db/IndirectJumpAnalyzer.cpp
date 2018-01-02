@@ -815,7 +815,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     for (Address addr : dests) {
         char tmp[1024];
         count++;
-        sprintf(tmp, "before decoding fragment %i of %zu (%s)", count, dests.size(), qPrintable(addr.toString()));
+        snprintf(tmp, 1024, "before decoding fragment %i of %zu (%s)", count, dests.size(), qPrintable(addr.toString()));
         Boomerang::get()->alertDecompileDebugPoint(proc, tmp);
         prog->decodeFragment(proc, addr);
     }
