@@ -22,6 +22,16 @@ private slots:
     void testGetType();
     void testExtent();
     void testIncomplete();
-    void testPredecessor();
-    void testSuccessor();
+
+    // predecessors / successors
+    void testGetPredecessor();
+    void testGetSuccessor();
+    void testSetPredecessor();
+    void testSetSuccessor();
+    void testAddPredecessor();
+    void testAddSuccessor();
+    void testRemovePredecessor();
+    void testRemoveSuccessor();
+    void testIsPredecessor();
+    void testIsSuccessor();
 };

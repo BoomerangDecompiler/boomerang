@@ -232,9 +232,6 @@ public:
     /// removes all predecessor BBs.
     void removeAllPredecessors() { m_predecessors.clear(); }
 
-    /// establish if this bb has a back edge to the given destination
-    bool hasBackEdgeTo(const BasicBlock *dest) const;
-
     /// \returns true if this BB is a (direct) predecessor of \p bb,
     /// i.e. there is an edge from this BB to \p bb
     bool isPredecessorOf(const BasicBlock *bb) const;
@@ -242,6 +239,10 @@ public:
     /// \returns true if this BB is a (direct) successor of \p bb,
     /// i.e. there is an edge from \p bb to this BB.
     bool isSuccessorOf(const BasicBlock *bb) const;
+
+    /// establish if this bb has a back edge to the given destination
+    bool hasBackEdgeTo(const BasicBlock *dest) const;
+
 
     // RTL and statement related
 public:
@@ -374,6 +375,7 @@ public:
 
     /// Update the high and low address of this BB if the RTL list has changed.
     void updateBBAddress();
+
 public:
     /**
      * Print the whole BB to the given stream
