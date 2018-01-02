@@ -33,14 +33,14 @@
 // With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
-static SharedExp forma =
+static SharedConstExp form_a =
     RefExp::get(Binary::get(opArrayIndex,
                             RefExp::get(Terminal::get(opWild), (Statement *)-1),
                             Terminal::get(opWild)),
                 (Statement *)-1);
 
 // Pattern: m[<expr> * 4 + T ]
-static SharedExp formA = Location::memOf(
+static SharedConstExp form_A = Location::memOf(
     Binary::get(opPlus,
                 Binary::get(opMult,
                             Terminal::get(opWild),
@@ -50,14 +50,14 @@ static SharedExp formA = Location::memOf(
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
-static SharedExp formo =
+static SharedConstExp form_o =
     RefExp::get(Binary::get(opArrayIndex,
                             RefExp::get(Terminal::get(opWild), (Statement *)-1),
                             Terminal::get(opWild)),
                 (Statement *)-1);
 
 // Pattern: m[<expr> * 4 + T ] + T
-static SharedExp formO =
+static SharedConstExp form_O =
     Binary::get(opPlus,
                 Location::memOf(Binary::get(opPlus,
                                             Binary::get(opMult,
@@ -68,7 +68,7 @@ static SharedExp formO =
 
 // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static SharedExp formR =
+static SharedConstExp form_R =
     Binary::get(opPlus,
                 Terminal::get(opPC),
                 Location::memOf(Binary::get(opPlus,
@@ -81,7 +81,7 @@ static SharedExp formR =
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static SharedExp formr =
+static SharedConstExp form_r =
     Binary::get(opPlus,
                 Terminal::get(opPC),
                 Location::memOf(Binary::get(opPlus,
@@ -100,12 +100,12 @@ struct SwitchForm
 
 static SwitchForm hlForms[] =
 {
-    { forma, 'a' },
-    { formA, 'A' },
-    { formo, 'o' },
-    { formO, 'O' },
-    { formR, 'R' },
-    { formr, 'r' }
+    { form_a, 'a' },
+    { form_A, 'A' },
+    { form_o, 'o' },
+    { form_O, 'O' },
+    { form_R, 'R' },
+    { form_r, 'r' }
 };
 
 
