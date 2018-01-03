@@ -777,7 +777,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // procedure
                             if (uDest < m_image->getLimitTextHigh()) {
                                 m_targetQueue.visit(cfg, uDest, pBB);
-                                cfg->addEdge(pBB, uDest, true);
+                                cfg->addEdge(pBB, uDest);
                             }
                             else {
                                 LOG_WARN("Goto instruction at address %1 branches beyond end of section, to %2", uAddr, uDest);
@@ -863,7 +863,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                     LOG_MSG("  guessed uDest %1", destAddr);
 
                                     m_targetQueue.visit(cfg, destAddr, pBB);
-                                    cfg->addEdge(pBB, destAddr, true);
+                                    cfg->addEdge(pBB, destAddr);
                                 }
 
                                 pBB->setType(BBType::Nway);
@@ -891,11 +891,11 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // Add the out edge if it is to a destination within the section
                             if (jumpDest < m_image->getLimitTextHigh()) {
                                 m_targetQueue.visit(cfg, jumpDest, pBB);
-                                cfg->addEdge(pBB, jumpDest, true);
+                                cfg->addEdge(pBB, jumpDest);
                             }
                             else {
                                 LOG_WARN("Branch instruction at address %1 branches beyond end of section, to %2", uAddr, jumpDest);
-                                cfg->addEdge(pBB, Address::INVALID, false);
+                                cfg->addEdge(pBB, Address::INVALID);
                             }
 
                             // Add the fall-through outedge
@@ -1065,8 +1065,6 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                     // Add out edge from call to return
                                     cfg->addEdge(pBB, returnBB);
-                                    // Put a label on the return BB (since it's an orphan); a jump will be reqd
-                                    cfg->setLabelRequired(returnBB);
 
                                     // Mike: do we need to set return locations?
                                     // This ends the function
@@ -1241,9 +1239,6 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::unique_ptr<RTLLis
         try {
             pBB = pCfg->createBB(std::move(BB_rtls), BBType::Oneway);
             BB_rtls = nullptr;
-
-            // if BB already exists but is incomplete, exception is thrown
-            pCfg->addEdge(pBB, retAddr, true);
 
             // Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
             // instructions before the return instruction).

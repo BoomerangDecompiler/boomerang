@@ -252,10 +252,6 @@ public:
     /// Simplify all expressions in this BB
     void simplify();
 
-    void setLabelRequired(bool required);
-
-public:
-
     /// Update the high and low address of this BB if the RTL list has changed.
     void updateBBAddresses();
 
@@ -285,9 +281,6 @@ protected:
     Address m_highAddr = Address::INVALID;
 
     BBType m_bbType = BBType::Invalid;      ///< type of basic block
-
-    /* general basic block information */
-    bool m_labelNeeded  = false; ///< If true, the start of the BB needs a label in the decompiled code
 
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_predecessors;  ///< Vector of in-edges

@@ -148,7 +148,7 @@ public:
      * \param destAddr  Destination BB of the out edge
      * \param labelRequired if true, set a label at the destination address. Set true on "true" branches of labels
      */
-    void addEdge(BasicBlock *sourceBB, Address destAddr, bool labelRequired = false);
+    void addEdge(BasicBlock *sourceBB, Address destAddr);
 
     /**
      * Add an edge between \p sourceBB and destBB.
@@ -160,18 +160,7 @@ public:
      * \param destBB Start address of the BB reached by the out edge
      * \param labelRequired - indicates that label is required in the destination BB
      */
-    void addEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool labelRequired = false);
-
-    /**
-     * Adds a label for the given basic block; the label number will be a non-zero integer.
-     *
-     * Sets a flag indicating that this BB has a label,
-     * in the sense that a label is required in the translated source code.
-     *
-     * \note         The label is only set if it was not set previously
-     * \param        bb Pointer to the BB whose label will be set
-     */
-    void setLabelRequired(BasicBlock *bb);
+    void addEdge(BasicBlock *sourceBB, BasicBlock *destBB);
 
     /**
      * Get the first BB of this CFG.

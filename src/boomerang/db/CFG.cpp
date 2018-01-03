@@ -235,7 +235,7 @@ BasicBlock *Cfg::createIncompleteBB(Address addr)
 }
 
 
-void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequiresLabel /* = false */)
+void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB)
 {
     // Wire up edges
     sourceBB->addSuccessor(destBB);
@@ -244,16 +244,11 @@ void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool destRequiresLab
     // special handling for upgrading oneway BBs to twoway BBs
     if ((sourceBB->getType() == BBType::Oneway) && (sourceBB->getNumSuccessors() > 1)) {
         sourceBB->setType(BBType::Twoway);
-        destRequiresLabel = true;
-    }
-
-    if (destRequiresLabel) {
-        setLabelRequired(destBB); // Indicate "label required"
     }
 }
 
 
-void Cfg::addEdge(BasicBlock *sourceBB, Address addr, bool requiresLabel /* = false */)
+void Cfg::addEdge(BasicBlock *sourceBB, Address addr)
 {
     // If we already have a BB for this address, add the edge to it.
     // If not, create a new incomplete BB at the destination address.
@@ -263,7 +258,7 @@ void Cfg::addEdge(BasicBlock *sourceBB, Address addr, bool requiresLabel /* = fa
         destBB = createIncompleteBB(addr);
     }
 
-    this->addEdge(sourceBB, destBB, requiresLabel);
+    this->addEdge(sourceBB, destBB);
 }
 
 
@@ -304,10 +299,9 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         // since they will never overlap
         _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->getRTLs()->end()));
         m_listBB.push_back(_newBB); // Put it in the graph
+
         // Put the implicit label into the map. Need to do this before the addOutEdge() below
         m_mapBB[splitAddr] = _newBB;
-        // There must be a label here; else would not be splitting. Give it a new label
-        _newBB->setLabelRequired(true);
     }
     else if (_newBB->isIncomplete()) {
         // We have an existing BB and a map entry, but no details except for
@@ -323,7 +317,6 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
             _newBB->addPredecessor(pred);
         }
 
-        _newBB->setLabelRequired(true);
         _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->getRTLs()->end()));
     }
 
@@ -715,8 +708,6 @@ bool Cfg::compressCfg()
             // which need the successor information.
             jmpBB->removePredecessor(a);
 
-            setLabelRequired(b);
-
             if (jmpBB->getNumPredecessors() == 0) {
                 jmpBB->removeAllSuccessors(); // now we can remove the successors
                 removeBB(jmpBB);
@@ -791,12 +782,6 @@ bool Cfg::isOrphan(Address uAddr) const
     // If it's incomplete, it can't be an orphan
     return pBB && !pBB->isIncomplete() &&
            pBB->getRTLs()->front()->getAddress().isZero();
-}
-
-
-void Cfg::setLabelRequired(BasicBlock *pBB)
-{
-    pBB->setLabelRequired(true);
 }
 
 

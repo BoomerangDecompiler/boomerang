@@ -130,10 +130,6 @@ void BasicBlock::print(QTextStream& os, bool html)
         os << "<br>";
     }
 
-    if (m_labelNeeded) {
-        os << "L" << getLowAddr().toString() << ": ";
-    }
-
     switch (getType())
     {
     case BBType::Oneway:
@@ -737,10 +733,4 @@ bool BasicBlock::hasStatement(const Statement *stmt) const
     }
 
     return false;
-}
-
-
-void BasicBlock::setLabelRequired(bool required)
-{
-    m_labelNeeded = required;
 }

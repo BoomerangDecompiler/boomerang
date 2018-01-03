@@ -33,8 +33,7 @@ class IBinaryImage;
  * Operator Name                Associativity    Operators
  * Primary scope resolution     left to right    ::
  * Primary                      left to right    ()    [ ]     .    -> dynamic_cast typeid
- * Unary                        right to left    ++    --    +  -  !     ~    &  *  (type_name)  sizeof new
- * delete
+ * Unary                        right to left    ++    --    +  -  !     ~    &  *  (type_name)  sizeof new delete
  * C++ Pointer to Member        left to right    .* ->*
  * Multiplicative               left to right    *  /  %
  * Additive                     left to right    +  -

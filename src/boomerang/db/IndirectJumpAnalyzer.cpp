@@ -782,7 +782,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
         if (switchDestination < prog->getLimitTextHigh()) {
             // tq.visit(cfg, uSwitch, this);
-            cfg->addEdge(bb, switchDestination, true);
+            cfg->addEdge(bb, switchDestination);
 
             // Remember to decode the newly discovered switch code arms, if necessary
             // Don't do it right now, in case there are recursive switch statements (e.g. app7win.exe from

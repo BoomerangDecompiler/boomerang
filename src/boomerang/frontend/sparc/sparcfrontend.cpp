@@ -98,7 +98,7 @@ void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& 
 
     if (dest < hiAddress) {
         tq.visit(cfg, dest, newBB);
-        cfg->addEdge(newBB, dest, true);
+        cfg->addEdge(newBB, dest);
     }
     else {
         LOG_ERROR("Branch to address %1 is beyond section limits", dest);
@@ -211,8 +211,6 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
             // Now add the out edge
             cfg->addEdge(callBB, returnBB);
-            // Put a label on the return BB; indicate that a jump is reqd
-            cfg->setLabelRequired(returnBB);
 
             address += inst.numBytes; // For coverage
             // This is a CTI block that doesn't fall through and so must
@@ -386,9 +384,6 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t delta, DecodeResult& ins
             // setReturnLocations(proc->getEpilogue(), 8 /* %o0 */);
             newBB->removeRTL(delay_inst.rtl);
 
-            // Put a label on the return BB; indicate that a jump is reqd
-            cfg->setLabelRequired(returnBB);
-
             // Add this call to the list of calls to analyse. We won't be able to analyse its callee(s), of course.
             callList.push_back(call_stmt);
 
@@ -511,10 +506,10 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         BasicBlock *pOrBB = cfg->createBB(std::move(pOrphan), BBType::Oneway);
 
         // Add an out edge from the orphan as well
-        cfg->addEdge(pOrBB, uDest, true);
+        cfg->addEdge(pOrBB, uDest);
 
         // Add an out edge from the current RTL to the orphan. Put a label at the orphan
-        cfg->addEdge(pBB, pOrBB, true);
+        cfg->addEdge(pBB, pOrBB);
 
         // Add the "false" leg to the NCT
         cfg->addEdge(pBB, address + 4);
@@ -575,16 +570,17 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
         BasicBlock *pOrBB = cfg->createBB(std::move(pOrphan), BBType::Oneway);
 
         // Add an out edge from the orphan as well. Set a label there.
-        cfg->addEdge(pOrBB, uDest, true);
+        cfg->addEdge(pOrBB, uDest);
 
         // Add an out edge from the current RTL to
         // the orphan. Set a label there.
-        cfg->addEdge(pBB, pOrBB, true);
+        cfg->addEdge(pBB, pOrBB);
     }
 
     // Both cases (orphan or not)
     // Add the "false" leg: point past delay inst. Set a label there (see below)
-    cfg->addEdge(pBB, address + 8, true);
+    cfg->addEdge(pBB, address + 8);
+
     // Could need a jump to the following BB, e.g. if uDest is the delay slot instruction itself! e.g. beq,a $+8
 
     address += 8;       // Skip branch and delay
