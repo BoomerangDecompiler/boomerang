@@ -19,7 +19,7 @@ class BasicBlock;
 
 
 /// an enumerated type for the class of stucture determined for a node
-enum class StructType
+enum class StructType : uint8_t
 {
     Invalid,
     Loop,     // Header of a loop only
@@ -30,7 +30,7 @@ enum class StructType
 
 
 /// an type for the class of unstructured conditional jumps
-enum class UnstructType
+enum class UnstructType : uint8_t
 {
     Invalid,
     Structured,
@@ -40,7 +40,7 @@ enum class UnstructType
 
 
 /// an enumerated type for the type of loop headers
-enum class LoopType
+enum class LoopType : uint8_t
 {
     Invalid,
     PreTested,  ///< Header of a while loop
@@ -50,7 +50,7 @@ enum class LoopType
 
 
 /// an enumerated type for the type of conditional headers
-enum class CondType
+enum class CondType : uint8_t
 {
     Invalid,
     IfThen,     ///< conditional with only a then clause
@@ -60,7 +60,7 @@ enum class CondType
 };
 
 /// Depth-first traversal constants.
-enum class TravType
+enum class TravType : uint8_t
 {
     Untraversed, ///< Initial value
     DFS_LNum,    ///< DFS loop stamping pass
@@ -70,7 +70,7 @@ enum class TravType
 };
 
 
-enum class SBBType
+enum class SBBType : uint8_t
 {
     None,          ///< not structured
     PreTestLoop,   ///< header of a loop
@@ -89,9 +89,6 @@ enum class SBBType
 /// Holds all information about control Flow Structure.
 struct BBStructInfo
 {
-    /* for traversal */
-    TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
-
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
     int m_ord = -1;                          ///< node's position within the ordering structure
     int m_revOrd = -1;                       ///< position within ordering structure for the reverse graph
@@ -100,9 +97,18 @@ struct BBStructInfo
     int m_loopStamps[2] = { 0 };
     int m_revLoopStamps[2] = { 0 }; ///< used for structuring analysis
 
+    /* for traversal */
+    TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
+
     /* high level structuring */
     SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
     SBBType m_structType   = SBBType::None; ///< structured type of this node
+
+    // Structured type of the node
+    StructType   m_structuringType     = StructType::Seq;        ///< the structuring class (Loop, Cond, etc)
+    UnstructType m_unstructuredType    = UnstructType::Invalid;  ///< the restructured type of a conditional header
+    LoopType     m_loopHeaderType      = LoopType::Invalid;      ///< the loop type of a loop header
+    CondType     m_conditionHeaderType = CondType::Invalid;      ///< the conditional type of a conditional header
 
     // analysis information
     const BasicBlock *m_immPDom = nullptr;     ///< immediate post dominator
@@ -111,12 +117,6 @@ struct BBStructInfo
     const BasicBlock *m_condFollow = nullptr;  ///< follow of a conditional header
     const BasicBlock *m_loopFollow = nullptr;  ///< follow of a loop header
     const BasicBlock *m_latchNode = nullptr;   ///< latching node of a loop header
-
-    // Structured type of the node
-    StructType   m_structuringType     = StructType::Seq;        ///< the structuring class (Loop, Cond, etc)
-    UnstructType m_unstructuredType    = UnstructType::Invalid;  ///< the restructured type of a conditional header
-    LoopType     m_loopHeaderType      = LoopType::Invalid;      ///< the loop type of a loop header
-    CondType     m_conditionHeaderType = CondType::Invalid;      ///< the conditional type of a conditional header
 };
 
 
