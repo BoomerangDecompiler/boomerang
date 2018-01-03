@@ -194,7 +194,7 @@ public:
     void setCondFollow(const BasicBlock *bb, const BasicBlock *follow) { m_info[bb].m_condFollow = follow; }
 
     /// establish if this bb has any back edges leading FROM it
-    bool hasBackEdge(const BasicBlock *bb);
+    bool hasBackEdge(const BasicBlock *bb) const;
 
     /// establish if this bb is an ancestor of another BB
     bool isAncestorOf(const BasicBlock *bb, const BasicBlock *other) const;
@@ -210,7 +210,7 @@ public:
     void unTraverse();
 
 public:
-    inline bool isLatchNode(const BasicBlock *bb)
+    inline bool isLatchNode(const BasicBlock *bb) const
     {
         const BasicBlock *loopHead = getLoopHead(bb);
         if (!loopHead) {

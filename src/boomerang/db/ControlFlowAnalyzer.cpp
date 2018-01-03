@@ -695,7 +695,7 @@ bool ControlFlowAnalyzer::isBBInLoop(const BasicBlock *bb, const BasicBlock *hea
 }
 
 
-bool ControlFlowAnalyzer::hasBackEdge(const BasicBlock* bb)
+bool ControlFlowAnalyzer::hasBackEdge(const BasicBlock* bb) const
 {
     return std::any_of(bb->getSuccessors().begin(), bb->getSuccessors().end(),
         [this, bb](const BasicBlock *succ) {
