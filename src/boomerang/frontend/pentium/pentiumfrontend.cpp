@@ -155,7 +155,8 @@ bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream&
     // point compares to generate floating point branches.
     // processFloatCode() will recurse to process its out-edge BBs (if not already processed)
     Cfg *cfg = function->getCFG();
-    cfg->unTraverse(); // Reset all the "traversed" flags (needed soon)
+    cfg->unTraverse();
+
     // This will get done twice; no harm
     function->setEntryBB();
 

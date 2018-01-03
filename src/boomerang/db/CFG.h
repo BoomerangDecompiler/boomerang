@@ -281,13 +281,6 @@ public:
      */
     bool compressCfg();
 
-    /**
-     * Reset all the traversed flags.
-     * \note To make this a useful public function, we need access
-     * to the traversed flag with other public functions.
-     */
-    void unTraverse();
-
     /// Check if is a BB at the address given
     /// whose first RTL is an orphan, i.e. getAddress() returns 0.
     bool isOrphan(Address uAddr) const;
@@ -308,9 +301,6 @@ public:
 
     /// Completely removes a single BB from this CFG.
     void removeBB(BasicBlock *bb);
-
-    /// Structures the control flow graph
-    void structure();
 
     /// return a BB given an address
     BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
@@ -387,48 +377,6 @@ public:
     BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, iterator& it);
 
 
-    // Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-
-    void setTimeStamps();
-
-    /// Finds the common post dominator of the current immediate post dominator and its successor's immediate post dominator
-    BasicBlock *commonPDom(BasicBlock *curImmPDom, BasicBlock *succImmPDom);
-
-    /**
-     * Finds the immediate post dominator of each node in the graph PROC->cfg.
-     *
-     * Adapted version of the dominators algorithm by Hecht and Ullman;
-     * finds immediate post dominators only.
-     * \note graph should be reducible
-     */
-    void updateImmedPDom();
-
-    /// Structures all conditional headers (i.e. nodes with more than one outedge)
-    void structConds();
-
-    /// \pre The graph for curProc has been built.
-    /// \post Each node is tagged with the header of the most nested loop of which it is a member (possibly none).
-    /// The header of each loop stores information on the latching node as well as the type of loop it heads.
-    void structLoops();
-
-    /// This routine is called after all the other structuring has been done. It detects conditionals that are in fact the
-    /// head of a jump into/outof a loop or into a case body. Only forward jumps are considered as unstructured backward
-    /// jumps will always be generated nicely.
-    void checkConds();
-
-    /// \pre  The loop induced by (head,latch) has already had all its member nodes tagged
-    /// \post The type of loop has been deduced
-    void determineLoopType(BasicBlock *header, bool *& loopNodes);
-
-    /// \pre  The loop headed by header has been induced and all it's member nodes have been tagged
-    /// \post The follow of the loop has been determined.
-    void findLoopFollow(BasicBlock *header, bool *& loopNodes);
-
-    /// \pre header has been detected as a loop header and has the details of the
-    ///        latching node
-    /// \post the nodes within the loop have been tagged
-    void tagNodesInLoop(BasicBlock *header, bool *& loopNodes);
-
     void removeUnneededLabels(ICodeGenerator *gen);
     void generateDotFile(QTextStream& of);
 
@@ -473,15 +421,19 @@ public:
 
     bool removeOrphanBBs();
 
+    /**
+     * Reset all the traversed flags.
+     * \note To make this a useful public function, we need access
+     * to the traversed flag with other public functions.
+     */
+    void unTraverse();
+
 private:
     UserProc *m_myProc;                      ///< Pointer to the UserProc object that contains this CFG object
     mutable bool m_wellFormed;
-    bool m_structured;
     bool m_implicitsDone;                    ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
 
     std::list<BasicBlock *> m_listBB;        ///< BasicBlock s contained in this CFG
-    std::vector<BasicBlock *> m_ordering;    ///< Ordering of BBs for control flow structuring
-    std::vector<BasicBlock *> m_revOrdering; ///< Ordering of BBs for control flow structuring
 
     MAPBB m_mapBB;                           ///< The Address to BB map
     BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.

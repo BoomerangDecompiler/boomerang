@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/ControlFlowAnalyzer.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
@@ -541,7 +542,8 @@ void CCodeGenerator::generateCode(UserProc *proc)
     assert(proc->getCFG());
     assert(proc->getEntryBB());
 
-    proc->getCFG()->structure();
+    ControlFlowAnalyzer ana(proc->getCFG());
+    ana.structureCFG();
     proc->removeUnusedLocals();
 
     // Note: don't try to remove unused statements here; that requires the
