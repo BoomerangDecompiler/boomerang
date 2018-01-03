@@ -132,7 +132,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
     }
 
     m_listOfRTLs = std::move(rtls);
-    updateBBAddress();
+    updateBBAddresses();
 }
 
 
@@ -709,7 +709,7 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 {
     // timestamp the current node with the current time
     // and set its traversed flag
-    m_travType     = TravType::DFS_LNum;
+    setTravType(TravType::DFS_LNum);
     m_loopStamps[0] = time;
 
     // recurse on unvisited children and set inedges for all children
@@ -719,7 +719,7 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
         // outEdges[i]->inEdges.Add(this);
 
         // recurse on this child if it hasn't already been visited
-        if (out->m_travType != TravType::DFS_LNum) {
+        if (out->getTravType() != TravType::DFS_LNum) {
             out->setLoopStamps(++time, order);
         }
     }
@@ -736,13 +736,13 @@ void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
 void BasicBlock::setRevLoopStamps(int& time)
 {
     // timestamp the current node with the current time and set its traversed flag
-    m_travType        = TravType::DFS_RNum;
+    setTravType(TravType::DFS_RNum);
     m_revLoopStamps[0] = time;
 
     // recurse on the unvisited children in reverse order
     for (int i = (int)m_successors.size() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
-        if (m_successors[i]->m_travType != TravType::DFS_RNum) {
+        if (m_successors[i]->getTravType() != TravType::DFS_RNum) {
             m_successors[i]->setRevLoopStamps(++time);
         }
     }
@@ -754,12 +754,12 @@ void BasicBlock::setRevLoopStamps(int& time)
 void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
 {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
-    m_travType = TravType::DFS_PDom;
+    setTravType(TravType::DFS_PDom);
 
     // recurse on unvisited children
-    for (BasicBlock *in : m_predecessors) {
-        if (in->m_travType != TravType::DFS_PDom) {
-            in->setRevOrder(order);
+    for (BasicBlock *pred : m_predecessors) {
+        if (pred->getTravType() != TravType::DFS_PDom) {
+            pred->setRevOrder(order);
         }
     }
 
@@ -774,7 +774,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
 {
     assert(!m_caseHead);
 
-    m_travType = TravType::DFS_Case;
+    setTravType(TravType::DFS_Case);
 
     // don't tag this node if it is the case header under investigation
     if (this != head) {
@@ -784,7 +784,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
     // if this is a nested case header, then it's member nodes
     // will already have been tagged so skip straight to its follow
     if (isType(BBType::Nway) && (this != head)) {
-        if (m_condFollow && (m_condFollow->m_travType != TravType::DFS_Case) && (m_condFollow != follow)) {
+        if (m_condFollow && (m_condFollow->getTravType() != TravType::DFS_Case) && (m_condFollow != follow)) {
             m_condFollow->setCaseHead(head, follow);
         }
     }
@@ -794,7 +794,7 @@ void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
         //  ii) hasn't already been traversed in a case tagging traversal and,
         // iii) isn't the follow node.
         for (BasicBlock *out : m_successors) {
-            if (!hasBackEdgeTo(out) && (out->m_travType != TravType::DFS_Case) && (out != follow)) {
+            if (!hasBackEdgeTo(out) && (out->getTravType() != TravType::DFS_Case) && (out != follow)) {
                 out->setCaseHead(head, follow);
             }
         }
@@ -906,7 +906,7 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
             rtl->append(s);
-            updateBBAddress();
+            updateBBAddresses();
             return;
         }
     }
@@ -916,11 +916,11 @@ void BasicBlock::prependStmt(Statement *s, UserProc *proc)
     RTL *rtl = new RTL(Address::ZERO, &listStmt);
     m_listOfRTLs->push_front(rtl);
 
-    updateBBAddress();
+    updateBBAddresses();
 }
 
 
-void BasicBlock::updateBBAddress()
+void BasicBlock::updateBBAddresses()
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         m_lowAddr = Address::ZERO;

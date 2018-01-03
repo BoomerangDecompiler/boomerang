@@ -256,7 +256,7 @@ public:
     {
         m_listOfRTLs->remove(rtl);
 
-        updateBBAddress();
+        updateBBAddresses();
     }
 
     /**
@@ -351,7 +351,7 @@ public:
     int getOrdering() const { return m_ord; }
 
     /// Update the high and low address of this BB if the RTL list has changed.
-    void updateBBAddress();
+    void updateBBAddresses();
 
 public:
     /**

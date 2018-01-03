@@ -359,7 +359,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
     }
 
     bb->getRTLs()->erase(ri, bb->getRTLs()->end());
-    bb->updateBBAddress();
+    bb->updateBBAddresses();
 
     // Erase any existing out edges
     bb->removeAllSuccessors();
@@ -640,7 +640,7 @@ bool Cfg::joinBB(BasicBlock *bb1, BasicBlock *bb2)
     for (auto it = bb1->getRTLs()->rbegin(); it != bb1->getRTLs()->rend(); it++) {
         bb2->getRTLs()->push_front(*it);
     }
-    bb2->updateBBAddress();
+    bb2->updateBBAddresses();
 
     completeMerge(bb1, bb2); // Mash them together
 
