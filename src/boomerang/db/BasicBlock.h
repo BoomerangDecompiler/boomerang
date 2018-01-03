@@ -29,59 +29,6 @@ class ConnectionGraph;
 struct SwitchInfo;
 
 
-/// Depth-first traversal constants.
-enum class TravType
-{
-    Untraversed, ///< Initial value
-    DFS_LNum,    ///< DFS loop stamping pass
-    DFS_RNum,    ///< DFS reverse loop stamping pass
-    DFS_Case,    ///< DFS case head tagging traversal
-    DFS_PDom,    ///< DFS post dominator ordering
-};
-
-
-/// an enumerated type for the class of stucture determined for a node
-enum class StructType
-{
-    Invalid,
-    Loop,     // Header of a loop only
-    Cond,     // Header of a conditional only (if-then-else or switch)
-    LoopCond, // Header of a loop and a conditional
-    Seq       // sequential statement (default)
-};
-
-
-/// an type for the class of unstructured conditional jumps
-enum class UnstructType
-{
-    Invalid,
-    Structured,
-    JumpInOutLoop,
-    JumpIntoCase
-};
-
-
-/// an enumerated type for the type of conditional headers
-enum class CondType
-{
-    Invalid,
-    IfThen,     ///< conditional with only a then clause
-    IfThenElse, ///< conditional with a then and an else clause
-    IfElse,     ///< conditional with only an else clause
-    Case        ///< nway conditional header (case statement)
-};
-
-
-/// an enumerated type for the type of loop headers
-enum class LoopType
-{
-    Invalid,
-    PreTested,  ///< Header of a while loop
-    PostTested, ///< Header of a do..while loop
-    Endless     ///< Header of an endless loop
-};
-
-
 /// Kinds of basic block nodes
 /// reordering these will break the save files - trent
 enum class BBType
@@ -97,21 +44,6 @@ enum class BBType
     CompCall = 7,  ///< computed call        (call [eax + 0x14])
 };
 
-
-enum class SBBType
-{
-    None,          ///< not structured
-    PreTestLoop,   ///< header of a loop
-    PostTestLoop,
-    EndlessLoop,
-    JumpInOutLoop, ///< an unstructured jump in or out of a loop
-    JumpIntoCase,  ///< an unstructured jump into a case statement
-    IfGoto,        ///< unstructured conditional
-    IfThen,        ///< conditional with then clause
-    IfThenElse,    ///< conditional with then and else clauses
-    IfElse,        ///< conditional with else clause only
-    Case           ///< case statement (switch)
-};
 
 typedef std::list<BasicBlock *>::iterator         BBIterator;
 typedef std::list<BasicBlock *>::const_iterator   BBCIterator;
@@ -240,10 +172,6 @@ public:
     /// i.e. there is an edge from \p bb to this BB.
     bool isSuccessorOf(const BasicBlock *bb) const;
 
-    /// establish if this bb has a back edge to the given destination
-    bool hasBackEdgeTo(const BasicBlock *dest) const;
-
-
     // RTL and statement related
 public:
     /// \returns all RTLs that are part of this BB.
@@ -284,10 +212,6 @@ public:
     void prependStmt(Statement *s, UserProc *proc);
 
     bool hasStatement(const Statement *stmt) const;
-
-
-    bool isCaseOption();
-
 
     /// \returns the address of the call, if this is a call BB.
     /// For all other BB types, returns Address::INVALID.
@@ -331,24 +255,6 @@ public:
     void setLabelRequired(bool required);
 
 public:
-    inline bool isLatchNode() { return m_loopHead && m_loopHead->getLatchNode() == this; }
-
-    inline BasicBlock *getLatchNode()  const { return m_latchNode; }
-    inline BasicBlock *getLoopHead()   const { return m_loopHead; }
-    inline BasicBlock *getLoopFollow() const { return m_loopFollow; }
-    inline BasicBlock *getCondFollow() const { return m_condFollow; }
-    inline BasicBlock *getCaseHead()   const { return m_caseHead; }
-
-    TravType getTravType() const { return m_travType; }
-    StructType getStructType() const { return m_structuringType; }
-    CondType getCondType() const;
-    UnstructType getUnstructType() const;
-    LoopType getLoopType() const;
-
-    void setTravType(TravType type) { m_travType = type; }
-    void setStructType(StructType s);
-
-    int getOrdering() const { return m_ord; }
 
     /// Update the high and low address of this BB if the RTL list has changed.
     void updateBBAddresses();
@@ -370,36 +276,6 @@ public:
     /// Print this BB to stderr
     void dump();
 
-public:
-    void setLoopStamps(int& time, std::vector<BasicBlock *>& order);
-    void setRevLoopStamps(int& time);
-    void setRevOrder(std::vector<BasicBlock *>& order);
-
-    void setLoopHead(BasicBlock *head) { m_loopHead = head; }
-    void setLatchNode(BasicBlock *latch) { m_latchNode = latch; }
-    void setCaseHead(BasicBlock *head, BasicBlock *follow);
-
-    void setUnstructType(UnstructType us);
-    void setLoopType(LoopType l);
-    void setCondType(CondType l);
-
-    void setLoopFollow(BasicBlock *other) { m_loopFollow = other; }
-    void setCondFollow(BasicBlock *other) { m_condFollow = other; }
-
-    /// establish if this bb has any back edges leading FROM it
-    bool hasBackEdge();
-
-    /// establish if this bb is an ancestor of another BB
-    bool isAncestorOf(const BasicBlock *other) const;
-    bool inLoop(BasicBlock *header, BasicBlock *latch);
-
-    int getRevOrd() const { return m_revOrd; }
-
-    BasicBlock *getImmPDom() { return m_immPDom; }
-    const BasicBlock *getImmPDom() const { return m_immPDom; }
-
-    void setImmPDom(BasicBlock *bb) { m_immPDom = bb; }
-
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
@@ -416,33 +292,4 @@ protected:
     /* in-edges and out-edges */
     std::vector<BasicBlock *> m_predecessors;  ///< Vector of in-edges
     std::vector<BasicBlock *> m_successors;    ///< Vector of out-edges
-
-    /* for traversal */
-    TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
-
-    /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-    int m_ord = -1;                          ///< node's position within the ordering structure
-    int m_revOrd = -1;                       ///< position within ordering structure for the reverse graph
-    int m_inEdgesVisited = 0;                ///< counts the number of in edges visited during a DFS
-    int m_numForwardInEdges = 0;             ///< inedges to this node that aren't back edges
-    int m_loopStamps[2] = { 0 };
-    int m_revLoopStamps[2] = { 0 }; ///< used for structuring analysis
-
-    /* high level structuring */
-    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
-    SBBType m_structType   = SBBType::None; ///< structured type of this node
-
-    // analysis information
-    BasicBlock *m_immPDom = nullptr;         ///< immediate post dominator
-    BasicBlock *m_loopHead = nullptr;        ///< head of the most nested enclosing loop
-    BasicBlock *m_caseHead = nullptr;        ///< head of the most nested enclosing case
-    BasicBlock *m_condFollow = nullptr;      ///< follow of a conditional header
-    BasicBlock *m_loopFollow = nullptr;      ///< follow of a loop header
-    BasicBlock *m_latchNode = nullptr;       ///< latching node of a loop header
-
-    // Structured type of the node
-    StructType m_structuringType = StructType::Seq;          ///< the structuring class (Loop, Cond, etc)
-    UnstructType m_unstructuredType = UnstructType::Invalid; ///< the restructured type of a conditional header
-    LoopType m_loopHeaderType = LoopType::Invalid;           ///< the loop type of a loop header
-    CondType m_conditionHeaderType = CondType::Invalid;      ///< the conditional type of a conditional header
 };

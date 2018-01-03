@@ -1322,10 +1322,3 @@ void Cfg::removeImplicitAssign(SharedExp x)
     m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
 }
 
-
-void Cfg::unTraverse()
-{
-    for (BasicBlock *bb : *this) {
-        bb->setTravType(TravType::Untraversed);
-    }
-}

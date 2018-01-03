@@ -421,13 +421,6 @@ public:
 
     bool removeOrphanBBs();
 
-    /**
-     * Reset all the traversed flags.
-     * \note To make this a useful public function, we need access
-     * to the traversed flag with other public functions.
-     */
-    void unTraverse();
-
 private:
     UserProc *m_myProc;                      ///< Pointer to the UserProc object that contains this CFG object
     mutable bool m_wellFormed;

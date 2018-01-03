@@ -63,23 +63,6 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     // m_labelNeeded is initialized to false, not copied
     , m_predecessors(bb.m_predecessors)
     , m_successors(bb.m_successors)
-    , m_travType(bb.m_travType)
-    , m_ord(bb.m_ord)
-    , m_revOrd(bb.m_revOrd)
-    , m_inEdgesVisited(bb.m_inEdgesVisited)
-    , m_numForwardInEdges(bb.m_numForwardInEdges)
-    , m_loopCondType(bb.m_loopCondType)
-    , m_structType(bb.m_structType)
-    , m_immPDom(bb.m_immPDom)
-    , m_loopHead(bb.m_loopHead)
-    , m_caseHead(bb.m_caseHead)
-    , m_condFollow(bb.m_condFollow)
-    , m_loopFollow(bb.m_loopFollow)
-    , m_latchNode(bb.m_latchNode)
-    , m_structuringType(bb.m_structuringType)
-    , m_unstructuredType(bb.m_unstructuredType)
-    , m_loopHeaderType(bb.m_loopHeaderType)
-    , m_conditionHeaderType(bb.m_conditionHeaderType)
 {
     // make a deep copy of the RTL list
     std::unique_ptr<RTLList> newList(new RTLList());
@@ -108,21 +91,6 @@ BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
     return *this;
 }
 
-
-bool BasicBlock::isCaseOption()
-{
-    if (!m_caseHead) {
-        return false;
-    }
-
-    for (int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
-        if (m_caseHead->getSuccessor(i) == this) {
-            return true;
-        }
-    }
-
-    return false;
-}
 
 
 void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
@@ -596,12 +564,6 @@ void BasicBlock::setCond(SharedExp e)
 }
 
 
-bool BasicBlock::isAncestorOf(const BasicBlock *other) const
-{
-    return ((m_loopStamps[0]   < other->m_loopStamps[0]    && m_loopStamps[1] > other->m_loopStamps[1]) ||
-           (m_revLoopStamps[0] < other->m_revLoopStamps[0] && m_revLoopStamps[1] > other->m_revLoopStamps[1]));
-}
-
 
 void BasicBlock::simplify()
 {
@@ -687,12 +649,6 @@ void BasicBlock::simplify()
 }
 
 
-bool BasicBlock::hasBackEdgeTo(const BasicBlock *dest) const
-{
-    return dest == this || dest->isAncestorOf(this);
-}
-
-
 bool BasicBlock::isPredecessorOf(const BasicBlock* bb) const
 {
     return std::find(m_successors.begin(), m_successors.end(), bb) != m_successors.end();
@@ -702,193 +658,6 @@ bool BasicBlock::isPredecessorOf(const BasicBlock* bb) const
 bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
 {
     return std::find(m_predecessors.begin(), m_predecessors.end(), bb) != m_predecessors.end();
-}
-
-
-void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
-{
-    // timestamp the current node with the current time
-    // and set its traversed flag
-    setTravType(TravType::DFS_LNum);
-    m_loopStamps[0] = time;
-
-    // recurse on unvisited children and set inedges for all children
-    for (BasicBlock *out : m_successors) {
-        // set the in edge from this child to its parent (the current node)
-        // (not done here, might be a problem)
-        // outEdges[i]->inEdges.Add(this);
-
-        // recurse on this child if it hasn't already been visited
-        if (out->getTravType() != TravType::DFS_LNum) {
-            out->setLoopStamps(++time, order);
-        }
-    }
-
-    // set the the second loopStamp value
-    m_loopStamps[1] = ++time;
-
-    // add this node to the ordering structure as well as recording its position within the ordering
-    m_ord = (int)order.size();
-    order.push_back(this);
-}
-
-
-void BasicBlock::setRevLoopStamps(int& time)
-{
-    // timestamp the current node with the current time and set its traversed flag
-    setTravType(TravType::DFS_RNum);
-    m_revLoopStamps[0] = time;
-
-    // recurse on the unvisited children in reverse order
-    for (int i = (int)m_successors.size() - 1; i >= 0; i--) {
-        // recurse on this child if it hasn't already been visited
-        if (m_successors[i]->getTravType() != TravType::DFS_RNum) {
-            m_successors[i]->setRevLoopStamps(++time);
-        }
-    }
-
-    m_revLoopStamps[1] = ++time;
-}
-
-
-void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
-{
-    // Set this node as having been traversed during the post domimator DFS ordering traversal
-    setTravType(TravType::DFS_PDom);
-
-    // recurse on unvisited children
-    for (BasicBlock *pred : m_predecessors) {
-        if (pred->getTravType() != TravType::DFS_PDom) {
-            pred->setRevOrder(order);
-        }
-    }
-
-    // add this node to the ordering structure and record the post dom. order of this node as its index within this
-    // ordering structure
-    m_revOrd = (int)order.size();
-    order.push_back(this);
-}
-
-
-void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
-{
-    assert(!m_caseHead);
-
-    setTravType(TravType::DFS_Case);
-
-    // don't tag this node if it is the case header under investigation
-    if (this != head) {
-        m_caseHead = head;
-    }
-
-    // if this is a nested case header, then it's member nodes
-    // will already have been tagged so skip straight to its follow
-    if (isType(BBType::Nway) && (this != head)) {
-        if (m_condFollow && (m_condFollow->getTravType() != TravType::DFS_Case) && (m_condFollow != follow)) {
-            m_condFollow->setCaseHead(head, follow);
-        }
-    }
-    else {
-        // traverse each child of this node that:
-        //   i) isn't on a back-edge,
-        //  ii) hasn't already been traversed in a case tagging traversal and,
-        // iii) isn't the follow node.
-        for (BasicBlock *out : m_successors) {
-            if (!hasBackEdgeTo(out) && (out->getTravType() != TravType::DFS_Case) && (out != follow)) {
-                out->setCaseHead(head, follow);
-            }
-        }
-    }
-}
-
-
-void BasicBlock::setStructType(StructType structType)
-{
-    // if this is a conditional header, determine exactly which type of conditional header it is (i.e. switch, if-then,
-    // if-then-else etc.)
-    if (structType == StructType::Cond) {
-        if (isType(BBType::Nway)) {
-            m_conditionHeaderType = CondType::Case;
-        }
-        else if (m_successors[BELSE] == m_condFollow) {
-            m_conditionHeaderType = CondType::IfThen;
-        }
-        else if (m_successors[BTHEN] == m_condFollow) {
-            m_conditionHeaderType = CondType::IfElse;
-        }
-        else {
-            m_conditionHeaderType = CondType::IfThenElse;
-        }
-    }
-
-    m_structuringType = structType;
-}
-
-
-void BasicBlock::setUnstructType(UnstructType unstructType)
-{
-    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
-    m_unstructuredType = unstructType;
-}
-
-
-UnstructType BasicBlock::getUnstructType() const
-{
-    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond));
-    // fails when cenerating code for switches; not sure if actually needed TODO
-    // assert(m_conditionHeaderType != CondType::Case);
-
-    return m_unstructuredType;
-}
-
-
-void BasicBlock::setLoopType(LoopType l)
-{
-    assert(m_structuringType == StructType::Loop || m_structuringType == StructType::LoopCond);
-    m_loopHeaderType = l;
-
-    // set the structured class (back to) just Loop if the loop type is PreTested OR it's PostTested and is a single
-    // block loop
-    if ((m_loopHeaderType == LoopType::PreTested) || ((m_loopHeaderType == LoopType::PostTested) && (this == m_latchNode))) {
-        m_structuringType = StructType::Loop;
-    }
-}
-
-
-LoopType BasicBlock::getLoopType() const
-{
-    assert(m_structuringType == StructType::Loop || m_structuringType == StructType::LoopCond);
-    return m_loopHeaderType;
-}
-
-
-void BasicBlock::setCondType(CondType c)
-{
-    assert(m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond);
-    m_conditionHeaderType = c;
-}
-
-
-CondType BasicBlock::getCondType() const
-{
-    assert(m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond);
-    return m_conditionHeaderType;
-}
-
-
-bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
-{
-    assert(header->m_latchNode == latch);
-    assert(header == latch ||
-           ((header->m_loopStamps[0] > latch->m_loopStamps[0] && latch->m_loopStamps[1] > header->m_loopStamps[1]) ||
-            (header->m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < header->m_loopStamps[1])));
-    // this node is in the loop if it is the latch node OR
-    // this node is within the header and the latch is within this when using the forward loop stamps OR
-    // this node is within the header and the latch is within this when using the reverse loop stamps
-    return this == latch || (header->m_loopStamps[0] < m_loopStamps[0] && m_loopStamps[1] < header->m_loopStamps[1] &&
-                             m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < m_loopStamps[1]) ||
-           (header->m_revLoopStamps[0] < m_revLoopStamps[0] && m_revLoopStamps[1] < header->m_revLoopStamps[1] &&
-            m_revLoopStamps[0] < latch->m_revLoopStamps[0] && latch->m_revLoopStamps[1] < m_revLoopStamps[1]);
 }
 
 
@@ -970,17 +739,6 @@ bool BasicBlock::hasStatement(const Statement *stmt) const
     return false;
 }
 
-
-bool BasicBlock::hasBackEdge()
-{
-    for (auto bb : m_successors) {
-        if (hasBackEdgeTo(bb)) {
-            return true;
-        }
-    }
-
-    return false;
-}
 
 void BasicBlock::setLabelRequired(bool required)
 {
