@@ -9,6 +9,7 @@
 
 list(APPEND boomerang-codegen-sources
     codegen/CCodeGenerator
+    codegen/ControlFlowAnalyzer
     codegen/ICodeGenerator.h
     codegen/syntax/SyntaxNode
     codegen/syntax/BlockSyntaxNode

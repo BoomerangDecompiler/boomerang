@@ -11,7 +11,6 @@ list(APPEND boomerang-db-sources
     db/BasicBlock
     db/BinaryImage
     db/CFG
-    db/ControlFlowAnalyzer
     db/DataFlow
     db/DefCollector
     db/Global
