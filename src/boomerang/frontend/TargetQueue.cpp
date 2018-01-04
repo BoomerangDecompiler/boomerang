@@ -17,6 +17,13 @@
 
 void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)
 {
+    const BasicBlock *existingBB = cfg->getBBStartingAt(newAddr);
+    if (existingBB) {
+        // BB was already visited - don't visit it again.
+        newBB = nullptr;
+        return;
+    }
+
     // Find out if we've already parsed the destination
     const bool alreadyParsed = cfg->label(newAddr, newBB);
 
@@ -49,7 +56,7 @@ Address TargetQueue::getNextAddress(const Cfg& cfg)
         }
 
         // If no label there at all, or if there is a BB, it's incomplete, then we can parse this address next
-        if (!cfg.existsBB(address) || cfg.isIncomplete(address)) {
+        if (!cfg.isStartOfBB(address) || cfg.isStartOfIncompleteBB(address)) {
             return address;
         }
     }

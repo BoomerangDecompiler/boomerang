@@ -1135,7 +1135,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             // In fact, mustn't decode twice, because it will muck up the coverage, but also will cause subtle problems
             // like add a call to the list of calls to be processed, then delete the call RTL (e.g. Pentium 134.perl
             // benchmark)
-            if (sequentialDecode && cfg->existsBB(uAddr)) {
+            if (sequentialDecode && cfg->isStartOfBB(uAddr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
                     BasicBlock *bb = cfg->createBB(BBType::Fall, std::move(BB_rtls));
@@ -1148,7 +1148,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                 }
 
                 // Pick a new address to decode from, if the BB is complete
-                if (!cfg->isIncomplete(uAddr)) {
+                if (!cfg->isStartOfIncompleteBB(uAddr)) {
                     sequentialDecode = false;
                 }
             }

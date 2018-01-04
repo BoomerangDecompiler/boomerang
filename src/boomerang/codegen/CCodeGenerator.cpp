@@ -589,7 +589,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     addProcEnd();
 
     if (!SETTING(noRemoveLabels)) {
-        proc->getCFG()->removeUnneededLabels(this);
+        this->removeUnusedLabels(proc->getCFG()->getNumBBs());
     }
 
     proc->setStatus(PROC_CODE_GENERATED);

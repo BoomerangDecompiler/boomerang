@@ -482,7 +482,7 @@ BasicBlock *UserProc::getEntryBB()
 
 void UserProc::setEntryBB()
 {
-    BasicBlock *entryBB = m_cfg->getBB(m_entryAddress);
+    BasicBlock *entryBB = m_cfg->getBBStartingAt(m_entryAddress);
     m_cfg->setEntryAndExitBB(entryBB);
 }
 
@@ -1400,7 +1400,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     }
 
     // Check for indirect jumps or calls not already removed by propagation of constants
-    if (m_cfg->decodeIndirectJmp(this)) {
+    if (m_cfg->analyzeIndirectJumps(this)) {
         // There was at least one indirect jump or call found and decoded. That means that most of what has been done
         // to this function so far is invalid. So redo everything. Very expensive!!
         // Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it

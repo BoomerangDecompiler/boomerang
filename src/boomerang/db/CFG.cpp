@@ -57,12 +57,13 @@ void Cfg::clear()
     // But this has to wait until the decoder redesign.
 
     m_listBB.clear();
-    m_mapBB.clear();
+    m_bbStartMap.clear();
     m_implicitMap.clear();
     m_entryBB    = nullptr;
     m_exitBB     = nullptr;
     m_wellFormed = false;
 }
+
 
 void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
 {
@@ -79,37 +80,12 @@ void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
 }
 
 
-void Cfg::setExitBB(BasicBlock *bb)
+BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 {
-    m_exitBB = bb;
-}
-
-
-bool Cfg::hasNoEntryBB()
-{
-    if (m_entryBB != nullptr) {
-        return false;
-    }
-
-    if (m_myProc) {
-        LOG_WARN("No entry BB for %1", m_myProc->getName());
-    }
-    else {
-        LOG_WARN("No entry BB for unknown proc");
-    }
-
-    return true;
-}
-
-
-BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
-{
-    MAPBB::iterator mi         = m_mapBB.end();
-    BasicBlock      *currentBB = nullptr;
 
     // First find the native address of the first RTL
     // Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
-    Address startAddr = pRtls->front()->getAddress();
+    Address startAddr = bbRTLs->front()->getAddress();
 
     // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
     // with its delay instruction moved in front of it (with 0 address).
@@ -117,19 +93,21 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
     // instr (if not a NOP), and one for the side effect of copying %o7 to %o1.
     // Note that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the map, but they
     // have no RTLs with a non zero address.
-    if (startAddr.isZero() && (pRtls->size() > 1)) {
-        std::list<RTL *>::iterator next = std::next(pRtls->begin());
+    if (startAddr.isZero() && (bbRTLs->size() > 1)) {
+        std::list<RTL *>::iterator next = std::next(bbRTLs->begin());
         startAddr = (*next)->getAddress();
     }
 
     // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here already
     // If it is zero, this is a special BB for handling delayed branches or the like
     bool bDone = false;
+    BBStartMap::iterator mi = m_bbStartMap.end();
+    BasicBlock      *currentBB = nullptr;
 
     if (!startAddr.isZero()) {
-        mi = m_mapBB.find(startAddr);
+        mi = m_bbStartMap.find(startAddr);
 
-        if ((mi != m_mapBB.end()) && (*mi).second) {
+        if ((mi != m_bbStartMap.end()) && (*mi).second) {
             currentBB = (*mi).second;
 
             // It should be incomplete, or the pBB there should be zero (we have called Label but not yet created the BB
@@ -137,14 +115,14 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
             // loop, so not error
             if (!currentBB->isIncomplete()) {
                 // This list of RTLs is not needed now
-                qDeleteAll(*pRtls);
+                qDeleteAll(*bbRTLs);
 
                 LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists", currentBB->getLowAddr());
                 return nullptr;
             }
             else {
                 // Fill in the details, and return it
-                currentBB->setRTLs(std::move(pRtls));
+                currentBB->setRTLs(std::move(bbRTLs));
                 currentBB->setType(bbType);
             }
 
@@ -154,18 +132,18 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
 
     if (!bDone) {
         // Else add a new BB to the back of the current list.
-        currentBB = new BasicBlock(bbType, std::move(pRtls), m_myProc);
+        currentBB = new BasicBlock(bbType, std::move(bbRTLs), m_myProc);
         m_listBB.push_back(currentBB);
 
         // Also add the address to the map from native (source) address to
         // pointer to BB, unless it's zero
         if (!startAddr.isZero()) {
-            m_mapBB[startAddr] = currentBB; // Insert the mapping
-            mi = m_mapBB.find(startAddr);
+            m_bbStartMap[startAddr] = currentBB; // Insert the mapping
+            mi = m_bbStartMap.find(startAddr);
         }
     }
 
-    if (!startAddr.isZero() && (mi != m_mapBB.end())) {
+    if (!startAddr.isZero() && (mi != m_bbStartMap.end())) {
         //
         //  Existing   New         +---+ Top of new
         //            +---+        +---+
@@ -184,7 +162,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
         //
         mi = std::next(mi);
 
-        if (mi != m_mapBB.end()) {
+        if (mi != m_bbStartMap.end()) {
             BasicBlock *nextBB          = (*mi).second;
             Address    nextAddr         = (*mi).first;
             bool       nextIsIncomplete = nextBB->isIncomplete();
@@ -222,15 +200,15 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
 }
 
 
-BasicBlock *Cfg::createIncompleteBB(Address addr)
+BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
 {
     // Create a new (basically empty) BB
-    BasicBlock *pBB = new BasicBlock(addr, m_myProc);
+    BasicBlock *bb = new BasicBlock(lowAddr, m_myProc);
 
     // Add it to the list
-    m_listBB.push_back(pBB);
-    m_mapBB[addr] = pBB; // Insert the mapping
-    return pBB;
+    m_listBB.push_back(bb);
+    m_bbStartMap[lowAddr] = bb; // Insert the mapping
+    return bb;
 }
 
 
@@ -251,7 +229,7 @@ void Cfg::addEdge(BasicBlock *sourceBB, Address addr)
 {
     // If we already have a BB for this address, add the edge to it.
     // If not, create a new incomplete BB at the destination address.
-    BasicBlock *destBB = getBB(addr);
+    BasicBlock *destBB = getBBStartingAt(addr);
 
     if (!destBB) {
         destBB = createIncompleteBB(addr);
@@ -261,16 +239,16 @@ void Cfg::addEdge(BasicBlock *sourceBB, Address addr)
 }
 
 
-bool Cfg::existsBB(Address addr) const
+bool Cfg::isStartOfBB(Address addr) const
 {
-    return getBB(addr) != nullptr;
+    return getBBStartingAt(addr) != nullptr;
 }
 
 
 BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */,
                          bool deleteRTLs /* = false */)
 {
-    std::list<RTL *>::iterator ri;
+    RTLList::iterator ri;
 
     // First find which RTL has the split address; note that this could fail (e.g. label in the middle of an
     // instruction, or some weird delay slot effects)
@@ -300,7 +278,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         m_listBB.push_back(_newBB); // Put it in the graph
 
         // Put the implicit label into the map. Need to do this before the addOutEdge() below
-        m_mapBB[splitAddr] = _newBB;
+        m_bbStartMap[splitAddr] = _newBB;
     }
     else if (_newBB->isIncomplete()) {
         // We have an existing BB and a map entry, but no details except for
@@ -332,7 +310,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 
         for (k = 0; k < succ->getNumPredecessors(); k++) {
             if (succ->getPredecessor(k) == bb) {
-                // Replace with a pointer to the new ancestor
+                // Replace with a pointer to the new predecessor
                 succ->setPredecessor(k, _newBB);
                 break;
             }
@@ -363,23 +341,23 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 
 bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
 {
-    MAPBB::iterator mi, newi;
+    BBStartMap::iterator mi, newi;
 
-    mi = m_mapBB.find(uNativeAddr);     // check if the native address is in the map already (explicit label)
+    mi = m_bbStartMap.find(uNativeAddr);     // check if the native address is in the map already (explicit label)
 
-    if (mi == m_mapBB.end()) {          // not in the map
+    if (mi == m_bbStartMap.end()) {          // not in the map
                                         // If not an explicit label, temporarily add the address to the map
-        m_mapBB[uNativeAddr] = nullptr; // no PBB yet
+        m_bbStartMap[uNativeAddr] = nullptr; // no PBB yet
                                         // get an iterator to the new native address and check if the previous
                                         // element in the (sorted) map overlaps this new native address; if so,
                                         // it's a non-explicit label which needs to be made explicit by
                                         // splitting the previous BB.
-        mi   = m_mapBB.find(uNativeAddr);
+        mi   = m_bbStartMap.find(uNativeAddr);
         newi = mi;
         bool       bSplit   = false;
         BasicBlock *pPrevBB = nullptr;
 
-        if (newi != m_mapBB.begin()) {
+        if (newi != m_bbStartMap.begin()) {
             pPrevBB = (*--mi).second;
 
             if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < uNativeAddr) &&
@@ -421,7 +399,7 @@ bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
         bool       bSplit = false;
         BasicBlock *pPrevBB = nullptr, *pBB = (*mi).second;
 
-        if (mi != m_mapBB.begin()) {
+        if (mi != m_bbStartMap.begin()) {
             pPrevBB = (*--mi).second;
 
             if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < uNativeAddr) &&
@@ -443,9 +421,9 @@ bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
 }
 
 
-bool Cfg::isIncomplete(Address uAddr) const
+bool Cfg::isStartOfIncompleteBB(Address uAddr) const
 {
-    const BasicBlock *bb = getBB(uAddr);
+    const BasicBlock *bb = getBBStartingAt(uAddr);
 
     return bb && bb->isIncomplete();
 }
@@ -470,15 +448,15 @@ bool Cfg::isWellFormed() const
 
         if (current->isIncomplete()) {
             m_wellFormed = false;
-            MAPBB::const_iterator itm;
+            BBStartMap::const_iterator itm;
 
-            for (itm = m_mapBB.begin(); itm != m_mapBB.end(); itm++) {
+            for (itm = m_bbStartMap.begin(); itm != m_bbStartMap.end(); itm++) {
                 if ((*itm).second == elem) {
                     break;
                 }
             }
 
-            if (itm == m_mapBB.end()) {
+            if (itm == m_bbStartMap.end()) {
                 LOG_ERROR("Incomplete BB not even in map!");
             }
             else {
@@ -608,7 +586,7 @@ void Cfg::removeBB(BasicBlock *bb)
     assert(bbIt != m_listBB.end()); // must not delete BBs of other CFGs
 
     if ((*bbIt)->getLowAddr() != Address::ZERO) {
-        m_mapBB.erase((*bbIt)->getLowAddr());
+        m_bbStartMap.erase((*bbIt)->getLowAddr());
     }
 
     m_listBB.erase(bbIt);
@@ -731,16 +709,6 @@ BasicBlock *Cfg::findRetNode()
 }
 
 
-bool Cfg::isOrphan(Address uAddr) const
-{
-    const BasicBlock *pBB = getBB(uAddr);
-
-    // If it's incomplete, it can't be an orphan
-    return pBB && !pBB->isIncomplete() &&
-           pBB->getRTLs()->front()->getAddress().isZero();
-}
-
-
 void Cfg::simplify()
 {
     LOG_VERBOSE("Simplifying CFG ...");
@@ -788,12 +756,6 @@ void Cfg::printToLog()
 
     print(ost);
     LOG_MSG(tgt);
-}
-
-
-void Cfg::removeUnneededLabels(ICodeGenerator *gen)
-{
-    gen->removeUnusedLabels(m_listBB.size());
 }
 
 
@@ -1030,7 +992,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
     if (!haveA) {
         skipRtl->setAddress(addr);
         // Address addr now refers to the splitBB
-        m_mapBB[addr] = skipBB;
+        m_bbStartMap[addr] = skipBB;
 
         // Fix all predecessors of pBB to point to splitBB instead
         for (int i = 0; i < bb->getNumPredecessors(); i++) {
@@ -1159,7 +1121,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
 }
 
 
-bool Cfg::decodeIndirectJmp(UserProc *proc)
+bool Cfg::analyzeIndirectJumps(UserProc *proc)
 {
     bool res = false;
 
