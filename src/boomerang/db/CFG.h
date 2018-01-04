@@ -152,11 +152,7 @@ public:
     BasicBlock *getExitBB() { return m_exitBB; }
     const BasicBlock *getExitBB() const { return m_exitBB; }
 
-    /**
-     * Check if \p addr is the start of a basic block, complete or not
-     * \note must ignore entries with a null BB, since these are caused by
-     * calls to Label that failed, i.e. the instruction is not decoded yet.
-     */
+    /// Check if \p addr is the start of a basic block, complete or not
     bool isStartOfBB(Address addr) const;
 
     /// Check if the given address is the start of an incomplete basic block.

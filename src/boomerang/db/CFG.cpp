@@ -214,6 +214,10 @@ BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
 
 void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB)
 {
+    if (!sourceBB || !destBB) {
+        return;
+    }
+
     // Wire up edges
     sourceBB->addSuccessor(destBB);
     destBB->addPredecessor(sourceBB);
