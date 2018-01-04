@@ -143,7 +143,7 @@ void BlockSyntaxNode::printAST(SyntaxNode *root, QTextStream& os)
     os << "\"];" << '\n';
 
     if (m_bb) {
-        for (size_t i = 0; i < m_bb->getNumSuccessors(); i++) {
+        for (int i = 0; i < m_bb->getNumSuccessors(); i++) {
             BasicBlock *out = m_bb->getSuccessor(i);
             os << qSetFieldWidth(4) << m_nodeID << qSetFieldWidth(0) << " ";
 
@@ -308,18 +308,23 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
 
             if ((b->getOutEdge(root, 0) == statements[i + 2]) &&
                 ((statements[i + 1]->getOutEdge(root, 0) == statements[i + 2]) || statements[i + 1]->endsWithGoto())) {
+
                 LOG_VERBOSE("Successor: jump over style if then");
 
                 BlockSyntaxNode *b1 = (BlockSyntaxNode *)this->clone();
                 b1 = (BlockSyntaxNode *)b1->replace(statements[i + 1], nullptr);
+
                 IfThenSyntaxNode *nif = new IfThenSyntaxNode();
                 SharedExp        cond = b->getBB()->getCond();
+
                 cond = Unary::get(opLNot, cond->clone());
                 cond = cond->simplify();
+
                 nif->setCond(cond);
                 nif->setThen(statements[i + 1]->clone());
                 nif->setBB(b->getBB());
                 b1->setStatement(i, nif);
+
                 SyntaxNode *n = root->clone();
                 n->setDepth(root->getDepth() + 1);
                 n = n->replace(this, b1);

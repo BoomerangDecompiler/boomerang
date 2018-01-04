@@ -40,48 +40,29 @@
 #include <inttypes.h>
 
 
-BasicBlock::BasicBlock(Function *parent)
-    : m_inEdgesVisited(0) // From Doug's code
-    , m_numForwardInEdges(-1)
-    , m_traversed(TravType::Untraversed)
-    , m_immPDom(nullptr)
-    , m_loopHead(nullptr)
-    , m_caseHead(nullptr)
-    , m_condFollow(nullptr)
-    , m_loopFollow(nullptr)
-    , m_latchNode(nullptr)
-    , m_structuringType(StructType::Seq)
-    , m_unstructuredType(UnstructType::Structured)
-    , m_overlappedRegProcessingDone(false) // others
+BasicBlock::BasicBlock(Address lowAddr, Function *function)
+    : m_function(function)
+    , m_lowAddr(lowAddr)
+    , m_bbType(BBType::Invalid)
 {
-    m_function = parent;
+}
+
+
+BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> pRtls, Function *function)
+    : m_function(function)
+    , m_bbType(bbType)
+{
+    // Set the RTLs. This also updates the low and the high address of the BB.
+    setRTLs(std::move(pRtls));
 }
 
 
 BasicBlock::BasicBlock(const BasicBlock& bb)
     : m_function(bb.m_function)
-    , m_nodeType(bb.m_nodeType)
-    , m_labelNum(bb.m_labelNum)
-    , m_incomplete(bb.m_incomplete) // m_labelNeeded is initialized to false, not copied
-    , m_jumpRequired(bb.m_jumpRequired)
+    , m_bbType(bb.m_bbType)
+    // m_labelNeeded is initialized to false, not copied
     , m_predecessors(bb.m_predecessors)
     , m_successors(bb.m_successors)
-    // From Doug's code
-    , m_ord(bb.m_ord)
-    , m_revOrd(bb.m_revOrd)
-    , m_inEdgesVisited(bb.m_inEdgesVisited)
-    , m_numForwardInEdges(bb.m_numForwardInEdges)
-    , m_traversed(bb.m_traversed)
-    , m_loopCondType(bb.m_loopCondType)
-    , m_structType(bb.m_structType)
-    , m_immPDom(bb.m_immPDom)
-    , m_loopHead(bb.m_loopHead)
-    , m_caseHead(bb.m_caseHead)
-    , m_condFollow(bb.m_condFollow)
-    , m_loopFollow(bb.m_loopFollow)
-    , m_latchNode(bb.m_latchNode)
-    , m_structuringType(bb.m_structuringType)
-    , m_unstructuredType(bb.m_unstructuredType)
 {
     // make a deep copy of the RTL list
     std::unique_ptr<RTLList> newList(new RTLList());
@@ -111,54 +92,6 @@ BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
 }
 
 
-BasicBlock::BasicBlock(Function *parent, std::unique_ptr<RTLList> pRtls, BBType bbType)
-    : m_nodeType(bbType)
-    , m_incomplete(false)
-    , m_inEdgesVisited(0) // From Doug's code
-    , m_numForwardInEdges(-1)
-    , m_traversed(TravType::Untraversed)
-    , m_immPDom(nullptr)
-    , m_loopHead(nullptr)
-    , m_caseHead(nullptr)
-    , m_condFollow(nullptr)
-    , m_loopFollow(nullptr)
-    , m_latchNode(nullptr)
-    , m_structuringType(StructType::Seq)
-    , m_unstructuredType(UnstructType::Structured)
-    , m_overlappedRegProcessingDone(false) // Others
-{
-    m_function = parent;
-
-    // Set the RTLs
-    setRTLs(std::move(pRtls));
-}
-
-
-bool BasicBlock::isCaseOption()
-{
-    if (m_caseHead) {
-        for (unsigned int i = 0; i < m_caseHead->getNumSuccessors() - 1; i++) {
-            if (m_caseHead->getSuccessor(i) == this) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-
-bool BasicBlock::isTraversed()
-{
-    return m_traversedMarker;
-}
-
-
-void BasicBlock::setTraversed(bool bTraversed)
-{
-    m_traversedMarker = bTraversed;
-}
-
 
 void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 {
@@ -167,24 +100,17 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
     }
 
     m_listOfRTLs = std::move(rtls);
-}
+    updateBBAddresses();
 
+    if (!m_listOfRTLs) {
+        return;
+    }
 
-void BasicBlock::updateType(BBType bbType)
-{
-    m_nodeType = bbType;
-}
-
-
-void BasicBlock::setJumpRequired()
-{
-    m_jumpRequired = true;
-}
-
-
-bool BasicBlock::isJumpRequired()
-{
-    return m_jumpRequired;
+    for (RTL *rtl : *m_listOfRTLs) {
+        for (Statement *stmt : *rtl) {
+            stmt->setBB(this);
+        }
+    }
 }
 
 
@@ -212,10 +138,6 @@ void BasicBlock::print(QTextStream& os, bool html)
 {
     if (html) {
         os << "<br>";
-    }
-
-    if (m_labelNum) {
-        os << "L" << m_labelNum << ": ";
     }
 
     switch (getType())
@@ -286,23 +208,6 @@ void BasicBlock::print(QTextStream& os, bool html)
             os << "</table>\n";
         }
     }
-
-    if (m_jumpRequired) {
-        if (html) {
-            os << "<br>";
-        }
-
-        os << "Synthetic out edge(s) to ";
-
-        // assert(TargetOutEdges == OutEdges.size());
-        for (BasicBlock *outEdge : m_successors) {
-            if (outEdge && outEdge->m_labelNum) {
-                os << "L" << outEdge->m_labelNum << " ";
-            }
-        }
-
-        os << '\n';
-    }
 }
 
 
@@ -316,44 +221,15 @@ void BasicBlock::printToLog()
 }
 
 
-bool BasicBlock::isBackEdge(size_t inEdge) const
-{
-    const BasicBlock *in = m_predecessors[inEdge];
-
-    return this == in || (m_DFTfirst < in->m_DFTfirst && m_DFTlast > in->m_DFTlast);
-}
-
-
 Address BasicBlock::getLowAddr() const
 {
-    if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-        return Address::ZERO;
-    }
-
-    Address a = m_listOfRTLs->front()->getAddress();
-
-    if (a.isZero() && (m_listOfRTLs->size() > 1)) {
-        std::list<RTL *>::iterator it = m_listOfRTLs->begin();
-        Address add2 = (*++it)->getAddress();
-
-        // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
-        // to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
-        if (add2 < Address(0x10)) {
-            // Assume that 0 is the real address
-            return Address::ZERO;
-        }
-
-        return add2;
-    }
-
-    return a;
+    return m_lowAddr;
 }
 
 
 Address BasicBlock::getHiAddr() const
 {
-    assert(m_listOfRTLs != nullptr);
-    return m_listOfRTLs->back()->getAddress();
+    return m_highAddr;
 }
 
 
@@ -369,67 +245,53 @@ const RTLList *BasicBlock::getRTLs() const
 }
 
 
-RTL *BasicBlock::getRTLWithStatement(Statement *stmt)
-{
-    if (m_listOfRTLs == nullptr) {
-        return nullptr;
-    }
-
-    for (RTL *rtl : *m_listOfRTLs) {
-        for (Statement *it1 : *rtl) {
-            if (it1 == stmt) {
-                return rtl;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-
-std::vector<BasicBlock *>& BasicBlock::getPredecessors()
+const std::vector<BasicBlock *>& BasicBlock::getPredecessors() const
 {
     return m_predecessors;
 }
 
 
-const std::vector<BasicBlock *>& BasicBlock::getSuccessors()
+const std::vector<BasicBlock *>& BasicBlock::getSuccessors() const
 {
     return m_successors;
 }
 
 
-void BasicBlock::setPredecessor(size_t i, BasicBlock *pNewInEdge)
+void BasicBlock::setPredecessor(int i, BasicBlock *predecessor)
 {
-    assert(i < getNumPredecessors());
-    m_predecessors[i] = pNewInEdge;
+    assert(Util::inRange(i, 0, getNumPredecessors()));
+    m_predecessors[i] = predecessor;
 }
 
 
-void BasicBlock::setSuccessor(size_t i, BasicBlock *pNewOutEdge)
+void BasicBlock::setSuccessor(int i, BasicBlock *successor)
 {
-    assert(i < getNumSuccessors());
-    m_successors[i] = pNewOutEdge;
+    assert(Util::inRange(i, 0, getNumSuccessors()));
+    m_successors[i] = successor;
 }
 
-BasicBlock *BasicBlock::getPredecessor(size_t i)
+
+BasicBlock *BasicBlock::getPredecessor(int i)
 {
-    if (i < m_predecessors.size()) {
-        return m_predecessors[i];
-    }
-    else {
-        return nullptr;
-    }
+    return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
 }
 
-BasicBlock *BasicBlock::getSuccessor(size_t i)
+
+const BasicBlock * BasicBlock::getPredecessor(int i) const
 {
-    if (i < m_successors.size()) {
-        return m_successors[i];
-    }
-    else {
-        return nullptr;
-    }
+    return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
+}
+
+
+BasicBlock *BasicBlock::getSuccessor(int i)
+{
+    return Util::inRange(i, 0, getNumSuccessors()) ? m_successors[i] : nullptr;
+}
+
+
+const BasicBlock *BasicBlock::getSuccessor(int i) const
+{
+    return Util::inRange(i, 0, getNumSuccessors()) ? m_successors[i] : nullptr;
 }
 
 
@@ -445,109 +307,30 @@ void BasicBlock::addSuccessor(BasicBlock* successor)
 }
 
 
-void BasicBlock::removePredecessor(BasicBlock *edge)
+void BasicBlock::removePredecessor(BasicBlock *pred)
 {
-    for (auto it = m_predecessors.begin(); it != m_predecessors.end(); it++) {
-        if (*it == edge) {
-            it = m_predecessors.erase(it);
-            break;
-        }
-    }
+    m_predecessors.erase(std::remove(m_predecessors.begin(), m_predecessors.end(), pred), m_predecessors.end());
 }
 
 
-void BasicBlock::removeSuccessor(BasicBlock *edge)
+void BasicBlock::removeSuccessor(BasicBlock *succ)
 {
-    edge->removePredecessor(this);
-
-    for (auto it = m_successors.begin(); it != m_successors.end(); it++) {
-        if (*it == edge) {
-            m_successors.erase(it);
-            break;
-        }
-    }
+    m_successors.erase(std::remove(m_successors.begin(), m_successors.end(), succ), m_successors.end());
 }
 
 
-unsigned BasicBlock::getDFTOrder(int& first, int& last)
+Function *BasicBlock::getCallDestProc() const
 {
-    first++;
-    m_DFTfirst = first;
-
-    unsigned numTraversed = 1;
-    m_traversedMarker = true;
-
-    for (BasicBlock *child : m_successors) {
-        if (child->m_traversedMarker == false) {
-            numTraversed = numTraversed + child->getDFTOrder(first, last);
-        }
-    }
-
-    last++;
-    m_DFTlast = last;
-
-    return numTraversed;
-}
-
-
-unsigned BasicBlock::getRevDFTOrder(int& first, int& last)
-{
-    first++;
-    m_DFTrevfirst = first;
-
-    unsigned numTraversed = 1;
-    m_traversedMarker = true;
-
-    for (BasicBlock *parent : m_predecessors) {
-        if (parent->m_traversedMarker == false) {
-            numTraversed = numTraversed + parent->getRevDFTOrder(first, last);
-        }
-    }
-
-    last++;
-    m_DFTrevlast = last;
-
-    return numTraversed;
-}
-
-
-bool BasicBlock::lessAddress(BasicBlock *bb1, BasicBlock *bb2)
-{
-    return bb1->getLowAddr() < bb2->getLowAddr();
-}
-
-
-bool BasicBlock::lessFirstDFT(BasicBlock *bb1, BasicBlock *bb2)
-{
-    return bb1->m_DFTfirst < bb2->m_DFTfirst;
-}
-
-
-bool BasicBlock::lessLastDFT(BasicBlock *bb1, BasicBlock *bb2)
-{
-    return bb1->m_DFTlast < bb2->m_DFTlast;
-}
-
-
-Address BasicBlock::getCallDest()
-{
-    Function *dest = getCallDestProc();
-
-    return dest ? dest->getEntryAddress() : Address::INVALID;
-}
-
-
-Function *BasicBlock::getCallDestProc()
-{
-    if (!isType(BBType::Call) || m_listOfRTLs->empty()) {
+    if (!isType(BBType::Call) || !m_listOfRTLs || m_listOfRTLs->empty()) {
         return nullptr;
     }
 
     RTL *lastRtl = m_listOfRTLs->back();
 
+    // search backwards for a CallStatement
     for (auto it = lastRtl->rbegin(); it != lastRtl->rend(); it++) {
         if ((*it)->getKind() == StmtType::Call) {
-            return ((CallStatement *)(*it))->getDestProc();
+            return static_cast<CallStatement *>(*it)->getDestProc();
         }
     }
 
@@ -555,24 +338,7 @@ Function *BasicBlock::getCallDestProc()
 }
 
 
-Function *BasicBlock::getDestProc()
-{
-    // The last Statement of the last RTL should be a CallStatement
-    CallStatement *call = (CallStatement *)(m_listOfRTLs->back()->getHlStmt());
-
-    assert(call->getKind() == StmtType::Call);
-    Function *proc = call->getDestProc();
-
-    if (proc == nullptr) {
-        LOG_FATAL("Indirect calls not handled yet.");
-        assert(false);
-    }
-
-    return proc;
-}
-
-
-Statement *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
+Statement *BasicBlock::getFirstStmt(RTLIterator& rit, StatementList::iterator& sit)
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
         return nullptr;
@@ -595,7 +361,7 @@ Statement *BasicBlock::getFirstStmt(rtlit& rit, StatementList::iterator& sit)
 }
 
 
-Statement *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
+Statement *BasicBlock::getNextStmt(RTLIterator& rit, StatementList::iterator& sit)
 {
     if (++sit != (*rit)->end()) {
         return *sit; // End of current RTL not reached, so return next
@@ -613,7 +379,7 @@ Statement *BasicBlock::getNextStmt(rtlit& rit, StatementList::iterator& sit)
 }
 
 
-Statement *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
+Statement *BasicBlock::getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit)
 {
     if (++sit != (*rit)->rend()) {
         return *sit; // Beginning of current RTL not reached, so return next
@@ -631,7 +397,7 @@ Statement *BasicBlock::getPrevStmt(rtlrit& rit, StatementList::reverse_iterator&
 }
 
 
-Statement *BasicBlock::getLastStmt(rtlrit& rit, StatementList::reverse_iterator& sit)
+Statement *BasicBlock::getLastStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit)
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -676,7 +442,7 @@ Statement *BasicBlock::getLastStmt()
         return nullptr;
     }
 
-    rtlrit rit = m_listOfRTLs->rbegin();
+    RTLRIterator rit = m_listOfRTLs->rbegin();
 
     while (rit != m_listOfRTLs->rend()) {
         RTL *rtl = *rit;
@@ -692,7 +458,7 @@ Statement *BasicBlock::getLastStmt()
 }
 
 
-void BasicBlock::getStatements(StatementList& stmts) const
+void BasicBlock::appendStatementsTo(StatementList& stmts) const
 {
     const std::list<RTL *> *rtls = getRTLs();
 
@@ -702,37 +468,37 @@ void BasicBlock::getStatements(StatementList& stmts) const
 
     for (const RTL *rtl : *rtls) {
         for (Statement *st : *rtl) {
-            if (st->getBB() == nullptr) { // TODO: why statement would have nullptr BB here ?
-                st->setBB(const_cast<BasicBlock *>(this));
-            }
-
+            assert(st->getBB() == this);
             stmts.append(st);
         }
     }
 }
 
 
-SharedExp BasicBlock::getCond()
+SharedExp BasicBlock::getCond() const
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
+
     // it should contain a BranchStatement
     BranchStatement *bs = dynamic_cast<BranchStatement *>(last->getHlStmt());
 
-    if (bs && (bs->getKind() == StmtType::Branch)) {
+    if (bs) {
+        assert(bs->getKind() == StmtType::Branch);
         return bs->getCondExpr();
     }
 
-    throw LastStatementNotABranchError(last->getHlStmt());
+    return nullptr;
 }
 
 
-SharedExp BasicBlock::getDest()
+SharedExp BasicBlock::getDest() const
 {
     // The destianation will be in the last rtl
     assert(m_listOfRTLs);
-    RTL *lastRtl = m_listOfRTLs->back();
+    const RTL *lastRtl = getLastRTL();
+
     // It should contain a GotoStatement or derived class
     Statement     *lastStmt = lastRtl->getHlStmt();
     CaseStatement *cs       = dynamic_cast<CaseStatement *>(lastStmt);
@@ -758,47 +524,23 @@ SharedExp BasicBlock::getDest()
 }
 
 
-void BasicBlock::setCond(SharedExp e) noexcept (false)
+void BasicBlock::setCond(SharedExp e)
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
     RTL *last = m_listOfRTLs->back();
-    // it should contain a BranchStatement
     assert(!last->empty());
 
+    // it should contain a BranchStatement
     for (auto it = last->rbegin(); it != last->rend(); it++) {
         if ((*it)->getKind() == StmtType::Branch) {
-            ((BranchStatement *)(*it))->setCondExpr(e);
+            assert(dynamic_cast<BranchStatement *>(*it) != nullptr);
+            static_cast<BranchStatement *>(*it)->setCondExpr(e);
             return;
         }
     }
-
-    throw LastStatementNotABranchError(nullptr);
 }
 
-
-BasicBlock *BasicBlock::getLoopBody()
-{
-    assert(m_structType == SBBType::PreTestLoop || m_structType == SBBType::PostTestLoop || m_structType == SBBType::EndlessLoop);
-    assert(m_successors.size() == 2);
-
-    if (m_successors[0] != m_loopFollow) {
-        return m_successors[0];
-    }
-
-    return m_successors[1];
-}
-
-
-bool BasicBlock::isAncestorOf(BasicBlock *other)
-{
-    return((m_loopStamps[0] < other->m_loopStamps[0] && m_loopStamps[1] > other->m_loopStamps[1]) ||
-           (m_revLoopStamps[0] < other->m_revLoopStamps[0] && m_revLoopStamps[1] > other->m_revLoopStamps[1]));
-
-    /*    return (m_DFTfirst < other->m_DFTfirst && m_DFTlast > other->m_DFTlast) ||
-     *  (m_DFTrevlast < other->m_DFTrevlast &&
-     *   m_DFTrevfirst > other->m_DFTrevfirst);*/
-}
 
 
 void BasicBlock::simplify()
@@ -810,22 +552,22 @@ void BasicBlock::simplify()
     }
 
     if (isType(BBType::Twoway)) {
-        assert(m_successors.size() > 1);
+        assert(getNumSuccessors() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-            updateType(BBType::Fall);
+            setType(BBType::Fall);
         }
         else {
             RTL *last = m_listOfRTLs->back();
 
             if (last->size() == 0) {
-                updateType(BBType::Fall);
+                setType(BBType::Fall);
             }
             else if (last->back()->isGoto()) {
-                updateType(BBType::Oneway);
+                setType(BBType::Oneway);
             }
             else if (!last->back()->isBranch()) {
-                updateType(BBType::Fall);
+                setType(BBType::Fall);
             }
         }
 
@@ -833,7 +575,7 @@ void BasicBlock::simplify()
             // set out edges to be the second one
             LOG_VERBOSE("Turning TWOWAY into FALL: %1 %2", m_successors[0]->getLowAddr(), m_successors[1]->getLowAddr());
 
-            BasicBlock *redundant = m_successors[0];
+            BasicBlock *redundant = getSuccessor(0);
             m_successors[0] = m_successors[1];
             m_successors.resize(1);
             LOG_VERBOSE("Redundant edge to address %1", redundant->getLowAddr());
@@ -885,1109 +627,88 @@ void BasicBlock::simplify()
 }
 
 
-bool BasicBlock::hasBackEdgeTo(BasicBlock *dest)
+bool BasicBlock::isPredecessorOf(const BasicBlock* bb) const
 {
-    return dest == this || dest->isAncestorOf(this);
+    return std::find(m_successors.begin(), m_successors.end(), bb) != m_successors.end();
 }
 
 
-bool BasicBlock::allParentsGenerated()
+bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
 {
-    for (BasicBlock *pred : m_predecessors) {
-        if (!pred->hasBackEdgeTo(this) && (pred->m_traversed != TravType::DFS_Codegen)) {
-            return false;
-        }
-    }
-
-    return true;
+    return std::find(m_predecessors.begin(), m_predecessors.end(), bb) != m_predecessors.end();
 }
 
 
-void BasicBlock::setLoopStamps(int& time, std::vector<BasicBlock *>& order)
-{
-    // timestamp the current node with the current time
-    // and set its traversed flag
-    m_traversed     = TravType::DFS_LNum;
-    m_loopStamps[0] = time;
-
-    // recurse on unvisited children and set inedges for all children
-    for (BasicBlock *out : m_successors) {
-        // set the in edge from this child to its parent (the current node)
-        // (not done here, might be a problem)
-        // outEdges[i]->inEdges.Add(this);
-
-        // recurse on this child if it hasn't already been visited
-        if (out->m_traversed != TravType::DFS_LNum) {
-            out->setLoopStamps(++time, order);
-        }
-    }
-
-    // set the the second loopStamp value
-    m_loopStamps[1] = ++time;
-
-    // add this node to the ordering structure as well as recording its position within the ordering
-    m_ord = (int)order.size();
-    order.push_back(this);
-}
-
-
-void BasicBlock::setRevLoopStamps(int& time)
-{
-    // timestamp the current node with the current time and set its traversed flag
-    m_traversed        = TravType::DFS_RNum;
-    m_revLoopStamps[0] = time;
-
-    // recurse on the unvisited children in reverse order
-    for (int i = (int)m_successors.size() - 1; i >= 0; i--) {
-        // recurse on this child if it hasn't already been visited
-        if (m_successors[i]->m_traversed != TravType::DFS_RNum) {
-            m_successors[i]->setRevLoopStamps(++time);
-        }
-    }
-
-    // set the the second loopStamp value
-    m_revLoopStamps[1] = ++time;
-}
-
-
-void BasicBlock::setRevOrder(std::vector<BasicBlock *>& order)
-{
-    // Set this node as having been traversed during the post domimator DFS ordering traversal
-    m_traversed = TravType::DFS_PDom;
-
-    // recurse on unvisited children
-    for (BasicBlock *in : m_predecessors) {
-        if (in->m_traversed != TravType::DFS_PDom) {
-            in->setRevOrder(order);
-        }
-    }
-
-    // add this node to the ordering structure and record the post dom. order of this node as its index within this
-    // ordering structure
-    m_revOrd = (int)order.size();
-    order.push_back(this);
-}
-
-
-void BasicBlock::setCaseHead(BasicBlock *head, BasicBlock *follow)
-{
-    assert(!m_caseHead);
-
-    m_traversed = TravType::DFS_Case;
-
-    // don't tag this node if it is the case header under investigation
-    if (this != head) {
-        m_caseHead = head;
-    }
-
-    // if this is a nested case header, then it's member nodes will already have been tagged so skip straight to its
-    // follow
-    if (isType(BBType::Nway) && (this != head)) {
-        if (m_condFollow && (m_condFollow->m_traversed != TravType::DFS_Case) && (m_condFollow != follow)) {
-            m_condFollow->setCaseHead(head, follow);
-        }
-    }
-    else {
-        // traverse each child of this node that:
-        //   i) isn't on a back-edge,
-        //  ii) hasn't already been traversed in a case tagging traversal and,
-        // iii) isn't the follow node.
-        for (BasicBlock *out : m_successors) {
-            if (!hasBackEdgeTo(out) && (out->m_traversed != TravType::DFS_Case) && (out != follow)) {
-                out->setCaseHead(head, follow);
-            }
-        }
-    }
-}
-
-
-void BasicBlock::setStructType(StructType structType)
-{
-    // if this is a conditional header, determine exactly which type of conditional header it is (i.e. switch, if-then,
-    // if-then-else etc.)
-    if (structType == StructType::Cond) {
-        if (isType(BBType::Nway)) {
-            m_conditionHeaderType = CondType::Case;
-        }
-        else if (m_successors[BELSE] == m_condFollow) {
-            m_conditionHeaderType = CondType::IfThen;
-        }
-        else if (m_successors[BTHEN] == m_condFollow) {
-            m_conditionHeaderType = CondType::IfElse;
-        }
-        else {
-            m_conditionHeaderType = CondType::IfThenElse;
-        }
-    }
-
-    m_structuringType = structType;
-}
-
-
-void BasicBlock::setUnstructType(UnstructType unstructType)
-{
-    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond) && m_conditionHeaderType != CondType::Case);
-    m_unstructuredType = unstructType;
-}
-
-
-UnstructType BasicBlock::getUnstructType() const
-{
-    assert((m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond));
-    // fails when cenerating code for switches; not sure if actually needed TODO
-    // assert(m_conditionHeaderType != CondType::Case);
-
-    return m_unstructuredType;
-}
-
-
-void BasicBlock::setLoopType(LoopType l)
-{
-    assert(m_structuringType == StructType::Loop || m_structuringType == StructType::LoopCond);
-    m_loopHeaderType = l;
-
-    // set the structured class (back to) just Loop if the loop type is PreTested OR it's PostTested and is a single
-    // block loop
-    if ((m_loopHeaderType == LoopType::PreTested) || ((m_loopHeaderType == LoopType::PostTested) && (this == m_latchNode))) {
-        m_structuringType = StructType::Loop;
-    }
-}
-
-
-LoopType BasicBlock::getLoopType() const
-{
-    assert(m_structuringType == StructType::Loop || m_structuringType == StructType::LoopCond);
-    return m_loopHeaderType;
-}
-
-
-void BasicBlock::setCondType(CondType c)
-{
-    assert(m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond);
-    m_conditionHeaderType = c;
-}
-
-
-CondType BasicBlock::getCondType() const
-{
-    assert(m_structuringType == StructType::Cond || m_structuringType == StructType::LoopCond);
-    return m_conditionHeaderType;
-}
-
-
-bool BasicBlock::inLoop(BasicBlock *header, BasicBlock *latch)
-{
-    assert(header->m_latchNode == latch);
-    assert(header == latch ||
-           ((header->m_loopStamps[0] > latch->m_loopStamps[0] && latch->m_loopStamps[1] > header->m_loopStamps[1]) ||
-            (header->m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < header->m_loopStamps[1])));
-    // this node is in the loop if it is the latch node OR
-    // this node is within the header and the latch is within this when using the forward loop stamps OR
-    // this node is within the header and the latch is within this when using the reverse loop stamps
-    return this == latch || (header->m_loopStamps[0] < m_loopStamps[0] && m_loopStamps[1] < header->m_loopStamps[1] &&
-                             m_loopStamps[0] < latch->m_loopStamps[0] && latch->m_loopStamps[1] < m_loopStamps[1]) ||
-           (header->m_revLoopStamps[0] < m_revLoopStamps[0] && m_revLoopStamps[1] < header->m_revLoopStamps[1] &&
-            m_revLoopStamps[0] < latch->m_revLoopStamps[0] && latch->m_revLoopStamps[1] < m_revLoopStamps[1]);
-}
-
-
-void BasicBlock::prependStmt(Statement *s, UserProc *proc)
+void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
 {
     assert(m_function == proc);
     // Check the first RTL (if any)
     assert(m_listOfRTLs);
-    s->setBB(this);
-    s->setProc(proc);
+    stmt->setBB(this);
+    stmt->setProc(proc);
 
     if (!m_listOfRTLs->empty()) {
         RTL *rtl = m_listOfRTLs->front();
 
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
-            rtl->append(s);
+            rtl->append(stmt);
+            updateBBAddresses();
             return;
         }
     }
 
     // Otherwise, prepend a new RTL
-    std::list<Statement *> listStmt = { s };
+    std::list<Statement *> listStmt = { stmt };
     RTL *rtl = new RTL(Address::ZERO, &listStmt);
     m_listOfRTLs->push_front(rtl);
+
+    updateBBAddresses();
 }
 
 
-/**
- * Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
- * Also check for type conflicts if DFA_TYPE_ANALYSIS
- * This is a helper function that is not directly declared in the BasicBlock class
- */
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc *)
+void BasicBlock::updateBBAddresses()
 {
-    // For each location to be considered
-    for (SharedExp exp : ls) {
-        if (!exp->isSubscript()) {
-            continue; // Only interested in subscripted vars
-        }
-
-        assert(std::dynamic_pointer_cast<RefExp>(exp) != nullptr);
-
-        auto refexp = std::static_pointer_cast<RefExp>(exp);
-        // Interference if we can find a live variable which differs only in the reference
-        SharedExp dr;
-
-        if (liveLocs.findDifferentRef(refexp, dr)) {
-            assert(dr->access<RefExp>()->getDef() != nullptr);
-            assert(exp->access<RefExp>()->getDef() != nullptr);
-            // We have an interference between r and dr. Record it
-            ig.connect(refexp, dr);
-
-            if (DEBUG_LIVENESS) {
-                LOG_VERBOSE("Interference of %1 with %2", dr, refexp);
-            }
-        }
-
-        // Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
-        // from the same statement, e.g.  blah := r24{2} + r24{3}
-        liveLocs.insert(exp);
-    }
-}
-
-
-bool BasicBlock::calcLiveness(ConnectionGraph& ig, UserProc *myProc)
-{
-    // Start with the liveness at the bottom of the BB
-    LocationSet liveLocs, phiLocs;
-
-    getLiveOut(liveLocs, phiLocs);
-    // Do the livensses that result from phi statements at successors first.
-    // FIXME: document why this is necessary
-    checkForOverlap(liveLocs, phiLocs, ig, myProc);
-    // For each RTL in this BB
-    std::list<RTL *>::reverse_iterator rit;
-
-    if (m_listOfRTLs) { // this can be nullptr
-        for (rit = m_listOfRTLs->rbegin(); rit != m_listOfRTLs->rend(); ++rit) {
-            std::list<Statement *>::reverse_iterator sit;
-
-            // For each statement this RTL
-            for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
-                Statement   *s = *sit;
-                LocationSet defs;
-                s->getDefinitions(defs);
-                // The definitions don't have refs yet
-                defs.addSubscript(s /* , myProc->getCFG() */);
-
-                // Definitions kill uses. Now we are moving to the "top" of statement s
-                liveLocs.makeDiff(defs);
-
-                // Phi functions are a special case. The operands of phi functions are uses, but they don't interfere
-                // with each other (since they come via different BBs). However, we don't want to put these uses into
-                // liveLocs, because then the livenesses will flow to all predecessors. Only the appropriate livenesses
-                // from the appropriate phi parameter should flow to the predecessor. This is done in getLiveOut()
-                if (s->isPhi()) {
-                    continue;
-                }
-
-                // Check for livenesses that overlap
-                LocationSet uses;
-                s->addUsedLocs(uses);
-                checkForOverlap(liveLocs, uses, ig, myProc);
-
-                if (DEBUG_LIVENESS) {
-                    LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.prints());
-                }
-            }
-        }
-    }
-
-    // liveIn is what we calculated last time
-    if (!(liveLocs == m_liveIn)) {
-        m_liveIn = liveLocs;
-        return true; // A change
-    }
-
-    // No change
-    return false;
-}
-
-
-void BasicBlock::getLiveOut(LocationSet& liveout, LocationSet& phiLocs)
-{
-    Cfg *cfg(((UserProc *)m_function)->getCFG());
-
-    liveout.clear();
-
-    for (BasicBlock *currBB : m_successors) {
-        // First add the non-phi liveness
-        liveout.makeUnion(currBB->m_liveIn); // add successor liveIn to this liveout set.
-
-        // The first RTL will have the phi functions, if any
-        if ((currBB->m_listOfRTLs == nullptr) || (currBB->m_listOfRTLs->size() == 0)) {
-            continue;
-        }
-
-        RTL *phiRtl = currBB->m_listOfRTLs->front();
-        assert(phiRtl);
-
-        for (Statement *st : *phiRtl) {
-            // Only interested in phi assignments. Note that it is possible that some phi assignments have been
-            // converted to ordinary assignments. So the below is a continue, not a break.
-            if (!st->isPhi()) {
-                continue;
-            }
-
-            PhiAssign *pa = dynamic_cast<PhiAssign *>(st);
-
-            for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
-                if (!cfg->existsBB(v.first)) {
-                    LOG_WARN("Someone removed the BB that defined the PHI! Need to update PhiAssign defs");
-                }
-            }
-
-            // Get the jth operand to the phi function; it has a use from BB *this
-            // assert(j>=0);
-            Statement *def = pa->getStmtAt(this);
-
-            if (!def) {
-                std::deque<BasicBlock *> to_visit(m_predecessors.begin(), m_predecessors.end());
-                std::set<BasicBlock *> tried {
-                    this
-                };
-
-                // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is defined in parent of
-                // 'this'
-                //  BB1 1  - defines r20
-                //  BB2 33 - transfers control to BB3
-                //  BB3 40 - r10 = phi { 1 }
-                while (!to_visit.empty()) {
-                    BasicBlock *pbb = to_visit.back();
-
-                    if (tried.find(pbb) != tried.end()) {
-                        to_visit.pop_back();
-                        continue;
-                    }
-
-                    def = pa->getStmtAt(pbb);
-
-                    if (def) {
-                        break;
-                    }
-
-                    tried.insert(pbb);
-                    to_visit.pop_back();
-
-                    for (BasicBlock *bb : pbb->m_predecessors) {
-                        if (tried.find(bb) != tried.end()) { // already tried
-                            continue;
-                        }
-
-                        to_visit.push_back(bb);
-                    }
-                }
-            }
-
-            SharedExp r = RefExp::get(pa->getLeft()->clone(), def);
-            assert(def);
-            liveout.insert(r);
-            phiLocs.insert(r);
-
-            if (DEBUG_LIVENESS) {
-                LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3",
-                        r, st, getLowAddr());
-            }
-        }
-    }
-}
-
-
-//    //    //    //    //    //    //    //    //    //    //    //    //
-//                                                //
-//         Indirect jump and call analyses        //
-//                                                //
-//    //    //    //    //    //    //    //    //    //    //    //    //
-
-// Switch High Level patterns
-
-// With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
-// Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
-// TODO: use initializer lists
-static SharedExp forma =
-    RefExp::get(Binary::get(opArrayIndex,
-                            RefExp::get(Terminal::get(opWild), (Statement *)-1),
-                            Terminal::get(opWild)),
-                (Statement *)-1);
-
-// Pattern: m[<expr> * 4 + T ]
-static SharedExp formA = Location::memOf(
-    Binary::get(opPlus,
-                Binary::get(opMult,
-                            Terminal::get(opWild),
-                            Const::get(4)),
-                Terminal::get(opWildIntConst)));
-
-// With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
-// Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
-// NOT COMPLETED YET!
-static SharedExp formo =
-    RefExp::get(Binary::get(opArrayIndex,
-                            RefExp::get(Terminal::get(opWild), (Statement *)-1),
-                            Terminal::get(opWild)),
-                (Statement *)-1);
-
-// Pattern: m[<expr> * 4 + T ] + T
-static SharedExp formO =
-    Binary::get(opPlus,
-                Location::memOf(Binary::get(opPlus,
-                                            Binary::get(opMult,
-                                                        Terminal::get(opWild),
-                                                        Const::get(4)),
-                                            Terminal::get(opWildIntConst))),
-                Terminal::get(opWildIntConst));
-
-// Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-// where k is a small constant, typically 28 or 20
-static SharedExp formR =
-    Binary::get(opPlus,
-                Terminal::get(opPC),
-                Location::memOf(Binary::get(opPlus,
-                                            Terminal::get(opPC),
-                                            Binary::get(opPlus,
-                                                        Binary::get(opMult,
-                                                                    Terminal::get(opWild),
-                                                                    Const::get(4)),
-                                                        Const::get(opWildIntConst)))));
-
-// Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-// where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static SharedExp formr =
-    Binary::get(opPlus,
-                Terminal::get(opPC),
-                Location::memOf(Binary::get(opPlus,
-                                            Terminal::get(opPC),
-                                            Binary::get(opMinus,
-                                                        Binary::get(opMult,
-                                                                    Terminal::get(opWild), Const::get(4)),
-                                                        Terminal::get(opWildIntConst)))));
-
-
-struct SwitchForm
-{
-    SharedConstExp pattern;
-    char           type;
-};
-
-static SwitchForm hlForms[] =
-{
-    { forma, 'a' },
-    { formA, 'A' },
-    { formo, 'o' },
-    { formO, 'O' },
-    { formR, 'R' },
-    { formr, 'r' }
-};
-
-// Vcall high level patterns
-// Pattern 0: global<wild>[0]
-static SharedExp vfc_funcptr =
-    Binary::get(opArrayIndex,
-                Location::get(opGlobal, Terminal::get(opWildStrConst), nullptr),
-                Const::get(0));
-
-// Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
-// K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only memory
-static SharedExp vfc_both = Location::memOf(
-    Binary::get(opPlus,
-                Location::memOf(Binary::get(opPlus,
-                                            Terminal::get(opWild),
-                                            Terminal::get(opWildIntConst))),
-                Terminal::get(opWildIntConst)));
-
-// Pattern 2: m[ m[ <expr> ] + K2]
-static SharedExp vfc_vto =
-    Location::memOf(Binary::get(opPlus,
-                                Location::memOf(Terminal::get(opWild)),
-                                Terminal::get(opWildIntConst)));
-
-// Pattern 3: m[ m[ <expr> + K1] ]
-static SharedExp vfc_vfo =
-    Location::memOf(Location::memOf(Binary::get(opPlus,
-                                                Terminal::get(opWild),
-                                                Terminal::get(opWildIntConst))));
-
-// Pattern 4: m[ m[ <expr> ] ]
-static SharedExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
-
-static SharedExp hlVfc[] = { vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none };
-
-void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
-{
-    switch (form)
-    {
-    case 'a':
-        {
-            // Pattern: <base>{}[<index>]{}
-            e = e->getSubExp1();
-            SharedExp base = e->getSubExp1();
-
-            if (base->isSubscript()) {
-                base = base->getSubExp1();
-            }
-
-            auto     con     = base->access<Const, 1>();
-            QString  gloName = con->getStr();
-            UserProc *p      = std::static_pointer_cast<Location>(base)->getProc();
-            Prog     *prog   = p->getProg();
-            T    = prog->getGlobalAddr(gloName);
-            expr = e->getSubExp2();
-            break;
-        }
-
-    case 'A':
-        {
-            // Pattern: m[<expr> * 4 + T ]
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            // b will be (<expr> * 4) + T
-            SharedExp b = e->getSubExp1();
-            T    = b->access<Const, 2>()->getAddr();
-            expr = b->access<Exp, 1, 1>();
-            break;
-        }
-
-    case 'O':
-        {       // Form O
-            // Pattern: m[<expr> * 4 + T ] + T
-            T = e->access<Const, 2>()->getAddr();
-            // l = m[<expr> * 4 + T ]:
-            SharedExp l = e->getSubExp1();
-
-            if (l->isSubscript()) {
-                l = l->getSubExp1();
-            }
-
-            // b = <expr> * 4 + T:
-            SharedExp b = l->getSubExp1();
-            // b = <expr> * 4:
-            b = b->getSubExp1();
-            // expr = <expr>:
-            expr = b->getSubExp1();
-            break;
-        }
-
-    case 'R':
-        {
-            // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
-            T = Address::ZERO; // ?
-            // l = m[%pc  + (<expr> * 4) + k]:
-            SharedExp l = e->getSubExp2();
-
-            if (l->isSubscript()) {
-                l = l->getSubExp1();
-            }
-
-            // b = %pc    + (<expr> * 4) + k:
-            SharedExp b = l->getSubExp1();
-            // b = (<expr> * 4) + k:
-            b = b->getSubExp2();
-            // b = <expr> * 4:
-            b = b->getSubExp1();
-            // expr = <expr>:
-            expr = b->getSubExp1();
-            break;
-        }
-
-    case 'r':
-        {
-            // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
-            T = Address::ZERO; // ?
-            // b = %pc + m[%pc + ((<expr> * 4) - k)]:
-            SharedExp b = e->getSubExp1();
-            // l = m[%pc + ((<expr> * 4) - k)]:
-            SharedExp l = b->getSubExp2();
-
-            if (l->isSubscript()) {
-                l = l->getSubExp1();
-            }
-
-            // b = %pc + ((<expr> * 4) - k)
-            b = l->getSubExp1();
-            // b = ((<expr> * 4) - k):
-            b = b->getSubExp2();
-            // b = <expr> * 4:
-            b = b->getSubExp1();
-            // expr = <expr>
-            expr = b->getSubExp1();
-            break;
-        }
-
-    default:
-        expr = nullptr;
-        T    = Address::INVALID;
-    }
-
-    // normalize address to native
-    T = T.native();
-}
-
-
-int BasicBlock::findNumCases()
-{
-    // should actually search from the statement to i
-    for (BasicBlock *in : m_predecessors) {          // For each in-edge
-        if (!in->isType(BBType::Twoway)) {      // look for a two-way BB
-            continue;                           // Ignore all others
-        }
-
-        assert(in->m_listOfRTLs && in->m_listOfRTLs->size() > 0);
-        RTL *lastRtl = in->m_listOfRTLs->back();
-        assert(!lastRtl->empty());
-        BranchStatement *lastStmt = (BranchStatement *)lastRtl->back();
-        SharedExp       pCond     = lastStmt->getCondExpr();
-
-        if (pCond->getArity() != 2) {
-            continue;
-        }
-
-        SharedExp rhs = pCond->getSubExp2();
-
-        if (!rhs->isIntConst()) {
-            continue;
-        }
-
-        int  k  = std::static_pointer_cast<Const>(rhs)->getInt();
-        OPER op = pCond->getOper();
-
-        if ((op == opGtr) || (op == opGtrUns)) {
-            return k + 1;
-        }
-
-        if ((op == opGtrEq) || (op == opGtrEqUns)) {
-            return k;
-        }
-
-        if ((op == opLess) || (op == opLessUns)) {
-            return k;
-        }
-
-        if ((op == opLessEq) || (op == opLessEqUns)) {
-            return k + 1;
-        }
-    }
-
-    LOG_WARN("Could not find number of cases for n-way at address %1", getLowAddr());
-    return 3; // Bald faced guess if all else fails
-}
-
-
-/// Find all the possible constant values that the location defined by s could be assigned with
-static void findConstantValues(const Statement *s, std::list<int>& dests)
-{
-    if (s == nullptr) {
+    if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
+        m_lowAddr = Address::ZERO;
+        m_highAddr = Address::INVALID;
         return;
     }
 
-    if (s->isPhi()) {
-        // For each definition, recurse
-        for (const auto& it : *((const PhiAssign *)s)) {
-            findConstantValues(it.second.getDef(), dests);
-        }
-    }
-    else if (s->isAssign()) {
-        SharedExp rhs = ((const Assign *)s)->getRight();
+    Address a = m_listOfRTLs->front()->getAddress();
 
-        if (rhs->isIntConst()) {
-            dests.push_back(rhs->access<Const>()->getInt());
+    if (a.isZero() && (m_listOfRTLs->size() > 1)) {
+        std::list<RTL *>::iterator it = m_listOfRTLs->begin();
+        Address add2 = (*++it)->getAddress();
+
+        // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
+        // to change orphan BBs' addresses to Address::INVALID, but I suspect that this will cause many problems. MVE
+        if (add2 < Address(0x10)) {
+            // Assume that 0 is the real address
+            m_lowAddr =  Address::ZERO;
+        }
+        else {
+            m_lowAddr = add2;
         }
     }
+    else {
+        m_lowAddr = a;
+    }
+
+    assert(m_listOfRTLs != nullptr);
+    m_highAddr = m_listOfRTLs->back()->getAddress();
 }
 
 
-bool BasicBlock::decodeIndirectJmp(UserProc *proc)
+bool BasicBlock::hasStatement(const Statement *stmt) const
 {
-#if CHECK_REAL_PHI_LOOPS
-    rtlit rit;
-    StatementList::iterator sit;
-    Statement               *s = getFirstStmt(rit, sit);
-
-    for (s = getFirstStmt(rit, sit); s; s = getNextStmt(rit, sit)) {
-        if (!s->isPhi()) {
-            continue;
-        }
-
-        Statement      *originalPhi = s;
-        InstructionSet workSet, seenSet;
-        workSet.insert(s);
-        seenSet.insert(s);
-
-        do {
-            PhiAssign *pi = (PhiAssign *)*workSet.begin();
-            workSet.remove(pi);
-            PhiAssign::Definitions::iterator it;
-
-            for (it = pi->begin(); it != pi->end(); it++) {
-                if (it->def == nullptr) {
-                    continue;
-                }
-
-                if (!it->def->isPhi()) {
-                    continue;
-                }
-
-                if (seenSet.exists(it->def)) {
-                    LOG_VERBOSE("Real phi loop involving statements %1 and %2",
-                                originalPhi->getNumber(), pi->getNumber());
-                    break;
-                }
-                else {
-                    workSet.insert(it->def);
-                    seenSet.insert(it->def);
-                }
-            }
-        } while (workSet.size());
-    }
-#endif
-
-    if (isType(BBType::CompJump)) {
-        assert(!m_listOfRTLs->empty());
-        RTL *lastRtl = m_listOfRTLs->back();
-
-        if (DEBUG_SWITCH) {
-            LOG_MSG("decodeIndirectJmp: %1", lastRtl->prints());
-        }
-
-        assert(!lastRtl->empty());
-        CaseStatement *lastStmt = (CaseStatement *)lastRtl->back();
-
-        // Note: some programs might not have the case expression propagated to, because of the -l switch (?)
-        // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
-        // because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
-        // now we'll assume no alias problems and force the propagation
-        bool convert = false;
-        lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
-        SharedExp e = lastStmt->getDest();
-
-        char form = 0;
-
-        for (auto& val : hlForms) {
-            if (*e *= *val.pattern) { // *= compare ignores subscripts
-                form = val.type;
-
-                if (DEBUG_SWITCH) {
-                    LOG_MSG("Indirect jump matches form %1", form);
-                }
-
-                break;
-            }
-        }
-
-        if (form) {
-            SwitchInfo *swi = new SwitchInfo;
-            swi->chForm = form;
-            Address   T = Address::INVALID;
-            SharedExp expr;
-            findSwParams(form, e, expr, T);
-
-            if (expr) {
-                swi->uTable    = T;
-                swi->iNumTable = findNumCases();
-
-                // TMN: Added actual control of the array members, to possibly truncate what findNumCases()
-                // thinks is the number of cases, when finding the first array element not pointing to code.
-                if (form == 'A') {
-                    const Prog *prog = proc->getProg();
-
-                    for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
-                        Address uSwitch = Address(prog->readNative4(swi->uTable + iPtr * 4));
-
-                        if (!Util::inRange(uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
-                            if (DEBUG_SWITCH) {
-                                LOG_MSG("Truncating type A indirect jump array to %1 entries "
-                                        "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
-                                        iPtr, uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh());
-                            }
-
-                            // Found an array that isn't a pointer-to-code. Assume array has ended.
-                            swi->iNumTable = iPtr;
-                            break;
-                        }
-                    }
-                }
-
-                if (swi->iNumTable <= 0) {
-                    LOG_WARN("Switch analysis failure at address %1", this->getLowAddr());
-                    return false;
-                }
-
-                // TODO: missing form = 'R' iOffset is not being set
-                swi->iUpper = swi->iNumTable - 1;
-                swi->iLower = 0;
-
-                if ((expr->getOper() == opMinus) && expr->getSubExp2()->isIntConst()) {
-                    swi->iLower  = std::static_pointer_cast<Const>(expr->getSubExp2())->getInt();
-                    swi->iUpper += swi->iLower;
-                    expr         = expr->getSubExp1();
-                }
-
-                swi->pSwitchVar = expr;
-                lastStmt->setDest((SharedExp)nullptr);
-                lastStmt->setSwitchInfo(swi);
-                return swi->iNumTable != 0;
-            }
-        }
-        else {
-            // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at the leaves of the
-            // phi tree. Basically, a location with a reference, e.g. m[r28{-} - 16]{87}
-            if (e->isSubscript()) {
-                SharedExp sub = e->getSubExp1();
-
-                if (sub->isLocation()) {
-                    // Yes, we have <location>{ref}. Follow the tree and store the constant values that <location>
-                    // could be assigned to in dests
-                    std::list<int> dests;
-                    findConstantValues(std::static_pointer_cast<RefExp>(e)->getDef(), dests);
-                    // The switch info wants an array of native addresses
-                    size_t num_dests = dests.size();
-
-                    if (num_dests) {
-                        int *destArray = new int[num_dests];
-                        std::copy(dests.begin(), dests.end(), destArray);
-                        SwitchInfo *swi = new SwitchInfo;
-                        swi->chForm     = 'F';                                     // The "Fortran" form
-                        swi->pSwitchVar = e;
-                        swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
-                        swi->iNumTable  = (int)num_dests;
-                        swi->iLower     = 1;                                       // Not used, except to compute
-                        swi->iUpper     = (int)num_dests;                          // the number of options
-                        lastStmt->setDest((SharedExp)nullptr);
-                        lastStmt->setSwitchInfo(swi);
-                        return true;
-                    }
-                }
-            }
-        }
-
+    if (!m_listOfRTLs) {
         return false;
     }
-    else if (isType(BBType::CompCall)) {
-        assert(!m_listOfRTLs->empty());
-        RTL *lastRtl = m_listOfRTLs->back();
 
-        if (DEBUG_SWITCH) {
-            LOG_MSG("decodeIndirectJmp: COMPCALL:");
-            LOG_MSG("%1", lastRtl->prints());
-        }
-
-        assert(!lastRtl->empty());
-        CallStatement *lastStmt = (CallStatement *)lastRtl->back();
-        SharedExp     e         = lastStmt->getDest();
-        // Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).
-        // Propagate to e, but only keep the changes if the expression matches (don't want excessive propagation to
-        // a genuine function pointer expression, even though it's hard to imagine).
-        e = e->propagateAll();
-        // We also want to replace any m[K]{-} with the actual constant from the (presumably) read-only data section
-        ConstGlobalConverter cgc(proc->getProg());
-        e = e->accept(&cgc);
-        // Simplify the result, e.g. for m[m[(r24{16} + m[0x8048d74]{-}) + 12]{-}]{-} get
-        // m[m[(r24{16} + 20) + 12]{-}]{-}, want m[m[r24{16} + 32]{-}]{-}. Note also that making the
-        // ConstGlobalConverter a simplifying expression modifier won't work in this case, since the simplifying
-        // converter will only simplify the direct parent of the changed expression (which is r24{16} + 20).
-        e = e->simplify();
-
-        if (DEBUG_SWITCH) {
-            LOG_MSG("decodeIndirect: propagated and const global converted call expression is %1", e);
-        }
-
-        int  n          = sizeof(hlVfc) / sizeof(SharedExp);
-        bool recognised = false;
-        int  i;
-
-        for (i = 0; i < n; i++) {
-            if (*e *= *hlVfc[i]) { // *= compare ignores subscripts
-                recognised = true;
-
-                if (DEBUG_SWITCH) {
-                    LOG_MSG("Indirect call matches form %1", i);
-                }
-
-                break;
-            }
-        }
-
-        if (!recognised) {
-            return false;
-        }
-
-        lastStmt->setDest(e); // Keep the changes to the indirect call expression
-        int       K1, K2;
-        SharedExp vtExp, t1;
-        Prog      *prog = proc->getProg();
-
-        switch (i)
-        {
-        case 0:
-            {
-                // This is basically an indirection on a global function pointer.  If it is initialised, we have a
-                // decodable entry point.  Note: it could also be a library function (e.g. Windows)
-                // Pattern 0: global<name>{0}[0]{0}
-                K2 = 0;
-
-                if (e->isSubscript()) {
-                    e = e->getSubExp1();
-                }
-
-                e  = e->getSubExp1(); // e is global<name>{0}[0]
-                t1 = e->getSubExp2();
-                auto t1_const = std::static_pointer_cast<Const>(t1);
-
-                if (e->isArrayIndex() && (t1->isIntConst()) && (t1_const->getInt() == 0)) {
-                    e = e->getSubExp1(); // e is global<name>{0}
-                }
-
-                if (e->isSubscript()) {
-                    e = e->getSubExp1();                                                        // e is global<name>
-                }
-
-                std::shared_ptr<Const> con     = std::static_pointer_cast<Const>(e->getSubExp1()); // e is <name>
-                Global                 *global = prog->getGlobal(con->getStr());
-                assert(global);
-                // Set the type to pointer to function, if not already
-                SharedType ty = global->getType();
-
-                if (!ty->isPointer() && !std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isFunc()) {
-                    global->setType(PointerType::get(FuncType::get()));
-                }
-
-                Address addr = global->getAddress();
-                // FIXME: not sure how to find K1 from here. I think we need to find the earliest(?) entry in the data
-                // map that overlaps with addr
-                // For now, let K1 = 0:
-                K1    = 0;
-                vtExp = Const::get(addr);
-                break;
-            }
-
-        case 1:
-            {
-                // Example pattern: e = m[m[r27{25} + 8]{-} + 8]{-}
-                if (e->isSubscript()) {
-                    e = e->getSubExp1();
-                }
-
-                e = e->getSubExp1();             // e = m[r27{25} + 8]{-} + 8
-                SharedExp rhs = e->getSubExp2(); // rhs = 8
-                K2 = std::static_pointer_cast<Const>(rhs)->getInt();
-                SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25} + 8]{-}
-
-                if (lhs->isSubscript()) {
-                    lhs = lhs->getSubExp1(); // lhs = m[r27{25} + 8]
-                }
-
-                vtExp = lhs;
-                lhs   = lhs->getSubExp1(); // lhs =   r27{25} + 8
-                SharedExp CK1 = lhs->getSubExp2();
-                K1 = std::static_pointer_cast<Const>(CK1)->getInt();
-                break;
-            }
-
-        case 2:
-            {
-                // Example pattern: e = m[m[r27{25}]{-} + 8]{-}
-                if (e->isSubscript()) {
-                    e = e->getSubExp1();
-                }
-
-                e = e->getSubExp1();             // e = m[r27{25}]{-} + 8
-                SharedExp rhs = e->getSubExp2(); // rhs = 8
-                K2 = std::static_pointer_cast<Const>(rhs)->getInt();
-                SharedExp lhs = e->getSubExp1(); // lhs = m[r27{25}]{-}
-
-                if (lhs->isSubscript()) {
-                    lhs = lhs->getSubExp1(); // lhs = m[r27{25}]
-                }
-
-                vtExp = lhs;
-                K1    = 0;
-                break;
-            }
-
-        case 3:
-            {
-                // Example pattern: e = m[m[r27{25} + 8]{-}]{-}
-                if (e->isSubscript()) {
-                    e = e->getSubExp1();
-                }
-
-                e  = e->getSubExp1(); // e = m[r27{25} + 8]{-}
-                K2 = 0;
-
-                if (e->isSubscript()) {
-                    e = e->getSubExp1(); // e = m[r27{25} + 8]
-                }
-
-                vtExp = e;
-                SharedExp lhs = e->getSubExp1(); // lhs =   r27{25} + 8
-                // Exp* object = ((Binary*)lhs)->getSubExp1();
-                SharedExp CK1 = lhs->getSubExp2();
-                K1 = std::static_pointer_cast<Const>(CK1)->getInt();
-                break;
-            }
-
-        case 4:
-
-            // Example pattern: e = m[m[r27{25}]{-}]{-}
-            if (e->isSubscript()) {
-                e = e->getSubExp1();
-            }
-
-            e  = e->getSubExp1(); // e = m[r27{25}]{-}
-            K2 = 0;
-
-            if (e->isSubscript()) {
-                e = e->getSubExp1(); // e = m[r27{25}]
-            }
-
-            vtExp = e;
-            K1    = 0;
-            // Exp* object = ((Unary*)e)->getSubExp1();
-            break;
-
-        default:
-            K1    = K2 = -1; // Suppress warnings
-            vtExp = nullptr;
-        }
-
-        if (DEBUG_SWITCH) {
-            LOG_MSG("Form %1: from statement %2 get e = %3, K1 = %4, K2 = %5, vtExp = %6",
-                    i, lastStmt->getNumber(), lastStmt->getDest(), K1, K2, vtExp);
-        }
-
-        // The vt expression might not be a constant yet, because of expressions not fully propagated, or because of
-        // m[K] in the expression (fixed with the ConstGlobalConverter).  If so, look it up in the defCollector in the
-        // call
-        vtExp = lastStmt->findDefFor(vtExp);
-
-        if (vtExp && DEBUG_SWITCH) {
-            LOG_MSG("VT expression boils down to this: %1", vtExp);
-        }
-
-        // Danger. For now, only do if -ic given
-        bool decodeThru = SETTING(decodeThruIndCall);
-
-        if (decodeThru && vtExp && vtExp->isIntConst()) {
-            Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
-            Address pfunc = Address(prog->readNative4(addr));
-
-            if (prog->findFunction(pfunc) == nullptr) {
-                // A new, undecoded procedure
-                if (SETTING(noDecodeChildren)) {
-                    return false;
-                }
-
-                prog->decodeEntryPoint(pfunc);
-                // Since this was not decoded, this is a significant change, and we want to redecode the current
-                // function now that the callee has been decoded
+    for (const RTL *rtl : *m_listOfRTLs) {
+        for (const Statement *s : *rtl) {
+            if (s == stmt) {
                 return true;
             }
         }
@@ -1997,151 +718,8 @@ bool BasicBlock::decodeIndirectJmp(UserProc *proc)
 }
 
 
-void BasicBlock::processSwitch(UserProc *proc)
+void BasicBlock::removeRTL(RTL* rtl)
 {
-    RTL           *last(m_listOfRTLs->back());
-    CaseStatement *lastStmt((CaseStatement *)last->getHlStmt());
-    SwitchInfo   *si(lastStmt->getSwitchInfo());
-
-    if (SETTING(debugSwitch)) {
-        LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
-                si->chForm, si->uTable, si->iNumTable, si->iLower, si->iUpper);
-    }
-
-    Address switchDestination;
-    int     iNumOut, iNum;
-    iNumOut = si->iUpper - si->iLower + 1;
-    iNum    = iNumOut;
-
-    // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
-    updateType(BBType::Nway);
-
-    Prog *prog(proc->getProg());
-    Cfg  *cfg(proc->getCFG());
-    // Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
-    // switch (x) {
-    //   case 3: case 5:
-    //        do something;
-    //        break;
-    //     case 4: case 10:
-    //        do something else
-    // ... }
-    // The switch statement is emitted assuming one out-edge for each switch value, which is assumed to be iLower+i
-    // for the ith zero-based case. It may be that the code for case 5 above will be a goto to the code for case 3,
-    // but a smarter back end could group them
-    std::list<Address> dests;
-
-    for (int i = 0; i < iNum; i++) {
-        // Get the destination address from the switch table.
-        if (si->chForm == 'H') {
-            int iValue = prog->readNative4(si->uTable + i * 2);
-
-            if (iValue == -1) {
-                continue;
-            }
-
-            switchDestination = Address(prog->readNative4(si->uTable + i * 8 + 4));
-        }
-        else if (si->chForm == 'F') {
-            switchDestination = Address(((int *)si->uTable.value())[i]);
-        }
-        else {
-            switchDestination = Address(prog->readNative4(si->uTable + i * 4));
-        }
-
-        if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r')) {
-            // Offset: add table address to make a real pointer to code.  For type R, the table is relative to the
-            // branch, so take iOffset. For others, iOffset is 0, so no harm
-            if (si->chForm != 'R') {
-                assert(si->iOffset == 0);
-            }
-
-            switchDestination += si->uTable - si->iOffset;
-        }
-
-        if (switchDestination < prog->getLimitTextHigh()) {
-            // tq.visit(cfg, uSwitch, this);
-            cfg->addOutEdge(this, switchDestination, true);
-            // Remember to decode the newly discovered switch code arms, if necessary
-            // Don't do it right now, in case there are recursive switch statements (e.g. app7win.exe from
-            // hackthissite.org)
-            dests.push_back(switchDestination);
-        }
-        else {
-            LOG_MSG("Switch table entry branches to past end of text section %1", switchDestination);
-
-            // TMN: If we reached an array entry pointing outside the program text, we can be quite confident the array
-            // has ended. Don't try to pull any more data from it.
-            LOG_MSG("Assuming the end of the pointer-array has been reached at index %1", i);
-
-            // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
-            // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
-            // assert(iNumOut        >= (iNum - i));
-            assert(int(m_successors.size()) >= (iNum - i));
-            size_t remove_from_this = m_successors.size() - (iNum - i);
-            // remove last (iNum - i) out edges
-            m_successors.erase(m_successors.begin() + remove_from_this, m_successors.end());
-            break;
-        }
-    }
-
-    // Decode the newly discovered switch code arms, if any, and if not already decoded
-    int count = 0;
-
-    for (Address addr : dests) {
-        char tmp[1024];
-        count++;
-        sprintf(tmp, "before decoding fragment %i of %zu (%s)", count, dests.size(), qPrintable(addr.toString()));
-        Boomerang::get()->alertDecompileDebugPoint(proc, tmp);
-        prog->decodeFragment(proc, addr);
-    }
-}
-
-
-bool BasicBlock::undoComputedBB(Statement *stmt)
-{
-    RTL *last = m_listOfRTLs->back();
-
-    for (auto rr = last->rbegin(); rr != last->rend(); rr++) {
-        if (*rr == stmt) {
-            updateType(BBType::Call);
-            LOG_MSG("undoComputedBB for statement %1", stmt);
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-bool BasicBlock::searchAll(const Exp& search_for, std::list<SharedExp>& results)
-{
-    bool ch = false;
-
-    for (RTL *rtl_it : *m_listOfRTLs) {
-        for (Statement *e : *rtl_it) {
-            SharedExp res; // searchAll can be used here too, would it change anything ?
-
-            if (e->search(search_for, res)) {
-                ch = true;
-                results.push_back(res);
-            }
-        }
-    }
-
-    return ch;
-}
-
-
-bool BasicBlock::searchAndReplace(const Exp& search, SharedExp replace)
-{
-    bool ch = false;
-
-    for (RTL *rtl_it : *m_listOfRTLs) {
-        for (auto& elem : *rtl_it) {
-            ch |= (elem)->searchAndReplace(search, replace);
-        }
-    }
-
-    return ch;
+    m_listOfRTLs->remove(rtl);
+    updateBBAddresses();
 }

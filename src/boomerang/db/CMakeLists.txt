@@ -18,6 +18,8 @@ list(APPEND boomerang-db-sources
     db/IBinarySection.h
     db/IBinarySymbols.h
     db/InsNameElem
+    db/IndirectJumpAnalyzer
+    db/LivenessAnalyzer
     db/Module
     db/Prog
     db/Register
@@ -61,7 +63,6 @@ list(APPEND boomerang-db-sources
     db/statements/GotoStatement
     db/statements/ImplicitAssign
     db/statements/ImpRefStatement
-    db/statements/JunctionStatement
     db/statements/PhiAssign
     db/statements/ReturnStatement
     db/statements/Statement

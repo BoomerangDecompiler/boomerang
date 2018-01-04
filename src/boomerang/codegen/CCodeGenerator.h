@@ -11,10 +11,13 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/codegen/ControlFlowAnalyzer.h"
 #include "boomerang/util/Address.h"
 
 #include <string>
 #include <sstream>
+#include <unordered_set>
+
 
 class BasicBlock;
 class Exp;
@@ -30,8 +33,7 @@ class IBinaryImage;
  * Operator Name                Associativity    Operators
  * Primary scope resolution     left to right    ::
  * Primary                      left to right    ()    [ ]     .    -> dynamic_cast typeid
- * Unary                        right to left    ++    --    +  -  !     ~    &  *  (type_name)  sizeof new
- * delete
+ * Unary                        right to left    ++    --    +  -  !     ~    &  *  (type_name)  sizeof new delete
  * C++ Pointer to Member        left to right    .* ->*
  * Multiplicative               left to right    *  /  %
  * Additive                     left to right    +  -
@@ -258,8 +260,8 @@ private:
     void closeParen(QTextStream& str, PREC outer, PREC inner);
 
 
-    void generateCode(BasicBlock *bb, BasicBlock *latch, std::list<BasicBlock *>& followSet, std::list<BasicBlock *>& gotoSet, UserProc *proc);
-    void generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& gotoSet, UserProc *proc, BasicBlock *latch, std::list<BasicBlock *>& followSet);
+    void generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet, std::list<const BasicBlock *>& gotoSet, UserProc *proc);
+    void generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc, const BasicBlock *latch, std::list<const BasicBlock *>& followSet);
 
     /// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
     /// just before the destination code if it isn't already there.    If the goto is to the return block, it would be nice
@@ -267,10 +269,14 @@ private:
     /// emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and
     /// 'break'
     /// statements are used instead if possible
-    void emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest);
+    void emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *dest);
 
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
     void writeBB(const BasicBlock *bb);
+
+    /// \returns true if all predecessors of this BB have had their code generated.
+    bool isAllParentsGenerated(const BasicBlock *bb) const;
+    bool isGenerated(const BasicBlock *bb) const;
 
 private:
     /// Dump all generated code to \p os.
@@ -289,4 +295,6 @@ private:
     std::set<int> m_usedLabels;             ///< All used goto labels.
     QStringList m_lines;                    ///< The generated code.
     UserProc *m_proc = nullptr;
+    std::unordered_set<const BasicBlock *> m_generatedBBs;
+    ControlFlowAnalyzer m_analyzer;
 };

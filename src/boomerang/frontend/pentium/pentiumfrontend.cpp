@@ -155,7 +155,7 @@ bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream&
     // point compares to generate floating point branches.
     // processFloatCode() will recurse to process its out-edge BBs (if not already processed)
     Cfg *cfg = function->getCFG();
-    cfg->unTraverse(); // Reset all the "traversed" flags (needed soon)
+
     // This will get done twice; no harm
     function->setEntryBB();
 
@@ -374,29 +374,28 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
         }
     }
 
-    bb->setTraversed(true);
+    m_floatProcessed.insert(bb);
 
     // Now recurse to process my out edges, if not already processed
-    const std::vector<BasicBlock *>& outs = bb->getSuccessors();
-    size_t n;
+    int oldNumSuccessors;
 
     do {
-        n = outs.size();
+        oldNumSuccessors = bb->getNumSuccessors();
 
-        for (unsigned o = 0; o < n; o++) {
-            BasicBlock *anOut = outs[o];
+        for (BasicBlock *succ : bb->getSuccessors()) {
+            if (isFloatProcessed(succ)) {
+                continue; // nothing to do
+            }
 
-            if (!anOut->isTraversed()) {
-                processFloatCode(anOut, tos, cfg);
+            processFloatCode(succ, tos, cfg);
 
-                if (outs.size() != n) {
-                    // During the processing, we have added or more likely deleted a BB, and the vector of out edges
-                    // has changed.  It's safe to just start the inner for loop again
-                    break;
-                }
+            if (bb->getNumSuccessors() != oldNumSuccessors) {
+                // During the processing, we have added or more likely deleted a BB, and the vector of out edges
+                // has changed.  It's safe to just start the inner for loop again
+                break;
             }
         }
-    } while (outs.size() != n);
+    } while (bb->getNumSuccessors() != oldNumSuccessors);
 }
 
 
@@ -650,8 +649,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
         bool    lastRtl = true;
 
         // For each RTL this BB
-        for (std::list<RTL *>::iterator rit = rtls->begin(); rit != rtls->end(); rit++) {
-            RTL *rtl = *rit;
+        for (RTL *rtl : *rtls) {
             prev = addr;
             addr = rtl->getAddress();
 
@@ -733,7 +731,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     for (it = stmts.begin(); it != stmts.end(); it++) {
         Statement *s = *it;
 
-        if (s->getBB()->isOverlappedRegProcessingDone()) { // never redo processing
+        if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
             continue;
         }
 
@@ -910,9 +908,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     }
 
     // set a flag for every BB we've processed so we don't do them again
-    for (BasicBlock *bb : bbs) {
-        bb->setOverlappedRegProcessingDone();
-    }
+    m_overlappedRegsProcessed.insert(bbs.begin(), bbs.end());
 }
 
 

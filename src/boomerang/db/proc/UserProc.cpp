@@ -233,7 +233,7 @@ bool UserProc::containsAddr(Address uAddr) const
     BBIterator it;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-        if (bb->getRTLs() && (bb->getLowAddr() <= uAddr) && (bb->getHiAddr() >= uAddr)) {
+        if (bb->getRTLs() && (uAddr >= bb->getLowAddr()) && (uAddr <= bb->getHiAddr())) {
             return true;
         }
     }
@@ -295,7 +295,12 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
 
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     m_locals[newName] = ty;
-    m_cfg->searchAndReplace(*oldLoc, newLoc);
+
+    StatementList stmts;
+    getStatements(stmts);
+    for (Statement *stmt : stmts) {
+        stmt->searchAndReplace(*oldLoc, newLoc);
+    }
 }
 
 
@@ -685,7 +690,7 @@ void UserProc::initStatements()
 {
     BBIterator it;
 
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb != nullptr; bb = m_cfg->getNextBB(it)) {
@@ -716,7 +721,7 @@ void UserProc::numberStatements()
 {
     BBIterator it;
 
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
@@ -735,7 +740,7 @@ void UserProc::getStatements(StatementList& stmts) const
     BBCIterator it;
 
     for (const BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-        bb->getStatements(stmts);
+        bb->appendStatementsTo(stmts);
     }
 
     for (Statement *s : stmts) {
@@ -1544,7 +1549,7 @@ void UserProc::remUnusedStmtEtc()
         BBIterator it;
 
         for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-            BasicBlock::rtlit       rtlIt;
+            BasicBlock::RTLIterator       rtlIt;
             StatementList::iterator stmtIt;
 
             for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
@@ -1768,7 +1773,7 @@ bool UserProc::branchAnalysis()
 
         if (branch->getFallBB() && branch->getTakenBB()) {
             StatementList fallstmts;
-            branch->getFallBB()->getStatements(fallstmts);
+            branch->getFallBB()->appendStatementsTo(fallstmts);
 
             if ((fallstmts.size() == 1) && (*fallstmts.begin())->isBranch()) {
                 BranchStatement *fallto = (BranchStatement *)*fallstmts.begin();
@@ -1789,11 +1794,19 @@ bool UserProc::branchAnalysis()
                     SharedExp cond =
                         Binary::get(opAnd, Unary::get(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone());
                     branch->setCondExpr(cond->simplify());
-                    assert(fallto->getBB()->getNumPredecessors() == 0);
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    assert(fallto->getBB()->getNumSuccessors() == 0);
-                    m_cfg->removeBB(fallto->getBB());
+
+                    BasicBlock *bb = fallto->getBB();
+                    assert(bb->getNumPredecessors() == 0);
+                    assert(bb->getNumSuccessors() == 2);
+                    BasicBlock *succ1 = fallto->getBB()->getSuccessor(0);
+                    BasicBlock *succ2 = fallto->getBB()->getSuccessor(1);
+
+                    bb->removeSuccessor(succ1);
+                    bb->removeSuccessor(succ2);
+                    succ1->removePredecessor(bb);
+                    succ2->removePredecessor(bb);
+
+                    m_cfg->removeBB(bb);
                     removedBBs = true;
                 }
 
@@ -1808,10 +1821,18 @@ bool UserProc::branchAnalysis()
                 if ((fallto->getTakenBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
                     branch->setFallBB(fallto->getFallBB());
                     branch->setCondExpr(Binary::get(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
-                    assert(fallto->getBB()->getNumPredecessors() == 0);
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    fallto->getBB()->removeSuccessor(fallto->getBB()->getSuccessor(0));
-                    assert(fallto->getBB()->getNumSuccessors() == 0);
+
+                    BasicBlock *bb = fallto->getBB();
+                    assert(bb->getNumPredecessors() == 0);
+                    assert(bb->getNumSuccessors() == 2);
+                    BasicBlock *succ1 = bb->getPredecessor(0);
+                    BasicBlock *succ2 = bb->getPredecessor(1);
+
+                    bb->removeSuccessor(succ1);
+                    bb->removeSuccessor(succ2);
+                    succ1->removePredecessor(bb);
+                    succ2->removePredecessor(bb);
+
                     m_cfg->removeBB(fallto->getBB());
                     removedBBs = true;
                 }
@@ -2417,11 +2438,14 @@ bool UserProc::propagateStatements(bool& convert, int pass)
     LOG_VERBOSE("--- Begin propagating statements pass %1 ---", pass);
     StatementList stmts;
     getStatements(stmts);
+
     // propagate any statements that can be
     StatementList::iterator it;
+
     // Find the locations that are used by a live, dominating phi-function
     LocationSet usedByDomPhi;
     findLiveAtDomPhi(usedByDomPhi);
+
     // Next pass: count the number of times each assignment LHS would be propagated somewhere
     std::map<SharedExp, int, lessExpStar> destCounts;
 
@@ -2879,7 +2903,7 @@ void UserProc::fromSSAForm()
                 firstTypes[base] = fte;
             }
             else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
-                if (DEBUG_LIVENESS) {
+                if (SETTING(debugLiveness)) {
                     LOG_MSG("Def of %1 at %2 type %3 is not compatible with first type %4.",
                             base, s->getNumber(), ty, ff->second.first);
                 }
@@ -2902,7 +2926,7 @@ void UserProc::fromSSAForm()
     // FIXME: are these going to be trivially predictable?
     findPhiUnites(pu);
 
-    if (DEBUG_LIVENESS) {
+    if (SETTING(debugLiveness)) {
         LOG_MSG("## ig interference graph:");
 
         for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ii++) {
@@ -2954,7 +2978,7 @@ void UserProc::fromSSAForm()
         SharedType ty    = rename->getDef()->getTypeFor(rename->getSubExp1());
         SharedExp  local = createLocal(ty, rename);
 
-        if (DEBUG_LIVENESS) {
+        if (SETTING(debugLiveness)) {
             LOG_MSG("Renaming %1 to %2", rename, local);
         }
 
@@ -3089,7 +3113,7 @@ void UserProc::fromSSAForm()
         if (phiParamsSame && first) {
             // Is the left of the phi assignment the same base variable as all the operands?
             if (*pa->getLeft() == *first) {
-                if (DEBUG_LIVENESS || DEBUG_UNUSED) {
+                if (SETTING(debugLiveness) || DEBUG_UNUSED) {
                     LOG_MSG("Removing phi: left and all refs same or 0: %1", s);
                 }
 
@@ -3111,7 +3135,7 @@ void UserProc::fromSSAForm()
             // Exp* tempLoc = newLocal(pa->getType());
             SharedExp tempLoc = getSymbolExp(RefExp::get(pa->getLeft(), pa), pa->getType());
 
-            if (DEBUG_LIVENESS) {
+            if (SETTING(debugLiveness)) {
                 LOG_MSG("Phi statement %1 requires local, using %2", s, tempLoc);
             }
 
@@ -3660,7 +3684,7 @@ bool UserProc::ellipsisProcessing()
 {
     BBIterator it;
 
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
     bool ch = false;
 
@@ -3873,7 +3897,7 @@ void UserProc::updateArguments()
     Boomerang::get()->alertDecompiling(this);
     LOG_VERBOSE("### Update arguments for %1 ###", getName());
     Boomerang::get()->alertDecompileDebugPoint(this, "Before updating arguments");
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *it : *m_cfg) {
@@ -4462,7 +4486,7 @@ void UserProc::fixCallAndPhiRefs()
 
 void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 {
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *m_cfg) {
@@ -4603,7 +4627,7 @@ bool UserProc::isLocalOrParamPattern(const SharedExp& e)
 
 bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited)
 {
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *pb : *m_cfg) {
@@ -4983,7 +5007,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     // Save the old parameters and call liveness
     const size_t oldNumParameters = m_parameters.size();
     std::map<CallStatement *, UseCollector> callLiveness;
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
     BBIterator it;
 
@@ -5077,7 +5101,7 @@ void UserProc::processDecodedICTs()
 {
     BBIterator it;
 
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
@@ -5110,7 +5134,7 @@ void UserProc::eliminateDuplicateArgs()
     LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
 
     BBIterator                      it;
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *m_cfg) {
@@ -5131,7 +5155,7 @@ void UserProc::removeCallLiveness()
     LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
 
     BBIterator                      it;
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (it = m_cfg->begin(); it != m_cfg->end(); ++it) {
@@ -5190,6 +5214,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
 
     std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
     m_df.findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
+
     // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
     std::map<SharedExp, PhiAssign *, lessExpStar>::iterator it;
 
@@ -5215,8 +5240,6 @@ void UserProc::setDominanceNumbers()
 
     m_df.setDominanceNums(0, currNum);
 }
-
-
 #endif
 
 

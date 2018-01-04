@@ -151,7 +151,10 @@ public:
     void deleteCFG() override;
 
     /// simplify the statements in this proc
-    void simplify() { m_cfg->simplify(); }
+    void simplify()
+    {
+        m_cfg->simplify();
+    }
 
     /**
      * Begin the decompile process at this procedure
@@ -316,6 +319,8 @@ public:
     /// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
     /// (else clear)
     bool propagateStatements(bool& convert, int pass);
+
+    /// Find the locations that are used by a live, dominating phi-function
     void findLiveAtDomPhi(LocationSet& usedByDomPhi);
 
 #if USE_DOMINANCE_NUMS

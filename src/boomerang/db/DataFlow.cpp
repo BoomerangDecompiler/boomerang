@@ -49,9 +49,8 @@ void DataFlow::dfs(int p, size_t n)
 
         // For each successor w of n
         BasicBlock *bb = m_BBs[n];
-        const std::vector<BasicBlock *>& successors = bb->getSuccessors();
 
-        for (BasicBlock *_bb : successors) {
+        for (BasicBlock *_bb : bb->getSuccessors()) {
             dfs(n, m_indices[_bb]);
         }
     }
@@ -214,9 +213,8 @@ void DataFlow::computeDF(int n)
     /* This loop computes DF_local[n] */
     // for each node y in succ(n)
     BasicBlock *bb = m_BBs[n];
-    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
 
-    for (BasicBlock *b : outEdges) {
+    for (BasicBlock *b : bb->getSuccessors()) {
         int y = m_indices[b];
 
         if (m_idom[y] != n) {
@@ -358,7 +356,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     // We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
     // Recreate each call because propagation and other changes make old data invalid
     for (size_t n = 0; n < numBB; n++) {
-        BasicBlock::rtlit       rit;
+        BasicBlock::RTLIterator       rit;
         StatementList::iterator sit;
         BasicBlock              *bb = m_BBs[n];
 
@@ -460,7 +458,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each statement S in block n
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
 
@@ -628,12 +626,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each successor Y of block n
-    const std::vector<BasicBlock *>& outEdges = bb->getSuccessors();
-    size_t numSucc = outEdges.size();
-
-    for (unsigned succ = 0; succ < numSucc; succ++) {
-        BasicBlock *Ybb = outEdges[succ];
-
+    for (BasicBlock *Ybb : bb->getSuccessors()) {
         // For each phi-function in Y
         for (Statement *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
             PhiAssign *pa = dynamic_cast<PhiAssign *>(St);
@@ -679,7 +672,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     // NOTE: Because of the need to pop childless calls from the Stacks, it is important in my algorithm to process the
     // statments in the BB *backwards*. (It is not important in Appel's algorithm, since he always pushes a definition
     // for every variable defined on the Stacks).
-    BasicBlock::rtlrit              rrit;
+    BasicBlock::RTLRIterator              rrit;
     StatementList::reverse_iterator srit;
 
     for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
@@ -809,12 +802,11 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
                                 std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi)
 {
     // For each statement this BB
-    BasicBlock::rtlit       rit;
+    BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
-    Statement               *S;
 
-    for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
+    for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign           *pa = (PhiAssign *)S;

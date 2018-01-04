@@ -22,7 +22,6 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/statements/JunctionStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"

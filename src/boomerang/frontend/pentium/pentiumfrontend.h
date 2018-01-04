@@ -12,6 +12,8 @@
 
 #include "boomerang/frontend/Frontend.h"
 
+#include <unordered_set>
+
 class Statement;
 class PentiumDecoder;
 
@@ -65,6 +67,12 @@ public:
      * \returns  Native pointer if found; Address::INVALID if not
      */
     virtual Address getMainEntryPoint(bool& gotMain) override;
+
+protected:
+    virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
+
+    /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
+    virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
 
 private:
     /// Emit a set instruction.
@@ -157,9 +165,17 @@ private:
     bool decodeSpecial_out(Address pc, DecodeResult& r);
     bool decodeSpecial_invalid(Address pc, DecodeResult& r);
 
-protected:
-    virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
+    bool isOverlappedRegsProcessed(const BasicBlock *bb) const
+    {
+        return m_overlappedRegsProcessed.find(bb) != m_overlappedRegsProcessed.end();
+    }
 
-    /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
-    virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
+    bool isFloatProcessed(const BasicBlock *bb) const
+    {
+        return m_floatProcessed.find(bb) != m_floatProcessed.end();
+    }
+
+private:
+    std::unordered_set<const BasicBlock *> m_overlappedRegsProcessed;
+    std::unordered_set<const BasicBlock *> m_floatProcessed;
 };

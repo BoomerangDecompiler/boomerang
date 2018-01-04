@@ -12,6 +12,7 @@
 
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/db/LivenessAnalyzer.h"
 
 #include <list>
 #include <vector>
@@ -147,7 +148,7 @@ public:
      * \param destAddr  Destination BB of the out edge
      * \param labelRequired if true, set a label at the destination address. Set true on "true" branches of labels
      */
-    void addOutEdge(BasicBlock *sourceBB, Address destAddr, bool labelRequired = false);
+    void addEdge(BasicBlock *sourceBB, Address destAddr);
 
     /**
      * Add an edge between \p sourceBB and destBB.
@@ -159,18 +160,7 @@ public:
      * \param destBB Start address of the BB reached by the out edge
      * \param labelRequired - indicates that label is required in the destination BB
      */
-    void addOutEdge(BasicBlock *sourceBB, BasicBlock *destBB, bool labelRequired = false);
-
-    /**
-     * Adds a label for the given basic block; the label number will be a non-zero integer.
-     *
-     * Sets a flag indicating that this BB has a label,
-     * in the sense that a label is required in the translated source code.
-     *
-     * \note         The label is only set if it was not set previously
-     * \param        bb Pointer to the BB whose label will be set
-     */
-    void setLabelRequired(BasicBlock *bb);
+    void addEdge(BasicBlock *sourceBB, BasicBlock *destBB);
 
     /**
      * Get the first BB of this CFG.
@@ -251,12 +241,6 @@ public:
      */
     void sortByAddress();
 
-    /// Sorts the BBs in a cfg by their first DFT numbers.
-    void sortByFirstDFT();
-
-    /// Sorts the BBs in a cfg by their last DFT numbers.
-    void sortByLastDFT();
-
     /**
      * Checks that all BBs are complete, and all out edges are valid;
      * however, Addresses that are interprocedural out edges are not checked or changed.
@@ -286,36 +270,9 @@ public:
      */
     bool compressCfg();
 
-    /**
-     * Given a well-formed cfg graph, a partial ordering is established between the nodes.
-     *
-     * The ordering is based on the final visit to each node during a depth first traversal such that if node n1 was
-     * visited for the last time before node n2 was visited for the last time, n1 will be less than n2.
-     * The return value indicates if all nodes where ordered. This will not be the case for incomplete CFGs
-     * (e.g. switch table not completely recognised) or where there are nodes unreachable from the entry
-     * node.
-     *
-     * \returns all nodes where ordered
-     */
-    bool establishDFTOrder();
-
-    /**
-     * Performs establishDFTOrder on the reverse (flip) of the graph,
-     * assumes: establishDFTOrder has already been called
-     * \returns all nodes where ordered
-     */
-    bool establishRevDFTOrder();
-
-    /**
-     * Reset all the traversed flags.
-     * \note To make this a useful public function, we need access
-     * to the traversed flag with other public functions.
-     */
-    void unTraverse();
-
     /// Check if is a BB at the address given
     /// whose first RTL is an orphan, i.e. getAddress() returns 0.
-    bool isOrphan(Address uAddr);
+    bool isOrphan(Address uAddr) const;
 
     /**
      * Amalgamate the RTLs for \p bb1 and  \p bb2, and place the result into \p bb2
@@ -333,22 +290,6 @@ public:
 
     /// Completely removes a single BB from this CFG.
     void removeBB(BasicBlock *bb);
-
-    /**
-     * Replace all instances of \p pattern with \p replacement in all BasicBlock's
-     * belonging to this Cfg. Can be type sensitive if required.
-     */
-    void searchAndReplace(const Exp& pattern, const SharedExp& replacement);
-
-    /// Search for all occurrences of \p pattern in this CFG
-    /// and put the results into \p result.
-    bool searchAll(const Exp& pattern, std::list<SharedExp>& result);
-
-    /// Structures the control flow graph
-    void structure();
-
-    /// Remove Junction statements
-    void removeJunctionStatements();
 
     /// return a BB given an address
     BasicBlock *bbForAddr(Address addr) { return m_mapBB[addr]; }
@@ -425,48 +366,6 @@ public:
     BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, iterator& it);
 
 
-    // Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-
-    void setTimeStamps();
-
-    /// Finds the common post dominator of the current immediate post dominator and its successor's immediate post dominator
-    BasicBlock *commonPDom(BasicBlock *curImmPDom, BasicBlock *succImmPDom);
-
-    /**
-     * Finds the immediate post dominator of each node in the graph PROC->cfg.
-     *
-     * Adapted version of the dominators algorithm by Hecht and Ullman;
-     * finds immediate post dominators only.
-     * \note graph should be reducible
-     */
-    void updateImmedPDom();
-
-    /// Structures all conditional headers (i.e. nodes with more than one outedge)
-    void structConds();
-
-    /// \pre The graph for curProc has been built.
-    /// \post Each node is tagged with the header of the most nested loop of which it is a member (possibly none).
-    /// The header of each loop stores information on the latching node as well as the type of loop it heads.
-    void structLoops();
-
-    /// This routine is called after all the other structuring has been done. It detects conditionals that are in fact the
-    /// head of a jump into/outof a loop or into a case body. Only forward jumps are considered as unstructured backward
-    /// jumps will always be generated nicely.
-    void checkConds();
-
-    /// \pre  The loop induced by (head,latch) has already had all its member nodes tagged
-    /// \post The type of loop has been deduced
-    void determineLoopType(BasicBlock *header, bool *& loopNodes);
-
-    /// \pre  The loop headed by header has been induced and all it's member nodes have been tagged
-    /// \post The follow of the loop has been determined.
-    void findLoopFollow(BasicBlock *header, bool *& loopNodes);
-
-    /// \pre header has been detected as a loop header and has the details of the
-    ///        latching node
-    /// \post the nodes within the loop have been tagged
-    void tagNodesInLoop(BasicBlock *header, bool *& loopNodes);
-
     void removeUnneededLabels(ICodeGenerator *gen);
     void generateDotFile(QTextStream& of);
 
@@ -514,16 +413,14 @@ public:
 private:
     UserProc *m_myProc;                      ///< Pointer to the UserProc object that contains this CFG object
     mutable bool m_wellFormed;
-    bool m_structured;
     bool m_implicitsDone;                    ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
-    int m_lastLabel;                         ///< Last label (positive integer) used by any BB this Cfg
 
     std::list<BasicBlock *> m_listBB;        ///< BasicBlock s contained in this CFG
-    std::vector<BasicBlock *> m_ordering;    ///< Ordering of BBs for control flow structuring
-    std::vector<BasicBlock *> m_revOrdering; ///< Ordering of BBs for control flow structuring
 
     MAPBB m_mapBB;                           ///< The Address to BB map
     BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.
     BasicBlock *m_exitBB;                    ///< The CFG exit BasicBlock.
     ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
+
+    LivenessAnalyzer m_livenessAna;
 };

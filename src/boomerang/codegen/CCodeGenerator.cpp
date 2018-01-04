@@ -541,7 +541,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     assert(proc->getCFG());
     assert(proc->getEntryBB());
 
-    proc->getCFG()->structure();
+    m_analyzer.structureCFG(proc->getCFG());
     proc->removeUnusedLocals();
 
     // Note: don't try to remove unused statements here; that requires the
@@ -583,7 +583,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     }
 
     // Start generating "real" code
-    std::list<BasicBlock *> followSet, gotoSet;
+    std::list<const BasicBlock *> followSet, gotoSet;
     generateCode(proc->getEntryBB(), nullptr, followSet, gotoSet, proc);
 
     addProcEnd();
@@ -2238,15 +2238,15 @@ void CCodeGenerator::closeParen(QTextStream& str, PREC outer, PREC inner)
 }
 
 
-void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<BasicBlock *>& followSet,
-                                  std::list<BasicBlock *>& gotoSet, UserProc *proc)
+void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet,
+                                  std::list<const BasicBlock *>& gotoSet, UserProc *proc)
 {
     // If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
     // in the follow set generate a goto to the follow
-    BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
+    const BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
 
-    if (Util::isIn(gotoSet, bb) && !bb->isLatchNode() &&
-        ((latch && latch->getLoopHead() && (bb == latch->getLoopHead()->getLoopFollow())) || !bb->allParentsGenerated())) {
+    if (Util::isIn(gotoSet, bb) && !m_analyzer.isLatchNode(bb) &&
+        ((latch && m_analyzer.getLoopHead(latch) && (bb == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)))) || !isAllParentsGenerated(bb))) {
         emitGotoAndLabel(bb, bb);
         return;
     }
@@ -2258,8 +2258,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         return;
     }
 
-    // Has this node already been generated?
-    if (bb->getTravType() == TravType::DFS_Codegen) {
+    if (isGenerated(bb)) {
         // this should only occur for a loop over a single block
         // FIXME: is this true? Perl_list (0x8068028) in the SPEC 2000 perlbmk seems to have a case with sType = Cond,
         // lType == PreTested, and latchNod == 0
@@ -2267,7 +2266,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         return;
     }
     else {
-        bb->setTravType(TravType::DFS_Codegen);
+        m_generatedBBs.insert(bb);
     }
 
     //
@@ -2289,7 +2288,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
     //        }
     //    \endcode
     //
-    if (bb->isLatchNode()) {
+    if (m_analyzer.isLatchNode(bb)) {
         // FIXME
 //         if (latch && latch->getLoopHead() &&
 //             (m_indent == latch->getLoopHead()->m_indentLevel + ((latch->m_loopHead->m_loopHeaderType == LoopType::PreTested) ? 1 : 0))) {
@@ -2304,9 +2303,9 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         return;
     }
 
-    BasicBlock *child = nullptr;
+    const BasicBlock *child = nullptr;
 
-    switch (bb->getStructType())
+    switch (m_analyzer.getStructType(bb))
     {
     case StructType::Loop:
     case StructType::LoopCond:
@@ -2316,39 +2315,39 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
     case StructType::Cond:
         {
             // reset this back to LoopCond if it was originally of this type
-            if (bb->getLatchNode()) {
-                bb->setStructType(StructType::LoopCond);
+            if (m_analyzer.getLatchNode(bb)) {
+                m_analyzer.setStructType(bb, StructType::LoopCond);
             }
 
             // for 2 way conditional headers that are effectively jumps into
             // or out of a loop or case body, we will need a new follow node
-            BasicBlock *tmpCondFollow = nullptr;
+            const BasicBlock *tmpCondFollow = nullptr;
 
             // keep track of how many nodes were added to the goto set so that
             // the correct number are removed
             int gotoTotal = 0;
 
             // add the follow to the follow set if this is a case header
-            if (bb->getCondType() == CondType::Case) {
-                followSet.push_back(bb->getCondFollow());
+            if (m_analyzer.getCondType(bb) == CondType::Case) {
+                followSet.push_back(m_analyzer.getCondFollow(bb));
             }
-            else if ((bb->getCondType() != CondType::Case) && bb->getCondFollow()) {
+            else if ((m_analyzer.getCondType(bb) != CondType::Case) && m_analyzer.getCondFollow(bb)) {
                 // For a structured two conditional header,
                 // its follow is added to the follow set
                 // myLoopHead = (sType == LoopCond ? this : loopHead);
 
-                if (bb->getUnstructType() == UnstructType::Structured) {
-                    followSet.push_back(bb->getCondFollow());
+                if (m_analyzer.getUnstructType(bb) == UnstructType::Structured) {
+                    followSet.push_back(m_analyzer.getCondFollow(bb));
                 }
 
                 // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
                 // The temporary follow is set for any unstructured conditional header branch that is within the
                 // same loop and case.
                 else {
-                    if (bb->getUnstructType() == UnstructType::JumpInOutLoop) {
+                    if (m_analyzer.getUnstructType(bb) == UnstructType::JumpInOutLoop) {
                         // define the loop header to be compared against
-                        BasicBlock *myLoopHead = (bb->getStructType() == StructType::LoopCond ? bb : bb->getLoopHead());
-                        gotoSet.push_back(bb->getCondFollow());
+                        const BasicBlock *myLoopHead = (m_analyzer.getStructType(bb) == StructType::LoopCond ? bb : m_analyzer.getLoopHead(bb));
+                        gotoSet.push_back(m_analyzer.getCondFollow(bb));
                         gotoTotal++;
 
                         // also add the current latch node, and the loop header of the follow if they exist
@@ -2357,16 +2356,17 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                             gotoTotal++;
                         }
 
-                        if (bb->getCondFollow()->getLoopHead() && (bb->getCondFollow()->getLoopHead() != myLoopHead)) {
-                            gotoSet.push_back(bb->getCondFollow()->getLoopHead());
+                        if (m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) &&
+                            m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) != myLoopHead) {
+                            gotoSet.push_back(m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)));
                             gotoTotal++;
                         }
                     }
 
-                    tmpCondFollow = bb->getSuccessor((bb->getCondType() == CondType::IfThen) ? BELSE : BTHEN);
+                    tmpCondFollow = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfThen) ? BELSE : BTHEN);
 
                     // for a jump into a case, the temp follow is added to the follow set
-                    if (bb->getUnstructType() == UnstructType::JumpIntoCase) {
+                    if (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase) {
                         followSet.push_back(tmpCondFollow);
                     }
                 }
@@ -2378,7 +2378,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             // write the conditional header
             SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
 
-            if (bb->getCondType() == CondType::Case) {
+            if (m_analyzer.getCondType(bb) == CondType::Case) {
                 // The CaseStatement will be in the last RTL this BB
                 RTL           *last = bb->getRTLs()->back();
                 CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
@@ -2394,12 +2394,12 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                     cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
                 }
 
-                if (bb->getCondType() == CondType::IfElse) {
+                if (m_analyzer.getCondType(bb) == CondType::IfElse) {
                     cond = Unary::get(opNot, cond->clone());
                     cond = cond->simplify();
                 }
 
-                if (bb->getCondType() == CondType::IfThenElse) {
+                if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
                     addIfElseCondHeader(cond);
                 }
                 else {
@@ -2408,12 +2408,12 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             }
 
             // write code for the body of the conditional
-            if (bb->getCondType() != CondType::Case) {
-                BasicBlock *succ = bb->getSuccessor((bb->getCondType() == CondType::IfElse) ? BELSE : BTHEN);
+            if (m_analyzer.getCondType(bb) != CondType::Case) {
+                const BasicBlock *succ = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
 
                 // emit a goto statement if the first clause has already been
                 // generated or it is the follow of this node's enclosing loop
-                if ((succ->getTravType() == TravType::DFS_Codegen) || (bb->getLoopHead() && (succ == bb->getLoopHead()->getLoopFollow()))) {
+                if (isGenerated(succ) || (m_analyzer.getLoopHead(bb) && succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)))) {
                     emitGotoAndLabel(bb, succ);
                 }
                 else {
@@ -2421,7 +2421,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                 }
 
                 // generate the else clause if necessary
-                if (bb->getCondType() == CondType::IfThenElse) {
+                if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
                     // generate the 'else' keyword and matching brackets
                     addIfElseCondOption();
 
@@ -2429,7 +2429,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
                     // emit a goto statement if the second clause has already
                     // been generated
-                    if (succ->getTravType() == TravType::DFS_Codegen) {
+                    if (isGenerated(succ)) {
                         emitGotoAndLabel(bb, succ);
                     }
                     else {
@@ -2447,7 +2447,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             else { // case header
                    // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
                    // generate code for each out branch
-                for (unsigned int i = 0; i < bb->getSuccessors().size(); i++) {
+                for (int i = 0; i < bb->getNumSuccessors(); i++) {
                     // emit a case label
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
@@ -2463,10 +2463,10 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                     addCaseCondOption(caseVal);
 
                     // generate code for the current out-edge
-                    BasicBlock *succ = bb->getSuccessor(i);
+                    const BasicBlock *succ = bb->getSuccessor(i);
 
                     // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
-                    if (succ->getTravType() == TravType::DFS_Codegen) {
+                    if (isGenerated(succ)) {
                         emitGotoAndLabel(bb, succ);
                     }
                     else {
@@ -2479,10 +2479,10 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
             }
 
             // do all the follow stuff if this conditional had one
-            if (bb->getCondFollow()) {
+            if (m_analyzer.getCondFollow(bb)) {
                 // remove the original follow from the follow set if it was
                 // added by this header
-                if ((bb->getUnstructType() == UnstructType::Structured) || (bb->getUnstructType() == UnstructType::JumpIntoCase)) {
+                if ((m_analyzer.getUnstructType(bb) == UnstructType::Structured) || (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase)) {
                     assert(gotoTotal == 0);
                     followSet.resize(followSet.size() - 1);
                 }
@@ -2493,10 +2493,10 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                 // do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
                 // it for the original follow
                 if (!tmpCondFollow) {
-                    tmpCondFollow = bb->getCondFollow();
+                    tmpCondFollow = m_analyzer.getCondFollow(bb);
                 }
 
-                if (tmpCondFollow->getTravType() == TravType::DFS_Codegen) {
+                if (isGenerated(tmpCondFollow)) {
                     emitGotoAndLabel(bb, tmpCondFollow);
                 }
                 else {
@@ -2519,7 +2519,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         }
 
         // return if this doesn't have any out edges (emit a warning)
-        if (bb->getSuccessors().empty()) {
+        if (bb->getNumSuccessors() == 0) {
             LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
 
             if (bb->getType() == BBType::CompJump) {
@@ -2540,8 +2540,8 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
         child = bb->getSuccessor(0);
 
-        if (bb->getSuccessors().size() > 1) {
-            BasicBlock *other = bb->getSuccessor(1);
+        if (bb->getNumSuccessors() > 1) {
+            const BasicBlock *other = bb->getSuccessor(1);
             LOG_MSG("Found seq with more than one outedge!");
             auto const_dest = std::static_pointer_cast<Const>(bb->getDest());
 
@@ -2551,10 +2551,12 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
                 LOG_MSG("Taken branch is first out edge");
             }
 
-            try {
+            SharedExp cond = bb->getCond();
+
+            if (cond) {
                 addIfCondHeader(bb->getCond());
 
-                if (other->getTravType() == TravType::DFS_Codegen) {
+                if (isGenerated(other)) {
                     emitGotoAndLabel(bb, other);
                 }
                 else {
@@ -2563,7 +2565,7 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
 
                 addIfCondEnd();
             }
-            catch (BasicBlock::LastStatementNotABranchError&) {
+            else {
                 LOG_ERROR("Last statement is not a cond, don't know what to do with this.");
             }
         }
@@ -2571,41 +2573,42 @@ void CCodeGenerator::generateCode(BasicBlock *bb, BasicBlock *latch, std::list<B
         // generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
         // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
         // the same loop is when it is only reached from this node
-        if ((child->getTravType() == TravType::DFS_Codegen) ||
-            ((child->getLoopHead() != bb->getLoopHead()) && (!child->allParentsGenerated() ||
-                                                             Util::isIn(followSet, child))) ||
-            (latch && latch->getLoopHead() && (latch->getLoopHead()->getLoopFollow() == child)) ||
-            !((bb->getCaseHead() == child->getCaseHead()) || (bb->getCaseHead() && (child == bb->getCaseHead()->getCondFollow())))) {
+        if (isGenerated(child) ||
+            (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) ||
+            (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) ||
+            !(m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) || (m_analyzer.getCaseHead(bb) && (m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))))) {
             emitGotoAndLabel(bb, child);
         }
         else {
-            if (bb->getCaseHead() && (child == bb->getCaseHead()->getCondFollow())) {
+            if (m_analyzer.getCaseHead(bb) && (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
                 // generate the 'break' statement
                 addCaseCondOptionEnd();
             }
-            else if ((bb->getCaseHead() == nullptr) || (bb->getCaseHead() != child->getCaseHead()) || !child->isCaseOption()) {
-                generateCode(child, latch, followSet, gotoSet, proc);
+            else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
+                (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
+                !m_analyzer.isCaseOption(child)) {
+                    generateCode(child, latch, followSet, gotoSet, proc);
             }
         }
 
         break;
 
     default:
-        LOG_ERROR("Unhandled structuring type %1", (int)bb->getStructType());
+        LOG_ERROR("Unhandled structuring type %1", (int)m_analyzer.getStructType(bb));
     }
 }
 
 
-void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& gotoSet, UserProc *proc,
-                                       BasicBlock *latch, std::list<BasicBlock *>& followSet)
+void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc,
+                                       const BasicBlock *latch, std::list<const BasicBlock *>& followSet)
 {
     // add the follow of the loop (if it exists) to the follow set
-    if (bb->getLoopFollow()) {
-        followSet.push_back(bb->getLoopFollow());
+    if (m_analyzer.getLoopFollow(bb)) {
+        followSet.push_back(m_analyzer.getLoopFollow(bb));
     }
 
-    if (bb->getLoopType() == LoopType::PreTested) {
-        assert(bb->getLatchNode()->getSuccessors().size() == 1);
+    if (m_analyzer.getLoopType(bb) == LoopType::PreTested) {
+        assert(m_analyzer.getLatchNode(bb)->getNumSuccessors() == 1);
 
         // write the body of the block (excluding the predicate)
         writeBB(bb);
@@ -2613,21 +2616,20 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
         // write the 'while' predicate
         SharedExp cond = bb->getCond();
 
-        if (bb->getSuccessor(BTHEN) == bb->getLoopFollow()) {
-            cond = Unary::get(opNot, cond);
-            cond = cond->simplify();
+        if (bb->getSuccessor(BTHEN) == m_analyzer.getLoopFollow(bb)) {
+            cond = Unary::get(opNot, cond)->simplify();
         }
 
         addPretestedLoopHeader(cond);
 
         // write the code for the body of the loop
-        BasicBlock *loopBody = (bb->getSuccessor(BELSE) == bb->getLoopFollow()) ? bb->getSuccessor(BTHEN) : bb->getSuccessor(BELSE);
-        generateCode(loopBody, bb->getLatchNode(), followSet, gotoSet, proc);
+        const BasicBlock *loopBody = (bb->getSuccessor(BELSE) == m_analyzer.getLoopFollow(bb)) ? bb->getSuccessor(BTHEN) : bb->getSuccessor(BELSE);
+        generateCode(loopBody, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
 
         // if code has not been generated for the latch node, generate it now
-        if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
-            bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
-            writeBB(bb->getLatchNode());
+        if (!isGenerated(m_analyzer.getLatchNode(bb))) {
+            m_generatedBBs.insert(m_analyzer.getLatchNode(bb));
+            writeBB(m_analyzer.getLatchNode(bb));
         }
 
         // rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
@@ -2639,7 +2641,7 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
     }
     else {
         // write the loop header
-        if (bb->getLoopType() == LoopType::Endless) {
+        if (m_analyzer.getLoopType(bb) == LoopType::Endless) {
             addEndlessLoopHeader();
         }
         else {
@@ -2648,38 +2650,38 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
 
         // if this is also a conditional header, then generate code for the conditional. Otherwise generate code
         // for the loop body.
-        if (bb->getStructType() == StructType::LoopCond) {
+        if (m_analyzer.getStructType(bb) == StructType::LoopCond) {
             // set the necessary flags so that generateCode can successfully be called again on this node
-            bb->setStructType(StructType::Cond);
-            bb->setTravType(TravType::Untraversed);
-            generateCode(bb, bb->getLatchNode(), followSet, gotoSet, proc);
+            m_analyzer.setStructType(bb, StructType::Cond);
+            m_analyzer.setTravType(bb, TravType::Untraversed);
+            generateCode(bb, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
         }
         else {
             writeBB(bb);
 
             // write the code for the body of the loop
-            generateCode(bb->getSuccessor(0), bb->getLatchNode(), followSet, gotoSet, proc);
+            generateCode(bb->getSuccessor(0), m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
         }
 
-        if (bb->getLoopType() == LoopType::PostTested) {
+        if (m_analyzer.getLoopType(bb) == LoopType::PostTested) {
             // if code has not been generated for the latch node, generate it now
-            if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
-                bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
-                writeBB(bb->getLatchNode());
+            if (!isGenerated(m_analyzer.getLatchNode(bb))) {
+                m_generatedBBs.insert(m_analyzer.getLatchNode(bb));
+                writeBB(m_analyzer.getLatchNode(bb));
             }
 
             // addPosttestedLoopEnd(getCond());
             // MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
             // Just a wild stab:
-            addPostTestedLoopEnd(bb->getLatchNode()->getCond());
+            addPostTestedLoopEnd(m_analyzer.getLatchNode(bb)->getCond());
         }
         else {
-            assert(bb->getLoopType() == LoopType::Endless);
+            assert(m_analyzer.getLoopType(bb) == LoopType::Endless);
 
             // if code has not been generated for the latch node, generate it now
-            if (bb->getLatchNode()->getTravType() != TravType::DFS_Codegen) {
-                bb->getLatchNode()->setTravType(TravType::DFS_Codegen);
-                writeBB(bb->getLatchNode());
+            if (!isGenerated(m_analyzer.getLatchNode(bb))) {
+                m_generatedBBs.insert(m_analyzer.getLatchNode(bb));
+                writeBB(m_analyzer.getLatchNode(bb));
             }
 
             // write the closing bracket for an endless loop
@@ -2688,24 +2690,24 @@ void CCodeGenerator::generateCode_Loop(BasicBlock *bb, std::list<BasicBlock *>& 
     }
 
     // write the code for the follow of the loop (if it exists)
-    if (bb->getLoopFollow()) {
+    if (m_analyzer.getLoopFollow(bb)) {
         // remove the follow from the follow set
         followSet.pop_back();
 
-        if (bb->getLoopFollow()->getTravType() != TravType::DFS_Codegen) {
-            generateCode(bb->getLoopFollow(), latch, followSet, gotoSet, proc);
+        if (!isGenerated(m_analyzer.getLoopFollow(bb))) {
+            generateCode(m_analyzer.getLoopFollow(bb), latch, followSet, gotoSet, proc);
         }
         else {
-            emitGotoAndLabel(bb, bb->getLoopFollow());
+            emitGotoAndLabel(bb, m_analyzer.getLoopFollow(bb));
         }
     }
 }
 
 
-void CCodeGenerator::emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest)
+void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *dest)
 {
-    if (bb->getLoopHead() && ((bb->getLoopHead() == dest) || (bb->getLoopHead()->getLoopFollow() == dest))) {
-        if (bb->getLoopHead() == dest) {
+    if (m_analyzer.getLoopHead(bb) && ((m_analyzer.getLoopHead(bb) == dest) || (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)) == dest))) {
+        if (m_analyzer.getLoopHead(bb) == dest) {
             addContinue();
         }
         else {
@@ -2713,7 +2715,7 @@ void CCodeGenerator::emitGotoAndLabel(BasicBlock *bb, BasicBlock *dest)
         }
     }
     else {
-        addGoto(dest->getOrdering());
+        addGoto(m_analyzer.getOrdering(dest));
     }
 }
 
@@ -2726,7 +2728,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 
     // Allocate space for a label to be generated for this node and add this to the generated code. The actual label can
     // then be generated now or back patched later
-    addLabel(bb->getOrdering());
+    addLabel(m_analyzer.getOrdering(bb));
 
     if (bb->getRTLs()) {
         for (RTL *rtl : *(bb->getRTLs())) {
@@ -2760,4 +2762,22 @@ void CCodeGenerator::indent(QTextStream& str, int indLevel)
 void CCodeGenerator::appendLine(const QString& s)
 {
     m_lines.push_back(s);
+}
+
+
+bool CCodeGenerator::isAllParentsGenerated(const BasicBlock* bb) const
+{
+    for (BasicBlock *pred : bb->getPredecessors()) {
+        if (!m_analyzer.isBackEdge(pred, bb) && !isGenerated(pred)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool CCodeGenerator::isGenerated(const BasicBlock* bb) const
+{
+    return m_generatedBBs.find(bb) != m_generatedBBs.end();
 }
