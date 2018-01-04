@@ -102,7 +102,7 @@ bool Cfg::hasNoEntryBB()
 }
 
 
-BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
+BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> pRtls)
 {
     MAPBB::iterator mi         = m_mapBB.end();
     BasicBlock      *currentBB = nullptr;
@@ -1024,7 +1024,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
     Address    a        = (haveA) ? addr : Address::ZERO;
     RTL        *skipRtl = new RTL(a, new std::list<Statement *> { br1 }); // list initializer in braces
     std::unique_ptr<RTLList> bbRTL(new RTLList({skipRtl}));
-    BasicBlock *skipBB  = createBB(std::move(bbRTL), BBType::Twoway);
+    BasicBlock *skipBB  = createBB(BBType::Twoway, std::move(bbRTL));
     rtl->setAddress(addr + 1);
 
     if (!haveA) {
@@ -1056,7 +1056,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
 
     // Move the remainder of the string RTL into a new BB
     bbRTL.reset(new RTLList({ *ri }));
-    BasicBlock *rptBB = createBB(std::move(bbRTL), BBType::Twoway);
+    BasicBlock *rptBB = createBB(BBType::Twoway, std::move(bbRTL));
     ri = bb->getRTLs()->erase(ri);
 
     // Move the remaining RTLs (if any) to a new list of RTLs
@@ -1073,7 +1073,7 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
         }
 
         oldOutEdges = bb->getNumSuccessors();
-        newBB       = this->createBB(std::move(pRtls), bb->getType());
+        newBB       = this->createBB(bb->getType(), std::move(pRtls));
 
         // Transfer the out edges from A to B (pBB to newBb)
         for (int i = 0; i < oldOutEdges; i++) {

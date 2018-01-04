@@ -84,7 +84,7 @@ void StatementTest::testEmpty()
     ls->push_back(new ReturnStatement);
     pRtls->push_back(new RTL(Address(0x00000123)));
 
-    BasicBlock *entryBB = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *entryBB = cfg->createBB(BBType::Ret, std::move(pRtls));
     cfg->setEntryAndExitBB(entryBB);
     proc->setDecoded(); // We manually "decoded"
 
@@ -142,7 +142,7 @@ void StatementTest::testFlow()
     a->setNumber(1);
     rtl->append(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
     pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
 
@@ -154,7 +154,7 @@ void StatementTest::testFlow()
     rtl->append(rs);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     // first was empty before
     first->addSuccessor(ret);
     ret->addPredecessor(first);
@@ -225,7 +225,7 @@ void StatementTest::testKill()
     rtl->append(e);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
     pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
@@ -237,7 +237,7 @@ void StatementTest::testKill()
     rtl->append(rs);
 
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -305,7 +305,7 @@ void StatementTest::testUse()
     rtl->append(a);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
     pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -316,7 +316,7 @@ void StatementTest::testUse()
     rtl->append(rs);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -386,7 +386,7 @@ void StatementTest::testUseOverKill()
     rtl->append(e);
     pRtls->push_back(rtl);
 
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
     pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -397,7 +397,7 @@ void StatementTest::testUseOverKill()
     rtl->append(rs);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -464,7 +464,7 @@ void StatementTest::testUseOverBB()
     rtl->append(a);
     pRtls->push_back(rtl);
 
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
     pRtls.reset(new RTLList);
     rtl   = new RTL();
     a     = new Assign(Location::regOf(28), Location::regOf(24));
@@ -481,7 +481,7 @@ void StatementTest::testUseOverBB()
     rs->addReturn(a);
     rtl->append(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -548,7 +548,7 @@ void StatementTest::testUseKill()
     rtl->append(a);
 
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
     pRtls.reset(new RTLList);
     rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
@@ -558,7 +558,7 @@ void StatementTest::testUseKill()
     rs->addReturn(a);
     rtl->append(rs);
     pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -625,7 +625,7 @@ void StatementTest::testEndlessLoop()
     a->setProc(proc);
     pRtls->push_back(new RTL(Address::ZERO, { a }));
 
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
     pRtls.reset(new RTLList);
 
@@ -634,7 +634,7 @@ void StatementTest::testEndlessLoop()
     a->setProc(proc);
     pRtls->push_back(new RTL(Address(0x00000020), { a }));
 
-    BasicBlock *body = cfg->createBB(std::move(pRtls), BBType::Oneway);
+    BasicBlock *body = cfg->createBB(BBType::Oneway, std::move(pRtls));
 
     first->addSuccessor(body);
     body->addPredecessor(first);
@@ -857,7 +857,7 @@ void StatementTest::testRecursion()
     a->setProc(proc);
     rtl->append(a);
     pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
     // The call BB
     pRtls.reset(new RTLList);
@@ -880,7 +880,7 @@ void StatementTest::testRecursion()
     rtl->append(c);
 
     c->setDestProc(proc); // Just call self
-    BasicBlock *callbb = cfg->createBB(std::move(pRtls), BBType::Call);
+    BasicBlock *callbb = cfg->createBB(BBType::Call, std::move(pRtls));
     first->addSuccessor(callbb);
     callbb->addPredecessor(first);
     callbb->addSuccessor(callbb);
@@ -899,7 +899,7 @@ void StatementTest::testRecursion()
     rtl->append(a);
     pRtls->push_back(rtl);
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     callbb->addSuccessor(ret);
     ret->addPredecessor(callbb);
     cfg->setEntryAndExitBB(first);
@@ -950,7 +950,8 @@ void StatementTest::testClone()
     a3->print(original_st);
     c3->print(clone_st);
 
-    QString expected("   0 *v* r8 := r9 + 99   0 *i16* x := y"
+    QString expected("   0 *v* r8 := r9 + 99"
+                     "   0 *i16* x := y"
                      "   0 *u16* z := q");
 
     QCOMPARE(original, expected);

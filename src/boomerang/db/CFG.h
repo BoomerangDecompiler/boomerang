@@ -103,7 +103,7 @@ public:
      * \param bbType - type of new BasicBlock
      * \returns Pointer to the newly created BB (non-null)
      */
-    BasicBlock *createBB(std::unique_ptr<RTLList> pRtls, BBType bbType) noexcept (false);
+    BasicBlock *createBB(BBType bbType, std::unique_ptr<RTLList> pRtls);
 
     /**
      * Allocates space for a new, incomplete BB, and the given address is added to the map.
@@ -112,7 +112,7 @@ public:
      * Use this function when there are outedges to BBs that are not created yet. Usually used via addOutEdge()
      * This function will commonly be called via addOutEdge()
      */
-    BasicBlock *createIncompleteBB(Address addr);
+    BasicBlock *createIncompleteBB(Address startAddr);
 
     /**
      * Get a BasicBlock starting at the given address.
