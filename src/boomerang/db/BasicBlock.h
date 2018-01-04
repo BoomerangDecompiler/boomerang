@@ -217,10 +217,7 @@ public:
 public:
     /// \returns the destination procedure of the call if this is a call BB.
     /// Returns nullptr for all other BB types.
-    Function *getCallDestProc();
-
-    /// Get the destination proc
-    Function *getDestProc();
+    Function *getCallDestProc() const;
 
     /*
      * Structuring and code generation.

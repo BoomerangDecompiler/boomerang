@@ -887,7 +887,7 @@ void Cfg::generateDotFile(QTextStream& of)
         case BBType::Call:
             {
                 of << "call";
-                Function *dest = bb->getDestProc();
+                Function *dest = bb->getCallDestProc();
 
                 if (dest) {
                     of << "\\n" << dest->getName();

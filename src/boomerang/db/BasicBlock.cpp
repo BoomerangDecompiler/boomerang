@@ -309,7 +309,7 @@ void BasicBlock::removeSuccessor(BasicBlock *succ)
 }
 
 
-Function *BasicBlock::getCallDestProc()
+Function *BasicBlock::getCallDestProc() const
 {
     if (!isType(BBType::Call) || !m_listOfRTLs || m_listOfRTLs->empty()) {
         return nullptr;
@@ -325,23 +325,6 @@ Function *BasicBlock::getCallDestProc()
     }
 
     return nullptr;
-}
-
-
-Function *BasicBlock::getDestProc()
-{
-    // The last Statement of the last RTL should be a CallStatement
-    CallStatement *call = (CallStatement *)(m_listOfRTLs->back()->getHlStmt());
-
-    assert(call->getKind() == StmtType::Call);
-    Function *proc = call->getDestProc();
-
-    if (proc == nullptr) {
-        LOG_FATAL("Indirect calls not handled yet.");
-        assert(false);
-    }
-
-    return proc;
 }
 
 
