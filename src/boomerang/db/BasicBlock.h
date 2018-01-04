@@ -101,15 +101,14 @@ public:
      * is copied in front of the branch instruction. Its address will be
      * UpdateAddress()'ed to 0, since it is "not really there", so the low address
      * for this BB will be the address of the branch.
-     *
-     * \sa updateBBAddress
+     * \sa updateBBAddresses
      */
     Address getLowAddr() const;
 
     /**
      * Get the highest address associated with this BB.
      * This is always the address associated with the last RTL.
-     * \sa updateBBAddress
+     * \sa updateBBAddresses
      */
     Address getHiAddr() const;
 
