@@ -101,6 +101,16 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 
     m_listOfRTLs = std::move(rtls);
     updateBBAddresses();
+
+    if (!m_listOfRTLs) {
+        return;
+    }
+
+    for (RTL *rtl : *m_listOfRTLs) {
+        for (Statement *stmt : *rtl) {
+            stmt->setBB(this);
+        }
+    }
 }
 
 
@@ -458,10 +468,7 @@ void BasicBlock::getStatements(StatementList& stmts) const
 
     for (const RTL *rtl : *rtls) {
         for (Statement *st : *rtl) {
-            if (st->getBB() == nullptr) { // TODO: why statement would have nullptr BB here ?
-                st->setBB(const_cast<BasicBlock *>(this));
-            }
-
+            assert(st->getBB() == this);
             stmts.append(st);
         }
     }
@@ -632,27 +639,27 @@ bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
 }
 
 
-void BasicBlock::prependStmt(Statement *s, UserProc *proc)
+void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
 {
     assert(m_function == proc);
     // Check the first RTL (if any)
     assert(m_listOfRTLs);
-    s->setBB(this);
-    s->setProc(proc);
+    stmt->setBB(this);
+    stmt->setProc(proc);
 
     if (!m_listOfRTLs->empty()) {
         RTL *rtl = m_listOfRTLs->front();
 
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
-            rtl->append(s);
+            rtl->append(stmt);
             updateBBAddresses();
             return;
         }
     }
 
     // Otherwise, prepend a new RTL
-    std::list<Statement *> listStmt = { s };
+    std::list<Statement *> listStmt = { stmt };
     RTL *rtl = new RTL(Address::ZERO, &listStmt);
     m_listOfRTLs->push_front(rtl);
 
@@ -708,4 +715,11 @@ bool BasicBlock::hasStatement(const Statement *stmt) const
     }
 
     return false;
+}
+
+
+void BasicBlock::removeRTL(RTL* rtl)
+{
+    m_listOfRTLs->remove(rtl);
+    updateBBAddresses();
 }

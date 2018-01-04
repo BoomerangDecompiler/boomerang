@@ -180,12 +180,7 @@ public:
     inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
     inline const RTL *getLastRTL() const { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
 
-    void removeRTL(RTL *rtl)
-    {
-        m_listOfRTLs->remove(rtl);
-
-        updateBBAddresses();
-    }
+    void removeRTL(RTL *rtl);
 
     /**
      * Update the RTL list of this basic block. Takes ownership of the pointer.
@@ -205,6 +200,7 @@ public:
     Statement *getLastStmt();
     Statement *getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
 
+    /// Appends all statements in this BB to \p stmts.
     void getStatements(StatementList& stmts) const;
 
     /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)

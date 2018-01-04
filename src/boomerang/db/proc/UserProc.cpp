@@ -740,7 +740,7 @@ void UserProc::getStatements(StatementList& stmts) const
     BBCIterator it;
 
     for (const BasicBlock *bb = m_cfg->getFirstBB(it); bb; bb = m_cfg->getNextBB(it)) {
-        bb->getStatements(stmts);
+        bb->appendStatementsTo(stmts);
     }
 
     for (Statement *s : stmts) {
@@ -1773,7 +1773,7 @@ bool UserProc::branchAnalysis()
 
         if (branch->getFallBB() && branch->getTakenBB()) {
             StatementList fallstmts;
-            branch->getFallBB()->getStatements(fallstmts);
+            branch->getFallBB()->appendStatementsTo(fallstmts);
 
             if ((fallstmts.size() == 1) && (*fallstmts.begin())->isBranch()) {
                 BranchStatement *fallto = (BranchStatement *)*fallstmts.begin();
