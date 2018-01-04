@@ -309,14 +309,6 @@ void BasicBlock::removeSuccessor(BasicBlock *succ)
 }
 
 
-Address BasicBlock::getCallDest()
-{
-    Function *dest = getCallDestProc();
-
-    return dest ? dest->getEntryAddress() : Address::INVALID;
-}
-
-
 Function *BasicBlock::getCallDestProc()
 {
     if (!isType(BBType::Call) || !m_listOfRTLs || m_listOfRTLs->empty()) {
@@ -515,7 +507,7 @@ SharedExp BasicBlock::getDest() const
 {
     // The destianation will be in the last rtl
     assert(m_listOfRTLs);
-    RTL *lastRtl = m_listOfRTLs->back();
+    const RTL *lastRtl = getLastRTL();
 
     // It should contain a GotoStatement or derived class
     Statement     *lastStmt = lastRtl->getHlStmt();
@@ -570,7 +562,7 @@ void BasicBlock::simplify()
     }
 
     if (isType(BBType::Twoway)) {
-        assert(m_successors.size() > 1);
+        assert(getNumSuccessors() > 1);
 
         if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
             setType(BBType::Fall);

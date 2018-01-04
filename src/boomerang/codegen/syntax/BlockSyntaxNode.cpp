@@ -308,18 +308,23 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
 
             if ((b->getOutEdge(root, 0) == statements[i + 2]) &&
                 ((statements[i + 1]->getOutEdge(root, 0) == statements[i + 2]) || statements[i + 1]->endsWithGoto())) {
+
                 LOG_VERBOSE("Successor: jump over style if then");
 
                 BlockSyntaxNode *b1 = (BlockSyntaxNode *)this->clone();
                 b1 = (BlockSyntaxNode *)b1->replace(statements[i + 1], nullptr);
+
                 IfThenSyntaxNode *nif = new IfThenSyntaxNode();
                 SharedExp        cond = b->getBB()->getCond();
+
                 cond = Unary::get(opLNot, cond->clone());
                 cond = cond->simplify();
+
                 nif->setCond(cond);
                 nif->setThen(statements[i + 1]->clone());
                 nif->setBB(b->getBB());
                 b1->setStatement(i, nif);
+
                 SyntaxNode *n = root->clone();
                 n->setDepth(root->getDepth() + 1);
                 n = n->replace(this, b1);

@@ -179,6 +179,7 @@ public:
     const RTLList *getRTLs() const;
 
     inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
+    inline const RTL *getLastRTL() const { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
 
     void removeRTL(RTL *rtl)
     {
@@ -213,10 +214,7 @@ public:
 
     bool hasStatement(const Statement *stmt) const;
 
-    /// \returns the address of the call, if this is a call BB.
-    /// For all other BB types, returns Address::INVALID.
-    Address getCallDest();
-
+public:
     /// \returns the destination procedure of the call if this is a call BB.
     /// Returns nullptr for all other BB types.
     Function *getCallDestProc();

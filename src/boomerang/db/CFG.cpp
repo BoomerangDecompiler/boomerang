@@ -763,9 +763,8 @@ BasicBlock *Cfg::findRetNode()
             return bb;
         }
         else if (bb->getType() == BBType::Call) {
-            Function *p = bb->getCallDestProc();
-
-            if (p && !p->getName().compare("exit")) { // TODO: move this into check Proc::noReturn();
+            const Function *func = bb->getCallDestProc();
+            if (func && !func->isLib() && func->isNoReturn()) {
                 retNode = bb;
             }
         }
