@@ -139,9 +139,8 @@ BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
                 // This list of RTLs is not needed now
                 qDeleteAll(*pRtls);
 
-                LOG_VERBOSE("throwing BBAlreadyExistsError");
-
-                throw BBAlreadyExistsError(currentBB);
+                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists", currentBB->getLowAddr());
+                return nullptr;
             }
             else {
                 // Fill in the details, and return it
@@ -202,8 +201,8 @@ BasicBlock *Cfg::createBB(std::unique_ptr<RTLList> pRtls, BBType bbType)
                     return nextBB;
                 }
 
-                // However, if the overlapping BB was already complete, return 0, so out edges won't be added twice
-                throw BBAlreadyExistsError(nextBB);
+                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists", currentBB->getLowAddr());
+                return nullptr;
             }
         }
 

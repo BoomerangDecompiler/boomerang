@@ -62,15 +62,6 @@ public:
     typedef std::list<BasicBlock *>::reverse_iterator              reverse_iterator;
     typedef std::list<BasicBlock *>::const_reverse_iterator        const_reverse_iterator;
 
-
-    class BBAlreadyExistsError : public std::exception
-    {
-    public:
-        BasicBlock *pBB;
-        BBAlreadyExistsError(BasicBlock *_pBB)
-            : pBB(_pBB) {}
-    };
-
 public:
     /// Creates an empty CFG for the function \p proc
     Cfg(UserProc *proc);

@@ -1236,17 +1236,12 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::unique_ptr<RTLLis
         }
 
         pRtl->append(new GotoStatement(retAddr));
-        try {
-            pBB = pCfg->createBB(std::move(BB_rtls), BBType::Oneway);
-            BB_rtls = nullptr;
+        pBB = pCfg->createBB(std::move(BB_rtls), BBType::Oneway);
 
+        if (pBB) {
             // Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
             // instructions before the return instruction).
             m_targetQueue.visit(pCfg, retAddr, pBB);
-        }
-        catch (Cfg::BBAlreadyExistsError&) {
-            LOG_VERBOSE("Not creating a BB at address %1 "
-                "because a BB already exists", retAddr);
         }
     }
 
