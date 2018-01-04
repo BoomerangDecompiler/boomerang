@@ -458,7 +458,7 @@ Statement *BasicBlock::getLastStmt()
 }
 
 
-void BasicBlock::getStatements(StatementList& stmts) const
+void BasicBlock::appendStatementsTo(StatementList& stmts) const
 {
     const std::list<RTL *> *rtls = getRTLs();
 

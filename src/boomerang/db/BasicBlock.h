@@ -201,7 +201,7 @@ public:
     Statement *getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
 
     /// Appends all statements in this BB to \p stmts.
-    void getStatements(StatementList& stmts) const;
+    void appendStatementsTo(StatementList& stmts) const;
 
     /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
     /// \a proc is the enclosing Proc
