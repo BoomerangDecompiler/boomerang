@@ -581,12 +581,18 @@ bool Cfg::joinBB(BasicBlock *bb1, BasicBlock *bb2)
 
 void Cfg::removeBB(BasicBlock *bb)
 {
+    if (bb == nullptr) {
+        return;
+    }
+
     iterator bbIt = std::find(m_listBB.begin(), m_listBB.end(), bb);
+    if (bbIt == m_listBB.end()) {
+        // not found in this CFG
+        return;
+    }
 
-    assert(bbIt != m_listBB.end()); // must not delete BBs of other CFGs
-
-    if ((*bbIt)->getLowAddr() != Address::ZERO) {
-        m_bbStartMap.erase((*bbIt)->getLowAddr());
+    if (bb->getLowAddr() != Address::ZERO) {
+        m_bbStartMap.erase(bb->getLowAddr());
     }
 
     m_listBB.erase(bbIt);

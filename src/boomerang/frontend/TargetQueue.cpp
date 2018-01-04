@@ -20,7 +20,6 @@ void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)
     const BasicBlock *existingBB = cfg->getBBStartingAt(newAddr);
     if (existingBB) {
         // BB was already visited - don't visit it again.
-        newBB = nullptr;
         return;
     }
 

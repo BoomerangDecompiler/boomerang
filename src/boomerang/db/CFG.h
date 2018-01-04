@@ -90,7 +90,7 @@ public:
     /// Remove all basic blocks from the CFG
     void clear();
 
-    /// \returns the number of BBs in this CFG.
+    /// \returns the number of (complete and incomplete) BBs in this CFG.
     int getNumBBs() const { return m_listBB.size(); }
 
     /// Checks if the BB is part of this CFG
