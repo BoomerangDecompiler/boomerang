@@ -70,24 +70,24 @@ void BasicBlockTest::testIncomplete()
 void BasicBlockTest::testGetPredecessor()
 {
     BasicBlock bb1(Address::ZERO, nullptr);
-    QCOMPARE(bb1.getPredecessor(0), nullptr); // out of range
+    QCOMPARE(bb1.getPredecessor(0), (BasicBlock *)nullptr); // out of range
 
     BasicBlock pred1(Address::ZERO, nullptr);
     bb1.addPredecessor(&pred1);
     QCOMPARE(bb1.getPredecessor(0), &pred1);
-    QCOMPARE(bb1.getPredecessor(1), nullptr);
+    QCOMPARE(bb1.getPredecessor(1), (BasicBlock *)nullptr);
 }
 
 
 void BasicBlockTest::testGetSuccessor()
 {
     BasicBlock bb1(Address::ZERO, nullptr);
-    QCOMPARE(bb1.getSuccessor(0), nullptr); // out of range
+    QCOMPARE(bb1.getSuccessor(0), (BasicBlock *)nullptr); // out of range
 
     BasicBlock succ1(Address::ZERO, nullptr);
     bb1.addSuccessor(&succ1);
     QCOMPARE(bb1.getSuccessor(0), &succ1);
-    QCOMPARE(bb1.getSuccessor(1), nullptr);
+    QCOMPARE(bb1.getSuccessor(1), (BasicBlock *)nullptr);
 }
 
 
@@ -105,7 +105,7 @@ void BasicBlockTest::testSetPredecessor()
 
     bb1.setPredecessor(0, nullptr);
     QCOMPARE(bb1.getNumPredecessors(), 1);
-    QCOMPARE(bb1.getPredecessor(0), nullptr);
+    QCOMPARE(bb1.getPredecessor(0), (BasicBlock *)nullptr);
 }
 
 
@@ -123,7 +123,7 @@ void BasicBlockTest::testSetSuccessor()
 
     bb1.setSuccessor(0, nullptr);
     QCOMPARE(bb1.getNumSuccessors(), 1);
-    QCOMPARE(bb1.getSuccessor(0), nullptr);
+    QCOMPARE(bb1.getSuccessor(0), (BasicBlock *)nullptr);
 }
 
 
