@@ -22,6 +22,19 @@
 #include <QDebug>
 
 
+std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
+{
+    std::unique_ptr<RTLList> rtls(new RTLList);
+
+    for (int i = 0; i < numRTLs; i++) {
+        rtls->push_back(new RTL(baseAddr + i,
+            { new Assign(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) }));
+    }
+
+    return rtls;
+}
+
+
 void CFGTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
@@ -34,10 +47,7 @@ void CFGTest::testCreateBB()
     UserProc proc(Address(0x1000), "test", nullptr);
     Cfg *cfg = proc.getCFG();
 
-    std::unique_ptr<RTLList> bbRTLs(new RTLList({ new RTL(Address(0x1000),
-        { new Assign(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })}));
-
-    BasicBlock *bb = cfg->createBB(BBType::Oneway, std::move(bbRTLs));
+    BasicBlock *bb = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
     QVERIFY(bb != nullptr);
     QVERIFY(bb->isType(BBType::Oneway));
     QCOMPARE(bb->getLowAddr(), Address(0x1000));
@@ -74,10 +84,7 @@ void CFGTest::testRemoveBB()
     QCOMPARE(cfg->getNumBBs(), 0);
 
     // remove complete BB
-    std::unique_ptr<RTLList> bbRTLs(new RTLList({ new RTL(Address(0x1000),
-        { new Assign(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })}));
-
-    bb = cfg->createBB(BBType::Oneway, std::move(bbRTLs));
+    bb = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
     cfg->removeBB(bb);
     QCOMPARE(cfg->getNumBBs(), 0);
 }
