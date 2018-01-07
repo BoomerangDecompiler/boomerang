@@ -82,7 +82,6 @@ void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
 
 BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 {
-
     // First find the native address of the first RTL
     // Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
     Address startAddr = bbRTLs->front()->getAddress();

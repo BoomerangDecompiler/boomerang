@@ -24,7 +24,16 @@ private slots:
     void initTestCase();
 
     void testCreateBB();
+
+    /// tests createBB if another (complete) BB is blocking the newly created BB.
+    void testCreateBBBlocking();
+
+    /// tests createBB if another incomplete BB is blocking the newly created BB.
+    void testCreateBBBlockingIncomplete();
+
+    /// tests creating an incomplete BB
     void testCreateIncompleteBB();
+
     void testRemoveBB();
 
     void testAddEdge();

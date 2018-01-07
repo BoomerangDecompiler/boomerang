@@ -97,37 +97,34 @@ public:
     bool hasBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
 
     /**
-     * Add a new basic block to this cfg.
+     * Create a new Basic Block for this CFG.
+     * If the BB is blocked by a complete BB, the new BB will be truncated so the two BBs
+     * do not overlap; a fallthrough edge will be created between the "low" BB and the "high"
+     * BB (address-wise). If the existing BB is of the same size as the new BB,
+     * the exising BB is returned instead.
      *
-     * Checks to see if the address associated with pRtls is already in the map as an incomplete BB; if so, it is
-     * completed now and a pointer to that BB is returned. Otherwise, allocates memory for a new basic block node,
-     * initializes its list of RTLs with pRtls, its type to the given type.
-     * The native address associated with the start of the BB is taken from pRtls, and added to the map (unless 0).
-     * If the native address of the new BB already belongs to a BB the existing BB is split,
-     * and an exception is thrown.
+     * The new BB might also be blocked by exising incomplete BBs.
+     * If this is the case, the new BB will be split at all blocking incomplete BBs,
+     * and fallthrough edges will be added between parts of the split BB.
+     * In this case, the incomplete BBs will be removed (since we just completed them).
      *
-     * \note You cannot assume that the returned BB will have the RTL associated with pStart as its first RTL, since
-     * the BB could be split. You can however assume that the returned BB is suitable for adding out edges (i.e. if
-     * the BB is split, you get the "bottom" part of the BB, not the "top" (with lower addresses at the "top").
-     * Returns nullptr if not successful, or if there already exists a completed BB at this address (this can happen
-     * with certain kinds of forward branches).
+     * \param bbType Type of the new Basic Block
+     * \param bbRTLs RTL list with semantics of all instructions contained in this BB.
      *
-     * \param pRtls list of pointers to RTLs to initialise the BB with bbType: the type of the BB (e.g. TWOWAY)
-     * \param bbType - type of new BasicBlock
-     * \returns Pointer to the newly created BB (non-null)
+     * \returns the newly created BB, or the exisitng BB if the new BB is the same as
+     * another exising complete BB.
      */
     BasicBlock *createBB(BBType bbType, std::unique_ptr<RTLList> pRtls);
 
     /**
-     * Allocates space for a new, incomplete BB, and the given address is added to the map.
-     * This BB will have to be completed before calling WellFormCfg.
-     *
-     * Use this function when there are outedges to BBs that are not created yet. Usually used via addOutEdge()
-     * This function will commonly be called via addOutEdge()
+     * Creates a new incomplete BB at address \p startAddr.
+     * Creating an incomplete BB will cause the Cfg to not be well-fomed until all
+     * incomplete BBs are completed by calling \ref createBB.
      */
     BasicBlock *createIncompleteBB(Address startAddr);
 
     /// Completely removes a single BB from this CFG.
+    /// Also removes all in edges and out edges from \p bb (if found)
     void removeBB(BasicBlock *bb);
 
     /**
