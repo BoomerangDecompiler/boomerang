@@ -245,10 +245,6 @@ public:
     /// Set the entry bb to \p entryBB and mark all return BBs as exit BBs.
     void setEntryAndExitBB(BasicBlock *entryBB);
 
-    /// Check for indirect jumps and calls.
-    /// If any found, decode the extra code and return true
-    bool analyzeIndirectJumps(UserProc *proc);
-
     // Implicit assignments
 
     /// Find the existing implicit assign for x (if any)

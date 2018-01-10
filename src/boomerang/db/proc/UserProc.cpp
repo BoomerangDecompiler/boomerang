@@ -13,6 +13,7 @@
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/codegen/syntax/BlockSyntaxNode.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
@@ -1400,7 +1401,14 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     }
 
     // Check for indirect jumps or calls not already removed by propagation of constants
-    if (m_cfg->analyzeIndirectJumps(this)) {
+    bool changed = false;
+    IndirectJumpAnalyzer analyzer;
+
+    for (BasicBlock *bb : *m_cfg) {
+        changed |= analyzer.decodeIndirectJmp(bb, this);
+    }
+
+    if (changed) {
         // There was at least one indirect jump or call found and decoded. That means that most of what has been done
         // to this function so far is invalid. So redo everything. Very expensive!!
         // Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it

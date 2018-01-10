@@ -1130,18 +1130,6 @@ BasicBlock *Cfg::splitForBranch(BasicBlock *bb, RTL *rtl, BranchStatement *br1, 
 }
 
 
-bool Cfg::analyzeIndirectJumps(UserProc *proc)
-{
-    bool res = false;
-
-    for (BasicBlock *bb : m_listBB) {
-        res |= IndirectJumpAnalyzer().decodeIndirectJmp(bb, proc);
-    }
-
-    return res;
-}
-
-
 void Cfg::undoComputedBB(Statement *stmt)
 {
     for (BasicBlock *bb : m_listBB) {
