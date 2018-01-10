@@ -98,10 +98,10 @@ public:
 
     /**
      * Create a new Basic Block for this CFG.
-     * If the BB is blocked by a complete BB, the new BB will be truncated so the two BBs
-     * do not overlap; a fallthrough edge will be created between the "low" BB and the "high"
-     * BB (address-wise). If the existing BB is of the same size as the new BB,
-     * the exising BB is returned instead.
+     * If the BB is blocked by a larger complete BB, the existing BB will be split at the first address of
+     * \p bbRTLs; in this case this function returns nullptr (since no BB was created).
+     * The case of the new BB being blocked by a smaller complete BB is not handled by this method;
+     * use \ref Cfg::label instead.
      *
      * The new BB might also be blocked by exising incomplete BBs.
      * If this is the case, the new BB will be split at all blocking incomplete BBs,
@@ -114,7 +114,7 @@ public:
      * \returns the newly created BB, or the exisitng BB if the new BB is the same as
      * another exising complete BB.
      */
-    BasicBlock *createBB(BBType bbType, std::unique_ptr<RTLList> pRtls);
+    BasicBlock *createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs);
 
     /**
      * Creates a new incomplete BB at address \p startAddr.
