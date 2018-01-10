@@ -442,70 +442,54 @@ void Cfg::sortByAddress()
 
 bool Cfg::isWellFormed() const
 {
-    m_wellFormed = true;
-
-    for (const BasicBlock *elem : m_listBB) {
-        // it iterates through all BBs in the list
-        // Check that it's complete
-        const BasicBlock *current = elem;
-
-        if (current->isIncomplete()) {
+    for (const BasicBlock *bb : *this) {
+        if (bb->isIncomplete()) {
             m_wellFormed = false;
-            BBStartMap::const_iterator itm;
+            LOG_VERBOSE("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
+            return false;
+        }
+        else if (bb->getFunction() != m_myProc) {
+            m_wellFormed = false;
+            LOG_VERBOSE("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
+                        bb->getLowAddr(), m_myProc->getName());
+            return false;
+        }
 
-            for (itm = m_bbStartMap.begin(); itm != m_bbStartMap.end(); itm++) {
-                if ((*itm).second == elem) {
-                    break;
-                }
+        for (const BasicBlock *pred : bb->getPredecessors()) {
+            if (!pred->isPredecessorOf(bb)) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                            pred->getLowAddr(), bb->getLowAddr());
+                return false;
             }
-
-            if (itm == m_bbStartMap.end()) {
-                LOG_ERROR("Incomplete BB not even in map!");
-            }
-            else {
-                LOG_ERROR("BB with native address %1 is incomplete", (*itm).first);
+            else if (pred->getFunction() != bb->getFunction()) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                            pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
+                            bb->getFunction()->getName());
+                return false;
             }
         }
-        else {
-            // Complete. Test the out edges
-            // assert(current->m_OutEdges.size() == current->m_iTargetOutEdges);
-            for (int i = 0; i < current->getNumSuccessors(); i++) {
-                // check if address is interprocedural
-                //                if ((*it)->m_OutEdgeInterProc[i] == false)
-                {
-                    // i iterates through the outedges in the BB *it
-                    const BasicBlock *pBB = current->getSuccessor(i);
 
-                    // Check that the out edge has been written (i.e. nonzero)
-                    if (pBB == nullptr) {
-                        m_wellFormed = false;                   // At least one problem
-                        Address addr = current->getLowAddr();
-                        LOG_ERROR("BB with native address %1 is missing outedge %2", addr, i);
-                    }
-                    else {
-                        // Check that there is a corresponding in edge from the child to here
-                        if (!pBB->isSuccessorOf(elem)) {
-                            LOG_ERROR("No in edge to BB at %1 from successor BB at %2",
-                                      (elem)->getLowAddr(), pBB->getLowAddr());
-                            m_wellFormed = false;                      // At least one problem
-                        }
-                    }
-                }
+        for (const BasicBlock *succ : bb->getSuccessors()) {
+            if (!succ->isSuccessorOf(bb)) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                            bb->getLowAddr(), succ->getLowAddr());
+                return false;
             }
-
-            // Also check that each in edge has a corresponding out edge to here (could have an extra in-edge, for
-            // example)
-            for (BasicBlock *pred : elem->getPredecessors()) {
-                if (!pred->isPredecessorOf(elem)) {
-                    LOG_ERROR("No out edge to BB at %1 from predecessor BB at %2",
-                              elem->getLowAddr(), pred->getLowAddr());
-                    m_wellFormed = false;                // At least one problem
-                }
+            else if (succ->getFunction() != bb->getFunction()) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                            bb->getFunction()->getName(),
+                            succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
+                return false;
             }
         }
     }
 
-    return m_wellFormed;
+    m_wellFormed = true;
+    return true;
 }
 
 

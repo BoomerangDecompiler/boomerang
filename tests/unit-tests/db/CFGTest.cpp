@@ -158,13 +158,84 @@ void CFGTest::testRemoveBB()
 
 void CFGTest::testAddEdge()
 {
-    QSKIP("Not yet implemented.");
+    UserProc proc(Address(0x1000), "test", nullptr);
+    Cfg *cfg = proc.getCFG();
+
+    cfg->addEdge(nullptr, nullptr);
+    QCOMPARE(cfg->getNumBBs(), 0);
+
+    BasicBlock *bb1 = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 2));
+    BasicBlock *bb2 = cfg->createBB(BBType::Oneway, createRTLs(Address(0x2000), 2));
+
+    cfg->addEdge(bb1, bb2);
+
+    QCOMPARE(bb1->getNumSuccessors(), 1);
+    QCOMPARE(bb2->getNumPredecessors(), 1);
+    QVERIFY(bb1->isPredecessorOf(bb2));
+    QVERIFY(bb2->isSuccessorOf(bb1));
+
+    QVERIFY(cfg->isWellFormed());
+    QCOMPARE(cfg->getNumBBs(), 2);
+
+    // we must add the edge twice because there could be a conditional jump to the next instruction
+    cfg->addEdge(bb1, bb2);
+    QVERIFY(cfg->isWellFormed());
+
+    QCOMPARE(bb1->getNumSuccessors(), 2);
+    QCOMPARE(bb2->getNumPredecessors(), 2);
+
+    // add edge to addr of existing BB
+    cfg->addEdge(bb2, bb1->getLowAddr());
+    QVERIFY(cfg->isWellFormed());
+
+    QCOMPARE(bb2->getNumSuccessors(), 1);
+    QCOMPARE(bb1->getNumPredecessors(), 1);
+    QVERIFY(bb2->isPredecessorOf(bb1));
+    QVERIFY(bb1->isSuccessorOf(bb2));
+
+    cfg->addEdge(bb2, Address(0x3000));
+    QVERIFY(!cfg->isWellFormed());
+
+    BasicBlock *incompleteBB = cfg->getBBStartingAt(Address(0x3000));
+    QVERIFY(incompleteBB->isIncomplete());
+    QCOMPARE(incompleteBB->getLowAddr(), Address(0x3000));
+    QCOMPARE(bb2->getNumSuccessors(), 2);
+    QVERIFY(bb2->isPredecessorOf(incompleteBB));
+    QVERIFY(incompleteBB->isSuccessorOf(bb2));
+
+    // special case: Upgrading oneway to twoway BB
+    QVERIFY(bb2->isType(BBType::Twoway));
+    QVERIFY(bb1->isType(BBType::Twoway));
 }
 
 
 void CFGTest::testIsWellFormed()
 {
-    QSKIP("Not yet implemented.");
+    UserProc proc(Address(0x1000), "test", nullptr);
+    Cfg *cfg = proc.getCFG();
+
+    QVERIFY(cfg->isWellFormed());
+
+    BasicBlock *bb1 = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
+    QVERIFY(cfg->isWellFormed());
+
+    BasicBlock *bb2 = cfg->createIncompleteBB(Address(0x2000));
+    QVERIFY(!cfg->isWellFormed());
+
+    cfg->addEdge(bb1, bb2);
+    QVERIFY(!cfg->isWellFormed()); // bb2 is still incomplete
+    BasicBlock *callBB = cfg->createBB(BBType::Call, createRTLs(Address(0x2000), 1)); // complete the BB
+    QVERIFY(cfg->isWellFormed());
+
+    // add interprocedural edge
+    UserProc proc2(Address(0x3000), "test2", nullptr);
+    Cfg *proc2Cfg = proc2.getCFG();
+
+    BasicBlock *proc2BB = proc2Cfg->createBB(BBType::Oneway, createRTLs(Address(0x3000), 1));
+
+    cfg->addEdge(callBB, proc2BB);
+    QVERIFY(!cfg->isWellFormed());
+    QVERIFY(!proc2Cfg->isWellFormed());
 }
 
 
