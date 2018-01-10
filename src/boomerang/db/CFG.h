@@ -264,34 +264,7 @@ public:
     bool implicitsDone() const { return m_implicitsDone; }    ///<  True if implicits have been created
     void setImplicitsDone() { m_implicitsDone = true; } ///< Call when implicits have been created
 
-    /**
-     * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all the in and out
-     * edges.
-     */
-
-    /*    pBB-> +----+    +----+ <-pBB
-     *   Change | A  | to | A  | where A and B could be empty. S is the string
-     *          |    |    |    | instruction (with will branch to itself and to the
-     *          +----+    +----+ start of the next instruction, i.e. the start of B,
-     *          | S  |      |       if B is non empty).
-     *          +----+      V
-     *          | B  |    +----+ <-skipBB
-     *          |    |    +-b1-+              b1 is just a branch for the skip part
-     *          +----+      |
-     *                      V
-     *                    +----+ <-rptBB
-     *                    | S' |              S' = S less the skip and repeat parts
-     *                    +-b2-+              b2 is a branch for the repeat part
-     *                      |
-     *                      V
-     *                    +----+ <-newBb
-     *                    | B  |
-     *                    |    |
-     *                    +----+
-     * S is an RTL with 6 statements representing one string instruction (so this function is highly specialised for the job
-     * of replacing the %SKIP and %RPT parts of string instructions)
-     */
-    BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2, iterator& it);
+    void setBBStart(BasicBlock *bb, Address startAddr) { m_bbStartMap[startAddr] = bb; }
 
 private:
     /**

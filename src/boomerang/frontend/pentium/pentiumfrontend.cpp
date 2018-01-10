@@ -25,14 +25,15 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
+#include "boomerang/frontend/pentium/StringInstructionProcessor.h"
+#include "boomerang/frontend/pentium/pentiumdecoder.h"
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/FuncType.h"
 #include "boomerang/type/type/PointerType.h"
-#include "boomerang/frontend/pentium/pentiumdecoder.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Types.h"
 
 #include <cassert>
 #include <cstring>
@@ -599,89 +600,10 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-void toBranches(Address addr, bool /*lastRtl*/, Cfg *cfg, RTL *rtl, BasicBlock *bb, Cfg::iterator& it)
-{
-    BranchStatement *br1 = new BranchStatement;
-
-    assert(rtl->size() >= 4); // They vary; at least 5 or 6
-    Statement *s1 = *rtl->begin();
-    Statement *s6 = *(--rtl->end());
-
-    if (s1->isAssign()) {
-        br1->setCondExpr(((Assign *)s1)->getRight());
-    }
-    else {
-        br1->setCondExpr(nullptr);
-    }
-
-    br1->setDest(addr + 2);
-    BranchStatement *br2 = new BranchStatement;
-
-    if (s6->isAssign()) {
-        br2->setCondExpr(((Assign *)s6)->getRight());
-    }
-    else {
-        br2->setCondExpr(nullptr);
-    }
-
-    br2->setDest(addr);
-    cfg->splitForBranch(bb, rtl, br1, br2, it);
-}
-
 
 void PentiumFrontEnd::processStringInst(UserProc *proc)
 {
-    Cfg           *cfg = proc->getCFG();
-
-    // For each BB this proc
-    for (Cfg::iterator it = cfg->begin(); it != cfg->end(); /* no increment! */) {
-        bool             noinc = false;
-        BasicBlock       *bb   = *it;
-        std::list<RTL *> *rtls = bb->getRTLs();
-
-        if (rtls == nullptr) {
-            break;
-        }
-
-        Address prev, addr = Address::ZERO;
-        bool    lastRtl = true;
-
-        // For each RTL this BB
-        for (RTL *rtl : *rtls) {
-            prev = addr;
-            addr = rtl->getAddress();
-
-            if (!rtl->empty()) {
-                Statement *firstStmt = rtl->front();
-
-                if (firstStmt->isAssign()) {
-                    SharedExp lhs = ((Assign *)firstStmt)->getLeft();
-
-                    if (lhs->isMachFtr()) {
-                        auto    sub = lhs->access<Const, 1>();
-                        QString str = sub->getStr();
-
-                        if (str.startsWith("%SKIP")) {
-                            toBranches(addr, lastRtl, cfg, rtl, bb, it);
-                            noinc = true; // toBranches inc's it
-                            // Abandon this BB; if there are other string instr this BB, they will appear in new BBs
-                            // near the end of the list
-                            break;
-                        }
-                        else {
-                            LOG_VERBOSE("Unhandled machine feature %1", str);
-                        }
-                    }
-                }
-            }
-
-            lastRtl = false;
-        }
-
-        if (!noinc) {
-            it++;
-        }
-    }
+    StringInstructionProcessor(proc).processStringInstructions();
 }
 
 
