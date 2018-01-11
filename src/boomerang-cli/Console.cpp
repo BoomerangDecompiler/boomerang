@@ -10,10 +10,12 @@
 #include "Console.h"
 
 
+#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/util/CFGDotWriter.h"
+
 
 #include <QFile>
 #include <QString>
@@ -719,7 +721,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
     }
     else if (args[0] == "cfg") {
         if (args.size() == 1) {
-            g_prog->generateDotFile();
+            CfgDotWriter().writeCFG(g_prog.get(), "cfg.dot");
             return CommandStatus::Success;
         }
         else {
@@ -742,17 +744,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
                 procs.insert(userProc);
             }
 
-            QFile outFile(QString("cfg.dot"));
-            outFile.open(QFile::WriteOnly | QFile::Text);
-            QTextStream textStream(&outFile);
-            textStream << "digraph cfg {\n";
-
-            for (UserProc *userProc : procs) {
-                textStream << "subgraph " << userProc->getName() << " {\n";
-                userProc->getCFG()->generateDotFile(textStream);
-            }
-
-            textStream << "}";
+            CfgDotWriter().writeCFG(procs, "cfg.dot");
 
             return CommandStatus::Success;
         }

@@ -228,8 +228,6 @@ public:
 
     BasicBlock *findRetNode();
 
-    void generateDotFile(QTextStream& of);
-
     /// Set the entry bb to \p entryBB and mark all return BBs as exit BBs.
     void setEntryAndExitBB(BasicBlock *entryBB);
 

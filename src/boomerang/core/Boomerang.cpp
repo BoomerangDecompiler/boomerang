@@ -20,6 +20,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/CFGDotWriter.h"
 
 #include <ctime>
 
@@ -136,7 +137,7 @@ int Boomerang::decompile(const QString& fname, const char *pname)
     prog->decompile();
 
     if (!SETTING(dotFile).isEmpty()) {
-        prog->generateDotFile();
+        CfgDotWriter().writeCFG(prog.get(), SETTING(dotFile));
     }
 
     if (SETTING(printAST)) {
