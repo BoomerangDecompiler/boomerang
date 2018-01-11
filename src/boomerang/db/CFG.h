@@ -217,6 +217,7 @@ public:
     /**
      * Checks that all BBs are complete, and all out edges are valid.
      * Also checks that the Cfg does not contain interprocedural edges.
+     * By definition, the empty CFG is well-formed.
      */
     bool isWellFormed() const;
 

@@ -32,7 +32,7 @@
 
 Cfg::Cfg(UserProc *proc)
     : m_myProc(proc)
-    , m_wellFormed(false)
+    , m_wellFormed(true)
     , m_implicitsDone(false)
     , m_entryBB(nullptr)
     , m_exitBB(nullptr)
@@ -60,7 +60,7 @@ void Cfg::clear()
     m_implicitMap.clear();
     m_entryBB    = nullptr;
     m_exitBB     = nullptr;
-    m_wellFormed = false;
+    m_wellFormed = true;
 }
 
 

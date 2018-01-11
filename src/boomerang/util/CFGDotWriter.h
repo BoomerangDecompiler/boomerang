@@ -15,6 +15,7 @@
 
 #include <set>
 
+
 class Prog;
 class Module;
 class UserProc;
@@ -32,7 +33,7 @@ public:
     /// Write the CFG of all procedures in the program.
     void writeCFG(const Prog *prog, const QString& filename);
 
-    /// write the CFG of all procedures in the set to \p filename
+    /// write the CFG of all procedures in \p procs to \p filename
     void writeCFG(const ProcSet& procs, const QString& filename);
 
 private:

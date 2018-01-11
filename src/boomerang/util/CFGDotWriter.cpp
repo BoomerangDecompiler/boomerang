@@ -89,7 +89,6 @@ void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
             break;
 
         case BBType::Twoway:
-
             if (bb->getCond()) {
                 of << "\\n";
                 bb->getCond()->print(of);
@@ -99,7 +98,6 @@ void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
             else {
                 of << "twoway";
             }
-
             break;
 
         case BBType::Nway:
