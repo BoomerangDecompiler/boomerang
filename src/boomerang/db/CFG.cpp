@@ -42,9 +42,7 @@ Cfg::Cfg(UserProc *proc)
 
 Cfg::~Cfg()
 {
-    for (BasicBlock *bb : m_listBB) {
-        delete bb;
-    }
+    qDeleteAll(begin(), end()); // deletes all BBs
 }
 
 
@@ -55,7 +53,6 @@ void Cfg::clear()
     // A better idea would be to save the CaseStatements explicitly and delete the BBs afterwards.
     // But this has to wait until the decoder redesign.
 
-    m_listBB.clear();
     m_bbStartMap.clear();
     m_implicitMap.clear();
     m_entryBB    = nullptr;
@@ -64,11 +61,23 @@ void Cfg::clear()
 }
 
 
+bool Cfg::hasBB(const BasicBlock* bb) const
+{
+    if (bb == nullptr) {
+        return false;
+    }
+
+    BBStartMap::const_iterator iter = m_bbStartMap.find(bb->getLowAddr());
+    return (iter != m_bbStartMap.end()) && iter->second == bb;
+}
+
+
+
 void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
 {
     m_entryBB = entryBB;
 
-    for (BasicBlock *bb : m_listBB) {
+    for (BasicBlock *bb : *this) {
         if (bb->getType() == BBType::Ret) {
             m_exitBB = bb;
             return;
@@ -129,16 +138,13 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     }
 
     if (!bDone) {
-        // Else add a new BB to the back of the current list.
         currentBB = new BasicBlock(bbType, std::move(bbRTLs), m_myProc);
-        m_listBB.push_back(currentBB);
-
-        // Also add the address to the map from native (source) address to
-        // pointer to BB, unless it's zero
-        if (!startAddr.isZero()) {
-            m_bbStartMap[startAddr] = currentBB; // Insert the mapping
-            mi = m_bbStartMap.find(startAddr);
+        if (startAddr.isZero() || startAddr == Address::INVALID) {
+            LOG_FATAL("Cannot add BB with invalid lowAddr %1", startAddr);
         }
+
+        m_bbStartMap[startAddr] = currentBB;
+        mi = m_bbStartMap.find(startAddr);
     }
 
     if (!startAddr.isZero() && (mi != m_bbStartMap.end())) {
@@ -203,9 +209,7 @@ BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
     // Create a new (basically empty) BB
     BasicBlock *bb = new BasicBlock(lowAddr, m_myProc);
 
-    // Add it to the list
-    m_listBB.push_back(bb);
-    m_bbStartMap[lowAddr] = bb; // Insert the mapping
+    m_bbStartMap[lowAddr] = bb;
     return bb;
 }
 
@@ -277,7 +281,6 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         // original BB's list. We don't have to "deep copy" the RTLs themselves,
         // since they will never overlap
         _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->getRTLs()->end()));
-        m_listBB.push_back(_newBB); // Put it in the graph
 
         // Put the implicit label into the map. Need to do this before the addOutEdge() below
         m_bbStartMap[splitAddr] = _newBB;
@@ -431,14 +434,6 @@ bool Cfg::isStartOfIncompleteBB(Address uAddr) const
 }
 
 
-void Cfg::sortByAddress()
-{
-    m_listBB.sort([] (const BasicBlock *bb1, const BasicBlock *bb2) {
-        return bb1->getLowAddr() < bb2->getLowAddr();
-    });
-}
-
-
 bool Cfg::isWellFormed() const
 {
     for (const BasicBlock *bb : *this) {
@@ -571,17 +566,10 @@ void Cfg::removeBB(BasicBlock *bb)
         return;
     }
 
-    iterator bbIt = std::find(m_listBB.begin(), m_listBB.end(), bb);
-    if (bbIt == m_listBB.end()) {
-        // not found in this CFG
-        return;
+    BBStartMap::iterator bbIt = m_bbStartMap.find(bb->getLowAddr());
+    if (bbIt != m_bbStartMap.end()) {
+        m_bbStartMap.erase(bbIt);
     }
-
-    if (bb->getLowAddr() != Address::ZERO) {
-        m_bbStartMap.erase(bb->getLowAddr());
-    }
-
-    m_listBB.erase(bbIt);
 
     // Actually, removed BBs should be deleted; however,
     // doing so deletes the statements of the BB that seem to be still in use.
@@ -593,7 +581,7 @@ BasicBlock *Cfg::findRetNode()
 {
     BasicBlock *retNode = nullptr;
 
-    for (BasicBlock *bb : m_listBB) {
+    for (BasicBlock *bb : *this) {
         if (bb->getType() == BBType::Ret) {
             return bb;
         }
@@ -613,7 +601,7 @@ void Cfg::simplify()
 {
     LOG_VERBOSE("Simplifying CFG ...");
 
-    for (BasicBlock *bb : m_listBB) {
+    for (BasicBlock *bb : *this) {
         bb->simplify();
     }
 }
@@ -623,7 +611,7 @@ void Cfg::print(QTextStream& out, bool html)
 {
     out << "Control Flow Graph:\n";
 
-    for (BasicBlock *bb : m_listBB) {
+    for (BasicBlock *bb : *this) {
         bb->print(out, html);
     }
 

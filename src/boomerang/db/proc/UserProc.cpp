@@ -1106,9 +1106,6 @@ void UserProc::initialiseDecompile()
 
     LOG_VERBOSE("Initialise decompile for %1", getName());
 
-    // Sort by address, so printouts make sense
-    m_cfg->sortByAddress();
-
     // Initialise statements
     initStatements();
 

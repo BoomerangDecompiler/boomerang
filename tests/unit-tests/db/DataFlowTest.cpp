@@ -39,6 +39,7 @@ void DataFlowTest::initTestCase()
 #define FRONTIER_TWELVE      Address(0x080483b2)
 #define FRONTIER_THIRTEEN    Address(0x080483b9)
 
+
 void DataFlowTest::testDominators()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
@@ -88,10 +89,10 @@ void DataFlowTest::testDominators()
     }
 
     QCOMPARE(actual_st,
-             FRONTIER_THIRTEEN.toString() + " " +
              FRONTIER_FOUR.toString() + " " +
+             FRONTIER_FIVE.toString() + " " +
              FRONTIER_TWELVE.toString() + " " +
-             FRONTIER_FIVE.toString() + " "
+             FRONTIER_THIRTEEN.toString() + " "
              );
 }
 
@@ -189,7 +190,6 @@ void DataFlowTest::testPlacePhi()
     Cfg      *cfg   = pProc->getCFG();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    cfg->sortByAddress();
     prog.finishDecode();
     DataFlow *df = pProc->getDataFlow();
     df->calculateDominators(cfg);
@@ -237,7 +237,6 @@ void DataFlowTest::testPlacePhi2()
     prog.finishDecode();
 
     Cfg *cfg = pProc->getCFG();
-    cfg->sortByAddress();
 
     DataFlow *df = pProc->getDataFlow();
     df->calculateDominators(cfg);

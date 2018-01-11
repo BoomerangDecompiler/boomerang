@@ -21,12 +21,6 @@
 #include "boomerang/type/type/FloatType.h"
 
 
-TableEntry::TableEntry()
-    : m_flags(0)
-{
-}
-
-
 TableEntry::TableEntry(const std::list<QString>& params, const RTL& rtl)
     : m_rtl(rtl)
     , m_flags(0)
@@ -60,7 +54,7 @@ int RTLInstDict::insert(const QString& name, std::list<QString>& params, const R
     opcode.remove(".");
 
     if (idict.find(opcode) == idict.end()) {
-        idict[opcode] = TableEntry(params, rtl);
+        idict.emplace(opcode, TableEntry(params, rtl));
     }
     else {
         return idict[opcode].appendRTL(params, rtl);

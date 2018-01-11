@@ -1406,7 +1406,7 @@ SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;
     nop_inst.valid    = true;
-    nop_inst.rtl      = new RTL();
+    nop_inst.rtl      = nullptr;
 }
 
 

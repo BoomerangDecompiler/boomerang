@@ -12,6 +12,7 @@
 
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/util/MapIterators.h"
 
 #include <list>
 #include <vector>
@@ -56,10 +57,10 @@ class Cfg
     typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
 
 public:
-    typedef std::list<BasicBlock *>::iterator                      iterator;
-    typedef std::list<BasicBlock *>::const_iterator                const_iterator;
-    typedef std::list<BasicBlock *>::reverse_iterator              reverse_iterator;
-    typedef std::list<BasicBlock *>::const_reverse_iterator        const_reverse_iterator;
+    typedef MapValueIterator<BBStartMap> iterator;
+    typedef MapValueConstIterator<BBStartMap> const_iterator;
+    typedef MapValueReverseIterator<BBStartMap> reverse_iterator;
+    typedef MapValueConstReverseIterator<BBStartMap> const_reverse_iterator;
 
 public:
     /// Creates an empty CFG for the function \p proc
@@ -73,27 +74,26 @@ public:
     Cfg& operator=(Cfg&& other) = default;
 
 public:
-    // The iterators get invalidated when the list of BBs is sorted or
-    // when BBs are added or removed.
-    iterator               begin()        { return m_listBB.begin(); }
-    const_iterator         begin()  const { return m_listBB.begin(); }
-    reverse_iterator       rbegin()       { return m_listBB.rbegin(); }
-    const_reverse_iterator rbegin() const { return m_listBB.rbegin(); }
+    // Note: the iterators are invalidated when BBs are added or removed from the CFG.
+    iterator begin() { return iterator(m_bbStartMap.begin()); }
+    iterator end()   { return iterator(m_bbStartMap.end()); }
+    const_iterator begin() const { return const_iterator(m_bbStartMap.begin()); }
+    const_iterator end() const { return const_iterator(m_bbStartMap.end()); }
 
-    iterator                end()         { return m_listBB.end(); }
-    const_iterator          end()   const { return m_listBB.end(); }
-    reverse_iterator        rend()        { return m_listBB.rend(); }
-    const_reverse_iterator  rend()  const { return m_listBB.rend(); }
+    reverse_iterator rbegin() { return reverse_iterator(m_bbStartMap.rbegin()); }
+    reverse_iterator rend()   { return reverse_iterator(m_bbStartMap.rend()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(m_bbStartMap.rbegin()); }
+    const_reverse_iterator rend()   const { return const_reverse_iterator(m_bbStartMap.rend()); }
 
 public:
     /// Remove all basic blocks from the CFG
     void clear();
 
     /// \returns the number of (complete and incomplete) BBs in this CFG.
-    int getNumBBs() const { return m_listBB.size(); }
+    int getNumBBs() const { return m_bbStartMap.size(); }
 
     /// Checks if the BB is part of this CFG
-    bool hasBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
+    bool hasBB(const BasicBlock *bb) const;
 
     /**
      * Create a new Basic Block for this CFG.
@@ -154,9 +154,6 @@ public:
     /// Check if the given address is the start of an incomplete basic block.
     bool isStartOfIncompleteBB(Address addr) const;
 
-    /// Check if the BasicBlock is in this graph
-    bool existsBB(const BasicBlock *bb) const { return std::find(m_listBB.begin(), m_listBB.end(), bb) != m_listBB.end(); }
-
     /**
      * Add an out edge from \p sourceBB to address \p destAddr.
      * If \p destAddr is not the start of a BB,
@@ -206,13 +203,6 @@ public:
      *                Note: \p pNewBB may be modified (as above)
      */
     bool label(Address addr, BasicBlock *& pNewBB);
-
-    /**
-     * Sorts the BBs in the CFG according to the low address of each BB.
-     * Useful because it makes printouts easier, if they used iterators
-     * to traverse the list of BBs.
-     */
-    void sortByAddress();
 
     /**
      * Checks that all BBs are complete, and all out edges are valid.
@@ -319,8 +309,6 @@ private:
     UserProc *m_myProc;                      ///< Pointer to the UserProc object that contains this CFG object
     mutable bool m_wellFormed;
     bool m_implicitsDone;                    ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
-
-    std::list<BasicBlock *> m_listBB;        ///< BasicBlocks contained in this CFG
 
     BBStartMap m_bbStartMap;                 ///< The Address to BB map
     BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.

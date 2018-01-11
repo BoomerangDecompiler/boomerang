@@ -31,8 +31,6 @@ class RTL : public std::list<Statement *>
     friend class BasicBlock;
 
 public:
-    RTL();
-
     /// \param   instrAddr the address of the instruction
     /// \param   listStmt  ptr to existing list of Statement
     RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);

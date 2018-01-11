@@ -395,19 +395,6 @@ void FrontSparcTest::testDelaySlot()
     bb = *(++it);
     QVERIFY(bb);
     bb->print(strm);
-    expected = "Twoway BB:\n"
-               "  in edges: 0x00010ab0(0x00010aa4) 0x00010ac4(0x00010ac0) \n"
-               "  out edges: 0x00010ad8 0x00010ad0 \n"
-               "0x00010ac8    0 *32* r8 := 0x11400\n"
-               "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
-               "High level: %flags\n";
-    QCOMPARE(actual, expected);
-    actual.clear();
-
-    QVERIFY(it != cfg->end());
-    bb = *(++it);
-    QVERIFY(bb);
-    bb->print(strm);
     expected = "Call BB:\n"
                "  in edges: 0x00010ab0(0x00010aa4) \n"
                "  out edges: 0x00010ac0 \n"
@@ -417,6 +404,34 @@ void FrontSparcTest::testDelaySlot()
                "              Reaching definitions: \n"
                "              Live variables: \n";
 
+    QCOMPARE(actual, expected);
+    actual.clear();
+
+    QVERIFY(it != cfg->end());
+    bb = *(++it);
+    QVERIFY(bb);
+    bb->print(strm);
+    expected = "Fall BB:\n"
+               "  in edges: 0x00010ab8(0x00010ab8) \n"
+               "  out edges: 0x00010ac8 \n"
+               "0x00010ac0    0 *32* r8 := m[r30 - 20]\n"
+               "0x00010ac4    0 *32* tmp := r16\n"
+               "              0 *32* r0 := r16 - r8\n"
+               "              0 *v* %flags := SUBFLAGS( tmp, r8, r0 )\n";
+    QCOMPARE(actual, expected);
+    actual.clear();
+
+
+    QVERIFY(it != cfg->end());
+    bb = *(++it);
+    QVERIFY(bb);
+    bb->print(strm);
+    expected = "Twoway BB:\n"
+               "  in edges: 0x00010ab0(0x00010aa4) 0x00010ac4(0x00010ac0) \n"
+               "  out edges: 0x00010ad8 0x00010ad0 \n"
+               "0x00010ac8    0 *32* r8 := 0x11400\n"
+               "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
+               "High level: %flags\n";
     QCOMPARE(actual, expected);
 
     delete prog;
