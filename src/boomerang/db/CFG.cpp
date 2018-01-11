@@ -13,7 +13,6 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/Register.h"
-#include "boomerang/db/LivenessAnalyzer.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
@@ -880,84 +879,9 @@ void Cfg::generateDotFile(QTextStream& of)
 }
 
 
-void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *>& workList, std::set<BasicBlock *>& workSet)
-{
-    // Insert inedges of currBB into the worklist, unless already there
-    for (BasicBlock *currIn : currBB->getPredecessors()) {
-        if (workSet.find(currIn) == workSet.end()) {
-            workList.push_front(currIn);
-            workSet.insert(currIn);
-        }
-    }
-}
-
-
-void Cfg::findInterferences(ConnectionGraph& cg)
-{
-    if (m_listBB.empty()) {
-        return;
-    }
-
-    std::list<BasicBlock *> workList; // List of BBs still to be processed
-    // Set of the same; used for quick membership test
-    std::set<BasicBlock *> workSet;
-    appendBBs(workList, workSet);
-
-    int count = 0;
-
-    while (!workList.empty() && count < 100000) {
-        count++; // prevent infinite loop
-
-        BasicBlock *currBB = workList.back();
-        workList.erase(--workList.end());
-        workSet.erase(currBB);
-        // Calculate live locations and interferences
-        bool change = m_livenessAna.calcLiveness(currBB, cg, m_myProc);
-
-        if (!change) {
-            continue;
-        }
-
-        if (SETTING(debugLiveness)) {
-            Statement *last = currBB->getLastStmt();
-
-            LOG_MSG("Revisiting BB ending with stmt %1 due to change",
-                    last ? QString::number(last->getNumber(), 10) : "<none>");
-        }
-
-        updateWorkListRev(currBB, workList, workSet);
-    }
-}
-
-
-void Cfg::appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset)
-{
-    // Append my list of BBs to the worklist
-    worklist.insert(worklist.end(), m_listBB.begin(), m_listBB.end());
-    // Do the same for the workset
-    std::copy(m_listBB.begin(), m_listBB.end(), std::inserter(workset, workset.end()));
-}
-
-
-void dumpBB(BasicBlock *bb)
-{
-    LOG_MSG("For BB at %1:", HostAddress(bb).toString());
-
-    LOG_MSG("  In edges:");
-    for (const BasicBlock *pred : bb->getPredecessors()) {
-        LOG_MSG("    %1", HostAddress(pred).toString());
-    }
-
-    LOG_MSG("  Out edges:");
-    for (const BasicBlock *succ : bb->getSuccessors()) {
-        LOG_MSG("    %1", HostAddress(succ).toString());
-    }
-}
-
-
 void Cfg::undoComputedBB(Statement *stmt)
 {
-    for (BasicBlock *bb : m_listBB) {
+    for (BasicBlock *bb : *this) {
         if (bb->hasStatement(stmt)) {
             LOG_MSG("undoComputedBB for statement %1", stmt);
             bb->setType(BBType::Call);
@@ -969,27 +893,24 @@ void Cfg::undoComputedBB(Statement *stmt)
 
 Statement *Cfg::findImplicitAssign(SharedExp x)
 {
-    Statement *def;
-
     std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(x);
 
-    if (it == m_implicitMap.end()) {
-        // A use with no explicit definition. Create a new implicit assignment
-        x   = x->clone(); // In case the original gets changed
-        def = new ImplicitAssign(x);
-        m_entryBB->prependStmt(def, m_myProc);
-
-        // Remember it for later so we don't insert more than one implicit assignment for any one location
-        // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
-        // the definition as at all uses
-        m_implicitMap[x] = def;
-    }
-    else {
-        // Use an existing implicit assignment
-        def = it->second;
+    if (it != m_implicitMap.end()) {
+        // implicit already present, use it
+        assert(it->second);
+        return it->second;
     }
 
-    assert(def);
+    // A use with no explicit definition. Create a new implicit assignment
+    x   = x->clone(); // In case the original gets changed
+    Statement *def = new ImplicitAssign(x);
+    m_entryBB->prependStmt(def, m_myProc);
+
+    // Remember it for later so we don't insert more than one implicit assignment for any one location
+    // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
+    // the definition as at all uses
+    m_implicitMap[x] = def;
+
     return def;
 }
 
@@ -998,12 +919,7 @@ Statement *Cfg::findTheImplicitAssign(const SharedExp& x)
 {
     // As per the above, but don't create an implicit if it doesn't already exist
     auto it = m_implicitMap.find(x);
-
-    if (it == m_implicitMap.end()) {
-        return nullptr;
-    }
-
-    return it->second;
+    return (it != m_implicitMap.end()) ? it->second : nullptr;
 }
 
 
@@ -1012,28 +928,16 @@ Statement *Cfg::findImplicitParamAssign(Parameter *param)
     // As per the above, but for parameters (signatures don't get updated with opParams)
     SharedExp n = param->getExp();
 
-    // TODO: implicitMap contains subscripted values -> m[r28{0}+4]
-    // but the Parameter expresions are not subscripted, so, they are not found
-    // with a simple:
-    // auto it = implicitMap.find(n);
-    ExpStatementMap::iterator it;
-
-    // search the map by hand, and compare without subscripts.
-    for (it = m_implicitMap.begin(); it != m_implicitMap.end(); ++it) {
-        if ((*(it->first)) *= *n) {
-            break;
-        }
-    }
+    ExpStatementMap::iterator it = std::find_if(m_implicitMap.begin(), m_implicitMap.end(),
+        [n] (const std::pair<const SharedExp&, Statement *>& val) {
+            return *(val.first) *= *n;
+        });
 
     if (it == m_implicitMap.end()) {
         it = m_implicitMap.find(Location::param(param->getName()));
     }
 
-    if (it == m_implicitMap.end()) {
-        return nullptr;
-    }
-
-    return it->second;
+    return (it != m_implicitMap.end()) ? it->second : nullptr;
 }
 
 
@@ -1046,4 +950,3 @@ void Cfg::removeImplicitAssign(SharedExp x)
     m_implicitMap.erase(it);          // Delete the mapping
     m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
 }
-

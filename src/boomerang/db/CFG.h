@@ -12,7 +12,6 @@
 
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/db/LivenessAnalyzer.h"
 
 #include <list>
 #include <vector>
@@ -259,8 +258,6 @@ public:
     /// Find or create an implicit assign for x
     Statement *findImplicitAssign(SharedExp x);
 
-    void findInterferences(ConnectionGraph& interferences);
-
     bool implicitsDone() const { return m_implicitsDone; }    ///<  True if implicits have been created
     void setImplicitsDone() { m_implicitsDone = true; } ///< Call when implicits have been created
 
@@ -341,6 +338,4 @@ private:
     BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.
     BasicBlock *m_exitBB;                    ///< The CFG exit BasicBlock.
     ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
-
-    LivenessAnalyzer m_livenessAna;
 };

@@ -17,8 +17,9 @@ list(APPEND boomerang-db-sources
     db/IBinaryImage.h
     db/IBinarySection.h
     db/IBinarySymbols.h
-    db/InsNameElem
     db/IndirectJumpAnalyzer
+    db/InsNameElem
+    db/InterferenceFinder
     db/LivenessAnalyzer
     db/Module
     db/Prog
