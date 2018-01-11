@@ -215,8 +215,8 @@ public:
     void sortByAddress();
 
     /**
-     * Checks that all BBs are complete, and all out edges are valid;
-     * however, Addresses that are interprocedural out edges are not checked or changed.
+     * Checks that all BBs are complete, and all out edges are valid.
+     * Also checks that the Cfg does not contain interprocedural edges.
      */
     bool isWellFormed() const;
 
