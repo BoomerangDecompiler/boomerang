@@ -226,19 +226,8 @@ public:
     /// Change the BB enclosing stmt to be CALL, not COMPCALL
     void undoComputedBB(Statement *stmt);
 
-    /**
-     * Given a well-formed cfg, optimizations are performed on the graph
-     * to reduce the number of basic blocks and edges.
-     *
-     * Optimizations performed are:
-     *  - Removal of redundant jumps (e.g. remove J in A->J->B if J only contains a jump)
-     *
-     * \returns true iff successful.
-     */
-    bool compressCfg();
-
     BasicBlock *findRetNode();
-    bool removeOrphanBBs();
+
     void generateDotFile(QTextStream& of);
 
     /// Set the entry bb to \p entryBB and mark all return BBs as exit BBs.

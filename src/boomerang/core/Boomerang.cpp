@@ -12,6 +12,7 @@
 
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/db/CFGCompressor.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Prog.h"
@@ -144,8 +145,8 @@ int Boomerang::decompile(const QString& fname, const char *pname)
         for (const auto& module : prog->getModuleList()) {
             for (Function *func : *module) {
                 if (!func->isLib()) {
-                    UserProc *proc = (UserProc *)func;
-                    proc->getCFG()->compressCfg();
+                    UserProc *proc = static_cast<UserProc *>(func);
+                    CFGCompressor().compressCFG(proc->getCFG());
                     proc->printAST();
                 }
             }

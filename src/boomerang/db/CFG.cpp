@@ -589,98 +589,6 @@ void Cfg::removeBB(BasicBlock *bb)
 }
 
 
-bool Cfg::compressCfg()
-{
-    // must be well formed
-    if (!m_wellFormed) {
-        return false;
-    }
-
-    // FIXME: The below was working while we still had reaching definitions. It seems to me that it would be easy to
-    // search the BB for definitions between the two branches (so we don't need reaching defs, just the SSA property of
-    //  unique definition).
-    //
-    // Look in CVS for old code.
-
-    // Find A -> J -> B where J is a BB that is only a jump and replace it by A -> B
-    for (iterator it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        BasicBlock *a = *it;
-
-        for (int i = 0; i < a->getNumSuccessors(); i++) {
-            BasicBlock *jmpBB = a->getSuccessor(i);
-
-            if (jmpBB->getNumSuccessors() != 1) { // only consider oneway jumps
-                continue;
-            }
-
-            if (jmpBB->getRTLs()->size() != 1 ||
-                jmpBB->getRTLs()->front()->size() != 1 ||
-                jmpBB->getRTLs()->front()->front()->isGoto()) {
-                continue;
-            }
-
-            // Found an out-edge to an only-jump BB.
-            // Replace edge A -> J -> B by A -> B
-            BasicBlock *b = jmpBB->getSuccessor(0);
-            a->setSuccessor(i, b);
-
-            for (int j = 0; j < b->getNumPredecessors(); j++) {
-                if (b->getPredecessor(j) == jmpBB) {
-                    b->setPredecessor(j, a);
-                    break;
-                }
-            }
-
-            // remove predecessor from j. Cannot remove successor now since there might be several predecessors
-            // which need the successor information.
-            jmpBB->removePredecessor(a);
-
-            if (jmpBB->getNumPredecessors() == 0) {
-                jmpBB->removeAllSuccessors(); // now we can remove the successors
-                removeBB(jmpBB);
-            }
-        }
-    }
-
-    return true;
-}
-
-
-bool Cfg::removeOrphanBBs()
-{
-    std::deque<BasicBlock *> orphans;
-
-    for (BasicBlock *potentialOrphan : m_listBB) {
-        if (potentialOrphan == this->m_entryBB) { // don't remove entry BasicBlock
-            continue;
-        }
-
-        if (potentialOrphan->getNumPredecessors() == 0) {
-            orphans.push_back(potentialOrphan);
-        }
-    }
-
-    const bool bbsRemoved = !orphans.empty();
-
-    while (!orphans.empty()) {
-        BasicBlock *b = orphans.front();
-        orphans.pop_front();
-
-        for (BasicBlock *child : b->getSuccessors()) {
-            child->removePredecessor(b);
-
-            if (child->getNumPredecessors() == 0) {
-                orphans.push_back(child);
-            }
-        }
-
-        removeBB(b);
-    }
-
-    return bbsRemoved;
-}
-
-
 BasicBlock *Cfg::findRetNode()
 {
     BasicBlock *retNode = nullptr;
@@ -690,9 +598,9 @@ BasicBlock *Cfg::findRetNode()
             return bb;
         }
         else if (bb->getType() == BBType::Call) {
-            const Function *func = bb->getCallDestProc();
-            if (func && !func->isLib() && func->isNoReturn()) {
-                retNode = bb;
+            const Function *callee = bb->getCallDestProc();
+            if (callee && !callee->isLib() && callee->isNoReturn()) {
+                retNode = bb; // use noreturn calls if the proc does not return
             }
         }
     }
