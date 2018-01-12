@@ -38,6 +38,8 @@ private slots:
 
     void testEnsureBBExists();
 
+    void testSetEntryAndExitBB();
+
     void testRemoveBB();
 
     void testAddEdge();

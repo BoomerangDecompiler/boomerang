@@ -188,6 +188,28 @@ void CFGTest::testEnsureBBExists()
 }
 
 
+void CFGTest::testSetEntryAndExitBB()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    Cfg *cfg = proc.getCFG();
+    cfg->setEntryAndExitBB(nullptr);
+
+    QVERIFY(cfg->getEntryBB() == nullptr);
+    QVERIFY(cfg->getExitBB()  == nullptr);
+
+    BasicBlock *bb1 = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 4));
+    cfg->setEntryAndExitBB(bb1);
+    QVERIFY(cfg->getEntryBB() == bb1);
+    QVERIFY(cfg->getExitBB()  == nullptr);
+
+    BasicBlock *bb2 = cfg->createBB(BBType::Ret, createRTLs(Address(0x1004), 4));
+    cfg->setEntryAndExitBB(bb1);
+
+    QVERIFY(cfg->getEntryBB() == bb1);
+    QVERIFY(cfg->getExitBB()  == bb2);
+}
+
+
 void CFGTest::testRemoveBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
