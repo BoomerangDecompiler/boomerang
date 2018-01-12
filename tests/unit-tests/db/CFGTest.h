@@ -23,6 +23,8 @@ class CFGTest : public QObject
 private slots:
     void initTestCase();
 
+    void testHasBB();
+
     void testCreateBB();
 
     /// tests createBB if another (complete) BB is blocking the newly created BB.

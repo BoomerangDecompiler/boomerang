@@ -42,6 +42,23 @@ void CFGTest::initTestCase()
 }
 
 
+void CFGTest::testHasBB()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    Cfg *cfg = proc.getCFG();
+
+    QVERIFY(!cfg->hasBB(nullptr));
+    BasicBlock *bb = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
+    QVERIFY(cfg->hasBB(bb));
+
+
+    UserProc proc2(Address(0x1000), "test", nullptr);
+    Cfg *cfg2 = proc2.getCFG();
+    cfg2->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
+    QVERIFY(!cfg2->hasBB(bb));
+}
+
+
 void CFGTest::testCreateBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
