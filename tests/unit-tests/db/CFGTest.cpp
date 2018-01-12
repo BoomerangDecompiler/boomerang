@@ -177,7 +177,7 @@ void CFGTest::testEnsureBBExists()
     BasicBlock *completeBB = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 4));
     QCOMPARE(cfg->ensureBBExists(Address(0x1000), dummy), true);
     QCOMPARE(cfg->getNumBBs(), 1);
-    QCOMPARE(dummy, nullptr);
+    QVERIFY(dummy == nullptr);
 
     // into the middle of a complete BB
     BasicBlock *currBB = completeBB;
