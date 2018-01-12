@@ -194,82 +194,44 @@ BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
 
 bool Cfg::ensureBBExists(Address addr, BasicBlock *&currBB)
 {
-    BBStartMap::iterator mi, newi;
+    // check for overlapping incomplete or complete BBs.
+    BBStartMap::iterator itExistingBB = m_bbStartMap.lower_bound(addr);
 
-    mi = m_bbStartMap.find(addr);     // check if the native address is in the map already (explicit label)
-
-    if (mi == m_bbStartMap.end()) {
-        createIncompleteBB(addr);
-
-        // get an iterator to the new native address and check if the previous
-        // element in the (sorted) map overlaps this new native address; if so,
-        // it's a non-explicit label which needs to be made explicit by
-        // splitting the previous BB.
-        mi   = m_bbStartMap.find(addr);
-        newi = mi;
-        bool       bSplit   = false;
-        BasicBlock *pPrevBB = nullptr;
-
-        if (newi != m_bbStartMap.begin()) {
-            pPrevBB = (*--mi).second;
-
-            if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < addr) &&
-                (pPrevBB->getHiAddr() >= addr)) {
-                bSplit = true;
-            }
-        }
-
-        if (bSplit) {
-            // Non-explicit label. Split the previous BB
-            BasicBlock *pNewBB = splitBB(pPrevBB, addr);
-
-            if (currBB == pPrevBB) {
-                // This means that the BB that we are expecting to use, usually to add
-                // out edges, has changed. We must change this pointer so that the right
-                // BB gets the out edges. However, if the new BB is not the BB of
-                // interest, we mustn't change pCurBB
-                currBB = pNewBB;
-            }
-
-            return true;  // wasn't a label, but already parsed
-        }
-        else {
-            // We don't have to erase this map entry. Having a null BasicBlock
-            // pointer is coped with in newBB() and addOutEdge(); when eventually
-            // the BB is created, it will replace this entry.  We should be
-            // currently processing this BB. The map will be corrected when newBB is
-            // called with this address.
-            return false;
+    BasicBlock *overlappingBB = nullptr;
+    if (itExistingBB != m_bbStartMap.end() && itExistingBB->second->getLowAddr() == addr) {
+        overlappingBB = itExistingBB->second;
+    }
+    else if (itExistingBB != m_bbStartMap.begin()) {
+        --itExistingBB;
+        if (itExistingBB->second->getLowAddr() <= addr && itExistingBB->second->getHiAddr() >= addr) {
+            overlappingBB = itExistingBB->second;
         }
     }
-    else {               // We already have uNativeAddr in the map
-        if ((*mi).second && !(*mi).second->isIncomplete()) {
-            return true; // There is a complete BB here. Return true.
-        }
 
-        // We are finalising an incomplete BB. Still need to check previous map
-        // entry to see if there is a complete BB overlapping
-        bool       bSplit = false;
-        BasicBlock *pPrevBB = nullptr, *pBB = (*mi).second;
-
-        if (mi != m_bbStartMap.begin()) {
-            pPrevBB = (*--mi).second;
-
-            if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < addr) &&
-                (pPrevBB->getHiAddr() >= addr)) {
-                bSplit = true;
-            }
-        }
-
-        if (bSplit) {
-            // Pass the third parameter to splitBB, because we already have an
-            // (incomplete) BB for the "bottom" BB of the split
-            splitBB(pPrevBB, addr, pBB); // non-explicit label
-            return true;                        // wasn't a label, but already parsed
-        }
-
-        // A non overlapping, incomplete entry is in the map.
+    if (!overlappingBB) {
+        // no BB at addr -> create a new incomplete BB
+        createIncompleteBB(addr);
         return false;
+    }
+    else if (overlappingBB->isIncomplete()) {
+        return false;
+    }
+    else if (overlappingBB && overlappingBB->getLowAddr() < addr) {
+        splitBB(overlappingBB, addr);
+        BasicBlock *highBB = getBBStartingAt(addr);
+
+        if (currBB == overlappingBB) {
+            // This means that the BB that we are expecting to use, usually to add
+            // out edges, has changed. We must change this pointer so that the right
+            // BB gets the out edges. However, if the new BB is not the BB of
+            // interest, we mustn't change currBB
+            currBB = highBB;
+        }
+        return true;
+    }
+    else {
+        // addr is the start of a complete BB
+        return true;
     }
 }
 
