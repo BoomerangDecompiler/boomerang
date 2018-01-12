@@ -249,35 +249,6 @@ private:
      */
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
 
-    /**
-     * Given two basic blocks that belong to a well-formed graph,
-     * merges the second block onto the first one.
-     * This effectively undoes a splitBB().
-     *
-     * \ | /                    \ | /
-     * +---+ BB1                +---+
-     * +---+                    |   |
-     *   |   Fallthrough   ==>  |   |
-     * +---+                    +---+
-     * +---+ BB2                / | \
-     * / | \
-     *
-     * If BB1 has more than one successor or BB2 has more than one predecessor,
-     * the merge fails.
-     *
-     * \returns true on success, false on failure.
-     */
-    bool mergeBBs(BasicBlock *bb1, BasicBlock *bb2);
-
-    /**
-     * Complete the merge of two BBs by adjusting in and out edges.
-     * No checks are made that the merge is valid (hence this is a private function).
-     *
-     * \param bb1,bb2 pointers to the two BBs to merge
-     * \param deleteBB if true, \p bb1 is deleted as well
-     */
-    void completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool deleteBB = false);
-
 public:
     /// print this cfg, mainly for debugging
     void print(QTextStream& out, bool html = false);

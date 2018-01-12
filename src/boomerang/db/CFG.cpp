@@ -73,7 +73,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     assert(!bbRTLs->empty());
 
     // First find the native address of the first RTL
-    // Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
+    // Can't use BasicBlock::getLowAddr(), since we don't yet have a BB!
     Address startAddr = bbRTLs->front()->getAddress();
 
     // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
@@ -83,7 +83,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     // Note that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the map, but they
     // have no RTLs with a non zero address.
     if (startAddr.isZero() && (bbRTLs->size() > 1)) {
-        std::list<RTL *>::iterator next = std::next(bbRTLs->begin());
+        RTLList::iterator next = std::next(bbRTLs->begin());
         startAddr = (*next)->getAddress();
     }
 
@@ -96,12 +96,14 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     if (!startAddr.isZero()) {
         mi = m_bbStartMap.find(startAddr);
 
-        if ((mi != m_bbStartMap.end()) && (*mi).second) {
-            currentBB = (*mi).second;
+        if ((mi != m_bbStartMap.end()) && mi->second) {
+            currentBB = mi->second;
 
-            // It should be incomplete, or the pBB there should be zero (we have called Label but not yet created the BB
-            // for it).  Else we have duplicated BBs. Note: this can happen with forward jumps into the middle of a
-            // loop, so not error
+            // It should be incomplete, or the pBB there should be zero
+            // (we have called ensureBBExists() but not yet created the BB for it).
+            // Else we have duplicated BBs.
+            // Note: this can happen with forward jumps into the middle of a loop,
+            // so not error
             if (!currentBB->isIncomplete()) {
                 // This list of RTLs is not needed now
                 qDeleteAll(*bbRTLs);
@@ -131,19 +133,22 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
     if (!startAddr.isZero() && (mi != m_bbStartMap.end())) {
         //
-        //  Existing   New         +---+ Top of new
+        //  Existing   New         +---+ "low" part of new
         //            +---+        +---+
-        //            |   |          \/ Fall through
-        //    +---+   |   | =>     +---+
+        //            |   |          |   Fall through
+        //    +---+   |   |   ==>  +---+
         //    |   |   |   |        |   | Existing; rest of new discarded
         //    +---+   +---+        +---+
         //
-        // Check for overlap of the just added BB with the next BB (address wise).  If there is an overlap, truncate the
-        // std::list<Exp*> for the new BB to not overlap, and make this a fall through BB.
-        // We still want to do this even if the new BB overlaps with an incomplete BB, though in this case,
-        // splitBB needs to fill in the details for the "bottom" BB of the split.
-        // Also, in this case, we return a pointer to the newly completed BB, so it will get out edges added
-        // (if required). In the other case (i.e. we overlap with an existing, completed BB), we want to return 0, since
+        // Check for overlap of the just added BB with the next BB (address wise).
+        // If there is an overlap, truncate the RTLList for the new BB to not overlap,
+        // and make this a fall through BB.
+        // We still want to do this even if the new BB overlaps with an incomplete BB,
+        // though in this case, splitBB needs to fill in the details for the "high"
+        // BB of the split.
+        // Also, in this case, we return a pointer to the newly completed BB,
+        // so it will get out edges added (if required). In the other case
+        // (i.e. we overlap with an existing, completed BB), we want to return 0, since
         // the out edges are already created.
         //
         mi = std::next(mi);
@@ -177,8 +182,9 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
         //    |   |    |   |       |   | New; rest of existing discarded
         //    +---+    +---+       +---+
         //
-        // Note: no need to check the other way around, because in this case, we will have called Cfg::Label(), and it
-        // will have split the existing BB already.
+        // Note: no need to check the other way around, because in this case,
+        // we will have called ensureBBExists(), which will have split
+        // the existing BB already.
     }
 
     assert(currentBB);
@@ -472,17 +478,17 @@ void Cfg::removeImplicitAssign(SharedExp x)
 BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */,
                          bool deleteRTLs /* = false */)
 {
-    RTLList::iterator ri;
+    RTLList::iterator splitIt;
 
-    // First find which RTL has the split address; note that this could fail (e.g. label in the middle of an
-    // instruction, or some weird delay slot effects)
-    for (ri = bb->getRTLs()->begin(); ri != bb->getRTLs()->end(); ri++) {
-        if ((*ri)->getAddress() == splitAddr) {
+    // First find which RTL has the split address; note that this could fail
+    // (e.g. jump into the middle of an instruction, or some weird delay slot effects)
+    for (splitIt = bb->getRTLs()->begin(); splitIt != bb->getRTLs()->end(); splitIt++) {
+        if ((*splitIt)->getAddress() == splitAddr) {
             break;
         }
     }
 
-    if (ri == bb->getRTLs()->end()) {
+    if (splitIt == bb->getRTLs()->end()) {
         LOG_WARN("Cannot split BB at address %1 at split address %2", bb->getLowAddr(), splitAddr);
         return bb;
     }
@@ -491,120 +497,58 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
     if (_newBB == nullptr) {
         _newBB = new BasicBlock(*bb);
 
-        // But we don't want the top BB's in edges; our only in-edge should be the out edge from the top BB
+        // But we don't want the top BB's in edges;
+        // our only predecessor should be the "low" BB
         _newBB->removeAllPredecessors();
 
-        // The "bottom" BB now starts at the implicit label, so we create a new list
-        // that starts at ri. We need a new list, since it is different from the
-        // original BB's list. We don't have to "deep copy" the RTLs themselves,
-        // since they will never overlap
-        _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->getRTLs()->end()));
+        // The "high" BB now starts at splitIt->getAddress(), so we create a new list
+        // that starts at splitIt. We don't want to "deep copy" the RTLs themselves,
+        // because we want to transfer ownership from the original BB to the "high" part
+        _newBB->setRTLs(Util::makeUnique<RTLList>(splitIt, bb->getRTLs()->end()));
 
-        // Put the implicit label into the map. Need to do this before the addOutEdge() below
         m_bbStartMap[splitAddr] = _newBB;
     }
     else if (_newBB->isIncomplete()) {
-        // We have an existing BB and a map entry, but no details except for
-        // in-edges and m_bHasLabel.
-        // First save the in-edges and m_iLabelNum
+        // complete the incomplete BB
         std::vector<BasicBlock *> oldPredecessors(_newBB->getPredecessors());
 
-        // Copy over the details now, completing the bottom BB
-        *_newBB = *bb;              // Assign the BB, copying fields.
+        *_newBB = *bb;
 
-        // Replace the in edges (likely only one)
+        // Replace the in edges. No need to adjust the successors of predecessors,
+        // since they already point to _newBB
         for (BasicBlock *pred : oldPredecessors) {
             _newBB->addPredecessor(pred);
         }
 
-        _newBB->setRTLs(Util::makeUnique<RTLList>(ri, bb->getRTLs()->end()));
+        _newBB->setRTLs(Util::makeUnique<RTLList>(splitIt, bb->getRTLs()->end()));
     }
 
-    // else pNewBB exists and is complete. We don't want to change the complete
-    // BB in any way, except to later add one in-edge
-    bb->setType(BBType::Fall); // Update original ("top") basic block's info and make it a fall-through
+    // the "low" part of the split pair only has a fallthrough branch.
+    bb->setType(BBType::Fall);
 
-    // Fix the in-edges of pBB's descendants. They are now pNewBB
-    // Note: you can't believe m_iNumOutEdges at the time that this function may
-    // get called
-    for (BasicBlock *succ : bb->getSuccessors()) {
-        // Search through the in edges for pBB (old ancestor)
-        int k;
+    // Update the successors of the original BB to have the "high" part as predecessor
+    const std::vector<BasicBlock *> successors = bb->getSuccessors();
 
-        for (k = 0; k < succ->getNumPredecessors(); k++) {
-            if (succ->getPredecessor(k) == bb) {
-                // Replace with a pointer to the new predecessor
-                succ->setPredecessor(k, _newBB);
-                break;
-            }
-        }
-
-        // That pointer should have been found!
-        assert(k < succ->getNumPredecessors());
+    for (BasicBlock *succ : successors) {
+        succ->removePredecessor(bb);
+        bb->removeSuccessor(succ);
+        addEdge(_newBB, succ);
     }
 
     // The old BB needs to have part of its list of RTLs erased, since the
     // instructions overlap
     if (deleteRTLs) {
         // Delete the list of pointers, and also the RTLs they point to
-        qDeleteAll(ri, bb->getRTLs()->end());
+        qDeleteAll(splitIt, bb->getRTLs()->end());
     }
 
-    bb->getRTLs()->erase(ri, bb->getRTLs()->end());
+    bb->getRTLs()->erase(splitIt, bb->getRTLs()->end());
     bb->updateBBAddresses();
 
     // Erase any existing out edges
     bb->removeAllSuccessors();
     addEdge(bb, splitAddr);
     return _newBB;
-}
-
-
-bool Cfg::mergeBBs(BasicBlock *bb1, BasicBlock *bb2)
-{
-    // Can only merge if pb1 has only one outedge to pb2, and pb2 has only one in-edge, from pb1. This can only be done
-    // after the in-edges are done, which can only be done on a well formed CFG.
-    if (!m_wellFormed) {
-        return false;
-    }
-
-    if (bb1->getNumSuccessors() != 1 || bb2->getNumSuccessors() != 1) {
-        return false;
-    }
-
-    if (bb1->getSuccessor(0) != bb2 || bb2->getPredecessor(0) != bb1) {
-        return false;
-    }
-
-    // Merge them! We remove pb1 rather than pb2, since this is also what is needed for many optimisations, e.g. jump to
-    // jump.
-    completeMerge(bb1, bb2, true);
-    return true;
-}
-
-
-void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
-{
-    // First we replace all of pb1's predecessors' out edges that used to point to pb1 (usually only one of these) with
-    // pb2
-    for (BasicBlock *pPred : bb1->getPredecessors()) {
-        for (int i = 0; i < pPred->getNumSuccessors(); i++) {
-            if (pPred->getSuccessor(i) == bb1) {
-                pPred->setSuccessor(i, bb2);
-            }
-        }
-    }
-
-    // Now we replace pb2's in edges by pb1's inedges
-    bb2->removeAllSuccessors();
-    for (BasicBlock *bb1Pred : bb1->getPredecessors()) {
-        bb2->addSuccessor(bb1Pred);
-    }
-
-    if (bDelete) {
-        // Finally, we delete bb1 from the CFG.
-        removeBB(bb1);
-    }
 }
 
 
