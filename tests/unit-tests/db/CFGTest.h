@@ -36,6 +36,8 @@ private slots:
     /// tests creating an incomplete BB
     void testCreateIncompleteBB();
 
+    void testEnsureBBExists();
+
     void testRemoveBB();
 
     void testAddEdge();

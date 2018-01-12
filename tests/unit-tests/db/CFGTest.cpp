@@ -153,6 +153,41 @@ void CFGTest::testCreateIncompleteBB()
 }
 
 
+void CFGTest::testEnsureBBExists()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    Cfg *cfg = proc.getCFG();
+
+    // create incomplete BB
+    BasicBlock *dummy = nullptr;
+    QCOMPARE(cfg->ensureBBExists(Address(0x1000), dummy), false);
+    QVERIFY(dummy == nullptr);
+    QCOMPARE(cfg->getNumBBs(), 1);
+
+    BasicBlock *incompleteBB = cfg->getBBStartingAt(Address(0x1000));
+    QVERIFY(incompleteBB != nullptr);
+    QVERIFY(incompleteBB->isIncomplete());
+
+    // over an existing incomplete BB
+    QCOMPARE(cfg->ensureBBExists(Address(0x1000), dummy), false);
+    QVERIFY(dummy == nullptr);
+    QCOMPARE(cfg->getNumBBs(), 1);
+
+    // start of complete BB
+    BasicBlock *completeBB = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 4));
+    QCOMPARE(cfg->ensureBBExists(Address(0x1000), dummy), true);
+    QCOMPARE(cfg->getNumBBs(), 1);
+    QCOMPARE(dummy, nullptr);
+
+    // into the middle of a complete BB
+    BasicBlock *currBB = completeBB;
+    QCOMPARE(cfg->ensureBBExists(Address(0x1002), currBB), true);
+    QCOMPARE(cfg->getNumBBs(), 2);
+    QCOMPARE(currBB->getLowAddr(), Address(0x1002));
+    QCOMPARE(currBB->getHiAddr(),  Address(0x1003));
+}
+
+
 void CFGTest::testRemoveBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);

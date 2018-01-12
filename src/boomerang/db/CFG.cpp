@@ -188,11 +188,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
 BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
 {
-    // Create a new (basically empty) BB
-    BasicBlock *bb = new BasicBlock(lowAddr, m_myProc);
-
-    m_bbStartMap[lowAddr] = bb;
-    return bb;
+    return (m_bbStartMap[lowAddr] = new BasicBlock(lowAddr, m_myProc));
 }
 
 
@@ -202,13 +198,13 @@ bool Cfg::ensureBBExists(Address addr, BasicBlock *&currBB)
 
     mi = m_bbStartMap.find(addr);     // check if the native address is in the map already (explicit label)
 
-    if (mi == m_bbStartMap.end()) {          // not in the map
-                                        // If not an explicit label, temporarily add the address to the map
-        m_bbStartMap[addr] = nullptr; // no PBB yet
-                                        // get an iterator to the new native address and check if the previous
-                                        // element in the (sorted) map overlaps this new native address; if so,
-                                        // it's a non-explicit label which needs to be made explicit by
-                                        // splitting the previous BB.
+    if (mi == m_bbStartMap.end()) {
+        createIncompleteBB(addr);
+
+        // get an iterator to the new native address and check if the previous
+        // element in the (sorted) map overlaps this new native address; if so,
+        // it's a non-explicit label which needs to be made explicit by
+        // splitting the previous BB.
         mi   = m_bbStartMap.find(addr);
         newi = mi;
         bool       bSplit   = false;
@@ -237,13 +233,13 @@ bool Cfg::ensureBBExists(Address addr, BasicBlock *&currBB)
 
             return true;  // wasn't a label, but already parsed
         }
-        else {            // not a non-explicit label
-                          // We don't have to erase this map entry. Having a null BasicBlock
-                          // pointer is coped with in newBB() and addOutEdge(); when eventually
-                          // the BB is created, it will replace this entry.  We should be
-                          // currently processing this BB. The map will be corrected when newBB is
-                          // called with this address.
-            return false; // was not already parsed
+        else {
+            // We don't have to erase this map entry. Having a null BasicBlock
+            // pointer is coped with in newBB() and addOutEdge(); when eventually
+            // the BB is created, it will replace this entry.  We should be
+            // currently processing this BB. The map will be corrected when newBB is
+            // called with this address.
+            return false;
         }
     }
     else {               // We already have uNativeAddr in the map
