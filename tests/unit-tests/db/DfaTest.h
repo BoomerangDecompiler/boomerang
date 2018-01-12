@@ -17,7 +17,7 @@
 
 
 /**
- * Tests the Dta Flow based type analysis code
+ * Tests the Data Flow based type analysis code
  */
 class DfaTest : public QObject
 {

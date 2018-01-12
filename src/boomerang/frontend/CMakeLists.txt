@@ -16,6 +16,7 @@ list(APPEND boomerang-frontend-sources
     frontend/NJMCDecoder
     frontend/pentium/pentiumdecoder
     frontend/pentium/pentiumfrontend
+    frontend/pentium/StringInstructionProcessor
     frontend/ppc/ppcdecoder
     frontend/ppc/ppcfrontend
     frontend/SigEnum.h

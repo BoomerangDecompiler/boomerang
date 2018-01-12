@@ -11,14 +11,16 @@ list(APPEND boomerang-db-sources
     db/BasicBlock
     db/BinaryImage
     db/CFG
+    db/CFGCompressor
     db/DataFlow
     db/DefCollector
     db/Global
     db/IBinaryImage.h
     db/IBinarySection.h
     db/IBinarySymbols.h
-    db/InsNameElem
     db/IndirectJumpAnalyzer
+    db/InsNameElem
+    db/InterferenceFinder
     db/LivenessAnalyzer
     db/Module
     db/Prog

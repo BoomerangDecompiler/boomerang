@@ -46,18 +46,13 @@ void RtlTest::initTestCase()
 void RtlTest::testAppend()
 {
     Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
-    RTL    r;
+    RTL    r(Address::ZERO, { a });
 
-    r.append(a);
     QString     res;
     QTextStream ost(&res);
     r.print(ost);
-    QString expected("00000000    0 *v* r8 := r9 + 99\n");
-    QCOMPARE(res, expected);
-    // No! appendExp does not copy the expression, so deleting the RTL will
-    // delete the expression(s) in it.
-    // Not sure if that's what we want...
-    // delete a;
+
+    QCOMPARE(res, QString("00000000    0 *v* r8 := r9 + 99\n"));
 }
 
 

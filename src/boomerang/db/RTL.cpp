@@ -26,12 +26,6 @@
 #include <cstring>                      // for strncpy
 
 
-RTL::RTL()
-    : m_nativeAddr(Address::ZERO)
-{
-}
-
-
 RTL::RTL(Address instrAddr, const std::list<Statement *> *listStmt /*= nullptr*/)
     : m_nativeAddr(instrAddr)
 {

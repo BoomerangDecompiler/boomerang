@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "CfgTest.h"
+#include "DataFlowTest.h"
 
 
 #include "boomerang/core/Boomerang.h"
@@ -27,7 +27,7 @@
 #define IFTHEN_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
 
 
-void CfgTest::initTestCase()
+void DataFlowTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
@@ -39,7 +39,8 @@ void CfgTest::initTestCase()
 #define FRONTIER_TWELVE      Address(0x080483b2)
 #define FRONTIER_THIRTEEN    Address(0x080483b9)
 
-void CfgTest::testDominators()
+
+void DataFlowTest::testDominators()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
 
@@ -67,18 +68,19 @@ void CfgTest::testDominators()
     df->calculateDominators(cfg);
 
     // Find BB "5" (as per Appel, Figure 19.5).
-    BBIterator it;
-    BasicBlock *bb = cfg->getFirstBB(it);
-
-    while (bb && bb->getLowAddr() != FRONTIER_FIVE) {
-        bb = cfg->getNextBB(it);
+    BasicBlock *foundBB = nullptr;
+    for (BasicBlock *bb : *cfg) {
+        if (bb->getLowAddr() == FRONTIER_FIVE) {
+            foundBB = bb;
+            break;
+        }
     }
 
-    QVERIFY(bb);
+    QVERIFY(foundBB);
     QString     actual_st;
     QTextStream actual(&actual_st);
 
-    int n5 = df->pbbToNode(bb);
+    int n5 = df->pbbToNode(foundBB);
     std::set<int>::iterator ii;
     std::set<int>&          DFset = df->getDF(n5);
 
@@ -87,10 +89,10 @@ void CfgTest::testDominators()
     }
 
     QCOMPARE(actual_st,
-             FRONTIER_THIRTEEN.toString() + " " +
              FRONTIER_FOUR.toString() + " " +
+             FRONTIER_FIVE.toString() + " " +
              FRONTIER_TWELVE.toString() + " " +
-             FRONTIER_FIVE.toString() + " "
+             FRONTIER_THIRTEEN.toString() + " "
              );
 }
 
@@ -101,7 +103,7 @@ void CfgTest::testDominators()
 #define SEMI_D    Address(0x8048354)
 #define SEMI_M    Address(0x80483e2)
 
-void CfgTest::testSemiDominators()
+void DataFlowTest::testSemiDominators()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
 
@@ -130,15 +132,16 @@ void CfgTest::testSemiDominators()
     df->calculateDominators(cfg);
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
-    BBIterator it;
-    BasicBlock *bb = cfg->getFirstBB(it);
-
-    while (bb && bb->getLowAddr() != SEMI_L) {
-        bb = cfg->getNextBB(it);
+    BasicBlock *foundBB = nullptr;
+    for (BasicBlock *bb : *cfg) {
+        if (bb->getLowAddr() == SEMI_L) {
+            foundBB = bb;
+            break;
+        }
     }
 
-    QVERIFY(bb);
-    int nL = df->pbbToNode(bb);
+    QVERIFY(foundBB);
+    int nL = df->pbbToNode(foundBB);
 
     // The dominator for L should be B, where the semi dominator is D
     // (book says F)
@@ -164,7 +167,7 @@ void CfgTest::testSemiDominators()
 }
 
 
-void CfgTest::testPlacePhi()
+void DataFlowTest::testPlacePhi()
 {
     QSKIP("Disabled.");
 
@@ -187,7 +190,6 @@ void CfgTest::testPlacePhi()
     Cfg      *cfg   = pProc->getCFG();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    cfg->sortByAddress();
     prog.finishDecode();
     DataFlow *df = pProc->getDataFlow();
     df->calculateDominators(cfg);
@@ -210,7 +212,7 @@ void CfgTest::testPlacePhi()
 }
 
 
-void CfgTest::testPlacePhi2()
+void DataFlowTest::testPlacePhi2()
 {
     QSKIP("Disabled.");
 
@@ -235,7 +237,6 @@ void CfgTest::testPlacePhi2()
     prog.finishDecode();
 
     Cfg *cfg = pProc->getCFG();
-    cfg->sortByAddress();
 
     DataFlow *df = pProc->getDataFlow();
     df->calculateDominators(cfg);
@@ -298,7 +299,7 @@ void CfgTest::testPlacePhi2()
 }
 
 
-void CfgTest::testRenameVars()
+void DataFlowTest::testRenameVars()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
 
@@ -334,4 +335,4 @@ void CfgTest::testRenameVars()
 }
 
 
-QTEST_MAIN(CfgTest)
+QTEST_MAIN(DataFlowTest)

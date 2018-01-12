@@ -84,7 +84,7 @@ void StatementTest::testEmpty()
     ls->push_back(new ReturnStatement);
     pRtls->push_back(new RTL(Address(0x00000123)));
 
-    BasicBlock *entryBB = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *entryBB = cfg->createBB(BBType::Ret, std::move(pRtls));
     cfg->setEntryAndExitBB(entryBB);
     proc->setDecoded(); // We manually "decoded"
 
@@ -132,34 +132,34 @@ void StatementTest::testFlow()
     std::string name  = "test";
     UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
+
     // create CFG
     Cfg              *cfg   = proc->getCFG();
-    std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
-    Assign           *a     = new Assign(Location::regOf(24), std::make_shared<Const>(5));
 
+    Assign *a = new Assign(Location::regOf(24), std::make_shared<Const>(5));
     a->setProc(proc);
     a->setNumber(1);
-    rtl->append(a);
-    pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
-    pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x00000123));
+    RTL *rtl   = new RTL(Address(0x00001000), { a });
+    std::unique_ptr<RTLList> pRtls(new RTLList({ rtl }));
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
+    pRtls.reset(new RTLList);
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(2);
     a = new Assign(Location::regOf(24), std::make_shared<Const>(5));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->append(rs);
-    pRtls->push_back(rtl);
+    pRtls->push_back(new RTL(Address(0x00001010), { rs }));
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
+    QVERIFY(ret);
+
     // first was empty before
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first); // Also sets exitBB; important!
     proc->setDecoded();
+
     // compute dataflow
     int indent = 0;
     proc->decompile(new ProcList, indent);
@@ -174,12 +174,12 @@ void StatementTest::testFlow()
     QString expected = "Control Flow Graph:\n"
                        "Fall BB:\n"
                        "  in edges: \n"
-                       "  out edges: 0x00000123 \n"
-                       "0x00000000\n"
+                       "  out edges: 0x00001010 \n"
+                       "0x00001000\n"
                        "Ret BB:\n"
-                       "  in edges: 0x00000000(0x00000000) \n"
+                       "  in edges: 0x00001000(0x00001000) \n"
                        "  out edges: \n"
-                       "0x00000123    2 RET *v* r24 := 5\n"
+                       "0x00001010    2 RET *v* r24 := 5\n"
                        "              Modifieds: \n"
                        "              Reaching definitions: r24=5\n\n";
 
@@ -212,32 +212,29 @@ void StatementTest::testKill()
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
-    Assign           *e     = new Assign(Location::regOf(24), Const::get(5));
 
-    e->setNumber(1);
-    e->setProc(proc);
-    rtl->append(e);
+    Assign *e1     = new Assign(Location::regOf(24), Const::get(5));
+    e1->setNumber(1);
+    e1->setProc(proc);
 
-    e = new Assign(Location::regOf(24), Const::get(6));
-    e->setNumber(2);
-    e->setProc(proc);
-    rtl->append(e);
+    Assign *e2 = new Assign(Location::regOf(24), Const::get(6));
+    e2->setNumber(2);
+    e2->setProc(proc);
 
-    pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    pRtls->push_back(new RTL(Address(0x1000), { e1, e2 }));
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
     pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(3);
-    e = new Assign(Location::regOf(24), Const::get(0));
+
+    Assign *e = new Assign(Location::regOf(24), Const::get(0));
     e->setProc(proc);
     rs->addReturn(e);
-    rtl->append(rs);
 
-    pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    pRtls->push_back(new RTL(Address(0x1010), { rs }));
+
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -256,12 +253,12 @@ void StatementTest::testKill()
         "Control Flow Graph:\n"
         "Fall BB:\n"
         "  in edges: \n"
-        "  out edges: 0x00000123 \n"
-        "0x00000000\n"
+        "  out edges: 0x00001010 \n"
+        "0x00001000\n"
         "Ret BB:\n"
-        "  in edges: 0x00000000(0x00000000) \n"
+        "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00000123    3 RET *v* r24 := 0\n"
+        "0x00001010    3 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
@@ -290,33 +287,31 @@ void StatementTest::testUse()
     std::string name  = "test";
     UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
+
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
-    Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
-    a->setNumber(1);
-    a->setProc(proc);
-    rtl->append(a);
 
-    a = new Assign(Location::regOf(28), Location::regOf(24));
-    a->setNumber(2);
-    a->setProc(proc);
-    rtl->append(a);
+    Assign *a1 = new Assign(Location::regOf(24), Const::get(5));
+    a1->setNumber(1);
+    a1->setProc(proc);
 
-    pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    Assign *a2 = new Assign(Location::regOf(28), Location::regOf(24));
+    a2->setNumber(2);
+    a2->setProc(proc);
+
+    pRtls->push_back(new RTL(Address(0x1000), { a1, a2 }));
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
+
     pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(3);
-    a = new Assign(Location::regOf(28), Const::get(1000));
+    Assign *a = new Assign(Location::regOf(28), Const::get(1000));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->append(rs);
-    pRtls->push_back(rtl);
+    pRtls->push_back(new RTL(Address(0x1010), { rs }));
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -334,12 +329,12 @@ void StatementTest::testUse()
         "Control Flow Graph:\n"
         "Fall BB:\n"
         "  in edges: \n"
-        "  out edges: 0x00000123 \n"
-        "0x00000000\n"
+        "  out edges: 0x00001010 \n"
+        "0x00001000\n"
         "Ret BB:\n"
-        "  in edges: 0x00000000(0x00000000) \n"
+        "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00000123    3 RET *v* r28 := 1000\n"
+        "0x00001010    3 RET *v* r28 := 1000\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=5,   r28=5\n\n";
 
@@ -371,33 +366,32 @@ void StatementTest::testUseOverKill()
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
-    Assign           *e     = new Assign(Location::regOf(24), Const::get(5));
-    e->setNumber(1);
-    e->setProc(proc);
-    rtl->append(e);
-    e = new Assign(Location::regOf(24), Const::get(6));
-    e->setNumber(2);
-    e->setProc(proc);
-    rtl->append(e);
-    e = new Assign(Location::regOf(28), Location::regOf(24));
-    e->setNumber(3);
-    e->setProc(proc);
-    rtl->append(e);
-    pRtls->push_back(rtl);
 
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    Assign *e1 = new Assign(Location::regOf(24), Const::get(5));
+    e1->setNumber(1);
+    e1->setProc(proc);
+
+    Assign *e2 = new Assign(Location::regOf(24), Const::get(6));
+    e2->setNumber(2);
+    e2->setProc(proc);
+
+    Assign *e3 = new Assign(Location::regOf(28), Location::regOf(24));
+    e3->setNumber(3);
+    e3->setProc(proc);
+
+    pRtls->push_back(new RTL(Address(0x1000), { e1, e2, e3 }));
+
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
     pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x00000123));
+
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(4);
-    e = new Assign(Location::regOf(24), Const::get(0));
+    Assign *e = new Assign(Location::regOf(24), Const::get(0));
     e->setProc(proc);
     rs->addReturn(e);
-    rtl->append(rs);
-    pRtls->push_back(rtl);
+    pRtls->push_back(new RTL(Address(0x1010), { rs }));
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -417,16 +411,16 @@ void StatementTest::testUseOverKill()
         "Control Flow Graph:\n"
         "Fall BB:\n"
         "  in edges: \n"
-        "  out edges: 0x00000123 \n"
-        "0x00000000\n"
+        "  out edges: 0x00001010 \n"
+        "0x00001000\n"
         "Ret BB:\n"
-        "  in edges: 0x00000000(0x00000000) \n"
+        "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00000123    4 RET *v* r24 := 0\n"
+        "0x00001010    4 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
-
     QCOMPARE(actual, expected);
+
     // clean up
     delete prog;
 }
@@ -449,39 +443,37 @@ void StatementTest::testUseOverBB()
     prog->setFrontEnd(pFE);
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00001000));
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
-    Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
-    a->setNumber(1);
-    a->setProc(proc);
-    rtl->append(a);
-    a = new Assign(Location::regOf(24), Const::get(6));
-    a->setNumber(2);
-    a->setProc(proc);
-    rtl->append(a);
-    pRtls->push_back(rtl);
 
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    Assign *a1 = new Assign(Location::regOf(24), Const::get(5));
+    a1->setNumber(1);
+    a1->setProc(proc);
+
+    Assign *a2 = new Assign(Location::regOf(24), Const::get(6));
+    a2->setNumber(2);
+    a2->setProc(proc);
+    pRtls->push_back(new RTL(Address(0x1000), { a1, a2 }));
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
+
     pRtls.reset(new RTLList);
-    rtl   = new RTL();
-    a     = new Assign(Location::regOf(28), Location::regOf(24));
-    a->setNumber(3);
-    a->setProc(proc);
-    rtl->append(a);
-    pRtls->push_back(rtl);
-    rtl = new RTL(Address(0x00000123));
+    Assign *a3  = new Assign(Location::regOf(28), Location::regOf(24));
+    a3->setNumber(3);
+    a3->setProc(proc);
+    pRtls->push_back(new RTL(Address(0x1010), { a3 }));
+
 
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(4);
-    a = new Assign(Location::regOf(24), Const::get(0));
+
+    Assign *a = new Assign(Location::regOf(24), Const::get(0));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->append(rs);
-    pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    pRtls->push_back(new RTL(Address(0x00001012), { rs }));
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
+
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
@@ -500,17 +492,17 @@ void StatementTest::testUseOverBB()
         "Control Flow Graph:\n"
         "Fall BB:\n"
         "  in edges: \n"
-        "  out edges: 0x00000123 \n"
-        "0x00000000\n"
+        "  out edges: 0x00001010 \n"
+        "0x00001000\n"
         "Ret BB:\n"
-        "  in edges: 0x00000000(0x00000000) \n"
+        "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00000000\n"
-        "0x00000123    4 RET *v* r24 := 0\n"
+        "0x00001010\n"
+        "0x00001012    4 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
-
     QCOMPARE(actual, expected);
+
     // clean up
     delete prog;
 }
@@ -537,32 +529,31 @@ void StatementTest::testUseKill()
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
-    Assign           *a     = new Assign(Location::regOf(24), Const::get(5));
-    a->setNumber(1);
-    a->setProc(proc);
-    rtl->append(a);
-    a = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
-    a->setNumber(2);
-    a->setProc(proc);
-    rtl->append(a);
+    Assign *a1 = new Assign(Location::regOf(24), Const::get(5));
+    a1->setNumber(1);
+    a1->setProc(proc);
 
-    pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    Assign *a2 = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
+    a2->setNumber(2);
+    a2->setProc(proc);
+
+    pRtls->push_back(new RTL(Address(0x1000), { a1, a2 }));
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
+
     pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x00000123));
     ReturnStatement *rs = new ReturnStatement;
     rs->setNumber(3);
-    a = new Assign(Location::regOf(24), Const::get(0));
+    Assign *a = new Assign(Location::regOf(24), Const::get(0));
     a->setProc(proc);
     rs->addReturn(a);
-    rtl->append(rs);
-    pRtls->push_back(rtl);
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    pRtls->push_back(new RTL(Address(0x1010), { rs }));
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
+
     first->addSuccessor(ret);
     ret->addPredecessor(first);
     cfg->setEntryAndExitBB(first);
     proc->setDecoded();
+
     // compute dataflow
     int indent = 0;
     proc->decompile(new ProcList, indent);
@@ -576,12 +567,12 @@ void StatementTest::testUseKill()
         "Control Flow Graph:\n"
         "Fall BB:\n"
         "  in edges: \n"
-        "  out edges: 0x00000123 \n"
-        "0x00000000\n"
+        "  out edges: 0x00001010 \n"
+        "0x00001000\n"
         "Ret BB:\n"
-        "  in edges: 0x00000000(0x00000000) \n"
+        "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00000123    3 RET *v* r24 := 0\n"
+        "0x00001010    3 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
@@ -613,7 +604,7 @@ void StatementTest::testEndlessLoop()
 
     // create UserProc
     std::string name  = "test";
-    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00000123));
+    UserProc    *proc = (UserProc *)prog->createFunction(Address(0x00001000));
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();
@@ -623,18 +614,18 @@ void StatementTest::testEndlessLoop()
     // r[24] := 5
     Assign *a = new Assign(Location::regOf(24), Const::get(5));
     a->setProc(proc);
-    pRtls->push_back(new RTL(Address::ZERO, { a }));
+    pRtls->push_back(new RTL(Address(0x1000), { a }));
 
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
     pRtls.reset(new RTLList);
 
     // r24 := r24 + 1
     a = new Assign(Location::regOf(24), Binary::get(opPlus, Location::regOf(24), Const::get(1)));
     a->setProc(proc);
-    pRtls->push_back(new RTL(Address(0x00000020), { a }));
+    pRtls->push_back(new RTL(Address(0x1010), { a }));
 
-    BasicBlock *body = cfg->createBB(std::move(pRtls), BBType::Oneway);
+    BasicBlock *body = cfg->createBB(BBType::Oneway, std::move(pRtls));
 
     first->addSuccessor(body);
     body->addPredecessor(first);
@@ -658,13 +649,13 @@ void StatementTest::testEndlessLoop()
     QString expected = "Control Flow Graph:\n"
                        "Fall BB:\n"
                        "  in edges: \n"
-                       "  out edges: 0x00000020 \n"
-                       "0x00000000    1 *i32* r24 := 5\n"
+                       "  out edges: 0x00001010 \n"
+                       "0x00001000    1 *i32* r24 := 5\n"
                        "Oneway BB:\n"
-                       "  in edges: 0x00000000(0x00000000) 0x00000020(0x00000020) \n"
-                       "  out edges: 0x00000020 \n"
+                       "  in edges: 0x00001000(0x00001000) 0x00001010(0x00001010) \n"
+                       "  out edges: 0x00001010 \n"
                        "0x00000000    3 *i32* r24 := phi{1 2}\n"
-                       "0x00000020    2 *i32* r24 := r24{3} + 1\n"
+                       "0x00001010    2 *i32* r24 := r24{3} + 1\n"
                        "\n";
 
     QCOMPARE(actual, expected);
@@ -830,76 +821,69 @@ void StatementTest::testRecursion()
     // create CFG
     Cfg              *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    RTL              *rtl   = new RTL();
+
     // push bp
     // r28 := r28 + -4
-    Assign *a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
-    rtl->append(a);
+    Assign *a1 = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
+
     // m[r28] := r29
-    a = new Assign(Location::memOf(Location::regOf(28)), Location::regOf(29));
-    rtl->append(a);
-    pRtls->push_back(rtl);
+    Assign *a2 = new Assign(Location::memOf(Location::regOf(28)), Location::regOf(29));
+    pRtls->push_back(new RTL(Address::ZERO, { a1, a2 }));
     pRtls.reset(); // ???
 
     pRtls.reset(new RTLList);
     // push arg+1
     // r28 := r28 + -4
-    a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
-    rtl->append(a);
+    Assign *a3 = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
+
     // Reference our parameter. At esp+0 is this arg; at esp+4 is old bp;
     // esp+8 is return address; esp+12 is our arg
     // m[r28] := m[r28+12] + 1
-    a = new Assign(
+    Assign *a4 = new Assign(
         Location::memOf(Location::regOf(28)),
         Binary::get(opPlus, Location::memOf(
                         Binary::get(opPlus, Location::regOf(28), Const::get(12))), Const::get(1)));
 
-    a->setProc(proc);
-    rtl->append(a);
-    pRtls->push_back(rtl);
-    BasicBlock *first = cfg->createBB(std::move(pRtls), BBType::Fall);
+    a4->setProc(proc);
+    pRtls->push_back(new RTL(Address::ZERO, { a3, a4 }));
+    BasicBlock *first = cfg->createBB(BBType::Fall, std::move(pRtls));
 
     // The call BB
     pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x0000001));
+
     // r28 := r28 + -4
-    a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
-    rtl->append(a);
+    Assign *a5 = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(-4)));
     // m[r28] := pc
-    a = new Assign(Location::memOf(Location::regOf(28)), Terminal::get(opPC));
-    rtl->append(a);
+    Assign *a6 = new Assign(Location::memOf(Location::regOf(28)), Terminal::get(opPC));
     // %pc := (%pc + 5) + 135893848
-    a = new Assign(Terminal::get(opPC),
+    Assign *a7 = new Assign(Terminal::get(opPC),
                    Binary::get(opPlus,
                                Binary::get(opPlus, Terminal::get(opPC), Const::get(5)),
                                Const::get(135893848)));
-    a->setProc(proc);
-    rtl->append(a);
-    pRtls->push_back(rtl);
-    CallStatement *c = new CallStatement;
-    rtl->append(c);
+    a7->setProc(proc);
 
+    CallStatement *c = new CallStatement;
     c->setDestProc(proc); // Just call self
-    BasicBlock *callbb = cfg->createBB(std::move(pRtls), BBType::Call);
+    pRtls->push_back(new RTL(Address(0x00000001), { a5, a6, a7, c }));
+    BasicBlock *callbb = cfg->createBB(BBType::Call, std::move(pRtls));
+
     first->addSuccessor(callbb);
     callbb->addPredecessor(first);
     callbb->addSuccessor(callbb);
     callbb->addPredecessor(callbb);
 
     pRtls.reset(new RTLList);
-    rtl   = new RTL(Address(0x00000123));
-    rtl->append(new ReturnStatement);
+    ReturnStatement *retStmt = new ReturnStatement;
     // This ReturnStatement requires the following two sets of semantics to pass the
     // tests for standard Pentium calling convention
     // pc = m[r28]
-    a = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(28)));
-    rtl->append(a);
+    a1 = new Assign(Terminal::get(opPC), Location::memOf(Location::regOf(28)));
     // r28 = r28 + 4
-    a = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
-    rtl->append(a);
-    pRtls->push_back(rtl);
+    a2 = new Assign(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
 
-    BasicBlock *ret = cfg->createBB(std::move(pRtls), BBType::Ret);
+    pRtls->push_back(new RTL(Address(0x00000123), { retStmt, a1, a2 }));
+
+    BasicBlock *ret = cfg->createBB(BBType::Ret, std::move(pRtls));
     callbb->addSuccessor(ret);
     ret->addPredecessor(callbb);
     cfg->setEntryAndExitBB(first);
@@ -950,7 +934,8 @@ void StatementTest::testClone()
     a3->print(original_st);
     c3->print(clone_st);
 
-    QString expected("   0 *v* r8 := r9 + 99   0 *i16* x := y"
+    QString expected("   0 *v* r8 := r9 + 99"
+                     "   0 *i16* x := y"
                      "   0 *u16* z := q");
 
     QCOMPARE(original, expected);
@@ -1364,8 +1349,6 @@ void StatementTest::testBypass()
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
 
     Cfg *cfg = proc->getCFG();
-    // Sort by address
-    cfg->sortByAddress();
 
     // Initialise statements
     proc->initStatements();

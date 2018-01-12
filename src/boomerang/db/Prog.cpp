@@ -161,47 +161,6 @@ void Prog::finishDecode()
 }
 
 
-void Prog::generateDotFile() const
-{
-    QString filename = SETTING(dotFile);
-
-    if (filename.isEmpty()) {
-        filename = "cfg.dot";
-    }
-
-    QFile tgt(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
-
-    if (!tgt.open(QFile::WriteOnly | QFile::Text)) {
-        return;
-    }
-
-    QTextStream of(&tgt);
-    of << "digraph Cfg {\n";
-
-    for (const auto& module : m_moduleList) {
-        for (Function *func : *module) {
-            if (func->isLib()) {
-                continue;
-            }
-
-            UserProc *p = (UserProc *)func;
-
-            if (!p->isDecoded()) {
-                continue;
-            }
-
-            // Subgraph for the proc name
-            of << "\nsubgraph cluster_" << p->getName() << " {\n"
-               << "       color=gray;\n    label=" << p->getName() << ";\n";
-            // Generate dotty CFG for this proc
-            p->getCFG()->generateDotFile(of);
-        }
-    }
-
-    of << "}";
-}
-
-
 void Prog::generateRTL(Module *cluster, UserProc *proc) const
 {
     bool generate_all   = cluster == nullptr;

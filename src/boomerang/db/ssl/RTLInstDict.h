@@ -38,9 +38,13 @@ using SharedRTL = std::shared_ptr<RTL>;
 class TableEntry
 {
 public:
-    TableEntry();
+    TableEntry() : m_rtl(Address::INVALID) {}
     TableEntry(const std::list<QString>& params, const RTL& rtl);
-    TableEntry(const TableEntry& other) { *this = other; }
+    TableEntry(const TableEntry& other)
+        : m_params(other.m_params)
+        , m_rtl(other.m_rtl)
+        , m_flags(other.m_flags)
+    {}
     TableEntry(TableEntry&& other) = default;
 
     ~TableEntry() = default;

@@ -108,6 +108,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 
     for (RTL *rtl : *m_listOfRTLs) {
         for (Statement *stmt : *rtl) {
+            assert(stmt != nullptr);
             stmt->setBB(this);
         }
     }

@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/CFGCompressor.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
@@ -93,7 +94,7 @@ void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
                 continue;
             }
 
-            userProc->getCFG()->compressCfg();
+            CFGCompressor().compressCFG(userProc->getCFG());
 
             generateCode(userProc);
             print(os);
@@ -197,8 +198,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 continue;
             }
 
-            _proc->getCFG()->compressCfg();
-            _proc->getCFG()->removeOrphanBBs();
+            CFGCompressor().compressCFG(_proc->getCFG());
 
             generateCode(_proc);
             print(module->getStream());
@@ -589,7 +589,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     addProcEnd();
 
     if (!SETTING(noRemoveLabels)) {
-        proc->getCFG()->removeUnneededLabels(this);
+        this->removeUnusedLabels(proc->getCFG()->getNumBBs());
     }
 
     proc->setStatus(PROC_CODE_GENERATED);

@@ -439,7 +439,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                             if (cc01 != 0) { /* If 64 bit cc used, can't handle */
                                 result.valid    = false;
-                                result.rtl      = new RTL;
+                                result.rtl      = new RTL(Address::INVALID);
                                 result.numBytes = 4;
                                 return false;
                             }
@@ -1879,7 +1879,7 @@ MATCH_label_d0:
 
             if (cc01 != 0) { /* If 64 bit cc used, can't handle */
                 result.valid    = false;
-                result.rtl      = new RTL;
+                result.rtl      = new RTL(Address::INVALID);
                 result.numBytes = 4;
                 return result.valid;
             }
@@ -1943,7 +1943,7 @@ MATCH_label_d1:
 
             if (name[0] == 'C') {
                 result.valid    = false;
-                result.rtl      = new RTL;
+                result.rtl      = new RTL(Address::INVALID);
                 result.numBytes = 4;
                 return result.valid;
             }
@@ -2013,7 +2013,7 @@ MATCH_label_d2:
 
             if (name[0] == 'C') {
                 result.valid    = false;
-                result.rtl      = new RTL;
+                result.rtl      = new RTL(Address::INVALID);
                 result.numBytes = 4;
                 return result.valid;
             }

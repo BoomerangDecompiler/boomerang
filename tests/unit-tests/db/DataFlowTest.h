@@ -10,19 +10,14 @@
 #pragma once
 
 
-#include "boomerang/db/CFG.h"
-
 #include <QtTest/QTest>
 
 /**
- * Test for Control Flow Graphs
+ * Test for basic data-flow related code
  */
-class CfgTest : public QObject
+class DataFlowTest : public QObject
 {
     Q_OBJECT
-
-protected:
-    Cfg *m_prog;
 
 private slots:
     void initTestCase();

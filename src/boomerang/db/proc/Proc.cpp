@@ -52,14 +52,15 @@ namespace dbghelp
 typedef std::map<Statement *, int> RefCounter;
 
 
-Function::Function(Address uNative, Signature *sig, Module *mod)
+Function::Function(Address entryAddr, Signature *sig, Module *module)
     : m_signature(sig)
-    , m_entryAddress(uNative)
+    , m_entryAddress(entryAddr)
     , m_firstCaller(nullptr)
-    , m_module(mod)
+    , m_module(module)
 {
-    assert(mod);
-    m_prog = mod->getProg();
+    if (module) {
+        m_prog = module->getProg();
+    }
 }
 
 

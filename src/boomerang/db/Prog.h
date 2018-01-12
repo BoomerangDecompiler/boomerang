@@ -169,8 +169,6 @@ public:
     /// Convert from SSA form
     void fromSSAForm();
 
-    /// Generate dotty file
-    void generateDotFile() const;
     void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr) const;
 
     /// Print this program (primarily for debugging)

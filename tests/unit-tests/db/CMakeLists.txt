@@ -11,17 +11,18 @@ include(boomerang-utils)
 
 set(TESTS
     BasicBlockTest
-    RtlTest
+    CFGTest
     DfaTest
+    ExpTest
     ParserTest
     ProgTest
     ProcTest
-    ExpTest
+    RtlTest
 )
 
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
-    CfgTest
+    DataFlowTest
     StatementTest
 )
 
