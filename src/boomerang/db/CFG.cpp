@@ -32,10 +32,6 @@
 
 Cfg::Cfg(UserProc *proc)
     : m_myProc(proc)
-    , m_wellFormed(true)
-    , m_implicitsDone(false)
-    , m_entryBB(nullptr)
-    , m_exitBB(nullptr)
 {
 }
 
@@ -70,7 +66,6 @@ bool Cfg::hasBB(const BasicBlock* bb) const
     BBStartMap::const_iterator iter = m_bbStartMap.find(bb->getLowAddr());
     return (iter != m_bbStartMap.end()) && iter->second == bb;
 }
-
 
 
 void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
@@ -535,31 +530,6 @@ void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
 }
 
 
-bool Cfg::joinBB(BasicBlock *bb1, BasicBlock *bb2)
-{
-    // Ensure that the fallthrough case for bb1 is bb2
-    if (bb1->getNumSuccessors() != 2 || bb1->getSuccessor(BELSE) != bb2) {
-        return false;
-    }
-
-    // Prepend the RTLs for pb1 to those of pb2.
-    // Since they will be pushed to the front of pb2,
-    // push them in reverse order
-    for (auto it = bb1->getRTLs()->rbegin(); it != bb1->getRTLs()->rend(); it++) {
-        bb2->getRTLs()->push_front(*it);
-    }
-    bb2->updateBBAddresses();
-
-    completeMerge(bb1, bb2); // Mash them together
-
-    // pb1 no longer needed. Remove it from the list of BBs.
-    // This will also delete *pb1. It will be a shallow delete,
-    // but that's good because we only did shallow copies to *pb2
-    removeBB(bb1);
-    return true;
-}
-
-
 void Cfg::removeBB(BasicBlock *bb)
 {
     if (bb == nullptr) {
@@ -624,28 +594,20 @@ void Cfg::dump()
     QTextStream q_cerr(stderr);
 
     print(q_cerr);
+    q_cerr.flush();
 }
 
 
 void Cfg::dumpImplicitMap()
 {
     QTextStream q_cerr(stderr);
+    q_cerr << "Implicits:\n";
 
     for (auto it : m_implicitMap) {
         q_cerr << it.first << " -> " << it.second << "\n";
     }
+    q_cerr.flush();
 }
-
-
-void Cfg::printToLog()
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    LOG_MSG(tgt);
-}
-
 
 
 void Cfg::undoComputedBB(Statement *stmt)

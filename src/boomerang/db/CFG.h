@@ -51,16 +51,14 @@ using RTLList   = std::list<RTL *>;
  */
 class Cfg
 {
+    typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
     typedef std::map<SharedExp, Statement *, lessExpStar>          ExpStatementMap;
 
-    // A type for the Address to BB map
-    typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
-
 public:
-    typedef MapValueIterator<BBStartMap> iterator;
-    typedef MapValueConstIterator<BBStartMap> const_iterator;
-    typedef MapValueReverseIterator<BBStartMap> reverse_iterator;
-    typedef MapValueConstReverseIterator<BBStartMap> const_reverse_iterator;
+    typedef MapValueIterator<BBStartMap>                iterator;
+    typedef MapValueConstIterator<BBStartMap>           const_iterator;
+    typedef MapValueReverseIterator<BBStartMap>         reverse_iterator;
+    typedef MapValueConstReverseIterator<BBStartMap>    const_reverse_iterator;
 
 public:
     /// Creates an empty CFG for the function \p proc
@@ -74,14 +72,14 @@ public:
     Cfg& operator=(Cfg&& other) = default;
 
 public:
-    // Note: the iterators are invalidated when BBs are added or removed from the CFG.
-    iterator begin() { return iterator(m_bbStartMap.begin()); }
-    iterator end()   { return iterator(m_bbStartMap.end()); }
-    const_iterator begin() const { return const_iterator(m_bbStartMap.begin()); }
-    const_iterator end() const { return const_iterator(m_bbStartMap.end()); }
+    /// Note: When removing a BB, the iterator(s) pointing to the removed BB are invalidated.
+    iterator begin()                      { return iterator(m_bbStartMap.begin()); }
+    iterator end()                        { return iterator(m_bbStartMap.end()); }
+    const_iterator begin()          const { return const_iterator(m_bbStartMap.begin()); }
+    const_iterator end()            const { return const_iterator(m_bbStartMap.end()); }
 
-    reverse_iterator rbegin() { return reverse_iterator(m_bbStartMap.rbegin()); }
-    reverse_iterator rend()   { return reverse_iterator(m_bbStartMap.rend()); }
+    reverse_iterator rbegin()             { return reverse_iterator(m_bbStartMap.rbegin()); }
+    reverse_iterator rend()               { return reverse_iterator(m_bbStartMap.rend()); }
     const_reverse_iterator rbegin() const { return const_reverse_iterator(m_bbStartMap.rbegin()); }
     const_reverse_iterator rend()   const { return const_reverse_iterator(m_bbStartMap.rend()); }
 
@@ -155,11 +153,19 @@ public:
     bool isStartOfIncompleteBB(Address addr) const;
 
     /**
+     * Add an edge from \p sourceBB to \p destBB.
+     * \param sourceBB the start of the edge.
+     * \param destBB the destination of the edge.
+     */
+    void addEdge(BasicBlock *sourceBB, BasicBlock *destBB);
+
+    /**
      * Add an out edge from \p sourceBB to address \p destAddr.
-     * If \p destAddr is not the start of a BB,
-     * an incomplete BB will be created.
-     * If \p destAddr is in the middle of a complete BB,
-     * the destination BB will be split.
+     * If \p destAddr is the start of a complete BB, add an edge from \p sourceBB to
+     * the complete BB.
+     * If \p destAddr is in the middle of a complete BB, the BB will be split; the edge
+     * will be added to the "high" part of the split BB.
+     * Otherwise, an incomplete BB will be created and the edge will be added to it.
      *
      * \param sourceBB the source of the edge
      * \param destAddr the destination of a CTI (jump or call)
@@ -167,40 +173,18 @@ public:
     void addEdge(BasicBlock *sourceBB, Address destAddr);
 
     /**
-     * Add an edge from \p sourceBB to \p destBB.
-     * \param sourceBB the start of the edge.
-     * \param destBB the destination of the edge.
-     */
-    void addEdge(BasicBlock *sourceBB, BasicBlock *destBB);
-
-    /* Checks whether the given native address is a label (explicit or non explicit) or not.  Explicit labels are
-     * addresses that have already been tagged as being labels due to transfers of control to that address.
-     * Non explicit labels are those that belong to basic blocks that have already been constructed (i.e. have
-     * previously been parsed) and now need to be made explicit labels.     In the case of non explicit labels, the
-     * basic block is split into two and types and edges are adjusted accordingly. pNewBB is set to the lower part
-     * of the split BB.
-     * Returns true if the native address is that of an explicit or non explicit label, false otherwise. */
-
-    /**
-     * Checks whether the given native address is a label (explicit or non explicit) or not.
-     * Returns false for incomplete BBs.
-     * So it returns true iff the address has already been decoded in some BB. If it was not
-     * already a label (i.e. the first instruction of some BB), the BB is split so that it becomes a label.
-     * Explicit labels are addresses that have already been tagged as being labels due to transfers of control
-     * to that address, and are therefore the start of some BB.
-     * Non explicit labels are those that belong to basic blocks that have already been constructed
-     * (i.e. have previously been parsed) and now need to be made explicit labels.
-     * In the case of non explicit labels, the basic block is split into two and types and edges
-     * are adjusted accordingly.
-     * If \p pNewBB is the BB that gets split, it is changed to point to the
-     * address of the new (lower) part of the split BB.
-     * If there is an incomplete entry in the table for this address which overlaps with a completed address,
-     * the completed BB is split and the BB for this address is completed.
+     * Checks whether the given native address is a label (explicit or non explicit) or not;
+     * returns false for incomplete BBs.
+     *
+     * Explicit labels are addresses that have already been tagged as being labels
+     * due to transfers of control to that address (i.e. they are the start of a complete Basic Block)
+     * Non explicit labels are addresses that are in the middle of a complete Basic Block. In this case, the
+     * existing complete BB is split. If \p pNewBB is the BB that gets split, \p pNewBB is updated
+     * to point to the "high" part of the split BB.
      *
      * \param         addr   native (source) address to check
      * \param         pNewBB See above
-     * \returns       True if \p addr is a label, i.e. (now) the start of a BB
-     *                Note: \p pNewBB may be modified (as above)
+     * \returns       True if \p addr is a label, i.e. (now) the start of a complete BB
      */
     bool label(Address addr, BasicBlock *& pNewBB);
 
@@ -243,49 +227,47 @@ public:
 
 private:
     /**
-     * Given two basic blocks that belong to a well-formed graph,
-     * merges the second block onto the first one and returns the new block.
-     * The in and out edges links are updated accordingly.
-     * Note that two basic blocks can only be merged if each
-     * has a unique out-edge and in-edge respectively,
-     * and these edges correspond to each other.
+     * Split \p bb into a "low" and "high" part at the RTL associated with \p splitAddr.
+     * The type of the "low" BB becomes fall-through. The type of the "high" part becomes the type of \p bb.
      *
-     * \returns true if the blocks were merged.
-     */
-    bool mergeBBs(BasicBlock *bb1, BasicBlock *bb2);
-
-    /**
-     * Amalgamate the RTLs for \p bb1 and  \p bb2, and place the result into \p bb2
+     * \ | /                    \ | /
+     * +---+ bb                 +---+ BB1
+     * |   |                    +---+
+     * |   |         ==>          |    Fallthrough
+     * +---+                    +---+
+     * / | \                    +---+ BB2
+     *                          / | \
      *
-     * This is called where a two-way branch is deleted, thereby joining a two-way BB with it's successor.
-     * This happens for example when transforming Intel floating point branches, and a branch on parity is deleted.
-     * The joined BB becomes the type of the successor.
-     *
-     * \note Assumes that fallthrough of *pb1 is *pb2
-     *
-     * \param   bb1,bb2 pointers to the BBs to join
-     * \returns True if successful
-     */
-    bool joinBB(BasicBlock *bb1, BasicBlock *bb2);
-
-    /**
-     * Split the given basic block at the RTL associated with \p splitAddr. The first node's type becomes
-     * fall-through and ends at the RTL prior to that associated with \p splitAddr.
-     * The second node's type becomes the type of the original basic block (\p bb),
-     * and its out-edges are those of the original basic block.
-     * In edges of the new BB's descendants are changed.
-     *
-     * \pre assumes \p splitAddr is an address within the boundaries of the given BB.
-     *
+     * If \p splitAddr is not in the range [bb->getLowAddr, bb->getHiAddr], the split fails.
      * \param   bb         pointer to the BB to be split
      * \param   splitAddr  address of RTL to become the start of the new BB
      * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
      *                     to not overlap.
      * \param   deleteRTLs if true, deletes the RTLs removed from the existing BB after the split point. Only used if
      *                     there is an overlap with existing instructions
-     * \returns A pointer to the "bottom" (new) part of the split BB.
+     * \returns If the merge is successful, returns the "low" part of the split BB. Otherwise, returns the original BB.
      */
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
+
+    /**
+     * Given two basic blocks that belong to a well-formed graph,
+     * merges the second block onto the first one.
+     * This effectively undoes a splitBB().
+     *
+     * \ | /                    \ | /
+     * +---+ BB1                +---+
+     * +---+                    |   |
+     *   |   Fallthrough   ==>  |   |
+     * +---+                    +---+
+     * +---+ BB2                / | \
+     * / | \
+     *
+     * If BB1 has more than one successor or BB2 has more than one predecessor,
+     * the merge fails.
+     *
+     * \returns true on success, false on failure.
+     */
+    bool mergeBBs(BasicBlock *bb1, BasicBlock *bb2);
 
     /**
      * Complete the merge of two BBs by adjusting in and out edges.
@@ -296,22 +278,20 @@ private:
      */
     void completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool deleteBB = false);
 
-    void appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset);
-
 public:
     /// print this cfg, mainly for debugging
     void print(QTextStream& out, bool html = false);
-    void printToLog();
-    void dump();            ///< Dump to LOG_STREAM()
-    void dumpImplicitMap(); ///< Dump the implicit map to LOG_STREAM()
+    void dump();            ///< Dump to stderr
+    void dumpImplicitMap(); ///< Dump the implicit map to stderr
 
 private:
-    UserProc *m_myProc;                      ///< Pointer to the UserProc object that contains this CFG object
-    mutable bool m_wellFormed;
-    bool m_implicitsDone;                    ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
-
+    UserProc *m_myProc = nullptr;            ///< Procedure to which this CFG belongs.
     BBStartMap m_bbStartMap;                 ///< The Address to BB map
-    BasicBlock *m_entryBB;                   ///< The CFG entry BasicBlock.
-    BasicBlock *m_exitBB;                    ///< The CFG exit BasicBlock.
+    BasicBlock *m_entryBB = nullptr;         ///< The CFG entry BasicBlock.
+    BasicBlock *m_exitBB = nullptr;          ///< The CFG exit BasicBlock.
+
     ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
+    bool m_implicitsDone = false;            ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
+    mutable bool m_wellFormed = false;
+
 };
