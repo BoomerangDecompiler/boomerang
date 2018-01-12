@@ -107,6 +107,7 @@ public:
      *
      * \param bbType Type of the new Basic Block
      * \param bbRTLs RTL list with semantics of all instructions contained in this BB.
+     *               Must not be empty.
      *
      * \returns the newly created BB, or the exisitng BB if the new BB is the same as
      * another exising complete BB.
@@ -120,9 +121,20 @@ public:
      */
     BasicBlock *createIncompleteBB(Address startAddr);
 
-    /// Completely removes a single BB from this CFG.
-    /// Also removes all in edges and out edges from \p bb (if found)
-    void removeBB(BasicBlock *bb);
+    /**
+     * Ensures that \p addr is the start of a complete or incomplete BasicBlock.
+     *
+     * Explicit labels are addresses that have already been tagged as being labels
+     * due to transfers of control to that address (i.e. they are the start of a complete Basic Block)
+     * Non explicit labels are addresses that are in the middle of a complete Basic Block. In this case, the
+     * existing complete BB is split. If \p currBB is the BB that gets split, \p currBB is updated
+     * to point to the "high" part of the split BB.
+     *
+     * \param         addr   native (source) address to check
+     * \param         currBB See above
+     * \returns true if the BB starting at \p address is (now) complete, false otherwise.
+     */
+    bool ensureBBExists(Address addr, BasicBlock *&currBB);
 
     /**
      * Get a BasicBlock starting at the given address.
@@ -140,17 +152,26 @@ public:
         return (it != m_bbStartMap.end()) ? (*it).second : nullptr;
     }
 
+    /// Check if \p addr is the start of a basic block, complete or not
+    bool isStartOfBB(Address addr) const;
+
+    /// Check if the given address is the start of an incomplete basic block.
+    bool isStartOfIncompleteBB(Address addr) const;
+
+    void setBBStart(BasicBlock *bb, Address startAddr) { m_bbStartMap[startAddr] = bb; }
+
     /// \returns the entry BB of the procedure of this CFG
     BasicBlock *getEntryBB() { return m_entryBB; }
     const BasicBlock *getEntryBB() const { return m_entryBB; }
     BasicBlock *getExitBB() { return m_exitBB; }
     const BasicBlock *getExitBB() const { return m_exitBB; }
 
-    /// Check if \p addr is the start of a basic block, complete or not
-    bool isStartOfBB(Address addr) const;
+    /// Set the entry bb to \p entryBB and mark all return BBs as exit BBs.
+    void setEntryAndExitBB(BasicBlock *entryBB);
 
-    /// Check if the given address is the start of an incomplete basic block.
-    bool isStartOfIncompleteBB(Address addr) const;
+    /// Completely removes a single BB from this CFG.
+    /// Also removes all in edges and out edges from \p bb (if found)
+    void removeBB(BasicBlock *bb);
 
     /**
      * Add an edge from \p sourceBB to \p destBB.
@@ -173,22 +194,6 @@ public:
     void addEdge(BasicBlock *sourceBB, Address destAddr);
 
     /**
-     * Checks whether the given native address is a label (explicit or non explicit) or not;
-     * returns false for incomplete BBs.
-     *
-     * Explicit labels are addresses that have already been tagged as being labels
-     * due to transfers of control to that address (i.e. they are the start of a complete Basic Block)
-     * Non explicit labels are addresses that are in the middle of a complete Basic Block. In this case, the
-     * existing complete BB is split. If \p pNewBB is the BB that gets split, \p pNewBB is updated
-     * to point to the "high" part of the split BB.
-     *
-     * \param         addr   native (source) address to check
-     * \param         pNewBB See above
-     * \returns       True if \p addr is a label, i.e. (now) the start of a complete BB
-     */
-    bool label(Address addr, BasicBlock *& pNewBB);
-
-    /**
      * Checks that all BBs are complete, and all out edges are valid.
      * Also checks that the Cfg does not contain interprocedural edges.
      * By definition, the empty CFG is well-formed.
@@ -202,9 +207,6 @@ public:
     void undoComputedBB(Statement *stmt);
 
     BasicBlock *findRetNode();
-
-    /// Set the entry bb to \p entryBB and mark all return BBs as exit BBs.
-    void setEntryAndExitBB(BasicBlock *entryBB);
 
     // Implicit assignments
 
@@ -220,10 +222,8 @@ public:
     /// Find or create an implicit assign for x
     Statement *findImplicitAssign(SharedExp x);
 
-    bool implicitsDone() const { return m_implicitsDone; }    ///<  True if implicits have been created
-    void setImplicitsDone() { m_implicitsDone = true; } ///< Call when implicits have been created
-
-    void setBBStart(BasicBlock *bb, Address startAddr) { m_bbStartMap[startAddr] = bb; }
+    bool isImplicitsDone() const { return m_implicitsDone; }
+    void setImplicitsDone() { m_implicitsDone = true; }
 
 private:
     /**

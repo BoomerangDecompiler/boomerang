@@ -24,7 +24,7 @@ void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)
     }
 
     // Find out if we've already parsed the destination
-    const bool alreadyParsed = cfg->label(newAddr, newBB);
+    const bool alreadyParsed = cfg->ensureBBExists(newAddr, newBB);
 
     // Add this address to the back of the local queue,
     // if not already processed

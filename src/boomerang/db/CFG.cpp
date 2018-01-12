@@ -68,23 +68,10 @@ bool Cfg::hasBB(const BasicBlock* bb) const
 }
 
 
-void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
-{
-    m_entryBB = entryBB;
-
-    for (BasicBlock *bb : *this) {
-        if (bb->getType() == BBType::Ret) {
-            m_exitBB = bb;
-            return;
-        }
-    }
-
-    // It is possible that there is no exit BB
-}
-
-
 BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 {
+    assert(!bbRTLs->empty());
+
     // First find the native address of the first RTL
     // Can't use BasicBlock::GetLowAddr(), since we don't yet have a BB!
     Address startAddr = bbRTLs->front()->getAddress();
@@ -209,6 +196,134 @@ BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
 }
 
 
+bool Cfg::ensureBBExists(Address addr, BasicBlock *&currBB)
+{
+    BBStartMap::iterator mi, newi;
+
+    mi = m_bbStartMap.find(addr);     // check if the native address is in the map already (explicit label)
+
+    if (mi == m_bbStartMap.end()) {          // not in the map
+                                        // If not an explicit label, temporarily add the address to the map
+        m_bbStartMap[addr] = nullptr; // no PBB yet
+                                        // get an iterator to the new native address and check if the previous
+                                        // element in the (sorted) map overlaps this new native address; if so,
+                                        // it's a non-explicit label which needs to be made explicit by
+                                        // splitting the previous BB.
+        mi   = m_bbStartMap.find(addr);
+        newi = mi;
+        bool       bSplit   = false;
+        BasicBlock *pPrevBB = nullptr;
+
+        if (newi != m_bbStartMap.begin()) {
+            pPrevBB = (*--mi).second;
+
+            if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < addr) &&
+                (pPrevBB->getHiAddr() >= addr)) {
+                bSplit = true;
+            }
+        }
+
+        if (bSplit) {
+            // Non-explicit label. Split the previous BB
+            BasicBlock *pNewBB = splitBB(pPrevBB, addr);
+
+            if (currBB == pPrevBB) {
+                // This means that the BB that we are expecting to use, usually to add
+                // out edges, has changed. We must change this pointer so that the right
+                // BB gets the out edges. However, if the new BB is not the BB of
+                // interest, we mustn't change pCurBB
+                currBB = pNewBB;
+            }
+
+            return true;  // wasn't a label, but already parsed
+        }
+        else {            // not a non-explicit label
+                          // We don't have to erase this map entry. Having a null BasicBlock
+                          // pointer is coped with in newBB() and addOutEdge(); when eventually
+                          // the BB is created, it will replace this entry.  We should be
+                          // currently processing this BB. The map will be corrected when newBB is
+                          // called with this address.
+            return false; // was not already parsed
+        }
+    }
+    else {               // We already have uNativeAddr in the map
+        if ((*mi).second && !(*mi).second->isIncomplete()) {
+            return true; // There is a complete BB here. Return true.
+        }
+
+        // We are finalising an incomplete BB. Still need to check previous map
+        // entry to see if there is a complete BB overlapping
+        bool       bSplit = false;
+        BasicBlock *pPrevBB = nullptr, *pBB = (*mi).second;
+
+        if (mi != m_bbStartMap.begin()) {
+            pPrevBB = (*--mi).second;
+
+            if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < addr) &&
+                (pPrevBB->getHiAddr() >= addr)) {
+                bSplit = true;
+            }
+        }
+
+        if (bSplit) {
+            // Pass the third parameter to splitBB, because we already have an
+            // (incomplete) BB for the "bottom" BB of the split
+            splitBB(pPrevBB, addr, pBB); // non-explicit label
+            return true;                        // wasn't a label, but already parsed
+        }
+
+        // A non overlapping, incomplete entry is in the map.
+        return false;
+    }
+}
+
+
+bool Cfg::isStartOfBB(Address addr) const
+{
+    return getBBStartingAt(addr) != nullptr;
+}
+
+
+bool Cfg::isStartOfIncompleteBB(Address uAddr) const
+{
+    const BasicBlock *bb = getBBStartingAt(uAddr);
+
+    return bb && bb->isIncomplete();
+}
+
+
+void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
+{
+    m_entryBB = entryBB;
+
+    for (BasicBlock *bb : *this) {
+        if (bb->getType() == BBType::Ret) {
+            m_exitBB = bb;
+            return;
+        }
+    }
+
+    // It is possible that there is no exit BB
+}
+
+
+void Cfg::removeBB(BasicBlock *bb)
+{
+    if (bb == nullptr) {
+        return;
+    }
+
+    BBStartMap::iterator bbIt = m_bbStartMap.find(bb->getLowAddr());
+    if (bbIt != m_bbStartMap.end()) {
+        m_bbStartMap.erase(bbIt);
+    }
+
+    // Actually, removed BBs should be deleted; however,
+    // doing so deletes the statements of the BB that seem to be still in use.
+    // So don't do it for now.
+}
+
+
 void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB)
 {
     if (!sourceBB || !destBB) {
@@ -240,9 +355,159 @@ void Cfg::addEdge(BasicBlock *sourceBB, Address addr)
 }
 
 
-bool Cfg::isStartOfBB(Address addr) const
+bool Cfg::isWellFormed() const
 {
-    return getBBStartingAt(addr) != nullptr;
+    for (const BasicBlock *bb : *this) {
+        if (bb->isIncomplete()) {
+            m_wellFormed = false;
+            LOG_VERBOSE("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
+            return false;
+        }
+        else if (bb->getFunction() != m_myProc) {
+            m_wellFormed = false;
+            LOG_VERBOSE("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
+                        bb->getLowAddr(), m_myProc->getName());
+            return false;
+        }
+
+        for (const BasicBlock *pred : bb->getPredecessors()) {
+            if (!pred->isPredecessorOf(bb)) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                            pred->getLowAddr(), bb->getLowAddr());
+                return false;
+            }
+            else if (pred->getFunction() != bb->getFunction()) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                            pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
+                            bb->getFunction()->getName());
+                return false;
+            }
+        }
+
+        for (const BasicBlock *succ : bb->getSuccessors()) {
+            if (!succ->isSuccessorOf(bb)) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                            bb->getLowAddr(), succ->getLowAddr());
+                return false;
+            }
+            else if (succ->getFunction() != bb->getFunction()) {
+                m_wellFormed = false;
+                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                            bb->getFunction()->getName(),
+                            succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
+                return false;
+            }
+        }
+    }
+
+    m_wellFormed = true;
+    return true;
+}
+
+
+void Cfg::simplify()
+{
+    LOG_VERBOSE("Simplifying CFG ...");
+
+    for (BasicBlock *bb : *this) {
+        bb->simplify();
+    }
+}
+
+
+void Cfg::undoComputedBB(Statement *stmt)
+{
+    for (BasicBlock *bb : *this) {
+        if (bb->hasStatement(stmt)) {
+            LOG_MSG("undoComputedBB for statement %1", stmt);
+            bb->setType(BBType::Call);
+            break;
+        }
+    }
+}
+
+
+BasicBlock *Cfg::findRetNode()
+{
+    BasicBlock *retNode = nullptr;
+
+    for (BasicBlock *bb : *this) {
+        if (bb->getType() == BBType::Ret) {
+            return bb;
+        }
+        else if (bb->getType() == BBType::Call) {
+            const Function *callee = bb->getCallDestProc();
+            if (callee && !callee->isLib() && callee->isNoReturn()) {
+                retNode = bb; // use noreturn calls if the proc does not return
+            }
+        }
+    }
+
+    return retNode;
+}
+
+
+Statement *Cfg::findImplicitAssign(SharedExp x)
+{
+    std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(x);
+
+    if (it != m_implicitMap.end()) {
+        // implicit already present, use it
+        assert(it->second);
+        return it->second;
+    }
+
+    // A use with no explicit definition. Create a new implicit assignment
+    x   = x->clone(); // In case the original gets changed
+    Statement *def = new ImplicitAssign(x);
+    m_entryBB->prependStmt(def, m_myProc);
+
+    // Remember it for later so we don't insert more than one implicit assignment for any one location
+    // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
+    // the definition as at all uses
+    m_implicitMap[x] = def;
+
+    return def;
+}
+
+
+Statement *Cfg::findTheImplicitAssign(const SharedExp& x)
+{
+    // As per the above, but don't create an implicit if it doesn't already exist
+    auto it = m_implicitMap.find(x);
+    return (it != m_implicitMap.end()) ? it->second : nullptr;
+}
+
+
+Statement *Cfg::findImplicitParamAssign(Parameter *param)
+{
+    // As per the above, but for parameters (signatures don't get updated with opParams)
+    SharedExp n = param->getExp();
+
+    ExpStatementMap::iterator it = std::find_if(m_implicitMap.begin(), m_implicitMap.end(),
+        [n] (const std::pair<const SharedExp&, Statement *>& val) {
+            return *(val.first) *= *n;
+        });
+
+    if (it == m_implicitMap.end()) {
+        it = m_implicitMap.find(Location::param(param->getName()));
+    }
+
+    return (it != m_implicitMap.end()) ? it->second : nullptr;
+}
+
+
+void Cfg::removeImplicitAssign(SharedExp x)
+{
+    auto it = m_implicitMap.find(x);
+
+    assert(it != m_implicitMap.end());
+    Statement *ia = it->second;
+    m_implicitMap.erase(it);          // Delete the mapping
+    m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
 }
 
 
@@ -337,152 +602,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 }
 
 
-
-
-bool Cfg::label(Address uNativeAddr, BasicBlock *& pCurBB)
-{
-    BBStartMap::iterator mi, newi;
-
-    mi = m_bbStartMap.find(uNativeAddr);     // check if the native address is in the map already (explicit label)
-
-    if (mi == m_bbStartMap.end()) {          // not in the map
-                                        // If not an explicit label, temporarily add the address to the map
-        m_bbStartMap[uNativeAddr] = nullptr; // no PBB yet
-                                        // get an iterator to the new native address and check if the previous
-                                        // element in the (sorted) map overlaps this new native address; if so,
-                                        // it's a non-explicit label which needs to be made explicit by
-                                        // splitting the previous BB.
-        mi   = m_bbStartMap.find(uNativeAddr);
-        newi = mi;
-        bool       bSplit   = false;
-        BasicBlock *pPrevBB = nullptr;
-
-        if (newi != m_bbStartMap.begin()) {
-            pPrevBB = (*--mi).second;
-
-            if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < uNativeAddr) &&
-                (pPrevBB->getHiAddr() >= uNativeAddr)) {
-                bSplit = true;
-            }
-        }
-
-        if (bSplit) {
-            // Non-explicit label. Split the previous BB
-            BasicBlock *pNewBB = splitBB(pPrevBB, uNativeAddr);
-
-            if (pCurBB == pPrevBB) {
-                // This means that the BB that we are expecting to use, usually to add
-                // out edges, has changed. We must change this pointer so that the right
-                // BB gets the out edges. However, if the new BB is not the BB of
-                // interest, we mustn't change pCurBB
-                pCurBB = pNewBB;
-            }
-
-            return true;  // wasn't a label, but already parsed
-        }
-        else {            // not a non-explicit label
-                          // We don't have to erase this map entry. Having a null BasicBlock
-                          // pointer is coped with in newBB() and addOutEdge(); when eventually
-                          // the BB is created, it will replace this entry.  We should be
-                          // currently processing this BB. The map will be corrected when newBB is
-                          // called with this address.
-            return false; // was not already parsed
-        }
-    }
-    else {               // We already have uNativeAddr in the map
-        if ((*mi).second && !(*mi).second->isIncomplete()) {
-            return true; // There is a complete BB here. Return true.
-        }
-
-        // We are finalising an incomplete BB. Still need to check previous map
-        // entry to see if there is a complete BB overlapping
-        bool       bSplit = false;
-        BasicBlock *pPrevBB = nullptr, *pBB = (*mi).second;
-
-        if (mi != m_bbStartMap.begin()) {
-            pPrevBB = (*--mi).second;
-
-            if (!pPrevBB->isIncomplete() && (pPrevBB->getLowAddr() < uNativeAddr) &&
-                (pPrevBB->getHiAddr() >= uNativeAddr)) {
-                bSplit = true;
-            }
-        }
-
-        if (bSplit) {
-            // Pass the third parameter to splitBB, because we already have an
-            // (incomplete) BB for the "bottom" BB of the split
-            splitBB(pPrevBB, uNativeAddr, pBB); // non-explicit label
-            return true;                        // wasn't a label, but already parsed
-        }
-
-        // A non overlapping, incomplete entry is in the map.
-        return false;
-    }
-}
-
-
-bool Cfg::isStartOfIncompleteBB(Address uAddr) const
-{
-    const BasicBlock *bb = getBBStartingAt(uAddr);
-
-    return bb && bb->isIncomplete();
-}
-
-
-bool Cfg::isWellFormed() const
-{
-    for (const BasicBlock *bb : *this) {
-        if (bb->isIncomplete()) {
-            m_wellFormed = false;
-            LOG_VERBOSE("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
-            return false;
-        }
-        else if (bb->getFunction() != m_myProc) {
-            m_wellFormed = false;
-            LOG_VERBOSE("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
-                        bb->getLowAddr(), m_myProc->getName());
-            return false;
-        }
-
-        for (const BasicBlock *pred : bb->getPredecessors()) {
-            if (!pred->isPredecessorOf(bb)) {
-                m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                            pred->getLowAddr(), bb->getLowAddr());
-                return false;
-            }
-            else if (pred->getFunction() != bb->getFunction()) {
-                m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                            pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
-                            bb->getFunction()->getName());
-                return false;
-            }
-        }
-
-        for (const BasicBlock *succ : bb->getSuccessors()) {
-            if (!succ->isSuccessorOf(bb)) {
-                m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                            bb->getLowAddr(), succ->getLowAddr());
-                return false;
-            }
-            else if (succ->getFunction() != bb->getFunction()) {
-                m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                            bb->getFunction()->getName(),
-                            succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
-                return false;
-            }
-        }
-    }
-
-    m_wellFormed = true;
-    return true;
-}
-
-
-bool Cfg::mergeBBs(BasicBlock *pb1, BasicBlock *pb2)
+bool Cfg::mergeBBs(BasicBlock *bb1, BasicBlock *bb2)
 {
     // Can only merge if pb1 has only one outedge to pb2, and pb2 has only one in-edge, from pb1. This can only be done
     // after the in-edges are done, which can only be done on a well formed CFG.
@@ -490,17 +610,17 @@ bool Cfg::mergeBBs(BasicBlock *pb1, BasicBlock *pb2)
         return false;
     }
 
-    if (pb1->getNumSuccessors() != 1 || pb2->getNumSuccessors() != 1) {
+    if (bb1->getNumSuccessors() != 1 || bb2->getNumSuccessors() != 1) {
         return false;
     }
 
-    if (pb1->getSuccessor(0) != pb2 || pb2->getPredecessor(0) != pb1) {
+    if (bb1->getSuccessor(0) != bb2 || bb2->getPredecessor(0) != bb1) {
         return false;
     }
 
     // Merge them! We remove pb1 rather than pb2, since this is also what is needed for many optimisations, e.g. jump to
     // jump.
-    completeMerge(pb1, pb2, true);
+    completeMerge(bb1, bb2, true);
     return true;
 }
 
@@ -526,53 +646,6 @@ void Cfg::completeMerge(BasicBlock *bb1, BasicBlock *bb2, bool bDelete)
     if (bDelete) {
         // Finally, we delete bb1 from the CFG.
         removeBB(bb1);
-    }
-}
-
-
-void Cfg::removeBB(BasicBlock *bb)
-{
-    if (bb == nullptr) {
-        return;
-    }
-
-    BBStartMap::iterator bbIt = m_bbStartMap.find(bb->getLowAddr());
-    if (bbIt != m_bbStartMap.end()) {
-        m_bbStartMap.erase(bbIt);
-    }
-
-    // Actually, removed BBs should be deleted; however,
-    // doing so deletes the statements of the BB that seem to be still in use.
-    // So don't do it for now.
-}
-
-
-BasicBlock *Cfg::findRetNode()
-{
-    BasicBlock *retNode = nullptr;
-
-    for (BasicBlock *bb : *this) {
-        if (bb->getType() == BBType::Ret) {
-            return bb;
-        }
-        else if (bb->getType() == BBType::Call) {
-            const Function *callee = bb->getCallDestProc();
-            if (callee && !callee->isLib() && callee->isNoReturn()) {
-                retNode = bb; // use noreturn calls if the proc does not return
-            }
-        }
-    }
-
-    return retNode;
-}
-
-
-void Cfg::simplify()
-{
-    LOG_VERBOSE("Simplifying CFG ...");
-
-    for (BasicBlock *bb : *this) {
-        bb->simplify();
     }
 }
 
@@ -607,77 +680,4 @@ void Cfg::dumpImplicitMap()
         q_cerr << it.first << " -> " << it.second << "\n";
     }
     q_cerr.flush();
-}
-
-
-void Cfg::undoComputedBB(Statement *stmt)
-{
-    for (BasicBlock *bb : *this) {
-        if (bb->hasStatement(stmt)) {
-            LOG_MSG("undoComputedBB for statement %1", stmt);
-            bb->setType(BBType::Call);
-            break;
-        }
-    }
-}
-
-
-Statement *Cfg::findImplicitAssign(SharedExp x)
-{
-    std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(x);
-
-    if (it != m_implicitMap.end()) {
-        // implicit already present, use it
-        assert(it->second);
-        return it->second;
-    }
-
-    // A use with no explicit definition. Create a new implicit assignment
-    x   = x->clone(); // In case the original gets changed
-    Statement *def = new ImplicitAssign(x);
-    m_entryBB->prependStmt(def, m_myProc);
-
-    // Remember it for later so we don't insert more than one implicit assignment for any one location
-    // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
-    // the definition as at all uses
-    m_implicitMap[x] = def;
-
-    return def;
-}
-
-
-Statement *Cfg::findTheImplicitAssign(const SharedExp& x)
-{
-    // As per the above, but don't create an implicit if it doesn't already exist
-    auto it = m_implicitMap.find(x);
-    return (it != m_implicitMap.end()) ? it->second : nullptr;
-}
-
-
-Statement *Cfg::findImplicitParamAssign(Parameter *param)
-{
-    // As per the above, but for parameters (signatures don't get updated with opParams)
-    SharedExp n = param->getExp();
-
-    ExpStatementMap::iterator it = std::find_if(m_implicitMap.begin(), m_implicitMap.end(),
-        [n] (const std::pair<const SharedExp&, Statement *>& val) {
-            return *(val.first) *= *n;
-        });
-
-    if (it == m_implicitMap.end()) {
-        it = m_implicitMap.find(Location::param(param->getName()));
-    }
-
-    return (it != m_implicitMap.end()) ? it->second : nullptr;
-}
-
-
-void Cfg::removeImplicitAssign(SharedExp x)
-{
-    auto it = m_implicitMap.find(x);
-
-    assert(it != m_implicitMap.end());
-    Statement *ia = it->second;
-    m_implicitMap.erase(it);          // Delete the mapping
-    m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
 }
