@@ -158,7 +158,7 @@ void ControlFlowAnalyzer::structConds()
     // Process the nodes in order
     for (const BasicBlock *currNode : m_ordering) {
         // does the current node have more than one out edge?
-        if (currNode->getNumSuccessors()) {
+        if (currNode->getNumSuccessors() > 1) {
             // if the current conditional header is a two way node and has a back edge, then it won't have a follow
             if (hasBackEdge(currNode) && (currNode->getType() == BBType::Twoway)) {
                 setStructType(currNode, StructType::Cond);
