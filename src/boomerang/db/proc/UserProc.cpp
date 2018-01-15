@@ -783,8 +783,8 @@ void UserProc::removeStatement(Statement *stmt)
 
 void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 {
-    std::list<Statement *>::iterator it;
-    std::list<Statement *>           *stmts;
+    RTL::iterator it;
+    RTL *stmts;
 
     if (s == nullptr) {
         // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB

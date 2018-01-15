@@ -729,7 +729,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
             // Statements to mark the start of instructions (and their native address).
             // FIXME: However, this workaround breaks logic below where a GOTO is changed to a CALL followed by a return
             // if it points to the start of a known procedure
-            std::list<Statement *> sl = *pRtl;
+            std::list<Statement *> sl(pRtl->getStatements());
 
             for (auto ss = sl.begin(); ss != sl.end(); ss++) {
                 Statement *s = *ss;
@@ -1161,18 +1161,16 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
         sequentialDecode = true;
     } // while nextAddress() != Address::INVALID
 
-    // Add the callees to the set of CallStatements, and also to the Prog object
-    std::list<CallStatement *>::iterator it;
 
-    for (it = callList.begin(); it != callList.end(); it++) {
-        Address dest = (*it)->getFixedDest();
+    for (CallStatement *callStmt : callList) {
+        Address dest = callStmt->getFixedDest();
         auto    symb = m_binarySymbols->find(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
         if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
             // Don't visit the destination of a register call
-            Function *np = (*it)->getDestProc();
+            Function *np = callStmt->getDestProc();
 
             if ((np == nullptr) && (dest != Address::INVALID)) {
                 // np = newProc(pProc->getProg(), dest);

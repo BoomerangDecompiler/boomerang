@@ -461,7 +461,7 @@ Statement *BasicBlock::getLastStmt()
 
 void BasicBlock::appendStatementsTo(StatementList& stmts) const
 {
-    const std::list<RTL *> *rtls = getRTLs();
+    const RTLList *rtls = getRTLs();
 
     if (!rtls) {
         return;
@@ -660,8 +660,7 @@ void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
     }
 
     // Otherwise, prepend a new RTL
-    std::list<Statement *> listStmt = { stmt };
-    RTL *rtl = new RTL(Address::ZERO, &listStmt);
+    RTL *rtl = new RTL(Address::ZERO, { stmt });
     m_listOfRTLs->push_front(rtl);
 
     updateBBAddresses();

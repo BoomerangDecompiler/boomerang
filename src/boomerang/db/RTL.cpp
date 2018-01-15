@@ -30,31 +30,28 @@ RTL::RTL(Address instrAddr, const std::list<Statement *> *listStmt /*= nullptr*/
     : m_nativeAddr(instrAddr)
 {
     if (listStmt) {
-        *(std::list<Statement *> *) this = *listStmt;
+        m_stmts = *listStmt;
     }
 }
 
 
-RTL::RTL(Address instrAddr, const std::initializer_list<Statement *> statements)
-    : std::list<Statement *>(statements)
+RTL::RTL(Address instrAddr, const std::initializer_list<Statement *>& statements)
+    : m_stmts(statements)
     , m_nativeAddr(instrAddr)
 {
 }
 
 
 RTL::RTL(const RTL& other)
-    : std::list<Statement *>()
-    , m_nativeAddr(other.m_nativeAddr)
+    : m_nativeAddr(other.m_nativeAddr)
 {
-    for (auto const& elem : other) {
-        push_back(elem->clone());
-    }
+    append(other.m_stmts);
 }
 
 
 RTL::~RTL()
 {
-    qDeleteAll(*this);
+    qDeleteAll(m_stmts);
 }
 
 
@@ -64,21 +61,22 @@ RTL& RTL::operator=(const RTL& other)
         return *this;
     }
 
+    m_nativeAddr = other.m_nativeAddr;
+
     // Do a deep copy always
     qDeleteAll(*this);
     clear();
 
-    other.deepCopyList(*this);
-    m_nativeAddr = other.m_nativeAddr;
+    other.deepCopyList(m_stmts);
     return *this;
 }
 
 
 RTL *RTL::clone() const
 {
-    std::list<Statement *> le;
-    deepCopyList(le);
-    return new RTL(m_nativeAddr, &le);
+    std::list<Statement *> stmtList;
+    deepCopyList(stmtList);
+    return new RTL(m_nativeAddr, &stmtList);
 }
 
 
@@ -94,22 +92,20 @@ void RTL::append(Statement *s)
 {
     assert(s != nullptr);
 
-    if (!empty()) {
-        if (back()->isFlagAssign()) {
-            iterator it = end();
-            insert(--it, s);
-            return;
-        }
+    if (!empty() && back()->isFlagAssign()) {
+        iterator it = end();
+        insert(--it, s);
+        return;
     }
 
     push_back(s);
 }
 
 
-void RTL::append(const std::list<Statement *>& le)
+void RTL::append(const std::list<Statement *>& stmts)
 {
-    for (Statement *it : le) {
-        push_back(it->clone());
+    for (Statement *stmt : stmts) {
+        push_back(stmt->clone());
     }
 }
 

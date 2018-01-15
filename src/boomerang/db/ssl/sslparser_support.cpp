@@ -442,7 +442,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
     for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
         nam = iname->getInstruction();
         // Need to make substitutions to a copy of the RTL
-        RTL rtl = *o_rtlist; // deep copy of contents
+        RTL rtl(*o_rtlist); // deep copy of contents
 
         for (Statement *s : rtl) {
             std::list<SharedExp> le;
