@@ -770,10 +770,10 @@ void UserProc::removeStatement(Statement *stmt)
     BasicBlock       *bb   = stmt->getBB(); // Get our enclosing BB
     std::list<RTL *> *rtls = bb->getRTLs();
 
-    for (RTL *rit : *rtls) {
-        for (RTL::iterator it = rit->begin(); it != rit->end(); it++) {
+    for (RTL *rtl : *rtls) {
+        for (RTL::iterator it = rtl->begin(); it != rtl->end(); it++) {
             if (*it == stmt) {
-                rit->erase(it);
+                rtl->erase(it);
                 return;
             }
         }
@@ -785,45 +785,47 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 {
     RTL::iterator it;
     RTL *stmts;
+    BasicBlock *bb = nullptr;
 
     if (s == nullptr) {
         // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
-        BasicBlock       *entryBB = m_cfg->getEntryBB();
-        std::list<RTL *> *rtls    = entryBB->getRTLs();
-        assert(rtls->size()); // Entry BB should have at least 1 RTL
+        bb = m_cfg->getEntryBB();
+        RTLList *rtls    = bb->getRTLs();
+        assert(!rtls->empty()); // Entry BB should have at least 1 RTL
         stmts = rtls->front();
         it    = stmts->begin();
     }
     else {
         // An ordinary definition; put the assignment at the end of s's BB
-        BasicBlock       *bb   = s->getBB(); // Get the enclosing BB for s
-        std::list<RTL *> *rtls = bb->getRTLs();
-        assert(rtls->size());                // If s is defined here, there should be
-        // at least 1 RTL
+        bb = s->getBB(); // Get the enclosing BB for s
+        RTLList *rtls = bb->getRTLs();
+        assert(!rtls->empty()); // If s is defined here, there should be at least 1 RTL
         stmts = rtls->back();
         it    = stmts->end(); // Insert before the end
     }
 
     Assign *as = new Assign(left, right);
-    as->setProc(this);
     stmts->insert(it, as);
+    as->setProc(this);
+    as->setBB(bb);
 }
 
 
 void UserProc::insertStatementAfter(Statement *s, Statement *a)
 {
     for (BasicBlock *bb : *m_cfg) {
-        std::list<RTL *> *rtls = bb->getRTLs();
+        RTLList *rtls = bb->getRTLs();
 
         if (rtls == nullptr) {
             continue; // e.g. bb is (as yet) invalid
         }
 
-        for (RTL *rr : *rtls) {
-            for (std::list<Statement *>::iterator ss = rr->begin(); ss != rr->end(); ss++) {
+        for (RTL *rtl : *rtls) {
+            for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ss++) {
                 if (*ss == s) {
                     ss++; // This is the point to insert before
-                    rr->insert(ss, a);
+                    rtl->insert(ss, a);
+                    a->setBB(bb);
                     return;
                 }
             }
