@@ -2655,6 +2655,7 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             // set the necessary flags so that generateCode can successfully be called again on this node
             m_analyzer.setStructType(bb, StructType::Cond);
             m_analyzer.setTravType(bb, TravType::Untraversed);
+            m_generatedBBs.erase(bb);
             generateCode(bb, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
         }
         else {
