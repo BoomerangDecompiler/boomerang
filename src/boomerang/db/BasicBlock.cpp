@@ -278,7 +278,7 @@ BasicBlock *BasicBlock::getPredecessor(int i)
 }
 
 
-const BasicBlock * BasicBlock::getPredecessor(int i) const
+const BasicBlock *BasicBlock::getPredecessor(int i) const
 {
     return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
 }

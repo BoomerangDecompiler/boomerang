@@ -2410,6 +2410,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
             // write code for the body of the conditional
             if (m_analyzer.getCondType(bb) != CondType::Case) {
                 const BasicBlock *succ = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
+                assert(succ != nullptr);
 
                 // emit a goto statement if the first clause has already been
                 // generated or it is the follow of this node's enclosing loop
