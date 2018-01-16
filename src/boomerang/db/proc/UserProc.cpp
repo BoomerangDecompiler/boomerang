@@ -205,9 +205,9 @@ bool UserProc::isNoReturn() const
     }
 
     if (exitbb->getNumPredecessors() == 1) {
-        Statement *s = exitbb->getPredecessors()[0]->getLastStmt();
+        Statement *s = exitbb->getPredecessor(0)->getLastStmt();
 
-        if (!s->isCall()) {
+        if (!s || !s->isCall()) {
             return false;
         }
 
