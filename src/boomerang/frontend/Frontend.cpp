@@ -817,9 +817,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             }
 
                             call->setDestProc(lp);
-                            std::list<Statement *> *stmt_list = new std::list<Statement *>;
-                            stmt_list->push_back(call);
-                            BB_rtls->push_back(new RTL(pRtl->getAddress(), stmt_list));
+                            BB_rtls->push_back(new RTL(pRtl->getAddress(), { call }));
                             pBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                             BB_rtls          = nullptr;
                             appendSyntheticReturn(pBB, pProc, pRtl);
@@ -1053,13 +1051,9 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 BB_rtls = nullptr;
 
                                 if (call->isReturnAfterCall()) {
-                                    // The only RTL in the basic block is one with a ReturnStatement
-                                    std::list<Statement *> *instrList = new std::list<Statement *>;
-                                    instrList->push_back(new ReturnStatement());
-
                                     // Constuct the RTLs for the new basic block
                                     std::unique_ptr<RTLList> rtls(new RTLList);
-                                    rtls->push_back(new RTL(pRtl->getAddress() + 1, instrList));
+                                    rtls->push_back(new RTL(pRtl->getAddress() + 1, { new ReturnStatement() }));
                                     BasicBlock *returnBB = cfg->createBB(BBType::Ret, std::move(rtls));
                                     rtls = nullptr;
 
@@ -1251,12 +1245,8 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *pProc, std::unique_ptr<RTLLis
 
 void IFrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl)
 {
-    ReturnStatement *ret = new ReturnStatement();
-
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::list<Statement *> *stmt_list = new std::list<Statement *>;
-    stmt_list->push_back(ret);
-    BasicBlock *pret = createReturnBlock(pProc, std::move(ret_rtls), new RTL(pRtl->getAddress() + 1, stmt_list));
+    BasicBlock *pret = createReturnBlock(pProc, std::move(ret_rtls), new RTL(pRtl->getAddress() + 1, { new ReturnStatement() }));
 
     pret->addPredecessor(pCallBB);
     assert(pCallBB->getNumSuccessors() == 0);

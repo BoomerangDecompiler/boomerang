@@ -123,6 +123,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
     if (!bDone) {
         currentBB = new BasicBlock(bbType, std::move(bbRTLs), m_myProc);
+
         if (startAddr.isZero() || startAddr == Address::INVALID) {
             LOG_FATAL("Cannot add BB with invalid lowAddr %1", startAddr);
         }

@@ -228,7 +228,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
         Statement *st;
 
         // Loop through each RTL this BB
-        std::list<RTL *> *BB_rtls = pBB->getRTLs();
+        RTLList *BB_rtls = pBB->getRTLs();
 
         if (BB_rtls == nullptr) {
             // For example, incomplete BB
@@ -241,35 +241,55 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
                 st = *iter;
 
                 if (st->isFpush()) {
-                    rtl->insert(iter, new Assign(FloatType::get(80),
+                    Assign *asgn = new Assign(FloatType::get(80),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
-                                                 Location::regOf(39)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(39), Location::regOf(38)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(38), Location::regOf(37)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(37), Location::regOf(36)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(36), Location::regOf(35)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(35), Location::regOf(34)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(34), Location::regOf(33)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(33), Location::regOf(32)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(32),
-                                                 Location::tempOf(Const::get(const_cast<char *>("tmpD9")))));
+                                                 Location::regOf(39));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(39), Location::regOf(38));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(38), Location::regOf(37));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(37), Location::regOf(36));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(36), Location::regOf(35));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(35), Location::regOf(34));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(34), Location::regOf(33));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(33), Location::regOf(32));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(32),
+                                                 Location::tempOf(Const::get(const_cast<char *>("tmpD9"))));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+
                     // Remove the FPUSH
                     iter = rtl->erase(iter);
                     continue;
                 }
                 else if (st->isFpop()) {
-                    rtl->insert(iter, new Assign(FloatType::get(80),
+                    Assign *asgn = new Assign(FloatType::get(80),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
-                                                 Location::regOf(32)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(32), Location::regOf(33)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(33), Location::regOf(34)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(34), Location::regOf(35)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(35), Location::regOf(36)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(36), Location::regOf(37)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(37), Location::regOf(38)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(38), Location::regOf(39)));
-                    rtl->insert(iter, new Assign(FloatType::get(80), Location::regOf(39),
-                                                 Location::tempOf(Const::get(const_cast<char *>("tmpD9")))));
+                                                 Location::regOf(32));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(32), Location::regOf(33));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(33), Location::regOf(34));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(34), Location::regOf(35));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(35), Location::regOf(36));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(36), Location::regOf(37));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(37), Location::regOf(38));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(38), Location::regOf(39));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn = new Assign(FloatType::get(80), Location::regOf(39),
+                                                 Location::tempOf(Const::get(const_cast<char *>("tmpD9"))));
+                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+
                     // Remove the FPOP
                     iter = rtl->erase(iter);
                     continue;

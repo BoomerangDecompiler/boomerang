@@ -132,7 +132,7 @@ public:
     void pop_back()  { m_stmts.pop_back(); }
 
     void push_front(const value_type& val) { m_stmts.push_front(val); }
-    void push_back(const value_type& val) { m_stmts.push_back(val); }
+    void push_back(const value_type& val)  { m_stmts.push_back(val);  }
 
     void insert(iterator where, const value_type& val) { m_stmts.insert(where, val); }
     void clear() { m_stmts.clear(); }

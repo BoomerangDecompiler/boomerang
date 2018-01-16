@@ -114,7 +114,7 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *skip
     // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
     // creating the rptBB). Or if there is no A, temporarily use 0
     Address    a        = (haveA) ? skipAddr : Address::ZERO;
-    RTL        *skipRtl = new RTL(a, new std::list<Statement *> { br1 }); // list initializer in braces
+    RTL        *skipRtl = new RTL(a, { br1 });
     std::unique_ptr<RTLList> bbRTL(new RTLList({ skipRtl }));
     BasicBlock *skipBB  = m_proc->getCFG()->createBB(BBType::Twoway, std::move(bbRTL));
     skipRTL->setAddress(skipAddr + 1);
