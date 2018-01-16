@@ -1813,8 +1813,8 @@ bool UserProc::branchAnalysis()
                     BasicBlock *bb = fallto->getBB();
                     assert(bb->getNumPredecessors() == 0);
                     assert(bb->getNumSuccessors() == 2);
-                    BasicBlock *succ1 = bb->getPredecessor(0);
-                    BasicBlock *succ2 = bb->getPredecessor(1);
+                    BasicBlock *succ1 = bb->getSuccessor(0);
+                    BasicBlock *succ2 = bb->getSuccessor(1);
 
                     bb->removeSuccessor(succ1);
                     bb->removeSuccessor(succ2);
