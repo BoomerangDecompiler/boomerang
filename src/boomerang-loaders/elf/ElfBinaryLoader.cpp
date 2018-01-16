@@ -879,16 +879,16 @@ void ElfBinaryLoader::applyRelocations()
                 for (unsigned u = 0; u < numEntries; u++) {
                     const Elf32_Addr r_offset    = elfRead4(&relEntries[u].r_offset);
                     const Elf32_Byte relType     = ELF32_R_TYPE(elfRead4(&relEntries[u].r_info));
-                    const Elf32_Word symTabIndex = ELF32_R_SYM(elfRead4(&relEntries[i].r_info));
+                    const Elf32_Word symTabIndex = ELF32_R_SYM(elfRead4(&relEntries[u].r_info));
 
                     DWord *relocDestination; // Pointer to the word to be relocated
 
                     if (e_type == ET_REL) {
-                        relocDestination = ((DWord *)(destHostOrigin + r_offset).value());
+                        relocDestination = (DWord *)((destHostOrigin + r_offset).value());
                     }
                     else {
                         const IBinarySection *destSec = m_binaryImage->getSectionByAddr(Address(r_offset));
-                        relocDestination = (DWord *)(destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value();
+                        relocDestination = (DWord *)((destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value());
                         destNatOrigin    = Address::ZERO;
                     }
 
