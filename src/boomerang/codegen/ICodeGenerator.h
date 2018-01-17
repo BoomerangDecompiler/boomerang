@@ -90,5 +90,5 @@ public:
     virtual void addReturnStatement(StatementList *rets) = 0;
 
     /// Removes unused labels from the code.
-    virtual void removeUnusedLabels(int maxOrd) = 0;
+    virtual void removeUnusedLabels() = 0;
 };
