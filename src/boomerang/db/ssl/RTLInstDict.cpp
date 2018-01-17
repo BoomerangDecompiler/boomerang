@@ -43,9 +43,10 @@ int TableEntry::appendRTL(const std::list<QString>& params, const RTL& rtl)
         return -1;
     }
 
-    m_rtl.append(rtl);
+    m_rtl.append(rtl.getStatements());
     return 0;
 }
+
 
 int RTLInstDict::insert(const QString& name, std::list<QString>& params, const RTL& rtl)
 {

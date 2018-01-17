@@ -26,20 +26,31 @@ class QTextStream;
  * \note when time permits, this class could be removed,
  * replaced with new Statements that mark the current native address
  */
-class RTL : public std::list<Statement *>
+class RTL
 {
-    friend class BasicBlock;
+    typedef std::list<Statement *> StmtList;
+
+public:
+    typedef StmtList::size_type size_type;
+    typedef StmtList::value_type value_type;
+    typedef StmtList::reference reference;
+    typedef StmtList::const_reference const_reference;
+
+    typedef StmtList::iterator iterator;
+    typedef StmtList::const_iterator const_iterator;
+    typedef StmtList::reverse_iterator reverse_iterator;
+    typedef StmtList::const_reverse_iterator const_reverse_iterator;
 
 public:
     /// \param   instrAddr the address of the instruction
     /// \param   listStmt  ptr to existing list of Statement
-    RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
+    explicit RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
 
     /// Take ownership of the statements in the initializer list.
-    RTL(Address instrAddr, const std::initializer_list<Statement *> statements);
+    explicit RTL(Address instrAddr, const std::initializer_list<Statement *>& statements);
 
-    RTL(const RTL& other); ///< Deep copies the content
-    RTL(RTL&& other) = default;
+    explicit RTL(const RTL& other); ///< Deep copies the content
+    explicit RTL(RTL&& other) = default;
 
     ~RTL();
 
@@ -90,12 +101,46 @@ public:
     /// Use this slow function when you can't be sure that the HL Statement is last
     Statement *getHlStmt() const;
 
-protected:
     /// Simplify all elements in this list and subsequently remove
     /// unnecessary statements (like branches with constant conditions)
     void simplify();
 
+    const StmtList& getStatements() const { return m_stmts; }
+
+    // delegates to std::list
+public:
+    bool empty() const { return m_stmts.empty(); }
+
+    size_type size() const { return m_stmts.size(); }
+
+    reference front() { return m_stmts.front(); }
+    reference back()  { return m_stmts.back();  }
+    const_reference front() const { return m_stmts.front(); }
+    const_reference back()  const { return m_stmts.back();  }
+
+    iterator begin() { return m_stmts.begin(); }
+    iterator end()   { return m_stmts.end();   }
+    const_iterator begin() const { return m_stmts.begin(); }
+    const_iterator end()   const { return m_stmts.end();   }
+
+    reverse_iterator rbegin() { return m_stmts.rbegin(); }
+    reverse_iterator rend()   { return m_stmts.rend();   }
+    const_reverse_iterator rbegin() const { return m_stmts.rbegin(); }
+    const_reverse_iterator rend()   const { return m_stmts.rend();   }
+
+    void pop_front() { m_stmts.pop_front(); }
+    void pop_back()  { m_stmts.pop_back(); }
+
+    void push_front(const value_type& val) { m_stmts.push_front(val); }
+    void push_back(const value_type& val) { m_stmts.push_back(val); }
+
+    void insert(iterator where, const value_type& val) { m_stmts.insert(where, val); }
+    void clear() { m_stmts.clear(); }
+
+    iterator erase(iterator it) { return m_stmts.erase(it); }
+
 private:
+    std::list<Statement *> m_stmts;
     Address m_nativeAddr; ///< RTL's source program instruction address
 };
 
