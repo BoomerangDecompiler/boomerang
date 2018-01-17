@@ -13,7 +13,7 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 ### Building prerequisites
 
- - A C++11 compatible compiler (GCC \>= 4.9, Clang \>= 3.9, MSVC \>= 2015 are known to work)
+ - A C++11 compatible compiler (GCC \>= 6, Clang \>= 4, MSVC \>= 2017 are known to work)
  - [CMake 3.1.0 or newer](https://cmake.org/download/)
  - [Qt5](https://www.qt.io/download-open-source/)
  - [Doxygen](http://www.doxygen.nl/) (optional)
@@ -57,5 +57,4 @@ To run the regression test suite, run `./full_regression.sh`.
 After running the test suite, the tool will report tests on which boomerang crashed.
 You can also check if your changes to boomerang produced any changes in the quality of decompiled code by running
  YOUR\_FAVOURITE\_DIFF\_GUI ./tests/outputs ./tests/baseline
-
 

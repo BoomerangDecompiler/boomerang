@@ -1,26 +1,54 @@
 language: cpp
 
-sudo: required
 dist: trusty
-
-before_install:
-  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-  - sudo apt-get update -qq
-
+sudo: false
 
 matrix:
   include:
     - os: linux
-      install:
-        - sudo apt-get -qq install qt5-default gcc-4.9 g++-4.9
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - qt5-default
+            - clang-4.0
       env:
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_C_COMPILER=/usr/bin/gcc-4.9 -DCMAKE_CXX_COMPILER=/usr/bin/g++-4.9 -DBOOMERANG_BUILD_TESTS=ON"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0"
+
     - os: linux
-      install:
-        - sudo apt-get -qq install qt5-default clang-3.9
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+          packages:
+            - qt5-default
+            - clang-5.0
       env:
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_C_COMPILER=/usr/bin/clang-3.9 -DCMAKE_CXX_COMPILER=/usr/bin/clang++-3.9 -DBOOMERANG_BUILD_TESTS=ON"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - qt5-default
+            - g++-6
+      env:
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6"
+
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - qt5-default
+            - g++-7
+      env:
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7"
 
 
 before_script: mkdir build && cd build
-script: cmake $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
+script: cmake -DBOOMERANG_BUILD_TESTS=ON $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
