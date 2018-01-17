@@ -134,10 +134,10 @@ public:
     void push_front(const value_type& val) { m_stmts.push_front(val); }
     void push_back(const value_type& val) { m_stmts.push_back(val); }
 
-    void insert(const_iterator where, const value_type& val) { m_stmts.insert(where, val); }
+    void insert(iterator where, const value_type& val) { m_stmts.insert(where, val); }
     void clear() { m_stmts.clear(); }
 
-    iterator erase(const_iterator it) { return m_stmts.erase(it); }
+    iterator erase(iterator it) { return m_stmts.erase(it); }
 
 private:
     std::list<Statement *> m_stmts;
