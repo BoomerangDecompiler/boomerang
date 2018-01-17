@@ -27,6 +27,8 @@
 
 #include <QRegularExpression>
 
+#include <numeric>
+
 
 int tlstrchr(const QString& str, char ch)
 {
