@@ -175,10 +175,10 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
         assert(false);
     }
 
-    m_proc->getCFG()->addEdge(skipBB, rptBB);
     m_proc->getCFG()->addEdge(skipBB, bBB);
-    m_proc->getCFG()->addEdge(rptBB, rptBB);
+    m_proc->getCFG()->addEdge(skipBB, rptBB);
     m_proc->getCFG()->addEdge(rptBB, bBB);
+    m_proc->getCFG()->addEdge(rptBB, rptBB);
 
     return haveB ? bBB : rptBB;
 }
