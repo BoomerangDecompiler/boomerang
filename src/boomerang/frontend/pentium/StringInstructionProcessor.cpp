@@ -100,149 +100,85 @@ bool StringInstructionProcessor::processStringInstructions()
 }
 
 
-
-BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *skipRTL, BranchStatement *br1, BranchStatement *br2)
+BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stringRTL, BranchStatement *skipBranch, BranchStatement *rptBranch)
 {
-    Address skipAddr = skipRTL->getAddress();
-    RTLList::iterator ri = std::find(bb->getRTLs()->begin(), bb->getRTLs()->end(), skipRTL);
-    assert(ri != bb->getRTLs()->end());
+    Address stringAddr = stringRTL->getAddress();
+    RTLList::iterator stringIt = std::find(bb->getRTLs()->begin(), bb->getRTLs()->end(), stringRTL);
+    assert(stringIt != bb->getRTLs()->end());
 
-    const bool haveA = (ri != bb->getRTLs()->begin());
+    const bool haveA = (stringIt != bb->getRTLs()->begin());
+    const bool haveB = (std::next(stringIt) != bb->getRTLs()->end());
+    BasicBlock *aBB = nullptr;
+    BasicBlock *bBB = nullptr;
 
-    // Make a BB for the br1 instruction
+    const std::vector<BasicBlock *> oldPredecessors = bb->getPredecessors();
+    const std::vector<BasicBlock *> oldSuccessors   = bb->getSuccessors();
 
-    // Don't give this "instruction" the same address as the rest of the string instruction (causes problems when
-    // creating the rptBB). Or if there is no A, temporarily use 0
-    Address    a        = (haveA) ? skipAddr : Address::ZERO;
-    RTL        *skipRtl = new RTL(a, { br1 });
-    std::unique_ptr<RTLList> bbRTL(new RTLList({ skipRtl }));
-    BasicBlock *skipBB  = m_proc->getCFG()->createBB(BBType::Twoway, std::move(bbRTL));
-    skipRTL->setAddress(skipAddr + 1);
-
-    if (!haveA) {
-        skipRtl->setAddress(skipAddr);
-        // Address addr now refers to the splitBB
-        m_proc->getCFG()->setBBStart(skipBB, skipAddr);
-
-        // Fix all predecessors of pBB to point to splitBB instead
-        for (int i = 0; i < bb->getNumPredecessors(); i++) {
-            BasicBlock *pred = bb->getPredecessor(i);
-
-            for (int j = 0; j < pred->getNumSuccessors(); j++) {
-                BasicBlock *succ = pred->getSuccessor(j);
-
-                if (succ == bb) {
-                    pred->setSuccessor(j, skipBB);
-                    skipBB->addPredecessor(pred);
-                    break;
-                }
-            }
-        }
+    if (haveA) {
+        aBB = bb;
+        bb = m_proc->getCFG()->splitBB(aBB, stringAddr);
+        assert(aBB->getLowAddr() < bb->getLowAddr());
     }
-
-    // Remove the SKIP from the start of the string instruction RTL
-    assert(skipRTL->size() >= 4);
-    skipRTL->pop_front();
-    // Replace the last statement with br2
-    skipRTL->back() = br2;
-
-    // Move the remainder of the string RTL into a new BB
-    bbRTL.reset(new RTLList({ *ri }));
-    BasicBlock *rptBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(bbRTL));
-    ri = bb->getRTLs()->erase(ri);
-
-    // Move the remaining RTLs (if any) to a new list of RTLs
-    BasicBlock *newBB;
-    int    oldOutEdges = 0;
-    bool       haveB       = true;
-
-    if (ri != bb->getRTLs()->end()) {
-        std::unique_ptr<RTLList> pRtls(new RTLList);
-
-        while (ri != bb->getRTLs()->end()) {
-            pRtls->push_back(*ri);
-            ri = bb->getRTLs()->erase(ri);
-        }
-
-        oldOutEdges = bb->getNumSuccessors();
-        newBB       = m_proc->getCFG()->createBB(bb->getType(), std::move(pRtls));
-
-        // Transfer the out edges from A to B (pBB to newBB)
-        for (int i = 0; i < oldOutEdges; i++) {
-            // Don't use addOutEdge, since it will also add in-edges back to the BB
-            newBB->addSuccessor(bb->getSuccessor(i));
-        }
-
-        // addOutEdge(newBB, pBB->getSuccessor(i));
-    }
-    else {
-        // The "B" part of the above diagram is empty.
-        // Don't create a new BB; just point newBB to the successor of this BB
-        haveB = false;
-        newBB = bb->getSuccessor(0);
-    }
-
-    // Change pBB to a FALL bb
-    bb->setType(BBType::Fall);
-
-    // Set the first out-edge to be skipBB
-    bb->removeAllSuccessors();
-    m_proc->getCFG()->addEdge(bb, skipBB);
-
-    // Set the out edges for skipBB. First is the taken (true) leg.
-    m_proc->getCFG()->addEdge(skipBB, newBB);
-    m_proc->getCFG()->addEdge(skipBB, rptBB);
-
-    // Set the out edges for the rptBB
-    m_proc->getCFG()->addEdge(rptBB, skipBB);
-    m_proc->getCFG()->addEdge(rptBB, newBB);
-
-    // For each out edge of newBB, change any in-edges from pBB to instead come from newBB
+    stringIt = bb->getRTLs()->begin();
     if (haveB) {
-        for (int i = 0; i < oldOutEdges; i++) {
-            BasicBlock *succ = newBB->getSuccessor(i);
-
-            for (int j = 0; j < succ->getNumPredecessors(); j++) {
-                if (succ->getPredecessor(j) == bb) {
-                    succ->setPredecessor(j, newBB);
-                    break;
-                }
-            }
-        }
+        Address splitAddr = (*std::next(stringIt))->getAddress();
+        bBB = m_proc->getCFG()->splitBB(bb, splitAddr);
+        assert(bb->getLowAddr() < bBB->getLowAddr());
     }
     else {
-        // There is no "B" bb (newBB is just the successor of pBB) Fix that one out-edge to point to rptBB
-        for (int i = 0; i < newBB->getNumPredecessors(); i++) {
-            if (newBB->getPredecessor(i) == bb) {
-                newBB->setPredecessor(i, rptBB);
-                break;
+        // this means the original BB has a fallthrough branch to its successor.
+        // Just pretend the successor is the split off B bb.
+        bBB = bb->getSuccessor(0);
+    }
+
+    assert(bb->getRTLs()->size() == 1); // only the string instruction
+    assert(bb->getRTLs()->front()->getAddress() == stringAddr);
+
+
+    // Make an RTL for the skip and the rpt branch instructions.
+    std::unique_ptr<RTLList> skipBBRTL(new RTLList({ new RTL(stringAddr, { skipBranch }) }));
+    std::unique_ptr<RTLList> rptBBRTL(new RTLList({ new RTL(**stringIt) }));
+    rptBBRTL->front()->setAddress(stringAddr + 1);
+    rptBBRTL->front()->pop_front();
+    rptBBRTL->front()->back() = rptBranch;
+
+    // remove the original string instruction from the CFG.
+    for (BasicBlock *pred : bb->getPredecessors()) {
+        for (int i = 0; i < pred->getNumSuccessors(); i++) {
+            if (pred->getSuccessor(i) == bb) {
+                pred->setSuccessor(i, nullptr);
             }
         }
     }
+    bb->removeAllPredecessors();
 
-    if (!haveA) {
-        // There is no A any more. All A's in-edges have been copied to the skipBB. It is possible that the original BB
-        // had a self edge (branch to start of self). If so, this edge, now in to skipBB, must now come from newBB (if
-        // there is a B) or rptBB if none.  Both of these will already exist, so delete it.
-        for (int i = 0; i < skipBB->getNumPredecessors(); i++) {
-            if (skipBB->getPredecessor(i) == bb) {
-                skipBB->removePredecessor(bb);
-                break;
-            }
-        }
+    // remove connection between the string instruction and the B part
+    for (BasicBlock *succ : bb->getSuccessors()) {
+        bb->removeSuccessor(succ);
+        succ->removePredecessor(bb);
+    }
 
-#if DEBUG_SPLIT_FOR_BRANCH
-        LOG_VERBOSE("About to delete pBB: %1", bb->prints());
-        dumpBB(bb);
-        dumpBB(skipBB);
-        dumpBB(rptBB);
-        dumpBB(newBB);
-#endif
+    m_proc->getCFG()->removeBB(bb);
 
-        // Must delete bb.
-        m_proc->getCFG()->removeBB(bb);
+    BasicBlock *skipBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTL));
+    BasicBlock *rptBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTL));
+
+    assert(skipBB && rptBB);
+
+    if (haveA) {
+        aBB->removeAllSuccessors();
+        aBB->setType(BBType::Fall);
+        m_proc->getCFG()->addEdge(aBB, skipBB);
+    }
+    else {
+        // TODO
         assert(false);
     }
 
-    return newBB;
+    m_proc->getCFG()->addEdge(skipBB, rptBB);
+    m_proc->getCFG()->addEdge(skipBB, bBB);
+    m_proc->getCFG()->addEdge(rptBB, rptBB);
+    m_proc->getCFG()->addEdge(rptBB, bBB);
+
+    return haveB ? bBB : rptBB;
 }

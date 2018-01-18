@@ -41,13 +41,13 @@ private:
      *          +----+      V
      *          | B  |    +----+ <-skipBB
      *          |    |    +-b1-+              b1 is just a branch for the skip part
-     *          +----+      |
-     *                      V
+     *          +----+      |   \___
+     *                      V       \
      *                    +----+ <-rptBB
-     *                    | S' |              S' = S less the skip and repeat parts
-     *                    +-b2-+              b2 is a branch for the repeat part
-     *                      |
-     *                      V
+     *                    | S' |  |  |        S' = S less the skip and repeat parts
+     *                    +-b2-+  |  |        b2 is a branch for the repeat part
+     *                      | \__/  /
+     *                      V      /
      *                    +----+ <-newBB
      *                    | B  |
      *                    |    |
@@ -55,9 +55,7 @@ private:
      * S is an RTL with 6 statements representing one string instruction (so this function is highly specialised for the job
      * of replacing the %SKIP and %RPT parts of string instructions)
      */
-    BasicBlock *splitForBranch(BasicBlock *pBB, RTL *rtl, BranchStatement *br1, BranchStatement *br2);
-
-    void processStringInstruction(BasicBlock *bb, RTL *stringRTL);
+    BasicBlock *splitForBranch(BasicBlock *bb, RTL *stringRTL, BranchStatement *skipBranch, BranchStatement *rptBranch);
 
 private:
     UserProc *m_proc;
