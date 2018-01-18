@@ -25,7 +25,6 @@ StringInstructionProcessor::StringInstructionProcessor(UserProc* proc)
 }
 
 
-
 bool StringInstructionProcessor::processStringInstructions()
 {
     std::list<std::pair<RTL *, BasicBlock *>> stringInstructions;
@@ -143,13 +142,6 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     rptBBRTL->front()->back() = rptBranch;
 
     // remove the original string instruction from the CFG.
-    for (BasicBlock *pred : bb->getPredecessors()) {
-        for (int i = 0; i < pred->getNumSuccessors(); i++) {
-            if (pred->getSuccessor(i) == bb) {
-                pred->setSuccessor(i, nullptr);
-            }
-        }
-    }
     bb->removeAllPredecessors();
 
     // remove connection between the string instruction and the B part
@@ -171,8 +163,13 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
         m_proc->getCFG()->addEdge(aBB, skipBB);
     }
     else {
-        // TODO
-        assert(false);
+        for (BasicBlock *pred : oldPredecessors) {
+            for (int i = 0; i < pred->getNumSuccessors(); i++) {
+                if (pred->getSuccessor(i) == bb) {
+                    pred->setSuccessor(i, skipBB);
+                }
+            }
+        }
     }
 
     m_proc->getCFG()->addEdge(skipBB, bBB);
