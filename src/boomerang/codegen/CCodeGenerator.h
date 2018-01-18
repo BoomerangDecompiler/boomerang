@@ -107,10 +107,8 @@ public:
     /// \copydoc ICodeGenerator::addReturnStatement
     virtual void addReturnStatement(StatementList *rets) override;
 
-    /**
-     * \copydoc ICodeGenerator::removeUnusedLabels
-     */
-    virtual void removeUnusedLabels(int) override;
+    /// \copydoc ICodeGenerator::removeUnusedLabels
+    virtual void removeUnusedLabels() override;
 
 private:
     /// Add a prototype (for forward declaration)
@@ -188,8 +186,7 @@ private:
     void addIfElseCondEnd();
 
     // goto, break, continue, etc
-    /// Adds: goto L \em ord
-    void addGoto(int ord);
+    void addGoto(const BasicBlock *bb);
 
     /// Adds: continue;
     void addContinue();
@@ -199,10 +196,7 @@ private:
 
     // labels
     /// Adds: L \a ord :
-    void addLabel(int ord);
-
-    /// Search for the label L \a ord and remove it from the generated code.
-    void removeLabel(int ord);
+    void addLabel(const BasicBlock *bb);
 
     // proc related
     /**
@@ -290,11 +284,11 @@ private:
     void appendLine(const QString& s);
 
 private:
-    int m_indent = 0;                       ///< Current indentation depth
-    std::map<QString, SharedType> m_locals; ///< All locals in a Proc
-    std::set<int> m_usedLabels;             ///< All used goto labels.
-    QStringList m_lines;                    ///< The generated code.
-    UserProc *m_proc = nullptr;
+    int m_indent = 0;                                     ///< Current indentation depth
+    std::map<QString, SharedType> m_locals;               ///< All locals in a Proc
+    std::unordered_set<Address::value_type> m_usedLabels; ///< All used goto labels. (lowAddr of BB)
     std::unordered_set<const BasicBlock *> m_generatedBBs;
+    QStringList m_lines;                                  ///< The generated code.
+    UserProc *m_proc = nullptr;
     ControlFlowAnalyzer m_analyzer;
 };

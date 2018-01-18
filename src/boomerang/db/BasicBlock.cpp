@@ -278,7 +278,7 @@ BasicBlock *BasicBlock::getPredecessor(int i)
 }
 
 
-const BasicBlock * BasicBlock::getPredecessor(int i) const
+const BasicBlock *BasicBlock::getPredecessor(int i) const
 {
     return Util::inRange(i, 0, getNumPredecessors()) ? m_predecessors[i] : nullptr;
 }
@@ -443,16 +443,14 @@ Statement *BasicBlock::getLastStmt()
         return nullptr;
     }
 
-    RTLRIterator rit = m_listOfRTLs->rbegin();
+    RTLRIterator revIt = m_listOfRTLs->rbegin();
 
-    while (rit != m_listOfRTLs->rend()) {
-        RTL *rtl = *rit;
+    while (revIt != m_listOfRTLs->rend()) {
+        RTL *rtl = *revIt++;
 
         if (!rtl->empty()) {
             return rtl->back();
         }
-
-        rit++;
     }
 
     return nullptr;

@@ -508,14 +508,16 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
 }
 
 
-void CCodeGenerator::removeUnusedLabels(int)
+void CCodeGenerator::removeUnusedLabels()
 {
     for (QStringList::iterator it = m_lines.begin(); it != m_lines.end();) {
-        if (it->startsWith('L') && it->contains(':')) {
-            QStringRef sxr = it->midRef(1, it->indexOf(':') - 1);
-            int        n   = sxr.toInt();
+        if (it->startsWith("bb0x") && it->contains(':')) {
+            QStringRef bbAddrString = it->midRef(4, it->indexOf(':')-4);
+            bool ok = false;
+            Address bbAddr(bbAddrString.toLongLong(&ok, 16));
+            assert(ok);
 
-            if (m_usedLabels.find(n) == m_usedLabels.end()) {
+            if (m_usedLabels.find(bbAddr.value()) == m_usedLabels.end()) {
                 it = m_lines.erase(it);
                 continue;
             }
@@ -589,7 +591,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     addProcEnd();
 
     if (!SETTING(noRemoveLabels)) {
-        this->removeUnusedLabels(proc->getCFG()->getNumBBs());
+        removeUnusedLabels();
     }
 
     proc->setStatus(PROC_CODE_GENERATED);
@@ -954,15 +956,15 @@ void CCodeGenerator::addIfElseCondEnd()
 }
 
 
-void CCodeGenerator::addGoto(int ord)
+void CCodeGenerator::addGoto(const BasicBlock *bb)
 {
     QString     tgt;
     QTextStream s(&tgt);
 
     indent(s, m_indent);
-    s << "goto L" << ord << ";";
+    s << "goto bb0x" << QString::number(bb->getLowAddr().value(), 16) << ";";
     appendLine(tgt);
-    m_usedLabels.insert(ord);
+    m_usedLabels.insert(bb->getLowAddr().value());
 }
 
 
@@ -988,23 +990,13 @@ void CCodeGenerator::addBreak()
 }
 
 
-void CCodeGenerator::addLabel(int ord)
+void CCodeGenerator::addLabel(const BasicBlock *bb)
 {
     QString     tgt;
     QTextStream s(&tgt);
 
-    s << "L" << ord << ":";
+    s << "bb0x" << QString::number(bb->getLowAddr().value(), 16) << ":";
     appendLine(tgt);
-}
-
-
-void CCodeGenerator::removeLabel(int ord)
-{
-    QString     tgt;
-    QTextStream s(&tgt);
-
-    s << "L" << ord << ":";
-    m_lines.removeAll(tgt);
 }
 
 
@@ -2410,6 +2402,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
             // write code for the body of the conditional
             if (m_analyzer.getCondType(bb) != CondType::Case) {
                 const BasicBlock *succ = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
+                assert(succ != nullptr);
 
                 // emit a goto statement if the first clause has already been
                 // generated or it is the follow of this node's enclosing loop
@@ -2654,6 +2647,7 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             // set the necessary flags so that generateCode can successfully be called again on this node
             m_analyzer.setStructType(bb, StructType::Cond);
             m_analyzer.setTravType(bb, TravType::Untraversed);
+            m_generatedBBs.erase(bb);
             generateCode(bb, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
         }
         else {
@@ -2715,7 +2709,7 @@ void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *de
         }
     }
     else {
-        addGoto(m_analyzer.getOrdering(dest));
+        addGoto(bb);
     }
 }
 
@@ -2728,7 +2722,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 
     // Allocate space for a label to be generated for this node and add this to the generated code. The actual label can
     // then be generated now or back patched later
-    addLabel(m_analyzer.getOrdering(bb));
+    addLabel(bb);
 
     if (bb->getRTLs()) {
         for (RTL *rtl : *(bb->getRTLs())) {

@@ -225,7 +225,6 @@ public:
     bool isImplicitsDone() const { return m_implicitsDone; }
     void setImplicitsDone() { m_implicitsDone = true; }
 
-private:
     /**
      * Split \p bb into a "low" and "high" part at the RTL associated with \p splitAddr.
      * The type of the "low" BB becomes fall-through. The type of the "high" part becomes the type of \p bb.
@@ -245,7 +244,7 @@ private:
      *                     to not overlap.
      * \param   deleteRTLs if true, deletes the RTLs removed from the existing BB after the split point. Only used if
      *                     there is an overlap with existing instructions
-     * \returns If the merge is successful, returns the "low" part of the split BB. Otherwise, returns the original BB.
+     * \returns If the merge is successful, returns the "high" part of the split BB. Otherwise, returns the original BB.
      */
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
 

@@ -106,10 +106,7 @@ void DataFlow::calculateDominators(Cfg *cfg)
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        const std::vector<BasicBlock *>&    inEdges = m_BBs[n]->getPredecessors();
-        std::vector<BasicBlock *>::iterator it;
-
-        for (BasicBlock *parentBB : inEdges) {
+        for (BasicBlock *parentBB : m_BBs[n]->getPredecessors()) {
             if (m_indices.find(parentBB) == m_indices.end()) {
                 QTextStream q_cerr(stderr);
 

@@ -82,7 +82,7 @@ Const::Const(Function *p)
 Const::Const(Address addr)
     : Exp(opIntConst)
     , m_conscript(0)
-    , m_type(IntegerType::get(Address::getSourceBits(), -1))
+    , m_type(VoidType::get())
 {
     m_value.ll = addr.value();
 }

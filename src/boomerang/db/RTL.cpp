@@ -93,19 +93,18 @@ void RTL::append(Statement *s)
     assert(s != nullptr);
 
     if (!empty() && back()->isFlagAssign()) {
-        iterator it = end();
-        insert(--it, s);
+        insert(std::prev(end()), s);
         return;
     }
 
-    push_back(s);
+    m_stmts.push_back(s);
 }
 
 
 void RTL::append(const std::list<Statement *>& stmts)
 {
     for (Statement *stmt : stmts) {
-        push_back(stmt->clone());
+        m_stmts.push_back(stmt->clone());
     }
 }
 
@@ -220,7 +219,9 @@ void RTL::simplify()
 
                 LOG_VERBOSE("Replacing branch with true condition with goto at %1 %2",
                             getAddress(), *it);
+                BasicBlock *bb = (*it)->getBB();
                 *it = new GotoStatement(((BranchStatement *)s)->getFixedDest());
+                (*it)->setBB(bb);
             }
         }
         else if (s->isAssign()) {
