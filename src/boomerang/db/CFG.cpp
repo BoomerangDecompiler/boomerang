@@ -494,13 +494,21 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         return bb;
     }
 
-    // If necessary, set up a new basic block with information from the original bb
+    // If necessary, set up a new basic block with information from the original bb.
+    // If we create a new BB, move all successor information of the old BB to the "high" BB;
+    // otherwise, the "high" BB already has successor information, so don't add edges twice.
     if (_newBB == nullptr) {
         _newBB = new BasicBlock(*bb);
 
         // But we don't want the top BB's in edges;
         // our only predecessor should be the "low" BB
         _newBB->removeAllPredecessors();
+
+        for (BasicBlock *succ : _newBB->getSuccessors()) {
+            succ->removePredecessor(bb);
+            bb->removeSuccessor(succ);
+            succ->addPredecessor(_newBB);
+        }
 
         // The "high" BB now starts at splitIt->getAddress(), so we create a new list
         // that starts at splitIt. We don't want to "deep copy" the RTLs themselves,
@@ -511,30 +519,24 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
     }
     else if (_newBB->isIncomplete()) {
         // complete the incomplete BB
-        std::vector<BasicBlock *> oldPredecessors(_newBB->getPredecessors());
+        const std::vector<BasicBlock *> oldSuccessors(_newBB->getSuccessors());
 
         *_newBB = *bb;
 
-        // Replace the in edges. No need to adjust the successors of predecessors,
-        // since they already point to _newBB
-        for (BasicBlock *pred : oldPredecessors) {
-            _newBB->addPredecessor(pred);
+        _newBB->removeAllSuccessors();
+        for (BasicBlock *succ : oldSuccessors) {
+            succ->removePredecessor(bb);
+            addEdge(_newBB, succ);
         }
 
         _newBB->setRTLs(Util::makeUnique<RTLList>(splitIt, bb->getRTLs()->end()));
     }
 
-    // the "low" part of the split pair only has a fallthrough branch.
+    // Now we already have moved over the successor information to the new "high" BB.
+    // Just update the fallthrough edge between the "low" and the "high" part.
+    assert(bb->getNumSuccessors() == 0);
     bb->setType(BBType::Fall);
-
-    // Update the successors of the original BB to have the "high" part as predecessor
-    const std::vector<BasicBlock *> successors = bb->getSuccessors();
-
-    for (BasicBlock *succ : successors) {
-        succ->removePredecessor(bb);
-        bb->removeSuccessor(succ);
-        addEdge(_newBB, succ);
-    }
+    addEdge(bb, _newBB);
 
     // The old BB needs to have part of its list of RTLs erased, since the
     // instructions overlap
@@ -546,9 +548,6 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
     bb->getRTLs()->erase(splitIt, bb->getRTLs()->end());
     bb->updateBBAddresses();
 
-    // Erase any existing out edges
-    bb->removeAllSuccessors();
-    addEdge(bb, splitAddr);
     return _newBB;
 }
 
