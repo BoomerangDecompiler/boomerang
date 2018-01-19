@@ -1386,18 +1386,16 @@ void StatementTest::testBypass()
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
 
-    Cfg *cfg = proc->getCFG();
-
     // Initialise statements
     proc->initStatements();
 
     // Compute dominance frontier
-    proc->getDataFlow()->calculateDominators(cfg);
+    proc->getDataFlow()->calculateDominators();
 
     // Number the statements
     proc->numberStatements();
-    proc->getDataFlow()->renameBlockVars(proc, 0, 0); // Block 0, mem depth 0
-    proc->getDataFlow()->renameBlockVars(proc, 0, 1); // Block 0, mem depth 1
+    proc->getDataFlow()->renameBlockVars(0, 0); // Block 0, mem depth 0
+    proc->getDataFlow()->renameBlockVars(0, 1); // Block 0, mem depth 1
     // Find various needed statements
     StatementList stmts;
     proc->getStatements(stmts);

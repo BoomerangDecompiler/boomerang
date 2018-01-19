@@ -65,7 +65,7 @@ void DataFlowTest::testDominators()
     UserProc *pProc = (UserProc *)*(m->begin());
     Cfg      *cfg   = pProc->getCFG();
     DataFlow *df    = pProc->getDataFlow();
-    df->calculateDominators(cfg);
+    df->calculateDominators();
 
     // Find BB "5" (as per Appel, Figure 19.5).
     BasicBlock *foundBB = nullptr;
@@ -129,7 +129,7 @@ void DataFlowTest::testSemiDominators()
     Cfg      *cfg   = pProc->getCFG();
 
     DataFlow *df = pProc->getDataFlow();
-    df->calculateDominators(cfg);
+    df->calculateDominators();
 
     // Find BB "L (6)" (as per Appel, Figure 19.8).
     BasicBlock *foundBB = nullptr;
@@ -187,13 +187,12 @@ void DataFlowTest::testPlacePhi()
     QVERIFY(m->size() > 0);
 
     UserProc *pProc = (UserProc *)(*m->begin());
-    Cfg      *cfg   = pProc->getCFG();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog.finishDecode();
     DataFlow *df = pProc->getDataFlow();
-    df->calculateDominators(cfg);
-    df->placePhiFunctions(pProc);
+    df->calculateDominators();
+    df->placePhiFunctions();
 
     // m[r29 - 8] (x for this program)
     SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
@@ -236,11 +235,9 @@ void DataFlowTest::testPlacePhi2()
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog.finishDecode();
 
-    Cfg *cfg = pProc->getCFG();
-
     DataFlow *df = pProc->getDataFlow();
-    df->calculateDominators(cfg);
-    df->placePhiFunctions(pProc);
+    df->calculateDominators();
+    df->placePhiFunctions();
 
     // In this program, x is allocated at [ebp-4], a at [ebp-8], and
     // b at [ebp-12]
@@ -318,16 +315,15 @@ void DataFlowTest::testRenameVars()
     QVERIFY(m->size() > 0);
 
     UserProc *pProc = (UserProc *)(*m->begin());
-    Cfg      *cfg   = pProc->getCFG();
     DataFlow *df    = pProc->getDataFlow();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog->finishDecode();
 
-    df->calculateDominators(cfg);
-    df->placePhiFunctions(pProc);
+    df->calculateDominators();
+    df->placePhiFunctions();
     pProc->numberStatements();        // After placing phi functions!
-    df->renameBlockVars(pProc, 0, 1); // Block 0, mem depth 1
+    df->renameBlockVars(0, 1); // Block 0, mem depth 1
 
     // MIKE: something missing here?
 

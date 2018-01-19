@@ -13,6 +13,7 @@
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/AssignSet.h"
 #include "boomerang/util/LocationSet.h"
+#include "boomerang/db/BasicBlock.h"
 
 #include <vector>
 #include <map>
@@ -35,12 +36,13 @@ typedef std::set<SharedExp, lessExpStar> ExpSet;
 
 
 /**
- * Dominator frontier code largely as per Appel 2002 ("Modern Compiler Implementation in Java")
+ * Dominator frontier code largely as per Appel 2002
+ * ("Modern Compiler Implementation in Java")
  */
 class DataFlow
 {
 public:
-    DataFlow();
+    DataFlow(UserProc *proc);
     DataFlow(const DataFlow& other) = delete;
     DataFlow(DataFlow&& other) = default;
 
@@ -52,55 +54,60 @@ public:
 public:
     /// Place phi functions.
     /// \returns true if any change
-    bool placePhiFunctions(UserProc *proc);
+    bool placePhiFunctions();
 
     /// \returns true if the expression \p e can be renamed
-    bool canRename(SharedExp e, UserProc *proc);
+    bool canRename(SharedExp e);
 
-    /// Essentially Algorithm 19.9 of Appel's "modern compiler implementation in Java" 2nd ed 2002
-    void calculateDominators(Cfg *cfg);
+    /**
+     * Calculate dominators for every node n using Lengauer-Tarjan with path compression.
+     * Essentially Algorithm 19.9 of Appel's
+     * "Modern compiler implementation in Java" 2nd ed 2002
+     */
+    void calculateDominators();
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
 
     /// Rename variables in basic block \p n.
     /// \returns true if any change made
-    bool renameBlockVars(UserProc *proc, int n, bool clearStacks = false);
+    bool renameBlockVars(int n, bool clearStacks = false);
 
-    void convertImplicits(Cfg *cfg);
+    void convertImplicits();
 
     /**
-     * Find the locations used by a live, dominating phi-function. Also removes dead phi-funcions.
+     * Find the locations in the CFG used by a live, dominating phi-function. Also removes dead phi-funcions.
+     * Helper function for UserProc::propagateStatements().
      *
-     * Helper function for UserProc::propagateStatements()
-     * Works on basic block \p n; call from UserProc with n=0 (entry BB)
-     *
-     * If an SSA location is in usedByDomPhi it means it is used in a phi that dominates its assignment
+     * If an SSA location is in \p usedByDomPhi it means it is used in a phi that dominates its assignment
      * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
-     * usedByDomPhi. So we maintain the map defdByPhi which maps locations defined at a phi to the phi statements. Every
-     * time we see a use of a location in defdByPhi, we remove that map entry. At the end of the procedure we therefore have
-     * only dead phi statements in the map, so we can delete the associated entries in defdByPhi and also remove the dead
+     * \p usedByDomPhi. So we maintain the map \p defdByPhi which maps locations defined at a phi to the phi statements. Every
+     * time we see a use of a location in \p defdByPhi, we remove that map entry. At the end of the procedure we therefore have
+     * only dead phi statements in the map, so we can delete the associated entries in \p defdByPhi and also remove the dead
      * phi statements.
      *
-     * We add to the set usedByDomPhi0 whenever we see a location referenced by a phi parameter. When we see a definition
+     * We add to the set \p usedByDomPhi0 whenever we see a location referenced by a phi parameter. When we see a definition
      * for such a location, we remove it from the usedByDomPhi0 set (to save memory) and add it to the usedByDomPhi set.
      * For locations defined before they are used in a phi parameter, there will be no entry in usedByDomPhi, so we ignore
      * it. Remember that each location is defined only once, so that's the time to decide if it is dominated by a phi use or
      * not.
      */
-    void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
+    void findLiveAtDomPhi(LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
 
+public:
     // For testing:
     int pbbToNode(BasicBlock *bb) { return m_indices[bb]; }
-    std::set<int>& getDF(size_t node) { return m_DF[node]; }
-    BasicBlock *nodeToBB(size_t node) { return m_BBs[node]; }
-    int getIdom(size_t node) { return m_idom[node]; }
-    int getSemi(size_t node) { return m_semi[node]; }
+    std::set<int>& getDF(int node) { return m_DF[node]; }
+    BasicBlock *nodeToBB(int node) { return m_BBs[node]; }
+    int getIdom(int node) { return m_idom[node]; }
+    int getSemi(int node) { return m_semi[node]; }
     std::set<int>& getA_phi(SharedExp e) { return m_A_phi[e]; }
 
 private:
     /// depth first search
-    void dfs(int p, size_t n);
+    /// \param myIdx index of the current BB
+    /// \param parentIdx index of the parent of the current BB
+    void dfs(int myIdx, int parentIdx);
 
     /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
     /// (overall O(N log N))
@@ -128,28 +135,42 @@ private:
     void dumpA_phi();
 
 private:
+    void allocateData();
+
+    void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
+                        std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
+private:
+    UserProc* m_proc;
+
     /* Dominance Frontier Data */
 
     /* These first two are not from Appel; they map PBBs to indices */
-    std::vector<BasicBlock *> m_BBs;       ///< Pointers to BBs from indices
-    std::map<BasicBlock *, int> m_indices; ///< Indices from pointers to BBs
+    std::vector<BasicBlock *> m_BBs;                                 ///< Maps index -> BasicBlock
+    std::map<BasicBlock *, int, BasicBlock::BBComparator> m_indices; ///< Maps BasicBlock -> index
 
-    /*
-     * Calculating the dominance frontier
-     */
-    // If there is a path from a to b in the cfg, then a is an ancestor of b
-    // if dfnum[a] < denum[b]
-    std::vector<int> m_dfnum;             ///< Number set in depth first search
-    std::vector<int> m_semi;              ///< Semi dominators
-    std::vector<int> m_ancestor;          ///< Defines the forest that becomes the spanning tree
-    std::vector<int> m_idom;              ///< Immediate dominator
+    /// Calculating the dominance frontier
+
+    /// Order number of BB n during a depth first search.
+    /// If there is a path from a to b in the cfg, then a is an ancestor of b
+    /// if dfnum[a] < dfnum[b]
+    std::vector<int> m_dfnum;
+
+    /// Immediate (unique) ancestor of the depth first spanning tree
+    std::vector<int> m_ancestor;
+
+    /// Semi dominator of n
+    std::vector<int> m_semi;
+
+    /// Immediate dominator
+    std::vector<int> m_idom;
+
     std::vector<int> m_samedom;           ///< ? To do with deferring
     std::vector<int> m_vertex;            ///< ?
     std::vector<int> m_parent;            ///< Parent in the dominator tree?
     std::vector<int> m_best;              ///< Improves ancestorWithLowestSemi
     std::vector<std::set<int> > m_bucket; ///< Deferred calculation?
+    std::vector<std::set<int> > m_DF;     ///< Dominance frontier for every node n
     int N;                                ///< Current node number in algorithm
-    std::vector<std::set<int> > m_DF;     ///< The dominance frontiers
 
     /*
      * Inserting phi-functions

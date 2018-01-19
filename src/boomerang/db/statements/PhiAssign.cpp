@@ -26,7 +26,7 @@
 #include "boomerang/util/Log.h"
 
 
-bool PhiAssign::BBComparator::operator()(const BasicBlock* bb1, const BasicBlock* bb2) const
+bool BasicBlock::BBComparator::operator()(const BasicBlock* bb1, const BasicBlock* bb2) const
 {
     // special case: in test code, we have statements that do not belong to BBs.
     // Thus, bb is nullptr

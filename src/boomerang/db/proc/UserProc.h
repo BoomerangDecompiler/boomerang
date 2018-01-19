@@ -210,7 +210,7 @@ public:
      */
     bool doRenameBlockVars(int pass, bool clearStacks = false);
 
-    bool canRename(SharedExp e) { return m_df.canRename(e, this); }
+    bool canRename(SharedExp e) { return m_df.canRename(e); }
 
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();

@@ -27,8 +27,9 @@
 #include <cstring>
 
 
-DataFlow::DataFlow()
-    : renameLocalsAndParams(false)
+DataFlow::DataFlow(UserProc *proc)
+    : m_proc(proc)
+    , renameLocalsAndParams(false)
 {
 }
 
@@ -38,66 +39,40 @@ DataFlow::~DataFlow()
 }
 
 
-void DataFlow::dfs(int p, size_t n)
+void DataFlow::dfs(int myIdx, int parentIdx)
 {
-    if (m_dfnum[n] == 0) {
-        m_dfnum[n]  = N;
-        m_vertex[N] = n;
-        m_parent[n] = p;
+    if (m_dfnum[myIdx] == -1) {
+        m_dfnum[myIdx]  = N;
+        m_vertex[N]     = myIdx;
+        m_parent[myIdx] = parentIdx;
 
         N++;
 
-        // For each successor w of n
-        BasicBlock *bb = m_BBs[n];
+        // Recurse to successors
+        BasicBlock *bb = m_BBs[myIdx];
 
-        for (BasicBlock *_bb : bb->getSuccessors()) {
-            dfs(n, m_indices[_bb]);
+        for (BasicBlock *succ : bb->getSuccessors()) {
+            dfs(m_indices[succ], myIdx);
         }
     }
 }
 
 
-void DataFlow::calculateDominators(Cfg *cfg)
+void DataFlow::calculateDominators()
 {
-    BasicBlock   *entryBB = cfg->getEntryBB();
-    const size_t numBB    = cfg->getNumBBs();
+    Cfg *cfg = m_proc->getCFG();
+    BasicBlock *entryBB = cfg->getEntryBB();
+    const int numBB     = cfg->getNumBBs();
 
-    assert(entryBB != nullptr);
-    assert(numBB > 0);
-
-    m_BBs.resize(numBB, nullptr);
-    N        = 0;
-    m_BBs[0] = entryBB;
-    m_indices.clear();    // In case restart decompilation due to switch statements
-    m_indices[entryBB] = 0;
-
-    // Initialise to "none"
-    m_dfnum.resize(numBB, 0);
-    m_semi.resize(numBB, -1);
-    m_ancestor.resize(numBB, -1);
-    m_idom.resize(numBB, -1);
-    m_samedom.resize(numBB, -1);
-    m_vertex.resize(numBB, -1);
-    m_parent.resize(numBB, -1);
-    m_best.resize(numBB, -1);
-    m_bucket.resize(numBB);
-    m_DF.resize(numBB);
-
-    // Set up the BBs and indices vectors. Do this here
-    // because sometimes a BB can be unreachable
-    // (so relying on in-edges doesn't work)
-
-    size_t idx = 1;
-
-    for (BasicBlock *bb : *cfg) {
-        if (bb != entryBB) { // Entry BB r already done
-            m_indices[bb] = idx;
-            m_BBs[idx++]  = bb;
-        }
+    if (!entryBB || numBB == 0) {
+        return; // nothing to do
     }
 
-    dfs(-1, 0);
-    assert((N - 1) >= 0);
+    N = 0;
+    allocateData();
+
+    dfs(0, -1);
+    assert(N >= 1);
 
     for (int i = N - 1; i >= 1; i--) {
         int n = m_vertex[i];
@@ -106,16 +81,16 @@ void DataFlow::calculateDominators(Cfg *cfg)
 
         /* These lines calculate the semi-dominator of n, based on the Semidominator Theorem */
         // for each predecessor v of n
-        for (BasicBlock *parentBB : m_BBs[n]->getPredecessors()) {
-            if (m_indices.find(parentBB) == m_indices.end()) {
+        for (BasicBlock *pred : m_BBs[n]->getPredecessors()) {
+            if (m_indices.find(pred) == m_indices.end()) {
                 QTextStream q_cerr(stderr);
 
                 q_cerr << "BB not in indices: ";
-                parentBB->print(q_cerr);
+                pred->print(q_cerr);
                 assert(false);
             }
 
-            int v     = m_indices[parentBB];
+            int v     = m_indices[pred];
             int sdash = v;
 
             if (m_dfnum[v] > m_dfnum[n]) {
@@ -248,7 +223,7 @@ void DataFlow::computeDF(int n)
 }
 
 
-bool DataFlow::canRename(SharedExp e, UserProc *proc)
+bool DataFlow::canRename(SharedExp e)
 {
     if (e->isSubscript()) {
         e = e->getSubExp1(); // Look inside refs
@@ -285,12 +260,12 @@ bool DataFlow::canRename(SharedExp e, UserProc *proc)
     // Besides,  before we have types and references, it is not easy to find a type for the location, so we can't tell
     // if e.g. m[esp{-}+12] is evnp or a separate local.
     // It certainly needs to have the local/parameter pattern
-    if (!proc->isLocalOrParamPattern(e)) {
+    if (!m_proc->isLocalOrParamPattern(e)) {
         return false;
     }
 
     // e is a local or parameter; allow it to be propagated iff we've done escape analysis and the address has not
-    return renameLocalsAndParams && !proc->isAddressEscapedVar(e); // escaped
+    return renameLocalsAndParams && !m_proc->isAddressEscapedVar(e); // escaped
 }
 
 
@@ -312,7 +287,7 @@ void DataFlow::dumpA_phi()
 }
 
 
-bool DataFlow::placePhiFunctions(UserProc *proc)
+bool DataFlow::placePhiFunctions()
 {
     // First free some memory no longer needed
     m_dfnum.resize(0);
@@ -327,7 +302,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     m_defallsites.clear();
 
     for (ExpSet& se : m_A_orig) {
-        for (auto iter = se.begin(), fin = se.end(); iter != fin;) {
+        for (auto iter = se.begin(); iter != se.end(); ) {
             if (m_A_phi.find(*iter) == m_A_phi.end()) {
                 iter = se.erase(iter);
             }
@@ -340,11 +315,10 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     m_A_orig.clear();      // and A_orig,
     m_defStmts.clear();    // and the map from variable to defining Stmt
 
-    bool change = false;
 
     // Set the sizes of needed vectors
     const size_t numIndices = m_indices.size();
-    const size_t numBB      = proc->getCFG()->getNumBBs();
+    const size_t numBB      = m_proc->getCFG()->getNumBBs();
     assert(numIndices == numBB);
     Q_UNUSED(numIndices);
 
@@ -353,7 +327,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
     // We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
     // Recreate each call because propagation and other changes make old data invalid
     for (size_t n = 0; n < numBB; n++) {
-        BasicBlock::RTLIterator       rit;
+        BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         BasicBlock              *bb = m_BBs[n];
 
@@ -366,7 +340,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
             }
 
             for (const SharedExp& exp : ls) {
-                if (canRename(exp, proc)) {
+                if (canRename(exp)) {
                     m_A_orig[n].insert(exp->clone());
                     m_defStmts[exp] = s;
                 }
@@ -382,14 +356,15 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
         }
     }
 
+    bool change = false;
     // For each variable a (in defsites, i.e. defined anywhere)
-    for (auto mm = m_defsites.begin(); mm != m_defsites.end(); mm++) {
-        SharedExp a = mm->first; // *mm is pair<Exp*, set<int>>
+    for (auto& val : m_defsites) {
+        SharedExp a = val.first;
 
         // Those variables that are defined everywhere (i.e. in defallsites)
         // need to be defined at every defsite, too
-        for (std::set<int>::iterator da = m_defallsites.begin(); da != m_defallsites.end(); ++da) {
-            m_defsites[a].insert(*da);
+        for (int da : m_defallsites) {
+            m_defsites[a].insert(da);
         }
 
         std::set<int> W = m_defsites[a];
@@ -415,7 +390,7 @@ bool DataFlow::placePhiFunctions(UserProc *proc)
                 Statement  *as  = new PhiAssign(SharedExp(a->clone()));
                 BasicBlock *Ybb = m_BBs[y];
 
-                Ybb->prependStmt(as, proc);
+                Ybb->prependStmt(as, m_proc);
                 // A_phi[a] <- A_phi[a] U {y}
                 m_A_phi[a].insert(y);
 
@@ -444,7 +419,7 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 #define STACKS_EMPTY(q)    (m_Stacks.find(q) == m_Stacks.end() || m_Stacks[q].empty())
 
 // Subscript dataflow variables
-bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = false */)
+bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
 {
     bool changed = false;
 
@@ -455,7 +430,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
     }
 
     // For each statement S in block n
-    BasicBlock::RTLIterator       rit;
+    BasicBlock::RTLIterator rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
 
@@ -494,7 +469,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 SharedExp x = *xx;
 
                 // Don't rename memOfs that are not renamable according to the current policy
-                if (!canRename(x, proc)) {
+                if (!canRename(x)) {
                     continue;
                 }
 
@@ -515,7 +490,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
                     // Update use collector in the proc (for parameters)
                     if (def == nullptr) {
-                        proc->useBeforeDefine(base->clone());
+                        m_proc->useBeforeDefine(base->clone());
                     }
 
                     continue; // Don't re-rename the renamed variable
@@ -532,7 +507,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                         // have stopped changing their expressions (complicates implicit assignments considerably).
                         def = nullptr;
                         // Update the collector at the start of the UserProc
-                        proc->useBeforeDefine(x->clone());
+                        m_proc->useBeforeDefine(x->clone());
                     }
                 }
                 else {
@@ -569,7 +544,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 col = ((ReturnStatement *)S)->getCollector();
             }
 
-            col->updateDefs(m_Stacks, proc);
+            col->updateDefs(m_Stacks, m_proc);
         }
 
         // For each definition of some variable a in S
@@ -580,7 +555,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
         for (dd = defs.begin(); dd != defs.end(); dd++) {
             SharedExp a = *dd;
             // Don't consider a if it cannot be renamed
-            bool suitable = canRename(a, proc);
+            bool suitable = canRename(a);
 
             if (suitable) {
                 // Push i onto Stacks[a]
@@ -640,7 +615,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
             SharedExp a = pa->getLeft();
 
             // Only consider variables that can be renamed
-            if (!canRename(a, proc)) {
+            if (!canRename(a)) {
                 continue;
             }
 
@@ -657,11 +632,11 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
 
     // For each child X of n
     // Note: linear search!
-    size_t numBB = proc->getCFG()->getNumBBs();
+    size_t numBB = m_proc->getCFG()->getNumBBs();
 
     for (size_t X = 0; X < numBB; X++) {
         if (m_idom[X] == n) { // if 'n' is immediate dominator of X
-            renameBlockVars(proc, X);
+            renameBlockVars(X);
         }
     }
 
@@ -679,7 +654,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
         LocationSet::iterator dd;
 
         for (dd = defs.begin(); dd != defs.end(); dd++) {
-            if (!canRename(*dd, proc)) {
+            if (!canRename(*dd)) {
                 continue;
             }
 
@@ -756,8 +731,10 @@ void DataFlow::dumpA_orig()
 }
 
 
-void DataFlow::convertImplicits(Cfg *cfg)
+void DataFlow::convertImplicits()
 {
+    Cfg *cfg = m_proc->getCFG();
+
     // Convert statements in A_phi from m[...]{-} to m[...]{0}
     std::map<SharedExp, std::set<int>, lessExpStar> A_phi_copy = m_A_phi; // Object copy
     ImplicitConverter ic(cfg);
@@ -792,6 +769,13 @@ void DataFlow::convertImplicits(Cfg *cfg)
 
         m_A_orig.insert(m_A_orig.end(), se_new);       // Copy the set (doesn't have to be a deep copy)
     }
+}
+
+
+void DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+                                std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi)
+{
+    return findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
 }
 
 
@@ -890,4 +874,45 @@ void DataFlow::setDominanceNums(int n, int& currNum)
     Q_UNUSED(n);
     Q_UNUSED(currNum);
 #endif
+}
+
+
+void DataFlow::allocateData()
+{
+    Cfg *cfg = m_proc->getCFG();
+    const int numBBs = cfg->getNumBBs();
+
+    m_BBs.resize(numBBs, nullptr);
+    m_indices.clear();
+
+    m_dfnum.resize(numBBs, -1);
+    m_semi.resize(numBBs, -1);
+    m_ancestor.resize(numBBs, -1);
+    m_idom.resize(numBBs, -1);
+    m_samedom.resize(numBBs, -1);
+    m_vertex.resize(numBBs, -1);
+    m_parent.resize(numBBs, -1);
+    m_best.resize(numBBs, -1);
+    m_bucket.resize(numBBs);
+    m_A_orig.resize(numBBs);
+    m_DF.resize(numBBs);
+
+    m_A_phi.clear();
+    m_defsites.clear();
+    m_defallsites.clear();
+    m_defStmts.clear();
+    m_Stacks.clear();
+
+
+    // Set up the BBs and indices vectors. Do this here
+    // because sometimes a BB can be unreachable
+    // (so relying on in-edges doesn't work)
+    int i = 0;
+    for (BasicBlock *bb : *cfg) {
+        m_BBs[i++] = bb;
+    }
+
+    for (int j = 0; j < numBBs; j++) {
+        m_indices[m_BBs[j]] = j;
+    }
 }
