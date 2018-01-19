@@ -14,6 +14,7 @@
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/exp/RefExp.h"
 
 
 StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter* ic, Cfg* cfg)
@@ -28,11 +29,11 @@ void StmtImplicitConverter::visit(PhiAssign *stmt, bool& visitChildren)
     // The LHS could be a m[x] where x has a null subscript; must do first
     stmt->setLeft(stmt->getLeft()->accept(m_mod));
 
-    for (auto& v : *stmt) {
-        assert(v.e != nullptr);
+    for (RefExp& exp : *stmt) {
+        assert(exp.getSubExp1() != nullptr);
 
-        if (v.getDef() == nullptr) {
-            v.setDef(m_cfg->findImplicitAssign(v.e));
+        if (exp.getDef() == nullptr) {
+            exp.setDef(m_cfg->findImplicitAssign(exp.getSubExp1()));
         }
     }
 

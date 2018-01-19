@@ -75,12 +75,12 @@ void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
 
     UserProc *_proc = ((ExpSsaXformer *)m_mod)->getProc();
 
-    for (auto& v : *stmt) {
-        assert(v.e != nullptr);
-        QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.e, v.getDef()));
+    for (RefExp& v : *stmt) {
+        assert(v.getSubExp1() != nullptr);
+        QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.getSubExp1(), v.getDef()));
 
         if (!sym.isNull()) {
-            v.e = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter
+            v.getSubExp1() = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter
         }
     }
 

@@ -144,7 +144,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
 
             PhiAssign *pa = dynamic_cast<PhiAssign *>(st);
 
-            for (std::pair<const BasicBlock *, PhiInfo> v : pa->getDefs()) {
+            for (const auto& v : pa->getDefs()) {
                 if (!cfg->hasBB(v.first)) {
                     LOG_WARN("Someone removed the BB that defined the PHI! Need to update PhiAssign defs");
                 }

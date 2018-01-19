@@ -12,29 +12,7 @@
 
 #include "boomerang/db/statements/Assignment.h"
 #include "boomerang/util/MapIterators.h"
-
-
-/**
- * The below could almost be a RefExp. But we could not
- * at one stage #include exp.h as part of statement,h; that's since changed
- * so it is now possible, and arguably desirable.
- * However, it's convenient to have these members public
- */
-class PhiInfo
-{
-public:
-    PhiInfo(SharedExp usedExp, Statement *def) { m_def = def; e = usedExp; }
-    void setDef(Statement *def) { m_def = def; }
-
-    Statement       *getDef() { return m_def; }
-    const Statement *getDef() const { return m_def; }
-
-public:
-    SharedExp       e;   ///< The expression for the thing being defined (never subscripted)
-
-private:
-    Statement       *m_def; ///< The defining statement
-};
+#include "boomerang/db/exp/RefExp.h"
 
 
 /**
@@ -60,7 +38,7 @@ class PhiAssign : public Assignment
     };
 
 public:
-    typedef std::map<BasicBlock *, PhiInfo, BBComparator> PhiDefs;
+    typedef std::map<BasicBlock *, RefExp, BBComparator> PhiDefs;
     typedef MapValueIterator<PhiDefs> iterator;
     typedef MapValueConstIterator<PhiDefs> const_iterator;
     typedef MapValueReverseIterator<PhiDefs> reverse_iterator;
@@ -79,6 +57,17 @@ public:
 
     PhiAssign& operator=(const PhiAssign& other) = default;
     PhiAssign& operator=(PhiAssign&& other) = default;
+
+public:
+    iterator begin() { return m_defs.begin(); }
+    iterator end()   { return m_defs.end(); }
+    const_iterator begin() const { return m_defs.begin(); }
+    const_iterator end() const { return m_defs.end(); }
+
+    reverse_iterator rbegin() { return m_defs.rbegin(); }
+    reverse_iterator rend()   { return m_defs.rend();   }
+    const_reverse_iterator rbegin() const { return m_defs.rbegin(); }
+    const_reverse_iterator rend()   const { return m_defs.rend();   }
 
 public:
     /// \copydoc Statement::clone
@@ -128,13 +117,6 @@ public:
     size_t getNumDefs() const { return m_defs.size(); }
     PhiDefs& getDefs() { return m_defs; }
     const PhiDefs& getDefs() const { return m_defs; }
-
-    PhiInfo& front() { return m_defs.begin()->second; }
-    PhiInfo& back() { return m_defs.rbegin()->second; }
-    iterator begin() { return m_defs.begin(); }
-    iterator end() { return m_defs.end(); }
-    const_iterator begin() const { return m_defs.begin(); }
-    const_iterator end() const { return m_defs.end(); }
 
     void removeAllReferences(std::shared_ptr<RefExp> exp);
 

@@ -808,9 +808,9 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign           *pa = (PhiAssign *)S;
 
-            for (PhiInfo& pi : *pa) {
-                if (pi.e) {
-                    auto re = RefExp::get(pi.e, pi.getDef());
+            for (RefExp& exp : *pa) {
+                if (exp.getSubExp1()) {
+                    auto re = RefExp::get(exp.getSubExp1(), exp.getDef());
                     usedByDomPhi0.insert(re);
                 }
             }

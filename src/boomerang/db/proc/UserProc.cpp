@@ -3005,10 +3005,10 @@ void UserProc::fromSSAForm()
                 bool                allSame     = true;
                 bool                r2IsOperand = false;
                 QString             firstName   = QString::null;
-                PhiAssign           *pi = (PhiAssign *)def1;
+                PhiAssign           *pa = (PhiAssign *)def1;
 
-                for (PhiInfo &phiInfo : *pi) {
-                    auto re(RefExp::get(phiInfo.e, phiInfo.getDef()));
+                for (RefExp &refExp : *pa) {
+                    auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
 
                     if (*re == *r2) {
                         r2IsOperand = true;
@@ -3086,17 +3086,17 @@ void UserProc::fromSSAForm()
         SharedExp first         = nullptr;
 
         if (pa->getNumDefs() > 1) {
-            for (PhiInfo& pi : *pa) {
-                if (pi.e == nullptr) {
+            for (RefExp& pi : *pa) {
+                if (pi.getSubExp1() == nullptr) {
                     continue;
                 }
 
                 if (first == nullptr) {
-                    first = pi.e;
+                    first = pi.getSubExp1();
                     continue;
                 }
 
-                if (!(*pi.e == *first)) {
+                if (!(*(pi.getSubExp1()) == *first)) {
                     phiParamsSame = false;
                     break;
                 }
@@ -3133,12 +3133,12 @@ void UserProc::fromSSAForm()
             }
 
             // For each definition ref'd in the phi
-            for (PhiInfo &pi : *pa) {
-                if (pi.e == nullptr) {
+            for (RefExp &pi : *pa) {
+                if (pi.getSubExp1() == nullptr) {
                     continue;
                 }
 
-                insertAssignAfter(pi.getDef(), tempLoc, pi.e);
+                insertAssignAfter(pi.getDef(), tempLoc, pi.getSubExp1());
             }
 
             // Replace the RHS of the phi with tempLoc
@@ -3501,7 +3501,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                             LOG_MSG("Found %1 prove for each, ", s);
                         }
 
-                        for (PhiInfo &pi : *pa) {
+                        for (RefExp &pi : *pa) {
                             auto e  = query->clone();
                             auto r1 = e->access<RefExp, 1>();
                             r1->setDef(pi.getDef());
@@ -4003,8 +4003,8 @@ void UserProc::reverseStrengthReduction()
                     PhiAssign *p = (PhiAssign *)r->getDef();
 
                     if (p->getNumDefs() == 2) {
-                        Statement *first  = p->front().getDef();
-                        Statement *second = p->back().getDef();
+                        Statement *first  = p->begin()->getDef();
+                        Statement *second = p->rbegin()->getDef();
 
                         if (first == as) {
                             // want the increment in second
@@ -4345,13 +4345,14 @@ void UserProc::fixCallAndPhiRefs()
         // Let first be a reference built from the first parameter
         PhiAssign::iterator phi_iter = ps->begin();
 
-        while (phi_iter->e == nullptr && phi_iter != ps->end()) {
+        while (phi_iter != ps->end() && phi_iter->getSubExp1() == nullptr) {
             ++phi_iter;                // Skip any null parameters
         }
 
         assert(phi_iter != ps->end()); // Should have been deleted
-        PhiInfo&  phi_inf = *phi_iter;
-        SharedExp first = RefExp::get(phi_inf.e, phi_inf.getDef());
+        RefExp&  phi_inf = *phi_iter;
+        SharedExp first = RefExp::get(phi_inf.getSubExp1(), phi_inf.getDef());
+
         // bypass to first
         CallBypasser cb(ps);
         first = first->accept(&cb);
@@ -4372,9 +4373,9 @@ void UserProc::fixCallAndPhiRefs()
 
         // For each parameter p of ps after the first
         for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
-            assert(phi_iter->e);
-            PhiInfo&     phi_inf2 = *phi_iter;
-            SharedExp    current = RefExp::get(phi_inf2.e, phi_inf2.getDef());
+            assert(phi_iter->getSubExp1());
+            RefExp&      phi_inf2 = *phi_iter;
+            SharedExp    current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
             CallBypasser cb2(ps);
             current = current->accept(&cb2);
 
@@ -4401,16 +4402,16 @@ void UserProc::fixCallAndPhiRefs()
             // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
             phi_iter = ps->begin();
 
-            while (phi_iter->e == nullptr && phi_iter != ps->end()) {
+            while (phi_iter != ps->end() && phi_iter->getSubExp1() == nullptr) {
                 ++phi_iter;                // Skip any null parameters
             }
 
             assert(phi_iter != ps->end()); // Should have been deleted
-            auto best = RefExp::get(phi_iter->e, phi_iter->getDef());
+            auto best = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
 
             for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
-                assert(phi_iter->e);
-                auto current = RefExp::get(phi_iter->e, phi_iter->getDef());
+                assert(phi_iter->getSubExp1());
+                auto current = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
 
                 if (current->isImplicitDef()) {
                     best = current;
@@ -5181,9 +5182,9 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
 
     for (it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        for (const auto& v : *it->second) {
-            assert(v.e);
-            auto wrappedParam = RefExp::get(v.e, (Statement *)v.getDef());
+        for (RefExp& v : *it->second) {
+            assert(v.getSubExp1());
+            auto wrappedParam = RefExp::get(v.getSubExp1(), (Statement *)v.getDef());
             usedByDomPhi.remove(wrappedParam);
         }
 
@@ -5219,9 +5220,9 @@ void UserProc::findPhiUnites(ConnectionGraph& pu)
         SharedExp lhs   = pa->getLeft();
         auto      reLhs = RefExp::get(lhs, pa);
 
-        for (const auto& v : *pa) {
-            assert(v.e);
-            auto re = RefExp::get(v.e, (Statement *)v.getDef());
+        for (RefExp& v : *pa) {
+            assert(v.getSubExp1());
+            auto re = RefExp::get(v.getSubExp1(), (Statement *)v.getDef());
             pu.connect(reLhs, re);
         }
     }
@@ -5326,9 +5327,9 @@ void UserProc::nameParameterPhis()
         QString    firstName = QString::null; // The name for the first parameter found
         SharedType ty        = pi->getType();
 
-        for (const auto& v : *pi) {
+        for (RefExp& v : *pi) {
             if (v.getDef()->isImplicit()) {
-                QString name = lookupSym(RefExp::get(v.e, (Statement *)v.getDef()), ty);
+                QString name = lookupSym(RefExp::get(v.getSubExp1(), (Statement *)v.getDef()), ty);
 
                 if (!name.isNull()) {
                     if (!firstName.isNull() && (firstName != name)) {

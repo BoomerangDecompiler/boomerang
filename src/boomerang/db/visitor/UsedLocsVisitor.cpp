@@ -93,13 +93,13 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& visitChildren)
         subExp2->accept(ev);
     }
 
-    for (const auto& v : *stmt) {
+    for (RefExp& refExp : *stmt) {
         // Note: don't make the RefExp based on lhs, since it is possible that the lhs was renamed in fromSSA()
         // Use the actual expression in the PhiAssign
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
-        assert(v.e);
-        auto temp = RefExp::get(v.e, (Statement *)v.getDef());
+        assert(refExp.getSubExp1());
+        auto temp = RefExp::get(refExp.getSubExp1(), refExp.getDef());
         temp->accept(ev);
     }
 
