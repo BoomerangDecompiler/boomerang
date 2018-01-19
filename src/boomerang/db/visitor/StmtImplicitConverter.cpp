@@ -29,10 +29,10 @@ void StmtImplicitConverter::visit(PhiAssign *stmt, bool& visitChildren)
     stmt->setLeft(stmt->getLeft()->accept(m_mod));
 
     for (auto& v : *stmt) {
-        assert(v.second.e != nullptr);
+        assert(v.e != nullptr);
 
-        if (v.second.getDef() == nullptr) {
-            v.second.setDef(m_cfg->findImplicitAssign(v.second.e));
+        if (v.getDef() == nullptr) {
+            v.setDef(m_cfg->findImplicitAssign(v.e));
         }
     }
 

@@ -75,18 +75,18 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
     PhiAssign::PhiDefs& defs = stmt->getDefs();
     PhiAssign::iterator it = defs.begin();
 
-    while (it->second.e == nullptr && it != defs.end()) {
+    while (it->e == nullptr && it != defs.end()) {
         ++it;
     }
 
     assert(it != defs.end());
-    assert(it->second.getDef());
-    SharedType meetOfArgs = it->second.getDef()->getTypeFor(stmt->getLeft());
+    assert(it->getDef());
+    SharedType meetOfArgs = it->getDef()->getTypeFor(stmt->getLeft());
 
     bool ch = false;
 
     for (++it; it != defs.end(); ++it) {
-        PhiInfo& phinf(it->second);
+        PhiInfo& phinf = *it;
 
         if (phinf.e == nullptr) {
             continue;
@@ -103,11 +103,11 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
     }
 
     for (it = defs.begin(); it != defs.end(); ++it) {
-        if (it->second.e == nullptr) {
+        if (it->e == nullptr) {
             continue;
         }
 
-        it->second.getDef()->meetWithFor(stmt->getType(), it->second.e, ch);
+        it->getDef()->meetWithFor(stmt->getType(), it->e, ch);
     }
 
     m_changed |= ch;

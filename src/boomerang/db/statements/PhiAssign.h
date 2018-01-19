@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/statements/Assignment.h"
+#include "boomerang/util/MapIterators.h"
 
 
 /**
@@ -22,6 +23,7 @@
 class PhiInfo
 {
 public:
+    PhiInfo(SharedExp usedExp, Statement *def) { m_def = def; e = usedExp; }
     void setDef(Statement *def) { m_def = def; }
 
     Statement       *getDef() { return m_def; }
@@ -59,8 +61,10 @@ class PhiAssign : public Assignment
 
 public:
     typedef std::map<BasicBlock *, PhiInfo, BBComparator> PhiDefs;
-    typedef PhiDefs::iterator                 iterator;
-    typedef PhiDefs::const_iterator           const_iterator;
+    typedef MapValueIterator<PhiDefs> iterator;
+    typedef MapValueConstIterator<PhiDefs> const_iterator;
+    typedef MapValueReverseIterator<PhiDefs> reverse_iterator;
+    typedef MapValueConstReverseIterator<PhiDefs> const_reverse_iterator;
 
 public:
     PhiAssign(SharedExp _lhs)
@@ -115,8 +119,8 @@ public:
     //
 
     /// Get statement at index \p idx
-    Statement *getStmtAt(BasicBlock *idx);
-    PhiInfo& getAt(BasicBlock *idx);
+    Statement *getStmtAt(BasicBlock *bb);
+    const Statement *getStmtAt(BasicBlock *bb) const;
 
     /// Update the statement at index \p idx
     void putAt(BasicBlock *idx, Statement *d, SharedExp e);
@@ -131,7 +135,8 @@ public:
     iterator end() { return m_defs.end(); }
     const_iterator begin() const { return m_defs.begin(); }
     const_iterator end() const { return m_defs.end(); }
-    iterator erase(iterator it) { return m_defs.erase(it); }
+
+    void removeAllReferences(std::shared_ptr<RefExp> exp);
 
     /// Convert this PhiAssignment to an ordinary Assignment.
     /// Hopefully, this is the only place that Statements change from

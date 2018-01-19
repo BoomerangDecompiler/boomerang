@@ -28,8 +28,8 @@ public:
     MapValueIterator(typename M::iterator it) : m_it(it) {}
     MapValueIterator(const MapValueIterator<M>& it) { this->m_it = it.m_it; }
 
-    MapValueIterator<M> &operator=(const MapValueIterator<M> & it)
-    { this->m_it = it->m_it; return *this; }
+    MapValueIterator<M> &operator=(const MapValueIterator<M> &it)
+    { this->m_it = it.m_it; return *this; }
 
     bool operator==(const MapValueIterator<M> &it) const { return m_it == it.m_it; }
     bool operator!=(const MapValueIterator<M> &it) const { return m_it != it.m_it; }

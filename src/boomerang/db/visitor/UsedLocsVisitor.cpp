@@ -98,8 +98,8 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& visitChildren)
         // Use the actual expression in the PhiAssign
         // Also note that it's possible for uu->e to be nullptr. Suppose variable a can be assigned to along in-edges
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
-        assert(v.second.e);
-        auto temp = RefExp::get(v.second.e, (Statement *)v.second.getDef());
+        assert(v.e);
+        auto temp = RefExp::get(v.e, (Statement *)v.getDef());
         temp->accept(ev);
     }
 

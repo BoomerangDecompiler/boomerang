@@ -47,9 +47,9 @@ Statement *PhiAssign::clone() const
     PhiDefs::const_iterator dd;
 
     for (dd = m_defs.begin(); dd != m_defs.end(); dd++) {
-        PhiInfo pi;
-        pi.setDef((Statement *)dd->second.getDef()); // Don't clone the Statement pointer (never moves)
-        pi.e = dd->second.e->clone();                // Do clone the expression pointer
+        PhiInfo pi(
+            dd->second.e->clone(),             // Do clone the expression pointer
+            (Statement *)dd->second.getDef()); // Don't clone the Statement pointer (never moves)
         assert(pi.e);
         pa->m_defs.insert(std::make_pair(dd->first, pi));
     }
@@ -193,12 +193,6 @@ bool PhiAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*c
 }
 
 
-PhiInfo& PhiAssign::getAt(BasicBlock *idx)
-{
-    return m_defs[idx];
-}
-
-
 bool PhiAssign::accept(StmtExpVisitor *visitor)
 {
     bool visitChildren = true;
@@ -338,12 +332,19 @@ void PhiAssign::simplify()
 }
 
 
-void PhiAssign::putAt(BasicBlock *i, Statement *def, SharedExp e)
+void PhiAssign::putAt(BasicBlock *bb, Statement *def, SharedExp e)
 {
     assert(e);     // should be something surely
-    // assert(defVec.end()==defVec.find(i));
-    m_defs[i].setDef(def);
-    m_defs[i].e = e;
+
+    // Can't use operator[] here since PhiInfo is not default-constructible
+    PhiDefs::iterator it = m_defs.find(bb);
+    if (it == m_defs.end()) {
+        m_defs.insert({ bb, PhiInfo(e, def) });
+    }
+    else {
+        it->second.setDef(def);
+        it->second.e = e;
+    }
 }
 
 
@@ -357,12 +358,43 @@ void PhiAssign::enumerateParams(std::list<SharedExp>& le)
 }
 
 
-Statement* PhiAssign::getStmtAt(BasicBlock* idx)
+const Statement *PhiAssign::getStmtAt(BasicBlock* idx) const
 {
-    if (m_defs.find(idx) == m_defs.end()) {
-        return nullptr;
-    }
-
-    return m_defs[idx].getDef();
+    PhiDefs::const_iterator it = m_defs.find(idx);
+    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
 }
 
+
+Statement *PhiAssign::getStmtAt(BasicBlock* idx)
+{
+    PhiDefs::iterator it = m_defs.find(idx);
+    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
+}
+
+
+void PhiAssign::removeAllReferences(std::shared_ptr<RefExp> refExp)
+{
+    for (PhiDefs::iterator pi = m_defs.begin(); pi != m_defs.end();) {
+        PhiInfo& p = pi->second;
+        assert(p.e);
+        std::shared_ptr<RefExp> current = RefExp::get(p.e, p.getDef());
+
+        if (*current == *refExp) {   // Will we ever see this?
+            pi = m_defs.erase(pi); // Erase this phi parameter
+            continue;
+        }
+
+        // Chase the definition
+        Statement *def = p.getDef();
+        if (def && def->isAssign()) {
+            SharedExp rhs = static_cast<Assign *>(def)->getRight();
+
+            if (*rhs == *refExp) {      // Check if RHS is a single reference to this
+                pi = m_defs.erase(pi);  // Yes, erase this phi parameter
+                continue;
+            }
+        }
+
+        ++pi; // keep it
+    }
+}

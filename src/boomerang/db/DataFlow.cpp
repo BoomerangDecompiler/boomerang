@@ -477,7 +477,7 @@ bool DataFlow::renameBlockVars(UserProc *proc, int n, bool clearStacks /* = fals
                 // A phi statement may use a location defined in a childless call, in which case its use collector
                 // needs updating
                 for (auto& pp : *pa) {
-                    Statement *def = pp.second.getDef();
+                    Statement *def = pp.getDef();
 
                     if (def && def->isCall()) {
                         ((CallStatement *)def)->useBeforeDefine(phiLeft->clone());
@@ -807,11 +807,10 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
         if (S->isPhi()) {
             // For each phi parameter, insert an entry into usedByDomPhi0
             PhiAssign           *pa = (PhiAssign *)S;
-            PhiAssign::iterator it;
 
-            for (it = pa->begin(); it != pa->end(); ++it) {
-                if (it->second.e) {
-                    auto re = RefExp::get(it->second.e, it->second.getDef());
+            for (PhiInfo& pi : *pa) {
+                if (pi.e) {
+                    auto re = RefExp::get(pi.e, pi.getDef());
                     usedByDomPhi0.insert(re);
                 }
             }
