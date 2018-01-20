@@ -199,7 +199,7 @@ Statement *BoolAssign::clone() const
     ret->m_isFloat  = m_isFloat;
     ret->m_size     = m_size;
     // Statement members
-    ret->m_parent = m_parent;
+    ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;

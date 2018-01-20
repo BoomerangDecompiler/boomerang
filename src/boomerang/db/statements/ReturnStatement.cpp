@@ -57,7 +57,7 @@ Statement *ReturnStatement::clone() const
     ret->m_retAddr = m_retAddr;
     ret->m_col.makeCloneOf(m_col);
     // Statement members
-    ret->m_parent = m_parent;
+    ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
@@ -418,8 +418,8 @@ void ReturnStatement::updateModifieds()
 
     m_modifieds.clear();
 
-    if ((m_parent->getNumPredecessors() == 1) && m_parent->getPredecessors()[0]->getLastStmt()->isCall()) {
-        CallStatement *call = (CallStatement *)m_parent->getPredecessors()[0]->getLastStmt();
+    if ((m_bb->getNumPredecessors() == 1) && m_bb->getPredecessors()[0]->getLastStmt()->isCall()) {
+        CallStatement *call = (CallStatement *)m_bb->getPredecessors()[0]->getLastStmt();
 
         if (call->getDestProc() && IFrontEnd::isNoReturnCallDest(call->getDestProc()->getName())) {
             return;
@@ -453,7 +453,7 @@ void ReturnStatement::updateModifieds()
         if (!found) {
             ImplicitAssign *ias = new ImplicitAssign(as->getType()->clone(), as->getLeft()->clone());
             ias->setProc(m_proc);     // Comes from the Collector
-            ias->setBB(m_parent);
+            ias->setBB(m_bb);
             oldMods.append(ias);
         }
     }
@@ -532,7 +532,7 @@ void ReturnStatement::updateReturns()
             SharedExp rhs = m_col.findDefFor(loc);     // Find the definition that reaches the return statement's collector
             Assign    *as = new Assign(loc->clone(), rhs->clone());
             as->setProc(m_proc);
-            as->setBB(m_parent);
+            as->setBB(m_bb);
             oldRets.append(as);
         }
     }

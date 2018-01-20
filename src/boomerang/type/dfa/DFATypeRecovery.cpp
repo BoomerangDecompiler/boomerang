@@ -286,7 +286,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     }
 
     if (ch) {
-        LOG_WARN("Iteration limit exceeded for dfaTypeAnalysis of procedure '%1'", proc->getName());
+        LOG_VERBOSE("Iteration limit exceeded for dfaTypeAnalysis of procedure '%1'", proc->getName());
     }
 
     if (DEBUG_TA) {

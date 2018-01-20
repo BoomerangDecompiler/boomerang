@@ -122,11 +122,11 @@ public:
     virtual Statement *clone() const = 0;
 
     /// \returns the BB that this statement is part of.
-    BasicBlock *getBB() { return m_parent; }
-    const BasicBlock *getBB() const { return m_parent; }
+    BasicBlock *getBB() { return m_bb; }
+    const BasicBlock *getBB() const { return m_bb; }
 
     /// Changes the BB that this statment is part of.
-    void setBB(BasicBlock *bb) { m_parent = bb; }
+    void setBB(BasicBlock *bb) { m_bb = bb; }
 
     /// \returns the procedure this statement is part of.
     UserProc *getProc() const { return m_proc; }
@@ -382,7 +382,7 @@ public:
     bool mayAlias(SharedExp e1, SharedExp e2, int size) const;
 
 protected:
-    BasicBlock *m_parent = nullptr; ///< contains a pointer to the enclosing BB
+    BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
     UserProc *m_proc = nullptr;     ///< procedure containing this statement
     int m_number = -1;              ///< Statement number for printing
 

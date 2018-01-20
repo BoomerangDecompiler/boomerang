@@ -271,7 +271,7 @@ void PhiAssign::convertToAssign(SharedExp rhs)
     // Thanks to tamlin for this cleaner way of implementing this hack
 
     int        n     = m_number;     // These items disappear with the destructor below
-    BasicBlock *bb   = m_parent;
+    BasicBlock *bb   = m_bb;
     UserProc   *p    = m_proc;
     SharedExp  lhs_  = m_lhs;
     SharedExp  rhs_  = rhs;

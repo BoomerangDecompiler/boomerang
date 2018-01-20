@@ -346,7 +346,7 @@ void CallStatement::setArguments(const StatementList& args)
         Assign *asgn = dynamic_cast<Assign *>(*ll);
         if (asgn) {
             asgn->setProc(m_proc);
-            asgn->setBB(m_parent);
+            asgn->setBB(m_bb);
         }
     }
 }
@@ -389,7 +389,7 @@ void CallStatement::setSigArguments()
                                 e->clone(),
                                 e->clone());
         as->setProc(m_proc);
-        as->setBB(m_parent);
+        as->setBB(m_bb);
         as->setNumber(m_number);     // So fromSSAForm will work later. But note: this call is probably not numbered yet!
         // as->setParent(this);
         m_arguments.append(as);
@@ -617,7 +617,7 @@ Statement *CallStatement::clone() const
     }
 
     // Statement members
-    ret->m_parent = m_parent;
+    ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
@@ -847,7 +847,7 @@ bool CallStatement::convertToDirect()
         SharedExp a   = sig->getParamExp(i);
         Assign    *as = new Assign(VoidType::get(), a->clone(), a->clone());
         as->setProc(m_proc);
-        as->setBB(m_parent);
+        as->setBB(m_bb);
         m_arguments.append(as);
     }
 
@@ -932,7 +932,7 @@ void CallStatement::setNumArguments(int n)
 
         Assign *as = new Assign(ty, a->clone(), a->clone());
         as->setProc(m_proc);
-        as->setBB(m_parent);
+        as->setBB(m_bb);
         m_arguments.append(as);
     }
 }
@@ -1285,7 +1285,7 @@ Assign *CallStatement::makeArgAssign(SharedType ty, SharedExp e)
     SharedExp rhs = localiseExp(e->clone());
     Assign    *as = new Assign(ty, lhs, rhs);
     as->setProc(m_proc);
-    as->setBB(m_parent);
+    as->setBB(m_bb);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
     Cfg *cfg = m_proc->getCFG();
 
@@ -1400,7 +1400,7 @@ void CallStatement::updateDefines()
             if (!oldDefines.existsOnLeft(loc)) {
                 ImplicitAssign *as = new ImplicitAssign(loc->clone());
                 as->setProc(m_proc);
-                as->setBB(m_parent);
+                as->setBB(m_bb);
                 oldDefines.append(as);
             }
         }
@@ -1519,7 +1519,7 @@ void CallStatement::updateArguments()
             as->setNumber(m_number);     // Give the assign the same statement number as the call (for now)
             // as->setParent(this);
             as->setProc(m_proc);
-            as->setBB(m_parent);
+            as->setBB(m_bb);
             oldArguments.append(as);
         }
     }

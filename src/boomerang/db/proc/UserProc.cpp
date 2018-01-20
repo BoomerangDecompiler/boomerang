@@ -713,10 +713,11 @@ void UserProc::numberStatements()
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            if (!s->isImplicit() &&      // Don't renumber implicits (remain number 0)
-                (s->getNumber() == 0)) { // Don't renumber existing (or waste numbers)
-                s->setNumber(++m_stmtNumber);
+            if (s->isImplicit() || s->getNumber() != 0) {
+                continue;
             }
+
+            s->setNumber(++m_stmtNumber);
         }
     }
 }
@@ -1412,10 +1413,10 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         // There was at least one indirect jump or call found and decoded. That means that most of what has been done
         // to this function so far is invalid. So redo everything. Very expensive!!
         // Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
-        LOG_MSG("=== about to restart decompilation of %1 because indirect jumps or calls have been analysed", getName());
+        LOG_MSG("Restarting decompilation of '%1' because indirect jumps or calls have been analyzed", getName());
 
         Boomerang::get()->alertDecompileDebugPoint(
-            this, "Before restarting decompilation because indirect jumps or calls have been analysed");
+            this, "Before restarting decompilation because indirect jumps or calls have been analyzed");
 
         // First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
         // will prevent duplicates
@@ -1459,21 +1460,16 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
 void UserProc::remUnusedStmtEtc()
 {
-    bool convert;
-    bool change;
-
-    // NO! Removing of unused statements is an important part of the global removing unused returns analysis, which
-    // happens after UserProc::decompile is complete
-    // if (status >= PROC_FINAL)
-    //    return;
-
     Boomerang::get()->alertDecompiling(this);
-    Boomerang::get()->alertDecompileDebugPoint(this, "before final");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before Final");
 
     LOG_VERBOSE("--- Remove unused statements for %1 ---", getName());
     // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
     //    if (theReturnStatement)
     //        theReturnStatement->specialProcessing();
+
+    bool convert;
+    bool change = false;
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
@@ -1540,7 +1536,7 @@ void UserProc::remUnusedStmtEtc()
 
         // recalculate phi assignments of referencing BBs
         for (BasicBlock *bb : *m_cfg) {
-            BasicBlock::RTLIterator       rtlIt;
+            BasicBlock::RTLIterator rtlIt;
             StatementList::iterator stmtIt;
 
             for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
@@ -3815,7 +3811,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
     else {
         for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
             const SharedType ty = getTypeForLocation(it.second);
-            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
+            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
 
             if (html) {
                 out << "<br>";

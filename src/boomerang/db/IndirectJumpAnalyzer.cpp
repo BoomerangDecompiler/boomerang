@@ -676,12 +676,12 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 int IndirectJumpAnalyzer::findNumCases(BasicBlock *bb)
 {
     // should actually search from the statement to i
-    for (BasicBlock *in : bb->getPredecessors()) {  // For each in-edge
-        if (!in->isType(BBType::Twoway)) {          // look for a two-way BB
+    for (BasicBlock *pred : bb->getPredecessors()) {  // For each in-edge
+        if (!pred->isType(BBType::Twoway)) {          // look for a two-way BB
             continue;                               // Ignore all others
         }
 
-        BranchStatement *lastStmt = dynamic_cast<BranchStatement *>(in->getLastStmt());
+        BranchStatement *lastStmt = dynamic_cast<BranchStatement *>(pred->getLastStmt());
         assert(lastStmt != nullptr);
         SharedExp pCond = lastStmt->getCondExpr();
         if (pCond->getArity() != 2) {

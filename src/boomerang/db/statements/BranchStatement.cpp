@@ -143,50 +143,50 @@ void BranchStatement::setCondExpr(SharedExp pe)
 
 BasicBlock *BranchStatement::getFallBB() const
 {
-    if (!m_parent || m_parent->getNumSuccessors() != 2) {
+    if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    return m_parent->getSuccessor(BELSE);
+    return m_bb->getSuccessor(BELSE);
 }
 
 
 void BranchStatement::setFallBB(BasicBlock *destBB)
 {
-    if (!m_parent || m_parent->getNumSuccessors() != 2) {
+    if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return;
     }
 
-    BasicBlock *oldDestBB = m_parent->getSuccessor(BELSE);
+    BasicBlock *oldDestBB = m_bb->getSuccessor(BELSE);
     if (destBB != oldDestBB) {
-        oldDestBB->removePredecessor(m_parent);
-        m_parent->setSuccessor(BELSE, destBB);
-        destBB->addPredecessor(m_parent);
+        oldDestBB->removePredecessor(m_bb);
+        m_bb->setSuccessor(BELSE, destBB);
+        destBB->addPredecessor(m_bb);
     }
 }
 
 
 BasicBlock *BranchStatement::getTakenBB() const
 {
-    if (!m_parent || m_parent->getNumSuccessors() != 2) {
+    if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    return m_parent->getSuccessor(BTHEN);
+    return m_bb->getSuccessor(BTHEN);
 }
 
 
 void BranchStatement::setTakenBB(BasicBlock *destBB)
 {
-    if (!m_parent || m_parent->getNumSuccessors() != 2) {
+    if (!m_bb || m_bb->getNumSuccessors() != 2) {
         return;
     }
 
-    BasicBlock *oldDestBB = m_parent->getSuccessor(BTHEN);
+    BasicBlock *oldDestBB = m_bb->getSuccessor(BTHEN);
     if (destBB != oldDestBB) {
-        oldDestBB->removePredecessor(m_parent);
-        m_parent->setSuccessor(BTHEN, destBB);
-        destBB->addPredecessor(m_parent);
+        oldDestBB->removePredecessor(m_bb);
+        m_bb->setSuccessor(BTHEN, destBB);
+        destBB->addPredecessor(m_bb);
     }
 }
 
@@ -347,7 +347,7 @@ Statement *BranchStatement::clone() const
     ret->m_cond       = m_cond ? m_cond->clone() : nullptr;
     ret->m_isFloat    = m_isFloat;
     // Statement members
-    ret->m_parent = m_parent;
+    ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;

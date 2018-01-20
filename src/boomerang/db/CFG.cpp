@@ -386,7 +386,7 @@ void Cfg::undoComputedBB(Statement *stmt)
 {
     for (BasicBlock *bb : *this) {
         if (bb->hasStatement(stmt)) {
-            LOG_MSG("undoComputedBB for statement %1", stmt);
+            LOG_VERBOSE("undoComputedBB for statement %1", stmt);
             bb->setType(BBType::Call);
             break;
         }

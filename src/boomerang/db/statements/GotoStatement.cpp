@@ -173,7 +173,7 @@ Statement *GotoStatement::clone() const
     ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
     // Statement members
-    ret->m_parent = m_parent;
+    ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
