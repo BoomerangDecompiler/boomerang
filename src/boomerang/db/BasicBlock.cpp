@@ -637,6 +637,7 @@ bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
 void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
 {
     assert(m_function == proc);
+
     // Check the first RTL (if any)
     assert(m_listOfRTLs);
     stmt->setBB(this);

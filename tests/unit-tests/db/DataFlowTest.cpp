@@ -138,15 +138,20 @@ void DataFlowTest::testPlacePhi()
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *pProc = (UserProc *)(*m->begin());
+    UserProc *mainProc = (UserProc *)(*m->begin());
+    QCOMPARE(mainProc->getName(), QString("main"));
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog.finishDecode();
-    DataFlow *df = pProc->getDataFlow();
-    df->calculateDominators();
-    df->placePhiFunctions();
 
-    // m[r29 - 8] (x for this program)
+    DataFlow *df = mainProc->getDataFlow();
+    df->calculateDominators();
+
+    // test!
+    QCOMPARE(df->placePhiFunctions(), true);
+
+    // r29 == ebp
+    // m[r29 - 4] (x for this program)
     SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
 
     // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)

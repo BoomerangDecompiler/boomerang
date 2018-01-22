@@ -200,7 +200,7 @@ private:
      * Inserting phi-functions
      */
     /// Array of sets of locations defined in BB n
-    std::vector<ExpSet> m_A_orig;
+    std::vector<ExpSet> m_definedAt; // was: m_A_orig
 
     /// Array of sets of BBs needing phis
     std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;

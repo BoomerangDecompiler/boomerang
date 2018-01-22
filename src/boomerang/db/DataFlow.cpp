@@ -277,10 +277,10 @@ bool DataFlow::placePhiFunctions()
     m_defsites.clear();
     m_defallsites.clear();
 
-    for (ExpSet& se : m_A_orig) {
-        for (auto iter = se.begin(); iter != se.end(); ) {
+    for (ExpSet& exps : m_definedAt) {
+        for (auto iter = exps.begin(); iter != exps.end(); ) {
             if (m_A_phi.find(*iter) == m_A_phi.end()) {
-                iter = se.erase(iter);
+                iter = exps.erase(iter);
             }
             else {
                 ++iter;
@@ -288,46 +288,44 @@ bool DataFlow::placePhiFunctions()
         }
     }
 
-    m_A_orig.clear();      // and A_orig,
+    m_definedAt.clear();   // and A_orig,
     m_defStmts.clear();    // and the map from variable to defining Stmt
 
 
     // Set the sizes of needed vectors
-    const size_t numIndices = m_indices.size();
-    const size_t numBB      = m_proc->getCFG()->getNumBBs();
+    const int numIndices = m_indices.size();
+    const int numBB      = m_proc->getCFG()->getNumBBs();
     assert(numIndices == numBB);
     Q_UNUSED(numIndices);
 
-    m_A_orig.resize(numBB);
+    m_definedAt.resize(numBB);
 
-    // We need to create A_orig[n] for all n, the array of sets of locations defined at BB n
+    // We need to create m_definedAt[n] for all n
     // Recreate each call because propagation and other changes make old data invalid
-    for (size_t n = 0; n < numBB; n++) {
+    for (int n = 0; n < numBB; n++) {
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         BasicBlock              *bb = m_BBs[n];
 
         for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            LocationSet ls;
-            s->getDefinitions(ls);
+            LocationSet locationSet;
+            s->getDefinitions(locationSet);
 
             if (s->isCall() && ((CallStatement *)s)->isChildless()) { // If this is a childless call
                 m_defallsites.insert(n);                              // then this block defines every variable
             }
 
-            for (const SharedExp& exp : ls) {
+            for (const SharedExp& exp : locationSet) {
                 if (canRename(exp)) {
-                    m_A_orig[n].insert(exp->clone());
+                    m_definedAt[n].insert(exp->clone());
                     m_defStmts[exp] = s;
                 }
             }
         }
     }
 
-    // For each node n
-    for (size_t n = 0; n < numBB; n++) {
-        // For each variable a in A_orig[n]
-        for (const SharedExp& a : m_A_orig[n]) {
+    for (int n = 0; n < numBB; n++) {
+        for (const SharedExp& a : m_definedAt[n]) {
             m_defsites[a].insert(n);
         }
     }
@@ -350,12 +348,7 @@ bool DataFlow::placePhiFunctions()
             int n = *W.begin();
             W.erase(W.begin());
 
-            const std::set<int>& DFn = m_DF[n];
-
-            // for each y in DF[n]
-            for (std::set<int>::const_iterator yy = DFn.begin(); yy != DFn.end(); yy++) {
-                int y = *yy;
-
+            for (int y : m_DF[n]) {
                 // phi function already created for y?
                 if (m_A_phi[a].find(y) != m_A_phi[a].end()) {
                     continue;
@@ -363,15 +356,13 @@ bool DataFlow::placePhiFunctions()
 
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                Statement  *as  = new PhiAssign(SharedExp(a->clone()));
-                BasicBlock *Ybb = m_BBs[y];
+                m_BBs[y]->prependStmt(new PhiAssign(a->clone()), m_proc);
 
-                Ybb->prependStmt(as, m_proc);
                 // A_phi[a] <- A_phi[a] U {y}
                 m_A_phi[a].insert(y);
 
                 // if a !elementof A_orig[y]
-                if (m_A_orig[y].find(a) == m_A_orig[y].end()) {
+                if (m_definedAt[y].find(a) == m_definedAt[y].end()) {
                     // W <- W U {y}
                     W.insert(y);
                 }
@@ -385,10 +376,11 @@ bool DataFlow::placePhiFunctions()
 
 static SharedExp defineAll = Terminal::get(opDefineAll); // An expression representing <all>
 
-// There is an entry in stacks[defineAll] that represents the latest definition from a define-all source. It is needed
-// for variables that don't have a definition as yet (i.e. stacks[x].empty() is true). As soon as a real definition to
-// x appears, stacks[defineAll] does not apply for variable x. This is needed to get correct operation of the use
-// collectors in calls.
+// There is an entry in stacks[defineAll] that represents the latest definition
+// from a define-all source. It is needed for variables that don't have a definition as yet
+// (i.e. stacks[x].empty() is true). As soon as a real definition to x appears,
+// stacks[defineAll] does not apply for variable x. This is needed to get correct
+// operation of the use collectors in calls.
 
 // Care with the Stacks object (a map from expression to stack); using Stacks[q].empty() can needlessly insert an empty
 // stack
@@ -472,23 +464,21 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
                     continue; // Don't re-rename the renamed variable
                 }
 
-                // Else x is not subscripted yet
-                if (STACKS_EMPTY(x)) {
-                    if (!m_Stacks[defineAll].empty()) {
-                        def = m_Stacks[defineAll].back();
-                    }
-                    else {
-                        // If the both stacks are empty, use a nullptr definition. This will be changed into a pointer
-                        // to an implicit definition at the start of type analysis, but not until all the m[...]
-                        // have stopped changing their expressions (complicates implicit assignments considerably).
-                        def = nullptr;
-                        // Update the collector at the start of the UserProc
-                        m_proc->useBeforeDefine(x->clone());
-                    }
-                }
-                else {
+                if (!STACKS_EMPTY(x)) {
                     def = m_Stacks[x].back();
                 }
+                else if (!STACKS_EMPTY(defineAll)) {
+                    def = m_Stacks[defineAll].back();
+                }
+                else {
+                    // If the both stacks are empty, use a nullptr definition. This will be changed into a pointer
+                    // to an implicit definition at the start of type analysis, but not until all the m[...]
+                    // have stopped changing their expressions (complicates implicit assignments considerably).
+                    def = nullptr;
+                    // Update the collector at the start of the UserProc
+                    m_proc->useBeforeDefine(x->clone());
+                }
+
 
                 if (def && def->isCall()) {
                     // Calls have UseCollectors for locations that are used before definition at the call
@@ -528,16 +518,16 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
         S->getDefinitions(defs);
         LocationSet::iterator dd;
 
-        for (dd = defs.begin(); dd != defs.end(); dd++) {
-            SharedExp a = *dd;
+        for (SharedExp a : defs) {
             // Don't consider a if it cannot be renamed
-            bool suitable = canRename(a);
+            const bool suitable = canRename(a);
 
             if (suitable) {
                 // Push i onto Stacks[a]
-                // Note: we clone a because otherwise it could be an expression that gets deleted through various
-                // modifications. This is necessary because we do several passes of this algorithm to sort out the
-                // memory expressions
+                // Note: we clone a because otherwise it could be an expression
+                // that gets deleted through various modifications.
+                // This is necessary because we do several passes of this algorithm
+                // to sort out the memory expressions.
                 if (m_Stacks.find(a) != m_Stacks.end()) { // expression exists, no need for clone ?
                     m_Stacks[a].push_back(S);
                 }
@@ -608,9 +598,9 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
 
     // For each child X of n
     // Note: linear search!
-    size_t numBB = m_proc->getCFG()->getNumBBs();
+    const int numBB = m_proc->getCFG()->getNumBBs();
 
-    for (size_t X = 0; X < numBB; X++) {
+    for (int X = 0; X < numBB; X++) {
         if (m_idom[X] == n) { // if 'n' is immediate dominator of X
             renameBlockVars(X);
         }
@@ -695,12 +685,12 @@ void DataFlow::dumpDefsites()
 
 void DataFlow::dumpA_orig()
 {
-    int n = m_A_orig.size();
+    int n = m_definedAt.size();
 
     for (int i = 0; i < n; ++i) {
         LOG_MSG("%1", i);
 
-        for (const SharedExp& ee : m_A_orig[i]) {
+        for (const SharedExp& ee : m_definedAt[i]) {
             LOG_MSG("  %1 ", ee);
         }
     }
@@ -731,8 +721,8 @@ void DataFlow::convertImplicits()
         m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
     }
 
-    std::vector<ExpSet> A_orig_copy = m_A_orig;
-    m_A_orig.clear();
+    std::vector<ExpSet> A_orig_copy = m_definedAt;
+    m_definedAt.clear();
 
     for (ExpSet& se : A_orig_copy) {
         ExpSet se_new;
@@ -743,7 +733,7 @@ void DataFlow::convertImplicits()
             se_new.insert(e);
         }
 
-        m_A_orig.insert(m_A_orig.end(), se_new);       // Copy the set (doesn't have to be a deep copy)
+        m_definedAt.insert(m_definedAt.end(), se_new);       // Copy the set (doesn't have to be a deep copy)
     }
 }
 
@@ -870,7 +860,7 @@ void DataFlow::allocateData()
     m_parent.resize(numBBs, -1);
     m_best.resize(numBBs, -1);
     m_bucket.resize(numBBs);
-    m_A_orig.resize(numBBs);
+    m_definedAt.resize(numBBs);
     m_DF.resize(numBBs);
 
     m_A_phi.clear();
