@@ -137,7 +137,7 @@ void DataFlow::calculateDominators()
         }
     }
 
-    computeDF(0); // Finally, compute the dominance frontiers
+    computeDominanceFrontiers();
 }
 
 
@@ -179,47 +179,23 @@ bool DataFlow::doesDominate(int n, int w)
 }
 
 
-void DataFlow::computeDF(int n)
+void DataFlow::computeDominanceFrontiers()
 {
-    std::set<int> S;
-    /* This loop computes DF_local[n] */
-    // for each node y in succ(n)
-    BasicBlock *bb = m_BBs[n];
+    // See https://www.cs.rice.edu/~keith/EMBED/dom.pdf (Figure 5)
+    for (int b = 0; b < (int)m_BBs.size(); b++) {
+        BasicBlock *bb = m_BBs[b];
+        if (bb->getNumPredecessors() > 1) {
+            // this bb is a join point
+            for (BasicBlock *pred : bb->getPredecessors()) {
+                int runner = pbbToNode(pred);
 
-    for (BasicBlock *b : bb->getSuccessors()) {
-        int y = m_indices[b];
-
-        if (m_idom[y] != n) {
-            S.insert(y);
-        }
-    }
-
-    // for each child c of n in the dominator tree
-    // Note: this is a linear search!
-    int sz = m_idom.size(); // ? Was ancestor.size()
-
-    for (int c = 0; c < sz; ++c) {
-        if (m_idom[c] != n) {
-            continue;
-        }
-
-        computeDF(c);
-        /* This loop computes DF_up[c] */
-        // for each element w of DF[c]
-        std::set<int>&          s = m_DF[c];
-        std::set<int>::iterator ww;
-
-        for (ww = s.begin(); ww != s.end(); ww++) {
-            int w = *ww;
-
-            // if n does not dominate w, or if n = w
-            if ((n == w) || !doesDominate(n, w)) {
-                S.insert(w);
+                while (runner != m_idom[b]) {
+                    m_DF[runner].insert(b);
+                    runner = m_idom[runner];
+                }
             }
         }
     }
-
-    m_DF[n] = S;
 }
 
 
