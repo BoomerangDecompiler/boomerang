@@ -16,7 +16,7 @@
 #include "boomerang/db/BasicBlock.h"
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <set>
 #include <stack>
 
@@ -52,19 +52,19 @@ public:
     DataFlow& operator=(DataFlow&& other) = default;
 
 public:
-    /// Place phi functions.
-    /// \returns true if any change
-    bool placePhiFunctions();
-
-    /// \returns true if the expression \p e can be renamed
-    bool canRename(SharedExp e);
-
     /**
      * Calculate dominators for every node n using Lengauer-Tarjan with path compression.
      * Essentially Algorithm 19.9 of Appel's
      * "Modern compiler implementation in Java" 2nd ed 2002
      */
     void calculateDominators();
+
+    /// Place phi functions.
+    /// \returns true if any change
+    bool placePhiFunctions();
+
+    /// \returns true if the expression \p e can be renamed
+    bool canRename(SharedExp e);
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
 
@@ -94,13 +94,36 @@ public:
     void findLiveAtDomPhi(LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
 
+    // for testing
+public:
+    /// \note can only be called after \ref calculateDominators()
+    const BasicBlock *getSemiDominator(const BasicBlock *bb) const
+    { return nodeToBB(getSemi(pbbToNode(bb))); }
+
+    /// \note can only ce called after \ref calculateDominators()
+    const BasicBlock *getDominator(const BasicBlock *bb) const
+    { return nodeToBB(getIdom(pbbToNode(bb))); }
+
+    /// \note can only be called after \ref calculateDominators()
+    std::set<const BasicBlock *> getDominanceFrontier(const BasicBlock *bb) const
+    {
+        std::set<const BasicBlock *> ret;
+        for (int idx : m_DF.at(pbbToNode(bb))) {
+            ret.insert(nodeToBB(idx));
+        }
+
+        return ret;
+    }
+
 public:
     // For testing:
-    int pbbToNode(BasicBlock *bb) { return m_indices[bb]; }
+    const BasicBlock *nodeToBB(int node) const { return m_BBs.at(node); }
+    int pbbToNode(const BasicBlock *bb) const
+    { return m_indices.at(const_cast<BasicBlock *>(bb)); }
+
     std::set<int>& getDF(int node) { return m_DF[node]; }
-    BasicBlock *nodeToBB(int node) { return m_BBs[node]; }
-    int getIdom(int node) { return m_idom[node]; }
-    int getSemi(int node) { return m_semi[node]; }
+    int getIdom(int node) const { return m_idom[node]; }
+    int getSemi(int node) const { return m_semi[node]; }
     std::set<int>& getA_phi(SharedExp e) { return m_A_phi[e]; }
 
 private:
@@ -146,7 +169,7 @@ private:
 
     /* These first two are not from Appel; they map PBBs to indices */
     std::vector<BasicBlock *> m_BBs;                                 ///< Maps index -> BasicBlock
-    std::map<BasicBlock *, int, BasicBlock::BBComparator> m_indices; ///< Maps BasicBlock -> index
+    std::unordered_map<BasicBlock *, int> m_indices; ///< Maps BasicBlock -> index
 
     /// Calculating the dominance frontier
 

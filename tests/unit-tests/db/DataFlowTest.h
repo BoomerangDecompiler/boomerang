@@ -22,11 +22,8 @@ class DataFlowTest : public QObject
 private slots:
     void initTestCase();
 
-    /// Test the dominator frontier code
-    void testDominators();
-
-    /// Test a case where semi dominators are different to dominators
-    void testSemiDominators();
+    /// Test calculating (semi-)dominators and the Dominance Frontier
+    void testCalculateDominators();
 
     /// Test the placing of phi functions
     void testPlacePhi();

@@ -12,19 +12,36 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/DataFlow.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/DataFlow.h"
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/RTL.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 #include <QDebug>
 
+
 #define FRONTIER_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/frontier"))
 #define SEMI_PENTIUM        (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/semi"))
 #define IFTHEN_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
+
+
+std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
+{
+    std::unique_ptr<RTLList> rtls(new RTLList);
+
+    for (int i = 0; i < numRTLs; i++) {
+        rtls->push_back(std::unique_ptr<RTL>(new RTL(baseAddr + i,
+            { new Assign(VoidType::get(), Terminal::get(opNil), Terminal::get(opNil)) })));
+    }
+
+    return rtls;
+}
 
 
 void DataFlowTest::initTestCase()
@@ -34,136 +51,71 @@ void DataFlowTest::initTestCase()
 }
 
 
-#define FRONTIER_FOUR        Address(0x08048347)
-#define FRONTIER_FIVE        Address(0x08048351)
-#define FRONTIER_TWELVE      Address(0x080483b2)
-#define FRONTIER_THIRTEEN    Address(0x080483b9)
-
-
-void DataFlowTest::testDominators()
+void DataFlowTest::testCalculateDominators()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    // Appel, Figure 19.8
+    UserProc proc(Address(0x1000), "test", nullptr);
+    Cfg *cfg = proc.getCFG();
+    DataFlow *df = proc.getDataFlow();
 
-    project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != nullptr);
+    BasicBlock *a = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1000), 1));
+    BasicBlock *b = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1001), 1));
+    BasicBlock *c = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1002), 1));
+    BasicBlock *d = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1003), 1));
+    BasicBlock *e = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1004), 1));
+    BasicBlock *f = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1005), 1));
+    BasicBlock *g = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1006), 1));
+    BasicBlock *h = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1007), 1));
+    BasicBlock *i = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1008), 1));
+    BasicBlock *j = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1009), 1));
+    BasicBlock *k = cfg->createBB(BBType::Oneway, createRTLs(Address(0x100A), 1));
+    BasicBlock *l = cfg->createBB(BBType::Twoway, createRTLs(Address(0x100B), 1));
+    BasicBlock *m = cfg->createBB(BBType::Ret,    createRTLs(Address(0x100C), 1));
 
-    Prog      prog(FRONTIER_PENTIUM);
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-    Type::clearNamedTypes();
-    prog.setFrontEnd(pFE);
-    pFE->decode(&prog);
+    cfg->addEdge(a, b); cfg->addEdge(a, c);
+    cfg->addEdge(b, d); cfg->addEdge(b, g);
+    cfg->addEdge(c, e); cfg->addEdge(c, h);
+    cfg->addEdge(d, f); cfg->addEdge(d, g);
+    cfg->addEdge(e, h);
+    cfg->addEdge(f, i); cfg->addEdge(f, k);
+    cfg->addEdge(g, j);
+    cfg->addEdge(h, m);
+    cfg->addEdge(i, l);
+    cfg->addEdge(j, i);
+    cfg->addEdge(k, l);
+    cfg->addEdge(l, b); cfg->addEdge(l, m);
 
-    bool    gotMain;
-    Address addr = pFE->getMainEntryPoint(gotMain);
-    QVERIFY(addr != Address::INVALID);
+    proc.setEntryBB();
 
-    const auto& m = *(prog.getModuleList().begin());
-    QVERIFY(m != nullptr);
-    QVERIFY(m->size() > 0);
-
-    UserProc *pProc = (UserProc *)*(m->begin());
-    Cfg      *cfg   = pProc->getCFG();
-    DataFlow *df    = pProc->getDataFlow();
+    // test!
     df->calculateDominators();
 
-    // Find BB "5" (as per Appel, Figure 19.5).
-    BasicBlock *foundBB = nullptr;
-    for (BasicBlock *bb : *cfg) {
-        if (bb->getLowAddr() == FRONTIER_FIVE) {
-            foundBB = bb;
-            break;
-        }
-    }
+    QCOMPARE(df->getSemiDominator(b), a); QCOMPARE(df->getDominator(b), a);
+    QCOMPARE(df->getSemiDominator(c), a); QCOMPARE(df->getDominator(c), a);
+    QCOMPARE(df->getSemiDominator(d), b); QCOMPARE(df->getDominator(d), b);
+    QCOMPARE(df->getSemiDominator(e), c); QCOMPARE(df->getDominator(e), c);
+    QCOMPARE(df->getSemiDominator(f), d); QCOMPARE(df->getDominator(f), d);
+    QCOMPARE(df->getSemiDominator(g), b); QCOMPARE(df->getDominator(g), b);
+    QCOMPARE(df->getSemiDominator(h), c); QCOMPARE(df->getDominator(h), c);
+    QCOMPARE(df->getSemiDominator(i), b); QCOMPARE(df->getDominator(i), b);
+    QCOMPARE(df->getSemiDominator(j), g); QCOMPARE(df->getDominator(j), g);
+    QCOMPARE(df->getSemiDominator(k), f); QCOMPARE(df->getDominator(k), f);
+    QCOMPARE(df->getSemiDominator(l), f); QCOMPARE(df->getDominator(l), b); // semidom != dom
+    QCOMPARE(df->getSemiDominator(m), a); QCOMPARE(df->getDominator(m), a);
 
-    QVERIFY(foundBB);
-    QString     actual_st;
-    QTextStream actual(&actual_st);
-
-    int n5 = df->pbbToNode(foundBB);
-    std::set<int>::iterator ii;
-    std::set<int>&          DFset = df->getDF(n5);
-
-    for (ii = DFset.begin(); ii != DFset.end(); ii++) {
-        actual << df->nodeToBB(*ii)->getLowAddr() << " ";
-    }
-
-    QCOMPARE(actual_st,
-             FRONTIER_FOUR.toString() + " " +
-             FRONTIER_FIVE.toString() + " " +
-             FRONTIER_TWELVE.toString() + " " +
-             FRONTIER_THIRTEEN.toString() + " "
-             );
-}
-
-
-#define SEMI_L    Address(0x80483b0)
-#define SEMI_M    Address(0x80483e2)
-#define SEMI_B    Address(0x8048345)
-#define SEMI_D    Address(0x8048354)
-#define SEMI_M    Address(0x80483e2)
-
-void DataFlowTest::testSemiDominators()
-{
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(SEMI_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(SEMI_PENTIUM);
-    QVERIFY(loader != nullptr);
-
-    Prog      prog(SEMI_PENTIUM);
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-    Type::clearNamedTypes();
-    prog.setFrontEnd(pFE);
-    pFE->decode(&prog);
-
-    bool    gotMain;
-    Address addr = pFE->getMainEntryPoint(gotMain);
-    QVERIFY(addr != Address::INVALID);
-
-    const auto& m = *prog.getModuleList().begin();
-    QVERIFY(m != nullptr);
-    QVERIFY(m->size() > 0);
-
-    UserProc *pProc = (UserProc *)(*m->begin());
-    Cfg      *cfg   = pProc->getCFG();
-
-    DataFlow *df = pProc->getDataFlow();
-    df->calculateDominators();
-
-    // Find BB "L (6)" (as per Appel, Figure 19.8).
-    BasicBlock *foundBB = nullptr;
-    for (BasicBlock *bb : *cfg) {
-        if (bb->getLowAddr() == SEMI_L) {
-            foundBB = bb;
-            break;
-        }
-    }
-
-    QVERIFY(foundBB);
-    int nL = df->pbbToNode(foundBB);
-
-    // The dominator for L should be B, where the semi dominator is D
-    // (book says F)
-    Address actual_dom  = df->nodeToBB(df->getIdom(nL))->getLowAddr();
-    Address actual_semi = df->nodeToBB(df->getSemi(nL))->getLowAddr();
-    QCOMPARE(actual_dom, SEMI_B);
-    QCOMPARE(actual_semi, SEMI_D);
-
-    // Check the final dominator frontier as well; should be M and B
-    QString     actual_st;
-    QTextStream actual(&actual_st);
-
-    std::set<int>& DFset = df->getDF(nL);
-
-    for (auto ii = DFset.begin(); ii != DFset.end(); ii++) {
-        actual << df->nodeToBB(*ii)->getLowAddr() << " ";
-    }
-
-    QCOMPARE(actual_st,
-             SEMI_B.toString() + " " +
-             SEMI_M.toString() + " "
-             );
+    QCOMPARE(df->getDominanceFrontier(a), std::set<const BasicBlock *>({         }));
+    QCOMPARE(df->getDominanceFrontier(b), std::set<const BasicBlock *>({ b, m    }));
+    QCOMPARE(df->getDominanceFrontier(c), std::set<const BasicBlock *>({ m       }));
+    QCOMPARE(df->getDominanceFrontier(d), std::set<const BasicBlock *>({ g, i, l }));
+    QCOMPARE(df->getDominanceFrontier(e), std::set<const BasicBlock *>({ h       }));
+    QCOMPARE(df->getDominanceFrontier(f), std::set<const BasicBlock *>({ i, l    }));
+    QCOMPARE(df->getDominanceFrontier(g), std::set<const BasicBlock *>({ i       }));
+    QCOMPARE(df->getDominanceFrontier(h), std::set<const BasicBlock *>({ m       }));
+    QCOMPARE(df->getDominanceFrontier(i), std::set<const BasicBlock *>({ l       }));
+    QCOMPARE(df->getDominanceFrontier(j), std::set<const BasicBlock *>({ i       }));
+    QCOMPARE(df->getDominanceFrontier(k), std::set<const BasicBlock *>({ l       }));
+    QCOMPARE(df->getDominanceFrontier(l), std::set<const BasicBlock *>({ b, m    }));
+    QCOMPARE(df->getDominanceFrontier(m), std::set<const BasicBlock *>({         }));
 }
 
 
