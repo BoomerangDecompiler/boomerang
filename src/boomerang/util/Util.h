@@ -73,11 +73,11 @@ void clone(const Container& from, Container& to)
         return;
     }
 
-    std::transform(from.begin(), from.end(), std::back_inserter(to),
-        [] (const typename Container::value_type& src) {
-            return src->clone();
-        }
-    );
+    to.resize(from.size());
+
+    for (typename Container::size_type i = 0; i < from.size(); i++) {
+        to[i] = from[i]->clone();
+    }
 }
 
 
