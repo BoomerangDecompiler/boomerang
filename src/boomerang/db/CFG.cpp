@@ -283,9 +283,7 @@ void Cfg::removeBB(BasicBlock *bb)
         m_bbStartMap.erase(bbIt);
     }
 
-    // Actually, removed BBs should be deleted; however,
-    // doing so deletes the statements of the BB that seem to be still in use.
-    // So don't do it for now.
+    delete bb;
 }
 
 

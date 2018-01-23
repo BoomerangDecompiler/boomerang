@@ -82,6 +82,9 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
 
 BasicBlock::~BasicBlock()
 {
+    if (m_listOfRTLs) {
+        qDeleteAll(*m_listOfRTLs);
+    }
 }
 
 
