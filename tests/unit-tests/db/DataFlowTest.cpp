@@ -331,7 +331,7 @@ void DataFlowTest::testRenameVars()
 
     // MIKE: something missing here?
 
-    delete pFE;
+    delete prog;
 }
 
 
