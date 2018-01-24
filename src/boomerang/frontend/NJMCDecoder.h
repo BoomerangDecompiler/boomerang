@@ -52,7 +52,7 @@ public:
      * \param   result ref to decoder result object
      */
     void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
-                             std::list<Statement *> *stmts, DecodeResult& result);
+                             std::unique_ptr<RTL> stmts, DecodeResult& result);
 
     /**
      * Process an indirect call instruction.
@@ -64,7 +64,7 @@ public:
      * \param   result ref to decoder result object
      */
     void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
-                             std::list<Statement *> *stmts, DecodeResult& result);
+                             std::unique_ptr<RTL> stmts, DecodeResult& result);
 
     /// \copydoc IInstructionTranslator::getRegName
     QString getRegName(int idx) const override;
@@ -90,7 +90,7 @@ protected:
      * \param   args Semantic String ptrs representing actual operands
      * \returns an instantiated list of Exps
      */
-    std::list<Statement *> *instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
+    std::unique_ptr<RTL> instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
 
     /**
      * Similarly to \ref NJMCDecoder::instantiate, given a parameter name
@@ -125,11 +125,10 @@ protected:
      * \param   name name of instruction (for debugging)
      * \param   size size of instruction in bytes
      * \param   pc native pc
-     * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
      */
     void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
-                                  std::list<Statement *> *stmts, DecodeResult& result);
+                                  DecodeResult& result);
 
 
     /**
@@ -177,7 +176,6 @@ protected:
 // the ordering is changed and multiple copies may be made
 
 #define COND_JUMP(name, size, relocd, cond)                                    \
-    result.rtl = new RTL(pc, stmts);                                           \
     BranchStatement *jump = new BranchStatement;                               \
     result.rtl->append(jump);                                                  \
     result.numBytes = size;                                                    \
@@ -186,12 +184,11 @@ protected:
     SHOW_ASM(name << " " << relocd)
 
 // This one is X86 specific
-#define SETS(name, dest, cond)           \
-    BoolAssign * bs = new BoolAssign(8); \
-    bs->setLeftFromList(stmts);          \
-    stmts->clear();                      \
-    result.rtl = new RTL(pc, stmts);     \
-    result.rtl->append(bs);              \
-    bs->setCondType(cond);               \
-    result.numBytes = 3;                 \
+#define SETS(name, dest, cond)                          \
+    BoolAssign * bs = new BoolAssign(8);                \
+    bs->setLeftFromList(result.rtl->getStatements());   \
+    result.rtl->clear();                                \
+    result.rtl->append(bs);                             \
+    bs->setCondType(cond);                              \
+    result.numBytes = 3;                                \
     SHOW_ASM(name << " " << dest)

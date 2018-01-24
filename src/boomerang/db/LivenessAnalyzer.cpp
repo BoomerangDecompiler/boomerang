@@ -132,7 +132,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
             continue;
         }
 
-        RTL *phiRtl = currBB->getRTLs()->front();
+        RTL *phiRtl = currBB->getRTLs()->front().get();
         assert(phiRtl);
 
         for (Statement *st : *phiRtl) {

@@ -13,13 +13,12 @@
 #include "boomerang/util/Address.h"
 
 #include <QString>
-#include <list>
 #include <memory>
 
 class Statement;
 class RTLInstDict;
 class Exp;
-
+class RTL;
 
 using SharedExp = std::shared_ptr<Exp>;
 
@@ -54,5 +53,5 @@ public:
 
     virtual Exp *convertOperand(MachineOperand *Operand) = 0;
 
-    virtual std::list<Statement *> *convertInstruction(MachineInstruction *Insn) = 0;
+    virtual std::unique_ptr<RTL> convertInstruction(MachineInstruction *Insn) = 0;
 };

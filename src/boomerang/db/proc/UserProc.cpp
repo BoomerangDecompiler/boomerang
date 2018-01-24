@@ -768,9 +768,9 @@ void UserProc::removeStatement(Statement *stmt)
 
     // remove from BB/RTL
     BasicBlock       *bb   = stmt->getBB(); // Get our enclosing BB
-    std::list<RTL *> *rtls = bb->getRTLs();
+    RTLList *rtls = bb->getRTLs();
 
-    for (RTL *rtl : *rtls) {
+    for (auto& rtl : *rtls) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); it++) {
             if (*it == stmt) {
                 rtl->erase(it);
@@ -792,7 +792,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
         bb = m_cfg->getEntryBB();
         RTLList *rtls    = bb->getRTLs();
         assert(!rtls->empty()); // Entry BB should have at least 1 RTL
-        stmts = rtls->front();
+        stmts = rtls->front().get();
         it    = stmts->begin();
     }
     else {
@@ -800,7 +800,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
         bb = s->getBB(); // Get the enclosing BB for s
         RTLList *rtls = bb->getRTLs();
         assert(!rtls->empty()); // If s is defined here, there should be at least 1 RTL
-        stmts = rtls->back();
+        stmts = rtls->back().get();
         it    = stmts->end(); // Insert before the end
     }
 
@@ -820,7 +820,7 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
             continue; // e.g. bb is (as yet) invalid
         }
 
-        for (RTL *rtl : *rtls) {
+        for (const auto& rtl : *rtls) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ss++) {
                 if (*ss == s) {
                     ss++; // This is the point to insert before
@@ -2109,13 +2109,13 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 void UserProc::assignProcsToCalls()
 {
     for (BasicBlock *pBB : *m_cfg) {
-        std::list<RTL *> *rtls = pBB->getRTLs();
+        RTLList *rtls = pBB->getRTLs();
 
         if (rtls == nullptr) {
             continue;
         }
 
-        for (RTL *rtl : *rtls) {
+        for (auto& rtl : *rtls) {
             if (!rtl->isCall()) {
                 continue;
             }
@@ -2148,7 +2148,7 @@ void UserProc::finalSimplify()
             continue;
         }
 
-        for (RTL *rtl : *rtls) {
+        for (auto& rtl : *rtls) {
             for (Statement *stmt : *rtl) {
                 stmt->simplifyAddr();
                 // Also simplify everything; in particular, stack offsets are

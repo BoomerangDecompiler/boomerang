@@ -44,7 +44,7 @@ class IFileLoader;
 
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
-using RTLList        = std::list<RTL *>;
+using RTLList        = std::list<std::unique_ptr<RTL>>;
 
 
 /**
@@ -183,7 +183,7 @@ public:
      *
      * param addr the native address of the call instruction
      */
-    virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, std::list<RTL *> * /*lrtl*/) { return false; }
+    virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, RTLList& /*lrtl*/) { return false; }
 
     /// Locate the entry address of "main", returning a native address
     virtual Address getMainEntryPoint(bool& gotMain) = 0;
@@ -202,7 +202,7 @@ public:
      *
      * \returns  Pointer to the newly created BB
      */
-    BasicBlock *createReturnBlock(UserProc *pProc, std::unique_ptr<RTLList> BB_rtls, RTL *pRtl);
+    BasicBlock *createReturnBlock(UserProc *pProc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL);
 
     /**
      * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
@@ -220,8 +220,7 @@ public:
      * incomplete in these cases, and needs to be restarted from scratch
      */
     void addDecodedRtl(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest,
-                            const std::list<Statement *>& sl, RTL *pRtl);
+    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *pRtl);
     void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 
 private:
@@ -229,9 +228,9 @@ private:
 
 protected:
     IBinaryImage *m_image;
-    IDecoder *m_decoder; ///< The decoder
+    IDecoder *m_decoder;            ///< The decoder
     IFileLoader *m_fileLoader;
-    Prog *m_program;     ///< The Prog object
+    Prog *m_program;                ///< The Prog object
 
     /// The queue of addresses still to be processed
     TargetQueue m_targetQueue;

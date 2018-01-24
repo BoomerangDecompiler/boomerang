@@ -57,12 +57,11 @@ void DEBUG_STMTS(DecodeResult& result)
 }
 
 
-RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name)
+std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<RTL> stmts, const char *name)
 {
-    RTL             *res = new RTL(pc, stmts);
     BranchStatement *br  = new BranchStatement();
 
-    res->append(br);
+    stmts->append(br);
 
     if (name[0] == 'F') {
         // fbranch is any of [ FBN FBNE FBLG FBUL FBL    FBUG FBG   FBU
@@ -114,11 +113,10 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
 
         default:
             LOG_WARN("Unknown float branch '%1'", name);
-            delete res;
-            res = nullptr;
+            stmts.reset();
         }
 
-        return res;
+        return stmts;
     }
 
     // ibranch is any of [ BN BE  BLE BL  BLEU BCS BNEG BVS
@@ -211,14 +209,13 @@ RTL *SparcDecoder::createBranchRtl(Address pc, std::list<Statement *> *stmts, co
         char temp[8];
         temp[0] = 'B';
         strcpy(temp + 1, name + 2);
-        delete res;
-        return createBranchRtl(pc, stmts, temp);
+        return createBranchRtl(pc, std::move(stmts), temp);
 
     default:
         LOG_WARN("Unknown non-float branch '%1'", name);
     }
 
-    return res;
+    return stmts;
 }
 
 
@@ -230,7 +227,8 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
     // Clear the result structure;
     result.reset();
     // The actual list of instantiated statements
-    std::list<Statement *> *stmts = nullptr;
+    std::unique_ptr<RTL> stmts;
+
     // #line 212 "frontend/machine/sparc/decoder.m"
     {
         HostAddress MATCH_p =
@@ -420,7 +418,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                         GotoStatement *jump = new GotoStatement;
                         result.type = SD;
-                        result.rtl  = new RTL(pc, stmts);
+                        result.rtl  = std::move(stmts);
                         result.rtl->append(jump);
                         jump->setDest(Address(tgt.value() - delta));
                         SHOW_ASM("BPA " << tgt - delta)
@@ -439,26 +437,25 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                             if (cc01 != 0) { /* If 64 bit cc used, can't handle */
                                 result.valid    = false;
-                                result.rtl      = new RTL(Address::INVALID);
+                                result.rtl.reset(new RTL(Address::INVALID));
                                 result.numBytes = 4;
                                 return false;
                             }
 
                             GotoStatement *jump = nullptr;
-                            RTL           *rtl  = nullptr;
+                            std::unique_ptr<RTL> rtl;
 
                             if (strcmp(name, "BPN") == 0) {
-                                jump = new GotoStatement;
-                                rtl  = new RTL(pc, stmts);
-                                rtl->append(jump);
+                                rtl  = std::move(stmts);
+                                rtl->append(new GotoStatement);
                             }
                             else if ((strcmp(name, "BPVS") == 0) || (strcmp(name, "BPVC") == 0)) {
                                 jump = new GotoStatement;
-                                rtl  = new RTL(pc, stmts);
-                                rtl->append(jump);
+                                rtl  = std::move(stmts);
+                                rtl->append(new GotoStatement);
                             }
                             else {
-                                rtl = createBranchRtl(pc, stmts, name);
+                                rtl = createBranchRtl(pc, std::move(stmts), name);
                                 // The BranchStatement will be the last Stmt of the rtl
 
                                 jump = (GotoStatement *)rtl->back();
@@ -480,7 +477,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 result.type = NCT;
                             }
 
-                            result.rtl = rtl;
+                            result.rtl = std::move(rtl);
                             jump->setDest(Address(tgt.value() - delta));
                             SHOW_ASM(name << " " << tgt - delta)
                             DEBUG_STMTS(result);
@@ -615,7 +612,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                     }
 
                     newCall->setDestProc(destProc);
-                    result.rtl = new RTL(pc, stmts);
+                    result.rtl = std::move(stmts);
                     result.rtl->append(newCall);
                     result.type = SD;
                     SHOW_ASM("call__ " << (nativeDest))
@@ -797,7 +794,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                             nextPC = MATCH_p + 4;
                             // #line 533 "frontend/machine/sparc/decoder.m"
 
-                            stmts = instantiate(pc, name, { DIS_RD });
+                            result.rtl = instantiate(pc, name, { DIS_RD });
                         }
                     } /*opt-block*/
                     else {
@@ -815,7 +812,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 536 "frontend/machine/sparc/decoder.m"
 
-                        stmts = instantiate(pc, name, { DIS_RD });
+                        result.rtl = instantiate(pc, name, { DIS_RD });
                     }
 
                     break;
@@ -829,7 +826,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 539 "frontend/machine/sparc/decoder.m"
 
-                        stmts = instantiate(pc, name, { DIS_RD });
+                        result.rtl = instantiate(pc, name, { DIS_RD });
                     }
 
                     break;
@@ -843,7 +840,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 542 "frontend/machine/sparc/decoder.m"
 
-                        stmts = instantiate(pc, name, { DIS_RD });
+                        result.rtl = instantiate(pc, name, { DIS_RD });
                     }
 
                     break;
@@ -863,7 +860,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                             nextPC = MATCH_p + 4;
                             // #line 545 "frontend/machine/sparc/decoder.m"
 
-                            stmts = instantiate(pc, name, { DIS_RS1, DIS_ROI });
+                            result.rtl = instantiate(pc, name, { DIS_RS1, DIS_ROI });
                         }
                     } /*opt-block*/
 
@@ -878,7 +875,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 548 "frontend/machine/sparc/decoder.m"
 
-                        stmts = instantiate(pc, name, { DIS_RS1, DIS_ROI });
+                        result.rtl = instantiate(pc, name, { DIS_RS1, DIS_ROI });
                     }
 
                     break;
@@ -892,7 +889,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 551 "frontend/machine/sparc/decoder.m"
 
-                        stmts = instantiate(pc, name, { DIS_RS1, DIS_ROI });
+                        result.rtl = instantiate(pc, name, { DIS_RS1, DIS_ROI });
                     }
 
                     break;
@@ -906,7 +903,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 554 "frontend/machine/sparc/decoder.m"
 
-                        stmts = instantiate(pc, name, { DIS_RS1, DIS_ROI });
+                        result.rtl = instantiate(pc, name, { DIS_RS1, DIS_ROI });
                     }
 
                     break;
@@ -1002,7 +999,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 560 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2S, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS2S, DIS_FDS });
                             }
 
                             break;
@@ -1017,7 +1014,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 611 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2D, DIS_FDD });
+                                result.rtl = instantiate(pc, name, { DIS_FS2D, DIS_FDD });
                             }
 
                             break;
@@ -1031,7 +1028,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 unsigned   fs2q  = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
                                 nextPC = MATCH_p + 4;
                                 // #line 614 "frontend/machine/sparc/decoder.m"
-                                stmts = instantiate(pc, name, { DIS_FS2Q, DIS_FDQ });
+                                result.rtl = instantiate(pc, name, { DIS_FS2Q, DIS_FDQ });
                                 // In V9, the privileged RETT becomes user-mode RETURN
                                 // It has the semantics of "ret restore" without the add part of the restore
                             }
@@ -1052,7 +1049,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 563 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS1S, DIS_FS2S, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS1S, DIS_FS2S, DIS_FDS });
                             }
 
                             break;
@@ -1071,7 +1068,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 566 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS1D, DIS_FS2D, DIS_FDD });
+                                result.rtl = instantiate(pc, name, { DIS_FS1D, DIS_FS2D, DIS_FDD });
                             }
 
                             break;
@@ -1090,7 +1087,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 569 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS1Q, DIS_FS2Q, DIS_FDQ });
+                                result.rtl = instantiate(pc, name, { DIS_FS1Q, DIS_FS2Q, DIS_FDQ });
                             }
 
                             break;
@@ -1106,7 +1103,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 581 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2S, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS2S, DIS_FDS });
                                 // Note: itod and dtoi have different sized registers
                             }
 
@@ -1122,7 +1119,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 597 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2D, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS2D, DIS_FDS });
                             }
 
                             break;
@@ -1137,7 +1134,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 602 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2Q, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS2Q, DIS_FDS });
                             }
 
                             break;
@@ -1152,7 +1149,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 584 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2S, DIS_FDD });
+                                result.rtl = instantiate(pc, name, { DIS_FS2S, DIS_FDD });
                             }
 
                             break;
@@ -1167,7 +1164,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 594 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2S, DIS_FDD });
+                                result.rtl = instantiate(pc, name, { DIS_FS2S, DIS_FDD });
                             }
 
                             break;
@@ -1182,7 +1179,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 607 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2Q, DIS_FDD });
+                                result.rtl = instantiate(pc, name, { DIS_FS2Q, DIS_FDD });
                             }
 
                             break;
@@ -1197,7 +1194,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 589 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2S, DIS_FDQ });
+                                result.rtl = instantiate(pc, name, { DIS_FS2S, DIS_FDQ });
                             }
 
                             break;
@@ -1212,7 +1209,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 599 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2S, DIS_FDQ });
+                                result.rtl = instantiate(pc, name, { DIS_FS2S, DIS_FDQ });
                             }
 
                             break;
@@ -1227,7 +1224,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 604 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2D, DIS_FDQ });
+                                result.rtl = instantiate(pc, name, { DIS_FS2D, DIS_FDQ });
                             }
 
                             break;
@@ -1242,7 +1239,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 nextPC = MATCH_p + 4;
                                 // #line 587 "frontend/machine/sparc/decoder.m"
 
-                                stmts = instantiate(pc, name, { DIS_FS2D, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS2D, DIS_FDS });
                             }
 
                             break;
@@ -1256,7 +1253,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 unsigned   fs2q  = (MATCH_w_32_0 & 0x1f) /* fs2q at 0 */;
                                 nextPC = MATCH_p + 4;
                                 // #line 592 "frontend/machine/sparc/decoder.m"
-                                stmts = instantiate(pc, name, { DIS_FS2Q, DIS_FDS });
+                                result.rtl = instantiate(pc, name, { DIS_FS2Q, DIS_FDS });
                             }
 
                             break;
@@ -1378,7 +1375,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                      *
                                      */
 
-                                    result.rtl = new RTL(pc, stmts);
+                                    result.rtl = std::move(stmts);
                                     result.rtl->append(new ReturnStatement);
                                     result.type = DD;
                                     SHOW_ASM("retl_")
@@ -1404,7 +1401,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                      *
                                      */
 
-                                    result.rtl = new RTL(pc, stmts);
+                                    result.rtl = std::move(stmts);
                                     result.rtl->append(new ReturnStatement);
                                     result.type = DD;
                                     SHOW_ASM("ret_")
@@ -1479,7 +1476,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         nextPC = MATCH_p + 4;
                         // #line 620 "frontend/machine/sparc/decoder.m"
                         stmts      = instantiate(pc, name, { DIS_ADDR });
-                        result.rtl = new RTL(pc, stmts);
+                        result.rtl = std::move(stmts);
                         result.rtl->append(new ReturnStatement);
                         result.type = DD;
                     }
@@ -1509,7 +1506,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                         // Decided to treat SAVE as an ordinary instruction
                         // That is, use the large list of effects from the SSL file, and
                         // hope that optimisation will vastly help the common cases
-                        stmts = instantiate(pc, "SAVE", { DIS_RS1, DIS_ROI, DIS_RD });
+                        result.rtl = instantiate(pc, "SAVE", { DIS_RS1, DIS_ROI, DIS_RD });
                     }
                     break;
 
@@ -1523,7 +1520,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                         // Decided to treat RESTORE as an ordinary instruction
 
-                        stmts = instantiate(pc, "RESTORE", { DIS_RS1, DIS_ROI, DIS_RD });
+                        result.rtl = instantiate(pc, "RESTORE", { DIS_RS1, DIS_ROI, DIS_RD });
                     }
                     break;
 
@@ -1879,26 +1876,26 @@ MATCH_label_d0:
 
             if (cc01 != 0) { /* If 64 bit cc used, can't handle */
                 result.valid    = false;
-                result.rtl      = new RTL(Address::INVALID);
+                result.rtl.reset(new RTL(Address::INVALID));
                 result.numBytes = 4;
                 return result.valid;
             }
 
             GotoStatement *jump = nullptr;
-            RTL           *rtl  = nullptr; // Init to nullptr to suppress a warning
+            std::unique_ptr<RTL> rtl; // Init to nullptr to suppress a warning
 
             if ((strcmp(name, "BPA,a") == 0) || (strcmp(name, "BPN,a") == 0)) {
                 jump = new GotoStatement;
-                rtl  = new RTL(pc, stmts);
+                rtl = std::move(stmts);
                 rtl->append(jump);
             }
             else if ((strcmp(name, "BPVS,a") == 0) || (strcmp(name, "BPVC,a") == 0)) {
                 jump = new GotoStatement;
-                rtl  = new RTL(pc, stmts);
+                rtl  = std::move(stmts);
                 rtl->append(jump);
             }
             else {
-                rtl  = createBranchRtl(pc, stmts, name);
+                rtl  = createBranchRtl(pc, std::move(stmts), name);
                 jump = (GotoStatement *)rtl->back();
             }
 
@@ -1916,7 +1913,7 @@ MATCH_label_d0:
                 result.type = SKIP;
             }
 
-            result.rtl = rtl;
+            result.rtl = std::move(rtl);
             jump->setDest(Address((tgt - delta).value()));
             SHOW_ASM(name << " " << tgt - delta)
 
@@ -1943,9 +1940,9 @@ MATCH_label_d1:
 
             if (name[0] == 'C') {
                 result.valid    = false;
-                result.rtl      = new RTL(Address::INVALID);
+                result.rtl.reset(new RTL(Address::INVALID));
                 result.numBytes = 4;
-                return result.valid;
+                return false;
             }
 
             // Instantiate a GotoStatement for the unconditional branches, BranchStatement for the rest
@@ -1954,20 +1951,20 @@ MATCH_label_d1:
             // else)
 
             GotoStatement *jump = nullptr;
-            RTL           *rtl  = nullptr;
+            std::unique_ptr<RTL> rtl;
 
             if ((strcmp(name, "BA") == 0) || (strcmp(name, "BN") == 0)) {
                 jump = new GotoStatement;
-                rtl  = new RTL(pc, stmts);
+                rtl = std::move(stmts);
                 rtl->append(jump);
             }
             else if ((strcmp(name, "BVS") == 0) || (strcmp(name, "BVC") == 0)) {
                 jump = new GotoStatement;
-                rtl  = new RTL(pc, stmts);
+                rtl = std::move(stmts);
                 rtl->append(jump);
             }
             else {
-                rtl  = createBranchRtl(pc, stmts, name);
+                rtl  = createBranchRtl(pc, std::move(stmts), name);
                 jump = (BranchStatement *)rtl->back();
             }
 
@@ -1986,7 +1983,7 @@ MATCH_label_d1:
                 result.type = NCT;
             }
 
-            result.rtl = rtl;
+            result.rtl = std::move(rtl);
             jump->setDest(Address((tgt - delta).value()));
             SHOW_ASM(name << " " << tgt - delta)
 
@@ -2013,9 +2010,9 @@ MATCH_label_d2:
 
             if (name[0] == 'C') {
                 result.valid    = false;
-                result.rtl      = new RTL(Address::INVALID);
+                result.rtl.reset(new RTL(Address::INVALID));
                 result.numBytes = 4;
-                return result.valid;
+                return false;
             }
 
             // Instantiate a GotoStatement for the unconditional branches, HLJconds for the rest.
@@ -2023,20 +2020,20 @@ MATCH_label_d2:
             // NOTE: NJMC toolkit cannot handle embedded else statements!
 
             GotoStatement *jump = nullptr;
-            RTL           *rtl  = nullptr; // Init to nullptr to suppress a warning
+            std::unique_ptr<RTL> rtl;
 
             if ((strcmp(name, "BA,a") == 0) || (strcmp(name, "BN,a") == 0)) {
                 jump = new GotoStatement;
-                rtl  = new RTL(pc, stmts);
+                rtl = std::move(stmts);
                 rtl->append(jump);
             }
             else if ((strcmp(name, "BVS,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
                 jump = new GotoStatement;
-                rtl  = new RTL(pc, stmts);
+                rtl = std::move(stmts);
                 rtl->append(jump);
             }
             else {
-                rtl  = createBranchRtl(pc, stmts, name);
+                rtl  = createBranchRtl(pc, std::move(stmts), name);
                 jump = (GotoStatement *)rtl->back();
             }
 
@@ -2054,7 +2051,7 @@ MATCH_label_d2:
                 result.type = SKIP;
             }
 
-            result.rtl = rtl;
+            result.rtl = std::move(rtl);
             jump->setDest(Address((tgt - delta).value()));
             SHOW_ASM(name << " " << tgt - delta)
 
@@ -2083,7 +2080,7 @@ MATCH_label_d4:
             nextPC = MATCH_p + 4;
             // #line 485 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, "sethi", { dis_Num(imm22), DIS_RD });
+            result.rtl = instantiate(pc, "sethi", { dis_Num(imm22), DIS_RD });
         }
         goto MATCH_finished_d;
 MATCH_label_d5:
@@ -2096,7 +2093,7 @@ MATCH_label_d5:
             nextPC = MATCH_p + 4;
             // #line 557 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_RS1, DIS_ROI, DIS_RD });
+            result.rtl = instantiate(pc, name, { DIS_RS1, DIS_ROI, DIS_RD });
         }
         goto MATCH_finished_d;
 MATCH_label_d6:
@@ -2119,7 +2116,7 @@ MATCH_label_d6:
             // Record the fact that it is a computed jump
 
             jump->setIsComputed();
-            result.rtl = new RTL(pc, stmts);
+            result.rtl = std::move(stmts);
             result.rtl->append(jump);
             result.type = DD;
             jump->setDest(dis_Eaddr(addr));
@@ -2159,7 +2156,7 @@ MATCH_label_d7:
             // Set the destination expression
 
             newCall->setDest(dis_Eaddr(addr));
-            result.rtl = new RTL(pc, stmts);
+            result.rtl = std::move(stmts);
             result.rtl->append(newCall);
             result.type = DD;
             SHOW_ASM("call_ " << dis_Eaddr(addr))
@@ -2175,7 +2172,7 @@ MATCH_label_d8:
             nextPC = MATCH_p + 4;
             // #line 626 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d9:
@@ -2187,7 +2184,7 @@ MATCH_label_d9:
             nextPC = MATCH_p + 4;
             // #line 488 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR, DIS_RD });
+            result.rtl = instantiate(pc, name, { DIS_ADDR, DIS_RD });
         }
         goto MATCH_finished_d;
 MATCH_label_d10:
@@ -2201,7 +2198,7 @@ MATCH_label_d10:
 
             // Note: RD is on the "right hand side" only for stores
 
-            stmts = instantiate(pc, name, { DIS_RDR, DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_RDR, DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d11:
@@ -2216,7 +2213,7 @@ MATCH_label_d11:
 
             Q_UNUSED(asi); // Note: this could be serious!
 
-            stmts = instantiate(pc, name, { DIS_RD, DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_RD, DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d12:
@@ -2231,7 +2228,7 @@ MATCH_label_d12:
 
             Q_UNUSED(asi); // Note: this could be serious!
 
-            stmts = instantiate(pc, name, { DIS_RDR, DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_RDR, DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d13:
@@ -2243,7 +2240,7 @@ MATCH_label_d13:
             nextPC = MATCH_p + 4;
             // #line 491 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR, DIS_FDS });
+            result.rtl = instantiate(pc, name, { DIS_ADDR, DIS_FDS });
         }
         goto MATCH_finished_d;
 MATCH_label_d14:
@@ -2254,7 +2251,7 @@ MATCH_label_d14:
             nextPC = MATCH_p + 4;
             // #line 515 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d15:
@@ -2266,7 +2263,7 @@ MATCH_label_d15:
             nextPC = MATCH_p + 4;
             // #line 494 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR, DIS_FDD });
+            result.rtl = instantiate(pc, name, { DIS_ADDR, DIS_FDD });
         }
         goto MATCH_finished_d;
 MATCH_label_d16:
@@ -2278,7 +2275,7 @@ MATCH_label_d16:
             nextPC = MATCH_p + 4;
             // #line 505 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_FDS, DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_FDS, DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d17:
@@ -2289,7 +2286,7 @@ MATCH_label_d17:
             nextPC = MATCH_p + 4;
             // #line 521 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d18:
@@ -2300,7 +2297,7 @@ MATCH_label_d18:
             nextPC = MATCH_p + 4;
             // #line 527 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d19:
@@ -2312,7 +2309,7 @@ MATCH_label_d19:
             nextPC = MATCH_p + 4;
             // #line 508 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_FDD, DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_FDD, DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d20:
@@ -2323,7 +2320,7 @@ MATCH_label_d20:
             nextPC = MATCH_p + 4;
             // #line 518 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d21:
@@ -2334,7 +2331,7 @@ MATCH_label_d21:
             nextPC = MATCH_p + 4;
             // #line 524 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_label_d22:
@@ -2345,7 +2342,7 @@ MATCH_label_d22:
             nextPC = MATCH_p + 4;
             // #line 530 "frontend/machine/sparc/decoder.m"
 
-            stmts = instantiate(pc, name, { DIS_ADDR });
+            result.rtl = instantiate(pc, name, { DIS_ADDR });
         }
         goto MATCH_finished_d;
 MATCH_finished_d:
@@ -2358,7 +2355,7 @@ MATCH_finished_d:
     assert(result.numBytes > 0);
 
     if (result.valid && (result.rtl == nullptr)) { // Don't override higher level res
-        result.rtl = new RTL(pc, stmts);
+        result.rtl = std::move(stmts);
     }
 
     return result.valid;

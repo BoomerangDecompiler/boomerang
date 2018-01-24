@@ -38,7 +38,7 @@ class Statement;
 
 enum class BBType;
 
-using RTLList   = std::list<RTL *>;
+using RTLList   = std::list<std::unique_ptr<RTL>>;
 
 #define BTHEN    0
 #define BELSE    1
@@ -241,12 +241,10 @@ public:
      * \param   bb         pointer to the BB to be split
      * \param   splitAddr  address of RTL to become the start of the new BB
      * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
-     *                     to not overlap.
-     * \param   deleteRTLs if true, deletes the RTLs removed from the existing BB after the split point. Only used if
-     *                     there is an overlap with existing instructions
+     *                     to not overlap. If this is the case, the RTLs of the original BB are deleted.
      * \returns If the merge is successful, returns the "high" part of the split BB. Otherwise, returns the original BB.
      */
-    BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr, bool deleteRTLs = false);
+    BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
 
 public:
     /// print this cfg, mainly for debugging

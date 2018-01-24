@@ -99,7 +99,7 @@ private:
      * \param name - instruction name (e.g. "BNE,a", or "BPNE")
      * \returns            Pointer to newly created RTL, or nullptr if invalid
      */
-    RTL *createBranchRtl(Address pc, std::list<Statement *> *stmts, const char *name);
+    std::unique_ptr<RTL> createBranchRtl(Address pc, std::unique_ptr<RTL> stmts, const char *name);
 
     /**
      * Check to see if the instructions at the given offset match any callee prologue,

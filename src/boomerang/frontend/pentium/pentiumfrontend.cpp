@@ -235,7 +235,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
             return;
         }
 
-        for (RTL *rtl : *BB_rtls) {
+        for (auto& rtl : *BB_rtls) {
             for (auto iter = rtl->begin(); iter != rtl->end(); /*incremented inside*/) {
                 // Get the current Exp
                 st = *iter;
@@ -304,20 +304,17 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 
 void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
 {
-    std::list<RTL *>::iterator rit;
-    Statement                  *st;
-
     // Loop through each RTL this BB
-    std::list<RTL *> *BB_rtls = bb->getRTLs();
+    RTLList *BB_rtls = bb->getRTLs();
 
     if (BB_rtls == nullptr) {
         // For example, incomplete BB
         return;
     }
 
-    rit = BB_rtls->begin();
+    Statement                  *st;
 
-    for (RTL *rtl : *BB_rtls) {
+    for (const auto& rtl : *BB_rtls) {
         // Check for call.
         if (rtl->isCall()) {
             // Reset the "top of stack" index. If this is not done, then after a sequence of calls to functions
@@ -431,7 +428,7 @@ void PentiumFrontEnd::emitSet(std::list<RTL *> *bbRTLs, std::list<RTL *>::iterat
 }
 
 
-bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl)
+bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 {
     if (dest == Address::INVALID) {
         return false;
@@ -452,7 +449,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         // r[26] = r[tmpl] >> 32
         Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                   std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
-        RTL *pRtl = new RTL(addr);
+        std::unique_ptr<RTL> pRtl(new RTL(addr));
         pRtl->append(a);
         a = new Assign(Location::regOf(24), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
@@ -460,17 +457,17 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, std::list<RTL *> 
         a = new Assign(Location::regOf(26),
                        Binary::get(opShiftR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))), Const::get(32)));
         pRtl->append(a);
+
         // Append this RTL to the list of RTLs for this BB
-        lrtl->push_back(pRtl);
+        lrtl.push_back(std::move(pRtl));
 
         // Return true, so the caller knows not to create a HLCall
         return true;
     }
     else if (name == "__mingw_allocstack") {
-        RTL       *pRtl = new RTL(addr);
-        Statement *a    = new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24)));
-        pRtl->append(a);
-        lrtl->push_back(pRtl);
+        std::unique_ptr<RTL> pRtl(new RTL(addr));
+        pRtl->append(new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24))));
+        lrtl.push_back(std::move(pRtl));
         m_program->removeFunction(name);
         return true;
     }
@@ -860,14 +857,17 @@ bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult& r)
     r.valid    = true;
     r.type     = NCT;
     r.reDecode = false;
-    r.rtl      = new RTL(pc);
+    r.rtl.reset(new RTL(pc));
+
     SharedExp     dx    = Location::regOf(m_decoder->getRegIdx("%dx"));
     SharedExp     al    = Location::regOf(m_decoder->getRegIdx("%al"));
+
     CallStatement *call = new CallStatement();
     call->setDestProc(m_program->getLibraryProc("outp"));
     call->setArgumentExp(0, dx);
     call->setArgumentExp(1, al);
     r.rtl->append(call);
+
     return true;
 }
 
@@ -885,7 +885,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
     r.valid    = true;
     r.type     = NCT;
     r.reDecode = false;
-    r.rtl      = new RTL(pc);
+    r.rtl.reset(new RTL(pc));
 
     CallStatement *call = new CallStatement();
     call->setDestProc(m_program->getLibraryProc("invalid_opcode"));
@@ -964,7 +964,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         unsigned int pushcount = 0;
 
         for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
-            RTL *rtl = *itr;
+            RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
                 Statement *stmt = *rtl_iter;
@@ -1050,7 +1050,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         int pushcount = 0;
 
         for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
-            RTL *rtl = *itr;
+            RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
                 Statement *stmt = *rtl_iter;

@@ -2372,7 +2372,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
 
             if (m_analyzer.getCondType(bb) == CondType::Case) {
                 // The CaseStatement will be in the last RTL this BB
-                RTL           *last = bb->getRTLs()->back();
+                RTL           *last = bb->getRTLs()->back().get();
                 CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
                 psi = cs->getSwitchInfo();
 
@@ -2517,7 +2517,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
 
             if (bb->getType() == BBType::CompJump) {
                 assert(!bb->getRTLs()->empty());
-                RTL *lastRTL = bb->getRTLs()->back();
+                RTL *lastRTL = bb->getRTLs()->back().get();
                 assert(!lastRTL->empty());
                 GotoStatement *gs = (GotoStatement *)lastRTL->back();
 
@@ -2725,7 +2725,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
     addLabel(bb);
 
     if (bb->getRTLs()) {
-        for (RTL *rtl : *(bb->getRTLs())) {
+        for (const auto& rtl : *(bb->getRTLs())) {
             if (DEBUG_GEN) {
                 LOG_MSG("%1", rtl->getAddress());
             }

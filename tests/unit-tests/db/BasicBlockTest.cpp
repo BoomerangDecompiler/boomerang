@@ -42,7 +42,8 @@ void BasicBlockTest::testExtent()
     QCOMPARE(bb2.getLowAddr().toString(), Address::ZERO.toString());
     QCOMPARE(bb2.getHiAddr(), Address::INVALID);
 
-    std::unique_ptr<RTLList> rtls(new RTLList({ new RTL(Address(0x1000), { new BranchStatement() }) }));
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
 
     BasicBlock bb3(BBType::Twoway, std::move(rtls), nullptr);
     QCOMPARE(bb3.getLowAddr(), Address(0x1000));
@@ -55,12 +56,15 @@ void BasicBlockTest::testIncomplete()
     BasicBlock bb1(Address(0x1000), nullptr);
     QCOMPARE(bb1.isIncomplete(), true);
 
-    std::unique_ptr<RTLList> rtls1(new RTLList({ new RTL(Address(0x1000), { new BranchStatement() }) }));
+    std::unique_ptr<RTLList> rtls1(new RTLList);
+    rtls1->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
 
     BasicBlock bb2(BBType::Twoway, std::move(rtls1), nullptr);
     QCOMPARE(bb2.isIncomplete(), false);
 
-    std::unique_ptr<RTLList> rtls2(new RTLList({ new RTL(Address(0x1000), { new BranchStatement() }) }));
+    std::unique_ptr<RTLList> rtls2(new RTLList);
+    rtls2->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+
     BasicBlock bb3(Address(0x1000), nullptr);
     bb3.setRTLs(std::move(rtls2));
     QCOMPARE(bb3.isIncomplete(), false);

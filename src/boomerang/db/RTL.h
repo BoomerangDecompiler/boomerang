@@ -106,6 +106,7 @@ public:
     void simplify();
 
     const StmtList& getStatements() const { return m_stmts; }
+    StmtList& getStatements() { return m_stmts; }
 
     // delegates to std::list
 public:
@@ -145,4 +146,5 @@ private:
 };
 
 using SharedRTL = std::shared_ptr<RTL>;
-using RTLList   = std::list<RTL *>;
+using RTLList   = std::list<std::unique_ptr<RTL>>;
+

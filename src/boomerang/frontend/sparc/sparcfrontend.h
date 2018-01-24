@@ -98,12 +98,12 @@ private:
      * destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
      * optimisation
      *
-     * \param src - the logical source address of a CTI
-     * \param dest - the logical destination address of the CTI
-     * \param delta - used to convert logical to real addresses
+     * \param src    - the logical source address of a CTI
+     * \param dest   - the logical destination address of the CTI
+     * \param delta  - used to convert logical to real addresses
      * \param uUpper - first address past the end of the main text section
-     * SIDE EFFECT:        Optionally displays an error message if the target of the branch is the delay slot of another
-     *                    delayed CTI
+     * SIDE EFFECT:    Optionally displays an error message if the target of the branch
+     *                 is the delay slot of another delayed CTI
      * \returns true if delay instruction can be optimized away
      */
     bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper);
@@ -136,7 +136,7 @@ private:
      * \returns    The basic block containing the single return instruction
      *             if this optimisation applies, nullptr otherwise.
      */
-    BasicBlock *optimise_CallReturn(CallStatement *call, RTL *rtl, RTL *delay, UserProc *pProc);
+    BasicBlock *optimise_CallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *pProc);
 
     /**
      * Adds the destination of a branch to the queue of address
@@ -188,7 +188,7 @@ private:
      * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
      * \returns              true if next instruction is to be fetched sequentially from this one
      */
-    bool case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst, std::list<RTL *> *& BB_rtls,
+    bool case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls,
                    UserProc *proc, std::list<CallStatement *>& callList, QTextStream& os, bool isPattern = false);
 
     /**
@@ -206,7 +206,7 @@ private:
      *
      */
     void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq, QTextStream& os);
+                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq, QTextStream& os);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)
@@ -223,7 +223,7 @@ private:
      * \returns              true if next instruction is to be fetched sequentially from this one
      */
     bool case_DD(Address& address, ptrdiff_t delta, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::list<RTL *> *& BB_rtls, TargetQueue& tq, UserProc *proc, std::list<CallStatement *>& callList);
+                 std::unique_ptr<RTLList> BB_rtls, TargetQueue& tq, UserProc *proc, std::list<CallStatement *>& callList);
 
 
     /**
@@ -241,7 +241,7 @@ private:
      * \returns true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                  std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq);
+                  std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
      * Handles all static conditional delayed anulled branches followed by
@@ -259,14 +259,14 @@ private:
      * \returns             true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                    std::list<RTL *> *& BB_rtls, Cfg *cfg, TargetQueue& tq);
+                    std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
      * Emit a null RTL with the given address.
      * \param   pRtls - List of RTLs to append this instruction to
      * \param   uAddr - Native address of this instruction
      */
-    void emitNop(std::list<RTL *> *pRtls, Address uAddr);
+    void emitNop(RTLList& pRtls, Address uAddr);
 
     /**
      * Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
@@ -276,18 +276,17 @@ private:
      *         ADD     %o7, 20, %o0
      * \param pRtls - list of RTLs to append to
      * \param uAddr - native address for the RTL
-     *
      */
-    void emitCopyPC(std::list<RTL *> *pRtls, Address uAddr);
+    void emitCopyPC(RTLList& pRtls, Address uAddr);
 
     // Append one assignment to a list of RTLs
-    void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, std::list<RTL *> *lrtl);
+    void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, RTLList& lrtl);
 
     /*
      * Small helper function to build an expression with
      * *128* m[m[r[14]+64]] = m[r[8]] OP m[r[9]]
      */
-    void quadOperation(Address addr, std::list<RTL *> *lrtl, OPER op);
+    void quadOperation(Address addr, RTLList& lrtl, OPER op);
 
     /**
      * Checks for sparc specific helper functions like .urem, which have specific sematics.
@@ -298,7 +297,7 @@ private:
      * \param  lrtl list of RTL* for current BB
      * \returns True if a helper function was found and handled; false otherwise
      */
-    bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
+    bool isHelperFunc(Address dest, Address addr, RTLList& lrtl) override;
 
     /**
      * Another small helper function to generate either (for V9):
@@ -310,12 +309,13 @@ private:
      * 32* r8 = r[tmp]
      * 32* r9 = %Y
      */
-    void gen32op32gives64(OPER op, std::list<RTL *> *lrtl, Address addr);
+    void gen32op32gives64(OPER op, RTLList& lrtl, Address addr);
 
     /// This is the long version of helperFunc (i.e. -f not used).
     /// This does the complete 64 bit semantics
-    bool helperFuncLong(Address dest, Address addr, std::list<RTL *> *lrtl, QString& name);
+    bool helperFuncLong(Address dest, Address addr, RTLList& lrtl, QString& name);
 
+private:
     // This struct represents a single nop instruction.
     // Used as a substitute delay slot instruction
     DecodeResult nop_inst;

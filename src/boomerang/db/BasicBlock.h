@@ -45,7 +45,7 @@ enum class BBType
 };
 
 
-using RTLList   = std::list<RTL *>;
+using RTLList   = std::list<std::unique_ptr<class RTL>>;
 using SharedExp = std::shared_ptr<class Exp>;
 
 
@@ -174,8 +174,8 @@ public:
     RTLList *getRTLs();
     const RTLList *getRTLs() const;
 
-    inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
-    inline const RTL *getLastRTL() const { return m_listOfRTLs ? m_listOfRTLs->back() : nullptr; }
+    inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr; }
+    inline const RTL *getLastRTL() const { return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr; }
 
     void removeRTL(RTL *rtl);
 
@@ -262,7 +262,7 @@ public:
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
-    std::unique_ptr<RTLList>  m_listOfRTLs = nullptr; ///< Ptr to list of RTLs
+    std::unique_ptr<RTLList>  m_listOfRTLs; ///< Ptr to list of RTLs
 
     Address m_lowAddr = Address::ZERO;
     Address m_highAddr = Address::INVALID;

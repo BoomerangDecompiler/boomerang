@@ -38,7 +38,7 @@ bool StringInstructionProcessor::processStringInstructions()
 
         Address prev, addr = Address::ZERO;
 
-        for (RTL *rtl : *bbRTLs) {
+        for (auto& rtl : *bbRTLs) {
             prev = addr;
             addr = rtl->getAddress();
 
@@ -51,7 +51,7 @@ bool StringInstructionProcessor::processStringInstructions()
                         QString str = lhs->access<Const, 1>()->getStr();
 
                         if (str.startsWith("%SKIP")) {
-                            stringInstructions.push_back({ rtl, bb });
+                            stringInstructions.push_back({ rtl.get(), bb });
 
                             // Assume there is only 1 string instruction per BB
                             // This might not be true, but can be migitated
@@ -102,7 +102,11 @@ bool StringInstructionProcessor::processStringInstructions()
 BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stringRTL, BranchStatement *skipBranch, BranchStatement *rptBranch)
 {
     Address stringAddr = stringRTL->getAddress();
-    RTLList::iterator stringIt = std::find(bb->getRTLs()->begin(), bb->getRTLs()->end(), stringRTL);
+    RTLList::iterator stringIt = std::find_if(bb->getRTLs()->begin(), bb->getRTLs()->end(),
+        [stringRTL] (const std::unique_ptr<RTL>& ptr) {
+            return stringRTL == ptr.get();
+        });
+
     assert(stringIt != bb->getRTLs()->end());
 
     const bool haveA = (stringIt != bb->getRTLs()->begin());
@@ -133,13 +137,15 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     assert(bb->getRTLs()->size() == 1); // only the string instruction
     assert(bb->getRTLs()->front()->getAddress() == stringAddr);
 
-
     // Make an RTL for the skip and the rpt branch instructions.
-    std::unique_ptr<RTLList> skipBBRTL(new RTLList({ new RTL(stringAddr, { skipBranch }) }));
-    std::unique_ptr<RTLList> rptBBRTL(new RTLList({ new RTL(**stringIt) }));
-    rptBBRTL->front()->setAddress(stringAddr + 1);
-    rptBBRTL->front()->pop_front();
-    rptBBRTL->front()->back() = rptBranch;
+    std::unique_ptr<RTLList> skipBBRTLs(new RTLList);
+    std::unique_ptr<RTLList> rptBBRTLs(new RTLList);
+    skipBBRTLs->push_back(std::unique_ptr<RTL>(new RTL(stringAddr, { skipBranch })));
+    rptBBRTLs->push_back(std::unique_ptr<RTL>(new RTL(**stringIt)));
+
+    rptBBRTLs->front()->setAddress(stringAddr + 1);
+    rptBBRTLs->front()->pop_front();
+    rptBBRTLs->front()->back() = rptBranch;
 
     // remove the original string instruction from the CFG.
     bb->removeAllPredecessors();
@@ -152,8 +158,8 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
 
     m_proc->getCFG()->removeBB(bb);
 
-    BasicBlock *skipBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTL));
-    BasicBlock *rptBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTL));
+    BasicBlock *skipBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTLs));
+    BasicBlock *rptBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTLs));
 
     assert(skipBB && rptBB);
 

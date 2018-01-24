@@ -28,10 +28,10 @@
 
 bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
-    result.reset();                          // Clear the result structure (numBytes = 0 etc)
-    HostAddress            hostPC = HostAddress(delta) + pc;
-    std::list<Statement *> *stmts = nullptr; // The actual list of instantiated Statements
-    int total = 0;                           // Total value from all prefixes
+    result.reset();              // Clear the result structure (numBytes = 0 etc)
+    HostAddress hostPC = HostAddress(delta) + pc;
+    std::unique_ptr<RTL> stmts;  // The actual list of instantiated Statements
+    int total = 0;               // Total value from all prefixes
 
     while (1) {
         // #line 60 "frontend/machine/st20/decoder.m"
@@ -55,8 +55,8 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         // #line 74 "frontend/machine/st20/decoder.m"
 
-                        processUnconditionalJump("j", result.numBytes, hostPC + result.numBytes + total + oper, delta, pc, stmts,
-                                                 result);
+                        processUnconditionalJump("j", result.numBytes, hostPC + result.numBytes + total + oper,
+                                                 delta, pc, result);
                     }
                     break;
 
@@ -77,7 +77,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         // #line 71 "frontend/machine/st20/decoder.m"
 
-                        stmts = instantiate(pc, name, { Const::get(total + oper) });
+                        result.rtl = instantiate(pc, name, { Const::get(total + oper) });
                     }
 
                     break;
@@ -114,15 +114,13 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         total += oper;
 
-                        stmts = instantiate(pc, "call", { Const::get(total) });
+                        result.rtl = instantiate(pc, "call", { Const::get(total) });
 
                         CallStatement *newCall = new CallStatement;
 
                         newCall->setIsComputed(false);
 
                         newCall->setDest(pc + result.numBytes + total);
-
-                        result.rtl = new RTL(pc, stmts);
 
                         result.rtl->append(newCall);
                     }
@@ -144,7 +142,7 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
 
                         br->setCondExpr(Binary::get(opEquals, dis_Reg(0), Const::get(0)));
 
-                        result.rtl = new RTL(pc, stmts);
+                        result.rtl = std::move(stmts);
 
                         result.rtl->append(br);
                     }
@@ -819,19 +817,16 @@ bool ST20Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& r
                         }
 
                         if (name) {
-                            stmts = instantiate(pc, name);
+                            result.rtl = instantiate(pc, name);
 
                             if (isRet) {
-                                result.rtl = new RTL(pc, stmts);
-
+                                result.rtl = std::move(stmts);
                                 result.rtl->append(new ReturnStatement);
                             }
                         }
                         else {
                             result.valid = false; // Invalid instruction
-
                             result.rtl = nullptr;
-
                             result.numBytes = 0;
 
                             return false;
@@ -854,7 +849,7 @@ MATCH_finished_a:
     }
 
     if (result.rtl == nullptr) {
-        result.rtl = new RTL(pc, stmts);
+        result.rtl = std::move(stmts);
     }
 
     return result.valid;

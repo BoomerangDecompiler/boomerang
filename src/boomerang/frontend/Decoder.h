@@ -82,7 +82,7 @@ public:
     int     numBytes; ///< The number of bytes decoded in the main instruction
 
     /// The RTL constructed (if any).
-    RTL     *rtl;
+    std::unique_ptr<RTL> rtl;
 
     /**
      * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.
