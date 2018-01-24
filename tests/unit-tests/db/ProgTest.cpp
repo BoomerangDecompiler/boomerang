@@ -28,6 +28,7 @@ void ProgTest::testName()
     progName = "Happy Prog";
     prog->setName(progName);
     QCOMPARE(prog->getName(), progName);
+    delete prog;
 }
 
 
