@@ -435,10 +435,11 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
     if (delay_inst.rtl->empty() || !delay_inst.rtl->back()->isFlagAssign()) {
         if (delay_inst.type != NOP) {
             // Emit delay instr
-            BB_rtls->push_back(std::move(delay_inst.rtl));
             // This is in case we have an in-edge to the branch. If the BB is split, we want the split to happen
             // here, so this delay instruction is active on this path
             delay_inst.rtl->setAddress(address);
+
+            BB_rtls->push_back(std::move(delay_inst.rtl));
         }
 
         // Now emit the branch
@@ -481,7 +482,6 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         // Visit the target of the branch
         tq.visit(cfg, uDest, pBB);
         std::unique_ptr<RTLList> pOrphan(new RTLList);
-        pOrphan->push_back(std::move(delay_inst.rtl));
 
         // Change the address to 0, since this code has no source address (else we may branch to here when we want
         // to branch to the real BB with this instruction).
@@ -490,6 +490,9 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         // often but not necessarily be the same, so we can't use the same orphan BB. newBB knows to consider BBs
         // with address 0 as being in the map, so several BBs can exist with address 0
         delay_inst.rtl->setAddress(Address::ZERO);
+        pOrphan->push_back(std::move(delay_inst.rtl));
+
+
 
         // Add a branch from the orphan instruction to the dest of the branch. Again, we can't even give the jumps
         // a special address like 1, since then the BB would have this getLowAddr.
