@@ -54,7 +54,7 @@ public:
     Prog& operator=(Prog&& other) = default;
 
 public:
-    /// Change the FrontEnd
+    /// Change the FrontEnd. Takes ownership of the pointer.
     void setFrontEnd(IFrontEnd *fe);
     IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
 
