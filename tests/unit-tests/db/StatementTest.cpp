@@ -80,7 +80,7 @@ void StatementTest::testEmpty()
     // create CFG
     Cfg                    *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> pRtls(new RTLList);
-    pRtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { new ReturnStatement })));
+    pRtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { })));
 
     BasicBlock *entryBB = cfg->createBB(BBType::Ret, std::move(pRtls));
     cfg->setEntryAndExitBB(entryBB);
@@ -94,16 +94,15 @@ void StatementTest::testEmpty()
     QTextStream st(&actual);
     cfg->print(st);
 
-    QCOMPARE(
-        actual,
-        QString(
+    QString expected = QString(
             "Control Flow Graph:\n"
             "Ret BB:\n"
             "  in edges: \n"
             "  out edges: \n"
             "0x00000123\n\n"
-            )
         );
+
+    QCOMPARE(actual, expected);
 
     // clean up
     delete prog;
