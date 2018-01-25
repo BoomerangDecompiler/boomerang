@@ -30,7 +30,7 @@
 PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog)
     : IFrontEnd(pBF, prog)
 {
-    m_decoder = new PPCDecoder(prog);
+    m_decoder.reset(new PPCDecoder(prog));
 }
 
 

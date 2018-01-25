@@ -64,7 +64,7 @@ public:
     IFrontEnd(const IFrontEnd&) = delete;
     IFrontEnd(IFrontEnd&&) = default;
 
-    virtual ~IFrontEnd() = default;
+    virtual ~IFrontEnd();
 
     IFrontEnd& operator=(const IFrontEnd&) = delete;
     IFrontEnd& operator=(IFrontEnd&&) = default;
@@ -104,7 +104,7 @@ public:
     IFileLoader *getLoader() const { return m_fileLoader; }
 
     /// Accessor function to get the decoder.
-    IDecoder *getDecoder() { return m_decoder; }
+    IDecoder *getDecoder() { return m_decoder.get(); }
 
     /// returns a symbolic name for a register index
     QString getRegName(int idx) const;
@@ -228,7 +228,7 @@ private:
 
 protected:
     IBinaryImage *m_image;
-    IDecoder *m_decoder;            ///< The decoder
+    std::unique_ptr<IDecoder> m_decoder; ///< The decoder
     IFileLoader *m_fileLoader;
     Prog *m_program;                ///< The Prog object
 

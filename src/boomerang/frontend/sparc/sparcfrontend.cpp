@@ -830,7 +830,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                         // e.g.
                         // 142c8:  40 00 5b 91          call           exit
                         // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-                        if (((SparcDecoder *)m_decoder)->isRestore(HostAddress(uAddr.value() + 4 + m_image->getTextDelta()))) {
+                        if (((SparcDecoder *)m_decoder.get())->isRestore(HostAddress(uAddr.value() + 4 + m_image->getTextDelta()))) {
                             // Give the address of the call; I think that this is actually important, if faintly annoying
                             delay_inst.rtl->setAddress(uAddr);
                             BB_rtls->push_back(std::move(delay_inst.rtl));
@@ -1377,7 +1377,7 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
 SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
     : IFrontEnd(p_BF, prog)
 {
-    m_decoder         = new SparcDecoder(prog);
+    m_decoder.reset(new SparcDecoder(prog));
     SymbolTable       = Boomerang::get()->getSymbols();
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;

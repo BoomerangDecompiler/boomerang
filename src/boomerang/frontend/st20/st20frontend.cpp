@@ -31,7 +31,7 @@
 ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog)
     : IFrontEnd(pBF, prog)
 {
-    m_decoder = new ST20Decoder(prog);
+    m_decoder.reset(new ST20Decoder(prog));
 }
 
 

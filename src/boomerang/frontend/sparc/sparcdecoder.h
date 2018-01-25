@@ -33,8 +33,6 @@ public:
  */
 class SparcDecoder : public NJMCDecoder
 {
-    SparcMachine *machine;
-
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     SparcDecoder(Prog *prog);
@@ -116,4 +114,7 @@ private:
      * \returns   the decoded double
      */
     DWord getDword(HostAddress lc);
+
+private:
+    std::unique_ptr<SparcMachine> machine;
 };

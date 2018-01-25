@@ -32,7 +32,7 @@
 MIPSFrontEnd::MIPSFrontEnd(IFileLoader *loader, Prog *prog)
     : IFrontEnd(loader, prog)
 {
-    m_decoder = new MIPSDecoder(prog);
+    m_decoder.reset(new MIPSDecoder(prog));
 }
 
 

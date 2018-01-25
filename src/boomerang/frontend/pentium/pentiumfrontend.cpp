@@ -487,14 +487,12 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog)
     : IFrontEnd(p_BF, prog)
 {
-    m_decoder = new PentiumDecoder(prog);
+    m_decoder.reset(new PentiumDecoder(prog));
 }
 
 
 PentiumFrontEnd::~PentiumFrontEnd()
 {
-    delete m_decoder;
-    m_decoder = nullptr;
 }
 
 

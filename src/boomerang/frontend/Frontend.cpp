@@ -61,6 +61,11 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
 }
 
 
+IFrontEnd::~IFrontEnd()
+{
+}
+
+
 IFrontEnd *IFrontEnd::instantiate(IFileLoader *pBF, Prog *prog)
 {
     switch (pBF->getMachine())
