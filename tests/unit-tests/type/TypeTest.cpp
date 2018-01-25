@@ -48,13 +48,13 @@ typedef std::list<ComplexTypeComp> ComplexTypeCompList;
 
 /// From a complex type like an array of structs with a float, return a list of components so you
 /// can construct e.g. myarray1[8].mystruct2.myfloat7
-ComplexTypeCompList& compForAddress(Address addr, DataIntervalMap& dim)
+std::unique_ptr<ComplexTypeCompList> compForAddress(Address addr, DataIntervalMap& dim)
 {
     const TypedVariable *var = dim.find(addr);
-    ComplexTypeCompList *res = new ComplexTypeCompList;
+    std::unique_ptr<ComplexTypeCompList> res(new ComplexTypeCompList);
 
     if (var == nullptr) {
-        return *res;
+        return res;
     }
 
     Address    startCurrent = var->baseAddr;
@@ -85,11 +85,11 @@ ComplexTypeCompList& compForAddress(Address addr, DataIntervalMap& dim)
         }
         else {
             LOG_ERROR("TYPE ERROR: no struct or array at byte address %1", addr);
-            return *res;
+            return res;
         }
     }
 
-    return *res;
+    return res;
 }
 
 
@@ -127,7 +127,9 @@ void TypeTest::testCompound()
     IFileLoader *loader = project.getBestLoader(HELLO_WINDOWS);
     QVERIFY(loader != nullptr);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, new Prog("HELLO_WINDOWS"));
+    Prog *prog = new Prog("HELLO_WINDOWS");
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
+    prog->setFrontEnd(pFE);
 
     pFE->readLibraryCatalog(); // Read definitions
 
@@ -163,7 +165,7 @@ void TypeTest::testCompound()
     // And at offset 8+8
     QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 8) * 8), QString("rcPaint"));
 
-    delete pFE;
+    delete prog;
 }
 
 
@@ -205,11 +207,11 @@ void TypeTest::testDataInterval()
     ct->addType(FloatType::get(32), "float1");
     dim.insertItem(Address(0x00001010), "struct1", ct);
 
-    ComplexTypeCompList& ctcl = compForAddress(Address(0x00001012), dim);
-    unsigned             ua   = ctcl.size();
+    std::unique_ptr<ComplexTypeCompList> ctcl = compForAddress(Address(0x00001012), dim);
+    unsigned             ua   = ctcl->size();
     unsigned             ue   = 1;
     QCOMPARE(ua, ue);
-    ComplexTypeComp& ctc = ctcl.front();
+    ComplexTypeComp& ctc = ctcl->front();
     ue = 0;
     ua = ctc.isArray;
     QCOMPARE(ua, ue);
@@ -218,17 +220,18 @@ void TypeTest::testDataInterval()
     // An array of 10 struct1's
     auto at = ArrayType::get(ct, 10);
     dim.insertItem(Address(0x00001020), "array1", at);
-    ComplexTypeCompList& ctcl2 = compForAddress(Address(0x00001020 + 0x3C + 8), dim);
+    std::unique_ptr<ComplexTypeCompList> ctcl2 = compForAddress(Address(0x00001020 + 0x3C + 8), dim);
     // Should be 2 components: [5] and .float1
-    ue = 2;
-    ua = ctcl2.size();
-    QCOMPARE(ua, ue);
-    ComplexTypeComp& ctc0 = ctcl2.front();
-    ComplexTypeComp& ctc1 = ctcl2.back();
+    QCOMPARE(ctcl2->size(), (size_t)2);
+
+    ComplexTypeComp& ctc0 = ctcl2->front();
+    ComplexTypeComp& ctc1 = ctcl2->back();
     QCOMPARE(ctc0.isArray, true);
     QCOMPARE(ctc0.u.index, 5U);
     QCOMPARE(ctc1.isArray, false);
     QCOMPARE(ctc1.u.memberName, QString("float1"));
+
+    delete prog;
 }
 
 
@@ -321,6 +324,8 @@ void TypeTest::testDataIntervalOverlaps()
     QVERIFY(dim.insertItem(Address(0x00000FF8), "newArray3", at) == dim.end());
     var = dim.find(Address(0x00000FF8));
     QVERIFY(var == nullptr);
+
+    delete prog;
 }
 
 
