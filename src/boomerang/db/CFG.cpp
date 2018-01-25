@@ -508,7 +508,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         }
         bb->removeAllSuccessors();
         addEdge(bb, _newBB);
-
+        bb->setType(BBType::Fall);
         m_bbStartMap[_newBB->getLowAddr()] = _newBB;
         return _newBB;
     }
@@ -544,7 +544,8 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 
     bb->removeAllSuccessors();
     addEdge(bb, _newBB);
-
+    _newBB->setType(bb->getType());
+    bb->setType(BBType::Fall);
     return _newBB;
 }
 
