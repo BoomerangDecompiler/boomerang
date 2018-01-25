@@ -1008,6 +1008,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 break;
                             }
 
+                            RTL *rtl = inst.rtl.get();
                             BB_rtls->push_back(std::move(inst.rtl));
 
                             // Add this non computed call site to the set of call sites which need to be analysed later.
@@ -1039,7 +1040,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                                 // Create the new basic block
                                 pBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
-                                appendSyntheticReturn(pBB, pProc, inst.rtl.get());
+                                appendSyntheticReturn(pBB, pProc, rtl);
 
                                 // Stop decoding sequentially
                                 sequentialDecode = false;
@@ -1052,7 +1053,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                                 if (call->isReturnAfterCall()) {
                                     // Constuct the RTLs for the new basic block
                                     std::unique_ptr<RTLList> rtls(new RTLList);
-                                    rtls->push_back(std::unique_ptr<RTL>(new RTL(inst.rtl->getAddress() + 1, { new ReturnStatement() })));
+                                    rtls->push_back(std::unique_ptr<RTL>(new RTL(rtl->getAddress() + 1, { new ReturnStatement() })));
                                     BasicBlock *returnBB = cfg->createBB(BBType::Ret, std::move(rtls));
 
                                     // Add out edge from call to return
@@ -1243,10 +1244,10 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
 void IFrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    BasicBlock *pret = createReturnBlock(pProc, std::move(ret_rtls),
-        std::unique_ptr<RTL>(new RTL(pRtl->getAddress() + 1, { new ReturnStatement() })));
+    std::unique_ptr<RTL> retRTL(new RTL(pRtl->getAddress() + 1, { new ReturnStatement }));
+    BasicBlock *retBB = createReturnBlock(pProc, std::move(ret_rtls), std::move(retRTL));
 
-    pret->addPredecessor(pCallBB);
+    retBB->addPredecessor(pCallBB);
     assert(pCallBB->getNumSuccessors() == 0);
-    pCallBB->addPredecessor(pret);
+    pCallBB->addPredecessor(retBB);
 }
