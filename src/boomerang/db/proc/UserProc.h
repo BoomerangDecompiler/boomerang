@@ -198,6 +198,7 @@ public:
     void updateCalls();
 
     /// Look for short circuit branching
+    /// \returns true if any change
     bool branchAnalysis();
 
     /// Fix any ugly branch statements (from propagating too much)

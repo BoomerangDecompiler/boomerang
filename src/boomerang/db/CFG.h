@@ -170,7 +170,7 @@ public:
     void setEntryAndExitBB(BasicBlock *entryBB);
 
     /// Completely removes a single BB from this CFG.
-    /// Also removes all in edges and out edges from \p bb (if found)
+    /// \note \p bb is invalid after this function returns.
     void removeBB(BasicBlock *bb);
 
     /**
