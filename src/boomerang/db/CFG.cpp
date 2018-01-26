@@ -324,12 +324,12 @@ bool Cfg::isWellFormed() const
     for (const BasicBlock *bb : *this) {
         if (bb->isIncomplete()) {
             m_wellFormed = false;
-            LOG_VERBOSE("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
+            LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
             return false;
         }
         else if (bb->getFunction() != m_myProc) {
             m_wellFormed = false;
-            LOG_VERBOSE("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
+            LOG_ERROR("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
                         bb->getLowAddr(), m_myProc->getName());
             return false;
         }
@@ -337,13 +337,13 @@ bool Cfg::isWellFormed() const
         for (const BasicBlock *pred : bb->getPredecessors()) {
             if (!pred->isPredecessorOf(bb)) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
                             pred->getLowAddr(), bb->getLowAddr());
                 return false;
             }
             else if (pred->getFunction() != bb->getFunction()) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                             pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
                             bb->getFunction()->getName());
                 return false;
@@ -353,13 +353,13 @@ bool Cfg::isWellFormed() const
         for (const BasicBlock *succ : bb->getSuccessors()) {
             if (!succ->isSuccessorOf(bb)) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
                             bb->getLowAddr(), succ->getLowAddr());
                 return false;
             }
             else if (succ->getFunction() != bb->getFunction()) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                             bb->getFunction()->getName(),
                             succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
                 return false;

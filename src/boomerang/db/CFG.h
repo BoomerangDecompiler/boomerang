@@ -40,9 +40,6 @@ enum class BBType;
 
 using RTLList   = std::list<std::unique_ptr<RTL>>;
 
-#define BTHEN    0
-#define BELSE    1
-
 
 /**
  * Control Flow Graph class. Contains all the BasicBlock objects for a procedure.

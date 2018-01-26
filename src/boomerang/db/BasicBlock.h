@@ -48,6 +48,12 @@ enum class BBType
 using RTLList   = std::list<std::unique_ptr<class RTL>>;
 using SharedExp = std::shared_ptr<class Exp>;
 
+// index of the "then" branch of conditional jumps
+#define BTHEN    0
+
+// index of the "else" branch of conditional jumps
+#define BELSE    1
+
 
 /**
  * BasicBlock class.

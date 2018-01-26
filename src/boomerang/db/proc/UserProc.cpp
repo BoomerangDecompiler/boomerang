@@ -1761,17 +1761,18 @@ bool UserProc::branchAnalysis()
             continue;
         }
 
-        BranchStatement *branch = static_cast<BranchStatement *>(stmt);
+        BranchStatement *firstBranch = static_cast<BranchStatement *>(stmt);
 
-        if (!branch->getFallBB() || !branch->getTakenBB()) {
+        if (!firstBranch->getFallBB() || !firstBranch->getTakenBB()) {
             continue;
         }
 
         StatementList fallstmts;
-        branch->getFallBB()->appendStatementsTo(fallstmts);
+        firstBranch->getFallBB()->appendStatementsTo(fallstmts);
+        Statement *nextAfterBranch = !fallstmts.empty() ? fallstmts.front() : nullptr;
 
-        if ((fallstmts.size() == 1) && (*fallstmts.begin())->isBranch()) {
-            BranchStatement *fallto = (BranchStatement *)*fallstmts.begin();
+        if (nextAfterBranch && nextAfterBranch->isBranch()) {
+            BranchStatement *secondBranch = static_cast<BranchStatement *>(nextAfterBranch);
 
             //   branch to A if cond1
             //   branch to B if cond2
@@ -1782,26 +1783,31 @@ bool UserProc::branchAnalysis()
             // A: something
             // B:
             //
-            if ((fallto->getFallBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
-                branch->setFallBB(fallto->getFallBB());
-                branch->setTakenBB(fallto->getTakenBB());
-                branch->setDest(fallto->getFixedDest());
+            if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
+                (secondBranch->getBB()->getNumPredecessors() == 1)) {
+
                 SharedExp cond =
-                    Binary::get(opAnd, Unary::get(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone());
-                branch->setCondExpr(cond->simplify());
+                    Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()), secondBranch->getCondExpr()->clone());
+                firstBranch->setCondExpr(cond->simplify());
 
-                BasicBlock *bb = fallto->getBB();
-                assert(bb->getNumPredecessors() == 0);
-                assert(bb->getNumSuccessors() == 2);
-                BasicBlock *succ1 = fallto->getBB()->getSuccessor(0);
-                BasicBlock *succ2 = fallto->getBB()->getSuccessor(1);
+                firstBranch->setDest(secondBranch->getFixedDest());
+                firstBranch->setTakenBB(secondBranch->getTakenBB());
+                firstBranch->setFallBB(secondBranch->getFallBB());
 
-                bb->removeSuccessor(succ1);
-                bb->removeSuccessor(succ2);
-                succ1->removePredecessor(bb);
-                succ2->removePredecessor(bb);
+                // remove second branch BB
+                BasicBlock *secondBranchBB = secondBranch->getBB();
 
-                bbsToRemove.insert(bb);
+                assert(secondBranchBB->getNumPredecessors() == 0);
+                assert(secondBranchBB->getNumSuccessors() == 2);
+                BasicBlock *succ1 = secondBranch->getBB()->getSuccessor(BTHEN);
+                BasicBlock *succ2 = secondBranch->getBB()->getSuccessor(BELSE);
+
+                secondBranchBB->removeSuccessor(succ1);
+                secondBranchBB->removeSuccessor(succ2);
+                succ1->removePredecessor(secondBranchBB);
+                succ2->removePredecessor(secondBranchBB);
+
+                bbsToRemove.insert(secondBranchBB);
             }
 
             //   branch to B if cond1
@@ -1812,22 +1818,26 @@ bool UserProc::branchAnalysis()
             //   branch to B if cond1 || cond2
             // A: something
             // B:
-            if ((fallto->getTakenBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
-                branch->setFallBB(fallto->getFallBB());
-                branch->setCondExpr(Binary::get(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
+            if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
+                (secondBranch->getBB()->getNumPredecessors() == 1)) {
 
-                BasicBlock *bb = fallto->getBB();
-                assert(bb->getNumPredecessors() == 0);
-                assert(bb->getNumSuccessors() == 2);
-                BasicBlock *succ1 = bb->getSuccessor(0);
-                BasicBlock *succ2 = bb->getSuccessor(1);
+                SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(), secondBranch->getCondExpr()->clone());
+                firstBranch->setCondExpr(cond->simplify());
 
-                bb->removeSuccessor(succ1);
-                bb->removeSuccessor(succ2);
-                succ1->removePredecessor(bb);
-                succ2->removePredecessor(bb);
+                firstBranch->setFallBB(secondBranch->getFallBB());
 
-                bbsToRemove.insert(bb); // Can't delete the BB directly since
+                BasicBlock *secondBranchBB = secondBranch->getBB();
+                assert(secondBranchBB->getNumPredecessors() == 0);
+                assert(secondBranchBB->getNumSuccessors() == 2);
+                BasicBlock *succ1 = secondBranchBB->getSuccessor(BTHEN);
+                BasicBlock *succ2 = secondBranchBB->getSuccessor(BELSE);
+
+                secondBranchBB->removeSuccessor(succ1);
+                secondBranchBB->removeSuccessor(succ2);
+                succ1->removePredecessor(secondBranchBB);
+                succ2->removePredecessor(secondBranchBB);
+
+                bbsToRemove.insert(secondBranchBB);
             }
         }
     }
