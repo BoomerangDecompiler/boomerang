@@ -51,8 +51,7 @@ public:
      * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
      */
-    void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
-                             std::unique_ptr<RTL> stmts, DecodeResult& result);
+    void processComputedJump(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result);
 
     /**
      * Process an indirect call instruction.
@@ -60,11 +59,9 @@ public:
      * \param   size size of instruction in bytes
      * \param   dest destination Exp*
      * \param   pc native pc
-     * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
      */
-    void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
-                             std::unique_ptr<RTL> stmts, DecodeResult& result);
+    void processComputedCall(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result);
 
     /// \copydoc IInstructionTranslator::getRegName
     QString getRegName(int idx) const override;

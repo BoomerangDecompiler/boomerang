@@ -155,10 +155,8 @@ void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddre
 }
 
 
-void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc,
-                                      std::unique_ptr<RTL> stmts, DecodeResult& result)
+void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result)
 {
-    result.rtl      = std::move(stmts);
     result.numBytes = size;
 
     GotoStatement *jump = new GotoStatement();
@@ -170,10 +168,8 @@ void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest
 }
 
 
-void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc,
-                                      std::unique_ptr<RTL> stmts, DecodeResult& result)
+void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result)
 {
-    result.rtl      = std::move(stmts);
     result.numBytes = size;
 
     CallStatement *call = new CallStatement();

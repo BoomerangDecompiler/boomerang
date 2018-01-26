@@ -63,7 +63,6 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
 #define DIS_FA         (dis_Reg(fa + 32))
 #define DIS_FB         (dis_Reg(fb + 32))
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
-    result.rtl = std::move(stmts);                    \
     BranchStatement *jump = new BranchStatement;      \
     result.rtl->append(jump);                         \
     result.numBytes = size;                           \
@@ -75,14 +74,10 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
 
 bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
-    HostAddress hostPC = HostAddress(delta) + pc;
-
-    // Clear the result structure;
     result.reset();
+    result.rtl.reset(new RTL(pc));
 
-    // The actual list of instantiated statements
-    std::unique_ptr<RTL> stmts;
-
+    HostAddress hostPC = HostAddress(delta) + pc;
     HostAddress nextPC = HostAddress::INVALID;
 
     // #line 119 "frontend/machine/ppc/decoder.m"
@@ -695,8 +690,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 Assign *as = new Assign(IntegerType::get(STD_SIZE, 0),
                                                         Unary::get(opMachFtr, Const::get("%LR")), Const::get(pc + 4));
 
-                                stmts.reset(new RTL(pc, { as }));
-
+                                result.rtl->append(as);
                                 SHOW_ASM(name << " " << BIcr << ", .+4"
                                               << " %LR = %pc+4")
                             }
@@ -706,16 +700,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 result.rtl = instantiate(pc, name, { dest });
 
                                 CallStatement *newCall = new CallStatement;
-
-                                // Record the fact that this is not a computed call
-
                                 newCall->setIsComputed(false);
-
-                                // Set the destination expression
-
                                 newCall->setDest(dest);
-
-                                result.rtl = std::move(stmts);
 
                                 result.rtl->append(newCall);
                             }
@@ -1039,16 +1025,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         result.rtl = instantiate(pc, name, { dest });
 
                         CallStatement *newCall = new CallStatement;
-
-                        // Record the fact that this is not a computed call
-
                         newCall->setIsComputed(false);
-
-                        // Set the destination expression
-
                         newCall->setDest(dest);
-
-                        result.rtl = std::move(stmts);
 
                         result.rtl->append(newCall);
 
@@ -1636,8 +1614,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 299 "frontend/machine/ppc/decoder.m"
 
-                                        processComputedCall(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, std::move(stmts),
-                                                            result);
+                                        processComputedCall(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, result);
 
                                         Q_UNUSED(BIcr);
                                     }
@@ -1651,8 +1628,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 295 "frontend/machine/ppc/decoder.m"
 
-                                        processComputedJump(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, std::move(stmts),
-                                                            result);
+                                        processComputedJump(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, result);
 
                                         Q_UNUSED(BIcr);
                                     }
@@ -8939,11 +8915,7 @@ MATCH_label_a0:
             nextPC = MATCH_p;
 
             // #line 353 "frontend/machine/ppc/decoder.m"
-
-            stmts = nullptr;
-
             result.valid = false;
-
             result.numBytes = 4;
         }
         goto MATCH_finished_a;
@@ -8975,9 +8947,6 @@ MATCH_label_a2:
             nextPC = MATCH_p + 4;
 
             // #line 341 "frontend/machine/ppc/decoder.m"
-
-            result.rtl = std::move(stmts);
-
             result.rtl->append(new ReturnStatement);
 
             SHOW_ASM(name << "\n");
@@ -9288,10 +9257,6 @@ MATCH_finished_a:
     // #line 358 "frontend/machine/ppc/decoder.m"
 
     result.numBytes = nextPC.value() - hostPC.value();
-
-    if (result.valid && (result.rtl == nullptr)) { // Don't override higher level res
-        result.rtl = std::move(stmts);
-    }
 
     return result.valid;
 }

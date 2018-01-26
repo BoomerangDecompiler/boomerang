@@ -69,10 +69,9 @@ public:
     void setAddress(Address a) { m_nativeAddr = a; }
 
     /**
-     *  Append \p s to the end of this RTL.
-     * \note   Exception: Leaves any flag call at the end
+     * Append \p s to the end of this RTL. Takes ownership of the pointer.
+     * \note Leaves any flag call at the end
      * (so may push exp to second last position, instead of last)
-     * \note   \p s is NOT copied.
      */
     void append(Statement *s);
 
