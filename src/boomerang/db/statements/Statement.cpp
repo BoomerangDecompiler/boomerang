@@ -60,7 +60,7 @@
 
 
 Statement::Statement()
-    : m_parent(nullptr)
+    : m_bb(nullptr)
     , m_proc(nullptr)
     , m_number(0)
 {
@@ -167,26 +167,26 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 
 bool Statement::isFirstStatementInBB() const
 {
-    assert(m_parent);
-    assert(m_parent->getRTLs());
-    assert(m_parent->getRTLs()->size());
-    assert(m_parent->getRTLs()->front());
-    assert(m_parent->getRTLs()->front()->size());
-    return this == m_parent->getRTLs()->front()->front();
+    assert(m_bb);
+    assert(m_bb->getRTLs());
+    assert(m_bb->getRTLs()->size());
+    assert(m_bb->getRTLs()->front());
+    assert(m_bb->getRTLs()->front()->size());
+    return this == m_bb->getRTLs()->front()->front();
 }
 
 
 bool Statement::isLastStatementInBB() const
 {
-    assert(m_parent);
-    return this == m_parent->getLastStmt();
+    assert(m_bb);
+    return this == m_bb->getLastStmt();
 }
 
 
 Statement *Statement::getPreviousStatementInBB() const
 {
-    assert(m_parent);
-    RTLList *rtls = m_parent->getRTLs();
+    assert(m_bb);
+    RTLList *rtls = m_bb->getRTLs();
     assert(rtls);
     Statement *previous = nullptr;
 
@@ -206,8 +206,8 @@ Statement *Statement::getPreviousStatementInBB() const
 
 Statement *Statement::getNextStatementInBB() const
 {
-    assert(m_parent);
-    RTLList *rtls = m_parent->getRTLs();
+    assert(m_bb);
+    RTLList *rtls = m_bb->getRTLs();
     assert(rtls);
     bool wantNext = false;
 

@@ -22,7 +22,7 @@ class Unary : public Exp
 public:
     Unary(OPER op, SharedExp subExp1);
     Unary(const Unary& other);
-    Unary(Unary&& other);
+    Unary(Unary&& other) = default;
 
     virtual ~Unary() override;
 

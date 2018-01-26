@@ -12,28 +12,8 @@
 
 #include "boomerang/db/statements/Assignment.h"
 #include "boomerang/db/BasicBlock.h"
-
-
-/**
- * The below could almost be a RefExp. But we could not
- * at one stage #include exp.h as part of statement,h; that's since changed
- * so it is now possible, and arguably desirable.
- * However, it's convenient to have these members public
- */
-class PhiInfo
-{
-public:
-    void setDef(Statement *def) { m_def = def; }
-
-    Statement       *getDef() { return m_def; }
-    const Statement *getDef() const { return m_def; }
-
-public:
-    SharedExp       e;   ///< The expression for the thing being defined (never subscripted)
-
-private:
-    Statement       *m_def; ///< The defining statement
-};
+#include "boomerang/util/MapIterators.h"
+#include "boomerang/db/exp/RefExp.h"
 
 
 /**
@@ -52,9 +32,11 @@ private:
 class PhiAssign : public Assignment
 {
 public:
-    typedef std::map<BasicBlock *, PhiInfo, BasicBlock::BBComparator> PhiDefs;
-    typedef PhiDefs::iterator                 iterator;
-    typedef PhiDefs::const_iterator           const_iterator;
+    typedef std::map<BasicBlock *, RefExp, BasicBlock::BBComparator> PhiDefs;
+    typedef MapValueIterator<PhiDefs> iterator;
+    typedef MapValueConstIterator<PhiDefs> const_iterator;
+    typedef MapValueReverseIterator<PhiDefs> reverse_iterator;
+    typedef MapValueConstReverseIterator<PhiDefs> const_reverse_iterator;
 
 public:
     PhiAssign(SharedExp _lhs)
@@ -69,6 +51,17 @@ public:
 
     PhiAssign& operator=(const PhiAssign& other) = default;
     PhiAssign& operator=(PhiAssign&& other) = default;
+
+public:
+    iterator begin() { return m_defs.begin(); }
+    iterator end()   { return m_defs.end(); }
+    const_iterator begin() const { return m_defs.begin(); }
+    const_iterator end() const { return m_defs.end(); }
+
+    reverse_iterator rbegin() { return m_defs.rbegin(); }
+    reverse_iterator rend()   { return m_defs.rend();   }
+    const_reverse_iterator rbegin() const { return m_defs.rbegin(); }
+    const_reverse_iterator rend()   const { return m_defs.rend();   }
 
 public:
     /// \copydoc Statement::clone
@@ -109,8 +102,8 @@ public:
     //
 
     /// Get statement at index \p idx
-    Statement *getStmtAt(BasicBlock *idx);
-    PhiInfo& getAt(BasicBlock *idx);
+    Statement *getStmtAt(BasicBlock *bb);
+    const Statement *getStmtAt(BasicBlock *bb) const;
 
     /// Update the statement at index \p idx
     void putAt(BasicBlock *idx, Statement *d, SharedExp e);
@@ -119,13 +112,7 @@ public:
     PhiDefs& getDefs() { return m_defs; }
     const PhiDefs& getDefs() const { return m_defs; }
 
-    PhiInfo& front() { return m_defs.begin()->second; }
-    PhiInfo& back() { return m_defs.rbegin()->second; }
-    iterator begin() { return m_defs.begin(); }
-    iterator end() { return m_defs.end(); }
-    const_iterator begin() const { return m_defs.begin(); }
-    const_iterator end() const { return m_defs.end(); }
-    iterator erase(iterator it) { return m_defs.erase(it); }
+    void removeAllReferences(std::shared_ptr<RefExp> exp);
 
     /// Convert this PhiAssignment to an ordinary Assignment.
     /// Hopefully, this is the only place that Statements change from

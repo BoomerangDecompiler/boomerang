@@ -714,10 +714,11 @@ void UserProc::numberStatements()
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            if (!s->isImplicit() &&      // Don't renumber implicits (remain number 0)
-                (s->getNumber() == 0)) { // Don't renumber existing (or waste numbers)
-                s->setNumber(++m_stmtNumber);
+            if (s->isImplicit() || s->getNumber() != 0) {
+                continue;
             }
+
+            s->setNumber(++m_stmtNumber);
         }
     }
 }
@@ -1413,10 +1414,10 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         // There was at least one indirect jump or call found and decoded. That means that most of what has been done
         // to this function so far is invalid. So redo everything. Very expensive!!
         // Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
-        LOG_MSG("=== about to restart decompilation of %1 because indirect jumps or calls have been analysed", getName());
+        LOG_MSG("Restarting decompilation of '%1' because indirect jumps or calls have been analyzed", getName());
 
         Boomerang::get()->alertDecompileDebugPoint(
-            this, "Before restarting decompilation because indirect jumps or calls have been analysed");
+            this, "Before restarting decompilation because indirect jumps or calls have been analyzed");
 
         // First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
         // will prevent duplicates
@@ -1460,21 +1461,16 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
 void UserProc::remUnusedStmtEtc()
 {
-    bool convert;
-    bool change;
-
-    // NO! Removing of unused statements is an important part of the global removing unused returns analysis, which
-    // happens after UserProc::decompile is complete
-    // if (status >= PROC_FINAL)
-    //    return;
-
     Boomerang::get()->alertDecompiling(this);
-    Boomerang::get()->alertDecompileDebugPoint(this, "before final");
+    Boomerang::get()->alertDecompileDebugPoint(this, "Before Final");
 
     LOG_VERBOSE("--- Remove unused statements for %1 ---", getName());
     // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
     //    if (theReturnStatement)
     //        theReturnStatement->specialProcessing();
+
+    bool convert;
+    bool change = false;
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
@@ -1541,7 +1537,7 @@ void UserProc::remUnusedStmtEtc()
 
         // recalculate phi assignments of referencing BBs
         for (BasicBlock *bb : *m_cfg) {
-            BasicBlock::RTLIterator       rtlIt;
+            BasicBlock::RTLIterator rtlIt;
             StatementList::iterator stmtIt;
 
             for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
@@ -1878,11 +1874,11 @@ void UserProc::fixUglyBranches()
                 PhiAssign *p = (PhiAssign *)n;
 
                 for (const auto& phi : *p) {
-                    if (!phi.second.getDef()->isAssign()) {
+                    if (!phi.getDef()->isAssign()) {
                         continue;
                     }
 
-                    Assign *a = (Assign *)phi.second.getDef();
+                    Assign *a = (Assign *)phi.getDef();
 
                     if (*a->getRight() == *hl->getSubExp1()) {
                         hl->setSubExp1(RefExp::get(a->getLeft(), a));
@@ -3006,11 +3002,10 @@ void UserProc::fromSSAForm()
                 bool                allSame     = true;
                 bool                r2IsOperand = false;
                 QString             firstName   = QString::null;
-                PhiAssign::iterator rr;
-                PhiAssign           *pi = (PhiAssign *)def1;
+                PhiAssign           *pa = (PhiAssign *)def1;
 
-                for (rr = pi->begin(); rr != pi->end(); ++rr) {
-                    auto re(RefExp::get(rr->second.e, rr->second.getDef()));
+                for (RefExp &refExp : *pa) {
+                    auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
 
                     if (*re == *r2) {
                         r2IsOperand = true;
@@ -3088,19 +3083,17 @@ void UserProc::fromSSAForm()
         SharedExp first         = nullptr;
 
         if (pa->getNumDefs() > 1) {
-            PhiAssign::iterator uu;
-
-            for (uu = pa->begin(); uu != pa->end(); uu++) {
-                if (uu->second.e == nullptr) {
+            for (RefExp& pi : *pa) {
+                if (pi.getSubExp1() == nullptr) {
                     continue;
                 }
 
                 if (first == nullptr) {
-                    first = uu->second.e;
+                    first = pi.getSubExp1();
                     continue;
                 }
 
-                if (!(*uu->second.e == *first)) {
+                if (!(*(pi.getSubExp1()) == *first)) {
                     phiParamsSame = false;
                     break;
                 }
@@ -3137,14 +3130,12 @@ void UserProc::fromSSAForm()
             }
 
             // For each definition ref'd in the phi
-            PhiAssign::iterator rr;
-
-            for (rr = pa->begin(); rr != pa->end(); rr++) {
-                if (rr->second.e == nullptr) {
+            for (RefExp &pi : *pa) {
+                if (pi.getSubExp1() == nullptr) {
                     continue;
                 }
 
-                insertAssignAfter(rr->second.getDef(), tempLoc, rr->second.e);
+                insertAssignAfter(pi.getDef(), tempLoc, pi.getSubExp1());
             }
 
             // Replace the RHS of the phi with tempLoc
@@ -3488,7 +3479,6 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                 else if (s && s->isPhi()) {
                     // for a phi, we have to prove the query for every statement
                     PhiAssign           *pa = (PhiAssign *)s;
-                    PhiAssign::iterator it;
                     bool                ok = true;
 
                     if ((lastPhis.find(pa) != lastPhis.end()) || (pa == lastPhi)) {
@@ -3508,10 +3498,10 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                             LOG_MSG("Found %1 prove for each, ", s);
                         }
 
-                        for (it = pa->begin(); it != pa->end(); it++) {
+                        for (RefExp &pi : *pa) {
                             auto e  = query->clone();
                             auto r1 = e->access<RefExp, 1>();
-                            r1->setDef(it->second.getDef());
+                            r1->setDef(pi.getDef());
 
                             if (DEBUG_PROOF) {
                                 LOG_MSG("proving for %1", e);
@@ -3822,7 +3812,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
     else {
         for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
             const SharedType ty = getTypeForLocation(it.second);
-            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "nullptr") << "\n";
+            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
 
             if (html) {
                 out << "<br>";
@@ -4010,8 +4000,8 @@ void UserProc::reverseStrengthReduction()
                     PhiAssign *p = (PhiAssign *)r->getDef();
 
                     if (p->getNumDefs() == 2) {
-                        Statement *first  = p->front().getDef();
-                        Statement *second = p->back().getDef();
+                        Statement *first  = p->begin()->getDef();
+                        Statement *second = p->rbegin()->getDef();
 
                         if (first == as) {
                             // want the increment in second
@@ -4316,7 +4306,8 @@ void UserProc::fixCallAndPhiRefs()
     // 56 r28 := phi{6, 26}
     // ...
     // 26 r28 := r28{56}
-    // So we can remove the second parameter, then reduce the phi to an assignment, then propagate it
+    // So we can remove the second parameter,
+    // then reduce the phi to an assignment, then propagate it
     for (it = stmts.begin(); it != stmts.end(); it++) {
         s = *it;
 
@@ -4324,32 +4315,10 @@ void UserProc::fixCallAndPhiRefs()
             continue;
         }
 
-        PhiAssign *ps = (PhiAssign *)s;
-        auto      r   = RefExp::get(ps->getLeft(), ps);
+        PhiAssign *ps = static_cast<PhiAssign *>(s);
+        std::shared_ptr<RefExp> refExp = RefExp::get(ps->getLeft(), ps);
 
-        for (PhiAssign::iterator pi = ps->begin(); pi != ps->end();) {
-            const PhiInfo& p(pi->second);
-            assert(p.e);
-            Statement *def    = (Statement *)p.getDef();
-            auto      current = RefExp::get(p.e, def);
-
-            if (*current == *r) {   // Will we ever see this?
-                pi = ps->erase(pi); // Erase this phi parameter
-                continue;
-            }
-
-            // Chase the definition
-            if (def && def->isAssign()) {
-                auto rhs = ((Assign *)def)->getRight();
-
-                if (*rhs == *r) {       // Check if RHS is a single reference to ps
-                    pi = ps->erase(pi); // Yes, erase this phi parameter
-                    continue;
-                }
-            }
-
-            ++pi;
-        }
+        ps->removeAllReferences(refExp);
     }
 
     // Second pass
@@ -4373,13 +4342,14 @@ void UserProc::fixCallAndPhiRefs()
         // Let first be a reference built from the first parameter
         PhiAssign::iterator phi_iter = ps->begin();
 
-        while (phi_iter->second.e == nullptr && phi_iter != ps->end()) {
+        while (phi_iter != ps->end() && phi_iter->getSubExp1() == nullptr) {
             ++phi_iter;                // Skip any null parameters
         }
 
         assert(phi_iter != ps->end()); // Should have been deleted
-        PhiInfo&  phi_inf(phi_iter->second);
-        SharedExp first = RefExp::get(phi_inf.e, phi_inf.getDef());
+        RefExp&  phi_inf = *phi_iter;
+        SharedExp first = RefExp::get(phi_inf.getSubExp1(), phi_inf.getDef());
+
         // bypass to first
         CallBypasser cb(ps);
         first = first->accept(&cb);
@@ -4400,9 +4370,9 @@ void UserProc::fixCallAndPhiRefs()
 
         // For each parameter p of ps after the first
         for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
-            assert(phi_iter->second.e);
-            PhiInfo&     phi_inf2(phi_iter->second);
-            SharedExp    current = RefExp::get(phi_inf2.e, phi_inf2.getDef());
+            assert(phi_iter->getSubExp1());
+            RefExp&      phi_inf2 = *phi_iter;
+            SharedExp    current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
             CallBypasser cb2(ps);
             current = current->accept(&cb2);
 
@@ -4429,23 +4399,23 @@ void UserProc::fixCallAndPhiRefs()
             // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
             phi_iter = ps->begin();
 
-            while (phi_iter->second.e == nullptr && phi_iter != ps->end()) {
+            while (phi_iter != ps->end() && phi_iter->getSubExp1() == nullptr) {
                 ++phi_iter;                // Skip any null parameters
             }
 
             assert(phi_iter != ps->end()); // Should have been deleted
-            auto best = RefExp::get(phi_iter->second.e, phi_iter->second.getDef());
+            auto best = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
 
             for (++phi_iter; phi_iter != ps->end(); ++phi_iter) {
-                assert(phi_iter->second.e);
-                auto current = RefExp::get(phi_iter->second.e, phi_iter->second.getDef());
+                assert(phi_iter->getSubExp1());
+                auto current = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
 
                 if (current->isImplicitDef()) {
                     best = current;
                     break;
                 }
 
-                if (phi_iter->second.getDef()->isAssign()) {
+                if (phi_iter->getDef()->isAssign()) {
                     best = current;
                 }
 
@@ -5209,9 +5179,9 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
 
     for (it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        for (const auto& v : *it->second) {
-            assert(v.second.e);
-            auto wrappedParam = RefExp::get(v.second.e, (Statement *)v.second.getDef());
+        for (RefExp& v : *it->second) {
+            assert(v.getSubExp1());
+            auto wrappedParam = RefExp::get(v.getSubExp1(), (Statement *)v.getDef());
             usedByDomPhi.remove(wrappedParam);
         }
 
@@ -5247,9 +5217,9 @@ void UserProc::findPhiUnites(ConnectionGraph& pu)
         SharedExp lhs   = pa->getLeft();
         auto      reLhs = RefExp::get(lhs, pa);
 
-        for (const auto& v : *pa) {
-            assert(v.second.e);
-            auto re = RefExp::get(v.second.e, (Statement *)v.second.getDef());
+        for (RefExp& v : *pa) {
+            assert(v.getSubExp1());
+            auto re = RefExp::get(v.getSubExp1(), (Statement *)v.getDef());
             pu.connect(reLhs, re);
         }
     }
@@ -5324,7 +5294,7 @@ void UserProc::verifyPHIs()
 
         for (const auto& pas : *pi) {
             Q_UNUSED(pas);
-            assert(pas.second.getDef());
+            assert(pas.getDef());
         }
     }
 }
@@ -5354,9 +5324,9 @@ void UserProc::nameParameterPhis()
         QString    firstName = QString::null; // The name for the first parameter found
         SharedType ty        = pi->getType();
 
-        for (const auto& v : *pi) {
-            if (v.second.getDef()->isImplicit()) {
-                QString name = lookupSym(RefExp::get(v.second.e, (Statement *)v.second.getDef()), ty);
+        for (RefExp& v : *pi) {
+            if (v.getDef()->isImplicit()) {
+                QString name = lookupSym(RefExp::get(v.getSubExp1(), (Statement *)v.getDef()), ty);
 
                 if (!name.isNull()) {
                     if (!firstName.isNull() && (firstName != name)) {

@@ -133,7 +133,7 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         }
 
         if (other->getSize() != size) {
-            LOG_WARN("Size %1 meet with %2; allowing temporarily",
+            LOG_VERBOSE("Size %1 meet with %2; allowing temporarily",
                      size, other->getCtype());
         }
 

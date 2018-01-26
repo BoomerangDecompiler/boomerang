@@ -109,7 +109,7 @@ Statement *CaseStatement::clone() const
     }
 
     // Statement members
-    ret->m_parent = m_parent;
+    ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;

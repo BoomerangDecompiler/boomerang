@@ -44,14 +44,19 @@ Statement *PhiAssign::clone() const
 {
     PhiAssign *pa = new PhiAssign(m_type, m_lhs);
 
-    PhiDefs::const_iterator dd;
+    for (const PhiDefs::value_type& val : m_defs) {
+        BasicBlock *bb    = val.first;
+        const RefExp& pi  = val.second;
+        assert(pi.getSubExp1());
 
-    for (dd = m_defs.begin(); dd != m_defs.end(); dd++) {
-        PhiInfo pi;
-        pi.setDef((Statement *)dd->second.getDef()); // Don't clone the Statement pointer (never moves)
-        pi.e = dd->second.e->clone();                // Do clone the expression pointer
-        assert(pi.e);
-        pa->m_defs.insert(std::make_pair(dd->first, pi));
+        RefExp clone(
+            pi.getSubExp1()->clone(), // Do clone the expression pointer
+            pi.getDef());             // Don't clone the Statement pointer (never moves)
+
+        pa->m_defs.insert({ bb, RefExp(
+            pi.getSubExp1()->clone(),
+            pi.getDef())
+        });
     }
 
     return pa;
@@ -78,10 +83,10 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
     bool simple = true;
 
     for (const auto& v : m_defs) {
-        assert(v.second.e != nullptr);
+        assert(v.second.getSubExp1() != nullptr);
 
         // If e is nullptr assume it is meant to match lhs
-        if (!(*v.second.e == *m_lhs)) {
+        if (!(*v.second.getSubExp1() == *m_lhs)) {
             // One of the phi parameters has a different base expression to lhs. Use non-simple print.
             simple = false;
             break;
@@ -118,7 +123,7 @@ void PhiAssign::printCompact(QTextStream& os, bool html) const
         os << "(";
 
         for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
-            SharedExp e = it->second.e;
+            SharedConstExp e = it->second.getSubExp1();
 
             if (e == nullptr) {
                 os << "nullptr{";
@@ -152,10 +157,10 @@ bool PhiAssign::search(const Exp& pattern, SharedExp& result) const
         return true;
     }
 
-    for (auto& v : m_defs) {
-        assert(v.second.e != nullptr);
+    for (RefExp exp : *this) {
+        assert(exp.getSubExp1() != nullptr);
         // Note: can't match foo{-} because of this
-        RefExp re(v.second.e, const_cast<Statement *>(v.second.getDef())); ///< \todo remove const_cast
+        RefExp re(exp.getSubExp1(), const_cast<Statement *>(exp.getDef())); ///< \todo remove const_cast
 
         if (re.search(pattern, result)) {
             return true;
@@ -180,22 +185,16 @@ bool PhiAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*c
 
     m_lhs = m_lhs->searchReplaceAll(pattern, replace, change);
 
-    for (auto& v : m_defs) {
-        assert(v.second.e != nullptr);
+    for (auto& refExp : *this) {
+        assert(refExp.getSubExp1() != nullptr);
         bool ch;
         // Assume that the definitions will also be replaced
-        v.second.e = v.second.e->searchReplaceAll(pattern, replace, ch);
-        assert(v.second.e);
+        refExp.setSubExp1(refExp.getSubExp1()->searchReplaceAll(pattern, replace, ch));
+        assert(refExp.getSubExp1());
         change |= ch;
     }
 
     return change;
-}
-
-
-PhiInfo& PhiAssign::getAt(BasicBlock *idx)
-{
-    return m_defs[idx];
 }
 
 
@@ -212,10 +211,10 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
         ret = m_lhs->accept(visitor->ev);
     }
 
-    for (auto& v : m_defs) {
-        assert(v.second.e != nullptr);
+    for (auto& refExp : *this) {
+        assert(refExp.getSubExp1() != nullptr);
         // RefExp *re = RefExp::get(v.second.e, v.second.def());
-        ret = RefExp::get(v.second.e, v.second.getDef())->accept(visitor->ev);
+        ret = RefExp::get(refExp.getSubExp1(), refExp.getDef())->accept(visitor->ev);
 
         if (ret == false) {
             return false;
@@ -272,7 +271,7 @@ void PhiAssign::convertToAssign(SharedExp rhs)
     // Thanks to tamlin for this cleaner way of implementing this hack
 
     int        n     = m_number;     // These items disappear with the destructor below
-    BasicBlock *bb   = m_parent;
+    BasicBlock *bb   = m_bb;
     UserProc   *p    = m_proc;
     SharedExp  lhs_  = m_lhs;
     SharedExp  rhs_  = rhs;
@@ -296,12 +295,10 @@ void PhiAssign::simplify()
     }
 
     bool              allSame = true;
-    PhiDefs::iterator uu      = m_defs.begin();
-    Statement         *first  = m_defs.begin()->second.getDef();
-    ++uu;
+    Statement *firstDef = begin()->getDef();
 
-    for ( ; uu != m_defs.end(); uu++) {
-        if (uu->second.getDef() != first) {
+    for (auto& refExp : *this) {
+        if (refExp.getDef() != firstDef) {
             allSame = false;
             break;
         }
@@ -309,23 +306,24 @@ void PhiAssign::simplify()
 
     if (allSame) {
         LOG_VERBOSE("all the same in %1", this);
-        convertToAssign(RefExp::get(m_lhs, first));
+        convertToAssign(RefExp::get(m_lhs, firstDef));
         return;
     }
 
     bool      onlyOneNotThis = true;
     Statement *notthis       = (Statement *)-1;
 
-    for (auto& v : m_defs) {
-        if ((v.second.getDef() == nullptr) || v.second.getDef()->isImplicit() || !v.second.getDef()->isPhi() ||
-            (v.second.getDef() != this)) {
-            if (notthis != (Statement *)-1) {
-                onlyOneNotThis = false;
-                break;
-            }
-            else {
-                notthis = v.second.getDef();
-            }
+    for (auto& refExp : *this) {
+        if (refExp.getDef() && !refExp.getDef()->isImplicit() &&
+            refExp.getDef()->isPhi() && refExp.getDef() == this) {
+                continue; // ok
+        }
+        else if (notthis == (Statement *)-1) {
+            notthis = refExp.getDef();
+        }
+        else {
+            onlyOneNotThis = false;
+            break;
         }
     }
 
@@ -338,31 +336,68 @@ void PhiAssign::simplify()
 }
 
 
-void PhiAssign::putAt(BasicBlock *i, Statement *def, SharedExp e)
+void PhiAssign::putAt(BasicBlock *bb, Statement *def, SharedExp e)
 {
     assert(e);     // should be something surely
-    // assert(defVec.end()==defVec.find(i));
-    m_defs[i].setDef(def);
-    m_defs[i].e = e;
+
+    // Can't use operator[] here since PhiInfo is not default-constructible
+    PhiDefs::iterator it = m_defs.find(bb);
+    if (it == m_defs.end()) {
+        m_defs.insert({ bb, RefExp(e, def) });
+    }
+    else {
+        it->second.setDef(def);
+        it->second.setSubExp1(e);
+    }
 }
 
 
 void PhiAssign::enumerateParams(std::list<SharedExp>& le)
 {
-    for (auto& v : m_defs) {
-        assert(v.second.e != nullptr);
-        auto r = RefExp::get(v.second.e, v.second.getDef());
+    for (RefExp& refExp : *this) {
+        assert(refExp.getSubExp1() != nullptr);
+        auto r = RefExp::get(refExp.getSubExp1(), refExp.getDef());
         le.push_back(r);
     }
 }
 
 
-Statement* PhiAssign::getStmtAt(BasicBlock* idx)
+const Statement *PhiAssign::getStmtAt(BasicBlock* idx) const
 {
-    if (m_defs.find(idx) == m_defs.end()) {
-        return nullptr;
-    }
-
-    return m_defs[idx].getDef();
+    PhiDefs::const_iterator it = m_defs.find(idx);
+    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
 }
 
+
+Statement *PhiAssign::getStmtAt(BasicBlock* idx)
+{
+    PhiDefs::iterator it = m_defs.find(idx);
+    return (it != m_defs.end()) ? it->second.getDef() : nullptr;
+}
+
+
+void PhiAssign::removeAllReferences(std::shared_ptr<RefExp> refExp)
+{
+    for (PhiDefs::iterator pi = m_defs.begin(); pi != m_defs.end();) {
+        RefExp& p = pi->second;
+        assert(p.getSubExp1());
+
+        if (p == *refExp) {   // Will we ever see this?
+            pi = m_defs.erase(pi); // Erase this phi parameter
+            continue;
+        }
+
+        // Chase the definition
+        Statement *def = p.getDef();
+        if (def && def->isAssign()) {
+            SharedExp rhs = static_cast<Assign *>(def)->getRight();
+
+            if (*rhs == *refExp) {      // Check if RHS is a single reference to this
+                pi = m_defs.erase(pi);  // Yes, erase this phi parameter
+                continue;
+            }
+        }
+
+        ++pi; // keep it
+    }
+}

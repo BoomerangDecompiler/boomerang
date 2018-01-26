@@ -18,7 +18,11 @@
  * RefExp is a subclass of Unary, holding an ordinary Exp pointer,
  * and a pointer to a defining statement (could be a phi assignment).
  * This is used for subscripting SSA variables. Example:
- *   m[1000] becomes m[1000]{3} if defined at statement 3
+ *   m[1000]
+ * becomes
+ *   m[1000]{3}
+ * if defined at statement 3.
+ *
  * The integer is really a pointer to the defining statement,
  * printed as the statement number for compactness.
  * If the expression is not explicitly defined anywhere,

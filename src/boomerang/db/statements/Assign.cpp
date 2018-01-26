@@ -69,7 +69,7 @@ Statement *Assign::clone() const
                            m_guard == nullptr ? nullptr : m_guard->clone());
 
     // Statement members
-    asgn->m_parent = m_parent;
+    asgn->m_bb = m_bb;
     asgn->m_proc   = m_proc;
     asgn->m_number = m_number;
     return asgn;
