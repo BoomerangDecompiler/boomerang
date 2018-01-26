@@ -134,30 +134,26 @@ public:
      * Read and parse the SSL file, and initialise the expanded instruction dictionary
      * (this object). This also reads and sets up the register map and flag functions.
      *
-     * \param sslFileName - the name of the file containing the SSL specification.
-     * \returns        true if the file was successfully read
+     * \param sslFileName the name of the file containing the SSL specification.
+     * \returns           true if the file was read successfully.
      */
     bool readSSLFile(const QString& sslFileName);
-
-    /**
-     * Reset the object to "undo" a readSSLFile()
-     * Called from test code if (e.g.) want to call readSSLFile() twice
-     */
-    void reset();
 
     /// \returns the name and the number of operands of the instruction wwith name \p name
     std::pair<QString, DWord> getSignature(const char *name);
 
     /**
-     * Returns an instance of a register transfer list for the instruction named 'name' with the actuals
-     * given as the second parameter.
+     * Returns an RTL containing the semantics of the instruction with name \p name.
      *
      * \param name    the name of the instruction (must correspond to one defined in the SSL file).
      * \param pc      address at which the named instruction is located
-     * \param actuals the actual values
-     * \returns       the instantiated list of Exps
+     * \param actuals the actual values of the instruction parameters
      */
-    std::list<Statement *> *instantiateRTL(const QString& name, Address pc, const std::vector<SharedExp>& actuals);
+    std::unique_ptr<RTL> instantiateRTL(const QString& name, Address pc, const std::vector<SharedExp>& actuals);
+
+private:
+    /// Reset the object to "undo" a readSSLFile()
+    void reset();
 
     /**
      * Returns an instance of a register transfer list for the parameterized rtlist with the given formals
@@ -169,10 +165,9 @@ public:
      * \param   actuals the actual parameter values
      * \returns the instantiated list of Exps
      */
-    std::list<Statement *> *instantiateRTL(RTL& rtls, Address pc, std::list<QString>& params,
+    std::unique_ptr<RTL> instantiateRTL(RTL& rtls, Address pc, std::list<QString>& params,
                                            const std::vector<SharedExp>& actuals);
 
-private:
     /**
      * Appends one RTL to the dictionary, or adds it to idict if an
      * entry does not already exist.
@@ -199,7 +194,7 @@ private:
      * \param rts the list of statements
      * \param optimize - try to remove temporary registers
      */
-    void transformPostVars(std::list<Statement *>& rts, bool optimize);
+    void transformPostVars(RTL& rts, bool optimize);
 
     /// Print a textual representation of the dictionary.
     void print(QTextStream& os);

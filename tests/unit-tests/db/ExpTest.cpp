@@ -868,6 +868,10 @@ void ExpTest::testSubscriptVar()
     ae->subscriptVar(r28, def3);
     ost << ae;
     QCOMPARE(actual, QString("   0 *v* m[r28{12} - 4] := r28{12} + r29"));
+
+    delete def1;
+    delete def3;
+    delete ae;
 }
 
 
@@ -887,6 +891,9 @@ void ExpTest::testTypeOf()
     QTextStream ost(&actual);
     ost << e;
     QCOMPARE(actual, QString("T[r24{5}] = T[r25{9}]"));
+
+    delete s5;
+    delete s9;
 }
 
 

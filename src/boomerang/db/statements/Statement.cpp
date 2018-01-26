@@ -186,11 +186,11 @@ bool Statement::isLastStatementInBB() const
 Statement *Statement::getPreviousStatementInBB() const
 {
     assert(m_parent);
-    std::list<RTL *> *rtls = m_parent->getRTLs();
+    RTLList *rtls = m_parent->getRTLs();
     assert(rtls);
     Statement *previous = nullptr;
 
-    for (auto rtl : *rtls) {
+    for (auto& rtl : *rtls) {
         for (Statement *it : *rtl) {
             if (it == this) {
                 return previous;
@@ -207,11 +207,11 @@ Statement *Statement::getPreviousStatementInBB() const
 Statement *Statement::getNextStatementInBB() const
 {
     assert(m_parent);
-    std::list<RTL *> *rtls = m_parent->getRTLs();
+    RTLList *rtls = m_parent->getRTLs();
     assert(rtls);
     bool wantNext = false;
 
-    for (auto rtl : *rtls) {
+    for (auto& rtl : *rtls) {
         for (Statement *it : *rtl) {
             if (wantNext) {
                 return it;

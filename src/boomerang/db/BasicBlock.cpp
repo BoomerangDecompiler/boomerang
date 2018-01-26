@@ -73,7 +73,7 @@ BasicBlock::BasicBlock(const BasicBlock& bb)
     RTLList::iterator destIt = newList->begin();
 
     while (srcIt != endIt) {
-        *destIt++ = new RTL(**srcIt++);
+        *destIt++ = Util::makeUnique<RTL>(**srcIt++);
     }
 
     setRTLs(std::move(newList));
@@ -95,10 +95,6 @@ BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
 
 void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 {
-    if (m_listOfRTLs) {
-        qDeleteAll(*m_listOfRTLs);
-    }
-
     m_listOfRTLs = std::move(rtls);
     updateBBAddresses();
 
@@ -106,7 +102,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
         return;
     }
 
-    for (RTL *rtl : *m_listOfRTLs) {
+    for (auto& rtl : *m_listOfRTLs) {
         for (Statement *stmt : *rtl) {
             assert(stmt != nullptr);
             stmt->setBB(this);
@@ -201,7 +197,7 @@ void BasicBlock::print(QTextStream& os, bool html)
             os << "<table>\n";
         }
 
-        for (RTL *r : *m_listOfRTLs) {
+        for (auto& r : *m_listOfRTLs) {
             r->print(os, html);
         }
 
@@ -326,7 +322,7 @@ Function *BasicBlock::getCallDestProc() const
         return nullptr;
     }
 
-    RTL *lastRtl = m_listOfRTLs->back();
+    RTL *lastRtl = m_listOfRTLs->back().get();
 
     // search backwards for a CallStatement
     for (auto it = lastRtl->rbegin(); it != lastRtl->rend(); it++) {
@@ -348,7 +344,7 @@ Statement *BasicBlock::getFirstStmt(RTLIterator& rit, StatementList::iterator& s
     rit = m_listOfRTLs->begin();
 
     while (rit != m_listOfRTLs->end()) {
-        RTL *rtl = *rit;
+        auto& rtl = *rit;
         sit = rtl->begin();
 
         if (sit != rtl->end()) {
@@ -407,7 +403,7 @@ Statement *BasicBlock::getLastStmt(RTLRIterator& rit, StatementList::reverse_ite
     rit = m_listOfRTLs->rbegin();
 
     while (rit != m_listOfRTLs->rend()) {
-        RTL *rtl = *rit;
+        auto& rtl = *rit;
         sit = rtl->rbegin();
 
         if (sit != rtl->rend()) {
@@ -427,7 +423,7 @@ Statement *BasicBlock::getFirstStmt()
         return nullptr;
     }
 
-    for (RTL *rtl : *m_listOfRTLs) {
+    for (auto& rtl : *m_listOfRTLs) {
         if (!rtl->empty()) {
             return rtl->front();
         }
@@ -446,7 +442,7 @@ Statement *BasicBlock::getLastStmt()
     RTLRIterator revIt = m_listOfRTLs->rbegin();
 
     while (revIt != m_listOfRTLs->rend()) {
-        RTL *rtl = *revIt++;
+        auto& rtl = *revIt++;
 
         if (!rtl->empty()) {
             return rtl->back();
@@ -465,7 +461,7 @@ void BasicBlock::appendStatementsTo(StatementList& stmts) const
         return;
     }
 
-    for (const RTL *rtl : *rtls) {
+    for (const auto& rtl : *rtls) {
         for (Statement *st : *rtl) {
             assert(st->getBB() == this);
             stmts.append(st);
@@ -478,7 +474,7 @@ SharedExp BasicBlock::getCond() const
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
-    RTL *last = m_listOfRTLs->back();
+    RTL *last = m_listOfRTLs->back().get();
 
     // it should contain a BranchStatement
     BranchStatement *bs = dynamic_cast<BranchStatement *>(last->getHlStmt());
@@ -527,7 +523,7 @@ void BasicBlock::setCond(SharedExp e)
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
-    RTL *last = m_listOfRTLs->back();
+    RTL *last = m_listOfRTLs->back().get();
     assert(!last->empty());
 
     // it should contain a BranchStatement
@@ -545,7 +541,7 @@ void BasicBlock::setCond(SharedExp e)
 void BasicBlock::simplify()
 {
     if (m_listOfRTLs) {
-        for (RTL *elem : *m_listOfRTLs) {
+        for (auto& elem : *m_listOfRTLs) {
             elem->simplify();
         }
     }
@@ -557,7 +553,7 @@ void BasicBlock::simplify()
             setType(BBType::Fall);
         }
         else {
-            RTL *last = m_listOfRTLs->back();
+            RTL *last = m_listOfRTLs->back().get();
 
             if (last->size() == 0) {
                 setType(BBType::Fall);
@@ -647,7 +643,7 @@ void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
     stmt->setProc(proc);
 
     if (!m_listOfRTLs->empty()) {
-        RTL *rtl = m_listOfRTLs->front();
+        RTL *rtl = m_listOfRTLs->front().get();
 
         if (rtl->getAddress().isZero()) {
             // Append to this RTL
@@ -658,8 +654,7 @@ void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
     }
 
     // Otherwise, prepend a new RTL
-    RTL *rtl = new RTL(Address::ZERO, { stmt });
-    m_listOfRTLs->push_front(rtl);
+    m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO, { stmt })));
 
     updateBBAddresses();
 }
@@ -676,7 +671,7 @@ void BasicBlock::updateBBAddresses()
     Address a = m_listOfRTLs->front()->getAddress();
 
     if (a.isZero() && (m_listOfRTLs->size() > 1)) {
-        std::list<RTL *>::iterator it = m_listOfRTLs->begin();
+        RTLList::iterator it = m_listOfRTLs->begin();
         Address add2 = (*++it)->getAddress();
 
         // This is a bit of a hack for 286 programs, whose main actually starts at offset 0. A better solution would be
@@ -704,7 +699,7 @@ bool BasicBlock::hasStatement(const Statement *stmt) const
         return false;
     }
 
-    for (const RTL *rtl : *m_listOfRTLs) {
+    for (const auto& rtl : *m_listOfRTLs) {
         for (const Statement *s : *rtl) {
             if (s == stmt) {
                 return true;
@@ -718,6 +713,10 @@ bool BasicBlock::hasStatement(const Statement *stmt) const
 
 void BasicBlock::removeRTL(RTL* rtl)
 {
-    m_listOfRTLs->remove(rtl);
+    RTLList::iterator it = std::find_if(m_listOfRTLs->begin(), m_listOfRTLs->end(),
+                                  [rtl] (const std::unique_ptr<RTL>& rtl2) {
+                                      return rtl == rtl2.get();
+                                  });
+    m_listOfRTLs->erase(it);
     updateBBAddresses();
 }

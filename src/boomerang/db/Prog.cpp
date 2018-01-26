@@ -104,6 +104,11 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
 
 void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
+    if (m_defaultFrontend) {
+        delete m_defaultFrontend;
+        m_defaultFrontend = nullptr;
+    }
+
     m_fileLoader      = frontEnd->getLoader();
     m_defaultFrontend = frontEnd;
 

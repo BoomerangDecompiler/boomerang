@@ -25,6 +25,7 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/util/Util.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -106,7 +107,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             // so not error
             if (!currentBB->isIncomplete()) {
                 // This list of RTLs is not needed now
-                qDeleteAll(*bbRTLs);
+                bbRTLs.reset();
 
                 LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists", currentBB->getLowAddr());
                 return nullptr;
@@ -283,9 +284,7 @@ void Cfg::removeBB(BasicBlock *bb)
         m_bbStartMap.erase(bbIt);
     }
 
-    // Actually, removed BBs should be deleted; however,
-    // doing so deletes the statements of the BB that seem to be still in use.
-    // So don't do it for now.
+    delete bb;
 }
 
 
@@ -325,12 +324,12 @@ bool Cfg::isWellFormed() const
     for (const BasicBlock *bb : *this) {
         if (bb->isIncomplete()) {
             m_wellFormed = false;
-            LOG_VERBOSE("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
+            LOG_ERROR("CFG is not well formed: BB at address %1 is incomplete", bb->getLowAddr());
             return false;
         }
         else if (bb->getFunction() != m_myProc) {
             m_wellFormed = false;
-            LOG_VERBOSE("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
+            LOG_ERROR("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
                         bb->getLowAddr(), m_myProc->getName());
             return false;
         }
@@ -338,13 +337,13 @@ bool Cfg::isWellFormed() const
         for (const BasicBlock *pred : bb->getPredecessors()) {
             if (!pred->isPredecessorOf(bb)) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
                             pred->getLowAddr(), bb->getLowAddr());
                 return false;
             }
             else if (pred->getFunction() != bb->getFunction()) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                             pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
                             bb->getFunction()->getName());
                 return false;
@@ -354,13 +353,13 @@ bool Cfg::isWellFormed() const
         for (const BasicBlock *succ : bb->getSuccessors()) {
             if (!succ->isSuccessorOf(bb)) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
+                LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
                             bb->getLowAddr(), succ->getLowAddr());
                 return false;
             }
             else if (succ->getFunction() != bb->getFunction()) {
                 m_wellFormed = false;
-                LOG_VERBOSE("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
+                LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
                             bb->getFunction()->getName(),
                             succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
                 return false;
@@ -476,8 +475,7 @@ void Cfg::removeImplicitAssign(SharedExp x)
 }
 
 
-BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */,
-                         bool deleteRTLs /* = false */)
+BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */)
 {
     RTLList::iterator splitIt;
 
@@ -494,60 +492,60 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
         return bb;
     }
 
-    // If necessary, set up a new basic block with information from the original bb.
-    // If we create a new BB, move all successor information of the old BB to the "high" BB;
-    // otherwise, the "high" BB already has successor information, so don't add edges twice.
-    if (_newBB == nullptr) {
-        _newBB = new BasicBlock(*bb);
+    if (_newBB && !_newBB->isIncomplete()) {
+        // we already have a BB for the high part. Delete overlapping RTLs and adjust edges.
 
-        // But we don't want the top BB's in edges;
-        // our only predecessor should be the "low" BB
+        while (splitIt != bb->getRTLs()->end()) {
+            splitIt = bb->getRTLs()->erase(splitIt); // deletes RTLs
+        }
+
+        bb->updateBBAddresses();
+        _newBB->updateBBAddresses();
+
         _newBB->removeAllPredecessors();
-
-        for (BasicBlock *succ : _newBB->getSuccessors()) {
+        for (BasicBlock *succ : bb->getSuccessors()) {
             succ->removePredecessor(bb);
-            bb->removeSuccessor(succ);
-            succ->addPredecessor(_newBB);
         }
-
-        // The "high" BB now starts at splitIt->getAddress(), so we create a new list
-        // that starts at splitIt. We don't want to "deep copy" the RTLs themselves,
-        // because we want to transfer ownership from the original BB to the "high" part
-        _newBB->setRTLs(Util::makeUnique<RTLList>(splitIt, bb->getRTLs()->end()));
-
-        m_bbStartMap[splitAddr] = _newBB;
+        bb->removeAllSuccessors();
+        addEdge(bb, _newBB);
+        bb->setType(BBType::Fall);
+        m_bbStartMap[_newBB->getLowAddr()] = _newBB;
+        return _newBB;
     }
-    else if (_newBB->isIncomplete()) {
-        // complete the incomplete BB
-        const std::vector<BasicBlock *> oldSuccessors(_newBB->getSuccessors());
-
-        *_newBB = *bb;
-
-        _newBB->removeAllSuccessors();
-        for (BasicBlock *succ : oldSuccessors) {
-            succ->removePredecessor(bb);
-            addEdge(_newBB, succ);
-        }
-
-        _newBB->setRTLs(Util::makeUnique<RTLList>(splitIt, bb->getRTLs()->end()));
+    else if (!_newBB) {
+        // create a new incomplete BasicBlock.
+        _newBB = createIncompleteBB(splitAddr);
     }
 
-    // Now we already have moved over the successor information to the new "high" BB.
-    // Just update the fallthrough edge between the "low" and the "high" part.
-    assert(bb->getNumSuccessors() == 0);
-    bb->setType(BBType::Fall);
-    addEdge(bb, _newBB);
-
-    // The old BB needs to have part of its list of RTLs erased, since the
-    // instructions overlap
-    if (deleteRTLs) {
-        // Delete the list of pointers, and also the RTLs they point to
-        qDeleteAll(splitIt, bb->getRTLs()->end());
+    // Now we have an incomplete BB at splitAddr;
+    // just complete it with the "high" RTLs from the original BB.
+    // We don't want to "deep copy" the RTLs themselves,
+    // because we want to transfer ownership from the original BB to the "high" part
+    std::unique_ptr<RTLList> highRTLs(new RTLList);
+    for (RTLList::iterator it = splitIt; it != bb->getRTLs()->end();) {
+        highRTLs->push_back(std::move(*it));
+        assert(*it == nullptr);
+        it = bb->getRTLs()->erase(it);
     }
 
-    bb->getRTLs()->erase(splitIt, bb->getRTLs()->end());
+    _newBB->setRTLs(std::move(highRTLs));
     bb->updateBBAddresses();
+    _newBB->updateBBAddresses();
 
+    assert(_newBB->getNumPredecessors() == 0);
+    assert(_newBB->getNumSuccessors() == 0);
+
+    const std::vector<BasicBlock *>& successors = bb->getSuccessors();
+    for (BasicBlock *succ : successors) {
+        succ->removePredecessor(bb);
+        succ->addPredecessor(_newBB);
+        _newBB->addSuccessor(succ);
+    }
+
+    bb->removeAllSuccessors();
+    addEdge(bb, _newBB);
+    _newBB->setType(bb->getType());
+    bb->setType(BBType::Fall);
     return _newBB;
 }
 

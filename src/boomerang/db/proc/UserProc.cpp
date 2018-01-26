@@ -768,9 +768,9 @@ void UserProc::removeStatement(Statement *stmt)
 
     // remove from BB/RTL
     BasicBlock       *bb   = stmt->getBB(); // Get our enclosing BB
-    std::list<RTL *> *rtls = bb->getRTLs();
+    RTLList *rtls = bb->getRTLs();
 
-    for (RTL *rtl : *rtls) {
+    for (auto& rtl : *rtls) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); it++) {
             if (*it == stmt) {
                 rtl->erase(it);
@@ -792,7 +792,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
         bb = m_cfg->getEntryBB();
         RTLList *rtls    = bb->getRTLs();
         assert(!rtls->empty()); // Entry BB should have at least 1 RTL
-        stmts = rtls->front();
+        stmts = rtls->front().get();
         it    = stmts->begin();
     }
     else {
@@ -800,7 +800,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
         bb = s->getBB(); // Get the enclosing BB for s
         RTLList *rtls = bb->getRTLs();
         assert(!rtls->empty()); // If s is defined here, there should be at least 1 RTL
-        stmts = rtls->back();
+        stmts = rtls->back().get();
         it    = stmts->end(); // Insert before the end
     }
 
@@ -820,7 +820,7 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
             continue; // e.g. bb is (as yet) invalid
         }
 
-        for (RTL *rtl : *rtls) {
+        for (const auto& rtl : *rtls) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ss++) {
                 if (*ss == s) {
                     ss++; // This is the point to insert before
@@ -1535,6 +1535,9 @@ void UserProc::remUnusedStmtEtc()
     fixUglyBranches();
 
     if (removedBBs) {
+        // redo the data flow
+        m_df.calculateDominators(m_cfg);
+
         // recalculate phi assignments of referencing BBs
         for (BasicBlock *bb : *m_cfg) {
             BasicBlock::RTLIterator       rtlIt;
@@ -1748,84 +1751,100 @@ void UserProc::updateCalls()
 bool UserProc::branchAnalysis()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before branch analysis");
-    bool          removedBBs = false;
     StatementList stmts;
     getStatements(stmts);
 
-    for (auto stmt : stmts) {
+    std::set<BasicBlock *> bbsToRemove;
+
+    for (Statement *stmt : stmts) {
         if (!stmt->isBranch()) {
             continue;
         }
 
-        BranchStatement *branch = (BranchStatement *)stmt;
+        BranchStatement *firstBranch = static_cast<BranchStatement *>(stmt);
 
-        if (branch->getFallBB() && branch->getTakenBB()) {
-            StatementList fallstmts;
-            branch->getFallBB()->appendStatementsTo(fallstmts);
+        if (!firstBranch->getFallBB() || !firstBranch->getTakenBB()) {
+            continue;
+        }
 
-            if ((fallstmts.size() == 1) && (*fallstmts.begin())->isBranch()) {
-                BranchStatement *fallto = (BranchStatement *)*fallstmts.begin();
+        StatementList fallstmts;
+        firstBranch->getFallBB()->appendStatementsTo(fallstmts);
+        Statement *nextAfterBranch = !fallstmts.empty() ? fallstmts.front() : nullptr;
 
-                //   branch to A if cond1
-                //   branch to B if cond2
-                // A: something
-                // B:
-                // ->
-                //   branch to B if !cond1 && cond2
-                // A: something
-                // B:
-                //
-                if ((fallto->getFallBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
-                    branch->setFallBB(fallto->getFallBB());
-                    branch->setTakenBB(fallto->getTakenBB());
-                    branch->setDest(fallto->getFixedDest());
-                    SharedExp cond =
-                        Binary::get(opAnd, Unary::get(opNot, branch->getCondExpr()), fallto->getCondExpr()->clone());
-                    branch->setCondExpr(cond->simplify());
+        if (nextAfterBranch && nextAfterBranch->isBranch()) {
+            BranchStatement *secondBranch = static_cast<BranchStatement *>(nextAfterBranch);
 
-                    BasicBlock *bb = fallto->getBB();
-                    assert(bb->getNumPredecessors() == 0);
-                    assert(bb->getNumSuccessors() == 2);
-                    BasicBlock *succ1 = fallto->getBB()->getSuccessor(0);
-                    BasicBlock *succ2 = fallto->getBB()->getSuccessor(1);
+            //   branch to A if cond1
+            //   branch to B if cond2
+            // A: something
+            // B:
+            // ->
+            //   branch to B if !cond1 && cond2
+            // A: something
+            // B:
+            //
+            if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
+                (secondBranch->getBB()->getNumPredecessors() == 1)) {
 
-                    bb->removeSuccessor(succ1);
-                    bb->removeSuccessor(succ2);
-                    succ1->removePredecessor(bb);
-                    succ2->removePredecessor(bb);
+                SharedExp cond =
+                    Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()), secondBranch->getCondExpr()->clone());
+                firstBranch->setCondExpr(cond->simplify());
 
-                    m_cfg->removeBB(bb);
-                    removedBBs = true;
-                }
+                firstBranch->setDest(secondBranch->getFixedDest());
+                firstBranch->setTakenBB(secondBranch->getTakenBB());
+                firstBranch->setFallBB(secondBranch->getFallBB());
 
-                //   branch to B if cond1
-                //   branch to B if cond2
-                // A: something
-                // B:
-                // ->
-                //   branch to B if cond1 || cond2
-                // A: something
-                // B:
-                if ((fallto->getTakenBB() == branch->getTakenBB()) && (fallto->getBB()->getNumPredecessors() == 1)) {
-                    branch->setFallBB(fallto->getFallBB());
-                    branch->setCondExpr(Binary::get(opOr, branch->getCondExpr(), fallto->getCondExpr()->clone()));
+                // remove second branch BB
+                BasicBlock *secondBranchBB = secondBranch->getBB();
 
-                    BasicBlock *bb = fallto->getBB();
-                    assert(bb->getNumPredecessors() == 0);
-                    assert(bb->getNumSuccessors() == 2);
-                    BasicBlock *succ1 = bb->getSuccessor(0);
-                    BasicBlock *succ2 = bb->getSuccessor(1);
+                assert(secondBranchBB->getNumPredecessors() == 0);
+                assert(secondBranchBB->getNumSuccessors() == 2);
+                BasicBlock *succ1 = secondBranch->getBB()->getSuccessor(BTHEN);
+                BasicBlock *succ2 = secondBranch->getBB()->getSuccessor(BELSE);
 
-                    bb->removeSuccessor(succ1);
-                    bb->removeSuccessor(succ2);
-                    succ1->removePredecessor(bb);
-                    succ2->removePredecessor(bb);
+                secondBranchBB->removeSuccessor(succ1);
+                secondBranchBB->removeSuccessor(succ2);
+                succ1->removePredecessor(secondBranchBB);
+                succ2->removePredecessor(secondBranchBB);
 
-                    m_cfg->removeBB(fallto->getBB());
-                    removedBBs = true;
-                }
+                bbsToRemove.insert(secondBranchBB);
+            }
+
+            //   branch to B if cond1
+            //   branch to B if cond2
+            // A: something
+            // B:
+            // ->
+            //   branch to B if cond1 || cond2
+            // A: something
+            // B:
+            if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
+                (secondBranch->getBB()->getNumPredecessors() == 1)) {
+
+                SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(), secondBranch->getCondExpr()->clone());
+                firstBranch->setCondExpr(cond->simplify());
+
+                firstBranch->setFallBB(secondBranch->getFallBB());
+
+                BasicBlock *secondBranchBB = secondBranch->getBB();
+                assert(secondBranchBB->getNumPredecessors() == 0);
+                assert(secondBranchBB->getNumSuccessors() == 2);
+                BasicBlock *succ1 = secondBranchBB->getSuccessor(BTHEN);
+                BasicBlock *succ2 = secondBranchBB->getSuccessor(BELSE);
+
+                secondBranchBB->removeSuccessor(succ1);
+                secondBranchBB->removeSuccessor(succ2);
+                succ1->removePredecessor(secondBranchBB);
+                succ2->removePredecessor(secondBranchBB);
+
+                bbsToRemove.insert(secondBranchBB);
             }
         }
+    }
+
+    const bool removedBBs = !bbsToRemove.empty();
+    for (BasicBlock *bb : bbsToRemove) {
+        m_cfg->removeBB(bb);
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "After branch analysis.");
@@ -2109,13 +2128,13 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 void UserProc::assignProcsToCalls()
 {
     for (BasicBlock *pBB : *m_cfg) {
-        std::list<RTL *> *rtls = pBB->getRTLs();
+        RTLList *rtls = pBB->getRTLs();
 
         if (rtls == nullptr) {
             continue;
         }
 
-        for (RTL *rtl : *rtls) {
+        for (auto& rtl : *rtls) {
             if (!rtl->isCall()) {
                 continue;
             }
@@ -2148,7 +2167,7 @@ void UserProc::finalSimplify()
             continue;
         }
 
-        for (RTL *rtl : *rtls) {
+        for (auto& rtl : *rtls) {
             for (Statement *stmt : *rtl) {
                 stmt->simplifyAddr();
                 // Also simplify everything; in particular, stack offsets are

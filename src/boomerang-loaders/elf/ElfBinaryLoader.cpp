@@ -73,6 +73,10 @@ ElfBinaryLoader::~ElfBinaryLoader()
     delete[] m_importStubs;
     delete[] m_shLink;
     delete[] m_shInfo;
+
+    m_importStubs = nullptr;
+    m_shLink = nullptr;
+    m_shInfo = nullptr;
 }
 
 
@@ -187,6 +191,12 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     // Set up the m_sh_link and m_sh_info arrays
+    if (m_shLink) {
+        delete[] m_shLink;
+    }
+    if (m_shInfo) {
+        delete[] m_shInfo;
+    }
     m_shLink = new Elf32_Word[numSections];
     m_shInfo = new Elf32_Word[numSections];
 

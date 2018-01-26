@@ -107,8 +107,7 @@ void FrontSparcTest::test1()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -158,8 +157,7 @@ void FrontSparcTest::test2()
     expected = QString("0x0001069c    0 *32* r24 := r8\n");
     QCOMPARE(actual, expected);
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -225,8 +223,7 @@ void FrontSparcTest::test3()
                        "              0 *32* r0 := tmp\n");
     QCOMPARE(actual, expected);
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -273,8 +270,7 @@ void FrontSparcTest::testBranch()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -301,13 +297,13 @@ void FrontSparcTest::testDelaySlot()
     QTextStream strm(&actual);
     Module      *m = prog->getOrInsertModule("test");
 
-    UserProc    *pProc = new UserProc(addr, "testDelaySlot", m);
+    UserProc    pProc(addr, "testDelaySlot", m);
     QString     dum;
     QTextStream dummy(&dum);
-    bool        res = pFE->processProc(addr, pProc, dummy, false);
+    bool        res = pFE->processProc(addr, &pProc, dummy, false);
 
     QVERIFY(res == 1);
-    Cfg        *cfg = pProc->getCFG();
+    Cfg        *cfg = pProc.getCFG();
     Cfg::iterator it = cfg->begin();
 
     QVERIFY(it != cfg->end());

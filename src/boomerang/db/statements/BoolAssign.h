@@ -113,7 +113,7 @@ public:
 
     /// a hack for the SETS macro
     /// This is for setting up SETcc instructions; see include/decoder.h macro SETS
-    void setLeftFromList(std::list<Statement *> *stmts);
+    void setLeftFromList(const std::list<Statement *>& stmts);
 
 private:
     BranchType m_jumpType = BranchType::INVALID; ///< the condition for setting true

@@ -38,7 +38,7 @@ NJMCDecoder::NJMCDecoder(Prog *prg)
 }
 
 
-std::list<Statement *> *NJMCDecoder::instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args)
+std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args)
 {
     // Get the signature of the instruction and extract its parts
     std::pair<QString, unsigned> sig = m_rtlDict.getSignature(name);
@@ -78,9 +78,7 @@ std::list<Statement *> *NJMCDecoder::instantiate(Address pc, const char *name, c
         q_cout << '\n';
     }
 
-    std::list<Statement *> *instance = m_rtlDict.instantiateRTL(opcode, pc, actuals);
-
-    return instance;
+    return m_rtlDict.instantiateRTL(opcode, pc, actuals);
 }
 
 
@@ -147,9 +145,8 @@ SharedExp NJMCDecoder::dis_Num(unsigned num)
 
 
 void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
-                                           std::list<Statement *> *stmts, DecodeResult& result)
+                                           DecodeResult& result)
 {
-    result.rtl      = new RTL(pc, stmts);
     result.numBytes = size;
     GotoStatement *jump = new GotoStatement();
     jump->setDest(Address((relocd - delta).value()));
@@ -158,28 +155,28 @@ void NJMCDecoder::processUnconditionalJump(const char *name, int size, HostAddre
 }
 
 
-void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, std::list<Statement *> *stmts,
-                                      DecodeResult& result)
+void NJMCDecoder::processComputedJump(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result)
 {
-    result.rtl      = new RTL(pc, stmts);
     result.numBytes = size;
+
     GotoStatement *jump = new GotoStatement();
     jump->setDest(dest);
     jump->setIsComputed(true);
     result.rtl->append(jump);
+
     SHOW_ASM(name << " " << dest)
 }
 
 
-void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, std::list<Statement *> *stmts,
-                                      DecodeResult& result)
+void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result)
 {
-    result.rtl      = new RTL(pc, stmts);
     result.numBytes = size;
+
     CallStatement *call = new CallStatement();
     call->setDest(dest);
     call->setIsComputed(true);
     result.rtl->append(call);
+
     SHOW_ASM(name << " " << dest)
 }
 

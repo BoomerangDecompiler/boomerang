@@ -86,7 +86,7 @@ void FrontPentTest::test1()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    delete pFE;
+    delete prog;
 }
 
 
@@ -129,8 +129,7 @@ void FrontPentTest::test2()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -171,8 +170,7 @@ void FrontPentTest::test3()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -219,8 +217,7 @@ void FrontPentTest::testBranch()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    delete pFE;
-    // delete pBF;
+    delete prog;
 }
 
 
@@ -245,11 +242,11 @@ void FrontPentTest::testFindMain()
     Address expected = Address(0x08048b10);
     QCOMPARE(addr, expected);
     loader->close();
-    delete pFE;
 
     project.loadBinaryFile(FEDORA3_TRUE);
     loader = project.getBestLoader(FEDORA3_TRUE);
     QVERIFY(loader != nullptr);
+
     pFE = new PentiumFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
     QVERIFY(pFE != nullptr);
@@ -257,7 +254,6 @@ void FrontPentTest::testFindMain()
     expected = Address(0x8048c4a);
     QCOMPARE(addr, expected);
     loader->close();
-    delete pFE;
 
     project.loadBinaryFile(SUSE_TRUE);
     loader = project.getBestLoader(SUSE_TRUE);
@@ -271,7 +267,7 @@ void FrontPentTest::testFindMain()
     QCOMPARE(addr, expected);
     loader->close();
 
-    delete pFE;
+    delete prog;
 }
 
 

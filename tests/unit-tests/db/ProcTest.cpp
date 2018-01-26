@@ -26,11 +26,10 @@ void ProcTest::testName()
 {
     Prog *prog = new Prog("testProcName");
 
-    QVERIFY(prog != nullptr);
-
-    std::string nm("default name");
     IProject&   project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(HELLO_PENTIUM);
+
+    QVERIFY(prog != nullptr);
 
     IFrontEnd *pFE = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
     QVERIFY(pFE != nullptr);

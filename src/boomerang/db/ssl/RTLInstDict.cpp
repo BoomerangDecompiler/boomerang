@@ -19,6 +19,7 @@
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/db/RTL.h"
 
 
 TableEntry::TableEntry(const std::list<QString>& params, const RTL& rtl)
@@ -257,7 +258,7 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
 }
 
 
-std::list<Statement *> *RTLInstDict::instantiateRTL(const QString& name, Address natPC,
+std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString& name, Address natPC,
                                                     const std::vector<SharedExp>& actuals)
 {
     QTextStream q_cerr(stderr);
@@ -279,15 +280,15 @@ std::list<Statement *> *RTLInstDict::instantiateRTL(const QString& name, Address
 }
 
 
-std::list<Statement *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std::list<QString>& params,
-                                                    const std::vector<SharedExp>& actuals)
+std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC,
+                                             std::list<QString>& params,
+                                             const std::vector<SharedExp>& actuals)
 {
-    Q_UNUSED(natPC);
     assert(params.size() == actuals.size());
 
     // Get a deep copy of the template RTL
-    std::list<Statement *> *newList = new std::list<Statement *>();
-    rtl.deepCopyList(*newList);
+    std::unique_ptr<RTL> newList(new RTL(existingRTL));
+    newList->setAddress(natPC);
 
     // Iterate through each Statement of the new list of stmts
     for (Statement *ss : *newList) {
@@ -310,7 +311,7 @@ std::list<Statement *> *RTLInstDict::instantiateRTL(RTL& rtl, Address natPC, std
         }
     }
 
-    transformPostVars(*newList, true);
+    transformPostVars(*newList.get(), true);
 
     // Perform simplifications, e.g. *1 in Pentium addressing modes
     std::list<Statement *>::iterator iter;
@@ -337,7 +338,7 @@ struct transPost
 };
 
 
-void RTLInstDict::transformPostVars(std::list<Statement *>& rts, bool optimise)
+void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
 {
     // Map from var (could be any expression really) to details
     std::map<SharedExp, transPost, lessExpStar> vars;

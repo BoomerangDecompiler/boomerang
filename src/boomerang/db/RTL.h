@@ -69,10 +69,9 @@ public:
     void setAddress(Address a) { m_nativeAddr = a; }
 
     /**
-     *  Append \p s to the end of this RTL.
-     * \note   Exception: Leaves any flag call at the end
+     * Append \p s to the end of this RTL. Takes ownership of the pointer.
+     * \note Leaves any flag call at the end
      * (so may push exp to second last position, instead of last)
-     * \note   \p s is NOT copied.
      */
     void append(Statement *s);
 
@@ -106,6 +105,7 @@ public:
     void simplify();
 
     const StmtList& getStatements() const { return m_stmts; }
+    StmtList& getStatements() { return m_stmts; }
 
     // delegates to std::list
 public:
@@ -145,4 +145,5 @@ private:
 };
 
 using SharedRTL = std::shared_ptr<RTL>;
-using RTLList   = std::list<RTL *>;
+using RTLList   = std::list<std::unique_ptr<RTL>>;
+

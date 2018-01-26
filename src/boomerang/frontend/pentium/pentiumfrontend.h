@@ -119,11 +119,11 @@ private:
      *
      * \param dest the destination of this call
      * \param addr the address of this call instruction
-     * \param lrtl pointer to a list of RTL pointers for this BB
+     * \param lrtl a list of RTL pointers for this BB
      *
      * \returns true if a helper function is converted; false otherwise
      */
-    bool isHelperFunc(Address dest, Address addr, std::list<RTL *> *lrtl) override;
+    bool isHelperFunc(Address dest, Address addr, RTLList& lrtl) override;
 
     /**
      * \returns true if \p stmt is an assignment

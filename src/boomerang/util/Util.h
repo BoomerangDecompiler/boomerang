@@ -65,7 +65,6 @@ std::unique_ptr<T> makeUnique(Args&&... args)
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
-
 template<class Container>
 void clone(const Container& from, Container& to)
 {

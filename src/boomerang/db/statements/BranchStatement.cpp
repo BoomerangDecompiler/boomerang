@@ -137,116 +137,56 @@ SharedExp BranchStatement::getCondExpr() const
 
 void BranchStatement::setCondExpr(SharedExp pe)
 {
-    if (m_cond) {
-        // delete pCond;
-    }
-
     m_cond = pe;
 }
 
 
 BasicBlock *BranchStatement::getFallBB() const
 {
-    Address a = getFixedDest();
-
-    if (a == Address::INVALID) {
+    if (!m_parent || m_parent->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    if (m_parent == nullptr) {
-        return nullptr;
-    }
-
-    if (m_parent->getNumSuccessors() != 2) {
-        return nullptr;
-    }
-
-    if (m_parent->getSuccessor(0)->getLowAddr() == a) {
-        return m_parent->getSuccessor(1);
-    }
-
-    return m_parent->getSuccessor(0);
+    return m_parent->getSuccessor(BELSE);
 }
 
 
-void BranchStatement::setFallBB(BasicBlock *bb)
+void BranchStatement::setFallBB(BasicBlock *destBB)
 {
-    Address a = getFixedDest();
-
-    if (a == Address::INVALID) {
+    if (!m_parent || m_parent->getNumSuccessors() != 2) {
         return;
     }
 
-    if (m_parent == nullptr) {
-        return;
-    }
-
-    if (m_parent->getNumSuccessors() != 2) {
-        return;
-    }
-
-    if (m_parent->getSuccessor(0)->getLowAddr() == a) {
-        m_parent->getSuccessor(1)->removePredecessor(m_parent);
-        m_parent->setSuccessor(1, bb);
-        bb->addPredecessor(m_parent);
-    }
-    else {
-        m_parent->getSuccessor(0)->removePredecessor(m_parent);
-        m_parent->setSuccessor(0, bb);
-        bb->addPredecessor(m_parent);
+    BasicBlock *oldDestBB = m_parent->getSuccessor(BELSE);
+    if (destBB != oldDestBB) {
+        oldDestBB->removePredecessor(m_parent);
+        m_parent->setSuccessor(BELSE, destBB);
+        destBB->addPredecessor(m_parent);
     }
 }
 
 
 BasicBlock *BranchStatement::getTakenBB() const
 {
-    Address a = getFixedDest();
-
-    if (a == Address::INVALID) {
+    if (!m_parent || m_parent->getNumSuccessors() != 2) {
         return nullptr;
     }
 
-    if (m_parent == nullptr) {
-        return nullptr;
-    }
-
-    if (m_parent->getNumSuccessors() != 2) {
-        return nullptr;
-    }
-
-    if (m_parent->getSuccessor(0)->getLowAddr() == a) {
-        return m_parent->getSuccessor(0);
-    }
-
-    return m_parent->getSuccessor(1);
+    return m_parent->getSuccessor(BTHEN);
 }
 
 
-void BranchStatement::setTakenBB(BasicBlock *bb)
+void BranchStatement::setTakenBB(BasicBlock *destBB)
 {
-    Address destination = getFixedDest();
-
-    if (destination == Address::INVALID) {
+    if (!m_parent || m_parent->getNumSuccessors() != 2) {
         return;
     }
 
-    if (m_parent == nullptr) {
-        return;
-    }
-
-    if (m_parent->getNumSuccessors() != 2) {
-        return;
-    }
-
-    if (m_parent->getSuccessor(0)->getLowAddr() == destination) {
-        m_parent->getSuccessor(0)->removePredecessor(m_parent);
-        m_parent->setSuccessor(0, bb);
-        bb->addPredecessor(m_parent);
-    }
-    else {
-        m_parent->getSuccessor(1)->removePredecessor(m_parent);
-        m_parent->setSuccessor(1, bb);
-        bb->addPredecessor(m_parent);
+    BasicBlock *oldDestBB = m_parent->getSuccessor(BTHEN);
+    if (destBB != oldDestBB) {
+        oldDestBB->removePredecessor(m_parent);
+        m_parent->setSuccessor(BTHEN, destBB);
+        destBB->addPredecessor(m_parent);
     }
 }
 

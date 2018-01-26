@@ -61,16 +61,14 @@ public:
     /// \param pe Pointer to Exp to set
     void setCondExpr(SharedExp pe);
 
-    /// \returns the destination BB of the fallthrough branch of a conditional jump
-    BasicBlock *getFallBB() const;
-
     /// \returns the destination BB of a taken conditional jump
     BasicBlock *getTakenBB() const;
 
-    /// \note if you set the taken BB or fixed dest first,
-    /// you will not be able to set the fall BB
-    void setFallBB(BasicBlock *bb);
+    /// \returns the destination BB of the fallthrough branch of a conditional jump
+    BasicBlock *getFallBB() const;
+
     void setTakenBB(BasicBlock *bb);
+    void setFallBB(BasicBlock *bb);
 
     /// \copydoc GotoStatement::print
     virtual void print(QTextStream& os, bool html = false) const override;
