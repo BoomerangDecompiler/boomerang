@@ -64,6 +64,12 @@ public:
     typedef RTLList::iterator                     RTLIterator;
     typedef RTLList::reverse_iterator             RTLRIterator;
 
+    class BBComparator
+    {
+    public:
+        /// \returns bb1->getLowAddr() < bb2->getLowAddr();
+        bool operator()(const BasicBlock *bb1, const BasicBlock *bb2) const;
+    };
 public:
     /**
      * Creates an incomplete BB.

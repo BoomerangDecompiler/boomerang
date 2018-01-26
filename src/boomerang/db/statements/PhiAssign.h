@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/statements/Assignment.h"
+#include "boomerang/db/BasicBlock.h"
 
 
 /**
@@ -50,15 +51,8 @@ private:
  */
 class PhiAssign : public Assignment
 {
-    class BBComparator
-    {
-    public:
-        /// \returns bb1->getLowAddr() < bb2->getLowAddr();
-        bool operator()(const BasicBlock *bb1, const BasicBlock *bb2) const;
-    };
-
 public:
-    typedef std::map<BasicBlock *, PhiInfo, BBComparator> PhiDefs;
+    typedef std::map<BasicBlock *, PhiInfo, BasicBlock::BBComparator> PhiDefs;
     typedef PhiDefs::iterator                 iterator;
     typedef PhiDefs::const_iterator           const_iterator;
 

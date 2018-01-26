@@ -74,6 +74,7 @@ public:
 
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, new Signature(name), module)
+    , m_df(this)
     , m_cycleGroup(nullptr)
     , m_retStatement(nullptr)
     , DFGcount(0)
@@ -1114,7 +1115,7 @@ void UserProc::initialiseDecompile()
     debugPrintAll("Before SSA");
 
     // Compute dominance frontier
-    m_df.calculateDominators(m_cfg);
+    m_df.calculateDominators();
 
     // Number the statements
     m_stmtNumber = 0;
@@ -1158,7 +1159,7 @@ void UserProc::earlyDecompile()
     LOG_VERBOSE("Placing phi functions 1st pass");
 
     // Place the phi functions
-    m_df.placePhiFunctions(this);
+    m_df.placePhiFunctions();
 
     LOG_VERBOSE("Numbering phi statements 1st pass");
     numberStatements(); // Number them
@@ -1228,7 +1229,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
     // For now, we create the initial arguments here (relatively early), and live with the fact that some apparently
     // distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be duplicates, and so
     // the duplicates must be eliminated.
-    bool change = m_df.placePhiFunctions(this);
+    bool change = m_df.placePhiFunctions();
 
     if (change) {
         numberStatements(); // Number the new statements
@@ -1247,7 +1248,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         LOG_VERBOSE("Renaming block variables (2) pass %1", pass);
 
         // Rename variables
-        change = m_df.placePhiFunctions(this);
+        change = m_df.placePhiFunctions();
 
         if (change) {
             numberStatements();                   // Number the new statements
@@ -1383,7 +1384,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
     LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
 
-    change = m_df.placePhiFunctions(this);
+    change = m_df.placePhiFunctions();
 
     if (change) {
         numberStatements();         // Number the new statements
@@ -1482,7 +1483,7 @@ void UserProc::remUnusedStmtEtc()
         typeAnalysis();
 
         // Now that locals are identified, redo the dataflow
-        change = m_df.placePhiFunctions(this);
+        change = m_df.placePhiFunctions();
 
         if (change) {
             numberStatements();           // Number the new statements
@@ -1536,7 +1537,7 @@ void UserProc::remUnusedStmtEtc()
 
     if (removedBBs) {
         // redo the data flow
-        m_df.calculateDominators(m_cfg);
+        m_df.calculateDominators();
 
         // recalculate phi assignments of referencing BBs
         for (BasicBlock *bb : *m_cfg) {
@@ -1899,7 +1900,7 @@ void UserProc::fixUglyBranches()
 bool UserProc::doRenameBlockVars(int pass, bool clearStacks)
 {
     LOG_VERBOSE("### Rename block vars for %1 pass %2, clear = %3 ###", getName(), pass, clearStacks);
-    bool b = m_df.renameBlockVars(this, 0, clearStacks);
+    bool b = m_df.renameBlockVars(0, clearStacks);
     LOG_VERBOSE("df.renameBlockVars return %1", (b ? "true" : "false"));
     return b;
 }
@@ -3715,7 +3716,7 @@ void UserProc::addImplicitAssigns()
     }
 
     m_cfg->setImplicitsDone();
-    m_df.convertImplicits(m_cfg); // Some maps have m[...]{-} need to be m[...]{0} now
+    m_df.convertImplicits(); // Some maps have m[...]{-} need to be m[...]{0} now
     makeSymbolsImplicit();
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after adding implicit assigns");
@@ -5199,9 +5200,9 @@ void UserProc::makeSymbolsImplicit()
 void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
 {
     LocationSet usedByDomPhi0;
-
     std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
-    m_df.findLiveAtDomPhi(0, usedByDomPhi, usedByDomPhi0, defdByPhi);
+
+    m_df.findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
 
     // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
     std::map<SharedExp, PhiAssign *, lessExpStar>::iterator it;
