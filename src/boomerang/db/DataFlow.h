@@ -138,8 +138,7 @@ private:
 
     void link(int p, int n);
 
-    /// Compute the dominance frontier of all BBs in the CFG.
-    void computeDominanceFrontiers();
+    void computeDF(int n);
 
     /// Return true if n dominates w
     bool doesDominate(int n, int w);
