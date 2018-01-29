@@ -208,11 +208,11 @@ public:
      * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
      *
      * \note the call BB should be created with one out edge (the return or branch BB)
-     * \param pCallBB a pointer to the call BB that will be followed by the return or jump
-     * \param pProc pointer to the enclosing UserProc
-     * \param pRtl pointer to the current RTL with the call instruction
+     * \param callBB  the call BB that will be followed by the return or jump
+     * \param proc    the enclosing UserProc
+     * \param callRTL the current RTL with the call instruction
      */
-    void appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl);
+    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
 
     /**
      * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and

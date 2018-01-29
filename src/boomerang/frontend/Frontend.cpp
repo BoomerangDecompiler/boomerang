@@ -1241,13 +1241,12 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
 }
 
 
-void IFrontEnd::appendSyntheticReturn(BasicBlock *pCallBB, UserProc *pProc, RTL *pRtl)
+void IFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
-    std::unique_ptr<RTL> retRTL(new RTL(pRtl->getAddress() + 1, { new ReturnStatement }));
-    BasicBlock *retBB = createReturnBlock(pProc, std::move(ret_rtls), std::move(retRTL));
+    std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress() + 1, { new ReturnStatement }));
+    BasicBlock *retBB = createReturnBlock(proc, std::move(ret_rtls), std::move(retRTL));
 
-    retBB->addPredecessor(pCallBB);
-    assert(pCallBB->getNumSuccessors() == 0);
-    pCallBB->addPredecessor(retBB);
+    assert(callBB->getNumSuccessors() == 0);
+    proc->getCFG()->addEdge(callBB, retBB);
 }
