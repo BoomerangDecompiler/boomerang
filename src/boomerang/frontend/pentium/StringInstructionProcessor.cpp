@@ -69,30 +69,30 @@ bool StringInstructionProcessor::processStringInstructions()
         RTL *skipRTL = p.first;
         BasicBlock *bb = p.second;
 
-        BranchStatement *br1 = new BranchStatement;
+        BranchStatement *skipBranch = new BranchStatement;
 
         assert(skipRTL->size() >= 4); // They vary; at least 5 or 6
 
         Statement *s1 = *skipRTL->begin();
         Statement *s6 = *(--skipRTL->end());
         if (s1->isAssign()) {
-            br1->setCondExpr(((Assign *)s1)->getRight());
+            skipBranch->setCondExpr(((Assign *)s1)->getRight());
         }
         else {
-            br1->setCondExpr(nullptr);
+            skipBranch->setCondExpr(nullptr);
         }
-        br1->setDest(skipRTL->getAddress() + 2);
+        skipBranch->setDest(skipRTL->getAddress() + 2);
 
-        BranchStatement *br2 = new BranchStatement;
+        BranchStatement *rptBranch = new BranchStatement;
         if (s6->isAssign()) {
-            br2->setCondExpr(((Assign *)s6)->getRight());
+            rptBranch->setCondExpr(((Assign *)s6)->getRight());
         }
         else {
-            br2->setCondExpr(nullptr);
+            rptBranch->setCondExpr(nullptr);
         }
-        br2->setDest(skipRTL->getAddress());
+        rptBranch->setDest(skipRTL->getAddress());
 
-        splitForBranch(bb, skipRTL, br1, br2);
+        splitForBranch(bb, skipRTL, skipBranch, rptBranch);
     }
 
     return !stringInstructions.empty();
@@ -151,7 +151,7 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     bb->removeAllPredecessors();
 
     // remove connection between the string instruction and the B part
-    for (BasicBlock *succ : bb->getSuccessors()) {
+    for (BasicBlock *succ : oldSuccessors) {
         bb->removeSuccessor(succ);
         succ->removePredecessor(bb);
     }
@@ -173,11 +173,13 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
             for (int i = 0; i < pred->getNumSuccessors(); i++) {
                 if (pred->getSuccessor(i) == bb) {
                     pred->setSuccessor(i, skipBB);
+                    skipBB->addPredecessor(pred);
                 }
             }
         }
     }
 
+    bBB->removePredecessor(bb);
     m_proc->getCFG()->addEdge(skipBB, bBB);
     m_proc->getCFG()->addEdge(skipBB, rptBB);
     m_proc->getCFG()->addEdge(rptBB, bBB);
