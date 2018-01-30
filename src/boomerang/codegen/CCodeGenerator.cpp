@@ -2563,14 +2563,24 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
             }
         }
 
-        // generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
-        // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
+        // Generate code for its successor if
+        //  - it hasn't already been visited and
+        //  - is in the same loop/case and
+        //  - is not the latch for the current most enclosing loop.
+        // The only exception for generating it when it is not in
         // the same loop is when it is only reached from this node
-        if (isGenerated(child) ||
-            (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) ||
-            (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) ||
-            !(m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) || (m_analyzer.getCaseHead(bb) && (m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))))) {
+        if (isGenerated(child)) {
             emitGotoAndLabel(bb, child);
+        }
+        else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) {
+            emitGotoAndLabel(bb, child);
+        }
+        else if (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
+            emitGotoAndLabel(bb, child);
+        }
+        else if (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
+            (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+                emitGotoAndLabel(bb, child);
         }
         else {
             if (m_analyzer.getCaseHead(bb) && (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
