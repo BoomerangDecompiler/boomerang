@@ -12,7 +12,6 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/codegen/syntax/SyntaxNode.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"

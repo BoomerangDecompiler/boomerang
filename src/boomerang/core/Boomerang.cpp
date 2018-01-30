@@ -142,20 +142,6 @@ int Boomerang::decompile(const QString& fname, const char *pname)
         CfgDotWriter().writeCFG(prog.get(), SETTING(dotFile));
     }
 
-    if (SETTING(printAST)) {
-        LOG_MSG("Printing AST...");
-
-        for (const auto& module : prog->getModuleList()) {
-            for (Function *func : *module) {
-                if (!func->isLib()) {
-                    UserProc *proc = static_cast<UserProc *>(func);
-                    CFGCompressor().compressCFG(proc->getCFG());
-                    proc->printAST();
-                }
-            }
-        }
-    }
-
     LOG_MSG("Generating code...");
     Boomerang::get()->getCodeGenerator()->generateCode(prog.get());
 

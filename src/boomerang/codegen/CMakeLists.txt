@@ -11,10 +11,6 @@ list(APPEND boomerang-codegen-sources
     codegen/CCodeGenerator
     codegen/ControlFlowAnalyzer
     codegen/ICodeGenerator.h
-    codegen/syntax/SyntaxNode
-    codegen/syntax/BlockSyntaxNode
-    codegen/syntax/IfThenSyntaxNode
-    codegen/syntax/LoopSyntaxNode
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-codegen-sources}" PARENT_SCOPE)

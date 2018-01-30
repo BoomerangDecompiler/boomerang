@@ -258,5 +258,4 @@ private:
     ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
     bool m_implicitsDone = false;            ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
     mutable bool m_wellFormed = false;
-
 };

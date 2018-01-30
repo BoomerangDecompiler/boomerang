@@ -11,7 +11,6 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/codegen/syntax/BlockSyntaxNode.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/InterferenceFinder.h"
@@ -62,16 +61,6 @@
 #include <cstring>
 
 
-class lessEvaluate
-{
-public:
-    bool operator()(SyntaxNode *node1, SyntaxNode *node2) const
-    {
-        return node1->getScore() > node2->getScore();
-    }
-};
-
-
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, new Signature(name), module)
     , m_df(this)
@@ -89,106 +78,6 @@ UserProc::~UserProc()
     deleteCFG();
 
     qDeleteAll(m_parameters);
-}
-
-
-SyntaxNode *UserProc::calculateAST() const
-{
-    int             numBBs = 0;
-    BlockSyntaxNode *init  = new BlockSyntaxNode();
-
-    for (BasicBlock *bb : *m_cfg) {
-        BlockSyntaxNode *b = new BlockSyntaxNode();
-        b->setBB(bb);
-        init->addStatement(b);
-        numBBs++;
-    }
-
-    // perform a best first search for the nicest AST
-    std::priority_queue<SyntaxNode *, std::vector<SyntaxNode *>, lessEvaluate> ASTs;
-    ASTs.push(init);
-
-    SyntaxNode *best      = init;
-    int        best_score = init->getScore();
-    int        count      = 0;
-
-    while (!ASTs.empty()) {
-        if (best_score < numBBs * 2) {
-            LOG_VERBOSE("Exit early: %1", best_score);
-            break;
-        }
-
-        SyntaxNode *top = ASTs.top();
-        ASTs.pop();
-        int score = top->evaluate(top);
-
-        printAST(top); // debug
-
-        if (score < best_score) {
-            if (best && (top != best)) {
-                delete best;
-            }
-
-            best       = top;
-            best_score = score;
-        }
-
-        count++;
-
-        if (count > 100) {
-            break;
-        }
-
-        // add successors
-        std::vector<SyntaxNode *> successors;
-        top->addSuccessors(top, successors);
-
-        for (auto& successor : successors) {
-            // successors[i]->addToScore(top->getScore());    // uncomment for A*
-            successor->addToScore(successor->getDepth()); // or this
-            ASTs.push(successor);
-        }
-
-        if (top != best) {
-            delete top;
-        }
-    }
-
-    // clean up memory
-    while (!ASTs.empty()) {
-        SyntaxNode *top = ASTs.top();
-        ASTs.pop();
-
-        if (top != best) {
-            delete top;
-        }
-    }
-
-    return best;
-}
-
-
-void UserProc::printAST(SyntaxNode *a) const
-{
-    static int count = 1;
-    char       s[1024];
-
-    if (a == nullptr) {
-        a = calculateAST();
-    }
-
-    sprintf(s, "ast%i-%s.dot", count++, qPrintable(getName()));
-    QFile tgt(s);
-
-    if (!tgt.open(QFile::WriteOnly)) {
-        return; // TODO: report error ?
-    }
-
-    QTextStream of(&tgt);
-    of << "digraph " << getName() << " {" << '\n';
-    of << "     label=\"score: " << a->evaluate(a) << "\";" << '\n';
-    a->printAST(a, of);
-    of << "}" << '\n';
 }
 
 

@@ -72,7 +72,6 @@ public:
     /// When true, attempt to decode main, all children, and all procs.
     /// \a decodeMain is set when there are no -e or -E switches given
     bool decodeMain          = true;
-    bool printAST            = false;
     bool removeReturns       = true;
     bool decodeThruIndCall   = false;
     bool decodeChildren      = true;

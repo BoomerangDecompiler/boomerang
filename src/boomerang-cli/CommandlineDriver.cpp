@@ -65,7 +65,6 @@ static void help()
         "  -X               : activate eXperimental code; errors likely\n"
         "  --               : No effect (used for testing)\n"
         "Debug\n"
-        "  -da              : Print AST before code generation\n"
         "  -dc              : Debug switch (Case) analysis\n"
         "  -dd              : Debug decoder to stdout\n"
         "  -dg              : Debug code Generation\n"
@@ -363,10 +362,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
             switch (arg[2].toLatin1())
             {
-            case 'a':
-                SETTING(printAST) = true;
-                break;
-
             case 'c':
                 SETTING(debugSwitch) = true;
                 break;

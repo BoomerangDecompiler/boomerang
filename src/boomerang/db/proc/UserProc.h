@@ -36,7 +36,6 @@ class TypedExp;
 class Type;
 class RTL;
 class ICodeGenerator;
-class SyntaxNode;
 class Parameter;
 class Argument;
 class Signature;
@@ -124,10 +123,6 @@ public:
     void printParams(QTextStream& out, bool html = false) const;
     char *prints() const;
     void printDFG() const;
-
-    /// Print AST to a file.
-    /// if \p node is null, print the AST of the whole procedure.
-    void printAST(SyntaxNode *node = nullptr) const;
 
     /// Print just the symbol map
     void printSymbolMap(QTextStream& out, bool html = false) const;
@@ -650,12 +645,6 @@ public:
     void debugPrintAll(const char *c);
 
 private:
-    /**
-     * Calculates the abstract syntax tree for the procedure in the internal representation.
-     * \note since the callculation is expensive, don't call this method too often.
-     */
-    SyntaxNode *calculateAST() const;
-
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
 
     /// Return a string for a new local suitable for \a e
