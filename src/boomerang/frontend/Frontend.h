@@ -196,8 +196,8 @@ public:
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
      * \param    pProc pointer to enclosing UserProc
-     * \param    BB_rtls list of RTLs for the current BB (not including pRtl)
-     * \param    pRtl pointer to the current RTL with the semantics for the return statement (including a
+     * \param    BB_rtls list of RTLs for the current BB (not including \p returnRTL)
+     * \param    returnRTL pointer to the current RTL with the semantics for the return statement (including a
      *           ReturnStatement as the last statement)
      *
      * \returns  Pointer to the newly created BB
