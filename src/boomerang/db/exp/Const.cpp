@@ -28,7 +28,7 @@
 Const::Const(uint32_t i)
     : Exp(opIntConst)
     , m_conscript(0)
-    , m_type(IntegerType::get(32, -1))
+    , m_type(VoidType::get())
 {
     m_value.i = i;
 }
