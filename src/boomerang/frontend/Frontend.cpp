@@ -1229,6 +1229,8 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
         newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
 
         if (newBB) {
+            cfg->addEdge(newBB, retBB);
+
             // Visit the return instruction. This will be needed in most cases to split the return BB (if it has other
             // instructions before the return instruction).
             m_targetQueue.visit(cfg, retAddr, newBB);

@@ -256,6 +256,7 @@ private:
 
     void generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet, std::list<const BasicBlock *>& gotoSet, UserProc *proc);
     void generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc, const BasicBlock *latch, std::list<const BasicBlock *>& followSet);
+    void generateCode_Branch(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc, const BasicBlock *latch, std::list<const BasicBlock *>& followSet);
 
     /// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
     /// just before the destination code if it isn't already there.    If the goto is to the return block, it would be nice

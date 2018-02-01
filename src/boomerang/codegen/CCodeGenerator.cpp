@@ -2304,201 +2304,9 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
         generateCode_Loop(bb, gotoSet, proc, latch, followSet);
         break;
 
-    case StructType::Cond:
-        {
-            // reset this back to LoopCond if it was originally of this type
-            if (m_analyzer.getLatchNode(bb)) {
-                m_analyzer.setStructType(bb, StructType::LoopCond);
-            }
-
-            // for 2 way conditional headers that are effectively jumps into
-            // or out of a loop or case body, we will need a new follow node
-            const BasicBlock *tmpCondFollow = nullptr;
-
-            // keep track of how many nodes were added to the goto set so that
-            // the correct number are removed
-            int gotoTotal = 0;
-
-            // add the follow to the follow set if this is a case header
-            if (m_analyzer.getCondType(bb) == CondType::Case) {
-                followSet.push_back(m_analyzer.getCondFollow(bb));
-            }
-            else if ((m_analyzer.getCondType(bb) != CondType::Case) && m_analyzer.getCondFollow(bb)) {
-                // For a structured two conditional header,
-                // its follow is added to the follow set
-                // myLoopHead = (sType == LoopCond ? this : loopHead);
-
-                if (m_analyzer.getUnstructType(bb) == UnstructType::Structured) {
-                    followSet.push_back(m_analyzer.getCondFollow(bb));
-                }
-
-                // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
-                // The temporary follow is set for any unstructured conditional header branch that is within the
-                // same loop and case.
-                else {
-                    if (m_analyzer.getUnstructType(bb) == UnstructType::JumpInOutLoop) {
-                        // define the loop header to be compared against
-                        const BasicBlock *myLoopHead = (m_analyzer.getStructType(bb) == StructType::LoopCond ? bb : m_analyzer.getLoopHead(bb));
-                        gotoSet.push_back(m_analyzer.getCondFollow(bb));
-                        gotoTotal++;
-
-                        // also add the current latch node, and the loop header of the follow if they exist
-                        if (latch) {
-                            gotoSet.push_back(latch);
-                            gotoTotal++;
-                        }
-
-                        if (m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) &&
-                            m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) != myLoopHead) {
-                            gotoSet.push_back(m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)));
-                            gotoTotal++;
-                        }
-                    }
-
-                    tmpCondFollow = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfThen) ? BELSE : BTHEN);
-
-                    // for a jump into a case, the temp follow is added to the follow set
-                    if (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase) {
-                        followSet.push_back(tmpCondFollow);
-                    }
-                }
-            }
-
-            // write the body of the block (excluding the predicate)
-            writeBB(bb);
-
-            // write the conditional header
-            SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
-
-            if (m_analyzer.getCondType(bb) == CondType::Case) {
-                // The CaseStatement will be in the last RTL this BB
-                RTL           *last = bb->getRTLs()->back().get();
-                CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
-                psi = cs->getSwitchInfo();
-
-                // Write the switch header (i.e. "switch(var) {")
-                addCaseCondHeader(psi->pSwitchVar);
-            }
-            else {
-                SharedExp cond = bb->getCond();
-
-                if (!cond) {
-                    cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
-                }
-
-                if (m_analyzer.getCondType(bb) == CondType::IfElse) {
-                    cond = Unary::get(opNot, cond->clone());
-                    cond = cond->simplify();
-                }
-
-                if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
-                    addIfElseCondHeader(cond);
-                }
-                else {
-                    addIfCondHeader(cond);
-                }
-            }
-
-            // write code for the body of the conditional
-            if (m_analyzer.getCondType(bb) != CondType::Case) {
-                const BasicBlock *succ = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
-                assert(succ != nullptr);
-
-                // emit a goto statement if the first clause has already been
-                // generated or it is the follow of this node's enclosing loop
-                if (isGenerated(succ) || (m_analyzer.getLoopHead(bb) && succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)))) {
-                    emitGotoAndLabel(bb, succ);
-                }
-                else {
-                    generateCode(succ, latch, followSet, gotoSet, proc);
-                }
-
-                // generate the else clause if necessary
-                if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
-                    // generate the 'else' keyword and matching brackets
-                    addIfElseCondOption();
-
-                    succ = bb->getSuccessor(BELSE);
-
-                    // emit a goto statement if the second clause has already
-                    // been generated
-                    if (isGenerated(succ)) {
-                        emitGotoAndLabel(bb, succ);
-                    }
-                    else {
-                        generateCode(succ, latch, followSet, gotoSet, proc);
-                    }
-
-                    // generate the closing bracket
-                    addIfElseCondEnd();
-                }
-                else {
-                    // generate the closing bracket
-                    addIfCondEnd();
-                }
-            }
-            else { // case header
-                   // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
-                   // generate code for each out branch
-                for (int i = 0; i < bb->getNumSuccessors(); i++) {
-                    // emit a case label
-                    // FIXME: Not valid for all switch types
-                    Const caseVal(0);
-
-                    if (psi->chForm == 'F') {                            // "Fortran" style?
-                        caseVal.setInt(((int *)psi->uTable.value())[i]); // Yes, use the table value itself
-                    }
-                    // Note that uTable has the address of an int array
-                    else {
-                        caseVal.setInt((int)(psi->iLower + i));
-                    }
-
-                    addCaseCondOption(caseVal);
-
-                    // generate code for the current out-edge
-                    const BasicBlock *succ = bb->getSuccessor(i);
-
-                    // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
-                    if (isGenerated(succ)) {
-                        emitGotoAndLabel(bb, succ);
-                    }
-                    else {
-                        generateCode(succ, latch, followSet, gotoSet, proc);
-                    }
-                }
-
-                // generate the closing bracket
-                addCaseCondEnd();
-            }
-
-            // do all the follow stuff if this conditional had one
-            if (m_analyzer.getCondFollow(bb)) {
-                // remove the original follow from the follow set if it was
-                // added by this header
-                if ((m_analyzer.getUnstructType(bb) == UnstructType::Structured) || (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase)) {
-                    assert(gotoTotal == 0);
-                    followSet.resize(followSet.size() - 1);
-                }
-                else { // remove all the nodes added to the goto set
-                    gotoSet.resize(std::max((int)gotoSet.size() - gotoTotal, 0));
-                }
-
-                // do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
-                // it for the original follow
-                if (!tmpCondFollow) {
-                    tmpCondFollow = m_analyzer.getCondFollow(bb);
-                }
-
-                if (isGenerated(tmpCondFollow)) {
-                    emitGotoAndLabel(bb, tmpCondFollow);
-                }
-                else {
-                    generateCode(tmpCondFollow, latch, followSet, gotoSet, proc);
-                }
-            }
-
-            break;
-        }
+    case StructType::Cond: // if-else / case
+        generateCode_Branch(bb, gotoSet, proc, latch, followSet);
+        break;
 
     case StructType::Seq:
         // generate code for the body of this block
@@ -2563,14 +2371,24 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
             }
         }
 
-        // generate code for its successor if it hasn't already been visited and is in the same loop/case and is not
-        // the latch for the current most enclosing loop.     The only exception for generating it when it is not in
+        // Generate code for its successor if
+        //  - it hasn't already been visited and
+        //  - is in the same loop/case and
+        //  - is not the latch for the current most enclosing loop.
+        // The only exception for generating it when it is not in
         // the same loop is when it is only reached from this node
-        if (isGenerated(child) ||
-            (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) ||
-            (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) ||
-            !(m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) || (m_analyzer.getCaseHead(bb) && (m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))))) {
+        if (isGenerated(child)) {
             emitGotoAndLabel(bb, child);
+        }
+        else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) {
+            emitGotoAndLabel(bb, child);
+        }
+        else if (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
+            emitGotoAndLabel(bb, child);
+        }
+        else if (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
+            (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+                emitGotoAndLabel(bb, child);
         }
         else {
             if (m_analyzer.getCaseHead(bb) && (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
@@ -2693,6 +2511,202 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
         }
         else {
             emitGotoAndLabel(bb, m_analyzer.getLoopFollow(bb));
+        }
+    }
+}
+
+
+void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc,
+                                         const BasicBlock *latch, std::list<const BasicBlock *>& followSet)
+{
+    // reset this back to LoopCond if it was originally of this type
+    if (m_analyzer.getLatchNode(bb)) {
+        m_analyzer.setStructType(bb, StructType::LoopCond);
+    }
+
+    // for 2 way conditional headers that are effectively jumps into
+    // or out of a loop or case body, we will need a new follow node
+    const BasicBlock *tmpCondFollow = nullptr;
+
+    // keep track of how many nodes were added to the goto set so that
+    // the correct number are removed
+    int gotoTotal = 0;
+
+    // add the follow to the follow set if this is a case header
+    if (m_analyzer.getCondType(bb) == CondType::Case) {
+        followSet.push_back(m_analyzer.getCondFollow(bb));
+    }
+    else if ((m_analyzer.getCondType(bb) != CondType::Case) && m_analyzer.getCondFollow(bb)) {
+        // For a structured two conditional header,
+        // its follow is added to the follow set
+        // myLoopHead = (sType == LoopCond ? this : loopHead);
+
+        if (m_analyzer.getUnstructType(bb) == UnstructType::Structured) {
+            followSet.push_back(m_analyzer.getCondFollow(bb));
+        }
+
+        // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
+        // The temporary follow is set for any unstructured conditional header branch that is within the
+        // same loop and case.
+        else {
+            if (m_analyzer.getUnstructType(bb) == UnstructType::JumpInOutLoop) {
+                // define the loop header to be compared against
+                const BasicBlock *myLoopHead = (m_analyzer.getStructType(bb) == StructType::LoopCond ? bb : m_analyzer.getLoopHead(bb));
+                gotoSet.push_back(m_analyzer.getCondFollow(bb));
+                gotoTotal++;
+
+                // also add the current latch node, and the loop header of the follow if they exist
+                if (latch) {
+                    gotoSet.push_back(latch);
+                    gotoTotal++;
+                }
+
+                if (m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) &&
+                    m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)) != myLoopHead) {
+                    gotoSet.push_back(m_analyzer.getLoopHead(m_analyzer.getCondFollow(bb)));
+                    gotoTotal++;
+                }
+            }
+
+            tmpCondFollow = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfThen) ? BELSE : BTHEN);
+
+            // for a jump into a case, the temp follow is added to the follow set
+            if (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase) {
+                followSet.push_back(tmpCondFollow);
+            }
+        }
+    }
+
+    // write the body of the block (excluding the predicate)
+    writeBB(bb);
+
+    // write the conditional header
+    SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
+
+    if (m_analyzer.getCondType(bb) == CondType::Case) {
+        // The CaseStatement will be in the last RTL this BB
+        RTL           *last = bb->getRTLs()->back().get();
+        CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
+        psi = cs->getSwitchInfo();
+
+        // Write the switch header (i.e. "switch(var) {")
+        addCaseCondHeader(psi->pSwitchVar);
+    }
+    else {
+        SharedExp cond = bb->getCond();
+
+        if (!cond) {
+            cond = Const::get(Address(0xfeedface)); // hack, but better than a crash
+        }
+
+        if (m_analyzer.getCondType(bb) == CondType::IfElse) {
+            cond = Unary::get(opNot, cond->clone());
+            cond = cond->simplify();
+        }
+
+        if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
+            addIfElseCondHeader(cond);
+        }
+        else {
+            addIfCondHeader(cond);
+        }
+    }
+
+    // write code for the body of the conditional
+    if (m_analyzer.getCondType(bb) != CondType::Case) {
+        const BasicBlock *succ = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
+        assert(succ != nullptr);
+
+        // emit a goto statement if the first clause has already been
+        // generated or it is the follow of this node's enclosing loop
+        if (isGenerated(succ) || (m_analyzer.getLoopHead(bb) && succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)))) {
+            emitGotoAndLabel(bb, succ);
+        }
+        else {
+            generateCode(succ, latch, followSet, gotoSet, proc);
+        }
+
+        // generate the else clause if necessary
+        if (m_analyzer.getCondType(bb) == CondType::IfThenElse) {
+            // generate the 'else' keyword and matching brackets
+            addIfElseCondOption();
+
+            succ = bb->getSuccessor(BELSE);
+
+            // emit a goto statement if the second clause has already
+            // been generated
+            if (isGenerated(succ)) {
+                emitGotoAndLabel(bb, succ);
+            }
+            else {
+                generateCode(succ, latch, followSet, gotoSet, proc);
+            }
+
+            // generate the closing bracket
+            addIfElseCondEnd();
+        }
+        else {
+            // generate the closing bracket
+            addIfCondEnd();
+        }
+    }
+    else { // case header
+            // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
+            // generate code for each out branch
+        for (int i = 0; i < bb->getNumSuccessors(); i++) {
+            // emit a case label
+            // FIXME: Not valid for all switch types
+            Const caseVal(0);
+
+            if (psi->chForm == 'F') {                            // "Fortran" style?
+                caseVal.setInt(((int *)psi->uTable.value())[i]); // Yes, use the table value itself
+            }
+            // Note that uTable has the address of an int array
+            else {
+                caseVal.setInt((int)(psi->iLower + i));
+            }
+
+            addCaseCondOption(caseVal);
+
+            // generate code for the current out-edge
+            const BasicBlock *succ = bb->getSuccessor(i);
+
+            // assert(succ->caseHead == this || succ == condFollow || HasBackEdgeTo(succ));
+            if (isGenerated(succ)) {
+                emitGotoAndLabel(bb, succ);
+            }
+            else {
+                generateCode(succ, latch, followSet, gotoSet, proc);
+            }
+        }
+
+        // generate the closing bracket
+        addCaseCondEnd();
+    }
+
+    // do all the follow stuff if this conditional had one
+    if (m_analyzer.getCondFollow(bb)) {
+        // remove the original follow from the follow set if it was
+        // added by this header
+        if ((m_analyzer.getUnstructType(bb) == UnstructType::Structured) || (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase)) {
+            assert(gotoTotal == 0);
+            followSet.resize(followSet.size() - 1);
+        }
+        else { // remove all the nodes added to the goto set
+            gotoSet.resize(std::max((int)gotoSet.size() - gotoTotal, 0));
+        }
+
+        // do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
+        // it for the original follow
+        if (!tmpCondFollow) {
+            tmpCondFollow = m_analyzer.getCondFollow(bb);
+        }
+
+        if (isGenerated(tmpCondFollow)) {
+            emitGotoAndLabel(bb, tmpCondFollow);
+        }
+        else {
+            generateCode(tmpCondFollow, latch, followSet, gotoSet, proc);
         }
     }
 }
