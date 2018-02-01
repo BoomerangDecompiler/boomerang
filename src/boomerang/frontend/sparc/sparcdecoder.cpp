@@ -453,7 +453,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 rtl = createBranchRtl(pc, std::move(inst.rtl), name);
                                 // The BranchStatement will be the last Stmt of the rtl
 
-                                jump = (GotoStatement *)rtl->back();
+                                jump = static_cast<GotoStatement *>(rtl->back());
                             }
 
                             // The class of this instruction depends on whether or not
@@ -602,7 +602,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                     newCall->setDest(nativeDest);
                     Function *destProc = m_prog->createFunction(nativeDest);
 
-                    if (destProc == (Function *)-1) {
+                    if (destProc == reinterpret_cast<Function *>(-1)) {
                         destProc = nullptr;
                     }
 
@@ -1884,7 +1884,7 @@ MATCH_label_d0:
             }
             else {
                 inst.rtl = createBranchRtl(pc, std::move(inst.rtl), name);
-                jump = (GotoStatement *)inst.rtl->back();
+                jump = static_cast<GotoStatement *>(inst.rtl->back());
             }
 
             // The class of this instruction depends on whether or not it is one of the 'unconditional' conditional
@@ -2013,7 +2013,7 @@ MATCH_label_d2:
             }
             else {
                 inst.rtl  = createBranchRtl(pc, std::move(inst.rtl), name);
-                jump = (GotoStatement *)inst.rtl->back();
+                jump = static_cast<GotoStatement *>(inst.rtl->back());
             }
 
             // The class of this instruction depends on whether or not it is one of the 'unconditional' conditional
@@ -2385,14 +2385,14 @@ SharedExp SparcDecoder::dis_Eaddr(HostAddress pc, int size)
                     int /* [~4096..4095] */ i = Util::signExtend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
                     // #line 722 "frontend/machine/sparc/decoder.m"
 
-                    expr = Const::get((int)i);
+                    expr = Const::get(static_cast<int>(i));
                 } /*opt-block*/ /*opt-block+*/
                 else {
                     int /* [~4096..4095] */ i   = Util::signExtend((MATCH_w_32_0 & 0x1fff) /* simm13 at 0 */, 13);
                     unsigned                rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                     // #line 725 "frontend/machine/sparc/decoder.m"
 
-                    expr = Binary::get(opPlus, Location::regOf(rs1), Const::get((int)i));
+                    expr = Binary::get(opPlus, Location::regOf(rs1), Const::get(reinterpret_cast<int>(i)));
                 } /*opt-block*/ /*opt-block+*/ /*opt-block+*/
             }
             else if ((MATCH_w_32_0 & 0x1f) /* rs2 at 0 */ == 0) {
@@ -2449,7 +2449,7 @@ bool SparcDecoder::isRestore(HostAddress hostPC)
 
 DWord SparcDecoder::getDword(HostAddress lc)
 {
-    return Util::readDWord((const void *)lc.value(), true);
+    return Util::readDWord(lc, true);
 }
 
 

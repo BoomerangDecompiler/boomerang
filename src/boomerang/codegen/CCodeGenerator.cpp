@@ -88,7 +88,7 @@ void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
                 continue;
             }
 
-            UserProc *userProc = (UserProc *)function;
+            UserProc *userProc = static_cast<UserProc *>(function);
 
             if (!userProc->isDecoded()) {
                 continue;
@@ -166,7 +166,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 continue;
             }
 
-            UserProc *_proc = (UserProc *)func;
+            UserProc *_proc = static_cast<UserProc *>(func);
             addPrototype(_proc); // May be the wrong signature if up has ellipsis
         }
     }
@@ -188,7 +188,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 continue;
             }
 
-            UserProc *_proc = (UserProc *)func;
+            UserProc *_proc = static_cast<UserProc *>(func);
 
             if (!_proc->isDecoded()) {
                 continue;
@@ -325,7 +325,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         if (rhs->getSubExp2()->isIntConst() &&
             ((rhs->access<Const, 2>()->getInt() == 1) || (asgn->getType()->isPointer() &&
                                                           (asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
-                                                           (unsigned)rhs->access<Const, 2>()->getInt() * 8)))) {
+                                                           static_cast<unsigned>(rhs->access<Const, 2>()->getInt()) * 8)))) {
             s << "++";
         }
         else {
@@ -353,7 +353,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
 
     if (!results.empty()) {
         // FIXME: Needs changing if more than one real result (return a struct)
-        SharedConstExp firstRet = ((const Assignment *)*results.begin())->getLeft();
+        SharedConstExp firstRet = (static_cast<const Assignment *>(*results.begin()))->getLeft();
         appendExp(s, *firstRet, PREC_ASSIGN);
         s << " = ";
     }
@@ -446,7 +446,7 @@ void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementLi
 
     for (Statement *ss : args) {
         QTextStream arg_str(&arg_tgt);
-        SharedExp   arg = ((Assign *)ss)->getRight();
+        SharedExp   arg = static_cast<Assign *>(ss)->getRight();
         appendExp(arg_str, *arg, PREC_COMMA);
         arg_strings << arg_tgt;
         arg_tgt.clear();
@@ -474,7 +474,7 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
 
     if (n >= 1) {
         s << " ";
-        appendExp(s, *((Assign *)*rets->begin())->getRight(), PREC_NONE);
+        appendExp(s, *static_cast<Assign *>(*rets->begin())->getRight(), PREC_NONE);
     }
 
     s << ";";
@@ -494,9 +494,9 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
                 s << ", ";
             }
 
-            appendExp(s, *((Assign *)*rr)->getLeft(), PREC_NONE);
+            appendExp(s, *(static_cast<Assign *>(*rr))->getLeft(), PREC_NONE);
             s << " := ";
-            appendExp(s, *((Assign *)*rr)->getRight(), PREC_NONE);
+            appendExp(s, *(static_cast<Assign *>(*rr))->getRight(), PREC_NONE);
         }
 
         if (n > 1) {
@@ -601,7 +601,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
 void CCodeGenerator::generateDataSectionCode(IBinaryImage *image, QString section_name, Address section_start, uint32_t size)
 {
     addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
-    addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : (unsigned int)-1));
+    addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : static_cast<uint32_t>(-1)));
     auto l = Terminal::get(opNil);
 
     for (unsigned int i = 0; i < size; i++) {
@@ -646,7 +646,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
         s << "void ";
     }
     else {
-        Assign *firstRet = (Assign *)*returns->begin();
+        Assign *firstRet = static_cast<Assign *>(*returns->begin());
         retType = firstRet->getType();
 
         if ((retType == nullptr) || retType->isVoid()) {
@@ -680,7 +680,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             s << ", ";
         }
 
-        Assignment *as  = (Assignment *)*pp;
+        Assignment *as  = static_cast<Assignment *>(*pp);
         SharedExp  left = as->getLeft();
         SharedType ty   = as->getType();
 
@@ -1030,7 +1030,7 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 
     if (e) {
         // ? Should never see subscripts in the back end!
-        if ((e->getOper() == opSubscript) && ((const RefExp *)e.get())->isImplicitDef() &&
+        if ((e->getOper() == opSubscript) && std::static_pointer_cast<const RefExp>(e)->isImplicitDef() &&
             ((e->getSubExp1()->getOper() == opParam) || (e->getSubExp1()->getOper() == opGlobal))) {
             s << " = ";
             appendExp(s, *e->getSubExp1(), PREC_NONE);
@@ -1133,12 +1133,12 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
             if (uns && (K < 0)) {
                 // An unsigned constant. Use some heuristics
-                unsigned rem = (unsigned)K % 100;
+                unsigned rem = static_cast<unsigned int>(K) % 100;
 
                 if ((rem == 0) || (rem == 99) || (K > -128)) {
                     // A multiple of 100, or one less; use 4000000000U style
                     char num[16];
-                    sprintf(num, "%u", (unsigned int)K);
+                    sprintf(num, "%u", static_cast<unsigned int>(K));
                     str << num << "U";
                 }
                 else {
@@ -1195,7 +1195,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                         break;
 
                     default:
-                        str << "'" << (char)K << "'";
+                        str << "'" << static_cast<char>(K) << "'";
                     }
                 }
                 else {
@@ -1215,7 +1215,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opLongConst:
 
         // str << std::dec << c->getLong() << "LL"; break;
-        if (((long long)c.getLong() < -1000LL) || ((long long)c.getLong() > 1000LL)) {
+        if ((static_cast<long long>(c.getLong()) < -1000LL) || (c.getLong() > 1000ULL)) {
             str << "0x" << QString::number(c.getLong(), 16) << "LL";
         }
         else {
@@ -1828,7 +1828,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
         // strcat(str, s); */
         if (t.getSubExp3()->isMemOf() && t.getSubExp1()->isIntConst() && t.getSubExp2()->isIntConst() &&
             (t.access<Const, 2>()->getInt() == 32)) {
-            unsigned sz = (unsigned)t.access<Const, 1>()->getInt();
+            int sz = t.access<Const, 1>()->getInt();
 
             if ((sz == 8) || (sz == 16)) {
                 bool close = false;
@@ -1876,7 +1876,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 #endif
 
             if ((u.getSubExp1()->getOper() == opTypedExp) &&
-                (*((const TypedExp&)u).getType() == *u.access<TypedExp, 1>()->getType())) {
+                (*static_cast<const TypedExp&>(u).getType() == *u.access<TypedExp, 1>()->getType())) {
                 // We have (type)(type)x: recurse with type(x)
                 appendExp(str, *u.getSubExp1(), curPrec);
             }
@@ -1885,7 +1885,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 PointerType *pty = nullptr;
 
                 // pty = T(x)
-                SharedType tt = ((const TypedExp&)u).getType();
+                SharedConstType tt = static_cast<const TypedExp &>(u).getType();
 
                 if ((pty != nullptr) &&
                     ((*pty->getPointsTo() == *tt) || (tt->isSize() && (pty->getPointsTo()->getSize() == tt->getSize())))) {
@@ -1894,7 +1894,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 else {
                     if (SETTING(noDecompile)) {
                         if (tt && tt->isFloat()) {
-                            if (tt->as<FloatType>()->getSize() == 32) {
+                            if (tt->as<const FloatType>()->getSize() == 32) {
                                 str << "FLOAT_MEMOF";
                             }
                             else {
@@ -1920,9 +1920,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             }
             else {
                 // Check for (tt)b where tt is a pointer; could be &local
-                SharedType tt = ((TypedExp&)u).getType();
+                SharedConstType tt = static_cast<const TypedExp &>(u).getType();
 
-                if (std::dynamic_pointer_cast<PointerType>(tt)) {
+                if (std::dynamic_pointer_cast<const PointerType>(tt)) {
 #if SYMS_IN_BACK_END
                     const char *sym = m_proc->lookupSym(Location::memOf(b));
 
@@ -2155,7 +2155,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 }
 
 
-void CCodeGenerator::appendType(QTextStream& str, SharedType typ)
+void CCodeGenerator::appendType(QTextStream& str, SharedConstType typ)
 {
     if (!typ) {
         str << "int"; // Default type for C
@@ -2173,7 +2173,7 @@ void CCodeGenerator::appendType(QTextStream& str, SharedType typ)
 }
 
 
-void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedType typ, QString ident)
+void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedConstType typ, QString ident)
 {
     if (typ == nullptr) {
         return;
@@ -2368,12 +2368,12 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
             writeBB(bb);
 
             // write the conditional header
-            SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
+            const SwitchInfo *psi = nullptr; // Init to nullptr to suppress a warning
 
             if (m_analyzer.getCondType(bb) == CondType::Case) {
                 // The CaseStatement will be in the last RTL this BB
                 RTL           *last = bb->getRTLs()->back().get();
-                CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
+                const CaseStatement *cs   = static_cast<const CaseStatement *>(last->getHlStmt());
                 psi = cs->getSwitchInfo();
 
                 // Write the switch header (i.e. "switch(var) {")
@@ -2446,11 +2446,11 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
                     Const caseVal(0);
 
                     if (psi->chForm == 'F') {                            // "Fortran" style?
-                        caseVal.setInt(((int *)psi->uTable.value())[i]); // Yes, use the table value itself
+                        caseVal.setInt((reinterpret_cast<int *>(psi->uTable.value()))[i]); // Yes, use the table value itself
                     }
                     // Note that uTable has the address of an int array
                     else {
-                        caseVal.setInt((int)(psi->iLower + i));
+                        caseVal.setInt(static_cast<int>(psi->iLower + i));
                     }
 
                     addCaseCondOption(caseVal);
@@ -2480,7 +2480,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
                     followSet.resize(followSet.size() - 1);
                 }
                 else { // remove all the nodes added to the goto set
-                    gotoSet.resize(std::max((int)gotoSet.size() - gotoTotal, 0));
+                    gotoSet.resize(std::max(static_cast<int>(gotoSet.size()) - gotoTotal, 0));
                 }
 
                 // do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
@@ -2519,7 +2519,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
                 assert(!bb->getRTLs()->empty());
                 RTL *lastRTL = bb->getRTLs()->back().get();
                 assert(!lastRTL->empty());
-                GotoStatement *gs = (GotoStatement *)lastRTL->back();
+                GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
 
                 QString     dat;
                 QTextStream ost(&dat);
@@ -2587,7 +2587,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
         break;
 
     default:
-        LOG_ERROR("Unhandled structuring type %1", (int)m_analyzer.getStructType(bb));
+        LOG_ERROR("Unhandled structuring type %1", static_cast<int>(m_analyzer.getStructType(bb)));
     }
 }
 

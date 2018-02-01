@@ -106,7 +106,7 @@ private:
      *                 is the delay slot of another delayed CTI
      * \returns true if delay instruction can be optimized away
      */
-    bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper);
+    bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper) const;
 
     /**
      * Determines if the given call and delay instruction consitute a call

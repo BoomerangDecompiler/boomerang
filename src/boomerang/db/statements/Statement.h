@@ -425,3 +425,6 @@ struct SwitchInfo
     int       iNumTable;   ///< Number of entries in the table (form H only)
     int       iOffset = 0; ///< Distance from jump to table (form R only)
 };
+
+/// Wildcard for statment search
+#define STMT_WILD (reinterpret_cast<Statement *>(-1))

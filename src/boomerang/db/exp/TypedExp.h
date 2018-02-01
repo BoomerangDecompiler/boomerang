@@ -60,7 +60,8 @@ public:
 
     /// Get and set the type
     SharedType getType()       { return m_type; }
-    const SharedType& getType() const { return m_type; }
+    SharedConstType getType() const { return m_type; }
+
     void setType(SharedType ty) { m_type = ty; }
 
     /// \copydoc Unary::polySimplify

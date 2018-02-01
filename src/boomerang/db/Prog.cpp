@@ -26,6 +26,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
@@ -73,7 +74,7 @@ Prog::Prog(const QString& name)
     : m_name(name)
     , m_defaultFrontend(nullptr)
 {
-    m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+    m_binarySymbols = static_cast<SymTab *>(Boomerang::get()->getSymbols());
     m_rootModule    = getOrInsertModule(getName());
     m_image         = Boomerang::get()->getImage();
 }
@@ -135,7 +136,7 @@ bool Prog::isWellFormed() const
     for (const auto& module : m_moduleList) {
         for (Function *func : *module) {
             if (!func->isLib()) {
-                UserProc *proc = (UserProc *)func;
+                UserProc *proc = static_cast<UserProc *>(func);
                 wellformed &= proc->getCFG()->isWellFormed();
             }
         }
@@ -153,7 +154,7 @@ void Prog::finishDecode()
                 continue;
             }
 
-            UserProc *p = (UserProc *)func;
+            UserProc *p = static_cast<UserProc *>(func);
 
             if (!p->isDecoded()) {
                 continue;
@@ -187,7 +188,7 @@ void Prog::generateRTL(Module *cluster, UserProc *proc) const
                 continue;
             }
 
-            UserProc *p = (UserProc *)func;
+            UserProc *p = static_cast<UserProc *>(func);
 
             if (!p->isDecoded()) {
                 continue;
@@ -244,7 +245,7 @@ void Prog::print(QTextStream& out) const
                 continue;
             }
 
-            UserProc *p = (UserProc *)proc;
+            const UserProc *p = static_cast<const UserProc *>(proc);
 
             if (p->isDecoded()) {
                 p->print(out);
@@ -542,7 +543,7 @@ Function *Prog::findFunction(Address entryAddr) const
         Function *proc = m->getFunction(entryAddr);
 
         if (proc != nullptr) {
-            assert(proc != (Function *)-1);
+            assert(proc != reinterpret_cast<Function *>(-1));
             return proc;
         }
     }
@@ -557,7 +558,7 @@ Function *Prog::findFunction(const QString& name) const
         Function *f = m->getFunction(name);
 
         if (f) {
-            assert(f != (Function *)-1);
+            assert(f != reinterpret_cast<Function*>(-1));
             return f;
         }
     }
@@ -566,15 +567,15 @@ Function *Prog::findFunction(const QString& name) const
 }
 
 
-LibProc *Prog::getLibraryProc(const QString& nam) const
+LibProc *Prog::getOrCreateLibraryProc(const QString& name)
 {
-    Function *p = findFunction(nam);
+    Function *existingProc = findFunction(name);
 
-    if (p && p->isLib()) {
-        return (LibProc *)p;
+    if (existingProc && existingProc->isLib()) {
+        return static_cast<LibProc *>(existingProc);
     }
 
-    return (LibProc *)m_rootModule->createFunction(nam, Address::INVALID, true);
+    return static_cast<LibProc *>(m_rootModule->createFunction(name, Address::INVALID, true));
 }
 
 
@@ -812,7 +813,7 @@ const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false *
     if (si && !si->isAddressBss(uaddr)) {
         // At this stage, only support ascii, null terminated, non unicode strings.
         // At least 4 of the first 6 chars should be printable ascii
-        char *p = (char *)(si->getHostAddr() - si->getSourceAddr() + uaddr).value();
+        char *p = reinterpret_cast<char *>((si->getHostAddr() - si->getSourceAddr() + uaddr).value());
 
         if (knownString) {
             // No need to guess... this is hopefully a known string
@@ -922,9 +923,9 @@ int Prog::readNative4(Address a) const
 
 void Prog::decodeEntryPoint(Address entryAddr)
 {
-    Function *p = (UserProc *)findFunction(entryAddr);
+    Function *func = findFunction(entryAddr);
 
-    if ((p == nullptr) || (!p->isLib() && !((UserProc *)p)->isDecoded())) {
+    if (!func || (!func->isLib() && !static_cast<UserProc *>(func)->isDecoded())) {
         if (!Util::inRange(entryAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
             LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", entryAddr);
             return;
@@ -934,33 +935,34 @@ void Prog::decodeEntryPoint(Address entryAddr)
         finishDecode();
     }
 
-    if (p == nullptr) {
-        p = findFunction(entryAddr);
+
+    if (!func) {
+        func = findFunction(entryAddr);
 
         // Chek if there is a library thunk at entryAddr
-        if (p == nullptr) {
+        if (!func) {
             Address jumpTarget = m_fileLoader->getJumpTarget(entryAddr);
 
             if (jumpTarget != Address::INVALID) {
-                p = findFunction(jumpTarget);
+                func = findFunction(jumpTarget);
             }
         }
     }
 
-    assert(p);
+    assert(func);
 
-    if (!p->isLib()) { // -sf procs marked as __nodecode are treated as library procs (?)
-        m_entryProcs.push_back((UserProc *)p);
+    if (!func->isLib()) { // -sf procs marked as __nodecode are treated as library procs (?)
+        m_entryProcs.push_back(static_cast<UserProc *>(func));
     }
 }
 
 
 void Prog::addEntryPoint(Address entryAddr)
 {
-    Function *func = (UserProc *)findFunction(entryAddr);
+    Function *func = findFunction(entryAddr);
 
     if (func && !func->isLib()) {
-        m_entryProcs.push_back((UserProc *)func);
+        m_entryProcs.push_back(static_cast<UserProc *>(func));
     }
 }
 
@@ -968,7 +970,6 @@ void Prog::addEntryPoint(Address entryAddr)
 bool Prog::isDynamicLinkedProcPointer(Address dest) const
 {
     auto sym = m_binarySymbols->find(dest);
-
     return sym && sym->isImportedFunction();
 }
 
@@ -1010,7 +1011,7 @@ void Prog::decompile()
                         continue;
                     }
 
-                    UserProc *proc = (UserProc *)pp;
+                    UserProc *proc = static_cast<UserProc *>(pp);
 
                     if (proc->isDecompiled()) {
                         continue;
@@ -1043,7 +1044,7 @@ void Prog::decompile()
                     continue;
                 }
 
-                UserProc *proc = (UserProc *)pp;
+                UserProc *proc = static_cast<UserProc *>(pp);
                 proc->printXML();
             }
         }
@@ -1071,7 +1072,7 @@ void Prog::removeUnusedGlobals()
                 continue;
             }
 
-            UserProc *proc = (UserProc *)func;
+            UserProc *proc = static_cast<UserProc *>(func);
             Location search(opGlobal, Terminal::get(opWild), proc);
             // Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
             // exist in the program representation)
@@ -1173,7 +1174,7 @@ void Prog::fromSSAForm()
                 continue;
             }
 
-            UserProc *proc = (UserProc *)pp;
+            UserProc *proc = static_cast<UserProc *>(pp);
 
             LOG_VERBOSE("===== Before transformation from SSA form for %1 ====", proc->getName());
             LOG_VERBOSE("===== End before transformation from SSA form for %1 ====", proc->getName());
@@ -1275,7 +1276,7 @@ void Prog::printCallGraph() const
 
         if (!p->isLib()) {
             n++;
-            UserProc               *u         = (UserProc *)p;
+            UserProc               *u         = static_cast<UserProc *>(p);
             std::list<Function *>& calleeList = u->getCallees();
 
             for (auto it1 = calleeList.rbegin(); it1 != calleeList.rend(); it1++) {
@@ -1312,7 +1313,7 @@ void printProcsRecursive(Function *function, int indent, QTextStream& f, std::se
         f << function->getEntryAddress();
         f << " __nodecode __incomplete void " << function->getName() << "();\n";
 
-        UserProc *proc = (UserProc *)function;
+        UserProc *proc = static_cast<UserProc *>(function);
 
         for (Function *callee : proc->getCallees()) {
             printProcsRecursive(callee, indent + 1, f, seen);
@@ -1523,7 +1524,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 
         for (unsigned int i = 0; i < c->getNumTypes(); i++) {
             Address    addr = uaddr + c->getOffsetTo(i) / 8;
-            SharedType t    = c->getType(i);
+            SharedType t    = c->getTypeAtIdx(i);
             auto       v    = readNativeAs(addr, t);
 
             if (v == nullptr) {

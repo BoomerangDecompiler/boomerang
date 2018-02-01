@@ -108,16 +108,12 @@ void LocationSet::remove(SharedExp given)
 
 void LocationSet::removeIfDefines(StatementSet& given)
 {
-    StatementSet::iterator it;
-
-    for (it = given.begin(); it != given.end(); ++it) {
-        Statement   *s = (Statement *)*it;
+    for (Statement *s : given) {
         LocationSet defs;
         s->getDefinitions(defs);
-        LocationSet::iterator dd;
 
-        for (dd = defs.begin(); dd != defs.end(); ++dd) {
-            lset.erase(*dd);
+        for (SharedExp loc : defs) {
+            lset.erase(loc);
         }
     }
 }
@@ -125,20 +121,16 @@ void LocationSet::removeIfDefines(StatementSet& given)
 
 void LocationSet::makeUnion(const LocationSet& other)
 {
-    iterator it;
-
-    for (it = other.lset.begin(); it != other.lset.end(); it++) {
-        lset.insert(*it);
+    for (const SharedExp &exp : other) {
+        lset.insert(exp);
     }
 }
 
 
 void LocationSet::makeDiff(const LocationSet& other)
 {
-    ExpSet::iterator it;
-
-    for (it = other.lset.begin(); it != other.lset.end(); it++) {
-        lset.erase(*it);
+    for (const SharedExp &exp : other) {
+        lset.erase(exp);
     }
 }
 
@@ -162,9 +154,9 @@ bool LocationSet::operator==(const LocationSet& o) const
 }
 
 
-bool LocationSet::exists(SharedExp e) const
+bool LocationSet::exists(SharedConstExp e) const
 {
-    return lset.find(e) != lset.end();
+    return lset.find(std::const_pointer_cast<Exp>(e)) != lset.end();
 }
 
 
@@ -217,7 +209,7 @@ bool LocationSet::existsImplicit(SharedExp e) const
 bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr)
 {
     assert(e);
-    auto             search = RefExp::get(e->getSubExp1()->clone(), (Statement *)-1);
+    auto             search = RefExp::get(e->getSubExp1()->clone(), STMT_WILD);
     ExpSet::iterator pos    = lset.find(search);
 
     if (pos == lset.end()) {

@@ -57,7 +57,6 @@ static int pointerCompareNest = 0;
 
 bool PointerType::operator==(const Type& other) const
 {
-    //    return other.isPointer() && (*points_to == *((PointerType&)other).points_to);
     if (!other.isPointer()) {
         return false;
     }
@@ -67,7 +66,7 @@ bool PointerType::operator==(const Type& other) const
         return true;
     }
 
-    bool ret = (*points_to == *((PointerType&)other).points_to);
+    bool ret = (*points_to == *static_cast<const PointerType &>(other).points_to);
     pointerCompareNest--;
     return ret;
 }
@@ -75,15 +74,11 @@ bool PointerType::operator==(const Type& other) const
 
 bool PointerType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
-    }
-
-    if (id > other.getId()) {
+    if (id != other.getId()) {
         return false;
     }
 
-    return(*points_to < *((PointerType&)other).points_to);
+    return *points_to < *static_cast<const PointerType &>(other).points_to;
 }
 
 
@@ -137,11 +132,11 @@ QString PointerType::getCtype(bool final) const
 SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((PointerType *)this)->shared_from_this();
+        return const_cast<PointerType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == STD_SIZE)) {
-        return ((PointerType *)this)->shared_from_this();
+        return const_cast<PointerType *>(this)->shared_from_this();
     }
 
     if (!other->resolvesToPointer()) {
@@ -173,7 +168,7 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
         }
 
         if (otherBase->isSubTypeOrEqual(thisBase)) {
-            return ((PointerType *)this)->shared_from_this();
+            return const_cast<PointerType *>(this)->shared_from_this();
         }
 
         // There may be another type that is a superset of this and other; for now return void*
@@ -190,12 +185,8 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             LOG_VERBOSE("HACK! BAD POINTER 2");
         }
 
-        if (thisBase == otherBase) {                          // Note: compare pointers
-            return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
-        }
-
-        if (*thisBase == *otherBase) {
-            return ((PointerType *)this)->shared_from_this();
+        if (thisBase == otherBase || *thisBase == *otherBase) {
+            return const_cast<PointerType *>(this)->shared_from_this();
         }
 
         if (getPointerDepth() == otherPtr->getPointerDepth()) {
@@ -208,11 +199,11 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             SharedType ofType = otherPtr->getFinalPointsTo();
 
             if (ofType->resolvesToVoid()) {
-                return ((PointerType *)this)->shared_from_this();
+                return const_cast<PointerType *>(this)->shared_from_this();
             }
 
             if (*fType == *ofType) {
-                return ((PointerType *)this)->shared_from_this();
+                return const_cast<PointerType *>(this)->shared_from_this();
             }
         }
     }
@@ -237,7 +228,7 @@ bool PointerType::isCompatible(const Type& other, bool /*all*/) const
         return other.isCompatibleWith(*this);
     }
 
-    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == STD_SIZE)) {
+    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == STD_SIZE) {
         return true;
     }
 

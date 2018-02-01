@@ -208,7 +208,7 @@ void RTL::simplify()
         s->simplify();
 
         if (s->isBranch()) {
-            SharedExp cond = ((BranchStatement *)s)->getCondExpr();
+            SharedExp cond = static_cast<BranchStatement *>(s)->getCondExpr();
 
             if (cond && (cond->getOper() == opIntConst)) {
                 if (cond->access<Const>()->getInt() == 0) {
@@ -220,12 +220,12 @@ void RTL::simplify()
                 LOG_VERBOSE("Replacing branch with true condition with goto at %1 %2",
                             getAddress(), *it);
                 BasicBlock *bb = (*it)->getBB();
-                *it = new GotoStatement(((BranchStatement *)s)->getFixedDest());
+                *it = new GotoStatement(static_cast<BranchStatement *>(s)->getFixedDest());
                 (*it)->setBB(bb);
             }
         }
         else if (s->isAssign()) {
-            SharedExp guard = ((Assign *)s)->getGuard();
+            SharedExp guard = static_cast<Assign *>(s)->getGuard();
 
             if (guard && (guard->isFalse() || (guard->isIntConst() && (guard->access<Const>()->getInt() == 0)))) {
                 // This assignment statement can be deleted

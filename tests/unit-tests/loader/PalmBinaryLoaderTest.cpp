@@ -36,7 +36,7 @@ void PalmBinaryLoaderTest::testPalmLoad()
     QVERIFY(loader != nullptr);
     IBinaryImage *image = Boomerang::get()->getImage();
 
-    QCOMPARE(image->getNumSections(), (size_t)8);
+    QCOMPARE(image->getNumSections(), static_cast<size_t>(8));
     QCOMPARE(image->getSection(0)->getName(), QString("code1"));
     QCOMPARE(image->getSection(1)->getName(), QString("MBAR1000"));
     QCOMPARE(image->getSection(2)->getName(), QString("tFRM1000"));

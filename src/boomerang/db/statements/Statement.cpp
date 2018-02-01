@@ -245,8 +245,8 @@ bool Statement::isFlagAssign() const
         return false;
     }
 
-    OPER op = ((Assign *)this)->getRight()->getOper();
-    return(op == opFlagCall);
+    OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
+    return op == opFlagCall;
 }
 
 
@@ -277,14 +277,14 @@ bool Statement::canPropagateToExp(Exp& e)
         return false;
     }
 
-    RefExp& re((RefExp&)e);
+    const RefExp &re = static_cast<const RefExp &>(e);
 
     if (re.isImplicitDef()) {
         // Can't propagate statement "-" or "0" (implicit assignments)
         return false;
     }
 
-    Statement *def = re.getDef();
+    const Statement *def = re.getDef();
 
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
@@ -298,7 +298,7 @@ bool Statement::canPropagateToExp(Exp& e)
         return false; // Only propagate ordinary assignments (so far)
     }
 
-    Assign *adef = (Assign *)def;
+    const Assign *adef = static_cast<const Assign *>(def);
 
     if (adef->getType()->isArray()) {
         // Assigning to an array, don't propagate (Could be alias problems?)
@@ -335,7 +335,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             }
 
             assert(dynamic_cast<Assignment *>(e->access<RefExp>()->getDef()) != nullptr);
-            Assignment *def = (Assignment *)(e->access<RefExp>()->getDef());
+            Assignment *def = static_cast<Assignment *>(e->access<RefExp>()->getDef());
             SharedExp  rhs  = def->getRight();
 
             // If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
@@ -378,7 +378,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                                 continue;
                             }
 
-                            SharedExp   lhsOWdef = ((Assign *)OWdef)->getLeft();
+                            SharedExp   lhsOWdef = static_cast<Assign *>(OWdef)->getLeft();
                             LocationSet OWcomps;
                             def->addUsedLocs(OWcomps);
 
@@ -584,7 +584,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
     // assert(ret);
 
     if (ret && isCall()) {
-        convert |= ((CallStatement *)this)->convertToDirect();
+        convert |= static_cast<CallStatement *>(this)->convertToDirect();
     }
 
     return ret;
@@ -597,7 +597,7 @@ bool Statement::isNullStatement() const
         return false;
     }
 
-    SharedExp right = ((Assign *)this)->getRight();
+    SharedExp right = static_cast<const Assign *>(this)->getRight();
 
     if (right->isSubscript()) {
         // Must refer to self to be null
@@ -605,7 +605,7 @@ bool Statement::isNullStatement() const
     }
     else {
         // Null if left == right
-        return *((Assign *)this)->getLeft() == *right;
+        return *static_cast<const Assign *>(this)->getLeft() == *right;
     }
 }
 
@@ -616,7 +616,7 @@ bool Statement::isFpush() const
         return false;
     }
 
-    return ((Assign *)this)->getRight()->getOper() == opFpush;
+    return static_cast<const Assign *>(this)->getRight()->getOper() == opFpush;
 }
 
 
@@ -626,7 +626,7 @@ bool Statement::isFpop() const
         return false;
     }
 
-    return ((Assign *)this)->getRight()->getOper() == opFpop;
+    return static_cast<const Assign *>(this)->getRight()->getOper() == opFpop;
 }
 
 

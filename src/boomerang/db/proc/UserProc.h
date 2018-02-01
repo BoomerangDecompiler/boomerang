@@ -210,7 +210,7 @@ public:
      */
     bool doRenameBlockVars(int pass, bool clearStacks = false);
 
-    bool canRename(SharedExp e) { return m_df.canRename(e); }
+    bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
 
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();
@@ -273,12 +273,12 @@ public:
 
     /// Is this m[sp{-} +/- K]?
     /// True if e could represent a stack local or stack param
-    bool isLocalOrParamPattern(const SharedExp& e);
+    bool isLocalOrParamPattern(SharedConstExp e) const;
 
     /// True if a local exists with name \a name
     bool existsLocal(const QString& name) const;
 
-    bool isAddressEscapedVar(const SharedExp& e) const { return m_addressEscapedVars.exists(e); }
+    bool isAddressEscapedVar(SharedConstExp e) const { return m_addressEscapedVars.exists(e); }
 
     /**
      * Find the procs the calls point to.

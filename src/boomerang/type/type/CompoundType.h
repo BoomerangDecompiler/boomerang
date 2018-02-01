@@ -44,7 +44,7 @@ public:
     size_t getNumTypes() const { return m_types.size(); }
 
     /// \returns the type of the \p idx -th member variable.
-    SharedType getType(unsigned idx);
+    SharedType getTypeAtIdx(unsigned idx);
 
     /// \returns the type of the member variable with name \p name
     SharedType getType(const QString& name);

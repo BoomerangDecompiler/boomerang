@@ -72,11 +72,13 @@ Function::~Function()
 void Function::eraseFromParent()
 {
     // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-    m_module->setLocationMap(getEntryAddress(), (Function *)-1);
+    m_module->setLocationMap(getEntryAddress(), reinterpret_cast<Function *>(-1));
+
     // Delete the cfg etc.
     m_module->getFunctionList().remove(this);
-    this->deleteCFG();
-    delete this;  // Delete ourselves
+
+    deleteCFG();
+    delete this;
 }
 
 

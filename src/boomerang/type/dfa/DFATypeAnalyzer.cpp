@@ -174,9 +174,9 @@ void DFATypeAnalyzer::visit(CallStatement* stmt, bool& visitChildren)
 
             int nt = 0;
 
-            for (StatementList::iterator aat = stmt->getArguments().begin(); aat != stmt->getArguments().end(); ++aat, ++nt) {
-                if (boundmax == stmt->getDestProc()->getSignature()->getParamName(nt)) {
-                    SharedType tyt = ((Assign *)*aat)->getType();
+            for (Statement *arg : stmt->getArguments()) {
+                if (boundmax == stmt->getDestProc()->getSignature()->getParamName(nt++)) {
+                    SharedType tyt = static_cast<const Assign *>(arg)->getType();
 
                     if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
                         tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded()) {

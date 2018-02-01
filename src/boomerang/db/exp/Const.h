@@ -75,7 +75,7 @@ public:
     QWord getLong() const { return m_value.ll; }
     double getFlt() const { return m_value.d; }
     QString getStr() const { return m_string; }
-    Address getAddr() const { return Address((Address::value_type)m_value.ll); }
+    Address getAddr() const { return Address(static_cast<Address::value_type>(m_value.ll)); }
     QString getFuncName() const;
 
     // Set the constant

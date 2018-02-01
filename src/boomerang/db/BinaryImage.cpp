@@ -49,7 +49,7 @@ Byte BinaryImage::readNative1(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return *(Byte *)host.value();
+    return *reinterpret_cast<Byte *>(host.value());
 }
 
 
@@ -62,7 +62,7 @@ SWord BinaryImage::readNative2(Address nat)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
-    return Util::readWord((const void *)host.value(), si->getEndian());
+    return Util::readWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
@@ -75,7 +75,7 @@ DWord BinaryImage::readNative4(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readDWord((const void *)host.value(), si->getEndian());
+    return Util::readDWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
@@ -88,7 +88,7 @@ QWord BinaryImage::readNative8(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readQWord((const void *)host.value(), si->getEndian());
+    return Util::readQWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
@@ -96,7 +96,7 @@ float BinaryImage::readNativeFloat4(Address nat)
 {
     DWord raw = readNative4(nat);
 
-    return *(float *)&raw; // Note: cast, not convert
+    return *reinterpret_cast<float *>(&raw); // Note: cast, not convert
 }
 
 
@@ -109,7 +109,7 @@ double BinaryImage::readNativeFloat8(Address nat)
     }
 
     QWord raw = readNative8(nat);
-    return *(double *)&raw;
+    return *reinterpret_cast<double *>(&raw);
 }
 
 
@@ -124,7 +124,7 @@ void BinaryImage::writeNative4(Address addr, uint32_t value)
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
 
-    Util::writeDWord((void *)host.value(), value, si->getEndian());
+    Util::writeDWord(reinterpret_cast<void *>(host.value()), value, si->getEndian());
 }
 
 

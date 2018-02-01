@@ -125,7 +125,7 @@ void DefCollector::makeCloneOf(const DefCollector& other)
     m_defs.clear();
 
     for (const auto& elem : other) {
-        m_defs.insert((Assign *)(elem)->clone());
+        m_defs.insert(static_cast<Assign *>(elem->clone()));
     }
 }
 

@@ -46,21 +46,24 @@ size_t FloatType::getSize() const
 
 bool FloatType::operator==(const Type& other) const
 {
-    return other.isFloat() && (size == 0 || ((FloatType&)other).size == 0 || (size == ((FloatType&)other).size));
+    if (!other.isFloat()) {
+        return false;
+    }
+    else if (size == 0 || static_cast<const FloatType &>(other).size == 0) {
+        return true;
+    }
+
+    return size == static_cast<const FloatType &>(other).size;
 }
 
 
 bool FloatType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
+    if (id != other.getId()) {
+        return id < other.getId();
     }
 
-    if (id > other.getId()) {
-        return false;
-    }
-
-    return(size < ((FloatType&)other).size);
+    return size < static_cast<const FloatType &>(other).size;
 }
 
 
@@ -104,7 +107,7 @@ QString FloatType::getTempName() const
 SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((FloatType *)this)->shared_from_this();
+        return const_cast<FloatType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToFloat() || other->resolvesToSize()) {
@@ -119,23 +122,16 @@ SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
 bool FloatType::isCompatible(const Type& other, bool /*all*/) const
 {
-    if (other.resolvesToVoid()) {
+    if (other.resolvesToVoid() || other.resolvesToFloat()) {
         return true;
     }
-
-    if (other.resolvesToFloat()) {
-        return true;
-    }
-
-    if (other.resolvesToUnion()) {
+    else if (other.resolvesToUnion()) {
         return other.isCompatibleWith(*this);
     }
-
-    if (other.resolvesToArray()) {
-        return isCompatibleWith(*((const ArrayType&)other).getBaseType());
+    else if (other.resolvesToArray()) {
+        return isCompatibleWith(*static_cast<const ArrayType &>(other).getBaseType());
     }
-
-    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == size)) {
+    else if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == size) {
         return true;
     }
 

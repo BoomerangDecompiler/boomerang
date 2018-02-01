@@ -311,14 +311,14 @@ void PhiAssign::simplify()
     }
 
     bool      onlyOneNotThis = true;
-    Statement *notthis       = (Statement *)-1;
+    Statement *notthis       = STMT_WILD;
 
     for (auto& refExp : *this) {
         if (refExp.getDef() && !refExp.getDef()->isImplicit() &&
             refExp.getDef()->isPhi() && refExp.getDef() == this) {
                 continue; // ok
         }
-        else if (notthis == (Statement *)-1) {
+        else if (notthis == STMT_WILD) {
             notthis = refExp.getDef();
         }
         else {
@@ -327,7 +327,7 @@ void PhiAssign::simplify()
         }
     }
 
-    if (onlyOneNotThis && (notthis != (Statement *)-1)) {
+    if (onlyOneNotThis && (notthis != STMT_WILD)) {
         LOG_VERBOSE("All but one not this in %1", this);
 
         convertToAssign(RefExp::get(m_lhs, notthis));

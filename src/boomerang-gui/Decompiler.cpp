@@ -102,6 +102,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         break;
 
     case Machine::UNKNOWN:
+    case Machine::INVALID:
         emit machineTypeChanged("UNKNOWN");
         break;
     }
@@ -271,7 +272,7 @@ bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
         return false;
     }
 
-    UserProc    *up = (UserProc *)p;
+    UserProc    *up = static_cast<UserProc *>(p);
     QTextStream os(&rtl);
     up->print(os, true);
     return true;
@@ -356,6 +357,6 @@ void Decompiler::getCompoundMembers(const QString& name, QTableWidget *tbl)
         tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i))));
         tbl->setItem(tbl->rowCount() - 1, 1, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i) / 8)));
         tbl->setItem(tbl->rowCount() - 1, 2, new QTableWidgetItem(c->getName(i)));
-        tbl->setItem(tbl->rowCount() - 1, 3, new QTableWidgetItem(tr("%1").arg(c->getType(i)->getSize())));
+        tbl->setItem(tbl->rowCount() - 1, 3, new QTableWidgetItem(tr("%1").arg(c->getTypeAtIdx(i)->getSize())));
     }
 }

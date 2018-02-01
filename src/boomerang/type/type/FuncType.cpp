@@ -43,25 +43,21 @@ bool FuncType::operator==(const Type& other) const
     if (!other.isFunc()) {
         return false;
     }
+    const FuncType &otherFunc = static_cast<const FuncType &>(other);
 
     // Note: some functions don't have a signature (e.g. indirect calls that have not yet been successfully analysed)
-
-    if (signature == nullptr) {
-        return ((FuncType&)other).signature == nullptr;
+    if (!signature) {
+        return otherFunc.signature == nullptr;
     }
 
-    return *signature == *((FuncType&)other).signature;
+    return *signature == *otherFunc.signature;
 }
 
 
 bool FuncType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
-    }
-
-    if (id > other.getId()) {
-        return false;
+    if (id != other.getId()) {
+        return id < other.getId();
     }
 
     // FIXME: Need to compare signatures
@@ -133,12 +129,12 @@ void FuncType::getReturnAndParam(QString& ret, QString& param)
 SharedType FuncType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((FuncType *)this)->shared_from_this();
+        return const_cast<FuncType *>(this)->shared_from_this();
     }
 
     // NOTE: at present, compares names as well as types and num parameters
     if (*this == *other) {
-        return ((FuncType *)this)->shared_from_this();
+        return const_cast<FuncType *>(this)->shared_from_this();
     }
 
     return createUnion(other, ch, bHighestPtr);
@@ -161,7 +157,7 @@ bool FuncType::isCompatible(const Type& other, bool /*all*/) const
         return other.isCompatibleWith(*this);
     }
 
-    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == STD_SIZE)) {
+    if (other.resolvesToSize() && (static_cast<const SizeType &>(other).getSize() == STD_SIZE)) {
         return true;
     }
 

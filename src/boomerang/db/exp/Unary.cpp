@@ -115,15 +115,11 @@ bool Unary::operator==(const Exp& o) const
 
 bool Unary::operator<(const Exp& o) const
 {
-    if (m_oper < o.getOper()) {
-        return true;
+    if (m_oper != static_cast<const Unary &>(o).m_oper) {
+        return m_oper < static_cast<const Unary &>(o).m_oper;
     }
 
-    if (m_oper > o.getOper()) {
-        return false;
-    }
-
-    return *subExp1 < *((const Unary&)o).getSubExp1();
+    return *subExp1 < *static_cast<const Unary &>(o).getSubExp1();
 }
 
 

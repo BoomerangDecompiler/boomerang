@@ -251,13 +251,13 @@ void MicroX86DisTest::testMicroDis1()
 {
     QString      deb;
     QTextStream  deb_str(&deb);
-    unsigned int n         = sizeof(pent_hello_text);
+    int n                  = sizeof(pent_hello_text);
     int          totalSize = 0;
-    void         *p        = pent_hello_text;
+    uint8_t      *p        = pent_hello_text;
     int          i         = 0;
 
-    while (totalSize < (int)n) {
-        int size = microX86Dis((uint8_t *)p);
+    while (totalSize < n) {
+        int size = microX86Dis(p);
 
         if (size >= 0x40) {
             deb_str << "Not handled instruction at offset "
@@ -271,18 +271,20 @@ void MicroX86DisTest::testMicroDis1()
 
         if (expected != size) {
             deb_str << "At offset " << HostAddress(p).value() - HostAddress(pent_hello_text).value() << " ("
-                    << (int)*((unsigned char *)p) << " " << (int)*((unsigned char *)p + 1) << " "
-                    << (int)*((unsigned char *)p + 2) << " " << (int)*((unsigned char *)p + 3) << " "
+                    << static_cast<int>(*(p + 0)) << " "
+                    << static_cast<int>(*(p + 1)) << " "
+                    << static_cast<int>(*(p + 2)) << " "
+                    << static_cast<int>(*(p + 3)) << " "
                     << ") expected " << expected << ", actual " << size << '\n';
             qDebug() << deb;
             QCOMPARE(size, expected);
         }
 
-        p          = (void *)((char *)p + size);
+        p         += size;
         totalSize += size;
     }
 
-    QCOMPARE(totalSize, (int)n);
+    QCOMPARE(totalSize, n);
 }
 
 

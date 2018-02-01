@@ -26,9 +26,8 @@
 
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
-#define UC(p)           ((unsigned char *)p)
-#define UINT4(p)        ((UC(p)[0] << 24) | (UC(p)[1] << 16) | (UC(p)[2] << 8) | UC(p)[3])
-#define UINT4ADDR(p)    (Address((UC(p)[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3]))
+#define UINT4(p)        Util::readDWord(p, true)
+#define UINT4ADDR(p)    Util::readDWord(p, true)
 
 
 HpSomBinaryLoader::HpSomBinaryLoader()
@@ -52,24 +51,9 @@ void HpSomBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symb
 }
 
 
-static int Read2(short *ps)
-{
-    unsigned char *p = (unsigned char *)ps;
-    // Little endian
-    int n = (int(p[0]) << 8) | p[1];
-
-    return n;
-}
-
-
 int Read4(int *pi)
 {
-    short *p = (short *)pi;
-    int   n1 = Read2(p);
-    int   n2 = Read2(p + 1);
-    int   n  = (int)((n1 << 16) | n2);
-
-    return n;
+    return Util::readDWord(pi, true);
 }
 
 
@@ -81,13 +65,13 @@ void HpSomBinaryLoader::processSymbols()
     unsigned numSym = UINT4(m_loadedImage + 0x60);
 
     HostAddress symPtr       = HostAddress(m_loadedImage) + UINT4(m_loadedImage + 0x5C);
-    const char  *symbolNames = (const char *)(m_loadedImage + (int)UINT4(m_loadedImage + 0x6C));
+    const char  *symbolNames = reinterpret_cast<const char *>(m_loadedImage + static_cast<int>(UINT4(m_loadedImage + 0x6C)));
 
 #define SYMSIZE    20 // 5 4-byte words per symbol entry
-#define SYMBOLNM(idx)     (UINT4((symPtr + idx * SYMSIZE + 4).value()))
-#define SYMBOLAUX(idx)    (UINT4((symPtr + idx * SYMSIZE + 8).value()))
-#define SYMBOLVAL(idx)    (UINT4((symPtr + idx * SYMSIZE + 16).value()))
-#define SYMBOLTY(idx)     ((UINT4((symPtr + idx * SYMSIZE).value()) >> 24) & 0x3f)
+#define SYMBOLNM(idx)     UINT4(symPtr + idx * SYMSIZE +  4)
+#define SYMBOLAUX(idx)    UINT4(symPtr + idx * SYMSIZE +  8)
+#define SYMBOLVAL(idx)    UINT4(symPtr + idx * SYMSIZE + 16)
+#define SYMBOLTY(idx)     ((UINT4(symPtr + idx * SYMSIZE) >> 24) & 0x3f)
 
     for (unsigned idx = 0; idx < numSym; idx++) {
         unsigned   symbolType  = SYMBOLTY(idx);
@@ -146,21 +130,18 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
         return false;
     }
 
-    QWord size = fp.size();
+    qint64 size = fp.size();
 
     // Allocate a buffer for the image
     m_loadedImage = new unsigned char[size];
 
     if (m_loadedImage == nullptr) {
-        LOG_ERROR("Could not allocate %1 bytes for image", size);
+        LOG_ERROR("Could not allocate %1 bytes for image", static_cast<QWord>(size));
         return false;
     }
 
-    memset(m_loadedImage, 0, size);
-
-
-    if (fp.read((char *)m_loadedImage, size) != (unsigned)size) {
-        LOG_ERROR("Error reading binary file", size);
+    if (fp.read(reinterpret_cast<char *>(m_loadedImage), size) != size) {
+        LOG_ERROR("Error reading binary file", static_cast<QWord>(size));
         return false;
     }
 
@@ -178,7 +159,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     }
 
     // Find the array of aux headers
-    unsigned *auxHeaders = (unsigned *)intptr_t(UINT4(m_loadedImage + 0x1c));
+    unsigned *auxHeaders = reinterpret_cast<unsigned *>(m_loadedImage + UINT4(m_loadedImage + 0x1c));
 
     if (auxHeaders == nullptr) {
         LOG_ERROR("Auxilliary header array is not present");
@@ -198,9 +179,8 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
             break;
         }
 
-        // Skip this one; length is at the second word. Rightshift by 2 for
-        // sizeof(unsigned).
-        auxHeaders += (UINT4((UC(auxHeaders + 1)))) >> 2;
+        // Skip this one; length is at the second word.
+        auxHeaders += UINT4(auxHeaders + 1) / sizeof(unsigned);
     }
 
     if (!found) {
@@ -215,13 +195,13 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // The DL table (Dynamic Link info?) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
     // assume that the first subspace entry points to it
-    const char   *subspaceLoc         = (const char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
+    const char   *subspaceLoc         = reinterpret_cast<const char *>(m_loadedImage) + UINT4(m_loadedImage + 0x34);
     Address      firstSubspaceFileLoc = Address(UINT4(subspaceLoc + 8));
-    const char   *dlTable             = (const char *)m_loadedImage + firstSubspaceFileLoc.value();
+    const char   *dlTable             = reinterpret_cast<const char *>(m_loadedImage) + firstSubspaceFileLoc.value();
     const char   *dlStrings           = dlTable + UINT4(dlTable + 0x28);
     unsigned     numImports           = UINT4(dlTable + 0x14); // Number of import strings
     unsigned     numExports           = UINT4(dlTable + 0x24); // Number of export strings
-    export_entry *export_list         = (export_entry *)(dlTable + UINT4(dlTable + 0x20));
+    const export_entry *export_list   = reinterpret_cast<const export_entry *>(dlTable + UINT4(dlTable + 0x20));
 
     // A convenient macro for accessing the fields (0-11) of the auxilliary header
     // Fields 0, 1 are the header (flags, aux header type, and size)
@@ -286,7 +266,8 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // u runs through import table; v through $PLT$ subspace
     // There should be a one to one correspondance between (DLT + PLT) entries and import table entries.
     // The DLT entries always come first in the import table
-    unsigned u = (unsigned)numDLT, v = 0;
+    unsigned u = static_cast<unsigned>(numDLT);
+    unsigned v = 0;
 //   plt_record *PLTs = (plt_record *)(pltStart + deltaData).value();
 
     u += numImports;
@@ -298,9 +279,11 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
         // cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
         // UINT4(&export_list[u].value) << endl;
         if (strncmp(dlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
-            Address callMainAddr = UINT4ADDR(&export_list[u].value);
+            Address callMainAddr(UINT4ADDR(&export_list[u]));
+
             // Enter the symbol "_callmain" for this address
             m_symbols->create(callMainAddr, "_callmain");
+
             // Found call to main. Extract the offset. See assemble_17
             // in pa-risc 1.1 manual page 5-9
             // +--------+--------+--------+----+------------+-+-+
@@ -312,7 +295,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
             // +----------------------+--------+-----+----------+
             //  31                  16|15    11| 10  |9        0
 
-            DWord bincall = *(DWord *)(callMainAddr.value() + deltaText);
+            DWord bincall = *reinterpret_cast<DWord *>(callMainAddr.value() + deltaText);
             int   offset  = ((((bincall & 1) << 31) >> 15) |    // w
                              ((bincall & 0x1f0000) >> 5) |      // w1
                              ((bincall & 4) << 8) |             // w2@10
@@ -334,7 +317,7 @@ int HpSomBinaryLoader::canLoad(QIODevice& dev) const
 {
     unsigned char buf[64];
 
-    dev.read((char *)buf, sizeof(buf));
+    dev.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
     if ((buf[0] == 0x02) && (buf[2] == 0x01) && ((buf[1] == 0x10) || (buf[1] == 0x0B)) &&
         ((buf[3] == 0x07) || (buf[3] == 0x08) || (buf[4] == 0x0B))) {
@@ -392,12 +375,12 @@ std::pair<Address, int> HpSomBinaryLoader::getSubspaceInfo(const char *ssname)
 {
     std::pair<Address, int> ret(Address::ZERO, 0);
     // Get the start and length of the subspace with the given name
-    subspace_dictionary_record *subSpaces = (subspace_dictionary_record *)(m_loadedImage + UINT4(m_loadedImage + 0x34));
+    subspace_dictionary_record *subSpaces = reinterpret_cast<subspace_dictionary_record *>(m_loadedImage + UINT4(m_loadedImage + 0x34));
     unsigned   numSubSpaces  = UINT4(m_loadedImage + 0x38);
-    const char *spaceStrings = (const char *)(m_loadedImage + UINT4(m_loadedImage + 0x44));
+    const char *spaceStrings = reinterpret_cast<const char *>(m_loadedImage + UINT4(m_loadedImage + 0x44));
 
     for (unsigned u = 0; u < numSubSpaces; u++) {
-        const char *thisName    = (const char *)(spaceStrings + UINT4(&subSpaces[u].name));
+        const char *thisName    = reinterpret_cast<const char *>(spaceStrings + UINT4(&subSpaces[u].name));
         unsigned   thisNameSize = UINT4(spaceStrings + UINT4(&subSpaces[u].name) - 4);
 
         // cout << "Subspace " << thisName << " starts " << hex << subSpaces[u].subspace_start << " length " <<
@@ -437,17 +420,17 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
     // The DL table (Dynamic Link info) is supposed to be at the start of
     // the $TEXT$ space, but the only way I can presently find that is to
     // assume that the first subspace entry points to it
-    const char *subspace_location     = (char *)m_loadedImage + UINT4(m_loadedImage + 0x34);
+    const char *subspace_location     = reinterpret_cast<const char *>(m_loadedImage) + UINT4(m_loadedImage + 0x34);
     Address    first_subspace_fileloc = Address(UINT4(subspace_location + 8));
-    const char *DLTable = (char *)m_loadedImage + first_subspace_fileloc.value();
+    const char *DLTable = reinterpret_cast<const char *>(m_loadedImage) + first_subspace_fileloc.value();
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned *p = (unsigned *)(UINT4(DLTable + 0x38) + m_image->getSection(1)->getHostAddr().value());
+    unsigned *p = reinterpret_cast<unsigned *>((m_image->getSection(1)->getHostAddr() + UINT4(DLTable + 0x38)).value());
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names
-    const import_entry *import_list = (import_entry *)(DLTable + UINT4(DLTable + 0x10));
+    const import_entry *import_list = reinterpret_cast<const import_entry *>(DLTable + UINT4(DLTable + 0x10));
     // Those names are in the DLT string table
     const char *dlStrings = DLTable + UINT4(DLTable + 0x28);
 

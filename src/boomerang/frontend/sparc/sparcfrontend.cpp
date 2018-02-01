@@ -46,17 +46,17 @@ void SparcFrontEnd::warnDCTcouple(Address uAt, Address uDest)
 }
 
 
-bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper)
+bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper) const
 {
     // Check that the destination is within the main test section; may not be when we speculatively decode junk
     if ((dest - 4) > uUpper) {
         return false;
     }
 
-    const DWord delay_inst       = *(DWord *)(src.value() + 4 + delta);
-    const DWord inst_before_dest = *(DWord *)(dest.value() - 4 + delta);
+    const DWord delay_inst       = *reinterpret_cast<const DWord *>(src.value() + 4 + delta);
+    const DWord inst_before_dest = *reinterpret_cast<const DWord *>(dest.value() - 4 + delta);
 
-    return(delay_inst == inst_before_dest);
+    return delay_inst == inst_before_dest;
 }
 
 
@@ -69,7 +69,7 @@ BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, const RTL *r
 
         // If the delay slot is a single assignment to %o7, we want to see the semantics for it, so that preservation
         // or otherwise of %o7 is correct
-        if ((delay->size() == 1) && delay->front()->isAssign() && ((Assign *)delay->front())->getLeft()->isRegN(15)) {
+        if ((delay->size() == 1) && delay->front()->isAssign() && static_cast<Assign *>(delay->front())->getLeft()->isRegN(15)) {
             ls->push_back(delay->front());
         }
 
@@ -141,7 +141,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
                               QTextStream& os, bool isPattern /* = false*/)
 {
     // Aliases for the call and delay RTLs
-    CallStatement *call_stmt = ((CallStatement *)inst.rtl->back());
+    CallStatement *call_stmt = static_cast<CallStatement *>(inst.rtl->back());
     RTL           *delay_rtl = delay_inst.rtl.get();
 
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or are followed by a
@@ -203,7 +203,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
         // Add this call site to the set of call sites which need to be analysed later.
         // This set will be used later to call prog.visitProc (so the proc will get decoded)
-        callList.push_back((CallStatement *)rtl->back());
+        callList.push_back(static_cast<CallStatement *>(rtl->back()));
 
         if (returnBB) {
             // Handle the call but don't add any outedges from it just yet.
@@ -342,7 +342,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
             newBB = cfg->createBB(BBType::CompJump, std::move(BB_rtls));
             BB_rtls = nullptr;
             bRet  = false;
-            SharedExp pDest = ((CaseStatement *)lastStmt)->getDest();
+            SharedExp pDest = static_cast<CaseStatement *>(lastStmt)->getDest();
 
             if (pDest == nullptr) { // Happens if already analysed (we are now redecoding)
                 // SWITCH_INFO* psi = ((CaseStatement*)lastStmt)->getSwitchInfo();
@@ -693,7 +693,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
             if (!inst.valid) {
                 ptrdiff_t delta = m_image->getTextDelta();
 
-                const Byte  *instructionData = (const Byte *)(uAddr.value() + delta);
+                const Byte  *instructionData = reinterpret_cast<const Byte *>(uAddr.value() + delta);
                 QString     instructionString;
                 QTextStream ost(&instructionString);
 
@@ -830,14 +830,14 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                         // e.g.
                         // 142c8:  40 00 5b 91          call           exit
                         // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-                        if (((SparcDecoder *)m_decoder.get())->isRestore(HostAddress(uAddr.value() + 4 + m_image->getTextDelta()))) {
+                        if (static_cast<SparcDecoder *>(m_decoder.get())->isRestore(HostAddress(uAddr.value() + 4 + m_image->getTextDelta()))) {
                             // Give the address of the call; I think that this is actually important, if faintly annoying
                             delay_inst.rtl->setAddress(uAddr);
                             BB_rtls->push_back(std::move(delay_inst.rtl));
 
                             // The restore means it is effectively followed by a return (since the resore semantics chop
                             // off one level of return address)
-                            ((CallStatement *)last)->setReturnAfterCall(true);
+                            static_cast<CallStatement *>(last)->setReturnAfterCall(true);
                             sequentialDecode = false;
                             case_CALL(uAddr, inst, nop_inst, std::move(BB_rtls), proc, callList, os, true);
                             break;
@@ -855,14 +855,14 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                         Statement *a = delay_inst.rtl->empty() ? nullptr : delay_inst.rtl->back(); // Look at last
 
                         if (a && a->isAssign()) {
-                            SharedExp lhs = ((Assign *)a)->getLeft();
+                            SharedExp lhs = static_cast<Assign *>(a)->getLeft();
 
                             if (lhs->isRegN(15)) { // %o7 is r[15]
                                 // If it's an add, this is special. Example:
                                 //     call foo
                                 //     add %o7, K, %o7
                                 // is equivalent to call foo / ba .+K
-                                SharedExp rhs = ((Assign *)a)->getRight();
+                                SharedExp rhs = static_cast<Assign *>(a)->getRight();
                                 auto      o7(Location::regOf(15));
 
                                 if ((rhs->getOper() == opPlus) && (rhs->access<Exp, 2>()->getOper() == opIntConst) &&
@@ -878,7 +878,7 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                                 else {
                                     // We assume this is some sort of move/x/call/move pattern. The overall effect is to
                                     // pop one return address, we we emit a return after this call
-                                    ((CallStatement *)last)->setReturnAfterCall(true);
+                                    static_cast<CallStatement *>(last)->setReturnAfterCall(true);
                                     sequentialDecode = false;
                                     case_CALL(uAddr, inst, delay_inst, std::move(BB_rtls), proc, callList, os, true);
                                     break;
@@ -951,12 +951,11 @@ bool SparcFrontEnd::processProc(Address uAddr, UserProc *proc, QTextStream& os, 
                                 uAddr   = uAddr + 8;
 
                                 // Add this call site to the set of call sites which need to be analyzed later.
-                                callList.push_back((CallStatement *)inst.rtl->back());
+                                callList.push_back(static_cast<CallStatement *>(inst.rtl->back()));
                             }
                             else {
                                 BasicBlock *pBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                                 assert(pBB);
-                                BB_rtls = nullptr;
                                 handleBranch(dest, m_image->getLimitTextHigh(), pBB, cfg, _targetQueue);
 
                                 // There is no fall through branch.

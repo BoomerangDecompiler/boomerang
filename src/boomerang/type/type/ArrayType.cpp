@@ -86,7 +86,7 @@ size_t ArrayType::getSize() const
 
 bool ArrayType::operator==(const Type& other) const
 {
-    return other.isArray() && *BaseType == *((ArrayType&)other).BaseType && ((ArrayType&)other).m_length == m_length;
+    return other.isArray() && *BaseType == *static_cast<const ArrayType &>(other).BaseType && static_cast<const ArrayType &>(other).m_length == m_length;
 }
 
 
@@ -100,7 +100,7 @@ bool ArrayType::operator<(const Type& other) const
         return false;
     }
 
-    return(*BaseType < *((ArrayType&)other).BaseType);
+    return(*BaseType < *static_cast<const ArrayType &>(other).BaseType);
 }
 
 
@@ -131,7 +131,7 @@ void ArrayType::fixBaseType(SharedType b)
 SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((ArrayType *)this)->shared_from_this();
+        return const_cast<ArrayType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToArray()) {
@@ -149,7 +149,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     if (*BaseType == *other) {
-        return ((ArrayType *)this)->shared_from_this();
+        return const_cast<ArrayType *>(this)->shared_from_this();
     }
 
     /*

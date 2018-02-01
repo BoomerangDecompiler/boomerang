@@ -344,13 +344,13 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
 
     // Put all the hard union logic in one place
     if (other->resolvesToUnion()) {
-        return other->meetWith(((Type *)this)->shared_from_this(), ch, bHighestPtr)->clone();
+        return other->meetWith(const_cast<Type *>(this)->shared_from_this(), ch, bHighestPtr)->clone();
     }
 
     // Check for anytype meet compound with anytype as first element
     if (other->resolvesToCompound()) {
         auto       otherComp = other->as<CompoundType>();
-        SharedType firstType = otherComp->getType((unsigned)0);
+        SharedType firstType = otherComp->getTypeAtIdx(0);
 
         if (firstType->isCompatibleWith(*this)) {
             // struct meet first element = struct

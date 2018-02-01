@@ -175,7 +175,7 @@ public:
     void print(QTextStream& out) const;
 
     /// lookup a library procedure by name; create if does not exist
-    LibProc *getLibraryProc(const QString& nam) const;
+    LibProc *getOrCreateLibraryProc(const QString& name);
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;

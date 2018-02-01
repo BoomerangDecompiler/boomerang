@@ -119,7 +119,7 @@ bool Exp::isRegOfK()
         return false;
     }
 
-    return ((Unary *)this)->getSubExp1()->getOper() == opIntConst;
+    return static_cast<const Unary *>(this)->getSubExp1()->getOper() == opIntConst;
 }
 
 
@@ -129,8 +129,8 @@ bool Exp::isRegN(int N) const
         return false;
     }
 
-    SharedConstExp sub = ((const Unary *)this)->getSubExp1();
-    return(sub->getOper() == opIntConst && std::static_pointer_cast<const Const>(sub)->getInt() == N);
+    SharedConstExp sub = static_cast<const Unary *>(this)->getSubExp1();
+    return (sub->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(sub)->getInt() == N);
 }
 
 
@@ -476,7 +476,7 @@ void Exp::printt(QTextStream& os) const
         return;
     }
 
-    SharedType t = ((TypedExp *)this)->getType();
+    SharedConstType t = static_cast<const TypedExp *>(this)->getType();
     os << "<" << t->getSize() << ">";
 }
 

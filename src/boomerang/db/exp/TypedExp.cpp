@@ -45,20 +45,20 @@ SharedExp TypedExp::clone() const
 
 bool TypedExp::operator==(const Exp& o) const
 {
-    if (((TypedExp&)o).m_oper == opWild) {
+    if (static_cast<const TypedExp &>(o).m_oper == opWild) {
         return true;
     }
 
-    if (((TypedExp&)o).m_oper != opTypedExp) {
+    if (static_cast<const TypedExp &>(o).m_oper != opTypedExp) {
         return false;
     }
 
     // This is the strict type version
-    if (*m_type != *((TypedExp&)o).m_type) {
+    if (*m_type != *static_cast<const TypedExp &>(o).m_type) {
         return false;
     }
 
-    return *((Unary *)this)->getSubExp1() == *((Unary&)o).getSubExp1();
+    return *this->getSubExp1() == *o.getSubExp1();
 }
 
 
@@ -72,7 +72,7 @@ bool TypedExp::operator<<(const Exp& o) const   // Type insensitive
         return false;
     }
 
-    return *subExp1 << *((Unary&)o).getSubExp1();
+    return *subExp1 << *o.getSubExp1();
 }
 
 
@@ -86,15 +86,15 @@ bool TypedExp::operator<(const Exp& o) const   // Type sensitive
         return false;
     }
 
-    if (*m_type < *((TypedExp&)o).m_type) {
+    if (*m_type < *static_cast<const TypedExp &>(o).m_type) {
         return true;
     }
 
-    if (*((TypedExp&)o).m_type < *m_type) {
+    if (*static_cast<const TypedExp &>(o).m_type < *m_type) {
         return false;
     }
 
-    return *subExp1 < *((Unary&)o).getSubExp1();
+    return *subExp1 < *o.getSubExp1();
 }
 
 
@@ -115,11 +115,11 @@ bool TypedExp::operator*=(const Exp& o) const
     }
 
     // This is the strict type version
-    if (*m_type != *((TypedExp *)other)->m_type) {
+    if (*m_type != *static_cast<const TypedExp *>(other)->m_type) {
         return false;
     }
 
-    return *((Unary *)this)->getSubExp1() *= *other->getSubExp1();
+    return *getSubExp1() *= *other->getSubExp1();
 }
 
 

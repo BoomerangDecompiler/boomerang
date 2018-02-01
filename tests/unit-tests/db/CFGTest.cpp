@@ -69,7 +69,7 @@ void CFGTest::testCreateBB()
     QVERIFY(bb->isType(BBType::Oneway));
     QCOMPARE(bb->getLowAddr(), Address(0x1000));
     QCOMPARE(bb->getHiAddr(),  Address(0x1000));
-    QCOMPARE(bb->getRTLs()->size(), (size_t)1);
+    QCOMPARE(bb->getRTLs()->size(), static_cast<size_t>(1));
 
     QCOMPARE(cfg->getNumBBs(), 1);
 }

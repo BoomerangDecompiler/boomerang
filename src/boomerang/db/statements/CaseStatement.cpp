@@ -38,6 +38,12 @@ SwitchInfo *CaseStatement::getSwitchInfo()
 }
 
 
+const SwitchInfo *CaseStatement::getSwitchInfo() const
+{
+    return m_switchInfo;
+}
+
+
 void CaseStatement::setSwitchInfo(SwitchInfo *psi)
 {
     m_switchInfo = psi;

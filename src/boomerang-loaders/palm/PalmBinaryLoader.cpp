@@ -24,10 +24,8 @@
 
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
-#define UC(ad)      ((unsigned char *)ad)
-#define UINT4(p)    ((UC((p))[0] << 24) + (UC(p)[1] << 16) + (UC(p)[2] << 8) + UC(p)[3])
-#define UINT4ADDR(p) \
-    ((UC((p).value())[0] << 24) + (UC((p).value())[1] << 16) + (UC((p).value())[2] << 8) + UC((p).value())[3])
+#define UINT4(p)        Util::readDWord(p, true)
+#define UINT4ADDR(p)    Util::readDWord(reinterpret_cast<const void *>((p).value()), true)
 
 
 PalmBinaryLoader::PalmBinaryLoader()
@@ -65,13 +63,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 {
     long size = img.size();
 
-    m_image = (uint8_t *)img.data();
+    m_image = reinterpret_cast<uint8_t *>(img.data());
 
     // Check type at offset 0x3C; should be "appl" (or "palm"; ugh!)
-    if ((strncmp((char *)(m_image + 0x3C), "appl", 4) != 0) && (strncmp((char *)(m_image + 0x3C), "panl", 4) != 0) &&
-        (strncmp((char *)(m_image + 0x3C), "libr", 4) != 0)) {
-        LOG_ERROR("This is not a standard .prc file");
-        return false;
+    if ((strncmp(img.data() + 0x3C, "appl", 4) != 0) &&
+        (strncmp(img.data() + 0x3C, "panl", 4) != 0) &&
+        (strncmp(img.data() + 0x3C, "libr", 4) != 0)) {
+            LOG_ERROR("This is not a standard .prc file");
+            return false;
     }
 
     addTrapSymbols();
@@ -87,7 +86,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     for (unsigned i = 0; i < numSections; i++) {
         // Now get the identifier (2 byte binary)
         unsigned   id = (p[4] << 8) + p[5];
-        QByteArray qba((char *)p, 4);
+        QByteArray qba(reinterpret_cast<char *>(p), 4);
         // First the name (4 alphanumeric characters from p to p+3)
         // Join the id to the name, e.g. code0, data12
         QString name = QString("%1%2").arg(QString(qba)).arg(id);
@@ -155,13 +154,13 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     // Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-    p = (unsigned char *)(dataSection->getHostAddr() + 4).value();
-    int start = (int)UINT4(p);
+    p = reinterpret_cast<unsigned char *>((dataSection->getHostAddr() + 4).value());
+    int start = static_cast<int>(UINT4(p));
     p += 4;
     unsigned char *q   = (m_data + m_sizeBelowA5 + start);
     bool          done = false;
 
-    while (!done && (p < (unsigned char *)(dataSection->getHostAddr() + dataSection->getSize()).value())) {
+    while (!done && (p < reinterpret_cast<unsigned char *>((dataSection->getHostAddr() + dataSection->getSize()).value()))) {
         unsigned char rle = *p++;
 
         if (rle == 0) {
@@ -253,7 +252,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     LOG_VERBOSE("Used %1 bytes of %2 in decompressing data section",
-                p - (unsigned char *)dataSection->getHostAddr().value(), dataSection->getSize());
+                p - reinterpret_cast<unsigned char *>(dataSection->getHostAddr().value(), dataSection->getSize()));
 
     // Replace the data pointer and size with the uncompressed versions
 
@@ -270,7 +269,7 @@ int PalmBinaryLoader::canLoad(QIODevice& dev) const
 {
     unsigned char buf[64];
 
-    dev.read((char *)buf, sizeof(buf));
+    dev.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
     if (TESTMAGIC4(buf, 0x3C, 'a', 'p', 'p', 'l') || TESTMAGIC4(buf, 0x3C, 'p', 'a', 'n', 'l')) {
         /* PRC Palm-pilot binary */
@@ -313,7 +312,7 @@ Machine PalmBinaryLoader::getMachine() const
 
 bool PalmBinaryLoader::isLibrary() const
 {
-    return(strncmp((char *)(m_image + 0x3C), "libr", 4) == 0);
+    return(strncmp(reinterpret_cast<char *>(m_image + 0x3C), "libr", 4) == 0);
 }
 
 
@@ -453,8 +452,8 @@ Address PalmBinaryLoader::getMainEntryPoint()
     }
 
     // Return the start of the code1 section
-    uint16_t *startCode = (uint16_t *)psect->getHostAddr().value();
-    int      delta      = (psect->getHostAddr() - psect->getSourceAddr()).value();
+    SWord *startCode = reinterpret_cast<SWord *>(psect->getHostAddr().value());
+    int      delta   = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
     // First try the CW first jump pattern
     const SWord *res = findPattern(startCode, 1, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord));
@@ -462,7 +461,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
     if (res) {
         // We have the code warrior first jump. Get the addil operand
         const int addilOp      = Util::readDWord((startCode + 5), true);
-        SWord     *startupCode = (SWord *)(HostAddress(startCode) + 10 + addilOp).value();
+        SWord     *startupCode = reinterpret_cast<SWord *>((HostAddress(startCode) + 10 + addilOp).value());
         // Now check the next 60 SWords for the call to PilotMain
         res = findPattern(startupCode, 60, CWCallMain, sizeof(CWCallMain) / sizeof(SWord));
 
@@ -471,7 +470,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
             const int _addilOp = Util::readDWord((res + 5), true);
 
             // That operand plus the address of that operand is PilotMain
-            Address offset_loc = Address((Byte *)res - (Byte *)startCode + 5);
+            Address offset_loc = Address(reinterpret_cast<const Byte *>(res) - reinterpret_cast<const Byte *>(startCode) + 5);
             return offset_loc + _addilOp; // ADDRESS::host_ptr(res) + 10 + addilOp - delta;
         }
         else {
@@ -517,7 +516,7 @@ void PalmBinaryLoader::generateBinFiles(const QString& path) const
             return;
         }
 
-        fwrite((void *)psect.getHostAddr().value(), psect.getSize(), 1, f);
+        fwrite(psect.getHostAddr(), psect.getSize(), 1, f);
         fclose(f);
     }
 }

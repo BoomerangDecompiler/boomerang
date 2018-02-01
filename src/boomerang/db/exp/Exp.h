@@ -37,6 +37,7 @@ typedef std::unique_ptr<Exp>         UniqExp;
 typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::shared_ptr<const Exp>   SharedConstExp;
 typedef std::shared_ptr<Type>        SharedType;
+typedef std::shared_ptr<const Type>   SharedConstType;
 
 
 /**

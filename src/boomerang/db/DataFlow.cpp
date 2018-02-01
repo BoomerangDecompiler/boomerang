@@ -223,30 +223,18 @@ void DataFlow::computeDF(int n)
 }
 
 
-bool DataFlow::canRename(SharedExp e)
+bool DataFlow::canRename(SharedConstExp e) const
 {
     if (e->isSubscript()) {
         e = e->getSubExp1(); // Look inside refs
     }
 
-    if (e->isRegOf()) {
-        return true; // Always rename registers
-    }
-
-    if (e->isTemp()) {
-        return true; // Always rename temps (always want to propagate away)
-    }
-
-    if (e->isFlags()) {
-        return true; // Always rename flags
-    }
-
-    if (e->isMainFlag()) {
-        return true; // Always rename individual flags like %CF
-    }
-
-    if (e->isLocal()) {
-        return true; // Rename hard locals in the post fromSSA pass
+    if (e->isRegOf()    ||  // Always rename registers
+        e->isTemp()     ||  // Always rename temps (always want to propagate away)
+        e->isFlags()    ||  // Always rename flags
+        e->isMainFlag() ||  // Always rename individual flags like %CF
+        e->isLocal()) {     // Rename hard locals in the post fromSSA pass
+            return true;
     }
 
     if (!e->isMemOf()) {
@@ -335,7 +323,7 @@ bool DataFlow::placePhiFunctions()
             LocationSet locationSet;
             s->getDefinitions(locationSet);
 
-            if (s->isCall() && ((CallStatement *)s)->isChildless()) { // If this is a childless call
+            if (s->isCall() && static_cast<const CallStatement *>(s)->isChildless()) { // If this is a childless call
                 m_defallsites.insert(n);                              // then this block defines every variable
             }
 
@@ -434,7 +422,7 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
             LocationSet locs;
 
             if (S->isPhi()) {
-                PhiAssign *pa     = (PhiAssign *)S;
+                PhiAssign *pa     = static_cast<PhiAssign *>(S);
                 SharedExp phiLeft = pa->getLeft();
 
                 if (phiLeft->isMemOf() || phiLeft->isRegOf()) {
@@ -447,7 +435,7 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
                     Statement *def = pp.getDef();
 
                     if (def && def->isCall()) {
-                        ((CallStatement *)def)->useBeforeDefine(phiLeft->clone());
+                        static_cast<CallStatement *>(def)->useBeforeDefine(phiLeft->clone());
                     }
                 }
             }
@@ -476,7 +464,7 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
 
                     if (def && def->isCall()) {
                         // Calls have UseCollectors for locations that are used before definition at the call
-                        ((CallStatement *)def)->useBeforeDefine(base->clone());
+                        static_cast<CallStatement *>(def)->useBeforeDefine(base->clone());
                         continue;
                     }
 
@@ -506,14 +494,14 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
 
                 if (def && def->isCall()) {
                     // Calls have UseCollectors for locations that are used before definition at the call
-                    ((CallStatement *)def)->useBeforeDefine(x->clone());
+                    static_cast<CallStatement *>(def)->useBeforeDefine(x->clone());
                 }
 
                 // Replace the use of x with x{def} in S
                 changed = true;
 
                 if (S->isPhi()) {
-                    SharedExp phiLeft = ((PhiAssign *)S)->getLeft();
+                    SharedExp phiLeft = static_cast<PhiAssign *>(S)->getLeft();
                     phiLeft->setSubExp1(phiLeft->getSubExp1()->expSubscriptVar(x, def));
                 }
                 else {
@@ -528,10 +516,10 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
             DefCollector *col;
 
             if (S->isCall()) {
-                col = ((CallStatement *)S)->getDefCollector();
+                col = static_cast<CallStatement *>(S)->getDefCollector();
             }
             else {
-                col = ((ReturnStatement *)S)->getCollector();
+                col = static_cast<ReturnStatement *>(S)->getCollector();
             }
 
             col->updateDefs(m_Stacks, m_proc);
@@ -576,7 +564,7 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
 
         // Special processing for define-alls (presently, only childless calls).
         // But note that only 'everythings' at the current memory level are defined!
-        if (S->isCall() && ((CallStatement *)S)->isChildless() && !SETTING(assumeABI)) {
+        if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless() && !SETTING(assumeABI)) {
             // S is a childless call (and we're not assuming ABI compliance)
             m_Stacks[defineAll];          // Ensure that there is an entry for defineAll
 
@@ -659,7 +647,7 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
         }
 
         // Pop all defs due to childless calls
-        if (S->isCall() && ((CallStatement *)S)->isChildless()) {
+        if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless()) {
             for (auto sss = m_Stacks.begin(); sss != m_Stacks.end(); ++sss) {
                 if (!sss->second.empty() && (sss->second.back() == S)) {
                     sss->second.pop_back();
@@ -780,7 +768,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {
             // For each phi parameter, insert an entry into usedByDomPhi0
-            PhiAssign           *pa = (PhiAssign *)S;
+            PhiAssign           *pa = static_cast<PhiAssign *>(S);
 
             for (RefExp& exp : *pa) {
                 if (exp.getSubExp1()) {

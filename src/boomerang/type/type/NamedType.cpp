@@ -46,7 +46,7 @@ size_t NamedType::getSize() const
 
 bool NamedType::operator==(const Type& other) const
 {
-    return other.isNamed() && (name == ((NamedType&)other).name);
+    return other.isNamed() && name == static_cast<const NamedType &>(other).name;
 }
 
 
@@ -64,11 +64,11 @@ SharedType NamedType::resolvesTo() const
 
 bool NamedType::operator<(const Type& other) const
 {
-    if (id > other.getId()) {
-        return false;
+    if (id != other.getId()) {
+        return id < other.getId();
     }
 
-    return id < other.getId() || (name < ((NamedType&)other).name);
+    return name < static_cast<const NamedType &>(other).name;
 }
 
 
@@ -86,18 +86,18 @@ SharedType NamedType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
         SharedType ret = rt->meetWith(other, ch, bHighestPtr);
 
         if (ret == rt) { // Retain the named type, much better than some compound type
-            return ((NamedType *)this)->shared_from_this();
+            return const_cast<NamedType *>(this)->shared_from_this();
         }
 
         return ret;              // Otherwise, whatever the result is
     }
 
     if (other->resolvesToVoid()) {
-        return ((NamedType *)this)->shared_from_this();
+        return const_cast<NamedType *>(this)->shared_from_this();
     }
 
     if (*this == *other) {
-        return ((NamedType *)this)->shared_from_this();
+        return const_cast<NamedType *>(this)->shared_from_this();
     }
 
     return createUnion(other, ch, bHighestPtr);
@@ -106,7 +106,7 @@ SharedType NamedType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
 bool NamedType::isCompatible(const Type& other, bool /*all*/) const
 {
-    if (other.isNamed() && (name == ((const NamedType&)other).getName())) {
+    if (other.isNamed() && (name == static_cast<const NamedType &>(other).getName())) {
         return true;
     }
 
@@ -120,5 +120,5 @@ bool NamedType::isCompatible(const Type& other, bool /*all*/) const
         return true;
     }
 
-    return(*this == other);
+    return *this == other;
 }

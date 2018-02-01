@@ -87,7 +87,7 @@ ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
     }
     else if (call->getCalleeReturn() != nullptr) {
         src          = SRC_CALLEE;
-        calleeParams = &((UserProc *)procDest)->getParameters();
+        calleeParams = &static_cast<UserProc *>(procDest)->getParameters();
         pp           = calleeParams->begin();
     }
     else {
@@ -136,7 +136,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
             return nullptr;
         }
 
-        s = ((Assignment *)*pp++)->getLeft()->clone();
+        s = static_cast<Assignment *>(*pp++)->getLeft()->clone();
         s->removeSubscripts(allZero);
         call->localiseComp(s);     // Localise the components. Has the effect of translating into
         // the contect of this caller
@@ -149,7 +149,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
         }
 
         // Give the location, i.e. the left hand side of the assignment
-        return ((Assign *)*cc++)->getLeft();
+        return static_cast<Assign *>(*cc++)->getLeft();
     }
 
     return nullptr;     // Suppress warning
@@ -160,8 +160,7 @@ SharedExp ArgSourceProvider::localise(SharedExp e)
 {
     if (src == SRC_COL) {
         // Provide the RHS of the current assignment
-        SharedExp ret = ((Assign *)*--cc)->getRight();
-        ++cc;
+        SharedExp ret = static_cast<Assign *>(*std::prev(cc))->getRight();
         return ret;
     }
 
@@ -181,16 +180,14 @@ SharedType ArgSourceProvider::curType(SharedExp e)
 
     case SRC_CALLEE:
         {
-            SharedType ty = ((Assignment *)*--pp)->getType();
-            pp++;
+            SharedType ty = static_cast<Assignment *>(*std::prev(pp))->getType();
             return ty;
         }
 
     case SRC_COL:
         {
             // Mostly, there won't be a type here, I would think...
-            SharedType ty = (*--cc)->getType();
-            ++cc;
+            SharedType ty = (*std::prev(cc))->getType();
             return ty;
         }
     }
@@ -227,7 +224,7 @@ bool ArgSourceProvider::exists(SharedExp e)
     case SRC_CALLEE:
 
         for (pp = calleeParams->begin(); pp != calleeParams->end(); ++pp) {
-            SharedExp par = ((Assignment *)*pp)->getLeft()->clone();
+            SharedExp par = static_cast<Assignment *>(*pp)->getLeft()->clone();
             par->removeSubscripts(allZero);
             call->localiseComp(par);
 
@@ -486,7 +483,7 @@ void CallStatement::print(QTextStream& os, bool html) const
 
         for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr) {
             assert((*rr)->isAssignment());
-            Assignment *as = (Assignment *)*rr;
+            Assignment *as = static_cast<Assignment *>(*rr);
 
             if (first) {
                 first = false;
@@ -636,6 +633,12 @@ Function *CallStatement::getDestProc()
 }
 
 
+const Function *CallStatement::getDestProc() const
+{
+    return m_procDest;
+}
+
+
 void CallStatement::setDestProc(Function *dest)
 {
     assert(dest);
@@ -735,7 +738,7 @@ bool CallStatement::usesExp(const Exp& e) const
 void CallStatement::getDefinitions(LocationSet& defs) const
 {
     for (auto dd = m_defines.begin(); dd != m_defines.end(); ++dd) {
-        defs.insert(((Assignment *)*dd)->getLeft());
+        defs.insert(static_cast<Assignment *>(*dd)->getLeft());
     }
 
     // Childless calls are supposed to define everything.
@@ -1109,7 +1112,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
         if (def->isAssign()) {
             // This would be unusual; propagation would normally take care of this
-            SharedExp rhs = ((Assign *)def)->getRight();
+            SharedExp rhs = static_cast<Assign *>(def)->getRight();
 
             if ((rhs == nullptr) || !rhs->isStrConst()) {
                 return false;
@@ -1119,7 +1122,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         }
         else if (def->isPhi()) {
             // More likely. Example: switch_gcc. Only need ONE candidate format string
-            PhiAssign *pa = (PhiAssign *)def;
+            PhiAssign *pa = static_cast<PhiAssign *>(def);
 
             for (auto& v : *pa) {
                 def = v.getDef();
@@ -1128,7 +1131,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
                     continue;
                 }
 
-                SharedExp rhs = ((Assign *)def)->getRight();
+                SharedExp rhs = static_cast<Assign *>(def)->getRight();
 
                 if (!rhs || !rhs->isStrConst()) {
                     continue;
@@ -1329,7 +1332,7 @@ bool CallStatement::isDefinition() const
 bool CallStatement::definesLoc(SharedExp loc) const
 {
     for (auto dd = m_defines.begin(); dd != m_defines.end(); ++dd) {
-        SharedExp lhs = ((Assign *)*dd)->getLeft();
+        SharedExp lhs = static_cast<Assign *>(*dd)->getLeft();
 
         if (*lhs == *loc) {
             return true;
@@ -1369,10 +1372,10 @@ void CallStatement::updateDefines()
     m_defines.clear();
 
     if (m_procDest && m_calleeReturn) {
-        StatementList& modifieds = ((UserProc *)m_procDest)->getModifieds();
+        StatementList& modifieds = static_cast<UserProc *>(m_procDest)->getModifieds();
 
         for (Statement *mm : modifieds) {
-            Assignment *as = (Assignment *)mm;
+            Assignment *as = static_cast<Assignment *>(mm);
             SharedExp  loc = as->getLeft();
 
             if (m_proc->filterReturns(loc)) {
@@ -1408,7 +1411,7 @@ void CallStatement::updateDefines()
 
     for (StatementList::reverse_iterator it = oldDefines.rbegin(); it != oldDefines.rend(); ++it) {
         // Make sure the LHS is still in the return or collector
-        Assignment *as = (Assignment *)*it;
+        Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();
 
         if (m_calleeReturn) {
@@ -1431,7 +1434,7 @@ void CallStatement::updateDefines()
         bool inserted = false;
 
         for (StatementList::iterator nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assignment *)*nn)) {     // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {     // If the new assignment is less than the current one
                 nn       = m_defines.insert(nn, as);               // then insert before this position
                 inserted = true;
                 break;
@@ -1526,7 +1529,7 @@ void CallStatement::updateArguments()
 
     for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend(); ++it) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
-        Assign    *as = (Assign *)*it;
+        Assign    *as = static_cast<Assign *>(*it);
         SharedExp lhs = as->getLeft();
 
         if (!asp.exists(lhs)) {
@@ -1544,7 +1547,7 @@ void CallStatement::updateArguments()
         bool inserted = false;
 
         for (StatementList::iterator nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
-            if (sig->argumentCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
+            if (sig->argumentCompare(*as, *static_cast<Assign *>(*nn))) {     // If the new assignment is less than the current one
                 m_arguments.insert(nn, as);           // then insert before this position
                 inserted = true;
                 break;
@@ -1568,7 +1571,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
         SharedExp rsp = Location::regOf(m_proc->getSignature()->getStackRegister(m_proc->getProg()));
 
         for (Statement *dd : m_defines) {
-            SharedExp lhs = ((Assignment *)dd)->getLeft();
+            SharedExp lhs = static_cast<Assignment *>(dd)->getLeft();
 
             // The stack pointer is allowed as a define, so remove it here as a special case non result
             if (*lhs == *rsp) {
@@ -1599,12 +1602,12 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
                 continue;                                          // Ignore the stack pointer
             }
 
-            ImplicitAssign *as      = new ImplicitAssign(loc);     // Create an implicit assignment
+            ImplicitAssign *as      = new ImplicitAssign(loc);
             bool           inserted = false;
 
             for (nn = result->begin(); nn != result->end(); ++nn) {
                 // If the new assignment is less than the current one,
-                if (sig->returnCompare(*as, *(Assignment *)*nn)) {
+                if (sig->returnCompare(*as, static_cast<const Assignment &>(**nn))) {
                     nn       = result->insert(nn, as);     // then insert before this position
                     inserted = true;
                     break;
@@ -1624,7 +1627,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
 void CallStatement::removeDefine(SharedExp e)
 {
     for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        Assignment *as = ((Assignment *)*ss);
+        Assignment *as = static_cast<Assignment *>(*ss);
 
         if (*as->getLeft() == *e) {
             delete *ss;
@@ -1647,7 +1650,7 @@ bool CallStatement::isChildless() const
     }
 
     // Early in the decompile process, recursive calls are treated as childless, so they use and define all
-    if (((UserProc *)m_procDest)->isEarlyRecursive()) {
+    if (static_cast<UserProc *>(m_procDest)->isEarlyRecursive()) {
         return true;
     }
 
@@ -1684,7 +1687,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
         // if (procDest->isLocal(base))                    // ICK! Need to prove locals and parameters through
         // calls...
         // FIXME: temporary HACK! Ignores alias issues.
-        if (!m_procDest->isLib() && ((UserProc *)m_procDest)->isLocalOrParamPattern(base)) {
+        if (!m_procDest->isLib() && static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
             SharedExp ret = localiseExp(base->clone());     // Assume that it is proved as preserved
             ch = true;
 
@@ -1723,7 +1726,7 @@ void CallStatement::eliminateDuplicateArgs()
     LocationSet ls;
 
     for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end();) {
-        SharedExp lhs = ((Assignment *)*it)->getLeft();
+        SharedExp lhs = static_cast<const Assignment *>(*it)->getLeft();
 
         if (ls.exists(lhs)) {
             // This is a duplicate

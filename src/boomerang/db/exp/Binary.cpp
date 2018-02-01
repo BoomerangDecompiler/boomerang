@@ -135,15 +135,15 @@ bool Binary::operator==(const Exp& o) const
         return false;
     }
 
-    if (m_oper != ((Binary&)o).m_oper) {
+    if (m_oper != static_cast<const Binary &>(o).m_oper) {
         return false;
     }
 
-    if (!(*subExp1 == *((Binary&)o).getSubExp1())) {
+    if (!(*subExp1 == *static_cast<const Binary &>(o).getSubExp1())) {
         return false;
     }
 
-    return *subExp2 == *((Binary&)o).getSubExp2();
+    return *subExp2 == *static_cast<const Binary &>(o).getSubExp2();
 }
 
 
@@ -159,15 +159,15 @@ bool Binary::operator<(const Exp& o) const
         return false;
     }
 
-    if (*subExp1 < *((Binary&)o).getSubExp1()) {
+    if (*subExp1 < *static_cast<const Binary &>(o).getSubExp1()) {
         return true;
     }
 
-    if (*((Binary&)o).getSubExp1() < *subExp1) {
+    if (*static_cast<const Binary &>(o).getSubExp1() < *subExp1) {
         return false;
     }
 
-    return *subExp2 < *((Binary&)o).getSubExp2();
+    return *subExp2 < *static_cast<const Binary &>(o).getSubExp2();
 }
 
 
@@ -694,7 +694,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opDiv:
-            k1 = (int)((unsigned)k1 / (unsigned)k2);
+            k1 = static_cast<int>(static_cast<unsigned>(k1) / static_cast<unsigned>(k2));
             break;
 
         case opDivs:
@@ -702,7 +702,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opMod:
-            k1 = (int)((unsigned)k1 % (unsigned)k2);
+            k1 = static_cast<int>(static_cast<unsigned>(k1) % static_cast<unsigned>(k2));
             break;
 
         case opMods:
@@ -710,7 +710,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opMult:
-            k1 = (int)((unsigned)k1 * (unsigned)k2);
+            k1 = static_cast<int>(static_cast<unsigned>(k1) * static_cast<unsigned>(k2));
             break;
 
         case opMults:
@@ -773,19 +773,19 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opLessUns:
-            k1 = ((unsigned)k1 < (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) < static_cast<unsigned>(k2);
             break;
 
         case opGtrUns:
-            k1 = ((unsigned)k1 > (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) > static_cast<unsigned>(k2);
             break;
 
         case opLessEqUns:
-            k1 = ((unsigned)k1 <= (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) <= static_cast<unsigned>(k2);
             break;
 
         case opGtrEqUns:
-            k1 = ((unsigned)k1 >= (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) >= static_cast<unsigned>(k2);
             break;
 
         default:
@@ -1188,7 +1188,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     }
 
     if ((m_oper == opPlus) && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() && (opSub2 == opIntConst)) {
-        unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
+        unsigned n = std::static_pointer_cast<const Const>(subExp2)->getInt();
         std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
         res = convertFromOffsetToCompound(subExp1, c, n);
 

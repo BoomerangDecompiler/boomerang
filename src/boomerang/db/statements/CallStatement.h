@@ -154,6 +154,7 @@ public:
 
     /// \returns the function that is called by this call statement.
     Function *getDestProc();
+    const Function *getDestProc() const;
 
     /// \copydoc GotoStatement::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;

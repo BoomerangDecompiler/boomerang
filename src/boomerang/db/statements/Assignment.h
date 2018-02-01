@@ -62,8 +62,7 @@ public:
     virtual bool definesLoc(SharedExp loc) const override;
 
     /// \returns the expression defining the left hand side of the assignment
-    virtual SharedExp getLeft();
-    virtual const SharedExp& getLeft() const;
+    virtual SharedExp getLeft() const;
 
     /// Update the left hand side of the assignment
     void setLeft(SharedExp e);

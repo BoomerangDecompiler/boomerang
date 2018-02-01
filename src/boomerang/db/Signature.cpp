@@ -492,7 +492,7 @@ void CallingConvention::Win32Signature::addParameter(SharedType type, const QStr
 
 SharedExp CallingConvention::Win32Signature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -509,7 +509,7 @@ SharedExp CallingConvention::Win32Signature::getArgumentExp(int n) const
 
 SharedExp CallingConvention::Win32TcSignature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -767,7 +767,7 @@ void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, co
 
 SharedExp CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -907,7 +907,7 @@ std::shared_ptr<Signature> CallingConvention::StdC::PPCSignature::clone() const
 
 SharedExp CallingConvention::StdC::PPCSignature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -1036,7 +1036,7 @@ bool CallingConvention::StdC::ST20Signature::operator==(const Signature& other) 
 
 SharedExp CallingConvention::StdC::ST20Signature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -1295,7 +1295,7 @@ void CallingConvention::StdC::MIPSSignature::addReturn(SharedType type, SharedEx
 
 SharedExp CallingConvention::StdC::MIPSSignature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -1311,7 +1311,7 @@ SharedExp CallingConvention::StdC::MIPSSignature::getArgumentExp(int n) const
                                         Const::get(4 * 4 + (n - 4) * 4)));
     }
     else {
-        e = Location::regOf((int)(8 + n));
+        e = Location::regOf(static_cast<int>(8 + n));
     }
 
     return e;
@@ -1393,7 +1393,7 @@ void CallingConvention::StdC::SparcSignature::addParameter(SharedType type, cons
 
 SharedExp CallingConvention::StdC::SparcSignature::getArgumentExp(int n) const
 {
-    if (n < (int)m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
     }
 
@@ -1753,7 +1753,7 @@ const QString& Signature::getParamName(size_t n) const
 
 SharedExp Signature::getParamExp(int n) const
 {
-    assert(n < (int)m_params.size());
+    assert(n < static_cast<int>(m_params.size()));
     return m_params[n]->getExp();
 }
 
@@ -1762,7 +1762,7 @@ SharedType Signature::getParamType(int n) const
 {
     // assert(n < (int)params.size() || ellipsis);
     // With recursion, parameters not set yet. Hack for now:
-    if (n >= (int)m_params.size()) {
+    if (n >= static_cast<int>(m_params.size())) {
         return nullptr;
     }
 
@@ -1772,7 +1772,7 @@ SharedType Signature::getParamType(int n) const
 
 QString Signature::getParamBoundMax(int n) const
 {
-    if (n >= (int)m_params.size()) {
+    if (n >= static_cast<int>(m_params.size())) {
         return QString::null;
     }
 
@@ -1869,7 +1869,7 @@ int Signature::findReturn(SharedExp e) const
 {
     for (unsigned i = 0; i < getNumReturns(); i++) {
         if (*m_returns[i]->getExp() == *e) {
-            return (int)i;
+            return static_cast<int>(i);
         }
     }
 
@@ -2080,7 +2080,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
         }
 
     default:
-        LOG_FATAL("Machine %1 not handled", (int)mach);
+        LOG_FATAL("Machine %1 not handled", static_cast<int>(mach));
     }
 
     return nullptr;
@@ -2200,16 +2200,16 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
     case Machine::PENTIUM:
         {
             StatementList *sl = new StatementList;
-            sl->append((Statement *)&pent1ret);
-            sl->append((Statement *)&pent2ret);
+            sl->append(&pent1ret);
+            sl->append(&pent2ret);
             return *sl;
         }
 
     case Machine::ST20:
         {
             StatementList *sl = new StatementList;
-            sl->append((Statement *)&st20_1ret);
-            sl->append((Statement *)&st20_2ret);
+            sl->append(&st20_1ret);
+            sl->append(&st20_2ret);
             return *sl;
         }
 

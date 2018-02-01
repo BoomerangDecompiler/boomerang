@@ -362,7 +362,7 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
         SharedExp ss;
 
         if (rt->isAssign()) {
-            Assign    *rt_asgn((Assign *)rt);
+            Assign    *rt_asgn = static_cast<Assign *>(rt);
             SharedExp lhs = rt_asgn->getLeft();
             SharedExp rhs = rt_asgn->getRight();
 
@@ -400,7 +400,7 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
             ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), Terminal::get(opNil)));
         }
         else if (rt->isFlagAssign()) {
-            Assign *rt_asgn = (Assign *)rt;
+            Assign *rt_asgn = static_cast<Assign *>(rt);
             // Exp *lhs = rt_asgn->getLeft();
             auto rhs = rt_asgn->getRight();
             // An opFlagCall is assumed to be a Binary with a string and an opList of parameters

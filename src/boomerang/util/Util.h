@@ -154,7 +154,7 @@ TgtType signExtend(const SrcType& src, size_t numSrcBits = 8 *sizeof(SrcType))
 
     // size difference, in bits
     const int sizeDifference = 8 * sizeof(TgtType) - numSrcBits;
-    return ((TgtType)((TgtType)src << sizeDifference)) >> sizeDifference;
+    return (static_cast<TgtType>(static_cast<TgtType>(src) << sizeDifference)) >> sizeDifference;
 }
 }
 
@@ -164,4 +164,4 @@ extern char debug_buffer[DEBUG_BUFSIZE];
 
 /// Given a pointer p, returns the 16 bits (halfword) in the two bytes
 /// starting at p.
-#define LH(p)    ((int)((Byte *)(p))[0] + ((int)((Byte *)(p))[1] << 8))
+#define LH(p) Util::readWord(reinterpret_cast<const void *>(p), false)

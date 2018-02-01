@@ -161,9 +161,9 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 
     time_t end;
     time(&end);
-    int hours = (int)((end - start) / 60 / 60);
-    int mins  = (int)((end - start) / 60 - hours * 60);
-    int secs  = (int)((end - start) - (hours * 60 * 60) - (mins * 60));
+    int hours = static_cast<int>((end - start) / 60 / 60);
+    int mins  = static_cast<int>((end - start) / 60 - hours * 60);
+    int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
 
     LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
 

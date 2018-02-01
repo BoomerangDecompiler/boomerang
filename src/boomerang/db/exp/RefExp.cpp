@@ -59,26 +59,28 @@ bool RefExp::operator==(const Exp& o) const
     }
 
     // Allow a def of (Statement*)-1 as a wild card
-    if (m_def == (Statement *)-1) {
+    if (m_def == STMT_WILD) {
         return true;
     }
 
     assert(dynamic_cast<const RefExp *>(&o) != nullptr);
 
+    const RefExp& otherRef = static_cast<const RefExp &>(o);
+
     // Allow a def of nullptr to match a def of an implicit assignment
-    if (((RefExp&)o).m_def == (Statement *)-1) {
+    if (otherRef.m_def == STMT_WILD) {
         return true;
     }
 
-    if ((m_def == nullptr) && ((RefExp&)o).isImplicitDef()) {
+    if (!m_def && otherRef.isImplicitDef()) {
         return true;
     }
 
-    if ((((RefExp&)o).m_def == nullptr) && m_def && m_def->isImplicit()) {
+    if (!otherRef.m_def && m_def && m_def->isImplicit()) {
         return true;
     }
 
-    return m_def == ((RefExp&)o).m_def;
+    return m_def == otherRef.m_def;
 }
 
 
@@ -92,24 +94,24 @@ bool RefExp::operator<(const Exp& o) const
         return false;
     }
 
-    if (*subExp1 < *((Unary&)o).getSubExp1()) {
+    if (*subExp1 < *static_cast<const Unary &>(o).getSubExp1()) {
         return true;
     }
 
-    if (*((Unary&)o).getSubExp1() < *subExp1) {
+    if (*static_cast<const Unary &>(o).getSubExp1() < *subExp1) {
         return false;
     }
 
     // Allow a wildcard def to match any
-    if (m_def == (Statement *)-1) {
+    if (m_def == STMT_WILD) {
         return false; // Not less (equal)
     }
 
-    if (((RefExp&)o).m_def == (Statement *)-1) {
+    if (static_cast<const RefExp &>(o).m_def == STMT_WILD) {
         return false;
     }
 
-    return m_def < ((RefExp&)o).m_def;
+    return m_def < static_cast<const RefExp &>(o).m_def;
 }
 
 
@@ -150,10 +152,10 @@ SharedExp RefExp::polySimplify(bool& bMod)
     // another hack, this time for aliasing
     // FIXME: do we really want this now? Pentium specific, and only handles ax/eax (not al or ah)
     if (subExp1->isRegN(0) &&                                                     // r0 (ax)
-        m_def && m_def->isAssign() && ((Assign *)m_def)->getLeft()->isRegN(24)) { // r24 (eax)
-        res  = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(24), m_def));
-        bMod = true;
-        return res;
+        m_def && m_def->isAssign() && static_cast<const Assign *>(m_def)->getLeft()->isRegN(24)) { // r24 (eax)
+            res  = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(24), m_def));
+            bMod = true;
+            return res;
     }
 
     // Was code here for bypassing phi statements that are now redundant
@@ -237,7 +239,7 @@ void RefExp::print(QTextStream& os, bool html) const
         os << "{";
     }
 
-    if (m_def == (Statement *)-1) {
+    if (m_def == STMT_WILD) {
         os << "WILD";
     }
     else if (m_def) {

@@ -57,7 +57,7 @@ QString CharType::getCtype(bool /*final*/) const
 SharedType CharType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
 {
     if (other->resolvesToVoid() || other->resolvesToChar()) {
-        return ((CharType *)this)->shared_from_this();
+        return const_cast<CharType *>(this)->shared_from_this();
     }
 
     // Also allow char to merge with integer
@@ -67,7 +67,7 @@ SharedType CharType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
     }
 
     if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == 8)) {
-        return ((CharType *)this)->shared_from_this();
+        return const_cast<CharType *>(this)->shared_from_this();
     }
 
     return createUnion(other, ch, bHighestPtr);
@@ -88,7 +88,7 @@ bool CharType::isCompatible(const Type& other, bool /*all*/) const
         return true;
     }
 
-    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == 8)) {
+    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == 8) {
         return true;
     }
 
@@ -97,7 +97,7 @@ bool CharType::isCompatible(const Type& other, bool /*all*/) const
     }
 
     if (other.resolvesToArray()) {
-        return isCompatibleWith(*((const ArrayType&)other).getBaseType());
+        return isCompatibleWith(*static_cast<const ArrayType &>(other).getBaseType());
     }
 
     return false;

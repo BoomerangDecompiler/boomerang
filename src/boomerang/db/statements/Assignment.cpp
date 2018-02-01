@@ -131,13 +131,7 @@ void Assignment::simplifyAddr()
 }
 
 
-SharedExp Assignment::getLeft()
-{
-    return m_lhs;
-}
-
-
-const SharedExp& Assignment::getLeft() const
+SharedExp Assignment::getLeft() const
 {
     return m_lhs;
 }

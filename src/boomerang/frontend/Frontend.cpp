@@ -57,7 +57,7 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
 {
     m_image = Boomerang::get()->getImage();
     assert(m_image);
-    m_binarySymbols = (SymTab *)Boomerang::get()->getSymbols();
+    m_binarySymbols = static_cast<SymTab *>(Boomerang::get()->getSymbols());
 }
 
 
@@ -229,8 +229,9 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
     SharedType ty = NamedType::getNamedType(type);
 
     assert(ty->isFunc());
-    UserProc *proc = (UserProc *)m_program->createFunction(addr);
+    UserProc *proc = static_cast<UserProc *>(m_program->createFunction(addr));
     assert(proc);
+
     auto                sig    = ty->as<FuncType>()->getSignature()->clone();
     const IBinarySymbol *p_sym = m_binarySymbols->find(addr);
     QString             sym    = p_sym ? p_sym->getName() : QString("");
@@ -392,7 +393,7 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         // the instruction at addr is just a jump to another address.
         addr = newProc->getEntryAddress();
         LOG_MSG("Starting decode at address %1", addr);
-        UserProc *proc = (UserProc *)m_program->findFunction(addr);
+        UserProc *proc = static_cast<UserProc *>(m_program->findFunction(addr));
 
         if (proc == nullptr) {
             LOG_MSG("No proc found at address %1", addr);
@@ -423,7 +424,7 @@ void IFrontEnd::decode(Prog *prg, Address addr)
                         continue;
                     }
 
-                    UserProc *userProc = (UserProc *)function;
+                    UserProc *userProc = static_cast<UserProc *>(function);
 
                     if (userProc->isDecoded()) {
                         continue;
@@ -462,7 +463,7 @@ void IFrontEnd::decodeOnly(Prog *prg, Address addr)
     Q_UNUSED(prg);
     assert(m_program == prg);
 
-    UserProc *p = (UserProc *)m_program->createFunction(addr);
+    UserProc *p = static_cast<UserProc *>(m_program->createFunction(addr));
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
@@ -573,7 +574,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
         }
     }
 
-    if ((proc != nullptr) && (proc != (Function *)-1)) {
+    if ((proc != nullptr) && (proc != reinterpret_cast<Function *>(-1))) {
         CallStatement *call = new CallStatement();
         call->setDest(dest);
         call->setDestProc(proc);
@@ -810,7 +811,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             QString       func  = sym->getName();
                             CallStatement *call = new CallStatement;
                             call->setDest(pDest->clone());
-                            LibProc *lp = pProc->getProg()->getLibraryProc(func);
+                            LibProc *lp = pProc->getProg()->getOrCreateLibraryProc(func);
 
                             if (lp == nullptr) {
                                 LOG_FATAL("getLibraryProc() returned nullptr");
@@ -912,7 +913,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
                             // Dynamic linked proc pointers are treated as static.
                             Address  linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
                             QString  name       = m_binarySymbols->find(linkedAddr)->getName();
-                            Function *function  = pProc->getProg()->getLibraryProc(name);
+                            Function *function  = pProc->getProg()->getOrCreateLibraryProc(name);
                             call->setDestProc(function);
                             call->setIsComputed(false);
 
@@ -950,7 +951,7 @@ bool IFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& /*os*/,
 
                                             QString name = m_binarySymbols->find(functionAddr)->getName();
                                             // Assign the proc to the call
-                                            Function *p = pProc->getProg()->getLibraryProc(name);
+                                            Function *p = pProc->getProg()->getOrCreateLibraryProc(name);
 
                                             if (call->getDestProc()) {
                                                 // prevent unnecessary __imp procs
@@ -1204,7 +1205,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
         // Create the basic block
         newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
         Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-        proc->setTheReturnAddr((ReturnStatement *)s, retRTL->getAddress());
+        proc->setTheReturnAddr(static_cast<ReturnStatement *>(s), retRTL->getAddress());
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra

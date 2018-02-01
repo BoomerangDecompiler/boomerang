@@ -61,6 +61,7 @@ public:
 
     /// Get information about this switch statement
     SwitchInfo *getSwitchInfo();
+    const SwitchInfo *getSwitchInfo() const;
 
     void setSwitchInfo(SwitchInfo *psi);
 

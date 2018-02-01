@@ -129,16 +129,16 @@ private:
      * \returns true if \p stmt is an assignment
      * that stores the FSW (Floating point Status Word) reg
      */
-    bool isStoreFsw(Statement *stmt);
+    bool isStoreFsw(const Statement *stmt) const;
 
     /// \returns true if \p rtl is a decrement of register AH
-    bool isDecAh(RTL *rtl);
+    bool isDecAh(const RTL *rtl) const;
 
     /// \returns true if \p stmt is a setX instruction
-    bool isSetX(Statement *stmt);
+    bool isSetX(const Statement *stmt) const;
 
     /// \returns true if \p stmt is an expression whose RHS is a ?: ternary
-    bool isAssignFromTern(Statement *stmt);
+    bool isAssignFromTern(const Statement *stmt) const;
 
     /**
      * Finds a subexpression within this expression of the form

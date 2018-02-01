@@ -528,7 +528,7 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int& time, std::ve
     m_info[bb].m_loopStamps[1] = ++time;
 
     // add this node to the ordering structure as well as recording its position within the ordering
-    m_info[bb].m_ord = (int)order.size();
+    m_info[bb].m_ord = static_cast<int>(order.size());
     order.push_back(bb);
 }
 
@@ -565,7 +565,7 @@ void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const Ba
 
     // add this node to the ordering structure and record the post dom. order of this node as its index within this
     // ordering structure
-    m_info[bb].m_revOrd = (int)order.size();
+    m_info[bb].m_revOrd = static_cast<int>(order.size());
     order.push_back(bb);
 }
 

@@ -138,7 +138,7 @@ void DataFlowTest::testPlacePhi()
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *mainProc = (UserProc *)(*m->begin());
+    UserProc *mainProc = static_cast<UserProc *>(*m->begin());
     QCOMPARE(mainProc->getName(), QString("main"));
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
@@ -187,7 +187,7 @@ void DataFlowTest::testPlacePhi2()
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *pProc = (UserProc *)(*m->begin());
+    UserProc *pProc = static_cast<UserProc *>(*m->begin());
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog.finishDecode();
@@ -271,7 +271,7 @@ void DataFlowTest::testRenameVars()
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *pProc = (UserProc *)(*m->begin());
+    UserProc *pProc = static_cast<UserProc *>(*m->begin());
     DataFlow *df    = pProc->getDataFlow();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]

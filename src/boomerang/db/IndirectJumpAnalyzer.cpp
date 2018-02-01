@@ -35,9 +35,9 @@
 // TODO: use initializer lists
 static SharedConstExp form_a =
     RefExp::get(Binary::get(opArrayIndex,
-                            RefExp::get(Terminal::get(opWild), (Statement *)-1),
+                            RefExp::get(Terminal::get(opWild), STMT_WILD),
                             Terminal::get(opWild)),
-                (Statement *)-1);
+                STMT_WILD);
 
 // Pattern: m[<expr> * 4 + T ]
 static SharedConstExp form_A = Location::memOf(
@@ -52,9 +52,9 @@ static SharedConstExp form_A = Location::memOf(
 // NOT COMPLETED YET!
 static SharedConstExp form_o =
     RefExp::get(Binary::get(opArrayIndex,
-                            RefExp::get(Terminal::get(opWild), (Statement *)-1),
+                            RefExp::get(Terminal::get(opWild), STMT_WILD),
                             Terminal::get(opWild)),
-                (Statement *)-1);
+                STMT_WILD);
 
 // Pattern: m[<expr> * 4 + T ] + T
 static SharedConstExp form_O =
@@ -152,12 +152,12 @@ static void findConstantValues(const Statement *s, std::list<int>& dests)
 
     if (s->isPhi()) {
         // For each definition, recurse
-        for (const auto& it : *((const PhiAssign *)s)) {
+        for (const auto& it : *static_cast<const PhiAssign *>(s)) {
             findConstantValues(it.getDef(), dests);
         }
     }
     else if (s->isAssign()) {
-        SharedExp rhs = ((const Assign *)s)->getRight();
+        SharedExp rhs = static_cast<const Assign *>(s)->getRight();
 
         if (rhs->isIntConst()) {
             dests.push_back(rhs->access<Const>()->getInt());
@@ -333,7 +333,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         }
 
         assert(!lastRtl->empty());
-        CaseStatement *lastStmt = (CaseStatement *)lastRtl->back();
+        CaseStatement *lastStmt = static_cast<CaseStatement *>(lastRtl->back());
 
         // Note: some programs might not have the case expression propagated to, because of the -l switch (?)
         // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
@@ -406,7 +406,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                 }
 
                 swi->pSwitchVar = expr;
-                lastStmt->setDest((SharedExp)nullptr);
+                lastStmt->setDest(nullptr);
                 lastStmt->setSwitchInfo(swi);
                 return swi->iNumTable != 0;
             }
@@ -432,10 +432,10 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                         swi->chForm     = 'F';                                     // The "Fortran" form
                         swi->pSwitchVar = e;
                         swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
-                        swi->iNumTable  = (int)num_dests;
+                        swi->iNumTable  = static_cast<int>(num_dests);
                         swi->iLower     = 1;                                       // Not used, except to compute
-                        swi->iUpper     = (int)num_dests;                          // the number of options
-                        lastStmt->setDest((SharedExp)nullptr);
+                        swi->iUpper     = static_cast<int>(num_dests);             // the number of options
+                        lastStmt->setDest(nullptr);
                         lastStmt->setSwitchInfo(swi);
                         return true;
                     }
@@ -455,7 +455,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         }
 
         assert(!lastRtl->empty());
-        CallStatement *lastStmt = (CallStatement *)lastRtl->back();
+        CallStatement *lastStmt = static_cast<CallStatement *>(lastRtl->back());
         SharedExp     e         = lastStmt->getDest();
         // Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).
         // Propagate to e, but only keep the changes if the expression matches (don't want excessive propagation to
@@ -722,7 +722,7 @@ int IndirectJumpAnalyzer::findNumCases(BasicBlock *bb)
 void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 {
     RTL *lastRTL = bb->getLastRTL();
-    SwitchInfo *si = ((CaseStatement *)lastRTL->getHlStmt())->getSwitchInfo();
+    SwitchInfo *si = static_cast<CaseStatement *>(lastRTL->getHlStmt())->getSwitchInfo();
 
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
@@ -764,7 +764,8 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
             switchDestination = Address(prog->readNative4(si->uTable + i * 8 + 4));
         }
         else if (si->chForm == 'F') {
-            switchDestination = Address(((int *)si->uTable.value())[i]);
+            Address::value_type *entry = reinterpret_cast<Address::value_type *>(si->uTable.value());
+            switchDestination = Address(entry[i]);
         }
         else {
             switchDestination = Address(prog->readNative4(si->uTable + i * 4));

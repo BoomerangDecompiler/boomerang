@@ -46,7 +46,7 @@ bool IntegerType::operator==(const Type& other) const
         return false;
     }
 
-    IntegerType& otherInt = (IntegerType&)other;
+    const IntegerType& otherInt = static_cast<const IntegerType &>(other);
     return
         // Note: zero size matches any other size (wild, or unknown, size)
         (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
@@ -58,23 +58,17 @@ bool IntegerType::operator==(const Type& other) const
 
 bool IntegerType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
+    if (id != other.getId()) {
+        return id < other.getId();
     }
 
-    if (id > other.getId()) {
-        return false;
+    const IntegerType &otherTy = static_cast<const IntegerType &>(other);
+
+    if (size != otherTy.size) {
+        return size < otherTy.size;
     }
 
-    if (size < ((IntegerType&)other).size) {
-        return true;
-    }
-
-    if (size > ((IntegerType&)other).size) {
-        return false;
-    }
-
-    return(signedness < ((IntegerType&)other).signedness);
+    return signedness < otherTy.signedness;
 }
 
 
@@ -176,7 +170,7 @@ QString IntegerType::getCtype(bool final) const
 SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((IntegerType *)this)->shared_from_this();
+        return const_cast<IntegerType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToInteger()) {
@@ -228,15 +222,7 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 
 bool IntegerType::isCompatible(const Type& other, bool /*all*/) const
 {
-    if (other.resolvesToVoid()) {
-        return true;
-    }
-
-    if (other.resolvesToInteger()) {
-        return true;
-    }
-
-    if (other.resolvesToChar()) {
+    if (other.resolvesToVoid() || other.resolvesToInteger() || other.resolvesToChar()) {
         return true;
     }
 
@@ -244,7 +230,7 @@ bool IntegerType::isCompatible(const Type& other, bool /*all*/) const
         return other.isCompatibleWith(*this);
     }
 
-    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == size)) {
+    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == size) {
         return true;
     }
 

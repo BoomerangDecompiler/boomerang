@@ -47,11 +47,11 @@ Statement *ReturnStatement::clone() const
     ReturnStatement *ret = new ReturnStatement();
 
     for (auto const& elem : m_modifieds) {
-        ret->m_modifieds.append((ImplicitAssign *)(elem)->clone());
+        ret->m_modifieds.append(static_cast<ImplicitAssign *>(elem)->clone());
     }
 
     for (auto const& elem : m_returns) {
-        ret->m_returns.append((Assignment *)(elem)->clone());
+        ret->m_returns.append(static_cast<Assignment *>(elem)->clone());
     }
 
     ret->m_retAddr = m_retAddr;
@@ -286,8 +286,8 @@ void ReturnStatement::getDefinitions(LocationSet& ls) const
 SharedType ReturnStatement::getTypeFor(SharedExp e) const
 {
     for (auto& elem : m_modifieds) {
-        if (*((Assignment *)elem)->getLeft() == *e) {
-            return ((Assignment *)elem)->getType();
+        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
+            return static_cast<Assignment *>(elem)->getType();
         }
     }
 
@@ -298,15 +298,15 @@ SharedType ReturnStatement::getTypeFor(SharedExp e) const
 void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
 {
     for (auto& elem : m_modifieds) {
-        if (*((Assignment *)elem)->getLeft() == *e) {
-            ((Assignment *)elem)->setType(ty);
+        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
+            static_cast<Assignment *>(elem)->setType(ty);
             break;
         }
     }
 
     for (auto& elem : m_returns) {
-        if (*((Assignment *)elem)->getLeft() == *e) {
-            ((Assignment *)elem)->setType(ty);
+        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
+            static_cast<Assignment *>(elem)->setType(ty);
             return;
         }
     }
@@ -330,7 +330,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     for (auto const& elem : m_returns) {
         QString     tgt;
         QTextStream ost(&tgt);
-        ((const Assignment *)elem)->printCompact(ost, html);
+        static_cast<const Assignment *>(elem)->printCompact(ost, html);
         unsigned len = tgt.length();
 
         if (first) {
@@ -368,7 +368,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     for (auto const& elem : m_modifieds) {
         QString          tgt2;
         QTextStream      ost(&tgt2);
-        const Assignment *as = (const Assignment *)elem;
+        const Assignment *as = static_cast<const Assignment *>(elem);
         const SharedType ty  = as->getType();
 
         if (ty) {
@@ -419,7 +419,7 @@ void ReturnStatement::updateModifieds()
     m_modifieds.clear();
 
     if ((m_bb->getNumPredecessors() == 1) && m_bb->getPredecessors()[0]->getLastStmt()->isCall()) {
-        CallStatement *call = (CallStatement *)m_bb->getPredecessors()[0]->getLastStmt();
+        CallStatement *call = static_cast<CallStatement *>(m_bb->getPredecessors()[0]->getLastStmt());
 
         if (call->getDestProc() && IFrontEnd::isNoReturnCallDest(call->getDestProc()->getName())) {
             return;
@@ -434,7 +434,7 @@ void ReturnStatement::updateModifieds()
 
     for (DefCollector::iterator ll = m_col.begin(); ll != m_col.end(); ++ll) {
         bool      found  = false;
-        Assign    *as    = (Assign *)*ll;
+        Assign    *as    = static_cast<Assign *>(*ll);
         SharedExp colLhs = as->getLeft();
 
         if (m_proc->filterReturns(colLhs)) {
@@ -442,7 +442,7 @@ void ReturnStatement::updateModifieds()
         }
 
         for (it = oldMods.begin(); it != oldMods.end(); it++) {
-            SharedExp lhs = ((Assignment *)*it)->getLeft();
+            SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
 
             if (*lhs == *colLhs) {
                 found = true;
@@ -464,7 +464,7 @@ void ReturnStatement::updateModifieds()
     for (it = oldMods.end(); it != oldMods.begin();) {
         --it;     // Becuase we are using a forwards iterator backwards
         // Make sure the LHS is still in the collector
-        Assignment *as = (Assignment *)*it;
+        Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();
 
         if (!m_col.existsOnLeft(lhs)) {
@@ -480,7 +480,7 @@ void ReturnStatement::updateModifieds()
         bool inserted = false;
 
         for (nn = m_modifieds.begin(); nn != m_modifieds.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assignment *)*nn)) {     // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {     // If the new assignment is less than the current one
                 nn       = m_modifieds.insert(nn, as);               // then insert before this position
                 inserted = true;
                 break;
@@ -506,7 +506,7 @@ void ReturnStatement::updateReturns()
     // Ick... O(N*M) (N existing returns, M modifieds locations)
     for (StatementList::iterator dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
         bool      found = false;
-        SharedExp loc   = ((Assignment *)*dd)->getLeft();
+        SharedExp loc   = static_cast<Assignment *>(*dd)->getLeft();
 
         if (m_proc->filterReturns(loc)) {
             continue;     // Filtered out
@@ -520,7 +520,7 @@ void ReturnStatement::updateReturns()
         }
 
         for (StatementList::iterator it = oldRets.begin(); it != oldRets.end(); it++) {
-            SharedExp lhs = ((Assign *)*it)->getLeft();
+            SharedExp lhs = static_cast<Assign *>(*it)->getLeft();
 
             if (*lhs == *loc) {
                 found = true;
@@ -541,7 +541,7 @@ void ReturnStatement::updateReturns()
     // new list. So read the old returns in reverse order
     for (StatementList::reverse_iterator it = oldRets.rbegin(); it != oldRets.rend(); ++it) {
         // Make sure the LHS is still in the modifieds
-        Assign    *as = (Assign *)*it;
+        Assign    *as = static_cast<Assign *>(*it);
         SharedExp lhs = as->getLeft();
 
         if (!m_modifieds.existsOnLeft(lhs)) {
@@ -568,7 +568,7 @@ void ReturnStatement::updateReturns()
         bool inserted = false;
 
         for (StatementList::iterator nn = m_returns.begin(); nn != m_returns.end(); ++nn) {
-            if (sig->returnCompare(*as, *(Assign *)*nn)) {     // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *static_cast<Assign *>(*nn))) {     // If the new assignment is less than the current one
                 nn       = m_returns.insert(nn, as);             // then insert before this position
                 inserted = true;
                 break;

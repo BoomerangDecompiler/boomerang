@@ -59,7 +59,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     IBinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), (size_t)29);
+    QCOMPARE(image->getNumSections(), static_cast<size_t>(29));
     QCOMPARE(image->getSection(0)->getName(),  QString(".interp"));
     QCOMPARE(image->getSection(10)->getName(), QString(".plt"));
     QCOMPARE(image->getSection(28)->getName(), QString(".shstrtab"));
@@ -87,7 +87,7 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
     IBinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), (size_t)29);
+    QCOMPARE(image->getNumSections(), static_cast<size_t>(29));
     QCOMPARE(image->getSection(0)->getName(), QString(".note.ABI-tag"));
     QCOMPARE(image->getSection(13)->getName(), QString(".eh_frame"));
     QCOMPARE(image->getSection(28)->getName(), QString(".shstrtab"));
@@ -111,29 +111,9 @@ void ElfBinaryLoaderTest::testPentiumLoad()
     IBinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), (size_t)33);
+    QCOMPARE(image->getNumSections(), static_cast<size_t>(33));
     QCOMPARE(image->getSection(1)->getName(), QString(".note.ABI-tag"));
     QCOMPARE(image->getSection(32)->getName(), QString(".strtab"));
-}
-
-
-typedef unsigned (*ElfHashFcn)(const char *);
-
-void ElfBinaryLoaderTest::testElfHash()
-{
-    QLibrary z;
-
-    z.setFileName(ELF_LOADER);
-    bool opened = z.load();
-    QVERIFY(opened);
-
-    // Use the handle to find the "elf_hash" function
-    ElfHashFcn hashFcn = (ElfHashFcn)z.resolve("elf_hash");
-    QVERIFY(hashFcn);
-
-    // Call the function with the string "main
-    unsigned int hashValue = hashFcn("main");
-    QCOMPARE(hashValue, 0x737FEU);
 }
 
 
