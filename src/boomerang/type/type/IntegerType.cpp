@@ -15,7 +15,7 @@
 
 
 IntegerType::IntegerType(unsigned int NumBits, int sign)
-    : Type(eInteger)
+    : Type(TypeClass::Integer)
 {
     size       = NumBits;
     signedness = sign;
@@ -167,7 +167,7 @@ QString IntegerType::getCtype(bool final) const
 }
 
 
-SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType IntegerType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<IntegerType *>(this)->shared_from_this();
@@ -185,12 +185,12 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             result->signedness--;
         }
 
-        ch |= ((result->signedness > 0) != (signedness > 0)); // Changed from signed to not necessarily signed
-        ch |= ((result->signedness < 0) != (signedness < 0)); // Changed from unsigned to not necessarily unsigned
+        changed |= ((result->signedness > 0) != (signedness > 0)); // Changed from signed to not necessarily signed
+        changed |= ((result->signedness < 0) != (signedness < 0)); // Changed from unsigned to not necessarily unsigned
 
         // Size. Assume 0 indicates unknown size
         result->size = std::max(size, otherInt->size);
-        ch          |= (result->size != size);
+        changed          |= (result->size != size);
 
         return result;
     }
@@ -200,7 +200,7 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
 
         if (size == 0) { // Doubt this will ever happen
             result->size = other_sz->getSize();
-            ch           = true;
+            changed           = true;
             return result;
         }
 
@@ -211,11 +211,11 @@ SharedType IntegerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
         LOG_VERBOSE("Integer size %1 meet with SizeType size %2!", size, other_sz->getSize());
 
         result->size = std::max(size, other_sz->getSize());
-        ch           = result->size != size;
+        changed           = result->size != size;
         return result;
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

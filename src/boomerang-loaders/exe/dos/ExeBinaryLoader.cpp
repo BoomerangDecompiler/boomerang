@@ -37,16 +37,10 @@ void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbol
 
 bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 {
-    //
-    QBuffer fp(&data);
-    int     i, cb;
-    Byte    buf[4];
-    int     fCOM;
-
-
     // Always just 3 sections
     m_header = new ExeHeader;
 
+    QBuffer fp(&data);
     fp.open(QBuffer::ReadOnly);
 
     /* Read in first 2 bytes to check EXE signature */
@@ -55,6 +49,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
+    int     fCOM;
+    int     cb;
     // Check for the "MZ" exe header
     if (!(fCOM = ((m_header->sigLo != 0x4D) || (m_header->sigHi != 0x5A)))) {
         /* Read rest of m_pHeader */
@@ -98,7 +94,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
             fp.seek(LH(&m_header->relocTabOffset));
 
             /* Read in seg:offset pairs and convert to Image ptrs */
-            for (i = 0; i < m_numReloc; i++) {
+            Byte    buf[4];
+            for (int i = 0; i < m_numReloc; i++) {
                 fp.read(reinterpret_cast<char *>(buf), 4);
                 m_relocTable[i] = Util::readDWord(buf, false);
             }
@@ -140,7 +137,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 
     /* Relocate segment constants */
     if (m_numReloc) {
-        for (i = 0; i < m_numReloc; i++) {
+        for (int i = 0; i < m_numReloc; i++) {
             Byte  *p = &m_loadedImage[m_relocTable[i]];
             Util::writeWord(p, LH(p), false);
         }

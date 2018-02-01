@@ -205,9 +205,12 @@ public:
     Statement *getFirstStmt(RTLIterator& rit, StatementList::iterator& sit);
     Statement *getNextStmt(RTLIterator& rit, StatementList::iterator& sit);
     Statement *getLastStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
-    Statement *getFirstStmt();
-    Statement *getLastStmt();
     Statement *getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
+
+    Statement *getFirstStmt();
+    const Statement *getFirstStmt() const;
+    Statement *getLastStmt();
+    const Statement *getLastStmt() const;
 
     /// Appends all statements in this BB to \p stmts.
     void appendStatementsTo(StatementList& stmts) const;

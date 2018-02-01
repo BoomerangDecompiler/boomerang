@@ -153,7 +153,7 @@ public:
     virtual void setName(const QString& name);
 
     // get/set the signature file
-    const QString& getSigFile() const { return m_sigFile; }
+    const QString& getSigFilePath() const { return m_sigFile; }
     void setSigFile(const QString& name) { m_sigFile = name; }
 
     // add a new parameter to this signature
@@ -251,7 +251,7 @@ public:
     /// A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
     /// happened. For the switch logic, that happens way too late. So for now, we have this cludge.
     /// This is very very hacky! (trent)
-    static SharedExp getReturnExp2(IFileLoader *pBF);
+    static SharedExp getReturnExp2(IFileLoader *loader);
     static StatementList& getStdRetStmt(Prog *prog);
 
     // get anything that can be proven as a result of the signature

@@ -813,15 +813,15 @@ bool CallStatement::convertToDirect()
         return false;     // Not a valid proc pointer
     }
 
-    Function *p       = prog->findFunction(nam);
-    bool     bNewProc = p == nullptr;
+    Function *p        = prog->findFunction(nam);
+    bool     isNewProc = p == nullptr;
 
-    if (bNewProc) {
+    if (isNewProc) {
         p = prog->createFunction(dest);
     }
 
     LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
-                (bNewProc ? "new" : "existing"), nam, p->getName());
+                (isNewProc ? "new" : "existing"), nam, p->getName());
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
@@ -833,7 +833,7 @@ bool CallStatement::convertToDirect()
     // 4) change this to a non-indirect call
     m_procDest = p;
     auto sig = p->getSignature();
-    // pDest is currently still global5{-}, but we may as well make it a constant now, since that's how it will be
+    // m_dest is currently still global5{-}, but we may as well make it a constant now, since that's how it will be
     // treated now
     m_dest = Const::get(dest);
 
@@ -1658,12 +1658,12 @@ bool CallStatement::isChildless() const
 }
 
 
-SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
+SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& changed)
 {
     SharedExp base = r->getSubExp1();
     SharedExp proven;
 
-    ch = false;
+    changed = false;
 
     if (m_procDest && m_procDest->isLib()) {
         auto sig = m_procDest->getSignature();
@@ -1689,7 +1689,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
         // FIXME: temporary HACK! Ignores alias issues.
         if (!m_procDest->isLib() && static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
             SharedExp ret = localiseExp(base->clone());     // Assume that it is proved as preserved
-            ch = true;
+            changed = true;
 
             LOG_VERBOSE("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
             return ret;
@@ -1705,9 +1705,9 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& ch)
     SharedExp to = localiseExp(base);                     // e.g. r28{17}
     assert(to);
     proven = proven->clone();                             // Don't modify the expressions in destProc->proven!
-    proven = proven->searchReplaceAll(*base, to, ch);     // e.g. r28{17} + 4
+    proven = proven->searchReplaceAll(*base, to, changed);     // e.g. r28{17} + 4
 
-    if (ch) {
+    if (changed) {
         LOG_VERBOSE("Replacing %1 with %2", r, proven);
     }
 

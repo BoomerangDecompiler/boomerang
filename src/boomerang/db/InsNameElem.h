@@ -34,7 +34,7 @@ public:
     virtual size_t getNumTokens() const;
     virtual QString getInstruction() const;
     virtual QString getInsPattern() const;
-    virtual void getRefMap(std::map<QString, InsNameElem *>& m);
+    virtual void getRefMap(std::map<QString, InsNameElem *>& map);
 
     int getNumInstructions() const;
     void append(std::shared_ptr<InsNameElem> next);

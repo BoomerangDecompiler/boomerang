@@ -240,11 +240,12 @@ public:
     virtual bool search(const Exp& pattern, SharedExp& result);
 
     /**
-     * Search this expression for the given subexpression, and for each found, return a pointer to the
-     * matched expression in result
+     * Search this expression for the given subexpression, and for each found,
+     * append the found subexpression to \p results.
+     *
      * \param   pattern ptr to Exp we are searching for
      * \param   results ref to list of Exp that matched
-     * \returns         True if a match was found
+     * \returns True if a match was found
      */
     bool searchAll(const Exp& pattern, std::list<SharedExp>& results);
 
@@ -277,31 +278,23 @@ public:
     SharedExp searchReplaceAll(const Exp& pattern, const SharedExp& replacement, bool& change, bool once = false);
 
     /**
-     * Search for the given subexpression.
-     * \note    Caller must free the list li after use, but not the Exp objects that they point to
-     * \note    If the top level expression matches, li will contain search
-     * \note    Now a static function. Searches pSrc, not this
+     * Search for the given sub-expression in \p toSearch and all children.
      * \note    Mostly not for public use.
      *
-     * \param   pattern Exp we are searching for
-     * \param   pSrc ref to ptr to Exp to search. Reason is that we can
-     *              then overwrite that pointer to effect a replacement.
-     *              So we need to append &pSrc in the list. Can't append &this!
-     * \param   li   list of Exp** where pointers to the matches are found
-     * \param   once true if not all occurrences to be found, false for all
+     * \param   pattern  Exp we are searching for
+     * \param   toSearch Exp to search for \p pattern.
+     * \param   matches  list of Exp** where pointers to the matches are found
+     * \param   once     true to return after the first match, false to return all matches in \p toSearch
      */
-    static void doSearch(const Exp& pattern, SharedExp& pSrc, std::list<SharedExp *>& li, bool once);
+    static void doSearch(const Exp& pattern, SharedExp& toSearch, std::list<SharedExp *>& matches, bool once);
 
     /**
      * Search for the given subexpression in all children
-     * \note        Virtual function; different implementation for each subclass of Exp
-     * \note        Will recurse via doSearch
-     *
-     * \param       search  ptr to Exp we are searching for
-     * \param       li      list of Exp** where pointers to the matches are found
-     * \param       once    true if not all occurrences to be found, false for all
+     * \param pattern ptr to Exp we are searching for
+     * \param matches list of Exp** where pointers to the matches are found
+     * \param once    true to return after the first match, false to return all matches in *this
      */
-    virtual void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once);
+    virtual void doSearchChildren(const Exp& pattern, std::list<SharedExp *>& matches, bool once);
 
     /// Propagate all possible assignments to components of this expression.
     SharedExp propagateAll();
@@ -463,9 +456,9 @@ public:
      * \note         Address simplification (a[ m[ x ]] == x) is done separately
      * \returns      Ptr to the simplified expression
      */
-    virtual SharedExp polySimplify(bool& bMod)
+    virtual SharedExp polySimplify(bool& changed)
     {
-        bMod = false;
+        changed = false;
         return shared_from_this();
     }
 
@@ -516,7 +509,7 @@ public:
     virtual SharedExp accept(ExpModifier *v) = 0;
 
     /// Set or clear the constant subscripts
-    void setConscripts(int n, bool bClear);
+    void setConscripts(int n, bool clear);
 
     /// Strip size casts from an Exp
     SharedExp stripSizes();

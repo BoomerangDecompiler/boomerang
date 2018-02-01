@@ -69,41 +69,41 @@ void ControlFlowAnalyzer::updateImmedPDom()
 {
     // traverse the nodes in order (i.e from the bottom up)
     for (int i = m_revOrdering.size() - 1; i >= 0; i--) {
-        const BasicBlock *curNode = m_revOrdering[i];
+        const BasicBlock *bb = m_revOrdering[i];
 
-        for (BasicBlock *succNode : curNode->getSuccessors()) {
-            if (getRevOrd(succNode) > getRevOrd(curNode)) {
-                setImmPDom(curNode, commonPDom(getImmPDom(curNode), succNode));
+        for (BasicBlock *succ : bb->getSuccessors()) {
+            if (getRevOrd(succ) > getRevOrd(bb)) {
+                setImmPDom(bb, commonPDom(getImmPDom(bb), succ));
             }
         }
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (const BasicBlock *curNode : m_ordering) {
-        if (curNode->getNumSuccessors() <= 1) {
+    for (const BasicBlock *bb : m_ordering) {
+        if (bb->getNumSuccessors() <= 1) {
             continue;
         }
 
-        for (auto& oEdge : curNode->getSuccessors()) {
-            BasicBlock *succNode = oEdge;
-            setImmPDom(curNode, commonPDom(getImmPDom(curNode), succNode));
+        for (auto& succ : bb->getSuccessors()) {
+            BasicBlock *succNode = succ;
+            setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
         }
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (const BasicBlock *currNode : m_ordering) {
-        if (currNode->getNumSuccessors() > 1) {
-            for (auto& oEdge : currNode->getSuccessors()) {
-                BasicBlock *succNode = oEdge;
+    for (const BasicBlock *bb : m_ordering) {
+        if (bb->getNumSuccessors() > 1) {
+            for (auto& succ : bb->getSuccessors()) {
+                BasicBlock *succNode = succ;
 
-                if (isBackEdge(currNode, succNode) &&
-                    (currNode->getNumSuccessors() > 1) &&
+                if (isBackEdge(bb, succNode) &&
+                    (bb->getNumSuccessors() > 1) &&
                     getImmPDom(succNode) &&
-                    (getOrdering(getImmPDom(succNode)) < getOrdering(getImmPDom(currNode)))) {
-                        setImmPDom(currNode, commonPDom(getImmPDom(succNode), getImmPDom(currNode)));
+                    (getOrdering(getImmPDom(succNode)) < getOrdering(getImmPDom(bb)))) {
+                        setImmPDom(bb, commonPDom(getImmPDom(succNode), getImmPDom(bb)));
                 }
                 else {
-                    setImmPDom(currNode, commonPDom(getImmPDom(currNode), succNode));
+                    setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
                 }
             }
         }
@@ -219,10 +219,10 @@ void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *& lo
 void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopNodes)
 {
     assert(getStructType(header) == StructType::Loop || getStructType(header) == StructType::LoopCond);
-    LoopType   lType  = getLoopType(header);
+    const LoopType loopType = getLoopType(header);
     const BasicBlock *latch = getLatchNode(header);
 
-    if (lType == LoopType::PreTested) {
+    if (loopType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop follow
         if (loopNodes[getOrdering(header->getSuccessor(0))]) {
             setLoopFollow(header, header->getSuccessor(1));
@@ -231,7 +231,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
             setLoopFollow(header, header->getSuccessor(0));
         }
     }
-    else if (lType == LoopType::PostTested) {
+    else if (loopType == LoopType::PostTested) {
         // the follow of a post tested ('repeat') loop is the node on the end of the non-back edge from the latch node
         if (latch->getSuccessor(0) == header) {
             setLoopFollow(header, latch->getSuccessor(1));

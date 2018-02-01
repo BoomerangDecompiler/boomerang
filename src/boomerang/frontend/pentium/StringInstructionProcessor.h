@@ -33,22 +33,22 @@ private:
      * edges.
      */
 
-    /*    pBB-> +----+    +----+ <-pBB
+    /**   bb -> +----+    +----+ <= bb
      *   Change | A  | to | A  |            where A or B could be empty. S is the string
      *          |    |    |    |            instruction (which will branch to itself and to the
      *          +----+    +----+            start of the next instruction, i.e. the start of B,
      *          | S  |      |               if B is non empty).
      *          +----+      V
-     *          | B  |    +----+ <-skipBB
-     *          |    |    +-b1-+              b1 is just a branch for the skip part
+     *          | B  |    +----+ < skipBB
+     *          |    |    +-b1-+            \p skipBranch is just a branch for the skip part
      *          +----+      |   \___
      *                      V       \
-     *                    +----+ <-rptBB
-     *                    | S' |  |  |        S' = S less the skip and repeat parts
-     *                    +-b2-+  |  |        b2 is a branch for the repeat part
+     *                    +----+ < rptBB
+     *                    | S' |  |  |      S' = S less the skip and repeat parts
+     *                    +-b2-+  |  |      \p rptBranch is a branch for the repeat part
      *                      | \__/  /
      *                      V      /
-     *                    +----+ <-newBB
+     *                    +----+ < newBB
      *                    | B  |
      *                    |    |
      *                    +----+

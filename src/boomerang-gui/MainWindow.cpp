@@ -838,7 +838,7 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
         name = ui->tblLibProcs->item(row, 0)->text();
     }
 
-    sigFile = m_decompiler->getSigFile(name);
+    sigFile = m_decompiler->getSigFilePath(name);
     QString filename = sigFile;
 
     int lastIndex = sigFile.lastIndexOf(QRegExp("[/\\\\]"));

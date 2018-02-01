@@ -42,8 +42,8 @@
 static QMap<QString, SharedType> namedTypes;
 
 
-Type::Type(TypeID _id)
-    : id(_id)
+Type::Type(TypeClass _class)
+    : id(_class)
 {
 }
 
@@ -243,69 +243,68 @@ QString Type::toString() const
 
 
 // A crude shortcut representation of a type
-QTextStream& operator<<(QTextStream& os, const Type& t)
+QTextStream& operator<<(QTextStream& os, const Type& type)
 {
-    switch (t.getId())
+    switch (type.getId())
     {
-    case eInteger:
+    case TypeClass::Integer:
         {
-            int sg = t.as<IntegerType>()->getSignedness();
+            int sg = type.as<IntegerType>()->getSignedness();
             // 'j' for either i or u, don't know which
             os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
-            os << t.as<IntegerType>()->getSize();
+            os << type.as<IntegerType>()->getSize();
             break;
         }
 
-    case eFloat:
+    case TypeClass::Float:
         os << 'f';
-        os << t.as<FloatType>()->getSize();
+        os << type.as<FloatType>()->getSize();
         break;
 
-    case ePointer:
-        os << t.as<PointerType>()->getPointsTo() << '*';
+    case TypeClass::Pointer:
+        os << type.as<PointerType>()->getPointsTo() << '*';
         break;
 
-    case eSize:
-        os << t.getSize();
+    case TypeClass::Size:
+        os << type.getSize();
         break;
 
-    case eChar:
+    case TypeClass::Char:
         os << 'c';
         break;
 
-    case eVoid:
+    case TypeClass::Void:
         os << 'v';
         break;
 
-    case eBoolean:
+    case TypeClass::Boolean:
         os << 'b';
         break;
 
-    case eCompound:
+    case TypeClass::Compound:
         os << "struct";
         break;
 
-    case eUnion:
+    case TypeClass::Union:
         os << "union";
         break;
 
-    // case eUnion:    os << t.getCtype(); break;
-    case eFunc:
+    case TypeClass::Func:
         os << "func";
         break;
 
-    case eArray:
-        os << '[' << t.as<ArrayType>()->getBaseType();
+    case TypeClass::Array:
+        os << '[' << type.as<ArrayType>()->getBaseType();
 
-        if (!t.as<ArrayType>()->isUnbounded()) {
-            os << ", " << t.as<ArrayType>()->getLength();
+        if (!type.as<ArrayType>()->isUnbounded()) {
+            os << ", " << type.as<ArrayType>()->getLength();
         }
 
         os << ']';
         break;
 
-    case eNamed:
-        os << t.as<NamedType>()->getName();
+    case TypeClass::Named:
+        os << type.as<NamedType>()->getName();
         break;
     }
 
@@ -337,14 +336,14 @@ SharedType Type::newIntegerLikeType(int size, int signedness)
 }
 
 
-SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = false */) const
+SharedType Type::createUnion(SharedType other, bool& changed, bool useHighestPtr) const
 {
     // `this' should not be a UnionType
     assert(!resolvesToUnion());
 
     // Put all the hard union logic in one place
     if (other->resolvesToUnion()) {
-        return other->meetWith(const_cast<Type *>(this)->shared_from_this(), ch, bHighestPtr)->clone();
+        return other->meetWith(const_cast<Type *>(this)->shared_from_this(), changed, useHighestPtr)->clone();
     }
 
     // Check for anytype meet compound with anytype as first element
@@ -365,7 +364,7 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
 
         if (elemTy->isCompatibleWith(*this)) {
             // x meet array[x] == array
-            ch = true; // since 'this' type is not an array, but the returned type is
+            changed = true; // since 'this' type is not an array, but the returned type is
             return other->clone();
         }
     }
@@ -373,7 +372,7 @@ SharedType Type::createUnion(SharedType other, bool& ch, bool bHighestPtr /* = f
     auto u = std::make_shared<UnionType>();
     u->addType(this->clone());
     u->addType(other->clone());
-    ch = true;
+    changed = true;
     return u;
 }
 

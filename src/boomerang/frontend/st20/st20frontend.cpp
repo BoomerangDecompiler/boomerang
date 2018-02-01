@@ -28,8 +28,8 @@
 #include <sstream>
 
 
-ST20FrontEnd::ST20FrontEnd(IFileLoader *pBF, Prog *prog)
-    : IFrontEnd(pBF, prog)
+ST20FrontEnd::ST20FrontEnd(IFileLoader *loader, Prog *prog)
+    : IFrontEnd(loader, prog)
 {
     m_decoder.reset(new ST20Decoder(prog));
 }
@@ -82,16 +82,16 @@ Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool ST20FrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool ST20FrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag /* = false */,
                                bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
         return false;
     }
 
     // This will get done twice; no harm
-    pProc->setEntryBB();
+    proc->setEntryBB();
 
     return true;
 }

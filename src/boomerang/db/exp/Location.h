@@ -54,7 +54,7 @@ public:
     UserProc *getProc() { return m_proc; }
 
     /// \copydoc Unary::polySimplify
-    virtual SharedExp polySimplify(bool& bMod) override;
+    virtual SharedExp polySimplify(bool& changed) override;
 
     void getDefinitions(LocationSet& defs);
 

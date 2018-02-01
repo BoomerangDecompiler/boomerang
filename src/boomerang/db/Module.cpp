@@ -84,7 +84,7 @@ Module::~Module()
 }
 
 
-size_t Module::getNumChildren()
+size_t Module::getNumChildren() const
 {
     return m_children.size();
 }
@@ -92,33 +92,29 @@ size_t Module::getNumChildren()
 
 Module *Module::getChild(size_t n)
 {
+    assert(n < getNumChildren());
     return m_children[n];
 }
 
 
-void Module::addChild(Module *n)
+void Module::addChild(Module *module)
 {
-    if (n->m_parent) {
-        n->m_parent->removeChild(n);
+    if (module->m_parent) {
+        module->m_parent->removeChild(module);
     }
 
-    m_children.push_back(n);
-    n->m_parent = this;
+    m_children.push_back(module);
+    module->m_parent = this;
 }
 
 
-void Module::removeChild(Module *n)
+void Module::removeChild(Module *module)
 {
-    auto it = m_children.begin();
-
-    for ( ; it != m_children.end(); it++) {
-        if (*it == n) {
-            break;
+    for (auto it = m_children.begin(); it != m_children.end(); it++) {
+        if (*it == module) {
+            m_children.erase(it);
         }
     }
-
-    assert(it != m_children.end());
-    m_children.erase(it);
 }
 
 
@@ -169,7 +165,7 @@ void Module::closeStreams()
 }
 
 
-QString Module::makeDirs()
+QString Module::makeDirs() const
 {
     QString path;
 
@@ -182,7 +178,7 @@ QString Module::makeDirs()
 
     QDir dr(path);
 
-    if ((getNumChildren() > 0) || (m_parent == nullptr)) {
+    if (getNumChildren() > 0 || m_parent == nullptr) {
         dr.mkpath(m_name);
         dr.cd(m_name);
     }
@@ -191,7 +187,7 @@ QString Module::makeDirs()
 }
 
 
-QString Module::getOutPath(const char *ext)
+QString Module::getOutPath(const char *ext) const
 {
     QString basedir = makeDirs();
     QDir    dr(basedir);

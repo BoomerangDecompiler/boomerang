@@ -114,7 +114,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
     int getConscript() const { return m_conscript; }
     void setConscript(int cs) { m_conscript = cs; }

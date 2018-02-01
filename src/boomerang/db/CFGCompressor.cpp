@@ -28,9 +28,9 @@ bool CFGCompressor::compressCFG(Cfg* cfg)
     // Look in CVS for old code.
 
     // Find A -> J -> B where J is a BB that is only a jump and replace it by A -> B
-    for (BasicBlock *a : *cfg) {
-        for (int i = 0; i < a->getNumSuccessors(); i++) {
-            BasicBlock *jmpBB = a->getSuccessor(i);
+    for (BasicBlock *aBB : *cfg) {
+        for (int i = 0; i < aBB->getNumSuccessors(); i++) {
+            BasicBlock *jmpBB = aBB->getSuccessor(i);
 
             if (jmpBB->getNumSuccessors() != 1) { // only consider oneway jumps
                 continue;
@@ -44,19 +44,19 @@ bool CFGCompressor::compressCFG(Cfg* cfg)
 
             // Found an out-edge to an only-jump BB.
             // Replace edge A -> J -> B by A -> B
-            BasicBlock *b = jmpBB->getSuccessor(0);
-            a->setSuccessor(i, b);
+            BasicBlock *bBB = jmpBB->getSuccessor(0);
+            aBB->setSuccessor(i, bBB);
 
-            for (int j = 0; j < b->getNumPredecessors(); j++) {
-                if (b->getPredecessor(j) == jmpBB) {
-                    b->setPredecessor(j, a);
+            for (int j = 0; j < bBB->getNumPredecessors(); j++) {
+                if (bBB->getPredecessor(j) == jmpBB) {
+                    bBB->setPredecessor(j, aBB);
                     break;
                 }
             }
 
             // remove predecessor from j. Cannot remove successor now since there might be several predecessors
             // which need the successor information.
-            jmpBB->removePredecessor(a);
+            jmpBB->removePredecessor(aBB);
 
             if (jmpBB->getNumPredecessors() == 0) {
                 jmpBB->removeAllSuccessors(); // now we can remove the successors

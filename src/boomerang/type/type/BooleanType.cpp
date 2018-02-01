@@ -14,7 +14,7 @@
 
 
 BooleanType::BooleanType()
-    : Type(eBoolean)
+    : Type(TypeClass::Boolean)
 {
 }
 
@@ -62,13 +62,13 @@ QString BooleanType::getCtype(bool /*final*/) const
 }
 
 
-SharedType BooleanType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType BooleanType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid() || other->resolvesToBoolean()) {
         return const_cast<BooleanType *>(this)->shared_from_this();
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

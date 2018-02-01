@@ -76,7 +76,7 @@ public:
 
 public:
     /// Relocation functions
-    virtual bool isRelocationAt(Address /*uNative*/) { return false; }
+    virtual bool isRelocationAt(Address addr) { Q_UNUSED(addr); return false; }
 
     /// \returns the target of the jmp/jXX instruction at address \p addr
     virtual Address getJumpTarget(Address addr) const { Q_UNUSED(addr); return Address::INVALID; }

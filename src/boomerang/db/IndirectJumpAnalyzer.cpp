@@ -95,17 +95,17 @@ static SharedConstExp form_r =
 struct SwitchForm
 {
     SharedConstExp pattern;
-    char           type;
+    SwitchType     type;
 };
 
 static SwitchForm hlForms[] =
 {
-    { form_a, 'a' },
-    { form_A, 'A' },
-    { form_o, 'o' },
-    { form_O, 'O' },
-    { form_R, 'R' },
-    { form_r, 'r' }
+    { form_a, SwitchType::a },
+    { form_A, SwitchType::A },
+    { form_o, SwitchType::o },
+    { form_O, SwitchType::O },
+    { form_R, SwitchType::R },
+    { form_r, SwitchType::r }
 };
 
 
@@ -140,7 +140,13 @@ static SharedExp vfc_vfo =
 // Pattern 4: m[ m[ <expr> ] ]
 static SharedExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
 
-static SharedExp hlVfc[] = { vfc_funcptr, vfc_both, vfc_vto, vfc_vfo, vfc_none };
+static SharedExp hlVfc[] = {
+    vfc_funcptr,
+    vfc_both,
+    vfc_vto,
+    vfc_vfo,
+    vfc_none
+};
 
 
 /// Find all the possible constant values that the location defined by s could be assigned with
@@ -166,11 +172,11 @@ static void findConstantValues(const Statement *s, std::list<int>& dests)
 }
 
 
-void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
+void findSwParams(SwitchType form, SharedExp e, SharedExp& expr, Address& T)
 {
     switch (form)
     {
-    case 'a':
+    case SwitchType::a:
         {
             // Pattern: <base>{}[<index>]{}
             e = e->getSubExp1();
@@ -189,7 +195,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
             break;
         }
 
-    case 'A':
+    case SwitchType::A:
         {
             // Pattern: m[<expr> * 4 + T ]
             if (e->isSubscript()) {
@@ -203,7 +209,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
             break;
         }
 
-    case 'O':
+    case SwitchType::O:
         {       // Form O
             // Pattern: m[<expr> * 4 + T ] + T
             T = e->access<Const, 2>()->getAddr();
@@ -223,7 +229,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
             break;
         }
 
-    case 'R':
+    case SwitchType::R:
         {
             // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
             T = Address::ZERO; // ?
@@ -245,7 +251,7 @@ void findSwParams(char form, SharedExp e, SharedExp& expr, Address& T)
             break;
         }
 
-    case 'r':
+    case SwitchType::r:
         {
             // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
             T = Address::ZERO; // ?
@@ -326,14 +332,14 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
     if (bb->isType(BBType::CompJump)) {
         assert(!bb->getRTLs()->empty());
-        RTL *lastRtl = bb->getLastRTL();
+        RTL *lastRTL = bb->getLastRTL();
 
         if (SETTING(debugSwitch)) {
-            LOG_MSG("decodeIndirectJmp: %1", lastRtl->prints());
+            LOG_MSG("decodeIndirectJmp: %1", lastRTL->prints());
         }
 
-        assert(!lastRtl->empty());
-        CaseStatement *lastStmt = static_cast<CaseStatement *>(lastRtl->back());
+        assert(!lastRTL->empty());
+        CaseStatement *lastStmt = static_cast<CaseStatement *>(lastRTL->back());
 
         // Note: some programs might not have the case expression propagated to, because of the -l switch (?)
         // We used to use ordinary propagation here to get the memory expression, but now it refuses to propagate memofs
@@ -341,100 +347,100 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         // now we'll assume no alias problems and force the propagation
         bool convert = false;
         lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
-        SharedExp e = lastStmt->getDest();
+        SharedExp jumpDest = lastStmt->getDest();
 
-        char form = 0;
+        SwitchType switchType = SwitchType::Invalid;
 
         for (auto& val : hlForms) {
-            if (*e *= *val.pattern) { // *= compare ignores subscripts
-                form = val.type;
+            if (*jumpDest *= *val.pattern) { // *= compare ignores subscripts
+                switchType = val.type;
 
                 if (DEBUG_SWITCH) {
-                    LOG_MSG("Indirect jump matches form %1", form);
+                    LOG_MSG("Indirect jump matches form %1", static_cast<char>(switchType));
                 }
 
                 break;
             }
         }
 
-        if (form) {
+        if (switchType != SwitchType::Invalid) {
             SwitchInfo *swi = new SwitchInfo;
-            swi->chForm = form;
+            swi->switchType = switchType;
             Address   T = Address::INVALID;
             SharedExp expr;
-            findSwParams(form, e, expr, T);
+            findSwParams(switchType, jumpDest, expr, T);
 
             if (expr) {
-                swi->uTable    = T;
-                swi->iNumTable = findNumCases(bb);
+                swi->tableAddr    = T;
+                swi->numTableEntries = findNumCases(bb);
 
                 // TMN: Added actual control of the array members, to possibly truncate what findNumCases()
                 // thinks is the number of cases, when finding the first array element not pointing to code.
-                if (form == 'A') {
+                if (switchType == SwitchType::A) {
                     const Prog *prog = proc->getProg();
 
-                    for (int iPtr = 0; iPtr < swi->iNumTable; ++iPtr) {
-                        Address uSwitch = Address(prog->readNative4(swi->uTable + iPtr * 4));
+                    for (int entryIdx = 0; entryIdx < swi->numTableEntries; ++entryIdx) {
+                        Address switchEntryAddr = Address(prog->readNative4(swi->tableAddr + entryIdx * 4));
 
-                        if (!Util::inRange(uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
+                        if (!Util::inRange(switchEntryAddr, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
                             if (DEBUG_SWITCH) {
                                 LOG_MSG("Truncating type A indirect jump array to %1 entries "
                                         "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
-                                        iPtr, uSwitch, prog->getLimitTextLow(), prog->getLimitTextHigh());
+                                        entryIdx, switchEntryAddr, prog->getLimitTextLow(), prog->getLimitTextHigh());
                             }
 
                             // Found an array that isn't a pointer-to-code. Assume array has ended.
-                            swi->iNumTable = iPtr;
+                            swi->numTableEntries = entryIdx;
                             break;
                         }
                     }
                 }
 
-                if (swi->iNumTable <= 0) {
+                if (swi->numTableEntries <= 0) {
                     LOG_WARN("Switch analysis failure at address %1", bb->getLowAddr());
                     return false;
                 }
 
-                // TODO: missing form = 'R' iOffset is not being set
-                swi->iUpper = swi->iNumTable - 1;
-                swi->iLower = 0;
+                // TODO: missing switchType = 'R' offset is not being set
+                swi->upperBound = swi->numTableEntries - 1;
+                swi->lowerBound = 0;
 
                 if ((expr->getOper() == opMinus) && expr->getSubExp2()->isIntConst()) {
-                    swi->iLower  = std::static_pointer_cast<Const>(expr->getSubExp2())->getInt();
-                    swi->iUpper += swi->iLower;
+                    swi->lowerBound  = std::static_pointer_cast<Const>(expr->getSubExp2())->getInt();
+                    swi->upperBound += swi->lowerBound;
                     expr         = expr->getSubExp1();
                 }
 
-                swi->pSwitchVar = expr;
+                swi->switchExp = expr;
                 lastStmt->setDest(nullptr);
                 lastStmt->setSwitchInfo(swi);
-                return swi->iNumTable != 0;
+                return swi->numTableEntries != 0;
             }
         }
         else {
             // Did not match a switch pattern. Perhaps it is a Fortran style goto with constants at the leaves of the
             // phi tree. Basically, a location with a reference, e.g. m[r28{-} - 16]{87}
-            if (e->isSubscript()) {
-                SharedExp sub = e->getSubExp1();
+            if (jumpDest->isSubscript()) {
+                SharedExp sub = jumpDest->getSubExp1();
 
                 if (sub->isLocation()) {
                     // Yes, we have <location>{ref}. Follow the tree and store the constant values that <location>
                     // could be assigned to in dests
                     std::list<int> dests;
-                    findConstantValues(std::static_pointer_cast<RefExp>(e)->getDef(), dests);
+                    findConstantValues(std::static_pointer_cast<RefExp>(jumpDest)->getDef(), dests);
                     // The switch info wants an array of native addresses
                     size_t num_dests = dests.size();
 
-                    if (num_dests) {
+                    if (num_dests > 0) {
                         int *destArray = new int[num_dests];
                         std::copy(dests.begin(), dests.end(), destArray);
                         SwitchInfo *swi = new SwitchInfo;
-                        swi->chForm     = 'F';                                     // The "Fortran" form
-                        swi->pSwitchVar = e;
-                        swi->uTable     = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the uTable member as a pointer
-                        swi->iNumTable  = static_cast<int>(num_dests);
-                        swi->iLower     = 1;                                       // Not used, except to compute
-                        swi->iUpper     = static_cast<int>(num_dests);             // the number of options
+                        swi->switchType      = SwitchType::F;                           // The "Fortran" form
+                        swi->switchExp       = jumpDest;
+                        swi->tableAddr       = Address(HostAddress(destArray).value()); // WARN: HACK HACK HACK Abuse the tableAddr member as a pointer
+                        swi->lowerBound      = 1;                                       // Not used, except to compute
+                        swi->upperBound      = static_cast<int>(num_dests);             // the number of options
+                        swi->numTableEntries = static_cast<int>(num_dests);
                         lastStmt->setDest(nullptr);
                         lastStmt->setSwitchInfo(swi);
                         return true;
@@ -447,15 +453,15 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
     }
     else if (bb->isType(BBType::CompCall)) {
         assert(!bb->getRTLs()->empty());
-        RTL *lastRtl = bb->getLastRTL();
+        RTL *lastRTL = bb->getLastRTL();
 
         if (DEBUG_SWITCH) {
             LOG_MSG("decodeIndirectJmp: COMPCALL:");
-            LOG_MSG("%1", lastRtl->prints());
+            LOG_MSG("%1", lastRTL->prints());
         }
 
-        assert(!lastRtl->empty());
-        CallStatement *lastStmt = static_cast<CallStatement *>(lastRtl->back());
+        assert(!lastRTL->empty());
+        CallStatement *lastStmt = static_cast<CallStatement *>(lastRTL->back());
         SharedExp     e         = lastStmt->getDest();
         // Indirect calls may sometimes not be propagated to, because of limited propagation (-l switch).
         // Propagate to e, but only keep the changes if the expression matches (don't want excessive propagation to
@@ -673,44 +679,45 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 }
 
 
-int IndirectJumpAnalyzer::findNumCases(BasicBlock *bb)
+int IndirectJumpAnalyzer::findNumCases(const BasicBlock *bb)
 {
     // should actually search from the statement to i
-    for (BasicBlock *pred : bb->getPredecessors()) {  // For each in-edge
+    for (const BasicBlock *pred : bb->getPredecessors()) {  // For each in-edge
         if (!pred->isType(BBType::Twoway)) {          // look for a two-way BB
             continue;                               // Ignore all others
         }
 
-        BranchStatement *lastStmt = dynamic_cast<BranchStatement *>(pred->getLastStmt());
+        const BranchStatement *lastStmt = dynamic_cast<const BranchStatement *>(pred->getLastStmt());
         assert(lastStmt != nullptr);
-        SharedExp pCond = lastStmt->getCondExpr();
-        if (pCond->getArity() != 2) {
+        SharedConstExp lastCondition = lastStmt->getCondExpr();
+        if (lastCondition->getArity() != 2) {
             continue;
         }
 
-        SharedExp rhs = pCond->getSubExp2();
+        SharedConstExp rhs = lastCondition->getSubExp2();
 
         if (!rhs->isIntConst()) {
             continue;
         }
 
-        int  k  = std::static_pointer_cast<Const>(rhs)->getInt();
-        OPER op = pCond->getOper();
+        const int  k  = std::static_pointer_cast<const Const>(rhs)->getInt();
+        const OPER op = lastCondition->getOper();
 
-        if ((op == opGtr) || (op == opGtrUns)) {
-            return k + 1;
-        }
+        switch(op) {
+        case opGtr:
+        case opGtrUns:
+        case opLessEq:
+        case opLessEqUns:
+            return k+1;
 
-        if ((op == opGtrEq) || (op == opGtrEqUns)) {
+        case opGtrEq:
+        case opGtrEqUns:
+        case opLess:
+        case opLessUns:
             return k;
-        }
 
-        if ((op == opLess) || (op == opLessUns)) {
-            return k;
-        }
-
-        if ((op == opLessEq) || (op == opLessEqUns)) {
-            return k + 1;
+        default:
+            break;
         }
     }
 
@@ -726,12 +733,11 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
     if (SETTING(debugSwitch)) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
-                si->chForm, si->uTable, si->iNumTable, si->iLower, si->iUpper);
+                static_cast<char>(si->switchType), si->tableAddr, si->numTableEntries, si->lowerBound, si->upperBound);
     }
 
     Address switchDestination;
-    int iNumOut = si->iUpper - si->iLower + 1;
-    int iNum    = iNumOut;
+    const int numCases = si->upperBound - si->lowerBound + 1;
 
     // Emit an NWAY BB instead of the COMPJUMP. Also update the number of out edges.
     bb->setType(BBType::Nway);
@@ -747,42 +753,41 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     //     case 4: case 10:
     //        do something else
     // ... }
-    // The switch statement is emitted assuming one out-edge for each switch value, which is assumed to be iLower+i
+    // The switch statement is emitted assuming one out-edge for each switch value, which is assumed to be lowerBound+i
     // for the ith zero-based case. It may be that the code for case 5 above will be a goto to the code for case 3,
     // but a smarter back end could group them
     std::list<Address> dests;
 
-    for (int i = 0; i < iNum; i++) {
+    for (int i = 0; i < numCases; i++) {
         // Get the destination address from the switch table.
-        if (si->chForm == 'H') {
-            int iValue = prog->readNative4(si->uTable + i * 2);
+        if (si->switchType == SwitchType::H) {
+            const int switchValue = prog->readNative4(si->tableAddr + i * 2);
 
-            if (iValue == -1) {
+            if (switchValue == -1) {
                 continue;
             }
 
-            switchDestination = Address(prog->readNative4(si->uTable + i * 8 + 4));
+            switchDestination = Address(prog->readNative4(si->tableAddr + i * 8 + 4));
         }
-        else if (si->chForm == 'F') {
-            Address::value_type *entry = reinterpret_cast<Address::value_type *>(si->uTable.value());
+        else if (si->switchType == SwitchType::F) {
+            Address::value_type *entry = reinterpret_cast<Address::value_type *>(si->tableAddr.value());
             switchDestination = Address(entry[i]);
         }
         else {
-            switchDestination = Address(prog->readNative4(si->uTable + i * 4));
+            switchDestination = Address(prog->readNative4(si->tableAddr + i * 4));
         }
 
-        if ((si->chForm == 'O') || (si->chForm == 'R') || (si->chForm == 'r')) {
+        if ((si->switchType == SwitchType::O) || (si->switchType == SwitchType::R) || (si->switchType == SwitchType::r)) {
             // Offset: add table address to make a real pointer to code.  For type R, the table is relative to the
-            // branch, so take iOffset. For others, iOffset is 0, so no harm
-            if (si->chForm != 'R') {
-                assert(si->iOffset == 0);
+            // branch, so take offsetFromJumpTbl. For others, offsetFromJumpTbl is 0, so no harm
+            if (si->switchType != SwitchType::R) {
+                assert(si->offsetFromJumpTbl == 0);
             }
 
-            switchDestination += si->uTable - si->iOffset;
+            switchDestination += si->tableAddr - si->offsetFromJumpTbl;
         }
 
         if (switchDestination < prog->getLimitTextHigh()) {
-            // tq.visit(cfg, uSwitch, this);
             cfg->addEdge(bb, switchDestination);
 
             // Remember to decode the newly discovered switch code arms, if necessary
@@ -799,11 +804,13 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
 
             // TODO: Elevate this logic to the code calculating iNumTable, but still leave this code as a safeguard.
             // Q: Should iNumOut and m_iNumOutEdges really be adjusted (iNum - i) ?
-            int numToRemove = std::max(iNum - i, 0);
+            int numToRemove = std::max(numCases - i, 0);
 
             // remove all table elements at index i and above
             while (numToRemove > 0) {
-                bb->removeSuccessor(bb->getSuccessor(i));
+                BasicBlock *succ = bb->getSuccessor(i);
+                bb->removeSuccessor(succ);
+                succ->removePredecessor(bb);
                 numToRemove--;
             }
             break;

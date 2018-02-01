@@ -39,10 +39,10 @@ void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 }
 
 
-void Decompiler::removeEntryPoint(Address a)
+void Decompiler::removeEntryPoint(Address entryAddr)
 {
     for (std::vector<Address>::iterator it = m_userEntrypoints.begin(); it != m_userEntrypoints.end(); it++) {
-        if (*it == a) {
+        if (*it == entryAddr) {
             m_userEntrypoints.erase(it);
             break;
         }
@@ -247,13 +247,13 @@ void Decompiler::alertNew(Function *function)
 }
 
 
-void Decompiler::alertRemove(Function *p)
+void Decompiler::alertRemove(Function *function)
 {
-    if (p->isLib()) {
-        emit libProcRemoved(p->getName());
+    if (function->isLib()) {
+        emit libProcRemoved(function->getName());
     }
     else {
-        emit userProcRemoved(p->getName(), p->getEntryAddress());
+        emit userProcRemoved(function->getName(), function->getEntryAddress());
     }
 }
 
@@ -264,7 +264,7 @@ void Decompiler::alertUpdateSignature(Function *p)
 }
 
 
-bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
+bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
 {
     Function *p = m_prog->findFunction(name);
 
@@ -279,13 +279,13 @@ bool Decompiler::getRtlForProc(const QString& name, QString& rtl)
 }
 
 
-void Decompiler::alertDecompileDebugPoint(UserProc *p, const char *description)
+void Decompiler::alertDecompileDebugPoint(UserProc *proc, const char *description)
 {
-    LOG_VERBOSE("%1: %2", p->getName(), description);
+    LOG_VERBOSE("%1: %2", proc->getName(), description);
 
     if (m_debugging) {
         m_waiting = true;
-        emit debugPointHit(p->getName(), description);
+        emit debugPointHit(proc->getName(), description);
 
         while (m_waiting) {
             QThread::yieldCurrentThread();
@@ -300,27 +300,22 @@ void Decompiler::stopWaiting()
 }
 
 
-QString Decompiler::getSigFile(const QString& name)
+QString Decompiler::getSigFilePath(const QString& name)
 {
-    Function *p = m_prog->findFunction(name);
+    Function *function = m_prog->findFunction(name);
 
-    if ((p == nullptr) || !p->isLib() || (p->getSignature() == nullptr)) {
+    if (!function || !function->isLib() || !function->getSignature()) {
         return "";
     }
 
-    return p->getSignature()->getSigFile();
+    return function->getSignature()->getSigFilePath();
 }
 
 
 QString Decompiler::getClusterFile(const QString& name)
 {
-    Module *c = m_prog->findModule(name);
-
-    if (c == nullptr) {
-        return "";
-    }
-
-    return c->getOutPath("c");
+    Module *module = m_prog->findModule(name);
+    return module ? module->getOutPath("c") : "";
 }
 
 

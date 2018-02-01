@@ -90,7 +90,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
     // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here already
     // If it is zero, this is a special BB for handling delayed branches or the like
-    bool bDone = false;
+    bool mustCreateBB = true;
     BBStartMap::iterator mi = m_bbStartMap.end();
     BasicBlock      *currentBB = nullptr;
 
@@ -100,7 +100,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
         if ((mi != m_bbStartMap.end()) && mi->second) {
             currentBB = mi->second;
 
-            // It should be incomplete, or the pBB there should be zero
+            // It should be incomplete, or the BB there should be zero
             // (we have called ensureBBExists() but not yet created the BB for it).
             // Else we have duplicated BBs.
             // Note: this can happen with forward jumps into the middle of a loop,
@@ -118,11 +118,11 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
                 currentBB->setType(bbType);
             }
 
-            bDone = true;
+            mustCreateBB = false;
         }
     }
 
-    if (!bDone) {
+    if (mustCreateBB) {
         currentBB = new BasicBlock(bbType, std::move(bbRTLs), m_myProc);
 
         if (startAddr.isZero() || startAddr == Address::INVALID) {
@@ -161,7 +161,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
             bool       nextIsIncomplete = nextBB->isIncomplete();
 
             if (nextAddr <= currentBB->getRTLs()->back()->getAddress()) {
-                // Need to truncate the current BB. We use splitBB(), but pass it pNextBB so it doesn't create a new BB
+                // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it doesn't create a new BB
                 // for the "bottom" BB of the split pair
                 splitBB(currentBB, nextAddr, nextBB);
 
@@ -250,9 +250,9 @@ bool Cfg::isStartOfBB(Address addr) const
 }
 
 
-bool Cfg::isStartOfIncompleteBB(Address uAddr) const
+bool Cfg::isStartOfIncompleteBB(Address addr) const
 {
-    const BasicBlock *bb = getBBStartingAt(uAddr);
+    const BasicBlock *bb = getBBStartingAt(addr);
 
     return bb && bb->isIncomplete();
 }
@@ -414,9 +414,9 @@ BasicBlock *Cfg::findRetNode()
 }
 
 
-Statement *Cfg::findImplicitAssign(SharedExp x)
+Statement *Cfg::findImplicitAssign(SharedExp exp)
 {
-    std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(x);
+    std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(exp);
 
     if (it != m_implicitMap.end()) {
         // implicit already present, use it
@@ -425,14 +425,14 @@ Statement *Cfg::findImplicitAssign(SharedExp x)
     }
 
     // A use with no explicit definition. Create a new implicit assignment
-    x   = x->clone(); // In case the original gets changed
-    Statement *def = new ImplicitAssign(x);
+    exp   = exp->clone(); // In case the original gets changed
+    Statement *def = new ImplicitAssign(exp);
     m_entryBB->prependStmt(def, m_myProc);
 
     // Remember it for later so we don't insert more than one implicit assignment for any one location
     // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
     // the definition as at all uses
-    m_implicitMap[x] = def;
+    m_implicitMap[exp] = def;
 
     return def;
 }
@@ -449,11 +449,11 @@ Statement *Cfg::findTheImplicitAssign(const SharedExp& x)
 Statement *Cfg::findImplicitParamAssign(Parameter *param)
 {
     // As per the above, but for parameters (signatures don't get updated with opParams)
-    SharedExp n = param->getExp();
+    SharedExp paramExp = param->getExp();
 
     ExpStatementMap::iterator it = std::find_if(m_implicitMap.begin(), m_implicitMap.end(),
-        [n] (const std::pair<const SharedExp&, Statement *>& val) {
-            return *(val.first) *= *n;
+        [paramExp] (const std::pair<const SharedExp&, Statement *>& val) {
+            return *(val.first) *= *paramExp;
         });
 
     if (it == m_implicitMap.end()) {

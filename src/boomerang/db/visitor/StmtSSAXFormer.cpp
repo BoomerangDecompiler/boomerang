@@ -45,9 +45,9 @@ void StmtSsaXformer::commonLhs(Assignment *as)
 void StmtSsaXformer::visit(BoolAssign *stmt, bool& visitChildren)
 {
     commonLhs(stmt);
-    SharedExp pCond = stmt->getCondExpr();
-    pCond = pCond->accept(static_cast<ExpSsaXformer *>(m_mod));
-    stmt->setCondExpr(pCond);
+    SharedExp condExp = stmt->getCondExpr();
+    condExp = condExp->accept(static_cast<ExpSsaXformer *>(m_mod));
+    stmt->setCondExpr(condExp);
     visitChildren = false; // TODO: verify recur setting
 }
 
@@ -90,11 +90,10 @@ void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
 
 void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
 {
-    SharedExp pDest = stmt->getDest();
+    SharedExp callDest = stmt->getDest();
 
-    if (pDest) {
-        pDest = pDest->accept(static_cast<ExpSsaXformer*>(m_mod));
-        stmt->setDest(pDest);
+    if (callDest) {
+        stmt->setDest(callDest->accept(static_cast<ExpSsaXformer*>(m_mod)));
     }
 
     const StatementList& arguments = stmt->getArguments();

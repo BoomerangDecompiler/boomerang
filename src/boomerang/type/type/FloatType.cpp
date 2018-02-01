@@ -15,7 +15,7 @@
 
 
 FloatType::FloatType(int sz)
-    : Type(eFloat)
+    : Type(TypeClass::Float)
     , size(sz)
 {
 }
@@ -104,7 +104,7 @@ QString FloatType::getTempName() const
 }
 
 
-SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType FloatType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<FloatType *>(this)->shared_from_this();
@@ -112,11 +112,11 @@ SharedType FloatType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     if (other->resolvesToFloat() || other->resolvesToSize()) {
         const size_t newSize = std::max(size, other->getSize());
-        ch |= (newSize != size);
+        changed |= (newSize != size);
         return FloatType::get(newSize);
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

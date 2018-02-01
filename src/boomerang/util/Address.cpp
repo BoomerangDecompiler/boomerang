@@ -34,7 +34,7 @@ Address::Address(value_type _value)
     : m_value(_value)
 {
     if ((m_value != static_cast<value_type>(-1)) && ((_value & ~getSourceMask()) != 0)) {
-        if (VERBOSE) {
+        if (SETTING(verboseOutput)) {
             LOG_WARN("Address initialized with invalid value %1",
                  QString("0x%1").arg(m_value, 2 * sizeof(value_type), 16, QChar('0')));
         }

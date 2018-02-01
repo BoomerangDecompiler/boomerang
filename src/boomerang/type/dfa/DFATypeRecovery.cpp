@@ -171,13 +171,13 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
     // Note: parameters are not explicit any more
     // if (lhs->isParam()) { // }
 
-    bool       allZero = false;
-    SharedExp  slhs    = lhs->clone()->removeSubscripts(allZero);
-    SharedType iType   = static_cast<const ImplicitAssign *>(s)->getType();
-    int        i       = proc->getSignature()->findParam(slhs);
+    bool       allZero      = false;
+    SharedExp  slhs         = lhs->clone()->removeSubscripts(allZero);
+    SharedType implicitType = static_cast<const ImplicitAssign *>(s)->getType();
+    int        i            = proc->getSignature()->findParam(slhs);
 
     if (i != -1) {
-        proc->setParamType(i, iType);
+        proc->setParamType(i, implicitType);
     }
     else if (lhs->isMemOf()) {
         SharedExp sub = lhs->getSubExp1();
@@ -185,13 +185,13 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
         if (sub->isIntConst()) {
             // We have a m[K] := -
             Address K = sub->access<Const>()->getAddr();
-            prog->markGlobalUsed(K, iType);
+            prog->markGlobalUsed(K, implicitType);
         }
     }
     else if (lhs->isGlobal()) {
         assert(std::dynamic_pointer_cast<Location>(lhs) != nullptr);
         QString gname = lhs->access<Const, 1>()->getStr();
-        prog->setGlobalType(gname, iType);
+        prog->setGlobalType(gname, implicitType);
     }
 }
 

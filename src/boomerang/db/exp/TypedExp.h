@@ -65,7 +65,7 @@ public:
     void setType(SharedType ty) { m_type = ty; }
 
     /// \copydoc Unary::polySimplify
-    virtual SharedExp polySimplify(bool& bMod) override;
+    virtual SharedExp polySimplify(bool& changed) override;
 
     /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;

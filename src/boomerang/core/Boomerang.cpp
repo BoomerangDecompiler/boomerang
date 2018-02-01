@@ -171,16 +171,16 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 }
 
 
-void Boomerang::miniDebugger(UserProc *p, const char *description)
+void Boomerang::miniDebugger(UserProc *proc, const char *description)
 {
     QTextStream q_cout(stdout);
     QTextStream q_cin(stdin);
 
-    q_cout << "decompiling " << p->getName() << ": " << description << "\n";
+    q_cout << "decompiling " << proc->getName() << ": " << description << "\n";
     QString stopAt;
     static std::set<Statement *> watches;
 
-    if (stopAt.isEmpty() || !p->getName().compare(stopAt)) {
+    if (stopAt.isEmpty() || !proc->getName().compare(stopAt)) {
         // This is a mini command line debugger.  Feel free to expand it.
         for (auto const& watche : watches) {
             (watche)->print(q_cout);
@@ -195,14 +195,14 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
             q_cin >> line;
 
             if (line.startsWith("print")) {
-                p->print(q_cout);
+                proc->print(q_cout);
             }
             else if (line.startsWith("fprint")) {
                 QFile tgt("out.proc");
 
                 if (tgt.open(QFile::WriteOnly)) {
                     QTextStream of(&tgt);
-                    p->print(of);
+                    proc->print(of);
                 }
             }
             else if (line.startsWith("run ")) {
@@ -220,7 +220,7 @@ void Boomerang::miniDebugger(UserProc *p, const char *description)
                 if (parts.size() > 1) {
                     int           n = parts[1].toInt();
                     StatementList stmts;
-                    p->getStatements(stmts);
+                    proc->getStatements(stmts);
                     StatementList::iterator it;
 
                     for (it = stmts.begin(); it != stmts.end(); it++) {
@@ -310,34 +310,34 @@ void Boomerang::alertDecompileComplete()
 }
 
 
-void Boomerang::alertNew(Function* p)
+void Boomerang::alertNew(Function* function)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertNew(p);
+        it->alertNew(function);
     }
 }
 
 
-void Boomerang::alertRemove(Function* p)
+void Boomerang::alertRemove(Function* function)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertRemove(p);
+        it->alertRemove(function);
     }
 }
 
 
-void Boomerang::alertUpdateSignature(Function* p)
+void Boomerang::alertUpdateSignature(Function* function)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertUpdateSignature(p);
+        it->alertUpdateSignature(function);
     }
 }
 
 
-void Boomerang::alertDecode(Address pc, int nBytes)
+void Boomerang::alertDecode(Address pc, int numBytes)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecode(pc, nBytes);
+        it->alertDecode(pc, numBytes);
     }
 }
 
@@ -350,10 +350,10 @@ void Boomerang::alertBadDecode(Address pc)
 }
 
 
-void Boomerang::alertDecode(Function* p, Address pc, Address last, int nBytes)
+void Boomerang::alertDecode(Function* p, Address pc, Address last, int numBytes)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecode(p, pc, last, nBytes);
+        it->alertDecode(p, pc, last, numBytes);
     }
 }
 
@@ -366,10 +366,10 @@ void Boomerang::alertLoad(Function* p)
 }
 
 
-void Boomerang::alertStartDecode(Address start, int nBytes)
+void Boomerang::alertStartDecode(Address start, int numBytes)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertStartDecode(start, nBytes);
+        it->alertStartDecode(start, numBytes);
     }
 }
 
@@ -382,58 +382,58 @@ void Boomerang::alertEndDecode()
 }
 
 
-void Boomerang::alertStartDecompile(UserProc* p)
+void Boomerang::alertStartDecompile(UserProc* proc)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertStartDecompile(p);
+        it->alertStartDecompile(proc);
     }
 }
 
 
-void Boomerang::alertProcStatusChange(UserProc* p)
+void Boomerang::alertProcStatusChange(UserProc* proc)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertProcStatusChange(p);
+        it->alertProcStatusChange(proc);
     }
 }
 
 
-void Boomerang::alertDecompileSSADepth(UserProc* p, int depth)
+void Boomerang::alertDecompileSSADepth(UserProc* proc, int depth)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecompileSSADepth(p, depth);
+        it->alertDecompileSSADepth(proc, depth);
     }
 }
 
 
-void Boomerang::alertDecompileBeforePropagate(UserProc* p, int depth)
+void Boomerang::alertDecompileBeforePropagate(UserProc* proc, int depth)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecompileBeforePropagate(p, depth);
+        it->alertDecompileBeforePropagate(proc, depth);
     }
 }
 
 
-void Boomerang::alertDecompileAfterPropagate(UserProc* p, int depth)
+void Boomerang::alertDecompileAfterPropagate(UserProc* proc, int depth)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecompileAfterPropagate(p, depth);
+        it->alertDecompileAfterPropagate(proc, depth);
     }
 }
 
 
-void Boomerang::alertDecompileAfterRemoveStmts(UserProc* p, int depth)
+void Boomerang::alertDecompileAfterRemoveStmts(UserProc* proc, int depth)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecompileAfterRemoveStmts(p, depth);
+        it->alertDecompileAfterRemoveStmts(proc, depth);
     }
 }
 
 
-void Boomerang::alertEndDecompile(UserProc* p)
+void Boomerang::alertEndDecompile(UserProc* proc)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertEndDecompile(p);
+        it->alertEndDecompile(proc);
     }
 }
 
@@ -446,10 +446,9 @@ void Boomerang::alertDiscovered(Function* caller, Function* function)
 }
 
 
-void Boomerang::alertDecompiling(UserProc* p)
+void Boomerang::alertDecompiling(UserProc* proc)
 {
     for (IWatcher *it : m_watchers) {
-        it->alertDecompiling(p);
+        it->alertDecompiling(proc);
     }
 }
-

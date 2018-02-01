@@ -27,11 +27,11 @@ public:
     virtual void alertNew(Function *) {}
     virtual void alertRemove(Function *) {}
     virtual void alertUpdateSignature(Function *) {}
-    virtual void alertDecode(Address pc, int nBytes) { Q_UNUSED(pc); Q_UNUSED(nBytes); }
+    virtual void alertDecode(Address pc, int numBytes) { Q_UNUSED(pc); Q_UNUSED(numBytes); }
     virtual void alertBadDecode(Address pc) { Q_UNUSED(pc); }
-    virtual void alertStartDecode(Address start, int nBytes) { Q_UNUSED(start); Q_UNUSED(nBytes); }
+    virtual void alertStartDecode(Address start, int numBytes) { Q_UNUSED(start); Q_UNUSED(numBytes); }
     virtual void alertEndDecode() {}
-    virtual void alertDecode(Function *, Address pc, Address last, int nBytes) { Q_UNUSED(pc); Q_UNUSED(last); Q_UNUSED(nBytes); }
+    virtual void alertDecode(Function *, Address pc, Address last, int numBytes) { Q_UNUSED(pc); Q_UNUSED(last); Q_UNUSED(numBytes); }
     virtual void alertStartDecompile(UserProc *) {}
     virtual void alertProcStatusChange(UserProc *) {}
     virtual void alertDecompileSSADepth(UserProc *, int depth) { Q_UNUSED(depth); }

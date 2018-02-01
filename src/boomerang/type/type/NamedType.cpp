@@ -14,7 +14,7 @@
 
 
 NamedType::NamedType(const QString& _name)
-    : Type(eNamed)
+    : Type(TypeClass::Named)
     , name(_name)
 {
 }
@@ -78,12 +78,12 @@ QString NamedType::getCtype(bool /*final*/) const
 }
 
 
-SharedType NamedType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType NamedType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     SharedType rt = resolvesTo();
 
     if (rt) {
-        SharedType ret = rt->meetWith(other, ch, bHighestPtr);
+        SharedType ret = rt->meetWith(other, changed, useHighestPtr);
 
         if (ret == rt) { // Retain the named type, much better than some compound type
             return const_cast<NamedType *>(this)->shared_from_this();
@@ -100,7 +100,7 @@ SharedType NamedType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
         return const_cast<NamedType *>(this)->shared_from_this();
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

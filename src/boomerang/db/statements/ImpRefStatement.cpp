@@ -47,9 +47,9 @@ void ImpRefStatement::print(QTextStream& os, bool html) const
 }
 
 
-void ImpRefStatement::meetWith(SharedType ty, bool& ch)
+void ImpRefStatement::meetWith(SharedType ty, bool& changed)
 {
-    m_type = m_type->meetWith(ty, ch);
+    m_type = m_type->meetWith(ty, changed);
 }
 
 

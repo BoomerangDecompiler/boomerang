@@ -85,16 +85,16 @@ Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool MIPSFrontEnd::processProc(Address uAddr, UserProc *function, QTextStream& os, bool frag /* = false */,
+bool MIPSFrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag /* = false */,
                                bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(uAddr, function, os, frag, spec)) {
+    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
         return false;
     }
 
     // This will get done twice; no harm
-    function->setEntryBB();
+    proc->setEntryBB();
 
     return true;
 }

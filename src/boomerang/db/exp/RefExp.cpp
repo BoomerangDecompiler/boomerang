@@ -127,13 +127,13 @@ bool RefExp::operator*=(const Exp& o) const
 }
 
 
-SharedExp RefExp::polySimplify(bool& bMod)
+SharedExp RefExp::polySimplify(bool& changed)
 {
     SharedExp res = shared_from_this();
 
-    SharedExp tmp = subExp1->polySimplify(bMod);
+    SharedExp tmp = subExp1->polySimplify(changed);
 
-    if (bMod) {
+    if (changed) {
         subExp1 = tmp;
         return res;
     }
@@ -145,7 +145,7 @@ SharedExp RefExp::polySimplify(bool& bMod)
      */
     if ((subExp1->getOper() == opDF) && (m_def == nullptr)) {
         res  = Const::get(int(0));
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -154,7 +154,7 @@ SharedExp RefExp::polySimplify(bool& bMod)
     if (subExp1->isRegN(0) &&                                                     // r0 (ax)
         m_def && m_def->isAssign() && static_cast<const Assign *>(m_def)->getLeft()->isRegN(24)) { // r24 (eax)
             res  = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(24), m_def));
-            bMod = true;
+            changed = true;
             return res;
     }
 
@@ -293,17 +293,17 @@ SharedType RefExp::ascendType()
 }
 
 
-void RefExp::descendType(SharedType parentType, bool& ch, Statement *s)
+void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
 {
     assert(getSubExp1());
 
     if (m_def == nullptr) {
         LOG_ERROR("Cannot descendType of expression '%1' since it does not have a defining statement!", getSubExp1());
-        ch = false;
+        changed = false;
         return;
     }
 
-    SharedType newType = m_def->meetWithFor(parentType, subExp1, ch);
+    SharedType newType = m_def->meetWithFor(parentType, subExp1, changed);
     // In case subExp1 is a m[...]
-    subExp1->descendType(newType, ch, s);
+    subExp1->descendType(newType, changed, s);
 }

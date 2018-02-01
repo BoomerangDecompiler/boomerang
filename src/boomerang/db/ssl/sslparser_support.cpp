@@ -40,7 +40,7 @@ class SSLScanner;
  */
 SSLParser::SSLParser(std::istream& in, bool trace)
     : sslFile("input")
-    , bFloat(false)
+    , floatRegister(false)
 {
     m_fin      = nullptr;
     theScanner = new SSLScanner(in, trace);

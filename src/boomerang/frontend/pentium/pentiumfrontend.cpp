@@ -224,11 +224,11 @@ std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
 
 void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 {
-    for (BasicBlock *pBB : *cfg) {
+    for (BasicBlock *bb : *cfg) {
         Statement *st;
 
         // Loop through each RTL this BB
-        RTLList *BB_rtls = pBB->getRTLs();
+        RTLList *BB_rtls = bb->getRTLs();
 
         if (BB_rtls == nullptr) {
             // For example, incomplete BB
@@ -244,24 +244,24 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
                     Assign *asgn = new Assign(FloatType::get(80),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
                                                  Location::regOf(39));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(39), Location::regOf(38));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(38), Location::regOf(37));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(37), Location::regOf(36));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(36), Location::regOf(35));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(35), Location::regOf(34));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(34), Location::regOf(33));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(33), Location::regOf(32));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(32),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
 
                     // Remove the FPUSH
                     iter = rtl->erase(iter);
@@ -271,24 +271,24 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
                     Assign *asgn = new Assign(FloatType::get(80),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
                                                  Location::regOf(32));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(32), Location::regOf(33));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(33), Location::regOf(34));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(34), Location::regOf(35));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(35), Location::regOf(36));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(36), Location::regOf(37));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(37), Location::regOf(38));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(38), Location::regOf(39));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
                     asgn = new Assign(FloatType::get(80), Location::regOf(39),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))));
-                    asgn->setBB(pBB); rtl->insert(iter, asgn);
+                    asgn->setBB(bb); rtl->insert(iter, asgn);
 
                     // Remove the FPOP
                     iter = rtl->erase(iter);
@@ -312,7 +312,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
         return;
     }
 
-    Statement                  *st;
+    Statement *st;
 
     for (const auto& rtl : *BB_rtls) {
         // Check for call.
@@ -415,19 +415,6 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
 }
 
 
-void PentiumFrontEnd::emitSet(std::list<RTL *> *bbRTLs, std::list<RTL *>::iterator& rit,
-                              Address addr, SharedExp lhs, SharedExp cond)
-{
-    Statement *asgn = new Assign(lhs, std::make_shared<Ternary>(opTern, cond, Const::get(1), Const::get(0)));
-    RTL       *pRtl = new RTL(addr);
-
-    pRtl->append(asgn);
-
-    // Insert the new RTL before rit
-    bbRTLs->insert(rit, pRtl);
-}
-
-
 bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 {
     if (dest == Address::INVALID) {
@@ -449,25 +436,25 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         // r[26] = r[tmpl] >> 32
         Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
                                   std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(32)));
-        std::unique_ptr<RTL> pRtl(new RTL(addr));
-        pRtl->append(a);
+        std::unique_ptr<RTL> newRTL(new RTL(addr));
+        newRTL->append(a);
         a = new Assign(Location::regOf(24), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
-        pRtl->append(a);
+        newRTL->append(a);
         a = new Assign(Location::regOf(26),
                        Binary::get(opShiftR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))), Const::get(32)));
-        pRtl->append(a);
+        newRTL->append(a);
 
         // Append this RTL to the list of RTLs for this BB
-        lrtl.push_back(std::move(pRtl));
+        lrtl.push_back(std::move(newRTL));
 
         // Return true, so the caller knows not to create a HLCall
         return true;
     }
     else if (name == "__mingw_allocstack") {
-        std::unique_ptr<RTL> pRtl(new RTL(addr));
-        pRtl->append(new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24))));
-        lrtl.push_back(std::move(pRtl));
+        std::unique_ptr<RTL> newRTL(new RTL(addr));
+        newRTL->append(new Assign(Location::regOf(28), Binary::get(opMinus, Location::regOf(28), Location::regOf(24))));
+        lrtl.push_back(std::move(newRTL));
         m_program->removeFunction(name);
         return true;
     }
@@ -484,8 +471,8 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 }
 
 
-PentiumFrontEnd::PentiumFrontEnd(IFileLoader *p_BF, Prog *prog)
-    : IFrontEnd(p_BF, prog)
+PentiumFrontEnd::PentiumFrontEnd(IFileLoader *loader, Prog *prog)
+    : IFrontEnd(loader, prog)
 {
     m_decoder.reset(new PentiumDecoder(prog));
 }
@@ -512,8 +499,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         return Address::INVALID;
     }
 
-    int     instCount = 100;
-    int     conseq    = 0;
+    int     numInstructionsLeft = 100;
     Address addr      = start;
 
     IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
@@ -531,7 +517,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
             break;
         }
 
-        CallStatement *cs = nullptr;
+        const CallStatement *cs = nullptr;
 
         if (!inst.rtl->empty()) {
             cs = (inst.rtl->back()->getKind() == StmtType::Call) ? static_cast<CallStatement *>(inst.rtl->back()) : nullptr;
@@ -541,13 +527,13 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
                                    symbols->find(cs->getDest()->access<Const, 1>()->getAddr()) : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
-            int oNumBytes = inst.numBytes;
+            const int oldInstLength = inst.numBytes;
 
-            if (decodeInstruction(addr + oNumBytes, inst) && (inst.rtl->size() == 2)) {
-                Assign *a = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
+            if (decodeInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
+                const Assign *asgn = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
 
-                if (a && (*a->getRight() == *Location::regOf(24))) {
-                    decodeInstruction(addr + oNumBytes + inst.numBytes, inst);
+                if (asgn && (*asgn->getRight() == *Location::regOf(24))) {
+                    decodeInstruction(addr + oldInstLength + inst.numBytes, inst);
 
                     if (!inst.rtl->empty()) {
                         CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
@@ -563,11 +549,9 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         }
 
         if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
-            ++conseq;
+            const QString destSym = m_program->getSymbolByAddress(dest);
 
-            QString dest_sym = m_program->getSymbolByAddress(dest);
-
-            if (dest_sym == "__libc_start_main") {
+            if (destSym == "__libc_start_main") {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4
@@ -581,11 +565,8 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
                 return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
             }
         }
-        else {
-            conseq = 0; // Must be consequitive
-        }
 
-        GotoStatement *gs = static_cast<GotoStatement *>(cs);
+        const GotoStatement *gs = static_cast<const GotoStatement *>(cs);
 
         if (gs && (gs->getKind() == StmtType::Goto)) {
             // Example: Borland often starts with a branch around some debug
@@ -595,7 +576,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         else {
             addr += inst.numBytes;
         }
-    } while (--instCount);
+    } while (--numInstructionsLeft > 0);
 
     // Last chance check: look for _main (e.g. Borland programs)
     const IBinarySymbol *sym = symbols->find("_main");

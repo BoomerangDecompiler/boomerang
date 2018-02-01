@@ -48,12 +48,12 @@ BasicBlock::BasicBlock(Address lowAddr, Function *function)
 }
 
 
-BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> pRtls, Function *function)
+BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> bbRTLs, Function *function)
     : m_function(function)
     , m_bbType(bbType)
 {
     // Set the RTLs. This also updates the low and the high address of the BB.
-    setRTLs(std::move(pRtls));
+    setRTLs(std::move(bbRTLs));
 }
 
 
@@ -197,8 +197,8 @@ void BasicBlock::print(QTextStream& os, bool html)
             os << "<table>\n";
         }
 
-        for (auto& r : *m_listOfRTLs) {
-            r->print(os, html);
+        for (auto& rtl : *m_listOfRTLs) {
+            rtl->print(os, html);
         }
 
         if (html) {
@@ -292,9 +292,9 @@ const BasicBlock *BasicBlock::getSuccessor(int i) const
 }
 
 
-void BasicBlock::addPredecessor(BasicBlock *pNewInEdge)
+void BasicBlock::addPredecessor(BasicBlock *predecessor)
 {
-    m_predecessors.push_back(pNewInEdge);
+    m_predecessors.push_back(predecessor);
 }
 
 
@@ -322,10 +322,10 @@ Function *BasicBlock::getCallDestProc() const
         return nullptr;
     }
 
-    RTL *lastRtl = m_listOfRTLs->back().get();
+    RTL *lastRTL = m_listOfRTLs->back().get();
 
     // search backwards for a CallStatement
-    for (auto it = lastRtl->rbegin(); it != lastRtl->rend(); it++) {
+    for (auto it = lastRTL->rbegin(); it != lastRTL->rend(); it++) {
         if ((*it)->getKind() == StmtType::Call) {
             return static_cast<CallStatement *>(*it)->getDestProc();
         }
@@ -432,8 +432,43 @@ Statement *BasicBlock::getFirstStmt()
     return nullptr;
 }
 
+const Statement *BasicBlock::getFirstStmt() const
+{
+    if (m_listOfRTLs == nullptr) {
+        return nullptr;
+    }
+
+    for (auto& rtl : *m_listOfRTLs) {
+        if (!rtl->empty()) {
+            return rtl->front();
+        }
+    }
+
+    return nullptr;
+}
+
 
 Statement *BasicBlock::getLastStmt()
+{
+    if (m_listOfRTLs == nullptr) {
+        return nullptr;
+    }
+
+    RTLRIterator revIt = m_listOfRTLs->rbegin();
+
+    while (revIt != m_listOfRTLs->rend()) {
+        auto& rtl = *revIt++;
+
+        if (!rtl->empty()) {
+            return rtl->back();
+        }
+    }
+
+    return nullptr;
+}
+
+
+const Statement *BasicBlock::getLastStmt() const
 {
     if (m_listOfRTLs == nullptr) {
         return nullptr;
@@ -492,10 +527,10 @@ SharedExp BasicBlock::getDest() const
 {
     // The destianation will be in the last rtl
     assert(m_listOfRTLs);
-    const RTL *lastRtl = getLastRTL();
+    const RTL *lastRTL = getLastRTL();
 
     // It should contain a GotoStatement or derived class
-    Statement     *lastStmt = lastRtl->getHlStmt();
+    Statement     *lastStmt = lastRTL->getHlStmt();
     CaseStatement *cs       = dynamic_cast<CaseStatement *>(lastStmt);
 
     if (cs) {
@@ -503,7 +538,7 @@ SharedExp BasicBlock::getDest() const
         SwitchInfo *si = cs->getSwitchInfo();
 
         if (si) {
-            return si->pSwitchVar;
+            return si->switchExp;
         }
     }
     else {

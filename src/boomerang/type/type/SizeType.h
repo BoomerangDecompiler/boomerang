@@ -46,7 +46,9 @@ public:
     virtual bool isSize() const override;
     virtual bool isComplete() override; // Basic type is unknown
     virtual QString getCtype(bool final = false) const override;
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
     virtual bool isCompatible(const Type& other, bool) const override;
 
 private:

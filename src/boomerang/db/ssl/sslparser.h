@@ -191,7 +191,7 @@ protected:
      * True when FLOAT keyword seen; false when INTEGER keyword seen
      * (in @REGISTER section)
      */
-    bool bFloat;
+    bool floatRegister;
 };
 
 /* END */

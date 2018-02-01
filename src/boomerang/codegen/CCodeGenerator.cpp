@@ -48,7 +48,7 @@
 
 
 
-static bool isBareMemof(const Exp& e, UserProc *)
+static bool isBareMemof(const Exp& exp, UserProc *)
 {
 #if SYMS_IN_BACK_END
     if (!e.isMemOf()) {
@@ -56,15 +56,15 @@ static bool isBareMemof(const Exp& e, UserProc *)
     }
 
     // Check if it maps to a symbol
-    const char *sym = proc->lookupSym(e);
+    const char *symName = proc->lookupSym(e);
 
-    if (sym == nullptr) {
-        sym = proc->lookupSym(e->getSubExp1());
+    if (symName == nullptr) {
+        symName = proc->lookupSym(e->getSubExp1());
     }
 
-    return sym == nullptr; // Only a bare memof if it is not a symbol
+    return symName == nullptr; // Only a bare memof if it is not a symbol
 #else
-    return e.isMemOf();
+    return exp.isMemOf();
 #endif
 }
 
@@ -73,10 +73,10 @@ void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 {
     for (Global *glob : prog->getGlobals()) {
         // Check for an initial value
-        auto e = glob->getInitialValue(prog);
+        SharedExp initialValue = glob->getInitialValue(prog);
 
-        if (e) {
-            addGlobal(glob->getName(), glob->getType(), e);
+        if (initialValue) {
+            addGlobal(glob->getName(), glob->getType(), initialValue);
         }
     }
 
@@ -229,8 +229,8 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
     //    return;
 
     QString     tgt;
-    QTextStream s(&tgt);
-    indent(s, m_indent);
+    QTextStream ost(&tgt);
+    indent(ost, m_indent);
 
     SharedType asgnType = asgn->getType();
     SharedExp  lhs      = asgn->getLeft();
@@ -257,18 +257,18 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
     if (SETTING(noDecompile) && isBareMemof(*lhs, proc)) {
         if (asgnType && asgnType->isFloat()) {
             if (asgnType->as<FloatType>()->getSize() == 32) {
-                s << "FLOAT_";
+                ost << "FLOAT_";
             }
             else {
-                s << "DOUBLE_";
+                ost << "DOUBLE_";
             }
         }
         else if (rhs->getOper() == opFsize) {
             if (rhs->access<Const, 2>()->getInt() == 32) {
-                s << "FLOAT_";
+                ost << "FLOAT_";
             }
             else {
-                s << "DOUBLE_";
+                ost << "DOUBLE_";
             }
         }
         else if ((rhs->getOper() == opRegOf) && (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
@@ -276,27 +276,27 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
             int wdth = rhs->access<Const, 2>()->getInt();
 
             if ((wdth >= 32) && (wdth <= 63)) {
-                s << "FLOAT_";
+                ost << "FLOAT_";
             }
             else if ((wdth >= 64) && (wdth <= 87)) {
-                s << "DOUBLE_";
+                ost << "DOUBLE_";
             }
         }
 
-        s << "MEMASSIGN(";
-        appendExp(s, *lhs->getSubExp1(), PREC_UNARY);
-        s << ", ";
-        appendExp(s, *rhs, PREC_UNARY);
-        s << ");";
+        ost << "MEMASSIGN(";
+        appendExp(ost, *lhs->getSubExp1(), PREC_UNARY);
+        ost << ", ";
+        appendExp(ost, *rhs, PREC_UNARY);
+        ost << ");";
         appendLine(tgt);
         return;
     }
 
     if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
-        appendExp(s, TypedExp(asgnType, lhs), PREC_ASSIGN);
+        appendExp(ost, TypedExp(asgnType, lhs), PREC_ASSIGN);
     }
     else if ((lhs->getOper() == opGlobal) && asgn->getType()->isArray()) {
-        appendExp(s, Binary(opArrayIndex, lhs, Const::get(0)), PREC_ASSIGN);
+        appendExp(ost, Binary(opArrayIndex, lhs, Const::get(0)), PREC_ASSIGN);
     }
     else if ((lhs->getOper() == opAt) && lhs->getSubExp2()->isIntConst() &&
              lhs->getSubExp3()->isIntConst()) {
@@ -304,19 +304,19 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         SharedExp exp1 = lhs->getSubExp1();
         int       n    = lhs->access<Const, 2>()->getInt();
         int       m    = lhs->access<Const, 3>()->getInt();
-        appendExp(s, *exp1, PREC_ASSIGN);
-        s << " = ";
+        appendExp(ost, *exp1, PREC_ASSIGN);
+        ost << " = ";
         int mask = ~(((1 << (m - n + 1)) - 1) << m); // MSVC winges without most of these parentheses
         rhs = Binary::get(opBitAnd, exp1,
                           Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
         rhs = rhs->simplify();
-        appendExp(s, *rhs, PREC_ASSIGN);
-        s << ";";
+        appendExp(ost, *rhs, PREC_ASSIGN);
+        ost << ";";
         appendLine(tgt);
         return;
     }
     else {
-        appendExp(s, *lhs, PREC_ASSIGN); // Ordinary LHS
+        appendExp(ost, *lhs, PREC_ASSIGN); // Ordinary LHS
     }
 
     if ((rhs->getOper() == opPlus) && (*rhs->getSubExp1() == *lhs)) {
@@ -326,19 +326,19 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
             ((rhs->access<Const, 2>()->getInt() == 1) || (asgn->getType()->isPointer() &&
                                                           (asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
                                                            static_cast<unsigned>(rhs->access<Const, 2>()->getInt()) * 8)))) {
-            s << "++";
+            ost << "++";
         }
         else {
-            s << " += ";
-            appendExp(s, *rhs->getSubExp2(), PREC_ASSIGN);
+            ost << " += ";
+            appendExp(ost, *rhs->getSubExp2(), PREC_ASSIGN);
         }
     }
     else {
-        s << " = ";
-        appendExp(s, *rhs, PREC_ASSIGN);
+        ost << " = ";
+        appendExp(ost, *rhs, PREC_ASSIGN);
     }
 
-    s << ";";
+    ost << ";";
     appendLine(tgt);
 }
 
@@ -463,25 +463,25 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
     StatementList::iterator rr;
     QString                 tgt;
-    QTextStream             s(&tgt);
-    indent(s, m_indent);
-    s << "return";
+    QTextStream             ost(&tgt);
+    indent(ost, m_indent);
+    ost << "return";
     size_t n = rets->size();
 
     if ((n == 0) && SETTING(noDecompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
-        s << " eax";
+        ost << " eax";
     }
 
     if (n >= 1) {
-        s << " ";
-        appendExp(s, *static_cast<Assign *>(*rets->begin())->getRight(), PREC_NONE);
+        ost << " ";
+        appendExp(ost, *static_cast<Assign *>(*rets->begin())->getRight(), PREC_NONE);
     }
 
-    s << ";";
+    ost << ";";
 
     if (n > 0) {
         if (n > 1) {
-            s << " /* WARNING: Also returning: ";
+            ost << " /* WARNING: Also returning: ";
         }
 
         bool first = true;
@@ -491,16 +491,16 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
                 first = false;
             }
             else {
-                s << ", ";
+                ost << ", ";
             }
 
-            appendExp(s, *(static_cast<Assign *>(*rr))->getLeft(), PREC_NONE);
-            s << " := ";
-            appendExp(s, *(static_cast<Assign *>(*rr))->getRight(), PREC_NONE);
+            appendExp(ost, *(static_cast<Assign *>(*rr))->getLeft(), PREC_NONE);
+            ost << " := ";
+            appendExp(ost, *(static_cast<Assign *>(*rr))->getRight(), PREC_NONE);
         }
 
         if (n > 1) {
-            s << " */";
+            ost << " */";
         }
     }
 
@@ -549,7 +549,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     // Note: don't try to remove unused statements here; that requires the
     // RefExps, which are all gone now (transformed out of SSA form)!
 
-    if (SETTING(printRtl)) {
+    if (SETTING(printRTLs)) {
         LOG_VERBOSE("%1", proc->toString());
     }
 
@@ -685,7 +685,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
         SharedType ty   = as->getType();
 
         if (ty == nullptr) {
-            if (VERBOSE) {
+            if (SETTING(verboseOutput)) {
                 LOG_ERROR("No type for parameter %1!", left);
             }
 
@@ -1022,27 +1022,27 @@ void CCodeGenerator::addProcEnd()
 void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    QTextStream ost(&tgt);
 
-    indent(s, 1);
-    appendTypeIdent(s, type, name);
+    indent(ost, 1);
+    appendTypeIdent(ost, type, name);
     SharedConstExp e = m_proc->expFromSymbol(name);
 
     if (e) {
         // ? Should never see subscripts in the back end!
         if ((e->getOper() == opSubscript) && std::static_pointer_cast<const RefExp>(e)->isImplicitDef() &&
             ((e->getSubExp1()->getOper() == opParam) || (e->getSubExp1()->getOper() == opGlobal))) {
-            s << " = ";
-            appendExp(s, *e->getSubExp1(), PREC_NONE);
-            s << ";";
+            ost << " = ";
+            appendExp(ost, *e->getSubExp1(), PREC_NONE);
+            ost << ";";
         }
         else {
-            s << "; \t\t// ";
-            e->print(s);
+            ost << "; \t\t// ";
+            e->print(ost);
         }
     }
     else {
-        s << ";";
+        ost << ";";
     }
 
     appendLine(tgt);
@@ -1120,16 +1120,16 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     }
 #endif
 
-    const Const&   c(static_cast<const Const&>(exp));
-    const Unary&   u(static_cast<const Unary&>(exp));
-    const Binary&  b(static_cast<const Binary&>(exp));
-    const Ternary& t(static_cast<const Ternary&>(exp));
+    const Const&   constExp(static_cast<const Const&>(exp));
+    const Unary&   unaryExp(static_cast<const Unary&>(exp));
+    const Binary&  binaryExp(static_cast<const Binary&>(exp));
+    const Ternary& ternaryExp(static_cast<const Ternary&>(exp));
 
     switch (op)
     {
     case opIntConst:
         {
-            int K = c.getInt();
+            int K = constExp.getInt();
 
             if (uns && (K < 0)) {
                 // An unsigned constant. Use some heuristics
@@ -1147,7 +1147,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 }
             }
             else {
-                if (c.getType() && c.getType()->isChar()) {
+                if (constExp.getType() && constExp.getType()->isChar()) {
                     switch (K)
                     {
                     case '\a':
@@ -1215,11 +1215,11 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opLongConst:
 
         // str << std::dec << c->getLong() << "LL"; break;
-        if ((static_cast<long long>(c.getLong()) < -1000LL) || (c.getLong() > 1000ULL)) {
-            str << "0x" << QString::number(c.getLong(), 16) << "LL";
+        if ((static_cast<long long>(constExp.getLong()) < -1000LL) || (constExp.getLong() > 1000ULL)) {
+            str << "0x" << QString::number(constExp.getLong(), 16) << "LL";
         }
         else {
-            str << c.getLong() << "LL";
+            str << constExp.getLong() << "LL";
         }
 
         break;
@@ -1227,7 +1227,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opFltConst:
         {
             // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
-            QString flt_val = QString::number(c.getFlt(), 'g', 8);
+            QString flt_val = QString::number(constExp.getFlt(), 'g', 8);
 
             if (!flt_val.contains('.')) {
                 flt_val += '.';
@@ -1239,16 +1239,16 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opStrConst:
         // escape string:
-        str << "\"" << Util::escapeStr(c.getStr()) << "\"";
+        str << "\"" << Util::escapeStr(constExp.getStr()) << "\"";
         break;
 
     case opFuncConst:
-        str << c.getFuncName();
+        str << constExp.getFuncName();
         break;
 
     case opAddrOf:
         {
-            SharedConstExp sub = u.getSubExp1();
+            SharedConstExp sub = unaryExp.getSubExp1();
 
             if (sub->isGlobal()) {
                 Prog *prog = m_proc->getProg();
@@ -1286,7 +1286,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opGlobal:
     case opLocal:
         {
-            auto c1 = std::dynamic_pointer_cast<const Const>(u.getSubExp1());
+            auto c1 = std::dynamic_pointer_cast<const Const>(unaryExp.getSubExp1());
             assert(c1 && c1->getOper() == opStrConst);
             str << c1->getStr();
         }
@@ -1295,9 +1295,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opEquals:
         {
             openParen(str, curPrec, PREC_EQUAL);
-            appendExp(str, *b.getSubExp1(), PREC_EQUAL);
+            appendExp(str, *binaryExp.getSubExp1(), PREC_EQUAL);
             str << " == ";
-            appendExp(str, *b.getSubExp2(), PREC_EQUAL);
+            appendExp(str, *binaryExp.getSubExp2(), PREC_EQUAL);
             closeParen(str, curPrec, PREC_EQUAL);
         }
         break;
@@ -1305,9 +1305,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opNotEqual:
         {
             openParen(str, curPrec, PREC_EQUAL);
-            appendExp(str, *b.getSubExp1(), PREC_EQUAL);
+            appendExp(str, *binaryExp.getSubExp1(), PREC_EQUAL);
             str << " != ";
-            appendExp(str, *b.getSubExp2(), PREC_EQUAL);
+            appendExp(str, *binaryExp.getSubExp2(), PREC_EQUAL);
             closeParen(str, curPrec, PREC_EQUAL);
         }
         break;
@@ -1315,63 +1315,63 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opLess:
     case opLessUns:
         openParen(str, curPrec, PREC_REL);
-        appendExp(str, *b.getSubExp1(), PREC_REL, op == opLessUns);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_REL, op == opLessUns);
         str << " < ";
-        appendExp(str, *b.getSubExp2(), PREC_REL, op == opLessUns);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_REL, op == opLessUns);
         closeParen(str, curPrec, PREC_REL);
         break;
 
     case opGtr:
     case opGtrUns:
         openParen(str, curPrec, PREC_REL);
-        appendExp(str, *b.getSubExp1(), PREC_REL, op == opGtrUns);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_REL, op == opGtrUns);
         str << " > ";
-        appendExp(str, *b.getSubExp2(), PREC_REL, op == opGtrUns);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_REL, op == opGtrUns);
         closeParen(str, curPrec, PREC_REL);
         break;
 
     case opLessEq:
     case opLessEqUns:
         openParen(str, curPrec, PREC_REL);
-        appendExp(str, *b.getSubExp1(), PREC_REL, op == opLessEqUns);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_REL, op == opLessEqUns);
         str << " <= ";
-        appendExp(str, *b.getSubExp2(), PREC_REL, op == opLessEqUns);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_REL, op == opLessEqUns);
         closeParen(str, curPrec, PREC_REL);
         break;
 
     case opGtrEq:
     case opGtrEqUns:
         openParen(str, curPrec, PREC_REL);
-        appendExp(str, *b.getSubExp1(), PREC_REL, op == opGtrEqUns);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_REL, op == opGtrEqUns);
         str << " >= ";
-        appendExp(str, *b.getSubExp2(), PREC_REL, op == opGtrEqUns);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_REL, op == opGtrEqUns);
         closeParen(str, curPrec, PREC_REL);
         break;
 
     case opAnd:
         openParen(str, curPrec, PREC_LOG_AND);
-        appendExp(str, *b.getSubExp1(), PREC_LOG_AND);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_LOG_AND);
         str << " && ";
-        appendExp(str, *b.getSubExp2(), PREC_LOG_AND);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_LOG_AND);
         closeParen(str, curPrec, PREC_LOG_AND);
         break;
 
     case opOr:
         openParen(str, curPrec, PREC_LOG_OR);
-        appendExp(str, *b.getSubExp1(), PREC_LOG_OR);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_LOG_OR);
         str << " || ";
-        appendExp(str, *b.getSubExp2(), PREC_LOG_OR);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_LOG_OR);
         closeParen(str, curPrec, PREC_LOG_OR);
         break;
 
     case opBitAnd:
         openParen(str, curPrec, PREC_BIT_AND);
-        appendExp(str, *b.getSubExp1(), PREC_BIT_AND);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_BIT_AND);
         str << " & ";
 
-        if (b.getSubExp2()->getOper() == opIntConst) {
+        if (binaryExp.getSubExp2()->getOper() == opIntConst) {
             // print it 0x2000 style
-            uint32_t val     = uint32_t(std::static_pointer_cast<const Const>(b.getSubExp2())->getInt());
+            uint32_t val     = uint32_t(std::static_pointer_cast<const Const>(binaryExp.getSubExp2())->getInt());
             QString  vanilla = QString("0x") + QString::number(val, 16);
             QString  negated = QString("~0x") + QString::number(~val, 16);
 
@@ -1383,7 +1383,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             }
         }
         else {
-            appendExp(str, *b.getSubExp2(), PREC_BIT_AND);
+            appendExp(str, *binaryExp.getSubExp2(), PREC_BIT_AND);
         }
 
         closeParen(str, curPrec, PREC_BIT_AND);
@@ -1391,31 +1391,31 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opBitOr:
         openParen(str, curPrec, PREC_BIT_IOR);
-        appendExp(str, *b.getSubExp1(), PREC_BIT_IOR);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_BIT_IOR);
         str << " | ";
-        appendExp(str, *b.getSubExp2(), PREC_BIT_IOR);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_BIT_IOR);
         closeParen(str, curPrec, PREC_BIT_IOR);
         break;
 
     case opBitXor:
         openParen(str, curPrec, PREC_BIT_XOR);
-        appendExp(str, *b.getSubExp1(), PREC_BIT_XOR);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_BIT_XOR);
         str << " ^ ";
-        appendExp(str, *b.getSubExp2(), PREC_BIT_XOR);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_BIT_XOR);
         closeParen(str, curPrec, PREC_BIT_XOR);
         break;
 
     case opNot:
         openParen(str, curPrec, PREC_UNARY);
         str << " ~";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         closeParen(str, curPrec, PREC_UNARY);
         break;
 
     case opLNot:
         openParen(str, curPrec, PREC_UNARY);
         str << " !";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         closeParen(str, curPrec, PREC_UNARY);
         break;
 
@@ -1423,7 +1423,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opFNeg:
         openParen(str, curPrec, PREC_UNARY);
         str << " -";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         closeParen(str, curPrec, PREC_UNARY);
         break;
 
@@ -1432,9 +1432,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             // I guess that most people will find this easier to read
             // s1 >> last & 0xMASK
             openParen(str, curPrec, PREC_BIT_AND);
-            appendExp(str, *t.getSubExp1(), PREC_BIT_SHIFT);
-            auto first = std::static_pointer_cast<const Const>(t.getSubExp2());
-            auto last  = std::static_pointer_cast<const Const>(t.getSubExp3());
+            appendExp(str, *ternaryExp.getSubExp1(), PREC_BIT_SHIFT);
+            auto first = std::static_pointer_cast<const Const>(ternaryExp.getSubExp2());
+            auto last  = std::static_pointer_cast<const Const>(ternaryExp.getSubExp3());
             str << " >> ";
             appendExp(str, *last, PREC_BIT_SHIFT);
             str << " & ";
@@ -1455,17 +1455,17 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opPlus:
         openParen(str, curPrec, PREC_ADD);
-        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_ADD);
         str << " + ";
-        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_ADD);
         closeParen(str, curPrec, PREC_ADD);
         break;
 
     case opMinus:
         openParen(str, curPrec, PREC_ADD);
-        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_ADD);
         str << " - ";
-        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_ADD);
         closeParen(str, curPrec, PREC_ADD);
         break;
 
@@ -1473,7 +1473,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
         if (SETTING(noDecompile)) {
             str << "MEMOF(";
-            appendExp(str, *u.getSubExp1(), PREC_NONE);
+            appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
             str << ")";
             break;
         }
@@ -1481,7 +1481,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
         openParen(str, curPrec, PREC_UNARY);
         // annotateMemofs should have added a cast if it was needed
         str << "*";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         closeParen(str, curPrec, PREC_UNARY);
         break;
 
@@ -1490,27 +1490,27 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             // MVE: this can likely go
             LOG_VERBOSE("Case opRegOf is deprecated");
 
-            if (u.getSubExp1()->getOper() == opTemp) {
+            if (unaryExp.getSubExp1()->getOper() == opTemp) {
                 // The great debate: r[tmpb] vs tmpb
                 str << "tmp";
                 break;
             }
 
-            assert(u.getSubExp1()->getOper() == opIntConst);
-            QString n(m_proc->getProg()->getRegName(std::static_pointer_cast<const Const>(u.getSubExp1())->getInt()));
+            assert(unaryExp.getSubExp1()->getOper() == opIntConst);
+            QString regName(m_proc->getProg()->getRegName(std::static_pointer_cast<const Const>(unaryExp.getSubExp1())->getInt()));
 
-            if (n.isEmpty()) {
-                if (n[0] == '%') {
-                    str << n + 1;
+            if (regName.isEmpty()) {
+                if (regName[0] == '%') {
+                    str << regName + 1;
                 }
                 else {
-                    str << n;
+                    str << regName;
                 }
             }
             else {
                 // What is this doing in the back end???
                 str << "r[";
-                appendExp(str, *u.getSubExp1(), PREC_NONE);
+                appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
                 str << "]";
             }
         }
@@ -1520,26 +1520,26 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
         // Should never see this; temps should be mapped to locals now so that they get declared
         LOG_VERBOSE("Case opTemp is deprecated");
         // Emit the temp name, e.g. "tmp1"
-        str << u.access<Const, 1>()->getStr();
+        str << unaryExp.access<Const, 1>()->getStr();
         break;
 
     case opItof:
         // TODO: MVE: needs work: float/double/long double.
         str << "(float)";
         openParen(str, curPrec, PREC_UNARY);
-        appendExp(str, *t.getSubExp3(), PREC_UNARY);
+        appendExp(str, *ternaryExp.getSubExp3(), PREC_UNARY);
         closeParen(str, curPrec, PREC_UNARY);
         break;
 
     case opFsize:
 
         // TODO: needs work!
-        if (t.getSubExp3()->isMemOf()) {
-            assert(t.getSubExp1()->isIntConst());
-            int float_bits = t.access<Const, 1>()->getInt();
+        if (ternaryExp.getSubExp3()->isMemOf()) {
+            assert(ternaryExp.getSubExp1()->isIntConst());
+            int float_bits = ternaryExp.access<Const, 1>()->getInt();
 
             if (SETTING(noDecompile)) {
-                assert(t.getSubExp1()->isIntConst());
+                assert(ternaryExp.getSubExp1()->isIntConst());
 
                 if (float_bits == 32) {
                     str << "FLOAT_MEMOF(";
@@ -1548,7 +1548,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                     str << "DOUBLE_MEMOF(";
                 }
 
-                appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_NONE);
+                appendExp(str, *ternaryExp.getSubExp3()->getSubExp1(), PREC_NONE);
                 str << ")";
             }
             else {
@@ -1568,13 +1568,13 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 }
 
                 openParen(str, curPrec, curPrec);
-                appendExp(str, *t.getSubExp3(), curPrec);
+                appendExp(str, *ternaryExp.getSubExp3(), curPrec);
                 closeParen(str, curPrec, curPrec);
                 str << ")";
             }
         }
         else {
-            appendExp(str, *t.getSubExp3(), curPrec);
+            appendExp(str, *ternaryExp.getSubExp3(), curPrec);
         }
 
         break;
@@ -1582,55 +1582,55 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opMult:
     case opMults: // FIXME: check types
         openParen(str, curPrec, PREC_MULT);
-        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_MULT);
         str << " * ";
-        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_MULT);
         closeParen(str, curPrec, PREC_MULT);
         break;
 
     case opDiv:
     case opDivs: // FIXME: check types
         openParen(str, curPrec, PREC_MULT);
-        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_MULT);
         str << " / ";
-        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_MULT);
         closeParen(str, curPrec, PREC_MULT);
         break;
 
     case opMod:
     case opMods: // Fixme: check types
         openParen(str, curPrec, PREC_MULT);
-        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_MULT);
         str << " % ";
-        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_MULT);
         closeParen(str, curPrec, PREC_MULT);
         break;
 
     case opShiftL:
         openParen(str, curPrec, PREC_BIT_SHIFT);
-        appendExp(str, *b.getSubExp1(), PREC_BIT_SHIFT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_BIT_SHIFT);
         str << " << ";
-        appendExp(str, *b.getSubExp2(), PREC_BIT_SHIFT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_BIT_SHIFT);
         closeParen(str, curPrec, PREC_BIT_SHIFT);
         break;
 
     case opShiftR:
     case opShiftRA:
         openParen(str, curPrec, PREC_BIT_SHIFT);
-        appendExp(str, *b.getSubExp1(), PREC_BIT_SHIFT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_BIT_SHIFT);
         str << " >> ";
-        appendExp(str, *b.getSubExp2(), PREC_BIT_SHIFT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_BIT_SHIFT);
         closeParen(str, curPrec, PREC_BIT_SHIFT);
         break;
 
     case opTern:
         openParen(str, curPrec, PREC_COND);
         str << " (";
-        appendExp(str, *t.getSubExp1(), PREC_NONE);
+        appendExp(str, *ternaryExp.getSubExp1(), PREC_NONE);
         str << ") ? ";
-        appendExp(str, *t.getSubExp2(), PREC_COND);
+        appendExp(str, *ternaryExp.getSubExp2(), PREC_COND);
         str << " : ";
-        appendExp(str, *t.getSubExp3(), PREC_COND);
+        appendExp(str, *ternaryExp.getSubExp3(), PREC_COND);
         closeParen(str, curPrec, PREC_COND);
         break;
 
@@ -1638,9 +1638,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opFPlusd:
     case opFPlusq:
         openParen(str, curPrec, PREC_ADD);
-        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_ADD);
         str << " + ";
-        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_ADD);
         closeParen(str, curPrec, PREC_ADD);
         break;
 
@@ -1648,9 +1648,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opFMinusd:
     case opFMinusq:
         openParen(str, curPrec, PREC_ADD);
-        appendExp(str, *b.getSubExp1(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_ADD);
         str << " - ";
-        appendExp(str, *b.getSubExp2(), PREC_ADD);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_ADD);
         closeParen(str, curPrec, PREC_ADD);
         break;
 
@@ -1658,9 +1658,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opFMultd:
     case opFMultq:
         openParen(str, curPrec, PREC_MULT);
-        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_MULT);
         str << " * ";
-        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_MULT);
         closeParen(str, curPrec, PREC_MULT);
         break;
 
@@ -1668,59 +1668,59 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opFDivd:
     case opFDivq:
         openParen(str, curPrec, PREC_MULT);
-        appendExp(str, *b.getSubExp1(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_MULT);
         str << " / ";
-        appendExp(str, *b.getSubExp2(), PREC_MULT);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_MULT);
         closeParen(str, curPrec, PREC_MULT);
         break;
 
     case opFround:
         // Note: we need roundf or roundl depending on size of operands
         str << "round("; // Note: math.h required
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opFtrunc:
         // Note: we need truncf or truncl depending on size of operands
         str << "trunc("; // Note: math.h required
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opFabs:
         str << "fabs(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opFtoi:
         // Should check size!
         str << "(int)";
-        appendExp(str, *u.getSubExp3(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp3(), PREC_UNARY);
         break;
 
     case opRotateL:
         str << "ROTL(";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         str << ")";
         break;
 
     case opRotateR:
         str << "ROTR(";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         str << ")";
         break;
 
     case opRotateLC:
         str << "ROTLC(";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         str << ")";
         break;
 
     case opRotateRC:
         str << "ROTRC(";
-        appendExp(str, *u.getSubExp1(), PREC_UNARY);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
         str << ")";
         break;
 
@@ -1729,7 +1729,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 //         SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
 //         str << "*(" << ty->getCtype(true) << " *)";
 //         appendExp(str, new Unary(opAddrOf, b.getSubExp2()), PREC_UNARY);
-        appendExp(str, *b.getSubExp2(), PREC_UNARY);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_UNARY);
         break;
 
     case opFMultsd:
@@ -1761,10 +1761,10 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opFlagCall:
         {
-            assert(b.getSubExp1()->getOper() == opStrConst);
-            str << b.access<Const, 1>()->getStr();
+            assert(binaryExp.getSubExp1()->getOper() == opStrConst);
+            str << binaryExp.access<Const, 1>()->getStr();
             str << "(";
-            auto l = b.getSubExp2();
+            auto l = binaryExp.getSubExp2();
 
             for ( ; l && l->getOper() == opList; l = l->getSubExp2()) {
                 appendExp(str, *l->getSubExp1(), PREC_NONE);
@@ -1781,11 +1781,11 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opList:
         {
             int            elems_on_line = 0; // try to limit line lengths
-            SharedConstExp b2            = b.shared_from_this();
-            SharedConstExp e2            = b.getSubExp2();
+            SharedConstExp b2            = binaryExp.shared_from_this();
+            SharedConstExp e2            = binaryExp.getSubExp2();
             str << "{ ";
 
-            if (b.getSubExp1()->getOper() == opList) {
+            if (binaryExp.getSubExp1()->getOper() == opList) {
                 str << "\n ";
             }
 
@@ -1826,9 +1826,9 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
         //    ((Const*)t.getSubExp1())->getInt(),
         //    ((Const*)t.getSubExp2())->getInt());
         // strcat(str, s); */
-        if (t.getSubExp3()->isMemOf() && t.getSubExp1()->isIntConst() && t.getSubExp2()->isIntConst() &&
-            (t.access<Const, 2>()->getInt() == 32)) {
-            int sz = t.access<Const, 1>()->getInt();
+        if (ternaryExp.getSubExp3()->isMemOf() && ternaryExp.getSubExp1()->isIntConst() && ternaryExp.getSubExp2()->isIntConst() &&
+            (ternaryExp.access<Const, 2>()->getInt() == 32)) {
+            int sz = ternaryExp.access<Const, 1>()->getInt();
 
             if ((sz == 8) || (sz == 16)) {
                 bool close = false;
@@ -1845,7 +1845,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 str << "*)";
                 openParen(str, curPrec, PREC_UNARY);
                 close = true;
-                appendExp(str, *t.getSubExp3()->getSubExp1(), PREC_UNARY);
+                appendExp(str, *ternaryExp.getSubExp3()->getSubExp1(), PREC_UNARY);
 
                 if (close) {
                     closeParen(str, curPrec, PREC_UNARY);
@@ -1857,7 +1857,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
         LOG_VERBOSE("Case opZfill is deprecated");
         str << "(";
-        appendExp(str, *t.getSubExp3(), PREC_NONE);
+        appendExp(str, *ternaryExp.getSubExp3(), PREC_NONE);
         str << ")";
         break;
 
@@ -1875,17 +1875,17 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             }
 #endif
 
-            if ((u.getSubExp1()->getOper() == opTypedExp) &&
-                (*static_cast<const TypedExp&>(u).getType() == *u.access<TypedExp, 1>()->getType())) {
+            if ((unaryExp.getSubExp1()->getOper() == opTypedExp) &&
+                (*static_cast<const TypedExp&>(unaryExp).getType() == *unaryExp.access<TypedExp, 1>()->getType())) {
                 // We have (type)(type)x: recurse with type(x)
-                appendExp(str, *u.getSubExp1(), curPrec);
+                appendExp(str, *unaryExp.getSubExp1(), curPrec);
             }
-            else if (u.getSubExp1()->getOper() == opMemOf) {
+            else if (unaryExp.getSubExp1()->getOper() == opMemOf) {
                 // We have (tt)m[x]
                 PointerType *pty = nullptr;
 
                 // pty = T(x)
-                SharedConstType tt = static_cast<const TypedExp &>(u).getType();
+                SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
 
                 if ((pty != nullptr) &&
                     ((*pty->getPointsTo() == *tt) || (tt->isSize() && (pty->getPointsTo()->getSize() == tt->getSize())))) {
@@ -1915,12 +1915,12 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 openParen(str, curPrec, PREC_UNARY);
                 // Emit x
                 // was : ((Location*)((TypedExp&)u).getSubExp1())->getSubExp1()
-                appendExp(str, *u.getSubExp1()->getSubExp1(), PREC_UNARY);
+                appendExp(str, *unaryExp.getSubExp1()->getSubExp1(), PREC_UNARY);
                 closeParen(str, curPrec, PREC_UNARY);
             }
             else {
                 // Check for (tt)b where tt is a pointer; could be &local
-                SharedConstType tt = static_cast<const TypedExp &>(u).getType();
+                SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
 
                 if (std::dynamic_pointer_cast<const PointerType>(tt)) {
 #if SYMS_IN_BACK_END
@@ -1940,7 +1940,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                 appendType(str, tt);
                 str << ")";
                 openParen(str, curPrec, PREC_UNARY);
-                appendExp(str, *u.getSubExp1(), PREC_UNARY);
+                appendExp(str, *unaryExp.getSubExp1(), PREC_UNARY);
                 closeParen(str, curPrec, PREC_UNARY);
             }
 
@@ -1950,8 +1950,8 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opSgnEx:
     case opTruncs:
         {
-            SharedConstExp s      = t.getSubExp3();
-            int            toSize = t.access<Const, 2>()->getInt();
+            SharedConstExp s      = ternaryExp.getSubExp3();
+            int            toSize = ternaryExp.access<Const, 2>()->getInt();
 
             switch (toSize)
             {
@@ -1978,8 +1978,8 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opTruncu:
         {
-            SharedConstExp s      = t.getSubExp3();
-            int            toSize = t.access<Const, 2>()->getInt();
+            SharedConstExp s      = ternaryExp.getSubExp3();
+            int            toSize = ternaryExp.access<Const, 2>()->getInt();
 
             switch (toSize)
             {
@@ -2007,7 +2007,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
     case opMachFtr:
         {
             str << "/* machine specific */ (int) ";
-            auto sub = u.access<Const, 1>();
+            auto sub = unaryExp.access<Const, 1>();
             assert(sub->isStrConst());
             QString s = sub->getStr();
 
@@ -2027,56 +2027,56 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opPow:
         str << "pow(";
-        appendExp(str, *b.getSubExp1(), PREC_COMMA);
+        appendExp(str, *binaryExp.getSubExp1(), PREC_COMMA);
         str << ", ";
-        appendExp(str, *b.getSubExp2(), PREC_COMMA);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_COMMA);
         str << ")";
         break;
 
     case opLog2:
         str << "log2(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opLog10:
         str << "log10(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opSin:
         str << "sin(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opCos:
         str << "cos(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opSqrt:
         str << "sqrt(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opTan:
         str << "tan(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opArcTan:
         str << "atan(";
-        appendExp(str, *u.getSubExp1(), PREC_NONE);
+        appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
         str << ")";
         break;
 
     case opSubscript:
-        appendExp(str, *u.getSubExp1(), curPrec);
+        appendExp(str, *unaryExp.getSubExp1(), curPrec);
         LOG_ERROR("Subscript in code generation of proc %1, exp (without subscript): %2", m_proc->getName(), str.readAll());
         break;
 
@@ -2085,7 +2085,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             SharedType ty = nullptr;
 
             if (ty == nullptr) {
-                LOG_MSG("Type failure: no type for subexp1 of %1", b.shared_from_this());
+                LOG_MSG("Type failure: no type for subexp1 of %1", binaryExp.shared_from_this());
 
                 // ty = b.getSubExp1()->getType();
                 // No idea why this is hitting! - trentw
@@ -2097,40 +2097,40 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             // local11.lhHeight (where local11 is a register)
             // Mike: it shouldn't!  local11 should have a compound type
             // assert(ty->resolvesToCompound());
-            if (b.getSubExp1()->getOper() == opMemOf) {
-                appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
+            if (binaryExp.getSubExp1()->getOper() == opMemOf) {
+                appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), PREC_PRIM);
                 str << "->";
             }
             else {
-                appendExp(str, *b.getSubExp1(), PREC_PRIM);
+                appendExp(str, *binaryExp.getSubExp1(), PREC_PRIM);
                 str << ".";
             }
 
-            str << b.access<const Const, 2>()->getStr();
+            str << binaryExp.access<const Const, 2>()->getStr();
         }
         break;
 
     case opArrayIndex:
         openParen(str, curPrec, PREC_PRIM);
 
-        if (b.getSubExp1()->isMemOf()) {
+        if (binaryExp.getSubExp1()->isMemOf()) {
             SharedType ty = nullptr;
 
             if (ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
                 // a pointer to an array is automatically dereferenced in C
-                appendExp(str, *b.getSubExp1()->getSubExp1(), PREC_PRIM);
+                appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), PREC_PRIM);
             }
             else {
-                appendExp(str, *b.getSubExp1(), PREC_PRIM);
+                appendExp(str, *binaryExp.getSubExp1(), PREC_PRIM);
             }
         }
         else {
-            appendExp(str, *b.getSubExp1(), PREC_PRIM);
+            appendExp(str, *binaryExp.getSubExp1(), PREC_PRIM);
         }
 
         closeParen(str, curPrec, PREC_PRIM);
         str << "[";
-        appendExp(str, *b.getSubExp2(), PREC_PRIM);
+        appendExp(str, *binaryExp.getSubExp2(), PREC_PRIM);
         str << "]";
         break;
 
@@ -2252,9 +2252,6 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
 
     if (isGenerated(bb)) {
         // this should only occur for a loop over a single block
-        // FIXME: is this true? Perl_list (0x8068028) in the SPEC 2000 perlbmk seems to have a case with sType = Cond,
-        // lType == PreTested, and latchNod == 0
-        // assert(bb->sType == Loop && bb->lType == PostTested && latchNode == bb);
         return;
     }
     else {
@@ -2377,7 +2374,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
                 psi = cs->getSwitchInfo();
 
                 // Write the switch header (i.e. "switch(var) {")
-                addCaseCondHeader(psi->pSwitchVar);
+                addCaseCondHeader(psi->switchExp);
             }
             else {
                 SharedExp cond = bb->getCond();
@@ -2445,12 +2442,12 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
                     // FIXME: Not valid for all switch types
                     Const caseVal(0);
 
-                    if (psi->chForm == 'F') {                            // "Fortran" style?
-                        caseVal.setInt((reinterpret_cast<int *>(psi->uTable.value()))[i]); // Yes, use the table value itself
+                    if (psi->switchType == SwitchType::F) {
+                        caseVal.setInt((reinterpret_cast<int *>(psi->tableAddr.value()))[i]); // Yes, use the table value itself
                     }
-                    // Note that uTable has the address of an int array
+                    // Note that psi->tableAddr has the address of an int array
                     else {
-                        caseVal.setInt(static_cast<int>(psi->iLower + i));
+                        caseVal.setInt(static_cast<int>(psi->lowerBound + i));
                     }
 
                     addCaseCondOption(caseVal);

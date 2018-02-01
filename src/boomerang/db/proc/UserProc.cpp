@@ -230,10 +230,10 @@ void UserProc::setStatus(ProcStatus s)
 }
 
 
-bool UserProc::containsAddr(Address uAddr) const
+bool UserProc::containsAddr(Address addr) const
 {
     for (BasicBlock *bb : *m_cfg) {
-        if (bb->getRTLs() && (uAddr >= bb->getLowAddr()) && (uAddr <= bb->getHiAddr())) {
+        if (bb->getRTLs() && (addr >= bb->getLowAddr()) && (addr <= bb->getHiAddr())) {
             return true;
         }
     }
@@ -1089,7 +1089,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
 void UserProc::debugPrintAll(const char *step_name)
 {
-    if (VERBOSE) {
+    if (SETTING(verboseOutput)) {
         LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
         LOG_SEPARATE(getName(), "%1", this->toString());
         LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
@@ -1267,7 +1267,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         printXML();
 
         // Print if requested
-        if (VERBOSE) { // was if debugPrintSSA
+        if (SETTING(verboseOutput)) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
             LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
@@ -1299,7 +1299,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
             printXML();
 
-            if (VERBOSE) {
+            if (SETTING(verboseOutput)) {
                 LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after updating returns) ---", getName(), pass);
                 LOG_SEPARATE(getName(), "%1", this->toString());
                 LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
@@ -1309,7 +1309,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         printXML();
 
         // Print if requested
-        if (VERBOSE) { // was if debugPrintSSA
+        if (SETTING(verboseOutput)) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after trimming return set) ---", getName(), pass);
             LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
@@ -1344,7 +1344,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         printXML();
 
-        if (VERBOSE) {
+        if (SETTING(verboseOutput)) {
             LOG_SEPARATE(getName(), "--- after propagate for %1 at pass %2 ---", getName(), pass);
             LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== End propagate for %1 at pass %2 ===", getName(), pass);
@@ -1488,7 +1488,7 @@ void UserProc::remUnusedStmtEtc()
         doRenameBlockVars(20);            // Rename the locals
         propagateStatements(convert, 20); // Surely need propagation too
 
-        if (VERBOSE) {
+        if (SETTING(verboseOutput)) {
             debugPrintAll("after propagating locals");
         }
     }
@@ -2124,8 +2124,8 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 
 void UserProc::assignProcsToCalls()
 {
-    for (BasicBlock *pBB : *m_cfg) {
-        RTLList *rtls = pBB->getRTLs();
+    for (BasicBlock *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
 
         if (rtls == nullptr) {
             continue;
@@ -2771,7 +2771,7 @@ void UserProc::removeUnusedLocals()
         }
 
         if ((usedLocals.find(name) == usedLocals.end()) && !all) {
-            if (VERBOSE) {
+            if (SETTING(verboseOutput)) {
                 LOG_VERBOSE("Removed unused local %1", name);
             }
 
@@ -4532,7 +4532,7 @@ void UserProc::initialParameters()
         m_parameters.append(new ImplicitAssign(v->clone()));
     }
 
-    if (VERBOSE) {
+    if (SETTING(verboseOutput)) {
         QString     tgt;
         QTextStream ost(&tgt);
         printParams(ost);
@@ -5056,9 +5056,6 @@ void UserProc::typeAnalysis()
 }
 
 
-RTL *globalRtl = nullptr;
-
-
 void UserProc::processDecodedICTs()
 {
     for (BasicBlock *bb : *m_cfg) {
@@ -5080,7 +5077,7 @@ void UserProc::processDecodedICTs()
             LOG_MSG("Saving high level switch statement %1", rtl);
         }
 
-        m_prog->addDecodedRtl(bb->getHiAddr(), rtl);
+        m_prog->addDecodedRTL(bb->getHiAddr(), rtl);
         // Now decode those new targets, adding out edges as well
         //        if (last->isCase())
         //            bb->processSwitch(this);

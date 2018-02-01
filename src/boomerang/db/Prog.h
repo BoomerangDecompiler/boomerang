@@ -244,7 +244,7 @@ public:
     SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
     bool isDynamicLinkedProcPointer(Address dest) const;
-    const QString& getDynamicProcName(Address uNative) const;
+    const QString& getDynamicProcName(Address addr) const;
 
     void readSymbolFile(const QString& fname);
 
@@ -258,7 +258,7 @@ public:
     bool isModuleUsed(Module *module) const;
 
     /// Add the given RTL to the front end's map from address to aldready-decoded-RTL
-    void addDecodedRtl(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRtl(a, rtl); }
+    void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
 
     /**
      * This does extra processing on a constant. The expression \p e

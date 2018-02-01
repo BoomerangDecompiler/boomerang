@@ -51,7 +51,7 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->chkDebugTA->setChecked(SETTING(debugTA));
     ui->chkDebugUnused->setChecked(SETTING(debugUnused));
     ui->chkTraceDecoder->setChecked(SETTING(traceDecoder));
-    ui->chkVerbose->setChecked(SETTING(vFlag));
+    ui->chkVerbose->setChecked(SETTING(verboseOutput));
 
     // Decode settings
     ui->chkDecodeChildren->setChecked(!SETTING(noDecodeChildren));
@@ -130,7 +130,7 @@ void SettingsDlg::on_btnApply_clicked()
     SETTING(debugTA)       = ui->chkDebugTA->isChecked();
     SETTING(debugUnused)   = ui->chkDebugUnused->isChecked();
     SETTING(traceDecoder)  = ui->chkTraceDecoder->isChecked();
-    SETTING(vFlag)         = ui->chkVerbose->isChecked();
+    SETTING(verboseOutput)         = ui->chkVerbose->isChecked();
 
     // Decode
     SETTING(noDecodeChildren)  = !ui->chkDecodeChildren->isChecked();

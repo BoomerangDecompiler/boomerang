@@ -84,10 +84,6 @@ SharedExp BoolAssign::getCondExpr() const
 
 void BoolAssign::setCondExpr(SharedExp pss)
 {
-    if (m_cond) {
-        // delete pCond;
-    }
-
     m_cond = pss;
 }
 

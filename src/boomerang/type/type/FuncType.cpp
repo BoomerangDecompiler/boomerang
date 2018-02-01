@@ -15,7 +15,7 @@
 
 
 FuncType::FuncType(const std::shared_ptr<Signature>& sig)
-    : Type(eFunc)
+    : Type(TypeClass::Func)
     , signature(sig)
 {
 }
@@ -126,7 +126,7 @@ void FuncType::getReturnAndParam(QString& ret, QString& param)
 }
 
 
-SharedType FuncType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType FuncType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<FuncType *>(this)->shared_from_this();
@@ -137,7 +137,7 @@ SharedType FuncType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         return const_cast<FuncType *>(this)->shared_from_this();
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

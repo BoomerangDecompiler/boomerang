@@ -11,9 +11,18 @@
 
 
 ArrayType::ArrayType(SharedType baseType, unsigned length)
-    : Type(eArray)
+    : Type(TypeClass::Array)
     , BaseType(baseType)
     , m_length(length)
+{
+}
+
+
+ArrayType::ArrayType()
+    : Type(TypeClass::Array)
+    , BaseType(nullptr)
+    , m_length(0)
+
 {
 }
 
@@ -128,7 +137,7 @@ void ArrayType::fixBaseType(SharedType b)
 }
 
 
-SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType ArrayType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<ArrayType *>(this)->shared_from_this();
@@ -136,11 +145,11 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     if (other->resolvesToArray()) {
         auto       otherArr  = other->as<ArrayType>();
-        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, changed, useHighestPtr);
         size_t     newLength = m_length;
 
         if (*newBase != *BaseType) {
-            ch        = true;
+            changed        = true;
             newLength = convertLength(newBase);
         }
 
@@ -194,7 +203,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     // Needs work?
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

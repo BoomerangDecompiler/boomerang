@@ -212,9 +212,6 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
         }
     }
 
-    //      if( param.funcParams.size() != funcParams.size() )
-    //          theSemTable.setItem( n, cFUNCTION, 0, 0, funcParams.size(),
-    //                               theSemTable[n].sName.c_str() );
     param.m_funcParams = funcParams;
 }
 

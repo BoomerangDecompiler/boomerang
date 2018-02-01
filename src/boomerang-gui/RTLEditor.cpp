@@ -29,7 +29,7 @@ void RTLEditor::updateContents()
 {
     QString rtl;
 
-    decompiler->getRtlForProc(name, rtl);
+    decompiler->getRTLForProc(name, rtl);
     int n = verticalScrollBar()->value();
     setHtml(rtl);
     verticalScrollBar()->setValue(n);

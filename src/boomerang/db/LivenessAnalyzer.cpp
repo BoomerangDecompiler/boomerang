@@ -132,10 +132,10 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
             continue;
         }
 
-        RTL *phiRtl = currBB->getRTLs()->front().get();
-        assert(phiRtl);
+        RTL *phiRTL = currBB->getRTLs()->front().get();
+        assert(phiRTL);
 
-        for (Statement *st : *phiRtl) {
+        for (Statement *st : *phiRTL) {
             // Only interested in phi assignments. Note that it is possible that some phi assignments have been
             // converted to ordinary assignments. So the below is a continue, not a break.
             if (!st->isPhi()) {
@@ -192,14 +192,14 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
                 }
             }
 
-            SharedExp r = RefExp::get(pa->getLeft()->clone(), def);
+            SharedExp ref = RefExp::get(pa->getLeft()->clone(), def);
             assert(def);
-            liveout.insert(r);
-            phiLocs.insert(r);
+            liveout.insert(ref);
+            phiLocs.insert(ref);
 
             if (SETTING(debugLiveness)) {
                 LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3",
-                        r, st, bb->getLowAddr());
+                        ref, st, bb->getLowAddr());
             }
         }
     }

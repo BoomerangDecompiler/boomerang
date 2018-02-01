@@ -105,7 +105,7 @@ public:
 
     // Do the call bypass logic e.g. r28{20} -> r28{17} + 4 (where 20 is this CallStatement)
     // Set ch if changed (bypassed)
-    SharedExp bypassRef(const std::shared_ptr<RefExp>& r, bool& ch);
+    SharedExp bypassRef(const std::shared_ptr<RefExp>& r, bool& changed);
 
     void clearUseCollector() { m_useCol.clear(); }
 

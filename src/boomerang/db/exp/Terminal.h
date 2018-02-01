@@ -67,5 +67,5 @@ public:
     SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    void descendType(SharedType parentType, bool& ch, Statement *s) override;
+    void descendType(SharedType parentType, bool& changed, Statement *s) override;
 };

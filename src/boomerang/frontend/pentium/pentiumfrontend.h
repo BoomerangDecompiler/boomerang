@@ -26,7 +26,7 @@ class PentiumFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PentiumFrontEnd(IFileLoader *pLoader, Prog *prog);
+    PentiumFrontEnd(IFileLoader *loader, Prog *prog);
     PentiumFrontEnd(const PentiumFrontEnd& other) = delete;
     PentiumFrontEnd(PentiumFrontEnd&& other) = default;
 
@@ -75,16 +75,11 @@ protected:
     virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
 
 private:
-    /// Emit a set instruction.
-    /// Emit Rtl of the form *8* lhs = [cond ? 1 : 0]
-    /// Insert before rit
-    void emitSet(std::list<RTL *> *pRtls, std::list<RTL *>::iterator& itRtl, Address uAddr, SharedExp pLHS, SharedExp cond);
-
     /**
      * Little simpler, just replaces FPUSH and FPOP with more complex
      * semantics.
      */
-    void processFloatCode(Cfg *pCfg);
+    void processFloatCode(Cfg *cfg);
 
     /**
      * Process a basic block, and all its successors, for floating point code.
@@ -94,11 +89,11 @@ private:
      * \note tos has to be a parameter, not a global, to get the right value at any point in
      * the call tree
      *
-     * \param pBB pointer to the current BB
+     * \param bb pointer to the current BB
      * \param tos reference to the value of the "top of stack" pointer currently. Starts at zero, and is
      *        decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
      *        reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
-     * \param pCfg passed to processFloatCode
+     * \param cfg passed to processFloatCode
      */
     void processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg);
 

@@ -15,7 +15,7 @@
 
 
 CharType::CharType()
-    : Type(eChar)
+    : Type(TypeClass::Char)
 {
 }
 
@@ -54,7 +54,7 @@ QString CharType::getCtype(bool /*final*/) const
 }
 
 
-SharedType CharType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType CharType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid() || other->resolvesToChar()) {
         return const_cast<CharType *>(this)->shared_from_this();
@@ -62,7 +62,7 @@ SharedType CharType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
 
     // Also allow char to merge with integer
     if (other->resolvesToInteger()) {
-        ch = true;
+        changed = true;
         return other->clone();
     }
 
@@ -70,7 +70,7 @@ SharedType CharType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         return const_cast<CharType *>(this)->shared_from_this();
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

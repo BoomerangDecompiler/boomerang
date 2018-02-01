@@ -380,12 +380,12 @@ SharedType Const::ascendType()
 }
 
 
-void Const::descendType(SharedType parentType, bool& ch, Statement *)
+void Const::descendType(SharedType parentType, bool& changed, Statement *)
 {
     bool thisCh = false;
 
     m_type = m_type->meetWith(parentType, thisCh);
-    ch    |= thisCh;
+    changed    |= thisCh;
 
     if (thisCh) {
         // May need to change the representation

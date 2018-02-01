@@ -138,10 +138,10 @@ bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool& visitChildren)
 
 bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
 {
-    SharedExp pDest = stmt->getDest();
+    SharedExp condExp = stmt->getDest();
 
-    if (pDest) {
-        pDest->accept(ev);
+    if (condExp) {
+        condExp->accept(ev);
     }
 
 
@@ -201,10 +201,10 @@ bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool& visitChildren)
 
 bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& visitChildren)
 {
-    SharedExp pCond = stmt->getCondExpr();
+    SharedExp condExp = stmt->getCondExpr();
 
-    if (pCond) {
-        pCond->accept(ev); // Condition is used
+    if (condExp) {
+        condExp->accept(ev); // Condition is used
     }
 
     SharedExp lhs = stmt->getLeft();

@@ -26,9 +26,6 @@ CaseStatement::CaseStatement()
 
 CaseStatement::~CaseStatement()
 {
-    if (m_switchInfo) {
-        // delete pSwitchInfo;
-    }
 }
 
 
@@ -55,8 +52,8 @@ bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
     bool ch  = GotoStatement::searchAndReplace(pattern, replace, cc);
     bool ch2 = false;
 
-    if (m_switchInfo && m_switchInfo->pSwitchVar) {
-        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->searchReplaceAll(pattern, replace, ch2);
+    if (m_switchInfo && m_switchInfo->switchExp) {
+        m_switchInfo->switchExp = m_switchInfo->switchExp->searchReplaceAll(pattern, replace, ch2);
     }
 
     return ch | ch2;
@@ -66,7 +63,7 @@ bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
 bool CaseStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 {
     return GotoStatement::searchAll(pattern, result) ||
-           (m_switchInfo && m_switchInfo->pSwitchVar && m_switchInfo->pSwitchVar->searchAll(pattern, result));
+           (m_switchInfo && m_switchInfo->switchExp && m_switchInfo->switchExp->searchAll(pattern, result));
 }
 
 
@@ -92,7 +89,7 @@ void CaseStatement::print(QTextStream& os, bool html) const
         os << "]";
     }
     else {
-        os << "SWITCH(" << m_switchInfo->pSwitchVar << ")\n";
+        os << "SWITCH(" << m_switchInfo->switchExp << ")\n";
     }
 
     if (html) {
@@ -111,7 +108,7 @@ Statement *CaseStatement::clone() const
     if (m_switchInfo) {
         ret->m_switchInfo             = new SwitchInfo;
         *ret->m_switchInfo            = *m_switchInfo;
-        ret->m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->clone();
+        ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
     }
 
     // Statement members
@@ -136,14 +133,14 @@ void CaseStatement::generateCode(ICodeGenerator *, const BasicBlock *)
 
 bool CaseStatement::usesExp(const Exp& e) const
 {
-    // Before a switch statement is recognised, pDest is non null
+    // Before a switch statement is recognised, m_dest is non null
     if (m_dest) {
         return *m_dest == e;
     }
 
-    // After a switch statement is recognised, pDest is null, and pSwitchInfo->pSwitchVar takes over
-    if (m_switchInfo->pSwitchVar) {
-        return *m_switchInfo->pSwitchVar == e;
+    // After a switch statement is recognised, m_dest is null, and m_switchInfo->m_switchVar takes over
+    if (m_switchInfo->switchExp) {
+        return *m_switchInfo->switchExp == e;
     }
 
     return false;
@@ -155,8 +152,8 @@ void CaseStatement::simplify()
     if (m_dest) {
         m_dest = m_dest->simplify();
     }
-    else if (m_switchInfo && m_switchInfo->pSwitchVar) {
-        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->simplify();
+    else if (m_switchInfo && m_switchInfo->switchExp) {
+        m_switchInfo->switchExp = m_switchInfo->switchExp->simplify();
     }
 }
 
@@ -174,8 +171,8 @@ bool CaseStatement::accept(StmtExpVisitor *v)
         ret = m_dest->accept(v->ev);
     }
 
-    if (ret && m_switchInfo && m_switchInfo->pSwitchVar) {
-        ret = m_switchInfo->pSwitchVar->accept(v->ev);
+    if (ret && m_switchInfo && m_switchInfo->switchExp) {
+        ret = m_switchInfo->switchExp->accept(v->ev);
     }
 
     return ret;
@@ -192,8 +189,8 @@ bool CaseStatement::accept(StmtModifier *v)
             m_dest = m_dest->accept(v->m_mod);
         }
 
-        if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
-            m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->m_mod);
+        if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {
+            m_switchInfo->switchExp = m_switchInfo->switchExp->accept(v->m_mod);
         }
     }
 
@@ -210,8 +207,8 @@ bool CaseStatement::accept(StmtPartModifier *v)
         m_dest = m_dest->accept(v->mod);
     }
 
-    if (m_switchInfo && m_switchInfo->pSwitchVar && visitChildren) {
-        m_switchInfo->pSwitchVar = m_switchInfo->pSwitchVar->accept(v->mod);
+    if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {
+        m_switchInfo->switchExp = m_switchInfo->switchExp->accept(v->mod);
     }
 
     return true;

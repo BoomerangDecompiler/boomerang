@@ -116,22 +116,22 @@ Address Win32BinaryLoader::getEntryPoint()
 
 Address Win32BinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol *aMain = m_symbols->find("main");
+    const IBinarySymbol *mainSymbol = m_symbols->find("main");
 
-    if (aMain) {
-        return aMain->getLocation();
+    if (mainSymbol) {
+        return mainSymbol->getLocation();
     }
 
-    aMain = m_symbols->find("_main"); // Example: MinGW
+    mainSymbol = m_symbols->find("_main"); // Example: MinGW
 
-    if (aMain) {
-        return aMain->getLocation();
+    if (mainSymbol) {
+        return mainSymbol->getLocation();
     }
 
-    aMain = m_symbols->find("WinMain"); // Example: MinGW
+    mainSymbol = m_symbols->find("WinMain"); // Example: MinGW
 
-    if (aMain) {
-        return aMain->getLocation();
+    if (mainSymbol) {
+        return mainSymbol->getLocation();
     }
 
     // This is a bit of a hack, but no more than the rest of Windows :-O  The pattern is to look for an indirect call
@@ -535,26 +535,23 @@ void Win32BinaryLoader::readDebugData(QString exename)
     // attempt to load symbols for the exe or dll
 
     DWORD  error;
-    HANDLE hProcess;
-
-    hProcess = GetCurrentProcess();
-    // hProcess = (HANDLE)processId;
+    HANDLE currProcess = GetCurrentProcess();
 
     dbghelp::SymSetOptions(SYMOPT_LOAD_LINES);
 
-    if (!dbghelp::SymInitialize(hProcess, nullptr, FALSE)) {
+    if (!dbghelp::SymInitialize(currProcess, nullptr, FALSE)) {
         error = GetLastError();
         printf("SymInitialize returned error : %d\n", error);
         return;
     }
 
     DWORD64 dwBaseAddr = 0;
-    dwBaseAddr = dbghelp::SymLoadModule64(hProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
+    dwBaseAddr = dbghelp::SymLoadModule64(currProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
 
     if (dwBaseAddr != 0) {
         assert(dwBaseAddr == m_pPEHeader->Imagebase);
         bool found = false;
-        dbghelp::SymEnumSourceFiles(hProcess, dwBaseAddr, 0, lookforsource, &found);
+        dbghelp::SymEnumSourceFiles(currProcess, dwBaseAddr, 0, lookforsource, &found);
         m_hasDebugInfo = found;
     }
     else {

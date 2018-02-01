@@ -144,14 +144,14 @@ void TypedExp::appendDotFile(QTextStream& of)
 }
 
 
-SharedExp TypedExp::polySimplify(bool& bMod)
+SharedExp TypedExp::polySimplify(bool& changed)
 {
     SharedExp res = shared_from_this();
 
     if (subExp1->getOper() == opRegOf) {
         // type cast on a reg of.. hmm.. let's remove this
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 

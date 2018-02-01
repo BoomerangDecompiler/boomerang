@@ -44,5 +44,5 @@ public:
      * that is indexed by the actual switch value, then the value from that array is used as an index into the array of
      * code pointers.
      */
-    int findNumCases(BasicBlock *bb);
+    int findNumCases(const BasicBlock *bb);
 };

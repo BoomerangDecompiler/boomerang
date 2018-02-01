@@ -261,13 +261,13 @@ Function *Prog::createFunction(Address startAddress)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
     // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
-    // assert(uAddr >= limitTextLow && uAddr < limitTextHigh);
+    // assert(startAddress >= limitTextLow && startAddress < limitTextHigh);
 
     // Check if we already have this proc
-    Function *pProc = findFunction(startAddress);
+    Function *existingFunction = findFunction(startAddress);
 
-    if (pProc) {      // Exists already ?
-        return pProc; // Yes, we are done
+    if (existingFunction) {      // Exists already ?
+        return existingFunction; // Yes, we are done
     }
 
     Address other = m_fileLoader->getJumpTarget(startAddress);
@@ -276,19 +276,19 @@ Function *Prog::createFunction(Address startAddress)
         startAddress = other;
     }
 
-    pProc = findFunction(startAddress);
+    existingFunction = findFunction(startAddress);
 
-    if (pProc) {      // Exists already ?
-        return pProc; // Yes, we are done
+    if (existingFunction) {      // Exists already ?
+        return existingFunction; // Yes, we are done
     }
 
     QString             procName;
     const IBinarySymbol *sym = m_binarySymbols->find(startAddress);
-    bool                bLib = false;
+    bool                isLibFunction = false;
 
     if (sym) {
-        bLib     = sym->isImportedFunction() || sym->isStaticFunction();
-        procName = sym->getName();
+        isLibFunction = sym->isImportedFunction() || sym->isStaticFunction();
+        procName      = sym->getName();
     }
 
     if (procName.isEmpty()) {
@@ -297,7 +297,7 @@ Function *Prog::createFunction(Address startAddress)
         LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
     }
 
-    return m_rootModule->createFunction(procName, startAddress, bLib);
+    return m_rootModule->createFunction(procName, startAddress, isLibFunction);
 }
 
 
@@ -484,11 +484,11 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
 
 void Prog::removeFunction(const QString& name)
 {
-    Function *f = findFunction(name);
+    Function *function = findFunction(name);
 
-    if (f) {
-        f->removeFromModule();
-        Boomerang::get()->alertRemove(f);
+    if (function) {
+        function->removeFromModule();
+        Boomerang::get()->alertRemove(function);
         // FIXME: this function removes the function from module, but it leaks it
     }
 }
@@ -514,22 +514,22 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const Modu
 }
 
 
-int Prog::getNumFunctions(bool user_only) const
+int Prog::getNumFunctions(bool userOnly) const
 {
     int n = 0;
 
-    if (user_only) {
+    if (userOnly) {
         for (const auto& m : m_moduleList) {
-            for (Function *pProc : *m) {
-                if (!pProc->isLib()) {
+            for (Function *proc : *m) {
+                if (!proc->isLib()) {
                     n++;
                 }
             }
         }
     }
     else {
-        for (const auto& m : m_moduleList) {
-            n += m->size();
+        for (const auto& module : m_moduleList) {
+            n += module->size();
         }
     }
 
@@ -554,8 +554,8 @@ Function *Prog::findFunction(Address entryAddr) const
 
 Function *Prog::findFunction(const QString& name) const
 {
-    for (const auto& m : m_moduleList) {
-        Function *f = m->getFunction(name);
+    for (const auto& module : m_moduleList) {
+        Function *f = module->getFunction(name);
 
         if (f) {
             assert(f != reinterpret_cast<Function*>(-1));
@@ -710,12 +710,12 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
     }
 
     size_t size   = symbol->getSize();
-    int numElems = baseType->getSizeInBytes();
-    if (numElems < 1) {
-        numElems = 1;
+    int elemSize = baseType->getSizeInBytes();
+    if (elemSize < 1) {
+        elemSize = 1;
     }
 
-    return ArrayType::get(baseType, size / numElems);
+    return ArrayType::get(baseType, size / elemSize);
 }
 
 
@@ -974,10 +974,10 @@ bool Prog::isDynamicLinkedProcPointer(Address dest) const
 }
 
 
-const QString& Prog::getDynamicProcName(Address uNative) const
+const QString& Prog::getDynamicProcName(Address addr) const
 {
     static QString dyn("dynamic");
-    auto           sym = m_binarySymbols->find(uNative);
+    auto           sym = m_binarySymbols->find(addr);
 
     return sym ? sym->getName() : dyn;
 }
@@ -1179,10 +1179,8 @@ void Prog::fromSSAForm()
             LOG_VERBOSE("===== Before transformation from SSA form for %1 ====", proc->getName());
             LOG_VERBOSE("===== End before transformation from SSA form for %1 ====", proc->getName());
 
-            if (VERBOSE) {
-                if (!SETTING(dotFile).isEmpty()) {
-                    proc->printDFG();
-                }
+            if (SETTING(verboseOutput) && !SETTING(dotFile).isEmpty()) {
+                proc->printDFG();
             }
 
             proc->fromSSAForm();

@@ -387,13 +387,13 @@ SharedExp Ternary::simplifyArith()
 }
 
 
-SharedExp Ternary::polySimplify(bool& bMod)
+SharedExp Ternary::polySimplify(bool& changed)
 {
     SharedExp res = shared_from_this();
 
-    subExp1 = subExp1->polySimplify(bMod);
-    subExp2 = subExp2->polySimplify(bMod);
-    subExp3 = subExp3->polySimplify(bMod);
+    subExp1 = subExp1->polySimplify(changed);
+    subExp2 = subExp2->polySimplify(changed);
+    subExp3 = subExp3->polySimplify(changed);
 
     // p ? 1 : 0 -> p
     if ((m_oper == opTern) && (subExp2->getOper() == opIntConst) && (subExp3->getOper() == opIntConst)) {
@@ -402,7 +402,7 @@ SharedExp Ternary::polySimplify(bool& bMod)
 
         if ((s2->getInt() == 1) && (s3->getInt() == 0)) {
             res  = getSubExp1();
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -410,33 +410,33 @@ SharedExp Ternary::polySimplify(bool& bMod)
     // 1 ? x : y -> x
     if ((m_oper == opTern) && (subExp1->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == 1)) {
         res  = this->getSubExp2();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // 0 ? x : y -> y
     if ((m_oper == opTern) && (subExp1->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == 0)) {
         res  = this->getSubExp3();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     if (((m_oper == opSgnEx) || (m_oper == opZfill)) && (subExp3->getOper() == opIntConst)) {
         res  = this->getSubExp3();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     if ((m_oper == opFsize) && (subExp3->getOper() == opItof) && (*subExp1 == *subExp3->getSubExp2()) &&
         (*subExp2 == *subExp3->getSubExp1())) {
         res  = this->getSubExp3();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     if ((m_oper == opFsize) && (subExp3->getOper() == opFltConst)) {
         res  = this->getSubExp3();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -444,7 +444,7 @@ SharedExp Ternary::polySimplify(bool& bMod)
         (std::static_pointer_cast<const Const>(subExp2)->getInt() == 32)) {
         unsigned n = std::static_pointer_cast<const Const>(subExp3)->getInt();
         res  = Const::get(*reinterpret_cast<float *>(&n));
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -462,7 +462,7 @@ SharedExp Ternary::polySimplify(bool& bMod)
                 LOG_VERBOSE("Replacing %1 with %2 in %3", subExp3, d, shared_from_this());
 
                 subExp3 = Const::get(d);
-                bMod    = true;
+                changed    = true;
                 return res;
             }
         }
@@ -476,13 +476,13 @@ SharedExp Ternary::polySimplify(bool& bMod)
         if (from == 32) {
             if (to == 16) {
                 res  = Const::get(Address(val & 0xffff));
-                bMod = true;
+                changed = true;
                 return res;
             }
 
             if (to == 8) {
                 res  = Const::get(Address(val & 0xff));
-                bMod = true;
+                changed = true;
                 return res;
             }
         }
@@ -496,13 +496,13 @@ SharedExp Ternary::polySimplify(bool& bMod)
         if (from == 32) {
             if (to == 16) {
                 res  = Const::get(val & 0xffff);
-                bMod = true;
+                changed = true;
                 return res;
             }
 
             if (to == 8) {
                 res  = Const::get(val & 0xff);
-                bMod = true;
+                changed = true;
                 return res;
             }
         }
@@ -594,12 +594,12 @@ SharedType Ternary::ascendType()
 }
 
 
-void Ternary::descendType(SharedType /*parentType*/, bool& ch, Statement *s)
+void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s)
 {
     switch (m_oper)
     {
     case opFsize:
-        subExp3->descendType(FloatType::get(subExp1->access<Const>()->getInt()), ch, s);
+        subExp3->descendType(FloatType::get(subExp1->access<Const>()->getInt()), changed, s);
         break;
 
     case opZfill:
@@ -608,7 +608,7 @@ void Ternary::descendType(SharedType /*parentType*/, bool& ch, Statement *s)
             int        fromSize = subExp1->access<Const>()->getInt();
             SharedType fromType;
             fromType = Type::newIntegerLikeType(fromSize, m_oper == opZfill ? -1 : 1);
-            subExp3->descendType(fromType, ch, s);
+            subExp3->descendType(fromType, changed, s);
             break;
         }
 

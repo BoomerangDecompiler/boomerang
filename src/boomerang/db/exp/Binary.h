@@ -76,7 +76,7 @@ public:
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
     /// \copydoc Unary::simplify
-    virtual SharedExp polySimplify(bool& bMod) override;
+    virtual SharedExp polySimplify(bool& changed) override;
 
     /// \copydoc Unary::simplifyArith
     SharedExp simplifyArith() override;
@@ -94,7 +94,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::ascendType
-    virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer

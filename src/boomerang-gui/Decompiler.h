@@ -34,12 +34,12 @@ public:
 
     /// IWatcher interface
 public:
-    virtual void alertDecompileDebugPoint(UserProc *p, const char *description) override;
-    virtual void alertDiscovered(Function *parent, Function *p) override;
-    virtual void alertDecompiling(UserProc *p) override;
-    virtual void alertNew(Function *p) override;
-    virtual void alertRemove(Function *p) override;
-    virtual void alertUpdateSignature(Function *p) override;
+    virtual void alertDecompileDebugPoint(UserProc *proc, const char *description) override;
+    virtual void alertDiscovered(Function *parent, Function *function) override;
+    virtual void alertDecompiling(UserProc *function) override;
+    virtual void alertNew(Function *function) override;
+    virtual void alertRemove(Function *function) override;
+    virtual void alertUpdateSignature(Function *function) override;
 
 signals: // Decompiler -> ui
     void loadingStarted();
@@ -82,8 +82,8 @@ public slots: // ui -> Decompiler
 
     // todo: provide thread-safe access mechanism
 public:
-    bool getRtlForProc(const QString& name, QString& rtl);
-    QString getSigFile(const QString& name);
+    bool getRTLForProc(const QString& name, QString& rtl);
+    QString getSigFilePath(const QString& name);
     QString getClusterFile(const QString& name);
     void renameProc(const QString& oldName, const QString& newName);
     void getCompoundMembers(const QString& name, QTableWidget *tbl);

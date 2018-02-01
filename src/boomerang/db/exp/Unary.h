@@ -73,7 +73,7 @@ public:
     SharedExp& refSubExp1() override;
 
     /// \copydoc Exp::polySimplify
-    virtual SharedExp polySimplify(bool& bMod) override;
+    virtual SharedExp polySimplify(bool& changed) override;
 
     /// \copydoc Exp::simplifyArith
     virtual SharedExp simplifyArith() override;
@@ -91,7 +91,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
 protected:
     SharedExp subExp1; ///< One subexpression pointer

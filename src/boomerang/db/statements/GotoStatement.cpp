@@ -27,19 +27,16 @@ GotoStatement::GotoStatement()
 }
 
 
-GotoStatement::GotoStatement(Address uDest)
+GotoStatement::GotoStatement(Address jumpDest)
     : m_isComputed(false)
 {
     m_kind = StmtType::Goto;
-    m_dest = Const::get(uDest);
+    m_dest = Const::get(jumpDest);
 }
 
 
 GotoStatement::~GotoStatement()
 {
-    if (m_dest) {
-        // delete pDest;
-    }
 }
 
 

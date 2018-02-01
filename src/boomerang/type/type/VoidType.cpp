@@ -11,7 +11,7 @@
 
 
 VoidType::VoidType()
-    : Type(eVoid)
+    : Type(TypeClass::Void)
 {
 }
 
@@ -51,10 +51,10 @@ QString VoidType::getCtype(bool /*final*/) const
 }
 
 
-SharedType VoidType::meetWith(SharedType other, bool& ch, bool /*bHighestPtr*/) const
+SharedType VoidType::meetWith(SharedType other, bool& changed, bool) const
 {
     // void meet x = x
-    ch |= !other->resolvesToVoid();
+    changed |= !other->resolvesToVoid();
     return other->clone();
 }
 

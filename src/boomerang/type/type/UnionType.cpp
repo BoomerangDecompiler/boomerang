@@ -16,13 +16,13 @@
 
 
 UnionType::UnionType()
-    : Type(eUnion)
+    : Type(TypeClass::Union)
 {
 }
 
 
 UnionType::UnionType::UnionType(const std::initializer_list<SharedType>& members)
-    : Type(eUnion)
+    : Type(TypeClass::Union)
 {
     for (SharedType member : members) {
         addType(member, "");
@@ -151,7 +151,7 @@ unsigned unionCount = 0;
 
 static int nextUnionNumber = 0;
 
-SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<UnionType *>(this)->shared_from_this();
@@ -168,7 +168,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
         *result = *this;
 
         for (UnionElement elem : otherUnion->li) {
-            result = result->meetWith(elem.type, ch, bHighestPtr)->as<UnionType>();
+            result = result->meetWith(elem.type, changed, useHighestPtr)->as<UnionType>();
         }
 
         return result;
@@ -213,10 +213,10 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
             continue;
         }
 
-        ch = false;
-        SharedType meet_res = v->meetWith(other, ch, bHighestPtr);
+        changed = false;
+        SharedType meet_res = v->meetWith(other, changed, useHighestPtr);
 
-        if (!ch) {
+        if (!changed) {
             // Fully compatible type alerady present in this union
             return const_cast<UnionType *>(this)->shared_from_this();
         }
@@ -246,7 +246,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     if (bestElem != li.end()) {
         ne.name = bestElem->name;
-        ne.type = bestElem->type->meetWith(other, ch, bHighestPtr); // we know this works because the types are compatible
+        ne.type = bestElem->type->meetWith(other, changed, useHighestPtr); // we know this works because the types are compatible
     }
     else {
         // Other is not compatible with any of my component types. Add a new type.
@@ -255,7 +255,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     result->addType(ne.type, ne.name);
-    ch = true;
+    changed = true;
     return result;
 }
 

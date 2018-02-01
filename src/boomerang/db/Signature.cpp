@@ -2087,9 +2087,9 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-/*static*/ SharedExp Signature::getReturnExp2(IFileLoader *pBF)
+/*static*/ SharedExp Signature::getReturnExp2(IFileLoader *loader)
 {
-    switch (pBF->getMachine())
+    switch (loader->getMachine())
     {
     case Machine::SPARC:
         return Location::regOf(8);

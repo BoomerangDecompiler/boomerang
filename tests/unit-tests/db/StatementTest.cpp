@@ -56,7 +56,7 @@ void StatementTest::initTestCase()
 void StatementTest::testEmpty()
 {
     // Force "verbose" flag (-v)
-    SETTING(vFlag) = true;
+    SETTING(verboseOutput) = true;
 
     Boomerang *boo = Boomerang::get();
     boo->getSettings()->setOutputDirectory("./unit_test/");
@@ -1068,7 +1068,7 @@ void StatementTest::testAddUsedLocsCase()
 
     c.setDest(Location::memOf(Location::regOf(26)));
     SwitchInfo si;
-    si.pSwitchVar = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(12)));
+    si.switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(12)));
     c.setSwitchInfo(&si);
     c.addUsedLocs(l);
 
@@ -1242,7 +1242,7 @@ void StatementTest::testSubscriptVars()
     CaseStatement c1;
     c1.setDest(Location::memOf(Location::regOf(26)));
     SwitchInfo si;
-    si.pSwitchVar = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(12)));
+    si.switchExp = Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(12)));
     c1.setSwitchInfo(&si);
 
     c1.subscriptVar(srch, &s9);

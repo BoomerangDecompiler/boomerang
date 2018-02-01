@@ -571,14 +571,14 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 
         if (flags == R_386_32) {
             // Lookup the value of the symbol table entry
-            Address a = Address(elfRead4(&m_symbolSection[symIndex].st_value));
+            Address synbolAddr = Address(elfRead4(&m_symbolSection[symIndex].st_value));
 
             if (m_symbolSection[symIndex].st_info & STT_SECTION) {
-                a = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)].SourceAddr;
+                synbolAddr = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)].SourceAddr;
             }
 
             // Overwrite the relocation value... ?
-            m_binaryImage->writeNative4(val, a.value());
+            m_binaryImage->writeNative4(val, synbolAddr.value());
             continue;
         }
 

@@ -92,9 +92,9 @@ bool Statement::mayAlias(SharedExp e1, SharedExp e2, int size) const
 
     // Pass the expressions both ways. Saves checking things like m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly
     // (only need to check one of these cases)
-    bool b = (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size));
+    const bool b = (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size));
 
-    if (b && VERBOSE) {
+    if (b && SETTING(verboseOutput)) {
         LOG_VERBOSE("Instruction may alias: %1 and %2 size %3", e1, e2, size);
     }
 
@@ -760,7 +760,7 @@ void Statement::dfaMapLocals()
 }
 
 
-SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& ch)
+SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& changed)
 {
     bool       thisCh  = false;
     SharedType typeFor = getTypeFor(e);
@@ -769,7 +769,7 @@ SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& ch)
     SharedType newType = typeFor->meetWith(ty, thisCh);
 
     if (thisCh) {
-        ch = true;
+        changed = true;
         setTypeFor(e, newType->clone());
     }
 

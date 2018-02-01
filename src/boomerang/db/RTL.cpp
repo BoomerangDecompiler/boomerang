@@ -124,18 +124,18 @@ void RTL::print(QTextStream& os, bool html) const
 
     // Print the statements
     // First line has 8 extra chars as above
-    bool bFirst = true;
+    bool firstStmt = true;
 
     for (Statement *stmt : *this) {
         if (html) {
-            if (!bFirst) {
+            if (!firstStmt) {
                 os << "<tr><td></td>";
             }
 
             os << "<td width=\"50\" align=\"center\">";
         }
         else {
-            if (bFirst) {
+            if (firstStmt) {
                 os << " ";
             }
             else {
@@ -154,7 +154,7 @@ void RTL::print(QTextStream& os, bool html) const
         }
 
         os << "\n";
-        bFirst = false;
+        firstStmt = false;
     }
 
     if (empty()) {
