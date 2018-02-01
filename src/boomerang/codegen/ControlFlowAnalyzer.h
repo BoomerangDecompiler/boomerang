@@ -17,7 +17,6 @@
 class Cfg;
 class BasicBlock;
 
-
 /// an enumerated type for the class of stucture determined for a node
 enum class StructType : uint8_t
 {
@@ -90,12 +89,13 @@ enum class SBBType : uint8_t
 struct BBStructInfo
 {
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-    int m_ord = -1;                          ///< node's position within the ordering structure
-    int m_revOrd = -1;                       ///< position within ordering structure for the reverse graph
-    int m_inEdgesVisited = 0;                ///< counts the number of in edges visited during a DFS
-    int m_numForwardInEdges = 0;             ///< inedges to this node that aren't back edges
-    int m_loopStamps[2] = { 0 };
-    int m_revLoopStamps[2] = { 0 }; ///< used for structuring analysis
+    int m_postOrderIndex = -1;    ///< node's position within the ordering structure
+    int m_revPostOrderIndex = -1; ///< position within ordering structure for the reverse graph
+
+    int m_preOrderID = 0;        ///< (unique) id of the node during pre-order traversal
+    int m_postOrderID = 0;       ///< (unique) id of the node during post-order traversal
+    int m_revPreOrderID = 0;     ///< (unique) id of the node during reverse pre-order traversal
+    int m_revPostOrderID = 0;    ///< (unique) id of the node during reverse post-order traversal
 
     /* for traversal */
     TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
@@ -140,7 +140,7 @@ private:
     void setTimeStamps();
 
     /**
-     * Finds the immediate post dominator of each node in the graph PROC->cfg.
+     * Finds the immediate post dominator of each node in the CFG.
      *
      * Adapted version of the dominators algorithm by Hecht and Ullman;
      * finds immediate post dominators only.
@@ -200,8 +200,8 @@ public:
     bool isAncestorOf(const BasicBlock *bb, const BasicBlock *other) const;
     bool isBBInLoop(const BasicBlock *bb, const BasicBlock *header, const BasicBlock *latch) const;
 
-    int getOrdering(const BasicBlock *bb) const { return m_info[bb].m_ord; }
-    int getRevOrd(const BasicBlock *bb) const { return m_info[bb].m_revOrd; }
+    int getPostOrdering(const BasicBlock *bb) const { return m_info[bb].m_postOrderIndex; }
+    int getRevOrd(const BasicBlock *bb) const { return m_info[bb].m_revPostOrderIndex; }
 
     const BasicBlock *getImmPDom(const BasicBlock *bb) const { return m_info[bb].m_immPDom; }
 
@@ -241,8 +241,8 @@ private:
     Cfg *m_cfg = nullptr;
     bool m_structured = false; ///< true if the CFG is structured
 
-    std::vector<const BasicBlock *> m_ordering;    ///< Ordering of BBs for control flow structuring
-    std::vector<const BasicBlock *> m_revOrdering; ///< Ordering of BBs for control flow structuring
+    std::vector<const BasicBlock *> m_postOrdering;    ///< Ordering of BBs for control flow structuring
+    std::vector<const BasicBlock *> m_revPostOrdering; ///< Ordering of BBs for control flow structuring
 
 private:
     // mutable to allow using the map in const methods (might create entries).

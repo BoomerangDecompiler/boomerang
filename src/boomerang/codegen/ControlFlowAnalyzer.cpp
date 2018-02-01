@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/codegen/syntax/SyntaxNode.h"
 
 
 ControlFlowAnalyzer::ControlFlowAnalyzer()
@@ -50,9 +51,9 @@ void ControlFlowAnalyzer::setTimeStamps()
 {
     // set the parenthesis for the nodes as well as setting the post-order ordering between the nodes
     int time = 1;
-    m_ordering.clear();
+    m_postOrdering.clear();
 
-    setLoopStamps(m_cfg->getEntryBB(), time, m_ordering);
+    setLoopStamps(m_cfg->getEntryBB(), time, m_postOrdering);
 
     // set the reverse parenthesis for the nodes
     time = 1;
@@ -60,16 +61,16 @@ void ControlFlowAnalyzer::setTimeStamps()
 
     BasicBlock *retNode = m_cfg->findRetNode();
     assert(retNode);
-    m_revOrdering.clear();
-    setRevOrder(retNode, m_revOrdering);
+    m_revPostOrdering.clear();
+    setRevOrder(retNode, m_revPostOrdering);
 }
 
 
 void ControlFlowAnalyzer::updateImmedPDom()
 {
     // traverse the nodes in order (i.e from the bottom up)
-    for (int i = m_revOrdering.size() - 1; i >= 0; i--) {
-        const BasicBlock *curNode = m_revOrdering[i];
+    for (int i = m_revPostOrdering.size() - 1; i >= 0; i--) {
+        const BasicBlock *curNode = m_revPostOrdering[i];
 
         for (BasicBlock *succNode : curNode->getSuccessors()) {
             if (getRevOrd(succNode) > getRevOrd(curNode)) {
@@ -79,7 +80,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (const BasicBlock *curNode : m_ordering) {
+    for (const BasicBlock *curNode : m_postOrdering) {
         if (curNode->getNumSuccessors() <= 1) {
             continue;
         }
@@ -91,7 +92,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (const BasicBlock *currNode : m_ordering) {
+    for (const BasicBlock *currNode : m_postOrdering) {
         if (currNode->getNumSuccessors() > 1) {
             for (auto& oEdge : currNode->getSuccessors()) {
                 BasicBlock *succNode = oEdge;
@@ -99,7 +100,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
                 if (isBackEdge(currNode, succNode) &&
                     (currNode->getNumSuccessors() > 1) &&
                     getImmPDom(succNode) &&
-                    (getOrdering(getImmPDom(succNode)) < getOrdering(getImmPDom(currNode)))) {
+                    (getPostOrdering(getImmPDom(succNode)) < getPostOrdering(getImmPDom(currNode)))) {
                         setImmPDom(currNode, commonPDom(getImmPDom(succNode), getImmPDom(currNode)));
                 }
                 else {
@@ -156,7 +157,7 @@ const BasicBlock *ControlFlowAnalyzer::commonPDom(const BasicBlock *currImmPDom,
 void ControlFlowAnalyzer::structConds()
 {
     // Process the nodes in order
-    for (const BasicBlock *currNode : m_ordering) {
+    for (const BasicBlock *currNode : m_postOrdering) {
         // does the current node have more than one out edge?
         if (currNode->getNumSuccessors() > 1) {
             // if the current conditional header is a two way node and has a back edge, then it won't have a follow
@@ -199,7 +200,7 @@ void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *& lo
     else if (header->getType() == BBType::Twoway) {
         // if the header is a two way node then it must have a conditional follow (since it can't have any backedges
         // leading from it). If this follow is within the loop then this must be an endless loop
-        if (getCondFollow(header) && loopNodes[getOrdering(getCondFollow(header))]) {
+        if (getCondFollow(header) && loopNodes[getPostOrdering(getCondFollow(header))]) {
             setLoopType(header, LoopType::Endless);
 
             // retain the fact that this is also a conditional header
@@ -224,7 +225,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
 
     if (lType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop follow
-        if (loopNodes[getOrdering(header->getSuccessor(0))]) {
+        if (loopNodes[getPostOrdering(header->getSuccessor(0))]) {
             setLoopFollow(header, header->getSuccessor(1));
         }
         else {
@@ -246,8 +247,8 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
 
         // traverse the ordering array between the header and latch nodes.
         // BasicBlock * latch = header->getLatchNode(); initialized at function start
-        for (int i = getOrdering(header) - 1; i > getOrdering(latch); i--) {
-            const BasicBlock *& desc = m_ordering[i];
+        for (int i = getPostOrdering(header) - 1; i > getPostOrdering(latch); i--) {
+            const BasicBlock *& desc = m_postOrdering[i];
             // the follow for an endless loop will have the following
             // properties:
             //   i) it will have a parent that is a conditional header inside the loop whose follow is outside the
@@ -256,10 +257,10 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
             // iii) have the highest ordering of all suitable follows (i.e. highest in the graph)
 
             if ((getStructType(desc) == StructType::Cond) && getCondFollow(desc) && (getLoopHead(desc) == header)) {
-                if (loopNodes[getOrdering(getCondFollow(desc))]) {
+                if (loopNodes[getPostOrdering(getCondFollow(desc))]) {
                     // if the conditional's follow is in the same loop AND is lower in the loop, jump to this follow
-                    if (getOrdering(desc) > getOrdering(getCondFollow(desc))) {
-                        i = getOrdering(getCondFollow(desc));
+                    if (getPostOrdering(desc) > getPostOrdering(getCondFollow(desc))) {
+                        i = getPostOrdering(getCondFollow(desc));
                     }
                     else {
                         // otherwise there is a backward jump somewhere to a node earlier in this loop.
@@ -272,8 +273,8 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
                     // otherwise find the child (if any) of the conditional header that isn't inside the same loop
                     const BasicBlock *succ = desc->getSuccessor(0);
 
-                    if (loopNodes[getOrdering(succ)]) {
-                        if (!loopNodes[getOrdering(desc->getSuccessor(1))]) {
+                    if (loopNodes[getPostOrdering(succ)]) {
+                        if (!loopNodes[getPostOrdering(desc->getSuccessor(1))]) {
                             succ = desc->getSuccessor(1);
                         }
                         else {
@@ -282,7 +283,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
                     }
 
                     // if a potential follow was found, compare its ordering with the currently found follow
-                    if (succ && (!follow || (getOrdering(succ) > getOrdering(follow)))) {
+                    if (succ && (!follow || (getPostOrdering(succ) > getPostOrdering(follow)))) {
                         follow = succ;
                     }
                 }
@@ -311,12 +312,12 @@ void ControlFlowAnalyzer::tagNodesInLoop(const BasicBlock *header, bool *& loopN
     const BasicBlock *latch = getLatchNode(header);
     assert(latch);
 
-    for (int i = getOrdering(header) - 1; i >= getOrdering(latch); i--) {
-        if (isBBInLoop(m_ordering[i], header, latch)) {
+    for (int i = getPostOrdering(header) - 1; i >= getPostOrdering(latch); i--) {
+        if (isBBInLoop(m_postOrdering[i], header, latch)) {
             // update the membership map to reflect that this node is within the loop
             loopNodes[i] = true;
 
-            setLoopHead(m_ordering[i], header);
+            setLoopHead(m_postOrdering[i], header);
         }
     }
 }
@@ -324,8 +325,8 @@ void ControlFlowAnalyzer::tagNodesInLoop(const BasicBlock *header, bool *& loopN
 
 void ControlFlowAnalyzer::structLoops()
 {
-    for (int i = m_ordering.size() - 1; i >= 0; i--) {
-        const BasicBlock *currNode = m_ordering[i]; // the current node under investigation
+    for (int i = m_postOrdering.size() - 1; i >= 0; i--) {
+        const BasicBlock *currNode = m_postOrdering[i]; // the current node under investigation
         const BasicBlock *latch    = nullptr;       // the latching node of the loop
 
         // If the current node has at least one back edge into it, it is a loop header. If there are numerous back edges
@@ -342,7 +343,7 @@ void ControlFlowAnalyzer::structLoops()
         for (const BasicBlock *pred : currNode->getPredecessors()) {
             if ((getCaseHead(pred) == getCaseHead(currNode)) &&                         // ii)
                 (getLoopHead(pred) == getLoopHead(currNode)) &&                         // iii)
-                (!latch || (getOrdering(latch) > getOrdering(pred))) &&                 // vi)
+                (!latch || (getPostOrdering(latch) > getPostOrdering(pred))) &&                 // vi)
                 !(getLoopHead(pred) && (getLatchNode(getLoopHead(pred)) == pred)) &&    // v)
                 isBackEdge(pred, currNode)) {                                           // i)
                 latch = pred;
@@ -352,9 +353,9 @@ void ControlFlowAnalyzer::structLoops()
         // if a latching node was found for the current node then it is a loop header.
         if (latch) {
             // define the map that maps each node to whether or not it is within the current loop
-            bool *loopNodes = new bool[m_ordering.size()];
+            bool *loopNodes = new bool[m_postOrdering.size()];
 
-            for (unsigned int j = 0; j < m_ordering.size(); j++) {
+            for (unsigned int j = 0; j < m_postOrdering.size(); j++) {
                 loopNodes[j] = false;
             }
 
@@ -385,9 +386,7 @@ void ControlFlowAnalyzer::structLoops()
 
 void ControlFlowAnalyzer::checkConds()
 {
-    for (auto& elem : m_ordering) {
-        const BasicBlock *currNode = elem;
-
+    for (const BasicBlock * currNode : m_postOrdering) {
         // consider only conditional headers that have a follow and aren't case headers
         if (((getStructType(currNode) == StructType::Cond) || (getStructType(currNode) == StructType::LoopCond)) && getCondFollow(currNode) &&
             (getCondType(currNode) != CondType::Case)) {
@@ -496,21 +495,20 @@ bool ControlFlowAnalyzer::isCaseOption(const BasicBlock *bb) const
 
 bool ControlFlowAnalyzer::isAncestorOf(const BasicBlock* bb, const BasicBlock* other) const
 {
-    return (m_info[bb].m_loopStamps[0] < m_info[other].m_loopStamps[0] &&
-            m_info[bb].m_loopStamps[1] > m_info[other].m_loopStamps[1])
+    return (m_info[bb].m_preOrderID  < m_info[other].m_preOrderID &&
+            m_info[bb].m_postOrderID > m_info[other].m_postOrderID)
         ||
-           (m_info[bb].m_revLoopStamps[0] < m_info[other].m_revLoopStamps[0] &&
-            m_info[bb].m_revLoopStamps[1] > m_info[other].m_revLoopStamps[1]);
+           (m_info[bb].m_revPreOrderID  < m_info[other].m_revPreOrderID &&
+            m_info[bb].m_revPostOrderID > m_info[other].m_revPostOrderID);
 }
 
 
-
-void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int& time, std::vector<const BasicBlock *>& order)
+void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int& time, std::vector<const BasicBlock *>& postOrder)
 {
     // timestamp the current node with the current time
     // and set its traversed flag
     setTravType(bb, TravType::DFS_LNum);
-    m_info[bb].m_loopStamps[0] = time;
+    m_info[bb].m_preOrderID = time;
 
     // recurse on unvisited children and set inedges for all children
     for (const BasicBlock *succ : bb->getSuccessors()) {
@@ -520,16 +518,16 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int& time, std::ve
 
         // recurse on this child if it hasn't already been visited
         if (getTravType(succ) != TravType::DFS_LNum) {
-            setLoopStamps(succ, ++time, order);
+            setLoopStamps(succ, ++time, postOrder);
         }
     }
 
     // set the the second loopStamp value
-    m_info[bb].m_loopStamps[1] = ++time;
+    m_info[bb].m_postOrderID = ++time;
 
     // add this node to the ordering structure as well as recording its position within the ordering
-    m_info[bb].m_ord = (int)order.size();
-    order.push_back(bb);
+    m_info[bb].m_postOrderIndex = (int)postOrder.size();
+    postOrder.push_back(bb);
 }
 
 
@@ -537,7 +535,7 @@ void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int& time)
 {
     // timestamp the current node with the current time and set its traversed flag
     setTravType(bb, TravType::DFS_RNum);
-    m_info[bb].m_revLoopStamps[0] = time;
+    m_info[bb].m_revPreOrderID = time;
 
     // recurse on the unvisited children in reverse order
     for (int i = bb->getNumSuccessors() - 1; i >= 0; i--) {
@@ -547,7 +545,7 @@ void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int& time)
         }
     }
 
-    m_info[bb].m_revLoopStamps[1] = ++time;
+    m_info[bb].m_revPostOrderID = ++time;
 }
 
 
@@ -565,7 +563,7 @@ void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const Ba
 
     // add this node to the ordering structure and record the post dom. order of this node as its index within this
     // ordering structure
-    m_info[bb].m_revOrd = (int)order.size();
+    m_info[bb].m_revPostOrderIndex = (int)order.size();
     order.push_back(bb);
 }
 
@@ -681,17 +679,17 @@ bool ControlFlowAnalyzer::isBBInLoop(const BasicBlock *bb, const BasicBlock *hea
 {
     assert(getLatchNode(header) == latch);
     assert(header == latch ||
-           ((m_info[header].m_loopStamps[0] > m_info[latch].m_loopStamps[0] && m_info[latch].m_loopStamps[1] > m_info[header].m_loopStamps[1]) ||
-            (m_info[header].m_loopStamps[0] < m_info[latch].m_loopStamps[0] && m_info[latch].m_loopStamps[1] < m_info[header].m_loopStamps[1])));
+           ((m_info[header].m_preOrderID > m_info[latch].m_preOrderID && m_info[latch].m_postOrderID > m_info[header].m_postOrderID) ||
+            (m_info[header].m_preOrderID < m_info[latch].m_preOrderID && m_info[latch].m_postOrderID < m_info[header].m_postOrderID)));
 
     // this node is in the loop if it is the latch node OR
     // this node is within the header and the latch is within this when using the forward loop stamps OR
     // this node is within the header and the latch is within this when using the reverse loop stamps
     return bb == latch ||
-        (m_info[header].m_loopStamps[0] < m_info[bb].m_loopStamps[0]    && m_info[bb].m_loopStamps[1]    < m_info[header].m_loopStamps[1] &&
-         m_info[bb].m_loopStamps[0]     < m_info[latch].m_loopStamps[0] && m_info[latch].m_loopStamps[1] < m_info[bb].m_loopStamps[1]) ||
-        (m_info[header].m_revLoopStamps[0] < m_info[bb].m_revLoopStamps[0]    && m_info[bb].m_revLoopStamps[1]    < m_info[header].m_revLoopStamps[1] &&
-         m_info[bb].m_revLoopStamps[0]     < m_info[latch].m_revLoopStamps[0] && m_info[latch].m_revLoopStamps[1] < m_info[bb].m_revLoopStamps[1]);
+        (m_info[header].m_preOrderID    < m_info[bb]   .m_preOrderID    && m_info[bb]   .m_postOrderID    < m_info[header].m_postOrderID &&
+         m_info[bb]    .m_preOrderID    < m_info[latch].m_preOrderID    && m_info[latch].m_postOrderID    < m_info[bb]    .m_postOrderID) ||
+        (m_info[header].m_revPreOrderID < m_info[bb]   .m_revPreOrderID && m_info[bb]   .m_revPostOrderID < m_info[header].m_revPostOrderID &&
+         m_info[bb]    .m_revPreOrderID < m_info[latch].m_revPreOrderID && m_info[latch].m_revPostOrderID < m_info[bb]    .m_revPostOrderID);
 }
 
 
