@@ -74,7 +74,12 @@ bool CFGCompressor::removeOrphanBBs(Cfg *cfg)
     std::deque<BasicBlock *> orphans;
 
     for (BasicBlock *potentialOrphan : *cfg) {
-        if (potentialOrphan == cfg->getEntryBB()) { // don't remove entry BasicBlock
+        if (potentialOrphan == cfg->getEntryBB()) {
+            // don't remove entry BasicBlock
+            continue;
+        }
+        else if (potentialOrphan->isType(BBType::Ret)) {
+            // Don't remove the ReturnStatement for noreturn functions
             continue;
         }
 
