@@ -2392,7 +2392,7 @@ SharedExp SparcDecoder::dis_Eaddr(HostAddress pc, int size)
                     unsigned                rs1 = (MATCH_w_32_0 >> 14 & 0x1f) /* rs1 at 0 */;
                     // #line 725 "frontend/machine/sparc/decoder.m"
 
-                    expr = Binary::get(opPlus, Location::regOf(rs1), Const::get(reinterpret_cast<int>(i)));
+                    expr = Binary::get(opPlus, Location::regOf(rs1), Const::get(i));
                 } /*opt-block*/ /*opt-block+*/ /*opt-block+*/
             }
             else if ((MATCH_w_32_0 & 0x1f) /* rs2 at 0 */ == 0) {
