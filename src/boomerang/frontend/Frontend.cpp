@@ -308,7 +308,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 }
 
 
-void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
+bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 {
     Q_UNUSED(prg);
     assert(m_program == prg);
@@ -318,7 +318,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     }
 
     if (!decodeMain) {
-        return;
+        return true;
     }
 
     Boomerang::get()->alertStartDecode(m_image->getLimitTextLow(),
@@ -332,17 +332,19 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         std::vector<Address> entrypoints = getEntryPoints();
 
         for (auto& entrypoint : entrypoints) {
-            decode(m_program, entrypoint);
+            if (!decode(m_program, entrypoint)) {
+                return false;
+            }
         }
 
-        return;
+        return true;
     }
 
     decode(m_program, a);
     m_program->addEntryPoint(a);
 
     if (!gotMain) {
-        return;
+        return false;
     }
 
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
@@ -361,7 +363,7 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 
         if (proc == nullptr) {
             LOG_WARN("No proc found for address %1", a);
-            return;
+            return false;
         }
 
         auto fty = std::dynamic_pointer_cast<FuncType>(Type::getNamedType(name));
@@ -378,13 +380,15 @@ void IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 
         break;
     }
+
+    return true;
 }
 
 
-void IFrontEnd::decode(Prog *prg, Address addr)
+bool IFrontEnd::decode(Prog *prog, Address addr)
 {
-    Q_UNUSED(prg);
-    assert(m_program == prg);
+    Q_UNUSED(prog);
+    assert(m_program == prog);
 
     if (addr != Address::INVALID) {
         Function *newProc = m_program->createFunction(addr);
@@ -397,12 +401,12 @@ void IFrontEnd::decode(Prog *prg, Address addr)
 
         if (proc == nullptr) {
             LOG_MSG("No proc found at address %1", addr);
-            return;
+            return false;
         }
 
         if (proc->isLib()) {
             LOG_MSG("NOT decoding library proc at address %1", addr);
-            return;
+            return false;
         }
 
         QTextStream os(stderr); // rtl output target
@@ -433,10 +437,9 @@ void IFrontEnd::decode(Prog *prg, Address addr)
                     // undecoded userproc.. decode it
                     change = true;
                     QTextStream os(stderr); // rtl output target
-                    int         res = processProc(userProc->getEntryAddress(), userProc, os);
 
-                    if (res != 1) {
-                        break;
+                    if (!processProc(userProc->getEntryAddress(), userProc, os)) {
+                        return false;
                     }
 
                     userProc->setDecoded();
@@ -454,11 +457,11 @@ void IFrontEnd::decode(Prog *prg, Address addr)
         }
     }
 
-    m_program->isWellFormed();
+    return m_program->isWellFormed();
 }
 
 
-void IFrontEnd::decodeOnly(Prog *prg, Address addr)
+bool IFrontEnd::decodeOnly(Prog *prg, Address addr)
 {
     Q_UNUSED(prg);
     assert(m_program == prg);
@@ -467,22 +470,23 @@ void IFrontEnd::decodeOnly(Prog *prg, Address addr)
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
 
-    if (processProc(p->getEntryAddress(), p, os)) {
+    bool ok = processProc(p->getEntryAddress(), p, os);
+    if (ok) {
         p->setDecoded();
     }
 
-    m_program->isWellFormed();
+    return ok && m_program->isWellFormed();
 }
 
 
-void IFrontEnd::decodeFragment(UserProc *proc, Address a)
+bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
     if (SETTING(traceDecoder)) {
         LOG_MSG("Decoding fragment at address %1", a);
     }
 
     QTextStream os(stderr); // rtl output target
-    processProc(a, proc, os, true);
+    return processProc(a, proc, os, true);
 }
 
 
@@ -654,11 +658,14 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
             }
 
             if (!decodeInstruction(addr, inst)) {
-                LOG_ERROR("Invalid instruction at %1: 0x%2 0x%3 0x%4 0x%5", addr,
-                    QString::number(m_image->readNative1(addr + 0), 16),
-                    QString::number(m_image->readNative1(addr + 1), 16),
-                    QString::number(m_image->readNative1(addr + 2), 16),
-                    QString::number(m_image->readNative1(addr + 3), 16));
+                QString message;
+                message.sprintf("Invalid or unrecognized instruction at address %s: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
+                                m_image->readNative1(addr + 0),
+                                m_image->readNative1(addr + 1),
+                                m_image->readNative1(addr + 2),
+                                m_image->readNative1(addr + 3));
+                LOG_ERROR(message);
+                return false;
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);

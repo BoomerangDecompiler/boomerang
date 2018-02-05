@@ -899,16 +899,19 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
         return nullptr; // Already decompiled
     }
 
+    std::shared_ptr<ProcSet> child = std::make_shared<ProcSet>();
     if (m_status < PROC_DECODED) {
         // Can happen e.g. if a callee is visible only after analysing a switch statement
-        m_prog->reDecode(this); // Actually decoding for the first time, not REdecoding
+        // Actually decoding for the first time, not REdecoding
+        if (!m_prog->reDecode(this)) {
+            return child;
+        }
     }
 
     if (m_status < PROC_VISITED) {
         setStatus(PROC_VISITED); // We have at least visited this proc "on the way down"
     }
 
-    std::shared_ptr<ProcSet> child = std::make_shared<ProcSet>();
     path->push_back(this); // Append this proc to path
 
     // Recurse to children
@@ -1425,7 +1428,11 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         // Now, decode from scratch
         m_retStatement = nullptr;
         m_cfg->clear();
-        m_prog->reDecode(this);
+
+        if (!m_prog->reDecode(this)) {
+            return std::shared_ptr<ProcSet>(new ProcSet());
+        }
+
         m_df.setRenameLocalsParams(false);                      // Start again with memofs
         setStatus(PROC_VISITED);                                // Back to only visited progress
         path->erase(--path->end());                             // Remove self from path

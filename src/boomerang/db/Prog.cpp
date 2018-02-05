@@ -1635,11 +1635,11 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 }
 
 
-void Prog::reDecode(UserProc *proc)
+bool Prog::reDecode(UserProc *proc)
 {
     QTextStream os(stderr); // rtl output target
 
-    m_defaultFrontend->processProc(proc->getEntryAddress(), proc, os);
+    return m_defaultFrontend->processProc(proc->getEntryAddress(), proc, os);
 }
 
 

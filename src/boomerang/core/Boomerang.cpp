@@ -78,12 +78,18 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
             LOG_MSG("Decoding entry point...");
         }
 
-        fe->decode(prog.get(), SETTING(decodeMain), pname);
+        if (!fe->decode(prog.get(), SETTING(decodeMain), pname)) {
+            LOG_ERROR("Aborting load due to decode failure");
+            return nullptr;
+        }
 
         if (!SETTING(noDecodeChildren)) {
             // this causes any undecoded userprocs to be decoded
             LOG_MSG("Decoding anything undecoded...");
-            fe->decode(prog.get(), Address::INVALID);
+            if (!fe->decode(prog.get(), Address::INVALID)) {
+                LOG_ERROR("Aborting load due to decode failure");
+                return nullptr;
+            }
         }
     }
 

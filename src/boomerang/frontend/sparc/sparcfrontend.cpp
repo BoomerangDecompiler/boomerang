@@ -691,7 +691,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     }
                 }
 
-                LOG_ERROR("Invalid instruction at %1: %2", addr, instructionString);
+                LOG_ERROR("Invalid or unrecognized instruction at %1: %2", addr, instructionString);
                 return false;
             }
 

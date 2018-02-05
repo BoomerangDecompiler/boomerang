@@ -144,18 +144,18 @@ public:
     void readLibraryCatalog();                        ///< read from default catalog
 
     /// Decode all undecoded procedures and return a new program containing them.
-    void decode(Prog *program, bool decodeMain = true, const char *progName = nullptr);
+    bool decode(Prog *program, bool decodeMain = true, const char *progName = nullptr);
 
     /// Decode all procs starting at a given address in a given program.
     /// \note Somehow, addr == Address::INVALID has come to mean decode anything not already decoded
-    void decode(Prog *Program, Address addr);
+    bool decode(Prog *Program, Address addr);
 
     /// Decode one proc starting at a given address in a given program.
     /// \p a should be the address of an UserProc
-    void decodeOnly(Prog *Program, Address addr);
+    bool decodeOnly(Prog *Program, Address addr);
 
     /// Decode a fragment of a procedure, e.g. for each destination of a switch statement
-    void decodeFragment(UserProc *proc, Address addr);
+    bool decodeFragment(UserProc *proc, Address addr);
 
 
     /**

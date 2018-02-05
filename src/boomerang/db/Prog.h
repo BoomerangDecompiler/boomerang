@@ -131,7 +131,7 @@ public:
     void decodeFragment(UserProc *proc, Address addr);
 
     /// Re-decode this proc from scratch
-    void reDecode(UserProc *proc);
+    bool reDecode(UserProc *proc);
 
     /// last fixes after decoding everything
     void finishDecode();
