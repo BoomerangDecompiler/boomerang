@@ -171,7 +171,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'v':
-            SETTING(vFlag) = true;
+            SETTING(verboseOutput) = true;
             break;
 
         case 'x':
@@ -184,7 +184,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'r':
-            SETTING(printRtl) = true;
+            SETTING(printRTLs) = true;
             break;
 
         case 't':

@@ -65,7 +65,9 @@ public:
 
     virtual QString getCtype(bool final = false) const override;
 
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+
     virtual bool isCompatible(const Type& other, bool all) const override;
 
 private:

@@ -45,7 +45,7 @@ bool StringInstructionProcessor::processStringInstructions()
             if (!rtl->empty()) {
                 Statement *firstStmt = rtl->front();
                 if (firstStmt->isAssign()) {
-                    SharedExp lhs = ((Assign *)firstStmt)->getLeft();
+                    SharedExp lhs = static_cast<Assign *>(firstStmt)->getLeft();
 
                     if (lhs->isMachFtr()) {
                         QString str = lhs->access<Const, 1>()->getStr();
@@ -76,7 +76,7 @@ bool StringInstructionProcessor::processStringInstructions()
         Statement *s1 = *skipRTL->begin();
         Statement *s6 = *(--skipRTL->end());
         if (s1->isAssign()) {
-            skipBranch->setCondExpr(((Assign *)s1)->getRight());
+            skipBranch->setCondExpr(static_cast<Assign *>(s1)->getRight());
         }
         else {
             skipBranch->setCondExpr(nullptr);
@@ -85,7 +85,7 @@ bool StringInstructionProcessor::processStringInstructions()
 
         BranchStatement *rptBranch = new BranchStatement;
         if (s6->isAssign()) {
-            rptBranch->setCondExpr(((Assign *)s6)->getRight());
+            rptBranch->setCondExpr(static_cast<Assign *>(s6)->getRight());
         }
         else {
             rptBranch->setCondExpr(nullptr);

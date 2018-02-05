@@ -118,20 +118,20 @@ public:
     /// Alert the watchers we have updated this Procs signature
     void alertUpdateSignature(Function *p);
 
-    /// Alert the watchers we are currently decoding \a nBytes bytes at address \a pc.
-    void alertDecode(Address pc, int nBytes);
+    /// Alert the watchers we are currently decoding \p numBytes bytes at address \p pc.
+    void alertDecode(Address pc, int numBytes);
 
     /// Alert the watchers of a bad decode of an instruction at \a pc.
     void alertBadDecode(Address pc);
 
     /// Alert the watchers we have succesfully decoded this function
-    void alertDecode(Function *p, Address pc, Address last, int nBytes);
+    void alertDecode(Function *p, Address pc, Address last, int numBytes);
 
     /// Alert the watchers we have loaded the Proc.
     void alertLoad(Function *p);
 
     /// Alert the watchers we are starting to decode.
-    void alertStartDecode(Address start, int nBytes);
+    void alertStartDecode(Address start, int numBytes);
 
     /// Alert the watchers we finished decoding.
     void alertEndDecode();
@@ -168,7 +168,6 @@ private:
 
 #define SETTING(var)    (Boomerang::get()->getSettings()->var)
 
-#define VERBOSE                 (SETTING(vFlag))
 #define DEBUG_TA                (SETTING(debugTA))
 #define DEBUG_PROOF             (SETTING(debugProof))
 #define DEBUG_UNUSED            (SETTING(debugUnused))

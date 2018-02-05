@@ -86,7 +86,6 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     // Start at program entry point
     unsigned      p = LMMH(m_pLXHeader->eip);
     unsigned      lim = p + 0x300;
-    unsigned char op1, op2;
     Address       addr;
 
     // unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
@@ -112,8 +111,8 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     }
 
     while (p < lim) {
-        op1 = *(unsigned char *)(p + base);
-        op2 = *(unsigned char *)(p + base + 1);
+        const Byte op1 = *reinterpret_cast<const Byte *>(base + p + 0);
+        const Byte op2 = *reinterpret_cast<const Byte *>(base + p + 1);
 
         switch (op1)
         {
@@ -122,7 +121,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             // An ordinary call
             if (gotSubEbp) {
                 // This is the call we want. Get the offset from the call instruction
-                addr = nativeOrigin + p + 5 + LMMH(*(p + base + 1));
+                addr = nativeOrigin + p + 5 + LMMH2(base + p + 1);
                 LOG_VERBOSE("Found __CMain at address %1", addr);
                 return addr;
             }
@@ -182,7 +181,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    buf.read((char *)&lxoffLE, 4); // Note: peoffLE will be in Little Endian
+    buf.read(reinterpret_cast<char *>(&lxoffLE), 4); // Note: peoffLE will be in Little Endian
     lxoff = LMMH(lxoffLE);
 
     if (!buf.seek(lxoff)) {
@@ -191,7 +190,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
     m_pLXHeader = new LXHeader;
 
-    if (!buf.read((char *)m_pLXHeader, sizeof(LXHeader))) {
+    if (!buf.read(reinterpret_cast<char *>(m_pLXHeader), sizeof(LXHeader))) {
         return false;
     }
 
@@ -205,7 +204,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     m_pLXObjects = new LXObject[LMMH(m_pLXHeader->numobjsinmodule)];
-    buf.read((char *)m_pLXObjects, sizeof(LXObject) * LMMH(m_pLXHeader->numobjsinmodule));
+    buf.read(reinterpret_cast<char *>(m_pLXObjects), sizeof(LXObject) * LMMH(m_pLXHeader->numobjsinmodule));
 
     unsigned npages = 0;
     m_cbImage = 0;
@@ -222,7 +221,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
     m_cbImage -= LMMH(m_pLXObjects[0].RelocBaseAddr);
 
-    base = (char *)malloc(m_cbImage);
+    base = reinterpret_cast<char *>(malloc(m_cbImage));
 
     uint32_t numSections = LMMH(m_pLXHeader->numobjsinmodule);
     std::vector<SectionParam> params;
@@ -272,7 +271,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     unsigned int *fixuppagetbl = new unsigned int[npages + 1];
-    buf.read((char *)fixuppagetbl, sizeof(unsigned int) * (npages + 1));
+    buf.read(reinterpret_cast<char *>(fixuppagetbl), sizeof(unsigned int) * (npages + 1));
 
     // for (unsigned n = 0; n < npages; n++)
     //    printf("offset for page %i: %x\n", n + 1, fixuppagetbl[n]);
@@ -283,7 +282,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     unsigned srcpage = 0;
 
     do {
-        buf.read((char *)&fixup, sizeof(fixup));
+        buf.read(reinterpret_cast<char *>(&fixup), sizeof(fixup));
 
         if ((fixup.src != 7) || (fixup.flags & ~0x50)) {
             LOG_WARN("Unknown fixup type %1 %2",
@@ -295,28 +294,28 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
         // fixup.trgoff);
-        unsigned long  src    = srcpage * LMMH(m_pLXHeader->pagesize) + (short)LMMHw(fixup.srcoff);
+        unsigned long  src    = srcpage * LMMH(m_pLXHeader->pagesize) + LMMHw(fixup.srcoff);
         unsigned short object = 0;
 
         if (fixup.flags & 0x40) {
-            buf.read((char *)&object, 2);
+            buf.read(reinterpret_cast<char *>(&object), 2);
         }
         else {
-            buf.read((char *)&object, 1);
+            buf.read(reinterpret_cast<char *>(&object), 1);
         }
 
         unsigned int trgoff = 0;
 
         if (fixup.flags & 0x10) {
-            buf.read((char *)&trgoff, 4);
+            buf.read(reinterpret_cast<char *>(&trgoff), 4);
         }
         else {
-            buf.read((char *)&trgoff, 2);
+            buf.read(reinterpret_cast<char *>(&trgoff), 2);
         }
 
         unsigned long target = LMMH(m_pLXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
-        *(unsigned int *)(base + src) = target;
+        Util::writeDWord(base + src, target, false);
 
         while (buf.pos() - (LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1])) {
             srcpage++;
@@ -333,13 +332,13 @@ int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 {
     unsigned char buf[64];
 
-    fl.read((char *)buf, sizeof(buf));
+    fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
     if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
         int peoff = LMMH(buf[0x3C]);
 
         if ((peoff != 0) && fl.seek(peoff)) {
-            fl.read((char *)buf, 4);
+            fl.read(reinterpret_cast<char *>(buf), 4);
 
             if (TESTMAGIC2(buf, 0, 'L', 'E')) {
                 /* Win32 VxD (Linear Executable) or DOS4GW app */

@@ -19,15 +19,10 @@
 // Given a little endian value x, load its value assuming big endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
-#define _BMMH(x)                                                                                              \
-    ((unsigned)((Byte *)(&x))[3] + ((unsigned)((Byte *)(&x))[2] << 8) + ((unsigned)((Byte *)(&x))[1] << 16) + \
-     ((unsigned)((Byte *)(&x))[0] << 24))
-// With this one, x IS a pounsigneder
-#define _BMMH2(x)                                                                                          \
-    ((unsigned)((Byte *)(x))[3] + ((unsigned)((Byte *)(x))[2] << 8) + ((unsigned)((Byte *)(x))[1] << 16) + \
-     ((unsigned)((Byte *)(x))[0] << 24))
+#define _BMMH(x)  Util::readDWord(&(x), true)
+#define _BMMH2(x) Util::readDWord((x), true)
+#define _BMMHW(x) Util::readWord(&(x), true)
 
-#define _BMMHW(x)    (((unsigned)((Byte *)(&x))[1]) + ((unsigned)((Byte *)(&x))[0] << 8))
 
 struct mach_header;
 
@@ -121,12 +116,12 @@ public:
     std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
 
 protected:
-    int machORead2(short *ps) const; ///< Read 2 bytes from native addr
-    int machORead4(int *pi) const;   ///< Read 4 bytes from native addr
+    SWord machORead2(const void *ps) const;
+    DWord machORead4(const void *pi) const;
 
     int32_t BMMH(int32_t x);
-    uint32_t BMMH(uint32_t x);
-    unsigned short BMMHW(unsigned short x);
+    DWord BMMH(DWord x);
+    SWord BMMHW(SWord x);
 
 private:
     /// Find names for jumps to IATs

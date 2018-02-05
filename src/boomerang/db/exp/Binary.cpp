@@ -135,15 +135,15 @@ bool Binary::operator==(const Exp& o) const
         return false;
     }
 
-    if (m_oper != ((Binary&)o).m_oper) {
+    if (m_oper != static_cast<const Binary &>(o).m_oper) {
         return false;
     }
 
-    if (!(*subExp1 == *((Binary&)o).getSubExp1())) {
+    if (!(*subExp1 == *static_cast<const Binary &>(o).getSubExp1())) {
         return false;
     }
 
-    return *subExp2 == *((Binary&)o).getSubExp2();
+    return *subExp2 == *static_cast<const Binary &>(o).getSubExp2();
 }
 
 
@@ -159,15 +159,15 @@ bool Binary::operator<(const Exp& o) const
         return false;
     }
 
-    if (*subExp1 < *((Binary&)o).getSubExp1()) {
+    if (*subExp1 < *static_cast<const Binary &>(o).getSubExp1()) {
         return true;
     }
 
-    if (*((Binary&)o).getSubExp1() < *subExp1) {
+    if (*static_cast<const Binary &>(o).getSubExp1() < *subExp1) {
         return false;
     }
 
-    return *subExp2 < *((Binary&)o).getSubExp2();
+    return *subExp2 < *static_cast<const Binary &>(o).getSubExp2();
 }
 
 
@@ -665,14 +665,14 @@ SharedExp Binary::simplifyArith()
 }
 
 
-SharedExp Binary::polySimplify(bool& bMod)
+SharedExp Binary::polySimplify(bool& changed)
 {
     assert(subExp1 && subExp2);
 
     SharedExp res = shared_from_this();
 
-    subExp1 = subExp1->polySimplify(bMod);
-    subExp2 = subExp2->polySimplify(bMod);
+    subExp1 = subExp1->polySimplify(changed);
+    subExp2 = subExp2->polySimplify(changed);
 
     OPER opSub1 = subExp1->getOper();
     OPER opSub2 = subExp2->getOper();
@@ -694,7 +694,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opDiv:
-            k1 = (int)((unsigned)k1 / (unsigned)k2);
+            k1 = static_cast<int>(static_cast<unsigned>(k1) / static_cast<unsigned>(k2));
             break;
 
         case opDivs:
@@ -702,7 +702,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opMod:
-            k1 = (int)((unsigned)k1 % (unsigned)k2);
+            k1 = static_cast<int>(static_cast<unsigned>(k1) % static_cast<unsigned>(k2));
             break;
 
         case opMods:
@@ -710,7 +710,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opMult:
-            k1 = (int)((unsigned)k1 * (unsigned)k2);
+            k1 = static_cast<int>(static_cast<unsigned>(k1) * static_cast<unsigned>(k2));
             break;
 
         case opMults:
@@ -773,19 +773,19 @@ SharedExp Binary::polySimplify(bool& bMod)
             break;
 
         case opLessUns:
-            k1 = ((unsigned)k1 < (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) < static_cast<unsigned>(k2);
             break;
 
         case opGtrUns:
-            k1 = ((unsigned)k1 > (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) > static_cast<unsigned>(k2);
             break;
 
         case opLessEqUns:
-            k1 = ((unsigned)k1 <= (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) <= static_cast<unsigned>(k2);
             break;
 
         case opGtrEqUns:
-            k1 = ((unsigned)k1 >= (unsigned)k2);
+            k1 = static_cast<unsigned>(k1) >= static_cast<unsigned>(k2);
             break;
 
         default:
@@ -794,7 +794,7 @@ SharedExp Binary::polySimplify(bool& bMod)
 
         if (change) {
             res  = Const::get(k1);
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -802,14 +802,14 @@ SharedExp Binary::polySimplify(bool& bMod)
     if (((m_oper == opBitXor) || (m_oper == opMinus)) && (*subExp1 == *subExp2)) {
         // x ^ x or x - x: result is zero
         res  = Const::get(0);
-        bMod = true;
+        changed = true;
         return res;
     }
 
     if (((m_oper == opBitOr) || (m_oper == opBitAnd)) && (*subExp1 == *subExp2)) {
         // x | x or x & x: result is x
         res  = subExp1;
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -817,7 +817,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         // x == x: result is true
         // delete this;
         res  = std::make_shared<Terminal>(opTrue);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -852,7 +852,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         res = res->getSubExp1();
         std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
         c_subexp->setInt(c_subexp->getInt() + n);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -863,7 +863,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         res->setOper(opPlus);
         std::shared_ptr<Const> c_subexp(std::static_pointer_cast<Const>(res->getSubExp2()));
         c_subexp->setInt(-c_subexp->getInt() + n);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -872,7 +872,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if (((m_oper == opMinus) || (m_oper == opPlus)) && ((opSub1 == opMults) || (opSub1 == opMult)) && (*subExp2 == *subExp1->getSubExp1())) {
         res = res->getSubExp1();
         res->setSubExp2(Binary::get(m_oper, res->getSubExp2(), Const::get(1)));
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -880,7 +880,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opPlus) && ((opSub2 == opMults) || (opSub2 == opMult)) && (*subExp1 == *subExp2->getSubExp1())) {
         res = res->getSubExp2();
         res->setSubExp2(Binary::get(opPlus, res->getSubExp2(), Const::get(1)));
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -895,14 +895,14 @@ SharedExp Binary::polySimplify(bool& bMod)
     // Check for exp + 0  or  exp - 0  or  exp | 0
     if (((m_oper == opPlus) || (m_oper == opMinus) || (m_oper == opBitOr)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0)) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // Check for exp or false
     if ((m_oper == opOr) && subExp2->isFalse()) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -910,7 +910,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if (((m_oper == opMult) || (m_oper == opMults) || (m_oper == opBitAnd)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0)) {
         // delete res;
         res  = Const::get(0);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -918,14 +918,14 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opAnd) && subExp2->isFalse()) {
         // delete res;
         res  = Terminal::get(opFalse);
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // Check for SharedExp 1
     if (((m_oper == opMult) || (m_oper == opMults)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -933,21 +933,21 @@ SharedExp Binary::polySimplify(bool& bMod)
     if (((m_oper == opDiv) || (m_oper == opDivs)) && ((opSub1 == opMult) || (opSub1 == opMults)) && (*subExp2 == *subExp1->getSubExp2())) {
         res  = res->getSubExp1();
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // Check for exp / 1, becomes exp
     if (((m_oper == opDiv) || (m_oper == opDivs)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // Check for exp % 1, becomes 0
     if (((m_oper == opMod) || (m_oper == opMods)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 1)) {
         res  = Const::get(0);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -955,14 +955,14 @@ SharedExp Binary::polySimplify(bool& bMod)
     if (((m_oper == opMod) || (m_oper == opMods)) && ((opSub1 == opMult) || (opSub1 == opMults)) &&
         (*subExp2 == *subExp1->getSubExp2())) {
         res  = Const::get(0);
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // Check for exp AND -1 (bitwise AND)
     if ((m_oper == opBitAnd) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == -1)) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -971,7 +971,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         // Is the below really needed?
         ((((opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() != 0))) || subExp2->isTrue())) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -979,7 +979,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opOr) && ((((opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() != 0))) || subExp2->isTrue())) {
         // delete res;
         res  = Terminal::get(opTrue);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -991,7 +991,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         if ((k >= 0) && (k < 32)) {
             res->setOper(opMult);
             std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -1002,7 +1002,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         if ((k >= 0) && (k < 32)) {
             res->setOper(opDiv);
             std::static_pointer_cast<Const>(subExp2)->setInt(1 << k);
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -1030,7 +1030,7 @@ SharedExp Binary::polySimplify(bool& bMod)
      *          b->subExp1 = 0;
      *          ;//delete b;
      *          subExp2 = Unary::get(opNeg, subExp2);
-     *          bMod = true;
+     *          changed = true;
      *          return res;
      *  }
      */
@@ -1040,7 +1040,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         auto b = std::static_pointer_cast<Binary>(subExp1);
         subExp2 = std::move(b->subExp2);
         subExp1 = std::move(b->subExp1);
-        bMod    = true;
+        changed    = true;
         return res;
     }
 
@@ -1053,7 +1053,7 @@ SharedExp Binary::polySimplify(bool& bMod)
             subExp2 = std::move(b->subExp2);
             std::static_pointer_cast<Const>(subExp2)->setInt(-std::static_pointer_cast<const Const>(subExp2)->getInt());
             subExp1 = std::move(b->subExp1);
-            bMod    = true;
+            changed    = true;
             return res;
         }
     }
@@ -1063,7 +1063,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         auto b = std::static_pointer_cast<Binary>(subExp1);
         subExp2 = std::move(b->subExp2);
         subExp1 = std::move(b->subExp1);
-        bMod    = true;
+        changed    = true;
         res->setOper(opNotEqual);
         return res;
     }
@@ -1073,7 +1073,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         auto b = std::static_pointer_cast<Binary>(subExp1);
         subExp2 = std::move(b->subExp2);
         subExp1 = std::move(b->subExp1);
-        bMod    = true;
+        changed    = true;
         res->setOper(opNotEqual);
         return res;
     }
@@ -1081,7 +1081,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     // Check for (x == y) != 0, becomes x == y
     if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opEquals)) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1089,7 +1089,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opNotEqual) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(subExp2)->getInt() == 0) && (opSub1 == opMinus) &&
         subExp1->getSubExp1()->isIntConst() && (std::static_pointer_cast<const Const>(subExp1->getSubExp1())->getInt() == 0)) {
         res  = Binary::get(opNotEqual, subExp1->getSubExp2()->clone(), subExp2->clone());
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1098,7 +1098,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         auto b = std::static_pointer_cast<Binary>(subExp1);
         subExp2 = std::move(b->subExp2);
         subExp1 = std::move(b->subExp1);
-        bMod    = true;
+        changed    = true;
         res->setOper(opLessEq);
         return res;
     }
@@ -1108,7 +1108,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         auto b = std::static_pointer_cast<Binary>(subExp1);
         subExp2 = std::move(b->subExp2);
         subExp1 = std::move(b->subExp1);
-        bMod    = true;
+        changed    = true;
         res->setOper(opLessEqUns);
         return res;
     }
@@ -1122,21 +1122,21 @@ SharedExp Binary::polySimplify(bool& bMod)
         (((*b1->subExp1 == *b2->subExp1) && (*b1->subExp2 == *b2->subExp2)) ||
          ((*b1->subExp1 == *b2->subExp2) && (*b1->subExp2 == *b2->subExp1)))) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
     // For (a || b) or (a && b) recurse on a and b
     if ((m_oper == opOr) || (m_oper == opAnd)) {
-        subExp1 = subExp1->polySimplify(bMod);
-        subExp2 = subExp2->polySimplify(bMod);
+        subExp1 = subExp1->polySimplify(changed);
+        subExp2 = subExp2->polySimplify(changed);
         return res;
     }
 
     // check for (x & x), becomes x
     if ((m_oper == opBitAnd) && (*subExp1 == *subExp2)) {
         res  = res->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1145,7 +1145,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         (subExp2->getSubExp2()->getOper() == opIntConst)) {
         res = res->getSubExp2();
         res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() + 1);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1154,7 +1154,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         int m = std::static_pointer_cast<const Const>(subExp2)->getInt();
         res = res->getSubExp1();
         res->access<Const, 2>()->setInt(res->access<Const, 2>()->getInt() * m);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1162,7 +1162,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opLNot) && (opSub1 == opEquals)) {
         res = res->getSubExp1();
         res->setOper(opNotEqual);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1170,7 +1170,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     if ((m_oper == opLNot) && (opSub1 == opNotEqual)) {
         res = res->getSubExp1();
         res->setOper(opEquals);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1188,20 +1188,20 @@ SharedExp Binary::polySimplify(bool& bMod)
     }
 
     if ((m_oper == opPlus) && ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToCompound() && (opSub2 == opIntConst)) {
-        unsigned n = (unsigned)std::static_pointer_cast<const Const>(subExp2)->getInt();
+        unsigned n = std::static_pointer_cast<const Const>(subExp2)->getInt();
         std::shared_ptr<CompoundType> c = ty->as<PointerType>()->getPointsTo()->as<CompoundType>();
         res = convertFromOffsetToCompound(subExp1, c, n);
 
         if (res) {
             LOG_VERBOSE("(trans1) replacing %1 with %2", shared_from_this(), res);
-            bMod = true;
+            changed = true;
             return res;
         }
     }
 
     if ((m_oper == opFMinus) && (subExp1->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(subExp1)->getFlt() == 0.0)) {
         res  = Unary::get(opFNeg, subExp2);
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1213,7 +1213,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         if (n1 == n2) {
             res = Binary::get(subExp1->getOper(), Binary::get(m_oper, subExp1->getSubExp1()->clone(), Const::get(1)),
                               Const::get(n1));
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -1229,7 +1229,7 @@ SharedExp Binary::polySimplify(bool& bMod)
                               Binary::get(subExp1->getSubExp2()->getOper(),
                                           Binary::get(m_oper, subExp1->access<Exp, 2, 1>()->clone(), Const::get(1)),
                                           Const::get(n1)));
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -1247,7 +1247,7 @@ SharedExp Binary::polySimplify(bool& bMod)
         if (((a % c) == 0) && ((b % c) == 0)) {
             res = Binary::get(opPlus, Binary::get(opMult, subExp1->getSubExp1()->getSubExp1(), Const::get(a / c)),
                               Binary::get(opMult, subExp1->access<Exp, 2, 1>(), Const::get(b / c)));
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -1266,19 +1266,19 @@ SharedExp Binary::polySimplify(bool& bMod)
 
         if (((a % c) == 0) && ((b % c) == 0)) {
             res  = Const::get(0);
-            bMod = true;
+            changed = true;
             return res;
         }
 
         if ((a % c) == 0) {
             res  = Binary::get(opMod, subExp1->getSubExp2()->clone(), Const::get(c));
-            bMod = true;
+            changed = true;
             return res;
         }
 
         if ((b % c) == 0) {
             res  = Binary::get(opMod, subExp1->getSubExp1()->clone(), Const::get(c));
-            bMod = true;
+            changed = true;
             return res;
         }
     }
@@ -1295,7 +1295,7 @@ SharedExp Binary::polySimplify(bool& bMod)
 
                 if (leftOfLess->isIntConst() && (std::static_pointer_cast<const Const>(leftOfLess)->getInt() == 0)) {
                     res  = getSubExp2();
-                    bMod = true;
+                    changed = true;
                     return res;
                 }
             }
@@ -1305,7 +1305,7 @@ SharedExp Binary::polySimplify(bool& bMod)
     // Replace opSize(n, loc) with loc and set the type if needed
     if ((m_oper == opSize) && subExp2->isLocation()) {
         res  = res->getSubExp2();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -1617,7 +1617,7 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
     return ta->clone();
 }
 
-void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
+void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
 {
     if (m_oper == opFlagCall) {
         return;
@@ -1633,17 +1633,17 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
     switch (m_oper)
     {
     case opPlus:
-        ta = ta->meetWith(sigmaAddend(parentType, tb), ch);
-        subExp1->descendType(ta, ch, s);
-        tb = tb->meetWith(sigmaAddend(parentType, ta), ch);
-        subExp2->descendType(tb, ch, s);
+        ta = ta->meetWith(sigmaAddend(parentType, tb), changed);
+        subExp1->descendType(ta, changed, s);
+        tb = tb->meetWith(sigmaAddend(parentType, ta), changed);
+        subExp2->descendType(tb, changed, s);
         break;
 
     case opMinus:
-        ta = ta->meetWith(deltaMinuend(parentType, tb), ch);
-        subExp1->descendType(ta, ch, s);
-        tb = tb->meetWith(deltaSubtrahend(parentType, ta), ch);
-        subExp2->descendType(tb, ch, s);
+        ta = ta->meetWith(deltaMinuend(parentType, tb), changed);
+        subExp1->descendType(ta, changed, s);
+        tb = tb->meetWith(deltaSubtrahend(parentType, ta), changed);
+        subExp2->descendType(tb, changed, s);
         break;
 
     case opGtrUns:
@@ -1651,10 +1651,10 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
     case opGtrEqUns:
     case opLessEqUns:
         nt = IntegerType::get(ta->getSize(), -1); // Used as unsigned
-        ta = ta->meetWith(nt, ch);
-        tb = tb->meetWith(nt, ch);
-        subExp1->descendType(ta, ch, s);
-        subExp2->descendType(tb, ch, s);
+        ta = ta->meetWith(nt, changed);
+        tb = tb->meetWith(nt, changed);
+        subExp1->descendType(ta, changed, s);
+        subExp2->descendType(tb, changed, s);
         break;
 
     case opGtr:
@@ -1662,10 +1662,10 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
     case opGtrEq:
     case opLessEq:
         nt = IntegerType::get(ta->getSize(), +1); // Used as signed
-        ta = ta->meetWith(nt, ch);
-        tb = tb->meetWith(nt, ch);
-        subExp1->descendType(ta, ch, s);
-        subExp2->descendType(tb, ch, s);
+        ta = ta->meetWith(nt, changed);
+        tb = tb->meetWith(nt, changed);
+        subExp1->descendType(ta, changed, s);
+        subExp2->descendType(tb, changed, s);
         break;
 
     case opBitAnd:
@@ -1708,8 +1708,8 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
             }
 
             int parentSize = parentType->getSize();
-            ta = ta->meetWith(IntegerType::get(parentSize, signedness), ch);
-            subExp1->descendType(ta, ch, s);
+            ta = ta->meetWith(IntegerType::get(parentSize, signedness), changed);
+            subExp1->descendType(ta, changed, s);
 
             if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
                 // These operators are not symmetric; doesn't force a signedness on the second operand
@@ -1718,8 +1718,8 @@ void Binary::descendType(SharedType parentType, bool& ch, Statement *s)
                 signedness = 0;
             }
 
-            tb = tb->meetWith(IntegerType::get(parentSize, signedness), ch);
-            subExp2->descendType(tb, ch, s);
+            tb = tb->meetWith(IntegerType::get(parentSize, signedness), changed);
+            subExp2->descendType(tb, changed, s);
             break;
         }
 

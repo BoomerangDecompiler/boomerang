@@ -258,8 +258,8 @@ SharedType Terminal::ascendType()
     }
 }
 
-void Terminal::descendType(SharedType, bool& ch, Statement*)
+void Terminal::descendType(SharedType, bool& changed, Statement*)
 {
-    ch = false;
+    changed = false;
 }
 

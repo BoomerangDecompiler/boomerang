@@ -31,7 +31,7 @@ class PPCFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PPCFrontEnd(IFileLoader *pLoader, Prog *Program);
+    PPCFrontEnd(IFileLoader *loader, Prog *prog);
     PPCFrontEnd(const PPCFrontEnd& other) = delete;
     PPCFrontEnd(PPCFrontEnd&& other) = default;
 
@@ -46,7 +46,7 @@ public:
     virtual Platform getType() const override { return Platform::PPC; }
 
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
+    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;

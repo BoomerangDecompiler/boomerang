@@ -120,21 +120,23 @@ void DFATypeAnalyzer::visit(Assign* stmt, bool& visitChildren)
 {
     SharedType tr = stmt->getRight()->ascendType();
 
-    bool ch = false;
+    bool changed = false;
 
-    // Note: bHighestPtr is set true, since the lhs could have a greater type
-    // (more possibilities) than the rhs. Example: pEmployee = pManager.
-    SharedType newType = stmt->getType()->meetWith(tr, ch, true);
-    if (ch) {
+    // Note: useHighestPtr is set true, since the lhs could have a greater type
+    // (more possibilities) than the rhs.
+    // Example:
+    //   Employee *employee = mananger
+    SharedType newType = stmt->getType()->meetWith(tr, changed, true);
+    if (changed) {
         stmt->setType(newType);
     }
 
     // This will effect rhs = rhs MEET lhs
-    stmt->getRight()->descendType(stmt->getType(), ch, stmt);
+    stmt->getRight()->descendType(stmt->getType(), changed, stmt);
 
-    m_changed |= ch;
+    m_changed |= changed;
 
-    visitAssignment(stmt, ch);  // Handle the LHS wrt m[] operands
+    visitAssignment(stmt, changed);  // Handle the LHS wrt m[] operands
     visitChildren = false;
 }
 
@@ -174,9 +176,9 @@ void DFATypeAnalyzer::visit(CallStatement* stmt, bool& visitChildren)
 
             int nt = 0;
 
-            for (StatementList::iterator aat = stmt->getArguments().begin(); aat != stmt->getArguments().end(); ++aat, ++nt) {
-                if (boundmax == stmt->getDestProc()->getSignature()->getParamName(nt)) {
-                    SharedType tyt = ((Assign *)*aat)->getType();
+            for (Statement *arg : stmt->getArguments()) {
+                if (boundmax == stmt->getDestProc()->getSignature()->getParamName(nt++)) {
+                    SharedType tyt = static_cast<const Assign *>(arg)->getType();
 
                     if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
                         tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded()) {

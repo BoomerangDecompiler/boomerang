@@ -119,7 +119,7 @@ bool Exp::isRegOfK()
         return false;
     }
 
-    return ((Unary *)this)->getSubExp1()->getOper() == opIntConst;
+    return static_cast<const Unary *>(this)->getSubExp1()->getOper() == opIntConst;
 }
 
 
@@ -129,8 +129,8 @@ bool Exp::isRegN(int N) const
         return false;
     }
 
-    SharedConstExp sub = ((const Unary *)this)->getSubExp1();
-    return(sub->getOper() == opIntConst && std::static_pointer_cast<const Const>(sub)->getInt() == N);
+    SharedConstExp sub = static_cast<const Unary *>(this)->getSubExp1();
+    return (sub->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(sub)->getInt() == N);
 }
 
 
@@ -185,14 +185,14 @@ SharedExp Exp::getGuard()
 }
 
 
-void Exp::doSearch(const Exp& search, SharedExp& pSrc, std::list<SharedExp *>& li, bool once)
+void Exp::doSearch(const Exp& pattern, SharedExp& toSearch, std::list<SharedExp *>& matches, bool once)
 {
     bool compare;
 
-    compare = (search == *pSrc);
+    compare = (pattern == *toSearch);
 
     if (compare) {
-        li.push_back(&pSrc); // Success
+        matches.push_back(&toSearch); // Success
 
         if (once) {
             return; // No more to do
@@ -201,16 +201,16 @@ void Exp::doSearch(const Exp& search, SharedExp& pSrc, std::list<SharedExp *>& l
 
     // Either want to find all occurrences, or did not match at this level
     // Recurse into children, unless a matching opSubscript
-    if (!compare || (pSrc->m_oper != opSubscript)) {
-        pSrc->doSearchChildren(search, li, once);
+    if (!compare || (toSearch->m_oper != opSubscript)) {
+        toSearch->doSearchChildren(pattern, matches, once);
     }
 }
 
 
-void Exp::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
+void Exp::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& matches, bool once)
 {
     Q_UNUSED(pattern);
-    Q_UNUSED(li);
+    Q_UNUSED(matches);
     Q_UNUSED(once);
     // Const and Terminal do not override this
 }
@@ -270,20 +270,18 @@ bool Exp::search(const Exp& pattern, SharedExp& result)
 
 bool Exp::searchAll(const Exp& pattern, std::list<SharedExp>& result)
 {
-    std::list<SharedExp *> li;
-    // result.clear();    // No! Useful when searching for more than one thing
-    // (add to the same list)
+    std::list<SharedExp *> matches;
+
     // The search requires a reference to a pointer to this object.
     // This isn't needed for searches, only for replacements, but we want to re-use the same search routine
-    SharedExp pSrc = shared_from_this();
-    doSearch(pattern, pSrc, li, false);
+    SharedExp toSearch = shared_from_this();
+    doSearch(pattern, toSearch, matches, false);
 
-    for (auto it : li) {
-        // li is list of pointers to SharedExp ; result is list of SharedExp
+    for (auto it : matches) {
         result.push_back(*it);
     }
 
-    return !li.empty();
+    return !matches.empty();
 }
 
 
@@ -377,16 +375,16 @@ SharedExp Exp::simplify()
 #if DEBUG_SIMP
     SharedExp save = clone();
 #endif
-    bool      bMod = false; // True if simplified at this or lower level
+    bool   changed = false; // True if simplified at this or lower level
     SharedExp res  = shared_from_this();
 
-    // res = ExpTransformer::applyAllTo(res, bMod);
+    // res = ExpTransformer::applyAllTo(res, changed);
     // return res;
     do {
-        bMod = false;
+        changed = false;
         // SharedExp before = res->clone();
-        res = res->polySimplify(bMod); // Call the polymorphic simplify
-    } while (bMod);                    // If modified at this (or a lower) level, redo
+        res = res->polySimplify(changed); // Call the polymorphic simplify
+    } while (changed);                    // If modified at this (or a lower) level, redo
 
     // The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
     // No! This slows everything down, and it's slow enough as it is. Call only where needed:
@@ -476,7 +474,7 @@ void Exp::printt(QTextStream& os) const
         return;
     }
 
-    SharedType t = ((TypedExp *)this)->getType();
+    SharedConstType t = static_cast<const TypedExp *>(this)->getType();
     os << "<" << t->getSize() << ">";
 }
 
@@ -602,9 +600,9 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
 }
 
 
-void Exp::setConscripts(int n, bool bClear)
+void Exp::setConscripts(int n, bool clear)
 {
-    ConscriptSetter sc(n, bClear);
+    ConscriptSetter sc(n, clear);
     this->accept(&sc);
 }
 
@@ -612,7 +610,6 @@ void Exp::setConscripts(int n, bool bClear)
 SharedExp Exp::stripSizes()
 {
     SizeStripper ss;
-
     return this->accept(&ss);
 }
 

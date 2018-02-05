@@ -62,7 +62,7 @@ public:
     QString getName() const { return m_name; }
     void setName(const QString& nam) { m_name = nam; }
 
-    size_t getNumChildren();
+    size_t getNumChildren() const;
     Module *getChild(size_t n);
     void addChild(Module *n);
     void removeChild(Module *n);
@@ -80,8 +80,8 @@ public:
     void closeStreams();
 
     QTextStream& getStream() { return m_strm; }
-    QString makeDirs();
-    QString getOutPath(const char *ext);
+    QString makeDirs() const;
+    QString getOutPath(const char *ext) const;
 
     /**
      * Prints a tree graph.

@@ -38,9 +38,9 @@ void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)
 }
 
 
-void TargetQueue::initial(Address uAddr)
+void TargetQueue::initial(Address addr)
 {
-    m_targets.push(uAddr);
+    m_targets.push(addr);
 }
 
 

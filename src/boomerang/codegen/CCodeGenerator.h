@@ -240,12 +240,12 @@ private:
     void appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
-    void appendType(QTextStream& str, SharedType typ);
+    void appendType(QTextStream& str, SharedConstType typ);
 
     /**
      * Print the identified type to \a str.
      */
-    void appendTypeIdent(QTextStream& str, SharedType typ, QString ident);
+    void appendTypeIdent(QTextStream& str, SharedConstType typ, QString ident);
 
     /// Adds: (
     void openParen(QTextStream& str, PREC outer, PREC inner);

@@ -963,7 +963,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 // #line 288 "frontend/machine/ppc/decoder.m"
 
-                                PPC_COND_JUMP(name, 4, reladdr, (BranchType)0, BIcr);
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::INVALID, BIcr);
 
                                 //    | bun(BIcr, reladdr) [name] =>
 
@@ -987,7 +987,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 // #line 285 "frontend/machine/ppc/decoder.m"
                                 // Branch on summary overflow
 
-                                PPC_COND_JUMP(name, 4, reladdr, (BranchType)0,
+                                PPC_COND_JUMP(name, 4, reladdr, BranchType::INVALID,
                                               BIcr); // MVE: Don't know these last 4 yet
                             }
 
@@ -1032,7 +1032,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         Function *destProc = m_prog->createFunction(Address(reladdr.value() - delta));
 
-                        if (destProc == (Function *)-1) {
+                        if (destProc == reinterpret_cast<Function *>(-1)) {
                             destProc = nullptr;
                         }
 
@@ -1466,7 +1466,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 337 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, (BranchType)0, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::INVALID, BIcr);
 
                                         result.rtl->append(new ReturnStatement);
                                     }
@@ -1482,7 +1482,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                         // #line 333 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, (BranchType)0, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::INVALID, BIcr);
 
                                         result.rtl->append(new ReturnStatement);
                                     }
@@ -9299,9 +9299,7 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
  */
 DWord PPCDecoder::getDword(HostAddress lc)
 {
-    Byte *p = (Byte *)lc.value();
-
-    return (p[0] << 24) + (p[1] << 16) + (p[2] << 8) + p[3];
+    return Util::readDWord(reinterpret_cast<const void *>(lc.value()), true);
 }
 
 

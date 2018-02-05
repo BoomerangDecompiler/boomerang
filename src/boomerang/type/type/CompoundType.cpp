@@ -14,7 +14,7 @@
 
 
 CompoundType::CompoundType(bool is_generic /* = false */)
-    : Type(eCompound)
+    : Type(TypeClass::Compound)
     , m_isGeneric(is_generic)
     , m_nextGenericMemberNum(1)
 {
@@ -212,7 +212,7 @@ unsigned CompoundType::getOffsetTo(const QString& member)
         offset += m_types[i]->getSize();
     }
 
-    return (unsigned)-1;
+    return static_cast<unsigned int>(-1);
 }
 
 
@@ -237,19 +237,23 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
 
 bool CompoundType::operator==(const Type& other) const
 {
-    const CompoundType& cother = (CompoundType&)other;
-
-    if (other.isCompound() && (cother.m_types.size() == m_types.size())) {
-        for (unsigned i = 0; i < m_types.size(); i++) {
-            if (!(*m_types[i] == *cother.m_types[i])) {
-                return false;
-            }
-        }
-
-        return true;
+    if (!other.isCompound()) {
+        return false;
     }
 
-    return false;
+    const CompoundType& cother = static_cast<const CompoundType &>(other);
+
+    if (cother.m_types.size() != m_types.size()) {
+        return false;
+    }
+
+    for (size_t i = 0; i < m_types.size(); i++) {
+        if (!(*m_types[i] == *cother.m_types[i])) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 
@@ -287,14 +291,14 @@ QString CompoundType::getCtype(bool final) const
 }
 
 
-void CompoundType::updateGenericMember(int off, SharedType ty, bool& ch)
+void CompoundType::updateGenericMember(int off, SharedType ty, bool& changed)
 {
     assert(m_isGeneric);
     int        bit_offset   = off * 8;
     SharedType existingType = getTypeAtOffset(bit_offset);
 
     if (existingType) {
-        existingType = existingType->meetWith(ty, ch);
+        existingType = existingType->meetWith(ty, changed);
         setTypeAtOffset(bit_offset, existingType);
     }
     else {
@@ -325,7 +329,7 @@ void CompoundType::addType(SharedType memberType, const QString& memberName)
 }
 
 
-SharedType CompoundType::getType(unsigned int idx)
+SharedType CompoundType::getTypeAtIdx(unsigned int idx)
 {
     assert(idx < getNumTypes());
     return m_types[idx];
@@ -339,42 +343,42 @@ QString CompoundType::getName(unsigned int idx)
 }
 
 
-SharedType CompoundType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType CompoundType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((CompoundType *)this)->shared_from_this();
+        return const_cast<CompoundType *>(this)->shared_from_this();
     }
 
     if (!other->resolvesToCompound()) {
         if (m_types[0]->isCompatibleWith(*other)) {
             // struct meet first element = struct
-            return ((CompoundType *)this)->shared_from_this();
+            return const_cast<CompoundType *>(this)->shared_from_this();
         }
 
-        return createUnion(other, ch, bHighestPtr);
+        return createUnion(other, changed, useHighestPtr);
     }
 
     auto otherCmp = other->as<CompoundType>();
 
-    if (otherCmp->isSuperStructOf(((CompoundType *)this)->shared_from_this())) {
+    if (otherCmp->isSuperStructOf(const_cast<CompoundType *>(this)->shared_from_this())) {
         // The other structure has a superset of my struct's offsets. Preserve the names etc of the bigger struct.
-        ch = true;
+        changed = true;
         return other;
     }
 
     if (isSubStructOf(otherCmp)) {
         // This is a superstruct of other
-        ch = true;
-        return ((CompoundType *)this)->shared_from_this();
+        changed = true;
+        return const_cast<CompoundType *>(this)->shared_from_this();
     }
 
     if (*this == *other) {
-        return ((CompoundType *)this)->shared_from_this();
+        return const_cast<CompoundType *>(this)->shared_from_this();
     }
 
     // Not compatible structs. Create a union of both complete structs.
     // NOTE: may be possible to take advantage of some overlaps of the two structures some day.
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

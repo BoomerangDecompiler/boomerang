@@ -18,20 +18,20 @@
 
 // Common to BranchStatement and BoolAssign
 // Return true if this is now a floating point Branch
-bool condToRelational(SharedExp& pCond, BranchType jtCond)
+bool condToRelational(SharedExp& condExp, BranchType jtCond)
 {
-    pCond = pCond->simplifyArith()->simplify();
+    condExp = condExp->simplifyArith()->simplify();
 
     QString     tgt;
     QTextStream os(&tgt);
-    pCond->print(os);
+    condExp->print(os);
 
-    OPER condOp = pCond->getOper();
+    OPER condOp = condExp->getOper();
 
-    if ((condOp == opFlagCall) && pCond->access<Const, 1>()->getStr().startsWith("SUBFLAGS")) {
+    if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("SUBFLAGS")) {
         OPER op = opWild;
         // Special for PPC unsigned compares; may be other cases in the future
-        bool makeUns = pCond->access<Const, 1>()->getStr().startsWith("SUBFLAGSNL");
+        bool makeUns = condExp->access<Const, 1>()->getStr().startsWith("SUBFLAGSNL");
 
         switch (jtCond)
         {
@@ -105,7 +105,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
 
         case BranchType::JMI:
 
-            /*     pCond
+            /*       condExp
              *      /      \
              *  Const       opList
              * "SUBFLAGS"    /    \
@@ -114,15 +114,15 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
              *   P2    opList
              *          /     \
              *        P3     opNil */
-            pCond =
+            condExp =
                 Binary::get(opLess,     // P3 < 0
-                            pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
+                            condExp->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
             break;
 
         case BranchType::JPOS:
-            pCond =
+            condExp =
                 Binary::get(opGtrEq,     // P3 >= 0
-                            pCond->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
+                            condExp->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
             break;
 
         case BranchType::JOF:
@@ -136,13 +136,12 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
         }
 
         if (op != opWild) {
-            pCond = Binary::get(op,
-                                pCond->getSubExp2()->getSubExp1()->clone(),                    // P1
-                                pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());     // P2
+            condExp = Binary::get(op,
+                                condExp->getSubExp2()->getSubExp1()->clone(),                    // P1
+                                condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone());     // P2
         }
     }
-    else if ((condOp == opFlagCall) && pCond->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS")) {
-        // Exp *e = pCond;
+    else if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS")) {
         OPER op = opWild;
 
         switch (jtCond)
@@ -206,7 +205,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                 // This is pentium specific too; see below for more notes.
 
                 /*
-                 *                                      pCond
+                 *                                      condExp
                  *                                      /    \
                  *                                Const        opList
                  *                      "LOGICALFLAGS8"        /    \
@@ -220,7 +219,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                  *                                        /    \
                  *                                      P2    opNil
                  */
-                SharedExp flagsParam = pCond->getSubExp2()->getSubExp1();
+                SharedExp flagsParam = condExp->getSubExp2()->getSubExp1();
                 SharedExp test       = flagsParam;
 
                 if (test->isSubscript()) {
@@ -251,7 +250,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                 switch (mask)
                 {
                 case 0:
-                    LOG_WARN("Unhandled pentium branch if parity with pCond = %1", pCond);
+                    LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
                     return false;
 
                 case 1:
@@ -271,7 +270,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                     break;
                 }
 
-                pCond = Binary::get(_op,
+                condExp = Binary::get(_op,
                                     at_opFlagsCall_List->getSubExp1()->clone(),
                                     at_opFlagsCall_List->getSubExp2()->getSubExp1()->clone());
                 return true;     // This is a floating point comparison
@@ -282,11 +281,10 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
         }
 
         if (op != opWild) {
-            pCond = Binary::get(op, pCond->getSubExp2()->getSubExp1()->clone(), Const::get(0));
+            condExp = Binary::get(op, condExp->getSubExp2()->getSubExp1()->clone(), Const::get(0));
         }
     }
-    else if ((condOp == opFlagCall) && pCond->access<Const, 1>()->getStr().startsWith("SETFFLAGS")) {
-        // Exp *e = pCond;
+    else if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("SETFFLAGS")) {
         OPER op = opWild;
 
         switch (jtCond)
@@ -328,8 +326,8 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
         }
 
         if (op != opWild) {
-            pCond = Binary::get(op, pCond->getSubExp2()->getSubExp1()->clone(),
-                                pCond->getSubExp2()->getSubExp2()->getSubExp1()->clone());
+            condExp = Binary::get(op, condExp->getSubExp2()->getSubExp1()->clone(),
+                                condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone());
         }
     }
     // ICK! This is all PENTIUM SPECIFIC... needs to go somewhere else.
@@ -345,8 +343,8 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
     // left = SETFFLAGS(...) & 1
     // left1 = SETFFLAGS(...) left2 = int 1, k = 0, mask = 1
     else if ((condOp == opEquals) || (condOp == opNotEqual)) {
-        SharedExp left     = pCond->getSubExp1();
-        SharedExp right    = pCond->getSubExp2();
+        SharedExp left     = condExp->getSubExp1();
+        SharedExp right    = condExp->getSubExp2();
         bool      hasXor40 = false;
 
         if ((left->getOper() == opBitXor) && right->isIntConst()) {
@@ -453,7 +451,7 @@ bool condToRelational(SharedExp& pCond, BranchType jtCond)
                 }
 
                 if (op != opWild) {
-                    pCond = Binary::get(op, left1->getSubExp2()->getSubExp1(),
+                    condExp = Binary::get(op, left1->getSubExp2()->getSubExp1(),
                                         left1->getSubExp2()->getSubExp2()->getSubExp1());
                     return true;     // This is now a float comparison
                 }

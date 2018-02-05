@@ -33,7 +33,7 @@ void StmtSsaXformer::commonLhs(Assignment *as)
 {
     SharedExp lhs = as->getLeft();
 
-    lhs = lhs->accept((ExpSsaXformer *)m_mod); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
+    lhs = lhs->accept(static_cast<ExpSsaXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
     QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
 
     if (!sym.isNull()) {
@@ -45,9 +45,9 @@ void StmtSsaXformer::commonLhs(Assignment *as)
 void StmtSsaXformer::visit(BoolAssign *stmt, bool& visitChildren)
 {
     commonLhs(stmt);
-    SharedExp pCond = stmt->getCondExpr();
-    pCond = pCond->accept((ExpSsaXformer *)m_mod);
-    stmt->setCondExpr(pCond);
+    SharedExp condExp = stmt->getCondExpr();
+    condExp = condExp->accept(static_cast<ExpSsaXformer *>(m_mod));
+    stmt->setCondExpr(condExp);
     visitChildren = false; // TODO: verify recur setting
 }
 
@@ -73,7 +73,7 @@ void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
 {
     commonLhs(stmt);
 
-    UserProc *_proc = ((ExpSsaXformer *)m_mod)->getProc();
+    UserProc *_proc = static_cast<ExpSsaXformer *>(m_mod)->getProc();
 
     for (RefExp& v : *stmt) {
         assert(v.getSubExp1() != nullptr);
@@ -90,11 +90,10 @@ void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
 
 void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
 {
-    SharedExp pDest = stmt->getDest();
+    SharedExp callDest = stmt->getDest();
 
-    if (pDest) {
-        pDest = pDest->accept((ExpSsaXformer *)m_mod);
-        stmt->setDest(pDest);
+    if (callDest) {
+        stmt->setDest(callDest->accept(static_cast<ExpSsaXformer*>(m_mod)));
     }
 
     const StatementList& arguments = stmt->getArguments();
@@ -109,9 +108,9 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
     StatementList& defines = stmt->getDefines();
 
     for (StatementList::iterator ss = defines.begin(); ss != defines.end(); ++ss) {
-        Assignment *as = ((Assignment *)*ss);
+        Assignment *as = static_cast<Assignment *>(*ss);
         // FIXME: use of fromSSAleft is deprecated
-        SharedExp e = as->getLeft()->fromSSAleft(((ExpSsaXformer *)m_mod)->getProc(), stmt);
+        SharedExp e = as->getLeft()->fromSSAleft(static_cast<ExpSsaXformer *>(m_mod)->getProc(), stmt);
 
         // FIXME: this looks like a HACK that can go:
         Function *procDest = stmt->getDestProc();

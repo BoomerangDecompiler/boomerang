@@ -70,41 +70,41 @@ void ControlFlowAnalyzer::updateImmedPDom()
 {
     // traverse the nodes in order (i.e from the bottom up)
     for (int i = m_revPostOrdering.size() - 1; i >= 0; i--) {
-        const BasicBlock *curNode = m_revPostOrdering[i];
+        const BasicBlock *bb = m_revPostOrdering[i];
 
-        for (BasicBlock *succNode : curNode->getSuccessors()) {
-            if (getRevOrd(succNode) > getRevOrd(curNode)) {
-                setImmPDom(curNode, commonPDom(getImmPDom(curNode), succNode));
+        for (BasicBlock *succ : bb->getSuccessors()) {
+            if (getRevOrd(succ) > getRevOrd(bb)) {
+                setImmPDom(bb, commonPDom(getImmPDom(bb), succ));
             }
         }
     }
 
     // make a second pass but consider the original CFG ordering this time
-    for (const BasicBlock *curNode : m_postOrdering) {
-        if (curNode->getNumSuccessors() <= 1) {
+    for (const BasicBlock *bb : m_postOrdering) {
+        if (bb->getNumSuccessors() <= 1) {
             continue;
         }
 
-        for (auto& oEdge : curNode->getSuccessors()) {
-            BasicBlock *succNode = oEdge;
-            setImmPDom(curNode, commonPDom(getImmPDom(curNode), succNode));
+        for (auto& succ : bb->getSuccessors()) {
+            BasicBlock *succNode = succ;
+            setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
         }
     }
 
     // one final pass to fix up nodes involved in a loop
-    for (const BasicBlock *currNode : m_postOrdering) {
-        if (currNode->getNumSuccessors() > 1) {
-            for (auto& oEdge : currNode->getSuccessors()) {
-                BasicBlock *succNode = oEdge;
+    for (const BasicBlock *bb : m_postOrdering) {
+        if (bb->getNumSuccessors() > 1) {
+            for (auto& succ : bb->getSuccessors()) {
+                BasicBlock *succNode = succ;
 
-                if (isBackEdge(currNode, succNode) &&
-                    (currNode->getNumSuccessors() > 1) &&
+                if (isBackEdge(bb, succNode) &&
+                    (bb->getNumSuccessors() > 1) &&
                     getImmPDom(succNode) &&
-                    (getPostOrdering(getImmPDom(succNode)) < getPostOrdering(getImmPDom(currNode)))) {
-                        setImmPDom(currNode, commonPDom(getImmPDom(succNode), getImmPDom(currNode)));
+                    (getPostOrdering(getImmPDom(succ)) < getPostOrdering(getImmPDom(bb)))) {
+                        setImmPDom(bb, commonPDom(getImmPDom(succNode), getImmPDom(bb)));
                 }
                 else {
-                    setImmPDom(currNode, commonPDom(getImmPDom(currNode), succNode));
+                    setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
                 }
             }
         }
@@ -220,10 +220,10 @@ void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *& lo
 void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopNodes)
 {
     assert(getStructType(header) == StructType::Loop || getStructType(header) == StructType::LoopCond);
-    LoopType   lType  = getLoopType(header);
+    const LoopType loopType = getLoopType(header);
     const BasicBlock *latch = getLatchNode(header);
 
-    if (lType == LoopType::PreTested) {
+    if (loopType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop follow
         if (loopNodes[getPostOrdering(header->getSuccessor(0))]) {
             setLoopFollow(header, header->getSuccessor(1));
@@ -232,7 +232,7 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *& loopN
             setLoopFollow(header, header->getSuccessor(0));
         }
     }
-    else if (lType == LoopType::PostTested) {
+    else if (loopType == LoopType::PostTested) {
         // the follow of a post tested ('repeat') loop is the node on the end of the non-back edge from the latch node
         if (latch->getSuccessor(0) == header) {
             setLoopFollow(header, latch->getSuccessor(1));
@@ -526,7 +526,7 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int& time, std::ve
     m_info[bb].m_postOrderID = ++time;
 
     // add this node to the ordering structure as well as recording its position within the ordering
-    m_info[bb].m_postOrderIndex = (int)postOrder.size();
+    m_info[bb].m_postOrderIndex = static_cast<int>(postOrder.size());
     postOrder.push_back(bb);
 }
 
@@ -563,7 +563,7 @@ void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const Ba
 
     // add this node to the ordering structure and record the post dom. order of this node as its index within this
     // ordering structure
-    m_info[bb].m_revPostOrderIndex = (int)order.size();
+    m_info[bb].m_revPostOrderIndex = static_cast<int>(order.size());
     order.push_back(bb);
 }
 

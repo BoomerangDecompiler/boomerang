@@ -872,7 +872,7 @@ MATCH_finished_a:
 Byte ST20Decoder::getByte(intptr_t lc)
 /* getByte - returns next byte from image pointed to by lc.     */
 {
-    return *(Byte *)lc;
+    return Util::readByte(reinterpret_cast<const void *>(lc));
 }
 
 
@@ -884,7 +884,7 @@ Byte ST20Decoder::getByte(intptr_t lc)
 SWord ST20Decoder::getWord(intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
 {
-    return (SWord)(*(Byte *)lc + (*(Byte *)(lc + 1) << 8));
+    return Util::readWord(reinterpret_cast<const void *>(lc), false);
 }
 
 
@@ -896,7 +896,7 @@ SWord ST20Decoder::getWord(intptr_t lc)
 DWord ST20Decoder::getDword(intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
-    return (DWord)(*(Byte *)lc + (*(Byte *)(lc + 1) << 8) + (*(Byte *)(lc + 2) << 16) + (*(Byte *)(lc + 3) << 24));
+    return Util::readDWord(reinterpret_cast<const void *>(lc), false);
 }
 
 

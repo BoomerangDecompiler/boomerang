@@ -16,7 +16,7 @@
 
 
 PointerType::PointerType(SharedType p)
-    : Type(ePointer)
+    : Type(TypeClass::Pointer)
 {
     setPointsTo(p);
 }
@@ -57,7 +57,6 @@ static int pointerCompareNest = 0;
 
 bool PointerType::operator==(const Type& other) const
 {
-    //    return other.isPointer() && (*points_to == *((PointerType&)other).points_to);
     if (!other.isPointer()) {
         return false;
     }
@@ -67,7 +66,7 @@ bool PointerType::operator==(const Type& other) const
         return true;
     }
 
-    bool ret = (*points_to == *((PointerType&)other).points_to);
+    bool ret = (*points_to == *static_cast<const PointerType &>(other).points_to);
     pointerCompareNest--;
     return ret;
 }
@@ -75,15 +74,11 @@ bool PointerType::operator==(const Type& other) const
 
 bool PointerType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
-    }
-
-    if (id > other.getId()) {
+    if (id != other.getId()) {
         return false;
     }
 
-    return(*points_to < *((PointerType&)other).points_to);
+    return *points_to < *static_cast<const PointerType &>(other).points_to;
 }
 
 
@@ -134,25 +129,25 @@ QString PointerType::getCtype(bool final) const
 }
 
 
-SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType PointerType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((PointerType *)this)->shared_from_this();
+        return const_cast<PointerType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToSize() && (other->as<SizeType>()->getSize() == STD_SIZE)) {
-        return ((PointerType *)this)->shared_from_this();
+        return const_cast<PointerType *>(this)->shared_from_this();
     }
 
     if (!other->resolvesToPointer()) {
         // Would be good to understand class hierarchies, so we know if a* is the same as b* when b is a subclass of a
-        return createUnion(other, ch, bHighestPtr);
+        return createUnion(other, changed, useHighestPtr);
     }
 
     auto otherPtr = other->as<PointerType>();
 
     if (isVoidPointer() && !otherPtr->isVoidPointer()) {
-        ch = true;
+        changed = true;
 
         // Can't point to self; impossible to compare, print, etc
         if (otherPtr->getPointsTo() == shared_from_this()) {
@@ -166,14 +161,14 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
     SharedType thisBase  = points_to;
     SharedType otherBase = otherPtr->points_to;
 
-    if (bHighestPtr) {
+    if (useHighestPtr) {
         // We want the greatest type of thisBase and otherBase
         if (thisBase->isSubTypeOrEqual(otherBase)) {
             return other->clone();
         }
 
         if (otherBase->isSubTypeOrEqual(thisBase)) {
-            return ((PointerType *)this)->shared_from_this();
+            return const_cast<PointerType *>(this)->shared_from_this();
         }
 
         // There may be another type that is a superset of this and other; for now return void*
@@ -190,40 +185,32 @@ SharedType PointerType::meetWith(SharedType other, bool& ch, bool bHighestPtr) c
             LOG_VERBOSE("HACK! BAD POINTER 2");
         }
 
-        if (thisBase == otherBase) {                          // Note: compare pointers
-            return ((PointerType *)this)->shared_from_this(); // Crude attempt to prevent stack overflow
-        }
-
-        if (*thisBase == *otherBase) {
-            return ((PointerType *)this)->shared_from_this();
+        if (thisBase == otherBase || *thisBase == *otherBase) {
+            return const_cast<PointerType *>(this)->shared_from_this();
         }
 
         if (getPointerDepth() == otherPtr->getPointerDepth()) {
-            SharedType fType = getFinalPointsTo();
+            SharedType finalType = getFinalPointsTo();
 
-            if (fType->resolvesToVoid()) {
+            if (finalType->resolvesToVoid()) {
                 return other->clone();
             }
 
-            SharedType ofType = otherPtr->getFinalPointsTo();
+            SharedType otherFinalType = otherPtr->getFinalPointsTo();
 
-            if (ofType->resolvesToVoid()) {
-                return ((PointerType *)this)->shared_from_this();
-            }
-
-            if (*fType == *ofType) {
-                return ((PointerType *)this)->shared_from_this();
+            if (otherFinalType->resolvesToVoid() || *finalType == *otherFinalType) {
+                return const_cast<PointerType *>(this)->shared_from_this();
             }
         }
     }
 
     if (thisBase->isCompatibleWith(*otherBase)) {
         // meet recursively if the types are compatible
-        return PointerType::get(points_to->meetWith(otherBase, ch, bHighestPtr));
+        return PointerType::get(points_to->meetWith(otherBase, changed, useHighestPtr));
     }
 
     // The bases did not meet successfully. Union the pointers.
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 
@@ -237,7 +224,7 @@ bool PointerType::isCompatible(const Type& other, bool /*all*/) const
         return other.isCompatibleWith(*this);
     }
 
-    if (other.resolvesToSize() && (((const SizeType&)other).getSize() == STD_SIZE)) {
+    if (other.resolvesToSize() && static_cast<const SizeType &>(other).getSize() == STD_SIZE) {
         return true;
     }
 

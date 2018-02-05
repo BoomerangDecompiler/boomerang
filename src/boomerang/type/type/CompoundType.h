@@ -44,7 +44,7 @@ public:
     size_t getNumTypes() const { return m_types.size(); }
 
     /// \returns the type of the \p idx -th member variable.
-    SharedType getType(unsigned idx);
+    SharedType getTypeAtIdx(unsigned idx);
 
     /// \returns the type of the member variable with name \p name
     SharedType getType(const QString& name);
@@ -58,7 +58,7 @@ public:
     QString getNameAtOffset(size_t offsetInBits);
 
     // Update this compound to use the fact that offset off has type ty
-    void updateGenericMember(int off, SharedType ty, bool& ch); // Add a new generic member if necessary
+    void updateGenericMember(int off, SharedType ty, bool& changed); // Add a new generic member if necessary
     unsigned getOffsetTo(unsigned n);
     unsigned getOffsetTo(const QString& member);
     unsigned getOffsetRemainder(unsigned n);
@@ -88,7 +88,8 @@ public:
      */
     bool isSubStructOf(SharedType other) const;
 
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
 
     virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
     virtual bool isCompatible(const Type& other, bool all) const override;

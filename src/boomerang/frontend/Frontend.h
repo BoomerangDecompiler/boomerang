@@ -140,11 +140,11 @@ public:
      * \param cc            the calling convention assumed
      */
     void readLibrarySignatures(const char *signatureFile, CallConv cc);
-    void readLibraryCatalog(const QString& sPath);              ///< read from a catalog
-    void readLibraryCatalog();                                  ///< read from default catalog
+    void readLibraryCatalog(const QString& filePath); ///< read from a catalog
+    void readLibraryCatalog();                        ///< read from default catalog
 
     /// Decode all undecoded procedures and return a new program containing them.
-    void decode(Prog *program, bool decodeMain = true, const char *pname = nullptr);
+    void decode(Prog *program, bool decodeMain = true, const char *progName = nullptr);
 
     /// Decode all procs starting at a given address in a given program.
     /// \note Somehow, addr == Address::INVALID has come to mean decode anything not already decoded
@@ -195,14 +195,13 @@ public:
 
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
-     * \param    pProc pointer to enclosing UserProc
-     * \param    BB_rtls list of RTLs for the current BB (not including \p returnRTL)
-     * \param    returnRTL pointer to the current RTL with the semantics for the return statement (including a
-     *           ReturnStatement as the last statement)
-     *
+     * \param proc      pointer to enclosing UserProc
+     * \param BB_rtls   list of RTLs for the current BB (not including \p returnRTL)
+     * \param returnRTL pointer to the current RTL with the semantics for the return statement
+     *                  (including a ReturnStatement as the last statement)
      * \returns  Pointer to the newly created BB
      */
-    BasicBlock *createReturnBlock(UserProc *pProc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL);
+    BasicBlock *createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL);
 
     /**
      * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
@@ -219,21 +218,20 @@ public:
      * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
      * incomplete in these cases, and needs to be restarted from scratch
      */
-    void addDecodedRtl(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *pRtl);
+    void addDecodedRTL(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
+    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL);
     void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 
 private:
-    bool refersToImportedFunction(const SharedExp& pDest);
+    bool refersToImportedFunction(const SharedExp& exp);
 
 protected:
     IBinaryImage *m_image;
-    std::unique_ptr<IDecoder> m_decoder; ///< The decoder
+    std::unique_ptr<IDecoder> m_decoder;
     IFileLoader *m_fileLoader;
-    Prog *m_program;                ///< The Prog object
+    Prog *m_program;
 
-    /// The queue of addresses still to be processed
-    TargetQueue m_targetQueue;
+    TargetQueue m_targetQueue; ///< Holds the addresses that still need to be processed
 
     /// Public map from function name (string) to signature.
     QMap<QString, std::shared_ptr<Signature> > m_librarySignatures;

@@ -409,7 +409,7 @@ void ExpTest::testPartitionTerms()
     Terminal expected2(opAFP);
     QVERIFY(*res == expected2);
 
-    QCOMPARE(integers.size(), (size_t)2);
+    QCOMPARE(integers.size(), static_cast<size_t>(2));
     QCOMPARE(integers.front(), 108);
     QCOMPARE(integers.back(), -92);
 }
@@ -667,7 +667,7 @@ void ExpTest::testMapOfExp()
     SharedExp rof2 = Location::get(opRegOf, Const::get(2), nullptr);
     m[rof2] = 2; // Should overwrite
 
-    QCOMPARE(m.size(), (size_t)3);
+    QCOMPARE(m.size(), static_cast<size_t>(3));
     int i = m[m_rof2];
     QCOMPARE(i, 2);
     i = m[rof2];

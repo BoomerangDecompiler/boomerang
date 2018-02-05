@@ -65,9 +65,9 @@ private:
     bool isFuncPrologue(Address hostPC);
 
     /// Read bytes, words or dwords from the memory at address \p addr
-    Byte getByte(HostAddress addr)  { return *(Byte *)addr.value(); }
-    SWord getWord(HostAddress addr)  { return *(SWord *)addr.value(); }
-    DWord getDword(HostAddress addr) { return *(DWord *)addr.value(); }
+    Byte getByte(HostAddress addr)   { return *reinterpret_cast<const Byte *>(addr.value()); }
+    SWord getWord(HostAddress addr)  { return *reinterpret_cast<const SWord *>(addr.value()); }
+    DWord getDword(HostAddress addr) { return *reinterpret_cast<const DWord *>(addr.value()); }
 
 private:
     Address lastDwordLc;

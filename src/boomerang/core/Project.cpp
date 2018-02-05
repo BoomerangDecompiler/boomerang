@@ -132,9 +132,9 @@ void Project::loadPlugins()
 
 IFileLoader *Project::getBestLoader(const QString& filePath) const
 {
-    QFile f(filePath);
+    QFile inputBinary(filePath);
 
-    if (!f.open(QFile::ReadOnly)) {
+    if (!inputBinary.open(QFile::ReadOnly)) {
         LOG_ERROR("Unable to open binary file: %1", filePath);
         return nullptr;
     }
@@ -144,10 +144,10 @@ IFileLoader *Project::getBestLoader(const QString& filePath) const
 
     // get the best plugin for loading this file
     for (const std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
-        f.seek(0); // reset the file offset for the next plugin
+        inputBinary.seek(0); // reset the file offset for the next plugin
         IFileLoader *loader = p->get();
 
-        int score = loader->canLoad(f);
+        int score = loader->canLoad(inputBinary);
 
         if (score > bestScore) {
             bestScore  = score;

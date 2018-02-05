@@ -163,7 +163,7 @@ private:
             return nullptr;
         }
         else {
-            return *(FuncPtr *)&symbol;
+            return *reinterpret_cast<FuncPtr *>(&symbol);
         }
     }
 

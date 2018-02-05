@@ -649,7 +649,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
         }
         else {
             outStream << "\tis a user proc.\n";
-            UserProc *p = (UserProc *)proc;
+            UserProc *p = static_cast<UserProc *>(proc);
 
             if (p->isDecoded()) {
                 outStream << "\thas been decoded.\n";

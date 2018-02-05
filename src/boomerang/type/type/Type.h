@@ -51,21 +51,22 @@ class DataIntervalMap;
 using SharedExp = std::shared_ptr<Exp>;
 
 
-enum TypeID
+/// For operator< mostly
+enum class TypeClass
 {
-    eVoid,
-    eFunc,
-    eBoolean,
-    eChar,
-    eInteger,
-    eFloat,
-    ePointer,
-    eArray,
-    eNamed,
-    eCompound,
-    eUnion,
-    eSize
-}; // For operator< mostly
+    Void,
+    Func,
+    Boolean,
+    Char,
+    Integer,
+    Float,
+    Pointer,
+    Array,
+    Named,
+    Compound,
+    Union,
+    Size
+};
 
 class Type;
 typedef std::shared_ptr<Type>         SharedType;
@@ -82,7 +83,7 @@ class Type : public std::enable_shared_from_this<Type>, public Printable
 {
 public:
     // Constructors
-    Type(TypeID id);
+    Type(TypeClass id);
     Type(const Type& other) = default;
     Type(Type&& other) = default;
 
@@ -92,8 +93,8 @@ public:
     Type& operator=(Type&& other) = default;
 
 public:
-    /// \returns the type class (ID) of this type.
-    TypeID getId() const { return id; }
+    /// \returns the type class of this type.
+    TypeClass getId() const { return id; }
 
     /// Add a named ("typedef'd") type to the global type list.
     static void addNamedType(const QString& name, SharedType type);
@@ -205,11 +206,14 @@ public:
     // type for the first parameter to 'main' is different for sparc and pentium
     static void clearNamedTypes();
 
-    // TODO: the best possible thing would be to have both types as const
-    // For data-flow-based type analysis only: implement the meet operator. Set ch true if any change
-    // If bHighestPtr is true, then if this and other are non void* pointers, set the result to the
-    // *highest* possible type compatible with both (i.e. this JOIN other)
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr = false) const = 0;
+    /**
+     * For data-flow-based type analysis only: implement the meet operator.
+     * Set \p changed true if any change. If \p useHighestPtr is true,
+     * then if this and other are non void* pointers, set the result to the
+     * *highest* possible type compatible with both (i.e. this JOIN other)
+     * \todo the best possible thing would be to have both types as const
+     */
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr = false) const = 0;
 
     // When all=false (default), return true if can use this and other interchangeably; in particular,
     // if at most one of the types is compound and the first element is compatible with the other, then
@@ -225,7 +229,8 @@ public:
     bool isSubTypeOrEqual(SharedType other);
 
     /// Create a union of this Type and other. Set ch true if any change
-    SharedType createUnion(SharedType other, bool& ch, bool bHighestPtr = false) const;
+    SharedType createUnion(SharedType other, bool& changed, bool useHighestPtr = false) const;
+
     static SharedType newIntegerLikeType(int size, int signedness); // Return a new Bool/Char/Int
 
     /// Dereference this type. For most cases, return null unless you are a pointer type. But for a
@@ -233,7 +238,7 @@ public:
     SharedType dereference();
 
 protected:
-    TypeID id;
+    TypeClass id;
 };
 
 

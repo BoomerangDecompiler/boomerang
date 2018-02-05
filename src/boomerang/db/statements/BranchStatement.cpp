@@ -45,7 +45,7 @@ void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)
     m_jumpType = cond;
     m_isFloat  = usesFloat;
 
-    // set pCond to a high level representation of this type
+    // set cond to a high level representation of this type
     SharedExp p = nullptr;
 
     switch (cond)

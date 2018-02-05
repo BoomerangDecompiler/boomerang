@@ -65,9 +65,9 @@
 class lessEvaluate
 {
 public:
-    bool operator()(const SyntaxNode *x, const SyntaxNode *y) const
+    bool operator()(SyntaxNode *node1, SyntaxNode *node2) const
     {
-        return ((SyntaxNode *)x)->getScore() > ((SyntaxNode *)y)->getScore();
+        return node1->getScore() > node2->getScore();
     }
 };
 
@@ -212,7 +212,7 @@ bool UserProc::isNoReturn() const
             return false;
         }
 
-        CallStatement *call = (CallStatement *)s;
+        const CallStatement *call = static_cast<const CallStatement *>(s);
 
         if (call->getDestProc() && call->getDestProc()->isNoReturn()) {
             return true;
@@ -230,10 +230,10 @@ void UserProc::setStatus(ProcStatus s)
 }
 
 
-bool UserProc::containsAddr(Address uAddr) const
+bool UserProc::containsAddr(Address addr) const
 {
     for (BasicBlock *bb : *m_cfg) {
-        if (bb->getRTLs() && (uAddr >= bb->getLowAddr()) && (uAddr <= bb->getHiAddr())) {
+        if (bb->getRTLs() && (addr >= bb->getLowAddr()) && (addr <= bb->getHiAddr())) {
             return true;
         }
     }
@@ -276,7 +276,7 @@ void UserProc::setParamType(int idx, SharedType ty)
     }
 
     if (it != m_parameters.end()) {
-        Assignment *a = (Assignment *)*it;
+        Assignment *a = static_cast<Assignment *>(*it);
         a->setType(ty);
         // Sometimes the signature isn't up to date with the latest parameters
         m_signature->setParamType(a->getLeft(), ty);
@@ -449,7 +449,7 @@ void UserProc::printUseGraph()
         s->addUsedLocs(refs);
 
         for (LocationSet::iterator rr = refs.begin(); rr != refs.end(); rr++) {
-            if (((SharedExp) * rr)->isSubscript()) {
+            if ((*rr)->isSubscript()) {
                 auto r = (*rr)->access<RefExp>();
 
                 if (r->getDef()) {
@@ -577,7 +577,7 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
                 out << ", ";
             }
 
-            out << ((Assignment *)elem)->getType() << " " << ((Assignment *)elem)->getLeft();
+            out << static_cast<Assignment *>(elem)->getType() << " " << static_cast<Assignment *>(elem)->getLeft();
         }
     }
     else {
@@ -923,7 +923,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
             }
 
             // The call Statement will be in the last RTL in this BB
-            CallStatement *call = (CallStatement *)bb->getRTLs()->back()->getHlStmt();
+            CallStatement *call = static_cast<CallStatement *>(bb->getRTLs()->back()->getHlStmt());
 
             if (!call->isCall()) {
                 LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2", bb->getLowAddr(), call);
@@ -1089,7 +1089,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
 void UserProc::debugPrintAll(const char *step_name)
 {
-    if (VERBOSE) {
+    if (SETTING(verboseOutput)) {
         LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
         LOG_SEPARATE(getName(), "%1", this->toString());
         LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
@@ -1267,7 +1267,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         printXML();
 
         // Print if requested
-        if (VERBOSE) { // was if debugPrintSSA
+        if (SETTING(verboseOutput)) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
             LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
@@ -1299,7 +1299,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
             printXML();
 
-            if (VERBOSE) {
+            if (SETTING(verboseOutput)) {
                 LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after updating returns) ---", getName(), pass);
                 LOG_SEPARATE(getName(), "%1", this->toString());
                 LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
@@ -1309,7 +1309,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
         printXML();
 
         // Print if requested
-        if (VERBOSE) { // was if debugPrintSSA
+        if (SETTING(verboseOutput)) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after trimming return set) ---", getName(), pass);
             LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
@@ -1344,7 +1344,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
 
         printXML();
 
-        if (VERBOSE) {
+        if (SETTING(verboseOutput)) {
             LOG_SEPARATE(getName(), "--- after propagate for %1 at pass %2 ---", getName(), pass);
             LOG_SEPARATE(getName(), "%1", this->toString());
             LOG_SEPARATE(getName(), "=== End propagate for %1 at pass %2 ===", getName(), pass);
@@ -1488,7 +1488,7 @@ void UserProc::remUnusedStmtEtc()
         doRenameBlockVars(20);            // Rename the locals
         propagateStatements(convert, 20); // Surely need propagation too
 
-        if (VERBOSE) {
+        if (SETTING(verboseOutput)) {
             debugPrintAll("after propagating locals");
         }
     }
@@ -1586,8 +1586,8 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
                 continue;
             }
 
-            Assignment *as    = (Assignment *)s;
-            SharedExp  asLeft = as->getLeft();
+            const Assignment *as    = static_cast<const Assignment *>(s);
+            SharedConstExp  asLeft = as->getLeft();
 
             // If depth < 0, consider all depths
             // if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
@@ -1861,7 +1861,7 @@ void UserProc::fixUglyBranches()
             continue;
         }
 
-        SharedExp hl = ((BranchStatement *)stmt)->getCondExpr();
+        SharedExp hl = static_cast<BranchStatement *>(stmt)->getCondExpr();
 
         // of the form: x{n} - 1 >= 0
         if (hl && (hl->getOper() == opGtrEq) && hl->getSubExp2()->isIntConst() &&
@@ -1871,14 +1871,14 @@ void UserProc::fixUglyBranches()
             Statement *n = hl->access<RefExp, 1, 1>()->getDef();
 
             if (n && n->isPhi()) {
-                PhiAssign *p = (PhiAssign *)n;
+                PhiAssign *p = static_cast<PhiAssign *>(n);
 
                 for (const auto& phi : *p) {
                     if (!phi.getDef()->isAssign()) {
                         continue;
                     }
 
-                    Assign *a = (Assign *)phi.getDef();
+                    Assign *a = static_cast<Assign *>(phi.getDef());
 
                     if (*a->getRight() == *hl->getSubExp1()) {
                         hl->setSubExp1(RefExp::get(a->getLeft(), a));
@@ -1958,7 +1958,7 @@ void UserProc::findPreserveds()
     StatementList& modifieds = m_retStatement->getModifieds();
 
     for (ReturnStatement::iterator mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-        SharedExp lhs      = ((Assignment *)*mm)->getLeft();
+        SharedExp lhs      = static_cast<Assignment *>(*mm)->getLeft();
         auto      equation = Binary::get(opEquals, lhs, lhs);
 
         if (DEBUG_PROOF) {
@@ -2011,7 +2011,7 @@ void UserProc::removeSpAssignsIfPossible()
     getStatements(stmts);
 
     for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*((Assign *)stmt)->getLeft() == *sp)) {
+        if (stmt->isAssign() && (*static_cast<Assign *>(stmt)->getLeft() == *sp)) {
             foundone = true;
         }
 
@@ -2036,8 +2036,8 @@ void UserProc::removeSpAssignsIfPossible()
     Boomerang::get()->alertDecompileDebugPoint(this, "Before removing stack pointer assigns.");
 
     for (auto& stmt : stmts) {
-        if ((stmt)->isAssign()) {
-            Assign *a = (Assign *)stmt;
+        if (stmt->isAssign()) {
+            Assign *a = static_cast<Assign *>(stmt);
 
             if (*a->getLeft() == *sp) {
                 removeStatement(a);
@@ -2062,12 +2062,12 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
     getStatements(stmts);
 
     for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*((Assign *)stmt)->getLeft() == *e)) {
+        if (stmt->isAssign() && (*static_cast<const Assign *>(stmt)->getLeft() == *e)) {
             foundone = true;
         }
 
         if (stmt->isPhi()) {
-            if (*((PhiAssign *)stmt)->getLeft() == *e) {
+            if (*static_cast<const PhiAssign *>(stmt)->getLeft() == *e) {
                 foundone = true;
             }
 
@@ -2100,14 +2100,14 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 
     for (auto& stmt : stmts) {
         if ((stmt)->isAssign()) {
-            Assign *a = (Assign *)stmt;
+            Assign *a = static_cast<Assign *>(stmt);
 
             if (*a->getLeft() == *e) {
                 removeStatement(a);
             }
         }
         else if ((stmt)->isPhi()) {
-            PhiAssign *a = (PhiAssign *)stmt;
+            PhiAssign *a = static_cast<PhiAssign *>(stmt);
 
             if (*a->getLeft() == *e) {
                 removeStatement(a);
@@ -2124,8 +2124,8 @@ void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
 
 void UserProc::assignProcsToCalls()
 {
-    for (BasicBlock *pBB : *m_cfg) {
-        RTLList *rtls = pBB->getRTLs();
+    for (BasicBlock *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
 
         if (rtls == nullptr) {
             continue;
@@ -2136,7 +2136,7 @@ void UserProc::assignProcsToCalls()
                 continue;
             }
 
-            CallStatement *call = (CallStatement *)(rtl->back());
+            CallStatement *call = static_cast<CallStatement *>(rtl->back());
 
             if ((call->getDestProc() == nullptr) && !call->isComputed()) {
                 Function *p = m_prog->findFunction(call->getFixedDest());
@@ -2239,7 +2239,7 @@ void UserProc::findFinalParameters()
             break; // Stop after reading all implicit assignments
         }
 
-        SharedExp e = ((ImplicitAssign *)s)->getLeft();
+        SharedExp e = static_cast<ImplicitAssign *>(s)->getLeft();
 
         if (m_signature->findParam(e) == -1) {
             if (DEBUG_PARAMS) {
@@ -2256,7 +2256,7 @@ void UserProc::findFinalParameters()
                 LOG_VERBOSE("Found new parameter %1", e);
             }
 
-            SharedType ty = ((ImplicitAssign *)s)->getType();
+            SharedType ty = static_cast<ImplicitAssign *>(s)->getType();
             // Add this parameter to the signature (for now; creates parameter names)
             addParameter(e, ty);
             // Insert it into the parameters StatementList, in sensible order
@@ -2284,7 +2284,7 @@ void UserProc::addParameterSymbols()
     int i = 0;
 
     for (it = m_parameters.begin(); it != m_parameters.end(); ++it, ++i) {
-        SharedExp lhs = ((Assignment *)*it)->getLeft();
+        SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
         lhs = lhs->expSubscriptAllNull();
         lhs = lhs->accept(&ic);
         SharedExp to = Location::param(m_signature->getParamName(i), this);
@@ -2322,7 +2322,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
                 int n = -loc->access<Const, 1, 2>()->getInt();
                 int m = -le->access<Const, 1, 2>()->getInt();
 
-                if ((m > n) && (m < n + (int)(lty->getSize() / 8))) {
+                if ((m > n) && (m < n + static_cast<int>(lty->getSize() / 8))) {
                     e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(m - n)));
                     LOG_VERBOSE("Seems %1 is in the middle of %2 returning %3", le, loc, e);
                     return e;
@@ -2745,8 +2745,8 @@ void UserProc::removeUnusedLocals()
             }
         }
 
-        if (s->isAssignment() && !s->isImplicit() && ((Assignment *)s)->getLeft()->isLocal()) {
-            Assignment *as = (Assignment *)s;
+        if (s->isAssignment() && !s->isImplicit() && static_cast<Assignment *>(s)->getLeft()->isLocal()) {
+            Assignment *as = static_cast<Assignment *>(s);
             auto       c   = as->getLeft()->access<Const, 1>();
             QString    name(c->getStr());
             usedLocals.insert(name);
@@ -2771,7 +2771,7 @@ void UserProc::removeUnusedLocals()
         }
 
         if ((usedLocals.find(name) == usedLocals.end()) && !all) {
-            if (VERBOSE) {
+            if (SETTING(verboseOutput)) {
                 LOG_VERBOSE("Removed unused local %1", name);
             }
 
@@ -2802,7 +2802,7 @@ void UserProc::removeUnusedLocals()
                 }
                 else if (s->isCall()) {
                     // Remove just this define. May end up removing several defines from this call.
-                    ((CallStatement *)s)->removeDefine(*ll);
+                    static_cast<CallStatement *>(s)->removeDefine(*ll);
                 }
 
                 // else if a ReturnStatement, don't attempt to remove it. The definition is used *outside* this proc.
@@ -3002,7 +3002,7 @@ void UserProc::fromSSAForm()
                 bool                allSame     = true;
                 bool                r2IsOperand = false;
                 QString             firstName   = QString::null;
-                PhiAssign           *pa = (PhiAssign *)def1;
+                PhiAssign           *pa = static_cast<PhiAssign *>(def1);
 
                 for (RefExp &refExp : *pa) {
                     auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
@@ -3067,7 +3067,7 @@ void UserProc::fromSSAForm()
         }
 
         // Check if the base variables are all the same
-        PhiAssign *pa = (PhiAssign *)s;
+        PhiAssign *pa = static_cast<PhiAssign *>(s);
 
         if (pa->begin() == pa->end()) {
             // no params to this phi, just remove it
@@ -3153,7 +3153,7 @@ void UserProc::mapParameters()
     StatementList::iterator pp;
 
     for (pp = m_parameters.begin(); pp != m_parameters.end(); ++pp) {
-        SharedExp lhs        = ((Assignment *)*pp)->getLeft();
+        SharedExp lhs        = static_cast<Assignment *>(*pp)->getLeft();
         QString   mappedName = lookupParam(lhs);
 
         if (mappedName.isNull()) {
@@ -3162,13 +3162,13 @@ void UserProc::mapParameters()
             SharedExp clean = lhs->clone()->removeSubscripts(allZero);
 
             if (allZero) {
-                ((Assignment *)*pp)->setLeft(clean);
+                static_cast<Assignment *>(*pp)->setLeft(clean);
             }
 
             // Else leave them alone
         }
         else {
-            ((Assignment *)*pp)->setLeft(Location::param(mappedName, this));
+            static_cast<Assignment *>(*pp)->setLeft(Location::param(mappedName, this));
         }
     }
 }
@@ -3205,13 +3205,12 @@ void UserProc::removeSubscriptsFromSymbols()
 
 void UserProc::removeSubscriptsFromParameters()
 {
-    StatementList::iterator it;
-    ExpSsaXformer           esx(this);
+    ExpSsaXformer esx(this);
 
-    for (it = m_parameters.begin(); it != m_parameters.end(); ++it) {
-        SharedExp left = ((Assignment *)*it)->getLeft();
+    for (Statement *param : m_parameters) {
+        SharedExp left = static_cast<Assignment *>(param)->getLeft();
         left = left->accept(&esx);
-        ((Assignment *)*it)->setLeft(left);
+        static_cast<Assignment *>(param)->setLeft(left);
     }
 }
 
@@ -3478,7 +3477,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                 }
                 else if (s && s->isPhi()) {
                     // for a phi, we have to prove the query for every statement
-                    PhiAssign           *pa = (PhiAssign *)s;
+                    PhiAssign           *pa = static_cast<PhiAssign *>(s);
                     bool                ok = true;
 
                     if ((lastPhis.find(pa) != lastPhis.end()) || (pa == lastPhi)) {
@@ -3546,7 +3545,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                     }
                     else {
                         refsTo.insert(s);
-                        query->setSubExp1(((Assign *)s)->getRight()->clone());
+                        query->setSubExp1(static_cast<Assign *>(s)->getRight()->clone());
                         change = true;
                     }
                 }
@@ -3987,7 +3986,7 @@ void UserProc::reverseStrengthReduction()
 
     for (it = stmts.begin(); it != stmts.end(); it++) {
         if ((*it)->isAssign()) {
-            Assign *as = (Assign *)*it;
+            Assign *as = static_cast<Assign *>(*it);
 
             // of the form x = x{p} + c
             if ((as->getRight()->getOper() == opPlus) && as->getRight()->getSubExp1()->isSubscript() &&
@@ -3997,7 +3996,7 @@ void UserProc::reverseStrengthReduction()
                 auto r = as->getRight()->access<RefExp, 1>();
 
                 if (r->getDef() && r->getDef()->isPhi()) {
-                    PhiAssign *p = (PhiAssign *)r->getDef();
+                    PhiAssign *p = static_cast<PhiAssign *>(r->getDef());
 
                     if (p->getNumDefs() == 2) {
                         Statement *first  = p->begin()->getDef();
@@ -4009,8 +4008,8 @@ void UserProc::reverseStrengthReduction()
                         }
 
                         // first must be of form x := 0
-                        if (first && first->isAssign() && ((Assign *)first)->getRight()->isIntConst() &&
-                            ((((Assign *)first)->getRight())->access<Const>()->getInt() == 0)) {
+                        if (first && first->isAssign() && static_cast<Assign *>(first)->getRight()->isIntConst() &&
+                            static_cast<Assign *>(first)->getRight()->access<Const>()->getInt() == 0) {
                             // ok, fun, now we need to find every reference to p and
                             // replace with x{p} * c
                             StatementList stmts2;
@@ -4047,13 +4046,13 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
 
     // Wrap it in an implicit assignment; DFA based TA should update the type later
     ImplicitAssign *as = new ImplicitAssign(ty->clone(), e->clone());
+
     // Insert as, in order, into the existing set of parameters
-    StatementList::iterator nn;
     bool inserted = false;
 
-    for (nn = m_parameters.begin(); nn != m_parameters.end(); ++nn) {
+    for (StatementList::iterator nn = m_parameters.begin(); nn != m_parameters.end(); ++nn) {
         // If the new assignment is less than the current one ...
-        if (m_signature->argumentCompare(*as, *(Assignment *)*nn)) {
+        if (m_signature->argumentCompare(*as, static_cast<const Assignment &>(**nn))) {
             nn       = m_parameters.insert(nn, as); // ... then insert before this position
             inserted = true;
             break;
@@ -4068,11 +4067,11 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
     m_signature->setNumParams(0);
     int i = 1;
 
-    for (nn = m_parameters.begin(); nn != m_parameters.end(); ++nn, ++i) {
-        Assignment *a = (Assignment *)*nn;
-        char       tmp[20];
-        sprintf(tmp, "param%i", i);
-        m_signature->addParameter(a->getType(), tmp, a->getLeft());
+    for (Statement *param : m_parameters) {
+        Assignment *a = static_cast<Assignment *>(param);
+        QString paramName = QString("param%1").arg(i++);
+
+        m_signature->addParameter(a->getType(), paramName, a->getLeft());
     }
 }
 
@@ -4273,10 +4272,10 @@ void UserProc::fixCallAndPhiRefs()
             continue;
         }
 
-        CallStatement *call = (CallStatement *)*it;
+        CallStatement *call = static_cast<CallStatement *>(*it);
 
         for (auto& elem : call->getArguments()) {
-            Assign *a = (Assign *)elem;
+            Assign *a = static_cast<Assign *>(elem);
 
             if (!a->getType()->resolvesToPointer()) {
                 continue;
@@ -4330,7 +4329,7 @@ void UserProc::fixCallAndPhiRefs()
             continue;
         }
 
-        PhiAssign *ps = (PhiAssign *)s;
+        PhiAssign *ps = static_cast<PhiAssign *>(s);
 
         if (ps->getNumDefs() == 0) {
             continue; // Can happen e.g. for m[...] := phi {} when this proc is
@@ -4458,7 +4457,7 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
         CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
         if (c && c->isChildless()) {
-            UserProc *dest = (UserProc *)c->getDestProc();
+            UserProc *dest = static_cast<UserProc *>(c->getDestProc());
 
             if (cs->find(dest) != cs->end()) { // Part of the cycle?
                 // Yes, set the callee return statement (making it non childless)
@@ -4489,11 +4488,11 @@ void UserProc::propagateToCollector()
             }
 
             auto   r   = v->access<RefExp>();
-            Assign *as = (Assign *)r->getDef();
-
-            if ((as == nullptr) || !as->isAssign()) {
+            if (!r->getDef() || !r->getDef()->isAssign()) {
                 continue;
             }
+
+            Assign *as = static_cast<Assign *>(r->getDef());
 
             bool ch;
             auto res = addr->clone()->searchReplaceAll(*r, as->getRight(), ch);
@@ -4533,7 +4532,7 @@ void UserProc::initialParameters()
         m_parameters.append(new ImplicitAssign(v->clone()));
     }
 
-    if (VERBOSE) {
+    if (SETTING(verboseOutput)) {
         QString     tgt;
         QTextStream ost(&tgt);
         printParams(ost);
@@ -4550,13 +4549,13 @@ bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
 }
 
 
-bool UserProc::isLocalOrParamPattern(const SharedExp& e)
+bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 {
     if (!e->isMemOf()) {
         return false; // Don't want say a register
     }
 
-    SharedExp addr = e->getSubExp1();
+    SharedConstExp addr = e->getSubExp1();
 
     if (!m_signature->isPromoted()) {
         return false; // Prevent an assert failure if using -E
@@ -4579,13 +4578,13 @@ bool UserProc::isLocalOrParamPattern(const SharedExp& e)
         return false;
     }
 
-    SharedExp left = addr->getSubExp1();
+    SharedConstExp left = addr->getSubExp1();
 
     if (!(*left == *initSp)) {
         return false;
     }
 
-    SharedExp right = addr->getSubExp2();
+    SharedConstExp right = addr->getSubExp2();
     return right->isIntConst();
 }
 
@@ -4596,15 +4595,15 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *pb : *m_cfg) {
-        CallStatement *c = (CallStatement *)pb->getLastStmt(rrit, srit);
+        CallStatement *c = static_cast<CallStatement *>(pb->getLastStmt(rrit, srit));
 
         if ((c == nullptr) || !c->isCall()) {
             continue; // Only interested in calls
         }
 
-        UserProc *dest = (UserProc *)c->getDestProc();
+        UserProc *dest = static_cast<UserProc *>(c->getDestProc());
 
-        if ((dest == nullptr) || dest->isLib()) {
+        if (!dest || dest->isLib()) {
             continue;    // Only interested in calls to UserProcs
         }
 
@@ -4663,7 +4662,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
 
         // Special checking for recursive calls
         if (s->isCall()) {
-            CallStatement *c    = (CallStatement *)s;
+            CallStatement *c    = static_cast<CallStatement *>(s);
             UserProc      *dest = dynamic_cast<UserProc *>(c->getDestProc());
 
             if (dest && dest->doesRecurseTo(this)) {
@@ -4689,7 +4688,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                     rhs->addUsedLocs(argUses);
 
                     if (argUses.existsImplicit(bparam)) {
-                        SharedExp lloc = ((Assign *)*aa)->getLeft();
+                        SharedExp lloc = static_cast<Assign *>(*aa)->getLeft();
 
                         if ((visited.find(dest) == visited.end()) && dest->checkForGainfulUse(lloc, visited)) {
                             return true;
@@ -4707,13 +4706,12 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
             }
         }
         else if (s->isPhi() && (m_retStatement != nullptr) && m_cycleGroup && m_cycleGroup->size()) {
-            SharedExp                 phiLeft = ((PhiAssign *)s)->getLeft();
+            SharedExp                 phiLeft = static_cast<PhiAssign *>(s)->getLeft();
             auto                      refPhi  = RefExp::get(phiLeft, s);
-            ReturnStatement::iterator rr;
             bool                      foundPhi = false;
 
-            for (rr = m_retStatement->begin(); rr != m_retStatement->end(); ++rr) {
-                SharedExp   rhs = ((Assign *)*rr)->getRight();
+            for (Statement *stmt : *m_retStatement) {
+                SharedExp   rhs = static_cast<Assign *>(stmt)->getRight();
                 LocationSet uses;
                 rhs->addUsedLocs(uses);
 
@@ -4760,7 +4758,7 @@ bool UserProc::removeRedundantParameters()
 
     // Note: this would be far more efficient if we had def-use information
     for (StatementList::iterator pp = m_parameters.begin(); pp != m_parameters.end(); ++pp) {
-        SharedExp param = ((Assignment *)*pp)->getLeft();
+        SharedExp param = static_cast<Assignment *>(*pp)->getLeft();
         bool      az;
         SharedExp bparam = param->clone()->removeSubscripts(az); // FIXME: why does main have subscripts on parameters?
         // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
@@ -4827,7 +4825,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         bool removedRets = false;
 
         for (ReturnStatement::iterator rr = m_retStatement->begin(); rr != m_retStatement->end();) {
-            Assign    *a  = (Assign *)*rr;
+            Assign    *a  = static_cast<Assign *>(*rr);
             SharedExp lhs = a->getLeft();
             // For each location in the returns, check if in the signature
             bool found = false;
@@ -4897,7 +4895,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     ReturnStatement::iterator rr;
 
     for (rr = m_retStatement->begin(); rr != m_retStatement->end();) {
-        Assign *a = (Assign *)*rr;
+        Assign *a = static_cast<Assign *>(*rr);
 
         if (unionOfCallerLiveLocs.exists(a->getLeft())) {
             ++rr;
@@ -4951,7 +4949,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     }
 
     if (m_retStatement->getNumReturns() == 1) {
-        Assign *a = (Assign *)*m_retStatement->getReturns().begin();
+        Assign *a = static_cast<Assign *>(m_retStatement->getReturns().front());
         m_signature->setRetType(a->getType());
     }
 
@@ -5032,7 +5030,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
                         call->getDestProc()->getName(), getName());
             }
 
-            removeRetSet.insert((UserProc *)call->getDestProc());
+            removeRetSet.insert(static_cast<UserProc *>(call->getDestProc()));
         }
     }
 }
@@ -5058,9 +5056,6 @@ void UserProc::typeAnalysis()
 }
 
 
-RTL *globalRtl = nullptr;
-
-
 void UserProc::processDecodedICTs()
 {
     for (BasicBlock *bb : *m_cfg) {
@@ -5082,7 +5077,7 @@ void UserProc::processDecodedICTs()
             LOG_MSG("Saving high level switch statement %1", rtl);
         }
 
-        m_prog->addDecodedRtl(bb->getHiAddr(), rtl);
+        m_prog->addDecodedRTL(bb->getHiAddr(), rtl);
         // Now decode those new targets, adding out edges as well
         //        if (last->isCase())
         //            bb->processSwitch(this);
@@ -5181,7 +5176,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
         // For each phi parameter, remove from the final usedByDomPhi set
         for (RefExp& v : *it->second) {
             assert(v.getSubExp1());
-            auto wrappedParam = RefExp::get(v.getSubExp1(), (Statement *)v.getDef());
+            auto wrappedParam = RefExp::get(v.getSubExp1(), v.getDef());
             usedByDomPhi.remove(wrappedParam);
         }
 
@@ -5208,18 +5203,18 @@ void UserProc::findPhiUnites(ConnectionGraph& pu)
 
     getStatements(stmts);
 
-    for (Statement *insn : stmts) {
-        if (!insn->isPhi()) {
+    for (Statement *stmt : stmts) {
+        if (!stmt->isPhi()) {
             continue;
         }
 
-        PhiAssign *pa   = (PhiAssign *)insn;
+        PhiAssign *pa   = static_cast<PhiAssign *>(stmt);
         SharedExp lhs   = pa->getLeft();
         auto      reLhs = RefExp::get(lhs, pa);
 
         for (RefExp& v : *pa) {
             assert(v.getSubExp1());
-            auto re = RefExp::get(v.getSubExp1(), (Statement *)v.getDef());
+            auto re = RefExp::get(v.getSubExp1(), v.getDef());
             pu.connect(reLhs, re);
         }
     }
@@ -5290,7 +5285,7 @@ void UserProc::verifyPHIs()
             continue; // Might be able to optimise this a bit
         }
 
-        PhiAssign *pi = (PhiAssign *)st;
+        PhiAssign *pi = static_cast<PhiAssign *>(st);
 
         for (const auto& pas : *pi) {
             Q_UNUSED(pas);
@@ -5326,7 +5321,7 @@ void UserProc::nameParameterPhis()
 
         for (RefExp& v : *pi) {
             if (v.getDef()->isImplicit()) {
-                QString name = lookupSym(RefExp::get(v.getSubExp1(), (Statement *)v.getDef()), ty);
+                QString name = lookupSym(RefExp::get(v.getSubExp1(), v.getDef()), ty);
 
                 if (!name.isNull()) {
                     if (!firstName.isNull() && (firstName != name)) {

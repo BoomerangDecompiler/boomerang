@@ -28,15 +28,15 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     // fill combo box with possible logging levels
     ui->cbLogLevel->clear();
     ui->cbLogLevel->setEditable(false);
-    ui->cbLogLevel->addItem("Fatal", (int)LogLevel::Fatal);
-    ui->cbLogLevel->addItem("Error", (int)LogLevel::Error);
-    ui->cbLogLevel->addItem("Warning", (int)LogLevel::Warning);
-    ui->cbLogLevel->addItem("Message", (int)LogLevel::Message);
-    ui->cbLogLevel->addItem("Verbose 1", (int)LogLevel::Verbose1);
-    ui->cbLogLevel->addItem("Verbose 2", (int)LogLevel::Verbose2);
+    ui->cbLogLevel->addItem("Fatal",     static_cast<int>(LogLevel::Fatal));
+    ui->cbLogLevel->addItem("Error",     static_cast<int>(LogLevel::Error));
+    ui->cbLogLevel->addItem("Warning",   static_cast<int>(LogLevel::Warning));
+    ui->cbLogLevel->addItem("Message",   static_cast<int>(LogLevel::Message));
+    ui->cbLogLevel->addItem("Verbose 1", static_cast<int>(LogLevel::Verbose1));
+    ui->cbLogLevel->addItem("Verbose 2", static_cast<int>(LogLevel::Verbose2));
 
     for (int i = 0; i < ui->cbLogLevel->count(); i++) {
-        LogLevel cmbLevel = (LogLevel)(ui->cbLogLevel->itemData(i).value<int>());
+        LogLevel cmbLevel = static_cast<LogLevel>(ui->cbLogLevel->itemData(i).value<int>());
         if (cmbLevel == Log::getOrCreateLog().getLogLevel()) {
             ui->cbLogLevel->setCurrentIndex(i);
             break;
@@ -51,7 +51,7 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->chkDebugTA->setChecked(SETTING(debugTA));
     ui->chkDebugUnused->setChecked(SETTING(debugUnused));
     ui->chkTraceDecoder->setChecked(SETTING(traceDecoder));
-    ui->chkVerbose->setChecked(SETTING(vFlag));
+    ui->chkVerbose->setChecked(SETTING(verboseOutput));
 
     // Decode settings
     ui->chkDecodeChildren->setChecked(!SETTING(noDecodeChildren));
@@ -120,7 +120,7 @@ void SettingsDlg::changeEvent(QEvent *e)
 
 void SettingsDlg::on_btnApply_clicked()
 {
-    Log::getOrCreateLog().setLogLevel((LogLevel)ui->cbLogLevel->currentData().value<int>());
+    Log::getOrCreateLog().setLogLevel(static_cast<LogLevel>(ui->cbLogLevel->currentData().value<int>()));
 
     SETTING(debugDecoder)  = ui->chkDebugDecoder->isChecked();
     SETTING(debugGen)      = ui->chkDebugGenerator->isChecked();
@@ -130,7 +130,7 @@ void SettingsDlg::on_btnApply_clicked()
     SETTING(debugTA)       = ui->chkDebugTA->isChecked();
     SETTING(debugUnused)   = ui->chkDebugUnused->isChecked();
     SETTING(traceDecoder)  = ui->chkTraceDecoder->isChecked();
-    SETTING(vFlag)         = ui->chkVerbose->isChecked();
+    SETTING(verboseOutput)         = ui->chkVerbose->isChecked();
 
     // Decode
     SETTING(noDecodeChildren)  = !ui->chkDecodeChildren->isChecked();

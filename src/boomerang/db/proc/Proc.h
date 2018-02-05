@@ -204,8 +204,6 @@ protected:
      * for LibProcs?
      */
     ExpExpMap m_provenTrue;
-    // Cache of queries proven false (to save time)
-    // mExpExp provenFalse;
 
     /**
      * Premises for recursion group analysis. This is a preservation

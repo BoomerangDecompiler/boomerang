@@ -16,13 +16,13 @@
 
 
 UnionType::UnionType()
-    : Type(eUnion)
+    : Type(TypeClass::Union)
 {
 }
 
 
 UnionType::UnionType::UnionType(const std::initializer_list<SharedType>& members)
-    : Type(eUnion)
+    : Type(TypeClass::Union)
 {
     for (SharedType member : members) {
         addType(member, "");
@@ -69,7 +69,7 @@ bool UnionType::operator==(const Type& other) const
         return false;
     }
 
-    const UnionType& uother = (UnionType&)other;
+    const UnionType& uother = static_cast<const UnionType &>(other);
 
     if (uother.li.size() != li.size()) {
         return false;
@@ -87,15 +87,11 @@ bool UnionType::operator==(const Type& other) const
 
 bool UnionType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
+    if (id != other.getId()) {
+        return id < other.getId();
     }
 
-    if (id > other.getId()) {
-        return false;
-    }
-
-    return getNumTypes() < ((const UnionType&)other).getNumTypes();
+    return getNumTypes() < static_cast<const UnionType &>(other).getNumTypes();
 }
 
 
@@ -155,15 +151,15 @@ unsigned unionCount = 0;
 
 static int nextUnionNumber = 0;
 
-SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((UnionType *)this)->shared_from_this();
+        return const_cast<UnionType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToUnion()) {
         if (this == other.get()) {                          // Note: pointer comparison
-            return ((UnionType *)this)->shared_from_this(); // Avoid infinite recursion
+            return const_cast<UnionType *>(this)->shared_from_this(); // Avoid infinite recursion
         }
 
         std::shared_ptr<UnionType> otherUnion = other->as<UnionType>();
@@ -172,7 +168,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
         *result = *this;
 
         for (UnionElement elem : otherUnion->li) {
-            result = result->meetWith(elem.type, ch, bHighestPtr)->as<UnionType>();
+            result = result->meetWith(elem.type, changed, useHighestPtr)->as<UnionType>();
         }
 
         return result;
@@ -181,7 +177,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     // Other is a non union type
     if (other->resolvesToPointer() && (other->as<PointerType>()->getPointsTo().get() == this)) {
         LOG_WARN("Attempt to union '%1' with pointer to self!", this->getCtype());
-        return ((UnionType *)this)->shared_from_this();
+        return const_cast<UnionType *>(this)->shared_from_this();
     }
 
     //    int subtypes_count = 0;
@@ -217,12 +213,12 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
             continue;
         }
 
-        ch = false;
-        SharedType meet_res = v->meetWith(other, ch, bHighestPtr);
+        changed = false;
+        SharedType meet_res = v->meetWith(other, changed, useHighestPtr);
 
-        if (!ch) {
+        if (!changed) {
             // Fully compatible type alerady present in this union
-            return ((UnionType *)this)->shared_from_this();
+            return const_cast<UnionType *>(this)->shared_from_this();
         }
 
         const int currentScore = meet_res->getCtype().size();
@@ -250,7 +246,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
 
     if (bestElem != li.end()) {
         ne.name = bestElem->name;
-        ne.type = bestElem->type->meetWith(other, ch, bHighestPtr); // we know this works because the types are compatible
+        ne.type = bestElem->type->meetWith(other, changed, useHighestPtr); // we know this works because the types are compatible
     }
     else {
         // Other is not compatible with any of my component types. Add a new type.
@@ -259,7 +255,7 @@ SharedType UnionType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     result->addType(ne.type, ne.name);
-    ch = true;
+    changed = true;
     return result;
 }
 
@@ -275,7 +271,7 @@ bool UnionType::isCompatible(const Type& other, bool all) const
             return true;      // Avoid infinite recursion
         }
 
-        const UnionType& otherUnion((const UnionType&)other);
+        const UnionType& otherUnion = static_cast<const UnionType &>(other);
 
         // Unions are compatible if one is a subset of the other
         if (li.size() < otherUnion.li.size()) {

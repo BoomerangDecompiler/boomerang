@@ -173,7 +173,7 @@ void TypeTest::testDataInterval()
 {
     Prog            *prog = new Prog("test");
     Module          *m    = prog->getOrInsertModule("test");
-    UserProc        *proc = (UserProc *)m->createFunction("test", Address(0x123));
+    UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x123)));
     DataIntervalMap dim(proc);
 
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "testProc"));
@@ -222,7 +222,7 @@ void TypeTest::testDataInterval()
     dim.insertItem(Address(0x00001020), "array1", at);
     std::unique_ptr<ComplexTypeCompList> ctcl2 = compForAddress(Address(0x00001020 + 0x3C + 8), dim);
     // Should be 2 components: [5] and .float1
-    QCOMPARE(ctcl2->size(), (size_t)2);
+    QCOMPARE(ctcl2->size(), static_cast<size_t>(2));
 
     ComplexTypeComp& ctc0 = ctcl2->front();
     ComplexTypeComp& ctc1 = ctcl2->back();
@@ -239,7 +239,7 @@ void TypeTest::testDataIntervalOverlaps()
 {
     Prog            *prog = new Prog("test");
     Module          *m    = prog->getOrInsertModule("test");
-    UserProc        *proc = (UserProc *)m->createFunction("test", Address(0x00000100));
+    UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000100)));
     DataIntervalMap dim(proc);
 
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));

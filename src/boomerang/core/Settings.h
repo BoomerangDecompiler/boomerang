@@ -43,14 +43,14 @@ public:
 
 public:
     // Command line flags
-    bool vFlag               = false;
+    bool verboseOutput               = false;
     bool debugSwitch         = false;
     bool debugLiveness       = false;
     bool debugTA             = false;
     bool debugDecoder        = false;
     bool debugProof          = false;
     bool debugUnused         = false;
-    bool printRtl            = false;
+    bool printRTLs            = false;
     bool noBranchSimplify    = false;
     bool noRemoveNull        = false;
     bool noLocals            = false;

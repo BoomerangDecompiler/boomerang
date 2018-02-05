@@ -149,7 +149,7 @@ void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
         if (s->searchAndReplace(scaledArrayPat, arr)) {
             if (s->isImplicit()) {
                 // Register an array of appropriate type
-                prog->markGlobalUsed(K2, ArrayType::get(((ImplicitAssign *)s)->getType()));
+                prog->markGlobalUsed(K2, ArrayType::get(static_cast<const ImplicitAssign *>(s)->getType()));
             }
         }
     }
@@ -167,17 +167,17 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
     Prog *prog = proc->getProg();
     assert(prog);
 
-    SharedExp lhs = ((ImplicitAssign *)s)->getLeft();
+    SharedExp lhs = static_cast<const ImplicitAssign *>(s)->getLeft();
     // Note: parameters are not explicit any more
     // if (lhs->isParam()) { // }
 
-    bool       allZero = false;
-    SharedExp  slhs    = lhs->clone()->removeSubscripts(allZero);
-    SharedType iType   = ((ImplicitAssign *)s)->getType();
-    int        i       = proc->getSignature()->findParam(slhs);
+    bool       allZero      = false;
+    SharedExp  slhs         = lhs->clone()->removeSubscripts(allZero);
+    SharedType implicitType = static_cast<const ImplicitAssign *>(s)->getType();
+    int        i            = proc->getSignature()->findParam(slhs);
 
     if (i != -1) {
-        proc->setParamType(i, iType);
+        proc->setParamType(i, implicitType);
     }
     else if (lhs->isMemOf()) {
         SharedExp sub = lhs->getSubExp1();
@@ -185,13 +185,13 @@ void DFATypeRecovery::dfa_analyze_implict_assigns(Statement *s)
         if (sub->isIntConst()) {
             // We have a m[K] := -
             Address K = sub->access<Const>()->getAddr();
-            prog->markGlobalUsed(K, iType);
+            prog->markGlobalUsed(K, implicitType);
         }
     }
     else if (lhs->isGlobal()) {
         assert(std::dynamic_pointer_cast<Location>(lhs) != nullptr);
         QString gname = lhs->access<Const, 1>()->getStr();
-        prog->setGlobalType(gname, iType);
+        prog->setGlobalType(gname, implicitType);
     }
 }
 
@@ -403,7 +403,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                         bool isImplicit = s->isImplicit();
 
                         if (isImplicit) {
-                            cfg->removeImplicitAssign(((ImplicitAssign *)s)->getLeft());
+                            cfg->removeImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
                         }
 
                         if (!s->searchAndReplace(unscaledArrayPat, arr)) {
@@ -415,7 +415,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
                         if (isImplicit) {
                             // Replace the implicit assignment entry. Note that s' lhs has changed
-                            cfg->findImplicitAssign(((ImplicitAssign *)s)->getLeft());
+                            cfg->findImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
                         }
 
                         // Ensure that the global is declared
@@ -429,7 +429,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                     // Reinterpret as a float (and convert to double)
                     // con->setFlt(reinterpret_cast<float>(con->getInt()));
                     int tmp = con->getInt();
-                    con->setFlt(*(float *)&tmp);      // Reinterpret to float, then cast to double
+                    con->setFlt(*reinterpret_cast<float *>(&tmp)); // Reinterpret to float, then cast to double
                     con->setOper(opFltConst);
                     con->setType(FloatType::get(64)); // TODO: why double ? float might do
                 }
@@ -453,22 +453,22 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
             SharedType typeExp = nullptr;
 
             if (s->isAssignment()) {
-                SharedExp lhs = ((Assignment *)s)->getLeft();
+                SharedExp lhs = static_cast<Assignment *>(s)->getLeft();
 
                 if (lhs->isMemOf()) {
                     addrExp = lhs->getSubExp1();
-                    typeExp = ((Assignment *)s)->getType();
+                    typeExp = static_cast<Assignment *>(s)->getType();
                 }
             }
             else {
                 // Assume an implicit reference
-                addrExp = ((ImpRefStatement *)s)->getAddressExp();
+                addrExp = static_cast<ImpRefStatement *>(s)->getAddressExp();
 
                 if (addrExp->isTypedExp() && addrExp->access<TypedExp>()->getType()->resolvesToPointer()) {
                     addrExp = addrExp->getSubExp1();
                 }
 
-                typeExp = ((ImpRefStatement *)s)->getType();
+                typeExp = static_cast<ImpRefStatement *>(s)->getType();
 
                 // typeExp should be a pointer expression, or a union of pointer types
                 if (typeExp->resolvesToUnion()) {
@@ -498,7 +498,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                     }
                 }
 
-                const SharedType& ty = ((TypingStatement *)s)->getType();
+                const SharedType& ty = static_cast<TypingStatement *>(s)->getType();
                 LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
                 localsMap.insertItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);

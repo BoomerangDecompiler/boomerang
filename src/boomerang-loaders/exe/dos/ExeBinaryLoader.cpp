@@ -37,30 +37,26 @@ void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbol
 
 bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 {
-    //
-    QBuffer fp(&data);
-    int     i, cb;
-    Byte    buf[4];
-    int     fCOM;
-
-
     // Always just 3 sections
     m_header = new ExeHeader;
 
+    QBuffer fp(&data);
     fp.open(QBuffer::ReadOnly);
 
     /* Read in first 2 bytes to check EXE signature */
-    if (fp.read((char *)m_header, 2) != 2) {
+    if (fp.read(reinterpret_cast<char *>(m_header), 2) != 2) {
         LOG_ERROR("Cannot read exe file");
         return false;
     }
 
+    int     fCOM;
+    int     cb;
     // Check for the "MZ" exe header
     if (!(fCOM = ((m_header->sigLo != 0x4D) || (m_header->sigHi != 0x5A)))) {
         /* Read rest of m_pHeader */
         fp.seek(0);
 
-        if (fp.read((char *)m_header, sizeof(ExeHeader)) != sizeof(ExeHeader)) {
+        if (fp.read(reinterpret_cast<char *>(m_header), sizeof(ExeHeader)) != sizeof(ExeHeader)) {
             LOG_ERROR("Cannot read Exe file");
             return false;
         }
@@ -76,10 +72,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
          * less the length of the m_pHeader and reloc table
          * less the number of bytes unused on last page
          */
-        cb = (DWord)LH(&m_header->numPages) * 512 - (DWord)LH(&m_header->numParaHeader) * 16;
+        cb = LH(&m_header->numPages) * 512U - LH(&m_header->numParaHeader) * 16U;
 
-        if (m_header->lastPageSize) {
-            cb -= 512 - LH(&m_header->lastPageSize);
+        if (m_header->lastPageSize > 0) {
+            cb -= 512U - LH(&m_header->lastPageSize);
         }
 
         /* We quietly ignore minAlloc and maxAlloc since for our
@@ -90,7 +86,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
          * to have to load DS from a constant so it'll be pretty
          * obvious.
          */
-        m_numReloc = (SWord)LH(&m_header->numReloc);
+        m_numReloc = LH(&m_header->numReloc);
 
         /* Allocate the relocation table */
         if (m_numReloc) {
@@ -98,14 +94,15 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
             fp.seek(LH(&m_header->relocTabOffset));
 
             /* Read in seg:offset pairs and convert to Image ptrs */
-            for (i = 0; i < m_numReloc; i++) {
-                fp.read((char *)buf, 4);
-                m_relocTable[i] = LH(buf) + (((int)LH(buf + 2)) << 4);
+            Byte    buf[4];
+            for (int i = 0; i < m_numReloc; i++) {
+                fp.read(reinterpret_cast<char *>(buf), 4);
+                m_relocTable[i] = Util::readDWord(buf, false);
             }
         }
 
         /* Seek to start of image */
-        fp.seek((int)LH(&m_header->numParaHeader) * 16);
+        fp.seek(LH(&m_header->numParaHeader) * 16U);
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
         // the segment in the top half, and offset int he bottom
@@ -133,18 +130,16 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     m_imageSize   = cb;
     m_loadedImage = new uint8_t[m_imageSize];
 
-    if (cb != fp.read((char *)m_loadedImage, (size_t)cb)) {
+    if (cb != fp.read(reinterpret_cast<char *>(m_loadedImage), cb)) {
         LOG_ERROR("Cannot read exe file!");
         return false;
     }
 
     /* Relocate segment constants */
     if (m_numReloc) {
-        for (i = 0; i < m_numReloc; i++) {
+        for (int i = 0; i < m_numReloc; i++) {
             Byte  *p = &m_loadedImage[m_relocTable[i]];
-            SWord w  = (SWord)LH(p);
-            *p++ = (Byte)(w & 0x00FF);
-            *p   = (Byte)((w & 0xFF00) >> 8);
+            Util::writeWord(p, LH(p), false);
         }
     }
 
@@ -212,11 +207,11 @@ Address ExeBinaryLoader::getEntryPoint()
 
 int ExeBinaryLoader::canLoad(QIODevice& fl) const
 {
-    unsigned char buf[4];
+    Byte buf[4];
+    fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
-    fl.read((char *)buf, sizeof(buf));
-
-    if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
+    if (TESTMAGIC2(buf, 0, 'M', 'Z')) {
+        /* DOS-based file */
         return 2;
     }
 

@@ -15,14 +15,14 @@
 
 
 SizeType::SizeType()
-    : Type(eSize)
+    : Type(TypeClass::Size)
     , size(0)
 {
 }
 
 
 SizeType::SizeType(unsigned sz)
-    : Type(eSize)
+    : Type(TypeClass::Size)
     , size(sz)
 {
 }
@@ -47,21 +47,17 @@ size_t SizeType::getSize() const
 
 bool SizeType::operator==(const Type& other) const
 {
-    return other.isSize() && (size == ((SizeType&)other).size);
+    return other.isSize() && (size == static_cast<const SizeType &>(other).size);
 }
 
 
 bool SizeType::operator<(const Type& other) const
 {
-    if (id < other.getId()) {
-        return true;
+    if (id != other.getId()) {
+        return id < other.getId();
     }
 
-    if (id > other.getId()) {
-        return false;
-    }
-
-    return(size < ((SizeType&)other).size);
+    return size < static_cast<const SizeType &>(other).size;
 }
 
 
@@ -106,10 +102,10 @@ QString SizeType::getCtype(bool /*final*/) const
 }
 
 
-SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType SizeType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((SizeType *)this)->shared_from_this();
+        return const_cast<SizeType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToSize()) {
@@ -124,7 +120,7 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         return result;
     }
 
-    ch = true;
+    changed = true;
 
     if (other->resolvesToInteger()) {
         if (other->getSize() == 0) {
@@ -140,7 +136,7 @@ SharedType SizeType::meetWith(SharedType other, bool& ch, bool bHighestPtr) cons
         return other->clone();
     }
 
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 
@@ -167,7 +163,7 @@ bool SizeType::isCompatible(const Type& other, bool /*all*/) const
     }
 
     if (other.resolvesToArray()) {
-        return isCompatibleWith(*((const ArrayType&)other).getBaseType());
+        return isCompatibleWith(*static_cast<const ArrayType &>(other).getBaseType());
     }
 
     // return false;

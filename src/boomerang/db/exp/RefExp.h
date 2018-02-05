@@ -71,7 +71,7 @@ public:
 
     bool references(const Statement *s) const { return m_def == s; }
 
-    virtual SharedExp polySimplify(bool& bMod) override;
+    virtual SharedExp polySimplify(bool& changed) override;
 
     /**
      * Before type analysis, implicit definitions are nullptr.
@@ -89,7 +89,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
-    virtual void descendType(SharedType parentType, bool& ch, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
 private:
     Statement *m_def; ///< The defining statement

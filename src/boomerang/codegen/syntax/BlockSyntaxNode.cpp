@@ -278,9 +278,9 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
                 LOG_VERBOSE("Successor: move previous statement into block");
                 SyntaxNode *n = root->clone();
                 n->setDepth(root->getDepth() + 1);
-                BlockSyntaxNode *b1 = (BlockSyntaxNode *)this->clone();
-                BlockSyntaxNode *nb = (BlockSyntaxNode *)b1->getStatement(i);
-                b1 = (BlockSyntaxNode *)b1->replace(statements[i - 1], nullptr);
+                BlockSyntaxNode *b1 = static_cast<BlockSyntaxNode *>(this->clone());
+                BlockSyntaxNode *nb = static_cast<BlockSyntaxNode *>(b1->getStatement(i));
+                b1 = static_cast<BlockSyntaxNode *>(b1->replace(statements[i - 1], nullptr));
                 nb->prependStatement(statements[i - 1]->clone());
                 n = n->replace(this, b1);
                 successors.push_back(n);
@@ -311,8 +311,8 @@ void BlockSyntaxNode::addSuccessors(SyntaxNode *root, std::vector<SyntaxNode *>&
 
                 LOG_VERBOSE("Successor: jump over style if then");
 
-                BlockSyntaxNode *b1 = (BlockSyntaxNode *)this->clone();
-                b1 = (BlockSyntaxNode *)b1->replace(statements[i + 1], nullptr);
+                BlockSyntaxNode *b1 = static_cast<BlockSyntaxNode *>(this->clone());
+                b1 = static_cast<BlockSyntaxNode *>(b1->replace(statements[i + 1], nullptr));
 
                 IfThenSyntaxNode *nif = new IfThenSyntaxNode();
                 SharedExp        cond = b->getBB()->getCond();

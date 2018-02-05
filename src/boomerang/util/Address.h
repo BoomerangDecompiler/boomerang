@@ -112,8 +112,8 @@ public:
     inline bool operator<=(const HostAddress& other) { return m_value <= other.m_value; }
     inline bool operator>=(const HostAddress& other) { return m_value >= other.m_value; }
 
-    HostAddress operator+=(const Address& other) { m_value += (value_type)other.value(); return *this; }
-    HostAddress operator-=(const Address& other) { m_value -= (value_type)other.value(); return *this; }
+    HostAddress operator+=(const Address& other) { m_value += static_cast<value_type>(other.value()); return *this; }
+    HostAddress operator-=(const Address& other) { m_value -= static_cast<value_type>(other.value()); return *this; }
 
     HostAddress operator+=(value_type offset) { m_value += offset; return *this; }
     HostAddress operator-=(value_type offset) { m_value -= offset; return *this; }
@@ -128,6 +128,8 @@ public:
     HostAddress operator-(const HostAddress& other) { return HostAddress(m_value - other.m_value); }
 
     QString toString() const;
+
+    operator const void *() const { return reinterpret_cast<const void *>(m_value); }
 
 private:
     value_type m_value;

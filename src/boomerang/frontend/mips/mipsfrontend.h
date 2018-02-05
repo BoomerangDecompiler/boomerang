@@ -22,7 +22,7 @@ class MIPSFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    MIPSFrontEnd(IFileLoader *pLoader, Prog *prog);
+    MIPSFrontEnd(IFileLoader *loader, Prog *prog);
     MIPSFrontEnd(const MIPSFrontEnd& other) = delete;
     MIPSFrontEnd(MIPSFrontEnd&& other) = default;
 
@@ -37,7 +37,7 @@ public:
     virtual Platform getType() const override { return Platform::MIPS; }
 
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
+    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;

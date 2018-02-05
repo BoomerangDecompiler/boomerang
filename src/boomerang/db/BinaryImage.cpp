@@ -49,7 +49,7 @@ Byte BinaryImage::readNative1(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return *(Byte *)host.value();
+    return *reinterpret_cast<Byte *>(host.value());
 }
 
 
@@ -62,7 +62,7 @@ SWord BinaryImage::readNative2(Address nat)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
-    return Util::readWord((const void *)host.value(), si->getEndian());
+    return Util::readWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
@@ -75,7 +75,7 @@ DWord BinaryImage::readNative4(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readDWord((const void *)host.value(), si->getEndian());
+    return Util::readDWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
@@ -88,7 +88,7 @@ QWord BinaryImage::readNative8(Address addr)
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
-    return Util::readQWord((const void *)host.value(), si->getEndian());
+    return Util::readQWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
@@ -96,7 +96,7 @@ float BinaryImage::readNativeFloat4(Address nat)
 {
     DWord raw = readNative4(nat);
 
-    return *(float *)&raw; // Note: cast, not convert
+    return *reinterpret_cast<float *>(&raw); // Note: cast, not convert
 }
 
 
@@ -109,7 +109,7 @@ double BinaryImage::readNativeFloat8(Address nat)
     }
 
     QWord raw = readNative8(nat);
-    return *(double *)&raw;
+    return *reinterpret_cast<double *>(&raw);
 }
 
 
@@ -124,7 +124,7 @@ void BinaryImage::writeNative4(Address addr, uint32_t value)
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
 
-    Util::writeDWord((void *)host.value(), value, si->getEndian());
+    Util::writeDWord(reinterpret_cast<void *>(host.value()), value, si->getEndian());
 }
 
 
@@ -134,8 +134,8 @@ void BinaryImage::updateTextLimits()
     m_limitTextHigh = Address::ZERO;
     m_textDelta     = 0;
 
-    for (IBinarySection *pSect : m_sections) {
-        if (!pSect->isCode()) {
+    for (IBinarySection *section : m_sections) {
+        if (!section->isCode()) {
             continue;
         }
 
@@ -143,44 +143,44 @@ void BinaryImage::updateTextLimits()
         // decode it, and in Sparc ELF files, it's actually in the data
         // section (so it can be modified). For now, we make this ugly
         // exception
-        if (".plt" == pSect->getName()) {
+        if (".plt" == section->getName()) {
             continue;
         }
 
-        if (pSect->getSourceAddr() < m_limitTextLow) {
-            m_limitTextLow = pSect->getSourceAddr();
+        if (section->getSourceAddr() < m_limitTextLow) {
+            m_limitTextLow = section->getSourceAddr();
         }
 
-        Address hiAddress = pSect->getSourceAddr() + pSect->getSize();
+        const Address highAddress = section->getSourceAddr() + section->getSize();
 
-        if (hiAddress > m_limitTextHigh) {
-            m_limitTextHigh = hiAddress;
+        if (highAddress > m_limitTextHigh) {
+            m_limitTextHigh = highAddress;
         }
 
-        ptrdiff_t host_native_diff = (pSect->getHostAddr() - pSect->getSourceAddr()).value();
+        const ptrdiff_t hostNativeDiff = (section->getHostAddr() - section->getSourceAddr()).value();
 
         if (m_textDelta == 0) {
-            m_textDelta = host_native_diff;
+            m_textDelta = hostNativeDiff;
         }
-        else if (m_textDelta != host_native_diff) {
-            fprintf(stderr, "warning: textDelta different for section %s (ignoring).\n", qPrintable(pSect->getName()));
+        else if (m_textDelta != hostNativeDiff) {
+            LOG_WARN("TextDelta different for section %s (ignoring).\n", qPrintable(section->getName()));
         }
     }
 }
 
 
-const IBinarySection *BinaryImage::getSectionByAddr(Address uEntry) const
+const IBinarySection *BinaryImage::getSectionByAddr(Address addr) const
 {
-    auto iter = m_sectionMap.find(uEntry);
+    auto iter = m_sectionMap.find(addr);
 
     return (iter != m_sectionMap.end()) ? iter->second : nullptr;
 }
 
 
-int BinaryImage::getSectionIndex(const QString& sName)
+int BinaryImage::getSectionIndex(const QString& sectionName)
 {
     for (size_t i = 0; i < m_sections.size(); i++) {
-        if (m_sections[i]->getName() == sName) {
+        if (m_sections[i]->getName() == sectionName) {
             return i;
         }
     }
@@ -189,15 +189,15 @@ int BinaryImage::getSectionIndex(const QString& sName)
 }
 
 
-IBinarySection *BinaryImage::getSectionByName(const QString& sName)
+IBinarySection *BinaryImage::getSectionByName(const QString& sectionName)
 {
-    int i = getSectionIndex(sName);
+    int sectionIdx = getSectionIndex(sectionName);
 
-    if (i == -1) {
+    if (sectionIdx == -1) {
         return nullptr;
     }
 
-    return m_sections[i];
+    return m_sections[sectionIdx];
 }
 
 

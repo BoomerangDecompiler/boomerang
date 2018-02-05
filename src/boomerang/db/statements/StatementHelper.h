@@ -14,4 +14,4 @@
 
 // Common to BranchStatement and BoolAssign
 // Return true if this is now a floating point branch
-bool condToRelational(SharedExp& pCond, BranchType jtCond);
+bool condToRelational(SharedExp& condExp, BranchType jtCond);

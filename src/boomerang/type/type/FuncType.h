@@ -45,7 +45,9 @@ public:
     // As above, but split into the return and parameter parts
     void getReturnAndParam(QString& ret, QString& param);
 
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+
     virtual bool isCompatible(const Type& other, bool all) const override;
 
 private:

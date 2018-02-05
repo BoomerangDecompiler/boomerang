@@ -64,7 +64,7 @@ public:
     bool placePhiFunctions();
 
     /// \returns true if the expression \p e can be renamed
-    bool canRename(SharedExp e);
+    bool canRename(SharedConstExp e) const;
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
 

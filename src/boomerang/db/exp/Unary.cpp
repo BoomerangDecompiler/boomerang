@@ -115,15 +115,11 @@ bool Unary::operator==(const Exp& o) const
 
 bool Unary::operator<(const Exp& o) const
 {
-    if (m_oper < o.getOper()) {
-        return true;
+    if (m_oper != static_cast<const Unary &>(o).m_oper) {
+        return m_oper < static_cast<const Unary &>(o).m_oper;
     }
 
-    if (m_oper > o.getOper()) {
-        return false;
-    }
-
-    return *subExp1 < *((const Unary&)o).getSubExp1();
+    return *subExp1 < *static_cast<const Unary &>(o).getSubExp1();
 }
 
 
@@ -446,11 +442,11 @@ SharedExp Unary::simplifyArith()
 }
 
 
-SharedExp Unary::polySimplify(bool& bMod)
+SharedExp Unary::polySimplify(bool& changed)
 {
     SharedExp res(shared_from_this());
 
-    subExp1 = subExp1->polySimplify(bMod);
+    subExp1 = subExp1->polySimplify(changed);
 
     if ((m_oper == opNot) || (m_oper == opLNot)) {
         switch (subExp1->getOper())
@@ -458,61 +454,61 @@ SharedExp Unary::polySimplify(bool& bMod)
         case opEquals:
             res = res->getSubExp1();
             res->setOper(opNotEqual);
-            bMod = true;
+            changed = true;
             return res;
 
         case opNotEqual:
             res = res->getSubExp1();
             res->setOper(opEquals);
-            bMod = true;
+            changed = true;
             return res;
 
         case opLess:
             res = res->getSubExp1();
             res->setOper(opGtrEq);
-            bMod = true;
+            changed = true;
             return res;
 
         case opLessEq:
             res = res->getSubExp1();
             res->setOper(opGtr);
-            bMod = true;
+            changed = true;
             return res;
 
         case opGtr:
             res = res->getSubExp1();
             res->setOper(opLessEq);
-            bMod = true;
+            changed = true;
             return res;
 
         case opGtrEq:
             res = res->getSubExp1();
             res->setOper(opLess);
-            bMod = true;
+            changed = true;
             return res;
 
         case opLessUns:
             res = res->getSubExp1();
             res->setOper(opGtrEqUns);
-            bMod = true;
+            changed = true;
             return res;
 
         case opLessEqUns:
             res = res->getSubExp1();
             res->setOper(opGtrUns);
-            bMod = true;
+            changed = true;
             return res;
 
         case opGtrUns:
             res = res->getSubExp1();
             res->setOper(opLessEqUns);
-            bMod = true;
+            changed = true;
             return res;
 
         case opGtrEqUns:
             res = res->getSubExp1();
             res->setOper(opLessUns);
-            bMod = true;
+            changed = true;
             return res;
 
         default:
@@ -557,12 +553,12 @@ SharedExp Unary::polySimplify(bool& bMod)
                 }
 
                 std::static_pointer_cast<Const>(res)->setInt(k);
-                bMod = true;
+                changed = true;
             }
             else if (m_oper == subOP) {
                 res  = res->getSubExp1();
                 res  = res->getSubExp1();
-                bMod = true;
+                changed = true;
                 break;
             }
         }
@@ -574,7 +570,7 @@ SharedExp Unary::polySimplify(bool& bMod)
         if (subExp1->getOper() == opMemOf) {
             res  = res->getSubExp1();
             res  = res->getSubExp1();
-            bMod = true;
+            changed = true;
             return res;
         }
 
@@ -582,7 +578,7 @@ SharedExp Unary::polySimplify(bool& bMod)
 
     case opMemOf:
     case opRegOf:
-        subExp1 = subExp1->polySimplify(bMod);
+        subExp1 = subExp1->polySimplify(changed);
         // The below IS bad now. It undoes the simplification of
         // m[r29 + -4] to m[r29 - 4]
         // If really needed, do another polySimplify, or swap the order
@@ -734,7 +730,7 @@ static bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
 }
 
 
-void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
+void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
 {
     UserProc *owner_proc = s->getProc();
     auto     sig         = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
@@ -763,11 +759,11 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
 
                 // The index is integer type
                 SharedExp x = leftOfPlus->getSubExp1();
-                x->descendType(IntegerType::get(parentType->getSize(), 0), ch, s);
+                x->descendType(IntegerType::get(parentType->getSize(), 0), changed, s);
                 // K2 is of type <array of parentType>
                 auto    constK2 = subExp1->access<Const, 2>();
                 Address intK2   = Address(constK2->getInt());         // TODO: use getAddr ?
-                constK2->descendType(prog->makeArrayType(intK2, parentType), ch, s);
+                constK2->descendType(prog->makeArrayType(intK2, parentType), changed, s);
             }
             else if (match_l1_K(shared_from_this(), matches)) {
                 // m[l1 + K]
@@ -784,7 +780,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
                         auto ct = st->as<CompoundType>();
 
                         if (ct->isGeneric()) {
-                            ct->updateGenericMember(K, parentType, ch);
+                            ct->updateGenericMember(K, parentType, changed);
                         }
                         else {
                             // would like to force a simplify here; I guess it will happen soon enough
@@ -793,7 +789,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
                     else {
                         // Need to create a generic stuct with a least one member at offset K
                         auto ct = CompoundType::get(true);
-                        ct->updateGenericMember(K, parentType, ch);
+                        ct->updateGenericMember(K, parentType, changed);
                     }
                 }
                 else {
@@ -804,7 +800,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
                 // FIXME: many other cases
             }
             else {
-                subExp1->descendType(PointerType::get(parentType), ch, s);
+                subExp1->descendType(PointerType::get(parentType), changed, s);
             }
 
             break;
@@ -813,7 +809,7 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
     case opAddrOf:
 
         if (parentType->resolvesToPointer()) {
-            subExp1->descendType(parentType->as<PointerType>()->getPointsTo(), ch, s);
+            subExp1->descendType(parentType->as<PointerType>()->getPointsTo(), changed, s);
         }
 
         break;
@@ -825,9 +821,9 @@ void Unary::descendType(SharedType parentType, bool& ch, Statement *s)
             SharedType ty     = _prog->getGlobalType(name);
 
             if (ty) {
-                ty = ty->meetWith(parentType, ch);
+                ty = ty->meetWith(parentType, changed);
 
-                if (ch) {
+                if (changed) {
                     _prog->setGlobalType(name, ty);
                 }
             }

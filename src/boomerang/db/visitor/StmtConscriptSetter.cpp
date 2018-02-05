@@ -79,7 +79,7 @@ bool StmtConscriptSetter::visit(CaseStatement *stmt)
     SwitchInfo   *si = stmt->getSwitchInfo();
 
     if (si) {
-        si->pSwitchVar->accept(&sc);
+        si->switchExp->accept(&sc);
         m_curConscript = sc.getLast();
     }
 

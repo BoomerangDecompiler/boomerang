@@ -82,7 +82,7 @@ public:
     SharedType getType() const { return m_type; }
 
     /// Meet the internal type with ty. Set ch if a change
-    void meetWith(SharedType ty, bool& ch);
+    void meetWith(SharedType ty, bool& changed);
 
 private:
     SharedExp m_addressExp; ///< The expression representing the address of the location referenced

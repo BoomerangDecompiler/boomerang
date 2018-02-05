@@ -11,9 +11,18 @@
 
 
 ArrayType::ArrayType(SharedType baseType, unsigned length)
-    : Type(eArray)
+    : Type(TypeClass::Array)
     , BaseType(baseType)
     , m_length(length)
+{
+}
+
+
+ArrayType::ArrayType()
+    : Type(TypeClass::Array)
+    , BaseType(nullptr)
+    , m_length(0)
+
 {
 }
 
@@ -86,7 +95,7 @@ size_t ArrayType::getSize() const
 
 bool ArrayType::operator==(const Type& other) const
 {
-    return other.isArray() && *BaseType == *((ArrayType&)other).BaseType && ((ArrayType&)other).m_length == m_length;
+    return other.isArray() && *BaseType == *static_cast<const ArrayType &>(other).BaseType && static_cast<const ArrayType &>(other).m_length == m_length;
 }
 
 
@@ -100,7 +109,7 @@ bool ArrayType::operator<(const Type& other) const
         return false;
     }
 
-    return(*BaseType < *((ArrayType&)other).BaseType);
+    return(*BaseType < *static_cast<const ArrayType &>(other).BaseType);
 }
 
 
@@ -128,19 +137,19 @@ void ArrayType::fixBaseType(SharedType b)
 }
 
 
-SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) const
+SharedType ArrayType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
-        return ((ArrayType *)this)->shared_from_this();
+        return const_cast<ArrayType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToArray()) {
         auto       otherArr  = other->as<ArrayType>();
-        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, ch, bHighestPtr);
+        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, changed, useHighestPtr);
         size_t     newLength = m_length;
 
         if (*newBase != *BaseType) {
-            ch        = true;
+            changed        = true;
             newLength = convertLength(newBase);
         }
 
@@ -149,7 +158,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     if (*BaseType == *other) {
-        return ((ArrayType *)this)->shared_from_this();
+        return const_cast<ArrayType *>(this)->shared_from_this();
     }
 
     /*
@@ -194,7 +203,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& ch, bool bHighestPtr) con
     }
 
     // Needs work?
-    return createUnion(other, ch, bHighestPtr);
+    return createUnion(other, changed, useHighestPtr);
 }
 
 

@@ -27,14 +27,12 @@
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
-#define LMMH(x)                                                                                               \
-    ((unsigned)((Byte *)(&x))[0] + ((unsigned)((Byte *)(&x))[1] << 8) + ((unsigned)((Byte *)(&x))[2] << 16) + \
-     ((unsigned)((Byte *)(&x))[3] << 24))
-// With this one, x is a pointer to unsigned
-#define LMMH2(x)                                                                                           \
-    ((unsigned)((Byte *)(x))[0] + ((unsigned)((Byte *)(x))[1] << 8) + ((unsigned)((Byte *)(x))[2] << 16) + \
-     ((unsigned)((Byte *)(x))[3] << 24))
+#define LMMH(x) \
+    Util::readDWord(&x, false)
 
+// With this one, x is a pointer to unsigned
+#define LMMH2(x) \
+    Util::readDWord(x, false)
 
 typedef struct  /* exe file header, just the signature really */
 {

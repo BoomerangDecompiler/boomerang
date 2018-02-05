@@ -1817,7 +1817,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 240 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NPod", 6, relocd, (BranchType)0)
+                                        COND_JUMP("Jv.NPod", 6, relocd, BranchType::INVALID)
                                     }
                                     break;
 
@@ -1874,7 +1874,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 263 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.Ood", 6, relocd, (BranchType)0)
+                                        COND_JUMP("Jv.Ood", 6, relocd, BranchType::INVALID)
                                     }
                                     break;
 
@@ -1884,7 +1884,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         HostAddress relocd = addressToPC(MATCH_p) + 6 + Util::signExtend<int64_t>(MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
                                         // #line 260 "frontend/machine/pentium/decoder.m"
-                                        COND_JUMP("Jv.NOod", 6, relocd, (BranchType)0)
+                                        COND_JUMP("Jv.NOod", 6, relocd, BranchType::INVALID)
                                     }
                                     break;
 
@@ -7698,7 +7698,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 168 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NP", 2, relocd, (BranchType)0)
+                            COND_JUMP("Jb.NP", 2, relocd, BranchType::INVALID)
                         }
                         break;
 
@@ -14398,7 +14398,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 result.rtl->push_back(call);
                                 Function *destProc = m_prog->createFunction(nativeDest);
 
-                                if (destProc == (Function *)-1) {
+                                if (destProc == reinterpret_cast<Function *>(-1)) {
                                     destProc = nullptr; // In case a deleted Proc
                                 }
 
@@ -17560,7 +17560,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 204 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NPow", 4, relocd, (BranchType)0)
+                                                    COND_JUMP("Jv.NPow", 4, relocd, BranchType::INVALID)
                                                 }
                                                 break;
 
@@ -17624,7 +17624,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 227 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.Oow", 4, relocd, (BranchType)0)
+                                                    COND_JUMP("Jv.Oow", 4, relocd, BranchType::INVALID)
 
                                                     /*
                                                      * Conditional branches, 32 bit offset: 0F 8X XX XX XX XX
@@ -17639,7 +17639,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                          Util::signExtend<int64_t>((MATCH_w_16_24 & 0xffff), 16);
                                                     nextPC = MATCH_p + 5;
                                                     // #line 224 "frontend/machine/pentium/decoder.m"
-                                                    COND_JUMP("Jv.NOow", 4, relocd, (BranchType)0)
+                                                    COND_JUMP("Jv.NOow", 4, relocd, BranchType::INVALID)
                                                 }
                                                 break;
 
@@ -27310,7 +27310,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 191 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.O", 2, relocd, (BranchType)0)
+                            COND_JUMP("Jb.O", 2, relocd, BranchType::INVALID)
 
                             /*
                              * Conditional branches, 16 bit offset: 66 0F 8X XX XX
@@ -27324,7 +27324,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 188 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NO", 2, relocd, (BranchType)0)
+                            COND_JUMP("Jb.NO", 2, relocd, BranchType::INVALID)
                         }
                         break;
 

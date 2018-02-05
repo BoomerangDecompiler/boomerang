@@ -104,7 +104,7 @@ bool Const::operator<(const Exp& o) const
         return m_oper < o.getOper();
     }
 
-    const Const& otherConst = (const Const&)o;
+    const Const& otherConst = static_cast<const Const&>(o);
 
     if (m_conscript != otherConst.m_conscript) {
         return m_conscript < otherConst.m_conscript;
@@ -189,7 +189,7 @@ void Const::printx(int ind) const
         break;
 
     default:
-        LOG_MSG("?%1?", (int)m_oper);
+        LOG_MSG("?%1?", static_cast<int>(m_oper));
         break;
     }
 
@@ -223,7 +223,7 @@ void Const::print(QTextStream& os, bool) const
 
     case opLongConst:
 
-        if (((long long)m_value.ll < -1000LL) || ((long long)m_value.ll > 1000LL)) {
+        if ((static_cast<long long>(m_value.ll) < -1000LL) || (static_cast<long long>(m_value.ll) > 1000LL)) {
             os << "0x" << QString::number(m_value.ll, 16) << "LL";
         }
         else {
@@ -319,23 +319,24 @@ bool Const::operator==(const Exp& other) const
         return false;
     }
 
-    if ((m_conscript && (m_conscript != ((Const&)other).m_conscript)) || ((Const&)other).m_conscript) {
-        return false;
+    if ((m_conscript && (m_conscript != static_cast<const Const&>(other).m_conscript)) ||
+        static_cast<const Const &>(other).m_conscript) {
+            return false;
     }
 
     switch (m_oper)
     {
     case opIntConst:
-        return m_value.i == ((Const&)other).m_value.i;
+        return m_value.i == static_cast<const Const &>(other).m_value.i;
 
     case opLongConst:
-        return m_value.ll == ((Const&)other).m_value.ll;
+        return m_value.ll == static_cast<const Const &>(other).m_value.ll;
 
     case opFltConst:
-        return m_value.d == ((Const&)other).m_value.d;
+        return m_value.d == static_cast<const Const &>(other).m_value.d;
 
     case opStrConst:
-        return m_string == ((Const&)other).m_string;
+        return m_string == static_cast<const Const &>(other).m_string;
 
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));
@@ -379,12 +380,12 @@ SharedType Const::ascendType()
 }
 
 
-void Const::descendType(SharedType parentType, bool& ch, Statement *)
+void Const::descendType(SharedType parentType, bool& changed, Statement *)
 {
     bool thisCh = false;
 
     m_type = m_type->meetWith(parentType, thisCh);
-    ch    |= thisCh;
+    changed    |= thisCh;
 
     if (thisCh) {
         // May need to change the representation
@@ -392,14 +393,13 @@ void Const::descendType(SharedType parentType, bool& ch, Statement *)
             if (m_oper == opIntConst) {
                 m_oper = opFltConst;
                 m_type = FloatType::get(64);
-                float f = *(float *)&m_value.i;
-                m_value.d = (double)f;
+                float f = *reinterpret_cast<float *>(&m_value.i);
+                m_value.d = static_cast<double>(f);
             }
             else if (m_oper == opLongConst) {
                 m_oper = opFltConst;
                 m_type = FloatType::get(64);
-                double d = *(double *)&m_value.ll;
-                m_value.d = d;
+                m_value.d = *reinterpret_cast<double *>(&m_value.ll);
             }
         }
 

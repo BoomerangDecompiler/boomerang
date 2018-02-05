@@ -118,7 +118,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
     unsigned int imgoffs = 0;
 
-    unsigned char      *magic = (uint8_t *)img.data();
+    unsigned char      *magic = reinterpret_cast<uint8_t *>(img.data());
     struct mach_header *header; // The Mach-O header
 
     if ((magic[0] == 0xca) && (magic[1] == 0xfe) && (magic[2] == 0xba) && (magic[3] == 0xbe)) {
@@ -141,7 +141,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         }
     }
 
-    header = (mach_header *)(img.data() + imgoffs);// new mach_header;
+    header = reinterpret_cast<mach_header *>(img.data() + imgoffs);// new mach_header;
     // fp.read((char *)header, sizeof(mach_header));
 
     if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
@@ -177,7 +177,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     for (unsigned i = 0; i < BMMH(header->ncmds); i++) {
         load_command cmd;
         long         pos = fp.pos();
-        fp.read((char *)&cmd, sizeof(load_command));
+        fp.read(reinterpret_cast<char *>(&cmd), sizeof(load_command));
         fp.seek(pos);
 
         switch (BMMH(cmd.cmd))
@@ -185,7 +185,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         case LC_SEGMENT:
             {
                 segment_command seg;
-                fp.read((char *)&seg, sizeof(seg));
+                fp.read(reinterpret_cast<char *>(&seg), sizeof(seg));
                 segments.push_back(seg);
                 DEBUG_PRINT("seg addr %1 size %2 fileoff %3 filesize %4 flags %5",
                             BMMH(seg.vmaddr),
@@ -196,7 +196,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
                 for (DWord n = 0; n < BMMH(seg.nsects); n++) {
                     section sect;
-                    fp.read((char *)&sect, sizeof(sect));
+                    fp.read(reinterpret_cast<char *>(&sect), sizeof(sect));
                     sections.push_back(sect);
                     DEBUG_PRINT("    sectname %1 segname %2 addr %3 size %4 flags %5",
                                 sect.sectname,
@@ -239,7 +239,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         case LC_SYMTAB:
             {
                 symtab_command syms;
-                fp.read((char *)&syms, sizeof(syms));
+                fp.read(reinterpret_cast<char *>(&syms), sizeof(syms));
                 fp.seek(imgoffs + BMMH(syms.stroff));
                 strtbl = new char[BMMH(syms.strsize)];
                 fp.read(strtbl, BMMH(syms.strsize));
@@ -247,7 +247,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
                 for (unsigned n = 0; n < BMMH(syms.nsyms); n++) {
                     nlist sym;
-                    fp.read((char *)&sym, sizeof(sym));
+                    fp.read(reinterpret_cast<char *>(&sym), sizeof(sym));
                     symbols.push_back(sym);
                     // DEBUG_PRINT(stdout, "got sym %s flags %x value %x\n", strtbl + BMMH(sym.n_un.n_strx), sym.n_type, BMMH(sym.n_value));
                 }
@@ -259,7 +259,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         case LC_DYSYMTAB:
             {
                 struct dysymtab_command syms;
-                fp.read((char *)&syms, sizeof(syms));
+                fp.read(reinterpret_cast<char *>(&syms), sizeof(syms));
                 DEBUG_PRINT("dysymtab local %1 %2 defext %3 %4 undef %5 %6",
                             BMMH(syms.ilocalsym),
                             BMMH(syms.nlocalsym),
@@ -279,7 +279,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 DEBUG_PRINT("dysymtab has %1 indirect symbols: ", BMMH(syms.nindirectsyms));
                 indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
                 fp.seek(imgoffs + BMMH(syms.indirectsymoff));
-                fp.read((char *)indirectsymtbl, BMMH(syms.nindirectsyms) * sizeof(unsigned));
+                fp.read(reinterpret_cast<char *>(indirectsymtbl), BMMH(syms.nindirectsyms) * sizeof(unsigned));
 
                 for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
                     DEBUG_PRINT("  %1 ", BMMH(indirectsymtbl[j]));
@@ -311,7 +311,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     loaded_addr = Address(BMMH(lowest->vmaddr));
     loaded_size = BMMH(highest->vmaddr) - BMMH(lowest->vmaddr) + BMMH(highest->vmsize);
 
-    base = (char *)malloc(loaded_size);
+    base = reinterpret_cast<char *>(malloc(loaded_size));
 
     if (!base) {
         LOG_ERROR("Cannot allocate memory for copy of image");
@@ -415,9 +415,10 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
         for (unsigned i = 0; i < objc_modules_size;) {
             struct objc_module *module =
-                (struct objc_module *)(HostAddress(base) + objc_modules - loaded_addr + i).value();
-            char   *name  = (char *)(intptr_t(base) + BMMH(module->name) - loaded_addr.value());
-            Symtab symtab = (Symtab)(HostAddress(base) + BMMH(module->symtab) - loaded_addr).value();
+                reinterpret_cast<struct objc_module *>((HostAddress(base) + objc_modules - loaded_addr + i).value());
+            char   *name  = reinterpret_cast<char *>(intptr_t(base) + BMMH(module->name) - loaded_addr.value());
+            Symtab symtab = reinterpret_cast<Symtab>((HostAddress(base) + BMMH(module->symtab) - loaded_addr).value());
+
 #ifdef DEBUG_MACHO_LOADER_OBJC
             LOG_MSG("module %1 (%2 classes)", name, BMMHW(symtab->cls_def_cnt));
 #endif
@@ -425,22 +426,26 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
             m->name = name;
 
             for (unsigned j = 0; j < BMMHW(symtab->cls_def_cnt); j++) {
-                struct objc_class *def   = (struct objc_class *)(base + BMMH(symtab->defs[j]) - loaded_addr.value());
-                char              *_name = (char *)(Address::value_type(base) + BMMH(def->name) - loaded_addr.value());
+                struct objc_class *def   = reinterpret_cast<struct objc_class *>(base + BMMH(symtab->defs[j]) - loaded_addr.value());
+                char              *_name = reinterpret_cast<char *>(Address::value_type(base) + BMMH(def->name) - loaded_addr.value());
+
 #ifdef DEBUG_MACHO_LOADER_OBJC
                 LOG_MSG("  class %1", name);
 #endif
+
                 ObjcClass *cl = &m->classes[_name];
                 cl->name = _name;
-                struct objc_ivar_list *ivars = (struct objc_ivar_list *)(base + BMMH(def->ivars) - loaded_addr.value());
+                struct objc_ivar_list *ivars = reinterpret_cast<struct objc_ivar_list *>(base + BMMH(def->ivars) - loaded_addr.value());
 
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(ivars->ivar_count)); k++) {
                     struct objc_ivar *ivar  = &ivars->ivar_list[k];
-                    char             *name2 = (char *)(Address::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.value());
-                    char             *types = (char *)(Address::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.value());
+                    char             *name2 = reinterpret_cast<char *>(Address::value_type(base) + BMMH(ivar->ivar_name) - loaded_addr.value());
+                    char             *types = reinterpret_cast<char *>(Address::value_type(base) + BMMH(ivar->ivar_type) - loaded_addr.value());
+
 #ifdef DEBUG_MACHO_LOADER_OBJC
                     LOG_MSG("    ivar %1 %2 %3", name, types, BMMH(ivar->ivar_offset));
 #endif
+
                     ObjcIvar *iv = &cl->ivars[name2];
                     iv->name   = name2;
                     iv->type   = types;
@@ -449,12 +454,13 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
                 // this is weird, why is it defined as a ** in the struct but used as a * in otool?
                 struct objc_method_list *methods =
-                    (struct objc_method_list *)(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.value());
+                    reinterpret_cast<struct objc_method_list *>(intptr_t(base) + BMMH(def->methodLists) - loaded_addr.value());
 
                 for (unsigned k = 0; k < static_cast<unsigned int>(BMMH(methods->method_count)); k++) {
                     struct objc_method *method = &methods->method_list[k];
-                    char               *name3  = (char *)(intptr_t(base) + BMMH(method->method_name) - loaded_addr.value());
-                    char               *types  = (char *)(intptr_t(base) + BMMH(method->method_types) - loaded_addr.value());
+                    char               *name3  = reinterpret_cast<char *>(intptr_t(base) + BMMH(method->method_name) - loaded_addr.value());
+                    char               *types  = reinterpret_cast<char *>(intptr_t(base) + BMMH(method->method_types) - loaded_addr.value());
+
 #ifdef DEBUG_MACHO_LOADER_OBJC
                     LOG_MSG("    method %1 %2 %3", name, types, BMMH((void *)method->method_imp));
 #endif
@@ -479,9 +485,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
 int MachOBinaryLoader::canLoad(QIODevice& dev) const
 {
-    unsigned char buf[8];
+    Byte buf[8];
 
-    dev.read((char *)buf, sizeof(buf));
+    dev.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
     if (((buf[0] == 0xfe) && (buf[1] == 0xed) && (buf[2] == 0xfa) && (buf[3] == 0xce)) ||
         ((buf[0] == 0xce) && (buf[1] == 0xfa) && (buf[2] == 0xed) && (buf[3] == 0xfe)) ||
@@ -500,37 +506,25 @@ void MachOBinaryLoader::unload()
 }
 
 
-int MachOBinaryLoader::machORead2(short *ps) const
+SWord MachOBinaryLoader::machORead2(const void *ps) const
 {
-    unsigned char *p = (unsigned char *)ps;
-    int           n;
-
     if (machine == Machine::PPC) {
-        n = (int)(p[1] + (p[0] << 8));
+        return Util::readWord(ps, true);
     }
     else {
-        n = (int)(p[0] + (p[1] << 8));
+        return Util::readWord(ps, false);
     }
-
-    return n;
 }
 
 
-int MachOBinaryLoader::machORead4(int *pi) const
+DWord MachOBinaryLoader::machORead4(const void *pi) const
 {
-    short *p = (short *)pi;
-    int   n1 = machORead2(p);
-    int   n2 = machORead2(p + 1);
-    int   n;
-
     if (machine == Machine::PPC) {
-        n = (int)(n2 | (n1 << 16));
+        return Util::readDWord(pi, true);
     }
     else {
-        n = (int)(n1 | (n2 << 16));
+        return Util::readDWord(pi, false);
     }
-
-    return n;
 }
 
 
@@ -545,7 +539,7 @@ int32_t MachOBinaryLoader::BMMH(int32_t x)
 }
 
 
-uint32_t MachOBinaryLoader::BMMH(uint32_t x)
+DWord MachOBinaryLoader::BMMH(DWord x)
 {
     if (swap_bytes) {
         return _BMMH(x);
@@ -556,10 +550,10 @@ uint32_t MachOBinaryLoader::BMMH(uint32_t x)
 }
 
 
-unsigned short MachOBinaryLoader::BMMHW(unsigned short x)
+SWord MachOBinaryLoader::BMMHW(SWord x)
 {
     if (swap_bytes) {
-        return (unsigned short)_BMMHW(x);
+        return _BMMHW(x);
     }
     else {
         return x;

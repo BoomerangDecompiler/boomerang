@@ -23,7 +23,7 @@
 SimpExpModifier::SimpExpModifier()
 {
     m_mask      = 1;
-    m_unchanged = (unsigned)-1;
+    m_unchanged = static_cast<unsigned int>(-1);
 }
 
 

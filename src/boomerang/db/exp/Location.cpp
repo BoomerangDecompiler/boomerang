@@ -71,15 +71,15 @@ SharedExp Location::clone() const
 }
 
 
-SharedExp Location::polySimplify(bool& bMod)
+SharedExp Location::polySimplify(bool& changed)
 {
-    SharedExp res = Unary::polySimplify(bMod);
+    SharedExp res = Unary::polySimplify(changed);
 
     if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf)) {
         LOG_VERBOSE("polySimplify %1", res);
 
         res  = res->getSubExp1()->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 
@@ -87,7 +87,7 @@ SharedExp Location::polySimplify(bool& bMod)
     if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf) &&
         (res->getSubExp1()->getSubExp1()->getOper() == opMemberAccess)) {
         res  = subExp1->getSubExp1();
-        bMod = true;
+        changed = true;
         return res;
     }
 

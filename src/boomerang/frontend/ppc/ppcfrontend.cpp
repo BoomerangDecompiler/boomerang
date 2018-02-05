@@ -27,8 +27,8 @@
 #include <sstream>
 
 
-PPCFrontEnd::PPCFrontEnd(IFileLoader *pBF, Prog *prog)
-    : IFrontEnd(pBF, prog)
+PPCFrontEnd::PPCFrontEnd(IFileLoader *loader, Prog *prog)
+    : IFrontEnd(loader, prog)
 {
     m_decoder.reset(new PPCDecoder(prog));
 }
@@ -83,16 +83,16 @@ Address PPCFrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool PPCFrontEnd::processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag /* = false */,
+bool PPCFrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag /* = false */,
                               bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(uAddr, pProc, os, frag, spec)) {
+    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
         return false;
     }
 
     // This will get done twice; no harm
-    pProc->setEntryBB();
+    proc->setEntryBB();
 
     return true;
 }

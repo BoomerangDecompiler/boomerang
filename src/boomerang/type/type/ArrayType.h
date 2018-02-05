@@ -63,7 +63,8 @@ public:
     virtual size_t getSize() const override;
     virtual QString getCtype(bool final = false) const override;
 
-    virtual SharedType meetWith(SharedType other, bool& ch, bool bHighestPtr) const override;
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
 
     virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
     virtual bool isCompatible(const Type& other, bool all) const override;
@@ -71,10 +72,7 @@ public:
     size_t convertLength(SharedType b) const;
 
 protected:
-    ArrayType()
-        : Type(eArray)
-        , BaseType(nullptr)
-        , m_length(0) {}
+    ArrayType();
 
 private:
     SharedType BaseType;

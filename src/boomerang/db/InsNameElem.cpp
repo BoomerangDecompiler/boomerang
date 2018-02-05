@@ -48,13 +48,13 @@ QString InsNameElem::getInsPattern() const
 }
 
 
-void InsNameElem::getRefMap(std::map<QString, InsNameElem *>& m)
+void InsNameElem::getRefMap(std::map<QString, InsNameElem *>& map)
 {
     if (m_nextElem != nullptr) {
-        m_nextElem->getRefMap(m);
+        m_nextElem->getRefMap(map);
     }
     else {
-        m.clear();
+        map.clear();
     }
 }
 

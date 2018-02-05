@@ -15,6 +15,7 @@
 #include "boomerang/type/type/Type.h"
 #include "boomerang/db/exp/Operator.h"
 
+
 class IFrontEnd;
 class SparcDecoder;
 class CallStatement;
@@ -32,7 +33,7 @@ class SparcFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    SparcFrontEnd(IFileLoader *p_BF, Prog *prog);
+    SparcFrontEnd(IFileLoader *loader, Prog *prog);
     SparcFrontEnd(const SparcFrontEnd& other) = delete;
     SparcFrontEnd(SparcFrontEnd&& other) = default;
 
@@ -48,26 +49,11 @@ public:
     /**
      * \copydoc IFrontEnd::processProc
      *
-     * This overrides the base class processProc to do source machine
-     * specific things (but often calls the base class to do most of the
-     * work. Sparc is an exception)
-     */
-    /**
      * Builds the CFG for a procedure out of the RTLs constructed
-     *         during decoding. The semantics of delayed CTIs are
-     *         transformed into CTIs that aren't delayed.
-     * \note   This function overrides (and replaces) the function with
-     *         the same name in class FrontEnd. The required actions
-     *         are so different that the base class implementation
-     *         can't be re-used
-     * \param uAddr - the native address at which the procedure starts
-     * \param proc - the procedure object
-     * \param os - output stream for rtl output
-     * \param fragment - TODO: needs documentation.
-     * \param spec - if true, this is a speculative decode
-     * \returns              True if a good decode
+     * during decoding. The semantics of delayed CTIs are
+     * transformed into CTIs that aren't delayed.
      */
-    virtual bool processProc(Address uAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
+    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;
@@ -85,28 +71,21 @@ public:
 
 private:
     /**
-     * Emit a warning when encountering a DCTI couple.
-     * \param uAt - the address of the couple
-     * \param uDest - the address of the first DCTI in the couple
-     */
-    void warnDCTcouple(Address uAt, Address uDest);
-
-    /**
      * Check if delay instruction can be optimized.
      *
      * Determines if a delay instruction is exactly the same as the instruction immediately preceding the
      * destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
      * optimisation
      *
-     * \param src    - the logical source address of a CTI
-     * \param dest   - the logical destination address of the CTI
-     * \param delta  - used to convert logical to real addresses
-     * \param uUpper - first address past the end of the main text section
+     * \param src        the logical source address of a CTI
+     * \param dest       the logical destination address of the CTI
+     * \param delta      used to convert logical to real addresses
+     * \param upperLimit first address past the end of the main text section
      * SIDE EFFECT:    Optionally displays an error message if the target of the branch
      *                 is the delay slot of another delayed CTI
      * \returns true if delay instruction can be optimized away
      */
-    bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address uUpper);
+    bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const;
 
     /**
      * Determines if the given call and delay instruction consitute a call
@@ -136,7 +115,7 @@ private:
      * \returns    The basic block containing the single return instruction
      *             if this optimisation applies, nullptr otherwise.
      */
-    BasicBlock *optimise_CallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *pProc);
+    BasicBlock *optimise_CallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc);
 
     /**
      * Adds the destination of a branch to the queue of address
@@ -246,27 +225,27 @@ private:
     /**
      * Handles all static conditional delayed anulled branches followed by
      * an NCT (but not NOP) instruction.
-     * \param address - the native address of the DD
-     * \param delta - the offset of the above address from the logical
-     *                address at which the procedure starts (i.e. the one given by dis)
-     * \param hiAddress - first address outside this code section
-     * \param  inst - the info summaries when decoding the SD instruction
-     * \param delay_inst - the info summaries when decoding the delay instruction
-     * \param BB_rtls - the list of RTLs currently built for the BB under construction
-     * \param cfg - the CFG of the enclosing procedure
-     * \param tq Object managing the target queue
-     * SIDE EFFECTS:    address may change; BB_rtls may be appended to or set nullptr
-     * \returns             true if next instruction is to be fetched sequentially from this one
+     * \param address    the native address of the DD
+     * \param delta      the offset of the above address from the logical
+     *                   address at which the procedure starts (i.e. the one given by dis)
+     * \param hiAddress  first address outside this code section
+     * \param inst       the info summaries when decoding the SD instruction
+     * \param delay_inst the info summaries when decoding the delay instruction
+     * \param BB_rtls    the list of RTLs currently built for the BB under construction
+     * \param cfg        the CFG of the enclosing procedure
+     * \param tq         Object managing the target queue
+     * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
+     * \returns          true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
                     std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
      * Emit a null RTL with the given address.
-     * \param   pRtls - List of RTLs to append this instruction to
-     * \param   uAddr - Native address of this instruction
+     * \param rtls List of RTLs to append this instruction to
+     * \param instAddr Native address of this instruction
      */
-    void emitNop(RTLList& pRtls, Address uAddr);
+    void emitNop(RTLList& rtls, Address instAddr);
 
     /**
      * Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
@@ -274,13 +253,13 @@ private:
      *         since the delay slot instruction may use %o7. Example:
      *         CALL $+8            ! This code is common in startup code
      *         ADD     %o7, 20, %o0
-     * \param pRtls - list of RTLs to append to
-     * \param uAddr - native address for the RTL
+     * \param rtls list of RTLs to append to
+     * \param addr native address for the RTL
      */
-    void emitCopyPC(RTLList& pRtls, Address uAddr);
+    void emitCopyPC(RTLList& rtls, Address addr);
 
     // Append one assignment to a list of RTLs
-    void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, RTLList& lrtl);
+    void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, RTLList& rtls);
 
     /*
      * Small helper function to build an expression with

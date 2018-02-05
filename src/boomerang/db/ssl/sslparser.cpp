@@ -89,7 +89,10 @@ SharedExp listExpToExp(std::list<SharedExp> *le);       // Convert a STL list of
 SharedExp listStrToExp(std::list<QString> *ls); // Convert a STL list of strings to opList
 
 /*apres const  */
-SSLParser::SSLParser(const QString &_sslFile, bool _trace) : sslFile(_sslFile), bFloat(false) {
+SSLParser::SSLParser(const QString &_sslFile, bool _trace)
+    : sslFile(_sslFile)
+    , floatRegister(false)
+{
 #if YY_SSLParser_DEBUG != 0
     YY_SSLParser_DEBUG_FLAG = 0;
 #endif
@@ -786,12 +789,12 @@ SSLParser::
         break;
     }
     case 21: {
-        bFloat = false;
+        floatRegister = false;
         ;
         break;
     }
     case 23: {
-        bFloat = true;
+        floatRegister = true;
         ;
         break;
     }
@@ -805,7 +808,7 @@ SSLParser::
     case 28: {
         if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
             yyerror("Name reglist declared twice\n");
-        Dict.addRegister(yyvsp[-5].str, yyvsp[0].num, yyvsp[-3].num, bFloat);
+        Dict.addRegister(yyvsp[-5].str, yyvsp[0].num, yyvsp[-3].num, floatRegister);
         ;
         break;
     }
@@ -841,7 +844,7 @@ SSLParser::
         }
         Dict.DetRegMap[yyvsp[-4].num].setMappedIndex(Dict.RegMap[yyvsp[-2].str]);
         Dict.DetRegMap[yyvsp[-4].num].setMappedOffset(0);
-        Dict.DetRegMap[yyvsp[-4].num].setIsFloat(bFloat);
+        Dict.DetRegMap[yyvsp[-4].num].setIsFloat(floatRegister);
         ;
         break;
     }
@@ -864,7 +867,7 @@ SSLParser::
             yyerror("Shared index not yet defined\n");
         Dict.DetRegMap[yyvsp[-8].num].setMappedIndex(Dict.RegMap[yyvsp[-6].str]);
         Dict.DetRegMap[yyvsp[-8].num].setMappedOffset(yyvsp[-3].num);
-        Dict.DetRegMap[yyvsp[-8].num].setIsFloat(bFloat);
+        Dict.DetRegMap[yyvsp[-8].num].setIsFloat(floatRegister);
         ;
         break;
     }
@@ -876,7 +879,7 @@ SSLParser::
             for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {
                 if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
                     yyerror("Name reglist declared twice\n");
-                Dict.addRegister(*loc, x, yyvsp[-5].num, bFloat);
+                Dict.addRegister(*loc, x, yyvsp[-5].num, floatRegister);
             }
             delete yyvsp[-8].strlist;
         };
@@ -887,7 +890,7 @@ SSLParser::
         for (; loc != yyvsp[-6].strlist->end(); loc++) {
             if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
                 yyerror("Name reglist declared twice\n");
-            Dict.addRegister(*loc, yyvsp[0].num, yyvsp[-3].num, bFloat);
+            Dict.addRegister(*loc, yyvsp[0].num, yyvsp[-3].num, floatRegister);
         }
         // delete $2;
         delete yyvsp[-6].strlist;

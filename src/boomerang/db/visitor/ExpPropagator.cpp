@@ -32,8 +32,8 @@ SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& exp)
     SharedExp res  = exp;
 
     if (def && def->isAssign()) {
-        SharedExp lhs = ((Assign *)def)->getLeft();
-        SharedExp rhs = ((Assign *)def)->getRight();
+        SharedExp lhs = static_cast<Assign *>(def)->getLeft();
+        SharedExp rhs = static_cast<Assign *>(def)->getRight();
         bool      ch;
         res = exp->searchReplaceAll(RefExp(lhs, def), rhs->clone(), ch);
 

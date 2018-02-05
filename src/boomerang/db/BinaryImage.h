@@ -66,7 +66,7 @@ public:
     const IBinarySection *getSectionByAddr(Address addr) const override;
 
     /// \copydoc IBinaryImage::getSectionIndexByName
-    int getSectionIndex(const QString& sName) override;
+    int getSectionIndex(const QString& sectionName) override;
 
     /// \copydoc IBinaryImage::getNumSections
     size_t getNumSections() const override { return m_sections.size(); }

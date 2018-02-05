@@ -306,7 +306,7 @@ struct Elf64_Rela
 
 
 #define ELF32_R_SYM(info)                ((info) >> 8)
-#define ELF32_R_TYPE(info)               ((unsigned char)(info))
+#define ELF32_R_TYPE(info)               (static_cast<unsigned char>(info))
 #define ELF32_R_INFO(sym, type)          (((sym) << 8) + (unsigned char)(type))
 #define ELF64_R_SYM(info)                ((info) >> 32)
 #define ELF64_R_TYPE(info)               ((Elf64_Word)(info))
@@ -538,15 +538,15 @@ struct Elf64_Sym
 #pragma pack(pop)
 
 
-#define ELF32_ST_BIND(info)          (ElfSymBinding)((info) >> 4)
-#define ELF32_ST_TYPE(info)          (ElfSymType)((info) & 0xf)
+#define ELF32_ST_BIND(info)          static_cast<ElfSymBinding>((info) >> 4)
+#define ELF32_ST_TYPE(info)          static_cast<ElfSymType>((info) & 0xf)
 #define ELF32_ST_INFO(bind, type)    (((bind) << 4) + ((type) & 0xf))
 #define ELF64_ST_BIND(info)          ((info) >> 4)
 #define ELF64_ST_TYPE(info)          ((info) & 0xf)
 #define ELF64_ST_INFO(bind, type)    (((bind) << 4) + ((type) & 0xf))
 
-#define ELF32_ST_VISIBILITY(o)       (ElfSymVisibility)((o) & 0x3)
-#define ELF64_ST_VISIBILITY(o)       (ElfSymVisibility)((o) & 0x3)
+#define ELF32_ST_VISIBILITY(o)       static_cast<ElfSymVisibility>((o) & 0x3)
+#define ELF64_ST_VISIBILITY(o)       static_cast<ElfSymVisibility>((o) & 0x3)
 
 
 enum ElfSymBinding

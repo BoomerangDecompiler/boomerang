@@ -80,10 +80,10 @@ void StmtSubscripter::visit(BoolAssign *stmt, bool& visitChildren)
 
 void StmtSubscripter::visit(CallStatement *stmt, bool& visitChildren)
 {
-    SharedExp pDest = stmt->getDest();
+    SharedExp condExp = stmt->getDest();
 
-    if (pDest) {
-        stmt->setDest(pDest->accept(m_mod));
+    if (condExp) {
+        stmt->setDest(condExp->accept(m_mod));
     }
 
     // Subscript the ordinary arguments

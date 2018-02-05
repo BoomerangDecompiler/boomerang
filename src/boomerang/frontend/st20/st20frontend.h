@@ -30,7 +30,7 @@ class ST20FrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    ST20FrontEnd(IFileLoader *pLoader, Prog *prog);
+    ST20FrontEnd(IFileLoader *loader, Prog *prog);
     ST20FrontEnd(const ST20FrontEnd& other) = delete;
     ST20FrontEnd(ST20FrontEnd&& other) = default;
 
@@ -45,7 +45,7 @@ public:
     virtual Platform getType() const override { return Platform::ST20; }
 
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address uAddr, UserProc *pProc, QTextStream& os, bool frag = false, bool spec = false) override;
+    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;
