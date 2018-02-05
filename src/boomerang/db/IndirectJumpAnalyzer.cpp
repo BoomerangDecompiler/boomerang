@@ -809,8 +809,10 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
             // remove all table elements at index i and above
             while (numToRemove > 0) {
                 BasicBlock *succ = bb->getSuccessor(i);
-                bb->removeSuccessor(succ);
-                succ->removePredecessor(bb);
+                if (succ) {
+                    bb->removeSuccessor(succ);
+                    succ->removePredecessor(bb);
+                }
                 numToRemove--;
             }
             break;
