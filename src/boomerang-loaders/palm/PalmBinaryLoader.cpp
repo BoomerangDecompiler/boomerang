@@ -252,7 +252,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     LOG_VERBOSE("Used %1 bytes of %2 in decompressing data section",
-                p - reinterpret_cast<unsigned char *>(dataSection->getHostAddr().value(), dataSection->getSize()));
+                p - reinterpret_cast<unsigned char *>(dataSection->getHostAddr().value()), dataSection->getSize());
 
     // Replace the data pointer and size with the uncompressed versions
 
