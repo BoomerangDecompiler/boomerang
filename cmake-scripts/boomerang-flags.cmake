@@ -64,7 +64,6 @@ else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-rdynamic -fPIC)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wold-style-cast -Wno-error=old-style-cast)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
     BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
