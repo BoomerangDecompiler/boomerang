@@ -2292,8 +2292,6 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
         return;
     }
 
-    const BasicBlock *child = nullptr;
-
     switch (m_analyzer.getStructType(bb))
     {
     case StructType::Loop:
@@ -2306,99 +2304,7 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
         break;
 
     case StructType::Seq:
-        // generate code for the body of this block
-        writeBB(bb);
-
-        // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
-        if (bb->getType() == BBType::Ret) {
-            // This should be emitted now, like a normal statement
-            // addReturnStatement(getReturnVal());
-            return;
-        }
-
-        // return if this doesn't have any out edges (emit a warning)
-        if (bb->getNumSuccessors() == 0) {
-            LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
-
-            if (bb->getType() == BBType::CompJump) {
-                assert(!bb->getRTLs()->empty());
-                RTL *lastRTL = bb->getRTLs()->back().get();
-                assert(!lastRTL->empty());
-                GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
-
-                QString     dat;
-                QTextStream ost(&dat);
-
-                ost << "goto " << gs->getDest();
-                addLineComment(dat);
-            }
-
-            return;
-        }
-
-        child = bb->getSuccessor(0);
-
-        if (bb->getNumSuccessors() > 1) {
-            const BasicBlock *other = bb->getSuccessor(1);
-            LOG_MSG("Found seq with more than one outedge!");
-            auto const_dest = std::static_pointer_cast<Const>(bb->getDest());
-
-            if (const_dest->isIntConst() && (const_dest->getAddr() == child->getLowAddr())) {
-                other = child;
-                child = bb->getSuccessor(1);
-                LOG_MSG("Taken branch is first out edge");
-            }
-
-            SharedExp cond = bb->getCond();
-
-            if (cond) {
-                addIfCondHeader(bb->getCond());
-
-                if (isGenerated(other)) {
-                    emitGotoAndLabel(bb, other);
-                }
-                else {
-                    generateCode(other, latch, followSet, gotoSet, proc);
-                }
-
-                addIfCondEnd();
-            }
-            else {
-                LOG_ERROR("Last statement is not a cond, don't know what to do with this.");
-            }
-        }
-
-        // Generate code for its successor if
-        //  - it hasn't already been visited and
-        //  - is in the same loop/case and
-        //  - is not the latch for the current most enclosing loop.
-        // The only exception for generating it when it is not in
-        // the same loop is when it is only reached from this node
-        if (isGenerated(child)) {
-            emitGotoAndLabel(bb, child);
-        }
-        else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) {
-            emitGotoAndLabel(bb, child);
-        }
-        else if (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
-            emitGotoAndLabel(bb, child);
-        }
-        else if (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
-            (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
-                emitGotoAndLabel(bb, child);
-        }
-        else {
-            if (m_analyzer.getCaseHead(bb) && (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
-                // generate the 'break' statement
-                addCaseCondOptionEnd();
-            }
-            else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
-                (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
-                !m_analyzer.isCaseOption(child)) {
-                    generateCode(child, latch, followSet, gotoSet, proc);
-            }
-        }
-
+        generateCode_Seq(bb, gotoSet, proc, latch, followSet);
         break;
 
     default:
@@ -2708,6 +2614,101 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
     }
 }
 
+
+void CCodeGenerator::generateCode_Seq(const BasicBlock* bb, std::list<const BasicBlock *>& gotoSet, UserProc* proc, const BasicBlock* latch, std::list<const BasicBlock *>& followSet)
+{
+    // generate code for the body of this block
+    writeBB(bb);
+
+    // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
+    if (bb->getType() == BBType::Ret) {
+        // This should be emitted now, like a normal statement
+        // addReturnStatement(getReturnVal());
+        return;
+    }
+
+    // return if this doesn't have any out edges (emit a warning)
+    if (bb->getNumSuccessors() == 0) {
+        LOG_WARN("No out edge for BB at address %1, in proc %2", bb->getLowAddr(), proc->getName());
+
+        if (bb->getType() == BBType::CompJump) {
+            assert(!bb->getRTLs()->empty());
+            RTL *lastRTL = bb->getRTLs()->back().get();
+            assert(!lastRTL->empty());
+            GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
+
+            QString     dat;
+            QTextStream ost(&dat);
+
+            ost << "goto " << gs->getDest();
+            addLineComment(dat);
+        }
+
+        return;
+    }
+
+    const BasicBlock *child = bb->getSuccessor(0);
+
+    if (bb->getNumSuccessors() > 1) {
+        const BasicBlock *other = bb->getSuccessor(1);
+        LOG_MSG("Found seq with more than one outedge!");
+        std::shared_ptr<Const> constDest = std::static_pointer_cast<Const>(bb->getDest());
+
+        if (constDest->isIntConst() && (constDest->getAddr() == child->getLowAddr())) {
+            std::swap(other, child);
+            LOG_MSG("Taken branch is first out edge");
+        }
+
+        SharedExp cond = bb->getCond();
+
+        if (cond) {
+            addIfCondHeader(bb->getCond());
+
+            if (isGenerated(other)) {
+                emitGotoAndLabel(bb, other);
+            }
+            else {
+                generateCode(other, latch, followSet, gotoSet, proc);
+            }
+
+            addIfCondEnd();
+        }
+        else {
+            LOG_ERROR("Last statement is not a cond, don't know what to do with this.");
+        }
+    }
+
+    // Generate code for its successor if
+    //  - it hasn't already been visited and
+    //  - is in the same loop/case and
+    //  - is not the latch for the current most enclosing loop.
+    // The only exception for generating it when it is not in
+    // the same loop is when it is only reached from this node
+    if (isGenerated(child)) {
+        emitGotoAndLabel(bb, child);
+    }
+    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) {
+        emitGotoAndLabel(bb, child);
+    }
+    else if (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
+        emitGotoAndLabel(bb, child);
+    }
+    else if (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
+        (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+            emitGotoAndLabel(bb, child);
+    }
+    else {
+        if (m_analyzer.getCaseHead(bb) && (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+            // generate the 'break' statement
+            addCaseCondOptionEnd();
+        }
+        else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
+            (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
+            !m_analyzer.isCaseOption(child)) {
+                generateCode(child, latch, followSet, gotoSet, proc);
+        }
+    }
+}
 
 void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *dest)
 {
