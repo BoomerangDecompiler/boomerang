@@ -86,7 +86,8 @@ enum class BranchType : uint8_t
     JPOS,   ///< Jump if result is positive
     JOF,    ///< Jump if overflow
     JNOF,   ///< Jump if no overflow
-    JPAR    ///< Jump if parity even (Intel only)
+    JPAR,   ///< Jump if parity even (Intel only)
+    JNPAR   ///< Jump if parity odd  (Intel only)
 };
 
 

@@ -7698,7 +7698,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 168 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NP", 2, relocd, BranchType::INVALID)
+                            COND_JUMP("Jb.NP", 2, relocd, BranchType::JNPAR)
                         }
                         break;
 

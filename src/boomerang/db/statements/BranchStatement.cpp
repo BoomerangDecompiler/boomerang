@@ -107,6 +107,7 @@ void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)
         break;
 
     case BranchType::JPAR:
+    case BranchType::JNPAR:
         // Can't handle this properly here; leave an impossible expression involving %flags so propagation will
         // still happen, and we can recognise this later in condToRelational()
         // Update: these expressions seem to get ignored ???
@@ -309,6 +310,10 @@ void BranchStatement::print(QTextStream& os, bool html) const
 
     case BranchType::JPAR:
         os << "parity";
+        break;
+
+    case BranchType::JNPAR:
+        os << "no parity";
         break;
 
     case BranchType::INVALID:
