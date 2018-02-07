@@ -128,6 +128,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
         case BranchType::JOF:
         case BranchType::JNOF:
         case BranchType::JPAR:
+        case BranchType::JNPAR:
             break;
 
         case BranchType::INVALID:
@@ -201,6 +202,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
             break;
 
         case BranchType::JPAR:
+        case BranchType::JNPAR:
             {
                 // This is pentium specific too; see below for more notes.
 
@@ -254,7 +256,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
                     return false;
 
                 case 1:
-                    _op = opLess;
+                    _op = jtCond == BranchType::JPAR ? opLess : opGtrEq;
                     break;
 
                 case 0x40:
@@ -262,7 +264,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
                     break;
 
                 case 0x41:
-                    _op = opLessEq;
+                    _op = jtCond == BranchType::JPAR ? opLessEq : opGtr;
                     break;
 
                 default:

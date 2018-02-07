@@ -156,6 +156,10 @@ void BoolAssign::printCompact(QTextStream& os, bool html) const
         os << "ev parity";
         break;
 
+    case BranchType::JNPAR:
+        os << "odd parity";
+        break;
+
     case BranchType::INVALID:
         assert(false);
         break;

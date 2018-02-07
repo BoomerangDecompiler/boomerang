@@ -16,7 +16,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
@@ -7698,7 +7698,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 168 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NP", 2, relocd, BranchType::INVALID)
+                            COND_JUMP("Jb.NP", 2, relocd, BranchType::JNPAR)
                         }
                         break;
 
@@ -8487,9 +8487,14 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         result.rtl->append(new ReturnStatement);
                         break;
 
-                    case 4:
-                        goto MATCH_label_c64;
+                    case 4: {
+                        nextPC = MATCH_p + 1;
+                        result.rtl = instantiate(pc, "INT3");
+                        CallStatement *call = new CallStatement();
+                        call->setDestProc(m_prog->getOrCreateLibraryProc("__debugbreak"));
+                        result.rtl->append(call);
                         break;
+                    }
 
                     case 5:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);

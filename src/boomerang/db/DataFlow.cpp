@@ -858,17 +858,17 @@ void DataFlow::allocateData()
     Cfg *cfg = m_proc->getCFG();
     const int numBBs = cfg->getNumBBs();
 
-    m_BBs.resize(numBBs, nullptr);
+    m_BBs.assign(numBBs, nullptr);
     m_indices.clear();
 
-    m_dfnum.resize(numBBs, -1);
-    m_semi.resize(numBBs, -1);
-    m_ancestor.resize(numBBs, -1);
-    m_idom.resize(numBBs, -1);
-    m_samedom.resize(numBBs, -1);
-    m_vertex.resize(numBBs, -1);
-    m_parent.resize(numBBs, -1);
-    m_best.resize(numBBs, -1);
+    m_dfnum.assign(numBBs, -1);
+    m_semi.assign(numBBs, -1);
+    m_ancestor.assign(numBBs, -1);
+    m_idom.assign(numBBs, -1);
+    m_samedom.assign(numBBs, -1);
+    m_vertex.assign(numBBs, -1);
+    m_parent.assign(numBBs, -1);
+    m_best.assign(numBBs, -1);
     m_bucket.resize(numBBs);
     m_definedAt.resize(numBBs);
     m_DF.resize(numBBs);
