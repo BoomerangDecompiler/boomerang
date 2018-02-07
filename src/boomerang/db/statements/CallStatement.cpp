@@ -879,8 +879,10 @@ bool CallStatement::convertToDirect()
 
 bool CallStatement::isCallToMemOffset() const
 {
-    return(getKind() == StmtType::Call && getDest()->getOper() == opMemOf &&
-           getDest()->getSubExp1()->getOper() == opIntConst);
+    return
+        getKind() == StmtType::Call && getDest() &&
+        getDest()->getOper() == opMemOf &&
+        getDest()->getSubExp1()->getOper() == opIntConst;
 }
 
 
