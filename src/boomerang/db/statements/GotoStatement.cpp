@@ -42,7 +42,7 @@ GotoStatement::~GotoStatement()
 
 Address GotoStatement::getFixedDest() const
 {
-    if (m_dest->getOper() != opIntConst) {
+    if (!m_dest || m_dest->getOper() != opIntConst) {
         return Address::INVALID;
     }
 

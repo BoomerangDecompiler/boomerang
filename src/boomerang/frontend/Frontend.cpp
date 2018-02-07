@@ -145,15 +145,13 @@ bool IFrontEnd::isWin32() const
 
 bool IFrontEnd::isNoReturnCallDest(const QString& name)
 {
-    if ((name == "_exit") ||
+    return
+        (name == "_exit") ||
         (name == "exit") ||
         (name == "ExitProcess") ||
         (name == "abort") ||
-        (name == "_assert")) {
-        return true;
-    }
-
-    return false;
+        (name == "_assert") ||
+        (name == "__debugbreak");
 }
 
 
@@ -344,7 +342,7 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     m_program->addEntryPoint(a);
 
     if (!gotMain) {
-        return false;
+        return true; // Decoded successfully, but patterns don't match a known main() pattern
     }
 
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
@@ -374,8 +372,8 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         else {
             proc->setSignature(fty->getSignature()->clone());
             proc->getSignature()->setName(name);
-            // proc->getSignature()->setFullSig(true);        // Don't add or remove parameters
-            proc->getSignature()->setForced(true); // Don't add or remove parameters
+            // proc->getSignature()->setFullSig(true); // Don't add or remove parameters
+            proc->getSignature()->setForced(true);     // Don't add or remove parameters
         }
 
         break;
@@ -659,13 +657,12 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
             if (!decodeInstruction(addr, inst)) {
                 QString message;
-                message.sprintf("Invalid or unrecognized instruction at address %s: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
+                message.sprintf("Treating invalid or unrecognized instruction at address %s as NOP: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
                                 m_image->readNative1(addr + 0),
                                 m_image->readNative1(addr + 1),
                                 m_image->readNative1(addr + 2),
                                 m_image->readNative1(addr + 3));
-                LOG_ERROR(message);
-                return false;
+                LOG_WARN(message);
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);

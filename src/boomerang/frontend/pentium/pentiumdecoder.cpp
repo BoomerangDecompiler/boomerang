@@ -16,7 +16,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/IBinaryImage.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
@@ -8487,9 +8487,14 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                         result.rtl->append(new ReturnStatement);
                         break;
 
-                    case 4:
-                        goto MATCH_label_c64;
+                    case 4: {
+                        nextPC = MATCH_p + 1;
+                        result.rtl = instantiate(pc, "INT3");
+                        CallStatement *call = new CallStatement();
+                        call->setDestProc(m_prog->getOrCreateLibraryProc("__debugbreak"));
+                        result.rtl->append(call);
                         break;
+                    }
 
                     case 5:
                         MATCH_w_8_8 = getByte(MATCH_p + 1);
