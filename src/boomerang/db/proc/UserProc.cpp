@@ -1542,7 +1542,7 @@ void UserProc::remUnusedStmtEtc()
         // redo the data flow
         m_df.calculateDominators();
 
-        // recalculate phi assignments of referencing BBs
+        // recalculate phi assignments of referencing BBs.
         for (BasicBlock *bb : *m_cfg) {
             BasicBlock::RTLIterator rtlIt;
             StatementList::iterator stmtIt;
@@ -1554,7 +1554,7 @@ void UserProc::remUnusedStmtEtc()
 
                 PhiAssign *phiStmt = dynamic_cast<PhiAssign *>(stmt);
                 assert(phiStmt);
-                phiStmt->getStmtAt(bb);
+
                 PhiAssign::PhiDefs& defs = phiStmt->getDefs();
 
                 for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end(); defIt++) {
