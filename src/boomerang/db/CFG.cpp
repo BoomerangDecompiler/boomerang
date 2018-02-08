@@ -64,8 +64,15 @@ bool Cfg::hasBB(const BasicBlock* bb) const
         return false;
     }
 
-    BBStartMap::const_iterator iter = m_bbStartMap.find(bb->getLowAddr());
-    return (iter != m_bbStartMap.end()) && iter->second == bb;
+    // we have to use linear search here, since the bb might already have been deleted
+    // (invoking UB when calling getLowAddr).
+    for (const auto& val : m_bbStartMap) {
+        if (val.second == bb) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 
