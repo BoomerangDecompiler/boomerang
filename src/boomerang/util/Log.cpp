@@ -11,19 +11,19 @@
 
 
 #include "boomerang/core/Boomerang.h"
-
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/proc/UserProc.h"
 
+#include <QSharedPointer>
 #include <QTextStream>
-#include <sstream>
+
 #include <iostream>
+#include <sstream>
 
 
 static Log            *g_log         = nullptr;
-static SeparateLogger *g_separateLog = nullptr;
 
 
 void ConsoleLogSink::write(const QString& s)
@@ -276,25 +276,21 @@ QString Log::levelToString(LogLevel level)
 }
 
 
-SeparateLogger::SeparateLogger(const QString& filePath)
+SeparateLogger::SeparateLogger(const QString& filename)
 {
-    static QMap<QString, int> versions;
-
-    if (!versions.contains(filePath)) {
-        versions[filePath] = 0;
-    }
-
-    QString full_path = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(
-        QString("%1_%2.log").arg(filePath).arg(versions[filePath]++, 2, 10, QChar('0')));
-    addLogSink(Util::makeUnique<FileLogSink>(full_path, true));
+    QString fullPath = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename);
+    QDir().remove(fullPath); // overwrite old logs
+    addLogSink(Util::makeUnique<FileLogSink>(fullPath, true));
 }
 
 
 SeparateLogger& SeparateLogger::getOrCreateLog(const QString& name)
 {
-    if (!g_separateLog) {
-        g_separateLog = new SeparateLogger(name);
+    static QMap<QString, QSharedPointer<SeparateLogger>> loggers;
+
+    if (!loggers.contains(name)) {
+        loggers[name].reset(new SeparateLogger(name + ".log"));
     }
 
-    return *g_separateLog;
+    return *loggers[name];
 }
