@@ -73,20 +73,25 @@ void DFATypeAnalyzer::visitAssignment(Assignment* stmt, bool& visitChildren)
 void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
 {
     PhiAssign::PhiDefs& defs = stmt->getDefs();
-    PhiAssign::iterator it = defs.begin();
+    PhiAssign::iterator defIt = defs.begin();
 
-    while (it != defs.end() && it->getSubExp1() == nullptr) {
-        ++it;
+    while (defIt != defs.end() && defIt->getSubExp1() == nullptr) {
+        ++defIt;
     }
 
-    assert(it != defs.end());
-    assert(it->getDef());
-    SharedType meetOfArgs = it->getDef()->getTypeFor(stmt->getLeft());
+    if (defIt == defs.end()) {
+        // phi does not have suitable defining statements, cannot infer type information
+        visitChildren = false;
+        return;
+    }
+
+    assert(defIt->getDef());
+    SharedType meetOfArgs = defIt->getDef()->getTypeFor(stmt->getLeft());
 
     bool ch = false;
 
-    for (++it; it != defs.end(); ++it) {
-        RefExp& phinf = *it;
+    for (++defIt; defIt != defs.end(); ++defIt) {
+        RefExp& phinf = *defIt;
 
         if (phinf.getSubExp1() == nullptr) {
             continue;
@@ -102,12 +107,12 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
         stmt->setType(newType);
     }
 
-    for (it = defs.begin(); it != defs.end(); ++it) {
-        if (it->getSubExp1() == nullptr) {
+    for (defIt = defs.begin(); defIt != defs.end(); ++defIt) {
+        if (defIt->getSubExp1() == nullptr) {
             continue;
         }
 
-        it->getDef()->meetWithFor(stmt->getType(), it->getSubExp1(), ch);
+        defIt->getDef()->meetWithFor(stmt->getType(), defIt->getSubExp1(), ch);
     }
 
     m_changed |= ch;
