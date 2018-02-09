@@ -364,7 +364,7 @@ bool DataFlow::placePhiFunctions()
 
                 // Insert trivial phi function for a at top of block y: a := phi()
                 change = true;
-                m_BBs[y]->prependStmt(new PhiAssign(a->clone()), m_proc);
+                m_BBs[y]->addPhi(a->clone());
 
                 // A_phi[a] <- A_phi[a] U {y}
                 m_A_phi[a].insert(y);

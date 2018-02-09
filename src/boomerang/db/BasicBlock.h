@@ -26,6 +26,8 @@ class RTL;
 class Function;
 class UserProc;
 class ConnectionGraph;
+class ImplicitAssign;
+class PhiAssign;
 struct SwitchInfo;
 
 
@@ -215,9 +217,11 @@ public:
     /// Appends all statements in this BB to \p stmts.
     void appendStatementsTo(StatementList& stmts) const;
 
-    /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
-    /// \a proc is the enclosing Proc
-    void prependStmt(Statement *s, UserProc *proc);
+    ///
+    ImplicitAssign *addImplicitAssign(SharedExp lhs);
+
+    /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
+    PhiAssign *addPhi(SharedExp usedExp);
 
     bool hasStatement(const Statement *stmt) const;
 

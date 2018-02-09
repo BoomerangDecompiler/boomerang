@@ -24,6 +24,7 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/visitor/ConstGlobalConverter.h"
@@ -668,32 +669,70 @@ bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
     return std::find(m_predecessors.begin(), m_predecessors.end(), bb) != m_predecessors.end();
 }
 
-
-void BasicBlock::prependStmt(Statement *stmt, UserProc *proc)
+ImplicitAssign *BasicBlock::addImplicitAssign(SharedExp lhs)
 {
-    assert(m_function == proc);
-
-    // Check the first RTL (if any)
     assert(m_listOfRTLs);
+    ImplicitAssign *stmt = new ImplicitAssign(lhs);
     stmt->setBB(this);
-    stmt->setProc(proc);
+    stmt->setProc(static_cast<UserProc *>(m_function));
 
-    if (!m_listOfRTLs->empty()) {
-        RTL *rtl = m_listOfRTLs->front().get();
-
-        if (rtl->getAddress().isZero()) {
-            // Append to this RTL
-            rtl->append(stmt);
-            updateBBAddresses();
-            return;
-        }
+    if (m_listOfRTLs->empty() || m_listOfRTLs->front()->getAddress() != Address::ZERO) {
+        // no other ImplicitAssign / Phi prepended already
+        m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO, { stmt })));
+        return stmt;
     }
 
-    // Otherwise, prepend a new RTL
-    m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO, { stmt })));
+    // we already have prepended ImplitAssigns / Phis.
+    RTL *rtl = m_listOfRTLs->front().get();
+    assert(rtl->getAddress() == Address::ZERO);
 
+    // todo: make sure to insert in the correct order
+    rtl->append(stmt);
     updateBBAddresses();
+    return stmt;
 }
+
+
+PhiAssign *BasicBlock::addPhi(SharedExp usedExp)
+{
+    if (m_listOfRTLs->empty() || m_listOfRTLs->front()->getAddress() != Address::ZERO) {
+        PhiAssign *stmt = new PhiAssign(usedExp);
+        stmt->setBB(this);
+        stmt->setProc(static_cast<UserProc *>(m_function));
+
+        // no other ImplicitAssign / Phi prepended already
+        m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO, { stmt })));
+        return stmt;
+    }
+
+    // we already have prepended ImplitAssigns / Phis.
+    RTL *rtl = m_listOfRTLs->front().get();
+    assert(rtl->getAddress() == Address::ZERO);
+
+    auto existingStmtIt = std::find_if(rtl->begin(), rtl->end(), [usedExp](const RTL::value_type& stmt) {
+            if (!stmt->isPhi()) {
+                return false;
+            }
+
+            PhiAssign *phi = static_cast<PhiAssign *>(stmt);
+            return *phi->getLeft() == *usedExp;
+        });
+
+    if (existingStmtIt != rtl->end()) {
+        return static_cast<PhiAssign *>(*existingStmtIt);
+    }
+
+    // lhs not already present in the RTL; create a new phi <lhs> := phi()
+    PhiAssign *stmt = new PhiAssign(usedExp);
+    stmt->setBB(this);
+    stmt->setProc(static_cast<UserProc *>(m_function));
+
+    // todo: make sure to insert in the correct order
+    rtl->append(stmt);
+    updateBBAddresses();
+    return stmt;
+}
+
 
 
 void BasicBlock::updateBBAddresses()
