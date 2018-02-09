@@ -1096,6 +1096,7 @@ void UserProc::debugPrintAll(const char *step_name)
         LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
         LOG_SEPARATE(getName(), "%1", this->toString());
         LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
+        SeparateLogger::getOrCreateLog(getName()).flush();
     }
 }
 
