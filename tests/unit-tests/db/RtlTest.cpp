@@ -56,31 +56,6 @@ void RtlTest::testAppend()
 }
 
 
-void RtlTest::testClone()
-{
-    Assign *a1 = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
-    Assign *a2 = new Assign(IntegerType::get(16), Location::get(opParam, Const::get("x"), nullptr),
-                            Location::get(opParam, Const::get("y"), nullptr));
-
-    std::list<Statement *> ls;
-    ls.push_back(a1);
-    ls.push_back(a2);
-    RTL         *r = new RTL(Address(0x1234), &ls);
-    RTL         *r2 = r->clone();
-    QString     act1, act2;
-    QTextStream o1(&act1), o2(&act2);
-    r->print(o1);
-    delete r; // And r2 should still stand!
-    r2->print(o2);
-    delete r2;
-    QString expected("00001234    0 *v* r8 := r9 + 99\n"
-                     "            0 *j16* x := y\n");
-
-    QCOMPARE(act1, expected);
-    QCOMPARE(act2, expected);
-}
-
-
 class StmtVisitorStub : public StmtVisitor
 {
 public:

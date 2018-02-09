@@ -59,9 +59,6 @@ public:
     RTL& operator=(RTL&& other) = default;
 
 public:
-    /// Creates a deep copy clone of this RTL.
-    RTL *clone() const;
-
     /// Return RTL's native address
     Address getAddress() const { return m_nativeAddr; }
 

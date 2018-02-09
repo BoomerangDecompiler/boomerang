@@ -72,14 +72,6 @@ RTL& RTL::operator=(const RTL& other)
 }
 
 
-RTL *RTL::clone() const
-{
-    std::list<Statement *> stmtList;
-    deepCopyList(stmtList);
-    return new RTL(m_nativeAddr, &stmtList);
-}
-
-
 void RTL::deepCopyList(std::list<Statement *>& dest) const
 {
     for (const Statement *it : *this) {
