@@ -201,10 +201,10 @@ private:
     /// Array of sets of locations defined in BB n
     std::vector<ExpSet> m_definedAt; // was: m_A_orig
 
-    /// Array of sets of BBs needing phis
+    /// For a given expression e, stores the BBs needing a phi for e
     std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;
 
-    /// Map from expression to set of block numbers
+    /// For a given expression e, stores the BBs where e is defined
     std::map<SharedExp, std::set<int>, lessExpStar> m_defsites;
 
     /// Set of block numbers defining all variables
