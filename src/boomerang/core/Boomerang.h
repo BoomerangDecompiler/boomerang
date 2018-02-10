@@ -16,7 +16,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Settings.h"
 
-#include <QObject>
 #include <QDir>
 #include <QTextStream>
 #include <string>

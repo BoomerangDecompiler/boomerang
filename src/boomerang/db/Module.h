@@ -32,10 +32,8 @@ class IFrontEnd;
  * For example, the Object Oriented Programming concept of a Class is a Module.
  * Modules can contain other Modules to form a tree.
  */
-class Module : public QObject
+class Module
 {
-    Q_OBJECT
-
 public:
     /// The type for the list of functions.
     typedef std::list<Function *>           FunctionList;
@@ -43,9 +41,6 @@ public:
 
     typedef FunctionList::iterator          iterator;
     typedef FunctionList::const_iterator    const_iterator;
-
-signals:
-    void newFunction(Function *);
 
 public:
     Module();

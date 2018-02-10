@@ -314,8 +314,6 @@ Function *Module::createFunction(const QString& name, Address entryAddr, bool li
     }
 
     m_functionList.push_back(function); // Append this to list of procs
-    // alert the watchers of a new proc
-    emit newFunction(function);
     Boomerang::get()->alertNew(function);
 
     // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
