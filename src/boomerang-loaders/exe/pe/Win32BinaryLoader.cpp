@@ -484,8 +484,6 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE /*SourceFile*/, PVOID UserConte
     *(bool *)UserContext = true;
     return FALSE;
 }
-
-
 #endif
 
 void Win32BinaryLoader::processIAT()
@@ -497,7 +495,7 @@ void Win32BinaryLoader::processIAT()
             char     *dllName = LMMH(id->name) + m_image;
             unsigned thunk    = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
             unsigned *iat     = reinterpret_cast<unsigned *>(m_image + LMMH(thunk));
-            unsigned iatEntry = LMMH(*iat);
+            unsigned iatEntry = LMMH2(iat);
             Address  paddr    = Address(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase)); //
 
             while (iatEntry) {
@@ -519,7 +517,7 @@ void Win32BinaryLoader::processIAT()
                 }
 
                 iat++;
-                iatEntry = LMMH(*iat);
+                iatEntry = LMMH2(iat);
                 paddr   += 4;
             }
 
