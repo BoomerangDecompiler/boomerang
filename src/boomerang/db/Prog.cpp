@@ -451,7 +451,7 @@ int debugRegister(int r)
 
 BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID UserContext)
 {
-    Function *proc = (Function *)UserContext;
+    Function *proc = static_cast<Function *>(UserContext);
 
     if (symInfo->Flags & SYMFLAG_PARAMETER) {
         SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
@@ -467,7 +467,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
         }
     }
     else if ((symInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
-        UserProc *uproc = (UserProc *)proc;
+        UserProc *uproc = static_cast<UserProc *>(proc);
         assert(symInfo->Flags & SYMFLAG_REGREL);
         assert(symInfo->Register == 8);
         SharedExp memref =
