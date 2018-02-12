@@ -57,7 +57,7 @@ public:
     const_iterator find(const Key& key) const
     {
         // todo: speed up
-        for (const_iterator it = begin(); it != end(); it++) {
+        for (const_iterator it = begin(); it != end(); ++it) {
             const Key& lower = it->first.lower();
             const Key& upper = it->first.upper();
 
@@ -79,7 +79,7 @@ public:
     iterator find(const Key& key)
     {
         // todo: speed up
-        for (iterator it = begin(); it != end(); it++) {
+        for (iterator it = begin(); it != end(); ++it) {
             const Key& lower = it->first.lower();
             const Key& upper = it->first.upper();
 
@@ -113,7 +113,7 @@ public:
         const_iterator itUpper = end();
 
         // todo: speed up
-        for (const_iterator it = begin(); it != end(); it++) {
+        for (const_iterator it = begin(); it != end(); ++it) {
             if ((it->first.upper() > interval.lower()) && (itLower == end())) {
                 itLower = it;
             }
@@ -139,7 +139,7 @@ public:
         iterator itUpper = end();
 
         // todo: speed up, use binary search since intervals are sorted
-        for (iterator it = begin(); it != end(); it++) {
+        for (iterator it = begin(); it != end(); ++it) {
             // intersection between it->first and interval must not be empty
             if ((it->first.upper() > interval.lower()) && (it->first.lower() < interval.upper()) && (itLower == end())) {
                 itLower = it;

@@ -128,7 +128,7 @@ void RTLInstDict::print(QTextStream& os /*= std::cout*/)
         const std::list<QString>& params((elem).second.m_params);
         int i = params.size();
 
-        for (auto s = params.begin(); s != params.end(); s++, i--) {
+        for (auto s = params.begin(); s != params.end(); ++s, i--) {
             os << *s << (i != 1 ? "," : "");
         }
 
@@ -293,7 +293,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC
         auto param = params.begin();
         std::vector<SharedExp>::const_iterator actual = actuals.begin();
 
-        for ( ; param != params.end(); param++, actual++) {
+        for ( ; param != params.end(); ++param, ++actual) {
             /* Simple parameter - just construct the formal to search for */
             Location formal(opParam, Const::get(*param), nullptr); // Location::param(param->c_str());
             ss->searchAndReplace(formal, *actual);
@@ -311,10 +311,8 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC
     transformPostVars(*newList.get(), true);
 
     // Perform simplifications, e.g. *1 in Pentium addressing modes
-    std::list<Statement *>::iterator iter;
-
-    for (iter = newList->begin(); iter != newList->end(); iter++) {
-        (*iter)->simplify();
+    for (Statement *s : *newList) {
+        s->simplify();
     }
 
     return newList;
@@ -342,16 +340,6 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
     int tmpcount = 1; // For making temp names unique
                       // Exp* matchParam(1,idParam);    // ? Was never used anyway
 
-#ifdef DEBUG_POSTVAR
-    std::cout << "Transforming from:\n";
-
-    for (Exp_CIT p = rts->begin(); p != rts->end(); p++) {
-        std::cout << setw(8) << " ";
-        (*p)->print(std::cout);
-        std::cout << "\n";
-    }
-#endif
-
     // First pass: Scan for post-variables and usages of their referents
     for (Statement *rt : rts) {
         // ss appears to be a list of expressions to be searched
@@ -371,8 +359,8 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
                     el.used = false;
                     el.type = rt_asgn->getType();
 
-                    // Constuct a temporary. We should probably be smarter and actually check that it's not otherwise
-                    // used here.
+                    // Constuct a temporary. We should probably be smarter and actually check
+                    // that it's not otherwise used here.
                     QString tmpname = QString("%1%2post").arg(el.type->getTempName()).arg((tmpcount++));
                     el.tmp = Location::tempOf(Const::get(tmpname));
 

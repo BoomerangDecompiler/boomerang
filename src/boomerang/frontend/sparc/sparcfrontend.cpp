@@ -1109,8 +1109,8 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
     } // End huge while loop
 
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
-    for (std::list<CallStatement *>::iterator it = callList.begin(); it != callList.end(); it++) {
-        Address             dest  = (*it)->getFixedDest();
+    for (CallStatement *call : callList) {
+        Address             dest  = call->getFixedDest();
         const IBinarySymbol *symb = SymbolTable->find(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked

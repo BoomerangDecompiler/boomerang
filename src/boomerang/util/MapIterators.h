@@ -39,8 +39,8 @@ public:
 
     MapValueIterator<M> &operator++() { ++m_it; return *this; }
     MapValueIterator<M> &operator--() { --m_it; return *this; }
-    MapValueIterator<M> operator++(int) { MapValueIterator<M> temp = *this; m_it++; return temp; }
-    MapValueIterator<M> operator--(int) { MapValueIterator<M> temp = *this; m_it--; return temp; }
+    MapValueIterator<M> operator++(int) { return MapValueIterator<M>(m_it++); }
+    MapValueIterator<M> operator--(int) { return MapValueIterator<M>(m_it--); }
 
 private:
     typename M::iterator m_it;
@@ -73,8 +73,8 @@ public:
 
     MapValueConstIterator<M> &operator++() { ++m_it; return *this; }
     MapValueConstIterator<M> &operator--() { --m_it; return *this; }
-    MapValueConstIterator<M> operator++(int) { auto temp = *this; m_it++; return temp; }
-    MapValueConstIterator<M> operator--(int) { auto temp = *this; m_it--; return temp; }
+    MapValueConstIterator<M> operator++(int) { return MapValueConstIterator<M>(m_it++); }
+    MapValueConstIterator<M> operator--(int) { return MapValueConstIterator<M>(m_it--); }
 
 private:
     typename M::const_iterator m_it;

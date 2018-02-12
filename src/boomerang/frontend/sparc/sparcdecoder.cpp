@@ -48,10 +48,8 @@ void DEBUG_STMTS(DecodeResult& result)
 {
     if (DEBUG_DECODER) {
         QTextStream q_cout(stdout);
-        std::list<Statement *>::iterator ii;
-
-        for (ii = result.rtl->begin(); ii != result.rtl->end(); ii++) {
-            q_cout << "            " << *ii << "\n";
+        for (Statement *s : *result.rtl) {
+            q_cout << "            " << s << "\n";
         }
     }
 }

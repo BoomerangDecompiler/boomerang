@@ -147,25 +147,22 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
 
     const StatementList& arguments = stmt->getArguments();
 
-    for (StatementList::const_iterator it = arguments.begin(); it != arguments.end(); it++) {
+    for (Statement *s : arguments) {
         // Don't want to ever collect anything from the lhs
-        const Assign *retval = dynamic_cast<const Assign *>(*it);
+        const Assign *retval = dynamic_cast<const Assign *>(s);
         if (retval) {
             retval->getRight()->accept(ev);
         }
     }
 
     if (m_countCol) {
-        DefCollector::iterator dd;
-        DefCollector           *col = stmt->getDefCollector();
-
-        for (dd = col->begin(); dd != col->end(); ++dd) {
-            (*dd)->accept(this);
+        for (Assign *as : *stmt->getDefCollector()) {
+            as->accept(this);
         }
     }
 
-    visitChildren = false; // Don't do the normal accept logic
-    return true;     // Continue the recursion
+    visitChildren = false;  // Don't do the normal accept logic
+    return true;            // Continue the recursion
 }
 
 

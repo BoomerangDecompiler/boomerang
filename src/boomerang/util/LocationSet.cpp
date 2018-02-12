@@ -28,9 +28,8 @@ QTextStream& operator<<(QTextStream& os, const LocationSet *ls)
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
     lset.clear();
-    ExpSet::const_iterator it;
 
-    for (it = o.lset.begin(); it != o.lset.end(); it++) {
+    for (ExpSet::const_iterator it = o.lset.begin(); it != o.lset.end(); ++it) {
         lset.insert((*it)->clone());
     }
 
@@ -42,7 +41,7 @@ LocationSet::LocationSet(const LocationSet& o)
 {
     ExpSet::const_iterator it;
 
-    for (it = o.lset.begin(); it != o.lset.end(); it++) {
+    for (it = o.lset.begin(); it != o.lset.end(); ++it) {
         lset.insert((*it)->clone());
     }
 }
@@ -53,9 +52,7 @@ char *LocationSet::prints() const
     QString     tgt;
     QTextStream ost(&tgt);
 
-    ExpSet::iterator it;
-
-    for (it = lset.begin(); it != lset.end(); it++) {
+    for (ExpSet::iterator it = lset.begin(); it != lset.end(); ++it) {
         if (it != lset.begin()) {
             ost << ",\t";
         }
@@ -72,16 +69,13 @@ char *LocationSet::prints() const
 void LocationSet::dump() const
 {
     QTextStream ost(stderr);
-
     print(ost);
 }
 
 
 void LocationSet::print(QTextStream& os) const
 {
-    ExpSet::iterator it;
-
-    for (it = lset.begin(); it != lset.end(); it++) {
+    for (auto it = lset.begin(); it != lset.end(); ++it) {
         if (it != lset.begin()) {
             os << ",\t";
         }
@@ -267,7 +261,6 @@ void LocationSet::substitute(Assign& a)
         return; // ? Will this ever happen?
     }
 
-    ExpSet::iterator it;
     // Note: it's important not to change the pointer in the set of pointers to expressions, without removing and
     // inserting again. Otherwise, the set becomes out of order, and operations such as set comparison fail!
     // To avoid any funny behaviour when iterating the loop, we use the following two sets
@@ -276,7 +269,7 @@ void LocationSet::substitute(Assign& a)
     LocationSet insertSet;       // These will be inserted after the loop
     bool        change;
 
-    for (it = lset.begin(); it != lset.end(); it++) {
+    for (auto it = lset.begin(); it != lset.end(); ++it) {
         SharedExp loc = *it;
         SharedExp replace;
 
@@ -290,8 +283,7 @@ void LocationSet::substitute(Assign& a)
             loc = loc->clone()->searchReplaceAll(*lhs, rhs, change);
 
             if (change) {
-                loc = loc->simplifyArith();
-                loc = loc->simplify();
+                loc = loc->simplifyArith()->simplify();
 
                 // If the result is no longer a register or memory (e.g.
                 // r[28]-4), then delete this expression and insert any
@@ -319,7 +311,7 @@ void LocationSet::substitute(Assign& a)
     makeUnion(insertSet);      // Insert the items to be added
     // Now delete the expressions that are no longer needed
 //    std::set<SharedExp , lessExpStar>::iterator dd;
-//    for (dd = removeAndDelete.lset.begin(); dd != removeAndDelete.lset.end(); dd++)
+//    for (dd = removeAndDelete.lset.begin(); dd != removeAndDelete.lset.end(); ++dd)
 //        delete *dd; // Plug that memory leak
 }
 
@@ -327,12 +319,9 @@ void LocationSet::substitute(Assign& a)
 
 void LocationSet::printDiff(LocationSet *o) const
 {
-    ExpSet::iterator it;
-    bool             printed2not1 = false;
+    bool printed2not1 = false;
 
-    for (it = o->lset.begin(); it != o->lset.end(); it++) {
-        SharedExp oe = *it;
-
+    for (const SharedExp& oe : o->lset) {
         if (lset.find(oe) == lset.end()) {
             if (!printed2not1) {
                 printed2not1 = true;
@@ -345,9 +334,7 @@ void LocationSet::printDiff(LocationSet *o) const
 
     bool printed1not2 = false;
 
-    for (it = lset.begin(); it != lset.end(); it++) {
-        SharedExp e = *it;
-
+    for (const SharedExp& e : lset) {
         if (o->lset.find(e) == o->lset.end()) {
             if (!printed1not2) {
                 printed1not2 = true;

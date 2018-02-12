@@ -168,13 +168,12 @@ bool Assign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
     bool res;
 
     std::list<SharedExp>           leftResult;
-    std::list<SharedExp>::iterator it;
     res = m_lhs->searchAll(pattern, leftResult);
     // Ugh: searchAll clears the list!
     res |= m_rhs->searchAll(pattern, result);
 
-    for (it = leftResult.begin(); it != leftResult.end(); it++) {
-        result.push_back(*it);
+    for (SharedExp exp : leftResult) {
+        result.push_back(exp);
     }
 
     return res;

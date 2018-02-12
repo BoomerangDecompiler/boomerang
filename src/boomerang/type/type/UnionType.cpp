@@ -233,7 +233,7 @@ SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestP
 
     std::shared_ptr<UnionType> result = UnionType::get();
 
-    for (UnionEntrySet::const_iterator it = li.begin(); it != li.end(); it++) {
+    for (auto it = li.begin(); it != li.end(); ++it) {
         if (it == bestElem) {
             // this is the element to be replaced
             continue;

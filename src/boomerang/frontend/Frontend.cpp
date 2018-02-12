@@ -735,7 +735,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
             // if it points to the start of a known procedure
             std::list<Statement *> sl(inst.rtl->getStatements());
 
-            for (auto ss = sl.begin(); ss != sl.end(); ss++) {
+            for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 Statement *s = *ss;
                 s->setProc(proc); // let's do this really early!
 

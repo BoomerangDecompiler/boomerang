@@ -609,16 +609,12 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     std::set<int> usedRegs;
     StatementList stmts;
     proc->getStatements(stmts);
-    StatementList::iterator it;
 
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement   *s = *it;
+    for (Statement *s : stmts) {
         LocationSet locs;
         s->addUsedLocs(locs);
 
-        for (LocationSet::iterator li = locs.begin(); li != locs.end(); li++) {
-            SharedExp l = *li;
-
+        for (SharedExp l : locs) {
             if (!l->isRegOfK()) {
                 continue;
             }
@@ -644,9 +640,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
     // ebp (29)  bp (5)
     // esi (30)  si (6)
     // edi (31)  di (7)
-    for (it = stmts.begin(); it != stmts.end(); it++) {
-        Statement *s = *it;
-
+    for (Statement *s : stmts) {
         if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
             continue;
         }
@@ -942,7 +936,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         SharedExp found = nullptr;
         unsigned int pushcount = 0;
 
-        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
+        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {
@@ -1028,7 +1022,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         bool found = false;
         int pushcount = 0;
 
-        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; itr++) {
+        for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; ++itr) {
             RTL *rtl = itr->get();
 
             for (auto rtl_iter = rtl->rbegin(); rtl_iter != rtl->rend(); ++rtl_iter) {

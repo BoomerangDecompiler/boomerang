@@ -26,9 +26,7 @@ QTextStream& operator<<(QTextStream& os, const StatementSet *ss)
 
 void StatementSet::makeUnion(const StatementSet& other)
 {
-    std::set<Statement *>::iterator it;
-
-    for (it = other.begin(); it != other.end(); it++) {
+    for (auto it = other.begin(); it != other.end(); ++it) {
         insert(*it);
     }
 }
@@ -36,9 +34,7 @@ void StatementSet::makeUnion(const StatementSet& other)
 
 void StatementSet::makeDiff(const StatementSet& other)
 {
-    std::set<Statement *>::iterator it;
-
-    for (it = other.begin(); it != other.end(); it++) {
+    for (auto it = other.begin(); it != other.end(); ++it) {
         erase(*it);
     }
 }
@@ -46,14 +42,13 @@ void StatementSet::makeDiff(const StatementSet& other)
 
 void StatementSet::makeIsect(const StatementSet& other)
 {
-    std::set<Statement *>::iterator it, ff;
-
-    for (it = begin(); it != end(); it++) {
-        ff = other.find(*it);
-
-        if (ff == other.end()) {
+    for (auto it = begin(); it != end(); ) {
+        if (other.find(*it) == other.end()) {
             // Not in both sets
-            erase(it);
+            it = erase(it);
+        }
+        else {
+            ++it;
         }
     }
 }
@@ -61,12 +56,8 @@ void StatementSet::makeIsect(const StatementSet& other)
 
 bool StatementSet::isSubSetOf(const StatementSet& other)
 {
-    std::set<Statement *>::iterator it, ff;
-
-    for (it = begin(); it != end(); it++) {
-        ff = other.find(*it);
-
-        if (ff == other.end()) {
+    for (auto it = begin(); it != end(); ++it) {
+        if (other.find(*it) == other.end()) {
             return false;
         }
     }
@@ -111,9 +102,7 @@ const char *StatementSet::prints()
     QString     tgt;
     QTextStream ost(&tgt);
 
-    std::set<Statement *>::iterator it;
-
-    for (it = begin(); it != end(); it++) {
+    for (auto it = begin(); it != end(); ++it) {
         if (it != begin()) {
             ost << ",\t";
         }
@@ -138,9 +127,7 @@ void StatementSet::dump()
 
 void StatementSet::print(QTextStream& os) const
 {
-    std::set<Statement *>::iterator it;
-
-    for (it = begin(); it != end(); it++) {
+    for (auto it = begin(); it != end(); ++it) {
         if (it != begin()) {
             os << ",\t";
         }

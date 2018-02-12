@@ -23,34 +23,29 @@ QTextStream& operator<<(QTextStream& os, const AssignSet *as)
 
 void AssignSet::makeUnion(const AssignSet& other)
 {
-    iterator it;
-
-    for (it = other.begin(); it != other.end(); it++) {
-        insert(*it);
+    for (Assign *as : other) {
+        insert(as);
     }
 }
 
 
 void AssignSet::makeDiff(const AssignSet& other)
 {
-    iterator it;
-
-    for (it = other.begin(); it != other.end(); it++) {
-        this->erase(*it);
+    for (Assign *as : other) {
+        this->erase(as);
     }
 }
 
 
 void AssignSet::makeIsect(const AssignSet& other)
 {
-    iterator it, ff;
-
-    for (it = begin(); it != end(); it++) {
-        ff = other.find(*it);
-
-        if (ff == other.end()) {
+    for (iterator it = begin(); it != end();) {
+        if (other.find(*it) == other.end()) {
             // Not in both sets
-            erase(it);
+            it = erase(it);
+        }
+        else {
+            ++it;
         }
     }
 }
@@ -58,12 +53,8 @@ void AssignSet::makeIsect(const AssignSet& other)
 
 bool AssignSet::isSubSetOf(const AssignSet& other)
 {
-    iterator it, ff;
-
-    for (it = begin(); it != end(); it++) {
-        ff = other.find(*it);
-
-        if (ff == other.end()) {
+    for (auto it = begin(); it != end(); ++it) {
+        if (other.find(*it) == other.end()) {
             return false;
         }
     }
@@ -116,14 +107,17 @@ char *AssignSet::prints()
 {
     QString     tgt;
     QTextStream ost(&tgt);
-    iterator    it;
+    bool first = true;
 
-    for (it = begin(); it != end(); it++) {
-        if (it != begin()) {
+    for (Assign *as : *this) {
+        if (first) {
+            first = false;
+        }
+        else {
             ost << ",\t";
         }
 
-        ost << *it;
+        ost << as;
     }
 
     ost << "\n";
@@ -136,16 +130,13 @@ char *AssignSet::prints()
 void AssignSet::dump()
 {
     QTextStream q_cerr(stderr);
-
     print(q_cerr);
 }
 
 
 void AssignSet::print(QTextStream& os) const
 {
-    iterator it;
-
-    for (it = begin(); it != end(); it++) {
+    for (iterator it = begin(); it != end(); ++it) {
         if (it != begin()) {
             os << ",\t";
         }
@@ -176,23 +167,13 @@ void AssignSet::printNums(QTextStream& os)
 
 bool AssignSet::operator<(const AssignSet& o) const
 {
-    if (size() < o.size()) {
-        return true;
+    if (size() != o.size()) {
+        return size() < o.size();
     }
 
-    if (size() > o.size()) {
-        return false;
-    }
-
-    const_iterator it1, it2;
-
-    for (it1 = begin(), it2 = o.begin(); it1 != end(); it1++, it2++) {
-        if (*it1 < *it2) {
-            return true;
-        }
-
-        if (*it1 > *it2) {
-            return false;
+    for (auto it1 = begin(), it2 = o.begin(); it1 != end(); ++it1, ++it2) {
+        if (*it1 != *it2) {
+            return *it1 < *it2;
         }
     }
 

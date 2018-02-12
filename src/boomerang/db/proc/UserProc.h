@@ -296,6 +296,7 @@ public:
     /// eliminate duplicate arguments
     void eliminateDuplicateArgs();
 
+    /// Remove assignments of the form x := x
     bool removeNullStatements();
 
     /// Count references to the things that are under SSA control.

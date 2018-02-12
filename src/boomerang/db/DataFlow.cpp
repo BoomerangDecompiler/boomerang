@@ -108,9 +108,7 @@ void DataFlow::calculateDominators()
         link(p, n);
 
         // for each v in bucket[p]
-        for (std::set<int>::iterator jj = m_bucket[p].begin(); jj != m_bucket[p].end(); jj++) {
-            int v = *jj;
-
+        for (int v : m_bucket[p]) {
             /* Now that the path from p to v has been linked into the spanning forest,
              * these lines calculate the dominator of v, based on the first clause of the Dominator Theorem,#
              * or else defer the calculation until y's dominator is known. */

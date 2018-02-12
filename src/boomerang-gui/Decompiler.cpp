@@ -41,7 +41,7 @@ void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 
 void Decompiler::removeEntryPoint(Address entryAddr)
 {
-    for (std::vector<Address>::iterator it = m_userEntrypoints.begin(); it != m_userEntrypoints.end(); it++) {
+    for (std::vector<Address>::iterator it = m_userEntrypoints.begin(); it != m_userEntrypoints.end(); ++it) {
         if (*it == entryAddr) {
             m_userEntrypoints.erase(it);
             break;

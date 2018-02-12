@@ -110,7 +110,7 @@ void Module::addChild(Module *module)
 
 void Module::removeChild(Module *module)
 {
-    for (auto it = m_children.begin(); it != m_children.end(); it++) {
+    for (auto it = m_children.begin(); it != m_children.end(); ++it) {
         if (*it == module) {
             m_children.erase(it);
         }

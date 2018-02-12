@@ -150,7 +150,7 @@ ConnectionGraph::iterator ConnectionGraph::remove(iterator aa)
 {
     assert(aa != emap.end());
     SharedExp b = aa->second;
-    emap.erase(aa++);
+    aa = emap.erase(aa);
     iterator bb = emap.find(b);
     assert(bb != emap.end());
 

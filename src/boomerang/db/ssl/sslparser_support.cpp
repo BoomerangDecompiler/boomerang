@@ -422,6 +422,7 @@ SharedExp listStrToExp(std::list<QString> *ls)
 static Binary  srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
 static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
 
+
 /**
  * Expand tables in an RTL and save to dictionary
  * \note    This may generate many entries
@@ -433,14 +434,13 @@ static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), T
  */
 void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict& Dict)
 {
-    int     i, m;
-    QString nam;
-
-    m = iname->getNumInstructions();
+    const int m = iname->getNumInstructions();
+    iname->reset();
 
     // Expand the tables (if any) in this instruction
-    for (i = 0, iname->reset(); i < m; i++, iname->increment()) {
-        nam = iname->getInstruction();
+    for (int i = 0; i < m; i++, iname->increment()) {
+        QString name = iname->getInstruction();
+
         // Need to make substitutions to a copy of the RTL
         RTL rtl(*o_rtlist); // deep copy of contents
 
@@ -450,13 +450,11 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
             assert(s->getKind() == StmtType::Assign);
 
             if (((Assign *)s)->searchAll(srchExpr, le)) {
-                std::list<SharedExp>::iterator it;
-
-                for (it = le.begin(); it != le.end(); it++) {
-                    QString   tbl  = (*it)->access<Const, 1>()->getStr();
-                    QString   idx  = (*it)->access<Const, 2>()->getStr();
+                for (SharedExp e : le) {
+                    QString   tbl  = (e)->access<Const, 1>()->getStr();
+                    QString   idx  = (e)->access<Const, 2>()->getStr();
                     SharedExp repl = ((ExprTable *)TableDict[tbl].get())->expressions[indexrefmap[idx]->getValue()];
-                    s->searchAndReplace(**it, repl);
+                    s->searchAndReplace(*e, repl);
                 }
             }
 
@@ -491,10 +489,10 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
             }
         }
 
-        if (Dict.insert(nam, *params, rtl) != 0) {
+        if (Dict.insert(name, *params, rtl) != 0) {
             QString     errmsg;
             QTextStream o(&errmsg);
-            o << "Pattern " << iname->getInsPattern() << " conflicts with an earlier declaration of " << nam << ".\n";
+            o << "Pattern " << iname->getInsPattern() << " conflicts with an earlier declaration of " << name << ".\n";
             yyerror(qPrintable(errmsg));
         }
     }

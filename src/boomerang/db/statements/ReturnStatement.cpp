@@ -78,14 +78,12 @@ void ReturnStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
 
 void ReturnStatement::simplify()
 {
-    iterator it;
-
-    for (it = m_modifieds.begin(); it != m_modifieds.end(); it++) {
-        (*it)->simplify();
+    for (Statement *s : m_modifieds) {
+        s->simplify();
     }
 
-    for (it = m_returns.begin(); it != m_returns.end(); it++) {
-        (*it)->simplify();
+    for (Statement *s : m_returns) {
+        s->simplify();
     }
 }
 
@@ -430,8 +428,6 @@ void ReturnStatement::updateModifieds()
     // be filtered and sorted to become the new modifieds
     // Ick... O(N*M) (N existing modifeds, M collected locations)
 
-    StatementList::iterator it;
-
     for (DefCollector::iterator ll = m_col.begin(); ll != m_col.end(); ++ll) {
         bool      found  = false;
         Assign    *as    = static_cast<Assign *>(*ll);
@@ -441,8 +437,8 @@ void ReturnStatement::updateModifieds()
             continue;     // Filtered out
         }
 
-        for (it = oldMods.begin(); it != oldMods.end(); it++) {
-            SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
+        for (Statement *s : oldMods) {
+            SharedExp lhs = static_cast<Assignment *>(s)->getLeft();
 
             if (*lhs == *colLhs) {
                 found = true;
@@ -461,8 +457,8 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
     // the
     // new list. So read the old modifications in reverse order
-    for (it = oldMods.end(); it != oldMods.begin();) {
-        --it;     // Becuase we are using a forwards iterator backwards
+    for (StatementList::iterator it = oldMods.end(); it != oldMods.begin();) {
+        --it;     // Because we are using a forwards iterator backwards
         // Make sure the LHS is still in the collector
         Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();
@@ -476,12 +472,12 @@ void ReturnStatement::updateModifieds()
         }
 
         // Insert as, in order, into the existing set of modifications
-        StatementList::iterator nn;
+
         bool inserted = false;
 
-        for (nn = m_modifieds.begin(); nn != m_modifieds.end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {     // If the new assignment is less than the current one
-                nn       = m_modifieds.insert(nn, as);               // then insert before this position
+        for (auto nn = m_modifieds.begin(); nn != m_modifieds.end(); ++nn) {
+            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) { // If the new assignment is less than the current one
+                nn       = m_modifieds.insert(nn, as);                      // then insert before this position
                 inserted = true;
                 break;
             }
@@ -501,10 +497,11 @@ void ReturnStatement::updateReturns()
     StatementList oldRets(m_returns);     // Copy the old returns
 
     m_returns.clear();
+
     // For each location in the modifieds, make sure that there is an assignment in the old returns, which will
     // be filtered and sorted to become the new returns
     // Ick... O(N*M) (N existing returns, M modifieds locations)
-    for (StatementList::iterator dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
+    for (auto dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
         bool      found = false;
         SharedExp loc   = static_cast<Assignment *>(*dd)->getLeft();
 
@@ -519,7 +516,7 @@ void ReturnStatement::updateReturns()
             continue;
         }
 
-        for (StatementList::iterator it = oldRets.begin(); it != oldRets.end(); it++) {
+        for (StatementList::iterator it = oldRets.begin(); it != oldRets.end(); ++it) {
             SharedExp lhs = static_cast<Assign *>(*it)->getLeft();
 
             if (*lhs == *loc) {

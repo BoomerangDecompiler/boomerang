@@ -523,7 +523,7 @@ void CCodeGenerator::removeUnusedLabels()
             }
         }
 
-        it++;
+        ++it;
     }
 }
 
@@ -563,7 +563,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
         last = std::prev(last);
     }
 
-    for (auto it = proc->getLocals().begin(); it != proc->getLocals().end(); it++) {
+    for (auto it = proc->getLocals().begin(); it != proc->getLocals().end(); ++it) {
         SharedType locType = it->second;
 
         if ((locType == nullptr) || locType->isVoid()) {
