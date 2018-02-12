@@ -126,9 +126,8 @@ void StatementTest::testFlow()
     prog->setFrontEnd(pFE);
 
     // create UserProc
-    std::string name  = "test";
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
+    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();

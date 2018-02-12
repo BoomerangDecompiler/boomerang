@@ -217,7 +217,6 @@ void ExpTest::testSearchReplace1()
     QString     actual;
     QTextStream ost(&actual);
 
-    std::string expected("r2@15:8");
     p->print(ost);
     QCOMPARE(actual, QString("r2@15:8"));
 
