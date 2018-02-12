@@ -158,16 +158,16 @@ public:
     DWord getDelta();
 
 protected:
-    SWord dos4gwRead2(const void *src) const; // Read 2 bytes from native addr
-    DWord dos4gwRead4(const void *src) const; // Read 4 bytes from native addr
+    SWord dos4gwRead2(const void *src) const; ///< Read 2 bytes from native addr
+    DWord dos4gwRead4(const void *src) const; ///< Read 4 bytes from native addr
 
 private:
     LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header
     LXObject *m_pLXObjects = nullptr;     ///< Pointer to lx objects
-    int m_cbImage;                        ///< Size of image
-    char *base;                           ///< Beginning of the loaded image
+    int m_cbImage = 0;                    ///< Size of image
+    char *base = nullptr;                 ///< Beginning of the loaded image
 
     /// Map from address of dynamic pointers to library procedure names:
-    IBinarySymbolTable *m_symbols;
-    IBinaryImage *m_image;
+    IBinarySymbolTable *m_symbols = nullptr;
+    IBinaryImage *m_image = nullptr;
 };

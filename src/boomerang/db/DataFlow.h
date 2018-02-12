@@ -163,12 +163,12 @@ private:
     void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                         std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
 private:
-    UserProc* m_proc;
+    UserProc* m_proc = nullptr;
 
     /* Dominance Frontier Data */
 
     /* These first two are not from Appel; they map PBBs to indices */
-    std::vector<BasicBlock *> m_BBs;                                 ///< Maps index -> BasicBlock
+    std::vector<BasicBlock *> m_BBs;                 ///< Maps index -> BasicBlock
     std::unordered_map<BasicBlock *, int> m_indices; ///< Maps BasicBlock -> index
 
     /// Calculating the dominance frontier
@@ -178,22 +178,17 @@ private:
     /// if dfnum[a] < dfnum[b]
     std::vector<int> m_dfnum;
 
-    /// Immediate (unique) ancestor of the depth first spanning tree
-    std::vector<int> m_ancestor;
+    std::vector<int> m_ancestor; /// Immediate (unique) ancestor of the depth first spanning tree
+    std::vector<int> m_semi;     /// Semi dominator of n
+    std::vector<int> m_idom;     /// Immediate dominator
 
-    /// Semi dominator of n
-    std::vector<int> m_semi;
-
-    /// Immediate dominator
-    std::vector<int> m_idom;
-
-    std::vector<int> m_samedom;           ///< ? To do with deferring
-    std::vector<int> m_vertex;            ///< ?
-    std::vector<int> m_parent;            ///< Parent in the dominator tree?
-    std::vector<int> m_best;              ///< Improves ancestorWithLowestSemi
-    std::vector<std::set<int> > m_bucket; ///< Deferred calculation?
-    std::vector<std::set<int> > m_DF;     ///< Dominance frontier for every node n
-    int N;                                ///< Current node number in algorithm
+    std::vector<int> m_samedom;          ///< ? To do with deferring
+    std::vector<int> m_vertex;           ///< ?
+    std::vector<int> m_parent;           ///< Parent in the dominator tree?
+    std::vector<int> m_best;             ///< Improves ancestorWithLowestSemi
+    std::vector<std::set<int>> m_bucket; ///< Deferred calculation?
+    std::vector<std::set<int>> m_DF;     ///< Dominance frontier for every node n
+    int N = 0;                           ///< Current node number in algorithm
 
     /*
      * Inserting phi-functions

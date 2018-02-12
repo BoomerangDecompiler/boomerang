@@ -73,12 +73,12 @@ private:
     void addTrapSymbols();
 
 private:
-    unsigned char *m_image; ///< Points to loaded image
-    unsigned char *m_data;  ///< Points to data
+    Byte *m_image = nullptr; ///< Points to loaded image
+    Byte *m_data = nullptr;  ///< Points to data
 
     /// Offset from start of data to where register a5 should be initialised to
-    unsigned int m_sizeBelowA5;
+    unsigned int m_sizeBelowA5 = 0;
 
-    IBinaryImage *m_binaryImage;
-    IBinarySymbolTable *m_symbols;
+    IBinaryImage *m_binaryImage = nullptr;
+    IBinarySymbolTable *m_symbols = nullptr;
 };

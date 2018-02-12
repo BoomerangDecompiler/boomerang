@@ -128,15 +128,15 @@ private:
     void findJumps(Address curr);
 
 private:
-    char *base;           ///< Beginning of the loaded image
-    Address entrypoint;
-    Address loaded_addr;
-    unsigned loaded_size;
-    Machine machine;
-    bool swap_bytes;
+    char *base = nullptr;                    ///< Beginning of the loaded image
+    Address entrypoint   = Address::INVALID;
+    Address loaded_addr  = Address::INVALID;
+    unsigned loaded_size = 0;
+    Machine machine      = Machine::INVALID;
+    bool swap_bytes      = false;
 
     std::map<QString, ObjcModule> modules;
     std::vector<struct section> sections;
-    IBinaryImage *Image;
-    IBinarySymbolTable *Symbols;
+    IBinaryImage *Image = nullptr;
+    IBinarySymbolTable *Symbols = nullptr;
 };

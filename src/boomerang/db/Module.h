@@ -129,13 +129,13 @@ private:
 private:
     FunctionList m_functionList; ///< The Functions in the module
     FunctionMap m_labelsToProcs;
-    IFrontEnd *m_currentFrontend;
+    IFrontEnd *m_currentFrontend = nullptr;
 
 protected:
     QString m_name;
-    Module *m_parent = nullptr;
     std::vector<Module *> m_children;
-    Prog *m_prog           = nullptr;
+    Module *m_parent = nullptr;
+    Prog *m_prog     = nullptr;
     QFile m_out;
     QTextStream m_strm;
     QString m_stream_ext;

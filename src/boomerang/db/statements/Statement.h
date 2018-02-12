@@ -150,8 +150,6 @@ public:
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;
 
-    void setLexBegin(unsigned int n) { m_lexBegin = n; }
-    void setLexEnd(unsigned int n) { m_lexEnd = n; }
     unsigned int getLexBegin() const { return m_lexBegin; }
     unsigned int getLexEnd() const { return m_lexEnd; }
 
@@ -384,8 +382,8 @@ public:
 
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
-    UserProc *m_proc = nullptr;     ///< procedure containing this statement
-    int m_number = -1;              ///< Statement number for printing
+    UserProc *m_proc = nullptr; ///< procedure containing this statement
+    int m_number = -1;          ///< Statement number for printing
 
 #if USE_DOMINANCE_NUMS
     int m_dominanceNum = -1;        ///< Like a statement number, but has dominance properties
@@ -398,7 +396,6 @@ protected:
 #endif
 
     StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. STMT_BRANCH)
-    unsigned int m_lexBegin, m_lexEnd;
 };
 
 

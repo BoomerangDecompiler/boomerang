@@ -68,14 +68,14 @@ public:
 private:
     class SectionInfoImpl *m_impl;
 
-    QString               m_sectionName;      ///< Name of section
-    Address               m_nativeAddr;       ///< Logical or native load address
-    HostAddress           m_hostAddr;         ///< Host or actual address of data
-    uint64                m_size;             ///< Size of section in bytes
-    uint32_t              m_sectionEntrySize; ///< Size of one section entry (if applicable)
-    unsigned              m_code     : 1;     ///< Set if section contains instructions
-    unsigned              m_data     : 1;     ///< Set if section contains data
-    unsigned              m_bss      : 1;     ///< Set if section is BSS (allocated only)
-    unsigned              m_readOnly : 1;     ///< Set if this is a read only section
-    uint8_t               m_endianness;       ///< 0 Little endian, 1 Big endian
+    QString               m_sectionName;                     ///< Name of section
+    Address               m_nativeAddr = Address::INVALID;   ///< Logical or native load address
+    HostAddress           m_hostAddr = HostAddress::INVALID; ///< Host or actual address of data
+    uint64                m_size = 0;                        ///< Size of section in bytes
+    uint32_t              m_sectionEntrySize = 0;            ///< Size of one section entry (if applicable)
+    unsigned              m_code     : 1;                    ///< Set if section contains instructions
+    unsigned              m_data     : 1;                    ///< Set if section contains data
+    unsigned              m_bss      : 1;                    ///< Set if section is BSS (allocated only)
+    unsigned              m_readOnly : 1;                    ///< Set if this is a read only section
+    uint8_t               m_endianness = 0;                  ///< 0 Little endian, 1 Big endian
 };

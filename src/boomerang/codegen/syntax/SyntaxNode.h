@@ -106,12 +106,12 @@ public:
     { Q_UNUSED(root); Q_UNUSED(successors); }
 
 protected:
-    BasicBlock *m_bb;
-    int m_nodeID;
-    int m_score;
-    SyntaxNode *m_correspond; ///< corresponding node in previous state
-    bool m_isGoto;
-    int m_depth;
+    BasicBlock *m_bb = nullptr;
+    int m_nodeID = -1;
+    int m_score = 0;
+    SyntaxNode *m_correspond = nullptr; ///< corresponding node in previous state
+    bool m_isGoto = false;
+    int m_depth = 0;
 };
 
 // for debugging
