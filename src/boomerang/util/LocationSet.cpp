@@ -136,15 +136,10 @@ bool LocationSet::operator==(const LocationSet& o) const
         return false;
     }
 
-    ExpSet::const_iterator it1, it2;
-
-    for (it1 = lset.begin(), it2 = o.lset.begin(); it1 != lset.end(); it1++, it2++) {
-        if (!(**it1 == **it2)) {
-            return false;
-        }
-    }
-
-    return true;
+    return std::equal(lset.begin(), lset.end(), o.lset.begin(),
+        [](const SharedConstExp& e1, const SharedConstExp& e2) {
+            return *e1 == *e2;
+        });
 }
 
 

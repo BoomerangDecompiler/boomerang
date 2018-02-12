@@ -166,15 +166,9 @@ bool StatementSet::operator<(const StatementSet& o) const
         return false;
     }
 
-    const_iterator it1, it2;
-
-    for (it1 = begin(), it2 = o.begin(); it1 != end(); it1++, it2++) {
-        if (*it1 < *it2) {
-            return true;
-        }
-
-        if (*it1 > *it2) {
-            return false;
+    for (auto it1 = begin(), it2 = o.begin(); it1 != end(); ++it1, ++it2) {
+        if (*it1 != *it2) {
+            return *it1 < *it2;
         }
     }
 

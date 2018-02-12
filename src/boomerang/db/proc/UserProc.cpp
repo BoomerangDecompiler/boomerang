@@ -267,13 +267,7 @@ void UserProc::setParamType(const char *nam, SharedType ty)
 
 void UserProc::setParamType(int idx, SharedType ty)
 {
-    int n = 0;
-
-    StatementList::iterator it;
-
-    // find n-th parameter it
-    for (it = m_parameters.begin(); n != idx && it != m_parameters.end(); ++it, ++n) {
-    }
+    auto it = std::next(m_parameters.begin(), idx);
 
     if (it != m_parameters.end()) {
         Assignment *a = static_cast<Assignment *>(*it);
@@ -436,11 +430,8 @@ void UserProc::printUseGraph()
     out << "digraph " << getName() << " {\n";
     StatementList stmts;
     getStatements(stmts);
-    StatementList::iterator it;
 
-    for (it = stmts.begin(); it != stmts.end(); ++it) {
-        Statement *s = *it;
-
+    for (Statement *s : stmts) {
         if (s->isPhi()) {
             out << s->getNumber() << " [shape=diamond];\n";
         }
@@ -448,9 +439,9 @@ void UserProc::printUseGraph()
         LocationSet refs;
         s->addUsedLocs(refs);
 
-        for (LocationSet::iterator rr = refs.begin(); rr != refs.end(); ++rr) {
-            if ((*rr)->isSubscript()) {
-                auto r = (*rr)->access<RefExp>();
+        for (SharedExp rr : refs) {
+            if (rr->isSubscript()) {
+                auto r = rr->access<RefExp>();
 
                 if (r->getDef()) {
                     out << r->getDef()->getNumber() << " -> " << s->getNumber() << ";\n";
@@ -492,6 +483,7 @@ void UserProc::setEntryBB()
 
 void UserProc::addCallee(Function *callee)
 {
+    // is it already in? (this is much slower than using a set)
     if (std::find(m_calleeList.begin(), m_calleeList.end(), callee) != m_calleeList.end()) {
         // already present
         return;
@@ -645,8 +637,8 @@ void UserProc::printDFG() const
         LocationSet refs;
         s->addUsedLocs(refs);
 
-        for (auto rr = refs.begin(); rr != refs.end(); ++rr) {
-            auto r = std::dynamic_pointer_cast<RefExp>(*rr);
+        for (SharedExp rr : refs) {
+            auto r = std::dynamic_pointer_cast<RefExp>(rr);
 
             if (r) {
                 if (r->getDef()) {
@@ -741,7 +733,6 @@ void UserProc::removeStatement(Statement *stmt)
         it->second->addUsedLocs(refs);
         it->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
         bool usesIt = false;
-
         for (SharedExp r : refs) {
             if (r->isSubscript() && (r->access<RefExp>()->getDef() == stmt)) {
                 usesIt = true;
@@ -757,7 +748,7 @@ void UserProc::removeStatement(Statement *stmt)
             continue;
         }
 
-        ++it; // it is incremented with the erase, or here
+        ++it;
     }
 
     // remove from BB/RTL
@@ -784,7 +775,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
     if (s == nullptr) {
         // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
         bb = m_cfg->getEntryBB();
-        RTLList *rtls    = bb->getRTLs();
+        RTLList *rtls = bb->getRTLs();
         assert(!rtls->empty()); // Entry BB should have at least 1 RTL
         stmts = rtls->front().get();
         it    = stmts->begin();
@@ -1549,10 +1540,13 @@ void UserProc::remUnusedStmtEtc()
                 phiStmt->getStmtAt(bb);
                 PhiAssign::PhiDefs& defs = phiStmt->getDefs();
 
-                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end(); ++defIt) {
+                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end();) {
                     if (!m_cfg->hasBB(defIt->first)) {
                         // remove phi reference to deleted bb
                         defIt = defs.erase(defIt);
+                    }
+                    else {
+                        ++defIt;
                     }
                 }
             }
@@ -1619,9 +1613,8 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
                 StatementSet stmtsRefdByUnused;
                 LocationSet    components;
                 s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
-                LocationSet::iterator cc;
 
-                for (cc = components.begin(); cc != components.end(); cc++) {
+                for (auto cc = components.begin(); cc != components.end(); ++cc) {
                     if ((*cc)->isSubscript()) {
                         stmtsRefdByUnused.insert((*cc)->access<RefExp>()->getDef());
                     }
@@ -2194,10 +2187,9 @@ void UserProc::findFinalParameters()
         for (int i = 0; i < n; ++i) {
             SharedExp             paramLoc = m_signature->getParamExp(i)->clone(); // E.g. m[r28 + 4]
             LocationSet           components;
-            LocationSet::iterator cc;
             paramLoc->addUsedLocs(components);
 
-            for (cc = components.begin(); cc != components.end(); ++cc) {
+            for (auto cc = components.begin(); cc != components.end(); ++cc) {
                 if (*cc != paramLoc) {                       // Don't subscript outer level
                     paramLoc->expSubscriptVar(*cc, nullptr); // E.g. r28 -> r28{-}
                     paramLoc->accept(&ic);                   // E.g. r28{-} -> r28{0}
@@ -2224,11 +2216,7 @@ void UserProc::findFinalParameters()
     StatementList stmts;
     getStatements(stmts);
 
-    StatementList::iterator it;
-
-    for (it = stmts.begin(); it != stmts.end(); ++it) {
-        Statement *s = *it;
-
+    for (Statement *s : stmts) {
         // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
         // program
         if (!s->isImplicit()) {
@@ -2276,11 +2264,10 @@ void UserProc::addParameter(SharedExp e, SharedType ty)
 
 void UserProc::addParameterSymbols()
 {
-    StatementList::iterator it;
     ImplicitConverter       ic(m_cfg);
     int i = 0;
 
-    for (it = m_parameters.begin(); it != m_parameters.end(); ++it, ++i) {
+    for (auto it = m_parameters.begin(); it != m_parameters.end(); ++it, ++i) {
         SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
         lhs = lhs->expSubscriptAllNull();
         lhs = lhs->accept(&ic);
@@ -2398,7 +2385,6 @@ bool UserProc::removeNullStatements()
 {
     bool          change = false;
     StatementList stmts;
-
     getStatements(stmts);
     // remove null code
     for (Statement *s : stmts) {
@@ -2688,8 +2674,8 @@ void UserProc::removeUnusedLocals()
     QSet<QString> usedLocals;
     StatementList stmts;
     getStatements(stmts);
-    // First count any uses of the locals
 
+    // First count any uses of the locals
     bool all = false;
 
     for (Statement *s : stmts) {
@@ -2735,7 +2721,6 @@ void UserProc::removeUnusedLocals()
     for (auto it = m_locals.begin(); it != m_locals.end(); ++it) {
         const QString& name(it->first);
 
-        // LOG << "Considering local " << name << "\n";
         if (all && removes.size()) {
             LOG_VERBOSE("WARNING: defineall seen in procedure %1, so not removing %2 locals",
                         name, removes.size());
@@ -2751,13 +2736,11 @@ void UserProc::removeUnusedLocals()
     }
 
     // Remove any definitions of the removed locals
-    for (StatementList::iterator ss = stmts.begin(); ss != stmts.end(); ++ss) {
-        Statement             *s = *ss;
-        LocationSet           ls;
-        LocationSet::iterator ll;
+    for (Statement *s : stmts) {
+        LocationSet ls;
         s->getDefinitions(ls);
 
-        for (ll = ls.begin(); ll != ls.end(); ++ll) {
+        for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
             SharedType ty   = s->getTypeFor(*ll);
             QString    name = findLocal(*ll, ty);
 
@@ -2844,10 +2827,8 @@ void UserProc::fromSSAForm()
     for (Statement *s : stmts) {
         LocationSet defs;
         s->getDefinitions(defs);
-        LocationSet::iterator dd;
 
-        for (dd = defs.begin(); dd != defs.end(); dd++) {
-            SharedExp  base = *dd;
+        for (SharedExp base : defs) {
             SharedType ty   = s->getTypeFor(base);
 
             if (ty == nullptr) { // Can happen e.g. when getting the type for %flags
@@ -2892,13 +2873,13 @@ void UserProc::fromSSAForm()
     if (SETTING(debugLiveness)) {
         LOG_MSG("## ig interference graph:");
 
-        for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ii++) {
+        for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ++ii) {
             LOG_MSG("   ig %1 -> %2", ii->first, ii->second);
         }
 
         LOG_MSG("## pu phi unites graph:");
 
-        for (ConnectionGraph::iterator ii = pu.begin(); ii != pu.end(); ii++) {
+        for (ConnectionGraph::iterator ii = pu.begin(); ii != pu.end(); ++ii) {
             LOG_MSG("   pu %1 -> %2", ii->first, ii->second);
         }
     }
@@ -3598,7 +3579,7 @@ bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
 SharedExp UserProc::getProven(SharedExp left)
 {
     // Note: proven information is in the form r28 mapsto (r28 + 4)
-    std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_provenTrue.find(left);
+    auto it = m_provenTrue.find(left);
 
     if (it != m_provenTrue.end()) {
         return it->second;
@@ -3613,7 +3594,7 @@ SharedExp UserProc::getProven(SharedExp left)
 
 SharedExp UserProc::getPremised(SharedExp left)
 {
-    std::map<SharedExp, SharedExp, lessExpStar>::iterator it = m_recurPremises.find(left);
+    auto it = m_recurPremises.find(left);
 
     if (it != m_recurPremises.end()) {
         return it->second;
@@ -3974,9 +3955,8 @@ void UserProc::reverseStrengthReduction()
                         // replace with x{p} * c
                         StatementList stmts2;
                         getStatements(stmts2);
-                        StatementList::iterator it2;
 
-                        for (it2 = stmts2.begin(); it2 != stmts2.end(); it2++) {
+                        for (auto it2 = stmts2.begin(); it2 != stmts2.end(); ++it2) {
                             if (*it2 != as) {
                                 (*it2)->searchAndReplace(*r, Binary::get(opMult, r->clone(), Const::get(c)));
                             }
@@ -4879,10 +4859,10 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     if (removedParams || removedRets) {
         // Update the statements that call us
 
-        for (std::set<CallStatement *>::iterator it = m_callerSet.begin(); it != m_callerSet.end(); it++) {
-            (*it)->updateArguments();              // Update caller's arguments
-            updateSet.insert((*it)->getProc());    // Make sure we redo the dataflow
-            removeRetSet.insert((*it)->getProc()); // Also schedule caller proc for more analysis
+        for (CallStatement *call : m_callerSet) {
+            call->updateArguments();              // Update caller's arguments
+            updateSet.insert(call->getProc());    // Make sure we redo the dataflow
+            removeRetSet.insert(call->getProc()); // Also schedule caller proc for more analysis
         }
 
         // Now update myself
@@ -4967,10 +4947,8 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     }
 
     // Check if the liveness of any calls has changed
-    std::map<CallStatement *, UseCollector>::iterator ll;
-
-    for (ll = callLiveness.begin(); ll != callLiveness.end(); ++ll) {
-        CallStatement *call       = ll->first;
+    for (auto ll = callLiveness.begin(); ll != callLiveness.end(); ++ll) {
+        CallStatement *call             = ll->first;
         const UseCollector& oldLiveness = ll->second;
         const UseCollector& newLiveness = *call->getUseCollector();
 
@@ -5117,9 +5095,7 @@ void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
     m_df.findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
 
     // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
-    std::map<SharedExp, PhiAssign *, lessExpStar>::iterator it;
-
-    for (it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
+    for (auto it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
         // For each phi parameter, remove from the final usedByDomPhi set
         for (RefExp& v : *it->second) {
             assert(v.getSubExp1());

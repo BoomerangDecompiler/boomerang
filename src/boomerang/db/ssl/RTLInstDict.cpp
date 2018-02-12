@@ -457,24 +457,7 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
             Assign *te = new Assign(var.second.type, var.second.base->clone(), var.second.tmp);
             rts.push_back(te);
         }
-        else {
-            // The temp is either used (uncloned) in the assignment, or is deleted here
-            // delete sr->second.tmp;
-        }
     }
-
-#ifdef DEBUG_POSTVAR
-    std::cout << "\nTo =>\n";
-
-    for (std::list<SharedExp>::iterator p = rts->begin(); p != rts->end(); p++) {
-        std::cout << setw(8) << " ";
-        (*p)->print(std::cout);
-        std::cout << "\n";
-    }
-    std::cout << "\n";
-#endif
-
-    // return rts;
 }
 
 
