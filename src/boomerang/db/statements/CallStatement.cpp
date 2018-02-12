@@ -244,12 +244,8 @@ bool ArgSourceProvider::exists(SharedExp e)
 
 
 CallStatement::CallStatement()
-    : m_returnAfterCall(false)
-    , m_calleeReturn(nullptr)
 {
-    m_kind      = StmtType::Call;
-    m_procDest  = nullptr;
-    m_signature = nullptr;
+    m_kind = StmtType::Call;
 }
 
 

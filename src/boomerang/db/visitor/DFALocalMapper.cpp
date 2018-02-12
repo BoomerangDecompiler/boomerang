@@ -18,10 +18,9 @@
 
 DfaLocalMapper::DfaLocalMapper(UserProc *proc)
     : m_proc(proc)
+    , m_prog(proc->getProg())
+    , m_sig(proc->getSignature())
 {
-    m_sig  = proc->getSignature();
-    m_prog = proc->getProg();
-    change = false;
 }
 
 

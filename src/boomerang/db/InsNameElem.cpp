@@ -18,10 +18,8 @@
 
 
 InsNameElem::InsNameElem(const QString& name)
+    : m_elemName(name)
 {
-    m_elemName = name;
-    m_value    = 0;
-    m_nextElem = nullptr;
 }
 
 
@@ -137,9 +135,9 @@ QString InsOptionElem::getInsPattern() const
 
 InsListElem::InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx)
     : InsNameElem(name)
+    , m_indexName(idx)
+    , m_theTable(t)
 {
-    m_indexName = idx;
-    m_theTable  = t;
 }
 
 

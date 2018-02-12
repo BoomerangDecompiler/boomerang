@@ -45,7 +45,7 @@ public:
 protected:
     std::shared_ptr<InsNameElem> m_nextElem;
     QString m_elemName;
-    size_t m_value;
+    size_t m_value = 0;
 };
 
 

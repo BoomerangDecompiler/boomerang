@@ -90,11 +90,11 @@ Const::Const(Address addr)
 
 Const::Const(const Const& other)
     : Exp(other.m_oper)
+    , m_string(other.m_string)
+    , m_conscript(other.m_conscript)
+    , m_type(other.m_type)
 {
-    m_value     = other.m_value;
-    m_conscript = other.m_conscript;
-    m_type      = other.m_type;
-    m_string    = other.m_string;
+    memcpy(&m_value, &other.m_value, sizeof(m_value));
 }
 
 

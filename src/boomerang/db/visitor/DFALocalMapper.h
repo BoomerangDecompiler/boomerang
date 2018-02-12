@@ -48,11 +48,11 @@ public:
     SharedExp preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
 public:
-    bool change; // True if changed this statement
+    bool change = false; // True if changed this statement
 
 private:
-    UserProc *m_proc;
-    Prog *m_prog;
+    UserProc *m_proc = nullptr;
+    Prog *m_prog = nullptr;
     std::shared_ptr<Signature> m_sig;      ///< Look up once (from proc) for speed
 
     /// Common processing for the two main cases (visiting a Location or a Binary)

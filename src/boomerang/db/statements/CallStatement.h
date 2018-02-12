@@ -227,7 +227,7 @@ private:
     bool objcSpecificProcessing(const QString& formatStr);
 
 private:
-    bool m_returnAfterCall; // True if call is effectively followed by a return.
+    bool m_returnAfterCall = false; // True if call is effectively followed by a return.
 
     /// The list of arguments passed by this call, actually a list of Assign statements (location := expr)
     StatementList m_arguments;
@@ -240,7 +240,7 @@ private:
     /// Destination of call. In the case of an analysed indirect call, this will be ONE target's return statement.
     /// For an unanalysed indirect call, or a call whose callee is not yet sufficiently decompiled due to recursion,
     /// this will be nullptr
-    Function *m_procDest;
+    Function *m_procDest = nullptr;
 
     /// The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
     /// the proc happens to have varargs
@@ -259,5 +259,5 @@ private:
     /// this will be a special ReturnStatement with ImplicitAssigns.
     /// Callee could be unanalysed because of an unanalysed indirect call,
     /// or a "recursion break".
-    ReturnStatement *m_calleeReturn;
+    ReturnStatement *m_calleeReturn = nullptr;
 };
