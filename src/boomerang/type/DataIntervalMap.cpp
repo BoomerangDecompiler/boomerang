@@ -25,7 +25,7 @@ DataIntervalMap::DataIntervalMap(UserProc *userProc)
 }
 
 
-bool DataIntervalMap::isClear(Address addr, unsigned size)
+bool DataIntervalMap::isClear(Address addr, unsigned size) const
 {
     VariableMap::const_iterator it1, it2;
     std::tie(it1, it2) = m_varMap.equalRange(addr, addr + size);
