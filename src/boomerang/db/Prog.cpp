@@ -308,46 +308,44 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 SharedType makeUDT(int index, DWORD64 ModBase)
 {
     HANDLE hProcess = GetCurrentProcess();
-    int    got;
     WCHAR  *name;
 
-    got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME, &name);
-    assert(got);
+    BOOL gotType = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME, &name);
+    if (!gotType) {
+        return nullptr;
+    }
 
-    if (got) {
-        char nameA[1024];
-        WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
-        SharedType ty = Type::getNamedType(nameA);
+    char nameA[1024];
+    WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
+    SharedType ty = Type::getNamedType(nameA);
 
-        if (ty) {
-            return NamedType::get(nameA);
-        }
-
-        auto  cty   = CompoundType::get();
-        DWORD count = 0;
-        got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
-        int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
-        dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(FindChildrenSize);
-        memset(pFC, 0, FindChildrenSize);
-        pFC->Count = count;
-        got        = SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC);
-
-        for (unsigned int i = 0; i < count; i++) {
-            char fieldName[1024];
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
-            WideCharToMultiByte(CP_ACP, 0, name, -1, fieldName, sizeof(fieldName), 0, nullptr);
-            DWORD mytype;
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
-            cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
-        }
-
-        Type::addNamedType(nameA, cty);
-        ty = Type::getNamedType(nameA);
-        assert(ty);
+    if (ty) {
         return NamedType::get(nameA);
     }
 
-    return nullptr;
+    auto  cty   = CompoundType::get();
+    DWORD count = 0;
+    dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
+    int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
+    dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(FindChildrenSize);
+    memset(pFC, 0, FindChildrenSize);
+    pFC->Count = count;
+    SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC);
+
+    for (unsigned int i = 0; i < count; i++) {
+        char fieldName[1024];
+        dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
+        WideCharToMultiByte(CP_ACP, 0, name, -1, fieldName, sizeof(fieldName), 0, nullptr);
+        DWORD mytype;
+        dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
+        cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
+    }
+
+    Type::addNamedType(nameA, cty);
+    ty = Type::getNamedType(nameA);
+    assert(ty);
+    return NamedType::get(nameA);
+
 }
 
 
