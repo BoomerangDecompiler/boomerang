@@ -22,19 +22,16 @@
 #include "boomerang/db/RTL.h"
 
 
-TableEntry::TableEntry(const std::list<QString>& params, const RTL& rtl)
-    : m_rtl(rtl)
-    , m_flags(0)
+TableEntry::TableEntry()
+    : m_rtl(Address::INVALID)
 {
-    std::copy(params.begin(), params.end(), std::back_inserter(m_params));
 }
 
 
-TableEntry& TableEntry::operator=(const TableEntry& other)
+TableEntry::TableEntry(const std::list<QString>& params, const RTL& rtl)
+    : m_rtl(rtl)
 {
-    m_params = other.m_params;
-    m_rtl    = other.m_rtl;
-    return *this;
+    std::copy(params.begin(), params.end(), std::back_inserter(m_params));
 }
 
 

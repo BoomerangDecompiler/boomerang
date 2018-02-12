@@ -38,42 +38,24 @@ using SharedRTL = std::shared_ptr<RTL>;
 class TableEntry
 {
 public:
-    TableEntry() : m_rtl(Address::INVALID) {}
+    TableEntry();
     TableEntry(const std::list<QString>& params, const RTL& rtl);
-    TableEntry(const TableEntry& other)
-        : m_params(other.m_params)
-        , m_rtl(other.m_rtl)
-        , m_flags(other.m_flags)
-    {}
-    TableEntry(TableEntry&& other) = default;
-
-    ~TableEntry() = default;
-
-    /**
-     * Sets the contents of this object with a deepcopy from another TableEntry object.
-     * Note that this is different from the semantics of operator= for an RTL
-     * which only does a shallow copy!
-     *
-     * \param other - the object to copy
-     * \returns a reference to this object
-     */
-    TableEntry& operator=(const TableEntry& other);
-    TableEntry& operator=(TableEntry&& other) = default;
 
 public:
     /**
-     * Appends an RTL to an exising TableEntry
-     * \param        p reference to list of formal parameters (as strings)
-     * \param        rtl reference to RTL with list of Exps to append
-     * \returns      zero for success, non-zero for failure
+     * Appends the statements in \p rtl to the RTL in this TableEntry,
+     * if the parameters match.
+     *
+     * \param params parameters of the instruction
+     * \param rtl Statements of this RTL are appended.
+     *
+     * \returns Zero on success, non-zero on failure.
      */
-    int appendRTL(const std::list<QString>& p, const RTL& rtl);
+    int appendRTL(const std::list<QString>& params, const RTL& rtl);
 
 public:
     std::list<QString> m_params;
     RTL m_rtl;
-
-    int m_flags; // aka required capabilities. Init. to 0
 };
 
 
