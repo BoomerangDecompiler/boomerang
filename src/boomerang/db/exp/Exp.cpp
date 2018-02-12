@@ -401,10 +401,10 @@ SharedExp Exp::simplify()
 
 SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c, int n)
 {
-    unsigned   r   = c->getOffsetRemainder(n * 8);
-    QString    nam = c->getNameAtOffset(n * 8);
-    SharedType t   = c->getTypeAtOffset(n * 8);
-    SharedExp  res = Binary::get(opMemberAccess, parent, Const::get(nam));
+    unsigned   r    = c->getOffsetRemainder(n * 8);
+    QString    name = c->getNameAtOffset(n * 8);
+    SharedType t    = c->getTypeAtOffset(n * 8);
+    SharedExp  res = Binary::get(opMemberAccess, parent, Const::get(name));
 
     assert((r % 8) == 0);
 

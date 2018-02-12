@@ -1882,14 +1882,17 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             }
             else if (unaryExp.getSubExp1()->getOper() == opMemOf) {
                 // We have (tt)m[x]
-                PointerType *pty = nullptr;
-
-                // pty = T(x)
                 SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
+                SharedConstExp x = unaryExp.getSubExp1()->getSubExp1();
+                std::shared_ptr<const PointerType> xType = nullptr; // type of "x"
+                if (x->isTypedExp()) {
+                    // x is of type pointer-to-type
+                    auto ptrTy = std::static_pointer_cast<const TypedExp>(x)->getType();
+                    xType = ptrTy->isPointer() ? std::static_pointer_cast<const PointerType>(ptrTy) : nullptr;
+                }
 
-                if ((pty != nullptr) &&
-                    ((*pty->getPointsTo() == *tt) || (tt->isSize() && (pty->getPointsTo()->getSize() == tt->getSize())))) {
-                    str << "*";
+                if (xType && (*tt == *xType->getPointsTo() || (tt->isSize() && (xType->getPointsTo()->getSize() == tt->getSize())))) {
+                    str << "*"; // memof degrades to dereference if types match
                 }
                 else {
                     if (SETTING(noDecompile)) {
@@ -1905,7 +1908,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                             str << "MEMOF";
                         }
                     }
-                    else {
+                    else { //  *(T *)
                         str << "*(";
                         appendType(str, tt);
                         str << "*)";
