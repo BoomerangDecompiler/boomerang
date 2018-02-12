@@ -262,8 +262,8 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         }
 
         for (UserProc *userProc : procSet) {
-            int indent = 0;
-            userProc->decompile(new ProcList, indent);
+            ProcList procList;
+            userProc->decompile(&procList);
         }
 
         return CommandStatus::Success;

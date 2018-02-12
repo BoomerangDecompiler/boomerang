@@ -821,7 +821,7 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
 }
 
 
-std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
+std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
 {
     /* Cycle detection logic:
      * *********************
@@ -996,7 +996,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
                 LOG_VERBOSE("Visiting on the way down child %1 from %2", c->getName(), getName());
 
                 c->promoteSignature();
-                std::shared_ptr<ProcSet> tmp = c->decompile(path, indent);
+                std::shared_ptr<ProcSet> tmp = c->decompile(path);
                 child->insert(tmp->begin(), tmp->end());
                 // Child has at least done middleDecompile(), possibly more
                 call->setCalleeReturn(c->getTheReturnStatement());
@@ -1015,7 +1015,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
 
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
-        child = middleDecompile(path, indent);
+        child = middleDecompile(path);
 
         // If there is a switch statement, middleDecompile could contribute some cycles. If so, we need to test for
         // the recursion logic again
@@ -1044,7 +1044,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
         // The big test: have we found all the strongly connected components (in the call graph)?
         if (*f == this) {
             // Yes, process these procs as a group
-            recursionGroupAnalysis(path, indent); // Includes remUnusedStmtEtc on all procs in cycleGrp
+            recursionGroupAnalysis(path); // Includes remUnusedStmtEtc on all procs in cycleGrp
             setStatus(PROC_FINAL);
             Boomerang::get()->alertEndDecompile(this);
             child->clear(); // delete child;
@@ -1067,7 +1067,6 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path, int& indent)
         LOG_WARN("Empty path when trying to remove last proc");
     }
 
-    --indent;
     LOG_VERBOSE("End decompile(%1)", getName());
     return child;
 }
@@ -1166,7 +1165,7 @@ void UserProc::earlyDecompile()
 }
 
 
-std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
+std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
 
@@ -1417,13 +1416,11 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path, int indent)
             return std::shared_ptr<ProcSet>(new ProcSet());
         }
 
-        m_df.setRenameLocalsParams(false);                      // Start again with memofs
-        setStatus(PROC_VISITED);                                // Back to only visited progress
-        path->erase(--path->end());                             // Remove self from path
-        --indent;                                               // Because this is not recursion
-        std::shared_ptr<ProcSet> ret = decompile(path, indent); // Restart decompiling this proc
-        ++indent;                                               // Restore indent
-        path->push_back(this);                                  // Restore self to path
+        m_df.setRenameLocalsParams(false);              // Start again with memofs
+        setStatus(PROC_VISITED);                        // Back to only visited progress
+        path->erase(--path->end());                     // Remove self from path
+        std::shared_ptr<ProcSet> ret = decompile(path); // Restart decompiling this proc
+        path->push_back(this);                          // Restore self to path
         // It is important to keep the result of this call for the recursion analysis
         return ret;
     }
@@ -1655,7 +1652,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
 }
 
 
-void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
+void UserProc::recursionGroupAnalysis(ProcList *path)
 {
     /* Overall algorithm:
      *  for each proc in the group
@@ -1691,7 +1688,7 @@ void UserProc::recursionGroupAnalysis(ProcList *path, int indent)
     // Now all the procs in the group should be ready for preservation analysis
     // The standard preservation analysis should automatically perform conditional preservation
     for (UserProc *proc : *m_cycleGroup) {
-        proc->middleDecompile(path, indent);
+        proc->middleDecompile(path);
         proc->setStatus(PROC_PRESERVEDS);
     }
 
