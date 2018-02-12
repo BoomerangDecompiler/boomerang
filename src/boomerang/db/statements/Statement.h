@@ -150,9 +150,6 @@ public:
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;
 
-    unsigned int getLexBegin() const { return m_lexBegin; }
-    unsigned int getLexEnd() const { return m_lexEnd; }
-
     /// returns true if this statement defines anything
     virtual bool isDefinition() const = 0;
 
