@@ -37,6 +37,10 @@ void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbol
 
 bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 {
+    if (m_header) {
+        delete m_header;
+    }
+
     // Always just 3 sections
     m_header = new ExeHeader;
 
