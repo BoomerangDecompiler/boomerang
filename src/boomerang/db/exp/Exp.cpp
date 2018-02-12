@@ -501,7 +501,6 @@ void Exp::descendType(SharedType, bool&, Statement*)
 
 SharedExp Exp::fixSuccessor()
 {
-    bool      change;
     SharedExp result;
     UniqExp   search_expression(new Unary(opSuccessor, Location::regOf(Terminal::get(opWild))));
 
@@ -519,6 +518,7 @@ SharedExp Exp::fixSuccessor()
         auto replace = sub1->clone();
         auto c       = replace->access<Const, 1>();
         c->setInt(c->getInt() + 1); // Do the increment
+        bool change = false;
         SharedExp res = searchReplace(*result, replace, change);
         return res;
     }

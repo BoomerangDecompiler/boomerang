@@ -1399,10 +1399,9 @@ void Binary::printx(int ind) const
 //  pi         void*     pi       pi
 SharedType sigmaSum(SharedType ta, SharedType tb)
 {
-    bool ch;
-
     if (ta->resolvesToPointer()) {
         if (tb->resolvesToPointer()) {
+            bool ch = false;
             return ta->createUnion(tb, ch);
         }
 

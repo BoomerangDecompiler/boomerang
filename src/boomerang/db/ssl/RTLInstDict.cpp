@@ -151,10 +151,9 @@ void RTLInstDict::fixupParams()
     int mark = 1;
 
     for (auto iter = DetParamMap.begin(); iter != DetParamMap.end(); ++iter) {
-        std::list<QString> funcParams;
-        bool               haveCount = false;
-
         if (iter.value().m_kind == PARAM_VARIANT) {
+            std::list<QString> funcParams;
+            bool               haveCount = false;
             fixupParamsSub(iter.key(), funcParams, haveCount, mark++);
         }
     }

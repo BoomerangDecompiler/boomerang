@@ -1460,9 +1460,6 @@ void UserProc::remUnusedStmtEtc()
     //    if (theReturnStatement)
     //        theReturnStatement->specialProcessing();
 
-    bool convert;
-    bool change = false;
-
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
     // to printf/scanf), and removing unused statements is unsafe without full use information
@@ -1470,13 +1467,14 @@ void UserProc::remUnusedStmtEtc()
         typeAnalysis();
 
         // Now that locals are identified, redo the dataflow
-        change = m_df.placePhiFunctions();
+        bool change = m_df.placePhiFunctions();
 
         if (change) {
             numberStatements();           // Number the new statements
         }
 
         doRenameBlockVars(20);            // Rename the locals
+        bool convert = false;
         propagateStatements(convert, 20); // Surely need propagation too
 
         if (SETTING(verboseOutput)) {
