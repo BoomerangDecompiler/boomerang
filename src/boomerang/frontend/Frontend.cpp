@@ -582,8 +582,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
         call->setDestProc(proc);
         call->setReturnAfterCall(true);
         // also need to change it in the actual RTL
-        std::list<Statement *>::iterator ss1 = std::next(ss);
-        assert(ss1 == sl.end());
+        assert(std::next(ss) == sl.end());
         assert(!originalRTL->empty());
         originalRTL->back() = call;
         *ss          = call;
