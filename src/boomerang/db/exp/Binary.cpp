@@ -1522,8 +1522,6 @@ SharedType Binary::ascendType()
 // pi        pi        pi        pi
 SharedType sigmaAddend(SharedType tc, SharedType to)
 {
-    bool ch;
-
     if (tc->resolvesToPointer()) {
         if (to->resolvesToPointer()) {
             return IntegerType::get(STD_SIZE, 0);
@@ -1538,6 +1536,7 @@ SharedType sigmaAddend(SharedType tc, SharedType to)
 
     if (tc->resolvesToInteger()) {
         if (to->resolvesToPointer()) {
+            bool ch = false;
             return tc->createUnion(to, ch);
         }
 
@@ -1559,10 +1558,9 @@ SharedType sigmaAddend(SharedType tc, SharedType to)
 // pi        void*    int        pi
 SharedType deltaMinuend(SharedType tc, SharedType tb)
 {
-    bool ch;
-
     if (tc->resolvesToPointer()) {
         if (tb->resolvesToPointer()) {
+            bool ch = false;
             return tc->createUnion(tb, ch);
         }
 
@@ -1592,14 +1590,13 @@ SharedType deltaMinuend(SharedType tc, SharedType tb)
 // pi        int        pi        pi
 SharedType deltaSubtrahend(SharedType tc, SharedType ta)
 {
-    bool ch;
-
     if (tc->resolvesToPointer()) {
         if (ta->resolvesToPointer()) {
             return IntegerType::get(STD_SIZE, 0);
         }
 
         if (ta->resolvesToInteger()) {
+            bool ch = false;
             return tc->createUnion(ta, ch);
         }
 

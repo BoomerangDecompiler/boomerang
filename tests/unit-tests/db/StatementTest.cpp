@@ -129,8 +129,7 @@ void StatementTest::testFlow()
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    Cfg *cfg   = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(24), std::make_shared<Const>(5));
     a1->setProc(proc);
