@@ -483,7 +483,7 @@ bool Statement::propagateFlagsTo()
 }
 
 
-bool Statement::doPropagateTo(SharedExp e, Assignment *def, bool& convert)
+bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert)
 {
     // Respect the -p N switch
     if (SETTING(numToPropagate) >= 0) {
@@ -754,7 +754,7 @@ void Statement::dfaMapLocals()
 }
 
 
-SharedType Statement::meetWithFor(SharedType ty, SharedExp e, bool& changed)
+SharedType Statement::meetWithFor(const SharedType &ty, const SharedExp &e, bool& changed)
 {
     bool       thisCh  = false;
     SharedType typeFor = getTypeFor(e);

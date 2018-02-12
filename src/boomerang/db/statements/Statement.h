@@ -300,7 +300,7 @@ public:
     virtual void fixSuccessor() {}
 
     // Data flow based type analysis
-    SharedType meetWithFor(SharedType ty, SharedExp e, bool& changed); // Meet the type associated with e with ty
+    SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool& changed); // Meet the type associated with e with ty
 
 public:
     // helper functions
@@ -371,7 +371,7 @@ public:
     /// Note: this procedure does not control what part of this statement is propagated to
     /// Propagate to e from definition statement def.
     /// Set convert to true if convert a call from indirect to direct.
-    bool doPropagateTo(SharedExp e, Assignment *def, bool& convert);
+    bool doPropagateTo(const SharedExp &e, Assignment *def, bool& convert);
 
     /// returns true if e1 may alias e2
     bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
