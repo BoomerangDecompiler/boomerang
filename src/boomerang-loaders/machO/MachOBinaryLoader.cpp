@@ -42,18 +42,6 @@
 #  define DEBUG_PRINT(...)
 #endif
 
-namespace
-{
-struct SectionParam
-{
-    QString Name;
-    Address from;
-    size_t  Size;
-    Address ImageAddress;
-    bool    Code, Data, ReadOnly;
-};
-}
-
 // #define DEBUG_MACHO_LOADER
 // #define DEBUG_MACHO_LOADER_OBJC
 
