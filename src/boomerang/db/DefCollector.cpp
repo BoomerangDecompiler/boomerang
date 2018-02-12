@@ -32,7 +32,7 @@ void DefCollector::clear()
 
 void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar>& Stacks, UserProc *proc)
 {
-    for (auto it = Stacks.begin(); it != Stacks.end(); it++) {
+    for (auto it = Stacks.begin(); it != Stacks.end(); ++it) {
         if (it->second.empty()) {
             continue; // This variable's definition doesn't reach here
         }

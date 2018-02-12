@@ -1769,8 +1769,10 @@ bool CallStatement::accept(StmtModifier *v)
         m_dest = m_dest->accept(v->m_mod);
     }
 
-    for (StatementList::iterator it = m_arguments.begin(); visitChildren && it != m_arguments.end(); it++) {
-        (*it)->accept(v);
+    if (visitChildren) {
+        for (Statement *s : m_arguments) {
+            s->accept(v);
+        }
     }
 
     // For example: needed for CallBypasser so that a collected definition that happens to be another call gets
@@ -1782,15 +1784,16 @@ bool CallStatement::accept(StmtModifier *v)
     if (!v->ignoreCollector()) {
         DefCollector::iterator cc;
 
-        for (cc = m_defCol.begin(); cc != m_defCol.end(); cc++) {
-            (*cc)->accept(v);
+        for (Statement *s : m_defCol) {
+            s->accept(v);
         }
     }
 
-    for (StatementList::iterator dd = m_defines.begin(); visitChildren && dd != m_defines.end(); ++dd) {
-        (*dd)->accept(v);
+    if (visitChildren) {
+        for (Statement *s : m_defines) {
+            s->accept(v);
+        }
     }
-
     return true;
 }
 
@@ -1808,9 +1811,8 @@ bool CallStatement::accept(StmtExpVisitor *v)
         ret = m_dest->accept(v->ev);
     }
 
-
-    for (StatementList::iterator it = m_arguments.begin(); ret && it != m_arguments.end(); it++) {
-        ret = (*it)->accept(v);
+    for (Statement *s : m_arguments) {
+        ret &= s->accept(v);
     }
 
     // FIXME: surely collectors should be counted?
@@ -1827,8 +1829,10 @@ bool CallStatement::accept(StmtPartModifier *v)
         m_dest = m_dest->accept(v->mod);
     }
 
-    for (StatementList::iterator it = m_arguments.begin(); visitChildren && it != m_arguments.end(); it++) {
-        (*it)->accept(v);
+    if (visitChildren) {
+        for (Statement *s : m_arguments) {
+            s->accept(v);
+        }
     }
 
     // For example: needed for CallBypasser so that a collected definition that happens to be another call gets
@@ -1836,24 +1840,22 @@ bool CallStatement::accept(StmtPartModifier *v)
     // But now I'm thinking no, the bypass and propagate while possible logic should take care of it.
     // Then again, what about the use collectors in calls? Best to do it.
     if (!v->ignoreCollector()) {
-        DefCollector::iterator dd;
-
-        for (dd = m_defCol.begin(); dd != m_defCol.end(); dd++) {
-            (*dd)->accept(v);
+        for (Statement *s : m_defCol) {
+            s->accept(v);
         }
 
-        UseCollector::iterator uu;
-
-        for (uu = m_useCol.begin(); uu != m_useCol.end(); ++uu) {
+        for (SharedExp exp : m_useCol) {
             // I believe that these should never change at the top level, e.g. m[esp{30} + 4] -> m[esp{-} - 20]
-            (*uu)->accept(v->mod);
+            exp->accept(v->mod);
         }
     }
 
     StatementList::iterator dd;
 
-    for (dd = m_defines.begin(); visitChildren && dd != m_defines.end(); dd++) {
-        (*dd)->accept(v);
+    if (visitChildren) {
+        for (Statement *s : m_defines) {
+            s->accept(v);
+        }
     }
 
     return true;

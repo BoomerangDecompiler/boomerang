@@ -582,9 +582,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
         call->setDestProc(proc);
         call->setReturnAfterCall(true);
         // also need to change it in the actual RTL
-        std::list<Statement *>::iterator ss1 = ss;
-        ss1++;
-        assert(ss1 == sl.end());
+        assert(std::next(ss) == sl.end());
         assert(!originalRTL->empty());
         originalRTL->back() = call;
         *ss          = call;
@@ -735,7 +733,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
             // if it points to the start of a known procedure
             std::list<Statement *> sl(inst.rtl->getStatements());
 
-            for (auto ss = sl.begin(); ss != sl.end(); ss++) {
+            for (auto ss = sl.begin(); ss != sl.end(); ++ss) {
                 Statement *s = *ss;
                 s->setProc(proc); // let's do this really early!
 

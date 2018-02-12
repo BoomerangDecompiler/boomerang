@@ -227,7 +227,7 @@ void RTL::simplify()
             }
         }
 
-        it++;
+        ++it;
     }
 }
 
@@ -245,7 +245,7 @@ bool RTL::isCall() const
 
 Statement *RTL::getHlStmt() const
 {
-    for (auto rit = rbegin(); rit != rend(); rit++) {
+    for (auto rit = rbegin(); rit != rend(); ++rit) {
         if ((*rit)->getKind() != StmtType::Assign) {
             return *rit;
         }

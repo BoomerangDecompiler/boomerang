@@ -74,7 +74,7 @@ void Statement::setProc(UserProc *proc)
     getDefinitions(defs);
     exps.makeUnion(defs);
 
-    for (auto ll = exps.begin(); ll != exps.end(); ll++) {
+    for (auto ll = exps.begin(); ll != exps.end(); ++ll) {
         auto l = std::dynamic_pointer_cast<Location>(*ll);
 
         if (l) {
@@ -322,14 +322,11 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
         // the reaching definitions of calls. Third parameter defaults to false, to
         // find all locations, not just those inside m[...]
         addUsedLocs(exps, true);
-        LocationSet::iterator ll;
         change = false; // True if changed this iteration of the do/while loop
 
         // Example: m[r24{10}] := r25{20} + m[r26{30}]
         // exps has r24{10}, r25{30}, m[r26{30}], r26{30}
-        for (ll = exps.begin(); ll != exps.end(); ll++) {
-            SharedExp e = *ll;
-
+        for (SharedExp e : exps) {
             if (!canPropagateToExp(*e)) {
                 continue;
             }
@@ -461,11 +458,8 @@ bool Statement::propagateFlagsTo()
     do {
         LocationSet exps;
         addUsedLocs(exps, true);
-        LocationSet::iterator ll;
 
-        for (ll = exps.begin(); ll != exps.end(); ll++) {
-            SharedExp e = *ll;
-
+        for (SharedExp e : exps) {
             if (!e->isSubscript()) {
                 continue;     // e.g. %pc
             }

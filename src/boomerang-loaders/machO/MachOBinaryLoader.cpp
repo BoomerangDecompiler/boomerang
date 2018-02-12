@@ -337,9 +337,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         unsigned long l = BMMH(segments[i].initprot);
         sect->setBss(false) // TODO
            .setEndian((machine == Machine::PPC) ? 1 : 0)
-           .setCode(l & VM_PROT_EXECUTE ? 1 : 0)
-           .setData(l & VM_PROT_READ ? 1 : 0)
-           .setReadOnly(~(l & VM_PROT_WRITE) ? 0 : 1);
+           .setCode((l & VM_PROT_EXECUTE) != 0)
+           .setData((l & VM_PROT_READ)    != 0)
+           .setReadOnly((l & VM_PROT_WRITE) == 0);
 
         for (size_t s_idx = 0; s_idx < sections.size(); s_idx++) {
             if (strcmp(sections[s_idx].segname, segments[i].segname) != 0) {

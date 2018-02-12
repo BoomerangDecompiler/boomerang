@@ -247,7 +247,7 @@ IBinarySection *BinaryImage::createSection(const QString& name, Address from, Ad
         SectionRangeMap::iterator itFrom, itTo;
         std::tie(itFrom, itTo) = m_sectionMap.equalRange(from, to);
 
-        for (SectionRangeMap::iterator clash_with = itFrom; clash_with != itTo; clash_with++) {
+        for (SectionRangeMap::iterator clash_with = itFrom; clash_with != itTo; ++clash_with) {
             if ((*clash_with->second).getName() != ".tbss") {
                 LOG_WARN("Segment %1 would intersect existing segment %2", name, (*clash_with->second).getName());
                 return nullptr;

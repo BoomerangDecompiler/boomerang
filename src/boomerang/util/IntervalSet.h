@@ -75,7 +75,7 @@ public:
         typename Data::iterator itUpper = end();
 
         // todo: speed up
-        for (iterator it = begin(); it != end(); it++) {
+        for (iterator it = begin(); it != end(); ++it) {
             if ((itLower == end()) && (it->upper() > interval.lower())) {
                 itLower = it;
             }

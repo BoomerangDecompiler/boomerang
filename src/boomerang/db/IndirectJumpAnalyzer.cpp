@@ -307,7 +307,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             workSet.remove(pi);
             PhiAssign::Definitions::iterator it;
 
-            for (it = pi->begin(); it != pi->end(); it++) {
+            for (it = pi->begin(); it != pi->end(); ++it) {
                 if (it->def == nullptr) {
                     continue;
                 }

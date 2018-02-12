@@ -1402,7 +1402,7 @@ void StatementTest::testBypass()
     StatementList::iterator it = stmts.begin();
 
     while (it != stmts.end() && !(*it)->isCall()) {
-        it++;
+        ++it;
     }
     QVERIFY(it != stmts.end());
 

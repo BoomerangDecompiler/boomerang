@@ -182,17 +182,4 @@ void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
             }
         }
     }
-
-#if PRINT_BACK_EDGES
-    for (it = m_listBB.begin(); it != m_listBB.end(); it++) {
-        std::vector<PBB>& inEdges = (*it)->getInEdges();
-
-        for (unsigned int j = 0; j < inEdges.size(); j++) {
-            of << "       "
-               << "bb" << std::hex << (*it)->getLowAddr() << " -> ";
-            of << "bb" << std::hex << inEdges[j]->getLowAddr();
-            of << " [color = \"green\"];\n";
-        }
-    }
-#endif
 }

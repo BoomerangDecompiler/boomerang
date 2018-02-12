@@ -229,7 +229,7 @@ void Boomerang::miniDebugger(UserProc *proc, const char *description)
                     proc->getStatements(stmts);
                     StatementList::iterator it;
 
-                    for (it = stmts.begin(); it != stmts.end(); it++) {
+                    for (it = stmts.begin(); it != stmts.end(); ++it) {
                         if ((*it)->getNumber() == n) {
                             watches.insert(*it);
                             q_cout << "watching " << *it << "\n";

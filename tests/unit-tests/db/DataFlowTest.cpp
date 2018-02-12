@@ -222,9 +222,8 @@ void DataFlowTest::testPlacePhi2()
     // m[r29 - 8]
     SharedExp               e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(8)));
     std::set<int>&          s = df->getA_phi(e);
-    std::set<int>::iterator pp;
 
-    for (pp = s.begin(); pp != s.end(); pp++) {
+    for (std::set<int>::iterator pp = s.begin(); pp != s.end(); ++pp) {
         actual << *pp << " ";
     }
 
@@ -244,7 +243,7 @@ void DataFlowTest::testPlacePhi2()
 
     std::set<int>& s2 = df->getA_phi(e);
 
-    for (pp = s2.begin(); pp != s2.end(); pp++) {
+    for (auto pp = s2.begin(); pp != s2.end(); ++pp) {
         actual2 << *pp << " ";
     }
 

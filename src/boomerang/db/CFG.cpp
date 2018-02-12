@@ -488,7 +488,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 
     // First find which RTL has the split address; note that this could fail
     // (e.g. jump into the middle of an instruction, or some weird delay slot effects)
-    for (splitIt = bb->getRTLs()->begin(); splitIt != bb->getRTLs()->end(); splitIt++) {
+    for (splitIt = bb->getRTLs()->begin(); splitIt != bb->getRTLs()->end(); ++splitIt) {
         if ((*splitIt)->getAddress() == splitAddr) {
             break;
         }

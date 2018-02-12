@@ -37,7 +37,7 @@ bool DataIntervalMap::isClear(Address addr, unsigned size)
         return false;
     }
 
-    for (VariableMap::const_iterator it = it1; it != it2; it++) {
+    for (VariableMap::const_iterator it = it1; it != it2; ++it) {
         // since we don't know the length of unbounded arrays (yet),
         // it is possible that the array ends before \p addr.
         // Therefore, allow these intervals to be marked as "clear"

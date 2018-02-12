@@ -229,7 +229,7 @@ void Function::addCallers(std::set<UserProc *>& callers)
 {
     std::set<CallStatement *>::iterator it;
 
-    for (it = m_callerSet.begin(); it != m_callerSet.end(); it++) {
+    for (it = m_callerSet.begin(); it != m_callerSet.end(); ++it) {
         UserProc *callerProc = (*it)->getProc();
         callers.insert(callerProc);
     }

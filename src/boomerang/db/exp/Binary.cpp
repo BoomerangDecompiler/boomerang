@@ -602,7 +602,7 @@ SharedExp Binary::simplifyArith()
                 break;
             }
 
-            nn++;
+            ++nn;
         }
 
         if (pp == positives.end()) {
@@ -610,7 +610,7 @@ SharedExp Binary::simplifyArith()
         }
 
         if (inc) {
-            pp++;
+            ++pp;
         }
     }
 

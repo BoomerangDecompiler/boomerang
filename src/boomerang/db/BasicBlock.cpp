@@ -325,7 +325,7 @@ Function *BasicBlock::getCallDestProc() const
     RTL *lastRTL = m_listOfRTLs->back().get();
 
     // search backwards for a CallStatement
-    for (auto it = lastRTL->rbegin(); it != lastRTL->rend(); it++) {
+    for (auto it = lastRTL->rbegin(); it != lastRTL->rend(); ++it) {
         if ((*it)->getKind() == StmtType::Call) {
             return static_cast<CallStatement *>(*it)->getDestProc();
         }
@@ -351,7 +351,7 @@ Statement *BasicBlock::getFirstStmt(RTLIterator& rit, StatementList::iterator& s
             return *sit;
         }
 
-        rit++;
+        ++rit;
     }
 
     return nullptr;
@@ -410,7 +410,7 @@ Statement *BasicBlock::getLastStmt(RTLRIterator& rit, StatementList::reverse_ite
             return *sit;
         }
 
-        rit++;
+        ++rit;
     }
 
     return nullptr;
@@ -562,7 +562,7 @@ void BasicBlock::setCond(SharedExp e)
     assert(!last->empty());
 
     // it should contain a BranchStatement
-    for (auto it = last->rbegin(); it != last->rend(); it++) {
+    for (auto it = last->rbegin(); it != last->rend(); ++it) {
         if ((*it)->getKind() == StmtType::Branch) {
             assert(dynamic_cast<BranchStatement *>(*it) != nullptr);
             static_cast<BranchStatement *>(*it)->setCondExpr(e);

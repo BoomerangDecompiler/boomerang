@@ -240,9 +240,10 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
             sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
             sect.Size         = LMMH(m_pLXObjects[n].VirtualSize);
             sect.Bss          = 0; // TODO
-            sect.Code         = Flags & 0x4 ? 1 : 0;
-            sect.Data         = Flags & 0x4 ? 0 : 1;
-            sect.ReadOnly     = Flags & 0x1 ? 0 : 1;
+            sect.Code         = (Flags & 0x4) ? true  : false;
+            sect.Data         = (Flags & 0x4) ? false : true;
+            sect.ReadOnly     = (Flags & 0x1) ? false : true;
+
             buf.seek(
                 m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize)
                 );

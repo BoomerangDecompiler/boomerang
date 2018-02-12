@@ -235,7 +235,7 @@ SharedExp Exp::searchReplaceAll(const Exp& pattern, const SharedExp& replace, bo
     SharedExp              top = shared_from_this(); // top may change; that's why we have to return it
     doSearch(pattern, top, li, false);
 
-    for (auto it = li.begin(); it != li.end(); it++) {
+    for (auto it = li.begin(); it != li.end(); ++it) {
         SharedExp *pp = *it;
         *pp = replace->clone(); // Do the replacement
 
@@ -568,12 +568,11 @@ SharedExp Exp::removeSubscripts(bool& allZero)
     LocationSet locs;
 
     e->addUsedLocs(locs);
-    LocationSet::iterator xx;
     allZero = true;
 
-    for (xx = locs.begin(); xx != locs.end(); xx++) {
-        if ((*xx)->getOper() == opSubscript) {
-            auto            r1   = std::static_pointer_cast<RefExp>(*xx);
+    for (const SharedExp& loc : locs) {
+        if (loc->getOper() == opSubscript) {
+            auto            r1   = std::static_pointer_cast<RefExp>(loc);
             const Statement *def = r1->getDef();
 
             if (!((def == nullptr) || (def->getNumber() == 0))) {
@@ -581,7 +580,7 @@ SharedExp Exp::removeSubscripts(bool& allZero)
             }
 
             bool change;
-            e = e->searchReplaceAll(**xx, r1->getSubExp1() /*->clone()*/,
+            e = e->searchReplaceAll(*loc, r1->getSubExp1() /*->clone()*/,
                                     change); // TODO: what happens when clone is restored here ?
         }
     }

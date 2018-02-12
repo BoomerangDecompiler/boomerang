@@ -23,9 +23,8 @@
 
 bool StatementList::remove(Statement *s)
 {
-    iterator it;
 
-    for (it = begin(); it != end(); it++) {
+    for (auto it = begin(); it != end(); ++it) {
         if (*it == s) {
             erase(it);
             return true;
@@ -102,7 +101,7 @@ bool StatementList::existsOnLeft(const SharedExp& loc) const
 
 void StatementList::removeDefOf(SharedExp loc)
 {
-    for (iterator it = begin(); it != end(); it++) {
+    for (iterator it = begin(); it != end(); ++it) {
         if (*static_cast<Assignment *>(*it)->getLeft() == *loc) {
             erase(it);
             return;

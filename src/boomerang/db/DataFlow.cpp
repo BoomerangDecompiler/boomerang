@@ -108,9 +108,7 @@ void DataFlow::calculateDominators()
         link(p, n);
 
         // for each v in bucket[p]
-        for (std::set<int>::iterator jj = m_bucket[p].begin(); jj != m_bucket[p].end(); jj++) {
-            int v = *jj;
-
+        for (int v : m_bucket[p]) {
             /* Now that the path from p to v has been linked into the spanning forest,
              * these lines calculate the dominator of v, based on the first clause of the Dominator Theorem,#
              * or else defer the calculation until y's dominator is known. */
@@ -204,16 +202,14 @@ void DataFlow::computeDF(int n)
         }
 
         computeDF(c);
+
         /* This loop computes DF_up[c] */
         // for each element w of DF[c]
         std::set<int>&          s = m_DF[c];
         std::set<int>::iterator ww;
 
-        for (ww = s.begin(); ww != s.end(); ww++) {
-            int w = *ww;
-
-            // if n does not dominate w, or if n = w
-            if ((n == w) || !doesDominate(n, w)) {
+        for (int w : s) {
+            if (n == w || !doesDominate(n, w)) {
                 S.insert(w);
             }
         }
@@ -443,11 +439,7 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
                 S->addUsedLocs(locs);
             }
 
-            LocationSet::iterator xx;
-
-            for (xx = locs.begin(); xx != locs.end(); xx++) {
-                SharedExp location = *xx;
-
+            for (SharedExp location : locs) {
                 // Don't rename memOfs that are not renamable according to the current policy
                 if (!canRename(location)) {
                     continue;
@@ -628,9 +620,8 @@ bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
         // For each definition of some variable a in S
         LocationSet defs;
         S->getDefinitions(defs);
-        LocationSet::iterator dd;
 
-        for (dd = defs.begin(); dd != defs.end(); dd++) {
+        for (auto dd = defs.begin(); dd != defs.end(); ++dd) {
             if (!canRename(*dd)) {
                 continue;
             }
