@@ -106,7 +106,7 @@ int microX86Dis(const unsigned char *instruction)
     const unsigned char *p = instruction;
     int                 opsize = 4; /* Operand size override will change to 2 */
     int                 size = 0;
-    unsigned char       modrm, op2, sib;
+    unsigned char       modrm;
     unsigned char       op     = *p++;
     int                 prefix = 1;
 
@@ -144,7 +144,7 @@ int microX86Dis(const unsigned char *instruction)
 
     if (op == 0x0F) {
         /* Two byte escape */
-        op2   = *p++;
+        unsigned char op2   = *p++;
         size += op0Fmap[op2];
     }
     else {
@@ -161,7 +161,7 @@ int microX86Dis(const unsigned char *instruction)
         if ((mod != 3) && ((modrm & 0x7) == 4)) {
             /* SIB also present */
             size++;     /* Count the SIB itself */
-            sib = *p++;
+            unsigned char sib = *p++;
 
             if ((mod == 0) && ((sib & 0x7) == 0x5)) {
                 /* ds:d32 with scale */

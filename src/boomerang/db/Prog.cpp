@@ -61,9 +61,9 @@
 #  include <windows.h>
 #  ifndef __MINGW32__
 namespace dbghelp
-{
-#    include <dbghelp.h>
 #  endif
+{
+#  include <dbghelp.h>
 }
 #endif
 

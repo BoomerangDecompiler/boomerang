@@ -303,7 +303,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
     if (!base) {
         LOG_ERROR("Cannot allocate memory for copy of image");
-        if (strtbl) { delete[] strtbl; }
+        delete[] strtbl;
+        delete[] indirectsymtbl;
         return false;
     }
 
@@ -467,7 +468,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     // Give the entry point a symbol
     // ADDRESS entry = GetMainEntryPoint();
     entrypoint = getMainEntryPoint();
-    if (strtbl) { delete[] strtbl; }
+    delete[] strtbl;
+    delete[] indirectsymtbl;
     return true;
 }
 

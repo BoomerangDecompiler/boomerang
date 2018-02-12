@@ -1431,8 +1431,6 @@ SharedType sigmaSum(SharedType ta, SharedType tb)
 // pi       pi      int        pi
 SharedType deltaDifference(SharedType ta, SharedType tb)
 {
-    bool ch;
-
     if (ta->resolvesToPointer()) {
         if (tb->resolvesToPointer()) {
             return IntegerType::get(STD_SIZE, 0);
@@ -1447,6 +1445,7 @@ SharedType deltaDifference(SharedType ta, SharedType tb)
 
     if (ta->resolvesToInteger()) {
         if (tb->resolvesToPointer()) {
+            bool ch = false;
             return ta->createUnion(tb, ch);
         }
 
