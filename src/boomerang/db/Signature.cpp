@@ -102,10 +102,11 @@ namespace CallingConvention
 class Win32Signature : public Signature
 {
 public:
-    Win32Signature(const QString& nam);
-    Win32Signature(Signature& old);
+    explicit Win32Signature(const QString& nam);
+    explicit Win32Signature(Signature& old);
     virtual ~Win32Signature() override = default;
 
+public:
     virtual std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
 
@@ -135,9 +136,10 @@ public:
 class Win32TcSignature : public Win32Signature
 {
 public:
-    Win32TcSignature(const QString& nam);
-    Win32TcSignature(Signature& old);
+    explicit Win32TcSignature(const QString& nam);
+    explicit Win32TcSignature(Signature& old);
 
+public:
     virtual SharedExp getArgumentExp(int n) const override;
     virtual SharedExp getProven(SharedExp left) const override;
 
@@ -152,10 +154,11 @@ namespace StdC
 class PentiumSignature : public Signature
 {
 public:
-    PentiumSignature(const QString& nam);
-    PentiumSignature(Signature& old);
+    explicit PentiumSignature(const QString& nam);
+    explicit PentiumSignature(Signature& old);
     virtual ~PentiumSignature() override = default;
 
+public:
     virtual std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
 
@@ -189,10 +192,11 @@ public:
 class SparcSignature : public Signature
 {
 public:
-    SparcSignature(const QString& nam);
-    SparcSignature(Signature& old);
+    explicit SparcSignature(const QString& nam);
+    explicit SparcSignature(Signature& old);
     virtual ~SparcSignature() override = default;
 
+public:
     virtual std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
     static bool qualified(UserProc *p, Signature&);
@@ -230,20 +234,22 @@ public:
 class SparcLibSignature : public SparcSignature
 {
 public:
-    SparcLibSignature(const QString& nam)
-        : SparcSignature(nam) {}
+    explicit SparcLibSignature(const QString& name)
+        : SparcSignature(name) {}
 
     virtual std::shared_ptr<Signature> clone() const override;
     virtual SharedExp getProven(SharedExp left) const override;
 };
 
+
 class PPCSignature : public Signature
 {
 public:
-    PPCSignature(const QString& name);
-    PPCSignature(Signature& old);
+    explicit PPCSignature(const QString& name);
+    explicit PPCSignature(Signature& old);
     virtual ~PPCSignature() override = default;
 
+public:
     virtual std::shared_ptr<Signature> clone() const override;
 
     static bool qualified(UserProc *p, Signature&);
@@ -273,9 +279,10 @@ public:
 class MIPSSignature : public Signature
 {
 public:
-    MIPSSignature(const QString& name);
+    explicit MIPSSignature(const QString& name);
     virtual ~MIPSSignature() override = default;
 
+public:
     virtual std::shared_ptr<Signature> clone() const override;
 
     static bool qualified(UserProc *p, Signature&);
@@ -304,10 +311,11 @@ public:
 class ST20Signature : public Signature
 {
 public:
-    ST20Signature(const QString& name);
-    ST20Signature(Signature& old);
+    explicit ST20Signature(const QString& name);
+    explicit ST20Signature(Signature& old);
     virtual ~ST20Signature() override = default;
 
+public:
     std::shared_ptr<Signature> clone() const override;
     virtual bool operator==(const Signature& other) const override;
     static bool qualified(UserProc *p, Signature&);

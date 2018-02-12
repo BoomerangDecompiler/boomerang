@@ -50,7 +50,7 @@ struct SectionParam
     Address from;
     size_t  Size;
     Address ImageAddress;
-    bool    Bss, Code, Data, ReadOnly;
+    bool    Code, Data, ReadOnly;
 };
 }
 
