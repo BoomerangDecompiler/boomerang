@@ -56,7 +56,9 @@ public:
     };
 
 public:
-    ArgSourceProvider(CallStatement *call);
+    explicit ArgSourceProvider(CallStatement *call);
+
+public:
     SharedExp nextArgLoc();              // Get the next location (not subscripted)
     SharedType curType(SharedExp e);     // Get the current location's type
     bool exists(SharedExp loc);          // True if the given location (not subscripted) exists as a source

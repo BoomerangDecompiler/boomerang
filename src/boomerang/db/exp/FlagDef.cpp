@@ -15,7 +15,7 @@
 #include "boomerang/db/visitor/ExpVisitor.h"
 
 
-FlagDef::FlagDef(SharedExp params, SharedRTL _rtl)
+FlagDef::FlagDef(const SharedExp& params, const SharedRTL& _rtl)
     : Unary(opFlagDef, params)
     , m_rtl(_rtl)
 {
@@ -24,7 +24,6 @@ FlagDef::FlagDef(SharedExp params, SharedRTL _rtl)
 
 FlagDef::~FlagDef()
 {
-    // delete rtl;
 }
 
 

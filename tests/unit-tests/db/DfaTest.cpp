@@ -29,11 +29,10 @@
 struct SharedTypeWrapper
 {
 public:
-    SharedTypeWrapper()
-        : ty(nullptr) {}
-    SharedTypeWrapper(SharedType _ty)
-        : ty(_ty) {}
+    explicit SharedTypeWrapper()               : ty(nullptr) {}
+    explicit SharedTypeWrapper(SharedType _ty) : ty(_ty) {}
 
+public:
     SharedType operator->() { return ty; }
     SharedType operator*() { return ty; }
     operator SharedType() { return ty; }

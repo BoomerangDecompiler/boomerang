@@ -182,7 +182,7 @@ bool Assign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 
 bool Assign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
 {
-    bool chl, chr, chg = false;
+    bool chl = false, chr = false, chg = false;
 
     m_lhs = m_lhs->searchReplaceAll(pattern, replace, chl);
     m_rhs = m_rhs->searchReplaceAll(pattern, replace, chr);
@@ -191,7 +191,7 @@ bool Assign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/
         m_guard = m_guard->searchReplaceAll(pattern, replace, chg);
     }
 
-    return chl | chr | chg;
+    return chl || chr || chg;
 }
 
 

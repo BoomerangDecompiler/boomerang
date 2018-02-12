@@ -23,7 +23,7 @@ typedef std::shared_ptr<RTL> SharedRTL;
 class FlagDef : public Unary
 {
 public:
-    FlagDef(SharedExp params, SharedRTL rtl);
+    FlagDef(const SharedExp& params, const SharedRTL& rtl);
     FlagDef(const FlagDef& other) = default;
     FlagDef(FlagDef&& other) = default;
 

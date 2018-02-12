@@ -49742,7 +49742,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
 
     default:
         // Should never happen
-        assert(BSFRstate - BSFRstate);
+        LOG_FATAL("Unknown BSFR state %1", BSFRstate);
     }
 
     // Keep numBytes == 0 until the last state, so we re-decode this instruction 3 times

@@ -64,10 +64,10 @@ public:
     const_iterator end() const { return m_varMap.end(); }
 
     /// \returns true iff the interval [addr; addr+size) does not contain a variable.
-    bool isClear(Address addr, unsigned size);
+    bool isClear(Address addr, unsigned size) const;
 
-    bool isClear(Address lower, Address upper) { assert(upper >= lower); return isClear(lower, (upper - lower).value()); }
-    bool isClear(const Interval<Address> interval) { return isClear(interval.lower(), interval.upper()); }
+    bool isClear(Address lower, Address upper) const { assert(upper >= lower); return isClear(lower, (upper - lower).value()); }
+    bool isClear(const Interval<Address> interval) const { return isClear(interval.lower(), interval.upper()); }
 
     /// \returns the variable that overlaps with address \p addr, or nullptr if no such variable exists.
     const TypedVariable *find(Address addr) const;

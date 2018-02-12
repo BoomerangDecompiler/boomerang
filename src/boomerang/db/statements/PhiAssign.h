@@ -112,7 +112,7 @@ public:
     PhiDefs& getDefs() { return m_defs; }
     const PhiDefs& getDefs() const { return m_defs; }
 
-    void removeAllReferences(std::shared_ptr<RefExp> exp);
+    void removeAllReferences(const std::shared_ptr<RefExp> &ref);
 
     /// Convert this PhiAssignment to an ordinary Assignment.
     /// Hopefully, this is the only place that Statements change from

@@ -401,10 +401,10 @@ SharedExp Exp::simplify()
 
 SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c, int n)
 {
-    unsigned   r   = c->getOffsetRemainder(n * 8);
-    QString    nam = c->getNameAtOffset(n * 8);
-    SharedType t   = c->getTypeAtOffset(n * 8);
-    SharedExp  res = Binary::get(opMemberAccess, parent, Const::get(nam));
+    unsigned   r    = c->getOffsetRemainder(n * 8);
+    QString    name = c->getNameAtOffset(n * 8);
+    SharedType t    = c->getTypeAtOffset(n * 8);
+    SharedExp  res = Binary::get(opMemberAccess, parent, Const::get(name));
 
     assert((r % 8) == 0);
 
@@ -501,7 +501,6 @@ void Exp::descendType(SharedType, bool&, Statement*)
 
 SharedExp Exp::fixSuccessor()
 {
-    bool      change;
     SharedExp result;
     UniqExp   search_expression(new Unary(opSuccessor, Location::regOf(Terminal::get(opWild))));
 
@@ -519,6 +518,7 @@ SharedExp Exp::fixSuccessor()
         auto replace = sub1->clone();
         auto c       = replace->access<Const, 1>();
         c->setInt(c->getInt() + 1); // Do the increment
+        bool change = false;
         SharedExp res = searchReplace(*result, replace, change);
         return res;
     }

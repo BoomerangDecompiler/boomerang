@@ -275,12 +275,15 @@ bool BoolAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) con
 bool BoolAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
 {
     Q_UNUSED(cc);
-    bool chl, chr;
+
     assert(m_cond);
     assert(m_lhs);
+
+    bool chl = false, chr = false;
     m_cond = m_cond->searchReplaceAll(pattern, replace, chl);
     m_lhs  = m_lhs->searchReplaceAll(pattern, replace, chr);
-    return chl | chr;
+
+    return chl || chr;
 }
 
 

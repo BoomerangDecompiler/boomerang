@@ -42,18 +42,6 @@
 #  define DEBUG_PRINT(...)
 #endif
 
-namespace
-{
-struct SectionParam
-{
-    QString Name;
-    Address from;
-    size_t  Size;
-    Address ImageAddress;
-    bool    Bss, Code, Data, ReadOnly;
-};
-}
-
 // #define DEBUG_MACHO_LOADER
 // #define DEBUG_MACHO_LOADER_OBJC
 
@@ -315,6 +303,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
     if (!base) {
         LOG_ERROR("Cannot allocate memory for copy of image");
+        delete[] strtbl;
+        delete[] indirectsymtbl;
         return false;
     }
 
@@ -478,7 +468,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     // Give the entry point a symbol
     // ADDRESS entry = GetMainEntryPoint();
     entrypoint = getMainEntryPoint();
-
+    delete[] strtbl;
+    delete[] indirectsymtbl;
     return true;
 }
 

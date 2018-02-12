@@ -791,8 +791,9 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 
             // If this definition is in the usedByDomPhi0 set, then it is in fact dominated by a phi use, so move it to
             // the final usedByDomPhi set
-            if (usedByDomPhi0.find(wrappedDef) != usedByDomPhi0.end()) {
-                usedByDomPhi0.remove(wrappedDef);
+            auto defIt = usedByDomPhi0.find(wrappedDef);
+            if (defIt != usedByDomPhi0.end()) {
+                usedByDomPhi0.remove(defIt);
                 usedByDomPhi.insert(RefExp::get(it, S));
             }
         }

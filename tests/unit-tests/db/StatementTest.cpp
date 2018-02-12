@@ -87,9 +87,8 @@ void StatementTest::testEmpty()
     proc->setDecoded(); // We manually "decoded"
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -126,12 +125,10 @@ void StatementTest::testFlow()
     prog->setFrontEnd(pFE);
 
     // create UserProc
-    std::string name  = "test";
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
+    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    Cfg *cfg   = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(24), std::make_shared<Const>(5));
     a1->setProc(proc);
@@ -161,9 +158,8 @@ void StatementTest::testFlow()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
 
     // print cfg to a string
     QString     actual;
@@ -244,9 +240,8 @@ void StatementTest::testKill()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
 
     // print cfg to a string
     QString     actual;
@@ -285,17 +280,12 @@ void StatementTest::testUse()
 
     // create Prog
     Prog *prog = new Prog("testUse");
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
+    prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
-    // We need a Prog object with a pBF (for getEarlyParamExp())
-    prog->setFrontEnd(pFE);
-    // create UserProc
-    std::string name  = "test";
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
+    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    Cfg *cfg   = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(24), Const::get(5));
     a1->setNumber(1);
@@ -324,9 +314,8 @@ void StatementTest::testUse()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -364,16 +353,12 @@ void StatementTest::testUseOverKill()
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
-
     // We need a Prog object with a pBF (for getEarlyParamExp())
-    prog->setFrontEnd(pFE);
-    // create UserProc
-    std::string name  = "test";
-    UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name.c_str()));
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
+
+    UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
+    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
+    Cfg *cfg = proc->getCFG();
 
     Assign *e1 = new Assign(Location::regOf(24), Const::get(5));
     e1->setNumber(1);
@@ -407,9 +392,8 @@ void StatementTest::testUseOverKill()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
 
     // print cfg to a string
     QString     actual;
@@ -450,15 +434,11 @@ void StatementTest::testUseOverBB()
     IFileLoader *pBF = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(pBF != nullptr);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+    prog->setFrontEnd(new PentiumFrontEnd(pBF, prog));
 
-    // We need a Prog object with a pBF (for getEarlyParamExp())
-    prog->setFrontEnd(pFE);
     // create UserProc
-    std::string name  = "test";
-    UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
+    Cfg *cfg       = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(24), Const::get(5));
     a1->setNumber(1);
@@ -494,9 +474,8 @@ void StatementTest::testUseOverBB()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
     // print cfg to a string
 
     QString     actual;
@@ -537,15 +516,11 @@ void StatementTest::testUseKill()
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
+    prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
-    // We need a Prog object with a pBF (for getEarlyParamExp())
-    prog->setFrontEnd(pFE);
-    // create UserProc
-    std::string name  = "test";
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    Cfg *cfg   = proc->getCFG();
+
     Assign *a1 = new Assign(Location::regOf(24), Const::get(5));
     a1->setNumber(1);
     a1->setProc(proc);
@@ -573,9 +548,8 @@ void StatementTest::testUseKill()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
     // print cfg to a string
 
     QString     actual;
@@ -618,17 +592,10 @@ void StatementTest::testEndlessLoop()
 
     // create Prog
     Prog *prog = new Prog("testEndlessLoop");
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
+    prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
-    // We need a Prog object with a pBF (for getEarlyParamExp())
-    prog->setFrontEnd(pFE);
-
-    // create UserProc
-    std::string name  = "test";
-    UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
-
-    // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
+    Cfg *cfg   = proc->getCFG();
 
 
     // r[24] := 5
@@ -656,9 +623,8 @@ void StatementTest::testEndlessLoop()
     proc->setDecoded();
 
     // compute dataflow
-    int indent = 0;
     ProcList procList;
-    proc->decompile(&procList, indent);
+    proc->decompile(&procList);
 
     QString     actual;
     QTextStream st(&actual);

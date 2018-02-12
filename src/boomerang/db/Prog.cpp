@@ -61,9 +61,9 @@
 #  include <windows.h>
 #  ifndef __MINGW32__
 namespace dbghelp
-{
-#    include <dbghelp.h>
 #  endif
+{
+#  include <dbghelp.h>
 }
 #endif
 
@@ -308,46 +308,44 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 SharedType makeUDT(int index, DWORD64 ModBase)
 {
     HANDLE hProcess = GetCurrentProcess();
-    int    got;
     WCHAR  *name;
 
-    got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME, &name);
-    assert(got);
+    BOOL gotType = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME, &name);
+    if (!gotType) {
+        return nullptr;
+    }
 
-    if (got) {
-        char nameA[1024];
-        WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
-        SharedType ty = Type::getNamedType(nameA);
+    char nameA[1024];
+    WideCharToMultiByte(CP_ACP, 0, name, -1, nameA, sizeof(nameA), 0, nullptr);
+    SharedType ty = Type::getNamedType(nameA);
 
-        if (ty) {
-            return NamedType::get(nameA);
-        }
-
-        auto  cty   = CompoundType::get();
-        DWORD count = 0;
-        got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
-        int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
-        dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(FindChildrenSize);
-        memset(pFC, 0, FindChildrenSize);
-        pFC->Count = count;
-        got        = SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC);
-
-        for (unsigned int i = 0; i < count; i++) {
-            char fieldName[1024];
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
-            WideCharToMultiByte(CP_ACP, 0, name, -1, fieldName, sizeof(fieldName), 0, nullptr);
-            DWORD mytype;
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
-            cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
-        }
-
-        Type::addNamedType(nameA, cty);
-        ty = Type::getNamedType(nameA);
-        assert(ty);
+    if (ty) {
         return NamedType::get(nameA);
     }
 
-    return nullptr;
+    auto  cty   = CompoundType::get();
+    DWORD count = 0;
+    dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
+    int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
+    dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(FindChildrenSize);
+    memset(pFC, 0, FindChildrenSize);
+    pFC->Count = count;
+    SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC);
+
+    for (unsigned int i = 0; i < count; i++) {
+        char fieldName[1024];
+        dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_SYMNAME, &name);
+        WideCharToMultiByte(CP_ACP, 0, name, -1, fieldName, sizeof(fieldName), 0, nullptr);
+        DWORD mytype;
+        dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
+        cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
+    }
+
+    Type::addNamedType(nameA, cty);
+    ty = Type::getNamedType(nameA);
+    assert(ty);
+    return NamedType::get(nameA);
+
 }
 
 
@@ -451,7 +449,7 @@ int debugRegister(int r)
 
 BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID UserContext)
 {
-    Function *proc = (Function *)UserContext;
+    Function *proc = static_cast<Function *>(UserContext);
 
     if (symInfo->Flags & SYMFLAG_PARAMETER) {
         SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
@@ -467,7 +465,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
         }
     }
     else if ((symInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
-        UserProc *uproc = (UserProc *)proc;
+        UserProc *uproc = static_cast<UserProc *>(proc);
         assert(symInfo->Flags & SYMFLAG_REGREL);
         assert(symInfo->Register == 8);
         SharedExp memref =
@@ -991,10 +989,9 @@ void Prog::decompile()
 
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
-        ProcList call_path;
         LOG_VERBOSE("Decompiling entry point '%1'", up->getName());
-        int indent = 0;
-        up->decompile(&call_path, indent);
+        ProcList call_path;
+        up->decompile(&call_path);
     }
 
     // Just in case there are any Procs not in the call graph.
@@ -1017,8 +1014,8 @@ void Prog::decompile()
                         continue;
                     }
 
-                    int indent = 0;
-                    proc->decompile(new ProcList, indent);
+                    ProcList procList;
+                    proc->decompile(&procList);
                     foundone = true;
                 }
             }

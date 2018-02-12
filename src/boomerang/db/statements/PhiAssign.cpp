@@ -376,7 +376,7 @@ Statement *PhiAssign::getStmtAt(BasicBlock* idx)
 }
 
 
-void PhiAssign::removeAllReferences(std::shared_ptr<RefExp> refExp)
+void PhiAssign::removeAllReferences(const std::shared_ptr<RefExp>& refExp)
 {
     for (PhiDefs::iterator pi = m_defs.begin(); pi != m_defs.end();) {
         RefExp& p = pi->second;
