@@ -17,35 +17,34 @@
 #include <QTextStream>
 
 
-QTextStream& operator<<(QTextStream& os, const StatementSet *ss)
+void StatementSet::insert(Statement *stmt)
 {
-    ss->print(os);
-    return os;
+    m_set.insert(stmt);
 }
 
 
 void StatementSet::makeUnion(const StatementSet& other)
 {
-    for (auto it = other.begin(); it != other.end(); ++it) {
-        insert(*it);
+    for (Statement *stmt : other) {
+        m_set.insert(stmt);
     }
 }
 
 
 void StatementSet::makeDiff(const StatementSet& other)
 {
-    for (auto it = other.begin(); it != other.end(); ++it) {
-        erase(*it);
+    for (Statement *stmt : other) {
+        m_set.erase(stmt);
     }
 }
 
 
 void StatementSet::makeIsect(const StatementSet& other)
 {
-    for (auto it = begin(); it != end(); ) {
-        if (other.find(*it) == other.end()) {
+    for (auto it = m_set.begin(); it != m_set.end(); ) {
+        if (!other.contains(*it)) {
             // Not in both sets
-            it = erase(it);
+            it = m_set.erase(it);
         }
         else {
             ++it;
@@ -56,8 +55,12 @@ void StatementSet::makeIsect(const StatementSet& other)
 
 bool StatementSet::isSubSetOf(const StatementSet& other)
 {
-    for (auto it = begin(); it != end(); ++it) {
-        if (other.find(*it) == other.end()) {
+    if (m_set.size() > other.m_set.size()) {
+        return false;
+    }
+
+    for (Statement *stmt : *this) {
+        if (!other.contains(stmt)) {
             return false;
         }
     }
@@ -68,109 +71,25 @@ bool StatementSet::isSubSetOf(const StatementSet& other)
 
 bool StatementSet::remove(Statement *s)
 {
-    if (find(s) != end()) {
-        erase(s);
+    if (this->contains(s)) {
+        m_set.erase(s);
         return true;
     }
 
     return false;
-}
-
-
-bool StatementSet::exists(Statement *s)
-{
-    iterator it = find(s);
-
-    return(it != end());
 }
 
 
 bool StatementSet::definesLoc(SharedExp loc)
 {
-    for (auto const& elem : *this) {
-        if ((elem)->definesLoc(loc)) {
-            return true;
-        }
-    }
-
-    return false;
+    return std::any_of(m_set.begin(), m_set.end(),
+        [loc] (const Statement *stmt) {
+            return stmt->definesLoc(loc);
+        });
 }
 
 
-const char *StatementSet::prints()
+bool StatementSet::contains(Statement *stmt) const
 {
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    for (auto it = begin(); it != end(); ++it) {
-        if (it != begin()) {
-            ost << ",\t";
-        }
-
-        ost << *it;
-    }
-
-    ost << "\n";
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
-
-void StatementSet::dump()
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-}
-
-
-void StatementSet::print(QTextStream& os) const
-{
-    for (auto it = begin(); it != end(); ++it) {
-        if (it != begin()) {
-            os << ",\t";
-        }
-
-        os << *it;
-    }
-
-    os << "\n";
-}
-
-
-void StatementSet::printNums(QTextStream& os)
-{
-    for (iterator it = begin(); it != end();) {
-        if (*it) {
-            (*it)->printNum(os);
-        }
-        else {
-            os << "-"; // Special case for nullptr definition
-        }
-
-        if (++it != end()) {
-            os << " ";
-        }
-    }
-}
-
-
-bool StatementSet::operator<(const StatementSet& o) const
-{
-    if (size() < o.size()) {
-        return true;
-    }
-
-    if (size() > o.size()) {
-        return false;
-    }
-
-    for (auto it1 = begin(), it2 = o.begin(); it1 != end(); ++it1, ++it2) {
-        if (*it1 != *it2) {
-            return *it1 < *it2;
-        }
-    }
-
-    return false;
+    return m_set.find(stmt) != m_set.end();
 }
