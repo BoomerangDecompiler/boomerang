@@ -277,7 +277,7 @@ public:
     /// True if a local exists with name \a name
     bool existsLocal(const QString& name) const;
 
-    bool isAddressEscapedVar(SharedConstExp e) const { return m_addressEscapedVars.exists(e); }
+    bool isAddressEscapedVar(SharedConstExp e) const { return m_addressEscapedVars.contains(e); }
 
     /**
      * Find the procs the calls point to.

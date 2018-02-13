@@ -62,7 +62,7 @@ public:
     void dump() const;
 
     /// \returns true if \p e is in the collection
-    inline bool exists(SharedExp e) { return m_locs.exists(e); }
+    inline bool exists(SharedExp e) { return m_locs.contains(e); }
     LocationSet& getLocSet() { return m_locs; }
 
 public:

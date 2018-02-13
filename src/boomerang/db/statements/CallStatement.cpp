@@ -1728,7 +1728,7 @@ void CallStatement::eliminateDuplicateArgs()
     for (StatementList::iterator it = m_arguments.begin(); it != m_arguments.end();) {
         SharedExp lhs = static_cast<const Assignment *>(*it)->getLeft();
 
-        if (ls.exists(lhs)) {
+        if (ls.contains(lhs)) {
             // This is a duplicate
             delete *it;
             it = m_arguments.erase(it);

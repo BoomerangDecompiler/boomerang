@@ -760,11 +760,11 @@ void StatementTest::testWildLocationSet()
     ls.insert(r13_20);
     ls.insert(r13_0);
     std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), reinterpret_cast<Statement *>(-1)));
-    QVERIFY(ls.exists(wildr12));
+    QVERIFY(ls.contains(wildr12));
     std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), reinterpret_cast<Statement *>(-1)));
-    QVERIFY(ls.exists(wildr13));
+    QVERIFY(ls.contains(wildr13));
     std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(10), reinterpret_cast<Statement *>(-1)));
-    QVERIFY(!ls.exists(wildr10));
+    QVERIFY(!ls.contains(wildr10));
 
     // Test findDifferentRef
     SharedExp x;
