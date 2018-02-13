@@ -23,25 +23,6 @@ bool lessExpStar::operator()(const SharedConstExp& x, const SharedConstExp& y) c
 }
 
 
-bool lessTI::operator()(const SharedExp& x, const SharedExp& y) const
-{
-    return (*x << *y);   // Compare the actual Exps
-}
-
-
-// A helper class for comparing Assignment*'s sensibly
-bool lessAssignment::operator()(const Assignment *x, const Assignment *y) const
-{
-    return(*x->getLeft() < *y->getLeft());      // Compare the LHS expressions
-}
-
-
-// Repeat the above for Assign's; sometimes the compiler doesn't (yet) understand that Assign's are Assignment's
-bool lessAssign::operator()(const Assign *x, const Assign *y) const
-{
-    return(*x->getLeft() < *y->getLeft());      // Compare the LHS expressions
-}
-
 
 void printChild(const SharedExp& e, int ind)
 {

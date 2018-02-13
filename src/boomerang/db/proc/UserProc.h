@@ -32,7 +32,6 @@ class Cfg;
 class BasicBlock;
 class Exp;
 class TypedExp;
-struct lessTI;
 
 class Type;
 class RTL;

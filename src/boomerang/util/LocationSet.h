@@ -18,6 +18,7 @@ class StatementSet;
 class RefExp;
 class Statement;
 class QTextStream;
+class Assign;
 
 
 /// For various purposes, we need sets of locations (registers or memory)

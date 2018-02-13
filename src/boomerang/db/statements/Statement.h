@@ -44,6 +44,8 @@ class RTL;
 class StatementSet;
 class ReturnStatement;
 class LocationSet;
+class Assignment;
+
 
 typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::shared_ptr<Type>        SharedType;

@@ -19,6 +19,7 @@ class Module;
 class UserProc;
 class Function;
 class StatementList;
+class Assign;
 
 
 /**
