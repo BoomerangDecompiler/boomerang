@@ -305,25 +305,15 @@ public:
     SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool& changed); // Meet the type associated with e with ty
 
 public:
-    // helper functions
-    bool isFirstStatementInBB() const;
-    bool isLastStatementInBB() const;
-    Statement *getNextStatementInBB() const;
-    Statement *getPreviousStatementInBB() const;
-
-    //    //    //    //    //    //    //    //    //    //
-    //                                                    //
-    //    Statement visitation functions                  //
-    //                                                    //
-    //    //    //    //    //    //    //    //    //    //
-
-    /// Find the locations used by expressions in this Statement.
-    /// Use the StmtExpVisitor and UsedLocsFinder visitor classes
-    /// Adds (inserts) all locations (registers or memory etc) used by this statement
-    /// Set \a cc to true to count the uses in collectors
-    /// \param used set of used locations
-    /// \param cc count collectors
-    /// \param memOnly - only add memory references.
+    /**
+     * Find the locations used by expressions in this Statement.
+     * Use the StmtExpVisitor and UsedLocsFinder visitor classes
+     * Adds (inserts) all locations (registers or memory etc) used by this statement
+     * Set \a cc to true to count the uses in collectors
+     * \param used set of used locations
+     * \param cc count collectors
+     * \param memOnly - only add memory references.
+     */
     void addUsedLocs(LocationSet& used, bool cc = false, bool memOnly = false);
 
     /// Special version of Statement::addUsedLocs for finding used locations.

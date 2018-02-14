@@ -165,68 +165,6 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 }
 
 
-bool Statement::isFirstStatementInBB() const
-{
-    assert(m_bb);
-    assert(m_bb->getRTLs());
-    assert(m_bb->getRTLs()->size());
-    assert(m_bb->getRTLs()->front());
-    assert(m_bb->getRTLs()->front()->size());
-    return this == m_bb->getRTLs()->front()->front();
-}
-
-
-bool Statement::isLastStatementInBB() const
-{
-    assert(m_bb);
-    return this == m_bb->getLastStmt();
-}
-
-
-Statement *Statement::getPreviousStatementInBB() const
-{
-    assert(m_bb);
-    RTLList *rtls = m_bb->getRTLs();
-    assert(rtls);
-    Statement *previous = nullptr;
-
-    for (auto& rtl : *rtls) {
-        for (Statement *it : *rtl) {
-            if (it == this) {
-                return previous;
-            }
-
-            previous = it;
-        }
-    }
-
-    return nullptr;
-}
-
-
-Statement *Statement::getNextStatementInBB() const
-{
-    assert(m_bb);
-    RTLList *rtls = m_bb->getRTLs();
-    assert(rtls);
-    bool wantNext = false;
-
-    for (auto& rtl : *rtls) {
-        for (Statement *it : *rtl) {
-            if (wantNext) {
-                return it;
-            }
-
-            if (it == this) {
-                wantNext = true;
-            }
-        }
-    }
-
-    return nullptr;
-}
-
-
 QTextStream& operator<<(QTextStream& os, const Statement *s)
 {
     if (s == nullptr) {
