@@ -581,8 +581,6 @@ void ReturnStatement::updateReturns()
 
 void ReturnStatement::removeModified(SharedExp loc)
 {
-    m_modifieds.removeDefOf(loc);
-    m_returns.removeDefOf(loc);
+    m_modifieds.removeFirstDefOf(loc);
+    m_returns.removeFirstDefOf(loc);
 }
-
-

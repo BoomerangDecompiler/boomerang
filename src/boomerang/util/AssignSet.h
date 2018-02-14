@@ -10,18 +10,48 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h"
-
+#include <memory>
 #include <set>
 
 class QTextStream;
+class Assign;
 
+using SharedExp = std::shared_ptr<class Exp>;
 
-/// Like \ref StatementSet, but the Statements are known to be Assigns,
-/// and are sorted sensibly
-class AssignSet : public std::set<Assign *, lessAssign>
+/**
+ * Like \ref StatementSet, but the Statements are known to be Assigns,
+ * and are sorted sensibly
+ */
+class AssignSet
 {
+    struct lessAssign
+    {
+        bool operator() (const Assign *x, const Assign *y) const;
+    };
+
+    typedef std::set<Assign *, lessAssign> Set;
+
 public:
+    typedef Set::iterator iterator;
+    typedef Set::const_iterator const_iterator;
+
+public:
+    iterator begin() { return m_set.begin(); }
+    iterator end()   { return m_set.end();   }
+
+    const_iterator begin() const { return m_set.begin(); }
+    const_iterator end()   const { return m_set.end(); }
+
+public:
+    void clear() { m_set.clear(); }
+
+    void insert(Assign *assign);
+
+    /// \returns false if it was not found.
+    bool remove(Assign *asgn);
+
+    bool contains(Assign *asgn) const { return m_set.find(asgn) != m_set.end(); }
+
     /// Set union.
     /// *this = *this union other
     void makeUnion(const AssignSet& other);
@@ -37,13 +67,6 @@ public:
     /// \returns true if all elements of this set are in \p other
     bool isSubSetOf(const AssignSet& other);
 
-    /// Remove this Assign.
-    /// \returns false if it was not found.
-    bool remove(Assign *asgn);
-
-    /// \returns true if found.
-    bool exists(Assign *asgn);
-
     /// \returns true if any assignment in this set defines \p loc
     bool definesLoc(SharedExp loc) const;
 
@@ -51,16 +74,6 @@ public:
     /// If found, return pointer to the Assign with that LHS (else return nullptr)
     Assign *lookupLoc(SharedExp loc);
 
-    bool operator<(const AssignSet& o) const;
-
-    void print(QTextStream& os) const;
-
-    /// Print just the numbers to stream os
-    void printNums(QTextStream& os);
-
-    /// Print to a string, for debugging
-    char *prints();
-
-    /// Print to standard error for debugging
-    void dump();
+private:
+    Set m_set;
 };

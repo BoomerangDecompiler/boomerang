@@ -18,6 +18,7 @@ class StatementSet;
 class RefExp;
 class Statement;
 class QTextStream;
+class Assign;
 
 
 /// For various purposes, we need sets of locations (registers or memory)
@@ -72,7 +73,7 @@ public:
     char *prints() const;                        ///< Print to string for debugging
     void dump() const;
     void printDiff(LocationSet *o) const;        ///< Diff 2 location sets to LOG_STREAM()
-    bool exists(SharedConstExp e) const;         ///< Return true if the location exists in the set
+    bool contains(SharedConstExp e) const;       ///< Return true if the location exists in the set
 
     /// Find location e (no subscripts); nullptr if not found
     /// This set is assumed to be of subscripted locations (e.g. a Collector), and we want to find the unsubscripted

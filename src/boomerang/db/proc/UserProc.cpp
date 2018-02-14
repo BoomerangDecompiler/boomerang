@@ -4641,7 +4641,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 LocationSet uses;
                 rhs->addUsedLocs(uses);
 
-                if (uses.exists(refPhi)) {
+                if (uses.contains(refPhi)) {
                     // s is a phi that defines a component of a recursive return. Ignore it
                     foundPhi = true;
                     break;
@@ -4823,7 +4823,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     for (rr = m_retStatement->begin(); rr != m_retStatement->end();) {
         Assign *a = static_cast<Assign *>(*rr);
 
-        if (unionOfCallerLiveLocs.exists(a->getLeft())) {
+        if (unionOfCallerLiveLocs.contains(a->getLeft())) {
             ++rr;
             continue;
         }

@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/AssignSet.h"
 
 #include <deque>

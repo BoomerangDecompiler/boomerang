@@ -14,7 +14,6 @@
 
 
 class Statement;
-class QTextStream;
 
 using SharedExp = std::shared_ptr<class Exp>;
 
@@ -22,41 +21,43 @@ using SharedExp = std::shared_ptr<class Exp>;
 /**
  * A class to implement sets of statements
  */
-class StatementSet : public std::set<Statement *>
+class StatementSet
 {
+    typedef std::set<Statement *> Set;
+    typedef Set::iterator iterator;
+    typedef Set::const_iterator const_iterator;
+
 public:
-    /// Set union
-    void makeUnion(const StatementSet& other);
+    iterator begin() { return m_set.begin(); }
+    iterator end()   { return m_set.end(); }
 
-    /// Set difference
-    void makeDiff(const StatementSet& other);
+    const_iterator begin() const { return m_set.begin(); }
+    const_iterator end()   const { return m_set.end();   }
 
-    /// Set intersection
-    void makeIsect(const StatementSet& other);
-
-    /// Set subset relation
-    bool isSubSetOf(const StatementSet& other);
+public:
+    void insert(Statement *stmt);
 
     /// Remove this Statement.
-    /// \returns false if it was not found.
+    /// \returns true if removed, false if not found
     bool remove(Statement *s);
 
-    /// \returns true if found.
-    bool exists(Statement *s);
+    bool contains(Statement *stmt) const;
 
-    /// \returns true if any assignment in this set defines \p loc
+    /// \returns true if any statement in this set defines \p loc
     bool definesLoc(SharedExp loc);
 
-    bool operator<(const StatementSet& o) const;
+    /// \returns true if this set is a subset of \p other
+    bool isSubSetOf(const StatementSet& other);
 
-    void print(QTextStream& os) const;
+    /// Set union: this = this union \p other
+    void makeUnion(const StatementSet& other);
 
-    /// Print just the numbers
-    void printNums(QTextStream& os);
+    /// Set intersection: this = this intersect other
+    void makeIsect(const StatementSet& other);
 
-    /// Print to string (for debugging)
-    const char *prints();
+    /// Set difference: this = this - other
+    void makeDiff(const StatementSet& other);
 
-    /// Print to standard error for debugging
-    void dump();
+private:
+    Set m_set;
 };

@@ -143,7 +143,7 @@ bool LocationSet::operator==(const LocationSet& o) const
 }
 
 
-bool LocationSet::exists(SharedConstExp e) const
+bool LocationSet::contains(SharedConstExp e) const
 {
     return lset.find(std::const_pointer_cast<Exp>(e)) != lset.end();
 }
