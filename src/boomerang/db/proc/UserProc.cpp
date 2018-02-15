@@ -986,7 +986,6 @@ void UserProc::initialiseDecompile()
     m_df.calculateDominators();
 
     // Number the statements
-    m_stmtNumber = 0;
     numberStatements();
 
     if (!SETTING(decompile)) {
