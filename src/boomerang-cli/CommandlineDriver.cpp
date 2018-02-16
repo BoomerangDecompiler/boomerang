@@ -48,7 +48,6 @@ static void help()
         "  -Tc              : Use old constraint-based type analysis\n"
         "  -Td              : Use data-flow-based type analysis\n"
         "  -a               : Assume ABI compliance\n"
-        "  -W               : Windows specific decompilation mode (requires pdb information)\n"
         "Output\n"
         "  -v               : Verbose\n"
         "  -h               : This help\n"
