@@ -66,7 +66,6 @@ public:
     bool usePromotion      = true;
     bool propOnlyToAll     = false;
     bool debugGen          = false;
-    int maxMemDepth        = 99;
     bool nameParameters    = true;
     bool stopAtDebugPoints = false;
 

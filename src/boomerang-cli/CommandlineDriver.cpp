@@ -73,14 +73,13 @@ static void help()
         "  -dp              : Debug proof engine\n"
         "  -ds              : Stop at debug points for keypress\n"
         "  -dt              : Debug type analysis\n"
-        "  -du              : Debug removing unused statements etc\n"
+        "  -du              : Debug removal of unused statements etc\n"
         "Restrictions\n"
         "  -nb              : No simplifications for branches\n"
         "  -nc              : No decode children in the call graph (callees)\n"
         "  -nd              : No (reduced) dataflow analysis\n"
         "  -nD              : No decompilation (at all!)\n"
         "  -nl              : No creation of local variables\n"
-//        "  -nm              : No decoding of the 'main' procedure\n"
         "  -ng              : No replacement of expressions with Globals\n"
         "  -nn              : No removal of nullptr and unused statements\n"
         "  -np              : No replacement of expressions with Parameter names\n"
@@ -404,16 +403,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 help();
             }
 
-            break;
-
-        case 'm':
-
-            if (++i == args.size()) {
-                usage();
-                return 1;
-            }
-
-            SETTING(maxMemDepth) = args[i].toInt();
             break;
 
         case 'a':

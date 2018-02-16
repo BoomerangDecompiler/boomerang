@@ -1016,9 +1016,6 @@ void UserProc::earlyDecompile()
     replaceSimpleGlobalConstants();
 
     // First placement of phi functions, renaming, and initial propagation. This is mostly for the stack pointer
-    // maxDepth = findMaxDepth() + 1;
-    // if (Boomerang::get()->maxMemDepth < maxDepth)
-    //    maxDepth = Boomerang::get()->maxMemDepth;
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
     // the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
     // equivalent to depth 0 in the old scheme

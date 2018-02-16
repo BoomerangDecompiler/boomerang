@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>767</height>
+    <height>733</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -286,20 +286,6 @@
               <string>Use signature promotion</string>
              </property>
             </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="hLayout_maxMemDepth">
-             <item>
-              <widget class="QLabel" name="lbMaxMemDepth">
-               <property name="text">
-                <string>maxMemDepth</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QSpinBox" name="spbMaxMemDepth"/>
-             </item>
-            </layout>
            </item>
            <item>
             <widget class="QCheckBox" name="chkChangeSignatures">

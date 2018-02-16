@@ -72,9 +72,6 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->cbTypeRecoveryEngine->addItem(rec->getName(), QVariant::fromValue<ITypeRecovery *>(rec));
     ui->cbTypeRecoveryEngine->setCurrentIndex(SETTING(dfaTypeAnalysis) ? 1 : 0);
 
-    ui->spbMaxMemDepth->setRange(0, std::numeric_limits<int>::max());
-    ui->spbMaxMemDepth->setValue(SETTING(maxMemDepth));
-
     ui->chkAssumeABI->setChecked(SETTING(assumeABI));
     ui->chkBranchSimplify->setChecked(SETTING(branchSimplify));
     ui->chkChangeSignatures->setChecked(SETTING(changeSignatures));
@@ -142,7 +139,6 @@ void SettingsDlg::on_btnApply_clicked()
     SETTING(propMaxDepth)    = ui->spbPropMaxDepth->value();
     SETTING(numToPropagate)  = ui->spbNumToPropagate->value();
     SETTING(dfaTypeAnalysis) = ui->cbTypeRecoveryEngine->currentData().value<ITypeRecovery *>() != nullptr;
-    SETTING(maxMemDepth)     = ui->spbMaxMemDepth->value();
 
     SETTING(assumeABI)           = ui->chkAssumeABI->isChecked();
     SETTING(branchSimplify)      = ui->chkBranchSimplify->isChecked();

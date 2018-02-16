@@ -655,7 +655,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         }
 
         // Danger. For now, only do if -ic given
-        bool decodeThru = SETTING(decodeThruIndCall);
+        const bool decodeThru = SETTING(decodeThruIndCall);
 
         if (decodeThru && vtExp && vtExp->isIntConst()) {
             Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
