@@ -298,124 +298,6 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
 }
 
 
-void UserProc::printCallGraphXML(QTextStream& os, int depth, bool recurse)
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    bool wasVisited = m_visited;
-    m_visited = true;
-    int i;
-
-    for (i = 0; i < depth; i++) {
-        os << "      ";
-    }
-
-    os << "<proc name=\"" << getName() << "\">\n";
-
-    if (recurse) {
-        for (auto& elem : m_calleeList) {
-            (elem)->printCallGraphXML(os, depth + 1, !wasVisited && !(elem)->isVisited());
-        }
-    }
-
-    for (i = 0; i < depth; i++) {
-        os << "      ";
-    }
-
-    os << "</proc>\n";
-}
-
-
-void UserProc::printDecodedXML()
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-decoded.xml"));
-
-    if (!file.open(QFile::WriteOnly)) {
-        LOG_ERROR("Can't write to file %1", file.fileName());
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "<proc name=\"" << getName() << "\">\n";
-    out << "    <decoded>\n";
-    QString     enc;
-    QTextStream os(&enc);
-    print(os);
-    out << enc.toHtmlEscaped();
-    out << "    </decoded>\n";
-    out << "</proc>\n";
-}
-
-
-void UserProc::printAnalysedXML()
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-analysed.xml"));
-
-    if (!file.open(QFile::WriteOnly)) {
-        LOG_ERROR("Can't write to file %1", file.fileName());
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "<proc name=\"" << getName() << "\">\n";
-    out << "    <analysed>\n";
-    QString     enc;
-    QTextStream os(&enc);
-    print(os);
-    out << enc.toHtmlEscaped();
-    out << "    </analysed>\n";
-    out << "</proc>\n";
-}
-
-
-void UserProc::printSSAXML()
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-ssa.xml"));
-
-    if (!file.open(QFile::WriteOnly)) {
-        LOG_ERROR("Can't write to file %1", file.fileName());
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "<proc name=\"" << getName() << "\">\n";
-    out << "    <ssa>\n";
-    QString     enc;
-    QTextStream os(&enc);
-    print(os);
-    out << enc.toHtmlEscaped();
-    out << "    </ssa>\n";
-    out << "</proc>\n";
-}
-
-
-void UserProc::printXML()
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    printDetailsXML();
-    printSSAXML();
-    m_prog->printCallGraphXML();
-    printUseGraph();
-}
-
-
 void UserProc::printUseGraph()
 {
     QString filePath = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
@@ -464,7 +346,6 @@ void UserProc::deleteCFG()
 void UserProc::setDecoded()
 {
     setStatus(PROC_DECODED);
-    printDecodedXML();
 }
 
 
@@ -1108,8 +989,6 @@ void UserProc::initialiseDecompile()
     m_stmtNumber = 0;
     numberStatements();
 
-    printXML();
-
     if (!SETTING(decompile)) {
         LOG_MSG("Not decompiling.");
         setStatus(PROC_FINAL); // ??!
@@ -1250,8 +1129,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
             m_retStatement->updateReturns();
         }
 
-        printXML();
-
         // Print if requested
         if (SETTING(verboseOutput)) { // was if debugPrintSSA
             LOG_SEPARATE(getName(), "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
@@ -1283,16 +1160,12 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
                 findPreserveds();    // Preserveds subtract from returns
             }
 
-            printXML();
-
             if (SETTING(verboseOutput)) {
                 LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after updating returns) ---", getName(), pass);
                 LOG_SEPARATE(getName(), "%1", this->toString());
                 LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
             }
         }
-
-        printXML();
 
         // Print if requested
         if (SETTING(verboseOutput)) { // was if debugPrintSSA
@@ -1327,8 +1200,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
                 LOG_SEPARATE(getName(), "Done after rename (2) of %1:", getName());
             }
         } while (_convert);
-
-        printXML();
 
         if (SETTING(verboseOutput)) {
             LOG_SEPARATE(getName(), "--- after propagate for %1 at pass %2 ---", getName(), pass);
@@ -1495,7 +1366,6 @@ void UserProc::remUnusedStmtEtc()
         removeNullStatements();
     }
 
-    printXML();
 
     if (SETTING(removeNull)) {
         debugPrintAll("after removing unused and null statements pass 1");
@@ -4975,8 +4845,6 @@ void UserProc::typeAnalysis()
     if (DFA_TYPE_ANALYSIS) {
         rec->recoverFunctionTypes(this);
     }
-
-    printXML();
 }
 
 

@@ -590,13 +590,6 @@ public:
     /// \copydoc Function::isPreserved
     virtual bool isPreserved(SharedExp e) override;
 
-    /// \copydoc Function::printCallGraphXML
-    virtual void printCallGraphXML(QTextStream& os, int depth, bool recurse = true) override;
-
-    void printDecodedXML();
-    void printAnalysedXML();
-    void printSSAXML();
-    void printXML();
     void printUseGraph();
 
     bool searchAndReplace(const Exp& search, SharedExp replace);

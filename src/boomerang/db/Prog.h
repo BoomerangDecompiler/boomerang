@@ -250,7 +250,6 @@ public:
 
     void printSymbolsToFile() const;
     void printCallGraph() const;
-    void printCallGraphXML() const;
 
     Module *getRootModule() const { return m_rootModule; }
     Module *findModule(const QString& name) const;

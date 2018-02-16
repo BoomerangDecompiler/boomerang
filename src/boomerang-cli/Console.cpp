@@ -464,7 +464,6 @@ CommandStatus Console::handleDelete(const QStringList& args)
                 return CommandStatus::Failure;
             }
 
-            QFile::remove(module->getOutPath("xml"));
             QFile::remove(module->getOutPath("c"));
             assert(module->getUpstream());
             module->getUpstream()->removeChild(module);

@@ -74,12 +74,9 @@ public:
     /// \a decodeMain is set when there are no -e or -E switches given
     bool decodeMain          = true;
     bool printAST            = false;
-    bool dumpXML             = false;
     bool removeReturns       = true;
     bool decodeThruIndCall   = false;
     bool decodeChildren      = true;
-    bool loadBeforeDecompile = false;
-    bool saveBeforeDecompile = false;
     bool useProof            = true;
     bool changeSignatures    = true;
     bool dfaTypeAnalysis     = true;

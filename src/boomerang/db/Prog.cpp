@@ -44,7 +44,6 @@
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
-#include <QtCore/QXmlStreamWriter>
 #include <QtCore/QDir>
 #include <QtCore/QString>
 
@@ -1033,18 +1032,6 @@ void Prog::decompile()
             while (removeUnusedReturns()) {
             }
         }
-
-        // print XML after removing returns
-        for (const auto& m : m_moduleList) {
-            for (Function *pp : *m) {
-                if (pp->isLib()) {
-                    continue;
-                }
-
-                UserProc *proc = static_cast<UserProc *>(pp);
-                proc->printXML();
-            }
-        }
     }
 
     LOG_VERBOSE("Transforming from SSA");
@@ -1374,43 +1361,6 @@ void Prog::printSymbolsToFile() const
     f.flush();
     tgt.commit();
     LOG_VERBOSE("Leaving Prog::printSymbolsToFile");
-}
-
-
-void Prog::printCallGraphXML() const
-{
-    if (!SETTING(dumpXML)) {
-        return;
-    }
-
-    for (const auto& m : m_moduleList) {
-        for (Function *it : *m) {
-            it->clearVisited();
-        }
-    }
-
-    QString     fname = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("callgraph.xml");
-    QSaveFile   CallGraphFile(fname);
-    QTextStream f(&CallGraphFile);
-    f << "<prog name=\"" << getName() << "\">\n";
-    f << "     <callgraph>\n";
-
-    for (UserProc *up : m_entryProcs) {
-        up->printCallGraphXML(f, 2);
-    }
-
-    for (const auto& m : m_moduleList) {
-        for (Function *pp : *m) {
-            if (!pp->isVisited() && !pp->isLib()) {
-                pp->printCallGraphXML(f, 2);
-            }
-        }
-    }
-
-    f << "     </callgraph>\n";
-    f << "</prog>\n";
-    f.flush();
-    CallGraphFile.commit();
 }
 
 

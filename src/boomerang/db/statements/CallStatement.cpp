@@ -866,7 +866,6 @@ bool CallStatement::convertToDirect()
     m_isComputed = false;
     m_proc->undoComputedBB(this);
     m_proc->addCallee(m_procDest);
-    m_procDest->printDetailsXML();
     convertIndirect = true;
 
     LOG_VERBOSE("Result of convertToDirect: %1", this);

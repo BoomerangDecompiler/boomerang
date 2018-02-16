@@ -47,16 +47,12 @@ static void help()
         "  -t               : Trace (print address of) every instruction decoded\n"
         "  -Tc              : Use old constraint-based type analysis\n"
         "  -Td              : Use data-flow-based type analysis\n"
-        "  -LD              : Load before decompile (<program> becomes xml input file)\n"
-        "  -SD              : Save before decompile\n"
         "  -a               : Assume ABI compliance\n"
         "  -W               : Windows specific decompilation mode (requires pdb information)\n"
-//        "  -pa              : only propagate if can propagate to all\n"
         "Output\n"
         "  -v               : Verbose\n"
         "  -h               : This help\n"
         "  -o <output path> : Where to generate output (defaults to ./output/)\n"
-        "  -x               : Dump XML files\n"
         "  -r               : Print RTL for each proc to log before code generation\n"
         "  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n"
         "  -gc              : Generate a call graph (callgraph.out and callgraph.dot)\n"
@@ -174,10 +170,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             SETTING(verboseOutput) = true;
             break;
 
-        case 'x':
-            SETTING(dumpXML) = true;
-            break;
-
         case 'X':
             SETTING(experimental) = true;
             LOG_WARN("Activating experimental code!");
@@ -232,14 +224,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case '-':
             break; // No effect: ignored
-
-        case 'L':
-
-            if (arg[2] == 'D') {
-                SETTING(loadBeforeDecompile) = true;
-            }
-
-            break;
 
         case 'i':
 
@@ -448,14 +432,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'S':
-
-            if (arg[2] == 'D') {
-                SETTING(saveBeforeDecompile) = true;
-            }
-            else {
-                minsToStopAfter = args[++i].toInt();
-            }
-
+            minsToStopAfter = args[++i].toInt();
             break;
 
         default:

@@ -160,12 +160,6 @@ public:
 
     void removeParameter(SharedExp e);
 
-    virtual void printCallGraphXML(QTextStream& os, int depth, bool = true);
-    void printDetailsXML();
-
-    void clearVisited() { m_visited = false; }
-    bool isVisited() const { return m_visited; }
-
     Module *getParent() { return m_module; }
     const Module *getParent() const { return m_module; }
 
@@ -177,7 +171,6 @@ protected:
     virtual void deleteCFG() {}
 
 protected:
-    bool m_visited; ///< For printCallGraphXML
     Prog *m_prog;   ///< Program containing this procedure.
 
     /**

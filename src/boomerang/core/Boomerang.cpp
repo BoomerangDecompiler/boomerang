@@ -106,7 +106,6 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
 
     if (SETTING(generateCallGraph)) {
         prog->printCallGraph();
-        prog->printCallGraphXML();
     }
 
     return prog;
@@ -120,19 +119,10 @@ int Boomerang::decompile(const QString& fname, const char *pname)
 
     time(&start);
 
-    if (SETTING(loadBeforeDecompile)) {
-        LOG_ERROR("Loading persisted state is not implemented.");
-    }
-    else {
-        prog = loadAndDecode(fname, pname);
+    prog = loadAndDecode(fname, pname);
 
-        if (prog == nullptr) {
-            return 1;
-        }
-    }
-
-    if (SETTING(saveBeforeDecompile)) {
-        LOG_ERROR("Saving persisted state is not implemented.");
+    if (prog == nullptr) {
+        return 1;
     }
 
     if (SETTING(stopBeforeDecompile)) {

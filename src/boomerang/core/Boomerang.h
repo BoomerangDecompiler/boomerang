@@ -174,5 +174,4 @@ private:
 #define DEBUG_GEN               (SETTING(debugGen))
 #define DEBUG_DECODER           (SETTING(debugDecoder))
 #define DFA_TYPE_ANALYSIS       (SETTING(dfaTypeAnalysis))
-#define DUMP_XML                (SETTING(dumpXML))
 #define EXPERIMENTAL            (SETTING(experimental))

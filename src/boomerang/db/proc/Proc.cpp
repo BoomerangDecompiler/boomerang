@@ -127,54 +127,6 @@ std::list<Type> *Function::getParamTypeList(const std::list<SharedExp>& /*actual
 }
 
 
-void Function::printCallGraphXML(QTextStream& os, int depth, bool /*recurse*/)
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    m_visited = true;
-
-    for (int i = 0; i < depth; i++) {
-        os << "      ";
-    }
-
-    os << "<proc name=\"" << getName() << "\"/>\n";
-}
-
-
-void Function::printDetailsXML()
-{
-    if (!DUMP_XML) {
-        return;
-    }
-
-    QFile file(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-details.xml"));
-
-    if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't write to file:" << file.fileName();
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "<proc name=\"" << getName() << "\">\n";
-    unsigned i;
-
-    for (i = 0; i < m_signature->getNumParams(); i++) {
-        out << "   <param name=\"" << m_signature->getParamName(i) << "\" "
-            << "exp=\"" << m_signature->getParamExp(i) << "\" "
-            << "type=\"" << m_signature->getParamType(i)->getCtype() << "\"\n";
-    }
-
-    for (i = 0; i < m_signature->getNumReturns(); i++) {
-        out << "   <return exp=\"" << m_signature->getReturnExp(i) << "\" "
-            << "type=\"" << m_signature->getReturnType(i)->getCtype() << "\"/>\n";
-    }
-
-    out << "</proc>\n";
-}
-
-
 void Function::removeFromModule()
 {
     assert(m_module);
