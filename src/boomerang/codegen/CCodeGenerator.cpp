@@ -123,7 +123,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
         if (proc == nullptr) {
             bool global = false;
 
-            if (SETTING(noDecompile)) {
+            if (!SETTING(decompile)) {
                 const char *sections[] = { "rodata", "data", "data1", nullptr };
 
                 for (int j = 0; sections[j]; j++) {
@@ -241,7 +241,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         return; // never want to see a = a;
     }
 
-    if (SETTING(noDecompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
+    if (!SETTING(decompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
         (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
         int wdth = lhs->access<Const, 1>()->getInt();
 
@@ -254,7 +254,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         }
     }
 
-    if (SETTING(noDecompile) && isBareMemof(*lhs, proc)) {
+    if (!SETTING(decompile) && isBareMemof(*lhs, proc)) {
         if (asgnType && asgnType->isFloat()) {
             if (asgnType->as<FloatType>()->getSize() == 32) {
                 ost << "FLOAT_";
@@ -389,7 +389,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         if (ok) {
             bool needclose = false;
 
-            if (SETTING(noDecompile) && proc->getSignature()->getParamType(n) &&
+            if (!SETTING(decompile) && proc->getSignature()->getParamType(n) &&
                 proc->getSignature()->getParamType(n)->isPointer()) {
                 s << "ADDR(";
                 needclose = true;
@@ -468,7 +468,7 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
     ost << "return";
     size_t n = rets->size();
 
-    if ((n == 0) && SETTING(noDecompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
+    if ((n == 0) && !SETTING(decompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
         ost << " eax";
     }
 
@@ -573,7 +573,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
         addLocal(it->first, locType, it == last);
     }
 
-    if (SETTING(noDecompile) && (proc->getName() == "main")) {
+    if (!SETTING(decompile) && (proc->getName() == "main")) {
         StatementList args, results;
 
         if (proc->getProg()->getFrontEndId() == Platform::PENTIUM) {
@@ -590,7 +590,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
 
     addProcEnd();
 
-    if (!SETTING(noRemoveLabels)) {
+    if (SETTING(removeLabels)) {
         removeUnusedLabels();
     }
 
@@ -1471,7 +1471,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
 
     case opMemOf:
 
-        if (SETTING(noDecompile)) {
+        if (!SETTING(decompile)) {
             str << "MEMOF(";
             appendExp(str, *unaryExp.getSubExp1(), PREC_NONE);
             str << ")";
@@ -1538,7 +1538,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
             assert(ternaryExp.getSubExp1()->isIntConst());
             int float_bits = ternaryExp.access<Const, 1>()->getInt();
 
-            if (SETTING(noDecompile)) {
+            if (!SETTING(decompile)) {
                 assert(ternaryExp.getSubExp1()->isIntConst());
 
                 if (float_bits == 32) {
@@ -1895,7 +1895,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, PREC curPrec, b
                     str << "*"; // memof degrades to dereference if types match
                 }
                 else {
-                    if (SETTING(noDecompile)) {
+                    if (!SETTING(decompile)) {
                         if (tt && tt->isFloat()) {
                             if (tt->as<const FloatType>()->getSize() == 32) {
                                 str << "FLOAT_MEMOF";

@@ -144,7 +144,7 @@ void Decompiler::decode()
         m_prog->decodeEntryPoint(entryAddr);
     }
 
-    if (!SETTING(noDecodeChildren)) {
+    if (SETTING(decodeChildren)) {
         // decode anything undecoded
         m_fe->decode(m_prog, Address::INVALID);
     }

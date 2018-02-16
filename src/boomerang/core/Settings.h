@@ -43,31 +43,31 @@ public:
 
 public:
     // Command line flags
-    bool verboseOutput               = false;
+    bool verboseOutput       = false;
     bool debugSwitch         = false;
     bool debugLiveness       = false;
     bool debugTA             = false;
     bool debugDecoder        = false;
     bool debugProof          = false;
     bool debugUnused         = false;
-    bool printRTLs            = false;
-    bool noBranchSimplify    = false;
-    bool noRemoveNull        = false;
-    bool noLocals            = false;
-    bool noRemoveLabels      = false;
-    bool noDataflow          = false;
-    bool noDecompile         = false;
+    bool printRTLs           = false;
+    bool branchSimplify      = true;
+    bool removeNull          = true;
+    bool useLocals           = true;
+    bool removeLabels        = true;
+    bool useDataflow         = true;
+    bool decompile           = true;
     bool stopBeforeDecompile = false;
     bool traceDecoder        = false;
 
     /// The file in which the dotty graph is saved
     QString dotFile;
     int numToPropagate     = -1;
-    bool noPromote         = false;
+    bool usePromotion      = true;
     bool propOnlyToAll     = false;
     bool debugGen          = false;
     int maxMemDepth        = 99;
-    bool noParameterNames  = false;
+    bool nameParameters    = true;
     bool stopAtDebugPoints = false;
 
     /// When true, attempt to decode main, all children, and all procs.
@@ -75,18 +75,18 @@ public:
     bool decodeMain          = true;
     bool printAST            = false;
     bool dumpXML             = false;
-    bool noRemoveReturns     = false;
+    bool removeReturns       = true;
     bool decodeThruIndCall   = false;
-    bool noDecodeChildren    = false;
+    bool decodeChildren      = true;
     bool loadBeforeDecompile = false;
     bool saveBeforeDecompile = false;
-    bool noProve             = false;
-    bool noChangeSignatures  = false;
+    bool useProof            = true;
+    bool changeSignatures    = true;
     bool dfaTypeAnalysis     = true;
     int propMaxDepth         = 3; ///< Max depth of expression that'll be propagated to more than one dest
     bool generateCallGraph   = false;
     bool generateSymbols     = false;
-    bool noGlobals           = false;
+    bool useGlobals          = true;
     bool assumeABI           = false; ///< Assume ABI compliance
     bool experimental        = false; ///< Activate experimental code. Caution!
 

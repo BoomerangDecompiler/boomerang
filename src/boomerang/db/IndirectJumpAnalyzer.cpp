@@ -663,7 +663,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
             if (prog->findFunction(pfunc) == nullptr) {
                 // A new, undecoded procedure
-                if (SETTING(noDecodeChildren)) {
+                if (!SETTING(decodeChildren)) {
                     return false;
                 }
 

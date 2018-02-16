@@ -443,13 +443,13 @@ bool IFrontEnd::decode(Prog *prog, Address addr)
                     userProc->setDecoded();
 
                     // Break out of the loops if not decoding children
-                    if (SETTING(noDecodeChildren)) {
+                    if (!SETTING(decodeChildren)) {
                         break;
                     }
                 }
             }
 
-            if (SETTING(noDecodeChildren)) {
+            if (!SETTING(decodeChildren)) {
                 break;
             }
         }
@@ -846,7 +846,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                         LOG_VERBOSE("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
-                        if (SETTING(noDecompile)) {
+                        if (!SETTING(decompile)) {
                             // try some hacks
                             if (jumpDest->isMemOf() && (jumpDest->getSubExp1()->getOper() == opPlus) &&
                                 jumpDest->getSubExp1()->getSubExp2()->isIntConst()) {

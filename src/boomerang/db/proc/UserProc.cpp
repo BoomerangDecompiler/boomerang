@@ -899,7 +899,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
 
     // Recurse to children
 
-    if (!SETTING(noDecodeChildren)) {
+    if (SETTING(decodeChildren)) {
         // Recurse to children first, to perform a depth first search
 
         // Look at each call, to do the DFS
@@ -1110,7 +1110,7 @@ void UserProc::initialiseDecompile()
 
     printXML();
 
-    if (SETTING(noDecompile)) {
+    if (!SETTING(decompile)) {
         LOG_MSG("Not decompiling.");
         setStatus(PROC_FINAL); // ??!
         return;
@@ -1196,7 +1196,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
     // Oh, no, we keep doing preservations till almost the end...
     // setStatus(PROC_PRESERVEDS);        // Preservation done
 
-    if (!SETTING(noPromote)) {
+    if (SETTING(usePromotion)) {
         // We want functions other than main to be promoted. Needed before mapExpressionsToLocals
         promoteSignature();
     }
@@ -1268,7 +1268,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
 // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.
-        if (!SETTING(noChangeSignatures)) {
+        if (SETTING(changeSignatures)) {
             // addNewReturns(depth);
             for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
@@ -1383,7 +1383,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
     // Now that memofs are renamed, the bypassing for memofs can work
     fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
 
-    if (!SETTING(noParameterNames)) {
+    if (SETTING(nameParameters)) {
         // ? Crazy time to do this... haven't even done "final" parameters as yet
         // mapExpressionsToParameters();
     }
@@ -1428,7 +1428,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
     findPreserveds();
 
     // Used to be later...
-    if (!SETTING(noParameterNames)) {
+    if (SETTING(nameParameters)) {
         // findPreserveds();        // FIXME: is this necessary here?
         // fixCallBypass();    // FIXME: surely this is not necessary now?
         // trimParameters();    // FIXME: surely there aren't any parameters to trim yet?
@@ -1486,18 +1486,18 @@ void UserProc::remUnusedStmtEtc()
     countRefs(refCounts);
 
     // Now remove any that have no used
-    if (!SETTING(noRemoveNull)) {
+    if (SETTING(removeNull)) {
         remUnusedStmtEtc(refCounts);
     }
 
     // Remove null statements
-    if (!SETTING(noRemoveNull)) {
+    if (SETTING(removeNull)) {
         removeNullStatements();
     }
 
     printXML();
 
-    if (!SETTING(noRemoveNull)) {
+    if (SETTING(removeNull)) {
         debugPrintAll("after removing unused and null statements pass 1");
     }
 
@@ -1505,7 +1505,7 @@ void UserProc::remUnusedStmtEtc()
 
     findFinalParameters();
 
-    if (!SETTING(noParameterNames)) {
+    if (SETTING(nameParameters)) {
         // Replace the existing temporary parameters with the final ones:
         // mapExpressionsToParameters();
         addParameterSymbols();
@@ -3176,7 +3176,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
         return true;
     }
 
-    if (SETTING(noProve)) {
+    if (!SETTING(useProof)) {
         return false;
     }
 

@@ -54,7 +54,7 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->chkVerbose->setChecked(SETTING(verboseOutput));
 
     // Decode settings
-    ui->chkDecodeChildren->setChecked(!SETTING(noDecodeChildren));
+    ui->chkDecodeChildren->setChecked(SETTING(decodeChildren));
     ui->chkDecodeMain->setChecked(SETTING(decodeMain));
     ui->chkDecodeThruIndirectCall->setChecked(SETTING(decodeThruIndCall));
     ui->chkGenCallGraph->setChecked(SETTING(generateCallGraph));
@@ -76,23 +76,22 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->spbMaxMemDepth->setValue(SETTING(maxMemDepth));
 
     ui->chkAssumeABI->setChecked(SETTING(assumeABI));
-    ui->chkBranchSimplify->setChecked(!SETTING(noBranchSimplify));
-    ui->chkChangeSignatures->setChecked(!SETTING(noChangeSignatures));
-    ui->chkDecompile->setChecked(!SETTING(noDecompile));
+    ui->chkBranchSimplify->setChecked(SETTING(branchSimplify));
+    ui->chkChangeSignatures->setChecked(SETTING(changeSignatures));
+    ui->chkDecompile->setChecked(SETTING(decompile));
     ui->chkExperimental->setChecked(SETTING(experimental));
     ui->chkGenSymbols->setChecked(SETTING(generateSymbols));
-    ui->chkNameParameters->setChecked(!SETTING(noParameterNames));
+    ui->chkNameParameters->setChecked(SETTING(nameParameters));
     ui->chkPropOnlyToAll->setChecked(SETTING(propOnlyToAll));
-    ui->chkRemoveLabels->setChecked(!SETTING(noRemoveLabels));
-    ui->chkRemoveNull->setChecked(!SETTING(noRemoveNull));
-    ui->chkRemoveReturns->setChecked(!SETTING(noRemoveReturns));
+    ui->chkRemoveLabels->setChecked(SETTING(removeLabels));
+    ui->chkRemoveNull->setChecked(SETTING(removeNull));
+    ui->chkRemoveReturns->setChecked(SETTING(removeReturns));
     ui->chkStopAtDebugPoints->setChecked(SETTING(stopAtDebugPoints));
-    ui->chkUseDataflow->setChecked(!SETTING(noDataflow));
-    ui->chkUseGlobals->setChecked(!SETTING(noGlobals));
-    ui->chkUseLocals->setChecked(!SETTING(noLocals));
-    ui->chkUsePromotion->setChecked(!SETTING(noPromote));
-    ui->chkUseProof->setChecked(!SETTING(noProve));
-
+    ui->chkUseDataflow->setChecked(SETTING(useDataflow));
+    ui->chkUseGlobals->setChecked(SETTING(useGlobals));
+    ui->chkUseLocals->setChecked(SETTING(useLocals));
+    ui->chkUsePromotion->setChecked(SETTING(usePromotion));
+    ui->chkUseProof->setChecked(SETTING(useProof));
 }
 
 
@@ -130,10 +129,10 @@ void SettingsDlg::on_btnApply_clicked()
     SETTING(debugTA)       = ui->chkDebugTA->isChecked();
     SETTING(debugUnused)   = ui->chkDebugUnused->isChecked();
     SETTING(traceDecoder)  = ui->chkTraceDecoder->isChecked();
-    SETTING(verboseOutput)         = ui->chkVerbose->isChecked();
+    SETTING(verboseOutput) = ui->chkVerbose->isChecked();
 
     // Decode
-    SETTING(noDecodeChildren)  = !ui->chkDecodeChildren->isChecked();
+    SETTING(decodeChildren)    = ui->chkDecodeChildren->isChecked();
     SETTING(decodeMain)        = ui->chkDecodeMain->isChecked();
     SETTING(decodeThruIndCall) = ui->chkDecodeThruIndirectCall->isChecked();
     SETTING(generateCallGraph) = ui->chkGenCallGraph->isChecked();
@@ -146,22 +145,22 @@ void SettingsDlg::on_btnApply_clicked()
     SETTING(maxMemDepth)     = ui->spbMaxMemDepth->value();
 
     SETTING(assumeABI)           = ui->chkAssumeABI->isChecked();
-    SETTING(noBranchSimplify)    = !ui->chkBranchSimplify->isChecked();
-    SETTING(noChangeSignatures)  = !ui->chkChangeSignatures->isChecked();
-    SETTING(noDecompile)         = !ui->chkDecompile->isChecked();
+    SETTING(branchSimplify)      = ui->chkBranchSimplify->isChecked();
+    SETTING(changeSignatures)    = ui->chkChangeSignatures->isChecked();
+    SETTING(decompile)           = ui->chkDecompile->isChecked();
     SETTING(experimental)        = ui->chkExperimental->isChecked();
     SETTING(generateSymbols)     = ui->chkGenSymbols->isChecked();
-    SETTING(noParameterNames)    = !ui->chkNameParameters->isChecked();
+    SETTING(nameParameters)      = ui->chkNameParameters->isChecked();
     SETTING(propOnlyToAll)       = ui->chkPropOnlyToAll->isChecked();
-    SETTING(noRemoveLabels)      = !ui->chkRemoveLabels->isChecked();
-    SETTING(noRemoveNull)        = !ui->chkRemoveNull->isChecked();
-    SETTING(noRemoveReturns)     = !ui->chkRemoveReturns->isChecked();
+    SETTING(removeLabels)        = ui->chkRemoveLabels->isChecked();
+    SETTING(removeNull)          = ui->chkRemoveNull->isChecked();
+    SETTING(removeReturns)       = ui->chkRemoveReturns->isChecked();
     SETTING(stopAtDebugPoints)   = ui->chkStopAtDebugPoints->isChecked();
-    SETTING(noDataflow)          = !ui->chkUseDataflow->isChecked();
-    SETTING(noGlobals)           = !ui->chkUseGlobals->isChecked();
-    SETTING(noLocals)            = !ui->chkUseLocals->isChecked();
-    SETTING(noPromote)           = !ui->chkUsePromotion->isChecked();
-    SETTING(noProve)             = !ui->chkUseProof->isChecked();
+    SETTING(useDataflow)         = ui->chkUseDataflow->isChecked();
+    SETTING(useGlobals)          = ui->chkUseGlobals->isChecked();
+    SETTING(useLocals)           = ui->chkUseLocals->isChecked();
+    SETTING(usePromotion)        = ui->chkUsePromotion->isChecked();
+    SETTING(useProof)            = ui->chkUseProof->isChecked();
 }
 
 

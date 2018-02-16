@@ -142,7 +142,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         switch (arg[1].toLatin1())
         {
         case 'E':
-            SETTING(noDecodeChildren) = true;
+            SETTING(decodeChildren) = false;
         // Fall through
 
         case 'e':
@@ -286,47 +286,47 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             switch (arg[2].toLatin1())
             {
             case 'b':
-                SETTING(noBranchSimplify) = true;
+                SETTING(branchSimplify) = false;
                 break;
 
             case 'c':
-                SETTING(noDecodeChildren) = true;
+                SETTING(decodeChildren) = false;
                 break;
 
             case 'd':
-                SETTING(noDataflow) = true;
+                SETTING(useDataflow) = false;
                 break;
 
             case 'D':
-                SETTING(noDecompile) = true;
+                SETTING(decompile) = false;
                 break;
 
             case 'l':
-                SETTING(noLocals) = true;
+                SETTING(useLocals) = false;
                 break;
 
             case 'n':
-                SETTING(noRemoveNull) = true;
+                SETTING(removeNull) = false;
                 break;
 
             case 'P':
-                SETTING(noPromote) = true;
+                SETTING(usePromotion) = false;
                 break;
 
             case 'p':
-                SETTING(noParameterNames) = true;
+                SETTING(nameParameters) = false;
                 break;
 
             case 'r':
-                SETTING(noRemoveLabels) = true;
+                SETTING(removeLabels) = false;
                 break;
 
             case 'R':
-                SETTING(noRemoveReturns) = true;
+                SETTING(removeReturns) = false;
                 break;
 
             case 'g':
-                SETTING(noGlobals) = true;
+                SETTING(useGlobals) = false;
                 break;
 
             default:

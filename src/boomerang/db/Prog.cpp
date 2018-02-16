@@ -996,7 +996,7 @@ void Prog::decompile()
 
     // Just in case there are any Procs not in the call graph.
 
-    if (SETTING(decodeMain) && !SETTING(noDecodeChildren)) {
+    if (SETTING(decodeMain) && SETTING(decodeChildren)) {
         bool foundone = true;
 
         while (foundone) {
@@ -1024,8 +1024,8 @@ void Prog::decompile()
 
     globalTypeAnalysis();
 
-    if (!SETTING(noDecompile)) {
-        if (!SETTING(noRemoveReturns)) {
+    if (SETTING(decompile)) {
+        if (SETTING(removeReturns)) {
             // A final pass to remove returns not used by any caller
             LOG_VERBOSE("Prog: global removing unused returns");
 

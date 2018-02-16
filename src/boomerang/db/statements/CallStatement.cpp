@@ -657,7 +657,7 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
     std::unique_ptr<StatementList> results = calcResults();
     assert(dest);
 
-    if (SETTING(noDecompile)) {
+    if (!SETTING(decompile)) {
         if (m_procDest->getSignature()->getNumReturns() > 0) {
             Assign *as = new Assign(IntegerType::get(STD_SIZE),
                                     Unary::get(opRegOf, Const::get(24)),

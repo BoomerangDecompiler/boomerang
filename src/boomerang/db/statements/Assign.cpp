@@ -87,7 +87,7 @@ void Assign::simplify()
     // simplify arithmetic of assignment
     OPER leftop = m_lhs->getOper();
 
-    if (SETTING(noBranchSimplify)) {
+    if (!SETTING(branchSimplify)) {
         if ((leftop == opZF) || (leftop == opCF) || (leftop == opOF) || (leftop == opNF)) {
             return;
         }
