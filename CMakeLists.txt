@@ -17,9 +17,12 @@ set(CMAKE_WARN_DEPRECATED ON)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-scripts")
 
 # CMake does not fill in CMAKE_BUILD_TYPE automatically.
-if (CMAKE_BUILD_TYPE STREQUAL "")
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type. Valid values are Debug Release MinSizeRel RelWithDebInfo")
-endif ()
+if (NOT MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL "")
+        set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build type. Valid values are Debug Release MinSizeRel RelWithDebInfo" FORCE)
+    endif ()
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release MinSizeRel RelWithDebInfo)
+endif (NOT MSVC)
 
 
 include(boomerang-version)      # get project version
