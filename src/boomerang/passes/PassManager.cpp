@@ -14,6 +14,7 @@
 #include "boomerang/db/proc/UserProc.h"
 
 #include "boomerang/passes/dataflow/DominatorPass.h"
+#include "boomerang/passes/dataflow/PhiPlacementPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -30,6 +31,7 @@ PassManager::PassManager()
     m_passes.resize(static_cast<size_t>(PassID::NUM_PASSES));
 
     m_passes[static_cast<size_t>(PassID::Dominators)].reset(new DominatorPass());
+    m_passes[static_cast<size_t>(PassID::PhiPlacement)].reset(new PhiPlacementPass());
 }
 
 

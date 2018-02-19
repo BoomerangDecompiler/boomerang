@@ -19,8 +19,9 @@ class UserProc;
 
 enum class PassID
 {
-    INVALID = -1,
-    Dominators = 0,
+    INVALID      = -1,
+    Dominators   = 0,
+    PhiPlacement = 1,
     NUM_PASSES
 };
 

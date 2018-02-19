@@ -887,11 +887,8 @@ void UserProc::earlyDecompile()
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
     // the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
     // equivalent to depth 0 in the old scheme
-    LOG_VERBOSE("Placing phi functions 1st pass");
+    PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-    // Place the phi functions
-    m_df.placePhiFunctions();
-    debugPrintAll("after placing phis (1)");
 
     // Rename variables
     LOG_VERBOSE("Renaming block variables 1st pass");
@@ -959,7 +956,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // For now, we create the initial arguments here (relatively early), and live with the fact that some apparently
     // distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be duplicates, and so
     // the duplicates must be eliminated.
-    bool change = m_df.placePhiFunctions();
+    bool change = PassManager::get()->executePass(PassID::PhiPlacement, this);
 
     doRenameBlockVars(2);
     propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
@@ -974,7 +971,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         LOG_VERBOSE("Renaming block variables (2) pass %1", pass);
 
         // Rename variables
-        change = m_df.placePhiFunctions();
+        change = PassManager::get()->executePass(PassID::PhiPlacement, this);
         change |= doRenameBlockVars(pass, false); // E.g. for new arguments
 
         // Seed the return statement with reaching definitions
@@ -1097,7 +1094,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
 
-    change = m_df.placePhiFunctions();
+    change = PassManager::get()->executePass(PassID::PhiPlacement, this);
     doRenameBlockVars(pass, false); // MVE: do we want this parameter false or not?
 
     debugPrintAll("after setting phis for memofs, renaming them");
@@ -1187,7 +1184,7 @@ void UserProc::remUnusedStmtEtc()
         typeAnalysis();
 
         // Now that locals are identified, redo the dataflow
-        m_df.placePhiFunctions();
+        PassManager::get()->executePass(PassID::PhiPlacement, this);
 
         doRenameBlockVars(20);            // Rename the locals
         bool convert = false;

@@ -13,6 +13,7 @@ list(APPEND boomerang-passes-sources
     passes/PassManager
 
     passes/dataflow/DominatorPass
+    passes/dataflow/PhiPlacementPass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)
