@@ -58,14 +58,14 @@ void DataFlow::dfs(int myIdx, int parentIdx)
 }
 
 
-void DataFlow::calculateDominators()
+bool DataFlow::calculateDominators()
 {
     Cfg *cfg = m_proc->getCFG();
     BasicBlock *entryBB = cfg->getEntryBB();
     const int numBB     = cfg->getNumBBs();
 
     if (!entryBB || numBB == 0) {
-        return; // nothing to do
+        return false; // nothing to do
     }
 
     N = 0;
@@ -136,6 +136,7 @@ void DataFlow::calculateDominators()
     }
 
     computeDF(0); // Finally, compute the dominance frontiers
+    return true;
 }
 
 

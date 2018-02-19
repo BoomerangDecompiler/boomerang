@@ -41,6 +41,7 @@
 #include "boomerang/db/visitor/TempToLocalMapper.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -854,8 +855,7 @@ void UserProc::initialiseDecompile()
 
     debugPrintAll("Before SSA");
 
-    // Compute dominance frontier
-    m_df.calculateDominators();
+    PassManager::get()->executePass(PassID::Dominators, this);
 
     if (!SETTING(decompile)) {
         LOG_MSG("Not decompiling.");
@@ -1237,7 +1237,7 @@ void UserProc::remUnusedStmtEtc()
 
     if (removedBBs) {
         // redo the data flow
-        m_df.calculateDominators();
+        PassManager::get()->executePass(PassID::Dominators, this);
 
         // recalculate phi assignments of referencing BBs.
         for (BasicBlock *bb : *m_cfg) {

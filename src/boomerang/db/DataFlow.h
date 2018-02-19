@@ -57,7 +57,7 @@ public:
      * Essentially Algorithm 19.9 of Appel's
      * "Modern compiler implementation in Java" 2nd ed 2002
      */
-    void calculateDominators();
+    bool calculateDominators();
 
     /// Place phi functions.
     /// \returns true if any change
