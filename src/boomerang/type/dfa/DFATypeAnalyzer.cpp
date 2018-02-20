@@ -85,6 +85,12 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
         return;
     }
 
+    if (!defIt->getDef()) {
+        // Cannot infer type information of parameters or uninitialized variables.
+        visitChildren = false;
+        return;
+    }
+
     assert(defIt->getDef());
     SharedType meetOfArgs = defIt->getDef()->getTypeFor(stmt->getLeft());
 
@@ -93,7 +99,7 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
     for (++defIt; defIt != defs.end(); ++defIt) {
         RefExp& phinf = *defIt;
 
-        if (phinf.getSubExp1() == nullptr) {
+        if (!phinf.getDef() || !phinf.getSubExp1()) {
             continue;
         }
 
