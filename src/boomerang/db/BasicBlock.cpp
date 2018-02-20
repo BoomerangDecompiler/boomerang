@@ -669,70 +669,72 @@ bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
     return std::find(m_predecessors.begin(), m_predecessors.end(), bb) != m_predecessors.end();
 }
 
+
 ImplicitAssign *BasicBlock::addImplicitAssign(SharedExp lhs)
 {
     assert(m_listOfRTLs);
-    ImplicitAssign *stmt = new ImplicitAssign(lhs);
-    stmt->setBB(this);
-    stmt->setProc(static_cast<UserProc *>(m_function));
 
     if (m_listOfRTLs->empty() || m_listOfRTLs->front()->getAddress() != Address::ZERO) {
-        // no other ImplicitAssign / Phi prepended already
-        m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO, { stmt })));
-        return stmt;
+        m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO)));
     }
 
-    // we already have prepended ImplitAssigns / Phis.
-    RTL *rtl = m_listOfRTLs->front().get();
-    assert(rtl->getAddress() == Address::ZERO);
+    // do not allow BB with 2 zero address RTLs
+    assert(m_listOfRTLs->size() < 2 || (*std::next(m_listOfRTLs->begin()))->getAddress() != Address::ZERO);
 
-    // todo: make sure to insert in the correct order
-    rtl->append(stmt);
-    updateBBAddresses();
-    return stmt;
+    for (Statement *s : *m_listOfRTLs->front()) {
+        if (s->isPhi() && *static_cast<PhiAssign *>(s)->getLeft() == *lhs) {
+            // phis kill implicits; don't add an implict assign
+            // if we already have a phi assigning to the LHS
+            return nullptr;
+        }
+        else if (s->isImplicit() && *static_cast<ImplicitAssign *>(s)->getLeft() == *lhs) {
+            // already present
+            return static_cast<ImplicitAssign *>(s);
+        }
+    }
+
+    // no phi or implicit assigning to the LHS already
+    ImplicitAssign *newImplicit = new ImplicitAssign(lhs);
+    newImplicit->setBB(this);
+    newImplicit->setProc(static_cast<UserProc *>(m_function));
+
+    m_listOfRTLs->front()->push_back(newImplicit);
+    return newImplicit;
 }
 
 
 PhiAssign *BasicBlock::addPhi(SharedExp usedExp)
 {
+    assert(m_listOfRTLs);
+
     if (m_listOfRTLs->empty() || m_listOfRTLs->front()->getAddress() != Address::ZERO) {
-        PhiAssign *stmt = new PhiAssign(usedExp);
-        stmt->setBB(this);
-        stmt->setProc(static_cast<UserProc *>(m_function));
-
-        // no other ImplicitAssign / Phi prepended already
-        m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO, { stmt })));
-        return stmt;
+        m_listOfRTLs->push_front(std::unique_ptr<RTL>(new RTL(Address::ZERO)));
     }
 
-    // we already have prepended ImplitAssigns / Phis.
-    RTL *rtl = m_listOfRTLs->front().get();
-    assert(rtl->getAddress() == Address::ZERO);
+    // do not allow BB with 2 zero address RTLs
+    assert(m_listOfRTLs->size() < 2 || (*std::next(m_listOfRTLs->begin()))->getAddress() != Address::ZERO);
 
-    auto existingStmtIt = std::find_if(rtl->begin(), rtl->end(), [usedExp](const RTL::value_type& stmt) {
-            if (!stmt->isPhi()) {
-                return false;
-            }
-
-            PhiAssign *phi = static_cast<PhiAssign *>(stmt);
-            return *phi->getLeft() == *usedExp;
-        });
-
-    if (existingStmtIt != rtl->end()) {
-        return static_cast<PhiAssign *>(*existingStmtIt);
+    for (auto existingIt = m_listOfRTLs->front()->begin(); existingIt != m_listOfRTLs->front()->end(); ) {
+        Statement *s = *existingIt;
+        if (s->isPhi() && *static_cast<PhiAssign *>(s)->getLeft() == *usedExp) {
+            // already present
+            return static_cast<PhiAssign *>(s);
+        }
+        else if (s->isAssignment() && *static_cast<Assignment *>(s)->getLeft() == *usedExp) {
+            // the LHS is already assigned to properly, don't create a second assignment
+            return nullptr;
+        }
+        else
+        ++existingIt;
     }
 
-    // lhs not already present in the RTL; create a new phi <lhs> := phi()
-    PhiAssign *stmt = new PhiAssign(usedExp);
-    stmt->setBB(this);
-    stmt->setProc(static_cast<UserProc *>(m_function));
+    PhiAssign *phi = new PhiAssign(usedExp);
+    phi->setBB(this);
+    phi->setProc(static_cast<UserProc *>(m_function));
 
-    // todo: make sure to insert in the correct order
-    rtl->append(stmt);
-    updateBBAddresses();
-    return stmt;
+    m_listOfRTLs->front()->push_back(phi);
+    return phi;
 }
-
 
 
 void BasicBlock::updateBBAddresses()

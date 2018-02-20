@@ -353,7 +353,7 @@ bool DataFlow::placePhiFunctions()
 
         while (!W.empty()) {
             // Pop first node from W
-            int n = *W.begin();
+            const int n = *W.begin();
             W.erase(W.begin());
 
             for (int y : m_DF[n]) {

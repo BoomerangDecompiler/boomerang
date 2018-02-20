@@ -34,4 +34,10 @@ private slots:
     void testRemoveSuccessor();
     void testIsPredecessor();
     void testIsSuccessor();
+
+    // adding phis/implict assigns
+    void testAddPhi();
+    void testAddImplicit();
+    void testAddPhiOverImplict();
+    void testAddImplicitOverPhi();
 };
