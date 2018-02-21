@@ -320,12 +320,12 @@ void BasicBlockTest::testAddPhiOverImplict()
     bb1.setRTLs(std::move(rtls));
 
     QVERIFY(nullptr != bb1.addImplicitAssign(Terminal::get(opCF)));
-    QVERIFY(nullptr != bb1.addPhi(Terminal::get(opCF)));
+    QVERIFY(nullptr == bb1.addPhi(Terminal::get(opCF)));
 
     QString expected("Invalid BB:\n"
         "  in edges: \n"
         "  out edges: \n"
-        "0x00000000    0 *v* %CF := phi{}\n"
+        "0x00000000    0 *v* %CF := -\n"
         "0x00001000    0 BRANCH *no dest*, condition equals\n"
         "\n"
     );
