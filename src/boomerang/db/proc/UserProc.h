@@ -168,7 +168,7 @@ private:
      * empty set at the top level.
      * \param indent is the indentation level; pass 0 at the top level
      */
-    std::shared_ptr<ProcSet> decompile(ProcList *path);
+    std::shared_ptr<ProcSet> decompile(ProcList &callStack);
 
     /// Initialise decompile: sort CFG, number statements, dominator tree, etc.
     void initialiseDecompile();
@@ -180,11 +180,11 @@ private:
     /// Middle decompile: All the decompilation from preservation up to
     /// but not including removing unused statements.
     /// \returns the cycle set from the recursive call to decompile()
-    std::shared_ptr<ProcSet> middleDecompile(ProcList *path);
+    std::shared_ptr<ProcSet> middleDecompile(ProcList &callStack);
 
     /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
     /// Also finalise the whole group.
-    void recursionGroupAnalysis(ProcList *path);
+    void recursionGroupAnalysis(ProcList &callStack);
 
     /// The inductive preservation analysis.
     bool inductivePreservation(UserProc *);
