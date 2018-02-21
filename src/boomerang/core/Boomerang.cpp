@@ -83,6 +83,12 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
             return nullptr;
         }
 
+        bool gotMain = false;
+        Address mainAddr = fe->getMainEntryPoint(gotMain);
+        if (gotMain) {
+            prog->addEntryPoint(mainAddr);
+        }
+
         if (SETTING(decodeChildren)) {
             // this causes any undecoded userprocs to be decoded
             LOG_MSG("Decoding anything undecoded...");

@@ -133,6 +133,10 @@ void Decompiler::decode()
     bool    gotMain;
     Address mainAddr = m_fe->getMainEntryPoint(gotMain);
 
+    if (gotMain) {
+        m_prog->addEntryPoint(mainAddr);
+    }
+
     for (Address entryAddr : m_userEntrypoints) {
         if (entryAddr == mainAddr) {
             m_fe->decode(m_prog, true, nullptr);
