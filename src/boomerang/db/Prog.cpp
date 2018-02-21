@@ -994,8 +994,7 @@ void Prog::decompile()
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
         LOG_VERBOSE("Decompiling entry point '%1'", up->getName());
-        ProcList call_path;
-        up->decompile(&call_path);
+        up->decompile();
     }
 
     // Just in case there are any Procs not in the call graph.
@@ -1017,9 +1016,7 @@ void Prog::decompile()
                     if (proc->isDecompiled()) {
                         continue;
                     }
-
-                    ProcList procList;
-                    proc->decompile(&procList);
+                    proc->decompile();
                     foundone = true;
                 }
             }

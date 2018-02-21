@@ -156,6 +156,12 @@ public:
     }
 
     /**
+     * Decompile this procedure, and all callees.
+     */
+    void decompile();
+
+private:
+    /**
      * Begin the decompile process at this procedure
      * \param  path A list of pointers to procedures, representing the path from
      * the current entry point to the current procedure in the call graph. Pass an
@@ -180,9 +186,6 @@ public:
     /// Also finalise the whole group.
     void recursionGroupAnalysis(ProcList *path);
 
-    /// Global type analysis (for this procedure).
-    void typeAnalysis();
-
     /// The inductive preservation analysis.
     bool inductivePreservation(UserProc *);
 
@@ -203,17 +206,6 @@ public:
     /// Fix any ugly branch statements (from propagating too much)
     void fixUglyBranches();
 
-    /**
-     * Rename block variables, with log if verbose.
-     * \returns true if a change
-     */
-    bool doRenameBlockVars(int pass, bool clearStacks = false);
-
-    bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
-
-    /// Initialise the statements, e.g. proc, bb pointers
-    void initStatements();
-    void numberStatements();
 
     /// \note Was trimReturns()
     void findPreserveds();
@@ -222,9 +214,6 @@ public:
     void findSpPreservation();
     void removeSpAssignsIfPossible();
     void removeMatchingAssignsIfPossible(SharedExp e);
-
-    /// Perform call and phi statement bypassing at all depths
-    void fixCallAndPhiRefs();
 
     /// Get the initial parameters, based on this UserProc's use collector
     /// Probably unused now
@@ -269,6 +258,26 @@ public:
     void reverseStrengthReduction();
 
     void addParameterSymbols();
+
+public:
+    /// Initialise the statements, e.g. proc, bb pointers
+    void initStatements();
+
+    void numberStatements();
+
+    bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
+
+    /**
+     * Rename block variables, with log if verbose.
+     * \returns true if a change
+     */
+    bool doRenameBlockVars(int pass, bool clearStacks = false);
+
+    /// Global type analysis (for this procedure).
+    void typeAnalysis();
+
+    /// Perform call and phi statement bypassing at all depths
+    void fixCallAndPhiRefs();
 
     /// Is this m[sp{-} +/- K]?
     /// True if e could represent a stack local or stack param

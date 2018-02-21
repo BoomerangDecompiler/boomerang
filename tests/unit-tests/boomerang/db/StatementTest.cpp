@@ -87,8 +87,8 @@ void StatementTest::testEmpty()
     proc->setDecoded(); // We manually "decoded"
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
+
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -158,8 +158,7 @@ void StatementTest::testFlow()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     // print cfg to a string
     QString     actual;
@@ -240,8 +239,7 @@ void StatementTest::testKill()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     // print cfg to a string
     QString     actual;
@@ -314,8 +312,7 @@ void StatementTest::testUse()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -392,8 +389,7 @@ void StatementTest::testUseOverKill()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     // print cfg to a string
     QString     actual;
@@ -474,10 +470,9 @@ void StatementTest::testUseOverBB()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
-    // print cfg to a string
+    proc->decompile();
 
+    // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
     cfg->print(st);
@@ -548,8 +543,7 @@ void StatementTest::testUseKill()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
     // print cfg to a string
 
     QString     actual;
@@ -623,8 +617,7 @@ void StatementTest::testEndlessLoop()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     QString     actual;
     QTextStream st(&actual);

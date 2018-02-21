@@ -702,6 +702,13 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
 }
 
 
+void UserProc::decompile()
+{
+    ProcList path;
+    decompile(&path);
+}
+
+
 std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
 {
     /* Cycle detection logic:
@@ -717,40 +724,42 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
      * If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
      * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
      * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses.
-     * cycleSet decompile(ProcList path)        // path initially empty
-     *      child = new ProcSet
-     *      append this proc to path
-     *      for each child c called by this proc
-     *              if c has already been visited but not finished
-     *                      // have new cycle
-     *                      if c is in path
-     *                        // this is a completely new cycle
-     *                        insert every proc from c to the end of path into child
-     *                      else
-     *                        // this is a new branch of an existing cycle
-     *                        child = c->cycleGrp
-     *                        find first element f of path that is in cycleGrp
-     *                        insert every proc after f to the end of path into child
-     *                      for each element e of child
-     *            insert e->cycleGrp into child
-     *                        e->cycleGrp = child
-     *              else
-     *                      // no new cycle
-     *                      tmp = c->decompile(path)
-     *                      child = union(child, tmp)
-     *                      set return statement in call to that of c
-     *      if (child empty)
-     *              earlyDecompile()
-     *              child = middleDecompile()
-     *              removeUnusedStatments()            // Not involved in recursion
-     *      else
-     *              // Is involved in recursion
-     *              find first element f in path that is also in cycleGrp
-     *              if (f == this)          // The big test: have we got the complete strongly connected component?
-     *                      recursionGroupAnalysis()        // Yes, we have
-     *                      child = new ProcSet            // Don't add these processed cycles to the parent
-     *      remove last element (= this) from path
-     *      return child
+     *
+     *   cycleSet decompile(ProcList path)        // path initially empty
+     *     child = new ProcSet
+     *     append this proc to path
+     *     for each child c called by this proc
+     *       if c has already been visited but not finished
+     *         // have new cycle
+     *         if c is in path
+     *           // this is a completely new cycle
+     *           insert every proc from c to the end of path into child
+     *         else
+     *           // this is a new branch of an existing cycle
+     *           child = c->cycleGrp
+     *           find first element f of path that is in cycleGrp
+     *           insert every proc after f to the end of path into child
+     *           for each element e of child
+     *         insert e->cycleGrp into child
+     *         e->cycleGrp = child
+     *       else
+     *         // no new cycle
+     *         tmp = c->decompile(path)
+     *         child = union(child, tmp)
+     *         set return statement in call to that of c
+     *
+     *     if (child empty)
+     *       earlyDecompile()
+     *       child = middleDecompile()
+     *       removeUnusedStatments()            // Not involved in recursion
+     *     else
+     *       // Is involved in recursion
+     *       find first element f in path that is also in cycleGrp
+     *       if (f == this)             // The big test: have we got the complete strongly connected component?
+     *         recursionGroupAnalysis() // Yes, we have
+     *         child = new ProcSet      // Don't add these processed cycles to the parent
+     *     remove last element (= this) from path
+     *     return child
      */
 
     Boomerang::get()->alertDiscovered(path->empty() ? nullptr : path->back(), this);
