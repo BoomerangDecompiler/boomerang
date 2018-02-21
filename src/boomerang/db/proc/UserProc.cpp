@@ -1274,6 +1274,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
         m_df.setRenameLocalsParams(false);              // Start again with memofs
         setStatus(PROC_VISITED);                        // Back to only visited progress
+        assert(callStack.back() == this);
         callStack.pop_back();                                // Remove self from call stack
         std::shared_ptr<ProcSet> ret = decompile(callStack); // Restart decompiling this proc
         callStack.push_back(this);                           // Restore self to call stack
