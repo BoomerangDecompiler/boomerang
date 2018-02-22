@@ -113,8 +113,8 @@ public:
     /// Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
     bool isDecoded() const { return m_status >= PROC_DECODED; }
     bool isDecompiled() const { return m_status >= PROC_FINAL; }
-    bool isEarlyRecursive() const { return m_cycleGroup != nullptr && m_status <= PROC_INCYCLE; }
-    bool doesRecurseTo(UserProc *proc) const { return m_cycleGroup && m_cycleGroup->find(proc) != m_cycleGroup->end(); }
+    bool isEarlyRecursive() const { return m_recursionGroup != nullptr && m_status <= PROC_INCYCLE; }
+    bool doesRecurseTo(UserProc *proc) const { return m_recursionGroup && m_recursionGroup->find(proc) != m_recursionGroup->end(); }
 
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
@@ -697,11 +697,13 @@ private:
 
     /**
      * Pointer to a set of procedures involved in a recursion group.
-     * \note Each procedure in the cycle points to the same set! However, there can be several separate cycles.
-     * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
-     * has c, d, and e at the point where the f-g cycle is found).
+     * The procedures in this group form a strongly connected component of the call graph.
+     * Each procedure in the recursion group points to the same ProcSet.
+     * If this procedure is not involved in recursion, this is nullptr.
+     * \note Since strongly connected components are disjunct,
+     * each procedure is part of at most 1 recursion group.
      */
-    std::shared_ptr<ProcSet> m_cycleGroup;
+    std::shared_ptr<ProcSet> m_recursionGroup;
 
 private:
     /**
