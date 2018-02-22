@@ -1023,6 +1023,7 @@ void UserProc::earlyDecompile()
 
 std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 {
+    assert(callStack.back() == this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
@@ -1518,44 +1519,16 @@ void UserProc::recursionGroupAnalysis(ProcList &callStack)
      */
 
     LOG_VERBOSE("# # # recursion group analysis for # # #");
-
-
     for (UserProc *proc : *m_recursionGroup) {
         LOG_VERBOSE("    %1", proc->getName());
     }
-
     LOG_VERBOSE("# # #");
 
-    // First, do the initial decompile, and call earlyDecompile
-    for (UserProc *proc : *m_recursionGroup) {
-        proc->setStatus(PROC_INCYCLE); // So the calls are treated as childless
-        Boomerang::get()->alertDecompiling(proc);
-        proc->initialiseDecompile();   // Sort the CFG, number statements, etc
-        proc->earlyDecompile();
-    }
-
-    // Now all the procs in the group should be ready for preservation analysis
-    // The standard preservation analysis should automatically perform conditional preservation.
-    for (UserProc *proc : *m_recursionGroup) {
-        proc->middleDecompile(callStack);
-        proc->setStatus(PROC_PRESERVEDS);
-    }
-
-    // FIXME: why exactly do we do this?
-    // Mark all the relevant calls as non childless (will harmlessly get done again later)
-    for (UserProc *proc : *m_recursionGroup) {
-        proc->markAsNonChildless(m_recursionGroup);
-    }
-
-    // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
-    // statements.
-    bool convert;
-
-    for (UserProc *proc : *m_recursionGroup) {
-        // proc->initialParameters();                    // FIXME: I think this needs to be mapping locals and params now
-        proc->mapLocalsAndParams();
-        proc->updateArguments();
-        proc->propagateStatements(convert, 0); // Need to propagate into arguments
+    // TODO: This requres a "do while changed" loop
+    for (int i = 0; i < 3; i++) {
+        ProcSet visited;
+        assert(callStack.back() == this);
+        decompileProcInRecursionGroup(callStack, visited);
     }
 
     // while no change
@@ -5146,3 +5119,52 @@ void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
 
     addLocal(ty, locName, base);
 }
+
+
+void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visited)
+{
+    UserProc *current = callStack.back();
+    visited.insert(current);
+
+    for (Function *c : current->getCallees()) {
+        if (c->isLib()) {
+            continue;
+        }
+
+        UserProc *callee = static_cast<UserProc *>(c);
+        if (visited.find(callee) != visited.end()) {
+            continue;
+        }
+        else if (m_recursionGroup->find(callee) == m_recursionGroup->end()) {
+            // not in recursion group any more
+            continue;
+        }
+
+        // visit unvisited callees first
+        callStack.push_back(callee);
+        decompileProcInRecursionGroup(callStack, visited);
+        callStack.pop_back();
+    }
+
+    current->setStatus(PROC_INCYCLE); // So the calls are treated as childless
+    Boomerang::get()->alertDecompiling(current);
+    current->initialiseDecompile();   // Sort the CFG, number statements, etc
+    current->earlyDecompile();
+
+    // The standard preservation analysis should automatically perform conditional preservation.
+    current->middleDecompile(callStack);
+    current->setStatus(PROC_PRESERVEDS);
+
+    // Mark all the relevant calls as non childless (will harmlessly get done again later)
+    // FIXME: why exactly do we do this?
+    current->markAsNonChildless(m_recursionGroup);
+
+    // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
+    // statements.
+    bool convert;
+
+    current->mapLocalsAndParams();
+    current->updateArguments();
+    current->propagateStatements(convert, 0); // Need to propagate into arguments
+}
+
