@@ -717,7 +717,7 @@ PhiAssign *BasicBlock::addPhi(SharedExp usedExp)
             // the LHS is already assigned to properly, don't create a second assignment
             return nullptr;
         }
-        else
+
         ++existingIt;
     }
 
