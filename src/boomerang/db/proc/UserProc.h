@@ -265,7 +265,7 @@ public:
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();
 
-    void numberStatements();
+    void numberStatements() const;
 
     bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
 
@@ -695,7 +695,6 @@ private:
 
     /// DataFlow object. Holds information relevant to transforming to and from SSA form.
     DataFlow m_df;
-    int m_stmtNumber = 0; ///< Current statement number. Makes it easier to split decompile() into smaller pieces.
 
     /**
      * Pointer to a set of procedures involved in a recursion group.

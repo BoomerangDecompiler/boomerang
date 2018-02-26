@@ -376,6 +376,8 @@ void UserProc::addCallee(Function *callee)
 
 void UserProc::print(QTextStream& out, bool html) const
 {
+    numberStatements();
+
     QString tgt1;
     QString tgt2;
 
@@ -576,17 +578,15 @@ void UserProc::initStatements()
 }
 
 
-void UserProc::numberStatements()
+void UserProc::numberStatements() const
 {
+    int stmtNumber = 0;
+
     for (BasicBlock *bb : *m_cfg) {
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            if (s->isImplicit() || s->getNumber() != 0) {
-                continue;
-            }
-
-            s->setNumber(++m_stmtNumber);
+            s->setNumber(++stmtNumber);
         }
     }
 }
@@ -937,6 +937,8 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
 void UserProc::debugPrintAll(const char *step_name)
 {
     if (SETTING(verboseOutput)) {
+        numberStatements();
+
         LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
         LOG_SEPARATE(getName(), "%1", this->toString());
         LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
@@ -965,9 +967,6 @@ void UserProc::initialiseDecompile()
 
     // Compute dominance frontier
     m_df.calculateDominators();
-
-    // Number the statements
-    numberStatements();
 
     if (!SETTING(decompile)) {
         LOG_MSG("Not decompiling.");
@@ -1003,9 +1002,7 @@ void UserProc::earlyDecompile()
 
     // Place the phi functions
     m_df.placePhiFunctions();
-
-    LOG_VERBOSE("Numbering phi statements 1st pass");
-    numberStatements(); // Number them
+    debugPrintAll("after placing phis (1)");
 
     // Rename variables
     LOG_VERBOSE("Renaming block variables 1st pass");
@@ -1075,10 +1072,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // the duplicates must be eliminated.
     bool change = m_df.placePhiFunctions();
 
-    if (change) {
-        numberStatements(); // Number the new statements
-    }
-
     doRenameBlockVars(2);
     propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
     updateArguments();
@@ -1093,11 +1086,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
         // Rename variables
         change = m_df.placePhiFunctions();
-
-        if (change) {
-            numberStatements();                   // Number the new statements
-        }
-
         change |= doRenameBlockVars(pass, false); // E.g. for new arguments
 
         // Seed the return statement with reaching definitions
@@ -1221,12 +1209,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
 
     change = m_df.placePhiFunctions();
-
-    if (change) {
-        numberStatements();         // Number the new statements
-    }
-
     doRenameBlockVars(pass, false); // MVE: do we want this parameter false or not?
+
     debugPrintAll("after setting phis for memofs, renaming them");
     propagateStatements(convert, pass);
     // Now that memofs are renamed, the bypassing for memofs can work
@@ -1314,11 +1298,7 @@ void UserProc::remUnusedStmtEtc()
         typeAnalysis();
 
         // Now that locals are identified, redo the dataflow
-        bool change = m_df.placePhiFunctions();
-
-        if (change) {
-            numberStatements();           // Number the new statements
-        }
+        m_df.placePhiFunctions();
 
         doRenameBlockVars(20);            // Rename the locals
         bool convert = false;
