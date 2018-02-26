@@ -825,11 +825,11 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
                     assert(calleeIt != callStack.end());
                     recursionGroup->insert(calleeIt, callStack.end());
                 }
-                else {
+                else if (callee->m_recursionGroup) {
                     // This is new branch of an existing cycle
                     recursionGroup = callee->m_recursionGroup;
 
-                    // Find first element func of callStack that is in callee->cycleGrp
+                    // Find first element func of callStack that is in callee->recursionGroup
                     ProcList::iterator _pi = std::find_if(callStack.begin(), callStack.end(),
                         [callee] (UserProc *func) {
                             return callee->m_recursionGroup->find(func) != callee->m_recursionGroup->end();
@@ -895,7 +895,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
         setStatus(PROC_FINAL);
         Boomerang::get()->alertEndDecompile(this);
     }
-    else {
+    else if (m_recursionGroup) {
         // This proc's callees, and hence this proc, is/are involved in recursion.
         // Find first element f in path that is also in our recursion group
         ProcList::iterator f = std::find_if(callStack.begin(), callStack.end(),
