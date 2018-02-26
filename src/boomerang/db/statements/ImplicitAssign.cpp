@@ -45,9 +45,7 @@ ImplicitAssign::ImplicitAssign(const ImplicitAssign& other)
 
 Statement *ImplicitAssign::clone() const
 {
-    ImplicitAssign *ia = new ImplicitAssign(m_type, m_lhs);
-
-    return ia;
+    return new ImplicitAssign(m_type, m_lhs);
 }
 
 

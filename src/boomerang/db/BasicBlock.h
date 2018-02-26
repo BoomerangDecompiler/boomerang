@@ -26,6 +26,8 @@ class RTL;
 class Function;
 class UserProc;
 class ConnectionGraph;
+class ImplicitAssign;
+class PhiAssign;
 struct SwitchInfo;
 
 
@@ -56,7 +58,9 @@ using SharedExp = std::shared_ptr<class Exp>;
 
 
 /**
- * BasicBlock class.
+ * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions without a CTI instruction.
+ * During decompilation, a special RTL with a zero address is prepended.
+ * This RTL contains implicit assigns and phi assigns.
  */
 class BasicBlock
 {
@@ -215,9 +219,11 @@ public:
     /// Appends all statements in this BB to \p stmts.
     void appendStatementsTo(StatementList& stmts) const;
 
-    /// Prepend an assignment (usually a PhiAssign or ImplicitAssign)
-    /// \a proc is the enclosing Proc
-    void prependStmt(Statement *s, UserProc *proc);
+    ///
+    ImplicitAssign *addImplicitAssign(SharedExp lhs);
+
+    /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
+    PhiAssign *addPhi(SharedExp usedExp);
 
     bool hasStatement(const Statement *stmt) const;
 

@@ -986,7 +986,6 @@ void UserProc::initialiseDecompile()
     m_df.calculateDominators();
 
     // Number the statements
-    m_stmtNumber = 0;
     numberStatements();
 
     if (!SETTING(decompile)) {
@@ -2059,8 +2058,7 @@ void UserProc::findFinalParameters()
                 }
             }
 
-            ImplicitAssign *ia = new ImplicitAssign(m_signature->getParamType(i), paramLoc);
-            m_parameters.append(ia);
+            m_parameters.append(new ImplicitAssign(m_signature->getParamType(i), paramLoc));
             QString   name       = m_signature->getParamName(i);
             SharedExp param      = Location::param(name, this);
             SharedExp reParamLoc = RefExp::get(paramLoc, m_cfg->findImplicitAssign(paramLoc));
@@ -2304,7 +2302,6 @@ bool UserProc::propagateStatements(bool& convert, int pass)
         if (!s->isPhi()) {
             change |= s->propagateTo(convert, &destCounts, &usedByDomPhi);
         }
-
     }
 
     simplify();

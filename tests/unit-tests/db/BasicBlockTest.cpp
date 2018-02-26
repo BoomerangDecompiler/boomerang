@@ -14,6 +14,9 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/BranchStatement.h"
+#include "boomerang/db/statements/ImplicitAssign.h"
+#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/exp/Terminal.h"
 
 
 void BasicBlockTest::initTestCase()
@@ -226,6 +229,108 @@ void BasicBlockTest::testIsSuccessor()
     QVERIFY(!bb1.isSuccessorOf(&bb2));
     bb1.addPredecessor(&bb2);
     QVERIFY(bb1.isSuccessorOf(&bb2));
+}
+
+
+void BasicBlockTest::testAddImplicit()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+    bb1.setRTLs(std::move(rtls));
+
+    ImplicitAssign *imp = bb1.addImplicitAssign(Terminal::get(opCF));
+    QVERIFY(imp);
+    QVERIFY(imp->isImplicit());
+    QVERIFY(*imp->getLeft() == *Terminal::get(opCF));
+
+    QString expected("Invalid BB:\n"
+        "  in edges: \n"
+        "  out edges: \n"
+        "0x00000000    0 *v* %CF := -\n"
+        "0x00001000    0 BRANCH *no dest*, condition equals\n"
+        "\n"
+    );
+
+    QCOMPARE(bb1.prints(), qPrintable(expected));
+
+    // add same implicit assign twice
+    bb1.addImplicitAssign(Terminal::get(OPER::opCF));
+
+    QCOMPARE(bb1.prints(), qPrintable(expected));
+}
+
+
+void BasicBlockTest::testAddPhi()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+    bb1.setRTLs(std::move(rtls));
+
+    PhiAssign *phi = bb1.addPhi(Terminal::get(OPER::opCF));
+    QVERIFY(phi);
+    QVERIFY(phi->isPhi());
+    QVERIFY(*phi->getLeft() == *Terminal::get(opCF));
+
+    QString expected("Invalid BB:\n"
+        "  in edges: \n"
+        "  out edges: \n"
+        "0x00000000    0 *v* %CF := phi{}\n"
+        "0x00001000    0 BRANCH *no dest*, condition equals\n"
+        "\n"
+    );
+
+    QCOMPARE(bb1.prints(), qPrintable(expected));
+
+    // add same implicit assign twice
+    bb1.addPhi(Terminal::get(OPER::opCF));
+
+    QCOMPARE(bb1.prints(), qPrintable(expected));
+}
+
+
+void BasicBlockTest::testAddImplicitOverPhi()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+    bb1.setRTLs(std::move(rtls));
+
+    QVERIFY(nullptr != bb1.addPhi(Terminal::get(opCF)));
+    QVERIFY(nullptr == bb1.addImplicitAssign(Terminal::get(opCF)));
+
+    QString expected("Invalid BB:\n"
+        "  in edges: \n"
+        "  out edges: \n"
+        "0x00000000    0 *v* %CF := phi{}\n"
+        "0x00001000    0 BRANCH *no dest*, condition equals\n"
+        "\n"
+    );
+
+    QCOMPARE(bb1.prints(), qPrintable(expected));
+}
+
+
+void BasicBlockTest::testAddPhiOverImplict()
+{
+     BasicBlock bb1(Address(0x1000), nullptr);
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+    bb1.setRTLs(std::move(rtls));
+
+    QVERIFY(nullptr != bb1.addImplicitAssign(Terminal::get(opCF)));
+    QVERIFY(nullptr == bb1.addPhi(Terminal::get(opCF)));
+
+    QString expected("Invalid BB:\n"
+        "  in edges: \n"
+        "  out edges: \n"
+        "0x00000000    0 *v* %CF := -\n"
+        "0x00001000    0 BRANCH *no dest*, condition equals\n"
+        "\n"
+    );
+
+    QCOMPARE(bb1.prints(), qPrintable(expected));
 }
 
 

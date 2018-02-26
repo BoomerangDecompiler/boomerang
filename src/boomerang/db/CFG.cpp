@@ -433,8 +433,7 @@ Statement *Cfg::findImplicitAssign(SharedExp exp)
 
     // A use with no explicit definition. Create a new implicit assignment
     exp   = exp->clone(); // In case the original gets changed
-    Statement *def = new ImplicitAssign(exp);
-    m_entryBB->prependStmt(def, m_myProc);
+    ImplicitAssign *def = m_entryBB->addImplicitAssign(exp);
 
     // Remember it for later so we don't insert more than one implicit assignment for any one location
     // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
