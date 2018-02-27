@@ -23,6 +23,7 @@ enum class PassID
     Dominators   = 0,
     PhiPlacement = 1,
     BlockVarRename,
+    CallDefineUpdate,
     NUM_PASSES
 };
 

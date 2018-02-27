@@ -879,7 +879,7 @@ void UserProc::earlyDecompile()
     LOG_VERBOSE("Early decompile for %1", getName());
 
     // Update the defines in the calls. Will redo if involved in recursion
-    updateCallDefines();
+    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
 
     // This is useful for obj-c
     replaceSimpleGlobalConstants();
@@ -1008,7 +1008,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
                 }
 
                 findPreserveds();
-                updateCallDefines(); // Returns have uses which affect call defines (if childless)
+                PassManager::get()->executePass(PassID::CallDefineUpdate, this); // Returns have uses which affect call defines (if childless)
                 fixCallAndPhiRefs();
                 findPreserveds();    // Preserveds subtract from returns
             }
@@ -1417,7 +1417,7 @@ void UserProc::updateCalls()
 {
     LOG_VERBOSE("### updateCalls for %1 ###", getName());
 
-    updateCallDefines();
+    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
     updateArguments();
     debugPrintAll("After update calls");
 }
@@ -3520,22 +3520,6 @@ void UserProc::updateArguments()
 
     LOG_VERBOSE("=== End update arguments for %1", getName());
     Boomerang::get()->alertDecompileDebugPoint(this, "After updating arguments");
-}
-
-
-void UserProc::updateCallDefines()
-{
-    LOG_VERBOSE("### Update call defines for %1 ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        CallStatement *call = dynamic_cast<CallStatement *>(s);
-        if (call) {
-            call->updateDefines();
-        }
-    }
 }
 
 

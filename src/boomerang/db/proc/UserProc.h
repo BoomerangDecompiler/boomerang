@@ -241,9 +241,6 @@ private:
     /// Update the arguments in calls
     void updateArguments();
 
-    /// Update the defines in calls
-    void updateCallDefines();
-
     /// Replace simple global constant references
     /// Statement level transform :
     /// PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
