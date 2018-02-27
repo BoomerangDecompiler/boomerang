@@ -25,6 +25,7 @@ enum class PassID
     BlockVarRename,
     CallDefineUpdate,
     CallArgumentUpdate,
+    StatementPropagation,
     NUM_PASSES
 };
 

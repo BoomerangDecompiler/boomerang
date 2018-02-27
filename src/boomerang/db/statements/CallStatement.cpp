@@ -29,6 +29,7 @@
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtModifier.h"
 #include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
@@ -754,7 +755,6 @@ bool CallStatement::convertToDirect()
         return false;
     }
 
-    bool      convertIndirect = false;
     SharedExp e = m_dest;
 
     if (m_dest->isSubscript()) {
@@ -799,27 +799,27 @@ bool CallStatement::convertToDirect()
         return false;
     }
 
-    QString nam     = e->access<Const, 1>()->getStr();
+    QString name    = e->access<Const, 1>()->getStr();
     Prog    *prog   = m_proc->getProg();
-    Address gloAddr = prog->getGlobalAddr(nam);
+    Address gloAddr = prog->getGlobalAddr(name);
     Address dest    = Address(prog->readNative4(gloAddr));
 
     // We'd better do some limit checking on the value.
     // This does not guarantee that it's a valid proc pointer,
     // but it may help
-    if ((dest < prog->getLimitTextLow()) || (dest > prog->getLimitTextHigh())) {
+    if (!Util::inRange(dest, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
         return false;     // Not a valid proc pointer
     }
 
-    Function *p        = prog->findFunction(nam);
-    bool     isNewProc = p == nullptr;
+    Function *p        = prog->findFunction(name);
+    const bool isNewProc = p == nullptr;
 
     if (isNewProc) {
         p = prog->createFunction(dest);
     }
 
     LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
-                (isNewProc ? "new" : "existing"), nam, p->getName());
+                (isNewProc ? "new" : "existing"), name, p->getName());
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
@@ -866,11 +866,9 @@ bool CallStatement::convertToDirect()
     m_isComputed = false;
     m_proc->undoComputedBB(this);
     m_proc->addCallee(m_procDest);
-    convertIndirect = true;
 
-    LOG_VERBOSE("Result of convertToDirect: %1", this);
-
-    return convertIndirect;
+    LOG_VERBOSE("Result of convertToDirect: true");
+    return true;
 }
 
 
@@ -1370,8 +1368,7 @@ void CallStatement::updateArguments()
     // of
     // the printf argument is still m[esp{phi1} -20] = "%d".
     if (EXPERIMENTAL) {
-        bool convert;
-        m_proc->propagateStatements(convert, 88);
+        PassManager::get()->executePass(PassID::StatementPropagation, m_proc);
     }
 
     // Do not delete statements in m_arguments since they are preserved by oldArguments

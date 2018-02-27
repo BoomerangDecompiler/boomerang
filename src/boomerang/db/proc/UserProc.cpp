@@ -894,11 +894,7 @@ void UserProc::earlyDecompile()
     // Rename variables
     getDataFlow()->clearStacks();
     PassManager::get()->executePass(PassID::BlockVarRename, this);
-
-    bool convert;
-    propagateStatements(convert, 1);
-
-    debugPrintAll("After propagation (1)");
+    PassManager::get()->executePass(PassID::StatementPropagation, this);
 
     Boomerang::get()->alertDecompileDebugPoint(this, "After Early");
 }
@@ -914,13 +910,11 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // (which can safely be processed at depth 1).
     // Except that this is now inherent in the visitor nature of the latest algorithm.
     fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
-    bool convert;
+    debugPrintAll("After call and phi bypass (1)");
 
     if (m_status != PROC_INCYCLE) { // FIXME: need this test?
-        propagateStatements(convert, 2);
+        PassManager::get()->executePass(PassID::StatementPropagation, this);
     }
-
-    debugPrintAll("After call and phi bypass (1)");
 
     // This part used to be calle middleDecompile():
 
@@ -959,7 +953,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     bool change = PassManager::get()->executePass(PassID::PhiPlacement, this);
 
     PassManager::get()->executePass(PassID::BlockVarRename, this);
-    propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
+    PassManager::get()->executePass(PassID::StatementPropagation, this); // Otherwise sometimes sp is not fully propagated
     PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
     reverseStrengthReduction();
 
@@ -1014,50 +1008,22 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             }
 
             if (SETTING(verboseOutput)) {
-                LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after updating returns) ---", getName(), pass);
-                LOG_SEPARATE(getName(), "%1", this->toString());
-                LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
+                debugPrintAll("SSA (after updating returns");
             }
         }
 
         // Print if requested
         if (SETTING(verboseOutput)) { // was if debugPrintSSA
-            LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after trimming return set) ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", this->toString());
-            LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
+            debugPrintAll("SSA (after trimming return set)");
         }
 
         Boomerang::get()->alertDecompileBeforePropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
 
-        // Propagate
-        bool _convert; // True when indirect call converted to direct
-
-        do {
-            _convert = false;
-            LOG_VERBOSE("Propagating at pass %1", pass);
-            change |= propagateStatements(_convert, pass);
-            getDataFlow()->clearStacks();
-            change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
-
-            // If you have an indirect to direct call conversion, some propagations that were blocked by
-            // the indirect call might now succeed, and may be needed to prevent alias problems
-            // FIXME: I think that the below, and even the convert parameter to propagateStatements(), is no longer
-            // needed - MVE
-            if (_convert) {
-                LOG_VERBOSE("About to restart propagations and dataflow at pass %1 due to conversion of indirect to direct call(s)", pass);
-
-                getDataFlow()->setRenameLocalsParams(false);
-                getDataFlow()->clearStacks();
-                change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
-            }
-        } while (_convert);
-
-        if (SETTING(verboseOutput)) {
-            LOG_SEPARATE(getName(), "--- after propagate for %1 at pass %2 ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", this->toString());
-            LOG_SEPARATE(getName(), "=== End propagate for %1 at pass %2 ===", getName(), pass);
-        }
+        LOG_VERBOSE("Propagating at pass %1", pass);
+        change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
+        getDataFlow()->clearStacks();
+        change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
         Boomerang::get()->alertDecompileAfterPropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
@@ -1098,7 +1064,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     debugPrintAll("after setting phis for memofs, renaming them");
-    propagateStatements(convert, pass);
+    PassManager::get()->executePass(PassID::StatementPropagation, this);
+
     // Now that memofs are renamed, the bypassing for memofs can work
     fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
 
@@ -1186,9 +1153,8 @@ void UserProc::remUnusedStmtEtc()
         // Now that locals are identified, redo the dataflow
         PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-        PassManager::get()->executePass(PassID::BlockVarRename, this); // Rename the locals
-        bool convert = false;
-        propagateStatements(convert, 20); // Surely need propagation too
+        PassManager::get()->executePass(PassID::BlockVarRename, this);       // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation, this); // Surely need propagation too
 
         if (SETTING(verboseOutput)) {
             debugPrintAll("after propagating locals");
@@ -2059,53 +2025,6 @@ bool UserProc::removeNullStatements()
 }
 
 
-bool UserProc::propagateStatements(bool& convert, int pass)
-{
-    LOG_VERBOSE("--- Begin propagating statements pass %1 ---", pass);
-    StatementList stmts;
-    getStatements(stmts);
-
-    // Find the locations that are used by a live, dominating phi-function
-    LocationSet usedByDomPhi;
-    findLiveAtDomPhi(usedByDomPhi);
-
-    // Next pass: count the number of times each assignment LHS would be propagated somewhere
-    std::map<SharedExp, int, lessExpStar> destCounts;
-
-    // Also maintain a set of locations which are used by phi statements
-    for (Statement *s : stmts) {
-        ExpDestCounter  edc(destCounts);
-        StmtDestCounter sdc(&edc);
-        s->accept(&sdc);
-    }
-
-#if USE_DOMINANCE_NUMS
-    // A third pass for dominance numbers
-    setDominanceNumbers();
-#endif
-    // A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
-    bool change = false;
-
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            change |= s->propagateFlagsTo();
-        }
-    }
-
-    // Finally the actual propagation
-    convert = false;
-
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            change |= s->propagateTo(convert, &destCounts, &usedByDomPhi);
-        }
-    }
-
-    simplify();
-    propagateToCollector();
-    LOG_VERBOSE("=== End propagating statements at pass %1 ===", pass);
-    return change;
-}
 
 
 void UserProc::promoteSignature()
@@ -4702,29 +4621,6 @@ void UserProc::makeSymbolsImplicit()
 }
 
 
-void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
-{
-    LocationSet usedByDomPhi0;
-    std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
-
-    m_df.findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
-
-    // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
-    for (auto it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
-        // For each phi parameter, remove from the final usedByDomPhi set
-        for (RefExp& v : *it->second) {
-            assert(v.getSubExp1());
-            auto wrappedParam = RefExp::get(v.getSubExp1(), v.getDef());
-            usedByDomPhi.remove(wrappedParam);
-        }
-
-        // Now remove the actual phi-function (a PhiAssign Statement)
-        // Ick - some problem with return statements not using their returns until more analysis is done
-        // removeStatement(it->second);
-    }
-}
-
-
 #if USE_DOMINANCE_NUMS
 void UserProc::setDominanceNumbers()
 {
@@ -4962,10 +4858,8 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
 
     // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
     // statements.
-    bool convert;
-
     current->mapLocalsAndParams();
     PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
-    current->propagateStatements(convert, 0); // Need to propagate into arguments
+    PassManager::get()->executePass(PassID::StatementPropagation, this); // Need to propagate into arguments
 }
 

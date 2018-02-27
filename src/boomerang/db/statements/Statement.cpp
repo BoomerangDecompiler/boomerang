@@ -388,7 +388,6 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 
 bool Statement::propagateFlagsTo()
 {
-    // FIXME: convert is uninitialized ?
     bool change  = false;
     bool convert = false;
     int  changes = 0;

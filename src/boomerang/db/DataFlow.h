@@ -79,8 +79,8 @@ public:
     void convertImplicits();
 
     /**
-     * Find the locations in the CFG used by a live, dominating phi-function. Also removes dead phi-funcions.
-     * Helper function for UserProc::propagateStatements().
+     * Find the locations in the CFG used by a live, dominating phi-function; also removes dead phi-funcions.
+     * Helper function for StatementPropagationPass.
      *
      * If an SSA location is in \p usedByDomPhi it means it is used in a phi that dominates its assignment
      * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in

@@ -313,15 +313,6 @@ public:
     /// Remove all liveness info in UseCollectors in calls
     void removeCallLiveness();
 
-    /// Propagate statements, but don't remove
-    /// Return true if change; set convert if an indirect call is converted to direct (else clear)
-    /// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
-    /// (else clear)
-    bool propagateStatements(bool& convert, int pass);
-
-    /// Find the locations that are used by a live, dominating phi-function
-    void findLiveAtDomPhi(LocationSet& usedByDomPhi);
-
 #if USE_DOMINANCE_NUMS
     void setDominanceNumbers();
 #endif
