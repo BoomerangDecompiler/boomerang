@@ -24,6 +24,7 @@ enum class PassID
     PhiPlacement = 1,
     BlockVarRename,
     CallDefineUpdate,
+    CallArgumentUpdate,
     NUM_PASSES
 };
 

@@ -193,8 +193,6 @@ private:
      */
     void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
 
-    /// Update the defines and arguments in calls.
-    void updateCalls();
 
     /// Look for short circuit branching
     /// \returns true if any change
@@ -237,9 +235,6 @@ private:
      * and filtering has changed, or the locations in the collector have changed
      */
     void insertParameter(SharedExp e, SharedType ty);
-
-    /// Update the arguments in calls
-    void updateArguments();
 
     /// Replace simple global constant references
     /// Statement level transform :

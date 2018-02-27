@@ -17,6 +17,7 @@ list(APPEND boomerang-passes-sources
     passes/dataflow/BlockVarRenamePass
 
     passes/call/CallDefineUpdatePass
+    passes/call/CallArgumentUpdatePass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)

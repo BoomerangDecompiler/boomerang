@@ -960,7 +960,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     PassManager::get()->executePass(PassID::BlockVarRename, this);
     propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
-    updateArguments();
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
     reverseStrengthReduction();
 
     // Repeat until no change
@@ -1049,11 +1049,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
                 getDataFlow()->setRenameLocalsParams(false);
                 getDataFlow()->clearStacks();
-
                 change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
-                LOG_SEPARATE(getName(), "After rename (2) of %1:", getName());
-                LOG_SEPARATE(getName(), "%1", this->toString());
-                LOG_SEPARATE(getName(), "Done after rename (2) of %1:", getName());
             }
         } while (_convert);
 
@@ -1208,15 +1204,7 @@ void UserProc::remUnusedStmtEtc()
     // Now remove any that have no used
     if (SETTING(removeNull)) {
         remUnusedStmtEtc(refCounts);
-    }
-
-    // Remove null statements
-    if (SETTING(removeNull)) {
         removeNullStatements();
-    }
-
-
-    if (SETTING(removeNull)) {
         debugPrintAll("after removing unused and null statements pass 1");
     }
 
@@ -1231,7 +1219,9 @@ void UserProc::remUnusedStmtEtc()
         debugPrintAll("after adding new parameters");
     }
 
-    updateCalls(); // Or just updateArguments?
+    // Or just CallArgumentUpdate?
+    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
 
     bool removedBBs = branchAnalysis();
     fixUglyBranches();
@@ -1410,16 +1400,6 @@ void UserProc::recursionGroupAnalysis(ProcList &callStack)
 
     LOG_VERBOSE("=== End recursion group analysis ===");
     Boomerang::get()->alertEndDecompile(this);
-}
-
-
-void UserProc::updateCalls()
-{
-    LOG_VERBOSE("### updateCalls for %1 ###", getName());
-
-    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
-    updateArguments();
-    debugPrintAll("After update calls");
 }
 
 
@@ -3497,31 +3477,6 @@ void UserProc::dumpSymbolMapx() const
 }
 
 
-void UserProc::updateArguments()
-{
-    Boomerang::get()->alertDecompiling(this);
-    LOG_VERBOSE("### Update arguments for %1 ###", getName());
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before updating arguments");
-    BasicBlock::RTLRIterator        rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *it : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(it->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        c->updateArguments();
-        // c->bypass();
-        LOG_VERBOSE("%1", c);
-    }
-
-    LOG_VERBOSE("=== End update arguments for %1", getName());
-    Boomerang::get()->alertDecompileDebugPoint(this, "After updating arguments");
-}
-
 
 void UserProc::replaceSimpleGlobalConstants()
 {
@@ -4521,7 +4476,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // Update the statements that call us
 
         for (CallStatement *call : m_callerSet) {
-            call->updateArguments();              // Update caller's arguments
+            PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
             updateSet.insert(call->getProc());    // Make sure we redo the dataflow
             removeRetSet.insert(call->getProc()); // Also schedule caller proc for more analysis
         }
@@ -5010,7 +4965,7 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
     bool convert;
 
     current->mapLocalsAndParams();
-    current->updateArguments();
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
     current->propagateStatements(convert, 0); // Need to propagate into arguments
 }
 
