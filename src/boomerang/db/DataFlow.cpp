@@ -396,15 +396,9 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 #define STACKS_EMPTY(q)    (m_Stacks.find(q) == m_Stacks.end() || m_Stacks[q].empty())
 
 // Subscript dataflow variables
-bool DataFlow::renameBlockVars(int n, bool clearStacks /* = false */)
+bool DataFlow::renameBlockVars(int n)
 {
     bool changed = false;
-
-    // Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
-    // failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
-    if (clearStacks) {
-        m_Stacks.clear();
-    }
 
     // For each statement S in block n
     BasicBlock::RTLIterator rit;

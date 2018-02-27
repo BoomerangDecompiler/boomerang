@@ -22,6 +22,7 @@ enum class PassID
     INVALID      = -1,
     Dominators   = 0,
     PhiPlacement = 1,
+    BlockVarRename,
     NUM_PASSES
 };
 

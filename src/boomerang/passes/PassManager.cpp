@@ -15,6 +15,7 @@
 
 #include "boomerang/passes/dataflow/DominatorPass.h"
 #include "boomerang/passes/dataflow/PhiPlacementPass.h"
+#include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -32,6 +33,7 @@ PassManager::PassManager()
 
     m_passes[static_cast<size_t>(PassID::Dominators)].reset(new DominatorPass());
     m_passes[static_cast<size_t>(PassID::PhiPlacement)].reset(new PhiPlacementPass());
+    m_passes[static_cast<size_t>(PassID::BlockVarRename)].reset(new BlockVarRenamePass());
 }
 
 

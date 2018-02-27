@@ -26,6 +26,7 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/ArrayType.h"
@@ -215,7 +216,9 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 
     do {
         if (first) {
-            up->doRenameBlockVars(-1, true); // Subscript the discovered extra parameters
+            // Subscript the discovered extra parameters
+            up->getDataFlow()->clearStacks();
+            PassManager::get()->executePass(PassID::BlockVarRename, up);
             bool convert;
             up->propagateStatements(convert, 0);
         }

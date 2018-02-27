@@ -68,9 +68,13 @@ public:
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
 
+    /// Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
+    /// failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
+    void clearStacks() { m_Stacks.clear(); }
+
     /// Rename variables in basic block \p n.
     /// \returns true if any change made
-    bool renameBlockVars(int n, bool clearStacks = false);
+    bool renameBlockVars(int n);
 
     void convertImplicits();
 

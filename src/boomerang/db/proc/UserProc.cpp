@@ -42,6 +42,7 @@
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -891,9 +892,8 @@ void UserProc::earlyDecompile()
 
 
     // Rename variables
-    LOG_VERBOSE("Renaming block variables 1st pass");
-    doRenameBlockVars(1, true);
-    debugPrintAll("after rename (1)");
+    getDataFlow()->clearStacks();
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     bool convert;
     propagateStatements(convert, 1);
@@ -958,7 +958,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // the duplicates must be eliminated.
     bool change = PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-    doRenameBlockVars(2);
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
     propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
     updateArguments();
     reverseStrengthReduction();
@@ -972,7 +972,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
         // Rename variables
         change = PassManager::get()->executePass(PassID::PhiPlacement, this);
-        change |= doRenameBlockVars(pass, false); // E.g. for new arguments
+        change |= PassManager::get()->executePass(PassID::BlockVarRename, this); // E.g. for new arguments
 
         // Seed the return statement with reaching definitions
         // FIXME: does this have to be in this loop?
@@ -1003,7 +1003,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
 
                 if (m_status != PROC_INCYCLE) {
-                    doRenameBlockVars(pass, true);
+                    getDataFlow()->clearStacks();
+                    PassManager::get()->executePass(PassID::BlockVarRename, this);
                 }
 
                 findPreserveds();
@@ -1036,7 +1037,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             _convert = false;
             LOG_VERBOSE("Propagating at pass %1", pass);
             change |= propagateStatements(_convert, pass);
-            change |= doRenameBlockVars(pass, true);
+            getDataFlow()->clearStacks();
+            change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
             // If you have an indirect to direct call conversion, some propagations that were blocked by
             // the indirect call might now succeed, and may be needed to prevent alias problems
@@ -1045,8 +1047,10 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             if (_convert) {
                 LOG_VERBOSE("About to restart propagations and dataflow at pass %1 due to conversion of indirect to direct call(s)", pass);
 
-                m_df.setRenameLocalsParams(false);
-                change |= doRenameBlockVars(0, true); // Initial dataflow level 0
+                getDataFlow()->setRenameLocalsParams(false);
+                getDataFlow()->clearStacks();
+
+                change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
                 LOG_SEPARATE(getName(), "After rename (2) of %1:", getName());
                 LOG_SEPARATE(getName(), "%1", this->toString());
                 LOG_SEPARATE(getName(), "Done after rename (2) of %1:", getName());
@@ -1095,7 +1099,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
 
     change = PassManager::get()->executePass(PassID::PhiPlacement, this);
-    doRenameBlockVars(pass, false); // MVE: do we want this parameter false or not?
+    change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     debugPrintAll("after setting phis for memofs, renaming them");
     propagateStatements(convert, pass);
@@ -1186,7 +1190,7 @@ void UserProc::remUnusedStmtEtc()
         // Now that locals are identified, redo the dataflow
         PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-        doRenameBlockVars(20);            // Rename the locals
+        PassManager::get()->executePass(PassID::BlockVarRename, this); // Rename the locals
         bool convert = false;
         propagateStatements(convert, 20); // Surely need propagation too
 
@@ -1360,7 +1364,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
     // Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
     // removed statement, so liveness in the call needs to be removed
     removeCallLiveness();  // Kill all existing livenesses
-    doRenameBlockVars(-2); // Recalculate new livenesses
+    PassManager::get()->executePass(PassID::BlockVarRename, this); // Recalculate new livenesses
     setStatus(PROC_FINAL); // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after remUnusedStmtEtc");
@@ -1564,15 +1568,6 @@ void UserProc::fixUglyBranches()
     }
 
     debugPrintAll("After fixUglyBranches");
-}
-
-
-bool UserProc::doRenameBlockVars(int pass, bool clearStacks)
-{
-    LOG_VERBOSE("### Rename block vars for %1 pass %2, clear = %3 ###", getName(), pass, clearStacks);
-    bool b = m_df.renameBlockVars(0, clearStacks);
-    LOG_VERBOSE("df.renameBlockVars return %1", (b ? "true" : "false"));
-    return b;
 }
 
 
@@ -3917,7 +3912,7 @@ void UserProc::fixCallAndPhiRefs()
     }
 
     if (found) {
-        doRenameBlockVars(2);
+        PassManager::get()->executePass(PassID::BlockVarRename, this);
     }
 
     // Scan for situations like this:
@@ -4605,7 +4600,8 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 
     // Have to redo dataflow to get the liveness at the calls correct
     removeCallLiveness(); // Want to recompute the call livenesses
-    doRenameBlockVars(-3, true);
+    getDataFlow()->clearStacks();
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     remUnusedStmtEtc(); // Also redoes parameters
 

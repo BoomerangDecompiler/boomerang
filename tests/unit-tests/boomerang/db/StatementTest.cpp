@@ -1372,8 +1372,10 @@ void StatementTest::testBypass()
 
     // Number the statements
     proc->numberStatements();
-    proc->getDataFlow()->renameBlockVars(0, 0); // Block 0, mem depth 0
-    proc->getDataFlow()->renameBlockVars(0, 1); // Block 0, mem depth 1
+    proc->getDataFlow()->renameBlockVars(0);
+    proc->getDataFlow()->clearStacks();
+    proc->getDataFlow()->renameBlockVars(0);
+
     // Find various needed statements
     StatementList stmts;
     proc->getStatements(stmts);
