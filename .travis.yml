@@ -5,6 +5,7 @@ sudo: false
 
 matrix:
   include:
+    # Clang 4, debug
     - os: linux
       addons:
         apt:
@@ -16,6 +17,7 @@ matrix:
       env:
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0"
 
+    # Clang 5, release
     - os: linux
       addons:
         apt:
@@ -27,6 +29,7 @@ matrix:
       env:
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0"
 
+    # GCC 6, debug with code coverage
     - os: linux
       addons:
         apt:
@@ -35,9 +38,18 @@ matrix:
           packages:
             - qt5-default
             - g++-6
+            - lcov
       env:
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6 -DBOOMERANG_ENABLE_COVERAGE=ON"
+      after_success:
+        # Create CodeCov report
+        - cd ${TRAVIS_BUILD_DIR}
+        - lcov --directory . --capture --output-file coverage.info
+        - lcov --r coverage.info '*.l' '/usr/*' '*/*tests/unit-tests/*' --output-file coverage.info
+        - lcov --list coverage.info
+        - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
 
+    # GCC 7, release
     - os: linux
       addons:
         apt:
