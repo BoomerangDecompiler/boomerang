@@ -18,6 +18,7 @@ set(test_LIBRARIES
 
 set(TESTS
     AssignSetTest
+    ConnectionGraphTest
     IntervalMapTest
 )
 

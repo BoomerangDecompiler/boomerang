@@ -13,7 +13,7 @@
 #include <QTest>
 
 
-class AssignSetTest : public QObject
+class ConnectionGraphTest : public QObject
 {
 public:
     Q_OBJECT
@@ -22,18 +22,10 @@ private slots:
     /// Set up anything needed before all tests
     void initTestCase();
 
-    void testClear();
-    void testEmpty();
-    void testSize();
-
-    void testInsert();
-    void testRemove();
-
-    void testMakeUnion();
-    void testMakeDiff();
-    void testMakeIsect();
-    void testIsSubSetOf();
-
-    void testDefinesLoc();
-    void testLookupLoc();
+    void testAdd();
+    void testConnect();
+    void testCount();
+    void testIsConnected();
+    void testAllRefsHaveDefs();
+    void testUpdate();
 };

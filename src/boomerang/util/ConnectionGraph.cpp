@@ -14,22 +14,22 @@
 #include "boomerang/util/Log.h"
 
 
-void ConnectionGraph::add(SharedExp a, SharedExp b)
+bool ConnectionGraph::add(SharedExp a, SharedExp b)
 {
     iterator ff = emap.find(a);
 
     while (ff != emap.end() && *ff->first == *a) {
         if (*ff->second == *b) {
-            return; // Don't add a second entry
+            return false; // Don't add a second entry
         }
 
         ++ff;
     }
 
-    std::pair<SharedExp, SharedExp> pr;
-    pr.first  = a;
-    pr.second = b;
-    emap.insert(pr);
+    emap.insert({ a, b });
+    emap.insert({ b, a });
+
+    return true;
 }
 
 
@@ -98,17 +98,12 @@ bool ConnectionGraph::isConnected(SharedExp a, const Exp& b) const
 
 bool ConnectionGraph::allRefsHaveDefs() const
 {
-    for (auto iter : *this) {
-        const SharedExp& fr(iter.first);
-        const SharedExp& sc(iter.second);
-        assert(std::dynamic_pointer_cast<RefExp>(fr));
-        assert(std::dynamic_pointer_cast<RefExp>(sc));
+    for (auto it : *this) {
+        const std::shared_ptr<RefExp> ref = std::dynamic_pointer_cast<RefExp>(it.first);
 
-        if (nullptr == std::static_pointer_cast<RefExp>(fr)->getDef()) {
-            return false;
-        }
-
-        if (nullptr == std::static_pointer_cast<RefExp>(sc)->getDef()) {
+        // we just have to compare the keys
+        // since we always have a -> b and b -> a in the map
+        if (ref && !ref->getDef()) {
             return false;
         }
     }
@@ -119,6 +114,10 @@ bool ConnectionGraph::allRefsHaveDefs() const
 
 void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
 {
+    assert(a);
+    assert(b);
+    assert(c);
+
     // find a->b
     iterator ff = emap.find(a);
 
@@ -143,23 +142,6 @@ void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
 
         ++ff;
     }
-}
-
-
-ConnectionGraph::iterator ConnectionGraph::remove(iterator aa)
-{
-    assert(aa != emap.end());
-    SharedExp b = aa->second;
-    aa = emap.erase(aa);
-    iterator bb = emap.find(b);
-    assert(bb != emap.end());
-
-    if (bb == aa) {
-        ++aa;
-    }
-
-    emap.erase(bb);
-    return aa;
 }
 
 
