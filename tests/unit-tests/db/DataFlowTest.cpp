@@ -121,8 +121,6 @@ void DataFlowTest::testCalculateDominators()
 
 void DataFlowTest::testPlacePhi()
 {
-    QSKIP("Disabled.");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(FRONTIER_PENTIUM);
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
@@ -150,21 +148,18 @@ void DataFlowTest::testPlacePhi()
     // test!
     QCOMPARE(df->placePhiFunctions(), true);
 
-    // r29 == ebp
-    // m[r29 - 4] (x for this program)
-    SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
+    SharedExp e = Location::regOf(24);
+    QString     actualStr;
+    QTextStream actual(&actualStr);
 
-    // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
-    QString     actual_st;
-    QTextStream actual(&actual_st);
+    // r24 == eax
+    std::set<int>& A_phi = df->getA_phi(Location::regOf(24));
 
-    std::set<int>& A_phi = df->getA_phi(e);
-
-    for (std::set<int>::iterator ii = A_phi.begin(); ii != A_phi.end(); ++ii) {
-        actual << *ii << " ";
+    for (int bb : A_phi) {
+        actual << bb << " ";
     }
 
-    QCOMPARE(actual_st, QString("7 8 10 15 20 21 "));
+    QCOMPARE(actualStr, QString("8 10 15 20 21 "));
 }
 
 
