@@ -121,8 +121,6 @@ void DataFlowTest::testCalculateDominators()
 
 void DataFlowTest::testPlacePhi()
 {
-    QSKIP("Disabled.");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(FRONTIER_PENTIUM);
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
@@ -150,77 +148,51 @@ void DataFlowTest::testPlacePhi()
     // test!
     QCOMPARE(df->placePhiFunctions(), true);
 
-    // r29 == ebp
-    // m[r29 - 4] (x for this program)
-    SharedExp e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(4)));
+    SharedExp e = Location::regOf(24);
+    QString     actualStr;
+    QTextStream actual(&actualStr);
 
-    // A_phi[x] should be the set {7 8 10 15 20 21} (all the join points)
-    QString     actual_st;
-    QTextStream actual(&actual_st);
+    // r24 == eax
+    std::set<int>& A_phi = df->getA_phi(Location::regOf(24));
 
-    std::set<int>& A_phi = df->getA_phi(e);
-
-    for (std::set<int>::iterator ii = A_phi.begin(); ii != A_phi.end(); ++ii) {
-        actual << *ii << " ";
+    for (int bb : A_phi) {
+        actual << bb << " ";
     }
 
-    QCOMPARE(actual_st, QString("7 8 10 15 20 21 "));
+    QCOMPARE(actualStr, QString("8 10 15 20 21 "));
 }
 
 
 void DataFlowTest::testPlacePhi2()
 {
-    QSKIP("Disabled.");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(IFTHEN_PENTIUM);
     IFileLoader *loader = project.getBestLoader(IFTHEN_PENTIUM);
 
     QVERIFY(loader != nullptr);
     Prog      prog(IFTHEN_PENTIUM);
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
     Type::clearNamedTypes();
-    prog.setFrontEnd(pFE);
-    pFE->decode(&prog);
+    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
+    fe->decode(&prog);
 
-    const auto& m = *prog.getModuleList().begin();
+    const Module *m = (*prog.getModuleList().begin()).get();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *pProc = static_cast<UserProc *>(*m->begin());
+    Function *mainFunction = *m->begin();
+    UserProc *proc = static_cast<UserProc *>(mainFunction);
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
     prog.finishDecode();
 
-    DataFlow *df = pProc->getDataFlow();
+    DataFlow *df = proc->getDataFlow();
     df->calculateDominators();
-    df->placePhiFunctions();
-
-    // In this program, x is allocated at [ebp-4], a at [ebp-8], and
-    // b at [ebp-12]
-    // We check that A_phi[ m[ebp-8] ] is 4, and that
-    // A_phi A_phi[ m[ebp-8] ] is null
-    // (block 4 comes out with n=4)
-
-    /*
-     * Call (0)
-     |
-     | V
-     | Call (1)
-     |
-     | V
-     | Twoway (2) if (b < 4 )
-     |
-     |-T-> Fall (3)
-     |      |
-     |      V
-     |-F-> Call (4) ----> Ret (5)
-     */
+    QVERIFY(df->placePhiFunctions());
 
     QString     actual_st;
     QTextStream actual(&actual_st);
-    // m[r29 - 8]
-    SharedExp               e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(8)));
+    SharedExp               e = Location::regOf(24);
     std::set<int>&          s = df->getA_phi(e);
 
     for (std::set<int>::iterator pp = s.begin(); pp != s.end(); ++pp) {
@@ -228,27 +200,6 @@ void DataFlowTest::testPlacePhi2()
     }
 
     QCOMPARE(actual_st, QString("4 "));
-
-    if (s.size() > 0) {
-        BBType actualType   = df->nodeToBB(*s.begin())->getType();
-        BBType expectedType = BBType::Call;
-        QCOMPARE(actualType, expectedType);
-    }
-
-    QString     expected = "";
-    QString     actual_st2;
-    QTextStream actual2(&actual_st2);
-    // m[r29 - 12]
-    e = Unary::get(opMemOf, Binary::get(opMinus, Location::regOf(29), Const::get(12)));
-
-    std::set<int>& s2 = df->getA_phi(e);
-
-    for (auto pp = s2.begin(); pp != s2.end(); ++pp) {
-        actual2 << *pp << " ";
-    }
-
-    QCOMPARE(actual_st2, expected);
-    delete pFE;
 }
 
 
@@ -260,30 +211,30 @@ void DataFlowTest::testRenameVars()
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    Prog      *prog = new Prog("FRONTIER_PENTIUM");
-    IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
+    Prog prog("FRONTIER_PENTIUM");
     Type::clearNamedTypes();
-    prog->setFrontEnd(pFE);
-    pFE->decode(prog);
+    IFrontEnd *fe  = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
+    fe->decode(&prog);
 
-    const auto& m = *prog->getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *pProc = static_cast<UserProc *>(*m->begin());
-    DataFlow *df    = pProc->getDataFlow();
+    UserProc *proc = static_cast<UserProc *>(*m->begin());
+    DataFlow *df    = proc->getDataFlow();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog->finishDecode();
+    prog.finishDecode();
 
     df->calculateDominators();
-    df->placePhiFunctions();
-    pProc->numberStatements();        // After placing phi functions!
-    df->renameBlockVars(0, 1); // Block 0, mem depth 1
+    QVERIFY(df->placePhiFunctions());
+    proc->numberStatements(); // After placing phi functions!
 
-    // MIKE: something missing here?
+    QCOMPARE(df->renameBlockVars(0, false), true);
 
-    delete prog;
+    // verify that no change occurs even when clearing stacks
+    QCOMPARE(df->renameBlockVars(0, true), false);
 }
 
 

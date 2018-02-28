@@ -74,14 +74,13 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
         // If s is a call, also display its return types
         CallStatement *call = dynamic_cast<CallStatement *>(s);
 
-        if (s->isCall() && call) {
+        if (call && call->isCall()) {
             ReturnStatement *rs = call->getCalleeReturn();
+            UseCollector *uc = call->getUseCollector();
 
-            if (rs == nullptr) {
+            if (!rs || !uc) {
                 continue;
             }
-
-            UseCollector *uc = call->getUseCollector();
 
             LOG_VERBOSE("  returns:");
 
@@ -89,6 +88,9 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
                 // Intersect the callee's returns with the live locations at the call, i.e. make sure that they
                 // exist in *uc
                 Assignment *assgn = dynamic_cast<Assignment *>(*rr);
+                if (!assgn) {
+                    continue;
+                }
                 SharedExp  lhs    = assgn->getLeft();
 
                 if (!uc->exists(lhs)) {

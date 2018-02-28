@@ -85,4 +85,10 @@ add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a 
 option(BOOMERANG_BUILD_TESTS     "Build the unit and regression tests. Requires Qt5Test." OFF)
 option(BOOMERANG_BUILD_GUI       "Build the GUI. Requires Qt5Widgets." ON)
 option(BOOMERANG_BUILD_CLI       "Build the command line interface." ON)
+
+if (BOOMERANG_BUILD_TESTS AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    option(BOOMERANG_ENABLE_COVERAGE "Build with coverage compiler flags enabled." OFF)
+endif ()
+
 option(BOOMERANG_INSTALL_SAMPLES "Install sample binaries." OFF)
+
