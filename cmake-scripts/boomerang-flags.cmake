@@ -96,9 +96,9 @@ if (NOT MSVC)
     endif ()
 
     if (BOOMERANG_ENABLE_COVERAGE)
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs --coverage")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs --coverage")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs --coverage")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs")
     endif (BOOMERANG_ENABLE_COVERAGE)
 endif (NOT MSVC)
 
