@@ -211,30 +211,30 @@ void DataFlowTest::testRenameVars()
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    Prog      *prog = new Prog("FRONTIER_PENTIUM");
-    IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
+    Prog prog("FRONTIER_PENTIUM");
     Type::clearNamedTypes();
-    prog->setFrontEnd(pFE);
-    pFE->decode(prog);
+    IFrontEnd *fe  = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
+    fe->decode(&prog);
 
-    const auto& m = *prog->getModuleList().begin();
+    const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
-    UserProc *pProc = static_cast<UserProc *>(*m->begin());
-    DataFlow *df    = pProc->getDataFlow();
+    UserProc *proc = static_cast<UserProc *>(*m->begin());
+    DataFlow *df    = proc->getDataFlow();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog->finishDecode();
+    prog.finishDecode();
 
     df->calculateDominators();
-    df->placePhiFunctions();
-    pProc->numberStatements();        // After placing phi functions!
-    df->renameBlockVars(0, 1); // Block 0, mem depth 1
+    QVERIFY(df->placePhiFunctions());
+    proc->numberStatements(); // After placing phi functions!
 
-    // MIKE: something missing here?
+    QCOMPARE(df->renameBlockVars(0, false), true);
 
-    delete prog;
+    // verify that no change occurs even when clearing stacks
+    QCOMPARE(df->renameBlockVars(0, true), false);
 }
 
 
