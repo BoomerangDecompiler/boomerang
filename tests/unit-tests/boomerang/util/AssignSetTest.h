@@ -10,20 +10,29 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include <QTest>
 
-
-class IntervalMapTest : public QObject
+class AssignSetTest : public QObject
 {
+public:
     Q_OBJECT
 
 private slots:
     /// Set up anything needed before all tests
     void initTestCase();
 
-    /// test isEmpty()
-    void testIsEmpty();
+    void testClear();
+    void testEmpty();
+    void testSize();
 
-    /// test find()
-    void testFind();
+    void testInsert();
+    void testRemove();
+
+    void testMakeUnion();
+    void testMakeDiff();
+    void testMakeIsect();
+    void testIsSubSetOf();
+
+    void testDefinesLoc();
+    void testLookupLoc();
 };

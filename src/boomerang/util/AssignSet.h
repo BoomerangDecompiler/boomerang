@@ -18,6 +18,7 @@ class Assign;
 
 using SharedExp = std::shared_ptr<class Exp>;
 
+
 /**
  * Like \ref StatementSet, but the Statements are known to be Assigns,
  * and are sorted sensibly
@@ -34,23 +35,35 @@ class AssignSet
 public:
     typedef Set::iterator iterator;
     typedef Set::const_iterator const_iterator;
+    typedef Set::reverse_iterator reverse_iterator;
+    typedef Set::const_reverse_iterator const_reverse_iterator;
 
 public:
     iterator begin() { return m_set.begin(); }
     iterator end()   { return m_set.end();   }
 
     const_iterator begin() const { return m_set.begin(); }
-    const_iterator end()   const { return m_set.end(); }
+    const_iterator end()   const { return m_set.end();   }
+
+    reverse_iterator rbegin() { return m_set.rbegin(); }
+    reverse_iterator rend()   { return m_set.rend();   }
+
+    const_reverse_iterator rbegin() const { return m_set.rbegin(); }
+    const_reverse_iterator rend()   const { return m_set.rend();   }
 
 public:
-    void clear() { m_set.clear(); }
+    void clear();
+
+    bool empty() const;
+
+    size_t size() const;
 
     void insert(Assign *assign);
 
-    /// \returns false if it was not found.
+    /// \returns true if removed, false if it was not found.
     bool remove(Assign *asgn);
 
-    bool contains(Assign *asgn) const { return m_set.find(asgn) != m_set.end(); }
+    bool contains(Assign *asgn) const;
 
     /// Set union.
     /// *this = *this union other

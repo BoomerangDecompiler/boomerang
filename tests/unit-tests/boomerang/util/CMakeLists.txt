@@ -17,6 +17,7 @@ set(test_LIBRARIES
 )
 
 set(TESTS
+    AssignSetTest
     IntervalMapTest
 )
 

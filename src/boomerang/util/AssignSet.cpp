@@ -20,8 +20,15 @@ bool AssignSet::lessAssign::operator()(const Assign* x, const Assign* y) const
 }
 
 
+void AssignSet::clear()
+{
+    m_set.clear();
+}
+
 void AssignSet::insert(Assign *assign)
 {
+    assert(assign);
+    assert(assign->getLeft());
     m_set.insert(assign);
 }
 
@@ -85,6 +92,10 @@ bool AssignSet::remove(Assign *a)
 
 bool AssignSet::definesLoc(SharedExp loc) const
 {
+    if (!loc) {
+        return false;
+    }
+
     Assign as(loc, Terminal::get(opWild));
 
     return m_set.find(&as) != end();
@@ -93,12 +104,31 @@ bool AssignSet::definesLoc(SharedExp loc) const
 
 Assign *AssignSet::lookupLoc(SharedExp loc)
 {
-    Assign   as(loc, Terminal::get(opWild));
-    iterator ff = m_set.find(&as);
-
-    if (ff == end()) {
+    if (!loc) {
         return nullptr;
     }
 
-    return *ff;
+    Assign   as(loc, Terminal::get(opWild));
+    iterator ff = m_set.find(&as);
+
+    return (ff != end()) ? *ff : nullptr;
 }
+
+
+bool AssignSet::contains(Assign *asgn) const
+{
+    return m_set.find(asgn) != m_set.end();
+}
+
+
+bool AssignSet::empty() const
+{
+    return m_set.empty();
+}
+
+
+size_t AssignSet::size() const
+{
+    return m_set.size();
+}
+
