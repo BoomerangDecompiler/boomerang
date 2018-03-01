@@ -44,7 +44,16 @@ void StatementList::append(Statement *s)
 
 void StatementList::append(const StatementList& sl)
 {
-    m_list.insert(end(), sl.begin(), sl.end());
+    if (&sl == this) {
+        const size_t oldSize = m_list.size();
+        auto it = m_list.begin();
+        for (size_t i = 0; i < oldSize; i++) {
+            m_list.push_back(*it++);
+        }
+    }
+    else {
+        m_list.insert(end(), sl.begin(), sl.end());
+    }
 }
 
 
