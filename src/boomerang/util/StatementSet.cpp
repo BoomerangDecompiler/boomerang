@@ -19,6 +19,7 @@
 
 void StatementSet::insert(Statement *stmt)
 {
+    assert(stmt != nullptr);
     m_set.insert(stmt);
 }
 
@@ -82,6 +83,10 @@ bool StatementSet::remove(Statement *s)
 
 bool StatementSet::definesLoc(SharedExp loc)
 {
+    if (!loc) {
+        return false;
+    }
+
     return std::any_of(m_set.begin(), m_set.end(),
         [loc] (const Statement *stmt) {
             return stmt->definesLoc(loc);
