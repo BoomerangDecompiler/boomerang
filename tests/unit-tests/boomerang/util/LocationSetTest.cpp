@@ -10,10 +10,11 @@
 #include "LocationSetTest.h"
 
 
-#include "boomerang/util/LocationSet.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/statements/Assign.h"
+#include "boomerang/util/LocationSet.h"
 
 
 void LocationSetTest::initTestCase()
@@ -274,13 +275,26 @@ void LocationSetTest::testSubstitute()
     SharedExp r25 = Location::regOf(25);
     SharedExp r26 = Location::regOf(26);
 
-    Assign a(r25, r26);
-    set.substitute(a);
+    Assign a1(r25, r26);
+    set.substitute(a1);
     QVERIFY(set.empty());
 
     set.insert(r25);
-    set.substitute(a);
+    set.substitute(a1);
     QCOMPARE(set.prints(), "r25, r26");
+
+    Assign a2(r25, nullptr);
+    set.substitute(a2);
+    QCOMPARE(set.prints(), "r25, r26"); // no change
+
+    Assign a3(r26, r25);
+    set.substitute(a3);
+    QCOMPARE(set.prints(), "r25, r26"); // no change
+
+    Assign a4(r25, Terminal::get(opPC)); // will cause r25 to be removed because of terminal
+    set.substitute(a4);
+    QCOMPARE(set.prints(), "r26");
+
 }
 
 
