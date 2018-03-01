@@ -95,8 +95,6 @@ public:
 
     void print(QTextStream& os) const;           ///< Print to os
     char *prints() const;                        ///< Print to string for debugging
-    void dump() const;
-    void printDiff(LocationSet *o) const;        ///< Diff 2 location sets to LOG_STREAM()
 
 private:
     /// We use a standard set, but with a special "less than" operator

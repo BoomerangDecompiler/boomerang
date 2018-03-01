@@ -22,7 +22,9 @@ private slots:
     /// Set up anything needed before all tests
     void initTestCase();
 
+    void testAssign();
     void testCompare();
+
     void testEmpty();
     void testSize();
     void testClear();

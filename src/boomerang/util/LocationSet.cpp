@@ -18,13 +18,6 @@
 #include <QTextStream>
 
 
-QTextStream& operator<<(QTextStream& os, const LocationSet *ls)
-{
-    ls->print(os);
-    return os;
-}
-
-
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
     lset.clear();
@@ -63,13 +56,6 @@ char *LocationSet::prints() const
     strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
-}
-
-
-void LocationSet::dump() const
-{
-    QTextStream ost(stderr);
-    print(ost);
 }
 
 
@@ -298,40 +284,5 @@ void LocationSet::substitute(Assign& a)
     makeDiff(removeSet);       // Remove the items to be removed
     makeDiff(removeAndDelete); // These are to be removed as well
     makeUnion(insertSet);      // Insert the items to be added
-    // Now delete the expressions that are no longer needed
-//    std::set<SharedExp , lessExpStar>::iterator dd;
-//    for (dd = removeAndDelete.lset.begin(); dd != removeAndDelete.lset.end(); ++dd)
-//        delete *dd; // Plug that memory leak
-}
-
-
-
-void LocationSet::printDiff(LocationSet *o) const
-{
-    bool printed2not1 = false;
-
-    for (const SharedExp& oe : o->lset) {
-        if (lset.find(oe) == lset.end()) {
-            if (!printed2not1) {
-                printed2not1 = true;
-                LOG_MSG("In set 2 but not set 1:");
-            }
-
-            LOG_MSG("  %1", oe);
-        }
-    }
-
-    bool printed1not2 = false;
-
-    for (const SharedExp& e : lset) {
-        if (o->lset.find(e) == o->lset.end()) {
-            if (!printed1not2) {
-                printed1not2 = true;
-                LOG_MSG("In set 1 but not set 2:");
-            }
-
-            LOG_MSG("  %1", e);
-        }
-    }
 }
 

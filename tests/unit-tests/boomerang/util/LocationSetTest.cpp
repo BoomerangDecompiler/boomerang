@@ -21,6 +21,19 @@ void LocationSetTest::initTestCase()
 }
 
 
+void LocationSetTest::testAssign()
+{
+    LocationSet set1, set2;
+
+    set1 = set2;
+    QCOMPARE(set1.prints(), "");
+
+    set2.insert(Location::regOf(24));
+    set1 = set2;
+    QCOMPARE(set1.prints(), "r24");
+}
+
+
 void LocationSetTest::testCompare()
 {
     LocationSet set1, set2;
