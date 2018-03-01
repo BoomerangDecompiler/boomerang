@@ -21,6 +21,7 @@ set(TESTS
     ConnectionGraphTest
     IntervalMapTest
     LocationSetTest
+    StatementListTest
 )
 
 foreach(t ${TESTS})

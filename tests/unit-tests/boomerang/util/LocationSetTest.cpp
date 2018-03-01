@@ -294,7 +294,6 @@ void LocationSetTest::testSubstitute()
     Assign a4(r25, Terminal::get(opPC)); // will cause r25 to be removed because of terminal
     set.substitute(a4);
     QCOMPARE(set.prints(), "r26");
-
 }
 
 

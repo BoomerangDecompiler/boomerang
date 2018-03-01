@@ -35,6 +35,13 @@ bool StatementList::remove(Statement *s)
 }
 
 
+void StatementList::append(Statement *s)
+{
+    assert(s);
+    m_list.push_back(s);
+}
+
+
 void StatementList::append(const StatementList& sl)
 {
     m_list.insert(end(), sl.begin(), sl.end());
@@ -67,6 +74,7 @@ void StatementList::makeIsect(StatementList& a, LocationSet& b)
 {
     if (this == &a) { // *this = *this isect b
         for (auto it = a.begin(); it != a.end(); ) {
+            assert((*it)->isAssignment());
             Assignment *as = static_cast<Assignment *>(*it);
 
             if (!b.contains(as->getLeft())) {
@@ -80,22 +88,13 @@ void StatementList::makeIsect(StatementList& a, LocationSet& b)
     else { // normal assignment
         clear();
         for (Statement *stmt : a) {
+            assert(stmt->isAssignment());
             Assignment *as = static_cast<Assignment *>(stmt);
 
             if (b.contains(as->getLeft())) {
-                push_back(as);
+                append(as);
             }
         }
-    }
-}
-
-
-void StatementList::makeCloneOf(const StatementList& other)
-{
-    clear();
-
-    for (auto& stmt : other) {
-        push_back((stmt)->clone());
     }
 }
 
@@ -112,14 +111,20 @@ bool StatementList::existsOnLeft(const SharedExp& loc) const
 }
 
 
-void StatementList::removeFirstDefOf(SharedExp loc)
+bool StatementList::removeFirstDefOf(SharedExp loc)
 {
+    if (!loc) {
+        return false;
+    }
+
     for (iterator it = begin(); it != end(); ++it) {
         if (*static_cast<Assignment *>(*it)->getLeft() == *loc) {
             erase(it);
-            return;
+            return true;
         }
     }
+
+    return false;
 }
 
 

@@ -22,6 +22,9 @@ class Assignment;
 using SharedExp = std::shared_ptr<class Exp>;
 
 
+/**
+ * A non-owning list of Statements.
+ */
 class StatementList
 {
     typedef std::list<Statement *> List;
@@ -51,23 +54,22 @@ public:
     const_reverse_iterator rend()   const { return m_list.rend();   }
 
 public:
-    iterator erase(iterator it) { return m_list.erase(it); }
-    iterator erase(iterator first, iterator last) { return m_list.erase(first, last); }
-
-    size_t size() const { return m_list.size(); }
     bool empty() const { return m_list.empty(); }
+    size_t size() const { return m_list.size(); }
+
+    void resize(size_t newSize) { m_list.resize(newSize, nullptr); }
 
     const_reference front() const { return m_list.front(); }
     const_reference back() const { return m_list.back(); }
 
     void clear() { m_list.clear(); }
 
+    iterator erase(iterator it) { return m_list.erase(it); }
+
     iterator insert(iterator where, Statement *stmt) { return m_list.insert(where, stmt); }
 
-    void push_back(Statement *stmt) { return m_list.push_back(stmt); }
-
     /**
-     * Special intersection method: this := a intersect b
+     * Special intersection method: *this := a intersect b
      * A special intersection operator; *this becomes the intersection
      * of StatementList a (assumed to be a list of Assignment *'s)
      * with the LocationSet b.
@@ -75,7 +77,7 @@ public:
      */
     void makeIsect(StatementList& a, LocationSet& b);
 
-    void append(Statement *s) { m_list.push_back(s); }
+    void append(Statement *s);
     void append(const StatementList& sl);
     void append(const StatementSet& sl);
 
@@ -83,11 +85,9 @@ public:
     bool remove(Statement *s);
 
     /// Remove the first definition where \p loc appears on the left
+    /// \returns true if removed successfully
     /// \note statements in this list are assumed to be assignments
-    void removeFirstDefOf(SharedExp loc);
-
-    char *prints();
-    void makeCloneOf(const StatementList& other);
+    bool removeFirstDefOf(SharedExp loc);
 
     /// Return true if loc appears on the left of any statements in this list
     /// Note: statements in this list are assumed to be assignments
@@ -95,6 +95,8 @@ public:
 
     /// Find the first Assignment with loc on the LHS
     Assignment *findOnLeft(SharedExp loc) const;   ///< Return the first stmt with loc on the LHS
+
+    char *prints();
 
 private:
     List m_list;

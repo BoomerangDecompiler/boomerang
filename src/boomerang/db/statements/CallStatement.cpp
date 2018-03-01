@@ -916,7 +916,7 @@ void CallStatement::setNumArguments(int n)
     if (oldSize > n) {
         StatementList::iterator start = std::next(m_arguments.begin(), n);
         qDeleteAll(start, m_arguments.end());
-        m_arguments.erase(start, m_arguments.end());
+        m_arguments.resize(n);
     }
 
     // MVE: check if these need extra propagation
@@ -1441,7 +1441,7 @@ void CallStatement::updateDefines()
         }
 
         if (!inserted) {
-            m_defines.push_back(as);     // In case larger than all existing elements
+            m_defines.append(as);     // In case larger than all existing elements
         }
     }
 }
@@ -1554,7 +1554,7 @@ void CallStatement::updateArguments()
         }
 
         if (!inserted) {
-            m_arguments.push_back(as); // In case larger than all existing elements
+            m_arguments.append(as); // In case larger than all existing elements
         }
     }
 }
