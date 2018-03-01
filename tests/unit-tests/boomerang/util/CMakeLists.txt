@@ -20,6 +20,7 @@ set(TESTS
     AssignSetTest
     ConnectionGraphTest
     IntervalMapTest
+    LocationSetTest
 )
 
 foreach(t ${TESTS})

@@ -54,7 +54,7 @@ char *LocationSet::prints() const
 
     for (ExpSet::iterator it = lset.begin(); it != lset.end(); ++it) {
         if (it != lset.begin()) {
-            ost << ",\t";
+            ost << ", ";
         }
 
         ost << *it;
@@ -100,22 +100,9 @@ void LocationSet::remove(SharedExp given)
 }
 
 
-void LocationSet::removeIfDefines(StatementSet& given)
-{
-    for (Statement *s : given) {
-        LocationSet defs;
-        s->getDefinitions(defs);
-
-        for (SharedExp loc : defs) {
-            lset.erase(loc);
-        }
-    }
-}
-
-
 void LocationSet::makeUnion(const LocationSet& other)
 {
-    for (const SharedExp &exp : other) {
+    for (const SharedExp& exp : other) {
         lset.insert(exp);
     }
 }
@@ -123,7 +110,7 @@ void LocationSet::makeUnion(const LocationSet& other)
 
 void LocationSet::makeDiff(const LocationSet& other)
 {
-    for (const SharedExp &exp : other) {
+    for (const SharedExp& exp : other) {
         lset.erase(exp);
     }
 }
@@ -151,10 +138,15 @@ bool LocationSet::contains(SharedConstExp e) const
 
 SharedExp LocationSet::findNS(SharedExp e)
 {
+    if (e == nullptr) {
+        return nullptr;
+    }
+
     // Note: can't search with a wildcard, since it doesn't have the weak ordering required (I think)
-    auto r(RefExp::get(e, nullptr));
+    auto ref = RefExp::get(e, nullptr);
+
     // Note: the below assumes that nullptr is less than any other pointer
-    iterator it = lset.lower_bound(r);
+    iterator it = lset.lower_bound(ref);
 
     if (it == lset.end()) {
         return nullptr;
@@ -171,6 +163,10 @@ SharedExp LocationSet::findNS(SharedExp e)
 
 bool LocationSet::existsImplicit(SharedExp e) const
 {
+    if (e == nullptr) {
+        return false;
+    }
+
     auto     r(RefExp::get(e, nullptr));
     iterator it = lset.lower_bound(r); // First element >= r
 
@@ -197,7 +193,10 @@ bool LocationSet::existsImplicit(SharedExp e) const
 
 bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr)
 {
-    assert(e);
+    if (!e) {
+        return false;
+    }
+
     auto             search = RefExp::get(e->getSubExp1()->clone(), STMT_WILD);
     ExpSet::iterator pos    = lset.find(search);
 
@@ -229,31 +228,26 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
 }
 
 
-void LocationSet::addSubscript(Statement *d /* , Cfg* cfg */)
+void LocationSet::addSubscript(Statement *d)
 {
     ExpSet newSet;
 
     for (SharedExp it : lset) {
-        newSet.insert(it->expSubscriptVar(it, d /* , cfg */));
+        newSet.insert(it->expSubscriptVar(it, d));
     }
 
-    lset = newSet; // Replace the old set!
-                   // Note: don't delete the old exps; they are copied in the new set
+    // Note: don't delete the old exps; they are copied in the new set
+    lset = newSet;
 }
 
 
 void LocationSet::substitute(Assign& a)
 {
-    auto lhs = a.getLeft();
-
-    if (lhs == nullptr) {
-        return;
-    }
-
+    SharedExp lhs = a.getLeft();
     SharedExp rhs = a.getRight();
 
-    if (rhs == nullptr) {
-        return; // ? Will this ever happen?
+    if (!lhs || !rhs) {
+        return;
     }
 
     // Note: it's important not to change the pointer in the set of pointers to expressions, without removing and
@@ -264,40 +258,40 @@ void LocationSet::substitute(Assign& a)
     LocationSet insertSet;       // These will be inserted after the loop
     bool        change;
 
-    for (auto it = lset.begin(); it != lset.end(); ++it) {
-        SharedExp loc = *it;
+    for (SharedExp loc : lset) {
         SharedExp replace;
+        if (!loc->search(*lhs, replace)) {
+            continue;
+        }
 
-        if (loc->search(*lhs, replace)) {
-            if (rhs->isTerminal()) {
-                // This is no longer a location of interest (e.g. %pc)
-                removeSet.insert(loc);
+        if (rhs->isTerminal()) {
+            // This is no longer a location of interest (e.g. %pc)
+            removeSet.insert(loc);
+            continue;
+        }
+
+        loc = loc->clone()->searchReplaceAll(*lhs, rhs, change);
+
+        if (change) {
+            loc = loc->simplifyArith()->simplify();
+
+            // If the result is no longer a register or memory (e.g.
+            // r[28]-4), then delete this expression and insert any
+            // components it uses (in the example, just r[28])
+            if (!loc->isRegOf() && !loc->isMemOf()) {
+                // Note: can't delete the expression yet, because the
+                // act of insertion into the remove set requires silent
+                // calls to the compare function
+                removeAndDelete.insert(loc);
+                loc->addUsedLocs(insertSet);
                 continue;
             }
 
-            loc = loc->clone()->searchReplaceAll(*lhs, rhs, change);
-
-            if (change) {
-                loc = loc->simplifyArith()->simplify();
-
-                // If the result is no longer a register or memory (e.g.
-                // r[28]-4), then delete this expression and insert any
-                // components it uses (in the example, just r[28])
-                if (!loc->isRegOf() && !loc->isMemOf()) {
-                    // Note: can't delete the expression yet, because the
-                    // act of insertion into the remove set requires silent
-                    // calls to the compare function
-                    removeAndDelete.insert(*it);
-                    loc->addUsedLocs(insertSet);
-                    continue;
-                }
-
-                // Else we just want to replace it
-                // Regardless of whether the top level expression pointer has
-                // changed, remove and insert it from the set of pointers
-                removeSet.insert(*it); // Note: remove the unmodified ptr
-                insertSet.insert(loc);
-            }
+            // Else we just want to replace it
+            // Regardless of whether the top level expression pointer has
+            // changed, remove and insert it from the set of pointers
+            removeSet.insert(loc); // Note: remove the unmodified ptr
+            insertSet.insert(loc);
         }
     }
 

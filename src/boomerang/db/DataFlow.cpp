@@ -789,11 +789,11 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
         for (const SharedExp& it : ls) {
             auto wrappedDef(RefExp::get(it, S));
 
-            // If this definition is in the usedByDomPhi0 set, then it is in fact dominated by a phi use, so move it to
+            // If this definition is in the usedByDomPhi0 set,
+            // then it is in fact dominated by a phi use, so move it to
             // the final usedByDomPhi set
-            auto defIt = usedByDomPhi0.find(wrappedDef);
-            if (defIt != usedByDomPhi0.end()) {
-                usedByDomPhi0.remove(defIt);
+            if (usedByDomPhi0.contains(wrappedDef)) {
+                usedByDomPhi0.remove(wrappedDef);
                 usedByDomPhi.insert(RefExp::get(it, S));
             }
         }

@@ -84,11 +84,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildr
     }
 
     std::shared_ptr<RefExp> e = exp;
-
-    if (m_used->find(e) == m_used->end()) {
-        // e = (RefExp *)arg.clone();
-        m_used->insert(e);       // This location is used
-    }
+    m_used->insert(e);       // This location is used
 
     // However, e's subexpression is NOT used ...
     visitChildren = false;

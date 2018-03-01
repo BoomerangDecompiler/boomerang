@@ -39,19 +39,21 @@ public:
     LocationSet& operator=(const LocationSet& other);
     LocationSet& operator=(LocationSet&& other) = default;
 
+    bool operator==(const LocationSet& other) const; ///< Compare
+    bool operator!=(const LocationSet& other) const { return !(*this == other); }
+
 public:
-    // Make this set the union of itself and other
-    void makeUnion(const LocationSet& other);           ///< Set union
-
-    // Make this set the set difference of itself and other
-    void makeDiff(const LocationSet& other);            ///< Set difference
-
-    void clear() { lset.clear(); }                ///< Clear the set
-
     iterator begin() { return lset.begin(); }
-    iterator end() { return lset.end(); }
+    iterator end()   { return lset.end();   }
     const_iterator begin() const { return lset.begin(); }
-    const_iterator end() const { return lset.begin(); }
+    const_iterator end()   const { return lset.end();   }
+
+public:
+    bool empty() const { return lset.empty(); }
+
+    size_t size() const { return lset.size(); }
+
+    void clear() { lset.clear(); }
 
     void insert(SharedExp loc) { lset.insert(loc); }  ///< Insert the given location
 
@@ -60,39 +62,41 @@ public:
 
     void remove(iterator ll) { lset.erase(ll); } ///< Remove location, given iterator
 
-    // Remove locations defined by any of the given set of statements
-    // Used for killing in liveness sets
-    void removeIfDefines(StatementSet& given); ///< Remove locs defined in given
-
-    size_t size() const { return lset.size(); }  ///< Number of elements
-    bool operator==(const LocationSet& o) const; ///< Compare
-
-    // Substitute s into all members of the set
-    void substitute(Assign& a);                  ///< Substitute the given assignment to all
-    void print(QTextStream& os) const;           ///< Print to os
-    char *prints() const;                        ///< Print to string for debugging
-    void dump() const;
-    void printDiff(LocationSet *o) const;        ///< Diff 2 location sets to LOG_STREAM()
     bool contains(SharedConstExp e) const;       ///< Return true if the location exists in the set
-
-    /// Find location e (no subscripts); nullptr if not found
-    /// This set is assumed to be of subscripted locations (e.g. a Collector), and we want to find the unsubscripted
-    /// location e in the set
-    SharedExp findNS(SharedExp e);
 
     // Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
     bool existsImplicit(SharedExp e) const;
 
-    /// Return an iterator to the found item (or end() if not). Only really makes sense if e has a wildcard
-    iterator find(SharedExp e)       { return lset.find(e); }
-    const_iterator find(SharedExp e) const { return lset.find(e); }
+    /**
+     * Given a not subscripted location \p e, return the subscripted location matching \p e.
+     * Example: Given e == r32, return r32{-}.
+     * Returns nullptr if not found.
+     * \note This set is assumed to be of subscripted locations (e.g. a Collector).
+     */
+    SharedExp findNS(SharedExp e);
 
     /// Find a location with a different def, but same expression. For example, pass r28{10},
     /// return true if r28{20} in the set. If return true, dr points to the first different ref
     bool findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr);
 
-    /// Add a subscript (to definition d) to each element
-    void addSubscript(Statement *def); ///< Add a subscript to all elements
+    /// Add a subscript (to definition \p def) to each element.
+    /// Existing exps are not re-subscripted.
+    void addSubscript(Statement *def);
+
+    // Make this set the union of itself and other
+    void makeUnion(const LocationSet& other);           ///< Set union
+
+    // Make this set the set difference of itself and other
+    void makeDiff(const LocationSet& other);            ///< Set difference
+
+    /// Substitute all occurrences of the LHS of the assignment
+    /// by the RHS of the assignment
+    void substitute(Assign& a);
+
+    void print(QTextStream& os) const;           ///< Print to os
+    char *prints() const;                        ///< Print to string for debugging
+    void dump() const;
+    void printDiff(LocationSet *o) const;        ///< Diff 2 location sets to LOG_STREAM()
 
 private:
     /// We use a standard set, but with a special "less than" operator
