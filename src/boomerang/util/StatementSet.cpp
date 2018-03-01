@@ -34,6 +34,11 @@ void StatementSet::makeUnion(const StatementSet& other)
 
 void StatementSet::makeDiff(const StatementSet& other)
 {
+    if (&other == this) {
+        m_set.clear(); // A \ A == empty set
+        return;
+    }
+
     for (Statement *stmt : other) {
         m_set.erase(stmt);
     }
