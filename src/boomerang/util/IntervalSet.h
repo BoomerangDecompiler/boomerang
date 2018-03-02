@@ -29,6 +29,16 @@ public:
     typedef typename Data::const_reverse_iterator                      const_reverse_iterator;
 
 public:
+    iterator begin() { return m_data.begin(); }
+    iterator end()   { return m_data.end(); }
+    const_iterator begin() const { return m_data.begin(); }
+    const_iterator end()   const { return m_data.end(); }
+    reverse_iterator rbegin() { return m_data.rbegin(); }
+    reverse_iterator rend()   { return m_data.rend(); }
+    const_reverse_iterator rbegin() const { return m_data.rbegin(); }
+    const_reverse_iterator rend() const { return m_data.rend(); }
+
+public:
     /// \returns true if the set does not contain any elements.
     bool isEmpty() const { return m_data.empty(); }
 
@@ -38,8 +48,12 @@ public:
     iterator insert(const T& from, const T& to) { return insert(Interval<T>(from, to)); }
     iterator insert(const Interval<T>& interval)
     {
+        if (interval.lower() >= interval.upper()) {
+            return end(); // Don't insert invalid intervals
+        }
+
         typename Data::iterator firstInRange, lastInRange;
-        std::tie(firstInRange, lastInRange) = equalRange(interval.lower(), interval.upper());
+        std::tie(firstInRange, lastInRange) = equalRange(interval);
 
         T minLower = interval.lower();
         T maxUpper = interval.upper();
@@ -48,17 +62,9 @@ public:
         if (lastInRange != m_data.end())  { maxUpper = std::max(maxUpper, lastInRange->upper()); }
 
         typename Data::iterator it = m_data.erase(firstInRange, lastInRange);
+
         return m_data.insert(it, Interval<T>(minLower, maxUpper));
     }
-
-    iterator begin() { return m_data.begin(); }
-    iterator end()   { return m_data.end(); }
-    const_iterator begin() const { return m_data.begin(); }
-    const_iterator end()   const { return m_data.end(); }
-    reverse_iterator rbegin() { return m_data.rbegin(); }
-    reverse_iterator rend()   { return m_data.rend(); }
-    const_reverse_iterator rbegin() const { return m_data.rbegin(); }
-    const_reverse_iterator rend() const { return m_data.rend(); }
 
 
     /**
@@ -71,22 +77,32 @@ public:
 
     std::pair<iterator, iterator> equalRange(const Interval<T>& interval)
     {
+        if (interval.lower() >= interval.upper()) {
+            return { end(), end() };
+        }
+
         typename Data::iterator itLower = end();
         typename Data::iterator itUpper = end();
 
         // todo: speed up
-        for (iterator it = begin(); it != end(); ++it) {
-            if ((itLower == end()) && (it->upper() > interval.lower())) {
-                itLower = it;
+        for (iterator existingIt = begin(); existingIt != end(); ++existingIt) {
+            if (existingIt->lower() >= interval.upper()) {
+                return { end(), end() }; // no blocking intervals
             }
+            else if (existingIt->upper() > interval.lower()) {
+                itLower = existingIt;
+                break;
+            }
+        }
 
-            if (itLower != end()) {
-                if (it->lower() < interval.upper()) {
-                    itUpper = it;
-                }
-                else {
-                    break; // not in range any more
-                }
+        if (itLower == end()) {
+            return { end(), end() };
+        }
+
+        for (iterator existingIt = std::next(itLower); existingIt != end(); ++existingIt) {
+            if (existingIt->lower() >= interval.upper()) {
+                itUpper = existingIt;
+                break;
             }
         }
 

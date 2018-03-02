@@ -20,6 +20,7 @@ set(TESTS
     AssignSetTest
     ConnectionGraphTest
     IntervalMapTest
+    IntervalSetTest
     LocationSetTest
     StatementListTest
     StatementSetTest
