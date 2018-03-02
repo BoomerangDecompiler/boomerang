@@ -50,7 +50,7 @@ bool inRange(const T& value, const U& rangeStart, const U& rangeEnd)
 
 /// Check if a value is in a container
 template<typename Cont, typename T>
-bool isIn(const Cont& cont, const T& value)
+bool isContained(const Cont& cont, const T& value)
 {
     return std::find(cont.begin(), cont.end(), value) != cont.end();
 }
@@ -64,6 +64,7 @@ std::unique_ptr<T> makeUnique(Args&&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
 
 template<class Container>
 void clone(const Container& from, Container& to)
@@ -84,6 +85,9 @@ void clone(const Container& from, Container& to)
 /// (example: 16 -> 0xFFFF)
 inline QWord getLowerBitMask(DWord bitCount)
 {
+    if (bitCount >= 64) {
+        return 0xFFFFFFFFFFFFFFFF;
+    }
     return (1ULL << (bitCount % (8 * sizeof(QWord)))) - 1ULL;
 }
 
@@ -134,7 +138,7 @@ QWord readQWord(const void *src, bool srcBigEndian);
 void writeByte(void *dst, Byte value);
 void writeWord(void *dst, SWord value, bool dstBigEndian);
 void writeDWord(void *dst, DWord value, bool dstBigEndian);
-void writeQWord(void *dst, DWord value, bool dstBigEndian);
+void writeQWord(void *dst, QWord value, bool dstBigEndian);
 
 
 /**

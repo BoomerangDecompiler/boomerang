@@ -23,6 +23,7 @@ set(TESTS
     LocationSetTest
     StatementListTest
     StatementSetTest
+    UtilTest
 )
 
 foreach(t ${TESTS})

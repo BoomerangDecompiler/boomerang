@@ -2240,12 +2240,12 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
     // in the follow set generate a goto to the follow
     const BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
 
-    if (Util::isIn(gotoSet, bb) && !m_analyzer.isLatchNode(bb) &&
+    if (Util::isContained(gotoSet, bb) && !m_analyzer.isLatchNode(bb) &&
         ((latch && m_analyzer.getLoopHead(latch) && (bb == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)))) || !isAllParentsGenerated(bb))) {
         emitGotoAndLabel(bb, bb);
         return;
     }
-    else if (Util::isIn(followSet, bb)) {
+    else if (Util::isContained(followSet, bb)) {
         if (bb != enclFollow) {
             emitGotoAndLabel(bb, bb);
         }
@@ -2690,7 +2690,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock* bb, std::list<const Basi
     if (isGenerated(child)) {
         emitGotoAndLabel(bb, child);
     }
-    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isIn(followSet, child))) {
+    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isContained(followSet, child))) {
         emitGotoAndLabel(bb, child);
     }
     else if (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {

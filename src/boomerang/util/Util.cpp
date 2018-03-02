@@ -142,7 +142,7 @@ void writeDWord(void *dst, DWord value, bool dstBigEndian)
 }
 
 
-void writeQWord(void *dst, DWord value, bool dstBigEndian)
+void writeQWord(void *dst, QWord value, bool dstBigEndian)
 {
     assert(dst);
     *reinterpret_cast<QWord *>(dst) = normEndian(value, dstBigEndian);
