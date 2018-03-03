@@ -21,9 +21,11 @@ private slots:
     /// Set up anything needed before all tests
     void initTestCase();
 
-    /// test isEmpty()
     void testIsEmpty();
-
-    /// test find()
+    void testClear();
+    void testInsert();
+    void testErase();
+    void testEraseAll();
     void testFind();
+    void testEqualRange();
 };

@@ -31,6 +31,16 @@ public:
     typedef typename Data::const_reverse_iterator     const_reverse_iterator;
 
 public:
+    iterator begin() { return m_data.begin(); }
+    iterator end()   { return m_data.end(); }
+    const_iterator begin() const { return m_data.begin(); }
+    const_iterator end()   const { return m_data.end(); }
+    reverse_iterator rbegin() { return m_data.rbegin(); }
+    reverse_iterator rend()   { return m_data.rend(); }
+    const_reverse_iterator rbegin() const { return m_data.rbegin(); }
+    const_reverse_iterator rend() const { return m_data.rend(); }
+
+public:
     /// \returns true if the map does not contain any elements.
     bool isEmpty() const { return m_data.empty(); }
 
@@ -40,6 +50,10 @@ public:
     /// Inserts an interval with a mapped value into this map.
     iterator insert(const Interval<Key>& key, const Value& value)
     {
+        if (key.lower() >= key.upper()) {
+            return end(); // do not insert degenerate intervals
+        }
+
         std::pair<typename Data::iterator, bool> p = m_data.insert({ key, value });
         return p.second ? p.first : m_data.end();
     }
@@ -47,6 +61,36 @@ public:
     iterator insert(const Key& lower, const Key& upper, const Value& value)
     {
         return insert(Interval<Key>(lower, upper), value);
+    }
+
+    /// Erase the item referenced by \p it
+    /// \returns an iterator to the element immediately after the deleted element
+    iterator erase(iterator it) { assert(it != end()); return m_data.erase(it); }
+
+    /// Remove all intervals containing \p key
+    void eraseAll(const Key& key)
+    {
+        iterator it = find(key);
+
+        if (it == end()) {
+            return;
+        }
+
+        do {
+            it = erase(it);
+        } while (it != end() && it->first.isContained(key));
+    }
+
+    /// Remove all intervals overlapping with \p interval
+    void eraseAll(const Interval<Key>& interval)
+    {
+        iterator it1, it2;
+
+        std::tie(it1, it2) = equalRange(interval);
+
+        while (it1 != it2) { // case it1 == it2 == end() accounted for
+            it1 = erase(it1);
+        }
     }
 
     /**
@@ -135,64 +179,37 @@ public:
 
     std::pair<iterator, iterator> equalRange(const Interval<Key>& interval)
     {
-        iterator itLower = end();
-        iterator itUpper = end();
+        if (interval.lower() >= interval.upper()) {
+            return { end(), end() };
+        }
 
-        // todo: speed up, use binary search since intervals are sorted
-        for (iterator it = begin(); it != end(); ++it) {
-            // intersection between it->first and interval must not be empty
-            if ((it->first.upper() > interval.lower()) && (it->first.lower() < interval.upper()) && (itLower == end())) {
-                itLower = it;
+        typename Data::iterator itLower = end();
+        typename Data::iterator itUpper = end();
+
+        // todo: speed up
+        for (iterator existingIt = begin(); existingIt != end(); ++existingIt) {
+            if (existingIt->first.lower() >= interval.upper()) {
+                return { end(), end() }; // no blocking intervals
             }
+            else if (existingIt->first.upper() > interval.lower()) {
+                itLower = existingIt;
+                break;
+            }
+        }
 
-            // we want to have the interval after the last interval overlapping
-            // with the desired interval
-            if ((itLower != end()) && (it->first.lower() >= interval.upper())) {
-                itUpper = it;
+        if (itLower == end()) {
+            return { end(), end() };
+        }
+
+        for (iterator existingIt = std::next(itLower); existingIt != end(); ++existingIt) {
+            if (existingIt->first.lower() >= interval.upper()) {
+                itUpper = existingIt;
+                break;
             }
         }
 
         return std::make_pair(itLower, itUpper);
     }
-
-    /// Erase the item referenced by \p it
-    /// \returns an iterator to the element immediately after the deleted element
-    iterator erase(iterator it) { return m_data.erase(it); }
-
-    /// Remove all intervals containing \p key
-    void eraseAll(const Key& key)
-    {
-        iterator it = find(key);
-
-        if (it == end()) {
-            return;
-        }
-
-        do {
-            it = erase(it);
-        } while (it != end() && it->first.isContained(key));
-    }
-
-    /// Remove all intervals overlapping with \p interval
-    void eraseAll(const Interval<Key>& interval)
-    {
-        iterator it1, it2;
-
-        std::tie(it1, it2) = equalRange(interval);
-
-        while (it1 != it2) { // case it1 == it2 == end() accounted for
-            it1 = erase(it1);
-        }
-    }
-
-    iterator begin() { return m_data.begin(); }
-    iterator end()   { return m_data.end(); }
-    const_iterator begin() const { return m_data.begin(); }
-    const_iterator end()   const { return m_data.end(); }
-    reverse_iterator rbegin() { return m_data.rbegin(); }
-    reverse_iterator rend()   { return m_data.rend(); }
-    const_reverse_iterator rbegin() const { return m_data.rbegin(); }
-    const_reverse_iterator rend() const { return m_data.rend(); }
 
 private:
     std::map<Interval<Key>, Value, std::less<Interval<Key> > > m_data;
