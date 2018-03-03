@@ -78,11 +78,11 @@ public:
     void makeIsect(StatementList& a, LocationSet& b);
 
     void append(Statement *s);
-    void append(const StatementList& sl);
-    void append(const StatementSet& sl);
+    void append(const StatementList& list);
+    void append(const StatementSet& set);
 
-    /// \returns false if not found
-    bool remove(Statement *s);
+    /// \returns true if successfully removed, false if not found
+    bool remove(Statement *stmt);
 
     /// Remove the first definition where \p loc appears on the left
     /// \returns true if removed successfully

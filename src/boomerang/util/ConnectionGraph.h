@@ -60,14 +60,19 @@ public:
     /// Return true if a is connected to b
     bool isConnected(SharedExp a, const Exp& b) const;
 
-    /// Return a count of locations connected to \a e
+    /// Return the number of expression connected to \p a
     int count(SharedExp a) const;
 
+    /**
+     * For all \ref RefExp expression in this graph,
+     * check if they have definitions.
+     */
     bool allRefsHaveDefs() const;
 
-    // Modify the map so that a <-> b becomes a <-> c
-    /// Update the map that used to be a <-> b, now it is a <-> c
-    void update(SharedExp a, SharedExp b, SharedExp c);
+    /**
+     * Modify the graph so that \p a <-> \p b becomes \p a <-> \p c
+     */
+    void updateConnection(SharedExp a, SharedExp b, SharedExp c);
 
 private:
     std::vector<SharedExp> allConnected(SharedExp a);

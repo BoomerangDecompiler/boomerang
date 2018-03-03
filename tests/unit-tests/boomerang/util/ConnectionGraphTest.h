@@ -27,5 +27,5 @@ private slots:
     void testCount();
     void testIsConnected();
     void testAllRefsHaveDefs();
-    void testUpdate();
+    void testUpdateConnection();
 };

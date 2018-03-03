@@ -102,7 +102,7 @@ inline SWord swapEndian(SWord value)
 inline DWord swapEndian(DWord value)
 {
     value = ((value << 16) & 0xFFFF0000) | ((value >> 16) & 0x0000FFFF);
-    value = ((value << 8) & 0xFF00FF00) | ((value >> 8) & 0x00FF00FF);
+    value = ((value <<  8) & 0xFF00FF00) | ((value >>  8) & 0x00FF00FF);
     return value;
 }
 
@@ -111,7 +111,7 @@ inline QWord swapEndian(QWord value)
 {
     value = ((value << 32) & 0xFFFFFFFF00000000ULL) | ((value >> 32) & 0x00000000FFFFFFFFULL);
     value = ((value << 16) & 0xFFFF0000FFFF0000ULL) | ((value >> 16) & 0x0000FFFF0000FFFFULL);
-    value = ((value << 8) & 0xFF00FF00FF00FF00ULL) | ((value >> 8) & 0x00FF00FF00FF00FFULL);
+    value = ((value <<  8) & 0xFF00FF00FF00FF00ULL) | ((value >>  8) & 0x00FF00FF00FF00FFULL);
     return value;
 }
 

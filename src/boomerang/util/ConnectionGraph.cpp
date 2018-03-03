@@ -112,7 +112,7 @@ bool ConnectionGraph::allRefsHaveDefs() const
 }
 
 
-void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
+void ConnectionGraph::updateConnection(SharedExp a, SharedExp b, SharedExp c)
 {
     assert(a);
     assert(b);

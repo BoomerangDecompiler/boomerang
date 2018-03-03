@@ -119,7 +119,7 @@ void ConnectionGraphTest::testAllRefsHaveDefs()
 }
 
 
-void ConnectionGraphTest::testUpdate()
+void ConnectionGraphTest::testUpdateConnection()
 {
     ConnectionGraph cg;
 
@@ -132,22 +132,22 @@ void ConnectionGraphTest::testUpdate()
     cg.add(c, d);
 
     // not connected before -> no change
-    cg.update(a, c, d);
+    cg.updateConnection(a, c, d);
     QVERIFY(cg.isConnected(a, *b));
     QVERIFY(!cg.isConnected(a, *c));
     QVERIFY(!cg.isConnected(a, *d));
 
-    cg.update(a, c, c);
+    cg.updateConnection(a, c, c);
     QVERIFY(cg.isConnected(a, *b));
     QVERIFY(!cg.isConnected(a, *c));
     QVERIFY(!cg.isConnected(a, *d));
 
-    cg.update(c, d, a);
+    cg.updateConnection(c, d, a);
     QVERIFY(!cg.isConnected(c, *d));
     QVERIFY(cg.isConnected(c, *a));
     QVERIFY(cg.isConnected(a, *c));
 
-    cg.update(b, a, d);
+    cg.updateConnection(b, a, d);
     QVERIFY(!cg.isConnected(b, *a));
     QVERIFY(cg.isConnected(b, *d));
     QVERIFY(cg.isConnected(d, *b));

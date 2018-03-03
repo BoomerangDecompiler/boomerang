@@ -83,11 +83,11 @@ public:
     /// Existing exps are not re-subscripted.
     void addSubscript(Statement *def);
 
-    // Make this set the union of itself and other
-    void makeUnion(const LocationSet& other);           ///< Set union
+    /// Make this set the union of itself and other
+    void makeUnion(const LocationSet& other);
 
-    // Make this set the set difference of itself and other
-    void makeDiff(const LocationSet& other);            ///< Set difference
+    /// Make this set the set difference of itself and other
+    void makeDiff(const LocationSet& other);
 
     /// Substitute all occurrences of the LHS of the assignment
     /// by the RHS of the assignment
