@@ -50,6 +50,11 @@ public:
     /// Add pair with check for existing
     /// \returns true if successfully inserted
     bool add(SharedExp a, SharedExp b);
+
+    /**
+     * Connect all neighbours of \p a to \p b and
+     * connect all neighbours of \p b to \p a
+     */
     void connect(SharedExp a, SharedExp b);
 
     /// Return true if a is connected to b
@@ -63,8 +68,6 @@ public:
     // Modify the map so that a <-> b becomes a <-> c
     /// Update the map that used to be a <-> b, now it is a <-> c
     void update(SharedExp a, SharedExp b, SharedExp c);
-
-    void dump() const;            ///< Dump for debugging
 
 private:
     std::vector<SharedExp> allConnected(SharedExp a);

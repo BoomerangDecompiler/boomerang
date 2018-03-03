@@ -143,11 +143,3 @@ void ConnectionGraph::update(SharedExp a, SharedExp b, SharedExp c)
         ++ff;
     }
 }
-
-
-void ConnectionGraph::dump() const
-{
-    for (auto iter : *this) {
-        LOG_MSG("%1 <-> %2", iter.first, iter.second);
-    }
-}

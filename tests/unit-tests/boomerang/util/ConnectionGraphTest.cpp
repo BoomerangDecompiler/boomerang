@@ -45,13 +45,21 @@ void ConnectionGraphTest::testConnect()
 
     ConnectionGraph cg;
 
-    cg.add(a, c);
+    cg.add(a, b);
+    cg.add(c, d);
+
     cg.connect(a, b);
-
     QVERIFY(cg.isConnected(a, *b));
-    QVERIFY(cg.isConnected(a, *c));
-
+    QVERIFY(!cg.isConnected(a, *c));
     QVERIFY(!cg.isConnected(a, *d));
+    QVERIFY(cg.isConnected(c, *d));
+
+    cg.connect(a, c);
+    QVERIFY(cg.isConnected(a, *c));
+    QVERIFY(cg.isConnected(a, *b));
+    QVERIFY(cg.isConnected(a, *d));
+    QVERIFY(cg.isConnected(c, *b));
+    QVERIFY(cg.isConnected(c, *d));
     QVERIFY(!cg.isConnected(b, *d));
 }
 
@@ -118,15 +126,31 @@ void ConnectionGraphTest::testUpdate()
     SharedExp a = Terminal::get(opZF);
     SharedExp b = Terminal::get(opCF);
     SharedExp c = Terminal::get(opFZF);
+    SharedExp d = Terminal::get(opOF);
 
     cg.add(a, b);
-    cg.add(b, c);
+    cg.add(c, d);
 
-    cg.update(a, b, c);
+    // not connected before -> no change
+    cg.update(a, c, d);
+    QVERIFY(cg.isConnected(a, *b));
+    QVERIFY(!cg.isConnected(a, *c));
+    QVERIFY(!cg.isConnected(a, *d));
 
-    QVERIFY(!cg.isConnected(a, *b));
+    cg.update(a, c, c);
+    QVERIFY(cg.isConnected(a, *b));
+    QVERIFY(!cg.isConnected(a, *c));
+    QVERIFY(!cg.isConnected(a, *d));
+
+    cg.update(c, d, a);
+    QVERIFY(!cg.isConnected(c, *d));
+    QVERIFY(cg.isConnected(c, *a));
     QVERIFY(cg.isConnected(a, *c));
-    QVERIFY(cg.isConnected(b, *c));
+
+    cg.update(b, a, d);
+    QVERIFY(!cg.isConnected(b, *a));
+    QVERIFY(cg.isConnected(b, *d));
+    QVERIFY(cg.isConnected(d, *b));
 }
 
 
