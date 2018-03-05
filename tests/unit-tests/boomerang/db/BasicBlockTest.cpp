@@ -313,31 +313,38 @@ void BasicBlockTest::testRemoveRTL()
 
 void BasicBlockTest::testGetStmt()
 {
-    std::unique_ptr<RTLList> rtls(new RTLList);
-
-    BasicBlock bb(BBType::CompJump, std::move(rtls), nullptr);
 
     BasicBlock::RTLIterator rit;
     BasicBlock::RTLRIterator rrit;
     StatementList::iterator sit;
     StatementList::reverse_iterator srit;
 
-    Statement *firstStmt = bb.getFirstStmt(rit, sit);
-    Statement *lastStmt  = bb.getLastStmt(rrit, srit);
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(bb1.getFirstStmt() == nullptr);
+    QVERIFY(bb1.getLastStmt() == nullptr);
+    QVERIFY(bb1.getFirstStmt(rit, sit) == nullptr);
+    QVERIFY(bb1.getLastStmt(rrit, srit) == nullptr);
+
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    BasicBlock bb2(BBType::CompJump, std::move(rtls), nullptr);
+
+    Statement *firstStmt = bb2.getFirstStmt(rit, sit);
+    Statement *lastStmt  = bb2.getLastStmt(rrit, srit);
 
     QVERIFY(firstStmt == nullptr);
     QVERIFY(lastStmt == nullptr);
-    QVERIFY(bb.getFirstStmt() == nullptr);
-    QVERIFY(bb.getLastStmt() == nullptr);
+    QVERIFY(bb2.getFirstStmt() == nullptr);
+    QVERIFY(bb2.getLastStmt() == nullptr);
 
-    bb.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+    bb2.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
 
-    firstStmt = bb.getFirstStmt(rit, sit);
-    lastStmt  = bb.getLastStmt(rrit, srit);
+    firstStmt = bb2.getFirstStmt(rit, sit);
+    lastStmt  = bb2.getLastStmt(rrit, srit);
 
     QVERIFY(firstStmt->isBranch());
-    QVERIFY(firstStmt == bb.getFirstStmt());
-    QVERIFY(lastStmt  == bb.getLastStmt());
+    QVERIFY(firstStmt == bb2.getFirstStmt());
+    QVERIFY(lastStmt  == bb2.getLastStmt());
     QVERIFY(firstStmt == lastStmt);
 }
 
