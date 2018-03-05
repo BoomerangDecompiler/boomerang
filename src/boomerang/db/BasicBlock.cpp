@@ -127,14 +127,6 @@ const char *BasicBlock::prints()
 }
 
 
-void BasicBlock::dump()
-{
-    QTextStream ost(stderr);
-
-    print(ost);
-}
-
-
 void BasicBlock::print(QTextStream& os, bool html)
 {
     if (html) {
@@ -209,16 +201,6 @@ void BasicBlock::print(QTextStream& os, bool html)
             os << "</table>\n";
         }
     }
-}
-
-
-void BasicBlock::printToLog()
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    LOG_MSG(tgt);
 }
 
 

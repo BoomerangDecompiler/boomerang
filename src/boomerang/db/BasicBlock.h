@@ -271,14 +271,9 @@ public:
      */
     void print(QTextStream& os, bool html = false);
 
-    /// Output this BB to the log.
-    void printToLog();
-
     /// Print to a static buffer (for debugging)
     const char *prints();
 
-    /// Print this BB to stderr
-    void dump();
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
