@@ -18,7 +18,9 @@
 LibProc::LibProc(Address addr, const QString& name, Module *module)
     : Function(addr, nullptr, module)
 {
-    m_signature = module->getLibSignature(name);
+    if (module) {
+        m_signature = module->getLibSignature(name);
+    }
 }
 
 

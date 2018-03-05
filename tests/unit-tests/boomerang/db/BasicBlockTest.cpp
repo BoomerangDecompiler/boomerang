@@ -13,9 +13,11 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/exp/Terminal.h"
 
 
@@ -23,6 +25,66 @@ void BasicBlockTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+}
+
+
+void BasicBlockTest::testConstruct()
+{
+    LibProc proc(Address(0x5000), "test", nullptr);
+
+    BasicBlock bb1(Address(0x1000), &proc);
+
+    QVERIFY(bb1.getLowAddr() == Address(0x1000));
+    QVERIFY(bb1.getFunction() == &proc);
+    QVERIFY(bb1.isIncomplete());
+    QVERIFY(bb1.isType(BBType::Invalid));
+
+    bb1.setType(BBType::Call);
+    BasicBlock bb2(bb1);
+
+    QVERIFY(bb2.getLowAddr() == Address(0x1000));
+    QVERIFY(bb2.getFunction() == &proc);
+    QVERIFY(bb2.isIncomplete());
+    QVERIFY(bb2.isType(BBType::Call));
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(Util::makeUnique<RTL>(Address(0x2000), nullptr));
+
+    BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
+    QVERIFY(bb3.getLowAddr() == Address(0x2000));
+    QVERIFY(bb3.getFunction() == &proc);
+    QVERIFY(!bb3.isIncomplete());
+    QVERIFY(bb3.isType(BBType::Fall));
+}
+
+
+void BasicBlockTest::testAssign()
+{
+    LibProc proc(Address(0x5000), "test", nullptr);
+
+    BasicBlock bb1(Address(0x1000), &proc);
+
+    BasicBlock bb2 = bb1;
+    QVERIFY(bb2.getLowAddr() == Address(0x1000));
+    QVERIFY(bb2.getFunction() == &proc);
+    QVERIFY(bb2.isIncomplete());
+    QVERIFY(bb2.isType(BBType::Invalid));
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(Util::makeUnique<RTL>(Address(0x2000), nullptr));
+
+    BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
+
+    BasicBlock bb4 = bb3;
+    QCOMPARE(bb4.prints(), bb3.prints());
+
+    BasicBlock bb5 = bb2;
+    bb5 = bb5;
+
+    QVERIFY(bb5.getLowAddr() == Address(0x1000));
+    QVERIFY(bb5.getFunction() == &proc);
+    QVERIFY(bb5.isIncomplete());
+    QVERIFY(bb5.isType(BBType::Invalid));
 }
 
 
@@ -232,6 +294,54 @@ void BasicBlockTest::testIsSuccessor()
 }
 
 
+void BasicBlockTest::testRemoveRTL()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    bb1.removeRTL(nullptr); // check it does not crash
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { new BranchStatement() })));
+
+    RTL *rtlToBeRemoved = rtls->front().get();
+    BasicBlock bb2(BBType::Twoway, std::move(rtls), nullptr);
+
+    bb2.removeRTL(rtlToBeRemoved);
+    QVERIFY(bb2.getLowAddr() == Address(0x2000));
+    QVERIFY(bb2.isIncomplete());
+}
+
+
+void BasicBlockTest::testGetStmt()
+{
+    std::unique_ptr<RTLList> rtls(new RTLList);
+
+    BasicBlock bb(BBType::CompJump, std::move(rtls), nullptr);
+
+    BasicBlock::RTLIterator rit;
+    BasicBlock::RTLRIterator rrit;
+    StatementList::iterator sit;
+    StatementList::reverse_iterator srit;
+
+    Statement *firstStmt = bb.getFirstStmt(rit, sit);
+    Statement *lastStmt  = bb.getLastStmt(rrit, srit);
+
+    QVERIFY(firstStmt == nullptr);
+    QVERIFY(lastStmt == nullptr);
+    QVERIFY(bb.getFirstStmt() == nullptr);
+    QVERIFY(bb.getLastStmt() == nullptr);
+
+    bb.getRTLs()->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
+
+    firstStmt = bb.getFirstStmt(rit, sit);
+    lastStmt  = bb.getLastStmt(rrit, srit);
+
+    QVERIFY(firstStmt->isBranch());
+    QVERIFY(firstStmt == bb.getFirstStmt());
+    QVERIFY(lastStmt  == bb.getLastStmt());
+    QVERIFY(firstStmt == lastStmt);
+}
+
+
 void BasicBlockTest::testAddImplicit()
 {
     BasicBlock bb1(Address(0x1000), nullptr);
@@ -314,7 +424,7 @@ void BasicBlockTest::testAddImplicitOverPhi()
 
 void BasicBlockTest::testAddPhiOverImplict()
 {
-     BasicBlock bb1(Address(0x1000), nullptr);
+    BasicBlock bb1(Address(0x1000), nullptr);
     std::unique_ptr<RTLList> rtls(new RTLList);
     rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { new BranchStatement() })));
     bb1.setRTLs(std::move(rtls));
@@ -333,6 +443,110 @@ void BasicBlockTest::testAddPhiOverImplict()
     QCOMPARE(bb1.prints(), qPrintable(expected));
 }
 
+
+void BasicBlockTest::testGetCallDestProc()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(bb1.getCallDestProc() == nullptr);
+
+    LibProc proc(Address(0x5000), "test", nullptr);
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    CallStatement *call = new CallStatement();
+    call->setDestProc(&proc);
+
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call })));
+    BasicBlock bb2(BBType::Call, std::move(rtls), nullptr);
+
+    QVERIFY(bb2.getCallDestProc() == &proc);
+}
+
+
+void BasicBlockTest::testGetCond()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(bb1.getCond() == nullptr);
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    BranchStatement *branch = new BranchStatement();
+    branch->setCondExpr(Terminal::get(opZF));
+
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
+    BasicBlock bb2(BBType::Twoway, std::move(rtls), nullptr);
+
+    QVERIFY(bb2.getCond() != nullptr);
+    QVERIFY(*bb2.getCond() == *Terminal::get(opZF));
+}
+
+
+void BasicBlockTest::testSetCond()
+{
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    BranchStatement *branch = new BranchStatement();
+    branch->setCondExpr(Terminal::get(opZF));
+
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { branch })));
+    BasicBlock bb2(BBType::Twoway, std::move(rtls), nullptr);
+
+    bb2.setCond(nullptr);
+    QVERIFY(bb2.getCond() == nullptr);
+
+    bb2.setCond(Terminal::get(opOF));
+    QVERIFY(*bb2.getCond() == *Terminal::get(opOF));
+}
+
+
+void BasicBlockTest::testGetDest()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(bb1.getDest() == nullptr);
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { jump })));
+    BasicBlock bb2(BBType::Oneway, std::move(rtls), nullptr);
+
+    QVERIFY(bb2.getDest() != nullptr);
+    QCOMPARE(bb2.getDest()->prints(), "0x2000");
+}
+
+
+void BasicBlockTest::testHasStatement()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    QVERIFY(!bb1.hasStatement(nullptr));
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { jump })));
+    BasicBlock bb2(BBType::Oneway, std::move(rtls), nullptr);
+    QVERIFY(bb2.hasStatement(jump));
+
+    GotoStatement jump2(Address(0x2000));
+    QVERIFY(!bb2.hasStatement(&jump2));
+}
+
+
+void BasicBlockTest::testUpdateBBAddresses()
+{
+    BasicBlock bb1(Address(0x1000), nullptr);
+    bb1.updateBBAddresses();
+
+    QVERIFY(bb1.getLowAddr() == Address(0x1000));
+    QVERIFY(bb1.getHiAddr()  == Address::INVALID);
+
+    std::unique_ptr<RTLList> rtls(new RTLList);
+    GotoStatement *jump = new GotoStatement(Address(0x2000));
+
+    rtls->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { jump })));
+    bb1.setRTLs(std::move(rtls));
+    bb1.updateBBAddresses();
+
+    QVERIFY(bb1.getLowAddr() == Address(0x2000));
+    QVERIFY(bb1.getHiAddr()  == Address(0x2000));
+}
 
 
 QTEST_MAIN(BasicBlockTest)

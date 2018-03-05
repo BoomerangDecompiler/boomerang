@@ -60,24 +60,27 @@ BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> bbRTLs, Function 
 
 BasicBlock::BasicBlock(const BasicBlock& bb)
     : m_function(bb.m_function)
+    , m_lowAddr(bb.m_lowAddr)
+    , m_highAddr(bb.m_highAddr)
     , m_bbType(bb.m_bbType)
     // m_labelNeeded is initialized to false, not copied
     , m_predecessors(bb.m_predecessors)
     , m_successors(bb.m_successors)
 {
-    // make a deep copy of the RTL list
-    std::unique_ptr<RTLList> newList(new RTLList());
-    newList->resize(bb.m_listOfRTLs->size());
+    if (bb.m_listOfRTLs) {
+        // make a deep copy of the RTL list
+        std::unique_ptr<RTLList> newList(new RTLList());
+        newList->resize(bb.m_listOfRTLs->size());
 
-    RTLList::const_iterator srcIt = bb.m_listOfRTLs->begin();
-    RTLList::const_iterator endIt = bb.m_listOfRTLs->end();
-    RTLList::iterator destIt = newList->begin();
+        RTLList::const_iterator srcIt = bb.m_listOfRTLs->begin();
+        RTLList::const_iterator endIt = bb.m_listOfRTLs->end();
+        RTLList::iterator destIt = newList->begin();
 
-    while (srcIt != endIt) {
-        *destIt++ = Util::makeUnique<RTL>(**srcIt++);
+        while (srcIt != endIt) {
+            *destIt++ = Util::makeUnique<RTL>(**srcIt++);
+        }
+        setRTLs(std::move(newList));
     }
-
-    setRTLs(std::move(newList));
 }
 
 
@@ -509,15 +512,18 @@ void BasicBlock::appendStatementsTo(StatementList& stmts) const
 SharedExp BasicBlock::getCond() const
 {
     // the condition will be in the last rtl
-    assert(m_listOfRTLs);
+    if (!m_listOfRTLs || m_listOfRTLs->empty()) {
+        return nullptr;
+    }
+
     RTL *last = m_listOfRTLs->back().get();
 
     // it should contain a BranchStatement
-    BranchStatement *bs = dynamic_cast<BranchStatement *>(last->getHlStmt());
+    BranchStatement *branch = dynamic_cast<BranchStatement *>(last->getHlStmt());
 
-    if (bs) {
-        assert(bs->getKind() == StmtType::Branch);
-        return bs->getCondExpr();
+    if (branch) {
+        assert(branch->getKind() == StmtType::Branch);
+        return branch->getCondExpr();
     }
 
     return nullptr;
@@ -527,7 +533,10 @@ SharedExp BasicBlock::getCond() const
 SharedExp BasicBlock::getDest() const
 {
     // The destianation will be in the last rtl
-    assert(m_listOfRTLs);
+    if (!m_listOfRTLs || m_listOfRTLs->empty()) {
+        return nullptr;
+    }
+
     const RTL *lastRTL = getLastRTL();
 
     // It should contain a GotoStatement or derived class
@@ -559,6 +568,8 @@ void BasicBlock::setCond(SharedExp e)
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
+    assert(!m_listOfRTLs->empty());
+
     RTL *last = m_listOfRTLs->back().get();
     assert(!last->empty());
 
@@ -740,7 +751,6 @@ PhiAssign *BasicBlock::addPhi(SharedExp usedExp)
 void BasicBlock::updateBBAddresses()
 {
     if ((m_listOfRTLs == nullptr) || m_listOfRTLs->empty()) {
-        m_lowAddr = Address::ZERO;
         m_highAddr = Address::INVALID;
         return;
     }
@@ -772,7 +782,7 @@ void BasicBlock::updateBBAddresses()
 
 bool BasicBlock::hasStatement(const Statement *stmt) const
 {
-    if (!m_listOfRTLs) {
+    if (!stmt || !m_listOfRTLs) {
         return false;
     }
 
@@ -790,10 +800,17 @@ bool BasicBlock::hasStatement(const Statement *stmt) const
 
 void BasicBlock::removeRTL(RTL* rtl)
 {
+    if (!m_listOfRTLs) {
+        return;
+    }
+
     RTLList::iterator it = std::find_if(m_listOfRTLs->begin(), m_listOfRTLs->end(),
                                   [rtl] (const std::unique_ptr<RTL>& rtl2) {
                                       return rtl == rtl2.get();
                                   });
-    m_listOfRTLs->erase(it);
-    updateBBAddresses();
+
+    if (it != m_listOfRTLs->end()) {
+        m_listOfRTLs->erase(it);
+        updateBBAddresses();
+    }
 }

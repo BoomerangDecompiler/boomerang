@@ -19,6 +19,7 @@ class Module;
 class CallStatement;
 class Prog;
 
+
 /**
  * Interface for the procedure classes, which are used to store information
  * about variables in the procedure such as parameters and locals.

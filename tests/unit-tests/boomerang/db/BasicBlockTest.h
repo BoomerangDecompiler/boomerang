@@ -19,6 +19,9 @@ class BasicBlockTest : public QObject
 private slots:
     void initTestCase();
 
+    void testConstruct();
+    void testAssign();
+
     void testGetType();
     void testExtent();
     void testIncomplete();
@@ -40,4 +43,13 @@ private slots:
     void testAddImplicit();
     void testAddPhiOverImplict();
     void testAddImplicitOverPhi();
+
+    void testRemoveRTL();
+    void testGetStmt();
+    void testGetCallDestProc();
+    void testGetCond();
+    void testSetCond();
+    void testGetDest();
+    void testHasStatement();
+    void testUpdateBBAddresses();
 };

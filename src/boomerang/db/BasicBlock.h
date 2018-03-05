@@ -254,7 +254,7 @@ public:
      */
     void setCond(SharedExp e);
 
-    /// Get the destination, if any
+    /// Get the destination of the high level jump in this BB, if any
     SharedExp getDest() const;
 
     /// Simplify all expressions in this BB
