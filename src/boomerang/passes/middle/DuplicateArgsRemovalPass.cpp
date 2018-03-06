@@ -1,0 +1,44 @@
+#pragma region License
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+#pragma endregion License
+#include "DuplicateArgsRemovalPass.h"
+
+
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/util/Log.h"
+
+
+DuplicateArgsRemovalPass::DuplicateArgsRemovalPass()
+    : IPass("DuplicateArgsRemoval", PassID::DuplicateArgsRemoval)
+{
+}
+
+
+bool DuplicateArgsRemovalPass::execute(UserProc *proc)
+{
+    LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
+
+    BasicBlock::RTLRIterator        rrit;
+    StatementList::reverse_iterator srit;
+
+    for (BasicBlock *bb : *proc->getCFG()) {
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
+
+        // Note: we may have removed some statements, so there may no longer be a last statement!
+        if (c == nullptr) {
+            continue;
+        }
+
+        c->eliminateDuplicateArgs();
+    }
+
+    return true;
+}

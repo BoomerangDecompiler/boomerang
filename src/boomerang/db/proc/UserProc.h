@@ -277,9 +277,6 @@ public:
     /// perform final simplifications
     void finalSimplify();
 
-    /// eliminate duplicate arguments
-    void eliminateDuplicateArgs();
-
     /// Remove assignments of the form x := x
     bool removeNullStatements();
 

@@ -31,6 +31,7 @@ enum class PassID
     PreservationAnalysis,
     StrengthReductionReversal,
     AssignRemoval,
+    DuplicateArgsRemoval,
     NUM_PASSES
 };
 

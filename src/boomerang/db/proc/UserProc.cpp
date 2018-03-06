@@ -958,9 +958,9 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     PassManager::get()->executePass(PassID::StrengthReductionReversal, this);
 
     // Repeat until no change
-    int pass;
+    int pass = 3;
 
-    for (pass = 3; pass <= 12; ++pass) {
+    do {
         // Redo the renaming process to take into account the arguments
         LOG_VERBOSE("Renaming block variables (2) pass %1", pass);
 
@@ -1030,13 +1030,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
          // this is just to make it readable, do NOT rely on these statements being removed
         PassManager::get()->executePass(PassID::AssignRemoval, this);
-
-        // processTypes();
-
-        if (!change) {
-            break; // Until no change
-        }
-    }
+    } while (change && ++pass < 12);
 
     // At this point, there will be some memofs that have still not been renamed. They have been prevented from
     // getting renamed so that they didn't get renamed incorrectly (usually as {-}), when propagation and/or bypassing
@@ -1117,7 +1111,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         debugPrintAll("after replacing expressions, trimming params and returns");
     }
 
-    eliminateDuplicateArgs();
+    PassManager::get()->executePass(PassID::DuplicateArgsRemoval, this);
 
     LOG_VERBOSE("===== End early decompile for %1 =====", getName());
 
@@ -4023,26 +4017,6 @@ void UserProc::processDecodedICTs()
         // Now decode those new targets, adding out edges as well
         //        if (last->isCase())
         //            bb->processSwitch(this);
-    }
-}
-
-
-void UserProc::eliminateDuplicateArgs()
-{
-    LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
-
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        c->eliminateDuplicateArgs();
     }
 }
 

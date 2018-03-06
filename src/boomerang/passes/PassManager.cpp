@@ -24,6 +24,7 @@
 #include "boomerang/passes/middle/PreservationAnalysisPass.h"
 #include "boomerang/passes/middle/StrengthReductionReversalPass.h"
 #include "boomerang/passes/middle/AssignRemovalPass.h"
+#include "boomerang/passes/middle/DuplicateArgsRemovalPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -50,6 +51,7 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::PreservationAnalysis)].reset(new PreservationAnalysisPass());
     m_passes[static_cast<size_t>(PassID::StrengthReductionReversal)].reset(new StrengthReductionReversalPass());
     m_passes[static_cast<size_t>(PassID::AssignRemoval)].reset(new AssignRemovalPass());
+    m_passes[static_cast<size_t>(PassID::DuplicateArgsRemoval)].reset(new DuplicateArgsRemovalPass());
 }
 
 
