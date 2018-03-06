@@ -32,6 +32,7 @@ enum class PassID
     StrengthReductionReversal,
     AssignRemoval,
     DuplicateArgsRemoval,
+    CallLivenessRemoval,
     NUM_PASSES
 };
 

@@ -294,9 +294,6 @@ public:
 
     const std::map<QString, SharedType>& getLocals() const { return m_locals; }
 
-    /// Remove all liveness info in UseCollectors in calls
-    void removeCallLiveness();
-
 #if USE_DOMINANCE_NUMS
     void setDominanceNumbers();
 #endif

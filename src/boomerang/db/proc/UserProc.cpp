@@ -1308,8 +1308,9 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
 
     // Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
     // removed statement, so liveness in the call needs to be removed
-    removeCallLiveness();  // Kill all existing livenesses
-    PassManager::get()->executePass(PassID::BlockVarRename, this); // Recalculate new livenesses
+    PassManager::get()->executePass(PassID::CallLivenessRemoval, this); // Kill all existing livenesses
+    PassManager::get()->executePass(PassID::BlockVarRename, this);      // Recalculate new livenesses
+
     setStatus(PROC_FINAL); // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after remUnusedStmtEtc");
@@ -3931,7 +3932,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     }
 
     // Have to redo dataflow to get the liveness at the calls correct
-    removeCallLiveness(); // Want to recompute the call livenesses
+    PassManager::get()->executePass(PassID::CallLivenessRemoval, this); // Want to recompute the call livenesses
     getDataFlow()->clearStacks();
     PassManager::get()->executePass(PassID::BlockVarRename, this);
 
@@ -4017,26 +4018,6 @@ void UserProc::processDecodedICTs()
         // Now decode those new targets, adding out edges as well
         //        if (last->isCase())
         //            bb->processSwitch(this);
-    }
-}
-
-
-void UserProc::removeCallLiveness()
-{
-    LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
-
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        c->removeAllLive();
     }
 }
 
