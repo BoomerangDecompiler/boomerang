@@ -202,11 +202,7 @@ private:
     void fixUglyBranches();
 
 
-    /// \note Was trimReturns()
-    void findPreserveds();
-
     /// Preservations only for the stack pointer
-    void findSpPreservation();
     void removeSpAssignsIfPossible();
     void removeMatchingAssignsIfPossible(SharedExp e);
 

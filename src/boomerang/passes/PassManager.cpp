@@ -21,6 +21,7 @@
 #include "boomerang/passes/early/StatementPropagationPass.h"
 #include "boomerang/passes/middle/CallAndPhiFixPass.h"
 #include "boomerang/passes/middle/SPPreservationPass.h"
+#include "boomerang/passes/middle/PreservationAnalysisPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -44,6 +45,7 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::StatementPropagation)].reset(new StatementPropagationPass());
     m_passes[static_cast<size_t>(PassID::CallAndPhiFix)].reset(new CallAndPhiFixPass());
     m_passes[static_cast<size_t>(PassID::SPPreservation)].reset(new SPPreservationPass());
+    m_passes[static_cast<size_t>(PassID::PreservationAnalysis)].reset(new PreservationAnalysisPass());
 }
 
 

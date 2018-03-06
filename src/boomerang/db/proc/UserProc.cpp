@@ -918,11 +918,11 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     // This part used to be calle middleDecompile():
 
-    findSpPreservation();
+    PassManager::get()->executePass(PassID::SPPreservation, this);
     // Oops - the idea of splitting the sp from the rest of the preservations was to allow correct naming of locals
     // so you are alias conservative. But of course some locals are ebp (etc) based, and so these will never be correct
     // until all the registers have preservation analysis done. So I may as well do them all together here.
-    findPreserveds();
+    PassManager::get()->executePass(PassID::PreservationAnalysis, this);
     PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Propagate and bypass sp
 
     debugPrintAll("After preservation, bypass and propagation");
@@ -1001,10 +1001,10 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
                     PassManager::get()->executePass(PassID::BlockVarRename, this);
                 }
 
-                findPreserveds();
+                PassManager::get()->executePass(PassID::PreservationAnalysis, this);
                 PassManager::get()->executePass(PassID::CallDefineUpdate, this); // Returns have uses which affect call defines (if childless)
                 PassManager::get()->executePass(PassID::CallAndPhiFix, this);
-                findPreserveds();    // Preserveds subtract from returns
+                PassManager::get()->executePass(PassID::PreservationAnalysis, this); // Preserveds subtract from returns
             }
 
             if (SETTING(verboseOutput)) {
@@ -1112,7 +1112,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         return ret;
     }
 
-    findPreserveds();
+    PassManager::get()->executePass(PassID::PreservationAnalysis, this);
 
     // Used to be later...
     if (SETTING(nameParameters)) {
@@ -1514,72 +1514,6 @@ void UserProc::fixUglyBranches()
     }
 
     debugPrintAll("After fixUglyBranches");
-}
-
-
-void UserProc::findSpPreservation()
-{
-    PassManager::get()->executePass(PassID::SPPreservation, this);
-}
-
-
-void UserProc::findPreserveds()
-{
-    std::set<SharedExp> removes;
-
-    LOG_VERBOSE("Finding preserveds for %1", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
-
-    if (m_retStatement == nullptr) {
-        if (DEBUG_PROOF) {
-            LOG_MSG("Can't find preservations as there is no return statement!");
-        }
-
-        Boomerang::get()->alertDecompileDebugPoint(this, "after finding preserveds (no return)");
-        return;
-    }
-
-    // prove preservation for all modifieds in the return statement
-    StatementList& modifieds = m_retStatement->getModifieds();
-
-    for (ReturnStatement::iterator mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-        SharedExp lhs      = static_cast<Assignment *>(*mm)->getLeft();
-        auto      equation = Binary::get(opEquals, lhs, lhs);
-
-        if (DEBUG_PROOF) {
-            LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
-        }
-
-        if (prove(equation)) {
-            removes.insert(equation);
-        }
-    }
-
-    if (DEBUG_PROOF) {
-        LOG_MSG("### proven true for procedure %1:", getName());
-
-        for (auto& elem : m_provenTrue) {
-            LOG_MSG("  %1 = %2", elem.first, elem.second);
-        }
-
-        LOG_MSG("### End proven true for procedure %1", getName());
-    }
-
-    // Remove the preserved locations from the modifieds and the returns
-    for (auto pp = m_provenTrue.begin(); pp != m_provenTrue.end(); ++pp) {
-        SharedExp lhs = pp->first;
-        SharedExp rhs = pp->second;
-
-        // Has to be of the form loc = loc, not say loc+4, otherwise the bypass logic won't see the add of 4
-        if (!(*lhs == *rhs)) {
-            continue;
-        }
-
-        m_retStatement->removeModified(lhs);
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After finding preserveds");
 }
 
 
