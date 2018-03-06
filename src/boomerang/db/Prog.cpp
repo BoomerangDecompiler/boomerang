@@ -1170,18 +1170,13 @@ void Prog::fromSSAForm()
 
             UserProc *proc = static_cast<UserProc *>(pp);
 
-            LOG_VERBOSE("===== Before transformation from SSA form for %1 ====", proc->getName());
-            LOG_VERBOSE("===== End before transformation from SSA form for %1 ====", proc->getName());
-
             if (SETTING(verboseOutput) && !SETTING(dotFile).isEmpty()) {
                 proc->printDFG();
             }
 
-            proc->fromSSAForm();
-
-            LOG_VERBOSE("===== After transformation from SSA form for %1 ====", proc->getName());
-            LOG_VERBOSE("%1", proc->prints());
-            LOG_VERBOSE("===== End after transformation from SSA form for %1 ====", proc->getName());
+            proc->debugPrintAll("before transformation from SSA form");
+            PassManager::get()->executePass(PassID::FromSSAForm, proc);
+            proc->debugPrintAll("after trasformation from SSA form");
         }
     }
 }

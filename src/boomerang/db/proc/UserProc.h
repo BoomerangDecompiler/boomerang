@@ -193,10 +193,11 @@ private:
      */
     void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
 
-
+public:
     /// Map expressions to locals and initial parameters
     void mapLocalsAndParams();
 
+private:
     /**
      * Search for expressions without explicit definitions (i.e. WILDCARD{0}),
      * which represent parameters (use before definition).
@@ -290,33 +291,14 @@ public:
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();
 
-    void fromSSAForm();
-
     /// Find the locations united by Phi-functions
     void findPhiUnites(ConnectionGraph& pu);
     void insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
-    void removeSubscriptsFromSymbols();
-    void removeSubscriptsFromParameters();
 
     /// Insert statement \a a after statement \a s.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
     void insertStatementAfter(Statement *s, Statement *a);
-
-    /**
-     * Add a mapping for the destinations of phi functions that have one
-     * argument that is a parameter.
-     *
-     * The idea here is to give a name to those SSA variables that have one
-     * and only one parameter amongst the phi arguments.
-     * For example, in test/source/param1, there is
-     *     18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0}
-     * mapped to param1; insert a mapping for m[r28{-} + 8]{18} to param1.
-     * This will avoid a copy, and will use the name of the parameter only
-     * when it is acually used as a parameter.
-     */
-    void nameParameterPhis();
-    void mapParameters();
 
     /**
      * Trim parameters to procedure calls with ellipsis (...).
@@ -454,6 +436,9 @@ public:
     SharedType getLocalType(const QString& nam);
     void setLocalType(const QString& nam, SharedType ty);
     SharedType getParamType(const QString& nam);
+
+    SymbolMap& getSymbolMap() { return m_symbolMap; }
+    const SymbolMap& getSymbolMap() const { return m_symbolMap; }
 
     /// \returns a symbol's exp (note: the original exp, like r24, not local1)
     SharedConstExp expFromSymbol(const QString& nam) const;
@@ -594,7 +579,6 @@ public:
      */
     bool filterParams(SharedExp e);
 
-    void verifyPHIs();
     void debugPrintAll(const char *c);
 
     UseCollector& getUseCollector() { return m_procUseCollector; }

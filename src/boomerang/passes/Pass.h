@@ -36,6 +36,7 @@ enum class PassID
     LocalTypeAnalysis,
     NullStatementRemoval,
     BranchAnalysis,
+    FromSSAForm,
     NUM_PASSES
 };
 
