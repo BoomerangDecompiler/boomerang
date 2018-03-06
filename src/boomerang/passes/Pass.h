@@ -29,6 +29,7 @@ enum class PassID
     CallAndPhiFix,
     SPPreservation,
     PreservationAnalysis,
+    StrengthReductionReversal,
     NUM_PASSES
 };
 

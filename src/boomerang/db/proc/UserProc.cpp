@@ -955,7 +955,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     PassManager::get()->executePass(PassID::BlockVarRename, this);
     PassManager::get()->executePass(PassID::StatementPropagation, this); // Otherwise sometimes sp is not fully propagated
     PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
-    reverseStrengthReduction();
+    PassManager::get()->executePass(PassID::StrengthReductionReversal, this);
 
     // Repeat until no change
     int pass;
@@ -3352,65 +3352,6 @@ void UserProc::replaceSimpleGlobalConstants()
             assgn->setRight(Const::get(val));
         }
     }
-}
-
-
-void UserProc::reverseStrengthReduction()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before reversing strength reduction");
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        if (!s->isAssign()) {
-            continue;
-        }
-
-        Assign *as = static_cast<Assign *>(s);
-
-        // of the form x = x{p} + c
-        if ((as->getRight()->getOper() == opPlus) && as->getRight()->getSubExp1()->isSubscript() &&
-            (*as->getLeft() == *as->getRight()->getSubExp1()->getSubExp1()) &&
-            as->getRight()->getSubExp2()->isIntConst()) {
-            int  c = as->getRight()->access<Const, 2>()->getInt();
-            auto r = as->getRight()->access<RefExp, 1>();
-
-            if (r->getDef() && r->getDef()->isPhi()) {
-                PhiAssign *p = static_cast<PhiAssign *>(r->getDef());
-
-                if (p->getNumDefs() == 2) {
-                    Statement *first  = p->begin()->getDef();
-                    Statement *second = p->rbegin()->getDef();
-
-                    if (first == as) {
-                        // want the increment in second
-                        std::swap(first, second);
-                    }
-
-                    // first must be of form x := 0
-                    if (first && first->isAssign() && static_cast<Assign *>(first)->getRight()->isIntConst() &&
-                        static_cast<Assign *>(first)->getRight()->access<Const>()->getInt() == 0) {
-                        // ok, fun, now we need to find every reference to p and
-                        // replace with x{p} * c
-                        StatementList stmts2;
-                        getStatements(stmts2);
-
-                        for (auto it2 = stmts2.begin(); it2 != stmts2.end(); ++it2) {
-                            if (*it2 != as) {
-                                (*it2)->searchAndReplace(*r, Binary::get(opMult, r->clone(), Const::get(c)));
-                            }
-                        }
-
-                        // that done we can replace c with 1 in as
-                        as->getRight()->access<Const, 2>()->setInt(1);
-                    }
-                }
-            }
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After reversing strength reduction");
 }
 
 

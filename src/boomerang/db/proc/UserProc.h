@@ -240,7 +240,6 @@ private:
     ///     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
     ///     statement.rhs.replace_with(Const($tmp_val))
     void replaceSimpleGlobalConstants();
-    void reverseStrengthReduction();
 
     void addParameterSymbols();
 
