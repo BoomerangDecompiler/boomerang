@@ -1159,7 +1159,7 @@ void UserProc::remUnusedStmtEtc()
     // Now remove any that have no used
     if (SETTING(removeNull)) {
         remUnusedStmtEtc(refCounts);
-        removeNullStatements();
+        PassManager::get()->executePass(PassID::NullStatementRemoval, this);
         debugPrintAll("after removing unused and null statements pass 1");
     }
 
@@ -1773,28 +1773,6 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
         // s->simplify();
     }
 }
-
-
-bool UserProc::removeNullStatements()
-{
-    bool          change = false;
-    StatementList stmts;
-    getStatements(stmts);
-    // remove null code
-    for (Statement *s : stmts) {
-        if (s->isNullStatement()) {
-            // A statement of the form x := x
-            LOG_VERBOSE("Removing null statement: %1 %2", s->getNumber(), s);
-
-            removeStatement(s);
-            change = true;
-        }
-    }
-
-    return change;
-}
-
-
 
 
 void UserProc::promoteSignature()

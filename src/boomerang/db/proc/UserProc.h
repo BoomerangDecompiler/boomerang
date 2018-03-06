@@ -277,9 +277,6 @@ public:
     /// perform final simplifications
     void finalSimplify();
 
-    /// Remove assignments of the form x := x
-    bool removeNullStatements();
-
     /// Count references to the things that are under SSA control.
     /// For each SSA subscripting, increment a counter for that definition
     void countRefs(RefCounter& refCounts);
