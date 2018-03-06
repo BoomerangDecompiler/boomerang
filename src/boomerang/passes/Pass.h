@@ -30,6 +30,7 @@ enum class PassID
     SPPreservation,
     PreservationAnalysis,
     StrengthReductionReversal,
+    AssignRemoval,
     NUM_PASSES
 };
 

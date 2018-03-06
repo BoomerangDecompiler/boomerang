@@ -1028,13 +1028,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         Boomerang::get()->alertDecompileAfterPropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
 
-        // this is just to make it readable, do NOT rely on these statements being removed
-        removeSpAssignsIfPossible();
-        // The problem with removing %flags and %CF is that %CF is a subset of %flags
-        // removeMatchingAssignsIfPossible(Terminal::get(opFlags));
-        // removeMatchingAssignsIfPossible(Terminal::get(opCF));
-        removeMatchingAssignsIfPossible(Unary::get(opTemp, Terminal::get(opWildStrConst)));
-        removeMatchingAssignsIfPossible(Terminal::get(opPC));
+         // this is just to make it readable, do NOT rely on these statements being removed
+        PassManager::get()->executePass(PassID::AssignRemoval, this);
 
         // processTypes();
 
@@ -1514,131 +1509,6 @@ void UserProc::fixUglyBranches()
     }
 
     debugPrintAll("After fixUglyBranches");
-}
-
-
-void UserProc::removeSpAssignsIfPossible()
-{
-    // if there are no uses of sp other than sp{-} in the whole procedure,
-    // we can safely remove all assignments to sp, this will make the output
-    // more readable for human eyes.
-
-    auto sp(Location::regOf(m_signature->getStackRegister(m_prog)));
-    bool foundone = false;
-
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*static_cast<Assign *>(stmt)->getLeft() == *sp)) {
-            foundone = true;
-        }
-
-        LocationSet refs;
-        stmt->addUsedLocs(refs);
-
-        for (const SharedExp& rr : refs) {
-            if (rr->isSubscript() && (*rr->getSubExp1() == *sp)) {
-                Statement *def = rr->access<RefExp>()->getDef();
-
-                if (def && (def->getProc() == this)) {
-                    return;
-                }
-            }
-        }
-    }
-
-    if (!foundone) {
-        return;
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before removing stack pointer assigns.");
-
-    for (auto& stmt : stmts) {
-        if (stmt->isAssign()) {
-            Assign *a = static_cast<Assign *>(stmt);
-
-            if (*a->getLeft() == *sp) {
-                removeStatement(a);
-            }
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After removing stack pointer assigns.");
-}
-
-
-void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
-{
-    // if there are no uses of %flags in the whole procedure,
-    // we can safely remove all assignments to %flags, this will make the output
-    // more readable for human eyes and makes short circuit analysis easier.
-
-    bool foundone = false;
-
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*static_cast<const Assign *>(stmt)->getLeft() == *e)) {
-            foundone = true;
-        }
-
-        if (stmt->isPhi()) {
-            if (*static_cast<const PhiAssign *>(stmt)->getLeft() == *e) {
-                foundone = true;
-            }
-
-            continue;
-        }
-
-        LocationSet refs;
-        stmt->addUsedLocs(refs);
-
-        for (const SharedExp& rr : refs) {
-            if (rr->isSubscript() && (*rr->getSubExp1() == *e)) {
-                Statement *def = rr->access<RefExp>()->getDef();
-
-                if (def && (def->getProc() == this)) {
-                    return;
-                }
-            }
-        }
-    }
-
-    if (!foundone) {
-        return;
-    }
-
-    QString     res_str;
-    QTextStream str(&res_str);
-    str << "Before removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG_VERBOSE(res_str);
-
-    for (auto& stmt : stmts) {
-        if ((stmt)->isAssign()) {
-            Assign *a = static_cast<Assign *>(stmt);
-
-            if (*a->getLeft() == *e) {
-                removeStatement(a);
-            }
-        }
-        else if ((stmt)->isPhi()) {
-            PhiAssign *a = static_cast<PhiAssign *>(stmt);
-
-            if (*a->getLeft() == *e) {
-                removeStatement(a);
-            }
-        }
-    }
-
-    res_str.clear();
-    str << "After removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG_VERBOSE(res_str);
 }
 
 

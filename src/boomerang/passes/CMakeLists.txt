@@ -25,6 +25,7 @@ list(APPEND boomerang-passes-sources
     passes/middle/SPPreservationPass
     passes/middle/PreservationAnalysisPass
     passes/middle/StrengthReductionReversalPass
+    passes/middle/AssignRemovalPass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)

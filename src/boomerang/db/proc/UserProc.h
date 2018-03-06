@@ -202,10 +202,6 @@ private:
     void fixUglyBranches();
 
 
-    /// Preservations only for the stack pointer
-    void removeSpAssignsIfPossible();
-    void removeMatchingAssignsIfPossible(SharedExp e);
-
     /// Get the initial parameters, based on this UserProc's use collector
     /// Probably unused now
     void initialParameters();
