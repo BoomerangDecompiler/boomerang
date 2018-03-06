@@ -194,14 +194,6 @@ private:
     void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
 
 
-    /// Look for short circuit branching
-    /// \returns true if any change
-    bool branchAnalysis();
-
-    /// Fix any ugly branch statements (from propagating too much)
-    void fixUglyBranches();
-
-
     /// Map expressions to locals and initial parameters
     void mapLocalsAndParams();
 

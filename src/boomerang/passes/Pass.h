@@ -35,6 +35,7 @@ enum class PassID
     CallLivenessRemoval,
     LocalTypeAnalysis,
     NullStatementRemoval,
+    BranchAnalysis,
     NUM_PASSES
 };
 
