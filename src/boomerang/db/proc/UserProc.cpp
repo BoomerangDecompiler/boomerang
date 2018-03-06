@@ -909,7 +909,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
     // (which can safely be processed at depth 1).
     // Except that this is now inherent in the visitor nature of the latest algorithm.
-    fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
+    PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Bypass children that are finalised (if any)
     debugPrintAll("After call and phi bypass (1)");
 
     if (m_status != PROC_INCYCLE) { // FIXME: need this test?
@@ -923,7 +923,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // so you are alias conservative. But of course some locals are ebp (etc) based, and so these will never be correct
     // until all the registers have preservation analysis done. So I may as well do them all together here.
     findPreserveds();
-    fixCallAndPhiRefs(); // Propagate and bypass sp
+    PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Propagate and bypass sp
 
     debugPrintAll("After preservation, bypass and propagation");
 
@@ -1003,7 +1003,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
                 findPreserveds();
                 PassManager::get()->executePass(PassID::CallDefineUpdate, this); // Returns have uses which affect call defines (if childless)
-                fixCallAndPhiRefs();
+                PassManager::get()->executePass(PassID::CallAndPhiFix, this);
                 findPreserveds();    // Preserveds subtract from returns
             }
 
@@ -1067,7 +1067,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     PassManager::get()->executePass(PassID::StatementPropagation, this);
 
     // Now that memofs are renamed, the bypassing for memofs can work
-    fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
+    PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Bypass children that are finalised (if any)
 
     if (SETTING(nameParameters)) {
         // ? Crazy time to do this... haven't even done "final" parameters as yet
@@ -3204,7 +3204,7 @@ bool UserProc::ellipsisProcessing()
     }
 
     if (ch) {
-        fixCallAndPhiRefs();
+        PassManager::get()->executePass(PassID::CallAndPhiFix, this);
     }
 
     return ch;
@@ -3696,223 +3696,6 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
     }
 
     return std::static_pointer_cast<Const>(ff->second->getSubExp1())->getStr();
-}
-
-
-// Perform call and phi statement bypassing at depth d <- missing
-void UserProc::fixCallAndPhiRefs()
-{
-    /* Algorithm:
-     *      for each statement s in this proc
-     *        if s is a phi statement ps
-     *              let r be a ref made up of lhs and s
-     *              for each parameter p of ps
-     *                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
-     *                      remove p from ps
-     *              let lhs be left hand side of ps
-     *              allSame = true
-     *              let first be a ref built from first p
-     *              do bypass but not propagation on first
-     *              if result is of the form lhs{x}
-     *                replace first with x
-     *              for each parameter p of ps after the first
-     *                let current be a ref built from p
-     *                do bypass but not propagation on current
-     *                if result is of form lhs{x}
-     *                      replace cur with x
-     *                if first != current
-     *                      allSame = false
-     *              if allSame
-     *                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-     *                replace ps with an assignment lhs := best
-     *      else (ordinary statement)
-     *        do bypass and propagation for s
-     */
-    LOG_VERBOSE("### Start fix call and phi bypass analysis for %1 ###", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before fixing call and phi refs");
-
-    std::map<SharedExp, int, lessExpStar> destCounts;
-    StatementList stmts;
-    getStatements(stmts);
-
-    // a[m[]] hack, aint nothing better.
-    bool found = true;
-
-    for (Statement *s : stmts) {
-        if (!s->isCall()) {
-            continue;
-        }
-
-        CallStatement *call = static_cast<CallStatement *>(s);
-
-        for (auto& elem : call->getArguments()) {
-            Assign *a = static_cast<Assign *>(elem);
-
-            if (!a->getType()->resolvesToPointer()) {
-                continue;
-            }
-
-            SharedExp e = a->getRight();
-
-            if ((e->getOper() == opPlus) || (e->getOper() == opMinus)) {
-                if (e->getSubExp2()->isIntConst()) {
-                    if (e->getSubExp1()->isSubscript() &&
-                        e->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
-                        (((e->access<RefExp, 1>())->getDef() == nullptr) ||
-                         (e->access<RefExp, 1>())->getDef()->isImplicit())) {
-                        a->setRight(Unary::get(opAddrOf, Location::memOf(e->clone())));
-                        found = true;
-                    }
-                }
-            }
-        }
-    }
-
-    if (found) {
-        PassManager::get()->executePass(PassID::BlockVarRename, this);
-    }
-
-    // Scan for situations like this:
-    // 56 r28 := phi{6, 26}
-    // ...
-    // 26 r28 := r28{56}
-    // So we can remove the second parameter,
-    // then reduce the phi to an assignment, then propagate it
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            continue;
-        }
-
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
-        std::shared_ptr<RefExp> refExp = RefExp::get(phi->getLeft(), phi);
-
-        phi->removeAllReferences(refExp);
-    }
-
-    // Second pass
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) { // Ordinary statement
-            s->bypass();
-            continue;
-        }
-
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
-
-        if (phi->getNumDefs() == 0) {
-            continue; // Can happen e.g. for m[...] := phi {} when this proc is
-        }
-
-        // involved in a recursion group
-        auto lhs     = phi->getLeft();
-        bool allSame = true;
-        // Let first be a reference built from the first parameter
-        PhiAssign::iterator phi_iter = phi->begin();
-
-        while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
-            ++phi_iter;                // Skip any null parameters
-        }
-
-        assert(phi_iter != phi->end()); // Should have been deleted
-        RefExp&  phi_inf = *phi_iter;
-        SharedExp first = RefExp::get(phi_inf.getSubExp1(), phi_inf.getDef());
-
-        // bypass to first
-        CallBypasser cb(phi);
-        first = first->accept(&cb);
-
-        if (cb.isTopChanged()) {
-            first = first->simplify();
-        }
-
-        first = first->propagateAll(); // Propagate everything repeatedly
-
-        if (cb.isMod()) {              // Modified?
-            // if first is of the form lhs{x}
-            if (first->isSubscript() && (*first->getSubExp1() == *lhs)) {
-                // replace first with x
-                phi_inf.setDef(first->access<RefExp>()->getDef());
-            }
-        }
-
-        // For each parameter p of ps after the first
-        for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
-            assert(phi_iter->getSubExp1());
-            RefExp&      phi_inf2 = *phi_iter;
-            SharedExp    current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
-            CallBypasser cb2(phi);
-            current = current->accept(&cb2);
-
-            if (cb2.isTopChanged()) {
-                current = current->simplify();
-            }
-
-            current = current->propagateAll();
-
-            if (cb2.isMod()) { // Modified?
-                // if current is of the form lhs{x}
-                if (current->isSubscript() && (*current->getSubExp1() == *lhs)) {
-                    // replace current with x
-                    phi_inf2.setDef(current->access<RefExp>()->getDef());
-                }
-            }
-
-            if (!(*first == *current)) {
-                allSame = false;
-            }
-        }
-
-        if (allSame) {
-            // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-            phi_iter = phi->begin();
-
-            while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
-                ++phi_iter;                // Skip any null parameters
-            }
-
-            assert(phi_iter != phi->end()); // Should have been deleted
-            auto best = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
-
-            for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
-                assert(phi_iter->getSubExp1());
-                auto current = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
-
-                if (current->isImplicitDef()) {
-                    best = current;
-                    break;
-                }
-
-                if (phi_iter->getDef()->isAssign()) {
-                    best = current;
-                }
-
-                // If phi_iter->second.def is a call, this is the worst case; keep only (via first)
-                // if all parameters are calls
-            }
-
-            phi->convertToAssign(best);
-            LOG_VERBOSE("Redundant phi replaced with copy assign; now %1", phi);
-        }
-    }
-
-    // Also do xxx in m[xxx] in the use collector
-    for (const SharedExp& cc : m_procUseCollector) {
-        if (!cc->isMemOf()) {
-            continue;
-        }
-
-        auto         addr = cc->getSubExp1();
-        CallBypasser cb(nullptr);
-        addr = addr->accept(&cb);
-
-        if (cb.isMod()) {
-            cc->setSubExp1(addr);
-        }
-    }
-
-    LOG_VERBOSE("### End fix call and phi bypass analysis for %1 ###", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after fixing call and phi refs");
 }
 
 

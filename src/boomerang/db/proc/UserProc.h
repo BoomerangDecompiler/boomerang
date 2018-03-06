@@ -627,6 +627,9 @@ public:
     void verifyPHIs();
     void debugPrintAll(const char *c);
 
+    UseCollector& getUseCollector() { return m_procUseCollector; }
+    const UseCollector& getUseCollector() const { return m_procUseCollector; }
+
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
 

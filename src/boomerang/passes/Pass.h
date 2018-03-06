@@ -26,6 +26,7 @@ enum class PassID
     CallDefineUpdate,
     CallArgumentUpdate,
     StatementPropagation,
+    CallAndPhiFix,
     NUM_PASSES
 };
 

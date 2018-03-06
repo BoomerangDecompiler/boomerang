@@ -823,7 +823,7 @@ bool CallStatement::convertToDirect()
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
-    // 2) call fixCallBypass (now fixCallAndPhiRefs) on the enclosing procedure
+    // 2) call fixCallBypass (now CallAndPhiFix) on the enclosing procedure
     // 3) fix the arguments (this will only affect the implicit arguments, the regular arguments should
     //    be empty at this point)
     // 3a replace current arguments with those of the new proc
@@ -837,7 +837,7 @@ bool CallStatement::convertToDirect()
 
     // 1
     // 2
-    m_proc->fixCallAndPhiRefs();
+    PassManager::get()->executePass(PassID::CallAndPhiFix, m_proc);
 
     // 3
     // 3a Do the same with the regular arguments

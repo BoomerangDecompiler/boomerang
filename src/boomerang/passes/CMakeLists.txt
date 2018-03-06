@@ -18,7 +18,10 @@ list(APPEND boomerang-passes-sources
 
     passes/call/CallDefineUpdatePass
     passes/call/CallArgumentUpdatePass
+
     passes/early/StatementPropagationPass
+
+    passes/middle/CallAndPhiFixPass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)
