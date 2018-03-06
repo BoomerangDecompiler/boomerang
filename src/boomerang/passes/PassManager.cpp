@@ -30,7 +30,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
-
 #include <cassert>
 
 

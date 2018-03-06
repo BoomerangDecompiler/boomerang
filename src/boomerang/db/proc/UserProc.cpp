@@ -1137,7 +1137,7 @@ void UserProc::remUnusedStmtEtc()
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
     // to printf/scanf), and removing unused statements is unsafe without full use information
     if (m_status < PROC_FINAL) {
-        typeAnalysis();
+        doTypeAnalysis();
 
         // Now that locals are identified, redo the dataflow
         PassManager::get()->executePass(PassID::PhiPlacement, this);
@@ -3975,7 +3975,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 }
 
 
-void UserProc::typeAnalysis()
+void UserProc::doTypeAnalysis()
 {
     LOG_VERBOSE("### Type analysis for %1 ###", getName());
 

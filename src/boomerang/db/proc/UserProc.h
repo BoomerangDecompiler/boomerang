@@ -250,7 +250,7 @@ public:
     bool doRenameBlockVars(int pass, bool clearStacks = false);
 
     /// Global type analysis (for this procedure).
-    void typeAnalysis();
+    void doTypeAnalysis();
 
     /// Perform call and phi statement bypassing at all depths
     void fixCallAndPhiRefs();

@@ -1146,7 +1146,7 @@ bool Prog::removeUnusedReturns()
         if (removedReturns) {
             // Removing returns changes the uses of the callee.
             // So we have to do type analyis to update the use information.
-            (*it)->typeAnalysis();
+            (*it)->doTypeAnalysis();
         }
         change |= removedReturns;
 
@@ -1196,14 +1196,14 @@ void Prog::globalTypeAnalysis()
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
-            if ((nullptr == proc) || !proc->isDecoded()) {
+            if (!proc || !proc->isDecoded()) {
                 continue;
             }
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
             LOG_VERBOSE("Global type analysis for '%1'", proc->getName());
-            proc->typeAnalysis();
+            proc->doTypeAnalysis();
         }
     }
 
