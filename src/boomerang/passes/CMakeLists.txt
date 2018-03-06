@@ -22,6 +22,7 @@ list(APPEND boomerang-passes-sources
     passes/early/StatementPropagationPass
 
     passes/middle/CallAndPhiFixPass
+    passes/middle/SPPreservationPass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)

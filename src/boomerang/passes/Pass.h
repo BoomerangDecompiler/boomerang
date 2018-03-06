@@ -27,6 +27,7 @@ enum class PassID
     CallArgumentUpdate,
     StatementPropagation,
     CallAndPhiFix,
+    SPPreservation,
     NUM_PASSES
 };
 

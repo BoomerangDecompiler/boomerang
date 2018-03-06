@@ -1519,36 +1519,7 @@ void UserProc::fixUglyBranches()
 
 void UserProc::findSpPreservation()
 {
-    LOG_VERBOSE("Finding stack pointer preservation for %1", getName());
-
-    bool stdsp = false; // FIXME: are these really used?
-    // Note: need this non-virtual version most of the time, since nothing proved yet
-    int sp = m_signature->getStackRegister(m_prog);
-
-    for (int n = 0; n < 2; n++) {
-        // may need to do multiple times due to dependencies FIXME: efficiency! Needed any more?
-
-        // Special case for 32-bit stack-based machines (e.g. Pentium).
-        // RISC machines generally preserve the stack pointer (so no special case required)
-        for (int p = 0; !stdsp && p < 8; p++) {
-            if (DEBUG_PROOF) {
-                LOG_MSG("Attempting to prove sp = sp + %1 for %2", p * 4, getName());
-            }
-
-            stdsp = prove(
-                Binary::get(opEquals,
-                            Location::regOf(sp),
-                            Binary::get(opPlus, Location::regOf(sp), Const::get(p * 4))));
-        }
-    }
-
-    if (DEBUG_PROOF) {
-        LOG_MSG("Proven for %1:", getName());
-
-        for (auto& elem : m_provenTrue) {
-            LOG_MSG("    %1 = %2", elem.first, elem.second);
-        }
-    }
+    PassManager::get()->executePass(PassID::SPPreservation, this);
 }
 
 

@@ -146,6 +146,8 @@ public:
     virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
     virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether e is preserved by this proc
 
+    const ExpExpMap& getProvenTrue() const { return m_provenTrue; }
+
     /// Set an equation as proven. Useful for some sorts of testing
     void setProvenTrue(SharedExp fact);
 
