@@ -202,10 +202,6 @@ private:
     void fixUglyBranches();
 
 
-    /// Get the initial parameters, based on this UserProc's use collector
-    /// Probably unused now
-    void initialParameters();
-
     /// Map expressions to locals and initial parameters
     void mapLocalsAndParams();
 

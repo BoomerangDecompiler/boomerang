@@ -3489,25 +3489,6 @@ void UserProc::propagateToCollector()
 }
 
 
-void UserProc::initialParameters()
-{
-    LOG_VERBOSE("### Initial parameters for %1", getName());
-    qDeleteAll(m_parameters);
-    m_parameters.clear();
-
-    for (const SharedExp& v : m_procUseCollector) {
-        m_parameters.append(new ImplicitAssign(v->clone()));
-    }
-
-    if (SETTING(verboseOutput)) {
-        QString     tgt;
-        QTextStream ost(&tgt);
-        printParams(ost);
-        LOG_MSG(tgt);
-    }
-}
-
-
 bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
 {
     // FIXME: This is not correct in general!! It should work OK for self recursion,
