@@ -33,6 +33,7 @@ enum class PassID
     AssignRemoval,
     DuplicateArgsRemoval,
     CallLivenessRemoval,
+    LocalTypeAnalysis,
     NUM_PASSES
 };
 

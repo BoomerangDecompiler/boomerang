@@ -26,6 +26,7 @@
 #include "boomerang/passes/middle/AssignRemovalPass.h"
 #include "boomerang/passes/middle/DuplicateArgsRemovalPass.h"
 #include "boomerang/passes/late/CallLivenessRemovalPass.h"
+#include "boomerang/passes/late/LocalTypeAnalysisPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -53,6 +54,7 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::AssignRemoval)].reset(new AssignRemovalPass());
     m_passes[static_cast<size_t>(PassID::DuplicateArgsRemoval)].reset(new DuplicateArgsRemovalPass());
     m_passes[static_cast<size_t>(PassID::CallLivenessRemoval)].reset(new CallLivenessRemovalPass());
+    m_passes[static_cast<size_t>(PassID::LocalTypeAnalysis)].reset(new LocalTypeAnalysisPass());
 }
 
 

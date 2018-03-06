@@ -1137,7 +1137,7 @@ void UserProc::remUnusedStmtEtc()
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
     // to printf/scanf), and removing unused statements is unsafe without full use information
     if (m_status < PROC_FINAL) {
-        doTypeAnalysis();
+        PassManager::get()->executePass(PassID::LocalTypeAnalysis, this);
 
         // Now that locals are identified, redo the dataflow
         PassManager::get()->executePass(PassID::PhiPlacement, this);
@@ -3971,24 +3971,6 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 
             removeRetSet.insert(static_cast<UserProc *>(call->getDestProc()));
         }
-    }
-}
-
-
-void UserProc::doTypeAnalysis()
-{
-    LOG_VERBOSE("### Type analysis for %1 ###", getName());
-
-    // Now we need to add the implicit assignments. Doing this earlier is extremely problematic, because
-    // of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
-    // Do this regardless of whether doing dfa-based TA, so things like finding parameters can rely on implicit assigns
-    addImplicitAssigns();
-
-    ITypeRecovery *rec = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
-    // Data flow based type analysis
-    // Want to be after all propagation, but before converting expressions to locals etc
-    if (DFA_TYPE_ANALYSIS) {
-        rec->recoverFunctionTypes(this);
     }
 }
 

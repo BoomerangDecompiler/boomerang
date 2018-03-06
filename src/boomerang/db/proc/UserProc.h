@@ -181,7 +181,7 @@ private:
     /// Also finalise the whole group.
     void recursionGroupAnalysis(ProcList &callStack);
 
-    void decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visited);
+    void decompileProcInRecursionGroup(ProcList& callStack, ProcSet& visited);
 
     /// The inductive preservation analysis.
     bool inductivePreservation(UserProc *);

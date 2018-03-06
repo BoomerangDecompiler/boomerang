@@ -28,6 +28,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/loader/IFileLoader.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -1146,7 +1147,7 @@ bool Prog::removeUnusedReturns()
         if (removedReturns) {
             // Removing returns changes the uses of the callee.
             // So we have to do type analyis to update the use information.
-            (*it)->doTypeAnalysis();
+            PassManager::get()->executePass(PassID::LocalTypeAnalysis, *it);
         }
         change |= removedReturns;
 
@@ -1203,7 +1204,7 @@ void Prog::globalTypeAnalysis()
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
             LOG_VERBOSE("Global type analysis for '%1'", proc->getName());
-            proc->doTypeAnalysis();
+            PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
         }
     }
 
