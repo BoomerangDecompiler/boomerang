@@ -18,6 +18,7 @@
 #include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/passes/call/CallDefineUpdatePass.h"
 #include "boomerang/passes/call/CallArgumentUpdatePass.h"
+#include "boomerang/passes/early/StatementInitPass.h"
 #include "boomerang/passes/early/StatementPropagationPass.h"
 #include "boomerang/passes/early/BBSimplifyPass.h"
 #include "boomerang/passes/middle/CallAndPhiFixPass.h"
@@ -52,6 +53,7 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::BlockVarRename           )].reset(new BlockVarRenamePass());
     m_passes[static_cast<size_t>(PassID::CallDefineUpdate         )].reset(new CallDefineUpdatePass());
     m_passes[static_cast<size_t>(PassID::CallArgumentUpdate       )].reset(new CallArgumentUpdatePass());
+    m_passes[static_cast<size_t>(PassID::StatementInit            )].reset(new StatementInitPass());
     m_passes[static_cast<size_t>(PassID::StatementPropagation     )].reset(new StatementPropagationPass());
     m_passes[static_cast<size_t>(PassID::BBSimplify               )].reset(new BBSimplifyPass());
     m_passes[static_cast<size_t>(PassID::CallAndPhiFix            )].reset(new CallAndPhiFixPass());

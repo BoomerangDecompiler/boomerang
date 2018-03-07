@@ -440,35 +440,6 @@ void UserProc::printDFG() const
 }
 
 
-void UserProc::initStatements()
-{
-    BasicBlock::RTLIterator       rit;
-    StatementList::iterator sit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr; stmt = bb->getNextStmt(rit, sit)) {
-            stmt->setProc(this);
-            stmt->setBB(bb);
-            CallStatement *call = dynamic_cast<CallStatement *>(stmt);
-
-            if (call) {
-                call->setSigArguments();
-
-                // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumSuccessors() == 1)) {
-                    BasicBlock *nextBB = bb->getSuccessor(0);
-
-                    if ((nextBB != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumPredecessors() != 1)) {
-                        nextBB->removePredecessor(bb);
-                        bb->removeAllSuccessors();
-                    }
-                }
-            }
-        }
-    }
-}
-
-
 void UserProc::numberStatements() const
 {
     int stmtNumber = 0;
@@ -852,7 +823,7 @@ void UserProc::initialiseDecompile()
     LOG_VERBOSE("Initialise decompile for %1", getName());
 
     // Initialise statements
-    initStatements();
+    PassManager::get()->executePass(PassID::StatementInit, this);
 
     debugPrintAll("Before SSA");
 

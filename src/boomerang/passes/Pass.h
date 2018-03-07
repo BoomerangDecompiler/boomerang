@@ -25,6 +25,7 @@ enum class PassID
     BlockVarRename,
     CallDefineUpdate,
     CallArgumentUpdate,
+    StatementInit,
     StatementPropagation,
     BBSimplify,
     CallAndPhiFix,
