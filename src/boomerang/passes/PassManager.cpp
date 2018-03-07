@@ -25,13 +25,13 @@
 #include "boomerang/passes/middle/StrengthReductionReversalPass.h"
 #include "boomerang/passes/middle/AssignRemovalPass.h"
 #include "boomerang/passes/middle/DuplicateArgsRemovalPass.h"
+#include "boomerang/passes/middle/ParameterSymbolMapPass.h"
 #include "boomerang/passes/late/CallLivenessRemovalPass.h"
 #include "boomerang/passes/late/LocalTypeAnalysisPass.h"
 #include "boomerang/passes/late/BranchAnalysisPass.h"
 #include "boomerang/passes/late/FromSSAFormPass.h"
 #include "boomerang/passes/late/FinalParameterSearchPass.h"
 #include "boomerang/passes/late/UnusedStatementRemovalPass.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -63,6 +63,7 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::FromSSAForm              )].reset(new FromSSAFormPass());
     m_passes[static_cast<size_t>(PassID::FinalParameterSearch     )].reset(new FinalParameterSearchPass());
     m_passes[static_cast<size_t>(PassID::UnusedStatementRemoval   )].reset(new UnusedStatementRemovalPass());
+    m_passes[static_cast<size_t>(PassID::ParameterSymbolMap       )].reset(new ParameterSymbolMapPass());
 }
 
 

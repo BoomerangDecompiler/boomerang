@@ -216,8 +216,6 @@ private:
     ///     statement.rhs.replace_with(Const($tmp_val))
     void replaceSimpleGlobalConstants();
 
-    void addParameterSymbols();
-
 public:
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();

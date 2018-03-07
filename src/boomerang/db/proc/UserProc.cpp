@@ -1156,7 +1156,7 @@ void UserProc::remUnusedStmtEtc()
     if (SETTING(nameParameters)) {
         // Replace the existing temporary parameters with the final ones:
         // mapExpressionsToParameters();
-        addParameterSymbols();
+        PassManager::get()->executePass(PassID::ParameterSymbolMap, this);
         debugPrintAll("after adding new parameters");
     }
 
@@ -1308,20 +1308,6 @@ void UserProc::addParameter(SharedExp e, SharedType ty)
     m_signature->addParameter(e, ty);
 }
 
-
-void UserProc::addParameterSymbols()
-{
-    ImplicitConverter       ic(m_cfg);
-    int i = 0;
-
-    for (auto it = m_parameters.begin(); it != m_parameters.end(); ++it, ++i) {
-        SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
-        lhs = lhs->expSubscriptAllNull();
-        lhs = lhs->accept(&ic);
-        SharedExp to = Location::param(m_signature->getParamName(i), this);
-        mapSymbolTo(lhs, to);
-    }
-}
 
 
 SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
@@ -2941,7 +2927,7 @@ bool UserProc::removeRedundantParameters()
         }
     }
 
-    m_parameters = newParameters;
+    getParameters() = newParameters;
 
     if (DEBUG_UNUSED) {
         LOG_MSG("%%% end removing unused parameters for %1", getName());

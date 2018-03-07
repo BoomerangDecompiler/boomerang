@@ -27,6 +27,7 @@ list(APPEND boomerang-passes-sources
     passes/middle/StrengthReductionReversalPass
     passes/middle/AssignRemovalPass
     passes/middle/DuplicateArgsRemovalPass
+    passes/middle/ParameterSymbolMapPass
 
     passes/late/CallLivenessRemovalPass
     passes/late/LocalTypeAnalysisPass

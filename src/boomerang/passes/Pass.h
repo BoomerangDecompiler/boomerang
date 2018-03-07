@@ -38,6 +38,7 @@ enum class PassID
     FromSSAForm,
     FinalParameterSearch,
     UnusedStatementRemoval,
+    ParameterSymbolMap,
     NUM_PASSES
 };
 
