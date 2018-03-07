@@ -2554,14 +2554,6 @@ void UserProc::propagateToCollector()
 }
 
 
-bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
-{
-    // FIXME: This is not correct in general!! It should work OK for self recursion,
-    // but not for general mutual recursion. Not that hard, just not done yet.
-    return true;
-}
-
-
 bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 {
     if (!e->isMemOf()) {
@@ -2902,9 +2894,8 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 
     // Intersect with the current returns
     bool removedRets = false;
-    ReturnStatement::iterator rr;
 
-    for (rr = m_retStatement->begin(); rr != m_retStatement->end();) {
+    for (auto rr = m_retStatement->begin(); rr != m_retStatement->end();) {
         Assign *a = static_cast<Assign *>(*rr);
 
         if (unionOfCallerLiveLocs.contains(a->getLeft())) {

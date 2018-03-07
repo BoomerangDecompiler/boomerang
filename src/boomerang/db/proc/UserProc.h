@@ -175,9 +175,6 @@ private:
 
     void decompileProcInRecursionGroup(ProcList& callStack, ProcSet& visited);
 
-    /// The inductive preservation analysis.
-    bool inductivePreservation(UserProc *);
-
     /**
      * Mark calls involved in the recursion cycle as non childless
      * (each child has had middleDecompile called on it now).
