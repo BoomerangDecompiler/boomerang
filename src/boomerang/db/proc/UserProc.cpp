@@ -740,7 +740,6 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
         Boomerang::get()->alertDecompiling(this);
         LOG_MSG("Decompiling procedure '%1'", getName());
 
-        initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         recursionGroup = middleDecompile(callStack);
 
@@ -809,24 +808,12 @@ void UserProc::debugPrintAll(const char *step_name)
 }
 
 
-/*    *    *    *    *    *    *    *    *    *    *    *
-*                                            *
-*        D e c o m p i l e   p r o p e r        *
-*            ( i n i t i a l )                *
-*                                            *
-*    *    *    *    *    *    *    *    *    *    *    */
-void UserProc::initialiseDecompile()
+void UserProc::earlyDecompile()
 {
     Boomerang::get()->alertStartDecompile(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Initialise");
 
-    LOG_VERBOSE("Initialise decompile for %1", getName());
-
-    // Initialise statements
     PassManager::get()->executePass(PassID::StatementInit, this);
-
-    debugPrintAll("Before SSA");
-
     PassManager::get()->executePass(PassID::Dominators, this);
 
     if (!SETTING(decompile)) {
@@ -837,11 +824,7 @@ void UserProc::initialiseDecompile()
 
     debugPrintAll("After Decoding");
     Boomerang::get()->alertDecompileDebugPoint(this, "After Initialise");
-}
 
-
-void UserProc::earlyDecompile()
-{
     if (m_status >= PROC_EARLYDONE) {
         return;
     }
@@ -851,9 +834,7 @@ void UserProc::earlyDecompile()
 
     // Update the defines in the calls. Will redo if involved in recursion
     PassManager::get()->executePass(PassID::CallDefineUpdate, this);
-
-    // This is useful for obj-c
-    replaceSimpleGlobalConstants();
+    PassManager::get()->executePass(PassID::GlobalConstReplace, this);
 
     // First placement of phi functions, renaming, and initial propagation. This is mostly for the stack pointer
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
@@ -2208,59 +2189,6 @@ void UserProc::dumpSymbolMapx() const
 
 
 
-void UserProc::replaceSimpleGlobalConstants()
-{
-    LOG_VERBOSE("### Replace simple global constants for %1 ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *st : stmts) {
-        Assign *assgn = dynamic_cast<Assign *>(st);
-
-        if (assgn == nullptr) {
-            continue;
-        }
-
-        if (!assgn->getRight()->isMemOf()) {
-            continue;
-        }
-
-        if (!assgn->getRight()->getSubExp1()->isIntConst()) {
-            continue;
-        }
-
-        Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
-        LOG_VERBOSE("Assign %1");
-
-        if (m_prog->isReadOnly(addr)) {
-            LOG_VERBOSE("is readonly");
-            int val = 0;
-
-            switch (assgn->getType()->getSize())
-            {
-            case 8:
-                val = m_prog->readNative1(addr);
-                break;
-
-            case 16:
-                val = m_prog->readNative2(addr);
-                break;
-
-            case 32:
-                val = m_prog->readNative4(addr);
-                break;
-
-            default:
-                assert(false);
-            }
-
-            assgn->setRight(Const::get(val));
-        }
-    }
-}
-
-
 void UserProc::insertParameter(SharedExp e, SharedType ty)
 {
     if (filterParams(e)) {
@@ -3225,7 +3153,6 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
 
     current->setStatus(PROC_INCYCLE); // So the calls are treated as childless
     Boomerang::get()->alertDecompiling(current);
-    current->initialiseDecompile();   // Sort the CFG, number statements, etc
     current->earlyDecompile();
 
     // The standard preservation analysis should automatically perform conditional preservation.

@@ -26,6 +26,7 @@ enum class PassID
     CallDefineUpdate,
     CallArgumentUpdate,
     StatementInit,
+    GlobalConstReplace,
     StatementPropagation,
     BBSimplify,
     CallAndPhiFix,

@@ -157,10 +157,8 @@ private:
      */
     std::shared_ptr<ProcSet> decompile(ProcList &callStack);
 
-    /// Initialise decompile: sort CFG, number statements, dominator tree, etc.
-    void initialiseDecompile();
-
-    /// Early decompile: Place phi functions, number statements, first rename,
+    /// Early decompile:
+    /// sort CFG, number statements, dominator tree, place phi functions, number statements, first rename,
     /// propagation: ready for preserveds.
     void earlyDecompile();
 
@@ -198,15 +196,6 @@ public:
     void insertParameter(SharedExp e, SharedType ty);
 
 private:
-    /// Replace simple global constant references
-    /// Statement level transform :
-    /// PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
-    /// ACTION:
-    ///     $tmp_addr = assgn.rhs.sub(1);
-    ///     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
-    ///     statement.rhs.replace_with(Const($tmp_val))
-    void replaceSimpleGlobalConstants();
-
 public:
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();
