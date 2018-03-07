@@ -1026,14 +1026,12 @@ void Prog::decompile()
 
     globalTypeAnalysis();
 
-    if (SETTING(decompile)) {
-        if (SETTING(removeReturns)) {
-            // A final pass to remove returns not used by any caller
-            LOG_VERBOSE("Prog: global removing unused returns");
+    if (SETTING(decompile) && SETTING(removeReturns)) {
+        // A final pass to remove returns not used by any caller
+        LOG_VERBOSE("Prog: global removing unused returns");
 
-            // Repeat until no change. Not 100% sure if needed.
-            while (removeUnusedReturns()) {
-            }
+        // Repeat until no change. Not 100% sure if needed.
+        while (removeUnusedReturns()) {
         }
     }
 
