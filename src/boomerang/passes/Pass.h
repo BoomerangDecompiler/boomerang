@@ -55,8 +55,8 @@ public:
     const QString& getName() const { return m_name; }
     PassID getType() const { return m_type; }
 
-    /// \returns true iff the pass only changes statements inside the function.
-    /// This means that these passes can be executed for each function in parallel.
+    /// \returns true iff the pass only accesses statements inside the function.
+    /// This means that procLocal passes can be executed for each function in parallel.
     virtual bool isProcLocal() const { return false; }
 
     /// Run this pass, updating \p proc
