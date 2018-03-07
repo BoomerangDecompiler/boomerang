@@ -20,6 +20,7 @@ list(APPEND boomerang-passes-sources
     passes/call/CallArgumentUpdatePass
 
     passes/early/StatementPropagationPass
+    passes/early/BBSimplifyPass
 
     passes/middle/CallAndPhiFixPass
     passes/middle/SPPreservationPass

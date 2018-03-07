@@ -97,11 +97,11 @@ public:
     virtual QString toString() const override;
 
     /// Returns a pointer to the CFG object.
-    Cfg *getCFG()       { return m_cfg; }
+    Cfg *getCFG() { return m_cfg; }
     const Cfg *getCFG() const { return m_cfg; }
 
     /// Returns a pointer to the DataFlow object.
-    DataFlow *getDataFlow()       { return &m_df; }
+    DataFlow *getDataFlow() { return &m_df; }
     const DataFlow *getDataFlow() const { return &m_df; }
 
     /// \copydoc Function::isNoReturn
@@ -141,12 +141,6 @@ public:
 
     /// Deletes the whole Cfg for this proc object.
     void deleteCFG() override;
-
-    /// simplify the statements in this proc
-    void simplify()
-    {
-        m_cfg->simplify();
-    }
 
     /**
      * Decompile this procedure, and all callees.

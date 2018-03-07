@@ -570,8 +570,8 @@ void BasicBlock::setCond(SharedExp e)
 void BasicBlock::simplify()
 {
     if (m_listOfRTLs) {
-        for (auto& elem : *m_listOfRTLs) {
-            elem->simplify();
+        for (auto& rtl : *m_listOfRTLs) {
+            rtl->simplify();
         }
     }
 

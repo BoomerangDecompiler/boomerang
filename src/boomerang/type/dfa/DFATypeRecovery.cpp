@@ -229,7 +229,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
         // so do it just before translating from SSA form (which is the where type information becomes inaccessible)
     } while (up->ellipsisProcessing());
 
-    up->simplify(); // In case there are new struct members
+    PassManager::get()->executePass(PassID::BBSimplify, up); // In case there are new struct members
 
     if (DEBUG_TA) {
         LOG_VERBOSE("=== End type analysis for %1 ===", getName());

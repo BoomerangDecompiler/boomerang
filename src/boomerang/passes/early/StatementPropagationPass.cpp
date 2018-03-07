@@ -14,6 +14,7 @@
 #include "boomerang/db/visitor/ExpDestCounter.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/passes/PassManager.h"
 
 
 StatementPropagationPass::StatementPropagationPass()
@@ -64,7 +65,7 @@ bool StatementPropagationPass::execute(UserProc *proc)
         }
     }
 
-    proc->simplify();
+    PassManager::get()->executePass(PassID::BBSimplify, proc);
     proc->propagateToCollector();
 
     return change || convert;
