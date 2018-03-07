@@ -197,15 +197,6 @@ public:
     /// Map expressions to locals and initial parameters
     void mapLocalsAndParams();
 
-private:
-    /**
-     * Search for expressions without explicit definitions (i.e. WILDCARD{0}),
-     * which represent parameters (use before definition).
-     * These are called final parameters, because they are determined
-     * from implicit references, not from the use collector at the start of the proc,
-     * which include some caused by recursive calls
-     */
-    void findFinalParameters();
 
     /// Add the parameter to the signature
     void addParameter(SharedExp e, SharedType ty);
@@ -217,6 +208,7 @@ private:
      */
     void insertParameter(SharedExp e, SharedType ty);
 
+private:
     /// Replace simple global constant references
     /// Statement level transform :
     /// PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
@@ -272,7 +264,7 @@ public:
 
     /// Count references to the things that are under SSA control.
     /// For each SSA subscripting, increment a counter for that definition
-    void countRefs(RefCounter& refCounts);
+    void updateRefCounts(RefCounter& refCounts);
 
     /// Remove unused statements.
     void remUnusedStmtEtc();

@@ -37,6 +37,7 @@ enum class PassID
     NullStatementRemoval,
     BranchAnalysis,
     FromSSAForm,
+    FinalParameterSearch,
     NUM_PASSES
 };
 

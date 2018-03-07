@@ -1136,7 +1136,7 @@ void UserProc::remUnusedStmtEtc()
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
     // to printf/scanf), and removing unused statements is unsafe without full use information
-    if (m_status < PROC_FINAL) {
+    if (getStatus() < PROC_FINAL) {
         PassManager::get()->executePass(PassID::LocalTypeAnalysis, this);
 
         // Now that locals are identified, redo the dataflow
@@ -1154,7 +1154,7 @@ void UserProc::remUnusedStmtEtc()
     // Remove unused statements
     RefCounter refCounts; // The map
     // Count the references first
-    countRefs(refCounts);
+    updateRefCounts(refCounts);
 
     // Now remove any that have no used
     if (SETTING(removeNull)) {
@@ -1165,7 +1165,7 @@ void UserProc::remUnusedStmtEtc()
 
     Boomerang::get()->alertDecompileAfterRemoveStmts(this, 1);
 
-    findFinalParameters();
+    PassManager::get()->executePass(PassID::FinalParameterSearch, this);
 
     if (SETTING(nameParameters)) {
         // Replace the existing temporary parameters with the final ones:
@@ -1410,92 +1410,6 @@ void UserProc::finalSimplify()
             }
         }
     }
-}
-
-
-// m[WILD]{-}
-static SharedExp memOfWild = RefExp::get(Location::memOf(Terminal::get(opWild)), nullptr);
-// r[WILD INT]{-}
-static SharedExp regOfWild = RefExp::get(Location::regOf(Terminal::get(opWildIntConst)), nullptr);
-
-
-void UserProc::findFinalParameters()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
-
-    qDeleteAll(m_parameters);
-    m_parameters.clear();
-
-    if (m_signature->isForced()) {
-        // Copy from signature
-        int               n = m_signature->getNumParams();
-        ImplicitConverter ic(m_cfg);
-
-        for (int i = 0; i < n; ++i) {
-            SharedExp             paramLoc = m_signature->getParamExp(i)->clone(); // E.g. m[r28 + 4]
-            LocationSet           components;
-            paramLoc->addUsedLocs(components);
-
-            for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                if (*cc != paramLoc) {                       // Don't subscript outer level
-                    paramLoc->expSubscriptVar(*cc, nullptr); // E.g. r28 -> r28{-}
-                    paramLoc->accept(&ic);                   // E.g. r28{-} -> r28{0}
-                }
-            }
-
-            m_parameters.append(new ImplicitAssign(m_signature->getParamType(i), paramLoc));
-            QString   name       = m_signature->getParamName(i);
-            SharedExp param      = Location::param(name, this);
-            SharedExp reParamLoc = RefExp::get(paramLoc, m_cfg->findImplicitAssign(paramLoc));
-            mapSymbolTo(reParamLoc, param); // Update name map
-        }
-
-        return;
-    }
-
-    if (DEBUG_PARAMS) {
-        LOG_VERBOSE("Finding final parameters for %1", getName());
-    }
-
-    //    int sp = signature->getStackRegister();
-    m_signature->setNumParams(0); // Clear any old ideas
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
-        // program
-        if (!s->isImplicit()) {
-            // Note: phis can get converted to assignments, but I hope that this is only later on: check this!
-            break; // Stop after reading all implicit assignments
-        }
-
-        SharedExp e = static_cast<ImplicitAssign *>(s)->getLeft();
-
-        if (m_signature->findParam(e) == -1) {
-            if (DEBUG_PARAMS) {
-                LOG_VERBOSE("Potential param %1", e);
-            }
-
-            // I believe that the only true parameters will be registers or memofs that look like locals (stack
-            // pararameters)
-            if (!(e->isRegOf() || isLocalOrParamPattern(e))) {
-                continue;
-            }
-
-            if (DEBUG_PARAMS) {
-                LOG_VERBOSE("Found new parameter %1", e);
-            }
-
-            SharedType ty = static_cast<ImplicitAssign *>(s)->getType();
-            // Add this parameter to the signature (for now; creates parameter names)
-            addParameter(e, ty);
-            // Insert it into the parameters StatementList, in sensible order
-            insertParameter(e, ty);
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after find final parameters.");
 }
 
 
@@ -1792,7 +1706,7 @@ SharedConstExp UserProc::expFromSymbol(const QString& nam) const
 }
 
 
-void UserProc::countRefs(RefCounter& refCounts)
+void UserProc::updateRefCounts(RefCounter& refCounts)
 {
     StatementList stmts;
     getStatements(stmts);
@@ -2990,7 +2904,7 @@ bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 
 bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited)
 {
-    BasicBlock::RTLRIterator              rrit;
+    BasicBlock::RTLRIterator        rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *pb : *m_cfg) {
@@ -3007,8 +2921,8 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
         }
 
         if (dest == p) { // Pointer comparison is OK here
-            // This is a recursive call to p. Check for an argument of the form param{-} FIXME: should be looking for
-            // component
+            // This is a recursive call to p. Check for an argument of the form param{-}
+            // FIXME: should be looking for component
             const StatementList& args = c->getArguments();
             for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
                 const Assign *a = dynamic_cast<const Assign *>(*aa);

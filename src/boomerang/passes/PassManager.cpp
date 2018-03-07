@@ -30,6 +30,7 @@
 #include "boomerang/passes/late/NullStatementRemovalPass.h"
 #include "boomerang/passes/late/BranchAnalysisPass.h"
 #include "boomerang/passes/late/FromSSAFormPass.h"
+#include "boomerang/passes/late/FinalParameterSearchPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -44,23 +45,24 @@ PassManager::PassManager()
 {
     m_passes.resize(static_cast<size_t>(PassID::NUM_PASSES));
 
-    m_passes[static_cast<size_t>(PassID::Dominators)].reset(new DominatorPass());
-    m_passes[static_cast<size_t>(PassID::PhiPlacement)].reset(new PhiPlacementPass());
-    m_passes[static_cast<size_t>(PassID::BlockVarRename)].reset(new BlockVarRenamePass());
-    m_passes[static_cast<size_t>(PassID::CallDefineUpdate)].reset(new CallDefineUpdatePass());
-    m_passes[static_cast<size_t>(PassID::CallArgumentUpdate)].reset(new CallArgumentUpdatePass());
-    m_passes[static_cast<size_t>(PassID::StatementPropagation)].reset(new StatementPropagationPass());
-    m_passes[static_cast<size_t>(PassID::CallAndPhiFix)].reset(new CallAndPhiFixPass());
-    m_passes[static_cast<size_t>(PassID::SPPreservation)].reset(new SPPreservationPass());
-    m_passes[static_cast<size_t>(PassID::PreservationAnalysis)].reset(new PreservationAnalysisPass());
+    m_passes[static_cast<size_t>(PassID::Dominators               )].reset(new DominatorPass());
+    m_passes[static_cast<size_t>(PassID::PhiPlacement             )].reset(new PhiPlacementPass());
+    m_passes[static_cast<size_t>(PassID::BlockVarRename           )].reset(new BlockVarRenamePass());
+    m_passes[static_cast<size_t>(PassID::CallDefineUpdate         )].reset(new CallDefineUpdatePass());
+    m_passes[static_cast<size_t>(PassID::CallArgumentUpdate       )].reset(new CallArgumentUpdatePass());
+    m_passes[static_cast<size_t>(PassID::StatementPropagation     )].reset(new StatementPropagationPass());
+    m_passes[static_cast<size_t>(PassID::CallAndPhiFix            )].reset(new CallAndPhiFixPass());
+    m_passes[static_cast<size_t>(PassID::SPPreservation           )].reset(new SPPreservationPass());
+    m_passes[static_cast<size_t>(PassID::PreservationAnalysis     )].reset(new PreservationAnalysisPass());
     m_passes[static_cast<size_t>(PassID::StrengthReductionReversal)].reset(new StrengthReductionReversalPass());
-    m_passes[static_cast<size_t>(PassID::AssignRemoval)].reset(new AssignRemovalPass());
-    m_passes[static_cast<size_t>(PassID::DuplicateArgsRemoval)].reset(new DuplicateArgsRemovalPass());
-    m_passes[static_cast<size_t>(PassID::CallLivenessRemoval)].reset(new CallLivenessRemovalPass());
-    m_passes[static_cast<size_t>(PassID::LocalTypeAnalysis)].reset(new LocalTypeAnalysisPass());
-    m_passes[static_cast<size_t>(PassID::NullStatementRemoval)].reset(new NullStatementRemovalPass());
-    m_passes[static_cast<size_t>(PassID::BranchAnalysis)].reset(new BranchAnalysisPass());
-    m_passes[static_cast<size_t>(PassID::FromSSAForm)].reset(new FromSSAFormPass());
+    m_passes[static_cast<size_t>(PassID::AssignRemoval            )].reset(new AssignRemovalPass());
+    m_passes[static_cast<size_t>(PassID::DuplicateArgsRemoval     )].reset(new DuplicateArgsRemovalPass());
+    m_passes[static_cast<size_t>(PassID::CallLivenessRemoval      )].reset(new CallLivenessRemovalPass());
+    m_passes[static_cast<size_t>(PassID::LocalTypeAnalysis        )].reset(new LocalTypeAnalysisPass());
+    m_passes[static_cast<size_t>(PassID::NullStatementRemoval     )].reset(new NullStatementRemovalPass());
+    m_passes[static_cast<size_t>(PassID::BranchAnalysis           )].reset(new BranchAnalysisPass());
+    m_passes[static_cast<size_t>(PassID::FromSSAForm              )].reset(new FromSSAFormPass());
+    m_passes[static_cast<size_t>(PassID::FinalParameterSearch     )].reset(new FinalParameterSearchPass());
 }
 
 
