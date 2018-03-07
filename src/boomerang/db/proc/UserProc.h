@@ -255,11 +255,8 @@ public:
     /// Remove unused statements.
     void remUnusedStmtEtc();
 
-    /// Note: call the below after translating from SSA form
-    /// FIXME: this can be done before transforming out of SSA form now, surely...
-    void removeUnusedLocals();
-
     const std::map<QString, SharedType>& getLocals() const { return m_locals; }
+    std::map<QString, SharedType>& getLocals() { return m_locals; }
 
 #if USE_DOMINANCE_NUMS
     void setDominanceNumbers();

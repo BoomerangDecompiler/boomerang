@@ -912,7 +912,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Bypass children that are finalised (if any)
     debugPrintAll("After call and phi bypass (1)");
 
-    if (m_status != PROC_INCYCLE) { // FIXME: need this test?
+    if (getStatus() != PROC_INCYCLE) { // FIXME: need this test?
         PassManager::get()->executePass(PassID::StatementPropagation, this);
     }
 
@@ -996,7 +996,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
 
-                if (m_status != PROC_INCYCLE) {
+                if (getStatus() != PROC_INCYCLE) {
                     getDataFlow()->clearStacks();
                     PassManager::get()->executePass(PassID::BlockVarRename, this);
                 }
@@ -1489,10 +1489,10 @@ void UserProc::setLocalType(const QString& nam, SharedType ty)
 }
 
 
-SharedType UserProc::getParamType(const QString& nam)
+SharedType UserProc::getParamType(const QString& name)
 {
     for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
-        if (nam == m_signature->getParamName(i)) {
+        if (name == m_signature->getParamName(i)) {
             return m_signature->getParamType(i);
         }
     }
@@ -1576,130 +1576,6 @@ SharedConstExp UserProc::expFromSymbol(const QString& nam) const
     }
 
     return nullptr;
-}
-
-
-void UserProc::removeUnusedLocals()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before removing unused locals");
-
-    LOG_VERBOSE("Removing unused locals (final) for %1", getName());
-
-    QSet<QString> usedLocals;
-    StatementList stmts;
-    getStatements(stmts);
-
-    // First count any uses of the locals
-    bool all = false;
-
-    for (Statement *s : stmts) {
-        LocationSet locs;
-        all |= s->addUsedLocals(locs);
-
-        for (SharedExp u : locs) {
-            // Must be a real symbol, and not defined in this statement, unless it is a return statement (in which case
-            // it is used outside this procedure), or a call statement. Consider local7 = local7+1 and
-            // return local7 = local7+1 and local7 = call(local7+1), where in all cases, local7 is not used elsewhere
-            // outside this procedure. With the assign, it can be deleted, but with the return or call statements, it
-            // can't.
-            if ((s->isReturn() || s->isCall() || !s->definesLoc(u))) {
-                if (!u->isLocal()) {
-                    continue;
-                }
-
-                QString name(u->access<Const, 1>()->getStr());
-                usedLocals.insert(name);
-
-                if (DEBUG_UNUSED) {
-                    LOG_MSG("Counted local %1 in %2", name, s);
-                }
-            }
-        }
-
-        if (s->isAssignment() && !s->isImplicit() && static_cast<Assignment *>(s)->getLeft()->isLocal()) {
-            Assignment *as = static_cast<Assignment *>(s);
-            auto       c   = as->getLeft()->access<Const, 1>();
-            QString    name(c->getStr());
-            usedLocals.insert(name);
-
-            if (DEBUG_UNUSED) {
-                LOG_MSG("Counted local %1 on left of %2", name, s);
-            }
-        }
-    }
-
-    // Now record the unused ones in set removes
-
-    QSet<QString> removes;
-
-    for (auto it = m_locals.begin(); it != m_locals.end(); ++it) {
-        const QString& name(it->first);
-
-        if (all && removes.size()) {
-            LOG_VERBOSE("WARNING: defineall seen in procedure %1, so not removing %2 locals",
-                        name, removes.size());
-        }
-
-        if ((usedLocals.find(name) == usedLocals.end()) && !all) {
-            if (SETTING(verboseOutput)) {
-                LOG_VERBOSE("Removed unused local %1", name);
-            }
-
-            removes.insert(name);
-        }
-    }
-
-    // Remove any definitions of the removed locals
-    for (Statement *s : stmts) {
-        LocationSet ls;
-        s->getDefinitions(ls);
-
-        for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
-            SharedType ty   = s->getTypeFor(*ll);
-            QString    name = findLocal(*ll, ty);
-
-            if (name.isNull()) {
-                continue;
-            }
-
-            if (removes.find(name) != removes.end()) {
-                // Remove it. If an assign, delete it; otherwise (call), remove the define
-                if (s->isAssignment()) {
-                    removeStatement(s);
-                    break; // Break to next statement
-                }
-                else if (s->isCall()) {
-                    // Remove just this define. May end up removing several defines from this call.
-                    static_cast<CallStatement *>(s)->removeDefine(*ll);
-                }
-
-                // else if a ReturnStatement, don't attempt to remove it. The definition is used *outside* this proc.
-            }
-        }
-    }
-
-    // Finally, remove them from locals, so they don't get declared
-    for (QString str : removes) {
-        m_locals.erase(str);
-    }
-
-    // Also remove them from the symbols, since symbols are a superset of locals at present
-    for (SymbolMap::iterator sm = m_symbolMap.begin(); sm != m_symbolMap.end();) {
-        SharedExp mapsTo = sm->second;
-
-        if (mapsTo->isLocal()) {
-            QString tmpName = mapsTo->access<Const, 1>()->getStr();
-
-            if (removes.find(tmpName) != removes.end()) {
-                sm = m_symbolMap.erase(sm);
-                continue;
-            }
-        }
-
-        ++sm;
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After removing unused locals");
 }
 
 

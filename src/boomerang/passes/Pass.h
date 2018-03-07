@@ -40,6 +40,7 @@ enum class PassID
     FinalParameterSearch,
     UnusedStatementRemoval,
     ParameterSymbolMap,
+    UnusedLocalRemoval,
     NUM_PASSES
 };
 
