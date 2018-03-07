@@ -1129,9 +1129,6 @@ void UserProc::remUnusedStmtEtc()
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Final");
 
     LOG_VERBOSE("--- Remove unused statements for %1 ---", getName());
-    // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
-    //    if (theReturnStatement)
-    //        theReturnStatement->specialProcessing();
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
@@ -1150,18 +1147,7 @@ void UserProc::remUnusedStmtEtc()
         }
     }
 
-    // Only remove unused statements after decompiling as much as possible of the proc
-    // Remove unused statements
-    RefCounter refCounts; // The map
-    // Count the references first
-    updateRefCounts(refCounts);
-
-    // Now remove any that have no used
-    if (SETTING(removeNull)) {
-        remUnusedStmtEtc(refCounts);
-        PassManager::get()->executePass(PassID::NullStatementRemoval, this);
-        debugPrintAll("after removing unused and null statements pass 1");
-    }
+    PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
 
     Boomerang::get()->alertDecompileAfterRemoveStmts(this, 1);
 
@@ -1214,105 +1200,6 @@ void UserProc::remUnusedStmtEtc()
 
     debugPrintAll("after remove unused statements etc");
     Boomerang::get()->alertDecompileDebugPoint(this, "after final");
-}
-
-
-void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "before remUnusedStmtEtc");
-
-    StatementList stmts;
-    getStatements(stmts);
-    bool change;
-
-    do { // FIXME: check if this is ever needed
-        change = false;
-        StatementList::iterator ll = stmts.begin();
-
-        while (ll != stmts.end()) {
-            Statement *s = *ll;
-
-            if (!s->isAssignment()) {
-                // Never delete a statement other than an assignment (e.g. nothing "uses" a Jcond)
-                ++ll;
-                continue;
-            }
-
-            const Assignment *as    = static_cast<const Assignment *>(s);
-            SharedConstExp  asLeft = as->getLeft();
-
-            // If depth < 0, consider all depths
-            // if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
-            //    ++ll;
-            //    continue;
-            // }
-            if (asLeft && (asLeft->getOper() == opGlobal)) {
-                // assignments to globals must always be kept
-                ++ll;
-                continue;
-            }
-
-            // If it's a memof and renameable it can still be deleted
-            if ((asLeft->getOper() == opMemOf) && !canRename(asLeft)) {
-                // Assignments to memof-anything-but-local must always be kept.
-                ++ll;
-                continue;
-            }
-
-            if ((asLeft->getOper() == opMemberAccess) || (asLeft->getOper() == opArrayIndex)) {
-                // can't say with these; conservatively never remove them
-                ++ll;
-                continue;
-            }
-
-            if ((refCounts.find(s) == refCounts.end()) || (refCounts[s] == 0)) { // Care not to insert unnecessarily
-                // First adjust the counts, due to statements only referenced by statements that are themselves unused.
-                // Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
-                // of statements that use a definition, not the total number of refs
-                StatementSet stmtsRefdByUnused;
-                LocationSet    components;
-                s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
-
-                for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                    if ((*cc)->isSubscript()) {
-                        stmtsRefdByUnused.insert((*cc)->access<RefExp>()->getDef());
-                    }
-                }
-
-                for (auto dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); ++dd) {
-                    if (*dd == nullptr) {
-                        continue;
-                    }
-
-                    if (DEBUG_UNUSED) {
-                        LOG_MSG("Decrementing ref count of %1 because %2 is unused", (*dd)->getNumber(), s->getNumber());
-                    }
-
-                    refCounts[*dd]--;
-                }
-
-                if (DEBUG_UNUSED) {
-                    LOG_MSG("Removing unused statement %1 %2", s->getNumber(), s);
-                }
-
-                removeStatement(s);
-                ll     = stmts.erase(ll); // So we don't try to re-remove it
-                change = true;
-                continue;                 // Don't call getNext this time
-            }
-
-            ++ll;
-        }
-    } while (change);
-
-    // Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
-    // removed statement, so liveness in the call needs to be removed
-    PassManager::get()->executePass(PassID::CallLivenessRemoval, this); // Kill all existing livenesses
-    PassManager::get()->executePass(PassID::BlockVarRename, this);      // Recalculate new livenesses
-
-    setStatus(PROC_FINAL); // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after remUnusedStmtEtc");
 }
 
 
@@ -1703,55 +1590,6 @@ SharedConstExp UserProc::expFromSymbol(const QString& nam) const
     }
 
     return nullptr;
-}
-
-
-void UserProc::updateRefCounts(RefCounter& refCounts)
-{
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        // Don't count uses in implicit statements. There is no RHS of course, but you can still have x from m[x] on the
-        // LHS and so on, and these are not real uses
-        if (s->isImplicit()) {
-            continue;
-        }
-
-        if (DEBUG_UNUSED) {
-            LOG_MSG("Counting references in %1", s);
-        }
-
-        LocationSet refs;
-        s->addUsedLocs(refs, false); // Ignore uses in collectors
-
-        for (const SharedExp& rr : refs) {
-            if (rr->isSubscript()) {
-                Statement *def = rr->access<RefExp>()->getDef();
-
-                // Used to not count implicit refs here (def->getNumber() == 0), meaning that implicit definitions get
-                // removed as dead code! But these are the ideal place to read off final parameters, and it is
-                // guaranteed now that implicit statements are sorted out for us by now (for dfa type analysis)
-                if (def /* && def->getNumber() */) {
-                    refCounts[def]++;
-
-                    if (DEBUG_UNUSED) {
-                        LOG_MSG("counted ref to %1", rr);
-                    }
-                }
-            }
-        }
-    }
-
-    if (DEBUG_UNUSED) {
-        LOG_MSG("### Reference counts for %1:", getName());
-
-        for (RefCounter::iterator rr = refCounts.begin(); rr != refCounts.end(); ++rr) {
-            LOG_MSG("  %1: %2", rr->first->getNumber(), rr->second);
-        }
-
-        LOG_MSG("### end reference counts");
-    }
 }
 
 

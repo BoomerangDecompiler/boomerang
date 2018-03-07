@@ -34,10 +34,10 @@ enum class PassID
     DuplicateArgsRemoval,
     CallLivenessRemoval,
     LocalTypeAnalysis,
-    NullStatementRemoval,
     BranchAnalysis,
     FromSSAForm,
     FinalParameterSearch,
+    UnusedStatementRemoval,
     NUM_PASSES
 };
 

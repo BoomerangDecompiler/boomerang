@@ -30,10 +30,10 @@ list(APPEND boomerang-passes-sources
 
     passes/late/CallLivenessRemovalPass
     passes/late/LocalTypeAnalysisPass
-    passes/late/NullStatementRemovalPass
     passes/late/BranchAnalysisPass
     passes/late/FromSSAFormPass
     passes/late/FinalParameterSearchPass
+    passes/late/UnusedStatementRemovalPass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)

@@ -29,6 +29,9 @@ class Function : public Printable
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
 public:
+    typedef std::map<Statement *, int> RefCounter;
+
+public:
     /**
      * \param address   Address of entry point of procedure
      * \param signature The Signature for this Proc

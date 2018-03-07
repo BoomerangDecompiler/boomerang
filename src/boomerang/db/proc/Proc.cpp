@@ -48,8 +48,6 @@ namespace dbghelp
 #  endif
 #endif
 
-typedef std::map<Statement *, int> RefCounter;
-
 
 Function::Function(Address entryAddr, Signature *sig, Module *module)
     : m_signature(sig)

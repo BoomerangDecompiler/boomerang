@@ -77,8 +77,6 @@ public:
      */
     typedef std::multimap<SharedConstExp, SharedExp, lessExpStar>   SymbolMap;
 
-    typedef std::map<Statement *, int>                              RefCounter;
-
 public:
     /**
      * \param address Address of entry point of function
@@ -262,13 +260,8 @@ public:
     /// perform final simplifications
     void finalSimplify();
 
-    /// Count references to the things that are under SSA control.
-    /// For each SSA subscripting, increment a counter for that definition
-    void updateRefCounts(RefCounter& refCounts);
-
     /// Remove unused statements.
     void remUnusedStmtEtc();
-    void remUnusedStmtEtc(RefCounter& refCounts);
 
     /// Note: call the below after translating from SSA form
     /// FIXME: this can be done before transforming out of SSA form now, surely...
