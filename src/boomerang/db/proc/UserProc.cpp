@@ -3473,7 +3473,7 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
     Statement *def = r->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp %1", r->toString());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
         return QString::null;
     }
 
@@ -3488,7 +3488,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
     Statement *def = r->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp %1", r->toString());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
         return QString::null;
     }
 
