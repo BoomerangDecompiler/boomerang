@@ -1030,7 +1030,7 @@ void Prog::decompile()
             // A final pass to remove returns not used by any caller
             LOG_VERBOSE("Prog: global removing unused returns");
 
-            // Repeat until no change. Note 100% sure if needed.
+            // Repeat until no change. Not 100% sure if needed.
             while (removeUnusedReturns()) {
             }
         }
@@ -1142,7 +1142,14 @@ bool Prog::removeUnusedReturns()
     // returns and/or dead code removes parameters, which affects all callers).
     while (!removeRetSet.empty()) {
         auto it = removeRetSet.begin(); // Pick the first element of the set
-        change |= (*it)->removeRedundantReturns(removeRetSet);
+        const bool removedReturns = (*it)->removeRedundantReturns(removeRetSet);
+        if (removedReturns) {
+            // Removing returns changes the uses of the callee.
+            // So we have to do type analyis to update the use information.
+            (*it)->typeAnalysis();
+        }
+        change |= removedReturns;
+
         // Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
         // procedures
         removeRetSet.erase(it); // Remove the current element (may no longer be the first)
