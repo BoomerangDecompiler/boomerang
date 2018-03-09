@@ -113,8 +113,8 @@ public:
     /// Returns whether or not this procedure can be decoded (i.e. has it already been decoded).
     bool isDecoded() const { return m_status >= PROC_DECODED; }
     bool isDecompiled() const { return m_status >= PROC_FINAL; }
-    bool isEarlyRecursive() const { return m_cycleGroup != nullptr && m_status <= PROC_INCYCLE; }
-    bool doesRecurseTo(UserProc *proc) const { return m_cycleGroup && m_cycleGroup->find(proc) != m_cycleGroup->end(); }
+    bool isEarlyRecursive() const { return m_recursionGroup != nullptr && m_status <= PROC_INCYCLE; }
+    bool doesRecurseTo(UserProc *proc) const { return m_recursionGroup && m_recursionGroup->find(proc) != m_recursionGroup->end(); }
 
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
@@ -156,13 +156,19 @@ public:
     }
 
     /**
+     * Decompile this procedure, and all callees.
+     */
+    void decompile();
+
+private:
+    /**
      * Begin the decompile process at this procedure
      * \param  path A list of pointers to procedures, representing the path from
      * the current entry point to the current procedure in the call graph. Pass an
      * empty set at the top level.
      * \param indent is the indentation level; pass 0 at the top level
      */
-    std::shared_ptr<ProcSet> decompile(ProcList *path);
+    std::shared_ptr<ProcSet> decompile(ProcList &callStack);
 
     /// Initialise decompile: sort CFG, number statements, dominator tree, etc.
     void initialiseDecompile();
@@ -174,14 +180,13 @@ public:
     /// Middle decompile: All the decompilation from preservation up to
     /// but not including removing unused statements.
     /// \returns the cycle set from the recursive call to decompile()
-    std::shared_ptr<ProcSet> middleDecompile(ProcList *path);
+    std::shared_ptr<ProcSet> middleDecompile(ProcList &callStack);
 
     /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
     /// Also finalise the whole group.
-    void recursionGroupAnalysis(ProcList *path);
+    void recursionGroupAnalysis(ProcList &callStack);
 
-    /// Global type analysis (for this procedure).
-    void typeAnalysis();
+    void decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visited);
 
     /// The inductive preservation analysis.
     bool inductivePreservation(UserProc *);
@@ -203,17 +208,6 @@ public:
     /// Fix any ugly branch statements (from propagating too much)
     void fixUglyBranches();
 
-    /**
-     * Rename block variables, with log if verbose.
-     * \returns true if a change
-     */
-    bool doRenameBlockVars(int pass, bool clearStacks = false);
-
-    bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
-
-    /// Initialise the statements, e.g. proc, bb pointers
-    void initStatements();
-    void numberStatements();
 
     /// \note Was trimReturns()
     void findPreserveds();
@@ -222,9 +216,6 @@ public:
     void findSpPreservation();
     void removeSpAssignsIfPossible();
     void removeMatchingAssignsIfPossible(SharedExp e);
-
-    /// Perform call and phi statement bypassing at all depths
-    void fixCallAndPhiRefs();
 
     /// Get the initial parameters, based on this UserProc's use collector
     /// Probably unused now
@@ -269,6 +260,26 @@ public:
     void reverseStrengthReduction();
 
     void addParameterSymbols();
+
+public:
+    /// Initialise the statements, e.g. proc, bb pointers
+    void initStatements();
+
+    void numberStatements() const;
+
+    bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
+
+    /**
+     * Rename block variables, with log if verbose.
+     * \returns true if a change
+     */
+    bool doRenameBlockVars(int pass, bool clearStacks = false);
+
+    /// Global type analysis (for this procedure).
+    void typeAnalysis();
+
+    /// Perform call and phi statement bypassing at all depths
+    void fixCallAndPhiRefs();
 
     /// Is this m[sp{-} +/- K]?
     /// True if e could represent a stack local or stack param
@@ -684,15 +695,16 @@ private:
 
     /// DataFlow object. Holds information relevant to transforming to and from SSA form.
     DataFlow m_df;
-    int m_stmtNumber = 0; ///< Current statement number. Makes it easier to split decompile() into smaller pieces.
 
     /**
      * Pointer to a set of procedures involved in a recursion group.
-     * \note Each procedure in the cycle points to the same set! However, there can be several separate cycles.
-     * E.g. in test/source/recursion.c, there is a cycle with f and g, while another is being built up (it only
-     * has c, d, and e at the point where the f-g cycle is found).
+     * The procedures in this group form a strongly connected component of the call graph.
+     * Each procedure in the recursion group points to the same ProcSet.
+     * If this procedure is not involved in recursion, this is nullptr.
+     * \note Since strongly connected components are disjunct,
+     * each procedure is part of at most 1 recursion group.
      */
-    std::shared_ptr<ProcSet> m_cycleGroup;
+    std::shared_ptr<ProcSet> m_recursionGroup;
 
 private:
     /**

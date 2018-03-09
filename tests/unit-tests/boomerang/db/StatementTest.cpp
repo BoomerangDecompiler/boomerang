@@ -46,6 +46,19 @@
 #define GLOBAL1_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/global1"))
 
 
+void compareStrings(const QString& actual, const QString& expected)
+{
+    QStringList actualList = actual.split('\n');
+    QStringList expectedList = expected.split('\n');
+
+    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
+        QCOMPARE(actualList[i], expectedList[i]);
+    }
+
+    QVERIFY(actualList.length() == expectedList.length());
+}
+
+
 void StatementTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
@@ -87,8 +100,8 @@ void StatementTest::testEmpty()
     proc->setDecoded(); // We manually "decoded"
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
+
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -158,8 +171,7 @@ void StatementTest::testFlow()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     // print cfg to a string
     QString     actual;
@@ -169,19 +181,22 @@ void StatementTest::testFlow()
 
     // The assignment to 5 gets propagated into the return, and the assignment
     // to r24 is removed
-    QString expected = "Control Flow Graph:\n"
-                       "Fall BB:\n"
-                       "  in edges: \n"
-                       "  out edges: 0x00001010 \n"
-                       "0x00001000\n"
-                       "Ret BB:\n"
-                       "  in edges: 0x00001000(0x00001000) \n"
-                       "  out edges: \n"
-                       "0x00001010    2 RET *v* r24 := 5\n"
-                       "              Modifieds: \n"
-                       "              Reaching definitions: r24=5\n\n";
+    QString expected =
+        "Control Flow Graph:\n"
+        "Fall BB:\n"
+        "  in edges: \n"
+        "  out edges: 0x00001010 \n"
+        "0x00001000\n"
+        "Ret BB:\n"
+        "  in edges: 0x00001000(0x00001000) \n"
+        "  out edges: \n"
+        "0x00001010    1 RET *v* r24 := 5\n"
+        "              Modifieds: \n"
+        "              Reaching definitions: r24=5\n"
+        "\n";
 
-    QCOMPARE(actual, expected);
+    compareStrings(actual, expected);
+
     // clean up
     delete prog;
     delete a1;
@@ -240,8 +255,7 @@ void StatementTest::testKill()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     // print cfg to a string
     QString     actual;
@@ -257,11 +271,11 @@ void StatementTest::testKill()
         "Ret BB:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00001010    3 RET *v* r24 := 0\n"
+        "0x00001010    1 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
-    QCOMPARE(actual, expected);
+    compareStrings(actual, expected);
 
     // clean up
     delete e1;
@@ -314,8 +328,7 @@ void StatementTest::testUse()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -330,11 +343,12 @@ void StatementTest::testUse()
         "Ret BB:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00001010    3 RET *v* r28 := 1000\n"
+        "0x00001010    1 RET *v* r28 := 1000\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=5,   r28=5\n\n";
 
-    QCOMPARE(actual, expected);
+    compareStrings(actual, expected);
+
     // clean up
     delete a1;
     delete a2;
@@ -392,8 +406,7 @@ void StatementTest::testUseOverKill()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     // print cfg to a string
     QString     actual;
@@ -410,10 +423,11 @@ void StatementTest::testUseOverKill()
         "Ret BB:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00001010    4 RET *v* r24 := 0\n"
+        "0x00001010    1 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
-    QCOMPARE(actual, expected);
+
+    compareStrings(actual, expected);
 
     // clean up
     delete e1;
@@ -474,10 +488,9 @@ void StatementTest::testUseOverBB()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
-    // print cfg to a string
+    proc->decompile();
 
+    // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
     cfg->print(st);
@@ -492,10 +505,11 @@ void StatementTest::testUseOverBB()
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010\n"
-        "0x00001012    4 RET *v* r24 := 0\n"
+        "0x00001012    1 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
-    QCOMPARE(actual, expected);
+
+    compareStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -548,8 +562,7 @@ void StatementTest::testUseKill()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
     // print cfg to a string
 
     QString     actual;
@@ -565,11 +578,11 @@ void StatementTest::testUseKill()
         "Ret BB:\n"
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
-        "0x00001010    3 RET *v* r24 := 0\n"
+        "0x00001010    1 RET *v* r24 := 0\n"
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
-    QCOMPARE(actual, expected);
+    compareStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -623,8 +636,7 @@ void StatementTest::testEndlessLoop()
     proc->setDecoded();
 
     // compute dataflow
-    ProcList procList;
-    proc->decompile(&procList);
+    proc->decompile();
 
     QString     actual;
     QTextStream st(&actual);
@@ -642,11 +654,11 @@ void StatementTest::testEndlessLoop()
                        "Oneway BB:\n"
                        "  in edges: 0x00001000(0x00001000) 0x00001010(0x00001010) \n"
                        "  out edges: 0x00001010 \n"
-                       "0x00000000    3 *i32* r24 := phi{1 2}\n"
-                       "0x00001010    2 *i32* r24 := r24{3} + 1\n"
+                       "0x00000000    2 *i32* r24 := phi{1 3}\n"
+                       "0x00001010    3 *i32* r24 := r24{2} + 1\n"
                        "\n";
 
-    QCOMPARE(actual, expected);
+    compareStrings(actual, expected);
 
     // clean up
     delete prog;

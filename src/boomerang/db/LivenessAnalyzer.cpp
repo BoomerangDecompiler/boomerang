@@ -128,7 +128,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
         liveout.makeUnion(m_liveIn[currBB]); // add successor liveIn to this liveout set.
 
         // The first RTL will have the phi functions, if any
-        if ((currBB->getRTLs() == nullptr) || (currBB->getRTLs()->size() == 0)) {
+        if (!currBB->getRTLs() || currBB->getRTLs()->empty()) {
             continue;
         }
 

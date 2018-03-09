@@ -75,7 +75,7 @@ public:
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, new Signature(name), module)
     , m_df(this)
-    , m_cycleGroup(nullptr)
+    , m_recursionGroup(nullptr)
     , m_retStatement(nullptr)
     , DFGcount(0)
     , m_cfg(new Cfg(this))
@@ -376,6 +376,8 @@ void UserProc::addCallee(Function *callee)
 
 void UserProc::print(QTextStream& out, bool html) const
 {
+    numberStatements();
+
     QString tgt1;
     QString tgt2;
 
@@ -576,17 +578,15 @@ void UserProc::initStatements()
 }
 
 
-void UserProc::numberStatements()
+void UserProc::numberStatements() const
 {
+    int stmtNumber = 0;
+
     for (BasicBlock *bb : *m_cfg) {
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
         for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            if (s->isImplicit() || s->getNumber() != 0) {
-                continue;
-            }
-
-            s->setNumber(++m_stmtNumber);
+            s->setNumber(++stmtNumber);
         }
     }
 }
@@ -702,7 +702,14 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
 }
 
 
-std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
+void UserProc::decompile()
+{
+    ProcList callStack;
+    decompile(callStack);
+}
+
+
+std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
 {
     /* Cycle detection logic:
      * *********************
@@ -712,50 +719,52 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
      * child is a set of procedures, cleared at the top of decompile(), representing the cycles associated with the
      * current procedure and all of its children. If this is empty, the current procedure is not involved in recursion,
      * and can be decompiled up to and including removing unused statements.
-     * path is an initially empty list of procedures, representing the call path from the current entry point to the
+     * callStack is an initially empty list of procedures, representing the call stack from the current entry point to the
      * current procedure, inclusive.
-     * If (after all children have been processed: important!) the first element in path and also cycleGrp is the current
+     * If (after all children have been processed: important!) the first element in callStack and also cycleGrp is the current
      * procedure, we have the maximal set of distinct cycles, so we can do the recursion group analysis and return an empty
      * set. At the end of the recursion group analysis, the whole group is complete, ready for the global analyses.
-     * cycleSet decompile(ProcList path)        // path initially empty
-     *      child = new ProcSet
-     *      append this proc to path
-     *      for each child c called by this proc
-     *              if c has already been visited but not finished
-     *                      // have new cycle
-     *                      if c is in path
-     *                        // this is a completely new cycle
-     *                        insert every proc from c to the end of path into child
-     *                      else
-     *                        // this is a new branch of an existing cycle
-     *                        child = c->cycleGrp
-     *                        find first element f of path that is in cycleGrp
-     *                        insert every proc after f to the end of path into child
-     *                      for each element e of child
-     *            insert e->cycleGrp into child
-     *                        e->cycleGrp = child
-     *              else
-     *                      // no new cycle
-     *                      tmp = c->decompile(path)
-     *                      child = union(child, tmp)
-     *                      set return statement in call to that of c
-     *      if (child empty)
-     *              earlyDecompile()
-     *              child = middleDecompile()
-     *              removeUnusedStatments()            // Not involved in recursion
-     *      else
-     *              // Is involved in recursion
-     *              find first element f in path that is also in cycleGrp
-     *              if (f == this)          // The big test: have we got the complete strongly connected component?
-     *                      recursionGroupAnalysis()        // Yes, we have
-     *                      child = new ProcSet            // Don't add these processed cycles to the parent
-     *      remove last element (= this) from path
-     *      return child
+     *
+     *   cycleSet decompile(ProcList callStack)        // call stack initially empty
+     *     child = new ProcSet
+     *     push this proc to the call stack
+     *     for each child c called by this proc
+     *       if c has already been visited but not finished
+     *         // have new cycle
+     *         if c is in callStack
+     *           // this is a completely new cycle
+     *           insert every proc from c to the end of callStack into child
+     *         else
+     *           // this is a new branch of an existing cycle
+     *           child = c->cycleGrp
+     *           find first element f of callStack that is in cycleGrp
+     *           insert every proc after f to the end of callStack into child
+     *           for each element e of child
+     *         insert e->cycleGrp into child
+     *         e->cycleGrp = child
+     *       else
+     *         // no new cycle
+     *         tmp = c->decompile(callStack)
+     *         child = union(child, tmp)
+     *         set return statement in call to that of c
+     *
+     *     if (child empty)
+     *       earlyDecompile()
+     *       child = middleDecompile()
+     *       removeUnusedStatments()            // Not involved in recursion
+     *     else
+     *       // Is involved in recursion
+     *       find first element f in callStack that is also in cycleGrp
+     *       if (f == this)             // The big test: have we got the complete strongly connected component?
+     *         recursionGroupAnalysis() // Yes, we have
+     *         child = new ProcSet      // Don't add these processed cycles to the parent
+     *     remove last element (= this) from callStack
+     *     return child
      */
 
-    Boomerang::get()->alertDiscovered(path->empty() ? nullptr : path->back(), this);
 
     LOG_MSG("%1 procedure '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
+    Boomerang::get()->alertDiscovered(this, this);
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
@@ -763,12 +772,12 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
         return nullptr; // Already decompiled
     }
 
-    std::shared_ptr<ProcSet> child = std::make_shared<ProcSet>();
+    std::shared_ptr<ProcSet> recursionGroup = std::make_shared<ProcSet>();
     if (m_status < PROC_DECODED) {
         // Can happen e.g. if a callee is visible only after analysing a switch statement
         // Actually decoding for the first time, not REdecoding
         if (!m_prog->reDecode(this)) {
-            return child;
+            return recursionGroup;
         }
     }
 
@@ -776,14 +785,10 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
         setStatus(PROC_VISITED); // We have at least visited this proc "on the way down"
     }
 
-    path->push_back(this); // Append this proc to path
-
-    // Recurse to children
+    callStack.push_back(this);
 
     if (SETTING(decodeChildren)) {
-        // Recurse to children first, to perform a depth first search
-
-        // Look at each call, to do the DFS
+        // Recurse to callees first, to perform a depth first search
         for (BasicBlock *bb : *m_cfg) {
             if (bb->getType() != BBType::Call) {
                 continue;
@@ -794,93 +799,72 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
 
             if (!call->isCall()) {
                 LOG_WARN("BB at address %1 is a CALL but last stmt is not a call: %2", bb->getLowAddr(), call);
+                continue;
             }
 
             assert(call->isCall());
-            UserProc *c = dynamic_cast<UserProc *>(call->getDestProc());
+            UserProc *callee = dynamic_cast<UserProc *>(call->getDestProc());
 
-            if (c == nullptr) { // not an user proc, or missing dest
+            if (callee == nullptr) { // not an user proc, or missing dest
                 continue;
             }
 
-            if (c->m_status == PROC_FINAL) {
+            if (callee->getStatus() == PROC_FINAL) {
                 // Already decompiled, but the return statement still needs to be set for this call
-                call->setCalleeReturn(c->getTheReturnStatement());
+                call->setCalleeReturn(callee->getTheReturnStatement());
                 continue;
             }
 
-            // if c has already been visited but not done (apart from global analyses, i.e. we have a new cycle)
-            if ((c->m_status >= PROC_VISITED) && (c->m_status <= PROC_EARLYDONE)) {
-                // if c is in path
-                ProcList::iterator pi;
-                bool               inPath = false;
+            // if the callee has already been visited but not done (apart from global analyses, i.e. we have a new cycle)
+            if ((callee->getStatus() >= PROC_VISITED) && (callee->getStatus() <= PROC_EARLYDONE)) {
+                // if callee is in callStack
+                ProcList::iterator calleeIt = std::find(callStack.begin(), callStack.end(), callee);
 
-                for (pi = path->begin(); pi != path->end(); ++pi) {
-                    if (*pi == c) {
-                        inPath = true;
-                        break;
-                    }
-                }
-
-                if (inPath) {
+                if (calleeIt != callStack.end()) {
                     // This is a completely new cycle
-                    // Insert every proc from c to the end of path into child
-                    do {
-                        child->insert(*pi);
-                        ++pi;
-                    } while (pi != path->end());
+                    assert(calleeIt != callStack.end());
+                    recursionGroup->insert(calleeIt, callStack.end());
                 }
-                else {
+                else if (callee->m_recursionGroup) {
                     // This is new branch of an existing cycle
-                    child = c->m_cycleGroup;
-                    // Find first element f of path that is in c->cycleGrp
-                    ProcList::iterator _pi;
-                    Function           *f = nullptr;
+                    recursionGroup = callee->m_recursionGroup;
 
-                    for (_pi = path->begin(); _pi != path->end(); ++_pi) {
-                        if (c->m_cycleGroup->find(*_pi) != c->m_cycleGroup->end()) {
-                            f = *_pi;
-                            break;
-                        }
-                    }
+                    // Find first element func of callStack that is in callee->recursionGroup
+                    ProcList::iterator _pi = std::find_if(callStack.begin(), callStack.end(),
+                        [callee] (UserProc *func) {
+                            return callee->m_recursionGroup->find(func) != callee->m_recursionGroup->end();
+                        });
 
-                    if (!f) {
-                        assert(false);
-                    }
+                    // Insert every proc after func to the end of path into child
+                    assert(_pi != callStack.end());
+                    recursionGroup->insert(std::next(_pi), callStack.end());
+                }
 
-                    // Insert every proc after f to the end of path into child
-                    // There must be at least one element in the list (this proc), so the ++pi should be safe
-                    while (++_pi != path->end()) {
-                        child->insert(*_pi);
+                // update the recursion group for each element in the new group;
+                // this will union all the recursion groups that are reached along the call path.
+                ProcSet oldRecursionGroup = *recursionGroup;
+                for (UserProc *proc : oldRecursionGroup) {
+                    if (proc->m_recursionGroup) {
+                        recursionGroup->insert(proc->m_recursionGroup->begin(), proc->m_recursionGroup->end());
                     }
                 }
 
-                // point cycleGrp for each element of child to child, unioning in each element's cycleGrp
-                ProcSet entries;
-
-                for (auto cc : *child) {
-                    if (cc->m_cycleGroup) {
-                        entries.insert(cc->m_cycleGroup->begin(), cc->m_cycleGroup->end());
-                    }
-                }
-
-                child->insert(entries.begin(), entries.end());
-
-                for (UserProc *proc : *child) {
-                    proc->m_cycleGroup = child;
+                // update the recursion group from the old one(s) to the new one
+                for (UserProc *proc : *recursionGroup) {
+                    proc->m_recursionGroup = recursionGroup;
                 }
 
                 setStatus(PROC_INCYCLE);
             }
             else {
                 // No new cycle
-                LOG_VERBOSE("Visiting on the way down child %1 from %2", c->getName(), getName());
+                LOG_VERBOSE("Visiting on the way down child %1 from %2", callee->getName(), getName());
 
-                c->promoteSignature();
-                std::shared_ptr<ProcSet> tmp = c->decompile(path);
-                child->insert(tmp->begin(), tmp->end());
+                callee->promoteSignature();
+                std::shared_ptr<ProcSet> tmp = callee->decompile(callStack);
+                recursionGroup->insert(tmp->begin(), tmp->end());
                 // Child has at least done middleDecompile(), possibly more
-                call->setCalleeReturn(c->getTheReturnStatement());
+                call->setCalleeReturn(callee->getTheReturnStatement());
 
                 if (!tmp->empty()) {
                     setStatus(PROC_INCYCLE);
@@ -889,73 +873,72 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList *path)
         }
     }
 
-    // if child is empty, i.e. no child involved in recursion
-    if (child->empty()) {
+    // if no child involved in recursion
+    if (recursionGroup->empty()) {
         Boomerang::get()->alertDecompiling(this);
         LOG_MSG("Decompiling procedure '%1'", getName());
 
         initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
-        child = middleDecompile(path);
+        recursionGroup = middleDecompile(callStack);
 
-        // If there is a switch statement, middleDecompile could contribute some cycles. If so, we need to test for
-        // the recursion logic again
-        if (!child->empty()) {
+        // If there is a switch statement, middleDecompile could contribute some cycles.
+        // If so, we need to test for the recursion logic again
+        if (!recursionGroup->empty()) {
             // We've just come back out of decompile(), so we've lost the current proc from the path.
-            path->push_back(this);
+            callStack.push_back(this);
         }
     }
 
-    if (child->empty()) {
+    if (recursionGroup->empty()) {
         remUnusedStmtEtc(); // Do the whole works
         setStatus(PROC_FINAL);
         Boomerang::get()->alertEndDecompile(this);
     }
-    else {
-        // this proc's children, and hence this proc, is/are involved in recursion
-        // find first element f in path that is also in cycleGrp
-        ProcList::iterator f;
+    else if (m_recursionGroup) {
+        // This proc's callees, and hence this proc, is/are involved in recursion.
+        // Find first element f in path that is also in our recursion group
+        ProcList::iterator f = std::find_if(callStack.begin(), callStack.end(),
+            [this] (UserProc *func) {
+                return m_recursionGroup->find(func) != m_recursionGroup->end();
+            });
 
-        for (f = path->begin(); f != path->end(); ++f) {
-            if (m_cycleGroup->find(*f) != m_cycleGroup->end()) {
-                break;
-            }
-        }
-
-        // The big test: have we found all the strongly connected components (in the call graph)?
+        // The big test: have we found the whole strongly connected component (in the call graph)?
         if (*f == this) {
             // Yes, process these procs as a group
-            recursionGroupAnalysis(path); // Includes remUnusedStmtEtc on all procs in cycleGrp
+            recursionGroupAnalysis(callStack); // Includes remUnusedStmtEtc on all procs in cycleGrp
             setStatus(PROC_FINAL);
             Boomerang::get()->alertEndDecompile(this);
-            child->clear(); // delete child;
-            child = std::make_shared<ProcSet>();
+            recursionGroup->clear();
+            recursionGroup = std::make_shared<ProcSet>();
         }
     }
 
     // Remove last element (= this) from path
     // The if should not be neccesary, but nestedswitch needs it
-    if (!path->empty()) {
-        assert(std::find(path->begin(), path->end(), this) != path->end());
+    if (!callStack.empty()) {
+        assert(std::find(callStack.begin(), callStack.end(), this) != callStack.end());
 
-        if (path->back() != this) {
+        if (callStack.back() != this) {
             LOG_WARN("Last UserProc in UserProc::decompile/path is not this!");
         }
 
-        path->remove(this);
+        callStack.remove(this);
     }
     else {
         LOG_WARN("Empty path when trying to remove last proc");
     }
 
     LOG_VERBOSE("End decompile(%1)", getName());
-    return child;
+    return recursionGroup;
 }
 
 
 void UserProc::debugPrintAll(const char *step_name)
 {
     if (SETTING(verboseOutput)) {
+        numberStatements();
+
         LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
         LOG_SEPARATE(getName(), "%1", this->toString());
         LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
@@ -984,9 +967,6 @@ void UserProc::initialiseDecompile()
 
     // Compute dominance frontier
     m_df.calculateDominators();
-
-    // Number the statements
-    numberStatements();
 
     if (!SETTING(decompile)) {
         LOG_MSG("Not decompiling.");
@@ -1022,9 +1002,7 @@ void UserProc::earlyDecompile()
 
     // Place the phi functions
     m_df.placePhiFunctions();
-
-    LOG_VERBOSE("Numbering phi statements 1st pass");
-    numberStatements(); // Number them
+    debugPrintAll("after placing phis (1)");
 
     // Rename variables
     LOG_VERBOSE("Renaming block variables 1st pass");
@@ -1040,8 +1018,9 @@ void UserProc::earlyDecompile()
 }
 
 
-std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
+std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 {
+    assert(callStack.back() == this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
@@ -1093,10 +1072,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
     // the duplicates must be eliminated.
     bool change = m_df.placePhiFunctions();
 
-    if (change) {
-        numberStatements(); // Number the new statements
-    }
-
     doRenameBlockVars(2);
     propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
     updateArguments();
@@ -1111,11 +1086,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
 
         // Rename variables
         change = m_df.placePhiFunctions();
-
-        if (change) {
-            numberStatements();                   // Number the new statements
-        }
-
         change |= doRenameBlockVars(pass, false); // E.g. for new arguments
 
         // Seed the return statement with reaching definitions
@@ -1239,12 +1209,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
     LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
 
     change = m_df.placePhiFunctions();
-
-    if (change) {
-        numberStatements();         // Number the new statements
-    }
-
     doRenameBlockVars(pass, false); // MVE: do we want this parameter false or not?
+
     debugPrintAll("after setting phis for memofs, renaming them");
     propagateStatements(convert, pass);
     // Now that memofs are renamed, the bypassing for memofs can work
@@ -1285,9 +1251,10 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList *path)
 
         m_df.setRenameLocalsParams(false);              // Start again with memofs
         setStatus(PROC_VISITED);                        // Back to only visited progress
-        path->erase(--path->end());                     // Remove self from path
-        std::shared_ptr<ProcSet> ret = decompile(path); // Restart decompiling this proc
-        path->push_back(this);                          // Restore self to path
+        assert(callStack.back() == this);
+        callStack.pop_back();                                // Remove self from call stack
+        std::shared_ptr<ProcSet> ret = decompile(callStack); // Restart decompiling this proc
+        callStack.push_back(this);                           // Restore self to call stack
         // It is important to keep the result of this call for the recursion analysis
         return ret;
     }
@@ -1331,11 +1298,7 @@ void UserProc::remUnusedStmtEtc()
         typeAnalysis();
 
         // Now that locals are identified, redo the dataflow
-        bool change = m_df.placePhiFunctions();
-
-        if (change) {
-            numberStatements();           // Number the new statements
-        }
+        m_df.placePhiFunctions();
 
         doRenameBlockVars(20);            // Rename the locals
         bool convert = false;
@@ -1518,7 +1481,7 @@ void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
 }
 
 
-void UserProc::recursionGroupAnalysis(ProcList *path)
+void UserProc::recursionGroupAnalysis(ProcList &callStack)
 {
     /* Overall algorithm:
      *  for each proc in the group
@@ -1536,48 +1499,21 @@ void UserProc::recursionGroupAnalysis(ProcList *path)
      */
 
     LOG_VERBOSE("# # # recursion group analysis for # # #");
-
-    for (UserProc *proc : *m_cycleGroup) {
+    for (UserProc *proc : *m_recursionGroup) {
         LOG_VERBOSE("    %1", proc->getName());
     }
-
     LOG_VERBOSE("# # #");
 
-    // First, do the initial decompile, and call earlyDecompile
-    for (UserProc *proc : *m_cycleGroup) {
-        proc->setStatus(PROC_INCYCLE); // So the calls are treated as childless
-        Boomerang::get()->alertDecompiling(proc);
-        proc->initialiseDecompile();   // Sort the CFG, number statements, etc
-        proc->earlyDecompile();
-    }
-
-    // Now all the procs in the group should be ready for preservation analysis
-    // The standard preservation analysis should automatically perform conditional preservation
-    for (UserProc *proc : *m_cycleGroup) {
-        proc->middleDecompile(path);
-        proc->setStatus(PROC_PRESERVEDS);
-    }
-
-    // FIXME: why exactly do we do this?
-    // Mark all the relevant calls as non childless (will harmlessly get done again later)
-    for (UserProc *proc : *m_cycleGroup) {
-        proc->markAsNonChildless(m_cycleGroup);
-    }
-
-    // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
-    // statements.
-    bool convert;
-
-    for (UserProc *proc : *m_cycleGroup) {
-        // proc->initialParameters();                    // FIXME: I think this needs to be mapping locals and params now
-        proc->mapLocalsAndParams();
-        proc->updateArguments();
-        proc->propagateStatements(convert, 0); // Need to propagate into arguments
+    // TODO: This requres a "do while changed" loop
+    for (int i = 0; i < 3; i++) {
+        ProcSet visited;
+        assert(callStack.back() == this);
+        decompileProcInRecursionGroup(callStack, visited);
     }
 
     // while no change
     for (int i = 0; i < 2; i++) {
-        for (UserProc *proc : *m_cycleGroup) {
+        for (UserProc *proc : *m_recursionGroup) {
             proc->remUnusedStmtEtc(); // Also does final parameters and arguments at present
         }
     }
@@ -3095,7 +3031,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
         }
     }
 
-    if (m_cycleGroup) { // If in involved in a recursion cycle
+    if (m_recursionGroup) { // If in involved in a recursion cycle
         //    then save the original query as a premise for bypassing calls
         m_recurPremises[origLeft->clone()] = origRight;
     }
@@ -3104,7 +3040,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
     std::map<PhiAssign *, SharedExp> cache;
     bool result = prover(query, lastPhis, cache);
 
-    if (m_cycleGroup) {
+    if (m_recursionGroup) {
         m_recurPremises.erase(origLeft); // Remove the premise, regardless of result
     }
 
@@ -3188,8 +3124,8 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                     UserProc *destProc = dynamic_cast<UserProc *>(call->getDestProc());
                     auto     base      = r->getSubExp1();
 
-                    if (destProc && !destProc->isLib() && (destProc->m_cycleGroup != nullptr) &&
-                        (destProc->m_cycleGroup->find(this) != destProc->m_cycleGroup->end())) {
+                    if (destProc && !destProc->isLib() && (destProc->m_recursionGroup != nullptr) &&
+                        (destProc->m_recursionGroup->find(this) != destProc->m_recursionGroup->end())) {
                         // The destination procedure may not have preservation proved as yet, because it is involved
                         // in our recursion group. Use the conditional preservation logic to determine whether query is
                         // true for this procedure
@@ -3537,7 +3473,7 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
     Statement *def = r->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp %1", r->toString());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
         return QString::null;
     }
 
@@ -3552,7 +3488,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
     Statement *def = r->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp %1", r->toString());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
         return QString::null;
     }
 
@@ -4491,14 +4427,14 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
             }
         }
         else if (s->isReturn()) {
-            if (m_cycleGroup && m_cycleGroup->size()) { // If this function is involved in recursion
+            if (m_recursionGroup && !m_recursionGroup->empty()) { // If this function is involved in recursion
                 continue;                               //  then ignore this return statement
             }
         }
-        else if (s->isPhi() && (m_retStatement != nullptr) && m_cycleGroup && m_cycleGroup->size()) {
-            SharedExp                 phiLeft = static_cast<PhiAssign *>(s)->getLeft();
-            auto                      refPhi  = RefExp::get(phiLeft, s);
-            bool                      foundPhi = false;
+        else if (s->isPhi() && (m_retStatement != nullptr) && m_recursionGroup && !m_recursionGroup->empty()) {
+            SharedExp  phiLeft = static_cast<PhiAssign *>(s)->getLeft();
+            auto       refPhi  = RefExp::get(phiLeft, s);
+            bool       foundPhi = false;
 
             for (Statement *stmt : *m_retStatement) {
                 SharedExp   rhs = static_cast<Assign *>(stmt)->getRight();
@@ -5163,3 +5099,52 @@ void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
 
     addLocal(ty, locName, base);
 }
+
+
+void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visited)
+{
+    UserProc *current = callStack.back();
+    visited.insert(current);
+
+    for (Function *c : current->getCallees()) {
+        if (c->isLib()) {
+            continue;
+        }
+
+        UserProc *callee = static_cast<UserProc *>(c);
+        if (visited.find(callee) != visited.end()) {
+            continue;
+        }
+        else if (m_recursionGroup->find(callee) == m_recursionGroup->end()) {
+            // not in recursion group any more
+            continue;
+        }
+
+        // visit unvisited callees first
+        callStack.push_back(callee);
+        decompileProcInRecursionGroup(callStack, visited);
+        callStack.pop_back();
+    }
+
+    current->setStatus(PROC_INCYCLE); // So the calls are treated as childless
+    Boomerang::get()->alertDecompiling(current);
+    current->initialiseDecompile();   // Sort the CFG, number statements, etc
+    current->earlyDecompile();
+
+    // The standard preservation analysis should automatically perform conditional preservation.
+    current->middleDecompile(callStack);
+    current->setStatus(PROC_PRESERVEDS);
+
+    // Mark all the relevant calls as non childless (will harmlessly get done again later)
+    // FIXME: why exactly do we do this?
+    current->markAsNonChildless(m_recursionGroup);
+
+    // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
+    // statements.
+    bool convert;
+
+    current->mapLocalsAndParams();
+    current->updateArguments();
+    current->propagateStatements(convert, 0); // Need to propagate into arguments
+}
+

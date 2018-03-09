@@ -55,6 +55,8 @@
 #include <vector>
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <unordered_set>
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -957,6 +959,9 @@ void Prog::decodeEntryPoint(Address entryAddr)
 void Prog::addEntryPoint(Address entryAddr)
 {
     Function *func = findFunction(entryAddr);
+    if (!func) {
+        func = createFunction(entryAddr);
+    }
 
     if (func && !func->isLib()) {
         m_entryProcs.push_back(static_cast<UserProc *>(func));
@@ -989,8 +994,7 @@ void Prog::decompile()
     // Start decompiling each entry point
     for (UserProc *up : m_entryProcs) {
         LOG_VERBOSE("Decompiling entry point '%1'", up->getName());
-        ProcList call_path;
-        up->decompile(&call_path);
+        up->decompile();
     }
 
     // Just in case there are any Procs not in the call graph.
@@ -1012,9 +1016,7 @@ void Prog::decompile()
                     if (proc->isDecompiled()) {
                         continue;
                     }
-
-                    ProcList procList;
-                    proc->decompile(&procList);
+                    proc->decompile();
                     foundone = true;
                 }
             }
@@ -1028,7 +1030,7 @@ void Prog::decompile()
             // A final pass to remove returns not used by any caller
             LOG_VERBOSE("Prog: global removing unused returns");
 
-            // Repeat until no change. Note 100% sure if needed.
+            // Repeat until no change. Not 100% sure if needed.
             while (removeUnusedReturns()) {
             }
         }
@@ -1140,7 +1142,14 @@ bool Prog::removeUnusedReturns()
     // returns and/or dead code removes parameters, which affects all callers).
     while (!removeRetSet.empty()) {
         auto it = removeRetSet.begin(); // Pick the first element of the set
-        change |= (*it)->removeRedundantReturns(removeRetSet);
+        const bool removedReturns = (*it)->removeRedundantReturns(removeRetSet);
+        if (removedReturns) {
+            // Removing returns changes the uses of the callee.
+            // So we have to do type analyis to update the use information.
+            (*it)->typeAnalysis();
+        }
+        change |= removedReturns;
+
         // Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
         // procedures
         removeRetSet.erase(it); // Remove the current element (may no longer be the first)
@@ -1204,77 +1213,57 @@ void Prog::globalTypeAnalysis()
 }
 
 
-void Prog::printCallGraph() const
+void Prog::printCallGraph(const QString &filename) const
 {
-    QString   fname1 = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("callgraph.out");
-    QString   fname2 = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("callgraph.dot");
-    QSaveFile file1(fname1);
-    QSaveFile file2(fname2);
+    QSaveFile saveFile(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
 
-    if (!(file1.open(QFile::WriteOnly) && file2.open(QFile::WriteOnly))) {
-        LOG_ERROR("Cannot open output files for callgraph output");
+    if (!saveFile.open(QFile::WriteOnly)) {
+        LOG_ERROR("Cannot open output file '%1' for callgraph output", filename);
         return;
     }
 
-    QTextStream                      f1(&file1);
-    QTextStream                      f2(&file2);
-    std::set<Function *>             seen;
-    std::map<Function *, int>        spaces;
-    std::map<Function *, Function *> calledBy;
-    std::list<Function *>            procList;
+    QTextStream ost(&saveFile);
 
-    std::copy(m_entryProcs.begin(), m_entryProcs.end(), std::back_inserter(procList));
+    ost << "digraph callgraph\n";
+    ost << "{\n";
 
-    spaces[procList.front()] = 0;
+    std::queue<Function *>           procList;
+    std::unordered_set<Function *>   seen;
 
-    f2 << "digraph callgraph {\n";
+    for (Function *entry : m_entryProcs) {
+        // We have to explicitly write entry procedures here
+        // because not every entry procedure has callees (e.g. hello world main)
+        ost << "    " << entry->getName() << ";\n";
+        procList.push(entry);
+    }
 
     while (!procList.empty()) {
-        Function *p = procList.front();
-        procList.pop_front();
+        Function *currentProc = procList.front();
+        procList.pop();
 
-        if (HostAddress(p) == HostAddress::INVALID) {
+        if (currentProc == reinterpret_cast<Function *>(-1)) {
             continue;
         }
-
-        if (seen.find(p) != seen.end()) {
-            continue;
+        else if (seen.find(currentProc) != seen.end()) {
+            continue; // already processed
         }
+        seen.insert(currentProc);
 
-        seen.insert(p);
-        int n = spaces[p];
+        UserProc *up = static_cast<UserProc *>(currentProc);
 
-        for (int i = 0; i < n; i++) {
-            f1 << "     ";
-        }
+        for (Function *callee : up->getCallees()) {
+            ost << "    " << up->getName() << " -> " << callee->getName() << ";\n";
 
-        f1 << p->getName() << " @ " << p->getEntryAddress();
-
-        if (calledBy.find(p) != calledBy.end()) {
-            f1 << " [parent=" << calledBy[p]->getName() << "]";
-        }
-
-        f1 << '\n';
-
-        if (!p->isLib()) {
-            n++;
-            UserProc               *u         = static_cast<UserProc *>(p);
-            std::list<Function *>& calleeList = u->getCallees();
-
-            for (auto it1 = calleeList.rbegin(); it1 != calleeList.rend(); it1++) {
-                procList.push_front(*it1);
-                spaces[*it1] = n;
-                calledBy[*it1] = p;
-                f2 << p->getName() << " -> " << (*it1)->getName() << ";\n";
+            if (seen.find(callee) == seen.end() && !callee->isLib()) {
+                procList.push(callee);
             }
         }
     }
 
-    f2 << "}\n";
-    f1.flush();
-    f2.flush();
-    file1.commit();
-    file2.commit();
+    ost << "}\n";
+
+    ost.flush();
+    saveFile.commit();
 }
 
 

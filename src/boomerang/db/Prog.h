@@ -249,7 +249,7 @@ public:
     void readSymbolFile(const QString& fname);
 
     void printSymbolsToFile() const;
-    void printCallGraph() const;
+    void printCallGraph(const QString &fileName = "callgraph.dot") const;
 
     Module *getRootModule() const { return m_rootModule; }
     Module *findModule(const QString& name) const;

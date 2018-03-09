@@ -84,7 +84,7 @@ ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
     if (procDest && procDest->isLib()) {
         src     = SRC_LIB;
         callSig = call->getSignature();
-        n       = callSig->getNumParams();
+        n       = callSig ? callSig->getNumParams() : 0;
         i       = 0;
     }
     else if (call->getCalleeReturn() != nullptr) {
