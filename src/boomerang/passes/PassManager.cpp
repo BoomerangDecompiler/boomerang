@@ -103,12 +103,12 @@ bool PassManager::executePass(PassID passID, UserProc *proc)
 }
 
 
-bool PassManager::executePass(IPass* pass, UserProc* proc)
+bool PassManager::executePass(IPass *pass, UserProc *proc)
 {
     assert(pass != nullptr);
-
     LOG_VERBOSE("Executing pass '%1' for '%2'", pass->getName(), proc->getName());
-    bool changed = pass->execute(proc);
+
+    const bool changed = pass->execute(proc);
 
     QString msg = QString("after executing pass '%1'").arg(pass->getName());
     proc->debugPrintAll(qPrintable(msg));
