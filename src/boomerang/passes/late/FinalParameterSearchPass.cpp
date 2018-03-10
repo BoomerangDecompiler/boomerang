@@ -26,8 +26,6 @@ FinalParameterSearchPass::FinalParameterSearchPass()
 
 bool FinalParameterSearchPass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompileDebugPoint(proc, "before find final parameters.");
-
     qDeleteAll(proc->getParameters());
     proc->getParameters().clear();
 
@@ -100,6 +98,5 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after find final parameters.");
     return true;
 }

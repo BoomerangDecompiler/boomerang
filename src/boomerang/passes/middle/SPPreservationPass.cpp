@@ -23,8 +23,6 @@ SPPreservationPass::SPPreservationPass()
 
 bool SPPreservationPass::execute(UserProc *proc)
 {
-    LOG_VERBOSE("Finding stack pointer preservation for %1", getName());
-
     bool stdsp = false; // FIXME: are these really used?
     // Note: need this non-virtual version most of the time, since nothing proved yet
     int sp = proc->getSignature()->getStackRegister(proc->getProg());

@@ -27,8 +27,6 @@ CallDefineUpdatePass::CallDefineUpdatePass()
 
 bool CallDefineUpdatePass::execute(UserProc *proc)
 {
-    LOG_VERBOSE("### Update call defines for %1 ###", proc->getName());
-
     StatementList stmts;
     proc->getStatements(stmts);
 

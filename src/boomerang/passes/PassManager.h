@@ -31,7 +31,7 @@ public:
 public:
     /// Creates a pass group with name \p name and elements \p passes
     /// \returns true iff creation was successful.
-    bool createPassGroup(const QString &name, const std::initializer_list<IPass *> &passes);
+    bool createPassGroup(const QString& name, const std::initializer_list<IPass *> &passes);
 
     /// \returns the pass of type \p passType
     IPass *getPass(PassID passID);
@@ -41,9 +41,9 @@ public:
     bool executePass(IPass *pass, UserProc *proc);
     bool executePass(PassID passID, UserProc *proc);
 
-    /// Execute all passes in the pass group with name \p name on \p proc
+    /// Execute all passes in the pass group with name \p name on \p proc.
     /// \returns true iff at least 1 pass updated \p proc
-    bool executePassGroup(const QString &name, UserProc *proc);
+    bool executePassGroup(const QString& name, UserProc *proc);
 
 private:
     void registerPass(PassID passType, std::unique_ptr<IPass> pass);

@@ -53,10 +53,6 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
      *      else (ordinary statement)
      *        do bypass and propagation for s
      */
-    LOG_VERBOSE("### Start fix call and phi bypass analysis for %1 ###", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before fixing call and phi refs");
-
     std::map<SharedExp, int, lessExpStar> destCounts;
     StatementList stmts;
     proc->getStatements(stmts);
@@ -234,10 +230,6 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             cc->setSubExp1(addr);
         }
     }
-
-    LOG_VERBOSE("### End fix call and phi bypass analysis for %1 ###", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after fixing call and phi refs");
 
     return true;
 }

@@ -24,8 +24,6 @@ DuplicateArgsRemovalPass::DuplicateArgsRemovalPass()
 
 bool DuplicateArgsRemovalPass::execute(UserProc *proc)
 {
-    LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
-
     BasicBlock::RTLRIterator        rrit;
     StatementList::reverse_iterator srit;
 

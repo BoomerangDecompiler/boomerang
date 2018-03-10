@@ -31,16 +31,6 @@ bool FromSSAFormPass::execute(UserProc *proc)
 {
     Boomerang::get()->alertDecompiling(proc);
 
-    LOG_VERBOSE("Transforming %1 from SSA form");
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before transforming from SSA form");
-
-    if (proc->getCFG()->getNumBBs() >= 100) { // Only for the larger procs
-        // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
-        // little procs that don't get messages. Also, looks better with progress dots
-        LOG_VERBOSE(" transforming out of SSA form: %1 with %2 BBs", getName(), proc->getCFG()->getNumBBs());
-    }
-
     StatementList stmts;
     proc->getStatements(stmts);
 
@@ -329,7 +319,6 @@ bool FromSSAFormPass::execute(UserProc *proc)
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after transforming from SSA form");
     return true;
 }
 

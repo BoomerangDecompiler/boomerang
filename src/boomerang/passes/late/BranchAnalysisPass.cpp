@@ -21,6 +21,7 @@ BranchAnalysisPass::BranchAnalysisPass()
 {
 }
 
+
 bool BranchAnalysisPass::execute(UserProc *proc)
 {
     bool removedBBs = doBranchAnalysis(proc);
@@ -31,7 +32,6 @@ bool BranchAnalysisPass::execute(UserProc *proc)
 
 bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
 {
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before branch analysis");
     StatementList stmts;
     proc->getStatements(stmts);
 
@@ -128,15 +128,12 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
         proc->getCFG()->removeBB(bb);
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After branch analysis.");
     return removedBBs;
 }
 
 
 void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
 {
-    LOG_VERBOSE("### fixUglyBranches for '%1' ###", getName());
-
     StatementList stmts;
     proc->getStatements(stmts);
 
@@ -172,8 +169,6 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
             }
         }
     }
-
-    proc->debugPrintAll("After fixUglyBranches");
 }
 
 

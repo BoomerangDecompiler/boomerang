@@ -23,8 +23,6 @@ CallLivenessRemovalPass::CallLivenessRemovalPass()
 
 bool CallLivenessRemovalPass::execute(UserProc *proc)
 {
-    LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
-
     BasicBlock::RTLRIterator        rrit;
     StatementList::reverse_iterator srit;
 

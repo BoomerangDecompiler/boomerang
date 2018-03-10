@@ -139,6 +139,7 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
     QString     res_str;
     QTextStream str(&res_str);
     str << "Before removing matching assigns (" << e << ").";
+
     Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(res_str));
     LOG_VERBOSE(res_str);
 

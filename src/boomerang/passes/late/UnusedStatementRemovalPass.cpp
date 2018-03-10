@@ -94,8 +94,6 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCo
 
 void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, Function::RefCounter& refCounts)
 {
-    Boomerang::get()->alertDecompileDebugPoint(proc, "before remUnusedStmtEtc");
-
     StatementList stmts;
     proc->getStatements(stmts);
     bool change;
@@ -185,9 +183,8 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, Function::RefC
     PassManager::get()->executePass(PassID::CallLivenessRemoval, proc); // Kill all existing livenesses
     PassManager::get()->executePass(PassID::BlockVarRename, proc);      // Recalculate new livenesses
 
-    proc->setStatus(PROC_FINAL); // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after remUnusedStmtEtc");
+    // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
+    proc->setStatus(PROC_FINAL);
 }
 
 bool UnusedStatementRemovalPass::removeNullStatements(UserProc* proc)

@@ -27,8 +27,6 @@ StrengthReductionReversalPass::StrengthReductionReversalPass()
 
 bool StrengthReductionReversalPass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before reversing strength reduction");
-
     StatementList stmts;
     proc->getStatements(stmts);
 
@@ -80,6 +78,5 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After reversing strength reduction");
     return true;
 }

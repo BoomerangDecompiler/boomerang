@@ -24,8 +24,6 @@ GlobalConstReplacePass::GlobalConstReplacePass()
 
 bool GlobalConstReplacePass::execute(UserProc *proc)
 {
-    LOG_VERBOSE("### Replace simple global constants for %1 ###", getName());
-
     StatementList stmts;
     proc->getStatements(stmts);
 

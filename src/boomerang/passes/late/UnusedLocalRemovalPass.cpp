@@ -27,10 +27,6 @@ UnusedLocalRemovalPass::UnusedLocalRemovalPass()
 
 bool UnusedLocalRemovalPass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before removing unused locals");
-
-    LOG_VERBOSE("Removing unused locals (final) for %1", getName());
-
     QSet<QString> usedLocals;
     StatementList stmts;
     proc->getStatements(stmts);

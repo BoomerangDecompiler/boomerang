@@ -26,16 +26,11 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
 {
     std::set<SharedExp> removes;
 
-    LOG_VERBOSE("Finding preserveds for %1", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "before finding preserveds");
-
     if (proc->getTheReturnStatement() == nullptr) {
         if (DEBUG_PROOF) {
             LOG_MSG("Can't find preservations as there is no return statement!");
         }
 
-        Boomerang::get()->alertDecompileDebugPoint(proc, "after finding preserveds (no return)");
         return false;
     }
 
@@ -77,8 +72,6 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
 
         proc->getTheReturnStatement()->removeModified(lhs);
     }
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After finding preserveds");
 
     return true;
 }

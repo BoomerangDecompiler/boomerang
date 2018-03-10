@@ -24,8 +24,6 @@ LocalTypeAnalysisPass::LocalTypeAnalysisPass()
 
 bool LocalTypeAnalysisPass::execute(UserProc *proc)
 {
-    LOG_VERBOSE("### Type analysis for %1 ###", getName());
-
     // Now we need to add the implicit assignments. Doing this earlier is extremely problematic, because
     // of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
     // Do this regardless of whether doing dfa-based TA, so things like finding parameters can rely on implicit assigns
@@ -37,5 +35,6 @@ bool LocalTypeAnalysisPass::execute(UserProc *proc)
     if (DFA_TYPE_ANALYSIS) {
         rec->recoverFunctionTypes(proc);
     }
+
     return true;
 }

@@ -25,8 +25,6 @@ CallArgumentUpdatePass::CallArgumentUpdatePass()
 bool CallArgumentUpdatePass::execute(UserProc *proc)
 {
     Boomerang::get()->alertDecompiling(proc);
-    LOG_VERBOSE("### Update arguments for %1 ###", getName());
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before updating arguments");
 
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator        rrit;
@@ -42,9 +40,6 @@ bool CallArgumentUpdatePass::execute(UserProc *proc)
         // c->bypass();
         LOG_VERBOSE("%1", c);
     }
-
-    LOG_VERBOSE("=== End update arguments for %1", getName());
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After updating arguments");
 
     return true;
 }
