@@ -147,7 +147,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, Function::RefC
                 s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
 
                 for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                    if ((*cc)->isSubscript()) {
+                    if ((*cc)->isSubscript() && (*cc)->access<RefExp>()->getDef()) {
                         stmtsRefdByUnused.insert((*cc)->access<RefExp>()->getDef());
                     }
                 }
