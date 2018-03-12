@@ -611,6 +611,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
     // just in case you missed it
     Boomerang::get()->alertNew(proc);
+    LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
     // that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
@@ -844,7 +845,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                         // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out to be a switch stmt
                         currentBB = cfg->createBB(BBType::CompJump, std::move(BB_rtls));
 
-                        LOG_VERBOSE("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
+                        LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
                         if (!SETTING(decompile)) {
                             // try some hacks
@@ -1173,7 +1174,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
     Boomerang::get()->alertDecode(proc, startAddr, lastAddr, numBytesDecoded);
 
-    LOG_VERBOSE("Finished processing proc %1 at address %2", proc->getName(), proc->getEntryAddress());
+    LOG_VERBOSE("### Finished decoding proc '%1' ###", proc->getName());
 
     return true;
 }

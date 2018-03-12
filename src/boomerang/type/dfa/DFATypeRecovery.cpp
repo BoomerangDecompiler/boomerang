@@ -503,7 +503,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 }
 
                 const SharedType& ty = static_cast<TypingStatement *>(s)->getType();
-                LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
+                LOG_VERBOSE2("Type analysis for '%1': Adding addrExp '%2' with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
                 localsMap.insertItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }

@@ -14,7 +14,7 @@
 
 
 PhiPlacementPass::PhiPlacementPass()
-    : IPass("Phi placement", PassID::PhiPlacement)
+    : IPass("PhiPlacement", PassID::PhiPlacement)
 {
 }
 

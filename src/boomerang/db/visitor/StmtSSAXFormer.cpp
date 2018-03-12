@@ -102,8 +102,9 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
         s->accept(this);
     }
 
-    // Note that defines have statements (assignments) within a statement (this call). The fromSSA logic, which needs
-    // to subscript definitions on the left with the statement pointer, won't work if we just call the assignment's
+    // Note that defines have statements (assignments) within a statement (this call).
+    // The fromSSA logic, which needs to subscript definitions on the left
+    // with the statement pointer, won't work if we just call the assignment's
     // fromSSA() function
     StatementList& defines = stmt->getDefines();
 
@@ -121,7 +122,7 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
             SharedType ty     = as->getType();
 
             if (ty && lty && (*ty != *lty)) {
-                LOG_MSG("Local %1 has type %2 that doesn't agree with type of define %3 of a library, why?",
+                LOG_WARN("Forcing type of local '%1' from '%2' to '%3' due to library constraints",
                         e, lty->getCtype(), ty->getCtype());
                 _proc->setLocalType(e->access<Const, 1>()->getStr(), ty);
             }

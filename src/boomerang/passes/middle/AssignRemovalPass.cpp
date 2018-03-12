@@ -136,12 +136,11 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
         return false;
     }
 
-    QString     res_str;
-    QTextStream str(&res_str);
+    QString     msg;
+    QTextStream str(&msg);
     str << "Before removing matching assigns (" << e << ").";
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(res_str));
-    LOG_VERBOSE(res_str);
+    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(msg));
 
     for (auto& stmt : stmts) {
         if ((stmt)->isAssign()) {
@@ -160,10 +159,10 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
         }
     }
 
-    res_str.clear();
+    msg.clear();
     str << "After removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(res_str));
-    LOG_VERBOSE(res_str);
+    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(msg));
+    LOG_VERBOSE(msg);
 
     return true;
 }

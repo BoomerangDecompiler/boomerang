@@ -1028,14 +1028,14 @@ void Prog::decompile()
 
     if (SETTING(decompile) && SETTING(removeReturns)) {
         // A final pass to remove returns not used by any caller
-        LOG_VERBOSE("Prog: global removing unused returns");
+        LOG_VERBOSE("Performing global removal of unused returns...");
 
         // Repeat until no change. Not 100% sure if needed.
         while (removeUnusedReturns()) {
         }
     }
 
-    LOG_VERBOSE("Transforming from SSA");
+    LOG_VERBOSE2("Transforming '%1' from SSA", getName());
 
     // Now it is OK to transform out of SSA form
     fromSSAForm();

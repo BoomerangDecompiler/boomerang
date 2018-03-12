@@ -1582,7 +1582,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& chang
             SharedExp ret = localiseExp(base->clone());     // Assume that it is proved as preserved
             changed = true;
 
-            LOG_VERBOSE("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
+            LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
             return ret;
         }
 
@@ -1599,7 +1599,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& chang
     proven = proven->searchReplaceAll(*base, to, changed);     // e.g. r28{17} + 4
 
     if (changed) {
-        LOG_VERBOSE("Replacing %1 with %2", r, proven);
+        LOG_VERBOSE2("Replacing %1 with %2", r, proven);
     }
 
     return proven;

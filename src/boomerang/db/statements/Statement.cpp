@@ -431,11 +431,11 @@ bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert
         SETTING(numToPropagate--);
     }
 
-    LOG_VERBOSE("Propagating %1 into %2", def, this);
+    LOG_VERBOSE2("Propagating %1 into %2", def, this);
 
     bool change = replaceRef(e, def, convert);
 
-    LOG_VERBOSE("    result %1", this);
+    LOG_VERBOSE2("    result %1", this);
 
     return change;
 }
@@ -686,7 +686,7 @@ void Statement::dfaMapLocals()
     accept(&sm);
 
     if (dlm.change) {
-        LOG_VERBOSE("Statement mapped with new local(s): %1", m_number);
+        LOG_VERBOSE2("Statement '%1' mapped with new local(s)", this);
     }
 }
 

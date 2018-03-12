@@ -720,7 +720,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
             }
             else {
                 // No new cycle
-                LOG_VERBOSE("Visiting on the way down child %1 from %2", callee->getName(), getName());
+                LOG_VERBOSE("Preparing to decompile callee '%1' of '%2'", callee->getName(), getName());
 
                 callee->promoteSignature();
                 std::shared_ptr<ProcSet> tmp = callee->decompile(callStack);
@@ -790,7 +790,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
         LOG_WARN("Empty path when trying to remove last proc");
     }
 
-    LOG_VERBOSE("End decompile(%1)", getName());
+    LOG_VERBOSE("Finished decompile of '%1'", getName());
     return recursionGroup;
 }
 
@@ -830,7 +830,7 @@ void UserProc::earlyDecompile()
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Early");
-    LOG_VERBOSE("Early decompile for %1", getName());
+    LOG_VERBOSE("### Beginning early decompile for '%1' ###", getName());
 
     // Update the defines in the calls. Will redo if involved in recursion
     PassManager::get()->executePass(PassID::CallDefineUpdate, this);
@@ -856,6 +856,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 {
     assert(callStack.back() == this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
+    LOG_VERBOSE("### Beginning middleDecompile for '%1' ###", getName());
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
     // The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
@@ -914,9 +915,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     do {
         // Redo the renaming process to take into account the arguments
-        LOG_VERBOSE("Renaming block variables (2) pass %1", pass);
-
-        // Rename variables
         change = PassManager::get()->executePass(PassID::PhiPlacement, this);
         change |= PassManager::get()->executePass(PassID::BlockVarRename, this); // E.g. for new arguments
 
@@ -972,7 +970,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         Boomerang::get()->alertDecompileBeforePropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
 
-        LOG_VERBOSE("Propagating at pass %1", pass);
         change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
         getDataFlow()->clearStacks();
         change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
@@ -998,8 +995,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     // Now we need another pass to inert phis for the memofs, rename them and propagate them
     ++pass;
-
-    LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
 
     change = PassManager::get()->executePass(PassID::PhiPlacement, this);
     change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
@@ -1065,8 +1060,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     PassManager::get()->executePass(PassID::DuplicateArgsRemoval, this);
 
-    LOG_VERBOSE("===== End early decompile for %1 =====", getName());
-
     setStatus(PROC_EARLYDONE);
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after middle");
@@ -1080,7 +1073,7 @@ void UserProc::remUnusedStmtEtc()
     Boomerang::get()->alertDecompiling(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Final");
 
-    LOG_VERBOSE("--- Remove unused statements for %1 ---", getName());
+    LOG_VERBOSE("### Removing unused statements for %1 ###", getName());
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
@@ -1406,7 +1399,7 @@ SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /*
         LOG_FATAL("Null type passed to newLocal");
     }
 
-    LOG_VERBOSE("Assigning type %1 to new %2", ty->getCtype(), localName);
+    LOG_VERBOSE2("Assigning type %1 to new %2", ty->getCtype(), localName);
 
     return Location::local(localName, this);
 }

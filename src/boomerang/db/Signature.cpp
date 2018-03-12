@@ -449,24 +449,24 @@ bool CallingConvention::Win32Signature::qualified(UserProc *p, Signature& /*cand
         return false;
     }
 
-    LOG_VERBOSE("Consider promotion to stdc win32 signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc win32 signature for %1", p->getName());
 
     bool      gotcorrectret1, gotcorrectret2 = false;
     SharedExp provenPC = p->getProven(Terminal::get(opPC));
     gotcorrectret1 = provenPC && (*provenPC == *savedReturnLocation);
 
     if (gotcorrectret1) {
-        LOG_VERBOSE("got pc = m[r[28]]");
+        LOG_VERBOSE2("got pc = m[r[28]]");
 
         SharedExp provenSP = p->getProven(Location::regOf(28));
         gotcorrectret2 = provenSP && *provenSP == *stackPlusFour;
 
         if (gotcorrectret2) {
-            LOG_VERBOSE("Got r[28] = r[28] + 4");
+            LOG_VERBOSE2("Got r[28] = r[28] + 4");
         }
     }
 
-    LOG_VERBOSE("Qualified: %1", (gotcorrectret1 && gotcorrectret2));
+    LOG_VERBOSE2("Qualified: %1", (gotcorrectret1 && gotcorrectret2));
 
     return gotcorrectret1 && gotcorrectret2;
 }
@@ -706,10 +706,10 @@ bool CallingConvention::StdC::PentiumSignature::qualified(UserProc *p, Signature
         return false;
     }
 
-    LOG_VERBOSE("Consider promotion to stdc pentium signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc pentium signature for %1", p->getName());
 
 #if 1
-    LOG_VERBOSE("Promotion qualified: always true");
+    LOG_VERBOSE2("Promotion qualified: always true");
     return true; // For now, always pass
 #else
     bool          gotcorrectret1 = false;
@@ -1126,7 +1126,7 @@ bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /
         return false;
     }
 
-    LOG_VERBOSE("Consider promotion to stdc st20 signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc st20 signature for %1", p->getName());
 
     return true;
 }
@@ -1202,7 +1202,7 @@ bool CallingConvention::StdC::SparcSignature::operator==(const Signature& other)
 
 bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    LOG_VERBOSE("Consider promotion to stdc sparc signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc sparc signature for %1", p->getName());
 
     Platform plat = p->getProg()->getFrontEndId();
 
@@ -1210,7 +1210,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& 
         return false;
     }
 
-    LOG_VERBOSE("Promoted to StdC::SparcSignature");
+    LOG_VERBOSE2("Promoted to StdC::SparcSignature");
 
     return true;
 }
@@ -1218,7 +1218,7 @@ bool CallingConvention::StdC::SparcSignature::qualified(UserProc *p, Signature& 
 
 bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    LOG_VERBOSE("Consider promotion to stdc PPC signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc PPC signature for %1", p->getName());
 
     Platform plat = p->getProg()->getFrontEndId();
 
@@ -1226,7 +1226,7 @@ bool CallingConvention::StdC::PPCSignature::qualified(UserProc *p, Signature& /*
         return false;
     }
 
-    LOG_VERBOSE("Promoted to StdC::PPCSignature (always qualifies)");
+    LOG_VERBOSE2("Promoted to StdC::PPCSignature (always qualifies)");
 
     return true;
 }

@@ -212,7 +212,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             }
 
             phi->convertToAssign(best);
-            LOG_VERBOSE("Redundant phi replaced with copy assign; now %1", phi);
+            LOG_VERBOSE2("Redundant phi replaced with copy assign; now %1", phi);
         }
     }
 
