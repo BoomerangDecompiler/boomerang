@@ -3167,6 +3167,7 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
     // statements.
     current->mapLocalsAndParams();
     PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
+    PassManager::get()->executePass(PassID::Dominators, this);
     PassManager::get()->executePass(PassID::StatementPropagation, this); // Need to propagate into arguments
 }
 
