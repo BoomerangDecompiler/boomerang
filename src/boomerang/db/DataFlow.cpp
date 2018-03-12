@@ -625,7 +625,7 @@ bool DataFlow::renameBlockVars(int n)
             auto ss = m_Stacks.find(*dd);
 
             if (ss == m_Stacks.end()) {
-                LOG_FATAL("Tried to pop %1 from Stacks; does not exist", (*dd)->toString());
+                LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", (*dd)->toString());
             }
 
             ss->second.pop_back();

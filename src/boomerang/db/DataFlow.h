@@ -212,15 +212,13 @@ private:
     /// A Boomerang requirement: Statements defining particular subscripted locations
     std::map<SharedExp, Statement *, lessExpStar> m_defStmts;
 
-    /*
-     * Renaming variables
-     */
     /// The stack which remembers the last definition of an expression.
-    /// A map from expression (Exp*) to a stack of (pointers to) Statements
     std::map<SharedExp, std::deque<Statement *>, lessExpStar> m_Stacks;
 
-    // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
-    // When true, locals and parameters can be renamed if their address does not escape the local procedure.
-    // See Mike's thesis for details.
+    /**
+     * Initially false, meaning that locals and parameters are not renamed and hence not propagated.
+     * When true, locals and parameters can be renamed if their address does not escape the local procedure.
+     * See Mike's thesis for details.
+     */
     bool renameLocalsAndParams;
 };

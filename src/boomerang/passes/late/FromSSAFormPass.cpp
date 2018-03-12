@@ -225,7 +225,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     // Update symbols and parameters, particularly for the stack pointer inside memofs.
     // NOTE: the ordering of the below operations is critical! Re-ordering may well prevent e.g. parameters from
     // renaming successfully.
-    verifyPhis(proc);
+    assert(proc->allPhisHaveDefs());
     nameParameterPhis(proc);
     proc->mapLocalsAndParams();
     mapParameters(proc);
@@ -320,26 +320,6 @@ bool FromSSAFormPass::execute(UserProc *proc)
     }
 
     return true;
-}
-
-
-void FromSSAFormPass::verifyPhis(UserProc* proc)
-{
-    StatementList stmts;
-    proc->getStatements(stmts);
-
-    for (Statement *st : stmts) {
-        if (!st->isPhi()) {
-            continue; // Might be able to optimise this a bit
-        }
-
-        PhiAssign *pi = static_cast<PhiAssign *>(st);
-
-        for (const auto& pas : *pi) {
-            Q_UNUSED(pas);
-            assert(pas.getDef());
-        }
-    }
 }
 
 

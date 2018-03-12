@@ -2928,6 +2928,29 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 }
 
 
+bool UserProc::allPhisHaveDefs() const
+{
+    StatementList stmts;
+    getStatements(stmts);
+
+    for (const Statement *stmt : stmts) {
+        if (!stmt->isPhi()) {
+            continue; // Might be able to optimise this a bit
+        }
+
+        const PhiAssign *pa = static_cast<const PhiAssign *>(stmt);
+
+        for (const auto& ref : *pa) {
+            if (!ref.getDef()) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
 void UserProc::processDecodedICTs()
 {
     for (BasicBlock *bb : *m_cfg) {

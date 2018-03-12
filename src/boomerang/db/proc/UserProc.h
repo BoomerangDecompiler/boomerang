@@ -195,7 +195,6 @@ public:
      */
     void insertParameter(SharedExp e, SharedType ty);
 
-private:
 public:
     /// Initialise the statements, e.g. proc, bb pointers
     void initStatements();
@@ -502,6 +501,8 @@ public:
     /// and hence is an *initial* parameter.
     /// \note final parameters don't use this information; it's only for handling recursion.
     void useBeforeDefine(const SharedExp& loc) { m_procUseCollector.insert(loc); }
+
+    bool allPhisHaveDefs() const;
 
     /**
      * Copy the RTLs for the already decoded Indirect Control Transfer instructions,

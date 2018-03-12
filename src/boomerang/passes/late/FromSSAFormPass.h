@@ -23,8 +23,6 @@ public:
     bool execute(UserProc *proc) override;
 
 private:
-    void verifyPhis(UserProc *proc);
-
     /**
      * Add a mapping for the destinations of phi functions that have one
      * argument that is a parameter.

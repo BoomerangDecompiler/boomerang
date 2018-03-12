@@ -486,6 +486,7 @@ QTextStream& operator<<(QTextStream& os, const Exp *p)
     return os;
 }
 
+
 SharedType Exp::ascendType()
 {
     assert(false);
