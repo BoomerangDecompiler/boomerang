@@ -412,8 +412,6 @@ bool DataFlow::renameBlockVars(int n)
     BasicBlock              *bb = m_BBs[n];
 
     for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
-        // if S is not a phi function (per Appel)
-        /* if (!S->isPhi()) */
         {
             // For each use of some variable x in S (not just assignments)
             LocationSet locs;
@@ -426,8 +424,8 @@ bool DataFlow::renameBlockVars(int n)
                     phiLeft->getSubExp1()->addUsedLocs(locs);
                 }
 
-                // A phi statement may use a location defined in a childless call, in which case its use collector
-                // needs updating
+                // A phi statement may use a location defined in a childless call,
+                // in which case its use collector needs updating
                 for (auto& pp : *pa) {
                     Statement *def = pp.getDef();
 
@@ -571,14 +569,11 @@ bool DataFlow::renameBlockVars(int n)
     for (BasicBlock *Ybb : bb->getSuccessors()) {
         // For each phi-function in Y
         for (Statement *St = Ybb->getFirstStmt(rit, sit); St; St = Ybb->getNextStmt(rit, sit)) {
-            PhiAssign *pa = dynamic_cast<PhiAssign *>(St);
-
-            // if S is not a phi function, then quit the loop (no more phi's)
-            // Wrong: do not quit the loop: there's an optimisation that turns a PhiAssign into an ordinary Assign.
-            // So continue, not break.
-            if (!pa) {
+            if (!St->isPhi()) {
                 continue;
             }
+
+            PhiAssign *pa = static_cast<PhiAssign *>(St);
 
             // Suppose the jth operand of the phi is 'a'
             // For now, just get the LHS
