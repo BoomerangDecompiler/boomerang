@@ -21,5 +21,5 @@ BlockVarRenamePass::BlockVarRenamePass()
 
 bool BlockVarRenamePass::execute(UserProc *proc)
 {
-    return proc->getDataFlow()->renameBlockVars(0);
+    return proc->getDataFlow()->renameBlockVars();
 }

@@ -72,9 +72,9 @@ public:
     /// failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
     void clearStacks() { m_Stacks.clear(); }
 
-    /// Rename variables in basic block \p n.
+    /// Rename variables into SSA form for every BB.
     /// \returns true if any change made
-    bool renameBlockVars(int n);
+    bool renameBlockVars();
 
     void convertImplicits();
 
@@ -97,6 +97,9 @@ public:
      */
     void findLiveAtDomPhi(LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
+
+private:
+    bool renameBlockVars(int n);
 
     // for testing
 public:

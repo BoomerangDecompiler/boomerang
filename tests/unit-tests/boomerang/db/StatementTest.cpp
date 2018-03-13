@@ -1367,9 +1367,9 @@ void StatementTest::testBypass()
 
     // Number the statements
     proc->numberStatements();
-    proc->getDataFlow()->renameBlockVars(0);
+    proc->getDataFlow()->renameBlockVars();
     proc->getDataFlow()->clearStacks();
-    proc->getDataFlow()->renameBlockVars(0);
+    proc->getDataFlow()->renameBlockVars();
 
     // Find various needed statements
     StatementList stmts;

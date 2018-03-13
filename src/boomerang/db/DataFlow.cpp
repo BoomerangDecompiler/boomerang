@@ -383,6 +383,12 @@ bool DataFlow::placePhiFunctions()
 }
 
 
+bool DataFlow::renameBlockVars()
+{
+    return renameBlockVars(0);
+}
+
+
 static SharedExp defineAll = Terminal::get(opDefineAll); // An expression representing <all>
 
 // There is an entry in stacks[defineAll] that represents the latest definition

@@ -231,11 +231,12 @@ void DataFlowTest::testRenameVars()
     QVERIFY(df->placePhiFunctions());
     proc->numberStatements(); // After placing phi functions!
 
-    QCOMPARE(df->renameBlockVars(0), true);
+    QCOMPARE(df->renameBlockVars(), true);
 
     // verify that no change occurs even when clearing stacks
     df->clearStacks();
-    QCOMPARE(df->renameBlockVars(0), false);
+    QCOMPARE(df->renameBlockVars(), false);
+    QCOMPARE(df->renameBlockVars(), false);
 }
 
 
