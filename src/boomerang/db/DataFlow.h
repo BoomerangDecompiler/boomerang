@@ -68,14 +68,6 @@ public:
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
 
-    /// Need to clear the Stacks of old, renamed locations like m[esp-4] (these will be deleted, and will cause compare
-    /// failures in the Stacks, so it can't be correctly ordered and hence balanced etc, and will lead to segfaults)
-    void clearStacks() { m_Stacks.clear(); }
-
-    /// Rename variables into SSA form for every BB.
-    /// \returns true if any change made
-    bool renameBlockVars();
-
     void convertImplicits();
 
     /**
@@ -97,9 +89,6 @@ public:
      */
     void findLiveAtDomPhi(LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                           std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
-
-private:
-    bool renameBlockVars(int n);
 
     // for testing
 public:
@@ -123,8 +112,9 @@ public:
     }
 
 public:
-    // For testing:
     const BasicBlock *nodeToBB(int node) const { return m_BBs.at(node); }
+    BasicBlock *nodeToBB(int node) { return m_BBs.at(node); }
+
     int pbbToNode(const BasicBlock *bb) const
     { return m_indices.at(const_cast<BasicBlock *>(bb)); }
 
@@ -157,7 +147,6 @@ private:
     void clearA_phi() { m_A_phi.clear(); }
 
     // For debugging:
-    void dumpStacks();
     void dumpDefsites();
     void dumpA_orig();
 
@@ -214,9 +203,6 @@ private:
 
     /// A Boomerang requirement: Statements defining particular subscripted locations
     std::map<SharedExp, Statement *, lessExpStar> m_defStmts;
-
-    /// The stack which remembers the last definition of an expression.
-    std::map<SharedExp, std::deque<Statement *>, lessExpStar> m_Stacks;
 
     /**
      * Initially false, meaning that locals and parameters are not renamed and hence not propagated.

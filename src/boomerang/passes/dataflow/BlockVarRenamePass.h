@@ -11,9 +11,17 @@
 
 
 #include "boomerang/passes/Pass.h"
+#include "boomerang/db/exp/ExpHelp.h"
+
+#include <map>
+#include <deque>
+
+
+class Statement;
+
 
 /**
- * Rewrites Statements in BasicBlocks in SSA form.
+ * Rewrites Statements in BasicBlocks into SSA form.
  */
 class BlockVarRenamePass : public IPass
 {
@@ -23,4 +31,7 @@ public:
 public:
     /// \copydoc IPass::execute
     bool execute(UserProc *proc) override;
+
+private:
+    bool renameBlockVars(UserProc *proc, int n, std::map<SharedExp, std::deque<Statement *>, lessExpStar>& stacks);
 };

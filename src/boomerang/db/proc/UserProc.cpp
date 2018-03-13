@@ -844,7 +844,6 @@ void UserProc::earlyDecompile()
 
 
     // Rename variables
-    getDataFlow()->clearStacks();
     PassManager::get()->executePass(PassID::BlockVarRename, this);
     PassManager::get()->executePass(PassID::StatementPropagation, this);
 
@@ -947,7 +946,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
 
                 if (getStatus() != PROC_INCYCLE) {
-                    getDataFlow()->clearStacks();
                     PassManager::get()->executePass(PassID::BlockVarRename, this);
                 }
 
@@ -971,7 +969,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
 
         change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
-        getDataFlow()->clearStacks();
         change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
         Boomerang::get()->alertDecompileAfterPropagate(this, pass);
@@ -2886,7 +2883,6 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 
     // Have to redo dataflow to get the liveness at the calls correct
     PassManager::get()->executePass(PassID::CallLivenessRemoval, this); // Want to recompute the call livenesses
-    getDataFlow()->clearStacks();
     PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     remUnusedStmtEtc(); // Also redoes parameters
