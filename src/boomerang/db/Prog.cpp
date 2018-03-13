@@ -1035,18 +1035,18 @@ void Prog::decompile()
         }
     }
 
-    LOG_VERBOSE2("Transforming '%1' from SSA", getName());
+    globalTypeAnalysis();
 
     // Now it is OK to transform out of SSA form
     fromSSAForm();
-
     removeUnusedGlobals();
+    LOG_MSG("Decompilation finished.");
 }
 
 
 void Prog::removeUnusedGlobals()
 {
-    LOG_VERBOSE("Removing unused globals");
+    LOG_MSG("Removing unused global variables...");
 
     // seach for used globals
     std::list<SharedExp> usedGlobals;
@@ -1160,6 +1160,8 @@ bool Prog::removeUnusedReturns()
 
 void Prog::fromSSAForm()
 {
+    LOG_MSG("Transforming from SSA form ...");
+
     for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
             if (pp->isLib()) {
