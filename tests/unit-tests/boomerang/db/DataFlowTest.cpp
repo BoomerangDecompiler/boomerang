@@ -22,6 +22,7 @@
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/passes/PassManager.h"
 
 #include <QDebug>
 
@@ -231,10 +232,8 @@ void DataFlowTest::testRenameVars()
     QVERIFY(df->placePhiFunctions());
     proc->numberStatements(); // After placing phi functions!
 
-    QCOMPARE(df->renameBlockVars(0, false), true);
-
-    // verify that no change occurs even when clearing stacks
-    QCOMPARE(df->renameBlockVars(0, true), false);
+    QCOMPARE(PassManager::get()->executePass(PassID::BlockVarRename, proc), true);
+    QCOMPARE(PassManager::get()->executePass(PassID::BlockVarRename, proc), false);
 }
 
 

@@ -33,7 +33,7 @@ void StmtImplicitConverter::visit(PhiAssign *stmt, bool& visitChildren)
         assert(exp.getSubExp1() != nullptr);
 
         if (exp.getDef() == nullptr) {
-            exp.setDef(m_cfg->findImplicitAssign(exp.getSubExp1()));
+            exp.setDef(m_cfg->findOrCreateImplicitAssign(exp.getSubExp1()));
         }
     }
 

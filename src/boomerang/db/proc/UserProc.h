@@ -77,8 +77,6 @@ public:
      */
     typedef std::multimap<SharedConstExp, SharedExp, lessExpStar>   SymbolMap;
 
-    typedef std::map<Statement *, int>                              RefCounter;
-
 public:
     /**
      * \param address Address of entry point of function
@@ -99,11 +97,11 @@ public:
     virtual QString toString() const override;
 
     /// Returns a pointer to the CFG object.
-    Cfg *getCFG()       { return m_cfg; }
+    Cfg *getCFG() { return m_cfg; }
     const Cfg *getCFG() const { return m_cfg; }
 
     /// Returns a pointer to the DataFlow object.
-    DataFlow *getDataFlow()       { return &m_df; }
+    DataFlow *getDataFlow() { return &m_df; }
     const DataFlow *getDataFlow() const { return &m_df; }
 
     /// \copydoc Function::isNoReturn
@@ -144,12 +142,6 @@ public:
     /// Deletes the whole Cfg for this proc object.
     void deleteCFG() override;
 
-    /// simplify the statements in this proc
-    void simplify()
-    {
-        m_cfg->simplify();
-    }
-
     /**
      * Decompile this procedure, and all callees.
      */
@@ -165,10 +157,8 @@ private:
      */
     std::shared_ptr<ProcSet> decompile(ProcList &callStack);
 
-    /// Initialise decompile: sort CFG, number statements, dominator tree, etc.
-    void initialiseDecompile();
-
-    /// Early decompile: Place phi functions, number statements, first rename,
+    /// Early decompile:
+    /// sort CFG, number statements, dominator tree, place phi functions, number statements, first rename,
     /// propagation: ready for preserveds.
     void earlyDecompile();
 
@@ -181,10 +171,7 @@ private:
     /// Also finalise the whole group.
     void recursionGroupAnalysis(ProcList &callStack);
 
-    void decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visited);
-
-    /// The inductive preservation analysis.
-    bool inductivePreservation(UserProc *);
+    void decompileProcInRecursionGroup(ProcList& callStack, ProcSet& visited);
 
     /**
      * Mark calls involved in the recursion cycle as non childless
@@ -193,40 +180,10 @@ private:
      */
     void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
 
-    /// Update the defines and arguments in calls.
-    void updateCalls();
-
-    /// Look for short circuit branching
-    /// \returns true if any change
-    bool branchAnalysis();
-
-    /// Fix any ugly branch statements (from propagating too much)
-    void fixUglyBranches();
-
-
-    /// \note Was trimReturns()
-    void findPreserveds();
-
-    /// Preservations only for the stack pointer
-    void findSpPreservation();
-    void removeSpAssignsIfPossible();
-    void removeMatchingAssignsIfPossible(SharedExp e);
-
-    /// Get the initial parameters, based on this UserProc's use collector
-    /// Probably unused now
-    void initialParameters();
-
+public:
     /// Map expressions to locals and initial parameters
     void mapLocalsAndParams();
 
-    /**
-     * Search for expressions without explicit definitions (i.e. WILDCARD{0}),
-     * which represent parameters (use before definition).
-     * These are called final parameters, because they are determined
-     * from implicit references, not from the use collector at the start of the proc,
-     * which include some caused by recursive calls
-     */
-    void findFinalParameters();
 
     /// Add the parameter to the signature
     void addParameter(SharedExp e, SharedType ty);
@@ -237,24 +194,6 @@ private:
      * and filtering has changed, or the locations in the collector have changed
      */
     void insertParameter(SharedExp e, SharedType ty);
-
-    /// Update the arguments in calls
-    void updateArguments();
-
-    /// Update the defines in calls
-    void updateCallDefines();
-
-    /// Replace simple global constant references
-    /// Statement level transform :
-    /// PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
-    /// ACTION:
-    ///     $tmp_addr = assgn.rhs.sub(1);
-    ///     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
-    ///     statement.rhs.replace_with(Const($tmp_val))
-    void replaceSimpleGlobalConstants();
-    void reverseStrengthReduction();
-
-    void addParameterSymbols();
 
 public:
     /// Initialise the statements, e.g. proc, bb pointers
@@ -271,7 +210,7 @@ public:
     bool doRenameBlockVars(int pass, bool clearStacks = false);
 
     /// Global type analysis (for this procedure).
-    void typeAnalysis();
+    void doTypeAnalysis();
 
     /// Perform call and phi statement bypassing at all depths
     void fixCallAndPhiRefs();
@@ -298,37 +237,11 @@ public:
     /// perform final simplifications
     void finalSimplify();
 
-    /// eliminate duplicate arguments
-    void eliminateDuplicateArgs();
-
-    /// Remove assignments of the form x := x
-    bool removeNullStatements();
-
-    /// Count references to the things that are under SSA control.
-    /// For each SSA subscripting, increment a counter for that definition
-    void countRefs(RefCounter& refCounts);
-
     /// Remove unused statements.
     void remUnusedStmtEtc();
-    void remUnusedStmtEtc(RefCounter& refCounts);
-
-    /// Note: call the below after translating from SSA form
-    /// FIXME: this can be done before transforming out of SSA form now, surely...
-    void removeUnusedLocals();
 
     const std::map<QString, SharedType>& getLocals() const { return m_locals; }
-
-    /// Remove all liveness info in UseCollectors in calls
-    void removeCallLiveness();
-
-    /// Propagate statements, but don't remove
-    /// Return true if change; set convert if an indirect call is converted to direct (else clear)
-    /// Propagate statemtents; return true if change; set convert if an indirect call is converted to direct
-    /// (else clear)
-    bool propagateStatements(bool& convert, int pass);
-
-    /// Find the locations that are used by a live, dominating phi-function
-    void findLiveAtDomPhi(LocationSet& usedByDomPhi);
+    std::map<QString, SharedType>& getLocals() { return m_locals; }
 
 #if USE_DOMINANCE_NUMS
     void setDominanceNumbers();
@@ -337,33 +250,14 @@ public:
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();
 
-    void fromSSAForm();
-
     /// Find the locations united by Phi-functions
     void findPhiUnites(ConnectionGraph& pu);
     void insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
-    void removeSubscriptsFromSymbols();
-    void removeSubscriptsFromParameters();
 
     /// Insert statement \a a after statement \a s.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
     void insertStatementAfter(Statement *s, Statement *a);
-
-    /**
-     * Add a mapping for the destinations of phi functions that have one
-     * argument that is a parameter.
-     *
-     * The idea here is to give a name to those SSA variables that have one
-     * and only one parameter amongst the phi arguments.
-     * For example, in test/source/param1, there is
-     *     18 *v* m[r28{-} + 8] := phi{- 7} with m[r28{-} + 8]{0}
-     * mapped to param1; insert a mapping for m[r28{-} + 8]{18} to param1.
-     * This will avoid a copy, and will use the name of the parameter only
-     * when it is acually used as a parameter.
-     */
-    void nameParameterPhis();
-    void mapParameters();
 
     /**
      * Trim parameters to procedure calls with ellipsis (...).
@@ -459,19 +353,6 @@ public:
     void getStatements(StatementList& stmts) const;
     void removeStatement(Statement *stmt);
 
-    /**
-     * Before Type Analysis, refs like r28{0} have a nullptr Statement pointer.
-     * After this, they will point to an implicit assignment for the location.
-     * Thus, during and after type analysis, you can find the type of any
-     * location by following the reference to the definition
-     * Note: you need something recursive to make sure that child subexpressions
-     * are processed before parents
-     * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment
-     * for r28{-} with a null reference, when other pieces of code add r28{0}
-     */
-    void addImplicitAssigns();
-    void makeSymbolsImplicit();
-
     StatementList& getParameters() { return m_parameters; }
     StatementList& getModifieds() { return m_retStatement->getModifieds(); }
 
@@ -501,6 +382,11 @@ public:
     SharedType getLocalType(const QString& nam);
     void setLocalType(const QString& nam, SharedType ty);
     SharedType getParamType(const QString& nam);
+
+    SymbolMap& getSymbolMap() { return m_symbolMap; }
+    const SymbolMap& getSymbolMap() const { return m_symbolMap; }
+
+    void clearSymbolMap() { m_symbolMap.clear(); }
 
     /// \returns a symbol's exp (note: the original exp, like r24, not local1)
     SharedConstExp expFromSymbol(const QString& nam) const;
@@ -605,6 +491,8 @@ public:
     /// \note final parameters don't use this information; it's only for handling recursion.
     void useBeforeDefine(const SharedExp& loc) { m_procUseCollector.insert(loc); }
 
+    bool allPhisHaveDefs() const;
+
     /**
      * Copy the RTLs for the already decoded Indirect Control Transfer instructions,
      * and decode any new targets in this CFG.
@@ -641,8 +529,10 @@ public:
      */
     bool filterParams(SharedExp e);
 
-    void verifyPHIs();
     void debugPrintAll(const char *c);
+
+    UseCollector& getUseCollector() { return m_procUseCollector; }
+    const UseCollector& getUseCollector() const { return m_procUseCollector; }
 
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);

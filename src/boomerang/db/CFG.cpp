@@ -421,7 +421,7 @@ BasicBlock *Cfg::findRetNode()
 }
 
 
-Statement *Cfg::findImplicitAssign(SharedExp exp)
+Statement *Cfg::findOrCreateImplicitAssign(SharedExp exp)
 {
     std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(exp);
 

@@ -217,7 +217,7 @@ public:
     void removeImplicitAssign(SharedExp x);
 
     /// Find or create an implicit assign for x
-    Statement *findImplicitAssign(SharedExp x);
+    Statement *findOrCreateImplicitAssign(SharedExp x);
 
     bool isImplicitsDone() const { return m_implicitsDone; }
     void setImplicitsDone() { m_implicitsDone = true; }

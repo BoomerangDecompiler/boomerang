@@ -28,12 +28,12 @@
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/BinaryImage.h"
 #include "boomerang/db/Global.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/FuncType.h"
-
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -544,7 +544,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     assert(proc->getEntryBB());
 
     m_analyzer.structureCFG(proc->getCFG());
-    proc->removeUnusedLocals();
+    PassManager::get()->executePass(PassID::UnusedLocalRemoval, proc);
 
     // Note: don't try to remove unused statements here; that requires the
     // RefExps, which are all gone now (transformed out of SSA form)!

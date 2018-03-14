@@ -28,6 +28,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/loader/IFileLoader.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -1025,29 +1026,27 @@ void Prog::decompile()
 
     globalTypeAnalysis();
 
-    if (SETTING(decompile)) {
-        if (SETTING(removeReturns)) {
-            // A final pass to remove returns not used by any caller
-            LOG_VERBOSE("Prog: global removing unused returns");
+    if (SETTING(decompile) && SETTING(removeReturns)) {
+        // A final pass to remove returns not used by any caller
+        LOG_VERBOSE("Performing global removal of unused returns...");
 
-            // Repeat until no change. Not 100% sure if needed.
-            while (removeUnusedReturns()) {
-            }
+        // Repeat until no change. Not 100% sure if needed.
+        while (removeUnusedReturns()) {
         }
     }
 
-    LOG_VERBOSE("Transforming from SSA");
+    globalTypeAnalysis();
 
     // Now it is OK to transform out of SSA form
     fromSSAForm();
-
     removeUnusedGlobals();
+    LOG_MSG("Decompilation finished.");
 }
 
 
 void Prog::removeUnusedGlobals()
 {
-    LOG_VERBOSE("Removing unused globals");
+    LOG_MSG("Removing unused global variables...");
 
     // seach for used globals
     std::list<SharedExp> usedGlobals;
@@ -1146,7 +1145,7 @@ bool Prog::removeUnusedReturns()
         if (removedReturns) {
             // Removing returns changes the uses of the callee.
             // So we have to do type analyis to update the use information.
-            (*it)->typeAnalysis();
+            PassManager::get()->executePass(PassID::LocalTypeAnalysis, *it);
         }
         change |= removedReturns;
 
@@ -1161,6 +1160,8 @@ bool Prog::removeUnusedReturns()
 
 void Prog::fromSSAForm()
 {
+    LOG_MSG("Transforming from SSA form ...");
+
     for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
             if (pp->isLib()) {
@@ -1169,18 +1170,13 @@ void Prog::fromSSAForm()
 
             UserProc *proc = static_cast<UserProc *>(pp);
 
-            LOG_VERBOSE("===== Before transformation from SSA form for %1 ====", proc->getName());
-            LOG_VERBOSE("===== End before transformation from SSA form for %1 ====", proc->getName());
-
             if (SETTING(verboseOutput) && !SETTING(dotFile).isEmpty()) {
                 proc->printDFG();
             }
 
-            proc->fromSSAForm();
-
-            LOG_VERBOSE("===== After transformation from SSA form for %1 ====", proc->getName());
-            LOG_VERBOSE("%1", proc->prints());
-            LOG_VERBOSE("===== End after transformation from SSA form for %1 ====", proc->getName());
+            proc->debugPrintAll("before transformation from SSA form");
+            PassManager::get()->executePass(PassID::FromSSAForm, proc);
+            proc->debugPrintAll("after trasformation from SSA form");
         }
     }
 }
@@ -1196,14 +1192,14 @@ void Prog::globalTypeAnalysis()
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
-            if ((nullptr == proc) || !proc->isDecoded()) {
+            if (!proc || !proc->isDecoded()) {
                 continue;
             }
 
             // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
             // This will require a repeat until no change loop
             LOG_VERBOSE("Global type analysis for '%1'", proc->getName());
-            proc->typeAnalysis();
+            PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
         }
     }
 

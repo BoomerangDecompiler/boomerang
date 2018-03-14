@@ -57,7 +57,7 @@ public:
      * Essentially Algorithm 19.9 of Appel's
      * "Modern compiler implementation in Java" 2nd ed 2002
      */
-    void calculateDominators();
+    bool calculateDominators();
 
     /// Place phi functions.
     /// \returns true if any change
@@ -68,15 +68,11 @@ public:
 
     void setRenameLocalsParams(bool b) { renameLocalsAndParams = b; }
 
-    /// Rename variables in basic block \p n.
-    /// \returns true if any change made
-    bool renameBlockVars(int n, bool clearStacks = false);
-
     void convertImplicits();
 
     /**
-     * Find the locations in the CFG used by a live, dominating phi-function. Also removes dead phi-funcions.
-     * Helper function for UserProc::propagateStatements().
+     * Find the locations in the CFG used by a live, dominating phi-function; also removes dead phi-funcions.
+     * Helper function for StatementPropagationPass.
      *
      * If an SSA location is in \p usedByDomPhi it means it is used in a phi that dominates its assignment
      * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
@@ -116,8 +112,9 @@ public:
     }
 
 public:
-    // For testing:
     const BasicBlock *nodeToBB(int node) const { return m_BBs.at(node); }
+    BasicBlock *nodeToBB(int node) { return m_BBs.at(node); }
+
     int pbbToNode(const BasicBlock *bb) const
     { return m_indices.at(const_cast<BasicBlock *>(bb)); }
 
@@ -150,7 +147,6 @@ private:
     void clearA_phi() { m_A_phi.clear(); }
 
     // For debugging:
-    void dumpStacks();
     void dumpDefsites();
     void dumpA_orig();
 
@@ -208,15 +204,10 @@ private:
     /// A Boomerang requirement: Statements defining particular subscripted locations
     std::map<SharedExp, Statement *, lessExpStar> m_defStmts;
 
-    /*
-     * Renaming variables
+    /**
+     * Initially false, meaning that locals and parameters are not renamed and hence not propagated.
+     * When true, locals and parameters can be renamed if their address does not escape the local procedure.
+     * See Mike's thesis for details.
      */
-    /// The stack which remembers the last definition of an expression.
-    /// A map from expression (Exp*) to a stack of (pointers to) Statements
-    std::map<SharedExp, std::deque<Statement *>, lessExpStar> m_Stacks;
-
-    // Initially false, meaning that locals and parameters are not renamed and hence not propagated.
-    // When true, locals and parameters can be renamed if their address does not escape the local procedure.
-    // See Mike's thesis for details.
     bool renameLocalsAndParams;
 };

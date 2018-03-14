@@ -12,13 +12,12 @@
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/core/Boomerang.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
-
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
@@ -31,8 +30,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Project.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -1364,16 +1362,13 @@ void StatementTest::testBypass()
 
     proc->promoteSignature(); // Make sure it's a PentiumSignature (needed for bypassing)
 
-    // Initialise statements
-    proc->initStatements();
-
-    // Compute dominance frontier
-    proc->getDataFlow()->calculateDominators();
+    PassManager::get()->executePass(PassID::StatementInit, proc);
+    PassManager::get()->executePass(PassID::Dominators, proc);
 
     // Number the statements
     proc->numberStatements();
-    proc->getDataFlow()->renameBlockVars(0, 0); // Block 0, mem depth 0
-    proc->getDataFlow()->renameBlockVars(0, 1); // Block 0, mem depth 1
+    PassManager::get()->executePass(PassID::BlockVarRename, proc);
+
     // Find various needed statements
     StatementList stmts;
     proc->getStatements(stmts);

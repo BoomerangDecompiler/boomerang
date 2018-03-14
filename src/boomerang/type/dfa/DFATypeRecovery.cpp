@@ -26,6 +26,7 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/ArrayType.h"
@@ -215,9 +216,10 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 
     do {
         if (first) {
-            up->doRenameBlockVars(-1, true); // Subscript the discovered extra parameters
-            bool convert;
-            up->propagateStatements(convert, 0);
+            // Subscript the discovered extra parameters
+            PassManager::get()->executePass(PassID::BlockVarRename, up);
+            PassManager::get()->executePass(PassID::StatementPropagation, up);
+            PassManager::get()->executePass(PassID::ImplicitPlacement, up);
         }
 
         first = false;
@@ -227,7 +229,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
         // so do it just before translating from SSA form (which is the where type information becomes inaccessible)
     } while (up->ellipsisProcessing());
 
-    up->simplify(); // In case there are new struct members
+    PassManager::get()->executePass(PassID::BBSimplify, up); // In case there are new struct members
 
     if (DEBUG_TA) {
         LOG_VERBOSE("=== End type analysis for %1 ===", getName());
@@ -417,7 +419,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
                         if (isImplicit) {
                             // Replace the implicit assignment entry. Note that s' lhs has changed
-                            cfg->findImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
+                            cfg->findOrCreateImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
                         }
 
                         // Ensure that the global is declared
@@ -501,7 +503,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 }
 
                 const SharedType& ty = static_cast<TypingStatement *>(s)->getType();
-                LOG_VERBOSE("In proc %1 adding addrExp %2 with type %3 to local table", proc->getName(), addrExp, ty);
+                LOG_VERBOSE2("Type analysis for '%1': Adding addrExp '%2' with type %3 to local table", proc->getName(), addrExp, ty);
                 SharedExp loc_mem = Location::memOf(addrExp);
                 localsMap.insertItem(Address(localAddressOffset), proc->lookupSym(loc_mem, ty), typeExp);
             }

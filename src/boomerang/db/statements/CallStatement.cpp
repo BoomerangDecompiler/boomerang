@@ -29,6 +29,7 @@
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtModifier.h"
 #include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
@@ -754,7 +755,6 @@ bool CallStatement::convertToDirect()
         return false;
     }
 
-    bool      convertIndirect = false;
     SharedExp e = m_dest;
 
     if (m_dest->isSubscript()) {
@@ -799,31 +799,31 @@ bool CallStatement::convertToDirect()
         return false;
     }
 
-    QString nam     = e->access<Const, 1>()->getStr();
+    QString name    = e->access<Const, 1>()->getStr();
     Prog    *prog   = m_proc->getProg();
-    Address gloAddr = prog->getGlobalAddr(nam);
+    Address gloAddr = prog->getGlobalAddr(name);
     Address dest    = Address(prog->readNative4(gloAddr));
 
     // We'd better do some limit checking on the value.
     // This does not guarantee that it's a valid proc pointer,
     // but it may help
-    if ((dest < prog->getLimitTextLow()) || (dest > prog->getLimitTextHigh())) {
+    if (!Util::inRange(dest, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
         return false;     // Not a valid proc pointer
     }
 
-    Function *p        = prog->findFunction(nam);
-    bool     isNewProc = p == nullptr;
+    Function *p        = prog->findFunction(name);
+    const bool isNewProc = p == nullptr;
 
     if (isNewProc) {
         p = prog->createFunction(dest);
     }
 
     LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
-                (isNewProc ? "new" : "existing"), nam, p->getName());
+                (isNewProc ? "new" : "existing"), name, p->getName());
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
-    // 2) call fixCallBypass (now fixCallAndPhiRefs) on the enclosing procedure
+    // 2) call fixCallBypass (now CallAndPhiFix) on the enclosing procedure
     // 3) fix the arguments (this will only affect the implicit arguments, the regular arguments should
     //    be empty at this point)
     // 3a replace current arguments with those of the new proc
@@ -837,7 +837,7 @@ bool CallStatement::convertToDirect()
 
     // 1
     // 2
-    m_proc->fixCallAndPhiRefs();
+    PassManager::get()->executePass(PassID::CallAndPhiFix, m_proc);
 
     // 3
     // 3a Do the same with the regular arguments
@@ -866,11 +866,9 @@ bool CallStatement::convertToDirect()
     m_isComputed = false;
     m_proc->undoComputedBB(this);
     m_proc->addCallee(m_procDest);
-    convertIndirect = true;
 
-    LOG_VERBOSE("Result of convertToDirect: %1", this);
-
-    return convertIndirect;
+    LOG_VERBOSE("Result of convertToDirect: true");
+    return true;
 }
 
 
@@ -1342,111 +1340,6 @@ bool CallStatement::definesLoc(SharedExp loc) const
 }
 
 
-void CallStatement::updateDefines()
-{
-    std::shared_ptr<Signature> sig;
-
-    if (m_procDest) {
-        // The signature knows how to order the returns
-        sig = m_procDest->getSignature();
-    }
-    else {
-        // Else just use the enclosing proc's signature
-        sig = m_proc->getSignature();
-    }
-
-    if (m_procDest && m_procDest->isLib()) {
-        sig->setLibraryDefines(m_defines);     // Set the locations defined
-        return;
-    }
-    else if (SETTING(assumeABI)) {
-        // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIDefines(m_proc->getProg(), m_defines);
-        return;
-    }
-
-    // Move the defines to a temporary list. We must make sure that all defines
-    // that are not inserted into m_defines again are deleted.
-    StatementList           oldDefines(m_defines);
-    m_defines.clear();
-
-    if (m_procDest && m_calleeReturn) {
-        StatementList& modifieds = static_cast<UserProc *>(m_procDest)->getModifieds();
-
-        for (Statement *mm : modifieds) {
-            Assignment *as = static_cast<Assignment *>(mm);
-            SharedExp  loc = as->getLeft();
-
-            if (m_proc->filterReturns(loc)) {
-                continue;
-            }
-
-            SharedType ty = as->getType();
-
-            if (!oldDefines.existsOnLeft(loc)) {
-                oldDefines.append(new ImplicitAssign(ty, loc));
-            }
-        }
-    }
-    else {
-        // Ensure that everything in the UseCollector has an entry in oldDefines
-        LocationSet::iterator ll;
-
-        for (ll = m_useCol.begin(); ll != m_useCol.end(); ++ll) {
-            SharedExp loc = *ll;
-
-            if (m_proc->filterReturns(loc)) {
-                continue;     // Filtered out
-            }
-
-            if (!oldDefines.existsOnLeft(loc)) {
-                ImplicitAssign *as = new ImplicitAssign(loc->clone());
-                as->setProc(m_proc);
-                as->setBB(m_bb);
-                oldDefines.append(as);
-            }
-        }
-    }
-
-    for (StatementList::reverse_iterator it = oldDefines.rbegin(); it != oldDefines.rend(); ++it) {
-        // Make sure the LHS is still in the return or collector
-        Assignment *as = static_cast<Assignment *>(*it);
-        SharedExp  lhs = as->getLeft();
-
-        if (m_calleeReturn) {
-            if (!m_calleeReturn->definesLoc(lhs)) {
-                delete *it;
-                continue;     // Not in callee returns
-            }
-        }
-        else if (!m_useCol.exists(lhs)) {
-            delete *it;
-            continue;     // Not in collector: delete it (don't copy it)
-        }
-
-        if (m_proc->filterReturns(lhs)) {
-            delete *it;
-            continue;     // Filtered out: delete it
-        }
-
-        // Insert as, in order, into the existing set of definitions
-        bool inserted = false;
-
-        for (StatementList::iterator nn = m_defines.begin(); nn != m_defines.end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {     // If the new assignment is less than the current one
-                nn       = m_defines.insert(nn, as);               // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            m_defines.append(as);     // In case larger than all existing elements
-        }
-    }
-}
-
-
 void CallStatement::updateArguments()
 {
     /*
@@ -1475,8 +1368,7 @@ void CallStatement::updateArguments()
     // of
     // the printf argument is still m[esp{phi1} -20] = "%d".
     if (EXPERIMENTAL) {
-        bool convert;
-        m_proc->propagateStatements(convert, 88);
+        PassManager::get()->executePass(PassID::StatementPropagation, m_proc);
     }
 
     // Do not delete statements in m_arguments since they are preserved by oldArguments
@@ -1690,7 +1582,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& chang
             SharedExp ret = localiseExp(base->clone());     // Assume that it is proved as preserved
             changed = true;
 
-            LOG_VERBOSE("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
+            LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
             return ret;
         }
 
@@ -1707,7 +1599,7 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& chang
     proven = proven->searchReplaceAll(*base, to, changed);     // e.g. r28{17} + 4
 
     if (changed) {
-        LOG_VERBOSE("Replacing %1 with %2", r, proven);
+        LOG_VERBOSE2("Replacing %1 with %2", r, proven);
     }
 
     return proven;

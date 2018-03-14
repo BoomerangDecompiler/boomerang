@@ -74,10 +74,6 @@ public:
     void removeDefine(SharedExp e);
     void addDefine(ImplicitAssign *as); // For testing
 
-    /// Set the defines to the set of locations modified by the callee,
-    /// or if no callee, to all variables live at this call
-    void updateDefines();         // Update the defines based on a callee change
-
     // Calculate results(this) = defines(this) intersect live(this)
     // Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
     // So the RHS is just ignored
@@ -181,9 +177,12 @@ public:
     virtual void setTypeFor(SharedExp e, SharedType ty) override;  // Set the type for this location, defined in this statement
 
     /// \returns pointer to the def collector object
+    const DefCollector *getDefCollector() const { return &m_defCol; }
     DefCollector *getDefCollector() { return &m_defCol; }
 
+
     /// \returns pointer to the use collector object
+    const UseCollector *getUseCollector() const { return &m_useCol; }
     UseCollector *getUseCollector() { return &m_useCol; }
 
     /// Add x to the UseCollector for this call
@@ -196,7 +195,10 @@ public:
     void removeAllLive() { m_useCol.clear(); }
 
     /// Get list of locations defined by this call
+    const StatementList& getDefines() const { return m_defines; }
     StatementList& getDefines() { return m_defines; }
+
+    void setDefines(const StatementList& defines) { m_defines = defines; }
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
     /// parameters if needed, and return true if any signature parameters added

@@ -41,6 +41,8 @@
 #include "boomerang/db/visitor/TempToLocalMapper.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -438,35 +440,6 @@ void UserProc::printDFG() const
 }
 
 
-void UserProc::initStatements()
-{
-    BasicBlock::RTLIterator       rit;
-    StatementList::iterator sit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr; stmt = bb->getNextStmt(rit, sit)) {
-            stmt->setProc(this);
-            stmt->setBB(bb);
-            CallStatement *call = dynamic_cast<CallStatement *>(stmt);
-
-            if (call) {
-                call->setSigArguments();
-
-                // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumSuccessors() == 1)) {
-                    BasicBlock *nextBB = bb->getSuccessor(0);
-
-                    if ((nextBB != m_cfg->getExitBB()) || (m_cfg->getExitBB()->getNumPredecessors() != 1)) {
-                        nextBB->removePredecessor(bb);
-                        bb->removeAllSuccessors();
-                    }
-                }
-            }
-        }
-    }
-}
-
-
 void UserProc::numberStatements() const
 {
     int stmtNumber = 0;
@@ -747,7 +720,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
             }
             else {
                 // No new cycle
-                LOG_VERBOSE("Visiting on the way down child %1 from %2", callee->getName(), getName());
+                LOG_VERBOSE("Preparing to decompile callee '%1' of '%2'", callee->getName(), getName());
 
                 callee->promoteSignature();
                 std::shared_ptr<ProcSet> tmp = callee->decompile(callStack);
@@ -767,7 +740,6 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
         Boomerang::get()->alertDecompiling(this);
         LOG_MSG("Decompiling procedure '%1'", getName());
 
-        initialiseDecompile(); // Sort the CFG, number statements, etc
         earlyDecompile();
         recursionGroup = middleDecompile(callStack);
 
@@ -818,7 +790,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
         LOG_WARN("Empty path when trying to remove last proc");
     }
 
-    LOG_VERBOSE("End decompile(%1)", getName());
+    LOG_VERBOSE("Finished decompile of '%1'", getName());
     return recursionGroup;
 }
 
@@ -836,26 +808,13 @@ void UserProc::debugPrintAll(const char *step_name)
 }
 
 
-/*    *    *    *    *    *    *    *    *    *    *    *
-*                                            *
-*        D e c o m p i l e   p r o p e r        *
-*            ( i n i t i a l )                *
-*                                            *
-*    *    *    *    *    *    *    *    *    *    *    */
-void UserProc::initialiseDecompile()
+void UserProc::earlyDecompile()
 {
     Boomerang::get()->alertStartDecompile(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Initialise");
 
-    LOG_VERBOSE("Initialise decompile for %1", getName());
-
-    // Initialise statements
-    initStatements();
-
-    debugPrintAll("Before SSA");
-
-    // Compute dominance frontier
-    m_df.calculateDominators();
+    PassManager::get()->executePass(PassID::StatementInit, this);
+    PassManager::get()->executePass(PassID::Dominators, this);
 
     if (!SETTING(decompile)) {
         LOG_MSG("Not decompiling.");
@@ -865,43 +824,28 @@ void UserProc::initialiseDecompile()
 
     debugPrintAll("After Decoding");
     Boomerang::get()->alertDecompileDebugPoint(this, "After Initialise");
-}
 
-
-void UserProc::earlyDecompile()
-{
     if (m_status >= PROC_EARLYDONE) {
         return;
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Early");
-    LOG_VERBOSE("Early decompile for %1", getName());
+    LOG_VERBOSE("### Beginning early decompile for '%1' ###", getName());
 
     // Update the defines in the calls. Will redo if involved in recursion
-    updateCallDefines();
-
-    // This is useful for obj-c
-    replaceSimpleGlobalConstants();
+    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
+    PassManager::get()->executePass(PassID::GlobalConstReplace, this);
 
     // First placement of phi functions, renaming, and initial propagation. This is mostly for the stack pointer
     // TODO: Check if this makes sense. It seems to me that we only want to do one pass of propagation here, since
     // the status == check had been knobbled below. Hopefully, one call to placing phi functions etc will be
     // equivalent to depth 0 in the old scheme
-    LOG_VERBOSE("Placing phi functions 1st pass");
+    PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-    // Place the phi functions
-    m_df.placePhiFunctions();
-    debugPrintAll("after placing phis (1)");
 
     // Rename variables
-    LOG_VERBOSE("Renaming block variables 1st pass");
-    doRenameBlockVars(1, true);
-    debugPrintAll("after rename (1)");
-
-    bool convert;
-    propagateStatements(convert, 1);
-
-    debugPrintAll("After propagation (1)");
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
+    PassManager::get()->executePass(PassID::StatementPropagation, this);
 
     Boomerang::get()->alertDecompileDebugPoint(this, "After Early");
 }
@@ -911,28 +855,27 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 {
     assert(callStack.back() == this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
+    LOG_VERBOSE("### Beginning middleDecompile for '%1' ###", getName());
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
     // The first stage bypass yields m[r1{2}]{11}, which needs another round of propagation to yield m[r1{-}-32]{11}
     // (which can safely be processed at depth 1).
     // Except that this is now inherent in the visitor nature of the latest algorithm.
-    fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
-    bool convert;
-
-    if (m_status != PROC_INCYCLE) { // FIXME: need this test?
-        propagateStatements(convert, 2);
-    }
-
+    PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Bypass children that are finalised (if any)
     debugPrintAll("After call and phi bypass (1)");
+
+    if (getStatus() != PROC_INCYCLE) { // FIXME: need this test?
+        PassManager::get()->executePass(PassID::StatementPropagation, this);
+    }
 
     // This part used to be calle middleDecompile():
 
-    findSpPreservation();
+    PassManager::get()->executePass(PassID::SPPreservation, this);
     // Oops - the idea of splitting the sp from the rest of the preservations was to allow correct naming of locals
     // so you are alias conservative. But of course some locals are ebp (etc) based, and so these will never be correct
     // until all the registers have preservation analysis done. So I may as well do them all together here.
-    findPreserveds();
-    fixCallAndPhiRefs(); // Propagate and bypass sp
+    PassManager::get()->executePass(PassID::PreservationAnalysis, this);
+    PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Propagate and bypass sp
 
     debugPrintAll("After preservation, bypass and propagation");
 
@@ -959,23 +902,20 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // For now, we create the initial arguments here (relatively early), and live with the fact that some apparently
     // distinct memof argument expressions (e.g. m[eax{30}] and m[esp{40}-4]) will turn out to be duplicates, and so
     // the duplicates must be eliminated.
-    bool change = m_df.placePhiFunctions();
+    bool change = PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-    doRenameBlockVars(2);
-    propagateStatements(convert, 2); // Otherwise sometimes sp is not fully propagated
-    updateArguments();
-    reverseStrengthReduction();
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
+    PassManager::get()->executePass(PassID::StatementPropagation, this); // Otherwise sometimes sp is not fully propagated
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
+    PassManager::get()->executePass(PassID::StrengthReductionReversal, this);
 
     // Repeat until no change
-    int pass;
+    int pass = 3;
 
-    for (pass = 3; pass <= 12; ++pass) {
+    do {
         // Redo the renaming process to take into account the arguments
-        LOG_VERBOSE("Renaming block variables (2) pass %1", pass);
-
-        // Rename variables
-        change = m_df.placePhiFunctions();
-        change |= doRenameBlockVars(pass, false); // E.g. for new arguments
+        change = PassManager::get()->executePass(PassID::PhiPlacement, this);
+        change |= PassManager::get()->executePass(PassID::BlockVarRename, this); // E.g. for new arguments
 
         // Seed the return statement with reaching definitions
         // FIXME: does this have to be in this loop?
@@ -1005,80 +945,38 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
 
-                if (m_status != PROC_INCYCLE) {
-                    doRenameBlockVars(pass, true);
+                if (getStatus() != PROC_INCYCLE) {
+                    PassManager::get()->executePass(PassID::BlockVarRename, this);
                 }
 
-                findPreserveds();
-                updateCallDefines(); // Returns have uses which affect call defines (if childless)
-                fixCallAndPhiRefs();
-                findPreserveds();    // Preserveds subtract from returns
+                PassManager::get()->executePass(PassID::PreservationAnalysis, this);
+                PassManager::get()->executePass(PassID::CallDefineUpdate, this); // Returns have uses which affect call defines (if childless)
+                PassManager::get()->executePass(PassID::CallAndPhiFix, this);
+                PassManager::get()->executePass(PassID::PreservationAnalysis, this); // Preserveds subtract from returns
             }
 
             if (SETTING(verboseOutput)) {
-                LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after updating returns) ---", getName(), pass);
-                LOG_SEPARATE(getName(), "%1", this->toString());
-                LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
+                debugPrintAll("SSA (after updating returns");
             }
         }
 
         // Print if requested
         if (SETTING(verboseOutput)) { // was if debugPrintSSA
-            LOG_SEPARATE(getName(), "--- debug print SSA for %1 at pass %2 (after trimming return set) ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", this->toString());
-            LOG_SEPARATE(getName(), "=== end debug print SSA for %1 at pass %2 ===", getName(), pass);
+            debugPrintAll("SSA (after trimming return set)");
         }
 
         Boomerang::get()->alertDecompileBeforePropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
 
-        // Propagate
-        bool _convert; // True when indirect call converted to direct
-
-        do {
-            _convert = false;
-            LOG_VERBOSE("Propagating at pass %1", pass);
-            change |= propagateStatements(_convert, pass);
-            change |= doRenameBlockVars(pass, true);
-
-            // If you have an indirect to direct call conversion, some propagations that were blocked by
-            // the indirect call might now succeed, and may be needed to prevent alias problems
-            // FIXME: I think that the below, and even the convert parameter to propagateStatements(), is no longer
-            // needed - MVE
-            if (_convert) {
-                LOG_VERBOSE("About to restart propagations and dataflow at pass %1 due to conversion of indirect to direct call(s)", pass);
-
-                m_df.setRenameLocalsParams(false);
-                change |= doRenameBlockVars(0, true); // Initial dataflow level 0
-                LOG_SEPARATE(getName(), "After rename (2) of %1:", getName());
-                LOG_SEPARATE(getName(), "%1", this->toString());
-                LOG_SEPARATE(getName(), "Done after rename (2) of %1:", getName());
-            }
-        } while (_convert);
-
-        if (SETTING(verboseOutput)) {
-            LOG_SEPARATE(getName(), "--- after propagate for %1 at pass %2 ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", this->toString());
-            LOG_SEPARATE(getName(), "=== End propagate for %1 at pass %2 ===", getName(), pass);
-        }
+        change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
+        change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
         Boomerang::get()->alertDecompileAfterPropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
 
-        // this is just to make it readable, do NOT rely on these statements being removed
-        removeSpAssignsIfPossible();
-        // The problem with removing %flags and %CF is that %CF is a subset of %flags
-        // removeMatchingAssignsIfPossible(Terminal::get(opFlags));
-        // removeMatchingAssignsIfPossible(Terminal::get(opCF));
-        removeMatchingAssignsIfPossible(Unary::get(opTemp, Terminal::get(opWildStrConst)));
-        removeMatchingAssignsIfPossible(Terminal::get(opPC));
-
-        // processTypes();
-
-        if (!change) {
-            break; // Until no change
-        }
-    }
+         // this is just to make it readable, do NOT rely on these statements being removed
+        PassManager::get()->executePass(PassID::AssignRemoval, this);
+    } while (change && ++pass < 12);
 
     // At this point, there will be some memofs that have still not been renamed. They have been prevented from
     // getting renamed so that they didn't get renamed incorrectly (usually as {-}), when propagation and/or bypassing
@@ -1095,15 +993,14 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // Now we need another pass to inert phis for the memofs, rename them and propagate them
     ++pass;
 
-    LOG_VERBOSE("Setting phis, renaming block variables after memofs renamable pass %1", pass);
-
-    change = m_df.placePhiFunctions();
-    doRenameBlockVars(pass, false); // MVE: do we want this parameter false or not?
+    change = PassManager::get()->executePass(PassID::PhiPlacement, this);
+    change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     debugPrintAll("after setting phis for memofs, renaming them");
-    propagateStatements(convert, pass);
+    PassManager::get()->executePass(PassID::StatementPropagation, this);
+
     // Now that memofs are renamed, the bypassing for memofs can work
-    fixCallAndPhiRefs(); // Bypass children that are finalised (if any)
+    PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Bypass children that are finalised (if any)
 
     if (SETTING(nameParameters)) {
         // ? Crazy time to do this... haven't even done "final" parameters as yet
@@ -1148,7 +1045,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         return ret;
     }
 
-    findPreserveds();
+    PassManager::get()->executePass(PassID::PreservationAnalysis, this);
 
     // Used to be later...
     if (SETTING(nameParameters)) {
@@ -1158,9 +1055,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         debugPrintAll("after replacing expressions, trimming params and returns");
     }
 
-    eliminateDuplicateArgs();
-
-    LOG_VERBOSE("===== End early decompile for %1 =====", getName());
+    PassManager::get()->executePass(PassID::DuplicateArgsRemoval, this);
 
     setStatus(PROC_EARLYDONE);
 
@@ -1175,69 +1070,47 @@ void UserProc::remUnusedStmtEtc()
     Boomerang::get()->alertDecompiling(this);
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Final");
 
-    LOG_VERBOSE("--- Remove unused statements for %1 ---", getName());
-    // A temporary hack to remove %CF = %CF{7} when 7 isn't a SUBFLAGS
-    //    if (theReturnStatement)
-    //        theReturnStatement->specialProcessing();
+    LOG_VERBOSE("### Removing unused statements for %1 ###", getName());
 
     // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
     // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
     // to printf/scanf), and removing unused statements is unsafe without full use information
-    if (m_status < PROC_FINAL) {
-        typeAnalysis();
+    if (getStatus() < PROC_FINAL) {
+        PassManager::get()->executePass(PassID::LocalTypeAnalysis, this);
 
         // Now that locals are identified, redo the dataflow
-        m_df.placePhiFunctions();
+        PassManager::get()->executePass(PassID::PhiPlacement, this);
 
-        doRenameBlockVars(20);            // Rename the locals
-        bool convert = false;
-        propagateStatements(convert, 20); // Surely need propagation too
+        PassManager::get()->executePass(PassID::BlockVarRename, this);       // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation, this); // Surely need propagation too
 
         if (SETTING(verboseOutput)) {
             debugPrintAll("after propagating locals");
         }
     }
 
-    // Only remove unused statements after decompiling as much as possible of the proc
-    // Remove unused statements
-    RefCounter refCounts; // The map
-    // Count the references first
-    countRefs(refCounts);
-
-    // Now remove any that have no used
-    if (SETTING(removeNull)) {
-        remUnusedStmtEtc(refCounts);
-    }
-
-    // Remove null statements
-    if (SETTING(removeNull)) {
-        removeNullStatements();
-    }
-
-
-    if (SETTING(removeNull)) {
-        debugPrintAll("after removing unused and null statements pass 1");
-    }
+    PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
 
     Boomerang::get()->alertDecompileAfterRemoveStmts(this, 1);
 
-    findFinalParameters();
+    PassManager::get()->executePass(PassID::FinalParameterSearch, this);
 
     if (SETTING(nameParameters)) {
         // Replace the existing temporary parameters with the final ones:
         // mapExpressionsToParameters();
-        addParameterSymbols();
+        PassManager::get()->executePass(PassID::ParameterSymbolMap, this);
         debugPrintAll("after adding new parameters");
     }
 
-    updateCalls(); // Or just updateArguments?
+    // Or just CallArgumentUpdate?
+    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
 
-    bool removedBBs = branchAnalysis();
-    fixUglyBranches();
+    const bool removedBBs = PassManager::get()->executePass(PassID::BranchAnalysis, this);
 
     if (removedBBs) {
         // redo the data flow
-        m_df.calculateDominators();
+        PassManager::get()->executePass(PassID::Dominators, this);
 
         // recalculate phi assignments of referencing BBs.
         for (BasicBlock *bb : *m_cfg) {
@@ -1269,104 +1142,6 @@ void UserProc::remUnusedStmtEtc()
 
     debugPrintAll("after remove unused statements etc");
     Boomerang::get()->alertDecompileDebugPoint(this, "after final");
-}
-
-
-void UserProc::remUnusedStmtEtc(RefCounter& refCounts)
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "before remUnusedStmtEtc");
-
-    StatementList stmts;
-    getStatements(stmts);
-    bool change;
-
-    do { // FIXME: check if this is ever needed
-        change = false;
-        StatementList::iterator ll = stmts.begin();
-
-        while (ll != stmts.end()) {
-            Statement *s = *ll;
-
-            if (!s->isAssignment()) {
-                // Never delete a statement other than an assignment (e.g. nothing "uses" a Jcond)
-                ++ll;
-                continue;
-            }
-
-            const Assignment *as    = static_cast<const Assignment *>(s);
-            SharedConstExp  asLeft = as->getLeft();
-
-            // If depth < 0, consider all depths
-            // if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
-            //    ++ll;
-            //    continue;
-            // }
-            if (asLeft && (asLeft->getOper() == opGlobal)) {
-                // assignments to globals must always be kept
-                ++ll;
-                continue;
-            }
-
-            // If it's a memof and renameable it can still be deleted
-            if ((asLeft->getOper() == opMemOf) && !canRename(asLeft)) {
-                // Assignments to memof-anything-but-local must always be kept.
-                ++ll;
-                continue;
-            }
-
-            if ((asLeft->getOper() == opMemberAccess) || (asLeft->getOper() == opArrayIndex)) {
-                // can't say with these; conservatively never remove them
-                ++ll;
-                continue;
-            }
-
-            if ((refCounts.find(s) == refCounts.end()) || (refCounts[s] == 0)) { // Care not to insert unnecessarily
-                // First adjust the counts, due to statements only referenced by statements that are themselves unused.
-                // Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
-                // of statements that use a definition, not the total number of refs
-                StatementSet stmtsRefdByUnused;
-                LocationSet    components;
-                s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
-
-                for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                    if ((*cc)->isSubscript()) {
-                        stmtsRefdByUnused.insert((*cc)->access<RefExp>()->getDef());
-                    }
-                }
-
-                for (auto dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); ++dd) {
-                    if (*dd == nullptr) {
-                        continue;
-                    }
-
-                    if (DEBUG_UNUSED) {
-                        LOG_MSG("Decrementing ref count of %1 because %2 is unused", (*dd)->getNumber(), s->getNumber());
-                    }
-
-                    refCounts[*dd]--;
-                }
-
-                if (DEBUG_UNUSED) {
-                    LOG_MSG("Removing unused statement %1 %2", s->getNumber(), s);
-                }
-
-                removeStatement(s);
-                ll     = stmts.erase(ll); // So we don't try to re-remove it
-                change = true;
-                continue;                 // Don't call getNext this time
-            }
-
-            ++ll;
-        }
-    } while (change);
-
-    // Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
-    // removed statement, so liveness in the call needs to be removed
-    removeCallLiveness();  // Kill all existing livenesses
-    doRenameBlockVars(-2); // Recalculate new livenesses
-    setStatus(PROC_FINAL); // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after remUnusedStmtEtc");
 }
 
 
@@ -1411,392 +1186,6 @@ void UserProc::recursionGroupAnalysis(ProcList &callStack)
     Boomerang::get()->alertEndDecompile(this);
 }
 
-
-void UserProc::updateCalls()
-{
-    LOG_VERBOSE("### updateCalls for %1 ###", getName());
-
-    updateCallDefines();
-    updateArguments();
-    debugPrintAll("After update calls");
-}
-
-
-bool UserProc::branchAnalysis()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before branch analysis");
-    StatementList stmts;
-    getStatements(stmts);
-
-    std::set<BasicBlock *> bbsToRemove;
-
-    for (Statement *stmt : stmts) {
-        if (!stmt->isBranch()) {
-            continue;
-        }
-
-        BranchStatement *firstBranch = static_cast<BranchStatement *>(stmt);
-
-        if (!firstBranch->getFallBB() || !firstBranch->getTakenBB()) {
-            continue;
-        }
-
-        StatementList fallstmts;
-        firstBranch->getFallBB()->appendStatementsTo(fallstmts);
-        Statement *nextAfterBranch = !fallstmts.empty() ? fallstmts.front() : nullptr;
-
-        if (nextAfterBranch && nextAfterBranch->isBranch()) {
-            BranchStatement *secondBranch = static_cast<BranchStatement *>(nextAfterBranch);
-
-            //   branch to A if cond1
-            //   branch to B if cond2
-            // A: something
-            // B:
-            // ->
-            //   branch to B if !cond1 && cond2
-            // A: something
-            // B:
-            //
-            if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
-                (secondBranch->getBB()->getNumPredecessors() == 1)) {
-
-                SharedExp cond =
-                    Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()), secondBranch->getCondExpr()->clone());
-                firstBranch->setCondExpr(cond->simplify());
-
-                firstBranch->setDest(secondBranch->getFixedDest());
-                firstBranch->setTakenBB(secondBranch->getTakenBB());
-                firstBranch->setFallBB(secondBranch->getFallBB());
-
-                // remove second branch BB
-                BasicBlock *secondBranchBB = secondBranch->getBB();
-
-                assert(secondBranchBB->getNumPredecessors() == 0);
-                assert(secondBranchBB->getNumSuccessors() == 2);
-                BasicBlock *succ1 = secondBranch->getBB()->getSuccessor(BTHEN);
-                BasicBlock *succ2 = secondBranch->getBB()->getSuccessor(BELSE);
-
-                secondBranchBB->removeSuccessor(succ1);
-                secondBranchBB->removeSuccessor(succ2);
-                succ1->removePredecessor(secondBranchBB);
-                succ2->removePredecessor(secondBranchBB);
-
-                bbsToRemove.insert(secondBranchBB);
-            }
-
-            //   branch to B if cond1
-            //   branch to B if cond2
-            // A: something
-            // B:
-            // ->
-            //   branch to B if cond1 || cond2
-            // A: something
-            // B:
-            if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
-                (secondBranch->getBB()->getNumPredecessors() == 1)) {
-
-                SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(), secondBranch->getCondExpr()->clone());
-                firstBranch->setCondExpr(cond->simplify());
-
-                firstBranch->setFallBB(secondBranch->getFallBB());
-
-                BasicBlock *secondBranchBB = secondBranch->getBB();
-                assert(secondBranchBB->getNumPredecessors() == 0);
-                assert(secondBranchBB->getNumSuccessors() == 2);
-                BasicBlock *succ1 = secondBranchBB->getSuccessor(BTHEN);
-                BasicBlock *succ2 = secondBranchBB->getSuccessor(BELSE);
-
-                secondBranchBB->removeSuccessor(succ1);
-                secondBranchBB->removeSuccessor(succ2);
-                succ1->removePredecessor(secondBranchBB);
-                succ2->removePredecessor(secondBranchBB);
-
-                bbsToRemove.insert(secondBranchBB);
-            }
-        }
-    }
-
-    const bool removedBBs = !bbsToRemove.empty();
-    for (BasicBlock *bb : bbsToRemove) {
-        m_cfg->removeBB(bb);
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After branch analysis.");
-    return removedBBs;
-}
-
-
-void UserProc::fixUglyBranches()
-{
-    LOG_VERBOSE("### fixUglyBranches for '%1' ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (auto stmt : stmts) {
-        if (!stmt->isBranch()) {
-            continue;
-        }
-
-        SharedExp hl = static_cast<BranchStatement *>(stmt)->getCondExpr();
-
-        // of the form: x{n} - 1 >= 0
-        if (hl && (hl->getOper() == opGtrEq) && hl->getSubExp2()->isIntConst() &&
-            (hl->access<Const, 2>()->getInt() == 0) && (hl->getSubExp1()->getOper() == opMinus) &&
-            hl->getSubExp1()->getSubExp2()->isIntConst() && (hl->access<Const, 1, 2>()->getInt() == 1) &&
-            hl->getSubExp1()->getSubExp1()->isSubscript()) {
-            Statement *n = hl->access<RefExp, 1, 1>()->getDef();
-
-            if (n && n->isPhi()) {
-                PhiAssign *p = static_cast<PhiAssign *>(n);
-
-                for (const auto& phi : *p) {
-                    if (!phi.getDef()->isAssign()) {
-                        continue;
-                    }
-
-                    Assign *a = static_cast<Assign *>(phi.getDef());
-
-                    if (*a->getRight() == *hl->getSubExp1()) {
-                        hl->setSubExp1(RefExp::get(a->getLeft(), a));
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
-    debugPrintAll("After fixUglyBranches");
-}
-
-
-bool UserProc::doRenameBlockVars(int pass, bool clearStacks)
-{
-    LOG_VERBOSE("### Rename block vars for %1 pass %2, clear = %3 ###", getName(), pass, clearStacks);
-    bool b = m_df.renameBlockVars(0, clearStacks);
-    LOG_VERBOSE("df.renameBlockVars return %1", (b ? "true" : "false"));
-    return b;
-}
-
-
-void UserProc::findSpPreservation()
-{
-    LOG_VERBOSE("Finding stack pointer preservation for %1", getName());
-
-    bool stdsp = false; // FIXME: are these really used?
-    // Note: need this non-virtual version most of the time, since nothing proved yet
-    int sp = m_signature->getStackRegister(m_prog);
-
-    for (int n = 0; n < 2; n++) {
-        // may need to do multiple times due to dependencies FIXME: efficiency! Needed any more?
-
-        // Special case for 32-bit stack-based machines (e.g. Pentium).
-        // RISC machines generally preserve the stack pointer (so no special case required)
-        for (int p = 0; !stdsp && p < 8; p++) {
-            if (DEBUG_PROOF) {
-                LOG_MSG("Attempting to prove sp = sp + %1 for %2", p * 4, getName());
-            }
-
-            stdsp = prove(
-                Binary::get(opEquals,
-                            Location::regOf(sp),
-                            Binary::get(opPlus, Location::regOf(sp), Const::get(p * 4))));
-        }
-    }
-
-    if (DEBUG_PROOF) {
-        LOG_MSG("Proven for %1:", getName());
-
-        for (auto& elem : m_provenTrue) {
-            LOG_MSG("    %1 = %2", elem.first, elem.second);
-        }
-    }
-}
-
-
-void UserProc::findPreserveds()
-{
-    std::set<SharedExp> removes;
-
-    LOG_VERBOSE("Finding preserveds for %1", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "before finding preserveds");
-
-    if (m_retStatement == nullptr) {
-        if (DEBUG_PROOF) {
-            LOG_MSG("Can't find preservations as there is no return statement!");
-        }
-
-        Boomerang::get()->alertDecompileDebugPoint(this, "after finding preserveds (no return)");
-        return;
-    }
-
-    // prove preservation for all modifieds in the return statement
-    StatementList& modifieds = m_retStatement->getModifieds();
-
-    for (ReturnStatement::iterator mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-        SharedExp lhs      = static_cast<Assignment *>(*mm)->getLeft();
-        auto      equation = Binary::get(opEquals, lhs, lhs);
-
-        if (DEBUG_PROOF) {
-            LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
-        }
-
-        if (prove(equation)) {
-            removes.insert(equation);
-        }
-    }
-
-    if (DEBUG_PROOF) {
-        LOG_MSG("### proven true for procedure %1:", getName());
-
-        for (auto& elem : m_provenTrue) {
-            LOG_MSG("  %1 = %2", elem.first, elem.second);
-        }
-
-        LOG_MSG("### End proven true for procedure %1", getName());
-    }
-
-    // Remove the preserved locations from the modifieds and the returns
-    for (auto pp = m_provenTrue.begin(); pp != m_provenTrue.end(); ++pp) {
-        SharedExp lhs = pp->first;
-        SharedExp rhs = pp->second;
-
-        // Has to be of the form loc = loc, not say loc+4, otherwise the bypass logic won't see the add of 4
-        if (!(*lhs == *rhs)) {
-            continue;
-        }
-
-        m_retStatement->removeModified(lhs);
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After finding preserveds");
-}
-
-
-void UserProc::removeSpAssignsIfPossible()
-{
-    // if there are no uses of sp other than sp{-} in the whole procedure,
-    // we can safely remove all assignments to sp, this will make the output
-    // more readable for human eyes.
-
-    auto sp(Location::regOf(m_signature->getStackRegister(m_prog)));
-    bool foundone = false;
-
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*static_cast<Assign *>(stmt)->getLeft() == *sp)) {
-            foundone = true;
-        }
-
-        LocationSet refs;
-        stmt->addUsedLocs(refs);
-
-        for (const SharedExp& rr : refs) {
-            if (rr->isSubscript() && (*rr->getSubExp1() == *sp)) {
-                Statement *def = rr->access<RefExp>()->getDef();
-
-                if (def && (def->getProc() == this)) {
-                    return;
-                }
-            }
-        }
-    }
-
-    if (!foundone) {
-        return;
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before removing stack pointer assigns.");
-
-    for (auto& stmt : stmts) {
-        if (stmt->isAssign()) {
-            Assign *a = static_cast<Assign *>(stmt);
-
-            if (*a->getLeft() == *sp) {
-                removeStatement(a);
-            }
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After removing stack pointer assigns.");
-}
-
-
-void UserProc::removeMatchingAssignsIfPossible(SharedExp e)
-{
-    // if there are no uses of %flags in the whole procedure,
-    // we can safely remove all assignments to %flags, this will make the output
-    // more readable for human eyes and makes short circuit analysis easier.
-
-    bool foundone = false;
-
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (auto stmt : stmts) {
-        if (stmt->isAssign() && (*static_cast<const Assign *>(stmt)->getLeft() == *e)) {
-            foundone = true;
-        }
-
-        if (stmt->isPhi()) {
-            if (*static_cast<const PhiAssign *>(stmt)->getLeft() == *e) {
-                foundone = true;
-            }
-
-            continue;
-        }
-
-        LocationSet refs;
-        stmt->addUsedLocs(refs);
-
-        for (const SharedExp& rr : refs) {
-            if (rr->isSubscript() && (*rr->getSubExp1() == *e)) {
-                Statement *def = rr->access<RefExp>()->getDef();
-
-                if (def && (def->getProc() == this)) {
-                    return;
-                }
-            }
-        }
-    }
-
-    if (!foundone) {
-        return;
-    }
-
-    QString     res_str;
-    QTextStream str(&res_str);
-    str << "Before removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG_VERBOSE(res_str);
-
-    for (auto& stmt : stmts) {
-        if ((stmt)->isAssign()) {
-            Assign *a = static_cast<Assign *>(stmt);
-
-            if (*a->getLeft() == *e) {
-                removeStatement(a);
-            }
-        }
-        else if ((stmt)->isPhi()) {
-            PhiAssign *a = static_cast<PhiAssign *>(stmt);
-
-            if (*a->getLeft() == *e) {
-                removeStatement(a);
-            }
-        }
-    }
-
-    res_str.clear();
-    str << "After removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(this, qPrintable(res_str));
-    LOG_VERBOSE(res_str);
-}
 
 
 void UserProc::assignProcsToCalls()
@@ -1853,92 +1242,6 @@ void UserProc::finalSimplify()
 }
 
 
-// m[WILD]{-}
-static SharedExp memOfWild = RefExp::get(Location::memOf(Terminal::get(opWild)), nullptr);
-// r[WILD INT]{-}
-static SharedExp regOfWild = RefExp::get(Location::regOf(Terminal::get(opWildIntConst)), nullptr);
-
-
-void UserProc::findFinalParameters()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "before find final parameters.");
-
-    qDeleteAll(m_parameters);
-    m_parameters.clear();
-
-    if (m_signature->isForced()) {
-        // Copy from signature
-        int               n = m_signature->getNumParams();
-        ImplicitConverter ic(m_cfg);
-
-        for (int i = 0; i < n; ++i) {
-            SharedExp             paramLoc = m_signature->getParamExp(i)->clone(); // E.g. m[r28 + 4]
-            LocationSet           components;
-            paramLoc->addUsedLocs(components);
-
-            for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                if (*cc != paramLoc) {                       // Don't subscript outer level
-                    paramLoc->expSubscriptVar(*cc, nullptr); // E.g. r28 -> r28{-}
-                    paramLoc->accept(&ic);                   // E.g. r28{-} -> r28{0}
-                }
-            }
-
-            m_parameters.append(new ImplicitAssign(m_signature->getParamType(i), paramLoc));
-            QString   name       = m_signature->getParamName(i);
-            SharedExp param      = Location::param(name, this);
-            SharedExp reParamLoc = RefExp::get(paramLoc, m_cfg->findImplicitAssign(paramLoc));
-            mapSymbolTo(reParamLoc, param); // Update name map
-        }
-
-        return;
-    }
-
-    if (DEBUG_PARAMS) {
-        LOG_VERBOSE("Finding final parameters for %1", getName());
-    }
-
-    //    int sp = signature->getStackRegister();
-    m_signature->setNumParams(0); // Clear any old ideas
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
-        // program
-        if (!s->isImplicit()) {
-            // Note: phis can get converted to assignments, but I hope that this is only later on: check this!
-            break; // Stop after reading all implicit assignments
-        }
-
-        SharedExp e = static_cast<ImplicitAssign *>(s)->getLeft();
-
-        if (m_signature->findParam(e) == -1) {
-            if (DEBUG_PARAMS) {
-                LOG_VERBOSE("Potential param %1", e);
-            }
-
-            // I believe that the only true parameters will be registers or memofs that look like locals (stack
-            // pararameters)
-            if (!(e->isRegOf() || isLocalOrParamPattern(e))) {
-                continue;
-            }
-
-            if (DEBUG_PARAMS) {
-                LOG_VERBOSE("Found new parameter %1", e);
-            }
-
-            SharedType ty = static_cast<ImplicitAssign *>(s)->getType();
-            // Add this parameter to the signature (for now; creates parameter names)
-            addParameter(e, ty);
-            // Insert it into the parameters StatementList, in sensible order
-            insertParameter(e, ty);
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after find final parameters.");
-}
-
-
 void UserProc::addParameter(SharedExp e, SharedType ty)
 {
     // In case it's already an implicit argument:
@@ -1947,20 +1250,6 @@ void UserProc::addParameter(SharedExp e, SharedType ty)
     m_signature->addParameter(e, ty);
 }
 
-
-void UserProc::addParameterSymbols()
-{
-    ImplicitConverter       ic(m_cfg);
-    int i = 0;
-
-    for (auto it = m_parameters.begin(); it != m_parameters.end(); ++it, ++i) {
-        SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
-        lhs = lhs->expSubscriptAllNull();
-        lhs = lhs->accept(&ic);
-        SharedExp to = Location::param(m_signature->getParamName(i), this);
-        mapSymbolTo(lhs, to);
-    }
-}
 
 
 SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
@@ -2067,75 +1356,6 @@ void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, Stat
 }
 
 
-bool UserProc::removeNullStatements()
-{
-    bool          change = false;
-    StatementList stmts;
-    getStatements(stmts);
-    // remove null code
-    for (Statement *s : stmts) {
-        if (s->isNullStatement()) {
-            // A statement of the form x := x
-            LOG_VERBOSE("Removing null statement: %1 %2", s->getNumber(), s);
-
-            removeStatement(s);
-            change = true;
-        }
-    }
-
-    return change;
-}
-
-
-bool UserProc::propagateStatements(bool& convert, int pass)
-{
-    LOG_VERBOSE("--- Begin propagating statements pass %1 ---", pass);
-    StatementList stmts;
-    getStatements(stmts);
-
-    // Find the locations that are used by a live, dominating phi-function
-    LocationSet usedByDomPhi;
-    findLiveAtDomPhi(usedByDomPhi);
-
-    // Next pass: count the number of times each assignment LHS would be propagated somewhere
-    std::map<SharedExp, int, lessExpStar> destCounts;
-
-    // Also maintain a set of locations which are used by phi statements
-    for (Statement *s : stmts) {
-        ExpDestCounter  edc(destCounts);
-        StmtDestCounter sdc(&edc);
-        s->accept(&sdc);
-    }
-
-#if USE_DOMINANCE_NUMS
-    // A third pass for dominance numbers
-    setDominanceNumbers();
-#endif
-    // A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
-    bool change = false;
-
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            change |= s->propagateFlagsTo();
-        }
-    }
-
-    // Finally the actual propagation
-    convert = false;
-
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            change |= s->propagateTo(convert, &destCounts, &usedByDomPhi);
-        }
-    }
-
-    simplify();
-    propagateToCollector();
-    LOG_VERBOSE("=== End propagating statements at pass %1 ===", pass);
-    return change;
-}
-
-
 void UserProc::promoteSignature()
 {
     m_signature = m_signature->promote(this);
@@ -2176,7 +1396,7 @@ SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /*
         LOG_FATAL("Null type passed to newLocal");
     }
 
-    LOG_VERBOSE("Assigning type %1 to new %2", ty->getCtype(), localName);
+    LOG_VERBOSE2("Assigning type %1 to new %2", ty->getCtype(), localName);
 
     return Location::local(localName, this);
 }
@@ -2211,10 +1431,10 @@ void UserProc::setLocalType(const QString& nam, SharedType ty)
 }
 
 
-SharedType UserProc::getParamType(const QString& nam)
+SharedType UserProc::getParamType(const QString& name)
 {
     for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
-        if (nam == m_signature->getParamName(i)) {
+        if (name == m_signature->getParamName(i)) {
             return m_signature->getParamType(i);
         }
     }
@@ -2298,553 +1518,6 @@ SharedConstExp UserProc::expFromSymbol(const QString& nam) const
     }
 
     return nullptr;
-}
-
-
-void UserProc::countRefs(RefCounter& refCounts)
-{
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        // Don't count uses in implicit statements. There is no RHS of course, but you can still have x from m[x] on the
-        // LHS and so on, and these are not real uses
-        if (s->isImplicit()) {
-            continue;
-        }
-
-        if (DEBUG_UNUSED) {
-            LOG_MSG("Counting references in %1", s);
-        }
-
-        LocationSet refs;
-        s->addUsedLocs(refs, false); // Ignore uses in collectors
-
-        for (const SharedExp& rr : refs) {
-            if (rr->isSubscript()) {
-                Statement *def = rr->access<RefExp>()->getDef();
-
-                // Used to not count implicit refs here (def->getNumber() == 0), meaning that implicit definitions get
-                // removed as dead code! But these are the ideal place to read off final parameters, and it is
-                // guaranteed now that implicit statements are sorted out for us by now (for dfa type analysis)
-                if (def /* && def->getNumber() */) {
-                    refCounts[def]++;
-
-                    if (DEBUG_UNUSED) {
-                        LOG_MSG("counted ref to %1", rr);
-                    }
-                }
-            }
-        }
-    }
-
-    if (DEBUG_UNUSED) {
-        LOG_MSG("### Reference counts for %1:", getName());
-
-        for (RefCounter::iterator rr = refCounts.begin(); rr != refCounts.end(); ++rr) {
-            LOG_MSG("  %1: %2", rr->first->getNumber(), rr->second);
-        }
-
-        LOG_MSG("### end reference counts");
-    }
-}
-
-
-void UserProc::removeUnusedLocals()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before removing unused locals");
-
-    LOG_VERBOSE("Removing unused locals (final) for %1", getName());
-
-    QSet<QString> usedLocals;
-    StatementList stmts;
-    getStatements(stmts);
-
-    // First count any uses of the locals
-    bool all = false;
-
-    for (Statement *s : stmts) {
-        LocationSet locs;
-        all |= s->addUsedLocals(locs);
-
-        for (SharedExp u : locs) {
-            // Must be a real symbol, and not defined in this statement, unless it is a return statement (in which case
-            // it is used outside this procedure), or a call statement. Consider local7 = local7+1 and
-            // return local7 = local7+1 and local7 = call(local7+1), where in all cases, local7 is not used elsewhere
-            // outside this procedure. With the assign, it can be deleted, but with the return or call statements, it
-            // can't.
-            if ((s->isReturn() || s->isCall() || !s->definesLoc(u))) {
-                if (!u->isLocal()) {
-                    continue;
-                }
-
-                QString name(u->access<Const, 1>()->getStr());
-                usedLocals.insert(name);
-
-                if (DEBUG_UNUSED) {
-                    LOG_MSG("Counted local %1 in %2", name, s);
-                }
-            }
-        }
-
-        if (s->isAssignment() && !s->isImplicit() && static_cast<Assignment *>(s)->getLeft()->isLocal()) {
-            Assignment *as = static_cast<Assignment *>(s);
-            auto       c   = as->getLeft()->access<Const, 1>();
-            QString    name(c->getStr());
-            usedLocals.insert(name);
-
-            if (DEBUG_UNUSED) {
-                LOG_MSG("Counted local %1 on left of %2", name, s);
-            }
-        }
-    }
-
-    // Now record the unused ones in set removes
-
-    QSet<QString> removes;
-
-    for (auto it = m_locals.begin(); it != m_locals.end(); ++it) {
-        const QString& name(it->first);
-
-        if (all && removes.size()) {
-            LOG_VERBOSE("WARNING: defineall seen in procedure %1, so not removing %2 locals",
-                        name, removes.size());
-        }
-
-        if ((usedLocals.find(name) == usedLocals.end()) && !all) {
-            if (SETTING(verboseOutput)) {
-                LOG_VERBOSE("Removed unused local %1", name);
-            }
-
-            removes.insert(name);
-        }
-    }
-
-    // Remove any definitions of the removed locals
-    for (Statement *s : stmts) {
-        LocationSet ls;
-        s->getDefinitions(ls);
-
-        for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
-            SharedType ty   = s->getTypeFor(*ll);
-            QString    name = findLocal(*ll, ty);
-
-            if (name.isNull()) {
-                continue;
-            }
-
-            if (removes.find(name) != removes.end()) {
-                // Remove it. If an assign, delete it; otherwise (call), remove the define
-                if (s->isAssignment()) {
-                    removeStatement(s);
-                    break; // Break to next statement
-                }
-                else if (s->isCall()) {
-                    // Remove just this define. May end up removing several defines from this call.
-                    static_cast<CallStatement *>(s)->removeDefine(*ll);
-                }
-
-                // else if a ReturnStatement, don't attempt to remove it. The definition is used *outside* this proc.
-            }
-        }
-    }
-
-    // Finally, remove them from locals, so they don't get declared
-    for (QString str : removes) {
-        m_locals.erase(str);
-    }
-
-    // Also remove them from the symbols, since symbols are a superset of locals at present
-    for (SymbolMap::iterator sm = m_symbolMap.begin(); sm != m_symbolMap.end();) {
-        SharedExp mapsTo = sm->second;
-
-        if (mapsTo->isLocal()) {
-            QString tmpName = mapsTo->access<Const, 1>()->getStr();
-
-            if (removes.find(tmpName) != removes.end()) {
-                sm = m_symbolMap.erase(sm);
-                continue;
-            }
-        }
-
-        ++sm;
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After removing unused locals");
-}
-
-
-void UserProc::fromSSAForm()
-{
-    Boomerang::get()->alertDecompiling(this);
-
-    LOG_VERBOSE("Transforming %1 from SSA form");
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before transforming from SSA form");
-
-    if (m_cfg->getNumBBs() >= 100) { // Only for the larger procs
-        // Note: emit newline at end of this proc, so we can distinguish getting stuck in this proc with doing a lot of
-        // little procs that don't get messages. Also, looks better with progress dots
-        LOG_VERBOSE(" transforming out of SSA form: %1 with %2 BBs", getName(), m_cfg->getNumBBs());
-    }
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        // Map registers to initial local variables
-        s->mapRegistersToLocals();
-        // Insert casts where needed, as types are about to become inaccessible
-        s->insertCasts();
-    }
-
-    // First split the live ranges where needed by reason of type incompatibility, i.e. when the type of a subscripted
-    // variable is different to its previous type. Start at the top, because we don't want to rename parameters (e.g.
-    // argc)
-    typedef std::pair<SharedType, SharedExp>                 FirstTypeEnt;
-    typedef std::map<SharedExp, FirstTypeEnt, lessExpStar>   FirstTypesMap;
-
-    FirstTypesMap           firstTypes;
-    FirstTypesMap::iterator ff;
-    ConnectionGraph         ig; // The interference graph; these can't have the same local variable
-    ConnectionGraph         pu; // The Phi Unites: these need the same local variable or copies
-
-    for (Statement *s : stmts) {
-        LocationSet defs;
-        s->getDefinitions(defs);
-
-        for (SharedExp base : defs) {
-            SharedType ty   = s->getTypeFor(base);
-
-            if (ty == nullptr) { // Can happen e.g. when getting the type for %flags
-                ty = VoidType::get();
-            }
-
-            LOG_VERBOSE("Got type %1 for %2 from %3", ty->prints(), base, s);
-            ff = firstTypes.find(base);
-            SharedExp ref = RefExp::get(base, s);
-
-            if (ff == firstTypes.end()) {
-                // There is no first type yet. Record it.
-                FirstTypeEnt fte;
-                fte.first        = ty;
-                fte.second       = ref;
-                firstTypes[base] = fte;
-            }
-            else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
-                if (SETTING(debugLiveness)) {
-                    LOG_MSG("Def of %1 at %2 type %3 is not compatible with first type %4.",
-                            base, s->getNumber(), ty, ff->second.first);
-                }
-
-                // There already is a type for base, and it is different to the type for this definition.
-                // Record an "interference" so it will get a new variable
-                if (!ty->isVoid()) { // just ignore void interferences ??!!
-                    ig.connect(ref, ff->second.second);
-                }
-            }
-        }
-    }
-    assert(ig.allRefsHaveDefs());
-
-    // Find the interferences generated by more than one version of a variable being live at the same program point
-    InterferenceFinder(m_cfg).findInterferences(ig);
-    assert(ig.allRefsHaveDefs());
-
-    // Find the set of locations that are "united" by phi-functions
-    // FIXME: are these going to be trivially predictable?
-    findPhiUnites(pu);
-
-    if (SETTING(debugLiveness)) {
-        LOG_MSG("## ig interference graph:");
-
-        for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ++ii) {
-            LOG_MSG("   ig %1 -> %2", ii->first, ii->second);
-        }
-
-        LOG_MSG("## pu phi unites graph:");
-
-        for (ConnectionGraph::iterator ii = pu.begin(); ii != pu.end(); ++ii) {
-            LOG_MSG("   pu %1 -> %2", ii->first, ii->second);
-        }
-    }
-
-    // Choose one of each interfering location to give a new name to
-    assert(ig.allRefsHaveDefs());
-
-    for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ++ii) {
-        auto    r1    = ii->first->access<RefExp>();
-        auto    r2    = ii->second->access<RefExp>(); // r1 -> r2 and vice versa
-        QString name1 = lookupSymFromRefAny(r1);
-        QString name2 = lookupSymFromRefAny(r2);
-
-        if (!name1.isNull() && !name2.isNull() && (name1 != name2)) {
-            continue; // Already different names, probably because of the redundant mapping
-        }
-
-        std::shared_ptr<RefExp> rename;
-
-        if (r1->isImplicitDef()) {
-            // If r1 is an implicit definition, don't rename it (it is probably a parameter, and should retain its
-            // current name)
-            rename = r2;
-        }
-        else if (r2->isImplicitDef()) {
-            rename = r1; // Ditto for r2
-        }
-
-        if (rename == nullptr) {
-            Statement *def2 = r2->getDef();
-
-            if (def2->isPhi()) { // Prefer the destinations of phis
-                rename = r2;
-            }
-            else {
-                rename = r1;
-            }
-        }
-
-        SharedType ty    = rename->getDef()->getTypeFor(rename->getSubExp1());
-        SharedExp  local = createLocal(ty, rename);
-
-        if (SETTING(debugLiveness)) {
-            LOG_MSG("Renaming %1 to %2", rename, local);
-        }
-
-        mapSymbolTo(rename, local);
-    }
-
-    // Implement part of the Phi Unites list, where renamings or parameters have broken them, by renaming
-    // The rest of them will be done as phis are removed
-    // The idea is that where l1 and l2 have to unite, and exactly one of them already has a local/name, you can
-    // implement the unification by giving the unnamed one the same name as the named one, as long as they don't
-    // interfere
-    for (ConnectionGraph::iterator ii = pu.begin(); ii != pu.end(); ++ii) {
-        auto    r1    = ii->first->access<RefExp>();
-        auto    r2    = ii->second->access<RefExp>();
-        QString name1 = lookupSymFromRef(r1);
-        QString name2 = lookupSymFromRef(r2);
-
-        if (!name1.isNull() && !name2.isNull() && !ig.isConnected(r1, *r2)) {
-            // There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We have renamed the
-            // destination of the phi to ebx_1, and that leaves the two phi operands as ebx. However, we attempt to
-            // unite them here, which will cause one of the operands to become ebx_1, so the neat oprimisation of
-            // replacing the phi with one copy doesn't work. The result is an extra copy.
-            // So check of r1 is a phi and r2 one of its operands, and all other operands for the phi have the same
-            // name. If so, don't rename.
-            Statement *def1 = r1->getDef();
-
-            if (def1->isPhi()) {
-                bool                allSame     = true;
-                bool                r2IsOperand = false;
-                QString             firstName   = QString::null;
-                PhiAssign           *pa = static_cast<PhiAssign *>(def1);
-
-                for (RefExp &refExp : *pa) {
-                    auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
-
-                    if (*re == *r2) {
-                        r2IsOperand = true;
-                    }
-
-                    if (firstName.isNull()) {
-                        firstName = lookupSymFromRefAny(re);
-                    }
-                    else {
-                        QString tmp = lookupSymFromRefAny(re);
-
-                        if (tmp.isNull() || (firstName != tmp)) {
-                            allSame = false;
-                            break;
-                        }
-                    }
-                }
-
-                if (allSame && r2IsOperand) {
-                    continue; // This situation has happened, don't map now
-                }
-            }
-
-            mapSymbolTo(r2, Location::local(name1, this));
-            continue;
-        }
-    }
-
-    /*    *    *    *    *    *    *    *    *    *    *    *    *    *    *\
-    *                                                        *
-    *     IR gets changed with hard locals and params here    *
-    *                                                        *
-    \*    *    *    *    *    *    *    *    *    *    *    *    *    *    */
-
-    // First rename the variables (including phi's, but don't remove).
-    // NOTE: it is not possible to postpone renaming these locals till the back end, since the same base location
-    // may require different names at different locations, e.g. r28{0} is local0, r28{16} is local1
-    // Update symbols and parameters, particularly for the stack pointer inside memofs.
-    // NOTE: the ordering of the below operations is critical! Re-ordering may well prevent e.g. parameters from
-    // renaming successfully.
-    verifyPHIs();
-    nameParameterPhis();
-    mapLocalsAndParams();
-    mapParameters();
-    removeSubscriptsFromSymbols();
-    removeSubscriptsFromParameters();
-
-    for (Statement *s : stmts) {
-        s->replaceSubscriptsWithLocals();
-    }
-
-    // Now remove the phis
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            continue;
-        }
-
-        // Check if the base variables are all the same
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
-
-        if (phi->begin() == phi->end()) {
-            // no params to this phi, just remove it
-            LOG_VERBOSE("Phi with no params, removing: %1", s);
-
-            removeStatement(s);
-            continue;
-        }
-
-        LocationSet refs;
-        phi->addUsedLocs(refs);
-        bool      phiParamsSame = true;
-        SharedExp first         = nullptr;
-
-        if (phi->getNumDefs() > 1) {
-            for (RefExp& pi : *phi) {
-                if (pi.getSubExp1() == nullptr) {
-                    continue;
-                }
-
-                if (first == nullptr) {
-                    first = pi.getSubExp1();
-                    continue;
-                }
-
-                if (!(*(pi.getSubExp1()) == *first)) {
-                    phiParamsSame = false;
-                    break;
-                }
-            }
-        }
-
-        if (phiParamsSame && first) {
-            // Is the left of the phi assignment the same base variable as all the operands?
-            if (*phi->getLeft() == *first) {
-                if (SETTING(debugLiveness) || DEBUG_UNUSED) {
-                    LOG_MSG("Removing phi: left and all refs same or 0: %1", s);
-                }
-
-                // Just removing the refs will work, or removing the whole phi
-                // NOTE: Removing the phi here may cause other statments to be not used.
-                removeStatement(s);
-            }
-            else {
-                // Need to replace the phi by an expression,
-                // e.g. local0 = phi(r24{3}, r24{5}) becomes
-                //        local0 = r24
-                phi->convertToAssign(first->clone());
-            }
-        }
-        else {
-            // Need new local(s) for phi operands that have different names from the lhs
-
-            // This way is costly in copies, but has no problems with extending live ranges
-            // Exp* tempLoc = newLocal(pa->getType());
-            SharedExp tempLoc = getSymbolExp(RefExp::get(phi->getLeft(), phi), phi->getType());
-
-            if (SETTING(debugLiveness)) {
-                LOG_MSG("Phi statement %1 requires local, using %2", s, tempLoc);
-            }
-
-            // For each definition ref'd in the phi
-            for (RefExp &pi : *phi) {
-                if (pi.getSubExp1() == nullptr) {
-                    continue;
-                }
-
-                insertAssignAfter(pi.getDef(), tempLoc, pi.getSubExp1());
-            }
-
-            // Replace the RHS of the phi with tempLoc
-            phi->convertToAssign(tempLoc);
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after transforming from SSA form");
-}
-
-
-void UserProc::mapParameters()
-{
-    // Replace the parameters with their mappings
-    StatementList::iterator pp;
-
-    for (pp = m_parameters.begin(); pp != m_parameters.end(); ++pp) {
-        SharedExp lhs        = static_cast<Assignment *>(*pp)->getLeft();
-        QString   mappedName = lookupParam(lhs);
-
-        if (mappedName.isNull()) {
-            LOG_WARN("No symbol mapping for parameter %1", lhs);
-            bool      allZero;
-            SharedExp clean = lhs->clone()->removeSubscripts(allZero);
-
-            if (allZero) {
-                static_cast<Assignment *>(*pp)->setLeft(clean);
-            }
-
-            // Else leave them alone
-        }
-        else {
-            static_cast<Assignment *>(*pp)->setLeft(Location::param(mappedName, this));
-        }
-    }
-}
-
-
-void UserProc::removeSubscriptsFromSymbols()
-{
-    // Basically, use the symbol map to map the symbols in the symbol map!
-    // However, do not remove subscripts from the outer level; they are still needed for comments in the output and also
-    // for when removing subscripts from parameters (still need the {0})
-    // Since this will potentially change the ordering of entries, need to copy the map
-    SymbolMap sm2 = m_symbolMap; // Object copy
-
-    SymbolMap::iterator it;
-    m_symbolMap.clear();
-    ExpSsaXformer esx(this);
-
-    for (it = sm2.begin(); it != sm2.end(); ++it) {
-        SharedExp from = std::const_pointer_cast<Exp>(it->first);
-
-        if (from->isSubscript()) {
-            // As noted above, don't touch the outer level of subscripts
-            SharedExp& sub = from->refSubExp1();
-            sub = sub->accept(&esx);
-        }
-        else {
-            from = from->accept(&esx);
-        }
-
-        mapSymbolTo(from, it->second);
-    }
-}
-
-
-void UserProc::removeSubscriptsFromParameters()
-{
-    ExpSsaXformer esx(this);
-
-    for (Statement *param : m_parameters) {
-        SharedExp left = static_cast<Assignment *>(param)->getLeft();
-        left = left->accept(&esx);
-        static_cast<Assignment *>(param)->setLeft(left);
-    }
 }
 
 
@@ -3313,31 +1986,10 @@ bool UserProc::ellipsisProcessing()
     }
 
     if (ch) {
-        fixCallAndPhiRefs();
+        PassManager::get()->executePass(PassID::CallAndPhiFix, this);
     }
 
     return ch;
-}
-
-
-void UserProc::addImplicitAssigns()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "before adding implicit assigns");
-
-    StatementList stmts;
-    getStatements(stmts);
-    ImplicitConverter     ic(m_cfg);
-    StmtImplicitConverter sm(&ic, m_cfg);
-
-    for (Statement *stmt : stmts) {
-        stmt->accept(&sm);
-    }
-
-    m_cfg->setImplicitsDone();
-    m_df.convertImplicits(); // Some maps have m[...]{-} need to be m[...]{0} now
-    makeSymbolsImplicit();
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after adding implicit assigns");
 }
 
 
@@ -3504,159 +2156,6 @@ void UserProc::dumpSymbolMapx() const
     }
 }
 
-
-void UserProc::updateArguments()
-{
-    Boomerang::get()->alertDecompiling(this);
-    LOG_VERBOSE("### Update arguments for %1 ###", getName());
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before updating arguments");
-    BasicBlock::RTLRIterator        rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *it : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(it->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        c->updateArguments();
-        // c->bypass();
-        LOG_VERBOSE("%1", c);
-    }
-
-    LOG_VERBOSE("=== End update arguments for %1", getName());
-    Boomerang::get()->alertDecompileDebugPoint(this, "After updating arguments");
-}
-
-
-void UserProc::updateCallDefines()
-{
-    LOG_VERBOSE("### Update call defines for %1 ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        CallStatement *call = dynamic_cast<CallStatement *>(s);
-        if (call) {
-            call->updateDefines();
-        }
-    }
-}
-
-
-void UserProc::replaceSimpleGlobalConstants()
-{
-    LOG_VERBOSE("### Replace simple global constants for %1 ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *st : stmts) {
-        Assign *assgn = dynamic_cast<Assign *>(st);
-
-        if (assgn == nullptr) {
-            continue;
-        }
-
-        if (!assgn->getRight()->isMemOf()) {
-            continue;
-        }
-
-        if (!assgn->getRight()->getSubExp1()->isIntConst()) {
-            continue;
-        }
-
-        Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
-        LOG_VERBOSE("Assign %1");
-
-        if (m_prog->isReadOnly(addr)) {
-            LOG_VERBOSE("is readonly");
-            int val = 0;
-
-            switch (assgn->getType()->getSize())
-            {
-            case 8:
-                val = m_prog->readNative1(addr);
-                break;
-
-            case 16:
-                val = m_prog->readNative2(addr);
-                break;
-
-            case 32:
-                val = m_prog->readNative4(addr);
-                break;
-
-            default:
-                assert(false);
-            }
-
-            assgn->setRight(Const::get(val));
-        }
-    }
-}
-
-
-void UserProc::reverseStrengthReduction()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before reversing strength reduction");
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        if (!s->isAssign()) {
-            continue;
-        }
-
-        Assign *as = static_cast<Assign *>(s);
-
-        // of the form x = x{p} + c
-        if ((as->getRight()->getOper() == opPlus) && as->getRight()->getSubExp1()->isSubscript() &&
-            (*as->getLeft() == *as->getRight()->getSubExp1()->getSubExp1()) &&
-            as->getRight()->getSubExp2()->isIntConst()) {
-            int  c = as->getRight()->access<Const, 2>()->getInt();
-            auto r = as->getRight()->access<RefExp, 1>();
-
-            if (r->getDef() && r->getDef()->isPhi()) {
-                PhiAssign *p = static_cast<PhiAssign *>(r->getDef());
-
-                if (p->getNumDefs() == 2) {
-                    Statement *first  = p->begin()->getDef();
-                    Statement *second = p->rbegin()->getDef();
-
-                    if (first == as) {
-                        // want the increment in second
-                        std::swap(first, second);
-                    }
-
-                    // first must be of form x := 0
-                    if (first && first->isAssign() && static_cast<Assign *>(first)->getRight()->isIntConst() &&
-                        static_cast<Assign *>(first)->getRight()->access<Const>()->getInt() == 0) {
-                        // ok, fun, now we need to find every reference to p and
-                        // replace with x{p} * c
-                        StatementList stmts2;
-                        getStatements(stmts2);
-
-                        for (auto it2 = stmts2.begin(); it2 != stmts2.end(); ++it2) {
-                            if (*it2 != as) {
-                                (*it2)->searchAndReplace(*r, Binary::get(opMult, r->clone(), Const::get(c)));
-                            }
-                        }
-
-                        // that done we can replace c with 1 in as
-                        as->getRight()->access<Const, 2>()->setInt(1);
-                    }
-                }
-            }
-        }
-    }
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "After reversing strength reduction");
-}
 
 
 void UserProc::insertParameter(SharedExp e, SharedType ty)
@@ -3849,223 +2348,6 @@ QString UserProc::findFirstSymbol(const SharedExp& e)
 }
 
 
-// Perform call and phi statement bypassing at depth d <- missing
-void UserProc::fixCallAndPhiRefs()
-{
-    /* Algorithm:
-     *      for each statement s in this proc
-     *        if s is a phi statement ps
-     *              let r be a ref made up of lhs and s
-     *              for each parameter p of ps
-     *                if p == r                        // e.g. test/pentium/fromssa2 r28{56}
-     *                      remove p from ps
-     *              let lhs be left hand side of ps
-     *              allSame = true
-     *              let first be a ref built from first p
-     *              do bypass but not propagation on first
-     *              if result is of the form lhs{x}
-     *                replace first with x
-     *              for each parameter p of ps after the first
-     *                let current be a ref built from p
-     *                do bypass but not propagation on current
-     *                if result is of form lhs{x}
-     *                      replace cur with x
-     *                if first != current
-     *                      allSame = false
-     *              if allSame
-     *                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-     *                replace ps with an assignment lhs := best
-     *      else (ordinary statement)
-     *        do bypass and propagation for s
-     */
-    LOG_VERBOSE("### Start fix call and phi bypass analysis for %1 ###", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before fixing call and phi refs");
-
-    std::map<SharedExp, int, lessExpStar> destCounts;
-    StatementList stmts;
-    getStatements(stmts);
-
-    // a[m[]] hack, aint nothing better.
-    bool found = true;
-
-    for (Statement *s : stmts) {
-        if (!s->isCall()) {
-            continue;
-        }
-
-        CallStatement *call = static_cast<CallStatement *>(s);
-
-        for (auto& elem : call->getArguments()) {
-            Assign *a = static_cast<Assign *>(elem);
-
-            if (!a->getType()->resolvesToPointer()) {
-                continue;
-            }
-
-            SharedExp e = a->getRight();
-
-            if ((e->getOper() == opPlus) || (e->getOper() == opMinus)) {
-                if (e->getSubExp2()->isIntConst()) {
-                    if (e->getSubExp1()->isSubscript() &&
-                        e->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
-                        (((e->access<RefExp, 1>())->getDef() == nullptr) ||
-                         (e->access<RefExp, 1>())->getDef()->isImplicit())) {
-                        a->setRight(Unary::get(opAddrOf, Location::memOf(e->clone())));
-                        found = true;
-                    }
-                }
-            }
-        }
-    }
-
-    if (found) {
-        doRenameBlockVars(2);
-    }
-
-    // Scan for situations like this:
-    // 56 r28 := phi{6, 26}
-    // ...
-    // 26 r28 := r28{56}
-    // So we can remove the second parameter,
-    // then reduce the phi to an assignment, then propagate it
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) {
-            continue;
-        }
-
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
-        std::shared_ptr<RefExp> refExp = RefExp::get(phi->getLeft(), phi);
-
-        phi->removeAllReferences(refExp);
-    }
-
-    // Second pass
-    for (Statement *s : stmts) {
-        if (!s->isPhi()) { // Ordinary statement
-            s->bypass();
-            continue;
-        }
-
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
-
-        if (phi->getNumDefs() == 0) {
-            continue; // Can happen e.g. for m[...] := phi {} when this proc is
-        }
-
-        // involved in a recursion group
-        auto lhs     = phi->getLeft();
-        bool allSame = true;
-        // Let first be a reference built from the first parameter
-        PhiAssign::iterator phi_iter = phi->begin();
-
-        while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
-            ++phi_iter;                // Skip any null parameters
-        }
-
-        assert(phi_iter != phi->end()); // Should have been deleted
-        RefExp&  phi_inf = *phi_iter;
-        SharedExp first = RefExp::get(phi_inf.getSubExp1(), phi_inf.getDef());
-
-        // bypass to first
-        CallBypasser cb(phi);
-        first = first->accept(&cb);
-
-        if (cb.isTopChanged()) {
-            first = first->simplify();
-        }
-
-        first = first->propagateAll(); // Propagate everything repeatedly
-
-        if (cb.isMod()) {              // Modified?
-            // if first is of the form lhs{x}
-            if (first->isSubscript() && (*first->getSubExp1() == *lhs)) {
-                // replace first with x
-                phi_inf.setDef(first->access<RefExp>()->getDef());
-            }
-        }
-
-        // For each parameter p of ps after the first
-        for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
-            assert(phi_iter->getSubExp1());
-            RefExp&      phi_inf2 = *phi_iter;
-            SharedExp    current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
-            CallBypasser cb2(phi);
-            current = current->accept(&cb2);
-
-            if (cb2.isTopChanged()) {
-                current = current->simplify();
-            }
-
-            current = current->propagateAll();
-
-            if (cb2.isMod()) { // Modified?
-                // if current is of the form lhs{x}
-                if (current->isSubscript() && (*current->getSubExp1() == *lhs)) {
-                    // replace current with x
-                    phi_inf2.setDef(current->access<RefExp>()->getDef());
-                }
-            }
-
-            if (!(*first == *current)) {
-                allSame = false;
-            }
-        }
-
-        if (allSame) {
-            // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-            phi_iter = phi->begin();
-
-            while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
-                ++phi_iter;                // Skip any null parameters
-            }
-
-            assert(phi_iter != phi->end()); // Should have been deleted
-            auto best = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
-
-            for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
-                assert(phi_iter->getSubExp1());
-                auto current = RefExp::get(phi_iter->getSubExp1(), phi_iter->getDef());
-
-                if (current->isImplicitDef()) {
-                    best = current;
-                    break;
-                }
-
-                if (phi_iter->getDef()->isAssign()) {
-                    best = current;
-                }
-
-                // If phi_iter->second.def is a call, this is the worst case; keep only (via first)
-                // if all parameters are calls
-            }
-
-            phi->convertToAssign(best);
-            LOG_VERBOSE("Redundant phi replaced with copy assign; now %1", phi);
-        }
-    }
-
-    // Also do xxx in m[xxx] in the use collector
-    for (const SharedExp& cc : m_procUseCollector) {
-        if (!cc->isMemOf()) {
-            continue;
-        }
-
-        auto         addr = cc->getSubExp1();
-        CallBypasser cb(nullptr);
-        addr = addr->accept(&cb);
-
-        if (cb.isMod()) {
-            cc->setSubExp1(addr);
-        }
-    }
-
-    LOG_VERBOSE("### End fix call and phi bypass analysis for %1 ###", getName());
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after fixing call and phi refs");
-}
-
-
 void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 {
     BasicBlock::RTLRIterator        rrit;
@@ -4140,33 +2422,6 @@ void UserProc::propagateToCollector()
 }
 
 
-void UserProc::initialParameters()
-{
-    LOG_VERBOSE("### Initial parameters for %1", getName());
-    qDeleteAll(m_parameters);
-    m_parameters.clear();
-
-    for (const SharedExp& v : m_procUseCollector) {
-        m_parameters.append(new ImplicitAssign(v->clone()));
-    }
-
-    if (SETTING(verboseOutput)) {
-        QString     tgt;
-        QTextStream ost(&tgt);
-        printParams(ost);
-        LOG_MSG(tgt);
-    }
-}
-
-
-bool UserProc::inductivePreservation(UserProc * /*topOfCycle*/)
-{
-    // FIXME: This is not correct in general!! It should work OK for self recursion,
-    // but not for general mutual recursion. Not that hard, just not done yet.
-    return true;
-}
-
-
 bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 {
     if (!e->isMemOf()) {
@@ -4209,7 +2464,7 @@ bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 
 bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited)
 {
-    BasicBlock::RTLRIterator              rrit;
+    BasicBlock::RTLRIterator        rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *pb : *m_cfg) {
@@ -4226,8 +2481,8 @@ bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visit
         }
 
         if (dest == p) { // Pointer comparison is OK here
-            // This is a recursive call to p. Check for an argument of the form param{-} FIXME: should be looking for
-            // component
+            // This is a recursive call to p. Check for an argument of the form param{-}
+            // FIXME: should be looking for component
             const StatementList& args = c->getArguments();
             for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
                 const Assign *a = dynamic_cast<const Assign *>(*aa);
@@ -4408,7 +2663,7 @@ bool UserProc::removeRedundantParameters()
         }
     }
 
-    m_parameters = newParameters;
+    getParameters() = newParameters;
 
     if (DEBUG_UNUSED) {
         LOG_MSG("%%% end removing unused parameters for %1", getName());
@@ -4507,9 +2762,8 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 
     // Intersect with the current returns
     bool removedRets = false;
-    ReturnStatement::iterator rr;
 
-    for (rr = m_retStatement->begin(); rr != m_retStatement->end();) {
+    for (auto rr = m_retStatement->begin(); rr != m_retStatement->end();) {
         Assign *a = static_cast<Assign *>(*rr);
 
         if (unionOfCallerLiveLocs.contains(a->getLeft())) {
@@ -4545,7 +2799,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         // Update the statements that call us
 
         for (CallStatement *call : m_callerSet) {
-            call->updateArguments();              // Update caller's arguments
+            PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
             updateSet.insert(call->getProc());    // Make sure we redo the dataflow
             removeRetSet.insert(call->getProc()); // Also schedule caller proc for more analysis
         }
@@ -4607,8 +2861,8 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     }
 
     // Have to redo dataflow to get the liveness at the calls correct
-    removeCallLiveness(); // Want to recompute the call livenesses
-    doRenameBlockVars(-3, true);
+    PassManager::get()->executePass(PassID::CallLivenessRemoval, this); // Want to recompute the call livenesses
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     remUnusedStmtEtc(); // Also redoes parameters
 
@@ -4649,21 +2903,26 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 }
 
 
-void UserProc::typeAnalysis()
+bool UserProc::allPhisHaveDefs() const
 {
-    LOG_VERBOSE("### Type analysis for %1 ###", getName());
+    StatementList stmts;
+    getStatements(stmts);
 
-    // Now we need to add the implicit assignments. Doing this earlier is extremely problematic, because
-    // of all the m[...] that change their sorting order as their arguments get subscripted or propagated into
-    // Do this regardless of whether doing dfa-based TA, so things like finding parameters can rely on implicit assigns
-    addImplicitAssigns();
+    for (const Statement *stmt : stmts) {
+        if (!stmt->isPhi()) {
+            continue; // Might be able to optimise this a bit
+        }
 
-    ITypeRecovery *rec = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
-    // Data flow based type analysis
-    // Want to be after all propagation, but before converting expressions to locals etc
-    if (DFA_TYPE_ANALYSIS) {
-        rec->recoverFunctionTypes(this);
+        const PhiAssign *pa = static_cast<const PhiAssign *>(stmt);
+
+        for (const auto& ref : *pa) {
+            if (!ref.getDef()) {
+                return false;
+            }
+        }
     }
+
+    return true;
 }
 
 
@@ -4696,46 +2955,6 @@ void UserProc::processDecodedICTs()
 }
 
 
-void UserProc::eliminateDuplicateArgs()
-{
-    LOG_VERBOSE("### Eliminate duplicate args for %1 ###", getName());
-
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        c->eliminateDuplicateArgs();
-    }
-}
-
-
-void UserProc::removeCallLiveness()
-{
-    LOG_VERBOSE("### Removing call livenesses for %1 ###", getName());
-
-    BasicBlock::RTLRIterator              rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        c->removeAllLive();
-    }
-}
-
-
 void UserProc::mapLocalsAndParams()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
@@ -4753,42 +2972,6 @@ void UserProc::mapLocalsAndParams()
 
     if (DEBUG_TA) {
         LOG_MSG("### End mapping expressions to local variables for %1 ###", getName());
-    }
-}
-
-
-void UserProc::makeSymbolsImplicit()
-{
-    SymbolMap sm2 = m_symbolMap; // Copy the whole map; necessary because the keys (Exps) change
-    m_symbolMap.clear();
-    ImplicitConverter ic(m_cfg);
-
-    for (auto it = sm2.begin(); it != sm2.end(); ++it) {
-        SharedExp impFrom = std::const_pointer_cast<Exp>(it->first)->accept(&ic);
-        mapSymbolTo(impFrom, it->second);
-    }
-}
-
-
-void UserProc::findLiveAtDomPhi(LocationSet& usedByDomPhi)
-{
-    LocationSet usedByDomPhi0;
-    std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
-
-    m_df.findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
-
-    // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
-    for (auto it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
-        // For each phi parameter, remove from the final usedByDomPhi set
-        for (RefExp& v : *it->second) {
-            assert(v.getSubExp1());
-            auto wrappedParam = RefExp::get(v.getSubExp1(), v.getDef());
-            usedByDomPhi.remove(wrappedParam);
-        }
-
-        // Now remove the actual phi-function (a PhiAssign Statement)
-        // Ick - some problem with return statements not using their returns until more analysis is done
-        // removeStatement(it->second);
     }
 }
 
@@ -4880,75 +3063,6 @@ const SharedType UserProc::getTypeForLocation(const SharedConstExp& e) const
 }
 
 
-void UserProc::verifyPHIs()
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (Statement *st : stmts) {
-        if (!st->isPhi()) {
-            continue; // Might be able to optimise this a bit
-        }
-
-        PhiAssign *pi = static_cast<PhiAssign *>(st);
-
-        for (const auto& pas : *pi) {
-            Q_UNUSED(pas);
-            assert(pas.getDef());
-        }
-    }
-}
-
-
-void UserProc::nameParameterPhis()
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (Statement *insn : stmts) {
-        if (!insn->isPhi()) {
-            continue; // Might be able to optimise this a bit
-        }
-
-        PhiAssign *pi = static_cast<PhiAssign *>(insn);
-        // See if the destination has a symbol already
-        SharedExp lhs    = pi->getLeft();
-        auto      lhsRef = RefExp::get(lhs, pi);
-
-        if (findFirstSymbol(lhsRef) != nullptr) {
-            continue;                         // Already mapped to something
-        }
-
-        bool       multiple  = false;         // True if find more than one unique parameter
-        QString    firstName = QString::null; // The name for the first parameter found
-        SharedType ty        = pi->getType();
-
-        for (RefExp& v : *pi) {
-            if (v.getDef()->isImplicit()) {
-                QString name = lookupSym(RefExp::get(v.getSubExp1(), v.getDef()), ty);
-
-                if (!name.isNull()) {
-                    if (!firstName.isNull() && (firstName != name)) {
-                        multiple = true;
-                        break;
-                    }
-
-                    firstName = name; // Remember this candidate
-                }
-            }
-        }
-
-        if (multiple || firstName.isNull()) {
-            continue;
-        }
-
-        mapSymbolTo(lhsRef, Location::param(firstName, this));
-    }
-}
-
-
 bool UserProc::existsLocal(const QString& name) const
 {
     return m_locals.find(name) != m_locals.end();
@@ -5017,7 +3131,6 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
 
     current->setStatus(PROC_INCYCLE); // So the calls are treated as childless
     Boomerang::get()->alertDecompiling(current);
-    current->initialiseDecompile();   // Sort the CFG, number statements, etc
     current->earlyDecompile();
 
     // The standard preservation analysis should automatically perform conditional preservation.
@@ -5030,10 +3143,9 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
 
     // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
     // statements.
-    bool convert;
-
     current->mapLocalsAndParams();
-    current->updateArguments();
-    current->propagateStatements(convert, 0); // Need to propagate into arguments
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
+    PassManager::get()->executePass(PassID::Dominators, this);
+    PassManager::get()->executePass(PassID::StatementPropagation, this); // Need to propagate into arguments
 }
 

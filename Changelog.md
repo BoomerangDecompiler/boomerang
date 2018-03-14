@@ -1,6 +1,7 @@
 0.4.0 (in development)
 ----------------------
 - Fixed: Crashes when decompiling SPARC binaries.
+- Fixed: Crashes when decompiling Win32 binaries.
 - Fixed: Crash when generating code for switch statements.
 - Fixed: Crash when loading MIPS binaries.
 - Fixed: Crash when loading HPPA binaries.
@@ -8,6 +9,7 @@
 - Fixed: Crash when decompiling library thunks.
 - Fixed: Crash when the instruction at the entry point is a jump instruction.
 - Fixed: Crash when accessing a Phi reference in a removed Basic Block.
+- Fixed: Crash when decompiling recursive functions containing switch statements or computed calls.
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
@@ -25,7 +27,7 @@
 - Technical: Dropped boost as a dependency.
 - Technical: Code base now uses 4 spaces for indentation exclusively.
 - Technical: Added option to auto-generate Doxygen documentation using CMake.
-- Technical: Allow compilation using GCC, Clang and Visual Studio compilers.
+- Technical: Allow compilation using GCC, Clang and Visual Studio (MSVC) compilers.
 - Technical: Removed unused files from the repository.
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
 - Technical: Upgraded code base to C++11.
