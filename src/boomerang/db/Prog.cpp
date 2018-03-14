@@ -1139,9 +1139,7 @@ void Prog::fromSSAForm()
                 proc->printDFG();
             }
 
-            proc->debugPrintAll("before transformation from SSA form");
             PassManager::get()->executePass(PassID::FromSSAForm, proc);
-            proc->debugPrintAll("after trasformation from SSA form");
         }
     }
 }
