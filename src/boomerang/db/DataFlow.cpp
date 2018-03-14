@@ -438,15 +438,14 @@ void DataFlow::convertImplicits()
         m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
     }
 
-    std::vector<ExpSet> A_orig_copy = m_definedAt;
+    std::vector<ExpSet> definedAtCopy = m_definedAt;
     m_definedAt.clear();
 
-    for (ExpSet& se : A_orig_copy) {
+    for (ExpSet& se : definedAtCopy) {
         ExpSet se_new;
 
         for (const SharedExp& ee : se) {
-            SharedExp e = ee->clone();
-            e = e->accept(&ic);
+            SharedExp e = ee->clone()->accept(&ic);
             se_new.insert(e);
         }
 

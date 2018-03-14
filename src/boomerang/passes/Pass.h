@@ -43,6 +43,7 @@ enum class PassID
     UnusedStatementRemoval,
     ParameterSymbolMap,
     UnusedLocalRemoval,
+    ImplicitPlacement,
     NUM_PASSES
 };
 

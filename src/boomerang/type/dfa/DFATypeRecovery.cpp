@@ -418,7 +418,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
                         if (isImplicit) {
                             // Replace the implicit assignment entry. Note that s' lhs has changed
-                            cfg->findImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
+                            cfg->findOrCreateImplicitAssign(static_cast<ImplicitAssign *>(s)->getLeft());
                         }
 
                         // Ensure that the global is declared

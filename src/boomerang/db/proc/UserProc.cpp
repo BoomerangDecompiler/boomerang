@@ -1993,27 +1993,6 @@ bool UserProc::ellipsisProcessing()
 }
 
 
-void UserProc::addImplicitAssigns()
-{
-    Boomerang::get()->alertDecompileDebugPoint(this, "before adding implicit assigns");
-
-    StatementList stmts;
-    getStatements(stmts);
-    ImplicitConverter     ic(m_cfg);
-    StmtImplicitConverter sm(&ic, m_cfg);
-
-    for (Statement *stmt : stmts) {
-        stmt->accept(&sm);
-    }
-
-    m_cfg->setImplicitsDone();
-    m_df.convertImplicits(); // Some maps have m[...]{-} need to be m[...]{0} now
-    makeSymbolsImplicit();
-
-    Boomerang::get()->alertDecompileDebugPoint(this, "after adding implicit assigns");
-}
-
-
 QString UserProc::lookupParam(SharedExp e)
 {
     // Originally e.g. m[esp+K]
@@ -2993,19 +2972,6 @@ void UserProc::mapLocalsAndParams()
 
     if (DEBUG_TA) {
         LOG_MSG("### End mapping expressions to local variables for %1 ###", getName());
-    }
-}
-
-
-void UserProc::makeSymbolsImplicit()
-{
-    SymbolMap sm2 = m_symbolMap; // Copy the whole map; necessary because the keys (Exps) change
-    m_symbolMap.clear();
-    ImplicitConverter ic(m_cfg);
-
-    for (auto it = sm2.begin(); it != sm2.end(); ++it) {
-        SharedExp impFrom = std::const_pointer_cast<Exp>(it->first)->accept(&ic);
-        mapSymbolTo(impFrom, it->second);
     }
 }
 

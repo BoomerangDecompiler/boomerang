@@ -353,19 +353,6 @@ public:
     void getStatements(StatementList& stmts) const;
     void removeStatement(Statement *stmt);
 
-    /**
-     * Before Type Analysis, refs like r28{0} have a nullptr Statement pointer.
-     * After this, they will point to an implicit assignment for the location.
-     * Thus, during and after type analysis, you can find the type of any
-     * location by following the reference to the definition
-     * Note: you need something recursive to make sure that child subexpressions
-     * are processed before parents
-     * Example: m[r28{0} - 12]{0} could end up adding an implicit assignment
-     * for r28{-} with a null reference, when other pieces of code add r28{0}
-     */
-    void addImplicitAssigns();
-    void makeSymbolsImplicit();
-
     StatementList& getParameters() { return m_parameters; }
     StatementList& getModifieds() { return m_retStatement->getModifieds(); }
 
@@ -398,6 +385,8 @@ public:
 
     SymbolMap& getSymbolMap() { return m_symbolMap; }
     const SymbolMap& getSymbolMap() const { return m_symbolMap; }
+
+    void clearSymbolMap() { m_symbolMap.clear(); }
 
     /// \returns a symbol's exp (note: the original exp, like r24, not local1)
     SharedConstExp expFromSymbol(const QString& nam) const;

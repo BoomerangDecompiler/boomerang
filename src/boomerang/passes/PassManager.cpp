@@ -36,6 +36,7 @@
 #include "boomerang/passes/late/FinalParameterSearchPass.h"
 #include "boomerang/passes/late/UnusedStatementRemovalPass.h"
 #include "boomerang/passes/late/UnusedLocalRemovalPass.h"
+#include "boomerang/passes/late/ImplicitPlacementPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -74,6 +75,7 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::ParameterSymbolMap       )].reset(new ParameterSymbolMapPass());
     m_passes[static_cast<size_t>(PassID::BBSimplify               )].reset(new BBSimplifyPass());
     m_passes[static_cast<size_t>(PassID::UnusedLocalRemoval       )].reset(new UnusedLocalRemovalPass());
+    m_passes[static_cast<size_t>(PassID::ImplicitPlacement        )].reset(new ImplicitPlacementPass());
 }
 
 

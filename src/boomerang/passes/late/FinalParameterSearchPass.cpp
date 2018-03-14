@@ -49,7 +49,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
             proc->getParameters().append(new ImplicitAssign(proc->getSignature()->getParamType(i), paramLoc));
             QString   name       = proc->getSignature()->getParamName(i);
             SharedExp param      = Location::param(name, proc);
-            SharedExp reParamLoc = RefExp::get(paramLoc, proc->getCFG()->findImplicitAssign(paramLoc));
+            SharedExp reParamLoc = RefExp::get(paramLoc, proc->getCFG()->findOrCreateImplicitAssign(paramLoc));
             proc->mapSymbolTo(reParamLoc, param); // Update name map
         }
 
