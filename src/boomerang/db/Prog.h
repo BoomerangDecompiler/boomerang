@@ -173,8 +173,6 @@ public:
     /// Convert from SSA form
     void fromSSAForm();
 
-    void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr) const;
-
     /// Print this program (primarily for debugging)
     void print(QTextStream& out) const;
 

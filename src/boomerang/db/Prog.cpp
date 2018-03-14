@@ -169,43 +169,6 @@ void Prog::finishDecode()
 }
 
 
-void Prog::generateRTL(Module *cluster, UserProc *proc) const
-{
-    bool generate_all   = cluster == nullptr;
-    bool all_procedures = proc == nullptr;
-
-    for (const auto& module : m_moduleList) {
-        if (!generate_all && (module.get() != cluster)) {
-            continue;
-        }
-
-        cluster->openStream("rtl");
-
-        for (Function *func : *module) {
-            if (!all_procedures && (func != proc)) {
-                continue;
-            }
-
-            if (func->isLib()) {
-                continue;
-            }
-
-            UserProc *p = static_cast<UserProc *>(func);
-
-            if (!p->isDecoded()) {
-                continue;
-            }
-
-            p->print(module->getStream());
-        }
-    }
-
-    for (const auto& module : m_moduleList) {
-        module->closeStreams();
-    }
-}
-
-
 bool Prog::isModuleUsed(Module *c) const
 {
     // TODO: maybe module can have no procedures and still be used ?
