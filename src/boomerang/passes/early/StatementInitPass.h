@@ -13,7 +13,7 @@
 #include "boomerang/passes/Pass.h"
 
 
-/// Initializes statements before decompilation
+/// Initializes statements before decompilation.
 class StatementInitPass : public IPass
 {
 public:

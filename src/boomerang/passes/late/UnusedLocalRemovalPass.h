@@ -13,8 +13,11 @@
 #include "boomerang/passes/Pass.h"
 
 
-/// Note: call the below after translating from SSA form
-/// FIXME: this can be done before transforming out of SSA form now, surely...
+/**
+ * Removes unused local variables.
+ * \note call the below after translating from SSA form
+ * FIXME: this can be done before transforming out of SSA form now, surely...
+ */
 class UnusedLocalRemovalPass : public IPass
 {
 public:

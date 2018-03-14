@@ -13,7 +13,7 @@
 #include "boomerang/passes/Pass.h"
 
 
-/// eliminate duplicate arguments
+/// Eliminates duplicate arguments of calls.
 class DuplicateArgsRemovalPass : public IPass
 {
 public:

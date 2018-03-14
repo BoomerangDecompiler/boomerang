@@ -13,6 +13,7 @@
 #include "boomerang/passes/Pass.h"
 
 
+/// Analyze whether the stack pointer is preserved by a function.
 class SPPreservationPass : public IPass
 {
 public:

@@ -13,6 +13,7 @@
 #include "boomerang/passes/Pass.h"
 
 
+/// Executes type analysis on a function.
 class LocalTypeAnalysisPass : public IPass
 {
 public:

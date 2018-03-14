@@ -13,7 +13,6 @@
 #include "boomerang/passes/Pass.h"
 
 
-/// Remove all liveness info in UseCollectors in calls
 /**
  * Search for expressions without explicit definitions (i.e. WILDCARD{0}),
  * which represent parameters (use before definition).
