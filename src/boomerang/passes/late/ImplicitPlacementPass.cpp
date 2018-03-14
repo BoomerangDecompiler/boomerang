@@ -25,8 +25,6 @@ ImplicitPlacementPass::ImplicitPlacementPass()
 
 bool ImplicitPlacementPass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompileDebugPoint(proc, "before adding implicit assigns");
-
     StatementList stmts;
     proc->getStatements(stmts);
     ImplicitConverter     ic(proc->getCFG());
@@ -40,7 +38,6 @@ bool ImplicitPlacementPass::execute(UserProc *proc)
     proc->getDataFlow()->convertImplicits(); // Some maps have m[...]{-} need to be m[...]{0} now
     makeSymbolsImplicit(proc);
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "after adding implicit assigns");
     return true;
 }
 
