@@ -76,6 +76,11 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::BBSimplify               )].reset(new BBSimplifyPass());
     m_passes[static_cast<size_t>(PassID::UnusedLocalRemoval       )].reset(new UnusedLocalRemovalPass());
     m_passes[static_cast<size_t>(PassID::ImplicitPlacement        )].reset(new ImplicitPlacementPass());
+
+    for (auto& pass : m_passes) {
+        Q_UNUSED(pass);
+        assert(pass.get());
+    }
 }
 
 
