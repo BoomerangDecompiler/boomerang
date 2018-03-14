@@ -55,6 +55,7 @@ class IPass
 {
 public:
     IPass(const QString &name, PassID type);
+    virtual ~IPass() {}
 
 public:
     const QString& getName() const { return m_name; }
