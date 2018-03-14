@@ -118,6 +118,7 @@ void DFATypeAnalyzer::visit(PhiAssign* stmt, bool& visitChildren)
             continue;
         }
 
+        assert(defIt->getDef());
         defIt->getDef()->meetWithFor(stmt->getType(), defIt->getSubExp1(), ch);
     }
 

@@ -219,6 +219,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
             // Subscript the discovered extra parameters
             PassManager::get()->executePass(PassID::BlockVarRename, up);
             PassManager::get()->executePass(PassID::StatementPropagation, up);
+            PassManager::get()->executePass(PassID::ImplicitPlacement, up);
         }
 
         first = false;
