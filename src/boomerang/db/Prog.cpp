@@ -204,26 +204,6 @@ Module *Prog::getModuleForSymbol(const QString& symbolName)
 }
 
 
-void Prog::print(QTextStream& out) const
-{
-    for (const auto& module : m_moduleList) {
-        for (Function *proc : *module) {
-            if (proc->isLib()) {
-                continue;
-            }
-
-            const UserProc *p = static_cast<const UserProc *>(proc);
-
-            if (p->isDecoded()) {
-                p->print(out);
-            }
-
-
-        }
-    }
-}
-
-
 Function *Prog::createFunction(Address startAddress)
 {
     // this test fails when decoding sparc, why?  Please investigate - trent
@@ -572,14 +552,6 @@ QString Prog::getGlobalName(Address uaddr) const
     }
 
     return getSymbolNameByAddress(uaddr);
-}
-
-
-void Prog::dumpGlobals() const
-{
-    for (Global *glob : m_globals) {
-        LOG_VERBOSE(glob->toString());
-    }
 }
 
 
@@ -1320,10 +1292,10 @@ Module *Prog::findModule(const QString& name) const
 
 void Prog::readSymbolFile(const QString& fname)
 {
-    std::unique_ptr<AnsiCParser> par = nullptr;
+    std::unique_ptr<AnsiCParser> parser = nullptr;
 
     try {
-        par.reset(new AnsiCParser(qPrintable(fname), false));
+        parser.reset(new AnsiCParser(qPrintable(fname), false));
     }
     catch (const char *) {
         LOG_ERROR("Cannot read symbol file '%1'", fname);
@@ -1331,25 +1303,21 @@ void Prog::readSymbolFile(const QString& fname)
     }
 
     Platform plat = getFrontEndId();
-    CallConv cc   = CallConv::C;
+    CallConv cc   = isWin32() ? CallConv::Pascal : CallConv::C;
 
-    if (isWin32()) {
-        cc = CallConv::Pascal;
-    }
+    parser->yyparse(plat, cc);
+    Module *targetModule = getRootModule();
 
-    par->yyparse(plat, cc);
-    Module *tgt_mod = getRootModule();
-
-    for (Symbol *sym : par->symbols) {
+    for (Symbol *sym : parser->symbols) {
         if (sym->sig) {
             QString name = sym->sig->getName();
-            tgt_mod = getModuleForSymbol(name);
+            targetModule = getModuleForSymbol(name);
             auto bin_sym       = m_binaryFile->getSymbols()->findSymbolByAddress(sym->addr);
             bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                                  // to specifically specify that this function obeys library calling conventions
                                  sym->mods->noDecode;
-            Function *p = tgt_mod->createFunction(name, sym->addr, do_not_decode);
+            Function *p = targetModule->createFunction(name, sym->addr, do_not_decode);
 
             if (!sym->mods->incomplete) {
                 p->setSignature(sym->sig->clone());
@@ -1373,7 +1341,7 @@ void Prog::readSymbolFile(const QString& fname)
         }
     }
 
-    for (SymbolRef *ref : par->refs) {
+    for (SymbolRef *ref : parser->refs) {
         m_defaultFrontend->addRefHint(ref->m_addr, ref->m_name);
     }
 }

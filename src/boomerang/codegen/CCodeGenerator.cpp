@@ -200,7 +200,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 continue;
             }
 
-            CFGCompressor().compressCFG(_proc->getCFG());
+//            CFGCompressor().compressCFG(_proc->getCFG());
 
             generateCode(_proc);
             print(module->getStream());
