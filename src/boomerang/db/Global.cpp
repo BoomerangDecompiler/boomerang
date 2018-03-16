@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/IBinarySection.h"
 #include "boomerang/db/exp/Exp.h"
 
 

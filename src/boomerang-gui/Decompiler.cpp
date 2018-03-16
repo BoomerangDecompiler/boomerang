@@ -15,7 +15,7 @@
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/IBinarySection.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/codegen/ICodeGenerator.h"

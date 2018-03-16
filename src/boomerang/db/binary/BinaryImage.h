@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/SectionInfo.h"
+#include "boomerang/db/binary/SectionInfo.h"
 #include "boomerang/db/binary/BinaryImage.h"
 
 #include "boomerang/util/IntervalMap.h"

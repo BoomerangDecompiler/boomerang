@@ -11,7 +11,7 @@
 
 
 #include "boomerang/util/Types.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/IBinarySection.h"
 
 #include <QString>
 

@@ -14,7 +14,6 @@ list(APPEND boomerang-db-sources
     db/DataFlow
     db/DefCollector
     db/Global
-    db/IBinarySection.h
     db/IBinarySymbols.h
     db/IndirectJumpAnalyzer
     db/InsNameElem
@@ -24,13 +23,14 @@ list(APPEND boomerang-db-sources
     db/Prog
     db/Register
     db/RTL
-    db/SectionInfo
     db/Signature
     db/SymTab
     db/Table
     db/UseCollector
 
+    db/binary/IBinarySection.h
     db/binary/BinaryImage
+    db/binary/SectionInfo
 
     # exp handling
     db/exp/Binary

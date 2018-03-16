@@ -38,7 +38,7 @@ namespace dbghelp
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/IBinarySection.h"
 #include "boomerang/util/Log.h"
 
 #include <algorithm>
