@@ -15,6 +15,7 @@
 #include <map>
 #include <cassert>
 
+
 /**
  * A map that maps intervals of Key types to Value types.
  * Intervals may overlap each other.
@@ -48,19 +49,19 @@ public:
     void clear() { m_data.clear(); }
 
     /// Inserts an interval with a mapped value into this map.
-    iterator insert(const Interval<Key>& key, const Value& value)
+    iterator insert(const Interval<Key>& key, Value value)
     {
         if (key.lower() >= key.upper()) {
             return end(); // do not insert degenerate intervals
         }
 
-        std::pair<typename Data::iterator, bool> p = m_data.insert({ key, value });
+        std::pair<typename Data::iterator, bool> p = m_data.insert(std::make_pair(key, std::forward<Value>(value)));
         return p.second ? p.first : m_data.end();
     }
 
-    iterator insert(const Key& lower, const Key& upper, const Value& value)
+    iterator insert(const Key& lower, const Key& upper, Value value)
     {
-        return insert(Interval<Key>(lower, upper), value);
+        return insert(Interval<Key>(lower, upper), std::forward<Value>(value));
     }
 
     /// Erase the item referenced by \p it
