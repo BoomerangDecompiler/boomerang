@@ -38,7 +38,7 @@ namespace dbghelp
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/Log.h"
 
 #include <algorithm>
@@ -146,7 +146,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
     int           gap;              // Number of instructions from the last ordinary call
     int           borlandState = 0; // State machine for Borland
 
-    IBinarySection *section = m_binaryImage->getSectionByName(".text");
+    BinarySection *section = m_binaryImage->getSectionByName(".text");
 
     if (section == nullptr) {
         section = m_binaryImage->getSectionByName("CODE");
@@ -638,7 +638,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     }
 
     for (SectionParam par : params) {
-        IBinarySection *sect = m_binaryImage->createSection(par.Name, par.From, par.From + par.Size);
+        BinarySection *sect = m_binaryImage->createSection(par.Name, par.From, par.From + par.Size);
 
         if (!sect) {
             continue;
@@ -722,7 +722,7 @@ int Win32BinaryLoader::canLoad(QIODevice& fl) const
 void Win32BinaryLoader::findJumps(Address curr)
 {
     int            cnt      = 0; // Count of bytes with no match
-    IBinarySection *section = m_binaryImage->getSectionByName(".text");
+    BinarySection *section = m_binaryImage->getSectionByName(".text");
 
     if (section == nullptr) {
         section = m_binaryImage->getSectionByName("CODE");
@@ -990,7 +990,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(Address addr) const
 bool Win32BinaryLoader::isMinGWsAllocStack(Address addr) const
 {
     if (m_mingw_main) {
-        const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+        const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
         if (section) {
             HostAddress   hostAddr      = section->getHostAddr() - section->getSourceAddr() + addr;
@@ -1018,7 +1018,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;
@@ -1051,7 +1051,7 @@ bool Win32BinaryLoader::isMinGWsFrameEnd(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;
@@ -1079,7 +1079,7 @@ bool Win32BinaryLoader::isMinGWsCleanupSetup(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;
@@ -1113,7 +1113,7 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;

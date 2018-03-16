@@ -30,7 +30,7 @@ class Signature;
 class Statement;
 class StatementSet;
 class Module;
-class IBinarySection;
+class BinarySection;
 class ICodeGenerator;
 class Global;
 class BinarySymbol;
@@ -229,7 +229,7 @@ public:
     /// Get a symbol from an address
     QString getSymbolByAddress(Address dest) const;
 
-    const IBinarySection *getSectionByAddr(Address a) const;
+    const BinarySection *getSectionByAddr(Address a) const;
     Address getLimitTextLow() const;
     Address getLimitTextHigh() const;
 

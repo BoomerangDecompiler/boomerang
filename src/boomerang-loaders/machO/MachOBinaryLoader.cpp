@@ -18,7 +18,7 @@
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/util/Log.h"
 
@@ -318,7 +318,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         DEBUG_PRINT("loaded segment %1 %2 in mem %3 in file", a.value(), sz, fsz);
 
         QString        name  = QByteArray(segments[i].segname, 17);
-        IBinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
+        BinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
                                                     Address(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
         assert(sect);
         sect->setHostAddr(HostAddress(base) + BMMH(segments[i].vmaddr) - loaded_addr);

@@ -129,10 +129,10 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 for (int j = 0; sections[j]; j++) {
                     QString str = ".";
                     str += sections[j];
-                    IBinarySection *info = Boomerang::get()->getImage()->getSectionByName(str);
+                    BinarySection *section = Boomerang::get()->getImage()->getSectionByName(str);
 
-                    if (info) {
-                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], info->getSourceAddr(), info->getSize());
+                    if (section) {
+                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], section->getSourceAddr(), section->getSize());
                     }
                     else {
                         generateDataSectionCode(Boomerang::get()->getImage(), sections[j], Address::INVALID, 0);

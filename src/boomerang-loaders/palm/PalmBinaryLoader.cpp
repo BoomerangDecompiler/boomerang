@@ -14,7 +14,7 @@
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/util/Log.h"
 
@@ -110,7 +110,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 
     for (SectionParams param : params) {
         assert(param.to != Address::INVALID);
-        IBinarySection *sect = m_binaryImage->createSection(param.name, param.from, param.to);
+        BinarySection *sect = m_binaryImage->createSection(param.name, param.from, param.to);
 
         if (sect) {
             // Decide if code or data; note that code0 is a special case (not code)
@@ -124,14 +124,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     // Create a separate, uncompressed, initialised data section
-    IBinarySection *dataSection = m_binaryImage->getSectionByName("data0");
+    BinarySection *dataSection = m_binaryImage->getSectionByName("data0");
 
     if (dataSection == nullptr) {
         LOG_ERROR("No data section found!");
         return false;
     }
 
-    const IBinarySection *code0Section = m_binaryImage->getSectionByName("code0");
+    const BinarySection *code0Section = m_binaryImage->getSectionByName("code0");
 
     if (code0Section == nullptr) {
         LOG_ERROR("No code 0 section found!");
@@ -337,7 +337,7 @@ void PalmBinaryLoader::addTrapSymbols()
 std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 {
     Address              agp = Address::ZERO;
-    const IBinarySection *ps = m_binaryImage->getSectionByName("data0");
+    const BinarySection *ps = m_binaryImage->getSectionByName("data0");
 
     if (ps) {
         agp = ps->getSourceAddr();
@@ -445,7 +445,7 @@ const SWord *findPattern(const SWord *start, int size, const SWord *patt, int pa
 // For Palm binaries, this is PilotMain.
 Address PalmBinaryLoader::getMainEntryPoint()
 {
-    IBinarySection *psect = m_binaryImage->getSectionByName("code1");
+    BinarySection *psect = m_binaryImage->getSectionByName("code1");
 
     if (psect == nullptr) {
         return Address::ZERO; // Failed
@@ -495,8 +495,8 @@ Address PalmBinaryLoader::getMainEntryPoint()
 
 void PalmBinaryLoader::generateBinFiles(const QString& path) const
 {
-    for (const IBinarySection *si : *m_binaryImage) {
-        const IBinarySection& psect(*si);
+    for (const BinarySection *si : *m_binaryImage) {
+        const BinarySection& psect(*si);
 
         if (psect.getName().startsWith("code") || psect.getName().startsWith("data")) {
             continue;

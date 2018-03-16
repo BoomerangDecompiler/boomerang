@@ -15,7 +15,7 @@
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/codegen/ICodeGenerator.h"
@@ -114,7 +114,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         emit entryPointAdded(entryPoint, m_prog->getSymbolByAddress(entryPoint));
     }
 
-    for (const IBinarySection *section : *m_image) {
+    for (const BinarySection *section : *m_image) {
         emit sectionAdded(section->getName(), section->getSourceAddr(),
                         section->getSourceAddr() + section->getSize());
     }

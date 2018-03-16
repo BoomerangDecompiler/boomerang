@@ -13,7 +13,7 @@
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -150,16 +150,16 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     fp.close();
 
     // TODO: prevent overlapping of those 3 sections
-    IBinarySection *header = m_image->createSection("$HEADER", Address(0x4000), Address(0x4000) + sizeof(ExeHeader));
+    BinarySection *header = m_image->createSection("$HEADER", Address(0x4000), Address(0x4000) + sizeof(ExeHeader));
     header->setHostAddr(HostAddress(m_header))
        .setEntrySize(1);
     // The text and data section
-    IBinarySection *text = m_image->createSection(".text", Address(0x10000), Address(0x10000) + sizeof(m_imageSize));
+    BinarySection *text = m_image->createSection(".text", Address(0x10000), Address(0x10000) + sizeof(m_imageSize));
     text->setCode(true)
        .setData(true)
        .setHostAddr(HostAddress(m_loadedImage))
        .setEntrySize(1);
-    IBinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
+    BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
     reloc->setHostAddr(HostAddress(m_relocTable))
        .setEntrySize(sizeof(DWord));
     return true;

@@ -806,7 +806,7 @@ void Prog::setGlobalType(const QString& name, SharedType ty)
 
 const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false */) const
 {
-    const IBinarySection *si = m_image->getSectionByAddr(uaddr);
+    const BinarySection *si = m_image->getSectionByAddr(uaddr);
 
     // Too many compilers put constants, including string constants, into read/write sections
     // if (si && si->bReadOnly)
@@ -854,7 +854,7 @@ const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false *
 double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 {
     ok = true;
-    const IBinarySection *si = m_image->getSectionByAddr(uaddr);
+    const BinarySection *si = m_image->getSectionByAddr(uaddr);
 
     if (si && si->isReadOnly()) {
         if (bits == 64) { // TODO: handle 80bit floats ?
@@ -879,7 +879,7 @@ QString Prog::getSymbolByAddress(Address dest) const
 }
 
 
-const IBinarySection *Prog::getSectionByAddr(Address a) const
+const BinarySection *Prog::getSectionByAddr(Address a) const
 {
     return m_image->getSectionByAddr(a);
 }
@@ -1419,7 +1419,7 @@ void Prog::readSymbolFile(const QString& fname)
 SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 {
     SharedExp            e   = nullptr;
-    const IBinarySection *si = getSectionByAddr(uaddr);
+    const BinarySection *si = getSectionByAddr(uaddr);
 
     if (si == nullptr) {
         return nullptr;

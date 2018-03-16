@@ -12,7 +12,7 @@
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/util/Log.h"
 
@@ -208,7 +208,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 #define AUXHDR(idx)    (UINT4(m_loadedImage + Address::value_type(auxHeaders + idx)))
 
     // Section 0: text (code)
-    IBinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
+    BinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
     assert(text);
     text->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(4))
        .setEntrySize(1)
@@ -220,7 +220,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
        .addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 
     // Section 1: initialised data
-    IBinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
+    BinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
     assert(data);
     data->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(7))
        .setEntrySize(1)
@@ -232,7 +232,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
        .addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
     // Section 2: BSS
     // For now, assume that BSS starts at the end of the initialised data
-    IBinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
+    BinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
                                                  Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
     assert(bss);
     bss->setHostAddr(HostAddress::ZERO)

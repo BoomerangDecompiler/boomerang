@@ -23,7 +23,7 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/exp/Location.h"
@@ -495,7 +495,7 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
         return false;
     }
 
-    const IBinarySection *section         = m_image->getSectionByAddr(pc);
+    const BinarySection *section          = m_image->getSectionByAddr(pc);
     ptrdiff_t            host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
     return m_decoder->decodeInstruction(pc, host_native_diff, result);
 }

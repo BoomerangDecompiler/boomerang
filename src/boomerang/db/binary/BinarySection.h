@@ -11,58 +11,59 @@
 
 
 #include "boomerang/util/Types.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/util/Address.h"
 
 #include <QString>
+
 
 class QVariant;
 
 
 /// All information about the sections is contained in these structures.
-class BinarySection : public IBinarySection
+class BinarySection
 {
 public:
     BinarySection(Address sourceAddr, uint64 size, const QString& name = "");
     BinarySection(const BinarySection& other);
     BinarySection(BinarySection&& other) = default;
 
-    virtual ~BinarySection() override;
+    virtual ~BinarySection();
 
     BinarySection& operator=(const BinarySection& other) = delete;
     BinarySection& operator=(BinarySection&& other) = default;
 
 public:
-    HostAddress getHostAddr()   const override { return m_hostAddr; }
-    Address getSourceAddr() const override { return m_nativeAddr; }
-    uint8_t getEndian()     const override { return m_endianness; }
-    bool isReadOnly()    const override { return m_readOnly; }
-    bool isCode()        const override { return m_code; }
-    bool isData()        const override { return m_data; }
-    uint32_t getSize()       const override { return m_size; }
-    QString getName()       const override { return m_sectionName; }
-    uint32_t getEntrySize()  const override { return m_sectionEntrySize; }
+    HostAddress getHostAddr() const { return m_hostAddr; }
+    Address getSourceAddr()   const { return m_nativeAddr; }
+    uint8_t getEndian()       const { return m_endianness; }
+    bool isReadOnly()         const { return m_readOnly; }
+    bool isCode()             const { return m_code; }
+    bool isData()             const { return m_data; }
+    uint32_t getSize()        const { return m_size; }
+    QString getName()         const { return m_sectionName; }
+    uint32_t getEntrySize()   const { return m_sectionEntrySize; }
 
-    IBinarySection& setBss(bool v) override { m_bss = v; return *this; }
-    IBinarySection& setCode(bool v) override { m_code = v;  return *this; }
-    IBinarySection& setData(bool v) override { m_data = v; return *this; }
-    IBinarySection& setReadOnly(bool v) override { m_readOnly = v; return *this; }
-    IBinarySection& setHostAddr(HostAddress v) override { m_hostAddr = v; return *this; }
-    IBinarySection& setSourceAddr(Address v) override { m_nativeAddr = v; return *this; }
-    IBinarySection& setEntrySize(uint32_t v) override { m_sectionEntrySize = v; return *this; }
-    IBinarySection& setEndian(uint8_t v) override { m_endianness = v; return *this; }
+    BinarySection& setBss(bool v) { m_bss = v; return *this; }
+    BinarySection& setCode(bool v) { m_code = v;  return *this; }
+    BinarySection& setData(bool v) { m_data = v; return *this; }
+    BinarySection& setReadOnly(bool v) { m_readOnly = v; return *this; }
+    BinarySection& setHostAddr(HostAddress v) { m_hostAddr = v; return *this; }
+    BinarySection& setSourceAddr(Address v) { m_nativeAddr = v; return *this; }
+    BinarySection& setEntrySize(uint32_t v) { m_sectionEntrySize = v; return *this; }
+    BinarySection& setEndian(uint8_t v) { m_endianness = v; return *this; }
 
     /// Windows's PE file sections can contain any combination of code, data and bss.
     /// As such, it can't be correctly described by BinarySection, why we need to override
     /// the behaviour of (at least) the question "Is this address in BSS".
-    bool isAddressBss(Address a) const override;
-    bool anyDefinedValues() const override;
+    bool isAddressBss(Address a) const;
+    bool anyDefinedValues() const;
 
-    void resize(uint32_t newSize) override;
+    void resize(uint32_t newSize);
 
     void clearDefinedArea();
-    void addDefinedArea(Address from, Address to) override;
-    void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to) override;
-    QVariantMap getAttributesForRange(Address from, Address to) override;
+    void addDefinedArea(Address from, Address to);
+    void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to);
+    QVariantMap getAttributesForRange(Address from, Address to);
     QVariant attributeInRange(const QString& attrib, Address from, Address to) const;
 
 private:

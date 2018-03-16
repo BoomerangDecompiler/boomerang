@@ -12,13 +12,14 @@
 
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
-
 #include "boomerang/util/IntervalMap.h"
+
+#include <memory>
 
 
 class BinaryImage
 {
-    typedef std::vector<IBinarySection *>     SectionListType;
+    typedef std::vector<BinarySection *>      SectionListType;
     typedef SectionListType::iterator         iterator;
     typedef SectionListType::const_iterator   const_iterator;
 
@@ -43,16 +44,16 @@ public:
     void reset();
 
     /// Creates a new section with name \p name between \p from and \p to
-    IBinarySection *createSection(const QString& name, Address from, Address to);
+    BinarySection *createSection(const QString& name, Address from, Address to);
 
     /// \copydoc BinaryImage::getBinarySection
-    const IBinarySection *getSection(int idx) const { return m_sections[idx]; }
+    const BinarySection *getSection(int idx) const { return m_sections[idx]; }
 
     /// \copydoc BinaryImage::getBinarySectionByName
-    IBinarySection *getSectionByName(const QString& sectionName);
+    BinarySection *getSectionByName(const QString& sectionName);
 
     /// \copydoc BinaryImage::getSectionByAddr
-    const IBinarySection *getSectionByAddr(Address addr) const;
+    const BinarySection *getSectionByAddr(Address addr) const;
 
     /// \copydoc BinaryImage::getSectionIndexByName
     int getSectionIndex(const QString& sectionName);
@@ -94,6 +95,6 @@ private:
     Address m_limitTextLow;
     Address m_limitTextHigh;
     ptrdiff_t m_textDelta;
-    IntervalMap<Address, std::unique_ptr<IBinarySection>> m_sectionMap;
+    IntervalMap<Address, std::unique_ptr<BinarySection>> m_sectionMap;
     SectionListType m_sections; ///< The section info
 };

@@ -36,7 +36,7 @@ void BinaryImage::reset()
 
 Byte BinaryImage::readNative1(Address addr)
 {
-    const IBinarySection *si = getSectionByAddr(addr);
+    const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         LOG_WARN("Target Memory access in unmapped section at address %1", addr.toString());
@@ -50,7 +50,7 @@ Byte BinaryImage::readNative1(Address addr)
 
 SWord BinaryImage::readNative2(Address nat)
 {
-    const IBinarySection *si = getSectionByAddr(nat);
+    const BinarySection *si = getSectionByAddr(nat);
 
     if (si == nullptr) {
         return 0;
@@ -63,7 +63,7 @@ SWord BinaryImage::readNative2(Address nat)
 
 DWord BinaryImage::readNative4(Address addr)
 {
-    const IBinarySection *si = getSectionByAddr(addr);
+    const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         return 0;
@@ -76,7 +76,7 @@ DWord BinaryImage::readNative4(Address addr)
 
 QWord BinaryImage::readNative8(Address addr)
 {
-    const IBinarySection *si = getSectionByAddr(addr);
+    const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         return 0;
@@ -97,7 +97,7 @@ float BinaryImage::readNativeFloat4(Address nat)
 
 double BinaryImage::readNativeFloat8(Address nat)
 {
-    const IBinarySection *si = getSectionByAddr(nat);
+    const BinarySection *si = getSectionByAddr(nat);
 
     if (si == nullptr) {
         return 0;
@@ -110,7 +110,7 @@ double BinaryImage::readNativeFloat8(Address nat)
 
 void BinaryImage::writeNative4(Address addr, uint32_t value)
 {
-    const IBinarySection *si = getSectionByAddr(addr);
+    const BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr) {
         LOG_WARN("Ignoring write at address %1: Address is outside any known section");
@@ -129,7 +129,7 @@ void BinaryImage::updateTextLimits()
     m_limitTextHigh = Address::ZERO;
     m_textDelta     = 0;
 
-    for (IBinarySection *section : m_sections) {
+    for (BinarySection *section : m_sections) {
         if (!section->isCode()) {
             continue;
         }
@@ -164,7 +164,7 @@ void BinaryImage::updateTextLimits()
 }
 
 
-const IBinarySection *BinaryImage::getSectionByAddr(Address addr) const
+const BinarySection *BinaryImage::getSectionByAddr(Address addr) const
 {
     auto iter = m_sectionMap.find(addr);
 
@@ -184,7 +184,7 @@ int BinaryImage::getSectionIndex(const QString& sectionName)
 }
 
 
-IBinarySection *BinaryImage::getSectionByName(const QString& sectionName)
+BinarySection *BinaryImage::getSectionByName(const QString& sectionName)
 {
     int sectionIdx = getSectionIndex(sectionName);
 
@@ -225,7 +225,7 @@ Address BinaryImage::getLimitTextHigh() const
 }
 
 
-IBinarySection *BinaryImage::createSection(const QString& name, Address from, Address to)
+BinarySection *BinaryImage::createSection(const QString& name, Address from, Address to)
 {
     assert(from <= to);
 
@@ -254,6 +254,6 @@ IBinarySection *BinaryImage::createSection(const QString& name, Address from, Ad
     BinarySection *sect = new BinarySection(from, (to - from).value(), name);
     m_sections.push_back(sect);
 
-    m_sectionMap.insert(from, to, std::unique_ptr<IBinarySection>(sect));
+    m_sectionMap.insert(from, to, std::unique_ptr<BinarySection>(sect));
     return sect;
 }

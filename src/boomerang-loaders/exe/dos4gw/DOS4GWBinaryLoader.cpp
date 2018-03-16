@@ -12,7 +12,7 @@
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/util/Log.h"
 
@@ -92,7 +92,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     bool gotSubEbp   = false;                               // True if see sub ebp, ebp
     bool lastWasCall = false;                               // True if the last instruction was a call
 
-    IBinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
+    BinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
 
     if (si == nullptr) {
         si = m_image->getSectionByName(".text");
@@ -253,7 +253,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     for (SectionParam par : params) {
-        IBinarySection *sect = m_image->createSection(par.Name, par.from, par.from + par.Size);
+        BinarySection *sect = m_image->createSection(par.Name, par.from, par.from + par.Size);
 
         if (sect) {
             sect->setBss(par.Bss)
