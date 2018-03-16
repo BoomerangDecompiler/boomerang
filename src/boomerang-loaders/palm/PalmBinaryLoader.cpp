@@ -13,7 +13,7 @@
 #include "palmsystraps.h"
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
@@ -42,7 +42,7 @@ PalmBinaryLoader::~PalmBinaryLoader()
 }
 
 
-void PalmBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void PalmBinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
 {
     m_binaryImage = image;
     m_symbols     = symbols;

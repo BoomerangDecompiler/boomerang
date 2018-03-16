@@ -39,7 +39,7 @@ class Signature;
 class Statement;
 class CallStatement;
 class SymTab;
-class IBinaryImage;
+class BinaryImage;
 class IFileLoader;
 
 using SharedExp      = std::shared_ptr<Exp>;
@@ -226,7 +226,7 @@ private:
     bool refersToImportedFunction(const SharedExp& exp);
 
 protected:
-    IBinaryImage *m_image;
+    BinaryImage *m_image;
     std::unique_ptr<IDecoder> m_decoder;
     IFileLoader *m_fileLoader;
     Prog *m_program;

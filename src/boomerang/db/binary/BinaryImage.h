@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/SectionInfo.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 
 #include "boomerang/util/IntervalMap.h"
 
@@ -31,75 +31,79 @@ struct SectionHolder
 };
 
 
-class BinaryImage : public IBinaryImage
+class BinaryImage
 {
+    typedef std::vector<IBinarySection *>     SectionListType;
+    typedef SectionListType::iterator         iterator;
+    typedef SectionListType::const_iterator   const_iterator;
+
 public:
     BinaryImage();
     BinaryImage(const BinaryImage& other) = delete;
     BinaryImage(BinaryImage&& other) = default;
 
-    virtual ~BinaryImage() override;
+    virtual ~BinaryImage();
 
     BinaryImage& operator=(const BinaryImage& other) = delete;
     BinaryImage& operator=(BinaryImage&& other) = default;
 
 public:
-    /// \copydoc IBinaryImage::size
-    size_t size() const override { return m_sections.size(); }
+    /// \copydoc BinaryImage::size
+    size_t size() const { return m_sections.size(); }
 
-    /// \copydoc IBinaryImage::empty
-    bool empty()  const override { return m_sections.empty(); }
+    /// \copydoc BinaryImage::empty
+    bool empty()  const { return m_sections.empty(); }
 
-    /// \copydoc IBinaryImage::reset
-    void reset() override;
+    /// \copydoc BinaryImage::reset
+    void reset();
 
-    /// \copydoc IBinaryImage::createSection
-    IBinarySection *createSection(const QString& name, Address from, Address to) override;
+    /// \copydoc BinaryImage::createSection
+    IBinarySection *createSection(const QString& name, Address from, Address to) ;
 
-    /// \copydoc IBinaryImage::getSectionInfo
-    const IBinarySection *getSection(int idx) const override { return m_sections[idx]; }
+    /// \copydoc BinaryImage::getSectionInfo
+    const IBinarySection *getSection(int idx) const { return m_sections[idx]; }
 
-    /// \copydoc IBinaryImage::getSectionInfoByName
-    IBinarySection *getSectionByName(const QString& sectionName) override;
+    /// \copydoc BinaryImage::getSectionInfoByName
+    IBinarySection *getSectionByName(const QString& sectionName);
 
-    /// \copydoc IBinaryImage::getSectionByAddr
-    const IBinarySection *getSectionByAddr(Address addr) const override;
+    /// \copydoc BinaryImage::getSectionByAddr
+    const IBinarySection *getSectionByAddr(Address addr) const;
 
-    /// \copydoc IBinaryImage::getSectionIndexByName
-    int getSectionIndex(const QString& sectionName) override;
+    /// \copydoc BinaryImage::getSectionIndexByName
+    int getSectionIndex(const QString& sectionName);
 
-    /// \copydoc IBinaryImage::getNumSections
-    size_t getNumSections() const override { return m_sections.size(); }
+    /// \copydoc BinaryImage::getNumSections
+    size_t getNumSections() const { return m_sections.size(); }
 
     // Section iteration
-    iterator begin()             override { return m_sections.begin(); }
-    const_iterator begin() const override { return m_sections.begin(); }
-    iterator end()               override { return m_sections.end(); }
-    const_iterator end()   const override { return m_sections.end(); }
+    iterator begin()             { return m_sections.begin(); }
+    const_iterator begin() const { return m_sections.begin(); }
+    iterator end()               { return m_sections.end(); }
+    const_iterator end()   const { return m_sections.end(); }
 
-    /// \copydoc IBinaryImage::updateTextLimits
-    void updateTextLimits() override;
+    /// \copydoc BinaryImage::updateTextLimits
+    void updateTextLimits();
 
-    /// \copydoc IBinaryImage::getLimitTextLow
-    Address getLimitTextLow() const override;
+    /// \copydoc BinaryImage::getLimitTextLow
+    Address getLimitTextLow() const;
 
-    /// \copydoc IBinaryImage::getLimitTextHigh
-    Address getLimitTextHigh() const override;
+    /// \copydoc BinaryImage::getLimitTextHigh
+    Address getLimitTextHigh() const;
 
-    /// \copydoc IBinaryImage::getTextDelta
-    ptrdiff_t getTextDelta() const override { return m_textDelta; }
+    /// \copydoc BinaryImage::getTextDelta
+    ptrdiff_t getTextDelta() const { return m_textDelta; }
 
 
-    Byte readNative1(Address addr) override;               ///< \copydoc IBinaryImage::readNative1
-    SWord readNative2(Address addr) override;              ///< \copydoc IBinaryImage::readNative2
-    DWord readNative4(Address addr) override;              ///< \copydoc IBinaryImage::readNative4
-    QWord readNative8(Address addr) override;              ///< \copydoc IBinaryImage::readNative8
-    float readNativeFloat4(Address addr) override;         ///< \copydoc IBinaryImage::readNativeFloat4
-    double readNativeFloat8(Address addr) override;        ///< \copydoc IBinaryImage::readNativeFloat8
-    void writeNative4(Address addr, DWord value) override; ///< \copydoc IBinaryImage::writeNative4
+    Byte readNative1(Address addr);               ///< \copydoc BinaryImage::readNative1
+    SWord readNative2(Address addr);              ///< \copydoc BinaryImage::readNative2
+    DWord readNative4(Address addr);              ///< \copydoc BinaryImage::readNative4
+    QWord readNative8(Address addr);              ///< \copydoc BinaryImage::readNative8
+    float readNativeFloat4(Address addr);         ///< \copydoc BinaryImage::readNativeFloat4
+    double readNativeFloat8(Address addr);        ///< \copydoc BinaryImage::readNativeFloat8
+    void writeNative4(Address addr, DWord value); ///< \copydoc BinaryImage::writeNative4
 
-    /// \copydoc IBinaryImage::isReadOnly
-    bool isReadOnly(Address addr) override;
+    /// \copydoc BinaryImage::isReadOnly
+    bool isReadOnly(Address addr);
 
 private:
     Address m_limitTextLow;

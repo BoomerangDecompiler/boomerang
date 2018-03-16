@@ -598,7 +598,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
 }
 
 
-void CCodeGenerator::generateDataSectionCode(IBinaryImage *image, QString section_name, Address section_start, uint32_t size)
+void CCodeGenerator::generateDataSectionCode(BinaryImage *image, QString section_name, Address section_start, uint32_t size)
 {
     addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
     addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : static_cast<uint32_t>(-1)));

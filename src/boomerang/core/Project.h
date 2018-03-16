@@ -19,7 +19,7 @@
 #include <vector>
 
 
-class IBinaryImage;
+class BinaryImage;
 
 
 class Project : public IProject
@@ -51,10 +51,10 @@ public:
     void unloadBinaryFile() override;
 
     /// \copydoc IProject::getImage
-    IBinaryImage *getImage() override { return m_image.get(); }
+    BinaryImage *getImage() override { return m_image.get(); }
 
     /// \copydoc IProject::getImage
-    const IBinaryImage *getImage() const override { return m_image.get(); }
+    const BinaryImage *getImage() const override { return m_image.get(); }
 
     ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
 
@@ -67,7 +67,7 @@ private:
 
 private:
     QByteArray m_fileBytes;
-    std::unique_ptr<IBinaryImage> m_image; ///< raw memory interface
+    std::unique_ptr<BinaryImage> m_image; ///< raw memory interface
     std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< type recovery engine
 
     // Plugins

@@ -12,7 +12,7 @@
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -28,7 +28,7 @@ ExeBinaryLoader::ExeBinaryLoader()
 }
 
 
-void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void ExeBinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
 {
     m_image   = image;
     m_symbols = symbols;

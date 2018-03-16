@@ -32,7 +32,7 @@ class Function;
 class UserProc;
 class ICodeGenerator;
 class ObjcModule;
-class IBinaryImage;
+class BinaryImage;
 class IBinarySymbolTable;
 class Project;
 
@@ -68,7 +68,7 @@ public:
     static Boomerang *get();
     static void destroy();
 
-    IBinaryImage *getImage() override;
+    BinaryImage *getImage() override;
     IBinarySymbolTable *getSymbols() override;
 
     IProject *getOrCreateProject() override;

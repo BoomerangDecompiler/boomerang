@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
@@ -44,7 +44,7 @@ HpSomBinaryLoader::~HpSomBinaryLoader()
 }
 
 
-void HpSomBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void HpSomBinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
 {
     m_image   = image;
     m_symbols = symbols;

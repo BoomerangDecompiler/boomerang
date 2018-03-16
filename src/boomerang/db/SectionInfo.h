@@ -19,7 +19,7 @@ class QVariant;
 
 
 /// All information about the sections is contained in these structures.
-struct SectionInfo : public IBinarySection
+class SectionInfo : public IBinarySection
 {
 public:
     SectionInfo(Address sourceAddr, uint64 size, const QString& name = "");

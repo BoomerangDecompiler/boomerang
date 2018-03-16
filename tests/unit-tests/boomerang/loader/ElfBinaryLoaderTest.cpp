@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
@@ -56,7 +56,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     QCOMPARE(loader->getMainEntryPoint(), Address(0x080483F0));
 
     // test the loaded image
-    IBinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), static_cast<size_t>(29));
@@ -84,7 +84,7 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
     QCOMPARE(loader->getMainEntryPoint(), Address(0x080489A0));
 
     // test the loaded image
-    IBinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), static_cast<size_t>(29));
@@ -108,7 +108,7 @@ void ElfBinaryLoaderTest::testPentiumLoad()
     QCOMPARE(loader->getFormat(), LoadFmt::ELF);
     QCOMPARE(loader->getMachine(), Machine::PENTIUM);
 
-    IBinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), static_cast<size_t>(33));

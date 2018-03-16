@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 
 #include "boomerang/util/Log.h"

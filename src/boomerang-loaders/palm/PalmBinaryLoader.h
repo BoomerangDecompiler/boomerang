@@ -26,7 +26,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(IBinaryImage *image, IBinarySymbolTable *table) override;
+    void initialize(BinaryImage *image, IBinarySymbolTable *table) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& dev) const override;
@@ -79,6 +79,6 @@ private:
     /// Offset from start of data to where register a5 should be initialised to
     unsigned int m_sizeBelowA5 = 0;
 
-    IBinaryImage *m_binaryImage = nullptr;
+    BinaryImage *m_binaryImage = nullptr;
     IBinarySymbolTable *m_symbols = nullptr;
 };

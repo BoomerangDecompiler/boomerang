@@ -284,6 +284,6 @@ private:
     std::set<Global *> m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
 
-    class IBinaryImage *m_image;
+    class BinaryImage *m_image;
     SymTab *m_binarySymbols;
 };

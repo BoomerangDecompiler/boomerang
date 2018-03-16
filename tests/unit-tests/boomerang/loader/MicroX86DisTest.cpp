@@ -13,7 +13,7 @@
 #include <QDebug>
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
 #include "boomerang-loaders/microX86dis.c"

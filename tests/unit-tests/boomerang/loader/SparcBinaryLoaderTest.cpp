@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
@@ -37,7 +37,7 @@ void SparcBinaryLoaderTest::testSparcLoad()
 
     QVERIFY(loader != nullptr);
 
-    IBinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), static_cast<size_t>(28));

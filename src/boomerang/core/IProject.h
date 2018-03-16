@@ -10,7 +10,7 @@
 #pragma once
 
 
-class IBinaryImage;
+class BinaryImage;
 class IFileLoader;
 class ITypeRecovery;
 class QString;
@@ -60,8 +60,8 @@ public:
     /**
      * Get the binary image of the loaded binary.
      */
-    virtual IBinaryImage *getImage()             = 0;
-    virtual const IBinaryImage *getImage() const = 0;
+    virtual BinaryImage *getImage()             = 0;
+    virtual const BinaryImage *getImage() const = 0;
 
     /**
      * \returns the type recovery engine

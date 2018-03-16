@@ -18,7 +18,7 @@ struct Elf32_Shdr;
 struct Elf32_Rel;
 struct Elf32_Sym;
 struct Translated_ElfSym;
-class IBinaryImage;
+class BinaryImage;
 class IBinarySymbolTable;
 class QFile;
 class SectionInfo;
@@ -36,7 +36,7 @@ public:
     virtual ~ElfBinaryLoader() override;
 
     /// \copydoc IFileLoader::initialize
-    void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+    void initialize(BinaryImage *image, IBinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& fl) const override;
@@ -147,6 +147,6 @@ private:
     uint32 *m_shInfo = nullptr;                 ///< pointer to array of sh_info values
 
     std::vector<struct SectionParam> m_elfSections;
-    IBinaryImage *m_binaryImage = nullptr;
+    BinaryImage *m_binaryImage = nullptr;
     IBinarySymbolTable *m_symbols = nullptr;
 };

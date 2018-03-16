@@ -73,7 +73,7 @@ public:
     ExeBinaryLoader();
 
     /// \copydoc IFileLoader::initialize
-    void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+    void initialize(BinaryImage *image, IBinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& fl) const override;
@@ -107,6 +107,6 @@ private:
     DWord *m_relocTable;  ///< The relocation table
     Address m_uInitPC;    ///< Initial program counter
     Address m_uInitSP;    ///< Initial stack pointer
-    IBinaryImage *m_image;
+    BinaryImage *m_image;
     IBinarySymbolTable *m_symbols;
 };

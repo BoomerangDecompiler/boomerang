@@ -244,7 +244,7 @@ void Boomerang::destroy()
 }
 
 
-IBinaryImage *Boomerang::getImage()
+BinaryImage *Boomerang::getImage()
 {
     return getOrCreateProject()->getImage();
 }

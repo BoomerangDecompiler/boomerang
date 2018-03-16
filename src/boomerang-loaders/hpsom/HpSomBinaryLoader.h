@@ -85,7 +85,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+    void initialize(BinaryImage *image, IBinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& dev) const override;
@@ -137,7 +137,7 @@ private:
     Byte *m_loadedImage;            ///< Points to loaded image
     IBinarySymbolTable *m_symbols;  ///< Symbol table object
     std::set<Address> m_imports;    ///< Set of imported proc addr's
-    IBinaryImage *m_image;
+    BinaryImage *m_image;
 
 public:
     void processSymbols();

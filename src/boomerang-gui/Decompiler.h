@@ -19,7 +19,7 @@
 class Module;
 class IFrontEnd;
 class Prog;
-class IBinaryImage;
+class BinaryImage;
 
 
 /**
@@ -101,7 +101,7 @@ protected:
 
     IFrontEnd *m_fe = nullptr;
     Prog *m_prog = nullptr;
-    IBinaryImage *m_image = nullptr;
+    BinaryImage *m_image = nullptr;
 
     std::vector<Address> m_userEntrypoints;
 };

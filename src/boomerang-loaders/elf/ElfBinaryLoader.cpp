@@ -13,7 +13,7 @@
 #include "ElfTypes.h"
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/binary/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"
@@ -80,7 +80,7 @@ ElfBinaryLoader::~ElfBinaryLoader()
 }
 
 
-void ElfBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void ElfBinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
 {
     m_binaryImage = image;
     m_symbols     = symbols;
