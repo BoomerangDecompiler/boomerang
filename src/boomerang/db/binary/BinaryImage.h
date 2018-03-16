@@ -16,21 +16,6 @@
 #include "boomerang/util/IntervalMap.h"
 
 
-struct SectionHolder
-{
-    SectionHolder()
-        : val(nullptr) {}
-    SectionHolder(SectionInfo *inf)
-        : val(inf) {}
-
-    SectionInfo *operator->() { return val; }
-    SectionInfo& operator*() const { return *val; }
-    operator SectionInfo *() { return val; }
-    operator const SectionInfo *() const { return val; }
-    SectionInfo *val;
-};
-
-
 class BinaryImage
 {
     typedef std::vector<IBinarySection *>     SectionListType;
@@ -48,17 +33,17 @@ public:
     BinaryImage& operator=(BinaryImage&& other) = default;
 
 public:
-    /// \copydoc BinaryImage::size
+    /// \returns the number of sections in this image
     size_t size() const { return m_sections.size(); }
 
-    /// \copydoc BinaryImage::empty
+    /// \returns whether this image contains any sections
     bool empty()  const { return m_sections.empty(); }
 
-    /// \copydoc BinaryImage::reset
+    /// Removes all sections from this image.
     void reset();
 
-    /// \copydoc BinaryImage::createSection
-    IBinarySection *createSection(const QString& name, Address from, Address to) ;
+    /// Creates a new section with name \p name between \p from and \p to
+    IBinarySection *createSection(const QString& name, Address from, Address to);
 
     /// \copydoc BinaryImage::getSectionInfo
     const IBinarySection *getSection(int idx) const { return m_sections[idx]; }
@@ -109,6 +94,6 @@ private:
     Address m_limitTextLow;
     Address m_limitTextHigh;
     ptrdiff_t m_textDelta;
-    IntervalMap<Address, SectionHolder> m_sectionMap;
+    IntervalMap<Address, std::unique_ptr<IBinarySection>> m_sectionMap;
     SectionListType m_sections; ///< The section info
 };

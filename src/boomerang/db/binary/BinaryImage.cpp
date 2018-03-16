@@ -30,11 +30,6 @@ BinaryImage::~BinaryImage()
 void BinaryImage::reset()
 {
     m_sectionMap.clear();
-
-    for (IBinarySection *section : m_sections) {
-        delete section;
-    }
-
     m_sections.clear();
 }
 
@@ -173,7 +168,7 @@ const IBinarySection *BinaryImage::getSectionByAddr(Address addr) const
 {
     auto iter = m_sectionMap.find(addr);
 
-    return (iter != m_sectionMap.end()) ? iter->second : nullptr;
+    return (iter != m_sectionMap.end()) ? iter->second.get() : nullptr;
 }
 
 
@@ -259,6 +254,6 @@ IBinarySection *BinaryImage::createSection(const QString& name, Address from, Ad
     SectionInfo *sect = new SectionInfo(from, (to - from).value(), name);
     m_sections.push_back(sect);
 
-    m_sectionMap.insert(from, to, sect);
+    m_sectionMap.insert(from, to, std::unique_ptr<IBinarySection>(sect));
     return sect;
 }
