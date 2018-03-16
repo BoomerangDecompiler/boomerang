@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/binary/SectionInfo.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
 
 #include "boomerang/util/IntervalMap.h"
@@ -45,10 +45,10 @@ public:
     /// Creates a new section with name \p name between \p from and \p to
     IBinarySection *createSection(const QString& name, Address from, Address to);
 
-    /// \copydoc BinaryImage::getSectionInfo
+    /// \copydoc BinaryImage::getBinarySection
     const IBinarySection *getSection(int idx) const { return m_sections[idx]; }
 
-    /// \copydoc BinaryImage::getSectionInfoByName
+    /// \copydoc BinaryImage::getBinarySectionByName
     IBinarySection *getSectionByName(const QString& sectionName);
 
     /// \copydoc BinaryImage::getSectionByAddr

@@ -1639,7 +1639,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
 
 bool Prog::isStringConstant(Address a) const
 {
-    const SectionInfo *si = static_cast<const SectionInfo *>(m_image->getSectionByAddr(a));
+    const BinarySection *si = static_cast<const BinarySection *>(m_image->getSectionByAddr(a));
 
     if (!si) {
         return false;

@@ -198,7 +198,7 @@ IBinarySection *BinaryImage::getSectionByName(const QString& sectionName)
 
 bool BinaryImage::isReadOnly(Address addr)
 {
-    const SectionInfo *p = static_cast<const SectionInfo *>(getSectionByAddr(addr));
+    const BinarySection *p = static_cast<const BinarySection *>(getSectionByAddr(addr));
 
     if (!p) {
         return false;
@@ -251,7 +251,7 @@ IBinarySection *BinaryImage::createSection(const QString& name, Address from, Ad
     }
 #endif
 
-    SectionInfo *sect = new SectionInfo(from, (to - from).value(), name);
+    BinarySection *sect = new BinarySection(from, (to - from).value(), name);
     m_sections.push_back(sect);
 
     m_sectionMap.insert(from, to, std::unique_ptr<IBinarySection>(sect));

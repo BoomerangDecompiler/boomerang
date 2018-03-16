@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "SectionInfo.h"
+#include "BinarySection.h"
 
 
 #include "boomerang/util/Log.h"
@@ -37,7 +37,7 @@ struct VariantHolder
     }
 };
 
-class SectionInfoImpl
+class BinarySectionImpl
 {
 public:
     void clearDefinedArea()
@@ -112,8 +112,8 @@ public:
 
 
 
-SectionInfo::SectionInfo(Address sourceAddr, uint64 size, const QString& name)
-    : m_impl(new SectionInfoImpl)
+BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString& name)
+    : m_impl(new BinarySectionImpl)
     , m_sectionName(name)
     , m_nativeAddr(sourceAddr)
     , m_hostAddr(HostAddress::ZERO)
@@ -127,8 +127,8 @@ SectionInfo::SectionInfo(Address sourceAddr, uint64 size, const QString& name)
 }
 
 
-SectionInfo::SectionInfo(const SectionInfo& other)
-    : SectionInfo(other.m_nativeAddr, other.m_size, other.m_sectionName)
+BinarySection::BinarySection(const BinarySection& other)
+    : BinarySection(other.m_nativeAddr, other.m_size, other.m_sectionName)
 {
     *m_impl            = *other.m_impl;
     m_hostAddr         = other.m_hostAddr;
@@ -140,13 +140,13 @@ SectionInfo::SectionInfo(const SectionInfo& other)
 }
 
 
-SectionInfo::~SectionInfo()
+BinarySection::~BinarySection()
 {
     delete m_impl;
 }
 
 
-bool SectionInfo::isAddressBss(Address a) const
+bool BinarySection::isAddressBss(Address a) const
 {
     assert(a >= m_nativeAddr && a < m_nativeAddr + m_size);
 
@@ -162,13 +162,13 @@ bool SectionInfo::isAddressBss(Address a) const
 }
 
 
-bool SectionInfo::anyDefinedValues() const
+bool BinarySection::anyDefinedValues() const
 {
     return !m_impl->m_hasDefinedValue.isEmpty();
 }
 
 
-void SectionInfo::resize(uint32_t sz)
+void BinarySection::resize(uint32_t sz)
 {
     LOG_VERBOSE("Function not fully implemented yet");
     m_size = sz;
@@ -182,31 +182,31 @@ void SectionInfo::resize(uint32_t sz)
 }
 
 
-void SectionInfo::clearDefinedArea()
+void BinarySection::clearDefinedArea()
 {
     m_impl->clearDefinedArea();
 }
 
 
-void SectionInfo::addDefinedArea(Address from, Address to)
+void BinarySection::addDefinedArea(Address from, Address to)
 {
     m_impl->addDefinedArea(from, to);
 }
 
 
-void SectionInfo::setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
+void BinarySection::setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
 {
     m_impl->setAttributeForRange(name, val, from, to);
 }
 
 
-QVariantMap SectionInfo::getAttributesForRange(Address from, Address to)
+QVariantMap BinarySection::getAttributesForRange(Address from, Address to)
 {
     return m_impl->getAttributesForRange(from, to);
 }
 
 
-QVariant SectionInfo::attributeInRange(const QString& attrib, Address from, Address to) const
+QVariant BinarySection::attributeInRange(const QString& attrib, Address from, Address to) const
 {
     return m_impl->attributeInRange(attrib, from, to);
 }

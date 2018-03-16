@@ -28,9 +28,9 @@ list(APPEND boomerang-db-sources
     db/Table
     db/UseCollector
 
-    db/binary/IBinarySection.h
     db/binary/BinaryImage
-    db/binary/SectionInfo
+    db/binary/BinarySection
+    db/binary/IBinarySection.h
 
     # exp handling
     db/exp/Binary

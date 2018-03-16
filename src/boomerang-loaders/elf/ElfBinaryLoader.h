@@ -21,7 +21,7 @@ struct Translated_ElfSym;
 class BinaryImage;
 class IBinarySymbolTable;
 class QFile;
-class SectionInfo;
+class BinarySection;
 
 
 /**

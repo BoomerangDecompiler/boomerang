@@ -19,17 +19,17 @@ class QVariant;
 
 
 /// All information about the sections is contained in these structures.
-class SectionInfo : public IBinarySection
+class BinarySection : public IBinarySection
 {
 public:
-    SectionInfo(Address sourceAddr, uint64 size, const QString& name = "");
-    SectionInfo(const SectionInfo& other);
-    SectionInfo(SectionInfo&& other) = default;
+    BinarySection(Address sourceAddr, uint64 size, const QString& name = "");
+    BinarySection(const BinarySection& other);
+    BinarySection(BinarySection&& other) = default;
 
-    virtual ~SectionInfo() override;
+    virtual ~BinarySection() override;
 
-    SectionInfo& operator=(const SectionInfo& other) = delete;
-    SectionInfo& operator=(SectionInfo&& other) = default;
+    BinarySection& operator=(const BinarySection& other) = delete;
+    BinarySection& operator=(BinarySection&& other) = default;
 
 public:
     HostAddress getHostAddr()   const override { return m_hostAddr; }
@@ -52,7 +52,7 @@ public:
     IBinarySection& setEndian(uint8_t v) override { m_endianness = v; return *this; }
 
     /// Windows's PE file sections can contain any combination of code, data and bss.
-    /// As such, it can't be correctly described by SectionInfo, why we need to override
+    /// As such, it can't be correctly described by BinarySection, why we need to override
     /// the behaviour of (at least) the question "Is this address in BSS".
     bool isAddressBss(Address a) const override;
     bool anyDefinedValues() const override;
@@ -66,7 +66,7 @@ public:
     QVariant attributeInRange(const QString& attrib, Address from, Address to) const;
 
 private:
-    class SectionInfoImpl *m_impl;
+    class BinarySectionImpl *m_impl;
 
     QString               m_sectionName;                     ///< Name of section
     Address               m_nativeAddr = Address::INVALID;   ///< Logical or native load address
