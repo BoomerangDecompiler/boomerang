@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "SectionInfo.h"
-#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/SectionInfo.h"
+#include "boomerang/db/binary/IBinaryImage.h"
 
 #include "boomerang/util/IntervalMap.h"
 

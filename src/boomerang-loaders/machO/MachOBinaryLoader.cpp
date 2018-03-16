@@ -17,7 +17,7 @@
 #include "objc/objc-runtime.h"
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/binary/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/IBinarySection.h"
 #include "boomerang/util/Log.h"

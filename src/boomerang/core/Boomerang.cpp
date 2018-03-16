@@ -13,7 +13,7 @@
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFGCompressor.h"
-#include "boomerang/db/BinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/SymTab.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"

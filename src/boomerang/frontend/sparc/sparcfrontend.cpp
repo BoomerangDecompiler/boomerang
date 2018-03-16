@@ -21,7 +21,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
-#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/binary/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"

@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/binary/IBinaryImage.h"
 #include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/BasicBlock.h"
