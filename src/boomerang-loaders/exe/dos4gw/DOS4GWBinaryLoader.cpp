@@ -256,11 +256,11 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         BinarySection *sect = m_image->createSection(par.Name, par.from, par.from + par.Size);
 
         if (sect) {
-            sect->setBss(par.Bss)
-               .setCode(par.Code)
-               .setData(par.Data)
-               .setReadOnly(par.ReadOnly)
-               .setHostAddr(par.ImageAddress);
+            sect->setBss(par.Bss);
+            sect->setCode(par.Code);
+            sect->setData(par.Data);
+            sect->setReadOnly(par.ReadOnly);
+            sect->setHostAddr(par.ImageAddress);
         }
     }
 

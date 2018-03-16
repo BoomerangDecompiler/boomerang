@@ -290,12 +290,12 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         assert(sect);
 
         if (sect) {
-            sect->setBss(par.Bss)
-               .setCode(par.Code)
-               .setData(par.Data)
-               .setEndian(m_bigEndian)
-               .setHostAddr(par.imagePtr)
-               .setEntrySize(par.entry_size);
+            sect->setBss(par.Bss);
+            sect->setCode(par.Code);
+            sect->setData(par.Data);
+            sect->setEndian(m_bigEndian);
+            sect->setHostAddr(par.imagePtr);
+            sect->setEntrySize(par.entry_size);
 
             if (!(par.Bss || par.SourceAddr.isZero())) {
                 sect->addDefinedArea(par.SourceAddr, par.SourceAddr + par.Size);

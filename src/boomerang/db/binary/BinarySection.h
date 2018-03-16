@@ -43,14 +43,14 @@ public:
     QString getName()         const { return m_sectionName; }
     uint32_t getEntrySize()   const { return m_sectionEntrySize; }
 
-    BinarySection& setBss(bool v) { m_bss = v; return *this; }
-    BinarySection& setCode(bool v) { m_code = v;  return *this; }
-    BinarySection& setData(bool v) { m_data = v; return *this; }
-    BinarySection& setReadOnly(bool v) { m_readOnly = v; return *this; }
-    BinarySection& setHostAddr(HostAddress v) { m_hostAddr = v; return *this; }
-    BinarySection& setSourceAddr(Address v) { m_nativeAddr = v; return *this; }
-    BinarySection& setEntrySize(uint32_t v) { m_sectionEntrySize = v; return *this; }
-    BinarySection& setEndian(uint8_t v) { m_endianness = v; return *this; }
+    void setBss(bool v)             { m_bss = v; }
+    void setCode(bool v)            { m_code = v; }
+    void setData(bool v)            { m_data = v; }
+    void setReadOnly(bool v)        { m_readOnly = v; }
+    void setHostAddr(HostAddress v) { m_hostAddr = v; }
+    void setSourceAddr(Address v)   { m_nativeAddr = v; }
+    void setEntrySize(uint32_t v)   { m_sectionEntrySize = v; }
+    void setEndian(uint8_t v)       { m_endianness = v; }
 
     /// Windows's PE file sections can contain any combination of code, data and bss.
     /// As such, it can't be correctly described by BinarySection, why we need to override

@@ -210,38 +210,39 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Section 0: text (code)
     BinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
     assert(text);
-    text->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(4))
-       .setEntrySize(1)
-       .setCode(true)
-       .setData(false)
-       .setBss(false)
-       .setReadOnly(true)
-       .setEndian(0)
-       .addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
+    text->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(4));
+    text->setEntrySize(1);
+    text->setCode(true);
+    text->setData(false);
+    text->setBss(false);
+    text->setReadOnly(true);
+    text->setEndian(0);
+    text->addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 
     // Section 1: initialised data
     BinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
     assert(data);
-    data->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(7))
-       .setEntrySize(1)
-       .setCode(false)
-       .setData(true)
-       .setBss(false)
-       .setReadOnly(false)
-       .setEndian(0)
-       .addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
+    data->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(7));
+    data->setEntrySize(1);
+    data->setCode(false);
+    data->setData(true);
+    data->setBss(false);
+    data->setReadOnly(false);
+    data->setEndian(0);
+    data->addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
+
     // Section 2: BSS
     // For now, assume that BSS starts at the end of the initialised data
     BinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
                                                  Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
     assert(bss);
-    bss->setHostAddr(HostAddress::ZERO)
-       .setEntrySize(1)
-       .setCode(false)
-       .setData(false)
-       .setBss(true)
-       .setReadOnly(false)
-       .setEndian(0);
+    bss->setHostAddr(HostAddress::ZERO);
+    bss->setEntrySize(1);
+    bss->setCode(false);
+    bss->setData(false);
+    bss->setBss(true);
+    bss->setReadOnly(false);
+    bss->setEndian(0);
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.

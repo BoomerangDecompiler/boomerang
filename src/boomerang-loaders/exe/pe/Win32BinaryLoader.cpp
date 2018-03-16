@@ -644,12 +644,12 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
             continue;
         }
 
-        sect->setBss(par.Bss)
-           .setCode(par.Code)
-           .setData(par.Data)
-           .setReadOnly(par.ReadOnly)
-           .setHostAddr(par.ImageAddress)
-           .setEndian(0);      // little endian
+        sect->setBss(par.Bss);
+        sect->setCode(par.Code);
+        sect->setData(par.Data);
+        sect->setReadOnly(par.ReadOnly);
+        sect->setHostAddr(par.ImageAddress);
+        sect->setEndian(0);      // little endian
 
         if (!(par.Bss || par.From.isZero())) {
             sect->addDefinedArea(par.From, par.From + par.PhysSize);

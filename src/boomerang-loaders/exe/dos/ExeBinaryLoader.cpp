@@ -151,17 +151,19 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 
     // TODO: prevent overlapping of those 3 sections
     BinarySection *header = m_image->createSection("$HEADER", Address(0x4000), Address(0x4000) + sizeof(ExeHeader));
-    header->setHostAddr(HostAddress(m_header))
-       .setEntrySize(1);
+    header->setHostAddr(HostAddress(m_header));
+    header->setEntrySize(1);
+
     // The text and data section
     BinarySection *text = m_image->createSection(".text", Address(0x10000), Address(0x10000) + sizeof(m_imageSize));
-    text->setCode(true)
-       .setData(true)
-       .setHostAddr(HostAddress(m_loadedImage))
-       .setEntrySize(1);
+    text->setCode(true);
+    text->setData(true);
+    text->setHostAddr(HostAddress(m_loadedImage));
+    text->setEntrySize(1);
+
     BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
-    reloc->setHostAddr(HostAddress(m_relocTable))
-       .setEntrySize(sizeof(DWord));
+    reloc->setHostAddr(HostAddress(m_relocTable));
+    reloc->setEntrySize(sizeof(DWord));
     return true;
 }
 

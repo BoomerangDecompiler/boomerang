@@ -114,12 +114,12 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 
         if (sect) {
             // Decide if code or data; note that code0 is a special case (not code)
-            sect->setHostAddr(param.hostAddr)
-               .setCode((param.name != "code0") && (param.name.startsWith("code")))
-               .setData(param.name.startsWith("data"))
-               .setEndian(0)                          // little endian
-               .setEntrySize(1)                       // No info available
-               .addDefinedArea(param.from, param.to); // no BSS
+            sect->setHostAddr(param.hostAddr);
+            sect->setCode((param.name != "code0") && (param.name.startsWith("code")));
+            sect->setData(param.name.startsWith("data"));
+            sect->setEndian(0);                          // little endian
+            sect->setEntrySize(1);                       // No info available
+            sect->addDefinedArea(param.from, param.to); // no BSS
         }
     }
 
