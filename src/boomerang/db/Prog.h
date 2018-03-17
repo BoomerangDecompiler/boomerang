@@ -285,5 +285,5 @@ private:
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
 
     class BinaryImage *m_image;
-    SymTab *m_binarySymbols;
+    BinarySymbolTable *m_binarySymbols;
 };

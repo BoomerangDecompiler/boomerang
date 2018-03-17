@@ -24,7 +24,7 @@ typedef std::shared_ptr<class Type> SharedType;
 
 class BinarySymbol : public IBinarySymbol
 {
-    friend class SymTab;
+    friend class BinarySymbolTable;
 
 public:
     BinarySymbol(Address location, const QString& name)
@@ -68,17 +68,17 @@ private:
  * If you have one of the maps be a pointer to the other string and use a special comparison operator, then
  * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
  */
-class SymTab : public IBinarySymbolTable
+class BinarySymbolTable : public IBinarySymbolTable
 {
 public:
-    SymTab();
-    SymTab(const SymTab& other) = delete;
-    SymTab(SymTab&& other) = default;
+    BinarySymbolTable();
+    BinarySymbolTable(const BinarySymbolTable& other) = delete;
+    BinarySymbolTable(BinarySymbolTable&& other) = default;
 
-    ~SymTab() override;
+    ~BinarySymbolTable() override;
 
-    SymTab& operator=(const SymTab& other) = delete;
-    SymTab& operator=(SymTab&& other) = default;
+    BinarySymbolTable& operator=(const BinarySymbolTable& other) = delete;
+    BinarySymbolTable& operator=(BinarySymbolTable&& other) = default;
 
 public:
     virtual iterator begin()             override { return m_symbolList.begin(); }

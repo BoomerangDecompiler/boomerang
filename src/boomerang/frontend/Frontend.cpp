@@ -56,7 +56,7 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
 {
     m_image = Boomerang::get()->getImage();
     assert(m_image);
-    m_binarySymbols = static_cast<SymTab *>(Boomerang::get()->getSymbols());
+    m_binarySymbols = static_cast<BinarySymbolTable *>(Boomerang::get()->getSymbols());
 }
 
 

@@ -38,7 +38,7 @@ struct DecodeResult;
 class Signature;
 class Statement;
 class CallStatement;
-class SymTab;
+class BinarySymbolTable;
 class BinaryImage;
 class IFileLoader;
 
@@ -242,5 +242,5 @@ protected:
     /// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
     std::map<Address, RTL *> m_previouslyDecoded;
 
-    SymTab *m_binarySymbols;
+    BinarySymbolTable *m_binarySymbols;
 };

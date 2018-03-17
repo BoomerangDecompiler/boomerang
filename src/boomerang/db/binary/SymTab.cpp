@@ -16,17 +16,17 @@
 #include <cassert>
 
 
-SymTab::SymTab()
+BinarySymbolTable::BinarySymbolTable()
 {
 }
 
 
-SymTab::~SymTab()
+BinarySymbolTable::~BinarySymbolTable()
 {
 }
 
 
-void SymTab::clear()
+void BinarySymbolTable::clear()
 {
     m_symbolList.clear();
     m_addrIndex.clear();
@@ -34,7 +34,7 @@ void SymTab::clear()
 }
 
 
-IBinarySymbol& SymTab::create(Address addr, const QString& name, bool local)
+IBinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool local)
 {
     assert(m_addrIndex.find(addr) == m_addrIndex.end());
 
@@ -59,7 +59,7 @@ IBinarySymbol& SymTab::create(Address addr, const QString& name, bool local)
 }
 
 
-const IBinarySymbol *SymTab::find(Address addr) const
+const IBinarySymbol *BinarySymbolTable::find(Address addr) const
 {
     auto ff = m_addrIndex.find(addr);
 
@@ -71,7 +71,7 @@ const IBinarySymbol *SymTab::find(Address addr) const
 }
 
 
-const IBinarySymbol *SymTab::find(const QString& s) const
+const IBinarySymbol *BinarySymbolTable::find(const QString& s) const
 {
     auto ff = m_nameIndex.find(s);
 
@@ -117,7 +117,7 @@ bool BinarySymbol::isStaticFunction() const
 }
 
 
-bool SymTab::rename(const QString& oldName, const QString& newName)
+bool BinarySymbolTable::rename(const QString& oldName, const QString& newName)
 {
     auto oldIt = m_nameIndex.find(oldName);
     auto newIt = m_nameIndex.find(newName);

@@ -76,7 +76,7 @@ Prog::Prog(const QString& name)
     : m_name(name)
     , m_defaultFrontend(nullptr)
 {
-    m_binarySymbols = static_cast<SymTab *>(Boomerang::get()->getSymbols());
+    m_binarySymbols = static_cast<BinarySymbolTable *>(Boomerang::get()->getSymbols());
     m_rootModule    = getOrInsertModule(getName());
     m_image         = Boomerang::get()->getImage();
 }
