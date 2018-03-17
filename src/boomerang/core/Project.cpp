@@ -87,7 +87,7 @@ bool Project::writeSaveFile(const QString& /*filePath*/)
 
 bool Project::isBinaryLoaded() const
 {
-    return !m_image->empty();
+    return m_image->hasSections();
 }
 
 

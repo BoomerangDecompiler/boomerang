@@ -40,9 +40,9 @@ void SparcBinaryLoaderTest::testSparcLoad()
     BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(28));
-    QCOMPARE(image->getSection(1)->getName(), QString(".hash"));
-    QCOMPARE(image->getSection(27)->getName(), QString(".stab.indexstr"));
+    QCOMPARE(image->getNumSections(), 28);
+    QCOMPARE(image->getSectionByIndex(1)->getName(), QString(".hash"));
+    QCOMPARE(image->getSectionByIndex(27)->getName(), QString(".stab.indexstr"));
 }
 
 

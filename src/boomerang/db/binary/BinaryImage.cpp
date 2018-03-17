@@ -164,38 +164,6 @@ void BinaryImage::updateTextLimits()
 }
 
 
-const BinarySection *BinaryImage::getSectionByAddr(Address addr) const
-{
-    auto iter = m_sectionMap.find(addr);
-
-    return (iter != m_sectionMap.end()) ? iter->second.get() : nullptr;
-}
-
-
-int BinaryImage::getSectionIndex(const QString& sectionName)
-{
-    for (size_t i = 0; i < m_sections.size(); i++) {
-        if (m_sections[i]->getName() == sectionName) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-
-BinarySection *BinaryImage::getSectionByName(const QString& sectionName)
-{
-    int sectionIdx = getSectionIndex(sectionName);
-
-    if (sectionIdx == -1) {
-        return nullptr;
-    }
-
-    return m_sections[sectionIdx];
-}
-
-
 bool BinaryImage::isReadOnly(Address addr)
 {
     const BinarySection *p = static_cast<const BinarySection *>(getSectionByAddr(addr));
@@ -257,3 +225,62 @@ BinarySection *BinaryImage::createSection(const QString& name, Address from, Add
     m_sectionMap.insert(from, to, std::unique_ptr<BinarySection>(sect));
     return sect;
 }
+
+
+BinarySection *BinaryImage::createSection(const QString& name, Interval<Address> extent)
+{
+    return createSection(name, extent.lower(), extent.upper());
+}
+
+
+BinarySection *BinaryImage::getSectionByIndex(int idx)
+{
+    assert(Util::inRange(idx, 0, getNumSections()));
+    return m_sections[idx];
+}
+
+const BinarySection *BinaryImage::getSectionByIndex(int idx) const
+{
+    assert(Util::inRange(idx, 0, getNumSections()));
+    return m_sections[idx];
+}
+
+
+BinarySection *BinaryImage::getSectionByName(const QString& sectionName)
+{
+    for (BinarySection *section : m_sections) {
+        if (section->getName() == sectionName) {
+            return section;
+        }
+    }
+
+    return nullptr;
+}
+
+
+const BinarySection *BinaryImage::getSectionByName(const QString& sectionName) const
+{
+    for (const BinarySection *section : m_sections) {
+        if (section->getName() == sectionName) {
+            return section;
+        }
+    }
+
+    return nullptr;
+}
+
+
+BinarySection *BinaryImage::getSectionByAddr(Address addr)
+{
+    auto iter = m_sectionMap.find(addr);
+    return (iter != m_sectionMap.end()) ? iter->second.get() : nullptr;
+}
+
+
+const BinarySection *BinaryImage::getSectionByAddr(Address addr) const
+{
+    auto iter = m_sectionMap.find(addr);
+    return (iter != m_sectionMap.end()) ? iter->second.get() : nullptr;
+}
+
+

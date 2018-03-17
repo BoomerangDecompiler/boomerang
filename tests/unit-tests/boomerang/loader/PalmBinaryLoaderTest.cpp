@@ -36,15 +36,15 @@ void PalmBinaryLoaderTest::testPalmLoad()
     QVERIFY(loader != nullptr);
     BinaryImage *image = Boomerang::get()->getImage();
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(8));
-    QCOMPARE(image->getSection(0)->getName(), QString("code1"));
-    QCOMPARE(image->getSection(1)->getName(), QString("MBAR1000"));
-    QCOMPARE(image->getSection(2)->getName(), QString("tFRM1000"));
-    QCOMPARE(image->getSection(3)->getName(), QString("Talt1001"));
-    QCOMPARE(image->getSection(4)->getName(), QString("data0"));
-    QCOMPARE(image->getSection(5)->getName(), QString("code0"));
-    QCOMPARE(image->getSection(6)->getName(), QString("tAIN1000"));
-    QCOMPARE(image->getSection(7)->getName(), QString("tver1000"));
+    QCOMPARE(image->getNumSections(), 8);
+    QCOMPARE(image->getSectionByIndex(0)->getName(), QString("code1"));
+    QCOMPARE(image->getSectionByIndex(1)->getName(), QString("MBAR1000"));
+    QCOMPARE(image->getSectionByIndex(2)->getName(), QString("tFRM1000"));
+    QCOMPARE(image->getSectionByIndex(3)->getName(), QString("Talt1001"));
+    QCOMPARE(image->getSectionByIndex(4)->getName(), QString("data0"));
+    QCOMPARE(image->getSectionByIndex(5)->getName(), QString("code0"));
+    QCOMPARE(image->getSectionByIndex(6)->getName(), QString("tAIN1000"));
+    QCOMPARE(image->getSectionByIndex(7)->getName(), QString("tver1000"));
 }
 
 

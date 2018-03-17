@@ -19,9 +19,11 @@
 
 class BinaryImage
 {
-    typedef std::vector<BinarySection *>      SectionListType;
-    typedef SectionListType::iterator         iterator;
-    typedef SectionListType::const_iterator   const_iterator;
+    typedef std::vector<BinarySection *> SectionList;
+    typedef SectionList::iterator               iterator;
+    typedef SectionList::const_iterator         const_iterator;
+    typedef SectionList::reverse_iterator       reverse_iterator;
+    typedef SectionList::const_reverse_iterator const_reverse_iterator;
 
 public:
     BinaryImage();
@@ -34,61 +36,56 @@ public:
     BinaryImage& operator=(BinaryImage&& other) = default;
 
 public:
-    /// \returns the number of sections in this image
-    size_t size() const { return m_sections.size(); }
+    // Section iteration
+    iterator begin()             { return m_sections.begin(); }
+    iterator end()               { return m_sections.end(); }
+    const_iterator begin() const { return m_sections.begin(); }
+    const_iterator end()   const { return m_sections.end(); }
 
-    /// \returns whether this image contains any sections
-    bool empty()  const { return m_sections.empty(); }
+    reverse_iterator rbegin()             { return m_sections.rbegin(); }
+    reverse_iterator rend()               { return m_sections.rend(); }
+    const_reverse_iterator rbegin() const { return m_sections.rbegin(); }
+    const_reverse_iterator rend()   const { return m_sections.rend(); }
+
+public:
+    /// \returns the number of sections in this image
+    int getNumSections() const { return m_sections.size(); }
+
+    bool hasSections() const { return !m_sections.empty(); }
 
     /// Removes all sections from this image.
     void reset();
 
     /// Creates a new section with name \p name between \p from and \p to
     BinarySection *createSection(const QString& name, Address from, Address to);
+    BinarySection *createSection(const QString& name, Interval<Address> extent);
 
-    /// \copydoc BinaryImage::getBinarySection
-    const BinarySection *getSection(int idx) const { return m_sections[idx]; }
+    BinarySection *getSectionByIndex(int idx);
+    const BinarySection *getSectionByIndex(int idx) const;
 
-    /// \copydoc BinaryImage::getBinarySectionByName
     BinarySection *getSectionByName(const QString& sectionName);
+    const BinarySection *getSectionByName(const QString& sectionName) const;
 
-    /// \copydoc BinaryImage::getSectionByAddr
+    BinarySection *getSectionByAddr(Address addr);
     const BinarySection *getSectionByAddr(Address addr) const;
 
-    /// \copydoc BinaryImage::getSectionIndexByName
-    int getSectionIndex(const QString& sectionName);
-
-    /// \copydoc BinaryImage::getNumSections
-    size_t getNumSections() const { return m_sections.size(); }
-
-    // Section iteration
-    iterator begin()             { return m_sections.begin(); }
-    const_iterator begin() const { return m_sections.begin(); }
-    iterator end()               { return m_sections.end(); }
-    const_iterator end()   const { return m_sections.end(); }
-
-    /// \copydoc BinaryImage::updateTextLimits
     void updateTextLimits();
 
-    /// \copydoc BinaryImage::getLimitTextLow
     Address getLimitTextLow() const;
 
-    /// \copydoc BinaryImage::getLimitTextHigh
     Address getLimitTextHigh() const;
 
-    /// \copydoc BinaryImage::getTextDelta
     ptrdiff_t getTextDelta() const { return m_textDelta; }
 
 
-    Byte readNative1(Address addr);               ///< \copydoc BinaryImage::readNative1
-    SWord readNative2(Address addr);              ///< \copydoc BinaryImage::readNative2
-    DWord readNative4(Address addr);              ///< \copydoc BinaryImage::readNative4
-    QWord readNative8(Address addr);              ///< \copydoc BinaryImage::readNative8
-    float readNativeFloat4(Address addr);         ///< \copydoc BinaryImage::readNativeFloat4
-    double readNativeFloat8(Address addr);        ///< \copydoc BinaryImage::readNativeFloat8
-    void writeNative4(Address addr, DWord value); ///< \copydoc BinaryImage::writeNative4
+    Byte readNative1(Address addr);
+    SWord readNative2(Address addr);
+    DWord readNative4(Address addr);
+    QWord readNative8(Address addr);
+    float readNativeFloat4(Address addr);
+    double readNativeFloat8(Address addr);
+    void writeNative4(Address addr, DWord value);
 
-    /// \copydoc BinaryImage::isReadOnly
     bool isReadOnly(Address addr);
 
 private:
@@ -96,5 +93,5 @@ private:
     Address m_limitTextHigh;
     ptrdiff_t m_textDelta;
     IntervalMap<Address, std::unique_ptr<BinarySection>> m_sectionMap;
-    SectionListType m_sections; ///< The section info
+    SectionList m_sections; ///< The section info
 };

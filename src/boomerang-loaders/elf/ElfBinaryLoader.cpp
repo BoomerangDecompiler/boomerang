@@ -633,7 +633,9 @@ HostAddress ElfBinaryLoader::nativeToHostAddress(Address addr)
         return HostAddress::ZERO;
     }
 
-    return m_binaryImage->getSection(1)->getHostAddr() - m_binaryImage->getSection(1)->getSourceAddr() + addr;
+    return m_binaryImage->getSectionByIndex(1)->getHostAddr()
+         - m_binaryImage->getSectionByIndex(1)->getSourceAddr()
+         + addr;
 }
 
 

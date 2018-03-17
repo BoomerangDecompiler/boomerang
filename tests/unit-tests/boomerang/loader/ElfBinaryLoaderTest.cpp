@@ -59,10 +59,10 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(29));
-    QCOMPARE(image->getSection(0)->getName(),  QString(".interp"));
-    QCOMPARE(image->getSection(10)->getName(), QString(".plt"));
-    QCOMPARE(image->getSection(28)->getName(), QString(".shstrtab"));
+    QCOMPARE(image->getNumSections(), 29);
+    QCOMPARE(image->getSectionByIndex(0)->getName(),  QString(".interp"));
+    QCOMPARE(image->getSectionByIndex(10)->getName(), QString(".plt"));
+    QCOMPARE(image->getSectionByIndex(28)->getName(), QString(".shstrtab"));
     QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
     QCOMPARE(image->getLimitTextHigh(), Address(0x0804A020));
 }
@@ -87,10 +87,10 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
     BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(29));
-    QCOMPARE(image->getSection(0)->getName(), QString(".note.ABI-tag"));
-    QCOMPARE(image->getSection(13)->getName(), QString(".eh_frame"));
-    QCOMPARE(image->getSection(28)->getName(), QString(".shstrtab"));
+    QCOMPARE(image->getNumSections(), 29);
+    QCOMPARE(image->getSectionByIndex(0)->getName(), QString(".note.ABI-tag"));
+    QCOMPARE(image->getSectionByIndex(13)->getName(), QString(".eh_frame"));
+    QCOMPARE(image->getSectionByIndex(28)->getName(), QString(".shstrtab"));
     QCOMPARE(image->getLimitTextLow(),  Address(0x08000001));
     QCOMPARE(image->getLimitTextHigh(), Address(0x080ECDA4));
 }
@@ -111,9 +111,9 @@ void ElfBinaryLoaderTest::testPentiumLoad()
     BinaryImage *image = Boomerang::get()->getImage();
     QVERIFY(image != nullptr);
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(33));
-    QCOMPARE(image->getSection(1)->getName(), QString(".note.ABI-tag"));
-    QCOMPARE(image->getSection(32)->getName(), QString(".strtab"));
+    QCOMPARE(image->getNumSections(), 33);
+    QCOMPARE(image->getSectionByIndex(1)->getName(), QString(".note.ABI-tag"));
+    QCOMPARE(image->getSectionByIndex(32)->getName(), QString(".strtab"));
 }
 
 
