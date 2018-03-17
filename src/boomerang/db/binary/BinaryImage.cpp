@@ -183,12 +183,18 @@ bool BinaryImage::isReadOnly(Address addr)
 
 Address BinaryImage::getLimitTextLow() const
 {
+    if (!hasSections()) {
+        return Address::INVALID;
+    }
     return m_sectionMap.begin()->first.lower();
 }
 
 
 Address BinaryImage::getLimitTextHigh() const
 {
+    if (!hasSections()) {
+        return Address::INVALID;
+    }
     return m_sectionMap.rbegin()->first.upper();
 }
 

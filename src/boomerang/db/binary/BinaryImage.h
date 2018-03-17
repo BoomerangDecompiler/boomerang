@@ -71,8 +71,12 @@ public:
 
     void updateTextLimits();
 
+    /// \returns the low limit of all sections.
+    /// If no such sections exist, return Address::INVALID
     Address getLimitTextLow() const;
 
+    /// \returns the high limit of all sections.
+    /// If no such sections exist, return Address::INVALID
     Address getLimitTextHigh() const;
 
     ptrdiff_t getTextDelta() const { return m_textDelta; }
