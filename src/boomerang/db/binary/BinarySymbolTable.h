@@ -31,9 +31,11 @@
  */
 class BinarySymbolTable
 {
-    typedef std::vector<std::shared_ptr<BinarySymbol>>   SymbolListType;
-    typedef SymbolListType::iterator       iterator;
-    typedef SymbolListType::const_iterator const_iterator;
+    typedef std::vector<std::shared_ptr<BinarySymbol>>   SymbolList;
+    typedef SymbolList::iterator               iterator;
+    typedef SymbolList::const_iterator         const_iterator;
+    typedef SymbolList::reverse_iterator       reverse_iterator;
+    typedef SymbolList::const_reverse_iterator const_reverse_iterator;
 
 public:
     BinarySymbolTable();
@@ -47,25 +49,31 @@ public:
 
 public:
     iterator begin()             { return m_symbolList.begin(); }
-    const_iterator begin() const { return m_symbolList.begin(); }
     iterator end()               { return m_symbolList.end(); }
-    const_iterator end() const   { return m_symbolList.end(); }
+    const_iterator begin() const { return m_symbolList.begin(); }
+    const_iterator end()   const { return m_symbolList.end(); }
 
+    reverse_iterator rbegin() { return m_symbolList.rbegin(); }
+    reverse_iterator rend()   { return m_symbolList.rend(); }
+    const_reverse_iterator rbegin() const { return m_symbolList.rbegin(); }
+    const_reverse_iterator rend()   const { return m_symbolList.rend(); }
+
+public:
     size_t size() const { return m_symbolList.size(); }
     bool empty()  const { return m_symbolList.empty(); }
     void clear();
 
-    /// \copydoc BinarySymbolTable::create
-    BinarySymbol& create(Address addr, const QString& name, bool local = false);
+    /// Creates a symbol if it does not exist.
+    BinarySymbol *createSymbol(Address addr, const QString& name, bool local = false);
 
-    /// \copydoc BinarySymbolTable::find(Address)
-    const BinarySymbol *find(Address addr) const;
+    BinarySymbol *findSymbolByAddress(Address addr);
+    const BinarySymbol *findSymbolByAddress(Address addr) const;
 
-    /// \copydoc BinarySymbolTable::find(const QString&)
-    const BinarySymbol *find(const QString& name) const;
+    BinarySymbol *findSymbolByName(const QString& name);
+    const BinarySymbol *findSymbolByName(const QString& name) const;
 
-    /// \copydoc BinarySymbolTable::renameSymbol
-    bool rename(const QString& oldName, const QString& newName);
+    /// \returns true iff the rename was successful
+    bool renameSymbol(const QString& oldName, const QString& newName);
 
 private:
     /// The map indexed by address.
@@ -74,5 +82,5 @@ private:
     /// The map indexed by string. Note that the strings are stored twice.
     std::map<QString, std::shared_ptr<BinarySymbol>> m_nameIndex;
 
-    SymbolListType m_symbolList;
+    SymbolList m_symbolList;
 };

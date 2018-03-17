@@ -421,7 +421,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         return false;
     }
 
-    QString name = m_program->getSymbolByAddress(dest);
+    QString name = m_program->getSymbolNameByAddress(dest);
 
     if (name.isEmpty()) {
         return false;
@@ -524,7 +524,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         }
 
         const BinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
-                                   symbols->find(cs->getDest()->access<Const, 1>()->getAddr()) : nullptr;
+                                   symbols->findSymbolByAddress(cs->getDest()->access<Const, 1>()->getAddr()) : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
             const int oldInstLength = inst.numBytes;
@@ -539,7 +539,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
                         CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
 
                         if (toMain && (toMain->getFixedDest() != Address::INVALID)) {
-                            symbols->create(toMain->getFixedDest(), "WinMain");
+                            symbols->createSymbol(toMain->getFixedDest(), "WinMain");
                             gotMain = true;
                             return toMain->getFixedDest();
                         }
@@ -549,7 +549,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         }
 
         if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
-            const QString destSym = m_program->getSymbolByAddress(dest);
+            const QString destSym = m_program->getSymbolNameByAddress(dest);
 
             if (destSym == "__libc_start_main") {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
@@ -579,7 +579,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     } while (--numInstructionsLeft > 0);
 
     // Last chance check: look for _main (e.g. Borland programs)
-    const BinarySymbol *sym = symbols->find("_main");
+    const BinarySymbol *sym = symbols->findSymbolByName("_main");
 
     if (sym) {
         return sym->getLocation();
@@ -588,7 +588,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     // Not ideal; we must return start
     LOG_WARN("main function not found, falling back to entry point");
 
-    if (symbols->find(start) == nullptr) {
+    if (symbols->findSymbolByAddress(start) == nullptr) {
         this->addSymbol(start, "_start");
     }
 

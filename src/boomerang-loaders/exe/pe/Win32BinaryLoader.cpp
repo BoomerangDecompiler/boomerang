@@ -116,19 +116,19 @@ Address Win32BinaryLoader::getEntryPoint()
 
 Address Win32BinaryLoader::getMainEntryPoint()
 {
-    const BinarySymbol *mainSymbol = m_symbols->find("main");
+    const BinarySymbol *mainSymbol = m_symbols->findSymbolByName("main");
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
     }
 
-    mainSymbol = m_symbols->find("_main"); // Example: MinGW
+    mainSymbol = m_symbols->findSymbolByName("_main"); // Example: MinGW
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
     }
 
-    mainSymbol = m_symbols->find("WinMain"); // Example: MinGW
+    mainSymbol = m_symbols->findSymbolByName("WinMain"); // Example: MinGW
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
@@ -201,7 +201,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 addr = Address(LMMH(*(m_image + p + 2)));
                 //                    const char *c = dlprocptrs[addr].c_str();
                 //                    printf("Checking %x finding %s\n", addr, c);
-                const BinarySymbol *exit_sym = m_symbols->find(addr);
+                const BinarySymbol *exit_sym = m_symbols->findSymbolByAddress(addr);
 
                 if (exit_sym && (exit_sym->getName() == "exit")) {
                     if (gap <= 10) {
@@ -300,12 +300,12 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     if ((*reinterpret_cast<Byte *>(p + m_image + 0x20) == 0xff) && (*reinterpret_cast<Byte *>(p + m_image + 0x21) == 0x15)) {
         Address desti    = Address(LMMH(*(p + m_image + 0x22)));
-        auto    dest_sym = m_symbols->find(desti);
+        auto    dest_sym = m_symbols->findSymbolByAddress(desti);
 
         if (dest_sym && (dest_sym->getName() == "GetVersionExA")) {
             if ((*reinterpret_cast<Byte *>(p + m_image + 0x6d) == 0xff) && (*reinterpret_cast<Byte *>(p + m_image + 0x6e) == 0x15)) {
                 desti    = Address(LMMH(*(p + m_image + 0x6f)));
-                dest_sym = m_symbols->find(desti);
+                dest_sym = m_symbols->findSymbolByAddress(desti);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
                     if (*reinterpret_cast<Byte *>(p + m_image + 0x16e) == 0xe8) {
@@ -403,7 +403,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 // skip all the call statements until we hit a call to an indirect call to ExitProcess
                 // main is the 2nd call before this one
                 if ((op2 == 0xff) && (op2a == 0x25)) {
-                    auto dest_sym = m_symbols->find(desti);
+                    auto dest_sym = m_symbols->findSymbolByAddress(desti);
 
                     if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
                         m_mingw_main = true;
@@ -446,7 +446,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         if (op1 == 0xFF) {
             if ((op2 == 0x15)) { // indirect CALL opcode
                 const Address       destAddr  = Address(LMMH(*(m_image + p + 2)));
-                const BinarySymbol *dest_sym = m_symbols->find(destAddr);
+                const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(destAddr);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
                     gotGMHA = true;
@@ -456,7 +456,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if ((op1 == 0xE8) && gotGMHA) { // CALL opcode
             Address dest = Address(p + 5 + LMMH(*(m_image + p + 1)));
-            m_symbols->create(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
+            m_symbols->createSymbol(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
             return dest + LMMH(m_pPEHeader->Imagebase);
         }
 
@@ -503,16 +503,23 @@ void Win32BinaryLoader::processIAT()
                     // This is an ordinal number (stupid idea)
                     QString nodots = QString(dllName).replace(".", "_"); // Dots can't be in identifiers
                     nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    m_symbols->create(paddr, nodots).setAttr("Imported", true).setAttr("Function", true);
+                    BinarySymbol *sym = m_symbols->createSymbol(paddr, nodots);
+                    sym->setAttribute("Imported", true);
+                    sym->setAttribute("Function", true);
                 }
                 else {
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
                     QString name(static_cast<const char *>(m_image + iatEntry + 2));
-                    m_symbols->create(paddr, name).setAttr("Imported", true).setAttr("Function", true);
+
+                    BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
+                    sym->setAttribute("Imported", true);
+                    sym->setAttribute("Function", true);
                     Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_image).value() + LMMH(m_pPEHeader->Imagebase));
 
                     if (paddr != old_loc) { // add both possibilities
-                        m_symbols->create(old_loc, QString("old_") + name).setAttr("Imported", true).setAttr("Function", true);
+                        BinarySymbol *symbol = m_symbols->createSymbol(old_loc, QString("old_") + name);
+                        symbol->setAttribute("Imported", true);
+                        symbol->setAttribute("Function", true);
                     }
                 }
 
@@ -668,8 +675,8 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     Address entry = getMainEntryPoint();
 
     if (entry != Address::INVALID) {
-        if (!m_symbols->find(entry)) {
-            m_symbols->create(entry, "main").setAttr("Function", true);
+        if (!m_symbols->findSymbolByAddress(entry)) {
+            m_symbols->createSymbol(entry, "main")->setAttribute("Function", true);
         }
     }
 
@@ -745,7 +752,7 @@ void Win32BinaryLoader::findJumps(Address curr)
         }
 
         Address             operand = Address(LMMH2(HostAddress(curr, delta+2)));
-        const BinarySymbol *symbol = m_symbols->find(operand);
+        const BinarySymbol *symbol = m_symbols->findSymbolByAddress(operand);
 
         if (symbol == nullptr) {
             continue;
@@ -753,11 +760,13 @@ void Win32BinaryLoader::findJumps(Address curr)
 
         // try to rename symbol
         const QString oldName = symbol->getName();
-        if (m_symbols->rename(oldName, "__imp_" + oldName) == false) {
+        if (m_symbols->renameSymbol(oldName, "__imp_" + oldName) == false) {
             continue;
         }
 
-        m_symbols->create(curr, oldName).setAttr("Function", true).setAttr("Imported", true);
+        BinarySymbol *sym = m_symbols->createSymbol(curr, oldName);
+        sym->setAttribute("Function", true);
+        sym->setAttribute("Imported", true);
         curr -= 4; // Next match is at least 4+2 bytes away
         cnt   = 0;
     }

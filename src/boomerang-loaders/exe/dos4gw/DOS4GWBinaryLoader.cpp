@@ -70,13 +70,13 @@ Address DOS4GWBinaryLoader::getEntryPoint()
 
 Address DOS4GWBinaryLoader::getMainEntryPoint()
 {
-    const BinarySymbol *sym = m_symbols->find("main");
+    const BinarySymbol *sym = m_symbols->findSymbolByName("main");
 
     if (sym) {
         return sym->getLocation();
     }
 
-    sym = m_symbols->find("__CMain");
+    sym = m_symbols->findSymbolByName("__CMain");
 
     if (sym) {
         return sym->getLocation();

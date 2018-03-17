@@ -461,7 +461,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     }
 
     // try to find given symbol, if it has Value of 0, try to use the name.
-    const BinarySymbol *symbol = sym.Value.isZero() ? m_symbols->find(sym.Name) : m_symbols->find(sym.Value);
+    const BinarySymbol *symbol = sym.Value.isZero() ? m_symbols->findSymbolByName(sym.Name) : m_symbols->findSymbolByAddress(sym.Value);
 
     // Ensure no overwriting (except functions)
     if (symbol != nullptr) { // TODO: if symbol already exists
@@ -492,19 +492,19 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     }
 
     // TODO: add more symbol information here (function/export etc. ) ?
-    BinarySymbol& new_symbol(m_symbols->create(sym.Value, sym.Name, local));
-    new_symbol.setSize(elfRead4(&m_symbolSection[i].st_size));
+    BinarySymbol *new_symbol(m_symbols->createSymbol(sym.Value, sym.Name, local));
+    new_symbol->setSize(elfRead4(&m_symbolSection[i].st_size));
 
     if (imported) {
-        new_symbol.setAttr("Imported", true);
+        new_symbol->setAttribute("Imported", true);
     }
 
     if (sym.Type == STT_FUNC) {
-        new_symbol.setAttr("Function", true);
+        new_symbol->setAttribute("Function", true);
     }
 
     if (!currentFile.isEmpty()) {
-        new_symbol.setAttr("SourceFile", currentFile);
+        new_symbol->setAttribute("SourceFile", currentFile);
     }
 }
 
@@ -542,9 +542,9 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
 
     const Address addressOfMain = getMainEntryPoint();
 
-    if ((addressOfMain != Address::INVALID) && (nullptr == m_symbols->find(addressOfMain))) {
+    if ((addressOfMain != Address::INVALID) && (nullptr == m_symbols->findSymbolByAddress(addressOfMain))) {
         // Ugh - main mustn't have the STT_FUNC attribute. Add it
-        m_symbols->create(addressOfMain, "main");
+        m_symbols->createSymbol(addressOfMain, "main");
     }
 }
 
@@ -595,12 +595,12 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
         symbolName = symbolName.left(symbolName.indexOf("@@")); // Hack off the "@@GLIBC_2.0" of Linux, if present
 
         std::map<Address, QString>::iterator it;
-        auto symbol = m_symbols->find(symbolName);
+        auto symbol = m_symbols->findSymbolByName(symbolName);
         // Add new extern
         Address location = symbol ? symbol->getLocation() : m_nextExtern;
 
         if (nullptr == symbol) {
-            m_symbols->create(m_nextExtern, symbolName);
+            m_symbols->createSymbol(m_nextExtern, symbolName);
             m_nextExtern += 4;
         }
 
@@ -611,7 +611,7 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 
 Address ElfBinaryLoader::getMainEntryPoint()
 {
-    auto sym = m_symbols->find("main");
+    auto sym = m_symbols->findSymbolByName("main");
 
     if (sym) {
         return sym->getLocation();
@@ -748,7 +748,7 @@ void ElfBinaryLoader::markImports()
             break;
         }
 
-        (*last)->setAttr("Imported", true);
+        (*last)->setAttribute("Imported", true);
     }
 }
 
@@ -923,9 +923,9 @@ void ElfBinaryLoader::applyRelocations()
                                 // S = GetAddressByName(pName);
                                 // if (S == (e_type == E_REL ? 0x8000000 : 0)) {
                                 S = Address((static_cast<int>(nextFakeLibAddr--)) & Address::getSourceMask()); // Allocate a new fake address
-                                BinarySymbol& newFunction = m_symbols->create(S, symbolName);
-                                newFunction.setAttr("Function", true);
-                                newFunction.setAttr("Imported", true);
+                                BinarySymbol *newFunction = m_symbols->createSymbol(S, symbolName);
+                                newFunction->setAttribute("Function", true);
+                                newFunction->setAttribute("Imported", true);
                                 // }
                             }
                             else if (e_type == ET_REL) {

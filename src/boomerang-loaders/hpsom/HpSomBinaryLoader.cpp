@@ -86,12 +86,12 @@ void HpSomBinaryLoader::processSymbols()
             // 6 - any antry code
             // 7 - uninitialized data blocks
             // 9 - MODULE name of source module
-            if (m_symbols->find(value)) {
+            if (m_symbols->findSymbolByAddress(value)) {
                 continue;
             }
 
-            if (!m_symbols->find(symbolName)) {
-                m_symbols->create(value, symbolName);
+            if (!m_symbols->findSymbolByName(symbolName)) {
+                m_symbols->createSymbol(value, symbolName);
             }
 
             continue;
@@ -112,8 +112,8 @@ void HpSomBinaryLoader::processSymbols()
 
         // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
         // value. So we have to check whether the symbol has already been entered (assume first one is correct).
-        if ((m_symbols->find(value) == nullptr) && (m_symbols->find(symbolName) == nullptr)) {
-            m_symbols->create(value, symbolName);
+        if ((m_symbols->findSymbolByAddress(value) == nullptr) && (m_symbols->findSymbolByName(symbolName) == nullptr)) {
+            m_symbols->createSymbol(value, symbolName);
         }
     }
 }
@@ -283,7 +283,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
             Address callMainAddr(UINT4ADDR(&export_list[u]));
 
             // Enter the symbol "_callmain" for this address
-            m_symbols->create(callMainAddr, "_callmain");
+            m_symbols->createSymbol(callMainAddr, "_callmain");
 
             // Found call to main. Extract the offset. See assemble_17
             // in pa-risc 1.1 manual page 5-9
@@ -302,14 +302,14 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
                              ((bincall & 4) << 8) |             // w2@10
                              ((bincall & 0x1ff8) >> 3));        // w2@0..9
             // Address of main is st + 8 + offset << 2
-            m_symbols->create(callMainAddr + 8 + (offset << 2), "main")
-               .setAttr("Export", true);
+            m_symbols->createSymbol(callMainAddr + 8 + (offset << 2), "main")
+               ->setAttribute("Export", true);
             break;
         }
     }
 
     processSymbols();
-    m_symbols->find("main")->setAttr("EntryPoint", true);
+    m_symbols->findSymbolByName("main")->setAttribute("EntryPoint", true);
     return true;
 }
 
@@ -453,7 +453,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
 Address HpSomBinaryLoader::getMainEntryPoint()
 {
-    const BinarySymbol *sym = m_symbols->find("main");
+    const BinarySymbol *sym = m_symbols->findSymbolByName("main");
 
     return sym ? sym->getLocation() : Address::INVALID;
 }

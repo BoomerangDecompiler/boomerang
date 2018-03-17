@@ -166,10 +166,10 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
         // First check for helper functions
         Address             dest  = call_stmt->getFixedDest();
-        const BinarySymbol *symb = SymbolTable->find(dest);
+        const BinarySymbol *symb = SymbolTable->findSymbolByAddress(dest);
 
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolByAddress(dest) == nullptr)) {
+        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddress(dest) == "")) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -219,7 +219,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
             bool ret = true;
             // Check for _exit; probably should check for other "never return" functions
-            QString name = m_program->getSymbolByAddress(dest);
+            QString name = m_program->getSymbolNameByAddress(dest);
 
             if (name == "_exit") {
                 // Don't keep decoding after this call
@@ -1111,7 +1111,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
     for (CallStatement *call : callList) {
         Address             dest  = call->getFixedDest();
-        const BinarySymbol *symb = SymbolTable->find(dest);
+        const BinarySymbol *symb = SymbolTable->findSymbolByAddress(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
@@ -1167,13 +1167,13 @@ void SparcFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
 
 bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 {
-    const BinarySymbol *sym = SymbolTable->find(dest);
+    const BinarySymbol *sym = SymbolTable->findSymbolByAddress(dest);
 
     if (!(sym && sym->isImportedFunction())) {
         return false;
     }
 
-    QString name = m_program->getSymbolByAddress(dest);
+    QString name = m_program->getSymbolNameByAddress(dest);
 
     if (name.isEmpty()) {
         LOG_ERROR("Can't find symbol for PLT address %1", dest);

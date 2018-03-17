@@ -34,7 +34,7 @@ void BinarySymbolTable::clear()
 }
 
 
-BinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool local)
+BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString& name, bool local)
 {
     assert(m_addrIndex.find(addr) == m_addrIndex.end());
 
@@ -45,7 +45,7 @@ BinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool 
         LOG_WARN("Symbol '%1' already exists in the global symbol table!", name);
         std::shared_ptr<BinarySymbol> existingSymbol = it->second;
         m_addrIndex[addr] = existingSymbol;
-        return *existingSymbol;
+        return existingSymbol.get();
     }
 
     std::shared_ptr<BinarySymbol> sym = std::make_shared<BinarySymbol>(addr, name);
@@ -55,46 +55,53 @@ BinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool 
         m_nameIndex[name] = sym;
     }
 
-    return *sym;
+    return sym.get();
 }
 
 
-const BinarySymbol *BinarySymbolTable::find(Address addr) const
+BinarySymbol *BinarySymbolTable::findSymbolByAddress(Address addr)
 {
     auto ff = m_addrIndex.find(addr);
-
-    if (ff == m_addrIndex.end()) {
-        return nullptr;
-    }
-
-    return ff->second.get();
+    return (ff != m_addrIndex.end()) ? ff->second.get() : nullptr;
 }
 
 
-const BinarySymbol *BinarySymbolTable::find(const QString& s) const
+const BinarySymbol *BinarySymbolTable::findSymbolByAddress(Address addr) const
 {
-    auto ff = m_nameIndex.find(s);
-
-    if (ff == m_nameIndex.end()) {
-        return nullptr;
-    }
-
-    return ff->second.get();
+    auto ff = m_addrIndex.find(addr);
+    return (ff != m_addrIndex.end()) ? ff->second.get() : nullptr;
 }
 
 
-bool BinarySymbolTable::rename(const QString& oldName, const QString& newName)
+BinarySymbol *BinarySymbolTable::findSymbolByName(const QString& name)
 {
+    auto ff = m_nameIndex.find(name);
+    return (ff != m_nameIndex.end()) ? ff->second.get() : nullptr;
+}
+
+
+const BinarySymbol *BinarySymbolTable::findSymbolByName(const QString& name) const
+{
+    auto ff = m_nameIndex.find(name);
+    return (ff != m_nameIndex.end()) ? ff->second.get() : nullptr;
+}
+
+
+bool BinarySymbolTable::renameSymbol(const QString& oldName, const QString& newName)
+{
+    if (oldName == newName) {
+        return true;
+    }
+
     auto oldIt = m_nameIndex.find(oldName);
     auto newIt = m_nameIndex.find(newName);
 
-    if (oldIt == m_nameIndex.end()) {
-        // symbol not found
-        LOG_ERROR("Could not rename symbol '%1' to '%2': Symbol not found.", oldName, newName);
+    if (oldIt == m_nameIndex.end()) { // symbol not found
+        LOG_ERROR("Could not rename symbol '%1' to '%2': A symbol with name '%1' was not found.",
+                  oldName, newName);
         return false;
     }
-    else if (newIt != m_nameIndex.end()) {
-        // symbol name clash
+    else if (newIt != m_nameIndex.end()) { // symbol name clash
         LOG_ERROR("Could not rename symbol '%1' to '%2': A symbol with name '%2' already exists",
                   oldName, newName);
         return false;
@@ -102,7 +109,7 @@ bool BinarySymbolTable::rename(const QString& oldName, const QString& newName)
 
     std::shared_ptr<BinarySymbol> oldSymbol = oldIt->second;
     m_nameIndex.erase(oldIt);
-    oldSymbol->Name = newName;
+    oldSymbol->m_name = newName;
     m_nameIndex[newName] = oldSymbol;
 
     return true;

@@ -120,7 +120,7 @@ IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog, IProject *project
 
 void IFrontEnd::addSymbol(Address addr, const QString& nam)
 {
-    m_binarySymbols->create(addr, nam);
+    m_binarySymbols->createSymbol(addr, nam);
 }
 
 
@@ -230,7 +230,7 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
     assert(proc);
 
     auto                sig    = ty->as<FuncType>()->getSignature()->clone();
-    const BinarySymbol *p_sym = m_binarySymbols->find(addr);
+    const BinarySymbol *p_sym = m_binarySymbols->findSymbolByAddress(addr);
     QString             sym    = p_sym ? p_sym->getName() : QString("");
 
     if (!sym.isEmpty()) {
@@ -264,7 +264,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
             if (p != fname) {
                 QString             name   = p.mid(0, p.length() - 6) + "ModuleData";
-                const BinarySymbol *p_sym = m_binarySymbols->find(name);
+                const BinarySymbol *p_sym = m_binarySymbols->findSymbolByName(name);
 
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
@@ -287,13 +287,13 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
         // Linux kernel module
         if (fname.endsWith(".ko")) {
-            const BinarySymbol *p_sym = m_binarySymbols->find("init_module");
+            const BinarySymbol *p_sym = m_binarySymbols->findSymbolByName("init_module");
 
             if (p_sym) {
                 entrypoints.push_back(p_sym->getLocation());
             }
 
-            p_sym = m_binarySymbols->find("cleanup_module");
+            p_sym = m_binarySymbols->findSymbolByName("cleanup_module");
 
             if (p_sym) {
                 entrypoints.push_back(p_sym->getLocation());
@@ -345,7 +345,7 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     }
 
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-    QString           name        = m_program->getSymbolByAddress(a);
+    QString           name        = m_program->getSymbolNameByAddress(a);
 
     if (name == nullptr) {
         name = mainName[0];
@@ -568,7 +568,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
     Function *proc = m_program->findFunction(dest);
 
     if (proc == nullptr) {
-        auto symb = m_binarySymbols->find(dest);
+        auto symb = m_binarySymbols->findSymbolByAddress(dest);
 
         if (symb && symb->isImportedFunction()) {
             proc = m_program->createFunction(dest);
@@ -592,7 +592,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
 bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
 {
     if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
-        const BinarySymbol *symbol = m_binarySymbols->find(exp->access<Const, 1>()->getAddr());
+        const BinarySymbol *symbol = m_binarySymbols->findSymbolByAddress(exp->access<Const, 1>()->getAddr());
 
         if (symbol && symbol->isImportedFunction()) {
             return true;
@@ -806,7 +806,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             // jump to a library function
                             // replace with a call ret
-                            const BinarySymbol *sym = m_binarySymbols->find(jumpDest->access<Const, 1>()->getAddr());
+                            const BinarySymbol *sym = m_binarySymbols->findSymbolByAddress(jumpDest->access<Const, 1>()->getAddr());
                             assert(sym != nullptr);
                             QString       func  = sym->getName();
                             CallStatement *call = new CallStatement;
@@ -912,7 +912,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                         if (refersToImportedFunction(call->getDest())) {
                             // Dynamic linked proc pointers are treated as static.
                             Address  linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
-                            QString  name       = m_binarySymbols->find(linkedAddr)->getName();
+                            QString  name       = m_binarySymbols->findSymbolByAddress(linkedAddr)->getName();
                             Function *function  = proc->getProg()->getOrCreateLibraryProc(name);
                             call->setDestProc(function);
                             call->setIsComputed(false);
@@ -949,7 +949,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                                             // Yes, it's a library function. Look up it's name.
                                             Address functionAddr = jmpStatement->getDest()->access<Const, 1>()->getAddr();
 
-                                            QString name = m_binarySymbols->find(functionAddr)->getName();
+                                            QString name = m_binarySymbols->findSymbolByAddress(functionAddr)->getName();
                                             // Assign the proc to the call
                                             Function *p = proc->getProg()->getOrCreateLibraryProc(name);
 
@@ -1027,11 +1027,11 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
-                            QString name = m_program->getSymbolByAddress(callAddr);
+                            QString name = m_program->getSymbolNameByAddress(callAddr);
 
                             if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
                                 Address a = call->getDest()->access<Const, 1>()->getAddr();
-                                name = m_binarySymbols->find(a)->getName();
+                                name = m_binarySymbols->findSymbolByAddress(a)->getName();
                             }
 
                             if (!name.isEmpty() && IFrontEnd::isNoReturnCallDest(name)) {
@@ -1151,7 +1151,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
     for (CallStatement *callStmt : callList) {
         Address dest = callStmt->getFixedDest();
-        auto    symb = m_binarySymbols->find(dest);
+        auto    symb = m_binarySymbols->findSymbolByAddress(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)

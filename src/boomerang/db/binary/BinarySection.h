@@ -55,7 +55,7 @@ public:
     /// Windows's PE file sections can contain any combination of code, data and bss.
     /// As such, it can't be correctly described by BinarySection, why we need to override
     /// the behaviour of (at least) the question "Is this address in BSS".
-    bool isAddressBss(Address a) const;
+    bool isAddressBss(Address addr) const;
     bool anyDefinedValues() const;
 
     void resize(uint32_t newSize);

@@ -259,7 +259,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     dataSection->setHostAddr(HostAddress(m_data));
     dataSection->resize(sizeData);
 
-    m_symbols->create(getMainEntryPoint(), "PilotMain").setAttr("EntryPoint", true);
+    m_symbols->createSymbol(getMainEntryPoint(), "PilotMain")->setAttribute("EntryPoint", true);
     return true;
 }
 
@@ -323,7 +323,7 @@ void PalmBinaryLoader::addTrapSymbols()
         unsigned offset = loc & 0xFFF;
 
         if (offset < numTrapStrings) {
-            m_symbols->create(Address(loc), trapNames[offset]);
+            m_symbols->createSymbol(Address(loc), trapNames[offset]);
         }
     }
 }

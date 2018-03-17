@@ -23,22 +23,15 @@ class BinarySymbol
     friend class BinarySymbolTable;
 
 public:
-    BinarySymbol(Address location, const QString& name)
-        : Location(location)
-        , Name(name)
-    {}
+    BinarySymbol(Address location, const QString& name);
 
 public:
-    const QString& getName() const { return Name; }
-    size_t getSize() const { return Size; }
-    void setSize(size_t v) { Size = v; }
-    Address getLocation() const { return Location; }
+    const QString& getName() const { return m_name; }
+    size_t getSize() const { return m_size; }
+    void setSize(size_t v) { m_size = v; }
+    Address getLocation() const { return m_address; }
 
-    const BinarySymbol& setAttr(const QString& name, const QVariant& v) const
-    {
-        attributes[name] = v;
-        return *this;
-    }
+    void setAttribute(const QString& key, const QVariant& value) const { m_attributes[key] = value; }
 
     bool isImportedFunction() const;
     bool isStaticFunction() const;
@@ -47,10 +40,10 @@ public:
     QString belongsToSourceFile() const;
 
 private:
-    Address              Location;
-    QString              Name;
-    SharedType           type;
-    size_t               Size;
+    QString              m_name;
+    Address              m_address;
+    size_t               m_size;
+    SharedType           m_type;
     /// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
-    mutable QVariantMap  attributes;
+    mutable QVariantMap  m_attributes;
 };

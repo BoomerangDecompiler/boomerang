@@ -227,7 +227,7 @@ public:
     Machine getMachine() const;
 
     /// Get a symbol from an address
-    QString getSymbolByAddress(Address dest) const;
+    QString getSymbolNameByAddress(Address dest) const;
 
     const BinarySection *getSectionByAddr(Address a) const;
     Address getLimitTextLow() const;

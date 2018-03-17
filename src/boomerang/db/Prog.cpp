@@ -216,7 +216,7 @@ bool Prog::isModuleUsed(Module *c) const
 Module *Prog::getDefaultModule(const QString& name)
 {
     QString             cfname;
-    const BinarySymbol *bsym = m_binarySymbols->find(name);
+    const BinarySymbol *bsym = m_binarySymbols->findSymbolByName(name);
 
     if (bsym) {
         cfname = bsym->belongsToSourceFile();
@@ -285,7 +285,7 @@ Function *Prog::createFunction(Address startAddress)
     }
 
     QString             procName;
-    const BinarySymbol *sym = m_binarySymbols->find(startAddress);
+    const BinarySymbol *sym = m_binarySymbols->findSymbolByAddress(startAddress);
     bool                isLibFunction = false;
 
     if (sym) {
@@ -606,7 +606,7 @@ QString Prog::getGlobalName(Address uaddr) const
         }
     }
 
-    return getSymbolByAddress(uaddr);
+    return getSymbolNameByAddress(uaddr);
 }
 
 
@@ -618,15 +618,15 @@ void Prog::dumpGlobals() const
 }
 
 
-Address Prog::getGlobalAddr(const QString& nam) const
+Address Prog::getGlobalAddr(const QString& name) const
 {
-    Global *glob = getGlobal(nam);
+    Global *glob = getGlobal(name);
 
     if (glob) {
         return glob->getAddress();
     }
 
-    auto symbol = m_binarySymbols->find(nam);
+    auto symbol = m_binarySymbols->findSymbolByName(name);
     return symbol ? symbol->getLocation() : Address::INVALID;
 }
 
@@ -674,7 +674,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
                 baseSize = baseType->getSizeInBytes();
             }
 
-            auto symbol = m_binarySymbols->find(name);
+            auto symbol = m_binarySymbols->findSymbolByName(name);
             int  sz     = symbol ? symbol->getSize() : 0;
 
             if (sz && baseSize) {
@@ -703,7 +703,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
 
     assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
-    auto symbol = m_binarySymbols->find(name);
+    auto symbol = m_binarySymbols->findSymbolByName(name);
 
     if (!symbol || (symbol->getSize() == 0)) {
         return ArrayType::get(baseType); // An "unbounded" array
@@ -734,7 +734,7 @@ SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) co
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #endif
-    auto symbol = m_binarySymbols->find(globalName);
+    auto symbol = m_binarySymbols->findSymbolByName(globalName);
     int  sz     = symbol ? symbol->getSize() : 0;
 
     if (sz == 0) {
@@ -871,9 +871,9 @@ double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 }
 
 
-QString Prog::getSymbolByAddress(Address dest) const
+QString Prog::getSymbolNameByAddress(Address dest) const
 {
-    auto sym = m_binarySymbols->find(dest);
+    auto sym = m_binarySymbols->findSymbolByAddress(dest);
 
     return sym ? sym->getName() : "";
 }
@@ -972,7 +972,7 @@ void Prog::addEntryPoint(Address entryAddr)
 
 bool Prog::isDynamicLinkedProcPointer(Address dest) const
 {
-    auto sym = m_binarySymbols->find(dest);
+    auto sym = m_binarySymbols->findSymbolByAddress(dest);
     return sym && sym->isImportedFunction();
 }
 
@@ -980,7 +980,7 @@ bool Prog::isDynamicLinkedProcPointer(Address dest) const
 const QString& Prog::getDynamicProcName(Address addr) const
 {
     static QString dyn("dynamic");
-    auto           sym = m_binarySymbols->find(addr);
+    auto           sym = m_binarySymbols->findSymbolByAddress(addr);
 
     return sym ? sym->getName() : dyn;
 }
@@ -1381,7 +1381,7 @@ void Prog::readSymbolFile(const QString& fname)
         if (sym->sig) {
             QString name = sym->sig->getName();
             tgt_mod = getDefaultModule(name);
-            auto bin_sym       = m_binarySymbols->find(sym->addr);
+            auto bin_sym       = m_binarySymbols->findSymbolByAddress(sym->addr);
             bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                                  // to specifically specify that this function obeys library calling conventions
@@ -1491,7 +1491,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
         if (!name.isEmpty()) {
-            auto symbol = m_binarySymbols->find(name);
+            auto symbol = m_binarySymbols->findSymbolByName(name);
             nelems = symbol ? symbol->getSize() : 0;
             assert(base_sz);
             nelems /= base_sz;
@@ -1598,7 +1598,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
     Address c_addr = e->access<Const>()->getAddr();
-    const BinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
+    const BinarySymbol *bin_sym = m_binarySymbols->findSymbolByAddress(c_addr);
 
     if (bin_sym != nullptr) {
         unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface

@@ -78,13 +78,13 @@ Address MachOBinaryLoader::getEntryPoint()
 
 Address MachOBinaryLoader::getMainEntryPoint()
 {
-    auto symbol = Symbols->find("main");
+    auto symbol = Symbols->findSymbolByName("main");
 
     if (symbol) {
         return symbol->getLocation();
     }
 
-    symbol = Symbols->find("_main");
+    symbol = Symbols->findSymbolByName("_main");
 
     if (symbol) {
         return symbol->getLocation();
@@ -373,7 +373,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 name++;
             }
 
-            Symbols->create(addr, name).setAttr("Function", true).setAttr("Imported", true);
+            BinarySymbol *sym = Symbols->createSymbol(addr, name);
+            sym->setAttribute("Function", true);
+            sym->setAttribute("Imported", true);
         }
     }
 
@@ -395,7 +397,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 name++;
             }
 
-            Symbols->create(Address(BMMH(symbols[i].n_value)), name);
+            Symbols->createSymbol(Address(BMMH(symbols[i].n_value)), name);
         }
     }
 

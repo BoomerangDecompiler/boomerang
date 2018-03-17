@@ -10,26 +10,32 @@
 #include "BinarySymbol.h"
 
 
+BinarySymbol::BinarySymbol(Address location, const QString& name)
+    : m_name(name)
+    , m_address(location)
+{
+}
+
 
 bool BinarySymbol::isImported() const
 {
-    return attributes.contains("Imported") && attributes["Imported"].toBool();
+    return m_attributes.contains("Imported") && m_attributes["Imported"].toBool();
 }
 
 
 QString BinarySymbol::belongsToSourceFile() const
 {
-    if (!attributes.contains("SourceFile")) {
+    if (!m_attributes.contains("SourceFile")) {
         return "";
     }
 
-    return attributes["SourceFile"].toString();
+    return m_attributes["SourceFile"].toString();
 }
 
 
 bool BinarySymbol::isFunction() const
 {
-    return attributes.contains("Function") && attributes["Function"].toBool();
+    return m_attributes.contains("Function") && m_attributes["Function"].toBool();
 }
 
 
@@ -41,5 +47,5 @@ bool BinarySymbol::isImportedFunction() const
 
 bool BinarySymbol::isStaticFunction() const
 {
-    return attributes.contains("StaticFunction") && attributes["StaticFunction"].toBool();
+    return m_attributes.contains("StaticFunction") && m_attributes["StaticFunction"].toBool();
 }
