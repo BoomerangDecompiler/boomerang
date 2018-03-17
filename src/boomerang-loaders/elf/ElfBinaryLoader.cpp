@@ -461,7 +461,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     }
 
     // try to find given symbol, if it has Value of 0, try to use the name.
-    const IBinarySymbol *symbol = sym.Value.isZero() ? m_symbols->find(sym.Name) : m_symbols->find(sym.Value);
+    const BinarySymbol *symbol = sym.Value.isZero() ? m_symbols->find(sym.Name) : m_symbols->find(sym.Value);
 
     // Ensure no overwriting (except functions)
     if (symbol != nullptr) { // TODO: if symbol already exists
@@ -492,7 +492,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     }
 
     // TODO: add more symbol information here (function/export etc. ) ?
-    IBinarySymbol& new_symbol(m_symbols->create(sym.Value, sym.Name, local));
+    BinarySymbol& new_symbol(m_symbols->create(sym.Value, sym.Name, local));
     new_symbol.setSize(elfRead4(&m_symbolSection[i].st_size));
 
     if (imported) {
@@ -921,7 +921,7 @@ void ElfBinaryLoader::applyRelocations()
                                 // S = GetAddressByName(pName);
                                 // if (S == (e_type == E_REL ? 0x8000000 : 0)) {
                                 S = Address((static_cast<int>(nextFakeLibAddr--)) & Address::getSourceMask()); // Allocate a new fake address
-                                IBinarySymbol& newFunction = m_symbols->create(S, symbolName);
+                                BinarySymbol& newFunction = m_symbols->create(S, symbolName);
                                 newFunction.setAttr("Function", true);
                                 newFunction.setAttr("Imported", true);
                                 // }

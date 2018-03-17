@@ -34,7 +34,7 @@ void BinarySymbolTable::clear()
 }
 
 
-IBinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool local)
+BinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool local)
 {
     assert(m_addrIndex.find(addr) == m_addrIndex.end());
 
@@ -59,7 +59,7 @@ IBinarySymbol& BinarySymbolTable::create(Address addr, const QString& name, bool
 }
 
 
-const IBinarySymbol *BinarySymbolTable::find(Address addr) const
+const BinarySymbol *BinarySymbolTable::find(Address addr) const
 {
     auto ff = m_addrIndex.find(addr);
 
@@ -71,7 +71,7 @@ const IBinarySymbol *BinarySymbolTable::find(Address addr) const
 }
 
 
-const IBinarySymbol *BinarySymbolTable::find(const QString& s) const
+const BinarySymbol *BinarySymbolTable::find(const QString& s) const
 {
     auto ff = m_nameIndex.find(s);
 

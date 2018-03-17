@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySymbols.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Register.h"
@@ -523,7 +523,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
             cs = (inst.rtl->back()->getKind() == StmtType::Call) ? static_cast<CallStatement *>(inst.rtl->back()) : nullptr;
         }
 
-        const IBinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
+        const BinarySymbol *sym = (cs && cs->isCallToMemOffset()) ?
                                    symbols->find(cs->getDest()->access<Const, 1>()->getAddr()) : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
@@ -579,7 +579,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     } while (--numInstructionsLeft > 0);
 
     // Last chance check: look for _main (e.g. Borland programs)
-    const IBinarySymbol *sym = symbols->find("_main");
+    const BinarySymbol *sym = symbols->find("_main");
 
     if (sym) {
         return sym->getLocation();

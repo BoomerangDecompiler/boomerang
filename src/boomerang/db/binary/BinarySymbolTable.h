@@ -31,7 +31,7 @@
  */
 class BinarySymbolTable
 {
-    typedef std::vector<std::shared_ptr<IBinarySymbol>>   SymbolListType;
+    typedef std::vector<std::shared_ptr<BinarySymbol>>   SymbolListType;
     typedef SymbolListType::iterator       iterator;
     typedef SymbolListType::const_iterator const_iterator;
 
@@ -56,13 +56,13 @@ public:
     void clear();
 
     /// \copydoc BinarySymbolTable::create
-    IBinarySymbol& create(Address addr, const QString& name, bool local = false);
+    BinarySymbol& create(Address addr, const QString& name, bool local = false);
 
     /// \copydoc BinarySymbolTable::find(Address)
-    const IBinarySymbol *find(Address addr) const;
+    const BinarySymbol *find(Address addr) const;
 
     /// \copydoc BinarySymbolTable::find(const QString&)
-    const IBinarySymbol *find(const QString& name) const;
+    const BinarySymbol *find(const QString& name) const;
 
     /// \copydoc BinarySymbolTable::renameSymbol
     bool rename(const QString& oldName, const QString& newName);

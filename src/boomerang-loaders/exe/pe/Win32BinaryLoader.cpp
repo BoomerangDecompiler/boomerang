@@ -116,7 +116,7 @@ Address Win32BinaryLoader::getEntryPoint()
 
 Address Win32BinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol *mainSymbol = m_symbols->find("main");
+    const BinarySymbol *mainSymbol = m_symbols->find("main");
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
@@ -201,7 +201,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 addr = Address(LMMH(*(m_image + p + 2)));
                 //                    const char *c = dlprocptrs[addr].c_str();
                 //                    printf("Checking %x finding %s\n", addr, c);
-                const IBinarySymbol *exit_sym = m_symbols->find(addr);
+                const BinarySymbol *exit_sym = m_symbols->find(addr);
 
                 if (exit_sym && (exit_sym->getName() == "exit")) {
                     if (gap <= 10) {
@@ -446,7 +446,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         if (op1 == 0xFF) {
             if ((op2 == 0x15)) { // indirect CALL opcode
                 const Address       destAddr  = Address(LMMH(*(m_image + p + 2)));
-                const IBinarySymbol *dest_sym = m_symbols->find(destAddr);
+                const BinarySymbol *dest_sym = m_symbols->find(destAddr);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
                     gotGMHA = true;
@@ -745,7 +745,7 @@ void Win32BinaryLoader::findJumps(Address curr)
         }
 
         Address             operand = Address(LMMH2(HostAddress(curr, delta+2)));
-        const IBinarySymbol *symbol = m_symbols->find(operand);
+        const BinarySymbol *symbol = m_symbols->find(operand);
 
         if (symbol == nullptr) {
             continue;

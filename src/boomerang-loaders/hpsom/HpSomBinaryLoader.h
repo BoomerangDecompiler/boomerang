@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/binary/IBinarySymbols.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/loader/IFileLoader.h"
 
 #include <set>

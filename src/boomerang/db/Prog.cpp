@@ -216,7 +216,7 @@ bool Prog::isModuleUsed(Module *c) const
 Module *Prog::getDefaultModule(const QString& name)
 {
     QString             cfname;
-    const IBinarySymbol *bsym = m_binarySymbols->find(name);
+    const BinarySymbol *bsym = m_binarySymbols->find(name);
 
     if (bsym) {
         cfname = bsym->belongsToSourceFile();
@@ -285,7 +285,7 @@ Function *Prog::createFunction(Address startAddress)
     }
 
     QString             procName;
-    const IBinarySymbol *sym = m_binarySymbols->find(startAddress);
+    const BinarySymbol *sym = m_binarySymbols->find(startAddress);
     bool                isLibFunction = false;
 
     if (sym) {
@@ -1598,7 +1598,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
     Address c_addr = e->access<Const>()->getAddr();
-    const IBinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
+    const BinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
 
     if (bin_sym != nullptr) {
         unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface
@@ -1618,7 +1618,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         }
         else {
             // check for accesses into the middle of symbols
-            for (const std::shared_ptr<IBinarySymbol> sym : *m_binarySymbols) {
+            for (const std::shared_ptr<BinarySymbol> sym : *m_binarySymbols) {
                 unsigned int sz = sym->getSize();
 
                 if ((sym->getLocation() < c_addr) && ((sym->getLocation() + sz) > c_addr)) {

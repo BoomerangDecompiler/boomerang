@@ -10,13 +10,15 @@
 #pragma once
 
 
-#include "boomerang/db/binary/IBinarySymbols.h"
+#include "boomerang/util/Address.h"
+
+#include <memory>
 
 
 typedef std::shared_ptr<class Type> SharedType;
 
 
-class BinarySymbol : public IBinarySymbol
+class BinarySymbol
 {
     friend class BinarySymbolTable;
 
@@ -27,22 +29,22 @@ public:
     {}
 
 public:
-    virtual const QString&       getName() const override { return Name; }
-    virtual size_t getSize() const override { return Size; }
-    virtual void setSize(size_t v) override { Size = v; }
-    virtual Address getLocation() const override { return Location; }
+    const QString& getName() const { return Name; }
+    size_t getSize() const { return Size; }
+    void setSize(size_t v) { Size = v; }
+    Address getLocation() const { return Location; }
 
-    virtual const IBinarySymbol& setAttr(const QString& name, const QVariant& v) const override
+    const BinarySymbol& setAttr(const QString& name, const QVariant& v) const
     {
         attributes[name] = v;
         return *this;
     }
 
-    virtual bool isImportedFunction() const override;
-    virtual bool isStaticFunction() const override;
-    virtual bool isFunction() const override;
-    virtual bool isImported() const override;
-    virtual QString belongsToSourceFile() const override;
+    bool isImportedFunction() const;
+    bool isStaticFunction() const;
+    bool isFunction() const;
+    bool isImported() const;
+    QString belongsToSourceFile() const;
 
 private:
     Address              Location;

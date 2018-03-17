@@ -230,7 +230,7 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
     assert(proc);
 
     auto                sig    = ty->as<FuncType>()->getSignature()->clone();
-    const IBinarySymbol *p_sym = m_binarySymbols->find(addr);
+    const BinarySymbol *p_sym = m_binarySymbols->find(addr);
     QString             sym    = p_sym ? p_sym->getName() : QString("");
 
     if (!sym.isEmpty()) {
@@ -264,7 +264,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
             if (p != fname) {
                 QString             name   = p.mid(0, p.length() - 6) + "ModuleData";
-                const IBinarySymbol *p_sym = m_binarySymbols->find(name);
+                const BinarySymbol *p_sym = m_binarySymbols->find(name);
 
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
@@ -287,7 +287,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
         // Linux kernel module
         if (fname.endsWith(".ko")) {
-            const IBinarySymbol *p_sym = m_binarySymbols->find("init_module");
+            const BinarySymbol *p_sym = m_binarySymbols->find("init_module");
 
             if (p_sym) {
                 entrypoints.push_back(p_sym->getLocation());
@@ -592,7 +592,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
 bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
 {
     if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
-        const IBinarySymbol *symbol = m_binarySymbols->find(exp->access<Const, 1>()->getAddr());
+        const BinarySymbol *symbol = m_binarySymbols->find(exp->access<Const, 1>()->getAddr());
 
         if (symbol && symbol->isImportedFunction()) {
             return true;
@@ -806,7 +806,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             // jump to a library function
                             // replace with a call ret
-                            const IBinarySymbol *sym = m_binarySymbols->find(jumpDest->access<Const, 1>()->getAddr());
+                            const BinarySymbol *sym = m_binarySymbols->find(jumpDest->access<Const, 1>()->getAddr());
                             assert(sym != nullptr);
                             QString       func  = sym->getName();
                             CallStatement *call = new CallStatement;

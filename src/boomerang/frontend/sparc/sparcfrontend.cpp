@@ -22,7 +22,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySymbols.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/exp/Const.h"
@@ -166,7 +166,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
         // First check for helper functions
         Address             dest  = call_stmt->getFixedDest();
-        const IBinarySymbol *symb = SymbolTable->find(dest);
+        const BinarySymbol *symb = SymbolTable->find(dest);
 
         // Special check for calls to weird PLT entries which don't have symbols
         if ((symb && symb->isImportedFunction()) && (m_program->getSymbolByAddress(dest) == nullptr)) {
@@ -1111,7 +1111,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
     for (CallStatement *call : callList) {
         Address             dest  = call->getFixedDest();
-        const IBinarySymbol *symb = SymbolTable->find(dest);
+        const BinarySymbol *symb = SymbolTable->find(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
@@ -1167,7 +1167,7 @@ void SparcFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
 
 bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 {
-    const IBinarySymbol *sym = SymbolTable->find(dest);
+    const BinarySymbol *sym = SymbolTable->find(dest);
 
     if (!(sym && sym->isImportedFunction())) {
         return false;

@@ -453,7 +453,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
 Address HpSomBinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol *sym = m_symbols->find("main");
+    const BinarySymbol *sym = m_symbols->find("main");
 
     return sym ? sym->getLocation() : Address::INVALID;
 }
