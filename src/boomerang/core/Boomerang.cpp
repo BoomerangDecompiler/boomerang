@@ -14,7 +14,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFGCompressor.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/SymTab.h"
+#include "boomerang/db/binary/SymTab.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/proc/UserProc.h"

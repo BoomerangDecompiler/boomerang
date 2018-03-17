@@ -14,7 +14,7 @@
 
 #include "boomerang/type/type/Type.h"
 #include "boomerang/type/DataIntervalMap.h"
-#include "boomerang/db/SymTab.h"
+#include "boomerang/db/binary/SymTab.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/loader/IBinaryFile.h"

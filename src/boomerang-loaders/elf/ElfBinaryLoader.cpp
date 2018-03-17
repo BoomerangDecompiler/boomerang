@@ -15,7 +15,7 @@
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/db/IBinarySymbols.h"
+#include "boomerang/db/binary/IBinarySymbols.h"
 #include "boomerang/util/Log.h"
 
 #include <sys/types.h> // Next three for open()

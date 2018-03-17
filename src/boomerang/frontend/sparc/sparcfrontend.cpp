@@ -22,7 +22,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/IBinarySymbols.h"
+#include "boomerang/db/binary/IBinarySymbols.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/exp/Const.h"
