@@ -37,7 +37,7 @@ void HpSomBinaryLoaderTest::testHppaLoad()
     QVERIFY(loader != nullptr);
     BinaryImage *image = Boomerang::get()->getImage();
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(3));
+    QCOMPARE(image->getNumSections(), 3);
     QCOMPARE(image->getSectionByIndex(0)->getName(), QString("$TEXT$"));
     QCOMPARE(image->getSectionByIndex(1)->getName(), QString("$DATA$"));
     QCOMPARE(image->getSectionByIndex(2)->getName(), QString("$BSS$"));
