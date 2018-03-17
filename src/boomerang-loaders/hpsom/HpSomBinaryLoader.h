@@ -85,7 +85,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(BinaryImage *image, IBinarySymbolTable *symbols) override;
+    void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& dev) const override;
@@ -135,7 +135,7 @@ private:
     std::pair<Address, int> getSubspaceInfo(const char *ssname);
 
     Byte *m_loadedImage;            ///< Points to loaded image
-    IBinarySymbolTable *m_symbols;  ///< Symbol table object
+    BinarySymbolTable *m_symbols;  ///< Symbol table object
     std::set<Address> m_imports;    ///< Set of imported proc addr's
     BinaryImage *m_image;
 

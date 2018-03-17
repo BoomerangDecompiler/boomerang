@@ -502,7 +502,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     int     numInstructionsLeft = 100;
     Address addr      = start;
 
-    IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
+    BinarySymbolTable *symbols = Boomerang::get()->getSymbols();
     // Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
     // This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
     // a push of eax and then the call to main.  Or a call to __libc_start_main

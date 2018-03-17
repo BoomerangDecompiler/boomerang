@@ -35,10 +35,10 @@ namespace dbghelp
 
 #include "Win32BinaryLoader.h"
 
-#include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySymbols.h"
 #include "boomerang/core/IBoomerang.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/Log.h"
 
 #include <algorithm>
@@ -94,7 +94,7 @@ Win32BinaryLoader::~Win32BinaryLoader()
 }
 
 
-void Win32BinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
+void Win32BinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     unload();
     m_binaryImage = image;

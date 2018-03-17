@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/IBinarySymbols.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 
@@ -47,7 +47,7 @@ bool Project::loadBinaryFile(const QString& filePath)
         unloadBinaryFile();
     }
 
-    IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
+    BinarySymbolTable *symbols = Boomerang::get()->getSymbols();
 
     loader->initialize(getImage(), symbols);
 

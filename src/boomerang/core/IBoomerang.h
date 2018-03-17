@@ -11,7 +11,7 @@
 
 
 class BinaryImage;
-class IBinarySymbolTable;
+class BinarySymbolTable;
 class IProject;
 
 
@@ -25,6 +25,6 @@ public:
     virtual ~IBoomerang() = default;
 
     virtual BinaryImage *getImage()         = 0;
-    virtual IBinarySymbolTable *getSymbols() = 0;
+    virtual BinarySymbolTable *getSymbols() = 0;
     virtual IProject *getOrCreateProject()   = 0;
 };

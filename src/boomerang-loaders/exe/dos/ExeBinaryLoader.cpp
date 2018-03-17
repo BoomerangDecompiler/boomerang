@@ -28,7 +28,7 @@ ExeBinaryLoader::ExeBinaryLoader()
 }
 
 
-void ExeBinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
+void ExeBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     m_image   = image;
     m_symbols = symbols;

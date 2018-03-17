@@ -19,7 +19,7 @@
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/db/binary/IBinarySymbols.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/Log.h"
 
 #include <QBuffer>
@@ -57,7 +57,7 @@ MachOBinaryLoader::~MachOBinaryLoader()
 }
 
 
-void MachOBinaryLoader::initialize(BinaryImage *image, IBinarySymbolTable *symbols)
+void MachOBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     Image   = image;
     Symbols = symbols;

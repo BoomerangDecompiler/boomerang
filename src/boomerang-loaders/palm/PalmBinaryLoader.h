@@ -26,7 +26,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(BinaryImage *image, IBinarySymbolTable *table) override;
+    void initialize(BinaryImage *image, BinarySymbolTable *table) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& dev) const override;
@@ -80,5 +80,5 @@ private:
     unsigned int m_sizeBelowA5 = 0;
 
     BinaryImage *m_binaryImage = nullptr;
-    IBinarySymbolTable *m_symbols = nullptr;
+    BinarySymbolTable *m_symbols = nullptr;
 };

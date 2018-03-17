@@ -68,39 +68,43 @@ private:
  * If you have one of the maps be a pointer to the other string and use a special comparison operator, then
  * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
  */
-class BinarySymbolTable : public IBinarySymbolTable
+class BinarySymbolTable
 {
+    typedef std::vector<std::shared_ptr<IBinarySymbol>>   SymbolListType;
+    typedef SymbolListType::iterator       iterator;
+    typedef SymbolListType::const_iterator const_iterator;
+
 public:
     BinarySymbolTable();
     BinarySymbolTable(const BinarySymbolTable& other) = delete;
     BinarySymbolTable(BinarySymbolTable&& other) = default;
 
-    ~BinarySymbolTable() override;
+    ~BinarySymbolTable();
 
     BinarySymbolTable& operator=(const BinarySymbolTable& other) = delete;
     BinarySymbolTable& operator=(BinarySymbolTable&& other) = default;
 
 public:
-    virtual iterator begin()             override { return m_symbolList.begin(); }
-    virtual const_iterator begin() const override { return m_symbolList.begin(); }
-    virtual iterator end()               override { return m_symbolList.end(); }
-    virtual const_iterator end() const   override { return m_symbolList.end(); }
+    iterator begin()             { return m_symbolList.begin(); }
+    const_iterator begin() const { return m_symbolList.begin(); }
+    iterator end()               { return m_symbolList.end(); }
+    const_iterator end() const   { return m_symbolList.end(); }
 
-    virtual size_t size()  const { return m_symbolList.size(); }
-    virtual bool empty()   const { return m_symbolList.empty(); }
-    virtual void clear() override;
+    size_t size() const { return m_symbolList.size(); }
+    bool empty()  const { return m_symbolList.empty(); }
+    void clear();
 
-    /// \copydoc IBinarySymbolTable::create
-    virtual IBinarySymbol& create(Address addr, const QString& name, bool local = false) override;
+    /// \copydoc BinarySymbolTable::create
+    IBinarySymbol& create(Address addr, const QString& name, bool local = false);
 
-    /// \copydoc IBinarySymbolTable::find(Address)
-    virtual const IBinarySymbol *find(Address addr) const override;
+    /// \copydoc BinarySymbolTable::find(Address)
+    const IBinarySymbol *find(Address addr) const;
 
-    /// \copydoc IBinarySymbolTable::find(const QString&)
-    virtual const IBinarySymbol *find(const QString& name) const override;
+    /// \copydoc BinarySymbolTable::find(const QString&)
+    const IBinarySymbol *find(const QString& name) const;
 
-    /// \copydoc IBinarySymbolTable::renameSymbol
-    virtual bool rename(const QString& oldName, const QString& newName) override;
+    /// \copydoc BinarySymbolTable::renameSymbol
+    bool rename(const QString& oldName, const QString& newName);
 
 private:
     /// The map indexed by address.

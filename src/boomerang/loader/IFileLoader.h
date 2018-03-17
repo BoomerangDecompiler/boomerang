@@ -14,7 +14,7 @@
 #include "boomerang/core/Plugin.h"
 
 class BinaryImage;
-class IBinarySymbolTable;
+class BinarySymbolTable;
 
 
 /**
@@ -34,7 +34,7 @@ public:
      * \param image   Binary image to load this file into.
      * \param symbols Symbol table to fill
      */
-    virtual void initialize(BinaryImage *image, IBinarySymbolTable *symbols) = 0;
+    virtual void initialize(BinaryImage *image, BinarySymbolTable *symbols) = 0;
 
     /// Test if this file can be loaded by this loader.
     /// This method does not necessarily need to read the whole file,

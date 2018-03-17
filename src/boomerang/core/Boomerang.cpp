@@ -250,7 +250,7 @@ BinaryImage *Boomerang::getImage()
 }
 
 
-IBinarySymbolTable *Boomerang::getSymbols()
+BinarySymbolTable *Boomerang::getSymbols()
 {
     return m_symbols.get();
 }
