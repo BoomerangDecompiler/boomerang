@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "SymTab.h"
+#include "BinarySymbolTable.h"
 
 
 #include "boomerang/util/Log.h"

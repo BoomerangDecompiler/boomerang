@@ -29,7 +29,7 @@ list(APPEND boomerang-db-sources
     db/binary/BinaryImage
     db/binary/BinarySection
     db/binary/IBinarySymbols.h
-    db/binary/SymTab
+    db/binary/BinarySymbolTable
 
     # exp handling
     db/exp/Binary

@@ -25,7 +25,7 @@
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/SymTab.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/util/Log.h"
