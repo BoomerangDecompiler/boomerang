@@ -213,29 +213,31 @@ bool Prog::isModuleUsed(Module *c) const
 }
 
 
-Module *Prog::getDefaultModule(const QString& name)
+Module *Prog::getModuleForSymbol(const QString& symbolName)
 {
-    QString             cfname;
-    const BinarySymbol *bsym = m_binarySymbols->findSymbolByName(name);
+    QString             sourceFileName;
+    const BinarySymbol *sym = m_binarySymbols->findSymbolByName(symbolName);
 
-    if (bsym) {
-        cfname = bsym->belongsToSourceFile();
+    if (sym) {
+        sourceFileName = sym->belongsToSourceFile();
     }
 
-    if (cfname.isEmpty() || !cfname.endsWith(".c")) {
+    if (sourceFileName.isEmpty() || !sourceFileName.endsWith(".c")) {
         return m_rootModule;
     }
 
-    LOG_VERBOSE("Got filename %1 for %2", cfname, name);
-    cfname.chop(2); // remove .c
-    Module *c = findModule(cfname);
+    LOG_VERBOSE("Got filename '%1' for symbol '%2'", sourceFileName, symbolName);
+    QString moduleName = sourceFileName;
+    moduleName.chop(2); // remove .c
 
-    if (c == nullptr) {
-        c = getOrInsertModule(cfname);
-        m_rootModule->addChild(c);
+    Module *module = findModule(moduleName);
+
+    if (module == nullptr) {
+        module = getOrInsertModule(moduleName);
+        m_rootModule->addChild(module);
     }
 
-    return c;
+    return module;
 }
 
 
@@ -1380,7 +1382,7 @@ void Prog::readSymbolFile(const QString& fname)
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {
             QString name = sym->sig->getName();
-            tgt_mod = getDefaultModule(name);
+            tgt_mod = getModuleForSymbol(name);
             auto bin_sym       = m_binarySymbols->findSymbolByAddress(sym->addr);
             bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,

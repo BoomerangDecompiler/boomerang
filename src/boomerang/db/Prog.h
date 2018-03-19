@@ -253,10 +253,12 @@ public:
 
     Module *getRootModule() const { return m_rootModule; }
     Module *findModule(const QString& name) const;
-    Module *getDefaultModule(const QString& name);
+
+    /// \returns the default module for a symbol with name \p name.
+    Module *getModuleForSymbol(const QString& symbolName);
     bool isModuleUsed(Module *module) const;
 
-    /// Add the given RTL to the front end's map from address to aldready-decoded-RTL
+    /// Add the given RTL to the front end's map from address to already-decoded-RTL
     void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
 
     /**

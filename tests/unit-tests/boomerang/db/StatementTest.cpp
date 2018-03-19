@@ -1245,7 +1245,7 @@ void StatementTest::testSubscriptVars()
     StatementList argl;
 
     Prog   *prog = new Prog("testSubscriptVars");
-    Module *mod  = prog->getDefaultModule("test");
+    Module *mod  = prog->getModuleForSymbol("test");
 
     argl.append(new Assign(Location::memOf(Location::regOf(27)), Const::get(1)));
     argl.append(new Assign(Location::regOf(28), Const::get(2)));
