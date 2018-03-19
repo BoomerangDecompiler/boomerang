@@ -240,7 +240,7 @@ void RtlTest::testSetConscripts()
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
     CallStatement *s2   = new CallStatement();
-    Prog          *p    = new Prog("fake_prog");
+    Prog          *p    = new Prog("fake_prog", nullptr);
     Module        *m    = p->getOrInsertModule("test");
     Function      *proc = new UserProc(Address(0x00002000), "printf", m); // Making a true LibProc is problematic
 

@@ -40,30 +40,29 @@ void FrontPentTest::initTestCase()
 
 void FrontPentTest::test1()
 {
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENT);
+
+    IFileLoader *loader = project.getBestLoader(HELLO_PENT);
+    QVERIFY(loader != nullptr);
+
+    Prog prog ("HELLO_PENT", project.getLoadedBinaryFile());
+    QVERIFY(loader->getMachine() == Machine::PENTIUM);
+
+    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
+
     QString     expected;
     QString     actual;
     QTextStream strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(HELLO_PENT);
-    IFileLoader *loader = project.getBestLoader(HELLO_PENT);
-
-    QVERIFY(loader != nullptr);
-
-    Prog *prog = new Prog("HELLO_PENT");
-    QVERIFY(loader->getMachine() == Machine::PENTIUM);
-
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
-
     bool    gotMain;
-    Address addr = pFE->getMainEntryPoint(gotMain);
+    Address addr = fe->getMainEntryPoint(gotMain);
     QVERIFY(gotMain && addr != Address::INVALID);
 
     // Decode first instruction
     DecodeResult inst;
-    pFE->decodeInstruction(addr, inst);
+    fe->decodeInstruction(addr, inst);
     inst.rtl->print(strm);
 
     expected = "0x08048328    0 *32* m[r28 - 4] := r29\n"
@@ -72,44 +71,42 @@ void FrontPentTest::test1()
     actual.clear();
 
     addr += inst.numBytes;
-    pFE->decodeInstruction(addr, inst);
+    fe->decodeInstruction(addr, inst);
     inst.rtl->print(strm);
     expected = QString("0x08048329    0 *32* r29 := r28\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
     addr = Address(0x804833b);
-    pFE->decodeInstruction(addr, inst);
+    fe->decodeInstruction(addr, inst);
     inst.rtl->print(strm);
     expected = QString("0x0804833b    0 *32* m[r28 - 4] := 0x80483fc\n"
                        "              0 *32* r28 := r28 - 4\n");
     QCOMPARE(actual, expected);
     actual.clear();
-
-    delete prog;
 }
 
 
 void FrontPentTest::test2()
 {
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENT);
+
+    IFileLoader *loader = project.getBestLoader(HELLO_PENT);
+    QVERIFY(loader != nullptr);
+
+    Prog prog("HELLO_PENT", project.getLoadedBinaryFile());
+    QVERIFY(loader->getMachine() == Machine::PENTIUM);
+
+    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
+
     DecodeResult inst;
     QString      expected;
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(HELLO_PENT);
-    IFileLoader *pBF = project.getBestLoader(HELLO_PENT);
-
-    QVERIFY(pBF != nullptr);
-    Prog *prog = new Prog("HELLO_PENT");
-    QVERIFY(pBF->getMachine() == Machine::PENTIUM);
-
-    IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
-    prog->setFrontEnd(pFE);
-
-    pFE->decodeInstruction(Address(0x08048345), inst);
+    fe->decodeInstruction(Address(0x08048345), inst);
     inst.rtl->print(strm);
     expected = QString("0x08048345    0 *32* tmp1 := r28\n"
                        "              0 *32* r28 := r28 + 16\n"
@@ -117,41 +114,38 @@ void FrontPentTest::test2()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    pFE->decodeInstruction(Address(0x08048348), inst);
+    fe->decodeInstruction(Address(0x08048348), inst);
     inst.rtl->print(strm);
     expected = QString("0x08048348    0 *32* r24 := 0\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    pFE->decodeInstruction(Address(0x8048329), inst);
+    fe->decodeInstruction(Address(0x8048329), inst);
     inst.rtl->print(strm);
     expected = QString("0x08048329    0 *32* r29 := r28\n");
     QCOMPARE(actual, expected);
     actual.clear();
-
-    delete prog;
 }
 
 
 void FrontPentTest::test3()
 {
+    IProject& project = *Boomerang::get()->getOrCreateProject();
+    project.loadBinaryFile(HELLO_PENT);
+    IFileLoader *loader = project.getBestLoader(HELLO_PENT);
+    QVERIFY(loader != nullptr);
+
+    Prog prog("HELLO_PENT", project.getLoadedBinaryFile());
+    QVERIFY(loader->getMachine() == Machine::PENTIUM);
+    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
+
     DecodeResult inst;
     QString      expected;
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(HELLO_PENT);
-    IFileLoader *loader = project.getBestLoader(HELLO_PENT);
-
-    QVERIFY(loader != nullptr);
-    Prog *prog = new Prog("HELLO_PENT");
-    QVERIFY(loader->getMachine() == Machine::PENTIUM);
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
-
-    pFE->decodeInstruction(Address(0x804834d), inst);
+    QVERIFY(fe->decodeInstruction(Address(0x804834d), inst));
     inst.rtl->print(strm);
     expected = QString("0x0804834d    0 *32* r28 := r29\n"
                        "              0 *32* r29 := m[r28]\n"
@@ -159,7 +153,7 @@ void FrontPentTest::test3()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    pFE->decodeInstruction(Address(0x804834e), inst);
+    QVERIFY(fe->decodeInstruction(Address(0x804834e), inst));
     inst.rtl->print(strm);
     expected = QString("0x0804834e    0 *32* %pc := m[r28]\n"
                        "              0 *32* r28 := r28 + 4\n"
@@ -169,8 +163,6 @@ void FrontPentTest::test3()
 
     QCOMPARE(actual, expected);
     actual.clear();
-
-    delete prog;
 }
 
 
@@ -182,18 +174,18 @@ void FrontPentTest::testBranch()
     QTextStream  strm(&actual);
 
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
     project.loadBinaryFile(BRANCH_PENT);
+
     IFileLoader *loader = project.getBestLoader(BRANCH_PENT);
     QVERIFY(loader != nullptr);
-    Prog *prog = new Prog("BRANCH_PENT");
 
+    Prog prog ("BRANCH_PENT", project.getLoadedBinaryFile());
     QVERIFY(loader->getMachine() == Machine::PENTIUM);
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
+    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    prog.setFrontEnd(fe);
 
     // jne
-    pFE->decodeInstruction(Address(0x8048979), inst);
+    fe->decodeInstruction(Address(0x8048979), inst);
     inst.rtl->print(strm);
     expected = QString("0x08048979    0 BRANCH 0x08048988, condition "
                        "not equals\n"
@@ -202,7 +194,7 @@ void FrontPentTest::testBranch()
     actual.clear();
 
     // jg
-    pFE->decodeInstruction(Address(0x80489c1), inst);
+    fe->decodeInstruction(Address(0x80489c1), inst);
     inst.rtl->print(strm);
     expected = QString("0x080489c1    0 BRANCH 0x080489d5, condition signed greater\n"
                        "High level: %flags\n");
@@ -210,14 +202,12 @@ void FrontPentTest::testBranch()
     actual.clear();
 
     // jbe
-    pFE->decodeInstruction(Address(0x8048a1b), inst);
+    fe->decodeInstruction(Address(0x8048a1b), inst);
     inst.rtl->print(strm);
     expected = QString("0x08048a1b    0 BRANCH 0x08048a2a, condition unsigned less or equals\n"
                        "High level: %flags\n");
     QCOMPARE(actual, expected);
     actual.clear();
-
-    delete prog;
 }
 
 
@@ -227,47 +217,61 @@ void FrontPentTest::testFindMain()
     // Also tests the loader hack
     IProject& project = *Boomerang::get()->getOrCreateProject();
 
-    project.loadBinaryFile(FEDORA2_TRUE);
-    IFileLoader *loader = project.getBestLoader(FEDORA2_TRUE);
-    QVERIFY(loader != nullptr);
+    {
+        project.loadBinaryFile(FEDORA2_TRUE);
+        IFileLoader *loader = project.getBestLoader(FEDORA2_TRUE);
+        QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog("FEDORA2_TRUE");
-    QVERIFY(loader->getMachine() == Machine::PENTIUM);
+        Prog prog("FEDORA2_TRUE", project.getLoadedBinaryFile());
+        QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
+        IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+        prog.setFrontEnd(pFE);
 
-    bool    found;
-    Address addr     = pFE->getMainEntryPoint(found);
-    Address expected = Address(0x08048b10);
-    QCOMPARE(addr, expected);
-    loader->close();
+        bool    found;
+        Address addr     = pFE->getMainEntryPoint(found);
+        Address expected = Address(0x08048b10);
+        QCOMPARE(addr, expected);
+        loader->close();
+    }
 
-    project.loadBinaryFile(FEDORA3_TRUE);
-    loader = project.getBestLoader(FEDORA3_TRUE);
-    QVERIFY(loader != nullptr);
+    {
+        project.loadBinaryFile(FEDORA3_TRUE);
+        IFileLoader *loader = project.getBestLoader(FEDORA3_TRUE);
+        QVERIFY(loader != nullptr);
 
-    pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
-    QVERIFY(pFE != nullptr);
-    addr     = pFE->getMainEntryPoint(found);
-    expected = Address(0x8048c4a);
-    QCOMPARE(addr, expected);
-    loader->close();
+        Prog prog("FEDORA3_TRUE", project.getLoadedBinaryFile());
+        QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
-    project.loadBinaryFile(SUSE_TRUE);
-    loader = project.getBestLoader(SUSE_TRUE);
-    QVERIFY(loader != nullptr);
+        IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+        prog.setFrontEnd(pFE);
+        QVERIFY(pFE != nullptr);
 
-    pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
-    QVERIFY(pFE != nullptr);
-    addr     = pFE->getMainEntryPoint(found);
-    expected = Address(0x8048b60);
-    QCOMPARE(addr, expected);
-    loader->close();
+        bool found;
+        Address addr     = pFE->getMainEntryPoint(found);
+        Address expected = Address(0x8048c4a);
+        QCOMPARE(addr, expected);
+        loader->close();
+    }
 
-    delete prog;
+    {
+        project.loadBinaryFile(SUSE_TRUE);
+        IFileLoader *loader = project.getBestLoader(SUSE_TRUE);
+        QVERIFY(loader != nullptr);
+
+        Prog prog("SUSE_TRUE", project.getLoadedBinaryFile());
+        QVERIFY(loader->getMachine() == Machine::PENTIUM);
+
+        IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+        prog.setFrontEnd(pFE);
+        QVERIFY(pFE != nullptr);
+
+        bool found;
+        Address addr     = pFE->getMainEntryPoint(found);
+        Address expected = Address(0x8048b60);
+        QCOMPARE(addr, expected);
+        loader->close();
+    }
 }
 
 

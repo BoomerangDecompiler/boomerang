@@ -26,6 +26,7 @@ list(APPEND boomerang-db-sources
     db/Table
     db/UseCollector
 
+    db/binary/BinaryFile
     db/binary/BinaryImage
     db/binary/BinarySection
     db/binary/BinarySymbol

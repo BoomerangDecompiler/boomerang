@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Register.h"
@@ -502,7 +503,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     int     numInstructionsLeft = 100;
     Address addr      = start;
 
-    BinarySymbolTable *symbols = Boomerang::get()->getSymbols();
+    BinarySymbolTable *symbols = m_program->getBinaryFile()->getSymbols();
     // Look for 3 calls in a row in the first 100 instructions, with no other instructions between them.
     // This is the "windows" pattern. Another windows pattern: call to GetModuleHandleA followed by
     // a push of eax and then the call to main.  Or a call to __libc_start_main
@@ -847,7 +848,7 @@ bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult& r)
 
 bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
 {
-    Byte n = m_image->readNative1(pc + 1);
+    Byte n = m_program->getBinaryFile()->getImage()->readNative1(pc + 1);
 
     if (n != 0x0b) {
         return false;
@@ -869,7 +870,7 @@ bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult& r)
 
 bool PentiumFrontEnd::decodeSpecial(Address pc, DecodeResult& r)
 {
-    Byte n = m_image->readNative1(pc);
+    Byte n = m_program->getBinaryFile()->getImage()->readNative1(pc);
 
     switch (n)
     {
@@ -1001,7 +1002,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
             if (compound->getTypeAtIdx(n)->resolvesToPointer() &&
                 compound->getTypeAtIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
-                Address d = Address(m_image->readNative4(a));
+                Address d = Address(m_program->getBinaryFile()->getImage()->readNative4(a));
                 LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
                             d, call->getDestProc()->getName());
 

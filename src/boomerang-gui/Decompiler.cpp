@@ -16,9 +16,11 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/loader/IFileLoader.h"
 
 #include <QThread>
 
@@ -55,9 +57,11 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
     emit loadingStarted();
 
-    m_image = Boomerang::get()->getImage();
-    m_prog  = new Prog(QFileInfo(inputFile).baseName());
-    m_fe    = IFrontEnd::create(inputFile, m_prog, Boomerang::get()->getOrCreateProject());
+    IFileLoader *loader = Boomerang::get()->getOrCreateProject()->getBestLoader(inputFile);
+//    m_binaryFile = new BinaryFile() // todo
+//    loader->loadFromFile()
+    m_prog  = new Prog(QFileInfo(inputFile).baseName(), m_binaryFile);
+    m_fe    = IFrontEnd::instantiate(loader, m_prog);
 
     if (m_fe == nullptr) {
         emit machineTypeChanged(QString("Unavailable: Load Failed!"));
@@ -114,7 +118,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         emit entryPointAdded(entryPoint, m_prog->getSymbolNameByAddress(entryPoint));
     }
 
-    for (const BinarySection *section : *m_image) {
+    for (const BinarySection *section : *m_binaryFile->getImage()) {
         emit sectionAdded(section->getName(), section->getSourceAddr(),
                         section->getSourceAddr() + section->getSize());
     }

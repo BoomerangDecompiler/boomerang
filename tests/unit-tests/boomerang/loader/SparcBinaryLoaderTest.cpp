@@ -37,7 +37,7 @@ void SparcBinaryLoaderTest::testSparcLoad()
 
     QVERIFY(loader != nullptr);
 
-    BinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), 28);

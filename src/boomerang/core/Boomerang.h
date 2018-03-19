@@ -68,9 +68,6 @@ public:
     static Boomerang *get();
     static void destroy();
 
-    BinaryImage *getImage() override;
-    BinarySymbolTable *getSymbols() override;
-
     IProject *getOrCreateProject() override;
 
     /// \returns the library version string

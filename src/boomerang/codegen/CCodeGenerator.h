@@ -118,7 +118,7 @@ private:
     void generateCode(UserProc *proc);
 
     /// Generate global variables from data sections.
-    void generateDataSectionCode(BinaryImage *image, QString sectionName, Address sectionStart, uint32_t sectionSize);
+    void generateDataSectionCode(const BinaryImage *image, QString sectionName, Address sectionStart, uint32_t sectionSize);
 
     /**
      * Print the declaration of a function.

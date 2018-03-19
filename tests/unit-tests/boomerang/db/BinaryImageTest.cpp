@@ -24,7 +24,7 @@ void BinaryImageTest::initTestCase()
 
 void BinaryImageTest::testGetNumSections()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QCOMPARE(img.getNumSections(), 0);
 
     img.createSection("sect1", Address(0x1000), Address(0x2000));
@@ -34,7 +34,7 @@ void BinaryImageTest::testGetNumSections()
 
 void BinaryImageTest::testHasSections()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QVERIFY(!img.hasSections());
 
     img.createSection("sect1", Address(0x1000), Address(0x2000));
@@ -44,7 +44,7 @@ void BinaryImageTest::testHasSections()
 
 void BinaryImageTest::testCreateSection()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
 
     BinarySection *sect1 = img.createSection("sect1", Address(0x1000), Address(0x2000));
     QCOMPARE(sect1->getSourceAddr(), Address(0x1000));
@@ -78,7 +78,7 @@ void BinaryImageTest::testCreateSection()
 
 void BinaryImageTest::testGetSectionByIndex()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QVERIFY(img.getSectionByIndex(0) == nullptr);
 
     BinarySection *sect1 = img.createSection("sect1", Address(0x1000), Address(0x2000));
@@ -88,7 +88,7 @@ void BinaryImageTest::testGetSectionByIndex()
 
 void BinaryImageTest::testGetSectionByName()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QVERIFY(img.getSectionByName("") == nullptr);
 
     BinarySection *sect1 = img.createSection("sect1", Address(0x1000), Address(0x2000));
@@ -99,7 +99,7 @@ void BinaryImageTest::testGetSectionByName()
 
 void BinaryImageTest::testGetSectionByAddr()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QVERIFY(img.getSectionByAddr(Address(0x1000)) == nullptr);
 
     BinarySection *sect1 = img.createSection("sect1", Address(0x1000), Address(0x2000));
@@ -111,7 +111,7 @@ void BinaryImageTest::testGetSectionByAddr()
 
 void BinaryImageTest::testUpdateTextLimits()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     img.updateTextLimits();
     QCOMPARE(img.getLimitTextLow(), Address::INVALID);
     QCOMPARE(img.getLimitTextHigh(), Address::INVALID);
@@ -144,7 +144,7 @@ void BinaryImageTest::testRead()
 {
     char sectionData[8] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
 
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QCOMPARE(img.readNative1(Address(0x1000)), static_cast<Byte>(0xFF));
     QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x0000));
     QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x00000000));
@@ -186,7 +186,7 @@ void BinaryImageTest::testWrite()
 {
     char sectionData[8] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
 
-    BinaryImage img;
+    BinaryImage img(QByteArray{sectionData});
     QVERIFY(!img.writeNative4(Address(0x1000), static_cast<DWord>(0x00112233)));
 
     // section not mapped to data. Verify no AV occurs.
@@ -207,7 +207,7 @@ void BinaryImageTest::testWrite()
 
 void BinaryImageTest::testIsReadOnly()
 {
-    BinaryImage img;
+    BinaryImage img(QByteArray{});
     QVERIFY(!img.isReadOnly(Address(0x1000)));
     QVERIFY(!img.isReadOnly(Address::INVALID));
 

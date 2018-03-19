@@ -13,6 +13,7 @@
 #include "boomerang/core/IProject.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"
+#include "boomerang/db/binary/BinaryFile.h"
 
 #include <QByteArray>
 #include <memory>
@@ -50,11 +51,8 @@ public:
     /// \copydoc IProject::unload
     void unloadBinaryFile() override;
 
-    /// \copydoc IProject::getImage
-    BinaryImage *getImage() override { return m_image.get(); }
-
-    /// \copydoc IProject::getImage
-    const BinaryImage *getImage() const override { return m_image.get(); }
+    BinaryFile *getLoadedBinaryFile() override { return m_loadedBinary.get(); }
+    const BinaryFile *getLoadedBinaryFile() const override { return m_loadedBinary.get(); }
 
     ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
 
@@ -66,8 +64,7 @@ private:
     void loadPlugins();
 
 private:
-    QByteArray m_fileBytes;
-    std::unique_ptr<BinaryImage> m_image; ///< raw memory interface
+    std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< type recovery engine
 
     // Plugins

@@ -19,7 +19,7 @@
 class Module;
 class IFrontEnd;
 class Prog;
-class BinaryImage;
+class BinaryFile;
 
 
 /**
@@ -101,7 +101,7 @@ protected:
 
     IFrontEnd *m_fe = nullptr;
     Prog *m_prog = nullptr;
-    BinaryImage *m_image = nullptr;
+    BinaryFile *m_binaryFile = nullptr;
 
     std::vector<Address> m_userEntrypoints;
 };

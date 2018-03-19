@@ -10,10 +10,11 @@
 #pragma once
 
 
-class BinaryImage;
+class BinaryFile;
 class IFileLoader;
 class ITypeRecovery;
 class QString;
+
 
 /**
  * The Project interface class
@@ -57,11 +58,8 @@ public:
      */
     virtual void unloadBinaryFile() = 0;
 
-    /**
-     * Get the binary image of the loaded binary.
-     */
-    virtual BinaryImage *getImage()             = 0;
-    virtual const BinaryImage *getImage() const = 0;
+    virtual BinaryFile *getLoadedBinaryFile() = 0;
+    virtual const BinaryFile *getLoadedBinaryFile() const = 0;
 
     /**
      * \returns the type recovery engine

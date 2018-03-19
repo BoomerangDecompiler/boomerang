@@ -18,8 +18,7 @@
 
 
 Project::Project()
-    : m_image(new BinaryImage)
-    , m_typeRecovery(new DFATypeRecovery())
+    : m_typeRecovery(new DFATypeRecovery())
 {
     loadPlugins();
 }
@@ -47,25 +46,20 @@ bool Project::loadBinaryFile(const QString& filePath)
         unloadBinaryFile();
     }
 
-    BinarySymbolTable *symbols = Boomerang::get()->getSymbols();
-
-    loader->initialize(getImage(), symbols);
-
     QFile srcFile(filePath);
-
     if (false == srcFile.open(QFile::ReadOnly)) {
         LOG_WARN("Opening '%1' failed");
         return false;
     }
 
-    m_fileBytes = srcFile.readAll();
+    m_loadedBinary.reset(new BinaryFile(srcFile.readAll()));
 
-    if (loader->loadFromMemory(m_fileBytes) == false) {
+    if (loader->loadFromFile(m_loadedBinary.get()) == false) {
         LOG_WARN("Loading '%1 failed", filePath);
         return false;
     }
 
-    m_image->updateTextLimits();
+    m_loadedBinary->getImage()->updateTextLimits();
 
     return true;
 }
@@ -87,16 +81,13 @@ bool Project::writeSaveFile(const QString& /*filePath*/)
 
 bool Project::isBinaryLoaded() const
 {
-    return m_image->hasSections();
+    return m_loadedBinary != nullptr;
 }
 
 
 void Project::unloadBinaryFile()
 {
-    Boomerang::get()->getSymbols()->clear();
-
-    m_fileBytes.clear();
-    m_image->reset();
+    m_loadedBinary.reset();
 }
 
 

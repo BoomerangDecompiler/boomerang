@@ -79,15 +79,6 @@ public:
      */
     static IFrontEnd *instantiate(IFileLoader *loader, Prog *prog);
 
-    /**
-     * Create FrontEnd instance given \p fname and \p prog
-     *
-     * \param fname string with full path to decoded file
-     * \param prog program being decoded
-     * \returns Binary-specific frontend.
-     */
-    static IFrontEnd *create(const QString& fname, Prog *prog, IProject *project);
-
     /// Is this a win32 frontend?
     /// \note Returns false if no binary is loaded.
     bool isWin32() const;
@@ -226,7 +217,6 @@ private:
     bool refersToImportedFunction(const SharedExp& exp);
 
 protected:
-    BinaryImage *m_image;
     std::unique_ptr<IDecoder> m_decoder;
     IFileLoader *m_fileLoader;
     Prog *m_program;
@@ -241,6 +231,4 @@ protected:
 
     /// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
     std::map<Address, RTL *> m_previouslyDecoded;
-
-    BinarySymbolTable *m_binarySymbols;
 };

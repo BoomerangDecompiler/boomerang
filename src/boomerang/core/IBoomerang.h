@@ -24,7 +24,5 @@ class IBoomerang
 public:
     virtual ~IBoomerang() = default;
 
-    virtual BinaryImage *getImage()         = 0;
-    virtual BinarySymbolTable *getSymbols() = 0;
-    virtual IProject *getOrCreateProject()   = 0;
+    virtual IProject *getOrCreateProject()  = 0;
 };

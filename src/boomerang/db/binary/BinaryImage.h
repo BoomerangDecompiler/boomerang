@@ -26,7 +26,7 @@ class BinaryImage
     typedef SectionList::const_reverse_iterator const_reverse_iterator;
 
 public:
-    BinaryImage();
+    BinaryImage(const QByteArray& rawData);
     BinaryImage(const BinaryImage& other) = delete;
     BinaryImage(BinaryImage&& other) = default;
 
@@ -48,6 +48,9 @@ public:
     const_reverse_iterator rend()   const { return m_sections.rend(); }
 
 public:
+    QByteArray& getRawData() { return m_rawData; }
+    const QByteArray& getRawData() const { return m_rawData; }
+
     /// \returns the number of sections in this image
     int getNumSections() const { return m_sections.size(); }
 
@@ -89,11 +92,13 @@ public:
     float readNativeFloat4(Address addr) const;
     double readNativeFloat8(Address addr) const;
 
+
     bool writeNative4(Address addr, DWord value);
 
     bool isReadOnly(Address addr) const;
 
 private:
+    QByteArray m_rawData;
     Address m_limitTextLow;
     Address m_limitTextHigh;
     ptrdiff_t m_textDelta;

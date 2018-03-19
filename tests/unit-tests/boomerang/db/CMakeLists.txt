@@ -14,6 +14,7 @@ set(TESTS
     BinaryImageTest
     BinarySectionTest
     BinarySymbolTableTest
+    BinarySymbolTest
     CFGTest
     DfaTest
     ExpTest

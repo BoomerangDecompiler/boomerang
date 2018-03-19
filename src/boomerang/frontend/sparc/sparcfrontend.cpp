@@ -23,6 +23,7 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/exp/Const.h"
@@ -166,7 +167,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
         // First check for helper functions
         Address             dest  = call_stmt->getFixedDest();
-        const BinarySymbol *symb = SymbolTable->findSymbolByAddress(dest);
+        const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
         // Special check for calls to weird PLT entries which don't have symbols
         if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddress(dest) == "")) {
@@ -677,7 +678,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 
             // Check for invalid instructions
             if (!inst.valid) {
-                ptrdiff_t delta = m_image->getTextDelta();
+                ptrdiff_t delta = m_program->getBinaryFile()->getImage()->getTextDelta();
 
                 const Byte  *instructionData = reinterpret_cast<const Byte *>(addr.value() + delta);
                 QString     instructionString;
@@ -775,7 +776,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     // address if it hasn't been visited already
                     BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                     assert(newBB);
-                    handleBranch(addr + 8, m_image->getLimitTextHigh(), newBB, cfg, _targetQueue);
+                    handleBranch(addr + 8, m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg, _targetQueue);
 
                     // There is no fall through branch.
                     sequentialDecode = false;
@@ -790,8 +791,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 
                     BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                     assert(newBB);
-
-                    handleBranch(jumpStmt->getFixedDest(), m_image->getLimitTextHigh(), newBB, cfg, _targetQueue);
+                    handleBranch(jumpStmt->getFixedDest(), m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg, _targetQueue);
 
                     // There is no fall through branch.
                     sequentialDecode = false;
@@ -814,7 +814,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                         // e.g.
                         // 142c8:  40 00 5b 91          call           exit
                         // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-                        if (static_cast<SparcDecoder *>(m_decoder.get())->isRestore(HostAddress(addr.value() + 4 + m_image->getTextDelta()))) {
+                        if (static_cast<SparcDecoder *>(m_decoder.get())->isRestore(HostAddress(addr.value() + 4 + m_program->getBinaryFile()->getImage()->getTextDelta()))) {
                             // Give the address of the call; I think that this is actually important, if faintly annoying
                             delay_inst.rtl->setAddress(addr);
                             BB_rtls->push_back(std::move(delay_inst.rtl));
@@ -886,7 +886,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                         }
                         else {
                             // This is a non-call followed by an NCT/NOP
-                            case_SD(addr, m_image->getTextDelta(), m_image->getLimitTextHigh(), inst, delay_inst,
+                            case_SD(addr, m_program->getBinaryFile()->getImage()->getTextDelta(), m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst, delay_inst,
                                     std::move(BB_rtls), cfg, _targetQueue, os);
 
                             // There is no fall through branch.
@@ -936,7 +936,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                             else {
                                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                                 assert(newBB);
-                                handleBranch(dest, m_image->getLimitTextHigh(), newBB, cfg, _targetQueue);
+                                handleBranch(dest, m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg, _targetQueue);
 
                                 // There is no fall through branch.
                                 sequentialDecode = false;
@@ -979,7 +979,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     {
                     case NOP:
                     case NCT:
-                        sequentialDecode = case_DD(addr, m_image->getTextDelta(), inst, delayInst,
+                        sequentialDecode = case_DD(addr, m_program->getBinaryFile()->getImage()->getTextDelta(), inst, delayInst,
                                                    std::move(BB_rtls), _targetQueue, proc, callList);
                         break;
 
@@ -1014,7 +1014,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     {
                     case NOP:
                     case NCT:
-                        sequentialDecode = case_SCD(addr, m_image->getTextDelta(), m_image->getLimitTextHigh(), inst,
+                        sequentialDecode = case_SCD(addr, m_program->getBinaryFile()->getImage()->getTextDelta(), m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
                                                     delay_inst, std::move(BB_rtls), cfg, _targetQueue);
                         break;
 
@@ -1022,7 +1022,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 
                         if (delay_inst.rtl->back()->getKind() == StmtType::Call) {
                             // Assume it's the move/call/move pattern
-                            sequentialDecode = case_SCD(addr, m_image->getTextDelta(), m_image->getLimitTextHigh(),
+                            sequentialDecode = case_SCD(addr, m_program->getBinaryFile()->getImage()->getTextDelta(), m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
                                                         inst, delay_inst, std::move(BB_rtls), cfg, _targetQueue);
                             break;
                         }
@@ -1059,7 +1059,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 
                             // Visit the destination of the branch; add "true" leg
                             Address jumpDest = jumpStmt->getFixedDest();
-                            handleBranch(jumpDest, m_image->getLimitTextHigh(), newBB, cfg, _targetQueue);
+                            handleBranch(jumpDest, m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg, _targetQueue);
                             // Add the "false" leg: point past the delay inst
                             cfg->addEdge(newBB, addr + 8);
                             addr  += 8;       // Skip branch and delay
@@ -1067,7 +1067,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                         }
 
                     case NCT:
-                        sequentialDecode = case_SCDAN(addr, m_image->getTextDelta(), m_image->getLimitTextHigh(),
+                        sequentialDecode = case_SCDAN(addr, m_program->getBinaryFile()->getImage()->getTextDelta(), m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
                                                       inst, delay_inst, std::move(BB_rtls), cfg, _targetQueue);
                         break;
 
@@ -1111,11 +1111,11 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
     for (CallStatement *call : callList) {
         Address             dest  = call->getFixedDest();
-        const BinarySymbol *symb = SymbolTable->findSymbolByAddress(dest);
+        const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
         // ones (in the .plt)
-        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
+        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
             // Don't visit the destination of a register call
             // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
             if (dest != Address::INVALID) {
@@ -1167,7 +1167,7 @@ void SparcFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
 
 bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 {
-    const BinarySymbol *sym = SymbolTable->findSymbolByAddress(dest);
+    const BinarySymbol *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
     if (!(sym && sym->isImportedFunction())) {
         return false;
@@ -1350,7 +1350,6 @@ SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
     : IFrontEnd(p_BF, prog)
 {
     m_decoder.reset(new SparcDecoder(prog));
-    SymbolTable       = Boomerang::get()->getSymbols();
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;
     nop_inst.valid    = true;

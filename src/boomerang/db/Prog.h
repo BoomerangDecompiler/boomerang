@@ -34,6 +34,7 @@ class BinarySection;
 class ICodeGenerator;
 class Global;
 class BinarySymbol;
+class BinaryFile;
 
 
 class Prog
@@ -44,7 +45,7 @@ public:
     typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
 
 public:
-    Prog(const QString& name);
+    Prog(const QString& name, BinaryFile *file);
     Prog(const Prog& other) = delete;
     Prog(Prog&& other) = default;
 
@@ -61,6 +62,9 @@ public:
     /// Assign a new name to this program
     void setName(const QString& name);
     QString getName() const { return m_name; }
+
+    BinaryFile *getBinaryFile() { return m_binaryFile; }
+    const BinaryFile *getBinaryFile() const { return m_binaryFile; }
 
     /**
      * Creates a new empty module.
@@ -273,6 +277,7 @@ public:
 
 private:
     QString m_name;             ///< name of the program
+    BinaryFile *m_binaryFile;
     Module *m_rootModule;       ///< Root of the module tree
     ModuleList m_moduleList;    ///< The Modules that make up this program
 
@@ -285,7 +290,4 @@ private:
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<Global *> m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
-
-    class BinaryImage *m_image;
-    BinarySymbolTable *m_binarySymbols;
 };

@@ -16,7 +16,8 @@
 #include <algorithm>
 
 
-BinaryImage::BinaryImage()
+BinaryImage::BinaryImage(const QByteArray& rawData)
+    : m_rawData(rawData)
 {
 }
 
@@ -323,5 +324,3 @@ const BinarySection *BinaryImage::getSectionByAddr(Address addr) const
     auto iter = m_sectionMap.find(addr);
     return (iter != m_sectionMap.end()) ? iter->second.get() : nullptr;
 }
-
-

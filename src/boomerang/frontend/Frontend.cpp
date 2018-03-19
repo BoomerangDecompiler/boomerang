@@ -26,6 +26,7 @@
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/util/Log.h"
@@ -54,9 +55,6 @@ IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
     : m_fileLoader(p_BF)
     , m_program(prog)
 {
-    m_image = Boomerang::get()->getImage();
-    assert(m_image);
-    m_binarySymbols = static_cast<BinarySymbolTable *>(Boomerang::get()->getSymbols());
 }
 
 
@@ -104,23 +102,10 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *loader, Prog *prog)
 }
 
 
-IFrontEnd *IFrontEnd::create(const QString& fname, Prog *prog, IProject *project)
-{
-    IFileLoader *loader = project->getBestLoader(fname);
-
-    if (loader == nullptr) {
-        return nullptr;
-    }
-
-    project->loadBinaryFile(fname);
-
-    return instantiate(loader, prog);
-}
-
 
 void IFrontEnd::addSymbol(Address addr, const QString& nam)
 {
-    m_binarySymbols->createSymbol(addr, nam);
+    m_program->getBinaryFile()->getSymbols()->createSymbol(addr, nam);
 }
 
 
@@ -230,7 +215,7 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
     assert(proc);
 
     auto                sig    = ty->as<FuncType>()->getSignature()->clone();
-    const BinarySymbol *p_sym = m_binarySymbols->findSymbolByAddress(addr);
+    const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(addr);
     QString             sym    = p_sym ? p_sym->getName() : QString("");
 
     if (!sym.isEmpty()) {
@@ -264,15 +249,16 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
             if (p != fname) {
                 QString             name   = p.mid(0, p.length() - 6) + "ModuleData";
-                const BinarySymbol *p_sym = m_binarySymbols->findSymbolByName(name);
+                const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName(name);
 
                 if (p_sym) {
                     Address tmpaddr = p_sym->getLocation();
                     Address setup, teardown;
 
-                    /*uint32_t vers = */ m_image->readNative4(tmpaddr); // TODO: find use for vers ?
-                    setup    = Address(m_image->readNative4(tmpaddr + 4));
-                    teardown = Address(m_image->readNative4(tmpaddr + 8));
+                    BinaryImage *image = m_program->getBinaryFile()->getImage();
+                    /*uint32_t vers = */ image->readNative4(tmpaddr); // TODO: find use for vers ?
+                    setup    = Address(image->readNative4(tmpaddr + 4));
+                    teardown = Address(image->readNative4(tmpaddr + 8));
 
                     if (!setup.isZero()) {
                         checkEntryPoint(entrypoints, setup, "ModuleSetupProc");
@@ -287,13 +273,13 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 
         // Linux kernel module
         if (fname.endsWith(".ko")) {
-            const BinarySymbol *p_sym = m_binarySymbols->findSymbolByName("init_module");
+            const BinarySymbol *p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName("init_module");
 
             if (p_sym) {
                 entrypoints.push_back(p_sym->getLocation());
             }
 
-            p_sym = m_binarySymbols->findSymbolByName("cleanup_module");
+            p_sym = m_program->getBinaryFile()->getSymbols()->findSymbolByName("cleanup_module");
 
             if (p_sym) {
                 entrypoints.push_back(p_sym->getLocation());
@@ -317,9 +303,10 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
     if (!decodeMain) {
         return true;
     }
+    BinaryImage *image = m_program->getBinaryFile()->getImage();
 
-    Boomerang::get()->alertStartDecode(m_image->getLimitTextLow(),
-                                       (m_image->getLimitTextHigh() - m_image->getLimitTextLow()).value());
+    Boomerang::get()->alertStartDecode(image->getLimitTextLow(),
+                                       (image->getLimitTextHigh() - image->getLimitTextLow()).value());
 
     bool    gotMain;
     Address a = getMainEntryPoint(gotMain);
@@ -489,13 +476,14 @@ bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
 
 bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
-    if (!m_image || (m_image->getSectionByAddr(pc) == nullptr)) {
+    BinaryImage *image = m_program->getBinaryFile()->getImage();
+    if (!image || (image->getSectionByAddr(pc) == nullptr)) {
         LOG_ERROR("attempted to decode outside any known section at address %1");
         result.valid = false;
         return false;
     }
 
-    const BinarySection *section          = m_image->getSectionByAddr(pc);
+    const BinarySection *section          = image->getSectionByAddr(pc);
     ptrdiff_t            host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
     return m_decoder->decodeInstruction(pc, host_native_diff, result);
 }
@@ -568,7 +556,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
     Function *proc = m_program->findFunction(dest);
 
     if (proc == nullptr) {
-        auto symb = m_binarySymbols->findSymbolByAddress(dest);
+        auto symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
         if (symb && symb->isImportedFunction()) {
             proc = m_program->createFunction(dest);
@@ -592,7 +580,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
 bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
 {
     if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
-        const BinarySymbol *symbol = m_binarySymbols->findSymbolByAddress(exp->access<Const, 1>()->getAddr());
+        const BinarySymbol *symbol = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(exp->access<Const, 1>()->getAddr());
 
         if (symbol && symbol->isImportedFunction()) {
             return true;
@@ -655,11 +643,12 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
             if (!decodeInstruction(addr, inst)) {
                 QString message;
+                BinaryImage *image = m_program->getBinaryFile()->getImage();
                 message.sprintf("Treating invalid or unrecognized instruction at address %s as NOP: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
-                                m_image->readNative1(addr + 0),
-                                m_image->readNative1(addr + 1),
-                                m_image->readNative1(addr + 2),
-                                m_image->readNative1(addr + 3));
+                                image->readNative1(addr + 0),
+                                image->readNative1(addr + 1),
+                                image->readNative1(addr + 2),
+                                image->readNative1(addr + 3));
                 LOG_WARN(message);
             }
             else if (inst.rtl->empty()) {
@@ -776,7 +765,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             // Add the out edge if it is to a destination within the
                             // procedure
-                            if (jumpDest < m_image->getLimitTextHigh()) {
+                            if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
                                 m_targetQueue.visit(cfg, jumpDest, currentBB);
                                 cfg->addEdge(currentBB, jumpDest);
                             }
@@ -806,7 +795,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             // jump to a library function
                             // replace with a call ret
-                            const BinarySymbol *sym = m_binarySymbols->findSymbolByAddress(jumpDest->access<Const, 1>()->getAddr());
+                            const BinarySymbol *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(jumpDest->access<Const, 1>()->getAddr());
                             assert(sym != nullptr);
                             QString       func  = sym->getName();
                             CallStatement *call = new CallStatement;
@@ -854,9 +843,9 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                                 Address jmptbl = jumpDest->access<Const, 1, 2>()->getAddr();
 
                                 for (unsigned int i = 0; ; i++) {
-                                    Address destAddr = Address(m_image->readNative4(jmptbl + 4 * i));
+                                    Address destAddr = Address(m_program->getBinaryFile()->getImage()->readNative4(jmptbl + 4 * i));
 
-                                    if ((destAddr < m_image->getLimitTextLow()) || (destAddr >= m_image->getLimitTextHigh())) {
+                                    if ((destAddr < m_program->getBinaryFile()->getImage()->getLimitTextLow()) || (destAddr >= m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
                                         break;
                                     }
 
@@ -889,7 +878,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                         }
                         else {
                             // Add the out edge if it is to a destination within the section
-                            if (jumpDest < m_image->getLimitTextHigh()) {
+                            if (jumpDest < m_program->getBinaryFile()->getImage()->getLimitTextHigh()) {
                                 m_targetQueue.visit(cfg, jumpDest, currentBB);
                                 cfg->addEdge(currentBB, jumpDest);
                             }
@@ -912,7 +901,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                         if (refersToImportedFunction(call->getDest())) {
                             // Dynamic linked proc pointers are treated as static.
                             Address  linkedAddr = call->getDest()->access<Const, 1>()->getAddr();
-                            QString  name       = m_binarySymbols->findSymbolByAddress(linkedAddr)->getName();
+                            QString  name       = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(linkedAddr)->getName();
                             Function *function  = proc->getProg()->getOrCreateLibraryProc(name);
                             call->setDestProc(function);
                             call->setIsComputed(false);
@@ -929,7 +918,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                             Address callAddr = call->getFixedDest();
 
                             // It should not be in the PLT either, but getLimitTextHigh() takes this into account
-                            if (Util::inRange(callAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
+                            if (Util::inRange(callAddr, m_program->getBinaryFile()->getImage()->getLimitTextLow(), m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
                                 DecodeResult decoded;
 
                                 // Decode it.
@@ -949,7 +938,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                                             // Yes, it's a library function. Look up it's name.
                                             Address functionAddr = jmpStatement->getDest()->access<Const, 1>()->getAddr();
 
-                                            QString name = m_binarySymbols->findSymbolByAddress(functionAddr)->getName();
+                                            QString name = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(functionAddr)->getName();
                                             // Assign the proc to the call
                                             Function *p = proc->getProg()->getOrCreateLibraryProc(name);
 
@@ -1031,7 +1020,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
                                 Address a = call->getDest()->access<Const, 1>()->getAddr();
-                                name = m_binarySymbols->findSymbolByAddress(a)->getName();
+                                name = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(a)->getName();
                             }
 
                             if (!name.isEmpty() && IFrontEnd::isNoReturnCallDest(name)) {
@@ -1151,11 +1140,11 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
     for (CallStatement *callStmt : callList) {
         Address dest = callStmt->getFixedDest();
-        auto    symb = m_binarySymbols->findSymbolByAddress(dest);
+        auto    symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
         // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
         // linked ones (in the .plt)
-        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_image->getLimitTextHigh())) {
+        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
             // Don't visit the destination of a register call
             Function *np = callStmt->getDestProc();
 

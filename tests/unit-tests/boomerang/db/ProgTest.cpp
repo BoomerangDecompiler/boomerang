@@ -21,7 +21,7 @@
 void ProgTest::testName()
 {
     QString progName = HELLO_PENTIUM;
-    Prog    *prog    = new Prog(progName);
+    Prog    *prog    = new Prog(progName, nullptr);
 
     QCOMPARE(prog->getName(), progName);
 

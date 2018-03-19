@@ -127,7 +127,7 @@ void TypeTest::testCompound()
     IFileLoader *loader = project.getBestLoader(HELLO_WINDOWS);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog("HELLO_WINDOWS");
+    Prog *prog = new Prog("HELLO_WINDOWS", nullptr);
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
 
@@ -171,7 +171,7 @@ void TypeTest::testCompound()
 
 void TypeTest::testDataInterval()
 {
-    Prog            *prog = new Prog("test");
+    Prog            *prog = new Prog("test", nullptr);
     Module          *m    = prog->getOrInsertModule("test");
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x123)));
     DataIntervalMap dim(proc);
@@ -237,7 +237,7 @@ void TypeTest::testDataInterval()
 
 void TypeTest::testDataIntervalOverlaps()
 {
-    Prog            *prog = new Prog("test");
+    Prog            *prog = new Prog("test", nullptr);
     Module          *m    = prog->getOrInsertModule("test");
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000100)));
     DataIntervalMap dim(proc);

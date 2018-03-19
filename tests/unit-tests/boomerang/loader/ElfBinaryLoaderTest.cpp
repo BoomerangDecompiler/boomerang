@@ -56,7 +56,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
     QCOMPARE(loader->getMainEntryPoint(), Address(0x080483F0));
 
     // test the loaded image
-    BinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = project->getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), 29);
@@ -84,7 +84,7 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
     QCOMPARE(loader->getMainEntryPoint(), Address(0x080489A0));
 
     // test the loaded image
-    BinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), 29);
@@ -108,7 +108,7 @@ void ElfBinaryLoaderTest::testPentiumLoad()
     QCOMPARE(loader->getFormat(), LoadFmt::ELF);
     QCOMPARE(loader->getMachine(), Machine::PENTIUM);
 
-    BinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), 33);

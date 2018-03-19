@@ -27,6 +27,7 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -126,16 +127,17 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
             if (!SETTING(decompile)) {
                 const char *sections[] = { "rodata", "data", "data1", nullptr };
 
+                const BinaryImage *image = prog->getBinaryFile()->getImage();
                 for (int j = 0; sections[j]; j++) {
                     QString str = ".";
                     str += sections[j];
-                    BinarySection *section = Boomerang::get()->getImage()->getSectionByName(str);
+                    const BinarySection *section = image->getSectionByName(str);
 
                     if (section) {
-                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], section->getSourceAddr(), section->getSize());
+                        generateDataSectionCode(image, sections[j], section->getSourceAddr(), section->getSize());
                     }
                     else {
-                        generateDataSectionCode(Boomerang::get()->getImage(), sections[j], Address::INVALID, 0);
+                        generateDataSectionCode(image, sections[j], Address::INVALID, 0);
                     }
                 }
 
@@ -598,7 +600,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
 }
 
 
-void CCodeGenerator::generateDataSectionCode(BinaryImage *image, QString section_name, Address section_start, uint32_t size)
+void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString section_name, Address section_start, uint32_t size)
 {
     addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
     addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : static_cast<uint32_t>(-1)));

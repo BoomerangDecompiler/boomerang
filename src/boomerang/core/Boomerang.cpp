@@ -45,8 +45,25 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
-    std::unique_ptr<Prog> prog(new Prog(QFileInfo(fname).baseName()));
-    IFrontEnd *fe   = IFrontEnd::create(fname, prog.get(), this->getOrCreateProject());
+
+    IFileLoader *loader = getOrCreateProject()->getBestLoader(fname);
+
+    if (loader == nullptr) {
+        return nullptr;
+    }
+
+    BinaryFile *file = nullptr;
+    const bool ok = getOrCreateProject()->loadBinaryFile(fname);
+    if (ok) {
+        file = getOrCreateProject()->getLoadedBinaryFile();
+    }
+    else {
+        // load failed
+        return nullptr;
+    }
+
+    std::unique_ptr<Prog> prog(new Prog(QFileInfo(fname).baseName(), file));
+    IFrontEnd *fe = IFrontEnd::instantiate(loader, prog.get());
 
     if (fe == nullptr) {
         LOG_ERROR("Loading '%1' failed.", fname);
@@ -241,18 +258,6 @@ void Boomerang::destroy()
 {
     delete g_boomerang;
     g_boomerang = nullptr;
-}
-
-
-BinaryImage *Boomerang::getImage()
-{
-    return getOrCreateProject()->getImage();
-}
-
-
-BinarySymbolTable *Boomerang::getSymbols()
-{
-    return m_symbols.get();
 }
 
 

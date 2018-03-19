@@ -78,7 +78,7 @@ void StatementTest::testEmpty()
 
 
     // create Prog
-    Prog      *prog = new Prog("testEmpty");
+    Prog      *prog = new Prog("testEmpty", project.getLoadedBinaryFile());
     IFrontEnd *pFE  = new PentiumFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
 
@@ -122,14 +122,12 @@ void StatementTest::testEmpty()
 
 void StatementTest::testFlow()
 {
-    // create Prog
-    Prog *prog = new Prog("testFlow");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
     project.loadBinaryFile(HELLO_PENTIUM);
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
+
+    Prog *prog = new Prog("testFlow", project.getLoadedBinaryFile());
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
 
     // We need a Prog object with a pBF (for getEarlyParamExp())
@@ -204,7 +202,6 @@ void StatementTest::testFlow()
 void StatementTest::testKill()
 {
     // create Prog
-    Prog *prog = new Prog("testKill");
 
     IProject& project = *Boomerang::get()->getOrCreateProject();
 
@@ -212,6 +209,7 @@ void StatementTest::testKill()
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
+    Prog *prog = new Prog("testKill", project.getLoadedBinaryFile());
     IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
 
     // We need a Prog object with a pBF (for getEarlyParamExp())
@@ -285,13 +283,11 @@ void StatementTest::testKill()
 void StatementTest::testUse()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
     project.loadBinaryFile(HELLO_PENTIUM);
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    // create Prog
-    Prog *prog = new Prog("testUse");
+    Prog *prog = new Prog("testUse", project.getLoadedBinaryFile());
     prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
@@ -356,16 +352,12 @@ void StatementTest::testUse()
 
 void StatementTest::testUseOverKill()
 {
-    // create Prog
-    Prog *prog = new Prog("testUseOverKill");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
     project.loadBinaryFile(HELLO_PENTIUM);
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    // We need a Prog object with a pBF (for getEarlyParamExp())
+    Prog *prog = new Prog("testUseOverKill", project.getLoadedBinaryFile());
     prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
@@ -437,16 +429,13 @@ void StatementTest::testUseOverKill()
 
 void StatementTest::testUseOverBB()
 {
-    // create Prog
-    Prog *prog = new Prog("testUseOverBB");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
     project.loadBinaryFile(HELLO_PENTIUM);
-    IFileLoader *pBF = project.getBestLoader(HELLO_PENTIUM);
-    QVERIFY(pBF != nullptr);
+    IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
+    QVERIFY(loader != nullptr);
 
-    prog->setFrontEnd(new PentiumFrontEnd(pBF, prog));
+    Prog *prog = new Prog("testUseOverBB", project.getLoadedBinaryFile());
+    prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
     // create UserProc
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
@@ -519,15 +508,12 @@ void StatementTest::testUseOverBB()
 
 void StatementTest::testUseKill()
 {
-    // create Prog
-    Prog *prog = new Prog("testUseKill");
-
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
     project.loadBinaryFile(HELLO_PENTIUM);
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
+    Prog *prog = new Prog("testUseKill", project.getLoadedBinaryFile());
     prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
@@ -600,9 +586,7 @@ void StatementTest::testEndlessLoop()
     IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
     QVERIFY(loader != nullptr);
 
-
-    // create Prog
-    Prog *prog = new Prog("testEndlessLoop");
+    Prog *prog = new Prog("testEndlessLoop", project.getLoadedBinaryFile());
     prog->setFrontEnd(new PentiumFrontEnd(loader, prog));
 
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
@@ -797,16 +781,16 @@ void StatementTest::testWildLocationSet()
 
 void StatementTest::testRecursion()
 {
-    QSKIP("Diabled.");
+    QSKIP("Disabled.");
+
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(HELLO_PENTIUM);
-    IFileLoader *pBF = project.getBestLoader(HELLO_PENTIUM);
-    QVERIFY(pBF != nullptr);
+    IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
+    QVERIFY(loader != nullptr);
 
-    // create Prog
-    Prog *prog = new Prog("testRecursion");
+    Prog *prog = new Prog("testRecursion", project.getLoadedBinaryFile());
 
-    IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
+    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
     prog->setFrontEnd(pFE);
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
@@ -1244,7 +1228,8 @@ void StatementTest::testSubscriptVars()
     ca.setDest(Location::memOf(Location::regOf(26)));
     StatementList argl;
 
-    Prog   *prog = new Prog("testSubscriptVars");
+    BinaryFile bf(QByteArray{});
+    Prog   *prog = new Prog("testSubscriptVars", &bf);
     Module *mod  = prog->getModuleForSymbol("test");
 
     argl.append(new Assign(Location::memOf(Location::regOf(27)), Const::get(1)));
@@ -1344,7 +1329,7 @@ void StatementTest::testBypass()
     IFileLoader *pBF = project.getBestLoader(GLOBAL1_PENTIUM);
     QVERIFY(pBF != nullptr);
 
-    Prog *prog = new Prog("testBypass");
+    Prog *prog = new Prog("testBypass", nullptr);
     IFrontEnd *pFE = new PentiumFrontEnd(pBF, prog);
 
     Type::clearNamedTypes();
