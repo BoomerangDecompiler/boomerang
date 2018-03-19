@@ -129,19 +129,6 @@ BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString& nam
 }
 
 
-BinarySection::BinarySection(const BinarySection& other)
-    : BinarySection(other.m_nativeAddr, other.m_size, other.m_sectionName)
-{
-    *m_impl            = *other.m_impl;
-    m_hostAddr         = other.m_hostAddr;
-    m_sectionEntrySize = other.m_sectionEntrySize;
-    m_code             = other.m_code;
-    m_data             = other.m_data;
-    m_bss              = other.m_bss;
-    m_readOnly         = other.m_readOnly;
-}
-
-
 BinarySection::~BinarySection()
 {
     delete m_impl;

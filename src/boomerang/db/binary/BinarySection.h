@@ -24,7 +24,7 @@ class BinarySection
 {
 public:
     BinarySection(Address sourceAddr, uint64 size, const QString& name = "");
-    BinarySection(const BinarySection& other);
+    BinarySection(const BinarySection& other) = delete;
     BinarySection(BinarySection&& other) = default;
 
     virtual ~BinarySection();
