@@ -13,6 +13,7 @@
 BinarySymbol::BinarySymbol(Address location, const QString& name)
     : m_name(name)
     , m_address(location)
+    , m_size(0)
 {
 }
 

@@ -13,6 +13,7 @@ set(TESTS
     BasicBlockTest
     BinaryImageTest
     BinarySectionTest
+    BinarySymbolTableTest
     CFGTest
     DfaTest
     ExpTest

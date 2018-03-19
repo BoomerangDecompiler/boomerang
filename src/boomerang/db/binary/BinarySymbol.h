@@ -27,8 +27,8 @@ public:
 
 public:
     const QString& getName() const { return m_name; }
-    size_t getSize() const { return m_size; }
-    void setSize(size_t v) { m_size = v; }
+    int getSize() const { return m_size; }
+    void setSize(int v) { m_size = v; }
     Address getLocation() const { return m_address; }
 
     void setAttribute(const QString& key, const QVariant& value) const { m_attributes[key] = value; }
@@ -41,8 +41,8 @@ public:
 
 private:
     QString              m_name;
-    Address              m_address;
-    size_t               m_size;
+    Address              m_address = Address::INVALID;
+    int                  m_size = 0;
     SharedType           m_type;
     /// it's mutable since no changes in attribute map will influence the layout of symbols in SymTable
     mutable QVariantMap  m_attributes;

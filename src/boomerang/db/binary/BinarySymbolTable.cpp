@@ -36,7 +36,9 @@ void BinarySymbolTable::clear()
 
 BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString& name, bool local)
 {
-    assert(m_addrIndex.find(addr) == m_addrIndex.end());
+    if (m_addrIndex.find(addr) != m_addrIndex.end()) {
+        return nullptr; // symbol already exists
+    }
 
     // If the symbol already exists, redirect the new symbol to the old one.
     std::map<QString, std::shared_ptr<BinarySymbol>>::iterator it = m_nameIndex.find(name);
@@ -55,6 +57,7 @@ BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString& name,
         m_nameIndex[name] = sym;
     }
 
+    m_symbolList.push_back(sym);
     return sym.get();
 }
 

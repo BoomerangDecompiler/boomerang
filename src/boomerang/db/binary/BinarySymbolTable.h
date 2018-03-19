@@ -59,7 +59,7 @@ public:
     const_reverse_iterator rend()   const { return m_symbolList.rend(); }
 
 public:
-    size_t size() const { return m_symbolList.size(); }
+    int size() const { return m_symbolList.size(); }
     bool empty()  const { return m_symbolList.empty(); }
     void clear();
 
