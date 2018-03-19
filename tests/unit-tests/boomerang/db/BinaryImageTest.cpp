@@ -16,8 +16,6 @@
 
 #include <QByteArray>
 
-char sectionData[8] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
-
 
 void BinaryImageTest::initTestCase()
 {
@@ -65,6 +63,16 @@ void BinaryImageTest::testCreateSection()
 
     BinarySection *invalid = img.createSection("invalid", Address(0x2000), Address(0x1000));
     QVERIFY(invalid == nullptr);
+
+    // do not create sections with same name
+    BinarySection *sect3 = img.createSection("sect1", Address(0x4000), Address(0x5000));
+    QVERIFY(sect3 == nullptr);
+
+    // section of size 0 -> section of size 1
+    sect3 = img.createSection("sect3", Address(0x4000), Address(0x4000));
+    QCOMPARE(sect3->getSourceAddr(), Address(0x4000));
+    QCOMPARE(sect3->getSize(), 1);
+    QCOMPARE(sect3->getName(), QString("sect3"));
 }
 
 
@@ -134,11 +142,15 @@ void BinaryImageTest::testUpdateTextLimits()
 
 void BinaryImageTest::testRead()
 {
+    char sectionData[8] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
+
     BinaryImage img;
     QCOMPARE(img.readNative1(Address(0x1000)), static_cast<Byte>(0xFF));
     QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x0000));
     QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x00000000));
     QCOMPARE(img.readNative8(Address(0x1000)), static_cast<QWord>(0x0000000000000000));
+    QCOMPARE(img.readNativeFloat4(Address(0x1000)), 0.0f);
+    QCOMPARE(img.readNativeFloat8(Address(0x1000)), 0.0);
 
     // section not mapped to data. Verify no AV occurs.
     BinarySection *sect1 = img.createSection("sect1", Address(0x1000), Address(0x1008));
@@ -146,6 +158,8 @@ void BinaryImageTest::testRead()
     QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x0000));
     QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x00000000));
     QCOMPARE(img.readNative8(Address(0x1000)), static_cast<QWord>(0x0000000000000000));
+    QCOMPARE(img.readNativeFloat4(Address(0x1000)), 0.0f);
+    QCOMPARE(img.readNativeFloat8(Address(0x1000)), 0.0);
 
     // section mapped to data. Verify correct read
     sect1->setHostAddr(HostAddress(sectionData));
@@ -153,16 +167,25 @@ void BinaryImageTest::testRead()
     QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x1100));
     QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x33221100));
     QCOMPARE(img.readNative8(Address(0x1000)), static_cast<QWord>(0x7766554433221100));
+    float floatResult = img.readNativeFloat4(Address(0x1000));
+    QVERIFY(memcmp(&floatResult, sectionData, 4) == 0);
+    double doubleResult = img.readNativeFloat8(Address(0x1000));
+    QVERIFY(memcmp(&doubleResult, sectionData, 8) == 0);
 
     // read crosses section boundary (makes no sense for readNative1)
     QCOMPARE(img.readNative2(Address(0x1007)), static_cast<SWord>(0x0000));
     QCOMPARE(img.readNative4(Address(0x1005)), static_cast<DWord>(0x00000000));
     QCOMPARE(img.readNative8(Address(0x1001)), static_cast<QWord>(0x0000000000000000));
+    QCOMPARE(img.readNativeFloat4(Address(0x1005)), 0.0f);
+    QCOMPARE(img.readNativeFloat8(Address(0x1001)), 0.0);
+
 }
 
 
 void BinaryImageTest::testWrite()
 {
+    char sectionData[8] = { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77 };
+
     BinaryImage img;
     QVERIFY(!img.writeNative4(Address(0x1000), static_cast<DWord>(0x00112233)));
 

@@ -42,10 +42,6 @@ Byte BinaryImage::readNative1(Address addr) const
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr);
         return 0xFF;
     }
-    else if (addr + 1 > si->getSourceAddr() + si->getSize()) {
-        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
-        return 0xFF;
-    }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return *reinterpret_cast<Byte *>(host.value());
