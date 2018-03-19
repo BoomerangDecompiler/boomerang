@@ -39,7 +39,7 @@ public:
     bool isReadOnly()         const { return m_readOnly; }
     bool isCode()             const { return m_code; }
     bool isData()             const { return m_data; }
-    uint32_t getSize()        const { return m_size; }
+    int getSize()             const { return m_size; }
     QString getName()         const { return m_sectionName; }
     uint32_t getEntrySize()   const { return m_sectionEntrySize; }
 

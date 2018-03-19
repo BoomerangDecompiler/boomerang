@@ -34,12 +34,16 @@ void BinaryImage::reset()
 }
 
 
-Byte BinaryImage::readNative1(Address addr)
+Byte BinaryImage::readNative1(Address addr) const
 {
     const BinarySection *si = getSectionByAddr(addr);
 
-    if (si == nullptr) {
-        LOG_WARN("Target Memory access in unmapped section at address %1", addr.toString());
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr);
+        return 0xFF;
+    }
+    else if (addr + 1 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
         return 0xFF;
     }
 
@@ -48,25 +52,35 @@ Byte BinaryImage::readNative1(Address addr)
 }
 
 
-SWord BinaryImage::readNative2(Address nat)
+SWord BinaryImage::readNative2(Address addr) const
 {
-    const BinarySection *si = getSectionByAddr(nat);
+    const BinarySection *si = getSectionByAddr(addr);
 
-    if (si == nullptr) {
-        return 0;
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
+        return 0x0000;
+    }
+    else if (addr + 2 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
+        return 0x0000;
     }
 
-    HostAddress host = si->getHostAddr() - si->getSourceAddr() + nat;
+    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return Util::readWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
 }
 
 
-DWord BinaryImage::readNative4(Address addr)
+DWord BinaryImage::readNative4(Address addr) const
 {
     const BinarySection *si = getSectionByAddr(addr);
 
-    if (si == nullptr) {
-        return 0;
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
+        return 0x00000000;
+    }
+    else if (addr + 4 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
+        return 0x00000000;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
@@ -74,12 +88,17 @@ DWord BinaryImage::readNative4(Address addr)
 }
 
 
-QWord BinaryImage::readNative8(Address addr)
+QWord BinaryImage::readNative8(Address addr) const
 {
     const BinarySection *si = getSectionByAddr(addr);
 
-    if (si == nullptr) {
-        return 0;
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
+        return 0x0000000000000000;
+    }
+    else if (addr + 8 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
+        return 0x0000000000000000;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
@@ -87,46 +106,67 @@ QWord BinaryImage::readNative8(Address addr)
 }
 
 
-float BinaryImage::readNativeFloat4(Address nat)
+float BinaryImage::readNativeFloat4(Address addr) const
 {
-    DWord raw = readNative4(nat);
+    const BinarySection *si = getSectionByAddr(addr);
+
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
+        return 0.0f;
+    }
+    else if (addr + 4 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
+        return 0.0f;
+    }
+
+    DWord raw = readNative4(addr);
 
     return *reinterpret_cast<float *>(&raw); // Note: cast, not convert
 }
 
 
-double BinaryImage::readNativeFloat8(Address nat)
+double BinaryImage::readNativeFloat8(Address addr) const
 {
-    const BinarySection *si = getSectionByAddr(nat);
+    const BinarySection *si = getSectionByAddr(addr);
 
-    if (si == nullptr) {
-        return 0;
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
+        return 0.0;
+    }
+    else if (addr + 8 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
+        return 0.0;
     }
 
-    QWord raw = readNative8(nat);
+    QWord raw = readNative8(addr);
     return *reinterpret_cast<double *>(&raw);
 }
 
 
-void BinaryImage::writeNative4(Address addr, uint32_t value)
+bool BinaryImage::writeNative4(Address addr, uint32_t value)
 {
     const BinarySection *si = getSectionByAddr(addr);
 
-    if (si == nullptr) {
-        LOG_WARN("Ignoring write at address %1: Address is outside any known section");
-        return;
+    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+        LOG_WARN("Ignoring write at address %1: Address is outside any writable section");
+        return false;
+    }
+    else if (addr + 4 > si->getSourceAddr() + si->getSize()) {
+        LOG_WARN("Invalid write at address %1: Write extends past section boundary", addr);
+        return 0.0f;
     }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
 
     Util::writeDWord(reinterpret_cast<void *>(host.value()), value, si->getEndian());
+    return true;
 }
 
 
 void BinaryImage::updateTextLimits()
 {
     m_limitTextLow  = Address::INVALID;
-    m_limitTextHigh = Address::ZERO;
+    m_limitTextHigh = Address::INVALID;
     m_textDelta     = 0;
 
     for (BinarySection *section : m_sections) {
@@ -142,13 +182,13 @@ void BinaryImage::updateTextLimits()
             continue;
         }
 
-        if (section->getSourceAddr() < m_limitTextLow) {
+        if (m_limitTextLow == Address::INVALID || section->getSourceAddr() < m_limitTextLow) {
             m_limitTextLow = section->getSourceAddr();
         }
 
         const Address highAddress = section->getSourceAddr() + section->getSize();
 
-        if (highAddress > m_limitTextHigh) {
+        if (m_limitTextHigh == Address::INVALID || highAddress > m_limitTextHigh) {
             m_limitTextHigh = highAddress;
         }
 
@@ -158,50 +198,51 @@ void BinaryImage::updateTextLimits()
             m_textDelta = hostNativeDiff;
         }
         else if (m_textDelta != hostNativeDiff) {
-            LOG_WARN("TextDelta different for section %s (ignoring).\n", qPrintable(section->getName()));
+            LOG_WARN("TextDelta different for section %1 (ignoring).", section->getName());
         }
     }
 }
 
 
-bool BinaryImage::isReadOnly(Address addr)
+bool BinaryImage::isReadOnly(Address addr) const
 {
-    const BinarySection *p = static_cast<const BinarySection *>(getSectionByAddr(addr));
+    const BinarySection *section = getSectionByAddr(addr);
 
-    if (!p) {
+    if (!section) {
         return false;
     }
 
-    if (p->isReadOnly()) {
+    if (section->isReadOnly()) {
         return true;
     }
 
-    QVariant v = p->attributeInRange("ReadOnly", addr, addr + 1);
+    QVariant v = section->attributeInRange("ReadOnly", addr, addr + 1);
     return !v.isNull();
 }
 
 
 Address BinaryImage::getLimitTextLow() const
 {
-    if (!hasSections()) {
-        return Address::INVALID;
-    }
-    return m_sectionMap.begin()->first.lower();
+    return m_limitTextLow;
 }
 
 
 Address BinaryImage::getLimitTextHigh() const
 {
-    if (!hasSections()) {
-        return Address::INVALID;
-    }
-    return m_sectionMap.rbegin()->first.upper();
+    return m_limitTextHigh;
 }
 
 
 BinarySection *BinaryImage::createSection(const QString& name, Address from, Address to)
 {
-    assert(from <= to);
+    if (from == Address::INVALID || to == Address::INVALID || to < from) {
+        LOG_ERROR("Could not create section '%1' with invalid extent [%2, %3)", name, from, to);
+        return nullptr;
+    }
+    else if (getSectionByName(name) != nullptr) {
+        LOG_ERROR("Could not create section '%1': A section with the same name already exists", name);
+        return nullptr;
+    }
 
     if (from == to) {
         to += 1; // open interval, so -> [from,to+1) is right
@@ -241,14 +282,13 @@ BinarySection *BinaryImage::createSection(const QString& name, Interval<Address>
 
 BinarySection *BinaryImage::getSectionByIndex(int idx)
 {
-    assert(Util::inRange(idx, 0, getNumSections()));
-    return m_sections[idx];
+    return Util::inRange(idx, 0, getNumSections()) ? m_sections[idx] : nullptr;
 }
+
 
 const BinarySection *BinaryImage::getSectionByIndex(int idx) const
 {
-    assert(Util::inRange(idx, 0, getNumSections()));
-    return m_sections[idx];
+    return Util::inRange(idx, 0, getNumSections()) ? m_sections[idx] : nullptr;
 }
 
 

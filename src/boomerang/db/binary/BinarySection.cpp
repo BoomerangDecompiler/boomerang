@@ -116,7 +116,7 @@ BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString& nam
     : m_impl(new BinarySectionImpl)
     , m_sectionName(name)
     , m_nativeAddr(sourceAddr)
-    , m_hostAddr(HostAddress::ZERO)
+    , m_hostAddr(HostAddress::INVALID)
     , m_size(size)
     , m_sectionEntrySize(0)
     , m_code(false)

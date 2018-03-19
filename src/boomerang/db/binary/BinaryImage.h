@@ -82,15 +82,16 @@ public:
     ptrdiff_t getTextDelta() const { return m_textDelta; }
 
 
-    Byte readNative1(Address addr);
-    SWord readNative2(Address addr);
-    DWord readNative4(Address addr);
-    QWord readNative8(Address addr);
-    float readNativeFloat4(Address addr);
-    double readNativeFloat8(Address addr);
-    void writeNative4(Address addr, DWord value);
+    Byte readNative1(Address addr) const;
+    SWord readNative2(Address addr) const;
+    DWord readNative4(Address addr) const;
+    QWord readNative8(Address addr) const;
+    float readNativeFloat4(Address addr) const;
+    double readNativeFloat8(Address addr) const;
 
-    bool isReadOnly(Address addr);
+    bool writeNative4(Address addr, DWord value);
+
+    bool isReadOnly(Address addr) const;
 
 private:
     Address m_limitTextLow;
