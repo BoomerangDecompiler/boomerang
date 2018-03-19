@@ -12,6 +12,7 @@ include(boomerang-utils)
 set(TESTS
     BasicBlockTest
     BinaryImageTest
+    BinarySectionTest
     CFGTest
     DfaTest
     ExpTest

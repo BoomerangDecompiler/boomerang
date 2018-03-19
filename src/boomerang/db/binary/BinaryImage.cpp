@@ -212,8 +212,7 @@ bool BinaryImage::isReadOnly(Address addr) const
         return true;
     }
 
-    QVariant v = section->attributeInRange("ReadOnly", addr, addr + 1);
-    return !v.isNull();
+    return section->isAttributeInRange("ReadOnly", addr, addr+1);
 }
 
 

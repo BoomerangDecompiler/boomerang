@@ -52,7 +52,9 @@ public:
 
     bool isAddressBss(Address a) const
     {
-        assert(!m_hasDefinedValue.isEmpty());
+        if (m_hasDefinedValue.isEmpty()) {
+            return true;
+        }
         return !m_hasDefinedValue.isContained(a);
     }
 
@@ -148,13 +150,13 @@ BinarySection::~BinarySection()
 
 bool BinarySection::isAddressBss(Address a) const
 {
-    assert(a >= m_nativeAddr && a < m_nativeAddr + m_size);
-
-    if (m_bss) {
+    if (!Util::inRange(a, m_nativeAddr, m_nativeAddr + m_size)) {
+        return false;
+    }
+    else if (m_bss) {
         return true;
     }
-
-    if (m_readOnly) {
+    else if (m_readOnly) {
         return false;
     }
 
@@ -206,7 +208,7 @@ QVariantMap BinarySection::getAttributesForRange(Address from, Address to)
 }
 
 
-QVariant BinarySection::attributeInRange(const QString& attrib, Address from, Address to) const
+bool BinarySection::isAttributeInRange(const QString& attrib, Address from, Address to) const
 {
-    return m_impl->attributeInRange(attrib, from, to);
+    return !m_impl->attributeInRange(attrib, from, to).isNull();
 }

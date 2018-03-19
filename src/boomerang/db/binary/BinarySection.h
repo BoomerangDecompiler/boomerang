@@ -52,19 +52,21 @@ public:
     void setEntrySize(uint32_t v)   { m_sectionEntrySize = v; }
     void setEndian(uint8_t v)       { m_endianness = v; }
 
+    void resize(uint32_t newSize);
+
     /// Windows's PE file sections can contain any combination of code, data and bss.
     /// As such, it can't be correctly described by BinarySection, why we need to override
     /// the behaviour of (at least) the question "Is this address in BSS".
     bool isAddressBss(Address addr) const;
+
+
     bool anyDefinedValues() const;
-
-    void resize(uint32_t newSize);
-
     void clearDefinedArea();
     void addDefinedArea(Address from, Address to);
+
     void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to);
     QVariantMap getAttributesForRange(Address from, Address to);
-    QVariant attributeInRange(const QString& attrib, Address from, Address to) const;
+    bool isAttributeInRange(const QString& attrib, Address from, Address to) const;
 
 private:
     class BinarySectionImpl *m_impl;

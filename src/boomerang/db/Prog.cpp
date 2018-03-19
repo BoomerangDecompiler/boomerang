@@ -1641,12 +1641,7 @@ bool Prog::isStringConstant(Address a) const
 {
     const BinarySection *si = static_cast<const BinarySection *>(m_image->getSectionByAddr(a));
 
-    if (!si) {
-        return false;
-    }
-
-    QVariant qv = si->attributeInRange("StringsSection", a, a + 1);
-    return !qv.isNull();
+    return si && si->isAttributeInRange("StringsSection", a, a + 1);
 }
 
 
