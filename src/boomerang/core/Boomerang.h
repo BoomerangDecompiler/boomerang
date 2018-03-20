@@ -32,8 +32,6 @@ class Function;
 class UserProc;
 class ICodeGenerator;
 class ObjcModule;
-class BinaryImage;
-class BinarySymbolTable;
 class Project;
 
 
@@ -145,7 +143,6 @@ public:
 public:
     std::unique_ptr<Settings> m_settings;
     std::unique_ptr<IProject> m_currentProject;
-    std::unique_ptr<BinarySymbolTable> m_symbols;
     std::unique_ptr<ICodeGenerator> m_codeGenerator;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.

@@ -10,8 +10,6 @@
 #pragma once
 
 
-class BinaryImage;
-class BinarySymbolTable;
 class IProject;
 
 

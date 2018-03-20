@@ -30,7 +30,6 @@ static Boomerang *g_boomerang;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_symbols(new BinarySymbolTable)
     , m_codeGenerator(new CCodeGenerator)
 {
 }
