@@ -920,7 +920,7 @@ void ElfBinaryLoader::applyRelocations()
                                 const char *symbolName = strSection + nameOffset;
 
                                 // this is too slow, I'm just going to assume it is 0
-                                // S = GetAddressByName(pName);
+                                // S = GetAddressByName(symbolName);
                                 // if (S == (e_type == E_REL ? 0x8000000 : 0)) {
                                 S = Address((static_cast<int>(nextFakeLibAddr--)) & Address::getSourceMask()); // Allocate a new fake address
                                 BinarySymbol *newFunction = m_symbols->createSymbol(S, symbolName);

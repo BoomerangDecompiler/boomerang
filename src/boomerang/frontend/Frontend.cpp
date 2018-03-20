@@ -849,7 +849,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                                         break;
                                     }
 
-                                    LOG_MSG("  guessed uDest %1", destAddr);
+                                    LOG_MSG("  guessed jump destination '%1'", destAddr);
 
                                     m_targetQueue.visit(cfg, destAddr, currentBB);
                                     cfg->addEdge(currentBB, destAddr);
@@ -1149,7 +1149,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
             Function *np = callStmt->getDestProc();
 
             if ((np == nullptr) && (dest != Address::INVALID)) {
-                // np = newProc(pProc->getProg(), dest);
+                // np = newProc(proc->getProg(), dest);
                 np = proc->getProg()->createFunction(dest);
             }
 

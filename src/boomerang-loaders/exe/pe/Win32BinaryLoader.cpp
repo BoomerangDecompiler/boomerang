@@ -77,11 +77,11 @@ struct SectionParam
 Win32BinaryLoader::Win32BinaryLoader()
     : m_image(nullptr)
     , m_imageSize(0)
-    , m_pHeader(nullptr)
-    , m_pPEHeader(nullptr)
+    , m_header(nullptr)
+    , m_peHeader(nullptr)
     , m_numRelocs(0)
     , m_hasDebugInfo(false)
-    , m_mingw_main(false)
+    , m_mingwMain(false)
     , m_binaryImage(nullptr)
     , m_symbols(nullptr)
 {
@@ -110,7 +110,7 @@ void Win32BinaryLoader::close()
 
 Address Win32BinaryLoader::getEntryPoint()
 {
-    return Address(LMMH(m_pPEHeader->Imagebase) + LMMH(m_pPEHeader->EntrypointRVA));
+    return Address(LMMH(m_peHeader->Imagebase) + LMMH(m_peHeader->EntrypointRVA));
 }
 
 
@@ -139,8 +139,8 @@ Address Win32BinaryLoader::getMainEntryPoint()
     // This pattern should work for "old style" and "new style" PE executables, as well as console mode PE files.
 
     // Start at program entry point
-    const Address imageBase = Address(LMMH(m_pPEHeader->Imagebase));
-    unsigned      p         = LMMH(m_pPEHeader->EntrypointRVA);
+    const Address imageBase = Address(LMMH(m_peHeader->Imagebase));
+    unsigned      p         = LMMH(m_peHeader->EntrypointRVA);
     Address       addr;
     unsigned      lastOrdCall = 0;
     int           gap;              // Number of instructions from the last ordinary call
@@ -162,9 +162,9 @@ Address Win32BinaryLoader::getMainEntryPoint()
     const unsigned int textSize    = section->getSize();
     const unsigned int searchLimit = p + std::min(MAIN_RANGE, textSize);
 
-    if (m_pPEHeader->Subsystem == 1) {
+    if (m_peHeader->Subsystem == 1) {
         // native -> _start == main
-        return imageBase + LMMH(m_pPEHeader->EntrypointRVA);
+        return imageBase + LMMH(m_peHeader->EntrypointRVA);
     }
 
     gap = 0xF0000000; // Large positive number (in case no ordinary calls)
@@ -296,7 +296,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
     }
 
     // VS.NET release console mode pattern
-    p = LMMH(m_pPEHeader->EntrypointRVA);
+    p = LMMH(m_peHeader->EntrypointRVA);
 
     if ((*reinterpret_cast<Byte *>(p + m_image + 0x20) == 0xff) && (*reinterpret_cast<Byte *>(p + m_image + 0x21) == 0x15)) {
         Address desti    = Address(LMMH(*(p + m_image + 0x22)));
@@ -310,7 +310,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
                     if (*reinterpret_cast<Byte *>(p + m_image + 0x16e) == 0xe8) {
                         Address dest = Address(p + 0x16e + 5 + LMMH(*(p + m_image + 0x16f)));
-                        return dest + LMMH(m_pPEHeader->Imagebase);
+                        return dest + LMMH(m_peHeader->Imagebase);
                     }
                 }
             }
@@ -320,7 +320,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
     // For VS.NET, need an old favourite: find a call with three pushes in the first 100 instuctions
     int count  = 100;
     int pushes = 0;
-    p = LMMH(m_pPEHeader->EntrypointRVA);
+    p = LMMH(m_peHeader->EntrypointRVA);
 
     while (count > 0) {
         count--;
@@ -342,7 +342,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                     dest += off + 5;
                 }
 
-                return dest + LMMH(m_pPEHeader->Imagebase);
+                return dest + LMMH(m_peHeader->Imagebase);
             }
             else {
                 pushes = 0;                    // Assume pushes don't accumulate over calls
@@ -380,7 +380,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
     }
 
     // mingw pattern
-    p = LMMH(m_pPEHeader->EntrypointRVA);
+    p = LMMH(m_peHeader->EntrypointRVA);
     bool    in_mingw_CRTStartup = false;
     Address lastcall            = Address::ZERO;
     Address lastlastcall        = Address::ZERO;
@@ -406,8 +406,8 @@ Address Win32BinaryLoader::getMainEntryPoint()
                     auto dest_sym = m_symbols->findSymbolByAddress(desti);
 
                     if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
-                        m_mingw_main = true;
-                        return lastlastcall + 5 + LMMH(*(lastlastcall.value() + m_image + 1)) + LMMH(m_pPEHeader->Imagebase);
+                        m_mingwMain = true;
+                        return lastlastcall + 5 + LMMH(*(lastlastcall.value() + m_image + 1)) + LMMH(m_peHeader->Imagebase);
                     }
                 }
 
@@ -436,7 +436,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
     }
 
     // Microsoft VisualC 2-6/net runtime
-    p = LMMH(m_pPEHeader->EntrypointRVA);
+    p = LMMH(m_peHeader->EntrypointRVA);
     bool gotGMHA = false; // has GetModuleHandleA been found?
 
     while (p < textSize) {
@@ -456,8 +456,8 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if ((op1 == 0xE8) && gotGMHA) { // CALL opcode
             Address dest = Address(p + 5 + LMMH(*(m_image + p + 1)));
-            m_symbols->createSymbol(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
-            return dest + LMMH(m_pPEHeader->Imagebase);
+            m_symbols->createSymbol(dest + LMMH(m_peHeader->Imagebase), "WinMain");
+            return dest + LMMH(m_peHeader->Imagebase);
         }
 
         if (op1 == 0xc3) { // ret ends search
@@ -488,15 +488,15 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE /*SourceFile*/, PVOID UserConte
 
 void Win32BinaryLoader::processIAT()
 {
-    PEImportDtor *id = reinterpret_cast<PEImportDtor *>((HostAddress(m_image) + LMMH(m_pPEHeader->ImportTableRVA)).value());
+    PEImportDtor *id = reinterpret_cast<PEImportDtor *>((HostAddress(m_image) + LMMH(m_peHeader->ImportTableRVA)).value());
 
-    if (m_pPEHeader->ImportTableRVA) { // If any import table entry exists
+    if (m_peHeader->ImportTableRVA) { // If any import table entry exists
         while (id->name != 0) {
             char     *dllName = LMMH(id->name) + m_image;
             unsigned thunk    = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
             unsigned *iat     = reinterpret_cast<unsigned *>(m_image + LMMH(thunk));
             unsigned iatEntry = LMMH2(iat);
-            Address  paddr    = Address(LMMH(id->firstThunk) + LMMH(m_pPEHeader->Imagebase)); //
+            Address  paddr    = Address(LMMH(id->firstThunk) + LMMH(m_peHeader->Imagebase)); //
 
             while (iatEntry) {
                 if (iatEntry >> 31) {
@@ -514,7 +514,7 @@ void Win32BinaryLoader::processIAT()
                     BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
                     sym->setAttribute("Imported", true);
                     sym->setAttribute("Function", true);
-                    Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_image).value() + LMMH(m_pPEHeader->Imagebase));
+                    Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_image).value() + LMMH(m_peHeader->Imagebase));
 
                     if (paddr != old_loc) { // add both possibilities
                         BinarySymbol *symbol = m_symbols->createSymbol(old_loc, QString("old_") + name);
@@ -554,7 +554,7 @@ void Win32BinaryLoader::readDebugData(QString exename)
     dwBaseAddr = dbghelp::SymLoadModule64(currProcess, nullptr, qPrintable(exename), nullptr, dwBaseAddr, 0);
 
     if (dwBaseAddr != 0) {
-        assert(dwBaseAddr == m_pPEHeader->Imagebase);
+        assert(dwBaseAddr == m_peHeader->Imagebase);
         bool found = false;
         dbghelp::SymEnumSourceFiles(currProcess, dwBaseAddr, 0, lookforsource, &found);
         m_hasDebugInfo = found;
@@ -605,25 +605,25 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     }
 
     memcpy(m_image, data, LMMH(tmphdr->HeaderSize));
-    m_pHeader = reinterpret_cast<Header *>(m_image);
+    m_header = reinterpret_cast<Header *>(m_image);
 
-    if ((m_pHeader->sigLo != 'M') || (m_pHeader->sigHi != 'Z')) {
+    if ((m_header->sigLo != 'M') || (m_header->sigHi != 'Z')) {
         LOG_ERROR("Error loading file - bad magic");
         return false;
     }
 
-    m_pPEHeader = reinterpret_cast<PEHeader *>(m_image + peoff);
+    m_peHeader = reinterpret_cast<PEHeader *>(m_image + peoff);
 
-    if ((m_pPEHeader->sigLo != 'P') || (m_pPEHeader->sigHi != 'E')) {
+    if ((m_peHeader->sigLo != 'P') || (m_peHeader->sigHi != 'E')) {
         LOG_ERROR("Error loading file: bad PE magic");
         return false;
     }
 
-    const PEObject *o = reinterpret_cast<PEObject *>(reinterpret_cast<char *>(m_pPEHeader) + LH(&m_pPEHeader->NtHdrSize) + 24);
+    const PEObject *o = reinterpret_cast<PEObject *>(reinterpret_cast<char *>(m_peHeader) + LH(&m_peHeader->NtHdrSize) + 24);
 
     std::vector<SectionParam> params;
 
-    const unsigned int numSections = LH(&m_pPEHeader->numObjects);
+    const unsigned int numSections = LH(&m_peHeader->numObjects);
 
     for (unsigned int i = 0; i < numSections; i++, o++) {
         SectionParam sect;
@@ -632,7 +632,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
         memcpy(m_image + LMMH(o->RVA), data + LMMH(o->PhysicalOffset), LMMH(o->PhysicalSize));
 
         sect.Name         = QByteArray(o->ObjectName, 8);
-        sect.From         = Address(LMMH(m_pPEHeader->Imagebase)) + Address(LMMH(o->RVA));
+        sect.From         = Address(LMMH(m_peHeader->Imagebase)) + Address(LMMH(o->RVA));
         sect.ImageAddress = HostAddress(m_image) + LMMH(o->RVA);
         sect.Size         = LMMH(o->VirtualSize);
         sect.PhysSize     = LMMH(o->PhysicalSize);
@@ -669,7 +669,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     // Was hoping that _main or main would turn up here for Borland console mode programs. No such luck.
     // I think IDA Pro must find it by a combination of FLIRT and some pattern matching
     // PEExportDtor* eid = (PEExportDtor*)
-    //    (LMMH(m_pPEHeader->ExportTableRVA) + base);
+    //    (LMMH(m_peHeader->ExportTableRVA) + base);
 
     // Give the entry point a symbol
     Address entry = getMainEntryPoint();
@@ -998,7 +998,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(Address addr) const
 
 bool Win32BinaryLoader::isMinGWsAllocStack(Address addr) const
 {
-    if (m_mingw_main) {
+    if (m_mingwMain) {
         const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
         if (section) {
@@ -1023,7 +1023,7 @@ bool Win32BinaryLoader::isMinGWsAllocStack(Address addr) const
 
 bool Win32BinaryLoader::isMinGWsFrameInit(Address addr) const
 {
-    if (!m_mingw_main) {
+    if (!m_mingwMain) {
         return false;
     }
 
@@ -1056,7 +1056,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address addr) const
 
 bool Win32BinaryLoader::isMinGWsFrameEnd(Address addr) const
 {
-    if (!m_mingw_main) {
+    if (!m_mingwMain) {
         return false;
     }
 
@@ -1084,7 +1084,7 @@ bool Win32BinaryLoader::isMinGWsFrameEnd(Address addr) const
 
 bool Win32BinaryLoader::isMinGWsCleanupSetup(Address addr) const
 {
-    if (!m_mingw_main) {
+    if (!m_mingwMain) {
         return false;
     }
 
@@ -1118,7 +1118,7 @@ bool Win32BinaryLoader::isMinGWsCleanupSetup(Address addr) const
 
 bool Win32BinaryLoader::isMinGWsMalloc(Address addr) const
 {
-    if (!m_mingw_main) {
+    if (!m_mingwMain) {
         return false;
     }
 
@@ -1168,7 +1168,7 @@ Machine Win32BinaryLoader::getMachine() const
 
 bool Win32BinaryLoader::isLibrary() const
 {
-    return (m_pPEHeader->Flags & 0x2000) != 0;
+    return (m_peHeader->Flags & 0x2000) != 0;
 }
 
 

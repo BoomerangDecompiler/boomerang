@@ -17,8 +17,8 @@
 
 
 ConscriptSetter::ConscriptSetter(int n, bool clear)
-    : m_bInLocalGlobal(false)
-    , m_bClear(clear)
+    : m_inLocalGlobal(false)
+    , m_clear(clear)
 {
     m_curConscript = n;
 }
@@ -32,8 +32,8 @@ int ConscriptSetter::getLast() const
 
 bool ConscriptSetter::visit(const std::shared_ptr<Const>& exp)
 {
-    if (!m_bInLocalGlobal) {
-        if (m_bClear) {
+    if (!m_inLocalGlobal) {
+        if (m_clear) {
             exp->setConscript(0);
         }
         else {
@@ -41,7 +41,7 @@ bool ConscriptSetter::visit(const std::shared_ptr<Const>& exp)
         }
     }
 
-    m_bInLocalGlobal = false;
+    m_inLocalGlobal = false;
     return true; // Continue recursion
 }
 
@@ -51,7 +51,7 @@ bool ConscriptSetter::visit(const std::shared_ptr<Location>& exp, bool& visitChi
     OPER op = exp->getOper();
 
     if ((op == opLocal) || (op == opGlobal) || (op == opRegOf) || (op == opParam)) {
-        m_bInLocalGlobal = true;
+        m_inLocalGlobal = true;
     }
 
     visitChildren = true;
@@ -64,7 +64,7 @@ bool ConscriptSetter::visit(const std::shared_ptr<Binary>& exp, bool& visitChild
     OPER op = exp->getOper();
 
     if (op == opSize) {
-        m_bInLocalGlobal = true;
+        m_inLocalGlobal = true;
     }
 
     visitChildren = true;

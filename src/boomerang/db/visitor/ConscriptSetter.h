@@ -37,6 +37,6 @@ public:
 
 private:
     int m_curConscript;
-    bool m_bInLocalGlobal; ///< True when inside a local or global
-    bool m_bClear;         ///< True when clearing, not setting
+    bool m_inLocalGlobal; ///< True when inside a local or global
+    bool m_clear;         ///< True when clearing, not setting
 };

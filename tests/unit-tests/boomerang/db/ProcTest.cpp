@@ -29,11 +29,11 @@ void ProcTest::testName()
     Prog *prog = project.getProg();
     QVERIFY(prog != nullptr);
 
-    IFrontEnd *pFE = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
-    QVERIFY(pFE != nullptr);
-    prog->setFrontEnd(pFE);
+    IFrontEnd *fe = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
+    QVERIFY(fe != nullptr);
+    prog->setFrontEnd(fe);
 
-    pFE->readLibraryCatalog();              // Since we are not decoding
+    fe->readLibraryCatalog();              // Since we are not decoding
 
     Function *f       = prog->createFunction(Address(0x00020000));
     QString  procName = "default name";

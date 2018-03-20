@@ -123,10 +123,10 @@ void FrontSparcTest::test2()
 
     Prog *prog = project.getProg();
     QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *pFE = new SparcFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
+    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
+    prog->setFrontEnd(fe);
 
-    pFE->decodeInstruction(Address(0x00010690), inst);
+    fe->decodeInstruction(Address(0x00010690), inst);
     inst.rtl->print(strm);
     // This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
@@ -137,19 +137,19 @@ void FrontSparcTest::test2()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    pFE->decodeInstruction(Address(0x00010694), inst);
+    fe->decodeInstruction(Address(0x00010694), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010694\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    pFE->decodeInstruction(Address(0x00010698), inst);
+    fe->decodeInstruction(Address(0x00010698), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010698    0 *32* r8 := 0\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    pFE->decodeInstruction(Address(0x0001069C), inst);
+    fe->decodeInstruction(Address(0x0001069C), inst);
     inst.rtl->print(strm);
     expected = QString("0x0001069c    0 *32* r24 := r8\n");
     QCOMPARE(actual, expected);
