@@ -277,7 +277,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     // Work through the exports, and find main. This isn't main itself,
     // but in fact a call to main.
     for (u = 0; u < numExports; u++) {
-        // cout << "Exporting " << (pDlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
+        // cout << "Exporting " << (dlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
         // UINT4(&export_list[u].value) << endl;
         if (strncmp(dlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
             Address callMainAddr(UINT4ADDR(&export_list[u]));

@@ -57,7 +57,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     int     cb;
     // Check for the "MZ" exe header
     if (!(fCOM = ((m_header->sigLo != 0x4D) || (m_header->sigHi != 0x5A)))) {
-        /* Read rest of m_pHeader */
+        /* Read rest of m_header */
         fp.seek(0);
 
         if (fp.read(reinterpret_cast<char *>(m_header), sizeof(ExeHeader)) != sizeof(ExeHeader)) {
@@ -73,7 +73,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 
         /* Calculate the load module size.
          * This is the number of pages in the file
-         * less the length of the m_pHeader and reloc table
+         * less the length of the m_header and reloc table
          * less the number of bytes unused on last page
          */
         cb = LH(&m_header->numPages) * 512U - LH(&m_header->numParaHeader) * 16U;

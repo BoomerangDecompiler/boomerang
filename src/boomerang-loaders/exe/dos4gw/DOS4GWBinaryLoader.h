@@ -162,8 +162,8 @@ protected:
     DWord dos4gwRead4(const void *src) const; ///< Read 4 bytes from native addr
 
 private:
-    LXHeader *m_pLXHeader  = nullptr;     ///< Pointer to lx header
-    LXObject *m_pLXObjects = nullptr;     ///< Pointer to lx objects
+    LXHeader *m_LXHeader  = nullptr;     ///< Pointer to lx header
+    LXObject *m_LXObjects = nullptr;     ///< Pointer to lx objects
     int m_cbImage = 0;                    ///< Size of image
     char *base = nullptr;                 ///< Beginning of the loaded image
 

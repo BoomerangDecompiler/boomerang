@@ -16,7 +16,7 @@
 class StmtConscriptSetter : public StmtVisitor
 {
 public:
-    StmtConscriptSetter(int n, bool _bClear);
+    StmtConscriptSetter(int n, bool clear);
     virtual ~StmtConscriptSetter() = default;
 
 public:

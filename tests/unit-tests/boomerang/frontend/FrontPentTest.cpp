@@ -225,11 +225,11 @@ void FrontPentTest::testFindMain()
         Prog prog("FEDORA2_TRUE", project.getLoadedBinaryFile());
         QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
-        IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-        prog.setFrontEnd(pFE);
+        IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+        prog.setFrontEnd(fe);
 
         bool    found;
-        Address addr     = pFE->getMainEntryPoint(found);
+        Address addr     = fe->getMainEntryPoint(found);
         Address expected = Address(0x08048b10);
         QCOMPARE(addr, expected);
         loader->close();
@@ -243,12 +243,12 @@ void FrontPentTest::testFindMain()
         Prog prog("FEDORA3_TRUE", project.getLoadedBinaryFile());
         QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
-        IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-        prog.setFrontEnd(pFE);
-        QVERIFY(pFE != nullptr);
+        IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+        prog.setFrontEnd(fe);
+        QVERIFY(fe != nullptr);
 
         bool found;
-        Address addr     = pFE->getMainEntryPoint(found);
+        Address addr     = fe->getMainEntryPoint(found);
         Address expected = Address(0x8048c4a);
         QCOMPARE(addr, expected);
         loader->close();
@@ -262,12 +262,12 @@ void FrontPentTest::testFindMain()
         Prog prog("SUSE_TRUE", project.getLoadedBinaryFile());
         QVERIFY(loader->getMachine() == Machine::PENTIUM);
 
-        IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
-        prog.setFrontEnd(pFE);
-        QVERIFY(pFE != nullptr);
+        IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+        prog.setFrontEnd(fe);
+        QVERIFY(fe != nullptr);
 
         bool found;
-        Address addr     = pFE->getMainEntryPoint(found);
+        Address addr     = fe->getMainEntryPoint(found);
         Address expected = Address(0x8048b60);
         QCOMPARE(addr, expected);
         loader->close();

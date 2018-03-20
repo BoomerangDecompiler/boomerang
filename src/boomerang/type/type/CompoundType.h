@@ -54,7 +54,7 @@ public:
 
     void setTypeAtOffset(unsigned offsetInBits, SharedType ty);
     SharedType getTypeAtOffset(unsigned offsetInBits);
-    void setNameAtOffset(unsigned offsetInBits, const QString& nam);
+    void setNameAtOffset(unsigned offsetInBits, const QString& name);
     QString getNameAtOffset(size_t offsetInBits);
 
     // Update this compound to use the fact that offset off has type ty

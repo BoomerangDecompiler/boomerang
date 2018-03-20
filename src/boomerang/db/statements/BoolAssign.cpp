@@ -216,7 +216,7 @@ void BoolAssign::generateCode(ICodeGenerator *gen, const BasicBlock *)
 {
     assert(m_lhs);
     assert(m_cond);
-    // lhs := (pCond) ? 1 : 0
+    // lhs := (m_cond) ? 1 : 0
     Assign as(m_lhs->clone(), std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
     gen->addAssignmentStatement(&as);
 }

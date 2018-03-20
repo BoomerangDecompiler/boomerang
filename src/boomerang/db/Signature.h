@@ -47,11 +47,11 @@ public:
     QString getBoundMax()    const { return m_boundMax; }
 
     void setType(SharedType ty) { m_type = ty; }
-    void setName(const QString& nam) { m_name = nam; }
+    void setName(const QString& name) { m_name = name; }
     void setExp(SharedExp e) { m_exp = e; }
 
     /// this parameter is the bound of another parameter with name nam
-    void setBoundMax(const QString& nam);
+    void setBoundMax(const QString& name);
 
 private:
     SharedType m_type;
@@ -100,7 +100,7 @@ private:
 class Signature : public std::enable_shared_from_this<Signature>
 {
 public:
-    Signature(const QString& nam);
+    Signature(const QString& name);
     Signature(const Signature& other) = default;
     Signature(Signature&& other) = default;
 
@@ -158,7 +158,7 @@ public:
 
     // add a new parameter to this signature
     virtual void addParameter(const char *name = nullptr);
-    virtual void addParameter(SharedType type, const QString& nam = QString::null, const SharedExp& e = nullptr,
+    virtual void addParameter(SharedType type, const QString& name = QString::null, const SharedExp& e = nullptr,
                               const QString& boundMax = "");
     virtual void addParameter(const SharedExp& e, SharedType ty);
     virtual void addParameter(std::shared_ptr<Parameter> param);
@@ -180,14 +180,14 @@ public:
     virtual QString getParamBoundMax(int n) const;
 
     virtual void setParamType(int n, SharedType ty);
-    virtual void setParamType(const char *nam, SharedType ty);
+    virtual void setParamType(const char *name, SharedType ty);
     virtual void setParamType(const SharedExp& e, SharedType ty);
-    virtual void setParamName(int n, const char *nam);
+    virtual void setParamName(int n, const char *name);
     virtual void setParamExp(int n, SharedExp e);
 
     // Return the index for the given expression, or -1 if not found
     virtual int findParam(const SharedExp& e) const;
-    virtual int findParam(const QString& nam) const;
+    virtual int findParam(const QString& name) const;
 
     // accessor for argument expressions
     virtual SharedExp getArgumentExp(int n) const;
@@ -277,7 +277,7 @@ public:
 
     // prefered format
     void setPreferredReturn(SharedType ty) { m_preferredReturn = ty; }
-    void setPreferredName(const QString& nam) { m_preferredName = nam; }
+    void setPreferredName(const QString& name) { m_preferredName = name; }
     void addPreferredParameter(int n) { m_preferredParams.push_back(n); }
     SharedType getPreferredReturn()   { return m_preferredReturn; }
     const QString& getPreferredName() { return m_preferredName; }
@@ -313,7 +313,7 @@ protected:
 class CustomSignature : public Signature
 {
 public:
-    CustomSignature(const QString& nam);
+    CustomSignature(const QString& name);
     virtual ~CustomSignature() override = default;
 
 public:

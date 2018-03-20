@@ -576,7 +576,7 @@ DWord MachOBinaryLoader::getDelta()
 {
     // Stupid function anyway: delta depends on section
     // This should work for the header only
-    //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
+    //    return (DWord)base - LMMH(m_peHeader->Imagebase);
     return (HostAddress(base) - loaded_addr).value();
 }
 

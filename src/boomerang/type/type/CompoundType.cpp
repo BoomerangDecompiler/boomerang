@@ -155,13 +155,13 @@ void CompoundType::setTypeAtOffset(unsigned bitOffset, SharedType ty)
 }
 
 
-void CompoundType::setNameAtOffset(unsigned n, const QString& nam)
+void CompoundType::setNameAtOffset(unsigned n, const QString& name)
 {
     unsigned offset = 0;
 
     for (unsigned i = 0; i < m_types.size(); i++) {
         if ((offset <= n) && (n < offset + m_types[i]->getSize())) {
-            m_names[i] = nam;
+            m_names[i] = name;
             return;
         }
 
@@ -302,9 +302,9 @@ void CompoundType::updateGenericMember(int off, SharedType ty, bool& changed)
         setTypeAtOffset(bit_offset, existingType);
     }
     else {
-        QString nam = QString("member") + QString::number(m_nextGenericMemberNum++);
+        QString name = QString("member") + QString::number(m_nextGenericMemberNum++);
         setTypeAtOffset(bit_offset, ty);
-        setNameAtOffset(bit_offset, nam);
+        setNameAtOffset(bit_offset, name);
     }
 }
 

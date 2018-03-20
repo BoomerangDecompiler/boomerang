@@ -55,7 +55,7 @@ public:
 
 public:
     QString getName() const { return m_name; }
-    void setName(const QString& nam) { m_name = nam; }
+    void setName(const QString& name) { m_name = name; }
 
     size_t getNumChildren() const;
     Module *getChild(size_t n);
@@ -66,7 +66,7 @@ public:
     bool hasChildren() const;
 
     /// \todo unused
-    Module *find(const QString& nam);
+    Module *find(const QString& name);
 
     virtual bool isAggregate() const { return false; }
 

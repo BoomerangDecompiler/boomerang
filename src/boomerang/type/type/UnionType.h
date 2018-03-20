@@ -75,7 +75,7 @@ public:
 
     ilUnionElement begin() { return li.begin(); }
     ilUnionElement end() { return li.end(); }
-    // Type        *getType(const char *nam);
+    // Type        *getType(const char *name);
     // const        char *getName(int n) { assert(n < getNumTypes()); return names[n].c_str(); }
 
     virtual SharedType clone() const override;

@@ -114,10 +114,10 @@ public:
 
 
     /// Add a symbol to the loader
-    void addSymbol(Address addr, const QString& nam);
+    void addSymbol(Address addr, const QString& name);
 
     /// Add a "hint" that an instruction at the given address references a named global
-    void addRefHint(Address addr, const QString& nam) { m_refHints[addr] = nam; }
+    void addRefHint(Address addr, const QString& name) { m_refHints[addr] = name; }
 
     virtual bool decodeInstruction(Address pc, DecodeResult& result);
 

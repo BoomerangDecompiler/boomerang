@@ -721,7 +721,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                 Address dest = stmt_jump->getFixedDest();
 
                 if ((dest != Address::INVALID) && (dest < hiAddress)) {
-                    unsigned inst_before_dest = *((unsigned *)(dest - 4 + pBF->getTextDelta()));
+                    unsigned inst_before_dest = *((unsigned *)(dest - 4 + loader->getTextDelta()));
 
                     unsigned bits31_30 = inst_before_dest >> 30;
                     unsigned bits23_22 = (inst_before_dest >> 22) & 3;

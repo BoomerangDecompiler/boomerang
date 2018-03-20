@@ -86,10 +86,10 @@ QString Function::getName() const
 }
 
 
-void Function::setName(const QString& nam)
+void Function::setName(const QString& name)
 {
     assert(m_signature);
-    m_signature->setName(nam);
+    m_signature->setName(name);
 }
 
 
@@ -99,9 +99,9 @@ Address Function::getEntryAddress() const
 }
 
 
-void Function::setEntryAddress(Address a)
+void Function::setEntryAddress(Address entryAddr)
 {
-    m_entryAddress = a;
+    m_entryAddress = entryAddr;
 }
 
 

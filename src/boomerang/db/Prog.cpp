@@ -717,11 +717,11 @@ QString Prog::newGlobalName(Address uaddr)
 }
 
 
-SharedType Prog::getGlobalType(const QString& nam) const
+SharedType Prog::getGlobalType(const QString& name) const
 {
-    for (Global *gl : m_globals) {
-        if (gl->getName() == nam) {
-            return gl->getType();
+    for (Global *global : m_globals) {
+        if (global->getName() == name) {
+            return global->getType();
         }
     }
 

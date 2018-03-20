@@ -376,12 +376,12 @@ public:
     /**
      * Add a new local supplying all needed information.
      */
-    void addLocal(SharedType ty, const QString& nam, SharedExp e);
+    void addLocal(SharedType ty, const QString& name, SharedExp e);
 
     /// return a local's type
-    SharedType getLocalType(const QString& nam);
-    void setLocalType(const QString& nam, SharedType ty);
-    SharedType getParamType(const QString& nam);
+    SharedType getLocalType(const QString& name);
+    void setLocalType(const QString& name, SharedType ty);
+    SharedType getParamType(const QString& name);
 
     SymbolMap& getSymbolMap() { return m_symbolMap; }
     const SymbolMap& getSymbolMap() const { return m_symbolMap; }
@@ -389,7 +389,7 @@ public:
     void clearSymbolMap() { m_symbolMap.clear(); }
 
     /// \returns a symbol's exp (note: the original exp, like r24, not local1)
-    SharedConstExp expFromSymbol(const QString& nam) const;
+    SharedConstExp expFromSymbol(const QString& name) const;
 
     void mapSymbolTo(const SharedConstExp& from, SharedExp to);
 
@@ -436,7 +436,7 @@ public:
     /// Get a name like eax or o2 from r24 or r8
     QString getRegName(SharedExp r);
 
-    void setParamType(const char *nam, SharedType ty);
+    void setParamType(const char *name, SharedType ty);
     void setParamType(int idx, SharedType ty);
 
     /**

@@ -223,11 +223,11 @@ private:
     char *m_image;                  ///< Beginning of the loaded image
     int m_imageSize;                ///< Size of image, in bytes
 
-    Header *m_pHeader;              ///< Pointer to header
-    PEHeader *m_pPEHeader;          ///< Pointer to pe header
+    Header *m_header;              ///< Pointer to header
+    PEHeader *m_peHeader;          ///< Pointer to pe header
     int m_numRelocs;                ///< Number of relocation entries
     bool m_hasDebugInfo;
-    bool m_mingw_main;
+    bool m_mingwMain;
 
     BinaryImage *m_binaryImage;
     BinarySymbolTable *m_symbols;

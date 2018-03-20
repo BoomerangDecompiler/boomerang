@@ -128,10 +128,10 @@ void DataFlowTest::testPlacePhi()
     QVERIFY(loader != nullptr);
 
     Prog      prog(FRONTIER_PENTIUM, project.getLoadedBinaryFile());
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
+    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
     Type::clearNamedTypes();
-    prog.setFrontEnd(pFE);
-    pFE->decode(&prog);
+    prog.setFrontEnd(fe);
+    fe->decode(&prog);
 
     const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);

@@ -64,7 +64,7 @@ void DOS4GWBinaryLoader::close()
 
 Address DOS4GWBinaryLoader::getEntryPoint()
 {
-    return Address((LMMH(m_pLXObjects[LMMH(m_pLXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_pLXHeader->eip)));
+    return Address((LMMH(m_LXObjects[LMMH(m_LXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_LXHeader->eip)));
 }
 
 
@@ -84,7 +84,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
 
     // Search with this crude pattern: call, sub ebp, ebp, call __Cmain in the first 0x300 bytes
     // Start at program entry point
-    unsigned      p = LMMH(m_pLXHeader->eip);
+    unsigned      p = LMMH(m_LXHeader->eip);
     unsigned      lim = p + 0x300;
     Address       addr;
 
@@ -188,67 +188,67 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    m_pLXHeader = new LXHeader;
+    m_LXHeader = new LXHeader;
 
-    if (!buf.read(reinterpret_cast<char *>(m_pLXHeader), sizeof(LXHeader))) {
+    if (!buf.read(reinterpret_cast<char *>(m_LXHeader), sizeof(LXHeader))) {
         return false;
     }
 
-    if ((m_pLXHeader->sigLo != 'L') || ((m_pLXHeader->sigHi != 'X') && (m_pLXHeader->sigHi != 'E'))) {
+    if ((m_LXHeader->sigLo != 'L') || ((m_LXHeader->sigHi != 'X') && (m_LXHeader->sigHi != 'E'))) {
         LOG_ERROR("Error loading file: bad LE/LX magic");
         return false;
     }
 
-    if (!buf.seek(lxoff + LMMH(m_pLXHeader->objtbloffset))) {
+    if (!buf.seek(lxoff + LMMH(m_LXHeader->objtbloffset))) {
         return false;
     }
 
-    m_pLXObjects = new LXObject[LMMH(m_pLXHeader->numobjsinmodule)];
-    buf.read(reinterpret_cast<char *>(m_pLXObjects), sizeof(LXObject) * LMMH(m_pLXHeader->numobjsinmodule));
+    m_LXObjects = new LXObject[LMMH(m_LXHeader->numobjsinmodule)];
+    buf.read(reinterpret_cast<char *>(m_LXObjects), sizeof(LXObject) * LMMH(m_LXHeader->numobjsinmodule));
 
     unsigned npages = 0;
     m_cbImage = 0;
 
-    for (unsigned n = 0; n < LMMH(m_pLXHeader->numobjsinmodule); n++) {
-        if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
-            if (LMMH(m_pLXObjects[n].PageTblIdx) + LMMH(m_pLXObjects[n].NumPageTblEntries) - 1 > npages) {
-                npages = LMMH(m_pLXObjects[n].PageTblIdx) + LMMH(m_pLXObjects[n].NumPageTblEntries) - 1;
+    for (unsigned n = 0; n < LMMH(m_LXHeader->numobjsinmodule); n++) {
+        if (LMMH(m_LXObjects[n].ObjectFlags) & 0x40) {
+            if (LMMH(m_LXObjects[n].PageTblIdx) + LMMH(m_LXObjects[n].NumPageTblEntries) - 1 > npages) {
+                npages = LMMH(m_LXObjects[n].PageTblIdx) + LMMH(m_LXObjects[n].NumPageTblEntries) - 1;
             }
 
-            m_cbImage = LMMH(m_pLXObjects[n].RelocBaseAddr) + LMMH(m_pLXObjects[n].VirtualSize);
+            m_cbImage = LMMH(m_LXObjects[n].RelocBaseAddr) + LMMH(m_LXObjects[n].VirtualSize);
         }
     }
 
-    m_cbImage -= LMMH(m_pLXObjects[0].RelocBaseAddr);
+    m_cbImage -= LMMH(m_LXObjects[0].RelocBaseAddr);
 
     base = reinterpret_cast<char *>(malloc(m_cbImage));
 
-    uint32_t numSections = LMMH(m_pLXHeader->numobjsinmodule);
+    uint32_t numSections = LMMH(m_LXHeader->numobjsinmodule);
     std::vector<SectionParam> params;
 
     for (unsigned n = 0; n < numSections; n++) {
-        if (LMMH(m_pLXObjects[n].ObjectFlags) & 0x40) {
-            printf("vsize %x reloc %x flags %x page %u npage %u\n", LMMH(m_pLXObjects[n].VirtualSize),
-                   LMMH(m_pLXObjects[n].RelocBaseAddr), LMMH(m_pLXObjects[n].ObjectFlags),
-                   LMMH(m_pLXObjects[n].PageTblIdx), LMMH(m_pLXObjects[n].NumPageTblEntries));
+        if (LMMH(m_LXObjects[n].ObjectFlags) & 0x40) {
+            printf("vsize %x reloc %x flags %x page %u npage %u\n", LMMH(m_LXObjects[n].VirtualSize),
+                   LMMH(m_LXObjects[n].RelocBaseAddr), LMMH(m_LXObjects[n].ObjectFlags),
+                   LMMH(m_LXObjects[n].PageTblIdx), LMMH(m_LXObjects[n].NumPageTblEntries));
 
             SectionParam sect;
-            DWord        Flags = LMMH(m_pLXObjects[n].ObjectFlags);
+            DWord        Flags = LMMH(m_LXObjects[n].ObjectFlags);
 
             sect.Name         = QString("seg%i").arg(n); // no section names in LX
-            sect.from         = Address(LMMH(m_pLXObjects[n].RelocBaseAddr));
+            sect.from         = Address(LMMH(m_LXObjects[n].RelocBaseAddr));
             sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
-            sect.Size         = LMMH(m_pLXObjects[n].VirtualSize);
+            sect.Size         = LMMH(m_LXObjects[n].VirtualSize);
             sect.Bss          = 0; // TODO
             sect.Code         = (Flags & 0x4) ? true  : false;
             sect.Data         = (Flags & 0x4) ? false : true;
             sect.ReadOnly     = (Flags & 0x1) ? false : true;
 
             buf.seek(
-                m_pLXHeader->datapagesoffset + (LMMH(m_pLXObjects[n].PageTblIdx) - 1) * LMMH(m_pLXHeader->pagesize)
+                m_LXHeader->datapagesoffset + (LMMH(m_LXObjects[n].PageTblIdx) - 1) * LMMH(m_LXHeader->pagesize)
                 );
-            char *p = base + LMMH(m_pLXObjects[n].RelocBaseAddr) - LMMH(m_pLXObjects[0].RelocBaseAddr);
-            buf.read(p, LMMH(m_pLXObjects[n].NumPageTblEntries) * LMMH(m_pLXHeader->pagesize));
+            char *p = base + LMMH(m_LXObjects[n].RelocBaseAddr) - LMMH(m_LXObjects[0].RelocBaseAddr);
+            buf.read(p, LMMH(m_LXObjects[n].NumPageTblEntries) * LMMH(m_LXHeader->pagesize));
         }
     }
 
@@ -267,7 +267,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     // TODO: decode entry tables
 
     // fixups
-    if (!buf.seek(LMMH(m_pLXHeader->fixuppagetbloffset) + lxoff)) {
+    if (!buf.seek(LMMH(m_LXHeader->fixuppagetbloffset) + lxoff)) {
         return false;
     }
 
@@ -278,7 +278,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     //    printf("offset for page %i: %x\n", n + 1, fixuppagetbl[n]);
     // printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
 
-    buf.seek(LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff);
+    buf.seek(LMMH(m_LXHeader->fixuprecordtbloffset) + lxoff);
     LXFixup  fixup;
     unsigned srcpage = 0;
 
@@ -295,7 +295,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
         // fixup.trgoff);
-        unsigned long  src    = srcpage * LMMH(m_pLXHeader->pagesize) + LMMHw(fixup.srcoff);
+        unsigned long  src    = srcpage * LMMH(m_LXHeader->pagesize) + LMMHw(fixup.srcoff);
         unsigned short object = 0;
 
         if (fixup.flags & 0x40) {
@@ -314,11 +314,11 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
             buf.read(reinterpret_cast<char *>(&trgoff), 2);
         }
 
-        unsigned long target = LMMH(m_pLXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
+        unsigned long target = LMMH(m_LXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
         Util::writeDWord(base + src, target, false);
 
-        while (buf.pos() - (LMMH(m_pLXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1])) {
+        while (buf.pos() - (LMMH(m_LXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1])) {
             srcpage++;
         }
     } while (srcpage < npages);
@@ -386,8 +386,8 @@ DWord DOS4GWBinaryLoader::getDelta()
 {
     // Stupid function anyway: delta depends on section
     // This should work for the header only
-    //    return (DWord)base - LMMH(m_pPEHeader->Imagebase);
-    return intptr_t(base) - m_pLXObjects[0].RelocBaseAddr;
+    //    return (DWord)base - LMMH(m_peHeader->Imagebase);
+    return intptr_t(base) - m_LXObjects[0].RelocBaseAddr;
 }
 
 

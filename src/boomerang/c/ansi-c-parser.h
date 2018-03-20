@@ -21,7 +21,7 @@ class TypeIdent
 {
 public:
     SharedType ty;
-    QString nam;
+    QString name;
 };
 
 class SymbolMods;
