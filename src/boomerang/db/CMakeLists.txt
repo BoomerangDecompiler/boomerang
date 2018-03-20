@@ -9,15 +9,11 @@
 
 list(APPEND boomerang-db-sources
     db/BasicBlock
-    db/BinaryImage
     db/CFG
     db/CFGCompressor
     db/DataFlow
     db/DefCollector
     db/Global
-    db/IBinaryImage.h
-    db/IBinarySection.h
-    db/IBinarySymbols.h
     db/IndirectJumpAnalyzer
     db/InsNameElem
     db/InterferenceFinder
@@ -26,11 +22,15 @@ list(APPEND boomerang-db-sources
     db/Prog
     db/Register
     db/RTL
-    db/SectionInfo
     db/Signature
-    db/SymTab
     db/Table
     db/UseCollector
+
+    db/binary/BinaryFile
+    db/binary/BinaryImage
+    db/binary/BinarySection
+    db/binary/BinarySymbol
+    db/binary/BinarySymbolTable
 
     # exp handling
     db/exp/Binary

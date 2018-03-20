@@ -12,12 +12,14 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
 
 #include "boomerang/util/Log.h"
 
+
 #define SWITCH_BORLAND    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/switch_borland.exe"))
+
 
 void Win32BinaryLoaderTest::initTestCase()
 {

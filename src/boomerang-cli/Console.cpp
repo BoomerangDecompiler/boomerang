@@ -25,9 +25,6 @@
 #include <iostream>
 
 
-std::unique_ptr<Prog> g_prog;
-
-
 Console::Console()
 {
     m_commandTypes["decode"]    = CT_decode;
@@ -209,15 +206,14 @@ CommandStatus Console::handleDecode(const QStringList& args)
         std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (g_prog) {
+    else if (Boomerang::get()->getOrCreateProject()->isBinaryLoaded()) {
         std::cerr << "Cannot decode program: A program is already loaded." << std::endl;
         return CommandStatus::Failure;
     }
 
-    Boomerang::get()->getOrCreateProject();
-    g_prog = Boomerang::get()->loadAndDecode(args[0]);
+    const bool ok = Boomerang::get()->loadAndDecode(args[0]);
 
-    if (g_prog) {
+    if (ok) {
         std::cout << "Loaded '" << args[0].toStdString() << "'." << std::endl;
         return CommandStatus::Success;
     }
@@ -230,13 +226,17 @@ CommandStatus Console::handleDecode(const QStringList& args)
 
 CommandStatus Console::handleDecompile(const QStringList& args)
 {
-    if (g_prog == nullptr) {
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    if (!project->isBinaryLoaded()) {
         std::cerr << "Cannot decompile: Need to 'decode' a program first.\n";
         return CommandStatus::Failure;
     }
 
+    Prog *prog = project->getProg();
+    assert(prog != nullptr);
+
     if (args.empty()) {
-        g_prog->decompile();
+        prog->decompile();
         return CommandStatus::Success;
     }
     else {
@@ -244,7 +244,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         ProcSet procSet;
 
         for (const QString& procName : args) {
-            Function *proc = g_prog->findFunction(procName);
+            Function *proc = prog->findFunction(procName);
 
             if (proc == nullptr) {
                 std::cerr << "Cannot find function '" << procName.toStdString() << "'\n";
@@ -272,19 +272,20 @@ CommandStatus Console::handleDecompile(const QStringList& args)
 
 CommandStatus Console::handleCodegen(const QStringList& args)
 {
-    if (g_prog == nullptr) {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    if (!prog) {
         std::cerr << "Cannot generate code: need to 'decompile' first.\n";
         return CommandStatus::Failure;
     }
 
     if (args.empty()) {
-        Boomerang::get()->getCodeGenerator()->generateCode(g_prog.get());
+        Boomerang::get()->getCodeGenerator()->generateCode(prog);
     }
     else {
         std::set<Module *> modules;
 
         for (QString name : args) {
-            Module *module = g_prog->findModule(name);
+            Module *module = prog->findModule(name);
 
             if (!module) {
                 std::cerr << "Cannot find module '" << name.toStdString() << "'\n";
@@ -295,7 +296,7 @@ CommandStatus Console::handleCodegen(const QStringList& args)
         }
 
         for (Module *mod : modules) {
-            Boomerang::get()->getCodeGenerator()->generateCode(g_prog.get(), mod);
+            Boomerang::get()->getCodeGenerator()->generateCode(prog, mod);
         }
     }
 
@@ -317,11 +318,13 @@ CommandStatus Console::handleReplay(const QStringList& args)
 
 CommandStatus Console::handleMove(const QStringList& args)
 {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+
     if (args.size() < 2) {
         std::cerr << "Not enough arguments for cmd." << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (g_prog == nullptr) {
+    else if (prog == nullptr) {
         std::cerr << "No valid Prog object!" << std::endl;
         return CommandStatus::Failure;
     }
@@ -332,14 +335,14 @@ CommandStatus Console::handleMove(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Function *proc = g_prog->findFunction(args[1]);
+        Function *proc = prog->findFunction(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        Module *module = g_prog->findModule(args[2]);
+        Module *module = prog->findModule(args[2]);
 
         if (module == nullptr) {
             std::cerr << "Cannot find module " << args[2].toStdString() << std::endl;
@@ -354,14 +357,14 @@ CommandStatus Console::handleMove(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Module *module = g_prog->findModule(args[1]);
+        Module *module = prog->findModule(args[1]);
 
         if (module == nullptr) {
             std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        Module *parentModule = g_prog->findModule(args[2]);
+        Module *parentModule = prog->findModule(args[2]);
 
         if (parentModule == nullptr) {
             std::cerr << "Cannot find module " << args[2].toStdString() << std::endl;
@@ -381,11 +384,13 @@ CommandStatus Console::handleMove(const QStringList& args)
 
 CommandStatus Console::handleAdd(const QStringList& args)
 {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+
     if (args.empty()) {
         std::cerr << "Not enough arguments for command." << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (g_prog == nullptr) {
+    else if (prog == nullptr) {
         std::cerr << "No valid Prog object!" << std::endl;
         return CommandStatus::Failure;
     }
@@ -396,7 +401,7 @@ CommandStatus Console::handleAdd(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Module *parent = (args.size() > 2) ? g_prog->findModule(args[2]) : g_prog->getRootModule();
+        Module *parent = (args.size() > 2) ? prog->findModule(args[2]) : prog->getRootModule();
 
         if (!parent) {
             std::cerr << "Cannot find parent module." << std::endl;
@@ -415,7 +420,7 @@ CommandStatus Console::handleAdd(const QStringList& args)
             }
         }
 
-        Module *module = g_prog->createModule(args[1], parent);
+        Module *module = prog->createModule(args[1], parent);
 
         if (module == nullptr) {
             std::cerr << "Cannot create module " << args[1].toStdString() << std::endl;
@@ -433,11 +438,13 @@ CommandStatus Console::handleAdd(const QStringList& args)
 
 CommandStatus Console::handleDelete(const QStringList& args)
 {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd\n";
         return CommandStatus::ParseError;
     }
-    else if (g_prog == nullptr) {
+    else if (prog == nullptr) {
         std::cerr << "no valid Prog object!" << std::endl;
     }
 
@@ -448,17 +455,17 @@ CommandStatus Console::handleDelete(const QStringList& args)
         }
 
         for (int i = 1; i < args.size(); i++) {
-            Module *module = g_prog->findModule(args[i]);
+            Module *module = prog->findModule(args[i]);
 
             if (module == nullptr) {
                 std::cerr << "Cannot find module " << args[i].toStdString() << std::endl;
                 return CommandStatus::Failure;
             }
-            else if (module == g_prog->getRootModule()) {
+            else if (module == prog->getRootModule()) {
                 std::cerr << "Cannot remove root module." << std::endl;
                 return CommandStatus::Failure;
             }
-            else if (module->hasChildren() || g_prog->isModuleUsed(module)) {
+            else if (module->hasChildren() || prog->isModuleUsed(module)) {
                 std::cerr << "Cannot remove module: Module is not empty." << std::endl;
                 return CommandStatus::Failure;
             }
@@ -479,11 +486,13 @@ CommandStatus Console::handleDelete(const QStringList& args)
 
 CommandStatus Console::handleRename(const QStringList& args)
 {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd" << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (g_prog == nullptr) {
+    else if (prog == nullptr) {
         std::cerr << "No valid Prog object!" << std::endl;
         return CommandStatus::Failure;
     }
@@ -494,14 +503,14 @@ CommandStatus Console::handleRename(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        Function *proc = g_prog->findFunction(args[1]);
+        Function *proc = prog->findFunction(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        Function *nproc = g_prog->findFunction(args[2]);
+        Function *nproc = prog->findFunction(args[2]);
 
         if (nproc != nullptr) {
             std::cerr << "Proc " << args[2].toStdString() << " already exists" << std::endl;
@@ -517,14 +526,14 @@ CommandStatus Console::handleRename(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Module *module = g_prog->findModule(args[1]);
+        Module *module = prog->findModule(args[1]);
 
         if (module == nullptr) {
             std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        Module *newModule = g_prog->findModule(args[2]);
+        Module *newModule = prog->findModule(args[2]);
 
         if (newModule != nullptr) {
             std::cerr << "Module " << args[2].toStdString() << "already exists" << std::endl;
@@ -543,26 +552,28 @@ CommandStatus Console::handleRename(const QStringList& args)
 
 CommandStatus Console::handleInfo(const QStringList& args)
 {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd!" << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (g_prog == nullptr) {
+    else if (prog == nullptr) {
         std::cerr << "No valid Prog object!" << std::endl;
         return CommandStatus::Failure;
     }
 
     if (args[0] == "prog") {
         QTextStream ost(stdout);
-        ost << "Program " << g_prog->getName() << ":\n";
+        ost << "Program " << prog->getName() << ":\n";
         ost << "\tModules:\n";
-        g_prog->getRootModule()->printTree(ost);
+        prog->getRootModule()->printTree(ost);
 
 
         std::list<const Function *> libFunctions;
         std::list<const Function *> userFunctions;
 
-        const Prog::ModuleList& modules = g_prog->getModuleList();
+        const Prog::ModuleList& modules = prog->getModuleList();
 
         for (const auto& module : modules) {
             for (const Function *function : *module) {
@@ -597,7 +608,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        Module *module = g_prog->findModule(args[1]);
+        Module *module = prog->findModule(args[1]);
 
         if (module == nullptr) {
             std::cerr << "Cannot find module " << args[1].toStdString() << std::endl;
@@ -630,7 +641,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Function *proc = g_prog->findFunction(args[1]);
+        Function *proc = prog->findFunction(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
@@ -670,11 +681,13 @@ CommandStatus Console::handleInfo(const QStringList& args)
 
 CommandStatus Console::handlePrint(const QStringList& args)
 {
+    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd" << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (g_prog == nullptr) {
+    else if (prog == nullptr) {
         std::cerr << "No valid Prog object!" << std::endl;
         return CommandStatus::Failure;
     }
@@ -686,7 +699,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
         }
 
         for (int i = 1; i < args.size(); i++) {
-            Function *proc = g_prog->findFunction(args[i]);
+            Function *proc = prog->findFunction(args[i]);
 
             if (proc == nullptr) {
                 std::cerr << "Cannot find procedure " << args[i].toStdString() << std::endl;
@@ -714,19 +727,19 @@ CommandStatus Console::handlePrint(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        g_prog->printCallGraph();
+        prog->printCallGraph();
         return CommandStatus::Success;
     }
     else if (args[0] == "cfg") {
         if (args.size() == 1) {
-            CfgDotWriter().writeCFG(g_prog.get(), "cfg.dot");
+            CfgDotWriter().writeCFG(prog, "cfg.dot");
             return CommandStatus::Success;
         }
         else {
             ProcSet procs;
 
             for (int i = 1; i < args.size(); i++) {
-                Function *proc = g_prog->findFunction(args[i]);
+                Function *proc = prog->findFunction(args[i]);
 
                 if (!proc) {
                     std::cerr << "Procedure '" << args[i].toStdString() << "' not found.";

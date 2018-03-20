@@ -14,7 +14,7 @@
 
 #include "boomerang/type/type/Type.h"
 #include "boomerang/type/DataIntervalMap.h"
-#include "boomerang/db/SymTab.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/loader/IBinaryFile.h"
@@ -30,10 +30,11 @@ class Signature;
 class Statement;
 class StatementSet;
 class Module;
-class IBinarySection;
+class BinarySection;
 class ICodeGenerator;
 class Global;
 class BinarySymbol;
+class BinaryFile;
 
 
 class Prog
@@ -44,7 +45,7 @@ public:
     typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
 
 public:
-    Prog(const QString& name);
+    Prog(const QString& name, BinaryFile *file);
     Prog(const Prog& other) = delete;
     Prog(Prog&& other) = default;
 
@@ -61,6 +62,9 @@ public:
     /// Assign a new name to this program
     void setName(const QString& name);
     QString getName() const { return m_name; }
+
+    BinaryFile *getBinaryFile() { return m_binaryFile; }
+    const BinaryFile *getBinaryFile() const { return m_binaryFile; }
 
     /**
      * Creates a new empty module.
@@ -227,9 +231,9 @@ public:
     Machine getMachine() const;
 
     /// Get a symbol from an address
-    QString getSymbolByAddress(Address dest) const;
+    QString getSymbolNameByAddress(Address dest) const;
 
-    const IBinarySection *getSectionByAddr(Address a) const;
+    const BinarySection *getSectionByAddr(Address a) const;
     Address getLimitTextLow() const;
     Address getLimitTextHigh() const;
 
@@ -253,10 +257,12 @@ public:
 
     Module *getRootModule() const { return m_rootModule; }
     Module *findModule(const QString& name) const;
-    Module *getDefaultModule(const QString& name);
+
+    /// \returns the default module for a symbol with name \p name.
+    Module *getModuleForSymbol(const QString& symbolName);
     bool isModuleUsed(Module *module) const;
 
-    /// Add the given RTL to the front end's map from address to aldready-decoded-RTL
+    /// Add the given RTL to the front end's map from address to already-decoded-RTL
     void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
 
     /**
@@ -271,6 +277,7 @@ public:
 
 private:
     QString m_name;             ///< name of the program
+    BinaryFile *m_binaryFile;
     Module *m_rootModule;       ///< Root of the module tree
     ModuleList m_moduleList;    ///< The Modules that make up this program
 
@@ -283,7 +290,4 @@ private:
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<Global *> m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
-
-    class IBinaryImage *m_image;
-    SymTab *m_binarySymbols;
 };

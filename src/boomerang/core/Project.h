@@ -13,13 +13,14 @@
 #include "boomerang/core/IProject.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"
+#include "boomerang/db/binary/BinaryFile.h"
 
 #include <QByteArray>
 #include <memory>
 #include <vector>
 
 
-class IBinaryImage;
+class BinaryImage;
 
 
 class Project : public IProject
@@ -50,24 +51,29 @@ public:
     /// \copydoc IProject::unload
     void unloadBinaryFile() override;
 
-    /// \copydoc IProject::getImage
-    IBinaryImage *getImage() override { return m_image.get(); }
-
-    /// \copydoc IProject::getImage
-    const IBinaryImage *getImage() const override { return m_image.get(); }
-
-    ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
-
     /// Get the best loader that is able to load the file at \p filePath
     IFileLoader *getBestLoader(const QString& filePath) const override;
+
+    BinaryFile *getLoadedBinaryFile() override { return m_loadedBinary.get(); }
+    const BinaryFile *getLoadedBinaryFile() const override { return m_loadedBinary.get(); }
+
+    /**
+     * Create a Prog from a loaded binary file. Returns nullptr on failure.
+     */
+    Prog *createProg(BinaryFile *file, const QString& name = "");
+
+    const Prog *getProg() const override { return m_prog.get(); }
+    Prog *getProg() override { return m_prog.get(); }
+
+    ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
 
 private:
     /// Load all plugins from the plugin directory.
     void loadPlugins();
 
 private:
-    QByteArray m_fileBytes;
-    std::unique_ptr<IBinaryImage> m_image; ///< raw memory interface
+    std::unique_ptr<BinaryFile> m_loadedBinary;
+    std::unique_ptr<Prog> m_prog;
     std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< type recovery engine
 
     // Plugins

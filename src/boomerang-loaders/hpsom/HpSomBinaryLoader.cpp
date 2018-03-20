@@ -11,9 +11,9 @@
 
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySymbols.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/Log.h"
 
 #include <QBuffer>
@@ -44,7 +44,7 @@ HpSomBinaryLoader::~HpSomBinaryLoader()
 }
 
 
-void HpSomBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void HpSomBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     m_image   = image;
     m_symbols = symbols;
@@ -86,12 +86,12 @@ void HpSomBinaryLoader::processSymbols()
             // 6 - any antry code
             // 7 - uninitialized data blocks
             // 9 - MODULE name of source module
-            if (m_symbols->find(value)) {
+            if (m_symbols->findSymbolByAddress(value)) {
                 continue;
             }
 
-            if (!m_symbols->find(symbolName)) {
-                m_symbols->create(value, symbolName);
+            if (!m_symbols->findSymbolByName(symbolName)) {
+                m_symbols->createSymbol(value, symbolName);
             }
 
             continue;
@@ -112,8 +112,8 @@ void HpSomBinaryLoader::processSymbols()
 
         // HP's symbol table is crazy. It seems that imports like printf have entries of type 3 with the wrong
         // value. So we have to check whether the symbol has already been entered (assume first one is correct).
-        if ((m_symbols->find(value) == nullptr) && (m_symbols->find(symbolName) == nullptr)) {
-            m_symbols->create(value, symbolName);
+        if ((m_symbols->findSymbolByAddress(value) == nullptr) && (m_symbols->findSymbolByName(symbolName) == nullptr)) {
+            m_symbols->createSymbol(value, symbolName);
         }
     }
 }
@@ -208,40 +208,41 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
 #define AUXHDR(idx)    (UINT4(m_loadedImage + Address::value_type(auxHeaders + idx)))
 
     // Section 0: text (code)
-    IBinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
+    BinarySection *text = m_image->createSection("$TEXT$", Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
     assert(text);
-    text->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(4))
-       .setEntrySize(1)
-       .setCode(true)
-       .setData(false)
-       .setBss(false)
-       .setReadOnly(true)
-       .setEndian(0)
-       .addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
+    text->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(4));
+    text->setEntrySize(1);
+    text->setCode(true);
+    text->setData(false);
+    text->setBss(false);
+    text->setReadOnly(true);
+    text->setEndian(0);
+    text->addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 
     // Section 1: initialised data
-    IBinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
+    BinarySection *data = m_image->createSection("$DATA$", Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
     assert(data);
-    data->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(7))
-       .setEntrySize(1)
-       .setCode(false)
-       .setData(true)
-       .setBss(false)
-       .setReadOnly(false)
-       .setEndian(0)
-       .addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
+    data->setHostAddr(HostAddress(m_loadedImage) + AUXHDR(7));
+    data->setEntrySize(1);
+    data->setCode(false);
+    data->setData(true);
+    data->setBss(false);
+    data->setReadOnly(false);
+    data->setEndian(0);
+    data->addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
+
     // Section 2: BSS
     // For now, assume that BSS starts at the end of the initialised data
-    IBinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
+    BinarySection *bss = m_image->createSection("$BSS$", Address(AUXHDR(6) + AUXHDR(5)),
                                                  Address(AUXHDR(6) + AUXHDR(5) + AUXHDR(8)));
     assert(bss);
-    bss->setHostAddr(HostAddress::ZERO)
-       .setEntrySize(1)
-       .setCode(false)
-       .setData(false)
-       .setBss(true)
-       .setReadOnly(false)
-       .setEndian(0);
+    bss->setHostAddr(HostAddress::ZERO);
+    bss->setEntrySize(1);
+    bss->setCode(false);
+    bss->setData(false);
+    bss->setBss(true);
+    bss->setReadOnly(false);
+    bss->setEndian(0);
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.
@@ -282,7 +283,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
             Address callMainAddr(UINT4ADDR(&export_list[u]));
 
             // Enter the symbol "_callmain" for this address
-            m_symbols->create(callMainAddr, "_callmain");
+            m_symbols->createSymbol(callMainAddr, "_callmain");
 
             // Found call to main. Extract the offset. See assemble_17
             // in pa-risc 1.1 manual page 5-9
@@ -301,14 +302,14 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
                              ((bincall & 4) << 8) |             // w2@10
                              ((bincall & 0x1ff8) >> 3));        // w2@0..9
             // Address of main is st + 8 + offset << 2
-            m_symbols->create(callMainAddr + 8 + (offset << 2), "main")
-               .setAttr("Export", true);
+            m_symbols->createSymbol(callMainAddr + 8 + (offset << 2), "main")
+               ->setAttribute("Export", true);
             break;
         }
     }
 
     processSymbols();
-    m_symbols->find("main")->setAttr("EntryPoint", true);
+    m_symbols->findSymbolByName("main")->setAttribute("EntryPoint", true);
     return true;
 }
 
@@ -426,7 +427,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
     unsigned numDLT = UINT4(DLTable + 0x40);
     // Offset 0x38 in the DL table has the offset relative to $DATA$ (section 2)
-    unsigned *p = reinterpret_cast<unsigned *>((m_image->getSection(1)->getHostAddr() + UINT4(DLTable + 0x38)).value());
+    unsigned *p = reinterpret_cast<unsigned *>((m_image->getSectionByIndex(1)->getHostAddr() + UINT4(DLTable + 0x38)).value());
 
     // The DLT is paralelled by the first <numDLT> entries in the import table;
     // the import table has the symbolic names
@@ -452,7 +453,7 @@ std::map<Address, const char *> *HpSomBinaryLoader::getDynamicGlobalMap()
 
 Address HpSomBinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol *sym = m_symbols->find("main");
+    const BinarySymbol *sym = m_symbols->findSymbolByName("main");
 
     return sym ? sym->getLocation() : Address::INVALID;
 }

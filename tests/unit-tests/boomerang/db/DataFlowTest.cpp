@@ -127,7 +127,7 @@ void DataFlowTest::testPlacePhi()
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    Prog      prog(FRONTIER_PENTIUM);
+    Prog      prog(FRONTIER_PENTIUM, project.getLoadedBinaryFile());
     IFrontEnd *pFE = new PentiumFrontEnd(loader, &prog);
     Type::clearNamedTypes();
     prog.setFrontEnd(pFE);
@@ -171,7 +171,7 @@ void DataFlowTest::testPlacePhi2()
     IFileLoader *loader = project.getBestLoader(IFTHEN_PENTIUM);
 
     QVERIFY(loader != nullptr);
-    Prog      prog(IFTHEN_PENTIUM);
+    Prog      prog(IFTHEN_PENTIUM, project.getLoadedBinaryFile());
     Type::clearNamedTypes();
     IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
     prog.setFrontEnd(fe);
@@ -212,7 +212,7 @@ void DataFlowTest::testRenameVars()
     IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
     QVERIFY(loader != nullptr);
 
-    Prog prog("FRONTIER_PENTIUM");
+    Prog prog("FRONTIER_PENTIUM", project.getLoadedBinaryFile());
     Type::clearNamedTypes();
     IFrontEnd *fe  = new PentiumFrontEnd(loader, &prog);
     prog.setFrontEnd(fe);

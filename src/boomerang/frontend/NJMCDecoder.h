@@ -19,7 +19,7 @@
 #include "boomerang/frontend/Decoder.h"
 
 
-class IBinaryImage;
+class BinaryImage;
 
 
 /**
@@ -147,7 +147,7 @@ protected:
     // (e.g. source machine's endianness)
     RTLInstDict m_rtlDict;
     Prog *m_prog;
-    IBinaryImage *m_image;
+    BinaryImage *m_image;
 };
 
 

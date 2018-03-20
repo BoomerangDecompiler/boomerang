@@ -7,11 +7,11 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "SectionInfo.h"
+#include "BinarySection.h"
 
 
 #include "boomerang/util/Log.h"
-#include "boomerang/db/IBinaryImage.h"
+#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/util/IntervalMap.h"
 #include "boomerang/util/IntervalSet.h"
 
@@ -37,7 +37,7 @@ struct VariantHolder
     }
 };
 
-class SectionInfoImpl
+class BinarySectionImpl
 {
 public:
     void clearDefinedArea()
@@ -52,7 +52,9 @@ public:
 
     bool isAddressBss(Address a) const
     {
-        assert(!m_hasDefinedValue.isEmpty());
+        if (m_hasDefinedValue.isEmpty()) {
+            return true;
+        }
         return !m_hasDefinedValue.isContained(a);
     }
 
@@ -112,11 +114,11 @@ public:
 
 
 
-SectionInfo::SectionInfo(Address sourceAddr, uint64 size, const QString& name)
-    : m_impl(new SectionInfoImpl)
+BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString& name)
+    : m_impl(new BinarySectionImpl)
     , m_sectionName(name)
     , m_nativeAddr(sourceAddr)
-    , m_hostAddr(HostAddress::ZERO)
+    , m_hostAddr(HostAddress::INVALID)
     , m_size(size)
     , m_sectionEntrySize(0)
     , m_code(false)
@@ -127,34 +129,21 @@ SectionInfo::SectionInfo(Address sourceAddr, uint64 size, const QString& name)
 }
 
 
-SectionInfo::SectionInfo(const SectionInfo& other)
-    : SectionInfo(other.m_nativeAddr, other.m_size, other.m_sectionName)
-{
-    *m_impl            = *other.m_impl;
-    m_hostAddr         = other.m_hostAddr;
-    m_sectionEntrySize = other.m_sectionEntrySize;
-    m_code             = other.m_code;
-    m_data             = other.m_data;
-    m_bss              = other.m_bss;
-    m_readOnly         = other.m_readOnly;
-}
-
-
-SectionInfo::~SectionInfo()
+BinarySection::~BinarySection()
 {
     delete m_impl;
 }
 
 
-bool SectionInfo::isAddressBss(Address a) const
+bool BinarySection::isAddressBss(Address a) const
 {
-    assert(a >= m_nativeAddr && a < m_nativeAddr + m_size);
-
-    if (m_bss) {
+    if (!Util::inRange(a, m_nativeAddr, m_nativeAddr + m_size)) {
+        return false;
+    }
+    else if (m_bss) {
         return true;
     }
-
-    if (m_readOnly) {
+    else if (m_readOnly) {
         return false;
     }
 
@@ -162,51 +151,51 @@ bool SectionInfo::isAddressBss(Address a) const
 }
 
 
-bool SectionInfo::anyDefinedValues() const
+bool BinarySection::anyDefinedValues() const
 {
     return !m_impl->m_hasDefinedValue.isEmpty();
 }
 
 
-void SectionInfo::resize(uint32_t sz)
+void BinarySection::resize(uint32_t sz)
 {
     LOG_VERBOSE("Function not fully implemented yet");
     m_size = sz;
 
 //    assert(false && "This function is not implmented yet");
 //    if(sz!=uSectionSize) {
-//        const IBinarySection *sect = Boomerang::get()->getImage()->getSectionByAddr(uNativeAddr+sz);
+//        const BinarySection *sect = Boomerang::get()->getImage()->getSectionByAddr(uNativeAddr+sz);
 //        if(sect==nullptr || sect==this ) {
 //        }
 //    }
 }
 
 
-void SectionInfo::clearDefinedArea()
+void BinarySection::clearDefinedArea()
 {
     m_impl->clearDefinedArea();
 }
 
 
-void SectionInfo::addDefinedArea(Address from, Address to)
+void BinarySection::addDefinedArea(Address from, Address to)
 {
     m_impl->addDefinedArea(from, to);
 }
 
 
-void SectionInfo::setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
+void BinarySection::setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
 {
     m_impl->setAttributeForRange(name, val, from, to);
 }
 
 
-QVariantMap SectionInfo::getAttributesForRange(Address from, Address to)
+QVariantMap BinarySection::getAttributesForRange(Address from, Address to)
 {
     return m_impl->getAttributesForRange(from, to);
 }
 
 
-QVariant SectionInfo::attributeInRange(const QString& attrib, Address from, Address to) const
+bool BinarySection::isAttributeInRange(const QString& attrib, Address from, Address to) const
 {
-    return m_impl->attributeInRange(attrib, from, to);
+    return !m_impl->attributeInRange(attrib, from, to).isNull();
 }

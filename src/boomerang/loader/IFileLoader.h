@@ -12,9 +12,11 @@
 
 #include "boomerang/loader/IBinaryFile.h"
 #include "boomerang/core/Plugin.h"
+#include "boomerang/db/binary/BinaryFile.h"
+#include "boomerang/db/binary/BinaryImage.h"
 
-class IBinaryImage;
-class IBinarySymbolTable;
+
+class BinarySymbolTable;
 
 
 /**
@@ -34,12 +36,7 @@ public:
      * \param image   Binary image to load this file into.
      * \param symbols Symbol table to fill
      */
-    virtual void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) = 0;
-
-    /// Test if this file can be loaded by this loader.
-    /// This method does not necessarily need to read the whole file,
-    /// only the part needed to understand the file format
-//    virtual bool canLoadFile(const QString& path) const = 0;
+    virtual void initialize(BinaryImage *image, BinarySymbolTable *symbols) = 0;
 
     /// Checks if the file can be loaded by this loader.
     /// If the file can be loaded, the function returns a score ( > 0)
@@ -48,7 +45,11 @@ public:
     virtual int canLoad(QIODevice& data) const = 0;
 
     /// Load the file with path \p path into memory.
-//    virtual IBinaryFile* loadFromFile(const QString& path) = 0;
+    virtual bool loadFromFile(BinaryFile *file)
+    {
+        initialize(file->getImage(), file->getSymbols());
+        return loadFromMemory(file->getImage()->getRawData());
+    };
 
     /// Load the file from an already existing buffer.
     /// \note \p data cannot be const

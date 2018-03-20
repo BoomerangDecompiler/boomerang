@@ -13,8 +13,8 @@
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFGCompressor.h"
-#include "boomerang/db/BinaryImage.h"
-#include "boomerang/db/SymTab.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -30,7 +30,6 @@ static Boomerang *g_boomerang;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_symbols(new SymTab)
     , m_codeGenerator(new CCodeGenerator)
 {
 }
@@ -42,15 +41,26 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 }
 
 
-std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char *pname)
+bool Boomerang::loadAndDecode(const QString& fname, const char *pname)
 {
     LOG_MSG("Loading...");
-    std::unique_ptr<Prog> prog(new Prog(QFileInfo(fname).baseName()));
-    IFrontEnd *fe   = IFrontEnd::create(fname, prog.get(), this->getOrCreateProject());
+    IProject *project = getOrCreateProject();
 
+    const bool ok = project && project->loadBinaryFile(fname);
+    if (!ok) {
+        // load failed
+        return false;
+    }
+
+    Prog *prog = project->getProg();
+    assert(prog);
+
+    IFileLoader *loader = project->getBestLoader(fname);
+    assert(loader != nullptr); // otherwise it would have failed above
+    IFrontEnd *fe = IFrontEnd::instantiate(loader, prog);
     if (fe == nullptr) {
         LOG_ERROR("Loading '%1' failed.", fname);
-        return nullptr;
+        return false;
     }
 
     prog->setFrontEnd(fe);
@@ -78,9 +88,9 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
             LOG_MSG("Decoding entry point...");
         }
 
-        if (!fe->decode(prog.get(), SETTING(decodeMain), pname)) {
+        if (!fe->decode(project->getProg(), SETTING(decodeMain), pname)) {
             LOG_ERROR("Aborting load due to decode failure");
-            return nullptr;
+            return false;
         }
 
         bool gotMain = false;
@@ -92,9 +102,9 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
         if (SETTING(decodeChildren)) {
             // this causes any undecoded userprocs to be decoded
             LOG_MSG("Decoding anything undecoded...");
-            if (!fe->decode(prog.get(), Address::INVALID)) {
+            if (!fe->decode(project->getProg(), Address::INVALID)) {
                 LOG_ERROR("Aborting load due to decode failure");
-                return nullptr;
+                return false;
             }
         }
     }
@@ -114,36 +124,35 @@ std::unique_ptr<Prog> Boomerang::loadAndDecode(const QString& fname, const char 
         prog->printCallGraph();
     }
 
-    return prog;
+    return true;
 }
 
 
 int Boomerang::decompile(const QString& fname, const char *pname)
 {
-    std::unique_ptr<Prog> prog = nullptr;
     time_t start;
 
     time(&start);
 
-    prog = loadAndDecode(fname, pname);
-
-    if (prog == nullptr) {
+    if (!loadAndDecode(fname, pname)) {
         return 1;
     }
+
 
     if (SETTING(stopBeforeDecompile)) {
         return 0;
     }
 
     LOG_MSG("Decompiling...");
+    Prog *prog = getOrCreateProject()->getProg();
     prog->decompile();
 
     if (!SETTING(dotFile).isEmpty()) {
-        CfgDotWriter().writeCFG(prog.get(), SETTING(dotFile));
+        CfgDotWriter().writeCFG(prog, SETTING(dotFile));
     }
 
     LOG_MSG("Generating code...");
-    Boomerang::get()->getCodeGenerator()->generateCode(prog.get());
+    Boomerang::get()->getCodeGenerator()->generateCode(prog);
 
     LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootModule()->getName()));
 
@@ -241,18 +250,6 @@ void Boomerang::destroy()
 {
     delete g_boomerang;
     g_boomerang = nullptr;
-}
-
-
-IBinaryImage *Boomerang::getImage()
-{
-    return getOrCreateProject()->getImage();
-}
-
-
-IBinarySymbolTable *Boomerang::getSymbols()
-{
-    return m_symbols.get();
 }
 
 

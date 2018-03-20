@@ -11,8 +11,8 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
@@ -35,12 +35,12 @@ void HpSomBinaryLoaderTest::testHppaLoad()
     project.loadBinaryFile(HELLO_HPPA);
     IFileLoader *loader = project.getBestLoader(HELLO_HPPA);
     QVERIFY(loader != nullptr);
-    IBinaryImage *image = Boomerang::get()->getImage();
+    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
 
-    QCOMPARE(image->getNumSections(), static_cast<size_t>(3));
-    QCOMPARE(image->getSection(0)->getName(), QString("$TEXT$"));
-    QCOMPARE(image->getSection(1)->getName(), QString("$DATA$"));
-    QCOMPARE(image->getSection(2)->getName(), QString("$BSS$"));
+    QCOMPARE(image->getNumSections(), 3);
+    QCOMPARE(image->getSectionByIndex(0)->getName(), QString("$TEXT$"));
+    QCOMPARE(image->getSectionByIndex(1)->getName(), QString("$DATA$"));
+    QCOMPARE(image->getSectionByIndex(2)->getName(), QString("$BSS$"));
 }
 
 

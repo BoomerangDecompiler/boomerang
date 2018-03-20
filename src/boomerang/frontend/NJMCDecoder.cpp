@@ -31,9 +31,8 @@
 #include <cstring>
 
 
-NJMCDecoder::NJMCDecoder(Prog *prg)
-    : m_prog(prg)
-    , m_image(Boomerang::get()->getImage())
+NJMCDecoder::NJMCDecoder(Prog *prog)
+    : m_prog(prog)
 {
 }
 

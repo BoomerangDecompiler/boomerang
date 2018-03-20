@@ -11,15 +11,15 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/BinaryImage.h"
-#include "boomerang/db/IBinarySymbols.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 
 
 Project::Project()
-    : m_image(new BinaryImage)
-    , m_typeRecovery(new DFATypeRecovery())
+    : m_typeRecovery(new DFATypeRecovery())
 {
     loadPlugins();
 }
@@ -47,27 +47,22 @@ bool Project::loadBinaryFile(const QString& filePath)
         unloadBinaryFile();
     }
 
-    IBinarySymbolTable *symbols = Boomerang::get()->getSymbols();
-
-    loader->initialize(getImage(), symbols);
-
     QFile srcFile(filePath);
-
     if (false == srcFile.open(QFile::ReadOnly)) {
         LOG_WARN("Opening '%1' failed");
         return false;
     }
 
-    m_fileBytes = srcFile.readAll();
+    m_loadedBinary.reset(new BinaryFile(srcFile.readAll()));
 
-    if (loader->loadFromMemory(m_fileBytes) == false) {
+    if (loader->loadFromFile(m_loadedBinary.get()) == false) {
         LOG_WARN("Loading '%1 failed", filePath);
         return false;
     }
 
-    m_image->updateTextLimits();
+    m_loadedBinary->getImage()->updateTextLimits();
 
-    return true;
+    return createProg(m_loadedBinary.get(), QFileInfo(filePath).baseName()) != nullptr;
 }
 
 
@@ -87,16 +82,27 @@ bool Project::writeSaveFile(const QString& /*filePath*/)
 
 bool Project::isBinaryLoaded() const
 {
-    return !m_image->empty();
+    return m_loadedBinary != nullptr;
 }
 
 
 void Project::unloadBinaryFile()
 {
-    Boomerang::get()->getSymbols()->clear();
+    m_prog.reset();
+    m_loadedBinary.reset();
+}
 
-    m_fileBytes.clear();
-    m_image->reset();
+
+Prog *Project::createProg(BinaryFile* file, const QString& name)
+{
+    if (!file) {
+        LOG_ERROR("Cannot create Prog without a binary file!");
+        return nullptr;
+    }
+
+    m_prog.reset();
+    m_prog.reset(new Prog(name, file));
+    return m_prog.get();
 }
 
 

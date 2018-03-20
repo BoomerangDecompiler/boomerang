@@ -129,7 +129,7 @@ public:
     virtual ~DOS4GWBinaryLoader();
 
     /// \copydoc IFileLoader::initialize
-    void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+    void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
     int canLoad(QIODevice& fl) const override;
@@ -168,6 +168,6 @@ private:
     char *base = nullptr;                 ///< Beginning of the loaded image
 
     /// Map from address of dynamic pointers to library procedure names:
-    IBinarySymbolTable *m_symbols = nullptr;
-    IBinaryImage *m_image = nullptr;
+    BinarySymbolTable *m_symbols = nullptr;
+    BinaryImage *m_image = nullptr;
 };

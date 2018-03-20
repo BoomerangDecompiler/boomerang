@@ -10,9 +10,10 @@
 #pragma once
 
 
-class IBinaryImage;
+class BinaryFile;
 class IFileLoader;
 class ITypeRecovery;
+class Prog;
 class QString;
 
 /**
@@ -57,11 +58,8 @@ public:
      */
     virtual void unloadBinaryFile() = 0;
 
-    /**
-     * Get the binary image of the loaded binary.
-     */
-    virtual IBinaryImage *getImage()             = 0;
-    virtual const IBinaryImage *getImage() const = 0;
+    virtual BinaryFile *getLoadedBinaryFile() = 0;
+    virtual const BinaryFile *getLoadedBinaryFile() const = 0;
 
     /**
      * \returns the type recovery engine
@@ -69,4 +67,7 @@ public:
     virtual ITypeRecovery *getTypeRecoveryEngine() const = 0;
 
     virtual IFileLoader *getBestLoader(const QString& filePath) const = 0;
+
+    virtual const Prog *getProg() const = 0;
+    virtual Prog *getProg() = 0;
 };

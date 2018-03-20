@@ -20,8 +20,9 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/SymTab.h"
-#include "boomerang/db/BinaryImage.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
@@ -72,13 +73,12 @@ namespace dbghelp
 #include <sys/types.h>
 
 
-Prog::Prog(const QString& name)
+Prog::Prog(const QString& name, BinaryFile *binaryFile)
     : m_name(name)
+    , m_binaryFile(binaryFile)
     , m_defaultFrontend(nullptr)
 {
-    m_binarySymbols = static_cast<SymTab *>(Boomerang::get()->getSymbols());
     m_rootModule    = getOrInsertModule(getName());
-    m_image         = Boomerang::get()->getImage();
 }
 
 
@@ -213,29 +213,31 @@ bool Prog::isModuleUsed(Module *c) const
 }
 
 
-Module *Prog::getDefaultModule(const QString& name)
+Module *Prog::getModuleForSymbol(const QString& symbolName)
 {
-    QString             cfname;
-    const IBinarySymbol *bsym = m_binarySymbols->find(name);
+    QString             sourceFileName;
+    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByName(symbolName);
 
-    if (bsym) {
-        cfname = bsym->belongsToSourceFile();
+    if (sym) {
+        sourceFileName = sym->belongsToSourceFile();
     }
 
-    if (cfname.isEmpty() || !cfname.endsWith(".c")) {
+    if (sourceFileName.isEmpty() || !sourceFileName.endsWith(".c")) {
         return m_rootModule;
     }
 
-    LOG_VERBOSE("Got filename %1 for %2", cfname, name);
-    cfname.chop(2); // remove .c
-    Module *c = findModule(cfname);
+    LOG_VERBOSE("Got filename '%1' for symbol '%2'", sourceFileName, symbolName);
+    QString moduleName = sourceFileName;
+    moduleName.chop(2); // remove .c
 
-    if (c == nullptr) {
-        c = getOrInsertModule(cfname);
-        m_rootModule->addChild(c);
+    Module *module = findModule(moduleName);
+
+    if (module == nullptr) {
+        module = getOrInsertModule(moduleName);
+        m_rootModule->addChild(module);
     }
 
-    return c;
+    return module;
 }
 
 
@@ -285,7 +287,7 @@ Function *Prog::createFunction(Address startAddress)
     }
 
     QString             procName;
-    const IBinarySymbol *sym = m_binarySymbols->find(startAddress);
+    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(startAddress);
     bool                isLibFunction = false;
 
     if (sym) {
@@ -606,7 +608,7 @@ QString Prog::getGlobalName(Address uaddr) const
         }
     }
 
-    return getSymbolByAddress(uaddr);
+    return getSymbolNameByAddress(uaddr);
 }
 
 
@@ -618,15 +620,15 @@ void Prog::dumpGlobals() const
 }
 
 
-Address Prog::getGlobalAddr(const QString& nam) const
+Address Prog::getGlobalAddr(const QString& name) const
 {
-    Global *glob = getGlobal(nam);
+    Global *glob = getGlobal(name);
 
     if (glob) {
         return glob->getAddress();
     }
 
-    auto symbol = m_binarySymbols->find(nam);
+    auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
     return symbol ? symbol->getLocation() : Address::INVALID;
 }
 
@@ -654,7 +656,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
         }
     }
 
-    if (m_image->getSectionByAddr(uaddr) == nullptr) {
+    if (m_binaryFile->getImage()->getSectionByAddr(uaddr) == nullptr) {
         LOG_VERBOSE("Refusing to create a global at address %1 "
                     "that is in no known section of the binary", uaddr);
         return false;
@@ -674,7 +676,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
                 baseSize = baseType->getSizeInBytes();
             }
 
-            auto symbol = m_binarySymbols->find(name);
+            auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
             int  sz     = symbol ? symbol->getSize() : 0;
 
             if (sz && baseSize) {
@@ -703,7 +705,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
 
     assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
-    auto symbol = m_binarySymbols->find(name);
+    auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
 
     if (!symbol || (symbol->getSize() == 0)) {
         return ArrayType::get(baseType); // An "unbounded" array
@@ -734,7 +736,7 @@ SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) co
         return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #endif
-    auto symbol = m_binarySymbols->find(globalName);
+    auto symbol = m_binaryFile->getSymbols()->findSymbolByName(globalName);
     int  sz     = symbol ? symbol->getSize() : 0;
 
     if (sz == 0) {
@@ -806,7 +808,7 @@ void Prog::setGlobalType(const QString& name, SharedType ty)
 
 const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false */) const
 {
-    const IBinarySection *si = m_image->getSectionByAddr(uaddr);
+    const BinarySection *si = m_binaryFile->getImage()->getSectionByAddr(uaddr);
 
     // Too many compilers put constants, including string constants, into read/write sections
     // if (si && si->bReadOnly)
@@ -854,15 +856,15 @@ const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false *
 double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 {
     ok = true;
-    const IBinarySection *si = m_image->getSectionByAddr(uaddr);
+    const BinarySection *si = m_binaryFile->getImage()->getSectionByAddr(uaddr);
 
     if (si && si->isReadOnly()) {
         if (bits == 64) { // TODO: handle 80bit floats ?
-            return m_image->readNativeFloat8(uaddr);
+            return m_binaryFile->getImage()->readNativeFloat8(uaddr);
         }
         else {
             assert(bits == 32);
-            return m_image->readNativeFloat4(uaddr);
+            return m_binaryFile->getImage()->readNativeFloat4(uaddr);
         }
     }
 
@@ -871,53 +873,53 @@ double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 }
 
 
-QString Prog::getSymbolByAddress(Address dest) const
+QString Prog::getSymbolNameByAddress(Address dest) const
 {
-    auto sym = m_binarySymbols->find(dest);
+    auto sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
 
     return sym ? sym->getName() : "";
 }
 
 
-const IBinarySection *Prog::getSectionByAddr(Address a) const
+const BinarySection *Prog::getSectionByAddr(Address a) const
 {
-    return m_image->getSectionByAddr(a);
+    return m_binaryFile->getImage()->getSectionByAddr(a);
 }
 
 
 Address Prog::getLimitTextLow() const
 {
-    return Boomerang::get()->getImage()->getLimitTextLow();
+    return m_binaryFile->getImage()->getLimitTextLow();
 }
 
 
 Address Prog::getLimitTextHigh() const
 {
-    return Boomerang::get()->getImage()->getLimitTextHigh();
+    return m_binaryFile->getImage()->getLimitTextHigh();
 }
 
 
 bool Prog::isReadOnly(Address a) const
 {
-    return m_image->isReadOnly(a);
+    return m_binaryFile->getImage()->isReadOnly(a);
 }
 
 
 int Prog::readNative1(Address a) const
 {
-    return m_image->readNative1(a);
+    return m_binaryFile->getImage()->readNative1(a);
 }
 
 
 int Prog::readNative2(Address a) const
 {
-    return m_image->readNative2(a);
+    return m_binaryFile->getImage()->readNative2(a);
 }
 
 
 int Prog::readNative4(Address a) const
 {
-    return m_image->readNative4(a);
+    return m_binaryFile->getImage()->readNative4(a);
 }
 
 
@@ -926,7 +928,7 @@ void Prog::decodeEntryPoint(Address entryAddr)
     Function *func = findFunction(entryAddr);
 
     if (!func || (!func->isLib() && !static_cast<UserProc *>(func)->isDecoded())) {
-        if (!Util::inRange(entryAddr, m_image->getLimitTextLow(), m_image->getLimitTextHigh())) {
+        if (!Util::inRange(entryAddr, m_binaryFile->getImage()->getLimitTextLow(), m_binaryFile->getImage()->getLimitTextHigh())) {
             LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", entryAddr);
             return;
         }
@@ -972,7 +974,7 @@ void Prog::addEntryPoint(Address entryAddr)
 
 bool Prog::isDynamicLinkedProcPointer(Address dest) const
 {
-    auto sym = m_binarySymbols->find(dest);
+    auto sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
     return sym && sym->isImportedFunction();
 }
 
@@ -980,7 +982,7 @@ bool Prog::isDynamicLinkedProcPointer(Address dest) const
 const QString& Prog::getDynamicProcName(Address addr) const
 {
     static QString dyn("dynamic");
-    auto           sym = m_binarySymbols->find(addr);
+    auto           sym = m_binaryFile->getSymbols()->findSymbolByAddress(addr);
 
     return sym ? sym->getName() : dyn;
 }
@@ -1380,8 +1382,8 @@ void Prog::readSymbolFile(const QString& fname)
     for (Symbol *sym : par->symbols) {
         if (sym->sig) {
             QString name = sym->sig->getName();
-            tgt_mod = getDefaultModule(name);
-            auto bin_sym       = m_binarySymbols->find(sym->addr);
+            tgt_mod = getModuleForSymbol(name);
+            auto bin_sym       = m_binaryFile->getSymbols()->findSymbolByAddress(sym->addr);
             bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
                                  // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
                                  // to specifically specify that this function obeys library calling conventions
@@ -1419,7 +1421,7 @@ void Prog::readSymbolFile(const QString& fname)
 SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 {
     SharedExp            e   = nullptr;
-    const IBinarySection *si = getSectionByAddr(uaddr);
+    const BinarySection *si = getSectionByAddr(uaddr);
 
     if (si == nullptr) {
         return nullptr;
@@ -1491,7 +1493,7 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
         if (!name.isEmpty()) {
-            auto symbol = m_binarySymbols->find(name);
+            auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
             nelems = symbol ? symbol->getSize() : 0;
             assert(base_sz);
             nelems /= base_sz;
@@ -1536,17 +1538,17 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
         switch (size)
         {
         case 8:
-            return Const::get(m_image->readNative1(uaddr));
+            return Const::get(m_binaryFile->getImage()->readNative1(uaddr));
 
         case 16:
             // Note: must respect endianness
-            return Const::get(m_image->readNative2(uaddr));
+            return Const::get(m_binaryFile->getImage()->readNative2(uaddr));
 
         case 32:
-            return Const::get(m_image->readNative4(uaddr));
+            return Const::get(m_binaryFile->getImage()->readNative4(uaddr));
 
         case 64:
-            return Const::get(m_image->readNative8(uaddr));
+            return Const::get(m_binaryFile->getImage()->readNative8(uaddr));
         }
     }
 
@@ -1557,10 +1559,10 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
     switch (type->as<FloatType>()->getSize())
     {
     case 32:
-        return Const::get(m_image->readNativeFloat4(uaddr));
+        return Const::get(m_binaryFile->getImage()->readNativeFloat4(uaddr));
 
     case 64:
-        return Const::get(m_image->readNativeFloat8(uaddr));
+        return Const::get(m_binaryFile->getImage()->readNativeFloat8(uaddr));
     }
 
     return e;
@@ -1577,7 +1579,7 @@ bool Prog::reDecode(UserProc *proc)
 
 void Prog::decodeFragment(UserProc *proc, Address a)
 {
-    if ((a >= m_image->getLimitTextLow()) && (a < m_image->getLimitTextHigh())) {
+    if ((a >= m_binaryFile->getImage()->getLimitTextLow()) && (a < m_binaryFile->getImage()->getLimitTextHigh())) {
         m_defaultFrontend->decodeFragment(proc, a);
     }
     else {
@@ -1598,7 +1600,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
     Address c_addr = e->access<Const>()->getAddr();
-    const IBinarySymbol *bin_sym = m_binarySymbols->find(c_addr);
+    const BinarySymbol *bin_sym = m_binaryFile->getSymbols()->findSymbolByAddress(c_addr);
 
     if (bin_sym != nullptr) {
         unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface
@@ -1618,7 +1620,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         }
         else {
             // check for accesses into the middle of symbols
-            for (const std::shared_ptr<IBinarySymbol> sym : *m_binarySymbols) {
+            for (const std::shared_ptr<BinarySymbol> sym : *m_binaryFile->getSymbols()) {
                 unsigned int sz = sym->getSize();
 
                 if ((sym->getLocation() < c_addr) && ((sym->getLocation() + sz) > c_addr)) {
@@ -1639,14 +1641,9 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
 
 bool Prog::isStringConstant(Address a) const
 {
-    const SectionInfo *si = static_cast<const SectionInfo *>(m_image->getSectionByAddr(a));
+    const BinarySection *si = static_cast<const BinarySection *>(m_binaryFile->getImage()->getSectionByAddr(a));
 
-    if (!si) {
-        return false;
-    }
-
-    QVariant qv = si->attributeInRange("StringsSection", a, a + 1);
-    return !qv.isNull();
+    return si && si->isAttributeInRange("StringsSection", a, a + 1);
 }
 
 

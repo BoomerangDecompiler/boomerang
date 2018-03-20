@@ -11,9 +11,9 @@
 
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySymbols.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/Log.h"
 
 #include <QBuffer>
@@ -49,7 +49,7 @@ DOS4GWBinaryLoader::~DOS4GWBinaryLoader()
 }
 
 
-void DOS4GWBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void DOS4GWBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     m_image   = image;
     m_symbols = symbols;
@@ -70,13 +70,13 @@ Address DOS4GWBinaryLoader::getEntryPoint()
 
 Address DOS4GWBinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol *sym = m_symbols->find("main");
+    const BinarySymbol *sym = m_symbols->findSymbolByName("main");
 
     if (sym) {
         return sym->getLocation();
     }
 
-    sym = m_symbols->find("__CMain");
+    sym = m_symbols->findSymbolByName("__CMain");
 
     if (sym) {
         return sym->getLocation();
@@ -92,7 +92,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     bool gotSubEbp   = false;                               // True if see sub ebp, ebp
     bool lastWasCall = false;                               // True if the last instruction was a call
 
-    IBinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
+    BinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
 
     if (si == nullptr) {
         si = m_image->getSectionByName(".text");
@@ -253,14 +253,14 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     for (SectionParam par : params) {
-        IBinarySection *sect = m_image->createSection(par.Name, par.from, par.from + par.Size);
+        BinarySection *sect = m_image->createSection(par.Name, par.from, par.from + par.Size);
 
         if (sect) {
-            sect->setBss(par.Bss)
-               .setCode(par.Code)
-               .setData(par.Data)
-               .setReadOnly(par.ReadOnly)
-               .setHostAddr(par.ImageAddress);
+            sect->setBss(par.Bss);
+            sect->setCode(par.Code);
+            sect->setData(par.Data);
+            sect->setReadOnly(par.ReadOnly);
+            sect->setHostAddr(par.ImageAddress);
         }
     }
 

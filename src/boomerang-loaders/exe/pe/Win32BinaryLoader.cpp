@@ -35,10 +35,10 @@ namespace dbghelp
 
 #include "Win32BinaryLoader.h"
 
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySymbols.h"
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/Log.h"
 
 #include <algorithm>
@@ -94,7 +94,7 @@ Win32BinaryLoader::~Win32BinaryLoader()
 }
 
 
-void Win32BinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void Win32BinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     unload();
     m_binaryImage = image;
@@ -116,19 +116,19 @@ Address Win32BinaryLoader::getEntryPoint()
 
 Address Win32BinaryLoader::getMainEntryPoint()
 {
-    const IBinarySymbol *mainSymbol = m_symbols->find("main");
+    const BinarySymbol *mainSymbol = m_symbols->findSymbolByName("main");
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
     }
 
-    mainSymbol = m_symbols->find("_main"); // Example: MinGW
+    mainSymbol = m_symbols->findSymbolByName("_main"); // Example: MinGW
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
     }
 
-    mainSymbol = m_symbols->find("WinMain"); // Example: MinGW
+    mainSymbol = m_symbols->findSymbolByName("WinMain"); // Example: MinGW
 
     if (mainSymbol) {
         return mainSymbol->getLocation();
@@ -146,7 +146,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
     int           gap;              // Number of instructions from the last ordinary call
     int           borlandState = 0; // State machine for Borland
 
-    IBinarySection *section = m_binaryImage->getSectionByName(".text");
+    BinarySection *section = m_binaryImage->getSectionByName(".text");
 
     if (section == nullptr) {
         section = m_binaryImage->getSectionByName("CODE");
@@ -201,7 +201,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 addr = Address(LMMH(*(m_image + p + 2)));
                 //                    const char *c = dlprocptrs[addr].c_str();
                 //                    printf("Checking %x finding %s\n", addr, c);
-                const IBinarySymbol *exit_sym = m_symbols->find(addr);
+                const BinarySymbol *exit_sym = m_symbols->findSymbolByAddress(addr);
 
                 if (exit_sym && (exit_sym->getName() == "exit")) {
                     if (gap <= 10) {
@@ -300,12 +300,12 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     if ((*reinterpret_cast<Byte *>(p + m_image + 0x20) == 0xff) && (*reinterpret_cast<Byte *>(p + m_image + 0x21) == 0x15)) {
         Address desti    = Address(LMMH(*(p + m_image + 0x22)));
-        auto    dest_sym = m_symbols->find(desti);
+        auto    dest_sym = m_symbols->findSymbolByAddress(desti);
 
         if (dest_sym && (dest_sym->getName() == "GetVersionExA")) {
             if ((*reinterpret_cast<Byte *>(p + m_image + 0x6d) == 0xff) && (*reinterpret_cast<Byte *>(p + m_image + 0x6e) == 0x15)) {
                 desti    = Address(LMMH(*(p + m_image + 0x6f)));
-                dest_sym = m_symbols->find(desti);
+                dest_sym = m_symbols->findSymbolByAddress(desti);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
                     if (*reinterpret_cast<Byte *>(p + m_image + 0x16e) == 0xe8) {
@@ -403,7 +403,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 // skip all the call statements until we hit a call to an indirect call to ExitProcess
                 // main is the 2nd call before this one
                 if ((op2 == 0xff) && (op2a == 0x25)) {
-                    auto dest_sym = m_symbols->find(desti);
+                    auto dest_sym = m_symbols->findSymbolByAddress(desti);
 
                     if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
                         m_mingw_main = true;
@@ -446,7 +446,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
         if (op1 == 0xFF) {
             if ((op2 == 0x15)) { // indirect CALL opcode
                 const Address       destAddr  = Address(LMMH(*(m_image + p + 2)));
-                const IBinarySymbol *dest_sym = m_symbols->find(destAddr);
+                const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(destAddr);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
                     gotGMHA = true;
@@ -456,7 +456,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if ((op1 == 0xE8) && gotGMHA) { // CALL opcode
             Address dest = Address(p + 5 + LMMH(*(m_image + p + 1)));
-            m_symbols->create(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
+            m_symbols->createSymbol(dest + LMMH(m_pPEHeader->Imagebase), "WinMain");
             return dest + LMMH(m_pPEHeader->Imagebase);
         }
 
@@ -503,16 +503,23 @@ void Win32BinaryLoader::processIAT()
                     // This is an ordinal number (stupid idea)
                     QString nodots = QString(dllName).replace(".", "_"); // Dots can't be in identifiers
                     nodots = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    m_symbols->create(paddr, nodots).setAttr("Imported", true).setAttr("Function", true);
+                    BinarySymbol *sym = m_symbols->createSymbol(paddr, nodots);
+                    sym->setAttribute("Imported", true);
+                    sym->setAttribute("Function", true);
                 }
                 else {
                     // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
                     QString name(static_cast<const char *>(m_image + iatEntry + 2));
-                    m_symbols->create(paddr, name).setAttr("Imported", true).setAttr("Function", true);
+
+                    BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
+                    sym->setAttribute("Imported", true);
+                    sym->setAttribute("Function", true);
                     Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_image).value() + LMMH(m_pPEHeader->Imagebase));
 
                     if (paddr != old_loc) { // add both possibilities
-                        m_symbols->create(old_loc, QString("old_") + name).setAttr("Imported", true).setAttr("Function", true);
+                        BinarySymbol *symbol = m_symbols->createSymbol(old_loc, QString("old_") + name);
+                        symbol->setAttribute("Imported", true);
+                        symbol->setAttribute("Function", true);
                     }
                 }
 
@@ -638,18 +645,18 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     }
 
     for (SectionParam par : params) {
-        IBinarySection *sect = m_binaryImage->createSection(par.Name, par.From, par.From + par.Size);
+        BinarySection *sect = m_binaryImage->createSection(par.Name, par.From, par.From + par.Size);
 
         if (!sect) {
             continue;
         }
 
-        sect->setBss(par.Bss)
-           .setCode(par.Code)
-           .setData(par.Data)
-           .setReadOnly(par.ReadOnly)
-           .setHostAddr(par.ImageAddress)
-           .setEndian(0);      // little endian
+        sect->setBss(par.Bss);
+        sect->setCode(par.Code);
+        sect->setData(par.Data);
+        sect->setReadOnly(par.ReadOnly);
+        sect->setHostAddr(par.ImageAddress);
+        sect->setEndian(0);      // little endian
 
         if (!(par.Bss || par.From.isZero())) {
             sect->addDefinedArea(par.From, par.From + par.PhysSize);
@@ -668,8 +675,8 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
     Address entry = getMainEntryPoint();
 
     if (entry != Address::INVALID) {
-        if (!m_symbols->find(entry)) {
-            m_symbols->create(entry, "main").setAttr("Function", true);
+        if (!m_symbols->findSymbolByAddress(entry)) {
+            m_symbols->createSymbol(entry, "main")->setAttribute("Function", true);
         }
     }
 
@@ -722,7 +729,7 @@ int Win32BinaryLoader::canLoad(QIODevice& fl) const
 void Win32BinaryLoader::findJumps(Address curr)
 {
     int            cnt      = 0; // Count of bytes with no match
-    IBinarySection *section = m_binaryImage->getSectionByName(".text");
+    BinarySection *section = m_binaryImage->getSectionByName(".text");
 
     if (section == nullptr) {
         section = m_binaryImage->getSectionByName("CODE");
@@ -745,7 +752,7 @@ void Win32BinaryLoader::findJumps(Address curr)
         }
 
         Address             operand = Address(LMMH2(HostAddress(curr, delta+2)));
-        const IBinarySymbol *symbol = m_symbols->find(operand);
+        const BinarySymbol *symbol = m_symbols->findSymbolByAddress(operand);
 
         if (symbol == nullptr) {
             continue;
@@ -753,11 +760,13 @@ void Win32BinaryLoader::findJumps(Address curr)
 
         // try to rename symbol
         const QString oldName = symbol->getName();
-        if (m_symbols->rename(oldName, "__imp_" + oldName) == false) {
+        if (m_symbols->renameSymbol(oldName, "__imp_" + oldName) == false) {
             continue;
         }
 
-        m_symbols->create(curr, oldName).setAttr("Function", true).setAttr("Imported", true);
+        BinarySymbol *sym = m_symbols->createSymbol(curr, oldName);
+        sym->setAttribute("Function", true);
+        sym->setAttribute("Imported", true);
         curr -= 4; // Next match is at least 4+2 bytes away
         cnt   = 0;
     }
@@ -990,7 +999,7 @@ bool Win32BinaryLoader::isStaticLinkedLibProc(Address addr) const
 bool Win32BinaryLoader::isMinGWsAllocStack(Address addr) const
 {
     if (m_mingw_main) {
-        const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+        const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
         if (section) {
             HostAddress   hostAddr      = section->getHostAddr() - section->getSourceAddr() + addr;
@@ -1018,7 +1027,7 @@ bool Win32BinaryLoader::isMinGWsFrameInit(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;
@@ -1051,7 +1060,7 @@ bool Win32BinaryLoader::isMinGWsFrameEnd(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;
@@ -1079,7 +1088,7 @@ bool Win32BinaryLoader::isMinGWsCleanupSetup(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;
@@ -1113,7 +1122,7 @@ bool Win32BinaryLoader::isMinGWsMalloc(Address addr) const
         return false;
     }
 
-    const IBinarySection *section = m_binaryImage->getSectionByAddr(addr);
+    const BinarySection *section = m_binaryImage->getSectionByAddr(addr);
 
     if (!section) {
         return false;

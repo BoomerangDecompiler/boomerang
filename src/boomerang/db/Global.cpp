@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/exp/Exp.h"
 
 
@@ -32,7 +32,7 @@ bool Global::containsAddress(Address addr) const
 
 SharedExp Global::getInitialValue(const Prog *prog) const
 {
-    const IBinarySection *si = prog->getSectionByAddr(m_addr);
+    const BinarySection *si = prog->getSectionByAddr(m_addr);
 
     // TODO: see what happens when we skip Bss check here
     if (si && si->isAddressBss(m_addr)) {

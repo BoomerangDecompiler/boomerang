@@ -83,7 +83,7 @@ public:
 
 public:
     /// \copydoc IFileLoader::initialize
-    void initialize(IBinaryImage *image, IBinarySymbolTable *symbols) override;
+    void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::loadFromMemory
     bool loadFromMemory(QByteArray& data) override;
@@ -137,6 +137,6 @@ private:
 
     std::map<QString, ObjcModule> modules;
     std::vector<struct section> sections;
-    IBinaryImage *Image = nullptr;
-    IBinarySymbolTable *Symbols = nullptr;
+    BinaryImage *Image = nullptr;
+    BinarySymbolTable *Symbols = nullptr;
 };

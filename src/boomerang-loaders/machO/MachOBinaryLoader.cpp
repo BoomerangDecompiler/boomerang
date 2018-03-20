@@ -17,9 +17,9 @@
 #include "objc/objc-runtime.h"
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySymbols.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/Log.h"
 
 #include <QBuffer>
@@ -57,7 +57,7 @@ MachOBinaryLoader::~MachOBinaryLoader()
 }
 
 
-void MachOBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void MachOBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     Image   = image;
     Symbols = symbols;
@@ -78,13 +78,13 @@ Address MachOBinaryLoader::getEntryPoint()
 
 Address MachOBinaryLoader::getMainEntryPoint()
 {
-    auto symbol = Symbols->find("main");
+    auto symbol = Symbols->findSymbolByName("main");
 
     if (symbol) {
         return symbol->getLocation();
     }
 
-    symbol = Symbols->find("_main");
+    symbol = Symbols->findSymbolByName("_main");
 
     if (symbol) {
         return symbol->getLocation();
@@ -318,18 +318,18 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
         DEBUG_PRINT("loaded segment %1 %2 in mem %3 in file", a.value(), sz, fsz);
 
         QString        name  = QByteArray(segments[i].segname, 17);
-        IBinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
+        BinarySection *sect = Image->createSection(name, Address(BMMH(segments[i].vmaddr)),
                                                     Address(BMMH(segments[i].vmaddr) + BMMH(segments[i].vmsize)));
         assert(sect);
         sect->setHostAddr(HostAddress(base) + BMMH(segments[i].vmaddr) - loaded_addr);
         assert(sect->getHostAddr() + sect->getSize() <= HostAddress(base) + loaded_size);
 
         unsigned long l = BMMH(segments[i].initprot);
-        sect->setBss(false) // TODO
-           .setEndian((machine == Machine::PPC) ? 1 : 0)
-           .setCode((l & VM_PROT_EXECUTE) != 0)
-           .setData((l & VM_PROT_READ)    != 0)
-           .setReadOnly((l & VM_PROT_WRITE) == 0);
+        sect->setBss(false); // TODO
+        sect->setEndian((machine == Machine::PPC) ? 1 : 0);
+        sect->setCode((l & VM_PROT_EXECUTE) != 0);
+        sect->setData((l & VM_PROT_READ)    != 0);
+        sect->setReadOnly((l & VM_PROT_WRITE) == 0);
 
         for (size_t s_idx = 0; s_idx < sections.size(); s_idx++) {
             if (strcmp(sections[s_idx].segname, segments[i].segname) != 0) {
@@ -373,7 +373,9 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 name++;
             }
 
-            Symbols->create(addr, name).setAttr("Function", true).setAttr("Imported", true);
+            BinarySymbol *sym = Symbols->createSymbol(addr, name);
+            sym->setAttribute("Function", true);
+            sym->setAttribute("Imported", true);
         }
     }
 
@@ -395,7 +397,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
                 name++;
             }
 
-            Symbols->create(Address(BMMH(symbols[i].n_value)), name);
+            Symbols->createSymbol(Address(BMMH(symbols[i].n_value)), name);
         }
     }
 

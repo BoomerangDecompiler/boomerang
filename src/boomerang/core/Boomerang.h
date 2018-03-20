@@ -32,8 +32,6 @@ class Function;
 class UserProc;
 class ICodeGenerator;
 class ObjcModule;
-class IBinaryImage;
-class IBinarySymbolTable;
 class Project;
 
 
@@ -68,9 +66,6 @@ public:
     static Boomerang *get();
     static void destroy();
 
-    IBinaryImage *getImage() override;
-    IBinarySymbolTable *getSymbols() override;
-
     IProject *getOrCreateProject() override;
 
     /// \returns the library version string
@@ -88,7 +83,7 @@ public:
      * \param fname The name of the file to load.
      * \param pname How the Prog will be named.
      */
-    std::unique_ptr<Prog> loadAndDecode(const QString& fname, const char *pname = nullptr);
+    bool loadAndDecode(const QString& fname, const char *pname = nullptr);
 
     /**
      * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
@@ -148,7 +143,6 @@ public:
 public:
     std::unique_ptr<Settings> m_settings;
     std::unique_ptr<IProject> m_currentProject;
-    std::unique_ptr<IBinarySymbolTable> m_symbols;
     std::unique_ptr<ICodeGenerator> m_codeGenerator;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.

@@ -21,14 +21,13 @@
 void ProgTest::testName()
 {
     QString progName = HELLO_PENTIUM;
-    Prog    *prog    = new Prog(progName);
+    Prog prog(progName, nullptr);
 
-    QCOMPARE(prog->getName(), progName);
+    QCOMPARE(prog.getName(), progName);
 
     progName = "Happy Prog";
-    prog->setName(progName);
-    QCOMPARE(prog->getName(), progName);
-    delete prog;
+    prog.setName(progName);
+    QCOMPARE(prog.getName(), progName);
 }
 
 

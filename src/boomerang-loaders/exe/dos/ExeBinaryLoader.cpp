@@ -12,8 +12,8 @@
 
 #include "boomerang/core/IBoomerang.h"
 #include "boomerang/loader/IFileLoader.h"
-#include "boomerang/db/IBinaryImage.h"
-#include "boomerang/db/IBinarySection.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -28,7 +28,7 @@ ExeBinaryLoader::ExeBinaryLoader()
 }
 
 
-void ExeBinaryLoader::initialize(IBinaryImage *image, IBinarySymbolTable *symbols)
+void ExeBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
 {
     m_image   = image;
     m_symbols = symbols;
@@ -150,18 +150,20 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     fp.close();
 
     // TODO: prevent overlapping of those 3 sections
-    IBinarySection *header = m_image->createSection("$HEADER", Address(0x4000), Address(0x4000) + sizeof(ExeHeader));
-    header->setHostAddr(HostAddress(m_header))
-       .setEntrySize(1);
+    BinarySection *header = m_image->createSection("$HEADER", Address(0x4000), Address(0x4000) + sizeof(ExeHeader));
+    header->setHostAddr(HostAddress(m_header));
+    header->setEntrySize(1);
+
     // The text and data section
-    IBinarySection *text = m_image->createSection(".text", Address(0x10000), Address(0x10000) + sizeof(m_imageSize));
-    text->setCode(true)
-       .setData(true)
-       .setHostAddr(HostAddress(m_loadedImage))
-       .setEntrySize(1);
-    IBinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
-    reloc->setHostAddr(HostAddress(m_relocTable))
-       .setEntrySize(sizeof(DWord));
+    BinarySection *text = m_image->createSection(".text", Address(0x10000), Address(0x10000) + sizeof(m_imageSize));
+    text->setCode(true);
+    text->setData(true);
+    text->setHostAddr(HostAddress(m_loadedImage));
+    text->setEntrySize(1);
+
+    BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
+    reloc->setHostAddr(HostAddress(m_relocTable));
+    reloc->setEntrySize(sizeof(DWord));
     return true;
 }
 
