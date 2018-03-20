@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 
@@ -61,7 +62,7 @@ bool Project::loadBinaryFile(const QString& filePath)
 
     m_loadedBinary->getImage()->updateTextLimits();
 
-    return true;
+    return createProg(m_loadedBinary.get(), QFileInfo(filePath).baseName()) != nullptr;
 }
 
 
@@ -87,7 +88,21 @@ bool Project::isBinaryLoaded() const
 
 void Project::unloadBinaryFile()
 {
+    m_prog.reset();
     m_loadedBinary.reset();
+}
+
+
+Prog *Project::createProg(BinaryFile* file, const QString& name)
+{
+    if (!file) {
+        LOG_ERROR("Cannot create Prog without a binary file!");
+        return nullptr;
+    }
+
+    m_prog.reset();
+    m_prog.reset(new Prog(name, file));
+    return m_prog.get();
 }
 
 

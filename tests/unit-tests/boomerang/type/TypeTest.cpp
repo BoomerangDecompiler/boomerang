@@ -122,18 +122,18 @@ void TypeTest::testNotEqual()
 void TypeTest::testCompound()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+    QVERIFY(project.loadBinaryFile(HELLO_WINDOWS));
 
-    project.loadBinaryFile(HELLO_WINDOWS);
     IFileLoader *loader = project.getBestLoader(HELLO_WINDOWS);
     QVERIFY(loader != nullptr);
 
-    Prog *prog = new Prog("HELLO_WINDOWS", nullptr);
-    IFrontEnd *pFE = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(pFE);
+    Prog *prog = project.getProg();
+    IFrontEnd *fe = new PentiumFrontEnd(loader, prog);
+    prog->setFrontEnd(fe);
 
-    pFE->readLibraryCatalog(); // Read definitions
+    fe->readLibraryCatalog(); // Read definitions
 
-    std::shared_ptr<Signature> paintSig = pFE->getLibSignature("BeginPaint");
+    std::shared_ptr<Signature> paintSig = fe->getLibSignature("BeginPaint");
 
     SharedType paramType = paintSig->getParamType(1);
     QCOMPARE(paintSig->getParamType(1)->getCtype(), QString("LPPAINTSTRUCT"));

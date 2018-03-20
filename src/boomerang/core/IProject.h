@@ -13,8 +13,8 @@
 class BinaryFile;
 class IFileLoader;
 class ITypeRecovery;
+class Prog;
 class QString;
-
 
 /**
  * The Project interface class
@@ -67,4 +67,7 @@ public:
     virtual ITypeRecovery *getTypeRecoveryEngine() const = 0;
 
     virtual IFileLoader *getBestLoader(const QString& filePath) const = 0;
+
+    virtual const Prog *getProg() const = 0;
+    virtual Prog *getProg() = 0;
 };

@@ -83,7 +83,7 @@ public:
      * \param fname The name of the file to load.
      * \param pname How the Prog will be named.
      */
-    std::unique_ptr<Prog> loadAndDecode(const QString& fname, const char *pname = nullptr);
+    bool loadAndDecode(const QString& fname, const char *pname = nullptr);
 
     /**
      * The program will be subsequently be loaded, decoded, decompiled and written to a source file.

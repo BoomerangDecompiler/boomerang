@@ -51,13 +51,21 @@ public:
     /// \copydoc IProject::unload
     void unloadBinaryFile() override;
 
+    /// Get the best loader that is able to load the file at \p filePath
+    IFileLoader *getBestLoader(const QString& filePath) const override;
+
     BinaryFile *getLoadedBinaryFile() override { return m_loadedBinary.get(); }
     const BinaryFile *getLoadedBinaryFile() const override { return m_loadedBinary.get(); }
 
-    ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
+    /**
+     * Create a Prog from a loaded binary file. Returns nullptr on failure.
+     */
+    Prog *createProg(BinaryFile *file, const QString& name = "");
 
-    /// Get the best loader that is able to load the file at \p filePath
-    IFileLoader *getBestLoader(const QString& filePath) const override;
+    const Prog *getProg() const override { return m_prog.get(); }
+    Prog *getProg() override { return m_prog.get(); }
+
+    ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
 
 private:
     /// Load all plugins from the plugin directory.
@@ -65,6 +73,7 @@ private:
 
 private:
     std::unique_ptr<BinaryFile> m_loadedBinary;
+    std::unique_ptr<Prog> m_prog;
     std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< type recovery engine
 
     // Plugins

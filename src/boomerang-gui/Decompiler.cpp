@@ -57,10 +57,16 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
     emit loadingStarted();
 
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    bool ok = project->loadBinaryFile(inputFile);
+    if (!ok) {
+        emit machineTypeChanged(QString("Unavailable: Load Failed!"));
+        return;
+    }
+
+    m_prog = project->getProg();
+
     IFileLoader *loader = Boomerang::get()->getOrCreateProject()->getBestLoader(inputFile);
-//    m_binaryFile = new BinaryFile() // todo
-//    loader->loadFromFile()
-    m_prog  = new Prog(QFileInfo(inputFile).baseName(), m_binaryFile);
     m_fe    = IFrontEnd::instantiate(loader, m_prog);
 
     if (m_fe == nullptr) {
@@ -130,7 +136,6 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
 void Decompiler::decode()
 {
     emit decodingStarted();
-
 
     LOG_MSG("Decoding program %1...", m_prog->getName());
 

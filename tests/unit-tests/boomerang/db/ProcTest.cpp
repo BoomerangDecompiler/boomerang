@@ -24,11 +24,9 @@
 
 void ProcTest::testName()
 {
-    Prog *prog = new Prog("testProcName", nullptr);
-
-    IProject&   project = *Boomerang::get()->getOrCreateProject();
+    IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(HELLO_PENTIUM);
-
+    Prog *prog = project.getProg();
     QVERIFY(prog != nullptr);
 
     IFrontEnd *pFE = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
@@ -46,8 +44,6 @@ void ProcTest::testName()
     QVERIFY(f != nullptr);
     QVERIFY(f->isLib());
     QCOMPARE(f->getName(), QString("printf"));
-
-    delete prog;
 }
 
 

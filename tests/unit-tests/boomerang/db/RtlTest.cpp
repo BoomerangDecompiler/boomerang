@@ -232,6 +232,7 @@ void RtlTest::testVisitor()
 //    delete pFE;
 // }
 
+
 void RtlTest::testSetConscripts()
 {
     // m[1000] = m[1000] + 1000
@@ -239,11 +240,11 @@ void RtlTest::testSetConscripts()
                                Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
-    CallStatement *s2   = new CallStatement();
     Prog          *p    = new Prog("fake_prog", nullptr);
     Module        *m    = p->getOrInsertModule("test");
     Function      *proc = new UserProc(Address(0x00002000), "printf", m); // Making a true LibProc is problematic
 
+    CallStatement *s2   = new CallStatement();
     s2->setDestProc(proc);
     s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
     SharedExp e1 = Const::get("max is %d");
@@ -257,6 +258,7 @@ void RtlTest::testSetConscripts()
     std::list<Statement *> list;
     list.push_back(s1);
     list.push_back(s2);
+
     RTL                 *rtl = new RTL(Address(0x1000), &list);
     StmtConscriptSetter sc(0, false);
 
