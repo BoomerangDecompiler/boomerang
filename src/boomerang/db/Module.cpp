@@ -196,14 +196,14 @@ QString Module::getOutPath(const char *ext) const
 }
 
 
-Module *Module::find(const QString& nam)
+Module *Module::find(const QString& name)
 {
-    if (m_name == nam) {
+    if (m_name == name) {
         return this;
     }
 
     for (Module *child : m_children) {
-        Module *c = child->find(nam);
+        Module *c = child->find(name);
 
         if (c) {
             return c;

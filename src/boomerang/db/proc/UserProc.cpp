@@ -150,9 +150,9 @@ void UserProc::renameParam(const char *oldName, const char *newName)
 }
 
 
-void UserProc::setParamType(const char *nam, SharedType ty)
+void UserProc::setParamType(const char *name, SharedType ty)
 {
-    m_signature->setParamType(nam, ty);
+    m_signature->setParamType(name, ty);
 }
 
 
@@ -1265,13 +1265,13 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
                 continue;
             }
 
-            QString nam = (elem).second->access<Const, 1>()->getStr();
+            QString name = (elem).second->access<Const, 1>()->getStr();
 
-            if (m_locals.find(nam) == m_locals.end()) {
+            if (m_locals.find(name) == m_locals.end()) {
                 continue;
             }
 
-            SharedType     lty = m_locals[nam];
+            SharedType     lty = m_locals[name];
             SharedConstExp loc = elem.first;
 
             if (loc->isMemOf() && (loc->getSubExp1()->getOper() == opMinus) &&
@@ -1402,32 +1402,32 @@ SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /*
 }
 
 
-void UserProc::addLocal(SharedType ty, const QString& nam, SharedExp e)
+void UserProc::addLocal(SharedType ty, const QString& name, SharedExp e)
 {
     // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
     // assert(symbolMap.find(e) == symbolMap.end());
-    mapSymbolTo(e, Location::local(nam, this));
-    // assert(locals.find(nam) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
-    m_locals[nam] = ty;
+    mapSymbolTo(e, Location::local(name, this));
+    // assert(locals.find(name) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
+    m_locals[name] = ty;
 }
 
 
-SharedType UserProc::getLocalType(const QString& nam)
+SharedType UserProc::getLocalType(const QString& name)
 {
-    if (m_locals.find(nam) == m_locals.end()) {
+    if (m_locals.find(name) == m_locals.end()) {
         return nullptr;
     }
 
-    SharedType ty = m_locals[nam];
+    SharedType ty = m_locals[name];
     return ty;
 }
 
 
-void UserProc::setLocalType(const QString& nam, SharedType ty)
+void UserProc::setLocalType(const QString& name, SharedType ty)
 {
-    m_locals[nam] = ty;
+    m_locals[name] = ty;
 
-    LOG_VERBOSE("Updating type of %1 to %2", nam, ty->getCtype());
+    LOG_VERBOSE("Updating type of %1 to %2", name, ty->getCtype());
 }
 
 
@@ -1507,12 +1507,12 @@ void UserProc::removeSymbolMapping(const SharedConstExp& from, SharedExp to)
 }
 
 
-SharedConstExp UserProc::expFromSymbol(const QString& nam) const
+SharedConstExp UserProc::expFromSymbol(const QString& name) const
 {
     for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
         auto e = it.second;
 
-        if (e->isLocal() && (e->access<Const, 1>()->getStr() == nam)) {
+        if (e->isLocal() && (e->access<Const, 1>()->getStr() == name)) {
             return it.first;
         }
     }

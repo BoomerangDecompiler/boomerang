@@ -103,9 +103,9 @@ IFrontEnd *IFrontEnd::instantiate(IFileLoader *loader, Prog *prog)
 
 
 
-void IFrontEnd::addSymbol(Address addr, const QString& nam)
+void IFrontEnd::addSymbol(Address addr, const QString& name)
 {
-    m_program->getBinaryFile()->getSymbols()->createSymbol(addr, nam);
+    m_program->getBinaryFile()->getSymbols()->createSymbol(addr, name);
 }
 
 

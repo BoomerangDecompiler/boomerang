@@ -746,7 +746,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
                 yyvsp[-1].type_ident->ty = PointerType::get(yyvsp[-1].type_ident->ty);
             }
 
-            yyval.param = std::make_shared<Parameter>(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->nam);
+            yyval.param = std::make_shared<Parameter>(yyvsp[-1].type_ident->ty, yyvsp[-1].type_ident->name);
 
             if (yyvsp[0].bound) {
                 switch (yyvsp[0].bound->m_kind)
@@ -785,7 +785,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 30 : {
-            Type::addNamedType(yyvsp[-1].type_ident->nam, yyvsp[-1].type_ident->ty);
+            Type::addNamedType(yyvsp[-1].type_ident->name, yyvsp[-1].type_ident->ty);
             break;
     }
 
@@ -810,7 +810,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 32 : {
-            auto sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->nam);
+            auto sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->name);
             sig->addReturn(yyvsp[-4].type_ident->ty);
 
             for (auto& elem : *yyvsp[-2].param_list) {
@@ -824,7 +824,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             }
 
             delete yyvsp[-2].param_list;
-            Type::addNamedType(yyvsp[-4].type_ident->nam, FuncType::get(sig));
+            Type::addNamedType(yyvsp[-4].type_ident->name, FuncType::get(sig));
 
             break;
     }
@@ -833,7 +833,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             auto t = CompoundType::get();
 
             for (auto& elem : *yyvsp[-2].type_ident_list) {
-                t->addType(elem->ty, elem->nam);
+                t->addType(elem->ty, elem->name);
             }
 
             Type::addNamedType(QString("struct %1").arg(yyvsp[-4].str), t);
@@ -848,7 +848,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
     case 35 : {
             yyvsp[-6].sig->setPreferredReturn(yyvsp[-4].type_ident->ty);
-            yyvsp[-6].sig->setPreferredName(yyvsp[-4].type_ident->nam);
+            yyvsp[-6].sig->setPreferredName(yyvsp[-4].type_ident->name);
 
             for (std::list<int>::iterator it = yyvsp[-2].num_list->begin(); it != yyvsp[-2].num_list->end(); it++) {
                 yyvsp[-6].sig->addPreferredParameter(*it - 1);
@@ -862,7 +862,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
     case 36 : {
             /* Use the passed calling convention (cc) */
-            auto sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->nam);
+            auto sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->name);
             sig->addReturn(yyvsp[-3].type_ident->ty);
 
             for (auto& elem : *yyvsp[-1].param_list) {
@@ -882,7 +882,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 37 : {
-            auto sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->nam);
+            auto sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->name);
             sig->addReturn(yyvsp[-3].type_ident->ty);
 
             for (auto& elem : *yyvsp[-1].param_list) {
@@ -902,7 +902,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 38 : {
-            CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->nam);
+            CustomSignature *sig = new CustomSignature(yyvsp[-3].type_ident->name);
 
             if (yyvsp[-4].custom_options->exp) {
                 sig->addReturn(yyvsp[-3].type_ident->ty, yyvsp[-4].custom_options->exp);
@@ -937,7 +937,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
     case 40 : {
             Symbol *sym = new Symbol(Address(yyvsp[-2].ival));
-            sym->name = yyvsp[-1].type_ident->nam;
+            sym->name = yyvsp[-1].type_ident->name;
             sym->ty  = yyvsp[-1].type_ident->ty;
             symbols.push_back(sym);
 
@@ -1017,7 +1017,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     case 52 : {
             yyval.type_ident      = new TypeIdent();
             yyval.type_ident->ty  = yyvsp[-1].type;
-            yyval.type_ident->nam = yyvsp[0].str;
+            yyval.type_ident->name = yyvsp[0].str;
 
             break;
     }
@@ -1026,7 +1026,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             yyval.type_ident = new TypeIdent();
             std::static_pointer_cast<ArrayType>(yyvsp[0].type)->fixBaseType(yyvsp[-2].type);
             yyval.type_ident->ty  = yyvsp[0].type;
-            yyval.type_ident->nam = yyvsp[-1].str;
+            yyval.type_ident->name = yyvsp[-1].str;
 
             break;
     }
@@ -1153,7 +1153,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             auto t = CompoundType::get();
 
             for (auto& elem : *yyvsp[-1].type_ident_list) {
-                t->addType((elem)->ty, elem->nam);
+                t->addType((elem)->ty, elem->name);
             }
 
             yyval.type = t;

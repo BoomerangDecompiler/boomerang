@@ -51,7 +51,7 @@ public:
     QString getName() const;
 
     /// Rename this procedure.
-    void setName(const QString& nam);
+    void setName(const QString& name);
 
     /// Get the address of the entry point of this procedure.
     Address getEntryAddress() const;

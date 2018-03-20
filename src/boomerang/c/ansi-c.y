@@ -58,7 +58,7 @@ public: \
   class TypeIdent {
   public:
       Type *ty;
-      std::string nam;
+      std::string name;
   };
 
   class SymbolMods;
@@ -66,12 +66,12 @@ public: \
   class Symbol {
   public:
       ADDRESS addr;
-      std::string nam;
+      std::string name;
       Type *ty;
       Signature *sig;
       SymbolMods *mods;
 
-      Symbol(ADDRESS a) : addr(a), nam(""), ty(NULL), sig(NULL),
+      Symbol(ADDRESS a) : addr(a), name(""), ty(NULL), sig(NULL),
                           mods(NULL) { }
   };
 
@@ -94,17 +94,17 @@ public: \
   class SymbolRef {
   public:
       ADDRESS addr;
-      std::string nam;
+      std::string name;
 
-      SymbolRef(ADDRESS a, const char *nam) : addr(a), nam(nam) { }
+      SymbolRef(ADDRESS a, const char *_name) : addr(a), name(_name) { }
   };
 
   class Bound {
   public:
       int kind;
-      std::string nam;
+      std::string name;
 
-      Bound(int kind, const char *nam) : kind(kind), nam(nam) { }
+      Bound(int kind, const char *_name) : kind(kind), name(_name) { }
   };
 
 %}
@@ -273,10 +273,10 @@ param: type_ident optional_bound
              */
             $1->ty = new PointerType($1->ty);
         }
-        $$ = new Parameter($1->ty, $1->nam.c_str());
+        $$ = new Parameter($1->ty, $1->name.c_str());
         if ($2) {
            switch($2->kind) {
-             case 0: $$->setBoundMax($2->nam.c_str());
+             case 0: $$->setBoundMax($2->name.c_str());
            }
         }
      }
@@ -299,7 +299,7 @@ param: type_ident optional_bound
      ;
 
 type_decl: TYPEDEF type_ident ';'
-         { Type::addNamedType($2->nam.c_str(), $2->ty); }
+         { Type::addNamedType($2->name.c_str(), $2->ty); }
          | TYPEDEF type '(' '*' IDENTIFIER ')' '(' param_list ')' ';'
          { Signature *sig = Signature::instantiate(plat, cc, NULL);
            sig->addReturn($2);
@@ -315,7 +315,7 @@ type_decl: TYPEDEF type_ident ';'
            Type::addNamedType($5, new PointerType(new FuncType(sig)));
          }
          | TYPEDEF type_ident '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(plat, cc, $2->nam.c_str());
+         { Signature *sig = Signature::instantiate(plat, cc, $2->name.c_str());
            sig->addReturn($2->ty);
            for (std::list<Parameter*>::iterator it = $4->begin();
                 it != $4->end(); it++)
@@ -326,13 +326,13 @@ type_decl: TYPEDEF type_ident ';'
                    delete *it;
                }
            delete $4;
-           Type::addNamedType($2->nam.c_str(), new FuncType(sig));
+           Type::addNamedType($2->name.c_str(), new FuncType(sig));
          }
          | STRUCT IDENTIFIER '{' type_ident_list '}' ';'
          { CompoundType *t = new CompoundType();
            for (std::list<TypeIdent*>::iterator it = $4->begin();
                    it != $4->end(); it++) {
-              t->addType((*it)->ty, (*it)->nam.c_str());
+              t->addType((*it)->ty, (*it)->name.c_str());
            }
            char tmp[1024];
            sprintf(tmp, "struct %s", $2);
@@ -347,7 +347,7 @@ func_decl: signature ';'
          | signature PREFER type_ident '(' num_list ')' ';'
          {
            $1->setPreferedReturn($3->ty);
-           $1->setPreferedName($3->nam.c_str());
+           $1->setPreferedName($3->name.c_str());
            for (std::list<int>::iterator it = $5->begin();
                 it != $5->end(); it++)
                $1->addPreferedParameter(*it - 1);
@@ -359,7 +359,7 @@ func_decl: signature ';'
 signature: type_ident '(' param_list ')'
          {
            /* Use the passed calling convention (cc) */
-           Signature *sig = Signature::instantiate(plat, cc, $1->nam.c_str());
+           Signature *sig = Signature::instantiate(plat, cc, $1->name.c_str());
            sig->addReturn($1->ty);
            for (std::list<Parameter*>::iterator it = $3->begin();
                 it != $3->end(); it++)
@@ -374,7 +374,7 @@ signature: type_ident '(' param_list ')'
          }
          | convention type_ident '(' param_list ')'
          { Signature *sig = Signature::instantiate(plat, $1,
-              $2->nam.c_str());
+              $2->name.c_str());
            sig->addReturn($2->ty);
            for (std::list<Parameter*>::iterator it = $4->begin();
                 it != $4->end(); it++)
@@ -388,7 +388,7 @@ signature: type_ident '(' param_list ')'
            $$ = sig;
          }
          | CUSTOM custom_options type_ident '(' param_list ')'
-         { CustomSignature *sig = new CustomSignature($3->nam.c_str());
+         { CustomSignature *sig = new CustomSignature($3->name.c_str());
            if ($2->exp)
                sig->addReturn($3->ty, $2->exp);
            if ($2->sp)
@@ -414,7 +414,7 @@ symbol_ref_decl: SYMBOLREF CONSTANT IDENTIFIER ';'
 
 symbol_decl: CONSTANT type_ident ';'
            { Symbol *sym = new Symbol($1);
-             sym->nam = $2->nam;
+             sym->name = $2->name;
              sym->ty = $2->ty;
              symbols.push_back(sym);
            }
@@ -470,13 +470,13 @@ array_modifier: '[' CONSTANT ']'
 type_ident: type IDENTIFIER
           { $$ = new TypeIdent();
             $$->ty = $1;
-            $$->nam = $2;
+            $$->name = $2;
           }
           | type IDENTIFIER array_modifier
           { $$ = new TypeIdent();
             ((ArrayType*)$3)->fixBaseType($1);
             $$->ty = $3;
-            $$->nam = $2;
+            $$->name = $2;
           }
           ;
 
@@ -545,7 +545,7 @@ type: CHAR
     { CompoundType *t = new CompoundType();
       for (std::list<TypeIdent*>::iterator it = $3->begin();
            it != $3->end(); it++) {
-          t->addType((*it)->ty, (*it)->nam.c_str());
+          t->addType((*it)->ty, (*it)->name.c_str());
       }
       $$ = t;
     }

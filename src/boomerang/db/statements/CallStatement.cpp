@@ -789,8 +789,8 @@ bool CallStatement::convertToDirect()
             // m[K]: convert it to a global right here
             Address u = Address(sub->access<Const>()->getInt());
             m_proc->getProg()->markGlobalUsed(u);
-            QString nam = m_proc->getProg()->newGlobalName(u);
-            e      = Location::global(nam, m_proc);
+            QString name = m_proc->getProg()->newGlobalName(u);
+            e      = Location::global(name, m_proc);
             m_dest = RefExp::get(e, nullptr);
         }
     }

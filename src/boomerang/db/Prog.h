@@ -196,7 +196,7 @@ public:
     QString newGlobalName(Address uaddr);
 
     /// Guess a global's type based on its name and address
-    SharedType guessGlobalType(const QString& nam, Address u) const;
+    SharedType guessGlobalType(const QString& name, Address addr) const;
 
     /// Make an array type for the global array starting at \p startAddr.
     /// Mainly, set the length sensibly
@@ -207,7 +207,7 @@ public:
     bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
 
     /// Get the type of a global variable
-    SharedType getGlobalType(const QString& nam) const;
+    SharedType getGlobalType(const QString& name) const;
 
     /// Set the type of a global variable
     void setGlobalType(const QString& name, SharedType ty);

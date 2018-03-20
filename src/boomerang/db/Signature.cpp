@@ -102,7 +102,7 @@ namespace CallingConvention
 class Win32Signature : public Signature
 {
 public:
-    explicit Win32Signature(const QString& nam);
+    explicit Win32Signature(const QString& name);
     explicit Win32Signature(Signature& old);
     virtual ~Win32Signature() override = default;
 
@@ -136,7 +136,7 @@ public:
 class Win32TcSignature : public Win32Signature
 {
 public:
-    explicit Win32TcSignature(const QString& nam);
+    explicit Win32TcSignature(const QString& name);
     explicit Win32TcSignature(Signature& old);
 
 public:
@@ -154,7 +154,7 @@ namespace StdC
 class PentiumSignature : public Signature
 {
 public:
-    explicit PentiumSignature(const QString& nam);
+    explicit PentiumSignature(const QString& name);
     explicit PentiumSignature(Signature& old);
     virtual ~PentiumSignature() override = default;
 
@@ -192,7 +192,7 @@ public:
 class SparcSignature : public Signature
 {
 public:
-    explicit SparcSignature(const QString& nam);
+    explicit SparcSignature(const QString& name);
     explicit SparcSignature(Signature& old);
     virtual ~SparcSignature() override = default;
 
@@ -342,8 +342,8 @@ public:
 } // namespace CallingConvention
 
 
-CallingConvention::Win32Signature::Win32Signature(const QString& nam)
-    : Signature(nam)
+CallingConvention::Win32Signature::Win32Signature(const QString& name)
+    : Signature(name)
 {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
@@ -357,8 +357,8 @@ CallingConvention::Win32Signature::Win32Signature(Signature& old)
 }
 
 
-CallingConvention::Win32TcSignature::Win32TcSignature(const QString& nam)
-    : Win32Signature(nam)
+CallingConvention::Win32TcSignature::Win32TcSignature(const QString& name)
+    : Win32Signature(name)
 {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
@@ -378,9 +378,9 @@ std::shared_ptr<Parameter> Parameter::clone() const
 }
 
 
-void Parameter::setBoundMax(const QString& nam)
+void Parameter::setBoundMax(const QString& name)
 {
-    m_boundMax = nam;
+    m_boundMax = name;
 }
 
 
@@ -491,10 +491,10 @@ void CallingConvention::Win32Signature::addReturn(SharedType type, SharedExp e)
 }
 
 
-void CallingConvention::Win32Signature::addParameter(SharedType type, const QString& nam, const SharedExp& e,
+void CallingConvention::Win32Signature::addParameter(SharedType type, const QString& name, const SharedExp& e,
                                                      const QString& boundMax)
 {
-    Signature::addParameter(type, nam, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
 }
 
 
@@ -653,8 +653,8 @@ SharedExp CallingConvention::Win32TcSignature::getProven(SharedExp left) const
 }
 
 
-CallingConvention::StdC::PentiumSignature::PentiumSignature(const QString& nam)
-    : Signature(nam)
+CallingConvention::StdC::PentiumSignature::PentiumSignature(const QString& name)
+    : Signature(name)
 {
     Signature::addReturn(Location::regOf(28));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
@@ -766,10 +766,10 @@ void CallingConvention::StdC::PentiumSignature::addReturn(SharedType type, Share
 }
 
 
-void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, const QString& nam, const SharedExp& e,
+void CallingConvention::StdC::PentiumSignature::addParameter(SharedType type, const QString& name, const SharedExp& e,
                                                              const QString& boundMax)
 {
-    Signature::addParameter(type, nam, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
 }
 
 
@@ -873,8 +873,8 @@ void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList&
 }
 
 
-CallingConvention::StdC::PPCSignature::PPCSignature(const QString& nam)
-    : Signature(nam)
+CallingConvention::StdC::PPCSignature::PPCSignature(const QString& name)
+    : Signature(name)
 {
     Signature::addReturn(Location::regOf(1));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "r1",
@@ -948,10 +948,10 @@ void CallingConvention::StdC::PPCSignature::addReturn(SharedType type, SharedExp
 }
 
 
-void CallingConvention::StdC::PPCSignature::addParameter(SharedType type, const QString& nam,
+void CallingConvention::StdC::PPCSignature::addParameter(SharedType type, const QString& name,
                                                          const SharedExp& e, const QString& boundMax)
 {
-    Signature::addParameter(type, nam, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
 }
 
 
@@ -1004,8 +1004,8 @@ void CallingConvention::StdC::PPCSignature::setLibraryDefines(StatementList& def
 
 /// ST20 signatures
 
-CallingConvention::StdC::ST20Signature::ST20Signature(const QString& nam)
-    : Signature(nam)
+CallingConvention::StdC::ST20Signature::ST20Signature(const QString& name)
+    : Signature(name)
 {
     Signature::addReturn(Location::regOf(3));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp", Location::regOf(3), nullptr);
@@ -1081,10 +1081,10 @@ std::shared_ptr<Signature> CallingConvention::StdC::ST20Signature::promote(UserP
 }
 
 
-void CallingConvention::StdC::ST20Signature::addParameter(SharedType type, const QString& nam,
+void CallingConvention::StdC::ST20Signature::addParameter(SharedType type, const QString& name,
                                                           const SharedExp& e, const QString& boundMax)
 {
-    Signature::addParameter(type, nam, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
 }
 
 
@@ -1132,8 +1132,8 @@ bool CallingConvention::StdC::ST20Signature::qualified(UserProc *p, Signature& /
 }
 
 
-CallingConvention::StdC::SparcSignature::SparcSignature(const QString& nam)
-    : Signature(nam)
+CallingConvention::StdC::SparcSignature::SparcSignature(const QString& name)
+    : Signature(name)
 {
     Signature::addReturn(Location::regOf(14));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp",
@@ -1326,9 +1326,9 @@ SharedExp CallingConvention::StdC::MIPSSignature::getArgumentExp(int n) const
 }
 
 
-void CallingConvention::StdC::MIPSSignature::addParameter(SharedType type, const QString& nam, const SharedExp& e, const QString& boundMax)
+void CallingConvention::StdC::MIPSSignature::addParameter(SharedType type, const QString& name, const SharedExp& e, const QString& boundMax)
 {
-    Signature::addParameter(type, nam, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
 }
 
 
@@ -1392,10 +1392,10 @@ void CallingConvention::StdC::SparcSignature::addReturn(SharedType type, SharedE
 }
 
 
-void CallingConvention::StdC::SparcSignature::addParameter(SharedType type, const QString& nam,
+void CallingConvention::StdC::SparcSignature::addParameter(SharedType type, const QString& name,
                                                            const SharedExp& e, const QString& boundMax)
 {
-    Signature::addParameter(type, nam, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
 }
 
 
@@ -1551,8 +1551,8 @@ Signature::Signature(const QString& name)
 }
 
 
-CustomSignature::CustomSignature(const QString& nam)
-    : Signature(nam)
+CustomSignature::CustomSignature(const QString& name)
+    : Signature(name)
     , m_spReg(0)
 {
 }
@@ -1642,9 +1642,9 @@ QString Signature::getName() const
 }
 
 
-void Signature::setName(const QString& nam)
+void Signature::setName(const QString& name)
 {
-    m_name = nam;
+    m_name = name;
 }
 
 
@@ -1800,12 +1800,12 @@ void Signature::setParamType(int n, SharedType ty)
 }
 
 
-void Signature::setParamType(const char *nam, SharedType ty)
+void Signature::setParamType(const char *name, SharedType ty)
 {
-    int idx = findParam(nam);
+    int idx = findParam(name);
 
     if (idx == -1) {
-        LOG_WARN("Could not set type for unknown parameter %1", nam);
+        LOG_WARN("Could not set type for unknown parameter %1", name);
         return;
     }
 
@@ -1861,10 +1861,10 @@ void Signature::renameParam(const QString& oldName, const char *newName)
 }
 
 
-int Signature::findParam(const QString& nam) const
+int Signature::findParam(const QString& name) const
 {
     for (unsigned i = 0; i < getNumParams(); i++) {
-        if (getParamName(i) == nam) {
+        if (getParamName(i) == name) {
             return i;
         }
     }
@@ -1931,7 +1931,7 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 }
 
 
-std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, const QString& nam)
+std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, const QString& name)
 {
     switch (plat)
     {
@@ -1939,13 +1939,13 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
         if (cc == CallConv::Pascal) {
             // For now, assume the only pascal calling convention pentium signatures will be Windows
-            return std::make_shared<CallingConvention::Win32Signature>(nam);
+            return std::make_shared<CallingConvention::Win32Signature>(name);
         }
         else if (cc == CallConv::ThisCall) {
-            return std::make_shared<CallingConvention::Win32TcSignature>(nam);
+            return std::make_shared<CallingConvention::Win32TcSignature>(name);
         }
         else {
-            return std::make_shared<CallingConvention::StdC::PentiumSignature>(nam);
+            return std::make_shared<CallingConvention::StdC::PentiumSignature>(name);
         }
 
     case Platform::SPARC:
@@ -1955,7 +1955,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
         }
 
         assert(cc == CallConv::C);
-        return std::make_shared<CallingConvention::StdC::SparcSignature>(nam);
+        return std::make_shared<CallingConvention::StdC::SparcSignature>(name);
 
     case Platform::PPC:
 
@@ -1963,7 +1963,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
             cc = CallConv::C;
         }
 
-        return std::make_shared<CallingConvention::StdC::PPCSignature>(nam);
+        return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
 
     case Platform::ST20:
 
@@ -1971,7 +1971,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
             cc = CallConv::C;
         }
 
-        return std::make_shared<CallingConvention::StdC::ST20Signature>(nam);
+        return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
 
     case Platform::MIPS:
 
@@ -1979,7 +1979,7 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
             cc = CallConv::C;
         }
 
-        return std::make_shared<CallingConvention::StdC::MIPSSignature>(nam);
+        return std::make_shared<CallingConvention::StdC::MIPSSignature>(name);
 
     // insert other conventions here
     default:

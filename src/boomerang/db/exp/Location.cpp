@@ -150,7 +150,7 @@ SharedExp Location::accept(ExpModifier *v)
 }
 
 
-std::shared_ptr<Location> Location::local(const QString& nam, UserProc *p)
+std::shared_ptr<Location> Location::local(const QString& name, UserProc *p)
 {
-    return std::make_shared<Location>(opLocal, Const::get(nam), p);
+    return std::make_shared<Location>(opLocal, Const::get(name), p);
 }
