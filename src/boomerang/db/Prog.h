@@ -173,11 +173,6 @@ public:
     /// Convert from SSA form
     void fromSSAForm();
 
-    void generateRTL(Module *cluster = nullptr, UserProc *proc = nullptr) const;
-
-    /// Print this program (primarily for debugging)
-    void print(QTextStream& out) const;
-
     /// lookup a library procedure by name; create if does not exist
     LibProc *getOrCreateLibraryProc(const QString& name);
 
@@ -216,9 +211,6 @@ public:
 
     /// Set the type of a global variable
     void setGlobalType(const QString& name, SharedType ty);
-
-    /// Dump the globals to stderr for debugging
-    void dumpGlobals() const;
 
     /// get a string constant at a given address if appropriate
     /// if knownString, it is already known to be a char*
