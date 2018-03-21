@@ -71,7 +71,9 @@ public:
 
     /// Temporarily needed for ad-hoc type analysis
     void removeDefine(SharedExp e);
-    void addDefine(ImplicitAssign *as); // For testing
+
+    /// For testing. Takes ownership of the pointer.
+    void addDefine(ImplicitAssign *as);
 
     // Calculate results(this) = defines(this) intersect live(this)
     // Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
@@ -197,7 +199,7 @@ public:
     const StatementList& getDefines() const { return m_defines; }
     StatementList& getDefines() { return m_defines; }
 
-    void setDefines(const StatementList& defines) { m_defines = defines; }
+    void setDefines(const StatementList& defines);
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
     /// parameters if needed, and return true if any signature parameters added

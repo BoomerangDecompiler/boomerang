@@ -61,7 +61,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
         Signature::getABIDefines(proc->getProg(), callStmt->getDefines());
-        return false;
+        return true;
     }
 
     // Move the defines to a temporary list. We must make sure that all defines

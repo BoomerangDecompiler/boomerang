@@ -1038,6 +1038,19 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
     return false;
 }
 
+void CallStatement::setDefines(const StatementList& defines)
+{
+    if (!m_defines.empty()) {
+        for (const Statement *stmt : defines) {
+            assert(std::find(m_defines.begin(), m_defines.end(), stmt) == m_defines.end());
+        }
+
+        qDeleteAll(m_defines);
+        m_defines.clear();
+    }
+    m_defines = defines;
+}
+
 
 bool CallStatement::ellipsisProcessing(Prog *prog)
 {
