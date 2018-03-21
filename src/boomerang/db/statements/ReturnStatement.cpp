@@ -39,6 +39,7 @@ ReturnStatement::ReturnStatement()
 ReturnStatement::~ReturnStatement()
 {
     qDeleteAll(m_returns);
+    qDeleteAll(m_modifieds);
 }
 
 
@@ -56,6 +57,7 @@ Statement *ReturnStatement::clone() const
 
     ret->m_retAddr = m_retAddr;
     ret->m_col.makeCloneOf(m_col);
+
     // Statement members
     ret->m_bb = m_bb;
     ret->m_proc   = m_proc;
@@ -562,6 +564,13 @@ void ReturnStatement::updateReturns()
 
 void ReturnStatement::removeModified(SharedExp loc)
 {
-    m_modifieds.removeFirstDefOf(loc);
-    m_returns.removeFirstDefOf(loc);
+    Statement *mod = m_modifieds.removeFirstDefOf(loc);
+    if (mod) {
+        delete mod;
+    }
+
+    Statement *ret = m_returns.removeFirstDefOf(loc);
+    if (ret) {
+        delete ret;
+    }
 }

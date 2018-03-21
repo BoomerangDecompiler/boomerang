@@ -88,9 +88,9 @@ public:
     bool remove(Statement *stmt);
 
     /// Remove the first definition where \p loc appears on the left
-    /// \returns true if removed successfully
+    /// \returns the removed statement, or nullptr if not found.
     /// \note statements in this list are assumed to be assignments
-    bool removeFirstDefOf(SharedExp loc);
+    Statement *removeFirstDefOf(SharedExp loc);
 
     /// Return true if loc appears on the left of any statements in this list
     /// Note: statements in this list are assumed to be assignments

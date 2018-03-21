@@ -120,20 +120,23 @@ bool StatementList::existsOnLeft(const SharedExp& loc) const
 }
 
 
-bool StatementList::removeFirstDefOf(SharedExp loc)
+Statement *StatementList::removeFirstDefOf(SharedExp loc)
 {
     if (!loc) {
-        return false;
+        return nullptr;
     }
 
     for (iterator it = begin(); it != end(); ++it) {
-        if (*static_cast<Assignment *>(*it)->getLeft() == *loc) {
+        assert((*it)->isAssignment());
+        Assignment *assign = static_cast<Assignment *>(*it);
+
+        if (*assign->getLeft() == *loc) {
             erase(it);
-            return true;
+            return assign;
         }
     }
 
-    return false;
+    return nullptr;
 }
 
 
