@@ -86,8 +86,6 @@ Prog::~Prog()
 {
     delete m_defaultFrontend;
     m_defaultFrontend = nullptr;
-
-    qDeleteAll(m_globals);
 }
 
 
@@ -545,7 +543,7 @@ bool Prog::isWin32() const
 QString Prog::getGlobalName(Address uaddr) const
 {
     // FIXME: inefficient
-    for (Global *glob : m_globals) {
+    for (auto& glob : m_globals) {
         if (glob->containsAddress(uaddr)) {
             return glob->getName();
         }
@@ -571,17 +569,17 @@ Address Prog::getGlobalAddr(const QString& name) const
 Global *Prog::getGlobal(const QString& name) const
 {
     auto iter = std::find_if(m_globals.begin(), m_globals.end(),
-        [&name](Global *g) -> bool {
+        [&name](const std::shared_ptr<Global>& g) -> bool {
             return g->getName() == name;
         });
 
-    return iter != m_globals.end() ? *iter : nullptr;
+    return iter != m_globals.end() ? iter->get() : nullptr;
 }
 
 
 bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 {
-    for (Global *glob : m_globals) {
+    for (auto& glob : m_globals) {
         if (glob->containsAddress(uaddr)) {
             if (knownType) {
                 glob->meetType(knownType);
@@ -624,8 +622,7 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
         ty = guessGlobalType(name, uaddr);
     }
 
-    Global *global = new Global(ty, uaddr, name, this);
-    m_globals.insert(global);
+    m_globals.insert(std::make_shared<Global>(ty, uaddr, name, this));
 
     LOG_VERBOSE("globalUsed: name %1, address %2, %3 type %4",
                 name, uaddr, knownType ? "known" : "guessed", ty->getCtype());
@@ -719,7 +716,7 @@ QString Prog::newGlobalName(Address uaddr)
 
 SharedType Prog::getGlobalType(const QString& name) const
 {
-    for (Global *global : m_globals) {
+    for (auto& global : m_globals) {
         if (global->getName() == name) {
             return global->getType();
         }
@@ -732,7 +729,7 @@ SharedType Prog::getGlobalType(const QString& name) const
 void Prog::setGlobalType(const QString& name, SharedType ty)
 {
     // FIXME: inefficient
-    for (Global *gl : m_globals) {
+    for (auto& gl : m_globals) {
         if (gl->getName() == name) {
             gl->setType(ty);
             return;
@@ -1017,14 +1014,14 @@ void Prog::removeUnusedGlobals()
     }
 
     // make a map to find a global by its name (could be a global var too)
-    QMap<QString, Global *> namedGlobals;
+    QMap<QString, std::shared_ptr<Global>> namedGlobals;
 
-    for (Global *g : m_globals) {
+    for (auto& g : m_globals) {
         namedGlobals[g->getName()] = g;
     }
 
-    // rebuild the globals vector.
-    // Do not delete the globals now since they will be re-inserted again if they are used.
+    // Rebuild the globals vector. Delete the unused globals only after re-inserting them
+    std::set<std::shared_ptr<Global>> oldGlobals = m_globals;
     m_globals.clear();
 
     for (const SharedExp& e : usedGlobals) {
@@ -1033,20 +1030,13 @@ void Prog::removeUnusedGlobals()
         }
 
         QString name(e->access<Const, 1>()->getStr());
-        Global *usedGlobal = namedGlobals[name];
+        auto& usedGlobal = namedGlobals[name];
 
         if (usedGlobal) {
             m_globals.insert(usedGlobal);
         }
         else {
             LOG_WARN("An expression refers to a nonexistent global");
-        }
-    }
-
-
-    for (Global *global : namedGlobals) {
-        if (m_globals.find(global) == m_globals.end()) {
-            delete global;
         }
     }
 }
@@ -1337,7 +1327,7 @@ void Prog::readSymbolFile(const QString& fname)
                 ty = guessGlobalType(name, sym->addr);
             }
 
-            m_globals.insert(new Global(ty, sym->addr, name, this));
+            m_globals.insert(std::make_shared<Global>(ty, sym->addr, name, this));
         }
     }
 
@@ -1535,8 +1525,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface
 
         if (getGlobal(bin_sym->getName()) == nullptr) {
-            Global *global = new Global(SizeType::get(sz * 8), c_addr, bin_sym->getName(), this);
-            m_globals.insert(global);
+            m_globals.insert(std::make_shared<Global>(SizeType::get(sz * 8), c_addr, bin_sym->getName(), this));
         }
 
         return Unary::get(opAddrOf, Location::global(bin_sym->getName(), nullptr));

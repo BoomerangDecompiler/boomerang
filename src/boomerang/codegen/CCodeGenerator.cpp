@@ -72,7 +72,7 @@ static bool isBareMemof(const Exp& exp, UserProc *)
 
 void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 {
-    for (Global *glob : prog->getGlobals()) {
+    for (auto& glob : prog->getGlobals()) {
         // Check for an initial value
         SharedExp initialValue = glob->getInitialValue(prog);
 
@@ -147,7 +147,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 global = true;
             }
 
-            for (Global *elem : prog->getGlobals()) {
+            for (auto& elem : prog->getGlobals()) {
                 // Check for an initial value
                 SharedExp e = elem->getInitialValue(prog);
                 // if (e) {
