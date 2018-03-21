@@ -494,8 +494,8 @@ void ReturnStatement::updateReturns()
 {
     auto          sig = m_proc->getSignature();
     int           sp  = sig->getStackRegister();
-    StatementList oldRets(m_returns);     // Copy the old returns
 
+    StatementList oldRets(m_returns);     // Copy the old returns
     m_returns.clear();
 
     // For each location in the modifieds, make sure that there is an assignment in the old returns, which will

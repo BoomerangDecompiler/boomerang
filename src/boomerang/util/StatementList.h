@@ -68,6 +68,9 @@ public:
 
     iterator insert(iterator where, Statement *stmt) { return m_list.insert(where, stmt); }
 
+    template<typename Comp = std::less<Statement *>>
+    void sort(Comp comp) { return m_list.sort(comp); }
+
     /**
      * Special intersection method: *this := a intersect b
      * A special intersection operator; *this becomes the intersection

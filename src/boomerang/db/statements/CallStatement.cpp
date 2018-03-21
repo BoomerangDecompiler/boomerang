@@ -1042,6 +1042,7 @@ void CallStatement::setDefines(const StatementList& defines)
 {
     if (!m_defines.empty()) {
         for (const Statement *stmt : defines) {
+            Q_UNUSED(stmt);
             assert(std::find(m_defines.begin(), m_defines.end(), stmt) == m_defines.end());
         }
 
@@ -1382,9 +1383,11 @@ void CallStatement::updateArguments()
     }
 
     auto sig = m_proc->getSignature();
-    // Ensure everything in the callee's signature (if this is a library call), or the callee parameters (if
-    // available),
-    // or the def collector if not,  exists in oldArguments
+    // Ensure everything
+    //  - in the callee's signature (if this is a library call),
+    //  - or the callee parameters (if available),
+    //  - or the def collector if not,
+    // exists in oldArguments
     ArgSourceProvider asp(this);
     SharedExp         loc;
 
@@ -1431,21 +1434,12 @@ void CallStatement::updateArguments()
             continue;
         }
 
-        // Insert as, in order, into the existing set of definitions
-        bool inserted = false;
-
-        for (StatementList::iterator nn = m_arguments.begin(); nn != m_arguments.end(); ++nn) {
-            if (sig->argumentCompare(*as, *static_cast<Assign *>(*nn))) {     // If the new assignment is less than the current one
-                m_arguments.insert(nn, as);           // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            m_arguments.append(as); // In case larger than all existing elements
-        }
+        m_arguments.append(as);
     }
+
+    m_arguments.sort([&sig] (const Statement *arg1, const Statement *arg2) {
+            return sig->argumentCompare(*static_cast<const Assignment *>(arg1), *static_cast<const Assignment *>(arg2));
+        });
 }
 
 
