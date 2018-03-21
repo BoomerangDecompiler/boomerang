@@ -255,6 +255,7 @@ CallStatement::CallStatement()
 CallStatement::~CallStatement()
 {
     qDeleteAll(m_defines);
+    qDeleteAll(m_arguments);
 }
 
 
