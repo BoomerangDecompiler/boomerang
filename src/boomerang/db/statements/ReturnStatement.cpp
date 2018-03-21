@@ -457,36 +457,27 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
     // the
     // new list. So read the old modifications in reverse order
-    for (StatementList::iterator it = oldMods.end(); it != oldMods.begin();) {
-        --it;     // Because we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); it++) {
         // Make sure the LHS is still in the collector
         Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();
 
         if (!m_col.existsOnLeft(lhs)) {
+            delete *it;
             continue;     // Not in collector: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
+            delete *it;
             continue;     // Filtered out: delete it
         }
 
-        // Insert as, in order, into the existing set of modifications
-
-        bool inserted = false;
-
-        for (auto nn = m_modifieds.begin(); nn != m_modifieds.end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) { // If the new assignment is less than the current one
-                nn       = m_modifieds.insert(nn, as);                      // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            m_modifieds.insert(m_modifieds.end(), as);     // In case larger than all existing elements
-        }
+        m_modifieds.append(as);
     }
+
+    m_modifieds.sort([&sig] (const Statement *mod1, const Statement *mod2) {
+            return sig->returnCompare(*static_cast<const Assignment *>(mod1), *static_cast<const Assignment *>(mod2));
+        });
 }
 
 
@@ -560,22 +551,12 @@ void ReturnStatement::updateReturns()
             continue;     // Filter out the preserveds
         }
 
-        // Insert as, in order, into the existing set of returns
-
-        bool inserted = false;
-
-        for (StatementList::iterator nn = m_returns.begin(); nn != m_returns.end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assign *>(*nn))) {     // If the new assignment is less than the current one
-                nn       = m_returns.insert(nn, as);             // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            m_returns.insert(m_returns.end(), as);     // In case larger than all existing elements
-        }
+        m_returns.append(as);
     }
+
+    m_returns.sort([&sig] (const Statement *ret1, const Statement *ret2) {
+            return sig->returnCompare(*static_cast<const Assignment *>(ret1), *static_cast<const Assignment *>(ret2));
+        });
 }
 
 
