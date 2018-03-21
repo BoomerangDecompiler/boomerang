@@ -123,7 +123,7 @@ public:
     virtual int getStackRegister() const noexcept (false)override { return 28; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-    virtual void setLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
+    virtual void getLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
 
     virtual bool isPromoted()        const override { return true; }
     virtual Platform getPlatform()   const override { return Platform::PENTIUM; }
@@ -179,7 +179,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
     /// Return a list of locations defined by library calls
-    virtual void setLibraryDefines(StatementList& defs) override;
+    virtual void getLibraryDefines(StatementList& defs) override;
 
     virtual bool isPromoted() const override { return true; }
     virtual Platform getPlatform() const override { return Platform::PENTIUM; }
@@ -214,7 +214,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
     /// Return a list of locations defined by library calls
-    virtual void setLibraryDefines(StatementList& defs) override;
+    virtual void getLibraryDefines(StatementList& defs) override;
 
     /// Stack offsets can be negative (inherited) or positive:
     virtual bool isLocalOffsetPositive() const override { return true; }
@@ -262,7 +262,7 @@ public:
     virtual int getStackRegister() const noexcept (false)override { return 1; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-    virtual void setLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
+    virtual void getLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
 
     virtual bool isLocalOffsetPositive() const override { return true; }
     virtual bool isPromoted() const override { return true; }
@@ -299,7 +299,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;
 
     /// Return a list of locations defined by library calls
-    virtual void setLibraryDefines(StatementList& defs) override;
+    virtual void getLibraryDefines(StatementList& defs) override;
 
     virtual bool isLocalOffsetPositive() const override { return true; }
     virtual bool isPromoted() const override { return true; }
@@ -613,7 +613,7 @@ bool CallingConvention::Win32Signature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::Win32Signature::setLibraryDefines(StatementList& defs)
+void CallingConvention::Win32Signature::getLibraryDefines(StatementList& defs)
 {
     if (defs.size()) {
         return;                           // Do only once
@@ -852,7 +852,7 @@ bool CallingConvention::StdC::PentiumSignature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::StdC::PentiumSignature::setLibraryDefines(StatementList& defs)
+void CallingConvention::StdC::PentiumSignature::getLibraryDefines(StatementList& defs)
 {
     if (defs.size() > 0) {
         // Do only once
@@ -990,7 +990,7 @@ bool CallingConvention::StdC::PPCSignature::isPreserved(SharedExp e) const
 
 
 // Return a list of locations defined by library calls
-void CallingConvention::StdC::PPCSignature::setLibraryDefines(StatementList& defs)
+void CallingConvention::StdC::PPCSignature::getLibraryDefines(StatementList& defs)
 {
     if (defs.size() > 0) {
         return; // Do only once
@@ -1364,7 +1364,7 @@ bool CallingConvention::StdC::MIPSSignature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::StdC::MIPSSignature::setLibraryDefines(StatementList& defs)
+void CallingConvention::StdC::MIPSSignature::getLibraryDefines(StatementList& defs)
 {
     if (defs.size() > 0) {
         return; // Do only once
@@ -1490,7 +1490,7 @@ bool CallingConvention::StdC::SparcSignature::isPreserved(SharedExp e) const
 }
 
 
-void CallingConvention::StdC::SparcSignature::setLibraryDefines(StatementList& defs)
+void CallingConvention::StdC::SparcSignature::getLibraryDefines(StatementList& defs)
 {
     if (defs.size() > 0) {
         return; // Do only once
@@ -2116,7 +2116,7 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-void Signature::setABIDefines(Prog *prog, StatementList& defs)
+void Signature::getABIDefines(Prog *prog, StatementList& defs)
 {
     if (defs.size() > 0) {
         return; // Do only once

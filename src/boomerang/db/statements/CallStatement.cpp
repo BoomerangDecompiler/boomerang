@@ -258,22 +258,6 @@ CallStatement::~CallStatement()
 }
 
 
-int CallStatement::findDefine(SharedExp e)
-{
-    int i = 0;
-
-    for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr, ++i) {
-        SharedConstExp ret = (dynamic_cast<Assignment *>(*rr))->getLeft();
-
-        if (*ret == *e) {
-            return i;
-        }
-    }
-
-    return -1;
-}
-
-
 SharedExp CallStatement::getProven(SharedExp e)
 {
     if (m_procDest) {
@@ -1518,6 +1502,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
 void CallStatement::removeDefine(SharedExp e)
 {
     for (StatementList::iterator ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
+        assert((*ss)->isAssignment());
         Assignment *as = static_cast<Assignment *>(*ss);
 
         if (*as->getLeft() == *e) {

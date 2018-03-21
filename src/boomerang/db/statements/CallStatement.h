@@ -70,7 +70,6 @@ public:
     void updateArguments();
 
     /// Temporarily needed for ad-hoc type analysis
-    int findDefine(SharedExp e);        // Still needed temporarily for ad hoc type analysis
     void removeDefine(SharedExp e);
     void addDefine(ImplicitAssign *as); // For testing
 

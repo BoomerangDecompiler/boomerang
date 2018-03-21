@@ -54,13 +54,13 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callee->isLib()) {
         StatementList defines;
-        sig->setLibraryDefines(defines);     // Set the locations defined
+        sig->getLibraryDefines(defines);     // Set the locations defined
         callStmt->setDefines(defines);
         return true;
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIDefines(proc->getProg(), callStmt->getDefines());
+        Signature::getABIDefines(proc->getProg(), callStmt->getDefines());
         return false;
     }
 
