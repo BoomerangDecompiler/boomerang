@@ -1051,8 +1051,6 @@ void StatementTest::testAddUsedLocsCall()
     l.print(ost);
 
     QCOMPARE(actual, expected);
-
-    qDeleteAll(argl);
 }
 
 
@@ -1241,7 +1239,6 @@ void StatementTest::testSubscriptVars()
     ost << &ca;
     QCOMPARE(expected, actual);
 
-    qDeleteAll(argl);
     argl.clear();
 
     // CallStatement with dest = r28, params = m[r27], r29, defines r31, m[r31]
@@ -1268,7 +1265,6 @@ void StatementTest::testSubscriptVars()
     ost << &ca2;
 
     QCOMPARE(actual, expected);
-    qDeleteAll(argl);
     argl.clear();
 
     // ReturnStatement with returns r28, m[r28], m[r28]{55} + r[26]{99}]

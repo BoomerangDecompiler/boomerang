@@ -55,7 +55,8 @@ public:
     /// \copydoc Statement::setNumber
     virtual void setNumber(int num) override;
 
-    /// Set the arguments of this call.
+    /// Set the arguments of this call. Takes ownership of the statements
+    /// in \p args.
     /// \param args The list of locations to set the arguments to (for testing)
     void setArguments(const StatementList& args);
 
