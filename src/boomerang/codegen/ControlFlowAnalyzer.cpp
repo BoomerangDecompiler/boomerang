@@ -378,6 +378,8 @@ void ControlFlowAnalyzer::structLoops()
 
             // calculate the follow node of this loop
             findLoopFollow(currNode, loopNodes);
+
+            delete[] loopNodes;
         }
     }
 }
