@@ -663,7 +663,6 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
         int    r        = c->getInt();
         int    off      = r & 3; // Offset into the array of 4 registers
         int    off_mod8 = r & 7; // Offset into the array of 8 registers; for ebp, esi, edi
-        Assign *a;
 
         switch (r)
         {
@@ -675,21 +674,21 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             //    eax         ecx      edx       ebx
             // Emit *16* r<off> := trunc(32, 16, r<24+off>)
             if (usedRegs.find(off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(16), Location::regOf(off),
+                Assign *a = new Assign(IntegerType::get(16), Location::regOf(off),
                                std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(24 + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
             if (usedRegs.find(8 + off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(8), Location::regOf(8 + off),
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(8 + off),
                                std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(8), Location::regOf(24 + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<12+off> := r<24+off>@[15:8]
             if (usedRegs.find(12 + off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(8), Location::regOf(12 + off),
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(12 + off),
                                std::make_shared<Ternary>(opAt, Location::regOf(24 + off), Const::get(15), Const::get(8)));
                 proc->insertStatementAfter(s, a);
             }
@@ -704,7 +703,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             //    ax        cx        dx        bx
             // Emit *32* r<24+off> := r<24+off>@[31:16] | zfill(16, 32, r<off>)
             if (usedRegs.find(24 + off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(32), Location::regOf(24 + off),
+                Assign *a = new Assign(IntegerType::get(32), Location::regOf(24 + off),
                                Binary::get(opBitOr,
                                            std::make_shared<Ternary>(opAt, Location::regOf(24 + off), Const::get(31), Const::get(16)),
                                            std::make_shared<Ternary>(opZfill, Const::get(16), Const::get(32), Location::regOf(off))));
@@ -713,14 +712,14 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 
             // Emit *8* r<8+off> := trunc(16, 8, r<off>)
             if (usedRegs.find(8 + off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(8), Location::regOf(8 + off),
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(8 + off),
                                std::make_shared<Ternary>(opTruncu, Const::get(16), Const::get(8), Location::regOf(24 + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<12+off> := r<off>@[15:8]
             if (usedRegs.find(12 + off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(8), Location::regOf(12 + off),
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(12 + off),
                                std::make_shared<Ternary>(opAt, Location::regOf(off), Const::get(15), Const::get(8)));
                 proc->insertStatementAfter(s, a);
             }
@@ -735,7 +734,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             //    al        cl         dl          bl
             // Emit *32* r<24+off> := r<24+off>@[31:8] | zfill(8, 32, r<8+off>)
             if (usedRegs.find(24 + off) != usedRegs.end()) {
-                a = new Assign(
+                Assign *a = new Assign(
                     IntegerType::get(32), Location::regOf(24 + off),
                     Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(24 + off), Const::get(31), Const::get(8)),
                                 std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(32), Location::regOf(8 + off))));
@@ -744,7 +743,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 
             // Emit *16* r<off> := r<off>@[15:8] | zfill(8, 16, r<8+off>)
             if (usedRegs.find(off) != usedRegs.end()) {
-                a = new Assign(
+                Assign *a = new Assign(
                     IntegerType::get(16), Location::regOf(off),
                     Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(off), Const::get(15), Const::get(8)),
                                 std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(16), Location::regOf(8 + off))));
@@ -762,7 +761,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             // Emit *32* r<24+off> := r<24+off> & 0xFFFF00FF
             //        *32* r<24+off> := r<24+off> | r<12+off> << 8
             if (usedRegs.find(24 + off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(32), Location::regOf(24 + off),
+                Assign *a = new Assign(IntegerType::get(32), Location::regOf(24 + off),
                                Binary::get(opBitOr, Location::regOf(24 + off),
                                            Binary::get(opShiftL, Location::regOf(12 + off), Const::get(8))));
                 proc->insertStatementAfter(s, a);
@@ -772,9 +771,9 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             }
 
             // Emit *16* r<off> := r<off> & 0x00FF
-            //        *16* r<off> := r<off> | r<12+off> << 8
+            //      *16* r<off> := r<off> | r<12+off> << 8
             if (usedRegs.find(off) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(16), Location::regOf(off),
+                Assign *a = new Assign(IntegerType::get(16), Location::regOf(off),
                                Binary::get(opBitOr, Location::regOf(off),
                                            Binary::get(opShiftL, Location::regOf(12 + off), Const::get(8))));
                 proc->insertStatementAfter(s, a);
@@ -792,7 +791,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             //    bp        si        di
             // Emit *32* r<24+off_mod8> := r<24+off_mod8>@[31:16] | zfill(16, 32, r<off_mod8>)
             if (usedRegs.find(24 + off_mod8) != usedRegs.end()) {
-                a = new Assign(
+                Assign *a = new Assign(
                     IntegerType::get(32), Location::regOf(24 + off_mod8),
                     Binary::get(opBitOr,
                                 std::make_shared<Ternary>(opAt, Location::regOf(24 + off_mod8), Const::get(31), Const::get(16)),
@@ -809,7 +808,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             //    ebp         esi      edi
             // Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
             if (usedRegs.find(off_mod8) != usedRegs.end()) {
-                a = new Assign(IntegerType::get(16), Location::regOf(off_mod8),
+                Assign *a = new Assign(IntegerType::get(16), Location::regOf(off_mod8),
                                std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(24 + off_mod8)));
                 proc->insertStatementAfter(s, a);
             }
