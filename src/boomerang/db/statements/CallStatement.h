@@ -55,7 +55,8 @@ public:
     /// \copydoc Statement::setNumber
     virtual void setNumber(int num) override;
 
-    /// Set the arguments of this call.
+    /// Set the arguments of this call. Takes ownership of the statements
+    /// in \p args.
     /// \param args The list of locations to set the arguments to (for testing)
     void setArguments(const StatementList& args);
 
@@ -70,9 +71,10 @@ public:
     void updateArguments();
 
     /// Temporarily needed for ad-hoc type analysis
-    int findDefine(SharedExp e);        // Still needed temporarily for ad hoc type analysis
     void removeDefine(SharedExp e);
-    void addDefine(ImplicitAssign *as); // For testing
+
+    /// For testing. Takes ownership of the pointer.
+    void addDefine(ImplicitAssign *as);
 
     // Calculate results(this) = defines(this) intersect live(this)
     // Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
@@ -198,7 +200,7 @@ public:
     const StatementList& getDefines() const { return m_defines; }
     StatementList& getDefines() { return m_defines; }
 
-    void setDefines(const StatementList& defines) { m_defines = defines; }
+    void setDefines(const StatementList& defines);
 
     /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
     /// parameters if needed, and return true if any signature parameters added

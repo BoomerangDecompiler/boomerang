@@ -72,7 +72,7 @@ static bool isBareMemof(const Exp& exp, UserProc *)
 
 void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 {
-    for (Global *glob : prog->getGlobals()) {
+    for (auto& glob : prog->getGlobals()) {
         // Check for an initial value
         SharedExp initialValue = glob->getInitialValue(prog);
 
@@ -147,7 +147,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 global = true;
             }
 
-            for (Global *elem : prog->getGlobals()) {
+            for (auto& elem : prog->getGlobals()) {
                 // Check for an initial value
                 SharedExp e = elem->getInitialValue(prog);
                 // if (e) {
@@ -459,11 +459,10 @@ void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementLi
 }
 
 
-void CCodeGenerator::addReturnStatement(StatementList *rets)
+void CCodeGenerator::addReturnStatement(const StatementList *rets)
 {
     // FIXME: should be returning a struct of more than one real return */
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
-    StatementList::iterator rr;
     QString                 tgt;
     QTextStream             ost(&tgt);
     indent(ost, m_indent);
@@ -488,7 +487,7 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
 
         bool first = true;
 
-        for (rr = ++rets->begin(); rr != rets->end(); ++rr) {
+        for (Statement *ret : (*rets)) {
             if (first) {
                 first = false;
             }
@@ -496,9 +495,9 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
                 ost << ", ";
             }
 
-            appendExp(ost, *(static_cast<Assign *>(*rr))->getLeft(), PREC_NONE);
+            appendExp(ost, *(static_cast<Assign *>(ret))->getLeft(), PREC_NONE);
             ost << " := ";
-            appendExp(ost, *(static_cast<Assign *>(*rr))->getRight(), PREC_NONE);
+            appendExp(ost, *(static_cast<Assign *>(ret))->getRight(), PREC_NONE);
         }
 
         if (n > 1) {

@@ -258,12 +258,12 @@ public:
     virtual SharedExp getProven(SharedExp /*left*/) const { return nullptr; }
     virtual bool isPreserved(SharedExp /*e*/) const { return false; }     // Return whether e is preserved by this proc
 
-    virtual void setLibraryDefines(StatementList& /*defs*/) {} // Set the locations defined by library calls
+    virtual void getLibraryDefines(StatementList& /*defs*/) {} // Set the locations defined by library calls
 
     /// Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
     /// very late in the decompilation. Get the set of registers that are not saved in library functions (or any
     /// procedures that follow the calling convention)
-    static void setABIDefines(Prog *prog, StatementList& defs);
+    static void getABIDefines(Prog *prog, StatementList& defs);
 
     // Return true if this is a known machine (e.g. SparcSignature as opposed to Signature)
     virtual bool isPromoted() const { return false; }

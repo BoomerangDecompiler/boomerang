@@ -88,7 +88,7 @@ public:
      * Adds a return statement and returns the first expression in \a rets.
      * \todo This should be returning a struct if more than one real return value.
      */
-    virtual void addReturnStatement(StatementList *rets) = 0;
+    virtual void addReturnStatement(const StatementList *rets) = 0;
 
     /// Removes unused labels from the code.
     virtual void removeUnusedLabels() = 0;

@@ -118,8 +118,7 @@ public:
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
 
     // globals
-
-    const std::set<Global *>& getGlobals() const { return m_globals; }
+    const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
 
 
     // Decoding
@@ -280,6 +279,6 @@ private:
     IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
-    std::set<Global *> m_globals; ///< globals to print at code generation time
+    std::set<std::shared_ptr<Global>> m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
 };

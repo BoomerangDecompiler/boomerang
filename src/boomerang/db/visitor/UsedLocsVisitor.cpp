@@ -169,10 +169,8 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
 bool UsedLocsVisitor::visit(ReturnStatement *stmt, bool& visitChildren)
 {
     // For the final pass, only consider the first return
-    ReturnStatement::iterator rr;
-
-    for (rr = stmt->begin(); rr != stmt->end(); ++rr) {
-        (*rr)->accept(this);
+    for (Statement *ret : *stmt) {
+        ret->accept(this);
     }
 
     // Also consider the reaching definitions to be uses, so when they are the only non-empty component of this

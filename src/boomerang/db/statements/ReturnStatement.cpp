@@ -39,6 +39,7 @@ ReturnStatement::ReturnStatement()
 ReturnStatement::~ReturnStatement()
 {
     qDeleteAll(m_returns);
+    qDeleteAll(m_modifieds);
 }
 
 
@@ -56,11 +57,22 @@ Statement *ReturnStatement::clone() const
 
     ret->m_retAddr = m_retAddr;
     ret->m_col.makeCloneOf(m_col);
+
     // Statement members
-    ret->m_bb = m_bb;
+    ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
+}
+
+
+ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
+{
+    assert(it != end());
+    Statement *removed = *it;
+    it = m_returns.erase(it);
+    delete removed;
+    return it;
 }
 
 
@@ -186,8 +198,8 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
         }
     }
 
-    for (ReturnStatement::iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_returns) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
@@ -215,16 +227,14 @@ bool ReturnStatement::accept(StmtModifier *v)
         }
     }
 
-    ReturnStatement::iterator rr;
-
-    for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_modifieds) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
 
-    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_returns) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
@@ -237,16 +247,15 @@ bool ReturnStatement::accept(StmtPartModifier *v)
 {
     bool visitChildren = true;
     v->visit(this, visitChildren);
-    ReturnStatement::iterator rr;
 
-    for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_modifieds) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
 
-    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_returns) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
@@ -325,10 +334,10 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     bool     first  = true;
     unsigned column = 19;
 
-    for (auto const& elem : m_returns) {
+    for (const Statement *stmt : m_returns) {
         QString     tgt;
         QTextStream ost(&tgt);
-        static_cast<const Assignment *>(elem)->printCompact(ost, html);
+        static_cast<const Assignment *>(stmt)->printCompact(ost, html);
         unsigned len = tgt.length();
 
         if (first) {
@@ -457,36 +466,27 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
     // the
     // new list. So read the old modifications in reverse order
-    for (StatementList::iterator it = oldMods.end(); it != oldMods.begin();) {
-        --it;     // Because we are using a forwards iterator backwards
+    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); it++) {
         // Make sure the LHS is still in the collector
         Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();
 
         if (!m_col.existsOnLeft(lhs)) {
+            delete *it;
             continue;     // Not in collector: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
+            delete *it;
             continue;     // Filtered out: delete it
         }
 
-        // Insert as, in order, into the existing set of modifications
-
-        bool inserted = false;
-
-        for (auto nn = m_modifieds.begin(); nn != m_modifieds.end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) { // If the new assignment is less than the current one
-                nn       = m_modifieds.insert(nn, as);                      // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            m_modifieds.insert(m_modifieds.end(), as);     // In case larger than all existing elements
-        }
+        m_modifieds.append(as);
     }
+
+    m_modifieds.sort([&sig] (const Statement *mod1, const Statement *mod2) {
+            return sig->returnCompare(*static_cast<const Assignment *>(mod1), *static_cast<const Assignment *>(mod2));
+        });
 }
 
 
@@ -494,8 +494,8 @@ void ReturnStatement::updateReturns()
 {
     auto          sig = m_proc->getSignature();
     int           sp  = sig->getStackRegister();
-    StatementList oldRets(m_returns);     // Copy the old returns
 
+    StatementList oldRets(m_returns);     // Copy the old returns
     m_returns.clear();
 
     // For each location in the modifieds, make sure that there is an assignment in the old returns, which will
@@ -534,20 +534,19 @@ void ReturnStatement::updateReturns()
         }
     }
 
-    // Mostly the old returns will be in the correct order, and inserting will be fastest near the start of the
-    // new list. So read the old returns in reverse order
-    for (StatementList::reverse_iterator it = oldRets.rbegin(); it != oldRets.rend(); ++it) {
+    for (Statement *stmt : oldRets) {
         // Make sure the LHS is still in the modifieds
-        Assign    *as = static_cast<Assign *>(*it);
+        assert(stmt->isAssign());
+        Assign    *as = static_cast<Assign *>(stmt);
         SharedExp lhs = as->getLeft();
 
         if (!m_modifieds.existsOnLeft(lhs)) {
-            delete *it;
+            delete stmt;
             continue;     // Not in modifieds: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
-            delete *it;
+            delete stmt;
             continue;     // Filtered out: delete it
         }
 
@@ -556,31 +555,28 @@ void ReturnStatement::updateReturns()
         SharedExp rhs = as->getRight();
 
         if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() && (*rhs->getSubExp1() == *lhs)) {
-            delete *it;
+            delete stmt;
             continue;     // Filter out the preserveds
         }
 
-        // Insert as, in order, into the existing set of returns
-
-        bool inserted = false;
-
-        for (StatementList::iterator nn = m_returns.begin(); nn != m_returns.end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assign *>(*nn))) {     // If the new assignment is less than the current one
-                nn       = m_returns.insert(nn, as);             // then insert before this position
-                inserted = true;
-                break;
-            }
-        }
-
-        if (!inserted) {
-            m_returns.insert(m_returns.end(), as);     // In case larger than all existing elements
-        }
+        m_returns.append(as);
     }
+
+    m_returns.sort([&sig] (const Statement *ret1, const Statement *ret2) {
+            return sig->returnCompare(*static_cast<const Assignment *>(ret1), *static_cast<const Assignment *>(ret2));
+        });
 }
 
 
 void ReturnStatement::removeModified(SharedExp loc)
 {
-    m_modifieds.removeFirstDefOf(loc);
-    m_returns.removeFirstDefOf(loc);
+    Statement *mod = m_modifieds.removeFirstDefOf(loc);
+    if (mod) {
+        delete mod;
+    }
+
+    Statement *ret = m_returns.removeFirstDefOf(loc);
+    if (ret) {
+        delete ret;
+    }
 }

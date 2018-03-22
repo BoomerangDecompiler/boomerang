@@ -109,6 +109,7 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
     StatementList& defines = stmt->getDefines();
 
     for (StatementList::iterator ss = defines.begin(); ss != defines.end(); ++ss) {
+        assert((*ss)->isAssignment());
         Assignment *as = static_cast<Assignment *>(*ss);
         // FIXME: use of fromSSAleft is deprecated
         SharedExp e = as->getLeft()->fromSSAleft(static_cast<ExpSsaXformer *>(m_mod)->getProc(), stmt);

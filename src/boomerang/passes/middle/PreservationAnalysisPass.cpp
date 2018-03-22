@@ -35,10 +35,8 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
     }
 
     // prove preservation for all modifieds in the return statement
-    StatementList& modifieds = proc->getTheReturnStatement()->getModifieds();
-
-    for (ReturnStatement::iterator mm = modifieds.begin(); mm != modifieds.end(); ++mm) {
-        SharedExp lhs      = static_cast<Assignment *>(*mm)->getLeft();
+    for (Statement *mod : proc->getTheReturnStatement()->getModifieds()) {
+        SharedExp lhs      = static_cast<Assignment *>(mod)->getLeft();
         auto      equation = Binary::get(opEquals, lhs, lhs);
 
         if (DEBUG_PROOF) {

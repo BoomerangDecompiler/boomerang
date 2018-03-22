@@ -257,7 +257,7 @@ public:
     /// Insert statement \a a after statement \a s.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
-    void insertStatementAfter(Statement *s, Statement *a);
+    void insertStatementAfter(Statement *afterThis, Statement *stmt);
 
     /**
      * Trim parameters to procedure calls with ellipsis (...).
@@ -354,7 +354,7 @@ public:
     void removeStatement(Statement *stmt);
 
     StatementList& getParameters() { return m_parameters; }
-    StatementList& getModifieds() { return m_retStatement->getModifieds(); }
+    const StatementList& getModifieds() { return m_retStatement->getModifieds(); }
 
 
     /// Return an expression that is equivalent to e in terms of symbols.

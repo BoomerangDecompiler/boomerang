@@ -54,14 +54,14 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callee->isLib()) {
         StatementList defines;
-        sig->setLibraryDefines(defines);     // Set the locations defined
+        sig->getLibraryDefines(defines);     // Set the locations defined
         callStmt->setDefines(defines);
         return true;
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::setABIDefines(proc->getProg(), callStmt->getDefines());
-        return false;
+        Signature::getABIDefines(proc->getProg(), callStmt->getDefines());
+        return true;
     }
 
     // Move the defines to a temporary list. We must make sure that all defines
@@ -71,7 +71,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callStmt->getCalleeReturn()) {
         assert(!callee->isLib());
-        StatementList& modifieds = static_cast<UserProc *>(callee)->getModifieds();
+        const StatementList& modifieds = static_cast<UserProc *>(callee)->getModifieds();
 
         for (Statement *mm : modifieds) {
             Assignment *as = static_cast<Assignment *>(mm);

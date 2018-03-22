@@ -590,9 +590,9 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 }
 
 
-SharedExp Exp::fromSSAleft(UserProc *proc, Statement *d)
+SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
 {
-    auto r = RefExp::get(shared_from_this(), d); // "Wrap" in a ref
+    auto r = RefExp::get(shared_from_this(), def); // "Wrap" in a ref
     ExpSsaXformer *xformer = new ExpSsaXformer(proc);
     SharedExp result = r->accept(xformer);
     delete xformer;
