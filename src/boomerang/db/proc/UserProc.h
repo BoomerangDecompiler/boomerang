@@ -257,7 +257,7 @@ public:
     /// Insert statement \a a after statement \a s.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
-    void insertStatementAfter(Statement *s, Statement *a);
+    void insertStatementAfter(Statement *afterThis, Statement *stmt);
 
     /**
      * Trim parameters to procedure calls with ellipsis (...).

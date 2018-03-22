@@ -539,7 +539,7 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 }
 
 
-void UserProc::insertStatementAfter(Statement *s, Statement *a)
+void UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
 {
     for (BasicBlock *bb : *m_cfg) {
         RTLList *rtls = bb->getRTLs();
@@ -550,10 +550,9 @@ void UserProc::insertStatementAfter(Statement *s, Statement *a)
 
         for (const auto& rtl : *rtls) {
             for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
-                if (*ss == s) {
-                    ++ss; // This is the point to insert before
-                    rtl->insert(ss, a);
-                    a->setBB(bb);
+                if (*ss == afterThis) {
+                    rtl->insert(std::next(ss), stmt);
+                    stmt->setBB(bb);
                     return;
                 }
             }
