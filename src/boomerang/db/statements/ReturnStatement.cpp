@@ -188,8 +188,8 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
         }
     }
 
-    for (ReturnStatement::iterator rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_returns) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
@@ -217,16 +217,14 @@ bool ReturnStatement::accept(StmtModifier *v)
         }
     }
 
-    ReturnStatement::iterator rr;
-
-    for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_modifieds) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
 
-    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_returns) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
@@ -239,16 +237,15 @@ bool ReturnStatement::accept(StmtPartModifier *v)
 {
     bool visitChildren = true;
     v->visit(this, visitChildren);
-    ReturnStatement::iterator rr;
 
-    for (rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_modifieds) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
 
-    for (rr = m_returns.begin(); rr != m_returns.end(); ++rr) {
-        if (!(*rr)->accept(v)) {
+    for (Statement *stmt : m_returns) {
+        if (!stmt->accept(v)) {
             return false;
         }
     }
@@ -327,10 +324,10 @@ void ReturnStatement::print(QTextStream& os, bool html) const
     bool     first  = true;
     unsigned column = 19;
 
-    for (auto const& elem : m_returns) {
+    for (const Statement *stmt : m_returns) {
         QString     tgt;
         QTextStream ost(&tgt);
-        static_cast<const Assignment *>(elem)->printCompact(ost, html);
+        static_cast<const Assignment *>(stmt)->printCompact(ost, html);
         unsigned len = tgt.length();
 
         if (first) {
@@ -527,20 +524,19 @@ void ReturnStatement::updateReturns()
         }
     }
 
-    // Mostly the old returns will be in the correct order, and inserting will be fastest near the start of the
-    // new list. So read the old returns in reverse order
-    for (StatementList::reverse_iterator it = oldRets.rbegin(); it != oldRets.rend(); ++it) {
+    for (Statement *stmt : oldRets) {
         // Make sure the LHS is still in the modifieds
-        Assign    *as = static_cast<Assign *>(*it);
+        assert(stmt->isAssign());
+        Assign    *as = static_cast<Assign *>(stmt);
         SharedExp lhs = as->getLeft();
 
         if (!m_modifieds.existsOnLeft(lhs)) {
-            delete *it;
+            delete stmt;
             continue;     // Not in modifieds: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
-            delete *it;
+            delete stmt;
             continue;     // Filtered out: delete it
         }
 
@@ -549,7 +545,7 @@ void ReturnStatement::updateReturns()
         SharedExp rhs = as->getRight();
 
         if (rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef() && (*rhs->getSubExp1() == *lhs)) {
-            delete *it;
+            delete stmt;
             continue;     // Filter out the preserveds
         }
 

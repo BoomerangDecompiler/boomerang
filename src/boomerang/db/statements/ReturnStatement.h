@@ -44,10 +44,13 @@ public:
     const_iterator begin() const { return m_returns.begin(); }
     const_iterator end()   const { return m_returns.end(); }
 
-    iterator erase(iterator it) { return m_returns.erase(it); }
+    iterator erase(iterator it)
+    {
+        return m_returns.erase(it);
+    }
 
-    StatementList& getModifieds() { return m_modifieds; }
-    StatementList& getReturns() { return m_returns; }
+    const StatementList& getModifieds() { return m_modifieds; }
+    const StatementList& getReturns() { return m_returns; }
 
     size_t getNumReturns() const { return m_returns.size(); }
 
@@ -80,6 +83,7 @@ public:
     /// Remove from modifieds AND from returns
     void removeModified(SharedExp loc);
 
+    /// For testing only
     void addReturn(Assignment *a);
 
     /// \copydoc Statement::getTypeFor

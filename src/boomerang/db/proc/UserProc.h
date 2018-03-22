@@ -354,7 +354,7 @@ public:
     void removeStatement(Statement *stmt);
 
     StatementList& getParameters() { return m_parameters; }
-    StatementList& getModifieds() { return m_retStatement->getModifieds(); }
+    const StatementList& getModifieds() { return m_retStatement->getModifieds(); }
 
 
     /// Return an expression that is equivalent to e in terms of symbols.

@@ -99,7 +99,7 @@ public:
     /// Find the first Assignment with loc on the LHS
     Assignment *findOnLeft(SharedExp loc) const;   ///< Return the first stmt with loc on the LHS
 
-    char *prints();
+    char *prints() const;
 
 private:
     List m_list;

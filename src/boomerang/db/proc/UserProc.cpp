@@ -2818,7 +2818,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     }
 
     if (m_retStatement->getNumReturns() == 1) {
-        Assign *a = static_cast<Assign *>(m_retStatement->getReturns().front());
+        const Assign *a = static_cast<Assign *>(m_retStatement->getReturns().front());
         m_signature->setRetType(a->getType());
     }
 

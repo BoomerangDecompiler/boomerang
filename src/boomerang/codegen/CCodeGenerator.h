@@ -105,7 +105,7 @@ public:
                                      const StatementList& results) override;
 
     /// \copydoc ICodeGenerator::addReturnStatement
-    virtual void addReturnStatement(StatementList *rets) override;
+    virtual void addReturnStatement(const StatementList *rets) override;
 
     /// \copydoc ICodeGenerator::removeUnusedLabels
     virtual void removeUnusedLabels() override;

@@ -63,7 +63,7 @@ void StatementList::append(const StatementSet& ss)
 }
 
 
-char *StatementList::prints()
+char *StatementList::prints() const
 {
     QString     tgt;
     QTextStream ost(&tgt);

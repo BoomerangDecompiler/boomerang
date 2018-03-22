@@ -459,11 +459,10 @@ void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementLi
 }
 
 
-void CCodeGenerator::addReturnStatement(StatementList *rets)
+void CCodeGenerator::addReturnStatement(const StatementList *rets)
 {
     // FIXME: should be returning a struct of more than one real return */
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
-    StatementList::iterator rr;
     QString                 tgt;
     QTextStream             ost(&tgt);
     indent(ost, m_indent);
@@ -488,7 +487,7 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
 
         bool first = true;
 
-        for (rr = ++rets->begin(); rr != rets->end(); ++rr) {
+        for (Statement *ret : (*rets)) {
             if (first) {
                 first = false;
             }
@@ -496,9 +495,9 @@ void CCodeGenerator::addReturnStatement(StatementList *rets)
                 ost << ", ";
             }
 
-            appendExp(ost, *(static_cast<Assign *>(*rr))->getLeft(), PREC_NONE);
+            appendExp(ost, *(static_cast<Assign *>(ret))->getLeft(), PREC_NONE);
             ost << " := ";
-            appendExp(ost, *(static_cast<Assign *>(*rr))->getRight(), PREC_NONE);
+            appendExp(ost, *(static_cast<Assign *>(ret))->getRight(), PREC_NONE);
         }
 
         if (n > 1) {
