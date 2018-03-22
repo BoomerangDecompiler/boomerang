@@ -59,10 +59,20 @@ Statement *ReturnStatement::clone() const
     ret->m_col.makeCloneOf(m_col);
 
     // Statement members
-    ret->m_bb = m_bb;
+    ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
+}
+
+
+ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
+{
+    assert(it != end());
+    Statement *removed = *it;
+    it = m_returns.erase(it);
+    delete removed;
+    return it;
 }
 
 

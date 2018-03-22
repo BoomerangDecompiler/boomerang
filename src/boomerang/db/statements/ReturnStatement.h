@@ -35,19 +35,17 @@ public:
     ReturnStatement& operator=(ReturnStatement&& other) = default;
 
 public:
-    /// \copydoc Statement::clone
-    virtual Statement *clone() const override;
-
     iterator begin() { return m_returns.begin(); }
     iterator end()   { return m_returns.end(); }
 
     const_iterator begin() const { return m_returns.begin(); }
     const_iterator end()   const { return m_returns.end(); }
 
-    iterator erase(iterator it)
-    {
-        return m_returns.erase(it);
-    }
+public:
+    /// \copydoc Statement::clone
+    virtual Statement *clone() const override;
+
+    iterator erase(iterator it);
 
     const StatementList& getModifieds() { return m_modifieds; }
     const StatementList& getReturns() { return m_returns; }
@@ -125,9 +123,6 @@ public:
 
     /// Find definition for e (in the collector)
     SharedExp findDefFor(SharedExp e) { return m_col.findDefFor(e); }
-
-    /// Remove the stack pointer and return a statement list
-    StatementList *getCleanReturns();
 
 protected:
     /// Native address of the (only) return instruction.
