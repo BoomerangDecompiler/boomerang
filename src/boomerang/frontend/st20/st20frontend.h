@@ -30,7 +30,7 @@ class ST20FrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    ST20FrontEnd(IFileLoader *loader, Prog *prog);
+    ST20FrontEnd(BinaryFile *binaryFile, Prog *prog);
     ST20FrontEnd(const ST20FrontEnd& other) = delete;
     ST20FrontEnd(ST20FrontEnd&& other) = default;
 

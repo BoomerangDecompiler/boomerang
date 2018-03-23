@@ -15,7 +15,6 @@ include_directories(
 
 set(IFC_SOURCES
     ${CMAKE_SOURCE_DIR}/src/boomerang/loader/IFileLoader.h
-    ${CMAKE_SOURCE_DIR}/src/boomerang/loader/IBinaryFile.h
 )
 
 BOOMERANG_ADD_LOADER(

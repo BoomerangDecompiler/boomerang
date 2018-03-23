@@ -12,8 +12,6 @@
 
 #include <QtTest/QTest>
 
-class IFileLoader;
-
 
 class ElfBinaryLoaderTest : public QObject
 {

@@ -124,11 +124,8 @@ void TypeTest::testCompound()
     IProject& project = *Boomerang::get()->getOrCreateProject();
     QVERIFY(project.loadBinaryFile(HELLO_WINDOWS));
 
-    IFileLoader *loader = project.getBestLoader(HELLO_WINDOWS);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(loader, prog);
+    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
     prog->setFrontEnd(fe);
 
     fe->readLibraryCatalog(); // Read definitions

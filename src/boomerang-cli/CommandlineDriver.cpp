@@ -155,7 +155,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_FATAL("Bad address: %1", args[i]);
                 }
 
-                boom.m_entryPoints.push_back(addr);
+                Boomerang::get()->getSettings()->m_entryPoints.push_back(addr);
             }
             break;
 
@@ -335,7 +335,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 's':
             {
                 if (arg[2] == 'f') {
-                    boom.m_symbolFiles.push_back(args[i + 1]);
+                    Boomerang::get()->getSettings()->m_symbolFiles.push_back(args[i + 1]);
                     i++;
                     break;
                 }
@@ -354,7 +354,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_FATAL("Bad address: %1", args[i + 1]);
                 }
 
-                boom.m_symbolMap[addr] = args[++i];
+                Boomerang::get()->getSettings()->m_symbolMap[addr] = args[++i];
             }
             break;
 
@@ -489,6 +489,7 @@ void DecompilationThread::run()
 {
     Boomerang& boom(*Boomerang::get());
     QDir       wd = boom.getSettings()->getWorkingDirectory();
+    QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
 
-    m_result = boom.decompile(wd.absoluteFilePath(m_pathToBinary));
+    m_result = boom.decompile(inf.absoluteFilePath(), inf.baseName());
 }

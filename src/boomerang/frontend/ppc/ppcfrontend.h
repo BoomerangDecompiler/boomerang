@@ -31,7 +31,7 @@ class PPCFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PPCFrontEnd(IFileLoader *loader, Prog *prog);
+    PPCFrontEnd(BinaryFile *binaryFile, Prog *prog);
     PPCFrontEnd(const PPCFrontEnd& other) = delete;
     PPCFrontEnd(PPCFrontEnd&& other) = default;
 

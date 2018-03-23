@@ -19,7 +19,7 @@
 
 class Statement;
 class StatementList;
-class IFileLoader;
+class BinaryFile;
 class Exp;
 
 
@@ -251,7 +251,7 @@ public:
     /// A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
     /// happened. For the switch logic, that happens way too late. So for now, we have this cludge.
     /// This is very very hacky! (trent)
-    static SharedExp getReturnExp2(IFileLoader *loader);
+    static SharedExp getReturnExp2(BinaryFile *binaryFile);
     static StatementList& getStdRetStmt(Prog *prog);
 
     // get anything that can be proven as a result of the signature

@@ -44,13 +44,10 @@ void FrontSparcTest::test1()
     QTextStream strm(&actual);
 
     IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(HELLO_SPARC);
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(loader != nullptr);
-    QVERIFY(loader->getMachine() == Machine::SPARC);
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
     Prog      *prog = project.getProg();
-    IFrontEnd *fe  = new SparcFrontEnd(loader, prog);
+    IFrontEnd *fe  = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
     prog->setFrontEnd(fe);
 
     bool    gotMain;
@@ -118,12 +115,8 @@ void FrontSparcTest::test2()
     IProject& project = *Boomerang::get()->getOrCreateProject();
     QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
+    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
     prog->setFrontEnd(fe);
 
     fe->decodeInstruction(Address(0x00010690), inst);
@@ -161,12 +154,8 @@ void FrontSparcTest::test3()
     IProject& project = *Boomerang::get()->getOrCreateProject();
     QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
+    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
     prog->setFrontEnd(fe);
 
 
@@ -231,12 +220,8 @@ void FrontSparcTest::testBranch()
     IProject& project = *Boomerang::get()->getOrCreateProject();
     QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(BRANCH_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
+    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
     prog->setFrontEnd(fe);
 
     // bne
@@ -271,13 +256,8 @@ void FrontSparcTest::testDelaySlot()
     IProject& project = *Boomerang::get()->getOrCreateProject();
     QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(BRANCH_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
+    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
     prog->setFrontEnd(fe);
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared

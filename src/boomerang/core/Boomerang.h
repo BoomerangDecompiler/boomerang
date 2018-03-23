@@ -83,7 +83,7 @@ public:
      * \param fname The name of the file to load.
      * \param pname How the Prog will be named.
      */
-    bool loadAndDecode(const QString& fname, const char *pname = nullptr);
+    bool loadAndDecode(const QString& fname, const QString& pname = "");
 
     /**
      * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
@@ -94,7 +94,7 @@ public:
      *
      * \return Zero on success, nonzero on faillure.
      */
-    int decompile(const QString& fname, const char *pname = nullptr);
+    int decompile(const QString& fname, const QString& pname = "");
 
 public:
     /// Add a Watcher to the set of Watchers for this Boomerang object.
@@ -146,9 +146,6 @@ public:
     std::unique_ptr<ICodeGenerator> m_codeGenerator;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
-    std::vector<Address> m_entryPoints;     ///< A vector which contains all know entrypoints for the Prog.
-    std::vector<QString> m_symbolFiles;     ///< A vector containing the names off all symbolfiles to load.
-    std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
 
 private:
     /// This is a mini command line debugger.  Feel free to expand it.

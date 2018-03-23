@@ -40,7 +40,8 @@ class Statement;
 class CallStatement;
 class BinarySymbolTable;
 class BinaryImage;
-class IFileLoader;
+class BinaryFile;
+
 
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
@@ -57,10 +58,9 @@ class IFrontEnd
 {
 public:
     /**
-     * \param loader pointer to the Loader
      * \param prog   program being decoded
      */
-    IFrontEnd(IFileLoader *loader, Prog *prog);
+    IFrontEnd(BinaryFile *binaryFile, Prog *prog);
     IFrontEnd(const IFrontEnd&) = delete;
     IFrontEnd(IFrontEnd&&) = default;
 
@@ -77,7 +77,7 @@ public:
      * \param loader pointer to the loader object
      * \param prog program being decoded
      */
-    static IFrontEnd *instantiate(IFileLoader *loader, Prog *prog);
+    static IFrontEnd *instantiate(BinaryFile *binaryFile, Prog *prog);
 
     /// Is this a win32 frontend?
     /// \note Returns false if no binary is loaded.
@@ -91,8 +91,6 @@ public:
 
     /// \returns an enum identifer for this frontend's platform
     virtual Platform getType() const = 0;
-
-    IFileLoader *getLoader() const { return m_fileLoader; }
 
     /// Accessor function to get the decoder.
     IDecoder *getDecoder() { return m_decoder.get(); }
@@ -135,15 +133,15 @@ public:
     void readLibraryCatalog();                        ///< read from default catalog
 
     /// Decode all undecoded procedures and return a new program containing them.
-    bool decode(Prog *program, bool decodeMain = true, const char *progName = nullptr);
+    bool decode(bool decodeMain = true);
 
-    /// Decode all procs starting at a given address in a given program.
+    /// Decode all procs starting at a given address
     /// \note Somehow, addr == Address::INVALID has come to mean decode anything not already decoded
-    bool decode(Prog *Program, Address addr);
+    bool decode(Address addr);
 
-    /// Decode one proc starting at a given address in a given program.
-    /// \p a should be the address of an UserProc
-    bool decodeOnly(Prog *Program, Address addr);
+    /// Decode one proc starting at a given address
+    /// \p addr should be the address of an UserProc
+    bool decodeOnly(Address addr);
 
     /// Decode a fragment of a procedure, e.g. for each destination of a switch statement
     bool decodeFragment(UserProc *proc, Address addr);
@@ -218,7 +216,7 @@ private:
 
 protected:
     std::unique_ptr<IDecoder> m_decoder;
-    IFileLoader *m_fileLoader;
+    BinaryFile *m_binaryFile;
     Prog *m_program;
 
     TargetQueue m_targetQueue; ///< Holds the addresses that still need to be processed

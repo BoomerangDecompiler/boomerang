@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/util/Address.h"
+
 #include <QString>
 #include <QDir>
 #include <QSettings>
@@ -86,6 +88,10 @@ public:
     bool experimental        = false; ///< Activate experimental code. Caution!
 
     QString replayFile;               ///< file with commands to execute in interactive mode
+
+    std::vector<Address> m_entryPoints;     ///< A vector which contains all know entrypoints for the Prog.
+    std::vector<QString> m_symbolFiles;     ///< A vector containing the names off all symbolfiles to load.
+    std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
 
 private:
     QDir m_workingDirectory;       ///< Directory where Boomerang is run from

@@ -28,7 +28,6 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 
@@ -51,8 +50,8 @@
 #include <sstream>
 
 
-IFrontEnd::IFrontEnd(IFileLoader *p_BF, Prog *prog)
-    : m_fileLoader(p_BF)
+IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
+    : m_binaryFile(binaryFile)
     , m_program(prog)
 {
 }
@@ -63,24 +62,24 @@ IFrontEnd::~IFrontEnd()
 }
 
 
-IFrontEnd *IFrontEnd::instantiate(IFileLoader *loader, Prog *prog)
+IFrontEnd *IFrontEnd::instantiate(BinaryFile *binaryFile, Prog *prog)
 {
-    switch (loader->getMachine())
+    switch (binaryFile->getMachine())
     {
     case Machine::PENTIUM:
-        return new PentiumFrontEnd(loader, prog);
+        return new PentiumFrontEnd(binaryFile, prog);
 
     case Machine::SPARC:
-        return new SparcFrontEnd(loader, prog);
+        return new SparcFrontEnd(binaryFile, prog);
 
     case Machine::PPC:
-        return new PPCFrontEnd(loader, prog);
+        return new PPCFrontEnd(binaryFile, prog);
 
     case Machine::MIPS:
-        return new MIPSFrontEnd(loader, prog);
+        return new MIPSFrontEnd(binaryFile, prog);
 
     case Machine::ST20:
-        return new ST20FrontEnd(loader, prog);
+        return new ST20FrontEnd(binaryFile, prog);
 
     case Machine::HPRISC:
         LOG_VERBOSE("No frontend for HP RISC");
@@ -123,7 +122,7 @@ int IFrontEnd::getRegSize(int idx)
 
 bool IFrontEnd::isWin32() const
 {
-    return m_fileLoader && m_fileLoader->getFormat() == LoadFmt::PE;
+    return m_binaryFile && m_binaryFile->getFormat() == LoadFmt::PE;
 }
 
 
@@ -200,7 +199,7 @@ void IFrontEnd::readLibraryCatalog()
     }
 
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
-    if (m_fileLoader->getFormat() == LoadFmt::MACHO) {
+    if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
         readLibraryCatalog(sig_dir.absoluteFilePath("objc.hs"));
     }
 }
@@ -291,18 +290,12 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 }
 
 
-bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
+bool IFrontEnd::decode(bool decodeMain)
 {
-    Q_UNUSED(prg);
-    assert(m_program == prg);
-
-    if (pname) {
-        m_program->setName(pname);
-    }
-
     if (!decodeMain) {
         return true;
     }
+
     BinaryImage *image = m_program->getBinaryFile()->getImage();
 
     Boomerang::get()->alertStartDecode(image->getLimitTextLow(),
@@ -316,7 +309,7 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         std::vector<Address> entrypoints = getEntryPoints();
 
         for (auto& entrypoint : entrypoints) {
-            if (!decode(m_program, entrypoint)) {
+            if (!decode(entrypoint)) {
                 return false;
             }
         }
@@ -324,7 +317,7 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
         return true;
     }
 
-    decode(m_program, a);
+    decode(a);
     m_program->addEntryPoint(a);
 
     if (!gotMain) {
@@ -369,11 +362,8 @@ bool IFrontEnd::decode(Prog *prg, bool decodeMain, const char *pname)
 }
 
 
-bool IFrontEnd::decode(Prog *prog, Address addr)
+bool IFrontEnd::decode(Address addr)
 {
-    Q_UNUSED(prog);
-    assert(m_program == prog);
-
     if (addr != Address::INVALID) {
         Function *newProc = m_program->createFunction(addr);
 
@@ -445,11 +435,8 @@ bool IFrontEnd::decode(Prog *prog, Address addr)
 }
 
 
-bool IFrontEnd::decodeOnly(Prog *prg, Address addr)
+bool IFrontEnd::decodeOnly(Address addr)
 {
-    Q_UNUSED(prg);
-    assert(m_program == prg);
-
     UserProc *p = static_cast<UserProc *>(m_program->createFunction(addr));
     assert(!p->isLib());
     QTextStream os(stderr); // rtl output target
@@ -496,8 +483,8 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     try {
         p.reset(new AnsiCParser(signatureFile, false));
     }
-    catch (const char *) {
-        LOG_ERROR("Cannot read library signature file '%1'", signatureFile);
+    catch (const char *err) {
+        LOG_ERROR("Cannot read library signature file '%1': %2", signatureFile, err);
         return;
     }
 

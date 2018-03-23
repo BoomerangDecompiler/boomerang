@@ -11,7 +11,6 @@
 
 
 class BinaryFile;
-class IFileLoader;
 class ITypeRecovery;
 class Prog;
 class QString;
@@ -58,15 +57,18 @@ public:
      */
     virtual void unloadBinaryFile() = 0;
 
+    /**
+     * Decodes the loaded binary file.
+     * \returns true on success, false if no binary is loaded or an error occurred.
+     */
+    virtual bool decodeBinaryFile() = 0;
+
+public:
     virtual BinaryFile *getLoadedBinaryFile() = 0;
     virtual const BinaryFile *getLoadedBinaryFile() const = 0;
 
-    /**
-     * \returns the type recovery engine
-     */
+    /// \returns the type recovery engine
     virtual ITypeRecovery *getTypeRecoveryEngine() const = 0;
-
-    virtual IFileLoader *getBestLoader(const QString& filePath) const = 0;
 
     virtual const Prog *getProg() const = 0;
     virtual Prog *getProg() = 0;

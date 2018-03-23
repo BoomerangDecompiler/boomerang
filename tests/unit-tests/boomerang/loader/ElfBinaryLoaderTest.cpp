@@ -44,19 +44,19 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 {
     IProject *project = new Project();
 
-    project->loadBinaryFile(HELLO_CLANG4);
-    IFileLoader *loader = project->getBestLoader(HELLO_CLANG4);
+    QVERIFY(project->loadBinaryFile(HELLO_CLANG4));
+    BinaryFile *binary = project->getLoadedBinaryFile();
 
     // test the loader
-    QVERIFY(loader != nullptr);
-    QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-    QCOMPARE(loader->getMachine(), Machine::PENTIUM);
-    QCOMPARE(loader->hasDebugInfo(), false);
-    QCOMPARE(loader->getEntryPoint(),     Address(0x080482F0));
-    QCOMPARE(loader->getMainEntryPoint(), Address(0x080483F0));
+    QVERIFY(binary != nullptr);
+    QCOMPARE(binary->getFormat(),         LoadFmt::ELF);
+    QCOMPARE(binary->getMachine(),        Machine::PENTIUM);
+    QCOMPARE(binary->hasDebugInfo(),      false);
+    QCOMPARE(binary->getEntryPoint(),     Address(0x080482F0));
+    QCOMPARE(binary->getMainEntryPoint(), Address(0x080483F0));
 
     // test the loaded image
-    BinaryImage *image = project->getLoadedBinaryFile()->getImage();
+    BinaryImage *image = binary->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), 29);
@@ -71,17 +71,17 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 void ElfBinaryLoaderTest::testElfLoadClangStatic()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+    QVERIFY(project.loadBinaryFile(HELLO_CLANG4_STATIC));
 
-    project.loadBinaryFile(HELLO_CLANG4_STATIC);
-    IFileLoader *loader = project.getBestLoader(HELLO_CLANG4_STATIC);
+    BinaryFile *binary = project.getLoadedBinaryFile();
 
     // test the loader
-    QVERIFY(loader != nullptr);
-    QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-    QCOMPARE(loader->getMachine(), Machine::PENTIUM);
-    QCOMPARE(loader->hasDebugInfo(), false);
-    QCOMPARE(loader->getEntryPoint(),     Address(0x0804884F));
-    QCOMPARE(loader->getMainEntryPoint(), Address(0x080489A0));
+    QVERIFY(binary != nullptr);
+    QCOMPARE(binary->getFormat(), LoadFmt::ELF);
+    QCOMPARE(binary->getMachine(), Machine::PENTIUM);
+    QCOMPARE(binary->hasDebugInfo(), false);
+    QCOMPARE(binary->getEntryPoint(),     Address(0x0804884F));
+    QCOMPARE(binary->getMainEntryPoint(), Address(0x080489A0));
 
     // test the loaded image
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
@@ -100,13 +100,12 @@ void ElfBinaryLoaderTest::testPentiumLoad()
 {
     // Load Pentium hello world
     IProject& project = *Boomerang::get()->getOrCreateProject();
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    BinaryFile *binary = project.getLoadedBinaryFile();
 
-    project.loadBinaryFile(HELLO_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(HELLO_PENTIUM);
-
-    QVERIFY(loader != nullptr);
-    QCOMPARE(loader->getFormat(), LoadFmt::ELF);
-    QCOMPARE(loader->getMachine(), Machine::PENTIUM);
+    QVERIFY(binary != nullptr);
+    QCOMPARE(binary->getFormat(), LoadFmt::ELF);
+    QCOMPARE(binary->getMachine(), Machine::PENTIUM);
 
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);

@@ -38,7 +38,7 @@ bool Project::loadBinaryFile(const QString& filePath)
     IFileLoader *loader = getBestLoader(filePath);
 
     if (loader == nullptr) {
-        LOG_WARN("Cannot load %1: Unrecognized binary file format.", filePath);
+        LOG_WARN("Cannot load '%1': Unrecognized binary file format.", filePath);
         return false;
     }
 
@@ -53,7 +53,7 @@ bool Project::loadBinaryFile(const QString& filePath)
         return false;
     }
 
-    m_loadedBinary.reset(new BinaryFile(srcFile.readAll()));
+    m_loadedBinary.reset(new BinaryFile(srcFile.readAll(), loader));
 
     if (loader->loadFromFile(m_loadedBinary.get()) == false) {
         LOG_WARN("Loading '%1 failed", filePath);
@@ -93,6 +93,24 @@ void Project::unloadBinaryFile()
 }
 
 
+bool Project::decodeBinaryFile()
+{
+    if (!getProg()) {
+        LOG_WARN("Cannot decode binary file: No binary file is loaded.");
+        return false;
+    }
+
+    m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
+    if (!m_fe) {
+        LOG_ERROR("Cannot instantiate frontend!");
+        return false;
+    }
+    m_prog->setFrontEnd(m_fe.get());
+    loadSymbols();
+    return decodeAll();
+}
+
+
 Prog *Project::createProg(BinaryFile* file, const QString& name)
 {
     if (!file) {
@@ -104,6 +122,61 @@ Prog *Project::createProg(BinaryFile* file, const QString& name)
     m_prog.reset(new Prog(name, file));
     return m_prog.get();
 }
+
+
+void Project::loadSymbols()
+{
+    // Add symbols from -s switch(es)
+    for (const std::pair<Address, QString>& elem : Boomerang::get()->getSettings()->m_symbolMap) {
+        m_fe->addSymbol(elem.first, elem.second);
+    }
+
+    m_fe->readLibraryCatalog(); // Needed before readSymbolFile()
+
+    for (auto& elem : Boomerang::get()->getSettings()->m_symbolFiles) {
+        LOG_MSG("Reading symbol file '%1'", elem);
+        m_prog->readSymbolFile(elem);
+    }
+}
+
+
+bool Project::decodeAll()
+{
+    // Entry points from -e (and -E) switch(es)
+    for (auto& elem : Boomerang::get()->getSettings()->m_entryPoints) {
+        LOG_MSG("Decoding specified entrypoint at address %1", elem);
+        m_prog->decodeEntryPoint(elem);
+    }
+
+    if (Boomerang::get()->getSettings()->m_entryPoints.size() == 0) { // no -e or -E given
+        if (SETTING(decodeMain)) {
+            LOG_MSG("Decoding entry point...");
+        }
+
+        if (!m_fe->decode(SETTING(decodeMain))) {
+            LOG_ERROR("Aborting load due to decode failure");
+            return false;
+        }
+
+        bool gotMain = false;
+        Address mainAddr = m_fe->getMainEntryPoint(gotMain);
+        if (gotMain) {
+            m_prog->addEntryPoint(mainAddr);
+        }
+
+        if (SETTING(decodeChildren)) {
+            // this causes any undecoded userprocs to be decoded
+            LOG_MSG("Decoding anything undecoded...");
+            if (!m_fe->decode(Address::INVALID)) {
+                LOG_ERROR("Aborting load due to decode failure");
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 
 
 void Project::loadPlugins()

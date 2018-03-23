@@ -29,11 +29,8 @@ void PalmBinaryLoaderTest::initTestCase()
 void PalmBinaryLoaderTest::testPalmLoad()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
+    QVERIFY(project.loadBinaryFile(STARTER_PALM));
 
-    project.loadBinaryFile(STARTER_PALM);
-    IFileLoader *loader = project.getBestLoader(STARTER_PALM);
-
-    QVERIFY(loader != nullptr);
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
 
     QCOMPARE(image->getNumSections(), 8);

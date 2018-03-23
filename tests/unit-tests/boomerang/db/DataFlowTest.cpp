@@ -123,15 +123,13 @@ void DataFlowTest::testCalculateDominators()
 void DataFlowTest::testPlacePhi()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != nullptr);
+    QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
 
     Prog      prog(FRONTIER_PENTIUM, project.getLoadedBinaryFile());
-    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), &prog);
     Type::clearNamedTypes();
     prog.setFrontEnd(fe);
-    fe->decode(&prog);
+    fe->decode();
 
     const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);
@@ -168,14 +166,11 @@ void DataFlowTest::testPlacePhi2()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
     project.loadBinaryFile(IFTHEN_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(IFTHEN_PENTIUM);
-
-    QVERIFY(loader != nullptr);
     Prog      prog(IFTHEN_PENTIUM, project.getLoadedBinaryFile());
     Type::clearNamedTypes();
-    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), &prog);
     prog.setFrontEnd(fe);
-    fe->decode(&prog);
+    fe->decode();
 
     const Module *m = (*prog.getModuleList().begin()).get();
     QVERIFY(m != nullptr);
@@ -207,16 +202,13 @@ void DataFlowTest::testPlacePhi2()
 void DataFlowTest::testRenameVars()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != nullptr);
+    QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
 
     Prog prog("FRONTIER_PENTIUM", project.getLoadedBinaryFile());
     Type::clearNamedTypes();
-    IFrontEnd *fe  = new PentiumFrontEnd(loader, &prog);
+    IFrontEnd *fe  = new PentiumFrontEnd(project.getLoadedBinaryFile(), &prog);
     prog.setFrontEnd(fe);
-    fe->decode(&prog);
+    fe->decode();
 
     const auto& m = *prog.getModuleList().begin();
     QVERIFY(m != nullptr);

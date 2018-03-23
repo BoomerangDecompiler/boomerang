@@ -20,7 +20,6 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/loader/IFileLoader.h"
 
 #include <QThread>
 
@@ -65,9 +64,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     }
 
     m_prog = project->getProg();
-
-    IFileLoader *loader = Boomerang::get()->getOrCreateProject()->getBestLoader(inputFile);
-    m_fe    = IFrontEnd::instantiate(loader, m_prog);
+    m_fe    = IFrontEnd::instantiate(project->getLoadedBinaryFile(), m_prog);
 
     if (m_fe == nullptr) {
         emit machineTypeChanged(QString("Unavailable: Load Failed!"));
@@ -148,7 +145,7 @@ void Decompiler::decode()
 
     for (Address entryAddr : m_userEntrypoints) {
         if (entryAddr == mainAddr) {
-            m_fe->decode(m_prog, true, nullptr);
+            m_fe->decode(true);
             break;
         }
     }
@@ -159,7 +156,7 @@ void Decompiler::decode()
 
     if (SETTING(decodeChildren)) {
         // decode anything undecoded
-        m_fe->decode(m_prog, Address::INVALID);
+        m_fe->decode(Address::INVALID);
     }
 
     LOG_MSG("Decoding finished!");

@@ -28,7 +28,6 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
@@ -79,13 +78,12 @@ Prog::Prog(const QString& name, BinaryFile *binaryFile)
     , m_defaultFrontend(nullptr)
 {
     m_rootModule    = getOrInsertModule(getName());
+    assert(m_rootModule != nullptr);
 }
 
 
 Prog::~Prog()
 {
-    delete m_defaultFrontend;
-    m_defaultFrontend = nullptr;
 }
 
 
@@ -110,22 +108,19 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
         m_defaultFrontend = nullptr;
     }
 
-    m_fileLoader      = frontEnd->getLoader();
     m_defaultFrontend = frontEnd;
 
     m_moduleList.clear();
-    m_rootModule = nullptr;
-
-    if (m_fileLoader && !m_name.isEmpty()) {
-        m_rootModule = getOrInsertModule(m_name);
-    }
+    m_rootModule = getOrInsertModule(m_name);
 }
 
 
 void Prog::setName(const QString& name)
 {
     m_name = name;
-    m_rootModule->setName(name);
+    if (m_rootModule) {
+        m_rootModule->setName(name);
+    }
 }
 
 
@@ -215,7 +210,7 @@ Function *Prog::createFunction(Address startAddress)
         return existingFunction; // Yes, we are done
     }
 
-    Address other = m_fileLoader->getJumpTarget(startAddress);
+    Address other = m_binaryFile->getJumpTarget(startAddress);
 
     if (other != Address::INVALID) {
         startAddress = other;
@@ -635,7 +630,6 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
 {
     QString name = newGlobalName(startAddr);
 
-    assert(m_fileLoader);
     // TODO: fix the case of missing symbol table interface
     auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
 
@@ -865,7 +859,7 @@ void Prog::decodeEntryPoint(Address entryAddr)
             return;
         }
 
-        m_defaultFrontend->decode(this, entryAddr);
+        m_defaultFrontend->decode(entryAddr);
         finishDecode();
     }
 
@@ -875,7 +869,7 @@ void Prog::decodeEntryPoint(Address entryAddr)
 
         // Chek if there is a library thunk at entryAddr
         if (!func) {
-            Address jumpTarget = m_fileLoader->getJumpTarget(entryAddr);
+            Address jumpTarget = m_binaryFile->getJumpTarget(entryAddr);
 
             if (jumpTarget != Address::INVALID) {
                 func = findFunction(jumpTarget);
@@ -1233,7 +1227,7 @@ void Prog::updateLibrarySignatures()
 
 Machine Prog::getMachine() const
 {
-    return m_fileLoader->getMachine();
+    return m_binaryFile->getMachine();
 }
 
 
@@ -1511,7 +1505,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
 {
     assert(e->isConst());
 
-    if (!m_fileLoader->isRelocationAt(location)) {
+    if (!m_binaryFile->isRelocationAt(location)) {
         return e;
     }
 

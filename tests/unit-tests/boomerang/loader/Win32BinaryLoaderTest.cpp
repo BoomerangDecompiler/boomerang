@@ -31,13 +31,11 @@ void Win32BinaryLoaderTest::initTestCase()
 void Win32BinaryLoaderTest::testWinLoad()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(SWITCH_BORLAND);
+    QVERIFY(project.loadBinaryFile(SWITCH_BORLAND));
 
     // Borland
-    IFileLoader *loader = project.getBestLoader(SWITCH_BORLAND);
-    QVERIFY(loader != nullptr);
-    QCOMPARE(loader->getMainEntryPoint(), Address(0x00401150));
+    BinaryFile *binary = project.getLoadedBinaryFile();
+    QCOMPARE(binary->getMainEntryPoint(), Address(0x00401150));
 }
 
 

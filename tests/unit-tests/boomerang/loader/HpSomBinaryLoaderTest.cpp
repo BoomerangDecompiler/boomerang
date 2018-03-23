@@ -32,9 +32,7 @@ void HpSomBinaryLoaderTest::testHppaLoad()
 
     // Load HPPA hello world
     IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(HELLO_HPPA);
-    IFileLoader *loader = project.getBestLoader(HELLO_HPPA);
-    QVERIFY(loader != nullptr);
+    QVERIFY(project.loadBinaryFile(HELLO_HPPA));
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
 
     QCOMPARE(image->getNumSections(), 3);

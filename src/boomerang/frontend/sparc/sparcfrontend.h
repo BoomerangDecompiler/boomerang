@@ -33,7 +33,7 @@ class SparcFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    SparcFrontEnd(IFileLoader *loader, Prog *prog);
+    SparcFrontEnd(BinaryFile *binaryFile, Prog *prog);
     SparcFrontEnd(const SparcFrontEnd& other) = delete;
     SparcFrontEnd(SparcFrontEnd&& other) = default;
 

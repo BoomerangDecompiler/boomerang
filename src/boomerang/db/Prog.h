@@ -15,10 +15,9 @@
 #include "boomerang/type/type/Type.h"
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/util/Util.h"
-#include "boomerang/loader/IBinaryFile.h"
-
 #include "boomerang/frontend/Frontend.h"
 
 
@@ -275,7 +274,6 @@ private:
     /// list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;
 
-    IFileLoader *m_fileLoader = nullptr;
     IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.

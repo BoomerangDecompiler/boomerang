@@ -21,6 +21,7 @@
 
 
 class BinaryImage;
+class IFrontEnd;
 
 
 class Project : public IProject
@@ -51,16 +52,12 @@ public:
     /// \copydoc IProject::unload
     void unloadBinaryFile() override;
 
-    /// Get the best loader that is able to load the file at \p filePath
-    IFileLoader *getBestLoader(const QString& filePath) const override;
+    /// \copydoc IProject::decodeBinaryFile
+    bool decodeBinaryFile() override;
 
+public:
     BinaryFile *getLoadedBinaryFile() override { return m_loadedBinary.get(); }
     const BinaryFile *getLoadedBinaryFile() const override { return m_loadedBinary.get(); }
-
-    /**
-     * Create a Prog from a loaded binary file. Returns nullptr on failure.
-     */
-    Prog *createProg(BinaryFile *file, const QString& name = "");
 
     const Prog *getProg() const override { return m_prog.get(); }
     Prog *getProg() override { return m_prog.get(); }
@@ -71,10 +68,24 @@ private:
     /// Load all plugins from the plugin directory.
     void loadPlugins();
 
+    /// Get the best loader that is able to load the file at \p filePath
+    IFileLoader *getBestLoader(const QString& filePath) const;
+
+    /**
+     * Create a Prog from a loaded binary file. Returns nullptr on failure.
+     */
+    Prog *createProg(BinaryFile *file, const QString& name = "");
+
+    void loadSymbols();
+
+    bool decodeAll();
+
 private:
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;
-    std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< type recovery engine
+
+    std::unique_ptr<IFrontEnd> m_fe;               ///< front end
+    std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< middle end
 
     // Plugins
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;

@@ -22,7 +22,7 @@ class MIPSFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    MIPSFrontEnd(IFileLoader *loader, Prog *prog);
+    MIPSFrontEnd(BinaryFile *binaryFile, Prog *prog);
     MIPSFrontEnd(const MIPSFrontEnd& other) = delete;
     MIPSFrontEnd(MIPSFrontEnd&& other) = default;
 

@@ -31,11 +31,7 @@ void SparcBinaryLoaderTest::testSparcLoad()
 {
     // Load SPARC hello world
     IProject& project = *Boomerang::get()->getOrCreateProject();
-
-    project.loadBinaryFile(HELLO_SPARC);
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-
-    QVERIFY(loader != nullptr);
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);

@@ -29,7 +29,6 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
-#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/frontend/sparc/sparcdecoder.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -1346,8 +1345,8 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
 }
 
 
-SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
-    : IFrontEnd(p_BF, prog)
+SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
+    : IFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new SparcDecoder(prog));
     nop_inst.numBytes = 0; // So won't disturb coverage
@@ -1360,13 +1359,13 @@ SparcFrontEnd::SparcFrontEnd(IFileLoader *p_BF, Prog *prog)
 Address SparcFrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
-    Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         return start;
     }
 
-    start   = m_fileLoader->getEntryPoint();
+    start   = m_binaryFile->getEntryPoint();
     gotMain = false;
 
     if (start == Address::INVALID) {

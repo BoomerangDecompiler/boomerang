@@ -41,7 +41,7 @@ ICodeGenerator *Boomerang::getCodeGenerator()
 }
 
 
-bool Boomerang::loadAndDecode(const QString& fname, const char *pname)
+bool Boomerang::loadAndDecode(const QString& fname, const QString& pname)
 {
     LOG_MSG("Loading...");
     IProject *project = getOrCreateProject();
@@ -55,59 +55,8 @@ bool Boomerang::loadAndDecode(const QString& fname, const char *pname)
     Prog *prog = project->getProg();
     assert(prog);
 
-    IFileLoader *loader = project->getBestLoader(fname);
-    assert(loader != nullptr); // otherwise it would have failed above
-    IFrontEnd *fe = IFrontEnd::instantiate(loader, prog);
-    if (fe == nullptr) {
-        LOG_ERROR("Loading '%1' failed.", fname);
-        return false;
-    }
-
-    prog->setFrontEnd(fe);
-
-    // Add symbols from -s switch(es)
-    for (const std::pair<Address, QString>& elem : m_symbolMap) {
-        fe->addSymbol(elem.first, elem.second);
-    }
-
-    fe->readLibraryCatalog(); // Needed before readSymbolFile()
-
-    for (auto& elem : m_symbolFiles) {
-        LOG_MSG("Reading symbol file '%1'", elem);
-        prog->readSymbolFile(elem);
-    }
-
-    // Entry points from -e (and -E) switch(es)
-    for (auto& elem : m_entryPoints) {
-        LOG_MSG("Decoding specified entrypoint at address %1", elem);
-        prog->decodeEntryPoint(elem);
-    }
-
-    if (m_entryPoints.size() == 0) { // no -e or -E given
-        if (SETTING(decodeMain)) {
-            LOG_MSG("Decoding entry point...");
-        }
-
-        if (!fe->decode(project->getProg(), SETTING(decodeMain), pname)) {
-            LOG_ERROR("Aborting load due to decode failure");
-            return false;
-        }
-
-        bool gotMain = false;
-        Address mainAddr = fe->getMainEntryPoint(gotMain);
-        if (gotMain) {
-            prog->addEntryPoint(mainAddr);
-        }
-
-        if (SETTING(decodeChildren)) {
-            // this causes any undecoded userprocs to be decoded
-            LOG_MSG("Decoding anything undecoded...");
-            if (!fe->decode(project->getProg(), Address::INVALID)) {
-                LOG_ERROR("Aborting load due to decode failure");
-                return false;
-            }
-        }
-    }
+    prog->setName(pname);
+    project->decodeBinaryFile();
 
     LOG_MSG("Finishing decode...");
     prog->finishDecode();
@@ -128,10 +77,9 @@ bool Boomerang::loadAndDecode(const QString& fname, const char *pname)
 }
 
 
-int Boomerang::decompile(const QString& fname, const char *pname)
+int Boomerang::decompile(const QString& fname, const QString& pname)
 {
     time_t start;
-
     time(&start);
 
     if (!loadAndDecode(fname, pname)) {

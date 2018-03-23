@@ -29,7 +29,7 @@ void ProcTest::testName()
     Prog *prog = project.getProg();
     QVERIFY(prog != nullptr);
 
-    IFrontEnd *fe = new PentiumFrontEnd(project.getBestLoader(HELLO_PENTIUM), prog);
+    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
     QVERIFY(fe != nullptr);
     prog->setFrontEnd(fe);
 
