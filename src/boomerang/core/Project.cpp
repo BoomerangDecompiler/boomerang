@@ -133,6 +133,21 @@ bool Project::decodeBinaryFile()
 }
 
 
+bool Project::decompileBinaryFile()
+{
+    m_prog->decompile();
+    return true;
+}
+
+
+bool Project::generateCode(Module *module)
+{
+    LOG_MSG("Generating code...");
+    m_codeGenerator->generateCode(getProg(), module);
+    return true;
+}
+
+
 Prog *Project::createProg(BinaryFile* file, const QString& name)
 {
     if (!file) {
@@ -259,9 +274,3 @@ IFileLoader *Project::getBestLoader(const QString& filePath) const
     return bestLoader;
 }
 
-bool Project::generateCode(Module *module)
-{
-    LOG_MSG("Generating code...");
-    m_codeGenerator->generateCode(getProg(), module);
-    return true;
-}

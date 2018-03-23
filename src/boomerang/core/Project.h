@@ -56,7 +56,10 @@ public:
     /// \copydoc IProject::decodeBinaryFile
     bool decodeBinaryFile() override;
 
-    /// \copydpc IProject::decodeBinaryFile
+    /// \copydoc IProject::decompileBinaryFile
+    bool decompileBinaryFile() override;
+
+    /// \copydoc IProject::decodeBinaryFile
     bool generateCode(Module *module = nullptr) override;
 
 public:

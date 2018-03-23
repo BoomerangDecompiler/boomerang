@@ -68,16 +68,16 @@ int Boomerang::decompile(const QString& fname, const QString& pname)
     }
 
     LOG_MSG("Decompiling...");
-    Prog *prog = getOrCreateProject()->getProg();
-    prog->decompile();
+    m_currentProject->decompileBinaryFile();
 
     if (!SETTING(dotFile).isEmpty()) {
-        CfgDotWriter().writeCFG(prog, SETTING(dotFile));
+        CfgDotWriter().writeCFG(m_currentProject->getProg(), SETTING(dotFile));
     }
 
     m_currentProject->generateCode();
 
-    LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootModule()->getName()));
+    QDir outDir = Boomerang::get()->getSettings()->getOutputDirectory();
+    LOG_MSG("Output written to '%1'", outDir.absolutePath());
 
     time_t end;
     time(&end);
@@ -86,7 +86,6 @@ int Boomerang::decompile(const QString& fname, const QString& pname)
     int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
 
     LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
-
     return 0;
 }
 
