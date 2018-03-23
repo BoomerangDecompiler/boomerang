@@ -56,24 +56,7 @@ bool Boomerang::loadAndDecode(const QString& fname, const QString& pname)
     assert(prog);
 
     prog->setName(pname);
-    project->decodeBinaryFile();
-
-    LOG_MSG("Finishing decode...");
-    prog->finishDecode();
-
-    Boomerang::get()->alertEndDecode();
-
-    LOG_MSG("Found %1 procs", prog->getNumFunctions());
-
-    if (SETTING(generateSymbols)) {
-        prog->printSymbolsToFile();
-    }
-
-    if (SETTING(generateCallGraph)) {
-        prog->printCallGraph();
-    }
-
-    return true;
+    return project->decodeBinaryFile();
 }
 
 

@@ -105,9 +105,29 @@ bool Project::decodeBinaryFile()
         LOG_ERROR("Cannot instantiate frontend!");
         return false;
     }
+
     m_prog->setFrontEnd(m_fe.get());
     loadSymbols();
-    return decodeAll();
+    if (!decodeAll()) {
+        return false;
+    }
+
+    LOG_MSG("Finishing decode...");
+    m_prog->finishDecode();
+
+    Boomerang::get()->alertEndDecode();
+
+    LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
+
+    if (SETTING(generateSymbols)) {
+        m_prog->printSymbolsToFile();
+    }
+
+    if (SETTING(generateCallGraph)) {
+        m_prog->printCallGraph();
+    }
+
+    return true;
 }
 
 
