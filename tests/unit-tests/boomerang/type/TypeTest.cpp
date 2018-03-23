@@ -121,12 +121,10 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_WINDOWS));
-
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_WINDOWS));
+    Prog *prog = project->getProg();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     fe->readLibraryCatalog(); // Read definitions
 
@@ -161,8 +159,6 @@ void TypeTest::testCompound()
 
     // And at offset 8+8
     QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 8) * 8), QString("rcPaint"));
-
-    delete prog;
 }
 
 

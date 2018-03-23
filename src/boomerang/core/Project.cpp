@@ -102,13 +102,6 @@ bool Project::decodeBinaryFile()
         return false;
     }
 
-    m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
-    if (!m_fe) {
-        LOG_ERROR("Cannot instantiate frontend!");
-        return false;
-    }
-
-    m_prog->setFrontEnd(m_fe.get());
     loadSymbols();
     if (!decodeAll()) {
         return false;
@@ -155,8 +148,20 @@ Prog *Project::createProg(BinaryFile* file, const QString& name)
         return nullptr;
     }
 
+    // unload old Prog before creating a new one
+    m_fe.reset();
     m_prog.reset();
+
     m_prog.reset(new Prog(name, file));
+    m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
+
+    if (!m_fe) {
+        LOG_ERROR("Cannot instantiate frontend!");
+        m_prog.reset();
+        return nullptr;
+    }
+
+    m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();
 }
 

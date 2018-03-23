@@ -39,16 +39,11 @@ void FrontSparcTest::initTestCase()
 
 void FrontSparcTest::test1()
 {
-    QString     expected;
-    QString     actual;
-    QTextStream strm(&actual);
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_SPARC));
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
-
-    Prog      *prog = project.getProg();
-    IFrontEnd *fe  = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog      *prog = project->getProg();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     bool    gotMain;
     Address addr = fe->getMainEntryPoint(gotMain);
@@ -56,6 +51,11 @@ void FrontSparcTest::test1()
 
     // Decode first instruction
     DecodeResult inst;
+    QString     expected;
+    QString     actual;
+    QTextStream strm(&actual);
+
+
     fe->decodeInstruction(addr, inst);
     QVERIFY(inst.rtl != nullptr);
     inst.rtl->print(strm);
@@ -107,17 +107,17 @@ void FrontSparcTest::test1()
 
 void FrontSparcTest::test2()
 {
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_SPARC));
+
     DecodeResult inst;
     QString      expected;
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog *prog = project->getProg();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     fe->decodeInstruction(Address(0x00010690), inst);
     inst.rtl->print(strm);
@@ -151,13 +151,11 @@ void FrontSparcTest::test2()
 
 void FrontSparcTest::test3()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_SPARC));
 
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
-
+    Prog *prog = project->getProg();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
     QString      expected;
@@ -217,12 +215,11 @@ void FrontSparcTest::testBranch()
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(BRANCH_SPARC));
 
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog *prog = project->getProg();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     // bne
     fe->decodeInstruction(Address(0x00010ab0), inst);
@@ -253,12 +250,11 @@ void FrontSparcTest::testBranch()
 
 void FrontSparcTest::testDelaySlot()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(BRANCH_SPARC));
 
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new SparcFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog *prog = project->getProg();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
     Type::clearNamedTypes();
@@ -403,9 +399,6 @@ void FrontSparcTest::testDelaySlot()
                "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
                "High level: %flags\n";
     QCOMPARE(actual, expected);
-
-    delete prog;
 }
-
 
 QTEST_MAIN(FrontSparcTest)

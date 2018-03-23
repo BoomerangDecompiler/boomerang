@@ -70,12 +70,10 @@ void StatementTest::testEmpty()
     SETTING(verboseOutput) = true;
     Boomerang::get()->getSettings()->setOutputDirectory("./unit_test/");
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project.getProg();
-    IFrontEnd *fe  = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog *prog = project->getProg();
 
     const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);
@@ -114,12 +112,10 @@ void StatementTest::testEmpty()
 
 void StatementTest::testFlow()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog *prog = project->getProg();
 
     // create UserProc
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
@@ -188,13 +184,10 @@ void StatementTest::testFlow()
 
 void StatementTest::testKill()
 {
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
-
-    Prog *prog = project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
-    prog->setFrontEnd(fe);
+    Prog *prog = project->getProg();
 
     // create UserProc
     QString  name  = "test";
@@ -263,11 +256,9 @@ void StatementTest::testKill()
 
 void StatementTest::testUse()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
-
-    Prog *prog = project.getProg();
-    prog->setFrontEnd(new PentiumFrontEnd(project.getLoadedBinaryFile(), prog));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = project->getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
@@ -330,11 +321,9 @@ void StatementTest::testUse()
 
 void StatementTest::testUseOverKill()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
-
-    Prog *prog = project.getProg();
-    prog->setFrontEnd(new PentiumFrontEnd(project.getLoadedBinaryFile(), prog));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = project->getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
@@ -404,11 +393,10 @@ void StatementTest::testUseOverKill()
 
 void StatementTest::testUseOverBB()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project.getProg();
-    prog->setFrontEnd(new PentiumFrontEnd(project.getLoadedBinaryFile(), prog));
+    Prog *prog = project->getProg();
 
     // create UserProc
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
@@ -480,11 +468,10 @@ void StatementTest::testUseOverBB()
 
 void StatementTest::testUseKill()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project.getProg();
-    prog->setFrontEnd(new PentiumFrontEnd(project.getLoadedBinaryFile(), prog));
+    Prog *prog = project->getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     Cfg *cfg   = proc->getCFG();
@@ -517,8 +504,8 @@ void StatementTest::testUseKill()
 
     // compute dataflow
     proc->decompile();
-    // print cfg to a string
 
+    // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
     cfg->print(st);
@@ -550,11 +537,9 @@ void StatementTest::testEndlessLoop()
     // BB1 -> BB2 _
     //       ^_____|
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
-
-    Prog *prog = project.getProg();
-    prog->setFrontEnd(new PentiumFrontEnd(project.getLoadedBinaryFile(), prog));
+    IProject *project = Boomerang::get()->getOrCreateProject();
+    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = project->getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
     Cfg *cfg   = proc->getCFG();
