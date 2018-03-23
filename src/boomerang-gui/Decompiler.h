@@ -20,6 +20,7 @@ class Module;
 class IFrontEnd;
 class Prog;
 class BinaryFile;
+class IProject;
 
 
 /**
@@ -99,9 +100,7 @@ protected:
     bool m_debugging = false;
     bool m_waiting = false;
 
-    IFrontEnd *m_fe = nullptr;
-    Prog *m_prog = nullptr;
-    BinaryFile *m_binaryFile = nullptr;
+    IProject *m_project = nullptr;
 
     std::vector<Address> m_userEntrypoints;
 };
