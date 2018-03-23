@@ -22,6 +22,7 @@
 
 class BinaryImage;
 class IFrontEnd;
+class ICodeGenerator;
 
 
 class Project : public IProject
@@ -55,6 +56,9 @@ public:
     /// \copydoc IProject::decodeBinaryFile
     bool decodeBinaryFile() override;
 
+    /// \copydpc IProject::decodeBinaryFile
+    bool generateCode(Module *module = nullptr) override;
+
 public:
     BinaryFile *getLoadedBinaryFile() override { return m_loadedBinary.get(); }
     const BinaryFile *getLoadedBinaryFile() const override { return m_loadedBinary.get(); }
@@ -84,8 +88,9 @@ private:
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;
 
-    std::unique_ptr<IFrontEnd> m_fe;               ///< front end
-    std::unique_ptr<ITypeRecovery> m_typeRecovery; ///< middle end
+    std::unique_ptr<IFrontEnd> m_fe;                 ///< front end
+    std::unique_ptr<ITypeRecovery> m_typeRecovery;   ///< middle end
+    std::unique_ptr<ICodeGenerator> m_codeGenerator; ///< back end
 
     // Plugins
     std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;

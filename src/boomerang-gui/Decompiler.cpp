@@ -193,7 +193,7 @@ void Decompiler::generateCode()
     emit generatingCodeStarted();
 
     LOG_MSG("Generating code...");
-    Boomerang::get()->getCodeGenerator()->generateCode(m_prog);
+    Boomerang::get()->getOrCreateProject()->generateCode();
 
     Module *root = m_prog->getRootModule();
 

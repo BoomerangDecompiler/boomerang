@@ -279,7 +279,7 @@ CommandStatus Console::handleCodegen(const QStringList& args)
     }
 
     if (args.empty()) {
-        Boomerang::get()->getCodeGenerator()->generateCode(prog);
+        Boomerang::get()->getOrCreateProject()->generateCode();
     }
     else {
         std::set<Module *> modules;
@@ -296,7 +296,7 @@ CommandStatus Console::handleCodegen(const QStringList& args)
         }
 
         for (Module *mod : modules) {
-            Boomerang::get()->getCodeGenerator()->generateCode(prog, mod);
+            Boomerang::get()->getOrCreateProject()->generateCode(mod);
         }
     }
 

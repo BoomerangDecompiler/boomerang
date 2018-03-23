@@ -71,10 +71,6 @@ public:
     /// \returns the library version string
     static const char *getVersionStr();
 
-    /// \returns the code generator that is currently in use.
-    ICodeGenerator *getCodeGenerator();
-
-
     Settings *getSettings() { return m_settings.get(); }
     const Settings *getSettings() const { return m_settings.get(); }
 
@@ -143,7 +139,6 @@ public:
 public:
     std::unique_ptr<Settings> m_settings;
     std::unique_ptr<IProject> m_currentProject;
-    std::unique_ptr<ICodeGenerator> m_codeGenerator;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
 

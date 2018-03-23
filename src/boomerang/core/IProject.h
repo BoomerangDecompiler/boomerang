@@ -14,6 +14,8 @@ class BinaryFile;
 class ITypeRecovery;
 class Prog;
 class QString;
+class Module;
+
 
 /**
  * The Project interface class
@@ -62,6 +64,8 @@ public:
      * \returns true on success, false if no binary is loaded or an error occurred.
      */
     virtual bool decodeBinaryFile() = 0;
+
+    virtual bool generateCode(Module *module = nullptr) = 0;
 
 public:
     virtual BinaryFile *getLoadedBinaryFile() = 0;

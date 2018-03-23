@@ -30,14 +30,7 @@ static Boomerang *g_boomerang;
 
 Boomerang::Boomerang()
     : m_settings(new Settings)
-    , m_codeGenerator(new CCodeGenerator)
 {
-}
-
-
-ICodeGenerator *Boomerang::getCodeGenerator()
-{
-    return m_codeGenerator.get();
 }
 
 
@@ -82,8 +75,7 @@ int Boomerang::decompile(const QString& fname, const QString& pname)
         CfgDotWriter().writeCFG(prog, SETTING(dotFile));
     }
 
-    LOG_MSG("Generating code...");
-    Boomerang::get()->getCodeGenerator()->generateCode(prog);
+    m_currentProject->generateCode();
 
     LOG_VERBOSE("Output written to '%1'", Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(prog->getRootModule()->getName()));
 

@@ -10,6 +10,7 @@
 #include "Project.h"
 
 
+#include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -20,6 +21,7 @@
 
 Project::Project()
     : m_typeRecovery(new DFATypeRecovery())
+    , m_codeGenerator(new CCodeGenerator())
 {
     loadPlugins();
 }
@@ -255,4 +257,11 @@ IFileLoader *Project::getBestLoader(const QString& filePath) const
     }
 
     return bestLoader;
+}
+
+bool Project::generateCode(Module *module)
+{
+    LOG_MSG("Generating code...");
+    m_codeGenerator->generateCode(getProg(), module);
+    return true;
 }
