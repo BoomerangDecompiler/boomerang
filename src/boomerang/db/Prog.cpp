@@ -76,7 +76,7 @@ namespace dbghelp
 Prog::Prog(const QString& name, IProject *project)
     : m_name(name)
     , m_project(project)
-    , m_binaryFile(project->getLoadedBinaryFile())
+    , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_defaultFrontend(nullptr)
 {
     m_rootModule    = getOrInsertModule(getName());
@@ -174,7 +174,10 @@ bool Prog::isModuleUsed(Module *c) const
 Module *Prog::getModuleForSymbol(const QString& symbolName)
 {
     QString             sourceFileName;
-    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByName(symbolName);
+    const BinarySymbol *sym = nullptr;
+    if (m_binaryFile) {
+        sym = m_binaryFile->getSymbols()->findSymbolByName(symbolName);
+    }
 
     if (sym) {
         sourceFileName = sym->belongsToSourceFile();

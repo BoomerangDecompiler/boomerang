@@ -12,7 +12,6 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
@@ -28,22 +27,19 @@
 Decompiler::Decompiler()
     : QObject()
 {
-    // create empty project to initialize all relevant data
-    m_project = new Project();
     Boomerang::get()->addWatcher(this);
 }
 
 
 Decompiler::~Decompiler()
 {
-    delete m_project;
 }
 
 
 void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 {
     m_userEntrypoints.push_back(entryAddr);
-    m_project->getProg()->getFrontEnd()->addSymbol(entryAddr, name);
+    m_project.getProg()->getFrontEnd()->addSymbol(entryAddr, name);
 }
 
 
@@ -63,13 +59,13 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
     emit loadingStarted();
 
-    bool ok = m_project->loadBinaryFile(inputFile);
+    bool ok = m_project.loadBinaryFile(inputFile);
     if (!ok) {
         emit machineTypeChanged(QString("Unavailable: Load Failed!"));
         return;
     }
 
-    switch (m_project->getLoadedBinaryFile()->getMachine())
+    switch (m_project.getLoadedBinaryFile()->getMachine())
     {
     case Machine::PENTIUM:
         emit machineTypeChanged("pentium");
@@ -109,15 +105,15 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         break;
     }
 
-    IFrontEnd *fe = IFrontEnd::instantiate(m_project->getLoadedBinaryFile(), m_project->getProg());
+    IFrontEnd *fe = IFrontEnd::instantiate(m_project.getLoadedBinaryFile(), m_project.getProg());
     std::vector<Address> entrypoints = fe->getEntryPoints();
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);
-        emit entryPointAdded(entryPoint, m_project->getProg()->getSymbolNameByAddress(entryPoint));
+        emit entryPointAdded(entryPoint, m_project.getProg()->getSymbolNameByAddress(entryPoint));
     }
 
-    for (const BinarySection *section : *m_project->getLoadedBinaryFile()->getImage()) {
+    for (const BinarySection *section : *m_project.getLoadedBinaryFile()->getImage()) {
         emit sectionAdded(section->getName(), section->getSourceAddr(),
                         section->getSourceAddr() + section->getSize());
     }
@@ -130,9 +126,9 @@ void Decompiler::decode()
 {
     emit decodingStarted();
 
-    LOG_MSG("Decoding program %1...", m_project->getProg()->getName());
+    LOG_MSG("Decoding program %1...", m_project.getProg()->getName());
 
-    bool ok = m_project->decodeBinaryFile();
+    bool ok = m_project.decodeBinaryFile();
     if (!ok) {
         emit machineTypeChanged(QString("Unavailable: Decode Failed!"));
         return;
@@ -148,7 +144,7 @@ void Decompiler::decompile()
     emit decompilingStarted();
 
     LOG_MSG("Starting decompile...");
-    m_project->decompileBinaryFile();
+    m_project.decompileBinaryFile();
     LOG_MSG("Decompile finished!");
 
     emit decompileCompleted();
@@ -170,15 +166,15 @@ void Decompiler::generateCode()
     emit generatingCodeStarted();
 
     LOG_MSG("Generating code...");
-    m_project->generateCode();
+    m_project.generateCode();
 
-    Module *root = m_project->getProg()->getRootModule();
+    Module *root = m_project.getProg()->getRootModule();
 
     if (root) {
         moduleAndChildrenUpdated(root);
     }
 
-    for (const auto& module : m_project->getProg()->getModuleList()) {
+    for (const auto& module : m_project.getProg()->getModuleList()) {
         for (Function *p : *module) {
             if (p->isLib()) {
                 continue;
@@ -253,7 +249,7 @@ void Decompiler::alertUpdateSignature(Function *p)
 
 bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
 {
-    Function *p = m_project->getProg()->findFunction(name);
+    Function *p = m_project.getProg()->findFunction(name);
 
     if (p->isLib()) {
         return false;
@@ -289,7 +285,7 @@ void Decompiler::stopWaiting()
 
 QString Decompiler::getSigFilePath(const QString& name)
 {
-    Function *function = m_project->getProg()->findFunction(name);
+    Function *function = m_project.getProg()->findFunction(name);
 
     if (!function || !function->isLib() || !function->getSignature()) {
         return "";
@@ -301,20 +297,20 @@ QString Decompiler::getSigFilePath(const QString& name)
 
 QString Decompiler::getClusterFile(const QString& name)
 {
-    Module *module = m_project->getProg()->findModule(name);
+    Module *module = m_project.getProg()->findModule(name);
     return module ? module->getOutPath("c") : "";
 }
 
 
 void Decompiler::rereadLibSignatures()
 {
-    m_project->getProg()->updateLibrarySignatures();
+    m_project.getProg()->updateLibrarySignatures();
 }
 
 
 void Decompiler::renameProc(const QString& oldName, const QString& newName)
 {
-    Function *proc = m_project->getProg()->findFunction(oldName);
+    Function *proc = m_project.getProg()->findFunction(oldName);
 
     if (proc) {
         proc->setName(newName);

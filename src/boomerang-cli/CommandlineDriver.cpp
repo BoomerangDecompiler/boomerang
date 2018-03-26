@@ -11,16 +11,25 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/CFGDotWriter.h"
 
 #include <QCoreApplication>
 #include <iostream>
 
 
+DecompilationThread::DecompilationThread(IProject *project)
+    : m_project(project)
+{
+}
+
+
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
+    , m_console(&m_project)
+    , m_thread(&m_project)
     , m_kill_timer(this)
-    , m_console(nullptr)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
     QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
@@ -492,5 +501,61 @@ void DecompilationThread::run()
     QDir       wd = boom.getSettings()->getWorkingDirectory();
     QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
 
-    m_result = boom.decompile(inf.absoluteFilePath(), inf.baseName());
+    m_result = decompile(inf.absoluteFilePath(), inf.baseName());
+}
+
+
+bool DecompilationThread::loadAndDecode(const QString& fname, const QString& pname)
+{
+    LOG_MSG("Loading...");
+
+    assert(m_project);
+    const bool ok = m_project->loadBinaryFile(fname);
+    if (!ok) {
+        // load failed
+        return false;
+    }
+
+    Prog *prog = m_project->getProg();
+    assert(prog);
+
+    prog->setName(pname);
+    return m_project->decodeBinaryFile();
+}
+
+
+int DecompilationThread::decompile(const QString& fname, const QString& pname)
+{
+    time_t start;
+    time(&start);
+
+    if (!loadAndDecode(fname, pname)) {
+        return 1;
+    }
+
+
+    if (SETTING(stopBeforeDecompile)) {
+        return 0;
+    }
+
+    LOG_MSG("Decompiling...");
+    m_project->decompileBinaryFile();
+
+    if (!SETTING(dotFile).isEmpty()) {
+        CfgDotWriter().writeCFG(m_project->getProg(), SETTING(dotFile));
+    }
+
+    m_project->generateCode();
+
+    QDir outDir = Boomerang::get()->getSettings()->getOutputDirectory();
+    LOG_MSG("Output written to '%1'", outDir.absolutePath());
+
+    time_t end;
+    time(&end);
+    int hours = static_cast<int>((end - start) / 60 / 60);
+    int mins  = static_cast<int>((end - start) / 60 - hours * 60);
+    int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
+
+    LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
+    return 0;
 }

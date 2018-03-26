@@ -34,66 +34,6 @@ Boomerang::Boomerang()
 }
 
 
-bool Boomerang::loadAndDecode(const QString& fname, const QString& pname)
-{
-    LOG_MSG("Loading...");
-    if (!m_currentProject) {
-        m_currentProject.reset(new Project());
-    }
-
-    IProject *project = m_currentProject.get();
-
-    const bool ok = project && project->loadBinaryFile(fname);
-    if (!ok) {
-        // load failed
-        return false;
-    }
-
-    Prog *prog = project->getProg();
-    assert(prog);
-
-    prog->setName(pname);
-    return project->decodeBinaryFile();
-}
-
-
-int Boomerang::decompile(const QString& fname, const QString& pname)
-{
-    time_t start;
-    time(&start);
-
-    if (!loadAndDecode(fname, pname)) {
-        return 1;
-    }
-
-
-    if (SETTING(stopBeforeDecompile)) {
-        return 0;
-    }
-
-    LOG_MSG("Decompiling...");
-    m_currentProject->decompileBinaryFile();
-
-    if (!SETTING(dotFile).isEmpty()) {
-        CfgDotWriter().writeCFG(m_currentProject->getProg(), SETTING(dotFile));
-    }
-
-    m_currentProject->generateCode();
-
-    QDir outDir = Boomerang::get()->getSettings()->getOutputDirectory();
-    LOG_MSG("Output written to '%1'", outDir.absolutePath());
-
-    time_t end;
-    time(&end);
-    int hours = static_cast<int>((end - start) / 60 / 60);
-    int mins  = static_cast<int>((end - start) / 60 - hours * 60);
-    int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
-
-    LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
-    return 0;
-}
-
-
 void Boomerang::miniDebugger(UserProc *proc, const char *description)
 {
     QTextStream q_cout(stdout);

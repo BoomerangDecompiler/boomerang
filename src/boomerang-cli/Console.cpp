@@ -212,7 +212,10 @@ CommandStatus Console::handleDecode(const QStringList& args)
         return CommandStatus::Failure;
     }
 
-    const bool ok = Boomerang::get()->loadAndDecode(args[0]);
+    bool ok = m_project->loadBinaryFile(args[0]);
+    if (ok) {
+        ok = m_project->decodeBinaryFile();
+    }
 
     if (ok) {
         std::cout << "Loaded '" << args[0].toStdString() << "'." << std::endl;

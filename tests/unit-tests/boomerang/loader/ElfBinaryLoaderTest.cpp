@@ -42,10 +42,9 @@ void ElfBinaryLoaderTest::initTestCase()
 
 void ElfBinaryLoaderTest::testElfLoadClang()
 {
-    IProject *project = new Project();
-
-    QVERIFY(project->loadBinaryFile(HELLO_CLANG4));
-    BinaryFile *binary = project->getLoadedBinaryFile();
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
+    BinaryFile *binary = project.getLoadedBinaryFile();
 
     // test the loader
     QVERIFY(binary != nullptr);
