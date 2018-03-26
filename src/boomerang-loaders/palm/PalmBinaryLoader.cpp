@@ -138,6 +138,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     PRCRecordList *records = reinterpret_cast<PRCRecordList *>(m_image + sizeof(PRCHeader));
     if (records->nextRecordListOffset != 0) {
         LOG_ERROR("Reading PRC files with multiple record lists is not supported!");
+        return false;
     }
 
     const SWord numSections = Util::readWord(&records->resourceCount, true);
