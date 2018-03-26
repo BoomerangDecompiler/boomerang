@@ -128,6 +128,11 @@ bool Project::decodeBinaryFile()
 
 bool Project::decompileBinaryFile()
 {
+    if (!m_prog) {
+        LOG_ERROR("Cannot decompile binary file: No binary file is loaded.");
+        return false;
+    }
+
     m_prog->decompile();
     return true;
 }
@@ -135,6 +140,11 @@ bool Project::decompileBinaryFile()
 
 bool Project::generateCode(Module *module)
 {
+    if (!m_prog) {
+        LOG_ERROR("Cannot generate code: No binary file is loaded.");
+        return false;
+    }
+
     LOG_MSG("Generating code...");
     m_codeGenerator->generateCode(getProg(), module);
     return true;
@@ -214,7 +224,6 @@ bool Project::decodeAll()
 
     return true;
 }
-
 
 
 void Project::loadPlugins()

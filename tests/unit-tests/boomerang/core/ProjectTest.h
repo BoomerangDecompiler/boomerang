@@ -36,4 +36,8 @@ private slots:
 
     // test whether a binary is loaded after loading unloading
     void testIsBinaryLoaded();
+
+    void testDecodeBinaryFile();
+    void testDecompileBinaryFile();
+    void testGenerateCode();
 };
