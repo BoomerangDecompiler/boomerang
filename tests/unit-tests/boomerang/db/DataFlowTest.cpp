@@ -124,19 +124,17 @@ void DataFlowTest::testPlacePhi()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
     QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
+    project.decodeBinaryFile();
 
     Prog *prog = project.getProg();
     Type::clearNamedTypes();
 
-    const auto& m = *prog->getModuleList().begin();
-    QVERIFY(m != nullptr);
-    QVERIFY(m->size() > 0);
+    const auto& module = *prog->getModuleList().begin();
+    QVERIFY(module != nullptr);
+    QVERIFY(module->size() > 0);
 
-    UserProc *mainProc = static_cast<UserProc *>(*m->begin());
+    UserProc *mainProc = static_cast<UserProc *>(*module->begin());
     QCOMPARE(mainProc->getName(), QString("main"));
-
-    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog->finishDecode();
 
     DataFlow *df = mainProc->getDataFlow();
     df->calculateDominators();
@@ -162,7 +160,8 @@ void DataFlowTest::testPlacePhi()
 void DataFlowTest::testPlacePhi2()
 {
     IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(IFTHEN_PENTIUM);
+    QVERIFY(project.loadBinaryFile(IFTHEN_PENTIUM));
+    QVERIFY(project.decodeBinaryFile());
 
     Prog *prog = project.getProg();
     Type::clearNamedTypes();
@@ -173,9 +172,6 @@ void DataFlowTest::testPlacePhi2()
 
     Function *mainFunction = *m->begin();
     UserProc *proc = static_cast<UserProc *>(mainFunction);
-
-    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog->finishDecode();
 
     DataFlow *df = proc->getDataFlow();
     df->calculateDominators();
