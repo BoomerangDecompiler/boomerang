@@ -58,13 +58,13 @@ void ProjectTest::testIsBinaryLoaded()
 {
     Project project;
 
-    project.loadBinaryFile(HELLO_CLANG4);
+    QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
     QVERIFY(project.isBinaryLoaded());
 
     project.unloadBinaryFile();
     QVERIFY(!project.isBinaryLoaded());
 
-    project.loadBinaryFile("invalid");
+    QVERIFY(!project.loadBinaryFile("invalid"));
     QVERIFY(!project.isBinaryLoaded());
 
     // test if binary is loaded when loading from save file
