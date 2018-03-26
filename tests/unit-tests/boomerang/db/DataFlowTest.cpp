@@ -122,7 +122,7 @@ void DataFlowTest::testCalculateDominators()
 
 void DataFlowTest::testPlacePhi()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
     project.decodeBinaryFile();
 
@@ -159,7 +159,7 @@ void DataFlowTest::testPlacePhi()
 
 void DataFlowTest::testPlacePhi2()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(IFTHEN_PENTIUM));
     QVERIFY(project.decodeBinaryFile());
 
@@ -192,7 +192,7 @@ void DataFlowTest::testPlacePhi2()
 
 void DataFlowTest::testRenameVars()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
 
     Prog *prog = project.getProg();

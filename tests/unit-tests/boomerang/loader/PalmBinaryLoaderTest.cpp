@@ -28,10 +28,10 @@ void PalmBinaryLoaderTest::initTestCase()
 
 void PalmBinaryLoaderTest::testPalmLoad()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(STARTER_PALM));
+    Project project;
+    QVERIFY(project.loadBinaryFile(STARTER_PALM));
 
-    BinaryImage *image = project->getLoadedBinaryFile()->getImage();
+    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
 
     QCOMPARE(image->getNumSections(), 8);
     QCOMPARE(image->getSectionByIndex(0)->getName(), QString("code1"));

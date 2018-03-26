@@ -162,7 +162,7 @@ Prog *Project::createProg(BinaryFile* file, const QString& name)
     m_fe.reset();
     m_prog.reset();
 
-    m_prog.reset(new Prog(name, file));
+    m_prog.reset(new Prog(name, this));
     m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
 
     // Cannot check here if  Frontend is valid, since e.g. Palm binaries do not have a frontend.

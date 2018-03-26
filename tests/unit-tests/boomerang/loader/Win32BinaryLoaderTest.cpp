@@ -30,7 +30,7 @@ void Win32BinaryLoaderTest::initTestCase()
 
 void Win32BinaryLoaderTest::testWinLoad()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(SWITCH_BORLAND));
 
     // Borland

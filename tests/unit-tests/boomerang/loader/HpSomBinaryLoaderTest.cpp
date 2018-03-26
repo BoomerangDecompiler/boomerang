@@ -31,7 +31,7 @@ void HpSomBinaryLoaderTest::testHppaLoad()
     QSKIP("Disabled.");
 
     // Load HPPA hello world
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(HELLO_HPPA));
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
 

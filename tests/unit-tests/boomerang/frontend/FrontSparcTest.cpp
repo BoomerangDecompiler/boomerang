@@ -39,10 +39,10 @@ void FrontSparcTest::initTestCase()
 
 void FrontSparcTest::test1()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_SPARC));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
-    Prog      *prog = project->getProg();
+    Prog      *prog = project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     bool    gotMain;
@@ -107,8 +107,8 @@ void FrontSparcTest::test1()
 
 void FrontSparcTest::test2()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_SPARC));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
     DecodeResult inst;
     QString      expected;
@@ -116,7 +116,7 @@ void FrontSparcTest::test2()
     QTextStream  strm(&actual);
 
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     fe->decodeInstruction(Address(0x00010690), inst);
@@ -151,10 +151,10 @@ void FrontSparcTest::test2()
 
 void FrontSparcTest::test3()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_SPARC));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
@@ -215,10 +215,10 @@ void FrontSparcTest::testBranch()
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(BRANCH_SPARC));
+    Project project;
+    QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     // bne
@@ -250,10 +250,10 @@ void FrontSparcTest::testBranch()
 
 void FrontSparcTest::testDelaySlot()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(BRANCH_SPARC));
+    Project project;
+    QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared

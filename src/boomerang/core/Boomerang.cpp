@@ -37,7 +37,11 @@ Boomerang::Boomerang()
 bool Boomerang::loadAndDecode(const QString& fname, const QString& pname)
 {
     LOG_MSG("Loading...");
-    IProject *project = getOrCreateProject();
+    if (!m_currentProject) {
+        m_currentProject.reset(new Project());
+    }
+
+    IProject *project = m_currentProject.get();
 
     const bool ok = project && project->loadBinaryFile(fname);
     if (!ok) {
@@ -190,16 +194,6 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 const char *Boomerang::getVersionStr()
 {
     return BOOMERANG_VERSION;
-}
-
-
-IProject *Boomerang::getOrCreateProject()
-{
-    if (!m_currentProject) {
-        m_currentProject.reset(new Project);
-    }
-
-    return m_currentProject.get();
 }
 
 

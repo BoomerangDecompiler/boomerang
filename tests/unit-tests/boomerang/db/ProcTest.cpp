@@ -24,7 +24,7 @@
 
 void ProcTest::testName()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     project.loadBinaryFile(HELLO_PENTIUM);
     Prog *prog = project.getProg();
     QVERIFY(prog != nullptr);

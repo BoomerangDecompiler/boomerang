@@ -70,7 +70,7 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 
 void ElfBinaryLoaderTest::testElfLoadClangStatic()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4_STATIC));
 
     BinaryFile *binary = project.getLoadedBinaryFile();
@@ -99,7 +99,7 @@ void ElfBinaryLoaderTest::testElfLoadClangStatic()
 void ElfBinaryLoaderTest::testPentiumLoad()
 {
     // Load Pentium hello world
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
     BinaryFile *binary = project.getLoadedBinaryFile();
 

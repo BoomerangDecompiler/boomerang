@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/core/IProject.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
@@ -29,8 +29,14 @@ Decompiler::Decompiler()
     : QObject()
 {
     // create empty project to initialize all relevant data
-    m_project = Boomerang::get()->getOrCreateProject();
+    m_project = new Project();
     Boomerang::get()->addWatcher(this);
+}
+
+
+Decompiler::~Decompiler()
+{
+    delete m_project;
 }
 
 
@@ -57,8 +63,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
     emit loadingStarted();
 
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    bool ok = project->loadBinaryFile(inputFile);
+    bool ok = m_project->loadBinaryFile(inputFile);
     if (!ok) {
         emit machineTypeChanged(QString("Unavailable: Load Failed!"));
         return;
@@ -165,7 +170,7 @@ void Decompiler::generateCode()
     emit generatingCodeStarted();
 
     LOG_MSG("Generating code...");
-    Boomerang::get()->getOrCreateProject()->generateCode();
+    m_project->generateCode();
 
     Module *root = m_project->getProg()->getRootModule();
 

@@ -20,6 +20,7 @@
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
     , m_kill_timer(this)
+    , m_console(nullptr)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
     QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,

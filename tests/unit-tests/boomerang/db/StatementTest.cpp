@@ -70,10 +70,10 @@ void StatementTest::testEmpty()
     SETTING(verboseOutput) = true;
     Boomerang::get()->getSettings()->setOutputDirectory("./unit_test/");
 
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
 
     const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);
@@ -112,10 +112,10 @@ void StatementTest::testEmpty()
 
 void StatementTest::testFlow()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
 
     // create UserProc
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
@@ -184,10 +184,10 @@ void StatementTest::testFlow()
 
 void StatementTest::testKill()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
 
     // create UserProc
     QString  name  = "test";
@@ -256,9 +256,9 @@ void StatementTest::testKill()
 
 void StatementTest::testUse()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
-    Prog *prog = project->getProg();
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
@@ -321,9 +321,9 @@ void StatementTest::testUse()
 
 void StatementTest::testUseOverKill()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
-    Prog *prog = project->getProg();
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
@@ -393,10 +393,10 @@ void StatementTest::testUseOverKill()
 
 void StatementTest::testUseOverBB()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
 
     // create UserProc
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
@@ -468,10 +468,10 @@ void StatementTest::testUseOverBB()
 
 void StatementTest::testUseKill()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
 
-    Prog *prog = project->getProg();
+    Prog *prog = project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00000123)));
     Cfg *cfg   = proc->getCFG();
@@ -537,9 +537,9 @@ void StatementTest::testEndlessLoop()
     // BB1 -> BB2 _
     //       ^_____|
 
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_PENTIUM));
-    Prog *prog = project->getProg();
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->createFunction(Address(0x00001000)));
     Cfg *cfg   = proc->getCFG();
@@ -732,7 +732,7 @@ void StatementTest::testRecursion()
 {
     QSKIP("Disabled.");
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     project.loadBinaryFile(HELLO_PENTIUM);
 
     Prog *prog = project.getProg();
@@ -1170,8 +1170,8 @@ void StatementTest::testSubscriptVars()
     ca.setDest(Location::memOf(Location::regOf(26)));
     StatementList argl;
 
-    BinaryFile bf(QByteArray{}, nullptr);
-    Prog   *prog = new Prog("testSubscriptVars", &bf);
+//    BinaryFile bf(QByteArray{}, nullptr);
+    Prog   *prog = new Prog("testSubscriptVars", nullptr);
     Module *mod  = prog->getModuleForSymbol("test");
 
     argl.append(new Assign(Location::memOf(Location::regOf(27)), Const::get(1)));
@@ -1264,7 +1264,7 @@ void StatementTest::testBypass()
 {
     QSKIP("Disabled.");
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(GLOBAL1_PENTIUM));
 
     Prog *prog = project.getProg();

@@ -44,7 +44,7 @@ public:
     typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
 
 public:
-    Prog(const QString& name, BinaryFile *file);
+    Prog(const QString& name, IProject *project);
     Prog(const Prog& other) = delete;
     Prog(Prog&& other) = default;
 
@@ -57,6 +57,9 @@ public:
     /// Change the FrontEnd. Takes ownership of the pointer.
     void setFrontEnd(IFrontEnd *fe);
     IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
+
+    IProject *getProject() { return m_project; }
+    const IProject *getProject() const { return m_project; }
 
     /// Assign a new name to this program
     void setName(const QString& name);
@@ -267,6 +270,7 @@ public:
 
 private:
     QString m_name;             ///< name of the program
+    IProject *m_project = nullptr;
     BinaryFile *m_binaryFile;
     Module *m_rootModule;       ///< Root of the module tree
     ModuleList m_moduleList;    ///< The Modules that make up this program

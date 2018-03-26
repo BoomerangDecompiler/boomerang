@@ -121,9 +121,9 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    QVERIFY(project->loadBinaryFile(HELLO_WINDOWS));
-    Prog *prog = project->getProg();
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_WINDOWS));
+    Prog *prog = project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     fe->readLibraryCatalog(); // Read definitions

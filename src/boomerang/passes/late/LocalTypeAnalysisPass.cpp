@@ -15,6 +15,8 @@
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/core/Project.h"
 
 
 LocalTypeAnalysisPass::LocalTypeAnalysisPass()
@@ -32,7 +34,8 @@ bool LocalTypeAnalysisPass::execute(UserProc *proc)
     // like finding parameters can rely on implicit assigns.
     PassManager::get()->executePass(PassID::ImplicitPlacement, proc);
 
-    ITypeRecovery *rec = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
+    IProject *project = proc->getProg()->getProject();
+    ITypeRecovery *rec = project->getTypeRecoveryEngine();
 
     // Data flow based type analysis
     // Want to be after all propagation, but before converting expressions to locals etc

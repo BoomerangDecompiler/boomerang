@@ -14,6 +14,9 @@
 #include <QMap>
 
 
+class IProject;
+
+
 enum class CommandStatus
 {
     Success      = 0,
@@ -50,7 +53,7 @@ enum CommandType
 class Console
 {
 public:
-    Console();
+    Console(IProject *project);
     ~Console() = default;
 
 public:
@@ -92,4 +95,5 @@ private:
 
 private:
     QMap<QString, CommandType> m_commandTypes;
+    IProject *m_project;
 };

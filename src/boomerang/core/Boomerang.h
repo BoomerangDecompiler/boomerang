@@ -11,7 +11,6 @@
 
 
 #include "boomerang/core/IBoomerang.h"
-#include "boomerang/core/IProject.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Settings.h"
@@ -32,7 +31,6 @@ class Function;
 class UserProc;
 class ICodeGenerator;
 class ObjcModule;
-class Project;
 
 
 /**
@@ -65,8 +63,6 @@ public:
     /// \returns The global boomerang object. It will be created if it does not already exist.
     static Boomerang *get();
     static void destroy();
-
-    IProject *getOrCreateProject() override;
 
     /// \returns the library version string
     static const char *getVersionStr();

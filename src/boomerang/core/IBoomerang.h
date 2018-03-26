@@ -21,6 +21,4 @@ class IBoomerang
 {
 public:
     virtual ~IBoomerang() = default;
-
-    virtual IProject *getOrCreateProject()  = 0;
 };
