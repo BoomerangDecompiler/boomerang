@@ -410,30 +410,28 @@ const SWord *findPattern(const SWord *start, int size, const SWord *patt, int pa
         return nullptr; // no pattern to find
     }
 
-    const SWord *last = start + size;
+    int startOffset = 0;
 
-    while (start + pattSize <= last) {
+    while (startOffset + pattSize <= size) {
         bool allMatched = true;
         for (int i = 0; i < pattSize; i++) {
-            const SWord curr = patt[i];
-            if (curr == WILD) {
+            if (patt[i] == WILD) {
                 continue;
             }
 
-            const SWord val  = Util::readWord(start + i, true);
-            if (curr != val) {
-                // Mismatch
+            const SWord curr = Util::readWord(start + startOffset + i, true);
+            if (patt[i] != curr) {
+                // Mismatch, try next pattern
                 allMatched = false;
                 break;
             }
         }
 
         if (allMatched) {
-            // All parts of the pattern matched
-            return start;
+            return start + startOffset;
         }
 
-        start++;
+        startOffset++;
     }
 
     // Each start position failed
@@ -456,12 +454,13 @@ Address PalmBinaryLoader::getMainEntryPoint()
     int      delta   = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
     // First try the CW first jump pattern
-    const SWord *res = findPattern(startCode, 1, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord));
+    const SWord *res = findPattern(startCode, sizeof(CWFirstJump) / sizeof(SWord), CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord));
 
     if (res) {
         // We have the code warrior first jump. Get the addil operand
-        const int addilOp      = Util::readDWord((startCode + 5), true);
-        SWord     *startupCode = reinterpret_cast<SWord *>((HostAddress(startCode) + 10 + addilOp).value());
+        const int addilOp    = static_cast<int>(Util::readDWord((startCode + 5), true));
+        SWord   *startupCode = reinterpret_cast<SWord *>((HostAddress(startCode) + 10 + addilOp).value());
+
         // Now check the next 60 SWords for the call to PilotMain
         res = findPattern(startupCode, 60, CWCallMain, sizeof(CWCallMain) / sizeof(SWord));
 
