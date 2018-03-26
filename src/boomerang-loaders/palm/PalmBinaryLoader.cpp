@@ -42,6 +42,8 @@ enum PRCAttr : SWord
     PRCAttr_Open              = 0x8000
 };
 
+#pragma pack(push, 1)
+
 struct PRCHeader
 {
     char name[0x20];  ///< name of app, in MacRoman encoding, padded with 0
@@ -65,13 +67,20 @@ struct PRCRecordList
     DWord nextRecordListOffset; ///< offset from this record list to the next record list; usually zero, indicating no further record lists
     SWord resourceCount;        ///< the number of resources
 };
+static_assert(sizeof(PRCRecordList) == 6, "PRCRecordList size does not match");
+
 
 struct PRCResource
 {
     DWord type; ///< the resource type, a four-character constant
-    DWord id;   ///< the resource id
+    SWord id;   ///< the resource id
     DWord dataOffset; ///< offset from start of file to start of resource data; end of resource data is indicated by next record or end of file
 };
+static_assert(sizeof(PRCResource) == 10, "PRCRecordList size does not match");
+
+
+#pragma pack(pop)
+
 
 
 PalmBinaryLoader::PalmBinaryLoader()
