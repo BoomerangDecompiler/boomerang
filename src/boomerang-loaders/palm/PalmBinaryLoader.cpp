@@ -434,8 +434,8 @@ static SWord CWFirstJump[] =
 
 static SWord CWCallMain[] =
 {
-    0x487a,   14,            // pea 14(pc)
-    0x487a,    4,            // pea 4(pc)
+    0x487a, 0x000e,          // pea 14(pc)
+    0x487a, 0x0004,          // pea 4(pc)
     0x0697, WILD, WILD,      // addil #number, (a7)
     0x4e75                   // rts
 };
