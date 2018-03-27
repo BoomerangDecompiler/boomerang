@@ -32,6 +32,7 @@ private slots:
      * \note Called before any tests
      */
     void initTestCase();
+    void cleanupTestCase();
 
     void testEmpty();
     void testFlow();
@@ -77,6 +78,4 @@ private slots:
 
     /// Test the visitor code that finds constants
     void testFindConstants();
-
-    void cleanupTestCase();
 };

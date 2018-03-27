@@ -64,6 +64,12 @@ void StatementTest::initTestCase()
 }
 
 
+void StatementTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void StatementTest::testEmpty()
 {
     // Force "verbose" flag (-v)
@@ -1380,12 +1386,6 @@ void StatementTest::testFindConstants()
     }
 
     QCOMPARE(actual, QString("3, 4"));
-}
-
-
-void StatementTest::cleanupTestCase()
-{
-    Boomerang::destroy();
 }
 
 
