@@ -26,6 +26,12 @@ void HpSomBinaryLoaderTest::initTestCase()
 }
 
 
+void HpSomBinaryLoaderTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void HpSomBinaryLoaderTest::testHppaLoad()
 {
     QSKIP("Disabled.");
