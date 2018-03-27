@@ -103,7 +103,15 @@ bool Project::decodeBinaryFile()
     }
 
     loadSymbols();
-    if (!decodeAll()) {
+
+    if (!Boomerang::get()->getSettings()->m_entryPoints.empty()) { // decode only specified procs
+        // decode entry points from -e (and -E) switch(es)
+        for (auto& elem : Boomerang::get()->getSettings()->m_entryPoints) {
+            LOG_MSG("Decoding specified entrypoint at address %1", elem);
+            m_prog->decodeEntryPoint(elem);
+        }
+    }
+    else if (!decodeAll()) { // decode everything
         return false;
     }
 
@@ -190,35 +198,27 @@ void Project::loadSymbols()
 
 bool Project::decodeAll()
 {
-    // Entry points from -e (and -E) switch(es)
-    for (auto& elem : Boomerang::get()->getSettings()->m_entryPoints) {
-        LOG_MSG("Decoding specified entrypoint at address %1", elem);
-        m_prog->decodeEntryPoint(elem);
+    if (SETTING(decodeMain)) {
+        LOG_MSG("Decoding entry point...");
     }
 
-    if (Boomerang::get()->getSettings()->m_entryPoints.size() == 0) { // no -e or -E given
-        if (SETTING(decodeMain)) {
-            LOG_MSG("Decoding entry point...");
-        }
+    if (!m_fe->decode(SETTING(decodeMain))) {
+        LOG_ERROR("Aborting load due to decode failure");
+        return false;
+    }
 
-        if (!m_fe->decode(SETTING(decodeMain))) {
+    bool gotMain = false;
+    Address mainAddr = m_fe->getMainEntryPoint(gotMain);
+    if (gotMain) {
+        m_prog->addEntryPoint(mainAddr);
+    }
+
+    if (SETTING(decodeChildren)) {
+        // this causes any undecoded userprocs to be decoded
+        LOG_MSG("Decoding anything undecoded...");
+        if (!m_fe->decode(Address::INVALID)) {
             LOG_ERROR("Aborting load due to decode failure");
             return false;
-        }
-
-        bool gotMain = false;
-        Address mainAddr = m_fe->getMainEntryPoint(gotMain);
-        if (gotMain) {
-            m_prog->addEntryPoint(mainAddr);
-        }
-
-        if (SETTING(decodeChildren)) {
-            // this causes any undecoded userprocs to be decoded
-            LOG_MSG("Decoding anything undecoded...");
-            if (!m_fe->decode(Address::INVALID)) {
-                LOG_ERROR("Aborting load due to decode failure");
-                return false;
-            }
         }
     }
 

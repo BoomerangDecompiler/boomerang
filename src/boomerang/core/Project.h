@@ -43,49 +43,52 @@ public:
      * Import a binary file from \p filePath.
      * Loads the binary file and decodes it.
      * If a binary file is already loaded, it is unloaded first (all unsaved data is lost).
-     * \returns whether loading was successful.
+     * \returns true iff loading was successful.
      */
     bool loadBinaryFile(const QString& filePath);
 
     /**
-     * Loads a saved file from \p filePath.
+     * Load a saved file from \p filePath.
      * If a binary file is already loaded, it is unloaded first (all unsaved data is lost).
-     * \returns whether loading was successful.
+     * \note Not yet implemented.
+     * \returns true iff loading was successful.
      */
     bool loadSaveFile(const QString& filePath);
 
     /**
-     * Saves data to the save file at \p filePath.
+     * Save data to the save file at \p filePath.
      * If the file already exists, it is overwritten.
-     * \returns whether saving was successful.
+     * \note Not yet implemented.
+     * \returns true iff saving was successful.
      */
     bool writeSaveFile(const QString& filePath);
 
     /**
-     * Checks if the project contains a loaded binary.
+     * Check if the project contains a loaded binary.
      */
     bool isBinaryLoaded() const;
 
     /**
-     * Unloads the loaded binary file.
+     * Unload the loaded binary file, discarding all unsaved data.
      * If there is no loaded binary, nothing happens.
      */
     void unloadBinaryFile();
 
     /**
-     * Decodes the loaded binary file.
+     * Decode the loaded binary file.
      * \returns true on success, false if no binary is loaded or an error occurred.
      */
     bool decodeBinaryFile();
 
     /**
-     * Decompiles the decoded binary file.
+     * Decompile the decoded binary file.
      * \returns true on success, false if no binary is decoded or an error occurred.
      */
     bool decompileBinaryFile();
 
     /**
-     * Genereate code for the decompiled binary file.
+     * Generate code for \p module, or all modules if \p module is nullptr.
+     * \returns true on success, false if no binary is decompiled or an error occurred.
      */
     bool generateCode(Module *module = nullptr);
 
@@ -112,8 +115,15 @@ private:
      */
     Prog *createProg(BinaryFile *file, const QString& name = "");
 
+    /**
+     * Define symbols from symbol files and command line switches ("-s")
+     */
     void loadSymbols();
 
+    /**
+     * Disassemble the whole binary file.
+     * \returns false iff an error occurred.
+     */
     bool decodeAll();
 
 private:
