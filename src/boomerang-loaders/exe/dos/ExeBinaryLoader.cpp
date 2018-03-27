@@ -10,7 +10,6 @@
 #include "ExeBinaryLoader.h"
 
 
-#include "boomerang/core/IBoomerang.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"

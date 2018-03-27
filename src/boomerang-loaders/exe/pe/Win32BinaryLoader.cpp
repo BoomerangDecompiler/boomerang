@@ -35,7 +35,6 @@ namespace dbghelp
 
 #include "Win32BinaryLoader.h"
 
-#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"

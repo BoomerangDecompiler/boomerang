@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include "boomerang/core/IBoomerang.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Settings.h"
@@ -37,7 +36,7 @@ class Project;
  * Controls the loading, decoding, decompilation and code generation for a program.
  * This is the main class of the decompiler.
  */
-class Boomerang : public IBoomerang
+class Boomerang
 {
 private:
     /**
@@ -54,7 +53,7 @@ private:
     Boomerang(const Boomerang& other) = delete;
     Boomerang(Boomerang&& other) = default;
 
-    virtual ~Boomerang() override = default;
+    virtual ~Boomerang() = default;
 
     Boomerang& operator=(const Boomerang& other) = delete;
     Boomerang& operator=(Boomerang&& other) = default;
