@@ -15,11 +15,6 @@
 #include "boomerang/db/binary/BinarySymbol.h"
 
 
-void BinarySymbolTest::initTestCase()
-{
-}
-
-
 void BinarySymbolTest::testCreate()
 {
     BinarySymbol sym(Address(0x1000), "testSym");

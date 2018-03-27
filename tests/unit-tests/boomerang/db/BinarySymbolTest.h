@@ -18,8 +18,6 @@ class BinarySymbolTest : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void testCreate();
     void testIsImportedFunction();
     void testIsStaticFunction();
