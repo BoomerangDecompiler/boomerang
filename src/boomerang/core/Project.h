@@ -89,7 +89,7 @@ private:
 
 private:
     // Plugins
-    std::vector<std::shared_ptr<LoaderPlugin> > m_loaderPlugins;
+    std::vector<std::unique_ptr<LoaderPlugin> > m_loaderPlugins;
 
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;

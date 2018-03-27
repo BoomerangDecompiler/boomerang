@@ -242,8 +242,8 @@ void Project::loadPlugins()
         }
 #endif
         try {
-            std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
-            m_loaderPlugins.push_back(loaderPlugin);
+            std::unique_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
+            m_loaderPlugins.push_back(std::move(loaderPlugin));
         }
         catch (const char *errmsg) {
             LOG_WARN("Unable to load plugin: %1", errmsg);
@@ -269,7 +269,7 @@ IFileLoader *Project::getBestLoader(const QString& filePath) const
     int         bestScore   = 0;
 
     // get the best plugin for loading this file
-    for (const std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
+    for (const std::unique_ptr<LoaderPlugin>& p : m_loaderPlugins) {
         inputBinary.seek(0); // reset the file offset for the next plugin
         IFileLoader *loader = p->get();
 
