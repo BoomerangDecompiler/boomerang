@@ -27,6 +27,12 @@ void SparcBinaryLoaderTest::initTestCase()
 }
 
 
+void SparcBinaryLoaderTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void SparcBinaryLoaderTest::testSparcLoad()
 {
     // Load SPARC hello world
