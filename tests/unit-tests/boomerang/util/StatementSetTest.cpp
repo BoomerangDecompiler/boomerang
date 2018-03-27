@@ -15,11 +15,6 @@
 #include "boomerang/util/StatementSet.h"
 
 
-void StatementSetTest::initTestCase()
-{
-}
-
-
 void StatementSetTest::testInsert()
 {
     StatementSet set;
