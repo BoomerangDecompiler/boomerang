@@ -11,16 +11,8 @@
 
 
 #include "boomerang/util/AssignSet.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Location.h"
-
-
-void AssignSetTest::initTestCase()
-{
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-}
 
 
 void AssignSetTest::testClear()
