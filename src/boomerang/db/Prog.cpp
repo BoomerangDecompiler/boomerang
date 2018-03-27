@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/IProject.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 
@@ -73,7 +73,7 @@ namespace dbghelp
 #include <sys/types.h>
 
 
-Prog::Prog(const QString& name, IProject *project)
+Prog::Prog(const QString& name, Project *project)
     : m_name(name)
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)

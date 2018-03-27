@@ -23,7 +23,7 @@ class DecompilationThread : public QThread
     Q_OBJECT
 
 public:
-    DecompilationThread(IProject *project);
+    DecompilationThread(Project *project);
 
     void run() override;
 
@@ -56,7 +56,7 @@ private:
 private:
     QString m_pathToBinary;
     int m_result = 0;
-    IProject *m_project;
+    Project *m_project;
 };
 
 

@@ -32,7 +32,6 @@ class Exp;
 class TypedExp;
 class Cfg;
 class Prog;
-class IProject;
 struct DecodeResult;
 
 class Signature;

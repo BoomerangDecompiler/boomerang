@@ -19,7 +19,7 @@
 #include <iostream>
 
 
-DecompilationThread::DecompilationThread(IProject *project)
+DecompilationThread::DecompilationThread(Project *project)
     : m_project(project)
 {
 }

@@ -34,7 +34,7 @@ bool LocalTypeAnalysisPass::execute(UserProc *proc)
     // like finding parameters can rely on implicit assigns.
     PassManager::get()->executePass(PassID::ImplicitPlacement, proc);
 
-    IProject *project = proc->getProg()->getProject();
+    Project *project = proc->getProg()->getProject();
     ITypeRecovery *rec = project->getTypeRecoveryEngine();
 
     // Data flow based type analysis

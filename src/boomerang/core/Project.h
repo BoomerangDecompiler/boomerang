@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/core/IProject.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/db/binary/BinaryFile.h"
@@ -23,53 +23,82 @@
 class BinaryImage;
 class IFrontEnd;
 class ICodeGenerator;
+class Module;
 
 
-class Project : public IProject
+class Project
 {
 public:
     Project();
     Project(const Project& other) = delete;
     Project(Project&& other) = default;
 
-    virtual ~Project() override;
+    virtual ~Project();
 
     Project& operator=(const Project& other) = delete;
     Project& operator=(Project&& other) = default;
 
 public:
-    /// \copydoc IProject::loadBinaryFile
-    bool loadBinaryFile(const QString& filePath) override;
+    /**
+     * Import a binary file from \p filePath.
+     * Loads the binary file and decodes it.
+     * If a binary file is already loaded, it is unloaded first (all unsaved data is lost).
+     * \returns whether loading was successful.
+     */
+    bool loadBinaryFile(const QString& filePath);
 
-    /// \copydoc IProject::loadSaveFile
-    bool loadSaveFile(const QString& filePath) override;
+    /**
+     * Loads a saved file from \p filePath.
+     * If a binary file is already loaded, it is unloaded first (all unsaved data is lost).
+     * \returns whether loading was successful.
+     */
+    bool loadSaveFile(const QString& filePath);
 
-    /// \copydoc IProject::writeSavefile
-    bool writeSaveFile(const QString& filePath) override;
+    /**
+     * Saves data to the save file at \p filePath.
+     * If the file already exists, it is overwritten.
+     * \returns whether saving was successful.
+     */
+    bool writeSaveFile(const QString& filePath);
 
-    /// \copydoc IProject::isBinaryLoaded
-    bool isBinaryLoaded() const override;
+    /**
+     * Checks if the project contains a loaded binary.
+     */
+    bool isBinaryLoaded() const;
 
-    /// \copydoc IProject::unload
-    void unloadBinaryFile() override;
+    /**
+     * Unloads the loaded binary file.
+     * If there is no loaded binary, nothing happens.
+     */
+    void unloadBinaryFile();
 
-    /// \copydoc IProject::decodeBinaryFile
-    bool decodeBinaryFile() override;
+    /**
+     * Decodes the loaded binary file.
+     * \returns true on success, false if no binary is loaded or an error occurred.
+     */
+    bool decodeBinaryFile();
 
-    /// \copydoc IProject::decompileBinaryFile
-    bool decompileBinaryFile() override;
+    /**
+     * Decompiles the decoded binary file.
+     * \returns true on success, false if no binary is decoded or an error occurred.
+     */
+    bool decompileBinaryFile();
 
-    /// \copydoc IProject::decodeBinaryFile
-    bool generateCode(Module *module = nullptr) override;
+    /**
+     * Genereate code for the decompiled binary file.
+     */
+    bool generateCode(Module *module = nullptr);
 
 public:
-    BinaryFile *getLoadedBinaryFile() override { return m_loadedBinary.get(); }
-    const BinaryFile *getLoadedBinaryFile() const override { return m_loadedBinary.get(); }
+    BinaryFile *getLoadedBinaryFile() { return m_loadedBinary.get(); }
+    const BinaryFile *getLoadedBinaryFile() const { return m_loadedBinary.get(); }
 
-    const Prog *getProg() const override { return m_prog.get(); }
-    Prog *getProg() override { return m_prog.get(); }
+    Prog *getProg() { return m_prog.get(); }
+    const Prog *getProg() const { return m_prog.get(); }
 
-    ITypeRecovery *getTypeRecoveryEngine() const override { return m_typeRecovery.get(); }
+    /// \returns the type recovery engine
+    ITypeRecovery *getTypeRecoveryEngine() { return m_typeRecovery.get(); }
+    const ITypeRecovery *getTypeRecoveryEngine() const { return m_typeRecovery.get(); }
 
 private:
     /// Load all plugins from the plugin directory.

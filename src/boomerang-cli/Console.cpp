@@ -25,7 +25,7 @@
 #include <iostream>
 
 
-Console::Console(IProject *project)
+Console::Console(Project *project)
     : m_project(project)
 {
     m_commandTypes["decode"]    = CT_decode;

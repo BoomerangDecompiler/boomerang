@@ -91,7 +91,7 @@ public:
     void getCompoundMembers(const QString& name, QTableWidget *tbl);
 
     void setDebugEnabled(bool debug) { m_debugging = debug; }
-    IProject *getProject() { return &m_project; }
+    Project *getProject() { return &m_project; }
 
 private:
     /// After code generation, update the list of modules

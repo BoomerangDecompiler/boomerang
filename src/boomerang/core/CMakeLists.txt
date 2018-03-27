@@ -10,7 +10,6 @@
 list(APPEND boomerang-core-sources
     core/Boomerang
     core/IBoomerang.h
-    core/IProject.h
     core/Plugin
     core/Project
     core/Settings

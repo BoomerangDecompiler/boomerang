@@ -31,7 +31,7 @@ class Function;
 class UserProc;
 class ICodeGenerator;
 class ObjcModule;
-
+class Project;
 
 /**
  * Controls the loading, decoding, decompilation and code generation for a program.
@@ -116,7 +116,7 @@ public:
 
 public:
     std::unique_ptr<Settings> m_settings;
-    std::unique_ptr<IProject> m_currentProject;
+    std::unique_ptr<Project> m_currentProject;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
 
