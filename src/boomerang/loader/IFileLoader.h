@@ -80,4 +80,4 @@ public:
     virtual bool hasDebugInfo() const { return false; }
 };
 
-typedef Plugin<IFileLoader> LoaderPlugin;
+typedef Plugin<IFileLoader, PluginType::Loader> LoaderPlugin;

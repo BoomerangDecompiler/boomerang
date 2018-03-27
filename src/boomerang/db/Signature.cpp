@@ -784,8 +784,7 @@ SharedExp CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) const
         n--;
     }
 
-    SharedExp e = Location::memOf(Binary::get(opPlus, esp, Const::get((n + 1) * 4)));
-    return e;
+    return Location::memOf(Binary::get(opPlus, esp, Const::get((n + 1) * 4)));
 }
 
 
