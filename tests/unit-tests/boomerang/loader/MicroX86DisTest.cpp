@@ -19,13 +19,6 @@
 #include "boomerang-loaders/microX86dis.c"
 
 
-void MicroX86DisTest::initTestCase()
-{
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-}
-
-
 // The below lengths were derived from a quick and dirty program (called
 // quick.c) which used the output from a disassembly to find the lengths.
 // Best way to test, but of course this array is very dependent on the
