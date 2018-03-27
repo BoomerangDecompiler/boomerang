@@ -28,6 +28,12 @@ void Win32BinaryLoaderTest::initTestCase()
 }
 
 
+void Win32BinaryLoaderTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void Win32BinaryLoaderTest::testWinLoad()
 {
     Project project;

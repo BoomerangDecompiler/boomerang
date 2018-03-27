@@ -19,6 +19,7 @@ class Win32BinaryLoaderTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     /// Test loading Windows programs
     void testWinLoad();
