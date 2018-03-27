@@ -18,8 +18,6 @@ class BinaryImageTest : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void testGetNumSections();
     void testHasSections();
     void testCreateSection();

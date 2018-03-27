@@ -17,11 +17,6 @@
 #include <QByteArray>
 
 
-void BinaryImageTest::initTestCase()
-{
-}
-
-
 void BinaryImageTest::testGetNumSections()
 {
     BinaryImage img(QByteArray{});
