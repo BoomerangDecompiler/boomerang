@@ -18,6 +18,7 @@ class BasicBlockTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     void testConstruct();
     void testAssign();
