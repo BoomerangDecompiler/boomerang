@@ -21,27 +21,14 @@ class CFGTest : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void testHasBB();
-
     void testCreateBB();
-
-    /// tests createBB if another (complete) BB is blocking the newly created BB.
-    void testCreateBBBlocking();
-
-    /// tests createBB if another incomplete BB is blocking the newly created BB.
-    void testCreateBBBlockingIncomplete();
-
-    /// tests creating an incomplete BB
-    void testCreateIncompleteBB();
-
+    void testCreateBBBlocking(); /// tests createBB if another (complete) BB is blocking the newly created BB.
+    void testCreateBBBlockingIncomplete(); /// tests createBB if another incomplete BB is blocking the newly created BB.
+    void testCreateIncompleteBB(); /// tests creating an incomplete BB
     void testEnsureBBExists();
-
     void testSetEntryAndExitBB();
-
     void testRemoveBB();
-
     void testAddEdge();
     void testIsWellFormed();
 };
