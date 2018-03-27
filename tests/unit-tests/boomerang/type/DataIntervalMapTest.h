@@ -18,15 +18,7 @@ class DataIntervalMapTest : public QObject
     Q_OBJECT
 
 private slots:
-    /// Set up anything needed before all tests
-    void initTestCase();
-
-    /// test isClear()
     void testIsClear();
-
-    /// test find()
     void testFind();
-
-    /// test insert()
     void testInsert();
 };
