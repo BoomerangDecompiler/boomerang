@@ -14,6 +14,7 @@
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/Module.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -36,10 +37,29 @@
 #define SWITCH_PENT     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/switch_cc"))
 
 
+void compareStrings(const QString& actual, const QString& expected)
+{
+    QStringList actualList = actual.split('\n');
+    QStringList expectedList = expected.split('\n');
+
+    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
+        QCOMPARE(actualList[i], expectedList[i]);
+    }
+
+    QVERIFY(actualList.length() == expectedList.length());
+}
+
+
 void RtlTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+}
+
+
+void RtlTest::cleanupTestCase()
+{
+    Boomerang::destroy();
 }
 
 
@@ -52,7 +72,7 @@ void RtlTest::testAppend()
     QTextStream ost(&res);
     r.print(ost);
 
-    QCOMPARE(res, QString("00000000    0 *v* r8 := r9 + 99\n"));
+    QCOMPARE(res, QString("0x00000000    0 *v* r8 := r9 + 99\n"));
 }
 
 
@@ -117,12 +137,6 @@ public:
 void RtlTest::testVisitor()
 {
     StmtVisitorStub *visitor = new StmtVisitorStub();
-
-    //    /* rtl */
-    //    RTL *rtl = new RTL();
-    //    rtl->accept(visitor);
-    //    QVERIFY(visitor->a);
-    //    delete rtl;
 
     /* jump stmt */
     GotoStatement *jump = new GotoStatement;
@@ -235,18 +249,21 @@ void RtlTest::testVisitor()
 
 void RtlTest::testSetConscripts()
 {
+    Prog prog("fake_prog", nullptr);
+    Module *module = prog.getOrInsertModule("test");
+    Function *proc = module->createFunction("printf", Address(0x2000)); // Making it a true library function is problematic
+
     // m[1000] = m[1000] + 1000
     Statement *s1 = new Assign(Location::memOf(Const::get(1000), nullptr),
                                Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000)));
 
     // "printf("max is %d", (local0 > 0) ? local0 : global1)
-    Prog          *p    = new Prog("fake_prog", nullptr);
-    Module        *m    = p->getOrInsertModule("test");
-    Function      *proc = new UserProc(Address(0x00002000), "printf", m); // Making a true LibProc is problematic
 
     CallStatement *s2   = new CallStatement();
+    ReturnStatement calleeReturn;
+
     s2->setDestProc(proc);
-    s2->setCalleeReturn(new ReturnStatement); // So it's not a childless call
+    s2->setCalleeReturn(&calleeReturn); // So it's not a childless call
     SharedExp e1 = Const::get("max is %d");
     SharedExp e2 = std::make_shared<Ternary>(opTern, Binary::get(opGtr, Location::local("local0", nullptr), Const::get(0)),
                                              Location::local("local0", nullptr), Location::global("global1", nullptr));
@@ -255,29 +272,26 @@ void RtlTest::testSetConscripts()
     args.append(new Assign(Location::regOf(9), e2));
     s2->setArguments(args);
 
-    std::list<Statement *> list;
-    list.push_back(s1);
-    list.push_back(s2);
-
-    RTL                 *rtl = new RTL(Address(0x1000), &list);
+    RTL rtl(Address(0x1000), { s1, s2 });
     StmtConscriptSetter sc(0, false);
 
-    for (Statement *s : *rtl) {
+    for (Statement *s : rtl) {
         s->accept(&sc);
     }
 
-    QString expected("00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
-                     "            0 CALL printf(\n"
-                     "                *v* r8 := \"max is %d\"\\4\\\n"
-                     "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
-                     "              )\n"
-                     "              Reaching definitions: \n"
-                     "              Live variables: \n");
-
     QString     actual;
     QTextStream ost(&actual);
-    rtl->print(ost);
-    QCOMPARE(actual, expected);
+    rtl.print(ost);
+
+    QString expected("0x00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"
+                    "              0 CALL printf(\n"
+                    "                *v* r8 := \"max is %d\"\\4\\\n"
+                    "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
+                    "              )\n"
+                    "              Reaching definitions: \n"
+                    "              Live variables: \n");
+
+    compareStrings(actual, expected);
 }
 
 
