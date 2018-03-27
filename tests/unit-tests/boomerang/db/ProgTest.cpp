@@ -18,6 +18,12 @@
 #define HELLO_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
 
 
+void ProgTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void ProgTest::testName()
 {
     QString progName = HELLO_PENTIUM;
