@@ -26,6 +26,12 @@ void PalmBinaryLoaderTest::initTestCase()
 }
 
 
+void PalmBinaryLoaderTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void PalmBinaryLoaderTest::testPalmLoad()
 {
     Project project;
