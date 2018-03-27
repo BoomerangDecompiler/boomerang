@@ -1383,4 +1383,10 @@ void StatementTest::testFindConstants()
 }
 
 
+void StatementTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 QTEST_MAIN(StatementTest)

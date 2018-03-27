@@ -77,4 +77,6 @@ private slots:
 
     /// Test the visitor code that finds constants
     void testFindConstants();
+
+    void cleanupTestCase();
 };
