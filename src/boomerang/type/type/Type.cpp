@@ -39,7 +39,7 @@
 
 
 /// For NamedType
-static QMap<QString, SharedType> namedTypes;
+static QMap<QString, SharedType> g_namedTypes;
 
 
 Type::Type(TypeClass _class)
@@ -101,12 +101,12 @@ void Type::dump()
 
 void Type::addNamedType(const QString& name, SharedType type)
 {
-    if (namedTypes.find(name) != namedTypes.end()) {
-        if (!(*type == *namedTypes[name])) {
+    if (g_namedTypes.find(name) != g_namedTypes.end()) {
+        if (!(*type == *g_namedTypes[name])) {
             LOG_WARN("Redefinition of type %1", name);
             LOG_WARN(" type     = %1", type->prints());
-            LOG_WARN(" previous = %1", namedTypes[name]->prints());
-            namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
+            LOG_WARN(" previous = %1", g_namedTypes[name]->prints());
+            g_namedTypes[name] = type; // WARN: was *type==*namedTypes[name], verify !
         }
     }
     else {
@@ -115,11 +115,11 @@ void Type::addNamedType(const QString& name, SharedType type)
         // typedef a b;
         // we then need to define b as int
         // we create clones to keep the GC happy
-        if (namedTypes.find(type->getCtype()) != namedTypes.end()) {
-            namedTypes[name] = namedTypes[type->getCtype()]->clone();
+        if (g_namedTypes.find(type->getCtype()) != g_namedTypes.end()) {
+            g_namedTypes[name] = g_namedTypes[type->getCtype()]->clone();
         }
         else {
-            namedTypes[name] = type->clone();
+            g_namedTypes[name] = type->clone();
         }
     }
 }
@@ -127,15 +127,15 @@ void Type::addNamedType(const QString& name, SharedType type)
 
 SharedType Type::getNamedType(const QString& name)
 {
-    auto iter = namedTypes.find(name);
+    auto iter = g_namedTypes.find(name);
 
-    return (iter != namedTypes.end()) ? *iter : nullptr;
+    return (iter != g_namedTypes.end()) ? *iter : nullptr;
 }
 
 
 void Type::dumpNames()
 {
-    for (auto it = namedTypes.begin(); it != namedTypes.end(); ++it) {
+    for (auto it = g_namedTypes.begin(); it != g_namedTypes.end(); ++it) {
         LOG_VERBOSE("%1 -> %2", it.key(), it.value()->getCtype());
     }
 }
@@ -198,7 +198,7 @@ QString Type::getTempName() const
 
 void Type::clearNamedTypes()
 {
-    namedTypes.clear();
+    g_namedTypes.clear();
 }
 
 
