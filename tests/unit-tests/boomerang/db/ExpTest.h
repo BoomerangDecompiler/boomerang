@@ -33,6 +33,7 @@ private slots:
      * \note Called before any tests
      */
     void initTestCase();
+    void cleanupTestCase();
 
     /// Test integer constant
     void test99();
