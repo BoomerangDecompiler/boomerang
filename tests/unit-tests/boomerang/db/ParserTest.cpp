@@ -21,6 +21,13 @@
 #define SPARC_SSL    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/sparc.ssl"))
 
 
+void ParserTest::initTestCase()
+{
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+}
+
+
 void ParserTest::cleanupTestCase()
 {
     Boomerang::destroy();
