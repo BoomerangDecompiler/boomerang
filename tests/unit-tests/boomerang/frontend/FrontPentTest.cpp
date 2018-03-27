@@ -38,6 +38,12 @@ void FrontPentTest::initTestCase()
 }
 
 
+void FrontPentTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void FrontPentTest::test1()
 {
     Project project;
