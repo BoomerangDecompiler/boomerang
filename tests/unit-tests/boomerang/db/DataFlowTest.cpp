@@ -52,6 +52,13 @@ void DataFlowTest::initTestCase()
 }
 
 
+void DataFlowTest::cleanupTestCase()
+{
+    NamedType::clearNamedTypes();
+    Boomerang::destroy();
+}
+
+
 void DataFlowTest::testCalculateDominators()
 {
     // Appel, Figure 19.8
@@ -124,7 +131,7 @@ void DataFlowTest::testPlacePhi()
 {
     Project project;
     QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
-    project.decodeBinaryFile();
+    QVERIFY(project.decodeBinaryFile());
 
     Prog *prog = project.getProg();
     Type::clearNamedTypes();
