@@ -18,6 +18,7 @@ class FrontSparcTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     void test1();
     void test2();

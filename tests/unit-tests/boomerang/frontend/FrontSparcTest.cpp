@@ -37,6 +37,12 @@ void FrontSparcTest::initTestCase()
 }
 
 
+void FrontSparcTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void FrontSparcTest::test1()
 {
     Project project;
