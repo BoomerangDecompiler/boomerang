@@ -17,11 +17,6 @@
 #include <QByteArray>
 
 
-void BinarySectionTest::initTestCase()
-{
-}
-
-
 void BinarySectionTest::testIsAddressBss()
 {
     BinarySection section(Address(0x1000), 0x1000, "testSection");
