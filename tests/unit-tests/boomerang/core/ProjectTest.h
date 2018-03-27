@@ -26,6 +26,7 @@ class ProjectTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     /// Test the import binary function.
     void testLoadBinaryFile();

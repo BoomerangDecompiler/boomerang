@@ -26,6 +26,12 @@ void ProjectTest::initTestCase()
 }
 
 
+void ProjectTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void ProjectTest::testLoadBinaryFile()
 {
     Project project;
