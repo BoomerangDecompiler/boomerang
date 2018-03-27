@@ -100,6 +100,12 @@ void TypeTest::initTestCase()
 }
 
 
+void TypeTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void TypeTest::testTypeLong()
 {
     auto t = IntegerType::get(64, -1);
