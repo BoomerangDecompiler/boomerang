@@ -95,28 +95,28 @@ void ProjectTest::testDecodeBinaryFile()
 
 void ProjectTest::testDecompileBinaryFile()
 {
-    //Project project;
+    Project project;
 
-    //QVERIFY(!project.decodeBinaryFile());
+    QVERIFY(!project.decodeBinaryFile());
 
-    //QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
-    //QVERIFY(project.decodeBinaryFile());
-    //QVERIFY(project.decompileBinaryFile());
+    QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
+    QVERIFY(project.decodeBinaryFile());
+    QVERIFY(project.decompileBinaryFile());
 }
 
 
 void ProjectTest::testGenerateCode()
 {
-    //Project project;
+    Project project;
 
-    //QVERIFY(!project.generateCode());
+    QVERIFY(!project.generateCode());
 
-    //QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
-    //QVERIFY(project.decodeBinaryFile());
-    //QVERIFY(project.decompileBinaryFile());
+    QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
+    QVERIFY(project.decodeBinaryFile());
+    QVERIFY(project.decompileBinaryFile());
 
-    //QVERIFY(project.generateCode(project.getProg()->getRootModule()));
-    //QVERIFY(project.generateCode());
+    QVERIFY(project.generateCode(project.getProg()->getRootModule()));
+    QVERIFY(project.generateCode());
 }
 
 
