@@ -154,15 +154,10 @@ public:
 
     // Get a wildcard to find stack locations
     virtual SharedExp getStackWildcard() const { return nullptr; }
-    class StackRegisterNotDefinedException : public std::exception
-    {
-    public:
-        StackRegisterNotDefinedException() {}
-    };
 
     /// Needed before the signature is promoted
-    virtual int getStackRegister() const noexcept (false);
-    static int getStackRegister(Prog *prog) noexcept (false);
+    virtual int getStackRegister() const;
+    static int getStackRegister(Prog *prog);
 
     /**
      * Does expression e represent a local stack-based variable?
@@ -259,7 +254,7 @@ public:
 
     void setSP(int spReg);
 
-    virtual int getStackRegister() const noexcept (false)override { return m_spReg; }
+    virtual int getStackRegister() const override { return m_spReg; }
 
 protected:
     int m_spReg;

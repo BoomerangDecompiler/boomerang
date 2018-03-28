@@ -109,7 +109,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept (false)override { return 28; }
+    virtual int getStackRegister() const override { return 28; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
     virtual void getLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
@@ -163,7 +163,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept (false)override { return 28; }
+    virtual int getStackRegister() const override { return 28; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
@@ -198,7 +198,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept (false)override { return 14; }
+    virtual int getStackRegister() const override { return 14; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 
@@ -248,7 +248,7 @@ public:
                               const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept (false)override { return 1; }
+    virtual int getStackRegister() const override { return 1; }
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
     virtual void getLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
@@ -281,7 +281,7 @@ public:
                               const SharedExp& e = nullptr, const QString& boundMax = "") override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept (false)override { return 29; }
+    virtual int getStackRegister() const override { return 29; }
     virtual SharedExp getProven(SharedExp left) const override;
 
     // Return whether e is preserved by this proc
@@ -317,7 +317,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
     virtual SharedExp getStackWildcard() const override;
 
-    virtual int getStackRegister() const noexcept (false)override { return 3; }
+    virtual int getStackRegister() const override { return 3; }
     virtual SharedExp getProven(SharedExp left) const override;
 
     virtual bool isPromoted() const override { return true; }
@@ -2205,15 +2205,13 @@ StatementList& Signature::getStdRetStmt(Prog *prog)
 }
 
 
-int Signature::getStackRegister() const noexcept (false)
+int Signature::getStackRegister() const
 {
-    LOG_VERBOSE("thowing StackRegisterNotDefinedException");
-
-    throw StackRegisterNotDefinedException();
+    return -1;
 }
 
 
-int Signature::getStackRegister(Prog *prog) noexcept (false)
+int Signature::getStackRegister(Prog *prog)
 {
     switch (prog->getMachine())
     {
@@ -2233,7 +2231,7 @@ int Signature::getStackRegister(Prog *prog) noexcept (false)
         return 29;
 
     default:
-        throw StackRegisterNotDefinedException();
+        return -1;
     }
 }
 
