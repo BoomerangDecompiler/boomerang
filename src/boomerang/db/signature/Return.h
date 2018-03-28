@@ -19,10 +19,7 @@
 class Return
 {
 public:
-    Return(SharedType _type, SharedExp _exp)
-        : m_type(_type)
-        , m_exp(_exp)
-    {}
+    Return(SharedType _type, SharedExp _exp);
 
 public:
     bool operator==(const Return& other) const;

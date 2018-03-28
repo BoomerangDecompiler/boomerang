@@ -240,22 +240,3 @@ protected:
     QString m_preferredName;
     std::vector<int> m_preferredParams;
 };
-
-
-class CustomSignature : public Signature
-{
-public:
-    CustomSignature(const QString& name);
-    virtual ~CustomSignature() override = default;
-
-public:
-    virtual bool isPromoted() const override { return true; }
-    virtual std::shared_ptr<Signature> clone() const override;
-
-    void setSP(int spReg);
-
-    virtual int getStackRegister() const override { return m_spReg; }
-
-protected:
-    int m_spReg;
-};

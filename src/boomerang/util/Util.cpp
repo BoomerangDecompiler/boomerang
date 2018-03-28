@@ -11,6 +11,7 @@
 
 
 #include "boomerang/util/Types.h"
+#include "boomerang/db/exp/Const.h"
 
 #include <QString>
 #include <QMap>
@@ -74,5 +75,37 @@ QTextStream& alignStream(QTextStream& str, int align)
     return str;
 }
 
+
+int getStackOffset(SharedConstExp e, int sp)
+{
+    int ret = 0;
+
+    if (e->isMemOf()) {
+        SharedConstExp sub = e->getSubExp1();
+        OPER      op  = sub->getOper();
+
+        if ((op == opPlus) || (op == opMinus)) {
+            SharedConstExp op1 = sub->getSubExp1();
+
+            if (op1->isSubscript()) {
+                op1 = op1->getSubExp1();
+            }
+
+            if (op1->isRegN(sp)) {
+                SharedConstExp op2 = sub->getSubExp2();
+
+                if (op2->isIntConst()) {
+                    ret = op2->access<const Const>()->getInt();
+                }
+
+                if (op == opMinus) {
+                    ret = -ret;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
 
 }

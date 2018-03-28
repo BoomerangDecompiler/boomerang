@@ -12,6 +12,12 @@
 
 #include "boomerang/db/exp/Exp.h"
 
+Return::Return(SharedType _type, SharedExp _exp)
+    : m_type(_type)
+    , m_exp(_exp)
+{
+}
+
 
 std::shared_ptr<Return> Return::clone() const
 {

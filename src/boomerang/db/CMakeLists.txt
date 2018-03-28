@@ -49,9 +49,16 @@ list(APPEND boomerang-db-sources
     db/proc/Proc
     db/proc/UserProc
 
+    db/signature/CustomSignature
+    db/signature/MIPSSignature
     db/signature/Signature
     db/signature/Parameter
     db/signature/Return
+    db/signature/PentiumSignature
+    db/signature/PPCSignature
+    db/signature/SparcSignature
+    db/signature/ST20Signature
+    db/signature/Win32Signature
 
     db/ssl/RTLInstDict
     db/ssl/sslparser
