@@ -228,6 +228,8 @@ bool Project::decodeAll()
 
 void Project::loadPlugins()
 {
+    LOG_MSG("Loading plugins...");
+
     QDir pluginsDir = Boomerang::get()->getSettings()->getPluginDirectory();
     if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
@@ -253,6 +255,16 @@ void Project::loadPlugins()
 
     if (m_loaderPlugins.empty()) {
         LOG_ERROR("No loader plugins found, unable to load any binaries.");
+    }
+    else {
+        LOG_MSG("Loaded plugins:");
+        for (const auto& plugin : m_loaderPlugins) {
+            LOG_MSG("  %1 %2 (by '%3')",
+                    plugin->getInfo()->name.c_str(),
+                    plugin->getInfo()->version.c_str(),
+                    plugin->getInfo()->author.c_str()
+                   );
+        }
     }
 }
 
