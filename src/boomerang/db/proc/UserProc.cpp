@@ -158,14 +158,19 @@ void UserProc::setParamType(const char *name, SharedType ty)
 
 void UserProc::setParamType(int idx, SharedType ty)
 {
-    auto it = (idx  < m_parameters.size()) ? std::next(m_parameters.begin(), idx) : m_parameters.end();
-
-    if (it != m_parameters.end()) {
-        Assignment *a = static_cast<Assignment *>(*it);
-        a->setType(ty);
-        // Sometimes the signature isn't up to date with the latest parameters
-        m_signature->setParamType(a->getLeft(), ty);
+    if (static_cast<size_t>(idx) >= m_parameters.size()) {
+        // index out of range
+        return;
     }
+
+    auto it = std::next(m_parameters.begin(), idx);
+    assert(it != m_parameters.end());
+    assert((*it)->isAssignment());
+
+    Assignment *a = static_cast<Assignment *>(*it);
+    a->setType(ty);
+    // Sometimes the signature isn't up to date with the latest parameters
+    m_signature->setParamType(a->getLeft(), ty);
 }
 
 
