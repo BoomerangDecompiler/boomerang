@@ -50,6 +50,8 @@ list(APPEND boomerang-db-sources
     db/proc/UserProc
 
     db/signature/Signature
+    db/signature/Parameter
+    db/signature/Return
 
     db/ssl/RTLInstDict
     db/ssl/sslparser

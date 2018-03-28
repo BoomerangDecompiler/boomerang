@@ -32,15 +32,6 @@
 #include <sstream>
 
 
-Parameter::Parameter(SharedType type, const QString& name, SharedExp exp, const QString& boundMax)
-    : m_type(type)
-    , m_name(name)
-    , m_exp(exp)
-    , m_boundMax(boundMax)
-{
-}
-
-
 QString Signature::getPlatformName(Platform plat)
 {
     switch (plat)
@@ -367,18 +358,6 @@ CallingConvention::Win32TcSignature::Win32TcSignature(const QString& name)
 CallingConvention::Win32TcSignature::Win32TcSignature(Signature& old)
     : Win32Signature(old)
 {
-}
-
-
-std::shared_ptr<Parameter> Parameter::clone() const
-{
-    return std::make_shared<Parameter>(m_type->clone(), m_name, m_exp->clone(), m_boundMax);
-}
-
-
-void Parameter::setBoundMax(const QString& name)
-{
-    m_boundMax = name;
 }
 
 
@@ -2365,25 +2344,6 @@ bool CallingConvention::StdC::SparcSignature::isAddrOfStackLocal(Prog *prog, con
 }
 
 
-bool Parameter::operator==(const Parameter& other) const
-{
-    if (!(*m_type == *other.m_type)) {
-        return false;
-    }
-
-    // Do we really care about a parameter's name?
-    if (!(m_name == other.m_name)) {
-        return false;
-    }
-
-    if (!(*m_exp == *other.m_exp)) {
-        return false;
-    }
-
-    return true;
-}
-
-
 bool Signature::isOpCompatStackLocal(OPER op) const
 {
     if (op == opMinus) {
@@ -2598,25 +2558,6 @@ bool CallingConvention::StdC::SparcSignature::argumentCompare(const Assignment& 
     return *la < *lb; // Else order arbitrarily
 }
 
-
-std::shared_ptr<Return> Return::clone() const
-{
-    return std::make_shared<Return>(m_type->clone(), SharedExp(m_exp->clone()));
-}
-
-
-bool Return::operator==(const Return& other) const
-{
-    if (!(*m_type == *other.m_type)) {
-        return false;
-    }
-
-    if (!(*m_exp == *other.m_exp)) {
-        return false;
-    }
-
-    return true;
-}
 
 
 SharedType Signature::getTypeFor(SharedExp e) const
