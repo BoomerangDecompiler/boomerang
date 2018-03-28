@@ -10,6 +10,7 @@
 
 
 #include "boomerang/core/Watcher.h"
+#include "boomerang/core/Project.h"
 
 #include <QObject>
 #include <QTableWidget>
@@ -31,6 +32,7 @@ class Decompiler : public QObject, public IWatcher
 
 public:
     Decompiler();
+    ~Decompiler();
 
     /// IWatcher interface
 public:
@@ -89,7 +91,7 @@ public:
     void getCompoundMembers(const QString& name, QTableWidget *tbl);
 
     void setDebugEnabled(bool debug) { m_debugging = debug; }
-
+    Project *getProject() { return &m_project; }
 
 private:
     /// After code generation, update the list of modules
@@ -99,9 +101,7 @@ protected:
     bool m_debugging = false;
     bool m_waiting = false;
 
-    IFrontEnd *m_fe = nullptr;
-    Prog *m_prog = nullptr;
-    BinaryFile *m_binaryFile = nullptr;
+    Project m_project;
 
     std::vector<Address> m_userEntrypoints;
 };

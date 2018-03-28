@@ -100,6 +100,12 @@ void TypeTest::initTestCase()
 }
 
 
+void TypeTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void TypeTest::testTypeLong()
 {
     auto t = IntegerType::get(64, -1);
@@ -121,15 +127,10 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(HELLO_WINDOWS));
-
-    IFileLoader *loader = project.getBestLoader(HELLO_WINDOWS);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(loader, prog);
-    prog->setFrontEnd(fe);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     fe->readLibraryCatalog(); // Read definitions
 
@@ -164,8 +165,6 @@ void TypeTest::testCompound()
 
     // And at offset 8+8
     QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 8) * 8), QString("rcPaint"));
-
-    delete prog;
 }
 
 

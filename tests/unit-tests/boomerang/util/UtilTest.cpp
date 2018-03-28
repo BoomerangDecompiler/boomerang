@@ -12,10 +12,6 @@
 #include "boomerang/util/Util.h"
 
 
-void UtilTest::initTestCase()
-{
-}
-
 
 void UtilTest::testEscapeStr()
 {

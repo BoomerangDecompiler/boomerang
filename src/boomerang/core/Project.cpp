@@ -10,6 +10,7 @@
 #include "Project.h"
 
 
+#include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -20,6 +21,7 @@
 
 Project::Project()
     : m_typeRecovery(new DFATypeRecovery())
+    , m_codeGenerator(new CCodeGenerator())
 {
     loadPlugins();
 }
@@ -38,7 +40,7 @@ bool Project::loadBinaryFile(const QString& filePath)
     IFileLoader *loader = getBestLoader(filePath);
 
     if (loader == nullptr) {
-        LOG_WARN("Cannot load %1: Unrecognized binary file format.", filePath);
+        LOG_WARN("Cannot load '%1': Unrecognized binary file format.", filePath);
         return false;
     }
 
@@ -53,7 +55,7 @@ bool Project::loadBinaryFile(const QString& filePath)
         return false;
     }
 
-    m_loadedBinary.reset(new BinaryFile(srcFile.readAll()));
+    m_loadedBinary.reset(new BinaryFile(srcFile.readAll(), loader));
 
     if (loader->loadFromFile(m_loadedBinary.get()) == false) {
         LOG_WARN("Loading '%1 failed", filePath);
@@ -68,14 +70,14 @@ bool Project::loadBinaryFile(const QString& filePath)
 
 bool Project::loadSaveFile(const QString& /*filePath*/)
 {
-    LOG_FATAL("Loading save files is not implemented.");
+    LOG_ERROR("Loading save files is not implemented.");
     return false;
 }
 
 
 bool Project::writeSaveFile(const QString& /*filePath*/)
 {
-    LOG_FATAL("Saving save files is not implemented.");
+    LOG_ERROR("Saving save files is not implemented.");
     return false;
 }
 
@@ -93,6 +95,70 @@ void Project::unloadBinaryFile()
 }
 
 
+bool Project::decodeBinaryFile()
+{
+    if (!getProg()) {
+        LOG_WARN("Cannot decode binary file: No binary file is loaded.");
+        return false;
+    }
+
+    loadSymbols();
+
+    if (!Boomerang::get()->getSettings()->m_entryPoints.empty()) { // decode only specified procs
+        // decode entry points from -e (and -E) switch(es)
+        for (auto& elem : Boomerang::get()->getSettings()->m_entryPoints) {
+            LOG_MSG("Decoding specified entrypoint at address %1", elem);
+            m_prog->decodeEntryPoint(elem);
+        }
+    }
+    else if (!decodeAll()) { // decode everything
+        return false;
+    }
+
+    LOG_MSG("Finishing decode...");
+    m_prog->finishDecode();
+
+    Boomerang::get()->alertEndDecode();
+
+    LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
+
+    if (SETTING(generateSymbols)) {
+        m_prog->printSymbolsToFile();
+    }
+
+    if (SETTING(generateCallGraph)) {
+        m_prog->printCallGraph();
+    }
+
+    return true;
+}
+
+
+bool Project::decompileBinaryFile()
+{
+    if (!m_prog) {
+        LOG_ERROR("Cannot decompile binary file: No binary file is loaded.");
+        return false;
+    }
+
+    m_prog->decompile();
+    return true;
+}
+
+
+bool Project::generateCode(Module *module)
+{
+    if (!m_prog) {
+        LOG_ERROR("Cannot generate code: No binary file is loaded.");
+        return false;
+    }
+
+    LOG_MSG("Generating code...");
+    m_codeGenerator->generateCode(getProg(), module);
+    return true;
+}
+
+
 Prog *Project::createProg(BinaryFile* file, const QString& name)
 {
     if (!file) {
@@ -100,17 +166,74 @@ Prog *Project::createProg(BinaryFile* file, const QString& name)
         return nullptr;
     }
 
+    // unload old Prog before creating a new one
+    m_fe.reset();
     m_prog.reset();
-    m_prog.reset(new Prog(name, file));
+
+    m_prog.reset(new Prog(name, this));
+    m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
+
+    // Cannot check here if  Frontend is valid, since e.g. Palm binaries do not have a frontend.
+
+    m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();
+}
+
+
+void Project::loadSymbols()
+{
+    // Add symbols from -s switch(es)
+    for (const std::pair<Address, QString>& elem : Boomerang::get()->getSettings()->m_symbolMap) {
+        m_fe->addSymbol(elem.first, elem.second);
+    }
+
+    m_fe->readLibraryCatalog(); // Needed before readSymbolFile()
+
+    for (auto& elem : Boomerang::get()->getSettings()->m_symbolFiles) {
+        LOG_MSG("Reading symbol file '%1'", elem);
+        m_prog->readSymbolFile(elem);
+    }
+}
+
+
+bool Project::decodeAll()
+{
+    if (SETTING(decodeMain)) {
+        LOG_MSG("Decoding entry point...");
+    }
+
+    if (!m_fe->decode(SETTING(decodeMain))) {
+        LOG_ERROR("Aborting load due to decode failure");
+        return false;
+    }
+
+    bool gotMain = false;
+    Address mainAddr = m_fe->getMainEntryPoint(gotMain);
+    if (gotMain) {
+        m_prog->addEntryPoint(mainAddr);
+    }
+
+    if (SETTING(decodeChildren)) {
+        // this causes any undecoded userprocs to be decoded
+        LOG_MSG("Decoding anything undecoded...");
+        if (!m_fe->decode(Address::INVALID)) {
+            LOG_ERROR("Aborting load due to decode failure");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 
 void Project::loadPlugins()
 {
+    LOG_MSG("Loading plugins...");
+
     QDir pluginsDir = Boomerang::get()->getSettings()->getPluginDirectory();
     if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
+        return;
     }
 
     for (QString fileName : pluginsDir.entryList(QDir::Files)) {
@@ -122,8 +245,8 @@ void Project::loadPlugins()
         }
 #endif
         try {
-            std::shared_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
-            m_loaderPlugins.push_back(loaderPlugin);
+            std::unique_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
+            m_loaderPlugins.push_back(std::move(loaderPlugin));
         }
         catch (const char *errmsg) {
             LOG_WARN("Unable to load plugin: %1", errmsg);
@@ -132,6 +255,16 @@ void Project::loadPlugins()
 
     if (m_loaderPlugins.empty()) {
         LOG_ERROR("No loader plugins found, unable to load any binaries.");
+    }
+    else {
+        LOG_MSG("Loaded plugins:");
+        for (const auto& plugin : m_loaderPlugins) {
+            LOG_MSG("  %1 %2 (by '%3')",
+                    plugin->getInfo()->name.c_str(),
+                    plugin->getInfo()->version.c_str(),
+                    plugin->getInfo()->author.c_str()
+                   );
+        }
     }
 }
 
@@ -149,7 +282,7 @@ IFileLoader *Project::getBestLoader(const QString& filePath) const
     int         bestScore   = 0;
 
     // get the best plugin for loading this file
-    for (const std::shared_ptr<LoaderPlugin>& p : m_loaderPlugins) {
+    for (const std::unique_ptr<LoaderPlugin>& p : m_loaderPlugins) {
         inputBinary.seek(0); // reset the file offset for the next plugin
         IFileLoader *loader = p->get();
 
@@ -163,3 +296,4 @@ IFileLoader *Project::getBestLoader(const QString& filePath) const
 
     return bestLoader;
 }
+

@@ -18,8 +18,6 @@
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/util/Log.h"
-
-#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/frontend/ppc/ppcdecoder.h"
 
 #include <cassert>
@@ -27,8 +25,8 @@
 #include <sstream>
 
 
-PPCFrontEnd::PPCFrontEnd(IFileLoader *loader, Prog *prog)
-    : IFrontEnd(loader, prog)
+PPCFrontEnd::PPCFrontEnd(BinaryFile *binaryFile, Prog *prog)
+    : IFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new PPCDecoder(prog));
 }
@@ -65,13 +63,13 @@ std::vector<SharedExp>& PPCFrontEnd::getDefaultReturns()
 Address PPCFrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
-    Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         return start;
     }
 
-    start   = m_fileLoader->getEntryPoint();
+    start   = m_binaryFile->getEntryPoint();
     gotMain = false;
 
     if (start == Address::INVALID) {

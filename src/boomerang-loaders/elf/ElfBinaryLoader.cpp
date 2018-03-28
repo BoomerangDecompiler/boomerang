@@ -12,7 +12,6 @@
 
 #include "ElfTypes.h"
 
-#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -571,14 +570,14 @@ void ElfBinaryLoader::addRelocsAsSyms(uint32_t relSecIdx)
 
         if (flags == R_386_32) {
             // Lookup the value of the symbol table entry
-            Address synbolAddr = Address(elfRead4(&m_symbolSection[symIndex].st_value));
+            Address symbolAddr = Address(elfRead4(&m_symbolSection[symIndex].st_value));
 
             if (m_symbolSection[symIndex].st_info & STT_SECTION) {
-                synbolAddr = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)].SourceAddr;
+                symbolAddr = m_elfSections[elfRead2(&m_symbolSection[symIndex].st_shndx)].SourceAddr;
             }
 
             // Overwrite the relocation value... ?
-            m_binaryImage->writeNative4(val, synbolAddr.value());
+            m_binaryImage->writeNative4(val, symbolAddr.value());
             continue;
         }
 

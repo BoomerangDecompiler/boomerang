@@ -28,6 +28,12 @@ void ParserTest::initTestCase()
 }
 
 
+void ParserTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void ParserTest::testRead()
 {
     RTLInstDict d;

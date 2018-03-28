@@ -26,7 +26,7 @@ class PentiumFrontEnd : public IFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PentiumFrontEnd(IFileLoader *loader, Prog *prog);
+    PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog);
     PentiumFrontEnd(const PentiumFrontEnd& other) = delete;
     PentiumFrontEnd(PentiumFrontEnd&& other) = default;
 

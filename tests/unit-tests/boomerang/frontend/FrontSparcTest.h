@@ -18,17 +18,11 @@ class FrontSparcTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
-    /**
-     * Test decoding some sparc instructions
-     */
     void test1();
-
     void test2();
-
     void test3();
-
     void testBranch();
-
     void testDelaySlot();
 };

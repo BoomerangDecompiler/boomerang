@@ -18,10 +18,8 @@ class ParserTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
-    /// Test reading the SSL file
     void testRead();
-
-    /// Test parsing an expression
     void testExp();
 };

@@ -18,7 +18,7 @@ class HpSomBinaryLoaderTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
-    /// Test loading the sparc hello world program
     void testHppaLoad();
 };

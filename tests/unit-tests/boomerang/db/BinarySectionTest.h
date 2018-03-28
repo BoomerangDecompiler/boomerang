@@ -18,8 +18,6 @@ class BinarySectionTest : public QObject
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void testIsAddressBss();
     void testAnyDefinedValues();
     void testResize();

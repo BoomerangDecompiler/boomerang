@@ -10,6 +10,7 @@
 #include "ExpTest.h"
 
 
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
@@ -31,6 +32,12 @@ void ExpTest::initTestCase()
 {
     m_99 = Const::get(99);
     m_rof2.reset(new Location(opRegOf, Const::get(2), nullptr));
+}
+
+
+void ExpTest::cleanupTestCase()
+{
+    Boomerang::destroy();
 }
 
 

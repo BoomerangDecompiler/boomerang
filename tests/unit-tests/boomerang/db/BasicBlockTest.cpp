@@ -28,6 +28,12 @@ void BasicBlockTest::initTestCase()
 }
 
 
+void BasicBlockTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void BasicBlockTest::testConstruct()
 {
     LibProc proc(Address(0x5000), "test", nullptr);

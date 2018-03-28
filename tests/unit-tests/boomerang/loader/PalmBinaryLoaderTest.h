@@ -18,6 +18,7 @@ class PalmBinaryLoaderTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     /// Test loading the Palm 68328 Starter.prc program
     void testPalmLoad();

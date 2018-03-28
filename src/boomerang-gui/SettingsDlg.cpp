@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang-gui/Decompiler.h"
@@ -19,7 +20,7 @@
 Q_DECLARE_METATYPE(ITypeRecovery *)
 
 
-SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
+SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     : QDialog(_parent)
     , ui(new Ui::SettingsDlg)
 {
@@ -67,7 +68,7 @@ SettingsDlg::SettingsDlg(Decompiler *, QWidget *_parent)
     ui->spbNumToPropagate->setRange(-1, std::numeric_limits<int>::max());
     ui->spbNumToPropagate->setValue(SETTING(numToPropagate));
 
-    ITypeRecovery *rec = Boomerang::get()->getOrCreateProject()->getTypeRecoveryEngine();
+    ITypeRecovery *rec = decompiler->getProject()->getTypeRecoveryEngine();
     ui->cbTypeRecoveryEngine->addItem("<None>",       QVariant::fromValue<ITypeRecovery *>(nullptr));
     ui->cbTypeRecoveryEngine->addItem(rec->getName(), QVariant::fromValue<ITypeRecovery *>(rec));
     ui->cbTypeRecoveryEngine->setCurrentIndex(SETTING(dfaTypeAnalysis) ? 1 : 0);

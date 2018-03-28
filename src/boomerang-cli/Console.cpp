@@ -15,7 +15,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/CFGDotWriter.h"
-
+#include "boomerang/core/Project.h"
 
 #include <QFile>
 #include <QString>
@@ -25,7 +25,8 @@
 #include <iostream>
 
 
-Console::Console()
+Console::Console(Project *project)
+    : m_project(project)
 {
     m_commandTypes["decode"]    = CT_decode;
     m_commandTypes["decompile"] = CT_decompile;
@@ -206,12 +207,15 @@ CommandStatus Console::handleDecode(const QStringList& args)
         std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
         return CommandStatus::ParseError;
     }
-    else if (Boomerang::get()->getOrCreateProject()->isBinaryLoaded()) {
+    else if (m_project->isBinaryLoaded()) {
         std::cerr << "Cannot decode program: A program is already loaded." << std::endl;
         return CommandStatus::Failure;
     }
 
-    const bool ok = Boomerang::get()->loadAndDecode(args[0]);
+    bool ok = m_project->loadBinaryFile(args[0]);
+    if (ok) {
+        ok = m_project->decodeBinaryFile();
+    }
 
     if (ok) {
         std::cout << "Loaded '" << args[0].toStdString() << "'." << std::endl;
@@ -226,13 +230,12 @@ CommandStatus Console::handleDecode(const QStringList& args)
 
 CommandStatus Console::handleDecompile(const QStringList& args)
 {
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    if (!project->isBinaryLoaded()) {
+    if (!m_project->isBinaryLoaded()) {
         std::cerr << "Cannot decompile: Need to 'decode' a program first.\n";
         return CommandStatus::Failure;
     }
 
-    Prog *prog = project->getProg();
+    Prog *prog = m_project->getProg();
     assert(prog != nullptr);
 
     if (args.empty()) {
@@ -272,14 +275,14 @@ CommandStatus Console::handleDecompile(const QStringList& args)
 
 CommandStatus Console::handleCodegen(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
     if (!prog) {
         std::cerr << "Cannot generate code: need to 'decompile' first.\n";
         return CommandStatus::Failure;
     }
 
     if (args.empty()) {
-        Boomerang::get()->getCodeGenerator()->generateCode(prog);
+        m_project->generateCode();
     }
     else {
         std::set<Module *> modules;
@@ -296,7 +299,7 @@ CommandStatus Console::handleCodegen(const QStringList& args)
         }
 
         for (Module *mod : modules) {
-            Boomerang::get()->getCodeGenerator()->generateCode(prog, mod);
+            m_project->generateCode(mod);
         }
     }
 
@@ -318,7 +321,7 @@ CommandStatus Console::handleReplay(const QStringList& args)
 
 CommandStatus Console::handleMove(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
 
     if (args.size() < 2) {
         std::cerr << "Not enough arguments for cmd." << std::endl;
@@ -384,7 +387,7 @@ CommandStatus Console::handleMove(const QStringList& args)
 
 CommandStatus Console::handleAdd(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
 
     if (args.empty()) {
         std::cerr << "Not enough arguments for command." << std::endl;
@@ -438,7 +441,7 @@ CommandStatus Console::handleAdd(const QStringList& args)
 
 CommandStatus Console::handleDelete(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
 
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd\n";
@@ -486,7 +489,7 @@ CommandStatus Console::handleDelete(const QStringList& args)
 
 CommandStatus Console::handleRename(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
 
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd" << std::endl;
@@ -552,7 +555,7 @@ CommandStatus Console::handleRename(const QStringList& args)
 
 CommandStatus Console::handleInfo(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
 
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd!" << std::endl;
@@ -681,7 +684,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
 
 CommandStatus Console::handlePrint(const QStringList& args)
 {
-    Prog *prog = Boomerang::get()->getOrCreateProject()->getProg();
+    Prog *prog = m_project->getProg();
 
     if (args.empty()) {
         std::cerr << "Not enough arguments for cmd" << std::endl;

@@ -26,15 +26,19 @@ void HpSomBinaryLoaderTest::initTestCase()
 }
 
 
+void HpSomBinaryLoaderTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void HpSomBinaryLoaderTest::testHppaLoad()
 {
     QSKIP("Disabled.");
 
     // Load HPPA hello world
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(HELLO_HPPA);
-    IFileLoader *loader = project.getBestLoader(HELLO_HPPA);
-    QVERIFY(loader != nullptr);
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_HPPA));
     BinaryImage *image = project.getLoadedBinaryFile()->getImage();
 
     QCOMPARE(image->getNumSections(), 3);

@@ -10,8 +10,6 @@
 #pragma once
 
 
-#include "boomerang/core/IBoomerang.h"
-#include "boomerang/core/IProject.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/core/Settings.h"
@@ -34,12 +32,11 @@ class ICodeGenerator;
 class ObjcModule;
 class Project;
 
-
 /**
  * Controls the loading, decoding, decompilation and code generation for a program.
  * This is the main class of the decompiler.
  */
-class Boomerang : public IBoomerang
+class Boomerang
 {
 private:
     /**
@@ -56,7 +53,7 @@ private:
     Boomerang(const Boomerang& other) = delete;
     Boomerang(Boomerang&& other) = default;
 
-    virtual ~Boomerang() override = default;
+    virtual ~Boomerang() = default;
 
     Boomerang& operator=(const Boomerang& other) = delete;
     Boomerang& operator=(Boomerang&& other) = default;
@@ -66,35 +63,11 @@ public:
     static Boomerang *get();
     static void destroy();
 
-    IProject *getOrCreateProject() override;
-
     /// \returns the library version string
     static const char *getVersionStr();
 
-    /// \returns the code generator that is currently in use.
-    ICodeGenerator *getCodeGenerator();
-
-
     Settings *getSettings() { return m_settings.get(); }
     const Settings *getSettings() const { return m_settings.get(); }
-
-    /**
-     * Loads the executable file and decodes it.
-     * \param fname The name of the file to load.
-     * \param pname How the Prog will be named.
-     */
-    bool loadAndDecode(const QString& fname, const char *pname = nullptr);
-
-    /**
-     * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
-     * After decompilation the elapsed time is printed to LOG_STREAM().
-     *
-     * \param fname The name of the file to load.
-     * \param pname The name that will be given to the Proc.
-     *
-     * \return Zero on success, nonzero on faillure.
-     */
-    int decompile(const QString& fname, const char *pname = nullptr);
 
 public:
     /// Add a Watcher to the set of Watchers for this Boomerang object.
@@ -142,13 +115,9 @@ public:
 
 public:
     std::unique_ptr<Settings> m_settings;
-    std::unique_ptr<IProject> m_currentProject;
-    std::unique_ptr<ICodeGenerator> m_codeGenerator;
+    std::unique_ptr<Project> m_currentProject;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
-    std::vector<Address> m_entryPoints;     ///< A vector which contains all know entrypoints for the Prog.
-    std::vector<QString> m_symbolFiles;     ///< A vector containing the names off all symbolfiles to load.
-    std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
 
 private:
     /// This is a mini command line debugger.  Feel free to expand it.

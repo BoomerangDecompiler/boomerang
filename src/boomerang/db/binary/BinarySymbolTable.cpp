@@ -23,13 +23,14 @@ BinarySymbolTable::BinarySymbolTable()
 
 BinarySymbolTable::~BinarySymbolTable()
 {
+    clear();
 }
 
 
 void BinarySymbolTable::clear()
 {
-    m_symbolList.clear();
     m_addrIndex.clear();
+    m_symbolList.clear();
     m_nameIndex.clear();
 }
 

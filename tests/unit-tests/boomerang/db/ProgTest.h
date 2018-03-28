@@ -22,6 +22,8 @@ class ProgTest : public QObject
     Q_OBJECT
 
 private slots:
+    void cleanupTestCase();
+
     /// Test setting and reading name
     void testName();
 

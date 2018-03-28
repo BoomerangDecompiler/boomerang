@@ -15,10 +15,9 @@
 #include "boomerang/type/type/Type.h"
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/util/Util.h"
-#include "boomerang/loader/IBinaryFile.h"
-
 #include "boomerang/frontend/Frontend.h"
 
 
@@ -35,6 +34,7 @@ class ICodeGenerator;
 class Global;
 class BinarySymbol;
 class BinaryFile;
+class Project;
 
 
 class Prog
@@ -45,7 +45,7 @@ public:
     typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
 
 public:
-    Prog(const QString& name, BinaryFile *file);
+    Prog(const QString& name, Project *project);
     Prog(const Prog& other) = delete;
     Prog(Prog&& other) = default;
 
@@ -58,6 +58,9 @@ public:
     /// Change the FrontEnd. Takes ownership of the pointer.
     void setFrontEnd(IFrontEnd *fe);
     IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
+
+    Project *getProject() { return m_project; }
+    const Project *getProject() const { return m_project; }
 
     /// Assign a new name to this program
     void setName(const QString& name);
@@ -268,6 +271,7 @@ public:
 
 private:
     QString m_name;             ///< name of the program
+    Project *m_project = nullptr;
     BinaryFile *m_binaryFile;
     Module *m_rootModule;       ///< Root of the module tree
     ModuleList m_moduleList;    ///< The Modules that make up this program
@@ -275,7 +279,6 @@ private:
     /// list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;
 
-    IFileLoader *m_fileLoader = nullptr;
     IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.

@@ -20,7 +20,6 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/type/type/SizeType.h"
 #include "boomerang/util/Log.h"
@@ -785,8 +784,7 @@ SharedExp CallingConvention::StdC::PentiumSignature::getArgumentExp(int n) const
         n--;
     }
 
-    SharedExp e = Location::memOf(Binary::get(opPlus, esp, Const::get((n + 1) * 4)));
-    return e;
+    return Location::memOf(Binary::get(opPlus, esp, Const::get((n + 1) * 4)));
 }
 
 
@@ -2095,9 +2093,9 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 }
 
 
-/*static*/ SharedExp Signature::getReturnExp2(IFileLoader *loader)
+/*static*/ SharedExp Signature::getReturnExp2(BinaryFile *binaryFile)
 {
-    switch (loader->getMachine())
+    switch (binaryFile->getMachine())
     {
     case Machine::SPARC:
         return Location::regOf(8);

@@ -11,7 +11,9 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/CFGDotWriter.h"
 
 #include <QCoreApplication>
 #include <iostream>
@@ -22,10 +24,6 @@ CommandlineDriver::CommandlineDriver(QObject *_parent)
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
-    QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
-                                          []() {
-        QCoreApplication::instance()->quit();
-    });
 }
 
 
@@ -117,8 +115,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         return 1;
     }
 
-    Boomerang& boom(*Boomerang::get());
-
     for (int i = 1; i < args.size(); ++i) {
         QString arg = args[i];
 
@@ -155,7 +151,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_FATAL("Bad address: %1", args[i]);
                 }
 
-                boom.m_entryPoints.push_back(addr);
+                Boomerang::get()->getSettings()->m_entryPoints.push_back(addr);
             }
             break;
 
@@ -215,7 +211,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     o_path += '/'; // Maintain the convention of a trailing slash
                 }
 
-                boom.getSettings()->setOutputDirectory(o_path);
+                Boomerang::get()->getSettings()->setOutputDirectory(o_path);
                 break;
             }
 
@@ -256,10 +252,10 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_MSG("Working directory now '%1'", wd.path());
                 }
 
-                boom.getSettings()->setWorkingDirectory(wd.path());
-                boom.getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
-                boom.getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
-                boom.getSettings()->setOutputDirectory(wd.path() + "/./output/");
+                Boomerang::get()->getSettings()->setWorkingDirectory(wd.path());
+                Boomerang::get()->getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
+                Boomerang::get()->getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
+                Boomerang::get()->getSettings()->setOutputDirectory(wd.path() + "/./output/");
             }
             break;
 
@@ -335,7 +331,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 's':
             {
                 if (arg[2] == 'f') {
-                    boom.m_symbolFiles.push_back(args[i + 1]);
+                    Boomerang::get()->getSettings()->m_symbolFiles.push_back(args[i + 1]);
                     i++;
                     break;
                 }
@@ -354,7 +350,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_FATAL("Bad address: %1", args[i + 1]);
                 }
 
-                boom.m_symbolMap[addr] = args[++i];
+                Boomerang::get()->getSettings()->m_symbolMap[addr] = args[++i];
             }
             break;
 
@@ -433,14 +429,17 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
 
-    m_thread.setPathToBinary(args.last());
+    m_pathToBinary = args.last();
     return 0;
 }
 
 
 int CommandlineDriver::interactiveMain()
 {
-    CommandStatus status = m_console.replayFile(SETTING(replayFile));
+    m_project.reset(new Project);
+    m_console.reset(new Console(m_project.get()));
+
+    CommandStatus status = m_console->replayFile(SETTING(replayFile));
 
     if (status == CommandStatus::ExitProgram) {
         return 2;
@@ -459,7 +458,7 @@ int CommandlineDriver::interactiveMain()
         }
 
         line   = strm.readLine();
-        status = m_console.handleCommand(line);
+        status = m_console->handleCommand(line);
 
         if (status == CommandStatus::ExitProgram) {
             return 2;
@@ -472,9 +471,12 @@ int CommandlineDriver::decompile()
 {
     Log::getOrCreateLog().addDefaultLogSinks();
 
-    m_thread.start();
-    m_thread.wait(); // wait indefinitely
-    return m_thread.resCode();
+    QDir       wd = Boomerang::get()->getSettings()->getWorkingDirectory();
+    QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
+
+    m_project.reset(new Project());
+
+    return decompile(inf.absoluteFilePath(), inf.baseName());
 }
 
 
@@ -485,10 +487,56 @@ void CommandlineDriver::onCompilationTimeout()
 }
 
 
-void DecompilationThread::run()
+bool CommandlineDriver::loadAndDecode(const QString& fname, const QString& pname)
 {
-    Boomerang& boom(*Boomerang::get());
-    QDir       wd = boom.getSettings()->getWorkingDirectory();
+    assert(m_project);
 
-    m_result = boom.decompile(wd.absoluteFilePath(m_pathToBinary));
+    const bool ok = m_project->loadBinaryFile(fname);
+    if (!ok) {
+        // load failed
+        return false;
+    }
+
+    Prog *prog = m_project->getProg();
+    assert(prog);
+
+    prog->setName(pname);
+    return m_project->decodeBinaryFile();
+}
+
+
+int CommandlineDriver::decompile(const QString& fname, const QString& pname)
+{
+    time_t start;
+    time(&start);
+
+    if (!loadAndDecode(fname, pname)) {
+        return 1;
+    }
+
+
+    if (SETTING(stopBeforeDecompile)) {
+        return 0;
+    }
+
+    LOG_MSG("Decompiling...");
+    m_project->decompileBinaryFile();
+
+    if (!SETTING(dotFile).isEmpty()) {
+        CfgDotWriter().writeCFG(m_project->getProg(), SETTING(dotFile));
+    }
+
+    m_project->generateCode();
+
+    QDir outDir = Boomerang::get()->getSettings()->getOutputDirectory();
+    LOG_MSG("Output written to '%1'", outDir.absolutePath());
+
+    time_t end;
+    time(&end);
+    int hours = static_cast<int>((end - start) / 60 / 60);
+    int mins  = static_cast<int>((end - start) / 60 - hours * 60);
+    int secs  = static_cast<int>((end - start) - (hours * 60 * 60) - (mins * 60));
+
+    LOG_MSG("Completed in %1 hours %2 minutes %3 seconds.", hours, mins, secs);
+    return 0;
 }

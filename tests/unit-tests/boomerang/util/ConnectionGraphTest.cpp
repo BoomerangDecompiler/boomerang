@@ -17,11 +17,6 @@
 #include "boomerang/db/exp/Location.h"
 
 
-void ConnectionGraphTest::initTestCase()
-{
-}
-
-
 void ConnectionGraphTest::testAdd()
 {
     SharedExp e1 = Terminal::get(opCF);

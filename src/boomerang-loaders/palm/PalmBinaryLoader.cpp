@@ -12,7 +12,6 @@
 
 #include "palmsystraps.h"
 
-#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -26,6 +25,61 @@
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UINT4(p)        Util::readDWord(p, true)
 #define UINT4ADDR(p)    Util::readDWord(reinterpret_cast<const void *>((p).value()), true)
+
+enum PRCAttr : SWord
+{
+    PRCAttr_PRC               =    0x1,
+    PRCAttr_ReadOnly          =    0x2,
+    PRCAttr_AppInfoDirty      =    0x4,
+    PRCAttr_NeedsBackup       =    0x8,
+    PRCAttr_ReplaceOK         =   0x10,
+    PRCAttr_ResetAfterInstall =   0x20,
+    PRCAttr_NoCopy            =   0x40,
+    PRCAttr_FileStreamDB      =   0x80,
+    PRCAttr_Hidden            =  0x100,
+    PRCAttr_Launchable        =  0x200,
+    PRCAttr_Open              = 0x8000
+};
+
+#pragma pack(push, 1)
+
+struct PRCHeader
+{
+    char name[0x20];  ///< name of app, in MacRoman encoding, padded with 0
+    SWord attributes; ///< PRCAttr
+    SWord version;            ///< Usually 1
+    DWord creationDate;       ///< seconds since midnight, January 1, 1904
+    DWord modificationDate;   ///< seconds since midnight, January 1, 1904
+    DWord backupDate;         ///< seconds since midnight, January 1, 1904
+    DWord modificationNumber; ///< usually 0
+    DWord appInfoOffset;      ///< offset from start of file to start of appInfo field; usually 0
+    DWord sortInfoOffset;     ///< offset from start of file to start of sortInfo field; usually 0
+    char type[4];             ///< for a PRC file, the four-character constant "appl" or "panl"
+    DWord creator;            ///< a four-character constant unique to this application
+    DWord uniqueIDSeed;       ///< usually 0
+};
+static_assert(sizeof(PRCHeader) == 72, "PRCHeader size does not match");
+
+
+struct PRCRecordList
+{
+    DWord nextRecordListOffset; ///< offset from this record list to the next record list; usually zero, indicating no further record lists
+    SWord resourceCount;        ///< the number of resources
+};
+static_assert(sizeof(PRCRecordList) == 6, "PRCRecordList size does not match");
+
+
+struct PRCResource
+{
+    DWord type; ///< the resource type, a four-character constant
+    SWord id;   ///< the resource id
+    DWord dataOffset; ///< offset from start of file to start of resource data; end of resource data is indicated by next record or end of file
+};
+static_assert(sizeof(PRCResource) == 10, "PRCRecordList size does not match");
+
+
+#pragma pack(pop)
+
 
 
 PalmBinaryLoader::PalmBinaryLoader()
@@ -49,77 +103,83 @@ void PalmBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols
 }
 
 
-namespace
-{
-struct SectionParams
+struct SectionProperties
 {
     QString     name;
     Address     from, to;
     HostAddress hostAddr;
 };
-}
+
 
 bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 {
-    long size = img.size();
-
+    const int size = img.size();
     m_image = reinterpret_cast<uint8_t *>(img.data());
 
+    if (static_cast<unsigned long>(size) < sizeof(PRCHeader) + sizeof(PRCRecordList)) {
+        LOG_ERROR("This is not a standard .prc file");
+        return false;
+    }
+
+    PRCHeader *prcHeader = reinterpret_cast<PRCHeader *>(img.data());
+
     // Check type at offset 0x3C; should be "appl" (or "palm"; ugh!)
-    if ((strncmp(img.data() + 0x3C, "appl", 4) != 0) &&
-        (strncmp(img.data() + 0x3C, "panl", 4) != 0) &&
-        (strncmp(img.data() + 0x3C, "libr", 4) != 0)) {
+    if ((strncmp(prcHeader->type, "appl", 4) != 0) &&
+        (strncmp(prcHeader->type, "panl", 4) != 0) &&
+        (strncmp(prcHeader->type, "libr", 4) != 0)) {
             LOG_ERROR("This is not a standard .prc file");
             return false;
     }
 
     addTrapSymbols();
+
     // Get the number of resource headers (one section per resource)
-
-    uint32_t numSections = (m_image[0x4C] << 8) + m_image[0x4D];
-
-    // Iterate through the resource headers (generating section info structs)
-    unsigned char              *p  = m_image + 0x4E; // First resource header
-    unsigned                   off = 0;
-    std::vector<SectionParams> params;
-
-    for (unsigned i = 0; i < numSections; i++) {
-        // Now get the identifier (2 byte binary)
-        unsigned   id = (p[4] << 8) + p[5];
-        QByteArray qba(reinterpret_cast<char *>(p), 4);
-        // First the name (4 alphanumeric characters from p to p+3)
-        // Join the id to the name, e.g. code0, data12
-        QString name = QString("%1%2").arg(QString(qba)).arg(id);
-
-        p  += 4 + 2;
-        off = UINT4(p);
-        p  += 4;
-
-        Address start_addr(off);
-
-        // Guess the length
-        if (i > 0) {
-            params.back().to = start_addr;
-        }
-
-        params.push_back({ name, start_addr, Address::INVALID, HostAddress(m_image + off) }); // Address::INVALID will be overwritten
+    PRCRecordList *records = reinterpret_cast<PRCRecordList *>(m_image + sizeof(PRCHeader));
+    if (records->nextRecordListOffset != 0) {
+        LOG_ERROR("Reading PRC files with multiple record lists is not supported!");
+        return false;
     }
 
-    // Set the length for the last section
-    params.back().to = params.back().from + size - off;
+    const SWord numSections = Util::readWord(&records->resourceCount, true);
 
-    for (SectionParams param : params) {
-        assert(param.to != Address::INVALID);
-        BinarySection *sect = m_binaryImage->createSection(param.name, param.from, param.to);
+    // Iterate through the resource headers (generating section info structs)
+    PRCResource *resource = reinterpret_cast<PRCResource *>(m_image + sizeof(PRCHeader) + sizeof(PRCRecordList));
+
+    std::vector<SectionProperties> sectionProperties;
+
+    for (unsigned i = 0; i < numSections; i++) {
+        char buf[5];
+        strncpy(buf, reinterpret_cast<char *>(&resource[i].type), 4);
+        buf[4] = 0;
+
+        SWord id = Util::readWord(&resource[i].id, true);
+        QString name = QString("%1%2").arg(buf).arg(id);
+        DWord dataOffset = Util::readDWord(&resource[i].dataOffset, true);
+
+        Address startAddr(dataOffset);
+
+        if (i > 0) {
+            sectionProperties[i-1].to = startAddr;
+        }
+
+        sectionProperties.push_back({ name, startAddr, Address::INVALID, HostAddress(m_image + dataOffset) });
+    }
+
+    // last section extends until eof
+    sectionProperties[numSections-1].to = Address(size);
+
+    for (SectionProperties props : sectionProperties) {
+        assert(props.to != Address::INVALID);
+        BinarySection *sect = m_binaryImage->createSection(props.name, props.from, props.to);
 
         if (sect) {
             // Decide if code or data; note that code0 is a special case (not code)
-            sect->setHostAddr(param.hostAddr);
-            sect->setCode((param.name != "code0") && (param.name.startsWith("code")));
-            sect->setData(param.name.startsWith("data"));
+            sect->setHostAddr(props.hostAddr);
+            sect->setCode((props.name != "code0") && (props.name.startsWith("code")));
+            sect->setData(props.name.startsWith("data"));
             sect->setEndian(0);                          // little endian
             sect->setEntrySize(1);                       // No info available
-            sect->addDefinedArea(param.from, param.to); // no BSS
+            sect->addDefinedArea(props.from, props.to); // no BSS
         }
     }
 
@@ -154,7 +214,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
     }
 
     // Uncompress the data. Skip first long (offset of CODE1 "xrefs")
-    p = reinterpret_cast<unsigned char *>((dataSection->getHostAddr() + 4).value());
+    Byte *p = reinterpret_cast<Byte *>((dataSection->getHostAddr() + 4).value());
     int start = static_cast<int>(UINT4(p));
     p += 4;
     unsigned char *q   = (m_data + m_sizeBelowA5 + start);
@@ -348,10 +408,6 @@ std::pair<Address, unsigned> PalmBinaryLoader::getGlobalPointerInfo()
 }
 
 
-//  //  //  //  //  //  //
-//  Specific for Palm   //
-//  //  //  //  //  //  //
-
 int PalmBinaryLoader::getAppID() const
 {
     // The answer is in the header. Return 0 if file not loaded
@@ -359,30 +415,32 @@ int PalmBinaryLoader::getAppID() const
         return 0;
     }
 
-// Beware the endianness (large)
-#define OFFSET_ID    0x40
-    return (m_image[OFFSET_ID] << 24) + (m_image[OFFSET_ID + 1] << 16) + (m_image[OFFSET_ID + 2] << 8) +
-           (m_image[OFFSET_ID + 3]);
+    const PRCHeader *prcHeader = reinterpret_cast<PRCHeader *>(m_image);
+    return Util::readDWord(&prcHeader->creator, true);
 }
 
 
-// Patterns for Code Warrior
 #define WILD    0x4AFC
 
+// Patterns for Code Warrior
 static SWord CWFirstJump[] =
 {
-    0x0,     0x1,                                 // ? All Pilot programs seem to start with this
-    0x487a,  0x4,                                 // pea 4(pc)
-    0x0697, WILD, WILD,                           // addil #number, (a7)
-    0x4e75
-};                                                // rts
+    0x0000, 0x0001,         // ? All Pilot programs seem to start with this
+    0x487a, 0x0004,         // pea 4(pc)
+    0x0697, WILD, WILD,     // addil #number, (a7)
+    0x4e75                  // rts
+};
+
 static SWord CWCallMain[] =
 {
-    0x487a,   14,                                 // pea 14(pc)
-    0x487a,    4,                                 // pea 4(pc)
-    0x0697, WILD, WILD,                           // addil #number, (a7)
-    0x4e75
-};                                                // rts
+    0x487a, 0x000e,          // pea 14(pc)
+    0x487a, 0x0004,          // pea 4(pc)
+    0x0697, WILD, WILD,      // addil #number, (a7)
+    0x4e75                   // rts
+};
+
+
+// patterns for GCC
 static SWord GccCallMain[] =
 {
     0x3F04,                                       // movew d4, -(a7)
@@ -392,6 +450,7 @@ static SWord GccCallMain[] =
     0x3F06,                                       // movew d6, -(a7)
     0x6100, WILD
 };                                                // bsr PilotMain
+
 
 /**
  * Find a byte pattern corresponding to \p patt;
@@ -410,30 +469,28 @@ const SWord *findPattern(const SWord *start, int size, const SWord *patt, int pa
         return nullptr; // no pattern to find
     }
 
-    const SWord *last = start + size;
+    int startOffset = 0;
 
-    while (start + pattSize <= last) {
+    while (startOffset + pattSize <= size) {
         bool allMatched = true;
         for (int i = 0; i < pattSize; i++) {
-            const SWord curr = patt[i];
-            if (curr == WILD) {
+            if (patt[i] == WILD) {
                 continue;
             }
 
-            const SWord val  = Util::readWord(start + i, true);
-            if (curr != val) {
-                // Mismatch
+            const SWord curr = Util::readWord(start + startOffset + i, true);
+            if (patt[i] != curr) {
+                // Mismatch, try next pattern
                 allMatched = false;
                 break;
             }
         }
 
         if (allMatched) {
-            // All parts of the pattern matched
-            return start;
+            return start + startOffset;
         }
 
-        start++;
+        startOffset++;
     }
 
     // Each start position failed
@@ -456,12 +513,13 @@ Address PalmBinaryLoader::getMainEntryPoint()
     int      delta   = (psect->getHostAddr() - psect->getSourceAddr()).value();
 
     // First try the CW first jump pattern
-    const SWord *res = findPattern(startCode, 1, CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord));
+    const SWord *res = findPattern(startCode, sizeof(CWFirstJump) / sizeof(SWord), CWFirstJump, sizeof(CWFirstJump) / sizeof(SWord));
 
     if (res) {
         // We have the code warrior first jump. Get the addil operand
-        const int addilOp      = Util::readDWord((startCode + 5), true);
-        SWord     *startupCode = reinterpret_cast<SWord *>((HostAddress(startCode) + 10 + addilOp).value());
+        const int addilOp    = static_cast<int>(Util::readDWord((startCode + 5), true));
+        SWord   *startupCode = reinterpret_cast<SWord *>((HostAddress(startCode) + 10 + addilOp).value());
+
         // Now check the next 60 SWords for the call to PilotMain
         res = findPattern(startupCode, 60, CWCallMain, sizeof(CWCallMain) / sizeof(SWord));
 

@@ -20,7 +20,6 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/loader/IFileLoader.h"
 
 #include <QThread>
 
@@ -28,16 +27,19 @@
 Decompiler::Decompiler()
     : QObject()
 {
-    // create empty project to initialize all relevant data
-    Boomerang::get()->getOrCreateProject();
     Boomerang::get()->addWatcher(this);
+}
+
+
+Decompiler::~Decompiler()
+{
 }
 
 
 void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 {
     m_userEntrypoints.push_back(entryAddr);
-    m_fe->addSymbol(entryAddr, name);
+    m_project.getProg()->getFrontEnd()->addSymbol(entryAddr, name);
 }
 
 
@@ -57,27 +59,13 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
     Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
     emit loadingStarted();
 
-    IProject *project = Boomerang::get()->getOrCreateProject();
-    bool ok = project->loadBinaryFile(inputFile);
+    bool ok = m_project.loadBinaryFile(inputFile);
     if (!ok) {
         emit machineTypeChanged(QString("Unavailable: Load Failed!"));
         return;
     }
 
-    m_prog = project->getProg();
-
-    IFileLoader *loader = Boomerang::get()->getOrCreateProject()->getBestLoader(inputFile);
-    m_fe    = IFrontEnd::instantiate(loader, m_prog);
-
-    if (m_fe == nullptr) {
-        emit machineTypeChanged(QString("Unavailable: Load Failed!"));
-        return;
-    }
-
-    m_prog->setFrontEnd(m_fe);
-    m_fe->readLibraryCatalog();
-
-    switch (m_prog->getMachine())
+    switch (m_project.getLoadedBinaryFile()->getMachine())
     {
     case Machine::PENTIUM:
         emit machineTypeChanged("pentium");
@@ -117,14 +105,15 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         break;
     }
 
-    std::vector<Address> entrypoints = m_fe->getEntryPoints();
+    IFrontEnd *fe = IFrontEnd::instantiate(m_project.getLoadedBinaryFile(), m_project.getProg());
+    std::vector<Address> entrypoints = fe->getEntryPoints();
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);
-        emit entryPointAdded(entryPoint, m_prog->getSymbolNameByAddress(entryPoint));
+        emit entryPointAdded(entryPoint, m_project.getProg()->getSymbolNameByAddress(entryPoint));
     }
 
-    for (const BinarySection *section : *m_binaryFile->getImage()) {
+    for (const BinarySection *section : *m_project.getLoadedBinaryFile()->getImage()) {
         emit sectionAdded(section->getName(), section->getSourceAddr(),
                         section->getSourceAddr() + section->getSize());
     }
@@ -137,34 +126,15 @@ void Decompiler::decode()
 {
     emit decodingStarted();
 
-    LOG_MSG("Decoding program %1...", m_prog->getName());
+    LOG_MSG("Decoding program %1...", m_project.getProg()->getName());
 
-    bool    gotMain;
-    Address mainAddr = m_fe->getMainEntryPoint(gotMain);
-
-    if (gotMain) {
-        m_prog->addEntryPoint(mainAddr);
-    }
-
-    for (Address entryAddr : m_userEntrypoints) {
-        if (entryAddr == mainAddr) {
-            m_fe->decode(m_prog, true, nullptr);
-            break;
-        }
-    }
-
-    for (Address entryAddr : m_userEntrypoints) {
-        m_prog->decodeEntryPoint(entryAddr);
-    }
-
-    if (SETTING(decodeChildren)) {
-        // decode anything undecoded
-        m_fe->decode(m_prog, Address::INVALID);
+    bool ok = m_project.decodeBinaryFile();
+    if (!ok) {
+        emit machineTypeChanged(QString("Unavailable: Decode Failed!"));
+        return;
     }
 
     LOG_MSG("Decoding finished!");
-    m_prog->finishDecode();
-
     emit decodeCompleted();
 }
 
@@ -174,7 +144,7 @@ void Decompiler::decompile()
     emit decompilingStarted();
 
     LOG_MSG("Starting decompile...");
-    m_prog->decompile();
+    m_project.decompileBinaryFile();
     LOG_MSG("Decompile finished!");
 
     emit decompileCompleted();
@@ -196,15 +166,15 @@ void Decompiler::generateCode()
     emit generatingCodeStarted();
 
     LOG_MSG("Generating code...");
-    Boomerang::get()->getCodeGenerator()->generateCode(m_prog);
+    m_project.generateCode();
 
-    Module *root = m_prog->getRootModule();
+    Module *root = m_project.getProg()->getRootModule();
 
     if (root) {
         moduleAndChildrenUpdated(root);
     }
 
-    for (const auto& module : m_prog->getModuleList()) {
+    for (const auto& module : m_project.getProg()->getModuleList()) {
         for (Function *p : *module) {
             if (p->isLib()) {
                 continue;
@@ -279,7 +249,7 @@ void Decompiler::alertUpdateSignature(Function *p)
 
 bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
 {
-    Function *p = m_prog->findFunction(name);
+    Function *p = m_project.getProg()->findFunction(name);
 
     if (p->isLib()) {
         return false;
@@ -315,7 +285,7 @@ void Decompiler::stopWaiting()
 
 QString Decompiler::getSigFilePath(const QString& name)
 {
-    Function *function = m_prog->findFunction(name);
+    Function *function = m_project.getProg()->findFunction(name);
 
     if (!function || !function->isLib() || !function->getSignature()) {
         return "";
@@ -327,23 +297,23 @@ QString Decompiler::getSigFilePath(const QString& name)
 
 QString Decompiler::getClusterFile(const QString& name)
 {
-    Module *module = m_prog->findModule(name);
+    Module *module = m_project.getProg()->findModule(name);
     return module ? module->getOutPath("c") : "";
 }
 
 
 void Decompiler::rereadLibSignatures()
 {
-    m_prog->updateLibrarySignatures();
+    m_project.getProg()->updateLibrarySignatures();
 }
 
 
 void Decompiler::renameProc(const QString& oldName, const QString& newName)
 {
-    Function *p = m_prog->findFunction(oldName);
+    Function *proc = m_project.getProg()->findFunction(oldName);
 
-    if (p) {
-        p->setName(newName);
+    if (proc) {
+        proc->setName(newName);
     }
 }
 

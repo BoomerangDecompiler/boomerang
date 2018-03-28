@@ -52,6 +52,13 @@ void DataFlowTest::initTestCase()
 }
 
 
+void DataFlowTest::cleanupTestCase()
+{
+    NamedType::clearNamedTypes();
+    Boomerang::destroy();
+}
+
+
 void DataFlowTest::testCalculateDominators()
 {
     // Appel, Figure 19.8
@@ -122,26 +129,19 @@ void DataFlowTest::testCalculateDominators()
 
 void DataFlowTest::testPlacePhi()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != nullptr);
+    Project project;
+    QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(project.decodeBinaryFile());
 
-    Prog      prog(FRONTIER_PENTIUM, project.getLoadedBinaryFile());
-    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
+    Prog *prog = project.getProg();
     Type::clearNamedTypes();
-    prog.setFrontEnd(fe);
-    fe->decode(&prog);
 
-    const auto& m = *prog.getModuleList().begin();
-    QVERIFY(m != nullptr);
-    QVERIFY(m->size() > 0);
+    const auto& module = *prog->getModuleList().begin();
+    QVERIFY(module != nullptr);
+    QVERIFY(module->size() > 0);
 
-    UserProc *mainProc = static_cast<UserProc *>(*m->begin());
+    UserProc *mainProc = static_cast<UserProc *>(*module->begin());
     QCOMPARE(mainProc->getName(), QString("main"));
-
-    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog.finishDecode();
 
     DataFlow *df = mainProc->getDataFlow();
     df->calculateDominators();
@@ -166,26 +166,19 @@ void DataFlowTest::testPlacePhi()
 
 void DataFlowTest::testPlacePhi2()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(IFTHEN_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(IFTHEN_PENTIUM);
+    Project project;
+    QVERIFY(project.loadBinaryFile(IFTHEN_PENTIUM));
+    QVERIFY(project.decodeBinaryFile());
 
-    QVERIFY(loader != nullptr);
-    Prog      prog(IFTHEN_PENTIUM, project.getLoadedBinaryFile());
+    Prog *prog = project.getProg();
     Type::clearNamedTypes();
-    IFrontEnd *fe = new PentiumFrontEnd(loader, &prog);
-    prog.setFrontEnd(fe);
-    fe->decode(&prog);
 
-    const Module *m = (*prog.getModuleList().begin()).get();
+    const Module *m = (*prog->getModuleList().begin()).get();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
     Function *mainFunction = *m->begin();
     UserProc *proc = static_cast<UserProc *>(mainFunction);
-
-    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog.finishDecode();
 
     DataFlow *df = proc->getDataFlow();
     df->calculateDominators();
@@ -206,19 +199,15 @@ void DataFlowTest::testPlacePhi2()
 
 void DataFlowTest::testRenameVars()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
+    QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
 
-    project.loadBinaryFile(FRONTIER_PENTIUM);
-    IFileLoader *loader = project.getBestLoader(FRONTIER_PENTIUM);
-    QVERIFY(loader != nullptr);
-
-    Prog prog("FRONTIER_PENTIUM", project.getLoadedBinaryFile());
+    Prog *prog = project.getProg();
+    IFrontEnd *fe  = prog->getFrontEnd();
     Type::clearNamedTypes();
-    IFrontEnd *fe  = new PentiumFrontEnd(loader, &prog);
-    prog.setFrontEnd(fe);
-    fe->decode(&prog);
+    fe->decode();
 
-    const auto& m = *prog.getModuleList().begin();
+    const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);
     QVERIFY(m->size() > 0);
 
@@ -226,7 +215,7 @@ void DataFlowTest::testRenameVars()
     DataFlow *df    = proc->getDataFlow();
 
     // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog.finishDecode();
+    prog->finishDecode();
 
     df->calculateDominators();
     QVERIFY(df->placePhiFunctions());

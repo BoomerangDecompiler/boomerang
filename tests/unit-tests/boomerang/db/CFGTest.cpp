@@ -35,13 +35,6 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 }
 
 
-void CFGTest::initTestCase()
-{
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-}
-
-
 void CFGTest::testHasBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);

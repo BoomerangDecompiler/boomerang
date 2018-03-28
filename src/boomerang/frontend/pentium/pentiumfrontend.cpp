@@ -28,7 +28,6 @@
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/frontend/pentium/pentiumdecoder.h"
-#include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/FuncType.h"
@@ -472,8 +471,8 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 }
 
 
-PentiumFrontEnd::PentiumFrontEnd(IFileLoader *loader, Prog *prog)
-    : IFrontEnd(loader, prog)
+PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
+    : IFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new PentiumDecoder(prog));
 }
@@ -486,7 +485,7 @@ PentiumFrontEnd::~PentiumFrontEnd()
 
 Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-    Address start = m_fileLoader->getMainEntryPoint();
+    Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {
         gotMain = true;
@@ -494,7 +493,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     }
 
     gotMain = false;
-    start   = m_fileLoader->getEntryPoint();
+    start   = m_binaryFile->getEntryPoint();
 
     if (start.isZero() || (start == Address::INVALID)) {
         return Address::INVALID;

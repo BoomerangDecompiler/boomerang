@@ -18,9 +18,6 @@ class IntervalMapTest : public QObject
     Q_OBJECT
 
 private slots:
-    /// Set up anything needed before all tests
-    void initTestCase();
-
     void testIsEmpty();
     void testClear();
     void testInsert();

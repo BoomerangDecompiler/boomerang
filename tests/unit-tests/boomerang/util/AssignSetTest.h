@@ -19,9 +19,6 @@ public:
     Q_OBJECT
 
 private slots:
-    /// Set up anything needed before all tests
-    void initTestCase();
-
     void testClear();
     void testEmpty();
     void testSize();

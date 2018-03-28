@@ -11,30 +11,10 @@
 
 
 #include "boomerang-cli/Console.h"
+#include "boomerang/core/Project.h"
 
 #include <QObject>
 #include <QTimer>
-#include <QThread>
-
-
-class DecompilationThread : public QThread
-{
-    Q_OBJECT
-
-public:
-    void run() override;
-
-    void setPathToBinary(const QString value)
-    {
-        m_pathToBinary = value;
-    }
-
-    int resCode() { return m_result; }
-
-private:
-    QString m_pathToBinary;
-    int m_result = 0;
-};
 
 
 class CommandlineDriver : public QObject
@@ -56,12 +36,32 @@ public:
      */
     int interactiveMain();
 
+private:
+    /**
+     * Loads the executable file and decodes it.
+     * \param fname The name of the file to load.
+     * \param pname How the Prog will be named.
+     */
+    bool loadAndDecode(const QString& fname, const QString& pname);
+
+    /**
+     * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
+     * After decompilation the elapsed time is printed to LOG_STREAM().
+     *
+     * \param fname The name of the file to load.
+     * \param pname The name that will be given to the Proc.
+     *
+     * \return Zero on success, nonzero on faillure.
+     */
+    int decompile(const QString& fname, const QString& pname);
+
 public slots:
     void onCompilationTimeout();
 
 private:
-    Console m_console;
-    DecompilationThread m_thread;
+    std::unique_ptr<Project> m_project;
+    std::unique_ptr<Console> m_console;
     QTimer m_kill_timer;
     int minsToStopAfter = 0;
+    QString m_pathToBinary;
 };

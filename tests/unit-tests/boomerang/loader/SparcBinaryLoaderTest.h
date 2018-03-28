@@ -19,6 +19,7 @@ class SparcBinaryLoaderTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     /// Test loading the sparc hello world program
     void testSparcLoad();

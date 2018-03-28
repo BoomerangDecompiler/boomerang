@@ -10,7 +10,6 @@
 #include "DOS4GWBinaryLoader.h"
 
 
-#include "boomerang/core/IBoomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"

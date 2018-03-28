@@ -21,6 +21,7 @@ class DataFlowTest : public QObject
 
 private slots:
     void initTestCase();
+    void cleanupTestCase();
 
     /// Test calculating (semi-)dominators and the Dominance Frontier
     void testCalculateDominators();

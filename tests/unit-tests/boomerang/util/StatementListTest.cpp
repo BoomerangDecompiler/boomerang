@@ -17,11 +17,6 @@
 #include "boomerang/util/StatementSet.h"
 
 
-void StatementListTest::initTestCase()
-{
-}
-
-
 void StatementListTest::testEmpty()
 {
     StatementList list;

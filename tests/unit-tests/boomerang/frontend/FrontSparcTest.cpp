@@ -37,21 +37,19 @@ void FrontSparcTest::initTestCase()
 }
 
 
+void FrontSparcTest::cleanupTestCase()
+{
+    Boomerang::destroy();
+}
+
+
 void FrontSparcTest::test1()
 {
-    QString     expected;
-    QString     actual;
-    QTextStream strm(&actual);
-
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    project.loadBinaryFile(HELLO_SPARC);
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(loader != nullptr);
-    QVERIFY(loader->getMachine() == Machine::SPARC);
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
     Prog      *prog = project.getProg();
-    IFrontEnd *fe  = new SparcFrontEnd(loader, prog);
-    prog->setFrontEnd(fe);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     bool    gotMain;
     Address addr = fe->getMainEntryPoint(gotMain);
@@ -59,6 +57,11 @@ void FrontSparcTest::test1()
 
     // Decode first instruction
     DecodeResult inst;
+    QString     expected;
+    QString     actual;
+    QTextStream strm(&actual);
+
+
     fe->decodeInstruction(addr, inst);
     QVERIFY(inst.rtl != nullptr);
     inst.rtl->print(strm);
@@ -110,21 +113,17 @@ void FrontSparcTest::test1()
 
 void FrontSparcTest::test2()
 {
+    Project project;
+    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
+
     DecodeResult inst;
     QString      expected;
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
-
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(loader != nullptr);
 
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
-    prog->setFrontEnd(fe);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     fe->decodeInstruction(Address(0x00010690), inst);
     inst.rtl->print(strm);
@@ -158,17 +157,11 @@ void FrontSparcTest::test2()
 
 void FrontSparcTest::test3()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(HELLO_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(HELLO_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
-    prog->setFrontEnd(fe);
-
+    IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
     QString      expected;
@@ -228,16 +221,11 @@ void FrontSparcTest::testBranch()
     QString      actual;
     QTextStream  strm(&actual);
 
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(BRANCH_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
-    prog->setFrontEnd(fe);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     // bne
     fe->decodeInstruction(Address(0x00010ab0), inst);
@@ -268,17 +256,11 @@ void FrontSparcTest::testBranch()
 
 void FrontSparcTest::testDelaySlot()
 {
-    IProject& project = *Boomerang::get()->getOrCreateProject();
+    Project project;
     QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
 
-    IFileLoader *loader = project.getBestLoader(BRANCH_SPARC);
-    QVERIFY(loader != nullptr);
-
     Prog *prog = project.getProg();
-    QVERIFY(loader->getMachine() == Machine::SPARC);
-
-    IFrontEnd *fe = new SparcFrontEnd(loader, prog);
-    prog->setFrontEnd(fe);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
     Type::clearNamedTypes();
@@ -423,9 +405,6 @@ void FrontSparcTest::testDelaySlot()
                "0x00010ac8    0 BRANCH 0x00010ad8, condition equals\n"
                "High level: %flags\n";
     QCOMPARE(actual, expected);
-
-    delete prog;
 }
-
 
 QTEST_MAIN(FrontSparcTest)
