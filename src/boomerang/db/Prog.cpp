@@ -24,7 +24,7 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"

@@ -11,7 +11,7 @@
 
 
 #include "boomerang/util/Address.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 
 #include <QString>
 

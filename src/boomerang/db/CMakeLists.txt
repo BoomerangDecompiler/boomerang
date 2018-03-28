@@ -22,7 +22,6 @@ list(APPEND boomerang-db-sources
     db/Prog
     db/Register
     db/RTL
-    db/Signature
     db/Table
     db/UseCollector
 
@@ -49,6 +48,8 @@ list(APPEND boomerang-db-sources
     db/proc/LibProc
     db/proc/Proc
     db/proc/UserProc
+
+    db/signature/Signature
 
     db/ssl/RTLInstDict
     db/ssl/sslparser

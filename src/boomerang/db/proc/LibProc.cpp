@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/Module.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/Frontend.h"
 
 

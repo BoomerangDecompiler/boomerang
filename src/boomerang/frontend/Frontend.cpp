@@ -20,7 +20,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/binary/BinarySection.h"

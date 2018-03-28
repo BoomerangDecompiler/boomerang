@@ -18,7 +18,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/UseCollector.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"

@@ -12,7 +12,7 @@
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/Assign.h"

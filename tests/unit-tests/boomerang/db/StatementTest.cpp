@@ -26,7 +26,7 @@
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"

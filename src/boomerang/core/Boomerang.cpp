@@ -17,7 +17,7 @@
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/util/Log.h"
