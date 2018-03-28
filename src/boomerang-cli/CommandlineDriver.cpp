@@ -19,23 +19,11 @@
 #include <iostream>
 
 
-DecompilationThread::DecompilationThread(Project *project)
-    : m_project(project)
-{
-}
-
-
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
-    , m_console(&m_project)
-    , m_thread(&m_project)
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
-    QCoreApplication::instance()->connect(&m_thread, &DecompilationThread::finished,
-                                          []() {
-        QCoreApplication::instance()->quit();
-    });
 }
 
 
@@ -126,8 +114,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         help();
         return 1;
     }
-
-    Boomerang& boom(*Boomerang::get());
 
     for (int i = 1; i < args.size(); ++i) {
         QString arg = args[i];
@@ -225,7 +211,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     o_path += '/'; // Maintain the convention of a trailing slash
                 }
 
-                boom.getSettings()->setOutputDirectory(o_path);
+                Boomerang::get()->getSettings()->setOutputDirectory(o_path);
                 break;
             }
 
@@ -266,10 +252,10 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_MSG("Working directory now '%1'", wd.path());
                 }
 
-                boom.getSettings()->setWorkingDirectory(wd.path());
-                boom.getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
-                boom.getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
-                boom.getSettings()->setOutputDirectory(wd.path() + "/./output/");
+                Boomerang::get()->getSettings()->setWorkingDirectory(wd.path());
+                Boomerang::get()->getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
+                Boomerang::get()->getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
+                Boomerang::get()->getSettings()->setOutputDirectory(wd.path() + "/./output/");
             }
             break;
 
@@ -443,14 +429,17 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         m_kill_timer.start(1000 * 60 * minsToStopAfter);
     }
 
-    m_thread.setPathToBinary(args.last());
+    m_pathToBinary = args.last();
     return 0;
 }
 
 
 int CommandlineDriver::interactiveMain()
 {
-    CommandStatus status = m_console.replayFile(SETTING(replayFile));
+    m_project.reset(new Project);
+    m_console.reset(new Console(m_project.get()));
+
+    CommandStatus status = m_console->replayFile(SETTING(replayFile));
 
     if (status == CommandStatus::ExitProgram) {
         return 2;
@@ -469,7 +458,7 @@ int CommandlineDriver::interactiveMain()
         }
 
         line   = strm.readLine();
-        status = m_console.handleCommand(line);
+        status = m_console->handleCommand(line);
 
         if (status == CommandStatus::ExitProgram) {
             return 2;
@@ -482,9 +471,12 @@ int CommandlineDriver::decompile()
 {
     Log::getOrCreateLog().addDefaultLogSinks();
 
-    m_thread.start();
-    m_thread.wait(); // wait indefinitely
-    return m_thread.resCode();
+    QDir       wd = Boomerang::get()->getSettings()->getWorkingDirectory();
+    QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
+
+    m_project.reset(new Project());
+
+    return decompile(inf.absoluteFilePath(), inf.baseName());
 }
 
 
@@ -495,21 +487,10 @@ void CommandlineDriver::onCompilationTimeout()
 }
 
 
-void DecompilationThread::run()
+bool CommandlineDriver::loadAndDecode(const QString& fname, const QString& pname)
 {
-    Boomerang& boom(*Boomerang::get());
-    QDir       wd = boom.getSettings()->getWorkingDirectory();
-    QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
-
-    m_result = decompile(inf.absoluteFilePath(), inf.baseName());
-}
-
-
-bool DecompilationThread::loadAndDecode(const QString& fname, const QString& pname)
-{
-    LOG_MSG("Loading...");
-
     assert(m_project);
+
     const bool ok = m_project->loadBinaryFile(fname);
     if (!ok) {
         // load failed
@@ -524,7 +505,7 @@ bool DecompilationThread::loadAndDecode(const QString& fname, const QString& pna
 }
 
 
-int DecompilationThread::decompile(const QString& fname, const QString& pname)
+int CommandlineDriver::decompile(const QString& fname, const QString& pname)
 {
     time_t start;
     time(&start);
