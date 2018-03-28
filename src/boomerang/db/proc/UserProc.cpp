@@ -158,7 +158,7 @@ void UserProc::setParamType(const char *name, SharedType ty)
 
 void UserProc::setParamType(int idx, SharedType ty)
 {
-    auto it = std::next(m_parameters.begin(), idx);
+    auto it = (idx  < m_parameters.size()) ? std::next(m_parameters.begin(), idx) : m_parameters.end();
 
     if (it != m_parameters.end()) {
         Assignment *a = static_cast<Assignment *>(*it);
