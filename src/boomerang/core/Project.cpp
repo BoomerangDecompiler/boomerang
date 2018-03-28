@@ -70,14 +70,14 @@ bool Project::loadBinaryFile(const QString& filePath)
 
 bool Project::loadSaveFile(const QString& /*filePath*/)
 {
-    LOG_FATAL("Loading save files is not implemented.");
+    LOG_ERROR("Loading save files is not implemented.");
     return false;
 }
 
 
 bool Project::writeSaveFile(const QString& /*filePath*/)
 {
-    LOG_FATAL("Saving save files is not implemented.");
+    LOG_ERROR("Saving save files is not implemented.");
     return false;
 }
 

@@ -50,13 +50,15 @@ void ProjectTest::testLoadBinaryFile()
 
 void ProjectTest::testLoadSaveFile()
 {
-    QSKIP("Not implemented.");
+    Project project;
+    QVERIFY(!project.loadSaveFile("invalid"));
 }
 
 
 void ProjectTest::testWriteSaveFile()
 {
-    QSKIP("Not implemented.");
+    Project project;
+    QVERIFY(!project.writeSaveFile("invalid"));
 }
 
 
