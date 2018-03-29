@@ -282,7 +282,7 @@ void Module::addWin32DbgInfo(Function *function)
         SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
 
         if (!rtype->isVoid()) {
-            function->getSignature()->addReturn(rtype, Location::regOf(24));
+            function->getSignature()->addReturn(Location::regOf(24), rtype);
         }
 
         // find params and locals
@@ -292,7 +292,7 @@ void Module::addWin32DbgInfo(Function *function)
         dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, function);
 
         LOG_VERBOSE("Retrieved Win32 debugging information:");
-        function->getSignature()->printToLog();
+        LOG_VERBOSE("%1", function->getSignature()->prints());
     }
 #endif
 }
