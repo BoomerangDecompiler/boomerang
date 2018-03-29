@@ -388,10 +388,10 @@ int Signature::findParam(const QString& name) const
 }
 
 
-int Signature::findReturn(SharedExp e) const
+int Signature::findReturn(SharedConstExp exp) const
 {
     for (unsigned i = 0; i < getNumReturns(); i++) {
-        if (*m_returns[i]->getExp() == *e) {
+        if (*m_returns[i]->getExp() == *exp) {
             return static_cast<int>(i);
         }
     }
@@ -413,9 +413,37 @@ void Signature::addReturn(SharedExp exp)
 }
 
 
+SharedConstExp Signature::getReturnExp(int n) const
+{
+    assert(Util::inRange(n, 0, static_cast<int>(m_returns.size())));
+    return m_returns[n]->getExp();
+}
+
+
+SharedExp Signature::getReturnExp(int n)
+{
+    assert(Util::inRange(n, 0, static_cast<int>(m_returns.size())));
+    return m_returns[n]->getExp();
+}
+
+
 SharedExp Signature::getArgumentExp(int n) const
 {
     return getParamExp(n);
+}
+
+
+SharedConstType Signature::getReturnType(int n) const
+{
+    assert(Util::inRange(n, 0, static_cast<int>(m_returns.size())));
+    return m_returns[n]->getType();
+}
+
+
+SharedType Signature::getReturnType(int n)
+{
+    assert(Util::inRange(n, 0, static_cast<int>(m_returns.size())));
+    return m_returns[n]->getType();
 }
 
 

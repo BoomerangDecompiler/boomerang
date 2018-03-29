@@ -74,20 +74,30 @@ public:
     /// If \p forced is true, don't change the signature by analysis code.
     void setForced(bool forced) { m_forced = forced; }
 
-    /// Add a return to this signature.
-    /// \param exp The value of the expression thar is returned.
+public:
+    /**
+     * Add a return to this signature. If \p exp already is a return expression,
+     * meet \p type with the type of the existing return.
+     *
+     * \param exp The value of the expression that is returned (e.g. r24)
+     * \param type The type of the return expression.
+     */
     virtual void addReturn(SharedType type, SharedExp exp = nullptr);
 
+    SharedConstExp getReturnExp(int n) const;
+    SharedExp getReturnExp(int n);
     /// \deprecated Deprecated. Use the above version.
     virtual void addReturn(SharedExp e);
 
-    virtual void addReturn(std::shared_ptr<Return> ret) { m_returns.emplace_back(ret); }
+    SharedConstType getReturnType(int n) const;
+    SharedType getReturnType(int n);
 
     virtual SharedExp getReturnExp(size_t n) const { return m_returns[n]->getExp(); }
     virtual SharedType getReturnType(size_t n) const { return m_returns[n]->getType(); }
     virtual size_t getNumReturns() const { return m_returns.size(); }
 
-    int findReturn(SharedExp e) const;
+    /// \returns the index of the return expression \p exp, or -1 if not found.
+    int findReturn(SharedConstExp exp) const;
 
 public:
     // add a new parameter to this signature
