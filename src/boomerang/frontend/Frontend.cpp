@@ -492,9 +492,9 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     Platform plat = getType();
     p->yyparse(plat, cc);
 
-    for (auto& elem : p->signatures) {
-        m_librarySignatures[elem->getName()] = elem;
-        elem->setSigFile(signatureFile);
+    for (auto& signature : p->signatures) {
+        m_librarySignatures[signature->getName()] = signature;
+        signature->setSigFilePath(signatureFile);
     }
 }
 

@@ -367,7 +367,7 @@ int Signature::findParam(const SharedExp& e) const
 }
 
 
-void Signature::renameParam(const QString& oldName, const char *newName)
+void Signature::renameParam(const QString& oldName, const QString& newName)
 {
     for (unsigned i = 0; i < getNumParams(); i++) {
         if (m_params[i]->getName() == oldName) {
@@ -566,16 +566,6 @@ char *Signature::prints() const
 }
 
 
-void Signature::printToLog() const
-{
-    QString     tgt;
-    QTextStream os(&tgt);
-
-    print(os);
-    LOG_MSG(tgt);
-}
-
-
 SharedExp Signature::getFirstArgLoc(Prog *prog) const
 {
     Machine mach = prog->getMachine();
@@ -606,27 +596,6 @@ SharedExp Signature::getFirstArgLoc(Prog *prog) const
 
     default:
         LOG_FATAL("Machine %1 not handled", static_cast<int>(mach));
-    }
-
-    return nullptr;
-}
-
-
-/*static*/ SharedExp Signature::getReturnExp2(BinaryFile *binaryFile)
-{
-    switch (binaryFile->getMachine())
-    {
-    case Machine::SPARC:
-        return Location::regOf(8);
-
-    case Machine::PENTIUM:
-        return Location::regOf(24);
-
-    case Machine::ST20:
-        return Location::regOf(0);
-
-    default:
-        LOG_WARN("Machine not handled");
     }
 
     return nullptr;
@@ -865,7 +834,7 @@ bool Signature::argumentCompare(const Assignment& a, const Assignment& b) const
 }
 
 
-SharedType Signature::getTypeFor(SharedExp e) const
+SharedType Signature::getTypeForReturnExp(SharedExp e) const
 {
     size_t n = m_returns.size();
 

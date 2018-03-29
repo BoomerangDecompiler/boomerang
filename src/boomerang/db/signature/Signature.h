@@ -56,6 +56,14 @@ public:
     /// clone this signature
     virtual std::shared_ptr<Signature> clone() const;
 
+    /// get/set the name
+    virtual QString getName() const;
+    virtual void setName(const QString& name);
+
+    /// get/set the signature file
+    const QString& getSigFilePath() const { return m_sigFile; }
+    void setSigFilePath(const QString& name) { m_sigFile = name; }
+
     bool isUnknown() const { return m_unknown; }
 
     /// \returns true if the signature cannot be changed by analysis code.
@@ -83,16 +91,10 @@ public:
 
     void setRetType(SharedType t) { m_rettype = t; }
 
-    SharedType getTypeFor(SharedExp e) const;
+    /// \returns the return type of the return corresponding to \p exp
+    SharedType getTypeForReturnExp(SharedExp exp) const;
 
-    // get/set the name
-    virtual QString getName() const;
-    virtual void setName(const QString& name);
-
-    // get/set the signature file
-    const QString& getSigFilePath() const { return m_sigFile; }
-    void setSigFile(const QString& name) { m_sigFile = name; }
-
+public:
     // add a new parameter to this signature
     virtual void addParameter(const char *name = nullptr);
     virtual void addParameter(SharedType type, const QString& name = QString::null, const SharedExp& e = nullptr,
@@ -126,20 +128,17 @@ public:
     virtual int findParam(const SharedExp& e) const;
     virtual int findParam(const QString& name) const;
 
+    void renameParam(const QString& oldName, const QString& newName);
+
     // accessor for argument expressions
     virtual SharedExp getArgumentExp(int n) const;
 
     void setHasEllipsis(bool yesno)  { m_ellipsis = yesno; }
     virtual bool hasEllipsis() const { return m_ellipsis; }
 
-    void renameParam(const QString& oldName, const char *newName);
 
     /// any signature can be promoted to a higher level signature, if available
     virtual std::shared_ptr<Signature> promote(UserProc *p);
-
-    void print(QTextStream& out, bool = false) const;
-    char *prints() const; // For debugging
-    void printToLog() const;
 
     // Special for Mike: find the location that conventionally holds the first outgoing (actual) parameter
     // MVE: Use the below now
@@ -179,11 +178,6 @@ public:
     // Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
     bool isOpCompatStackLocal(OPER op) const;
 
-    /// \todo remove quick and dirty hack
-    /// A bit of a cludge. Problem is that we can't call the polymorphic getReturnExp() until signature promotion has
-    /// happened. For the switch logic, that happens way too late. So for now, we have this cludge.
-    /// This is very very hacky! (trent)
-    static SharedExp getReturnExp2(BinaryFile *binaryFile);
     static StatementList& getStdRetStmt(Prog *prog);
 
     // get anything that can be proven as a result of the signature
@@ -225,6 +219,10 @@ public:
     virtual bool returnCompare(const Assignment& a, const Assignment& b) const;
 
     bool isNoReturn() const { return false; }
+
+public:
+    void print(QTextStream& out, bool = false) const;
+    char *prints() const; // For debugging
 
 protected:
     QString m_name;                                    ///< name of procedure
