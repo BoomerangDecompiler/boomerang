@@ -34,7 +34,6 @@ public:
     virtual SharedExp getArgumentExp(int n) const override;
     virtual void addParameter(SharedType type, const QString& name = QString::null,
                               const SharedExp& e = nullptr, const QString& boundMax = "") override;
-    virtual SharedExp getStackWildcard() const override;
 
     virtual int getStackRegister() const override { return 29; }
     virtual SharedExp getProven(SharedExp left) const override;

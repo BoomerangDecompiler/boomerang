@@ -54,7 +54,6 @@ std::shared_ptr<Signature> SparcSignature::clone() const
     Util::clone(m_returns, n->m_returns);
 
     n->m_ellipsis      = m_ellipsis;
-    n->m_rettype       = m_rettype->clone();
     n->m_preferredName = m_preferredName;
 
     if (m_preferredReturn) {
@@ -118,12 +117,6 @@ std::shared_ptr<Signature> SparcSignature::promote(UserProc * /*p*/)
 {
     // no promotions from here up, obvious example would be name mangling
     return shared_from_this();
-}
-
-
-SharedExp SparcSignature::getStackWildcard() const
-{
-    return Location::memOf(Binary::get(opPlus, Location::regOf(14), Terminal::get(opWild)));
 }
 
 

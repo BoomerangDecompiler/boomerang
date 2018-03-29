@@ -36,7 +36,6 @@ public:
     virtual SharedExp getArgumentExp(int n) const override;
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
-    virtual SharedExp getStackWildcard() const override;
 
     virtual int getStackRegister() const override { return 14; }
     virtual SharedExp getProven(SharedExp left) const override;

@@ -47,7 +47,6 @@ std::shared_ptr<Signature> PentiumSignature::clone() const
     // cloneVec(implicitParams, n->implicitParams);
     Util::clone(m_returns, n->m_returns);
     n->m_ellipsis      = m_ellipsis;
-    n->m_rettype       = m_rettype->clone();
     n->m_preferredName = m_preferredName;
 
     if (m_preferredReturn) {
@@ -164,13 +163,6 @@ std::shared_ptr<Signature> PentiumSignature::promote(UserProc * /*p*/)
 {
     // No promotions from here up, obvious idea would be c++ name mangling
     return shared_from_this();
-}
-
-
-SharedExp PentiumSignature::getStackWildcard() const
-{
-    // Note: m[esp + -8] is simplified to m[esp - 8] now
-    return Location::memOf(Binary::get(opMinus, Location::regOf(28), Terminal::get(opWild)));
 }
 
 

@@ -2817,11 +2817,6 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         }
     }
 
-    if (m_retStatement->getNumReturns() == 1) {
-        const Assign *a = static_cast<Assign *>(m_retStatement->getReturns().front());
-        m_signature->setRetType(a->getType());
-    }
-
     Boomerang::get()->alertDecompileDebugPoint(this, "after removing unused and redundant returns");
     return removedRets || removedParams;
 }

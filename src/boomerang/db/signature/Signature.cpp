@@ -92,8 +92,7 @@ QString Signature::getConventionName(CallConv cc)
 
 
 Signature::Signature(const QString& name)
-    : m_rettype(VoidType::get())
-    , m_ellipsis(false)
+    : m_ellipsis(false)
     , m_unknown(true)
     , m_forced(false)
     , m_preferredReturn(nullptr)
@@ -115,7 +114,6 @@ std::shared_ptr<Signature> Signature::clone() const
     Util::clone(m_returns, n->m_returns);
 
     n->m_ellipsis        = m_ellipsis;
-    n->m_rettype         = m_rettype->clone();
     n->m_preferredName   = m_preferredName;
     n->m_preferredReturn = m_preferredReturn ? m_preferredReturn->clone() : nullptr;
     n->m_preferredParams = m_preferredParams;
@@ -566,42 +564,6 @@ char *Signature::prints() const
 }
 
 
-SharedExp Signature::getFirstArgLoc(Prog *prog) const
-{
-    Machine mach = prog->getMachine();
-
-    switch (mach)
-    {
-    case Machine::SPARC:
-        {
-            CallingConvention::StdC::SparcSignature sig("");
-            return sig.getArgumentExp(0);
-        }
-
-    case Machine::PENTIUM:
-        {
-            // CallingConvention::StdC::PentiumSignature sig("");
-            // Exp* e = sig.getArgumentExp(0);
-            // For now, need to work around how the above appears to be the wrong thing!
-            SharedExp e = Location::memOf(Location::regOf(28));
-            return e;
-        }
-
-    case Machine::ST20:
-        {
-            CallingConvention::StdC::ST20Signature sig("");
-            return sig.getArgumentExp(0);
-            // return Location::regOf(0);
-        }
-
-    default:
-        LOG_FATAL("Machine %1 not handled", static_cast<int>(mach));
-    }
-
-    return nullptr;
-}
-
-
 void Signature::getABIDefines(Prog *prog, StatementList& defs)
 {
     if (defs.size() > 0) {
@@ -642,76 +604,6 @@ void Signature::getABIDefines(Prog *prog, StatementList& defs)
     default:
         break;
     }
-}
-
-
-SharedExp Signature::getEarlyParamExp(int n, Prog *prog) const
-{
-    switch (prog->getMachine())
-    {
-    case Machine::SPARC:
-        {
-            CallingConvention::StdC::SparcSignature temp("");
-            return temp.getParamExp(n);
-        }
-
-    case Machine::PENTIUM:
-        {
-            // Would we ever need Win32?
-            CallingConvention::StdC::PentiumSignature temp("");
-            return temp.getParamExp(n);
-        }
-
-    case Machine::ST20:
-        {
-            CallingConvention::StdC::ST20Signature temp("");
-            return temp.getParamExp(n);
-        }
-
-    default:
-        break;
-    }
-
-    assert(false); // Machine not handled
-    return nullptr;
-}
-
-
-StatementList& Signature::getStdRetStmt(Prog *prog)
-{
-    // pc := m[r[28]]
-    static Assign pent1ret(Terminal::get(opPC), Location::memOf(Location::regOf(28)));
-    // r[28] := r[28] + 4
-    static Assign pent2ret(Location::regOf(28), Binary::get(opPlus, Location::regOf(28), Const::get(4)));
-    static Assign st20_1ret(Terminal::get(opPC), Location::memOf(Location::regOf(3)));
-    static Assign st20_2ret(Location::regOf(3), Binary::get(opPlus, Location::regOf(3), Const::get(16)));
-
-    switch (prog->getMachine())
-    {
-    case Machine::SPARC:
-        break; // No adjustment to stack pointer required
-
-    case Machine::PENTIUM:
-        {
-            StatementList *sl = new StatementList;
-            sl->append(&pent1ret);
-            sl->append(&pent2ret);
-            return *sl;
-        }
-
-    case Machine::ST20:
-        {
-            StatementList *sl = new StatementList;
-            sl->append(&st20_1ret);
-            sl->append(&st20_2ret);
-            return *sl;
-        }
-
-    default:
-        break;
-    }
-
-    return *new StatementList;
 }
 
 
@@ -831,18 +723,4 @@ bool Signature::returnCompare(const Assignment& a, const Assignment& b) const
 bool Signature::argumentCompare(const Assignment& a, const Assignment& b) const
 {
     return *a.getLeft() < *b.getLeft(); // Default: sort by expression only, no explicit ordering
-}
-
-
-SharedType Signature::getTypeForReturnExp(SharedExp e) const
-{
-    size_t n = m_returns.size();
-
-    for (size_t i = 0; i < n; ++i) {
-        if (*m_returns[i]->getExp() == *e) {
-            return m_returns[i]->getType();
-        }
-    }
-
-    return nullptr;
 }

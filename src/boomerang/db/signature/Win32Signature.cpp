@@ -60,7 +60,6 @@ std::shared_ptr<Signature> Win32Signature::clone() const
     Util::clone(m_returns, n->m_returns);
 
     n->m_ellipsis      = m_ellipsis;
-    n->m_rettype       = m_rettype->clone();
     n->m_preferredName = m_preferredName;
 
     if (m_preferredReturn) {
@@ -84,7 +83,6 @@ std::shared_ptr<Signature> Win32TcSignature::clone() const
     Util::clone(m_returns, n->m_returns);
 
     n->m_ellipsis      = m_ellipsis;
-    n->m_rettype       = m_rettype->clone();
     n->m_preferredName = m_preferredName;
 
     if (m_preferredReturn) {
@@ -210,13 +208,6 @@ std::shared_ptr<Signature> Win32Signature::promote(UserProc * /*p*/)
     // no promotions from win32 signature up, yet.
     // a possible thing to investigate would be COM objects
     return shared_from_this();
-}
-
-
-SharedExp Win32Signature::getStackWildcard() const
-{
-    // Note: m[esp + -8] is simplified to m[esp - 8] now
-    return Location::memOf(Binary::get(opMinus, Location::regOf(28), Terminal::get(opWild)));
 }
 
 

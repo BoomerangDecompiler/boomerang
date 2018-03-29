@@ -44,7 +44,6 @@ std::shared_ptr<Signature> ST20Signature::clone() const
     n->m_params          = m_params;
     n->m_returns         = m_returns;
     n->m_ellipsis        = m_ellipsis;
-    n->m_rettype         = m_rettype;
     n->m_preferredName   = m_preferredName;
     n->m_preferredReturn = m_preferredReturn;
     n->m_preferredParams = m_preferredParams;
@@ -103,13 +102,6 @@ void ST20Signature::addParameter(SharedType type, const QString& name,
                                  const SharedExp& e, const QString& boundMax)
 {
     Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
-}
-
-
-SharedExp ST20Signature::getStackWildcard() const
-{
-    // m[r1 - WILD]
-    return Location::memOf(Binary::get(opMinus, Location::regOf(3), Terminal::get(opWild)));
 }
 
 

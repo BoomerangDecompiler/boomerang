@@ -89,11 +89,6 @@ public:
 
     int findReturn(SharedExp e) const;
 
-    void setRetType(SharedType t) { m_rettype = t; }
-
-    /// \returns the return type of the return corresponding to \p exp
-    SharedType getTypeForReturnExp(SharedExp exp) const;
-
 public:
     // add a new parameter to this signature
     virtual void addParameter(const char *name = nullptr);
@@ -136,23 +131,13 @@ public:
     void setHasEllipsis(bool yesno)  { m_ellipsis = yesno; }
     virtual bool hasEllipsis() const { return m_ellipsis; }
 
+    bool isNoReturn() const { return false; }
+
+    /// \returns true if this is a known machine (e.g. SparcSignature as opposed to Signature)
+    virtual bool isPromoted() const { return false; }
 
     /// any signature can be promoted to a higher level signature, if available
     virtual std::shared_ptr<Signature> promote(UserProc *p);
-
-    // Special for Mike: find the location that conventionally holds the first outgoing (actual) parameter
-    // MVE: Use the below now
-    // Special for Mike: find the location where the first outgoing (actual) parameter is conventionally held
-    SharedExp getFirstArgLoc(Prog *prog) const;
-
-    /// Get the expected argument location, based solely on the machine of the input program
-    ///
-    /// This is like getParamLoc, except that it works before Signature::analyse is called.  It is used only to order
-    /// parameters correctly, for the common case where the proc will end up using a standard calling convention
-    SharedExp getEarlyParamExp(int n, Prog *prog) const;
-
-    // Get a wildcard to find stack locations
-    virtual SharedExp getStackWildcard() const { return nullptr; }
 
     /// Needed before the signature is promoted
     virtual int getStackRegister() const;
@@ -178,8 +163,6 @@ public:
     // Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
     bool isOpCompatStackLocal(OPER op) const;
 
-    static StatementList& getStdRetStmt(Prog *prog);
-
     // get anything that can be proven as a result of the signature
     virtual SharedExp getProven(SharedExp /*left*/) const { return nullptr; }
     virtual bool isPreserved(SharedExp /*e*/) const { return false; }     // Return whether e is preserved by this proc
@@ -190,9 +173,6 @@ public:
     /// very late in the decompilation. Get the set of registers that are not saved in library functions (or any
     /// procedures that follow the calling convention)
     static void getABIDefines(Prog *prog, StatementList& defs);
-
-    // Return true if this is a known machine (e.g. SparcSignature as opposed to Signature)
-    virtual bool isPromoted() const { return false; }
 
     // ascii versions of platform, calling convention name
     static QString getPlatformName(Platform plat);
@@ -218,8 +198,6 @@ public:
     /// \returns \p a < \p b
     virtual bool returnCompare(const Assignment& a, const Assignment& b) const;
 
-    bool isNoReturn() const { return false; }
-
 public:
     void print(QTextStream& out, bool = false) const;
     char *prints() const; // For debugging
@@ -230,7 +208,6 @@ protected:
 
     std::vector<std::shared_ptr<Parameter> > m_params; ///< \todo unique_ptr ?
     std::vector<std::shared_ptr<Return> > m_returns;
-    SharedType m_rettype;
     bool m_ellipsis;
     bool m_unknown;
     bool m_forced;

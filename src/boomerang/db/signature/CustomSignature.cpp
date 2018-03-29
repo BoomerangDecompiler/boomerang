@@ -28,7 +28,6 @@ std::shared_ptr<Signature> CustomSignature::clone() const
     Util::clone(m_returns, result->m_returns);
 
     result->m_ellipsis        = m_ellipsis;
-    result->m_rettype         = m_rettype->clone();
     result->m_spReg           = m_spReg;
     result->m_forced          = m_forced;
     result->m_preferredName   = m_preferredName;

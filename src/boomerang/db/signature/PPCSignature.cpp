@@ -48,7 +48,6 @@ std::shared_ptr<Signature> PPCSignature::clone() const
     // n->implicitParams = implicitParams;
     Util::clone(m_returns, n->m_returns);
     n->m_ellipsis      = m_ellipsis;
-    n->m_rettype       = m_rettype->clone();
     n->m_preferredName = m_preferredName;
 
     if (m_preferredReturn) {
@@ -103,13 +102,6 @@ void PPCSignature::addParameter(SharedType type, const QString& name,
                                 const SharedExp& e, const QString& boundMax)
 {
     Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
-}
-
-
-SharedExp PPCSignature::getStackWildcard() const
-{
-    // m[r1 - WILD]
-    return Location::memOf(Binary::get(opMinus, Location::regOf(1), Terminal::get(opWild)));
 }
 
 
