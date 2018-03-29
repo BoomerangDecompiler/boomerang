@@ -11,10 +11,10 @@ include(boomerang-utils)
 
 set(TESTS
     BasicBlockTest
-    BinaryImageTest
-    BinarySectionTest
-    BinarySymbolTableTest
-    BinarySymbolTest
+    binary/BinaryImageTest
+    binary/BinarySectionTest
+    binary/BinarySymbolTableTest
+    binary/BinarySymbolTest
     CFGTest
     DfaTest
     ExpTest
@@ -22,7 +22,6 @@ set(TESTS
     ProgTest
     ProcTest
     RtlTest
-
 )
 
 # These tests require the ELF loader
@@ -32,8 +31,9 @@ set(TESTS_WITH_ELF
 )
 
 foreach(t ${TESTS})
+    string(REGEX REPLACE ".*/" "" TEST_NAME ${t})
 	BOOMERANG_ADD_TEST(
-		NAME ${t}
+		NAME ${TEST_NAME}
 		SOURCES ${t}.h ${t}.cpp
 		LIBRARIES
 			${DEBUG_LIB}
