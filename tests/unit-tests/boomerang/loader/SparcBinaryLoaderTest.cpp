@@ -48,4 +48,4 @@ void SparcBinaryLoaderTest::testSparcLoad()
 }
 
 
-QTEST_MAIN(SparcBinaryLoaderTest)
+QTEST_GUILESS_MAIN(SparcBinaryLoaderTest)

@@ -181,4 +181,4 @@ void IntervalMapTest::testEqualRange()
 }
 
 
-QTEST_MAIN(IntervalMapTest)
+QTEST_GUILESS_MAIN(IntervalMapTest)

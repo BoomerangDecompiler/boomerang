@@ -226,4 +226,4 @@ void DataFlowTest::testRenameVars()
 }
 
 
-QTEST_MAIN(DataFlowTest)
+QTEST_GUILESS_MAIN(DataFlowTest)

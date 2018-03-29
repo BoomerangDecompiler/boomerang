@@ -306,4 +306,4 @@ void CFGTest::testIsWellFormed()
 }
 
 
-QTEST_MAIN(CFGTest)
+QTEST_GUILESS_MAIN(CFGTest)

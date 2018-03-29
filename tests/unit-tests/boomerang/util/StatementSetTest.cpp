@@ -157,4 +157,4 @@ void StatementSetTest::testMakeDiff()
 }
 
 
-QTEST_MAIN(StatementSetTest)
+QTEST_GUILESS_MAIN(StatementSetTest)

@@ -407,4 +407,4 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
 }
 
-QTEST_MAIN(FrontSparcTest)
+QTEST_GUILESS_MAIN(FrontSparcTest)

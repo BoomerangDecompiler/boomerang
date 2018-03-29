@@ -151,4 +151,4 @@ void IntervalSetTest::testIsContained()
 }
 
 
-QTEST_MAIN(IntervalSetTest)
+QTEST_GUILESS_MAIN(IntervalSetTest)

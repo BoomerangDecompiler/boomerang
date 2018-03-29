@@ -76,4 +76,4 @@ void DataIntervalMapTest::testInsert()
 }
 
 
-QTEST_MAIN(DataIntervalMapTest)
+QTEST_GUILESS_MAIN(DataIntervalMapTest)

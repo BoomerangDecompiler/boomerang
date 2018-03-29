@@ -218,4 +218,4 @@ void BinaryImageTest::testIsReadOnly()
 }
 
 
-QTEST_MAIN(BinaryImageTest)
+QTEST_GUILESS_MAIN(BinaryImageTest)

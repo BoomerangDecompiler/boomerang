@@ -124,4 +124,4 @@ void UtilTest::testSignExtend()
 
 
 
-QTEST_MAIN(UtilTest)
+QTEST_GUILESS_MAIN(UtilTest)

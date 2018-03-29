@@ -328,4 +328,4 @@ void TypeTest::testDataIntervalOverlaps()
 }
 
 
-QTEST_MAIN(TypeTest)
+QTEST_GUILESS_MAIN(TypeTest)

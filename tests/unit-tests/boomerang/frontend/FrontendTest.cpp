@@ -23,4 +23,4 @@ void FrontendTest::test1()
 }
 
 
-QTEST_MAIN(FrontendTest)
+QTEST_GUILESS_MAIN(FrontendTest)

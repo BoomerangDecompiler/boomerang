@@ -51,4 +51,4 @@ void PalmBinaryLoaderTest::testPalmLoad()
 }
 
 
-QTEST_MAIN(PalmBinaryLoaderTest)
+QTEST_GUILESS_MAIN(PalmBinaryLoaderTest)

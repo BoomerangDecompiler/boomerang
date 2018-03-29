@@ -149,4 +149,4 @@ void ConnectionGraphTest::testUpdateConnection()
 }
 
 
-QTEST_MAIN(ConnectionGraphTest)
+QTEST_GUILESS_MAIN(ConnectionGraphTest)

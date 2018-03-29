@@ -1390,4 +1390,4 @@ void StatementTest::testFindConstants()
 }
 
 
-QTEST_MAIN(StatementTest)
+QTEST_GUILESS_MAIN(StatementTest)

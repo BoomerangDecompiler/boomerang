@@ -136,4 +136,4 @@ void DfaTest::testMeet_data()
     TEST_MEET("f32 M f64", FloatType::get(32), FloatType::get(64), FloatType::get(64)); // Maybe this should result in a union
 }
 
-QTEST_MAIN(DfaTest)
+QTEST_GUILESS_MAIN(DfaTest)

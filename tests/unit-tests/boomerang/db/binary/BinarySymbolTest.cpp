@@ -76,4 +76,4 @@ void BinarySymbolTest::testBelongsToSourceFile()
 }
 
 
-QTEST_MAIN(BinarySymbolTest)
+QTEST_GUILESS_MAIN(BinarySymbolTest)

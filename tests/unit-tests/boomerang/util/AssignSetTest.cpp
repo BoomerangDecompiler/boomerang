@@ -202,4 +202,4 @@ void AssignSetTest::testLookupLoc()
 
 
 
-QTEST_MAIN(AssignSetTest)
+QTEST_GUILESS_MAIN(AssignSetTest)

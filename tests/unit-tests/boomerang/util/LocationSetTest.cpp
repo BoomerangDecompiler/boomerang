@@ -267,4 +267,4 @@ void LocationSetTest::testMakeDiff()
 }
 
 
-QTEST_MAIN(LocationSetTest)
+QTEST_GUILESS_MAIN(LocationSetTest)

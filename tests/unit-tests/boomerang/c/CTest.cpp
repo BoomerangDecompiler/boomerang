@@ -44,4 +44,4 @@ void CTest::testSignature()
 }
 
 
-QTEST_MAIN(CTest)
+QTEST_GUILESS_MAIN(CTest)

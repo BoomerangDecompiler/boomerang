@@ -45,4 +45,4 @@ void Win32BinaryLoaderTest::testWinLoad()
 }
 
 
-QTEST_MAIN(Win32BinaryLoaderTest)
+QTEST_GUILESS_MAIN(Win32BinaryLoaderTest)

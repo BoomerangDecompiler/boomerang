@@ -1115,4 +1115,4 @@ void ExpTest::testVisitors()
 }
 
 
-QTEST_MAIN(ExpTest)
+QTEST_GUILESS_MAIN(ExpTest)

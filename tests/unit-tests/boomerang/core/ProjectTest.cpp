@@ -120,4 +120,4 @@ void ProjectTest::testGenerateCode()
 }
 
 
-QTEST_MAIN(ProjectTest)
+QTEST_GUILESS_MAIN(ProjectTest)
