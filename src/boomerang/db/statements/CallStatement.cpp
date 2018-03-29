@@ -1322,7 +1322,7 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
         ty = PointerType::get(ty);
     }
 
-    m_signature->addParameter(ty);
+    m_signature->addParameter(nullptr, ty);
     SharedExp paramExp = m_signature->getParamExp(m_signature->getNumParams() - 1);
 
     LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());

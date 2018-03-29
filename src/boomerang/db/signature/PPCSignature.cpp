@@ -98,10 +98,10 @@ void PPCSignature::addReturn(SharedType type, SharedExp e)
 }
 
 
-void PPCSignature::addParameter(SharedType type, const QString& name,
-                                const SharedExp& e, const QString& boundMax)
+void PPCSignature::addParameter(const QString& name, const SharedExp& e,
+                                SharedType type, const QString& boundMax)
 {
-    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
 
 

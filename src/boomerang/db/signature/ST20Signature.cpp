@@ -98,10 +98,10 @@ std::shared_ptr<Signature> ST20Signature::promote(UserProc * /*p*/)
 }
 
 
-void ST20Signature::addParameter(SharedType type, const QString& name,
-                                 const SharedExp& e, const QString& boundMax)
+void ST20Signature::addParameter(const QString& name, const SharedExp& e,
+                                 SharedType type, const QString& boundMax)
 {
-    Signature::addParameter(type, name, e ? e : getArgumentExp(m_params.size()), boundMax);
+    Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
 
 

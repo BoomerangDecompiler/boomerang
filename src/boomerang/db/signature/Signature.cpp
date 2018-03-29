@@ -163,20 +163,14 @@ void Signature::setName(const QString& name)
 }
 
 
-void Signature::addParameter(const char *name /*= nullptr*/)
-{
-    addParameter(VoidType::get(), name);
-}
-
-
 void Signature::addParameter(const SharedExp& e, SharedType ty)
 {
-    addParameter(ty, nullptr, e);
+    addParameter(nullptr, e, ty);
 }
 
 
-void Signature::addParameter(SharedType type, const QString& name /*= nullptr*/, const SharedExp& e /*= nullptr*/,
-                             const QString& boundMax /*= ""*/)
+void Signature::addParameter(const QString& name, const SharedExp& e,
+                             SharedType type, const QString& boundMax)
 {
     if (e == nullptr) {
         // Else get infinite mutual recursion with the below proc
@@ -225,7 +219,7 @@ void Signature::addParameter(std::shared_ptr<Parameter> param)
     }
 
     if ((ty == nullptr) || (e == nullptr) || name.isNull()) {
-        addParameter(ty, name, e, param->getBoundMax());
+        addParameter(name, e, ty, param->getBoundMax());
     }
     else {
         m_params.push_back(param);
@@ -261,7 +255,7 @@ void Signature::setNumParams(size_t n)
     }
     else {
         for (size_t i = m_params.size(); i < n; i++) {
-            addParameter();
+            addParameter(nullptr, VoidType::get());
         }
     }
 }

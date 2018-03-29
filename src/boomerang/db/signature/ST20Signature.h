@@ -31,8 +31,8 @@ public:
     static bool qualified(UserProc *p, Signature&);
 
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
-    void addParameter(SharedType type, const QString& name = QString::null,
-                      const SharedExp& e = nullptr, const QString& boundMax = "") override;
+    void addParameter(const QString& name, const SharedExp& e,
+                      SharedType type = VoidType::get(), const QString& boundMax = "") override;
     SharedExp getArgumentExp(int n) const override;
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;

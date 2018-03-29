@@ -2194,7 +2194,7 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
         Assignment *a = static_cast<Assignment *>(param);
         QString paramName = QString("param%1").arg(i++);
 
-        m_signature->addParameter(a->getType(), paramName, a->getLeft());
+        m_signature->addParameter(paramName, a->getLeft(), a->getType());
     }
 }
 

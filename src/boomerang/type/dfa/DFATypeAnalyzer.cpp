@@ -178,24 +178,28 @@ void DFATypeAnalyzer::visit(CallStatement* stmt, bool& visitChildren)
     // Iterate through the arguments
     int n = 0;
 
-    for (Statement *aa : stmt->getArguments()) {
-        Assign *param = dynamic_cast<Assign *>(aa);
-        assert(param);
+    Function *callee = stmt->getDestProc();
 
-        if (stmt->getDestProc() && !stmt->getDestProc()->getSignature()->getParamBoundMax(n).isNull() && param->getRight()->isIntConst()) {
-            QString boundmax = stmt->getDestProc()->getSignature()->getParamBoundMax(n);
-            assert(param->getType()->resolvesToInteger());
+    for (Statement *aa : stmt->getArguments()) {
+        assert(aa->isAssign());
+        Assign *boundArg = static_cast<Assign *>(aa);
+
+        // Check if we have something like
+        //  memcpy(dst, src, 5);
+        // In this case, we set the max length of both dst and src to 5
+        if (callee && !callee->getSignature()->getParamBoundMax(n).isNull() && boundArg->getRight()->isIntConst()) {
+            const QString boundmax = stmt->getDestProc()->getSignature()->getParamBoundMax(n);
+            assert(boundArg->getType()->resolvesToInteger());
 
             int nt = 0;
-
-            for (Statement *arg : stmt->getArguments()) {
+            for (const Statement *arrayArg : stmt->getArguments()) {
                 if (boundmax == stmt->getDestProc()->getSignature()->getParamName(nt++)) {
-                    SharedType tyt = static_cast<const Assign *>(arg)->getType();
+                    SharedType tyt = static_cast<const Assign *>(arrayArg)->getType();
 
                     if (tyt->resolvesToPointer() && tyt->as<PointerType>()->getPointsTo()->resolvesToArray() &&
                         tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->isUnbounded()) {
                         tyt->as<PointerType>()->getPointsTo()->as<ArrayType>()->setLength(
-                            param->getRight()->access<Const>()->getInt());
+                            boundArg->getRight()->access<Const>()->getInt());
                     }
 
                     break;
@@ -205,7 +209,7 @@ void DFATypeAnalyzer::visit(CallStatement* stmt, bool& visitChildren)
 
         // The below will ascend type, meet type with that of arg, and descend type. Note that the type of the assign
         // will already be that of the signature, if this is a library call, from updateArguments()
-        visit(param, visitChildren);
+        visit(boundArg, visitChildren);
         ++n;
     }
 

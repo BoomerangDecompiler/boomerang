@@ -100,12 +100,11 @@ public:
     int findReturn(SharedConstExp exp) const;
 
 public:
-    // add a new parameter to this signature
-    virtual void addParameter(const char *name = nullptr);
-    virtual void addParameter(SharedType type, const QString& name = QString::null, const SharedExp& e = nullptr,
-                              const QString& boundMax = "");
-    virtual void addParameter(const SharedExp& e, SharedType ty);
-    virtual void addParameter(std::shared_ptr<Parameter> param);
+    /// add a new parameter to this signature
+    void addParameter(std::shared_ptr<Parameter> param);
+    virtual void addParameter(const SharedExp& exp, SharedType ty = VoidType::get());
+    virtual void addParameter(const QString& name, const SharedExp& exp,
+                              SharedType type = VoidType::get(), const QString& boundMax = "");
 
     virtual void removeParameter(const SharedExp& e);
     virtual void removeParameter(size_t i);
