@@ -20,6 +20,7 @@
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/db/RTL.h"
+#include "boomerang/util/Log.h"
 
 
 TableEntry::TableEntry()

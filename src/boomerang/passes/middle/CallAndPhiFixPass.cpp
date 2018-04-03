@@ -17,6 +17,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/db/visitor/CallBypasser.h"
+#include "boomerang/util/Log.h"
 
 
 CallAndPhiFixPass::CallAndPhiFixPass()

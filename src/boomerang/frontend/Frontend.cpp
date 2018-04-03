@@ -298,8 +298,9 @@ bool IFrontEnd::decode(bool decodeMain)
 
     BinaryImage *image = m_program->getBinaryFile()->getImage();
 
-    Boomerang::get()->alertStartDecode(image->getLimitTextLow(),
-                                       (image->getLimitTextHigh() - image->getLimitTextLow()).value());
+    Interval<Address> extent(image->getLimitTextLow(), image->getLimitTextHigh());
+
+    Boomerang::get()->alertStartDecode(extent.lower(), (extent.upper() - extent.lower()).value());
 
     bool    gotMain;
     Address a = getMainEntryPoint(gotMain);
@@ -583,8 +584,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 {
     BasicBlock *currentBB;
 
-    // just in case you missed it
-    Boomerang::get()->alertNew(proc);
     LOG_VERBOSE("### Decoding proc '%1' at address %2 ###", proc->getName(), addr);
 
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
@@ -669,7 +668,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
             }
 
             // alert the watchers that we have decoded an instruction
-            Boomerang::get()->alertDecode(addr, inst.numBytes);
+            Boomerang::get()->alertInstructionDecoded(addr, inst.numBytes);
             numBytesDecoded += inst.numBytes;
 
             // Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
@@ -806,7 +805,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                                 func = "__imp_" + func;
                                 proc->setName(func);
                                 // lp->setName(func.c_str());
-                                Boomerang::get()->alertUpdateSignature(proc);
+                                Boomerang::get()->alertSignatureUpdated(proc);
                             }
 
                             callList.push_back(call);
@@ -1147,7 +1146,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
         }
     }
 
-    Boomerang::get()->alertDecode(proc, startAddr, lastAddr, numBytesDecoded);
+    Boomerang::get()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
 
     LOG_VERBOSE("### Finished decoding proc '%1' ###", proc->getName());
 

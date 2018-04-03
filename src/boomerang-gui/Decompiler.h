@@ -36,12 +36,12 @@ public:
 
     /// IWatcher interface
 public:
-    virtual void alertDecompileDebugPoint(UserProc *proc, const char *description) override;
-    virtual void alertDiscovered(Function *parent, Function *function) override;
-    virtual void alertDecompiling(UserProc *function) override;
-    virtual void alertNew(Function *function) override;
-    virtual void alertRemove(Function *function) override;
-    virtual void alertUpdateSignature(Function *function) override;
+    virtual void onDecompileDebugPoint(UserProc *proc, const char *description) override;
+    virtual void onFunctionDiscovered(Function *parent, Function *function) override;
+    virtual void onDecompileInProgress(UserProc *function) override;
+    virtual void onFunctionCreated(Function *function) override;
+    virtual void onFunctionRemoved(Function *function) override;
+    virtual void onSignatureUpdated(Function *function) override;
 
 signals: // Decompiler -> ui
     void loadingStarted();

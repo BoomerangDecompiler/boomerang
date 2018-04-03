@@ -12,7 +12,7 @@ list(APPEND boomerang-core-sources
     core/Plugin
     core/Project
     core/Settings
-    core/Watcher.h
+    core/Watcher
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-core-sources}" PARENT_SCOPE)

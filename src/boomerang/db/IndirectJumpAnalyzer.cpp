@@ -26,6 +26,7 @@
 #include "boomerang/db/Global.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FuncType.h"
+#include "boomerang/util/Log.h"
 
 
 // Switch High Level patterns

@@ -16,6 +16,7 @@
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/util/Log.h"
 
 
 UnusedStatementRemovalPass::UnusedStatementRemovalPass()

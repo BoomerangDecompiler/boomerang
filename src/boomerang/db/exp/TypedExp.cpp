@@ -14,6 +14,7 @@
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/Type.h"
+#include "boomerang/util/Log.h"
 
 
 TypedExp::TypedExp(SharedExp e1)

@@ -22,6 +22,7 @@
 #include "boomerang/db/visitor/ExpVisitor.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
+#include "boomerang/util/Log.h"
 
 
 RefExp::RefExp(SharedExp e, Statement *d)

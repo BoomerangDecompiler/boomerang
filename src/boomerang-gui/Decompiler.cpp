@@ -10,16 +10,17 @@
 #include "Decompiler.h"
 
 
+#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/frontend/Frontend.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/frontend/Frontend.h"
+#include "boomerang/util/Log.h"
 
 #include <QThread>
 
@@ -189,19 +190,19 @@ void Decompiler::generateCode()
 }
 
 
-void Decompiler::alertDiscovered(Function *caller, Function *proc)
+void Decompiler::onFunctionDiscovered(Function *caller, Function *proc)
 {
     emit procDiscovered(caller ? caller->getName() : "", proc->getName());
 }
 
 
-void Decompiler::alertDecompiling(UserProc *p)
+void Decompiler::onDecompileInProgress(UserProc *p)
 {
     emit procDecompileStarted(p->getName());
 }
 
 
-void Decompiler::alertNew(Function *function)
+void Decompiler::onFunctionCreated(Function *function)
 {
     if (function->isLib()) {
         QString params;
@@ -230,7 +231,7 @@ void Decompiler::alertNew(Function *function)
 }
 
 
-void Decompiler::alertRemove(Function *function)
+void Decompiler::onFunctionRemoved(Function *function)
 {
     if (function->isLib()) {
         emit libProcRemoved(function->getName());
@@ -241,9 +242,9 @@ void Decompiler::alertRemove(Function *function)
 }
 
 
-void Decompiler::alertUpdateSignature(Function *p)
+void Decompiler::onSignatureUpdated(Function *p)
 {
-    alertNew(p);
+    onFunctionCreated(p);
 }
 
 
@@ -262,7 +263,7 @@ bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
 }
 
 
-void Decompiler::alertDecompileDebugPoint(UserProc *proc, const char *description)
+void Decompiler::onDecompileDebugPoint(UserProc *proc, const char *description)
 {
     LOG_VERBOSE("%1: %2", proc->getName(), description);
 

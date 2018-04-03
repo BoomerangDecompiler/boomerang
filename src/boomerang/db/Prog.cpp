@@ -431,7 +431,7 @@ void Prog::removeFunction(const QString& name)
 
     if (function) {
         function->removeFromModule();
-        Boomerang::get()->alertRemove(function);
+        Boomerang::get()->alertFunctionRemoved(function);
         // FIXME: this function removes the function from module, but it leaks it
     }
 }

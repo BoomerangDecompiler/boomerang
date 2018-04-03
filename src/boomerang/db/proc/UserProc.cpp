@@ -117,7 +117,7 @@ bool UserProc::isNoReturn() const
 void UserProc::setStatus(ProcStatus s)
 {
     m_status = s;
-    Boomerang::get()->alertProcStatusChange(this);
+    Boomerang::get()->alertProcStatusChanged(this);
 }
 
 
@@ -939,8 +939,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             printDFG();
         }
 
-        Boomerang::get()->alertDecompileSSADepth(this, pass); // FIXME: need depth -> pass in GUI code
-
 // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.
@@ -969,13 +967,11 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             debugPrintAll("SSA (after trimming return set)");
         }
 
-        Boomerang::get()->alertDecompileBeforePropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
 
         change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
         change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
-        Boomerang::get()->alertDecompileAfterPropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
 
          // this is just to make it readable, do NOT rely on these statements being removed
@@ -1094,9 +1090,6 @@ void UserProc::remUnusedStmtEtc()
     }
 
     PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
-
-    Boomerang::get()->alertDecompileAfterRemoveStmts(this, 1);
-
     PassManager::get()->executePass(PassID::FinalParameterSearch, this);
 
     if (SETTING(nameParameters)) {

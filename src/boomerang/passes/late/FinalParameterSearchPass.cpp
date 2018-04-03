@@ -16,6 +16,7 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/util/Log.h"
 
 
 FinalParameterSearchPass::FinalParameterSearchPass()

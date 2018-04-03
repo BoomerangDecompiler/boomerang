@@ -10,27 +10,17 @@
 #pragma once
 
 
-#include "boomerang/core/Watcher.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/core/Settings.h"
 
-#include <QDir>
-#include <QTextStream>
-#include <string>
+#include <memory>
 #include <set>
-#include <vector>
-#include <map>
 
 
 class QString;
-class SeparateLogger;
-class Log;
-class Prog;
 class Function;
 class UserProc;
-class ICodeGenerator;
-class ObjcModule;
 class Project;
+class IWatcher;
 
 
 /**
@@ -70,49 +60,55 @@ public:
     Settings *getSettings() { return m_settings.get(); }
     const Settings *getSettings() const { return m_settings.get(); }
 
-public:
-    /// Add a Watcher to the set of Watchers for this Boomerang object.
+    /// Register a watcher to receive events about the decompilation.
+    /// Does NOT take ownership of the pointer.
     void addWatcher(IWatcher *watcher);
 
-    /// Alert the watchers that decompilation has completed.
-    void alertDecompileComplete();
+public:
+    /// Called once after a function was created.
+    void alertFunctionCreated(Function *function);
 
-    /// Alert the watchers we have found a new Proc.
-    void alertNew(Function *p);
+    /// Called once after a function was removed.
+    void alertFunctionRemoved(Function *function);
 
-    /// Alert the watchers we have removed a %Proc.
-    void alertRemove(Function *p);
+    /// Called once after the function signature was updated.
+    void alertSignatureUpdated(Function *function);
 
-    /// Alert the watchers we have updated this Procs signature
-    void alertUpdateSignature(Function *p);
-
-    /// Alert the watchers we are currently decoding \p numBytes bytes at address \p pc.
-    void alertDecode(Address pc, int numBytes);
-
-    /// Alert the watchers of a bad decode of an instruction at \a pc.
-    void alertBadDecode(Address pc);
-
-    /// Alert the watchers we have succesfully decoded this function
-    void alertDecode(Function *p, Address pc, Address last, int numBytes);
-
-    /// Alert the watchers we have loaded the Proc.
-    void alertLoad(Function *p);
-
-    /// Alert the watchers we are starting to decode.
+    /// Called once on decode start.
     void alertStartDecode(Address start, int numBytes);
 
-    /// Alert the watchers we finished decoding.
+    /// Called every time an instruction is decoded.
+    /// \param numBytes size of the instruction
+    void alertInstructionDecoded(Address pc, int numBytes);
+
+    /// Called every time an invalid or unrecognized instruction is encountered.
+    void alertBadDecode(Address pc);
+
+    /// Called every time a function was decoded completely.
+    void alertFunctionDecoded(Function *function, Address pc, Address last, int numBytes);
+
+    /// Called once on decode end.
     void alertEndDecode();
-    void alertStartDecompile(UserProc *p);
-    void alertProcStatusChange(UserProc *p);
-    void alertDecompileSSADepth(UserProc *p, int depth);
-    void alertDecompileBeforePropagate(UserProc *p, int depth);
-    void alertDecompileAfterPropagate(UserProc *p, int depth);
-    void alertDecompileAfterRemoveStmts(UserProc *p, int depth);
-    void alertEndDecompile(UserProc *p);
-    void alertDiscovered(Function *_parent, Function *p);
-    void alertDecompiling(UserProc *p);
+
+    /// Called once for every function on decompilation start (before earlyDecompile)
+    void alertStartDecompile(UserProc *proc);
+
+    /// Called every time the status of \p proc has changed.
+    void alertProcStatusChanged(UserProc *proc);
+
+    /// Called once for every completely decompiled proc \p proc.
+    void alertEndDecompile(UserProc *proc);
+
+    /// Called every time before middleDecompile is executed for \p function
+    void alertDiscovered(Function */*unused*/, Function *function);
+
+    /// Called during the decompilation process when resuming decompilation of this proc.
+    void alertDecompiling(UserProc *proc);
+
     void alertDecompileDebugPoint(UserProc *p, const char *description);
+
+    /// Called once on decompilation end.
+    void alertDecompilationEnd();
 
 public:
     std::unique_ptr<Settings> m_settings;
