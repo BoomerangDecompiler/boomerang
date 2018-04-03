@@ -52,6 +52,9 @@ enum class Machine : uint8_t
 };
 
 
+/**
+ * This class provides file-format independent access to loaded binary files.
+ */
 class BinaryFile
 {
 public:
@@ -65,15 +68,25 @@ public:
     const BinarySymbolTable *getSymbols() const;
 
 public:
+    /// \returns the file format of the binary file.
     LoadFmt getFormat() const;
+
+    /// \returns the primary instruction set used in the binary file.
     Machine getMachine() const;
 
+    /// \returns the address of the entry point
     Address getEntryPoint() const;
+
+    /// \returns the address of main()/WinMain(), if found, else Address::INVALID
     Address getMainEntryPoint() const;
 
+    /// \returns true if \p addr is the destination of a relocated symbol.
     bool isRelocationAt(Address addr) const;
+
+    /// \returns the destination of a jump at address \p addr, taking relocation into account
     Address getJumpTarget(Address addr) const;
 
+    /// \note not yet implemented.
     bool hasDebugInfo() const;
 
 private:

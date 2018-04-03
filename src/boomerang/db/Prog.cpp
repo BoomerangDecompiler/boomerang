@@ -1537,7 +1537,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         }
         else {
             // check for accesses into the middle of symbols
-            for (const std::shared_ptr<BinarySymbol> sym : *m_binaryFile->getSymbols()) {
+            for (const BinarySymbol *sym : *m_binaryFile->getSymbols()) {
                 unsigned int sz = sym->getSize();
 
                 if ((sym->getLocation() < c_addr) && ((sym->getLocation() + sz) > c_addr)) {

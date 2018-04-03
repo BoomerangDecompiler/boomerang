@@ -19,7 +19,7 @@
 class QVariant;
 
 
-/// All information about the sections is contained in these structures.
+/// File-format independent access to sections of binary files.
 class BinarySection
 {
 public:
