@@ -111,11 +111,11 @@ list(APPEND boomerang-db-sources
     db/visitor/stmtmodifier/StmtSSAXFormer
     db/visitor/stmtmodifier/StmtSubscripter
 
-    db/visitor/StmtConstFinder
-    db/visitor/StmtDestCounter
-    db/visitor/StmtExpVisitor
-    db/visitor/StmtRegMapper
-    db/visitor/UsedLocsVisitor
+    db/visitor/stmtexpvisitor/StmtConstFinder
+    db/visitor/stmtexpvisitor/StmtDestCounter
+    db/visitor/stmtexpvisitor/StmtExpVisitor
+    db/visitor/stmtexpvisitor/StmtRegMapper
+    db/visitor/stmtexpvisitor/UsedLocsVisitor
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-db-sources}" PARENT_SCOPE)

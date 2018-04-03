@@ -12,7 +12,7 @@
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/visitor/expvisitor/ExpDestCounter.h"
-#include "boomerang/db/visitor/StmtDestCounter.h"
+#include "boomerang/db/visitor/stmtexpvisitor/StmtDestCounter.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/passes/PassManager.h"
 

@@ -18,7 +18,7 @@
 #include "boomerang/db/statements/StatementHelper.h"
 #include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/stmtvisitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/db/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/util/LocationSet.h"

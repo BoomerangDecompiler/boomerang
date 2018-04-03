@@ -10,7 +10,8 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/StmtExpVisitor.h"
+#include "boomerang/db/visitor/stmtexpvisitor/StmtExpVisitor.h"
+
 
 class ExpRegMapper;
 class Assignment;
