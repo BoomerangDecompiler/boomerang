@@ -25,9 +25,9 @@ enum class PluginType
 struct PluginInfo
 {
     PluginType  type;    ///< type of plugin (loader, etc)
-    std::string name;    ///< Name of this plugin
-    std::string version; ///< Plugin version
-    std::string author;  ///< Plugin creator (copyright information)
+    const char *name;    ///< Name of this plugin
+    const char *version; ///< Plugin version
+    const char *author;  ///< Plugin creator (copyright information)
 };
 
 
