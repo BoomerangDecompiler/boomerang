@@ -80,7 +80,7 @@ public:
      * \todo This should really be removed, once CaseStatement
      * and HLNwayCall are implemented properly
      */
-    void setIsComputed(bool b = true);
+    void setIsComputed(bool computed = true);
 
     /**
      * Returns whether or not this call is computed.

@@ -14,7 +14,8 @@
 
 
 /**
- * Assignment is an abstract subclass of TypingStatement, holding a location
+ * Assignment is the base class of all statements that assign to a
+ * left hand side like ordinary assignments, phi statements or implicit assignments.
  */
 class Assignment : public TypingStatement
 {

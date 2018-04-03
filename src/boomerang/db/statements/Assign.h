@@ -14,7 +14,8 @@
 
 
 /**
- * Assign an ordinary assignment with left and right sides.
+ * An ordinary assignment with left and right hand sides.
+ * Example: r25 := 5
  */
 class Assign : public Assignment
 {
