@@ -37,7 +37,7 @@
 #include "boomerang/db/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/db/visitor/expvisitor/TempToLocalMapper.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
-#include "boomerang/db/visitor/StmtImplicitConverter.h"
+#include "boomerang/db/visitor/stmtmodifier/StmtImplicitConverter.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtDestCounter.h"
 #include "boomerang/passes/PassManager.h"

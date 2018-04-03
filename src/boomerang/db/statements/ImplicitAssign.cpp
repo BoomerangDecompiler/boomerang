@@ -16,8 +16,8 @@
 #include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/db/visitor/stmtvisitor/StmtVisitor.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/db/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
 

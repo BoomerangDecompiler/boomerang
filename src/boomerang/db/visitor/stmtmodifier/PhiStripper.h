@@ -10,26 +10,27 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
 
 
-class Cfg;
-class ImplicitConverter;
+class ExpModifier;
 
 
 /**
  *
  */
-class StmtImplicitConverter : public StmtModifier
+class PhiStripper : public StmtModifier
 {
 public:
-    StmtImplicitConverter(ImplicitConverter *ic, Cfg *cfg);
-    virtual ~StmtImplicitConverter() = default;
+    PhiStripper(ExpModifier *em);
+    virtual ~PhiStripper() = default;
 
 public:
+    bool getDelete() const { return m_del; }
+
     /// \copydoc StmtModifier::visit
     virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
 
 private:
-    Cfg *m_cfg;
+    bool m_del; ///< Set true if this statment is to be deleted
 };

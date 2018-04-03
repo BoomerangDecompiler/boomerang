@@ -9,7 +9,7 @@
 #pragma endregion License
 
 
-#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
 
 
 class ExpSubscripter;

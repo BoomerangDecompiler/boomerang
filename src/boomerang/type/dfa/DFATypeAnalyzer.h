@@ -10,9 +10,11 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/StmtModifier.h"
+#include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
+
 
 class Assignment;
+
 
 /**
  * This modifier traverses all statements

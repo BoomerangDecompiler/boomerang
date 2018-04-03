@@ -104,16 +104,17 @@ list(APPEND boomerang-db-sources
     db/visitor/stmtvisitor/StmtConscriptSetter
     db/visitor/stmtvisitor/StmtVisitor
 
-    db/visitor/PhiStripper
+    db/visitor/stmtmodifier/PhiStripper
+    db/visitor/stmtmodifier/StmtImplicitConverter
+    db/visitor/stmtmodifier/StmtModifier
+    db/visitor/stmtmodifier/StmtPartModifier
+    db/visitor/stmtmodifier/StmtSSAXFormer
+    db/visitor/stmtmodifier/StmtSubscripter
+
     db/visitor/StmtConstFinder
     db/visitor/StmtDestCounter
     db/visitor/StmtExpVisitor
-    db/visitor/StmtImplicitConverter
-    db/visitor/StmtModifier
-    db/visitor/StmtPartModifier
     db/visitor/StmtRegMapper
-    db/visitor/StmtSSAXFormer
-    db/visitor/StmtSubscripter
     db/visitor/UsedLocsVisitor
 )
 
