@@ -20,7 +20,7 @@ ExpPropagator::ExpPropagator()
 }
 
 
-SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpPropagator::postModify(const std::shared_ptr<RefExp>& exp)
 {
     // No need to call e->canRename() here, because if e's base expression is not suitable for renaming, it will never
     // have been renamed, and we never would get here
@@ -42,7 +42,7 @@ SharedExp ExpPropagator::postVisit(const std::shared_ptr<RefExp>& exp)
             m_unchanged &= ~m_mask; // Been changed now (so simplify parent)
 
             if (res->isSubscript()) {
-                res = postVisit(std::static_pointer_cast<RefExp>(res)); // Recursively propagate more if possible
+                res = postModify(std::static_pointer_cast<RefExp>(res)); // Recursively propagate more if possible
             }
         }
     }

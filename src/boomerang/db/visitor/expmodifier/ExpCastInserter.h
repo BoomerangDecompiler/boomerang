@@ -32,16 +32,16 @@ public:
     /// memof may be changed internally to include a TypedExp, which will emit as a cast
     static void checkMemofType(const SharedExp& memof, SharedType memofType);
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     /// Don't consider if already cast
-    SharedExp preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::postVisit
-    SharedExp postVisit(const std::shared_ptr<RefExp>& exp) override;
+    /// \copydoc ExpModifier::postModify
+    SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
-    SharedExp postVisit(const std::shared_ptr<Binary>& exp) override;
+    /// \copydoc ExpModifier::postModify
+    SharedExp postModify(const std::shared_ptr<Binary>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
-    SharedExp postVisit(const std::shared_ptr<Const>& exp) override;
+    /// \copydoc ExpModifier::postModify
+    SharedExp postModify(const std::shared_ptr<Const>& exp) override;
 };

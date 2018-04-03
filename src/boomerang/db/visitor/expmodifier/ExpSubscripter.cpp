@@ -23,7 +23,7 @@ ExpSubscripter::ExpSubscripter(const SharedExp& s, Statement* def)
 }
 
 
-SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp ExpSubscripter::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (*exp == *m_search) {
         visitChildren = exp->isMemOf();         // Don't double subscript unless m[...]
@@ -35,7 +35,7 @@ SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Location>& exp, bool& v
 }
 
 
-SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp ExpSubscripter::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
     // array[index] is like m[addrexp]: requires a subscript
     if (exp->isArrayIndex() && (*exp == *m_search)) {
@@ -48,7 +48,7 @@ SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Binary>& exp, bool& vis
 }
 
 
-SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Terminal>& exp)
+SharedExp ExpSubscripter::preModify(const std::shared_ptr<Terminal>& exp)
 {
     if (*exp == *m_search) {
         return RefExp::get(exp, m_def);
@@ -58,7 +58,7 @@ SharedExp ExpSubscripter::preVisit(const std::shared_ptr<Terminal>& exp)
 }
 
 
-SharedExp ExpSubscripter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+SharedExp ExpSubscripter::preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     // Don't look inside... not sure about this
     visitChildren = false;

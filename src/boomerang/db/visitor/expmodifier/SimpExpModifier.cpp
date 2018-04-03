@@ -27,7 +27,7 @@ SimpExpModifier::SimpExpModifier()
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -35,7 +35,7 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Unary>& exp, bool& vis
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -43,7 +43,7 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Binary>& exp, bool& vi
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<Ternary>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -51,7 +51,7 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Ternary>& exp, bool& v
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -59,7 +59,7 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<TypedExp>& exp, bool& 
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<FlagDef>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<FlagDef>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -67,7 +67,7 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<FlagDef>& exp, bool& v
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -75,7 +75,7 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<RefExp>& exp, bool& vi
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -83,21 +83,21 @@ SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Location>& exp, bool& 
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Const>& exp)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<Const>& exp)
 {
     m_mask <<= 1;
     return exp;
 }
 
 
-SharedExp SimpExpModifier::preVisit(const std::shared_ptr<Terminal>& exp)
+SharedExp SimpExpModifier::preModify(const std::shared_ptr<Terminal>& exp)
 {
     m_mask <<= 1;
     return exp;
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Location>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Location>& exp)
 {
     SharedExp ret = exp;
 
@@ -110,7 +110,7 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Location>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<RefExp>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<RefExp>& exp)
 {
     SharedExp ret = exp;
 
@@ -123,7 +123,7 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<RefExp>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Unary>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Unary>& exp)
 {
     SharedExp ret = exp;
 
@@ -136,7 +136,7 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Unary>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Binary>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Binary>& exp)
 {
     SharedExp ret = exp;
 
@@ -149,7 +149,7 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Binary>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Ternary>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Ternary>& exp)
 {
     SharedExp ret = exp;
 
@@ -162,7 +162,7 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Ternary>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<TypedExp>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<TypedExp>& exp)
 {
     SharedExp ret = exp;
 
@@ -175,7 +175,7 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<TypedExp>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<FlagDef>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<FlagDef>& exp)
 {
     SharedExp ret = exp;
 
@@ -188,14 +188,14 @@ SharedExp SimpExpModifier::postVisit(const std::shared_ptr<FlagDef>& exp)
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Const>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Const>& exp)
 {
     m_mask >>= 1;
     return exp;
 }
 
 
-SharedExp SimpExpModifier::postVisit(const std::shared_ptr<Terminal>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Terminal>& exp)
 {
     m_mask >>= 1;
     return exp;

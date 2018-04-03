@@ -51,31 +51,31 @@ public:
      * \param[out] visitChildren true to continue visiting children.
      * \returns the modified expression
      */
-    virtual SharedExp preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren);
+    virtual SharedExp preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildren);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<Ternary>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<FlagDef>& exp, bool& visitChildren);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<FlagDef>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<Const>& exp);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<Const>& exp);
 
-    /// \copydoc ExpModifier::preVisit
-    virtual SharedExp preVisit(const std::shared_ptr<Terminal>& exp);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp preModify(const std::shared_ptr<Terminal>& exp);
 
     /**
      * Modify the expression after modifying children.
@@ -84,31 +84,31 @@ public:
      * \param exp the expression to modify.
      * \returns the modified expression.
      */
-    virtual SharedExp postVisit(const std::shared_ptr<Unary>& exp);
+    virtual SharedExp postModify(const std::shared_ptr<Unary>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<Binary>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Binary>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<Ternary>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Ternary>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<TypedExp>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<TypedExp>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<FlagDef>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<FlagDef>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<RefExp>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<RefExp>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<Location>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Location>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<Const>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Const>& exp);
 
-    /// \copydoc ExpModifier::postVisit
-    virtual SharedExp postVisit(const std::shared_ptr<Terminal>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Terminal>& exp);
 
 protected:
     bool m_mod = false; ///< Set if there is any change. Don't have to implement

@@ -50,7 +50,7 @@ static SharedExp checkSignedness(SharedExp e, int reqSignedness)
     return e;
 }
 
-SharedExp ExpCastInserter::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+SharedExp ExpCastInserter::preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
     visitChildren = false;
     return exp;
@@ -73,7 +73,7 @@ void ExpCastInserter::checkMemofType(const SharedExp& memof, SharedType memofTyp
 }
 
 
-SharedExp ExpCastInserter::postVisit(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp>& exp)
 {
     SharedExp base = exp->getSubExp1();
 
@@ -94,7 +94,7 @@ SharedExp ExpCastInserter::postVisit(const std::shared_ptr<RefExp>& exp)
 }
 
 
-SharedExp ExpCastInserter::postVisit(const std::shared_ptr<Binary>& exp)
+SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary>& exp)
 {
     OPER op = exp->getOper();
 
@@ -136,7 +136,7 @@ SharedExp ExpCastInserter::postVisit(const std::shared_ptr<Binary>& exp)
 }
 
 
-SharedExp ExpCastInserter::postVisit(const std::shared_ptr<Const>& exp)
+SharedExp ExpCastInserter::postModify(const std::shared_ptr<Const>& exp)
 {
     if (exp->isIntConst()) {
         bool       naturallySigned = exp->getInt() < 0;

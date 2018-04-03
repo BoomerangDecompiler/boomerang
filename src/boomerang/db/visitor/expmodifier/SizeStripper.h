@@ -21,5 +21,5 @@ public:
 
 public:
     /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 };

@@ -21,7 +21,7 @@ CallBypasser::CallBypasser(Statement* enclosing)
 }
 
 
-SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& exp)
+SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp>& exp)
 {
     // If child was modified, simplify now
     SharedExp ret = exp;
@@ -57,7 +57,7 @@ SharedExp CallBypasser::postVisit(const std::shared_ptr<RefExp>& exp)
 }
 
 
-SharedExp CallBypasser::postVisit(const std::shared_ptr<Location>& exp)
+SharedExp CallBypasser::postModify(const std::shared_ptr<Location>& exp)
 {
     // Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
     bool isAddrOfMem = exp->isAddrOf() && exp->getSubExp1()->isMemOf();

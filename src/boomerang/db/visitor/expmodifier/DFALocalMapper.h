@@ -35,17 +35,17 @@ public:
     virtual ~DfaLocalMapper() = default;
 
 public:
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     /// To process m[X]
-    SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     /// To look for sp -+ K
-    SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     /// To prevent processing TypedExps more than once
-    SharedExp preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
 public:
     bool change = false; // True if changed this statement

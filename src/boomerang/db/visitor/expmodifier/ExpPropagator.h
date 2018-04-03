@@ -27,9 +27,9 @@ public:
     bool isChanged() { return m_changed; }
     void clearChanged() { m_changed = false; }
 
-    /// \copydoc SimpExpModifier::postVisit
+    /// \copydoc SimpExpModifier::postModify
     // Ugh! This is still a separate propagation mechanism from Statement::propagateTo()
-    SharedExp postVisit(const std::shared_ptr<RefExp>& exp) override;
+    SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
 
 private:
     bool m_changed;

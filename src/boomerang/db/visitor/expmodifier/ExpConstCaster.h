@@ -25,8 +25,8 @@ public:
 public:
     bool isChanged() const { return m_changed; }
 
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<Const>& exp) override;
+    /// \copydoc ExpModifier::preModify
+    SharedExp preModify(const std::shared_ptr<Const>& exp) override;
 
 private:
     int m_num;

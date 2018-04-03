@@ -24,12 +24,12 @@ class Prog;
 class ConstGlobalConverter : public ExpModifier
 {
 public:
-    ConstGlobalConverter(Prog *pg);
+    ConstGlobalConverter(Prog *prog);
     virtual ~ConstGlobalConverter() = default;
 
 public:
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    /// \copydoc ExpModifier::preModify
+    SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
 private:
     Prog *m_prog; ///< Pointer to the Prog object, for reading memory

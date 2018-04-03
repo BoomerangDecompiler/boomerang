@@ -24,7 +24,7 @@ ConstGlobalConverter::ConstGlobalConverter(Prog* prog)
 }
 
 
-SharedExp ConstGlobalConverter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+SharedExp ConstGlobalConverter::preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     Statement *def = exp->getDef();
 

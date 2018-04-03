@@ -13,7 +13,7 @@
 #include "boomerang/db/exp/Binary.h"
 
 
-SharedExp SizeStripper::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp SizeStripper::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
     visitChildren = true;
 

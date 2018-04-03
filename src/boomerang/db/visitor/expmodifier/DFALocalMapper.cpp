@@ -41,7 +41,7 @@ bool DfaLocalMapper::processExp(const SharedExp& exp)
 }
 
 
-SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp DfaLocalMapper::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     visitChildren = true;
 
@@ -54,7 +54,7 @@ SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Location>& exp, bool& v
 }
 
 
-SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp DfaLocalMapper::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
 #if 1
     // Check for sp -/+ K
@@ -76,7 +76,7 @@ SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<Binary>& exp, bool& vis
 }
 
 
-SharedExp DfaLocalMapper::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+SharedExp DfaLocalMapper::preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
     // Assume it's already been done correctly, so don't recurse into this
     visitChildren = false;

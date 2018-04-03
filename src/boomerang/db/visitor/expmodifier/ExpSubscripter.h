@@ -26,22 +26,19 @@ public:
     virtual ~ExpSubscripter() = default;
 
 public:
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    /// \copydoc ExpModifier::preModify
+    SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+    /// \copydoc ExpModifier::preModify
+    SharedExp preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    /// \copydoc ExpModifier::preModify
+    SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preVisit(const std::shared_ptr<Terminal>& exp) override;
+    /// \copydoc ExpModifier::preModify
+    SharedExp preModify(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     SharedExp m_search;
     Statement *m_def;
 };
-
-
-

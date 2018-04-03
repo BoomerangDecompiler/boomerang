@@ -181,7 +181,7 @@ bool TypedExp::accept(ExpVisitor *v)
 SharedExp TypedExp::accept(ExpModifier *v)
 {
     bool visitChildren;
-    auto ret          = v->preVisit(shared_from_base<TypedExp>(), visitChildren);
+    auto ret          = v->preModify(shared_from_base<TypedExp>(), visitChildren);
     auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
 
     if (visitChildren) {
@@ -189,7 +189,7 @@ SharedExp TypedExp::accept(ExpModifier *v)
     }
 
     assert(typedexp_ret);
-    return v->postVisit(typedexp_ret);
+    return v->postModify(typedexp_ret);
 }
 
 

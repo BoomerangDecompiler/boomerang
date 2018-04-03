@@ -22,7 +22,7 @@ ExpSsaXformer::ExpSsaXformer(UserProc* p)
 }
 
 
-SharedExp ExpSsaXformer::postVisit(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpSsaXformer::postModify(const std::shared_ptr<RefExp>& exp)
 {
     QString sym = m_proc->lookupSymFromRefAny(exp);
 
@@ -34,5 +34,3 @@ SharedExp ExpSsaXformer::postVisit(const std::shared_ptr<RefExp>& exp)
     LOG_ERROR("Could not find local or parameter for %1!!", exp);
     return exp->getSubExp1(); // At least strip off the subscript
 }
-
-

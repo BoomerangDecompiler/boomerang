@@ -22,7 +22,7 @@ Localiser::Localiser(CallStatement* call)
 }
 
 
-SharedExp Localiser::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+SharedExp Localiser::preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     visitChildren    = false; // Don't recurse into already subscripted variables
     m_mask <<= 1;
@@ -30,7 +30,7 @@ SharedExp Localiser::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChi
 }
 
 
-SharedExp Localiser::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp Localiser::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     visitChildren    = true;
     m_mask <<= 1;
@@ -38,7 +38,7 @@ SharedExp Localiser::preVisit(const std::shared_ptr<Location>& exp, bool& visitC
 }
 
 
-SharedExp Localiser::postVisit(const std::shared_ptr<Location>& exp)
+SharedExp Localiser::postModify(const std::shared_ptr<Location>& exp)
 {
     SharedExp ret = exp;
 
@@ -64,7 +64,7 @@ SharedExp Localiser::postVisit(const std::shared_ptr<Location>& exp)
 }
 
 
-SharedExp Localiser::postVisit(const std::shared_ptr<Terminal>& exp)
+SharedExp Localiser::postModify(const std::shared_ptr<Terminal>& exp)
 {
     SharedExp ret = exp;
 

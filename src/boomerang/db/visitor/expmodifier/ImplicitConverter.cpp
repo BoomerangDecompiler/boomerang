@@ -20,7 +20,7 @@ ImplicitConverter::ImplicitConverter(Cfg* cfg)
 }
 
 
-SharedExp ImplicitConverter::postVisit(const std::shared_ptr<RefExp>& exp)
+SharedExp ImplicitConverter::postModify(const std::shared_ptr<RefExp>& exp)
 {
     if (exp->getDef() == nullptr) {
         exp->setDef(m_cfg->findOrCreateImplicitAssign(exp->getSubExp1()));

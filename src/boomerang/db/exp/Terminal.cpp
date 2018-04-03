@@ -210,17 +210,17 @@ bool Terminal::accept(ExpVisitor *v)
 SharedExp Terminal::accept(ExpModifier *v)
 {
     // This is important if we need to modify terminals
-    SharedExp val      = v->preVisit(shared_from_base<Terminal>());
+    SharedExp val      = v->preModify(shared_from_base<Terminal>());
     auto      term_res = std::dynamic_pointer_cast<Terminal>(val);
 
     if (term_res) {
-        return v->postVisit(term_res);
+        return v->postModify(term_res);
     }
 
     auto ref_res = std::dynamic_pointer_cast<RefExp>(val);
 
     if (ref_res) {
-        return v->postVisit(ref_res);
+        return v->postModify(ref_res);
     }
 
     assert(false);

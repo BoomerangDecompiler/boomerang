@@ -549,7 +549,7 @@ bool Ternary::accept(ExpVisitor *v)
 SharedExp Ternary::accept(ExpModifier *v)
 {
     bool visitChildren = true;
-    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), visitChildren));
+    auto ret = std::static_pointer_cast<Ternary>(v->preModify(shared_from_base<Ternary>(), visitChildren));
 
     if (visitChildren) {
         subExp1 = subExp1->accept(v);
@@ -558,7 +558,7 @@ SharedExp Ternary::accept(ExpModifier *v)
     }
 
     assert(std::dynamic_pointer_cast<Ternary>(ret));
-    return v->postVisit(ret);
+    return v->postModify(ret);
 }
 
 
