@@ -18,31 +18,31 @@
 #include "boomerang/visitor/expmodifier/ExpCastInserter.h"
 
 
-bool StmtCastInserter::visit(Assign *stmt)
+bool StmtCastInserter::visit(const Assign *stmt)
 {
     return common(stmt);
 }
 
 
-bool StmtCastInserter::visit(PhiAssign *stmt)
+bool StmtCastInserter::visit(const PhiAssign *stmt)
 {
     return common(stmt);
 }
 
 
-bool StmtCastInserter::visit(ImplicitAssign *stmt)
+bool StmtCastInserter::visit(const ImplicitAssign *stmt)
 {
     return common(stmt);
 }
 
 
-bool StmtCastInserter::visit(BoolAssign *stmt)
+bool StmtCastInserter::visit(const BoolAssign *stmt)
 {
     return common(stmt);
 }
 
 
-bool StmtCastInserter::common(Assignment *stmt)
+bool StmtCastInserter::common(const Assignment *stmt)
 {
     SharedExp lhs = stmt->getLeft();
 

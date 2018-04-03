@@ -359,7 +359,7 @@ Statement *BranchStatement::clone() const
 }
 
 
-bool BranchStatement::accept(StmtVisitor *visitor)
+bool BranchStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

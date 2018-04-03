@@ -63,7 +63,7 @@ Statement *PhiAssign::clone() const
 }
 
 
-bool PhiAssign::accept(StmtVisitor *visitor)
+bool PhiAssign::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

@@ -41,7 +41,7 @@ public:
     virtual Statement *clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
@@ -66,6 +66,7 @@ public:
 
     /// Return call's arguments
     StatementList& getArguments() { return m_arguments; }
+    const StatementList& getArguments() const { return m_arguments; }
 
     /// Update the arguments based on a callee change
     void updateArguments();

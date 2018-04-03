@@ -605,7 +605,7 @@ Statement *CallStatement::clone() const
 }
 
 
-bool CallStatement::accept(StmtVisitor *visitor)
+bool CallStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

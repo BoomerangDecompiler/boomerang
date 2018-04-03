@@ -29,17 +29,17 @@ public:
     virtual ~StmtCastInserter() = default;
 
 public:
-    bool common(Assignment *stmt);
+    bool common(const Assignment *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(Assign *stmt) override;
+    virtual bool visit(const Assign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(PhiAssign *stmt) override;
+    virtual bool visit(const PhiAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt) override;
+    virtual bool visit(const ImplicitAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(BoolAssign *stmt) override;
+    virtual bool visit(const BoolAssign *stmt) override;
 };

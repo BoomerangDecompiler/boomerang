@@ -59,7 +59,7 @@ Statement *ImpRefStatement::clone() const
 }
 
 
-bool ImpRefStatement::accept(StmtVisitor *visitor)
+bool ImpRefStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

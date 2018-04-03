@@ -76,7 +76,7 @@ Statement *Assign::clone() const
 }
 
 
-bool Assign::accept(StmtVisitor *visitor)
+bool Assign::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

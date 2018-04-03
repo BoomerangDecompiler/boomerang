@@ -37,36 +37,36 @@ public:
 
 public:
     /// returns true to continue iterating the container
-    virtual bool visit(RTL *rtl);
+    virtual bool visit(const RTL *rtl);
 
     /// Visit this statement.
     /// \returns true to continue visiting.
-    virtual bool visit(Assign *stmt);
+    virtual bool visit(const Assign *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(PhiAssign *stmt);
+    virtual bool visit(const PhiAssign *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt);
+    virtual bool visit(const ImplicitAssign *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(BoolAssign *stmt);
+    virtual bool visit(const BoolAssign *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(GotoStatement *stmt);
+    virtual bool visit(const GotoStatement *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(BranchStatement *stmt);
+    virtual bool visit(const BranchStatement *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(CaseStatement *stmt);
+    virtual bool visit(const CaseStatement *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(CallStatement *stmt);
+    virtual bool visit(const CallStatement *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ReturnStatement *stmt);
+    virtual bool visit(const ReturnStatement *stmt);
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ImpRefStatement *stmt);
+    virtual bool visit(const ImpRefStatement *stmt);
 };

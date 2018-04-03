@@ -45,7 +45,7 @@ public:
     void setRight(SharedExp e) { m_rhs = e; }
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;

@@ -23,31 +23,31 @@ public:
     int getLast() const { return m_curConscript; }
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(Assign *stmt) override;
+    virtual bool visit(const Assign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(PhiAssign *stmt) override;
+    virtual bool visit(const PhiAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt) override;
+    virtual bool visit(const ImplicitAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(BoolAssign *stmt) override;
+    virtual bool visit(const BoolAssign *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(CaseStatement *stmt) override;
+    virtual bool visit(const CaseStatement *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(CallStatement *stmt) override;
+    virtual bool visit(const CallStatement *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ReturnStatement *stmt) override;
+    virtual bool visit(const ReturnStatement *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(BranchStatement *stmt) override;
+    virtual bool visit(const BranchStatement *stmt) override;
 
     /// \copydoc StmtVisitor::visit
-    virtual bool visit(ImpRefStatement *stmt) override;
+    virtual bool visit(const ImpRefStatement *stmt) override;
 
 private:
     int m_curConscript;

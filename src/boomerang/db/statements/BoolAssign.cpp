@@ -206,7 +206,7 @@ Statement *BoolAssign::clone() const
 }
 
 
-bool BoolAssign::accept(StmtVisitor *visitor)
+bool BoolAssign::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

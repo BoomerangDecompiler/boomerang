@@ -147,7 +147,7 @@ public:
 
     /// Accept a visitor (of various kinds) to this Statement.
     /// \return true to continue visiting
-    virtual bool accept(StmtVisitor *visitor)       = 0;
+    virtual bool accept(StmtVisitor *visitor) const = 0;
     virtual bool accept(StmtExpVisitor *visitor)    = 0;
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;

@@ -11,67 +11,67 @@
 
 
 
-bool StmtVisitor::visit(RTL * /*rtl*/)
+bool StmtVisitor::visit(const RTL *)
 {
     // Mostly, don't do anything at the RTL level
     return true;
 }
 
-bool StmtVisitor::visit(Assign* /*stmt*/)
+bool StmtVisitor::visit(const Assign *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(PhiAssign* /*stmt*/)
+bool StmtVisitor::visit(const PhiAssign *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(ImplicitAssign* /*stmt*/)
+bool StmtVisitor::visit(const ImplicitAssign *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(BoolAssign* /*stmt*/)
+bool StmtVisitor::visit(const BoolAssign *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(GotoStatement* /*stmt*/)
+bool StmtVisitor::visit(const GotoStatement *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(BranchStatement* /*stmt*/)
+bool StmtVisitor::visit(const BranchStatement *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(CaseStatement* /*stmt*/)
+bool StmtVisitor::visit(const CaseStatement *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(CallStatement* /*stmt*/)
+bool StmtVisitor::visit(const CallStatement *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(ReturnStatement* /*stmt*/)
+bool StmtVisitor::visit(const ReturnStatement *)
 {
     return true;
 }
 
 
-bool StmtVisitor::visit(ImpRefStatement* /*stmt*/)
+bool StmtVisitor::visit(const ImpRefStatement *)
 {
     return true;
 }

@@ -177,7 +177,7 @@ Statement *GotoStatement::clone() const
 }
 
 
-bool GotoStatement::accept(StmtVisitor *visitor)
+bool GotoStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

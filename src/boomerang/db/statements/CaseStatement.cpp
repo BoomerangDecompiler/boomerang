@@ -119,7 +119,7 @@ Statement *CaseStatement::clone() const
 }
 
 
-bool CaseStatement::accept(StmtVisitor *visitor)
+bool CaseStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

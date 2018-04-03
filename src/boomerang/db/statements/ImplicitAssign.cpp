@@ -49,7 +49,7 @@ Statement *ImplicitAssign::clone() const
 }
 
 
-bool ImplicitAssign::accept(StmtVisitor *visitor)
+bool ImplicitAssign::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

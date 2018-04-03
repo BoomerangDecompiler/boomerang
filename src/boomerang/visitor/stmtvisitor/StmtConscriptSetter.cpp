@@ -29,7 +29,7 @@ StmtConscriptSetter::StmtConscriptSetter(int n, bool clear)
 {
 }
 
-bool StmtConscriptSetter::visit(Assign *stmt)
+bool StmtConscriptSetter::visit(const Assign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
@@ -40,7 +40,7 @@ bool StmtConscriptSetter::visit(Assign *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(PhiAssign *stmt)
+bool StmtConscriptSetter::visit(const PhiAssign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
@@ -50,7 +50,7 @@ bool StmtConscriptSetter::visit(PhiAssign *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(ImplicitAssign *stmt)
+bool StmtConscriptSetter::visit(const ImplicitAssign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
@@ -60,11 +60,11 @@ bool StmtConscriptSetter::visit(ImplicitAssign *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(CallStatement *stmt)
+bool StmtConscriptSetter::visit(const CallStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    for (Statement *s : stmt->getArguments()) {
+    for (const Statement *s : stmt->getArguments()) {
         s->accept(this);
     }
 
@@ -73,10 +73,10 @@ bool StmtConscriptSetter::visit(CallStatement *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(CaseStatement *stmt)
+bool StmtConscriptSetter::visit(const CaseStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
-    SwitchInfo   *si = stmt->getSwitchInfo();
+    const SwitchInfo   *si = stmt->getSwitchInfo();
 
     if (si) {
         si->switchExp->accept(&sc);
@@ -87,7 +87,7 @@ bool StmtConscriptSetter::visit(CaseStatement *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(ReturnStatement *stmt)
+bool StmtConscriptSetter::visit(const ReturnStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
@@ -100,7 +100,7 @@ bool StmtConscriptSetter::visit(ReturnStatement *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(BoolAssign *stmt)
+bool StmtConscriptSetter::visit(const BoolAssign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
@@ -111,7 +111,7 @@ bool StmtConscriptSetter::visit(BoolAssign *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(BranchStatement *stmt)
+bool StmtConscriptSetter::visit(const BranchStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
@@ -121,7 +121,7 @@ bool StmtConscriptSetter::visit(BranchStatement *stmt)
 }
 
 
-bool StmtConscriptSetter::visit(ImpRefStatement *stmt)
+bool StmtConscriptSetter::visit(const ImpRefStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 

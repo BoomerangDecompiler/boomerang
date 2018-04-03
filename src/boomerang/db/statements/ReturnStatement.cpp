@@ -76,7 +76,7 @@ ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
 }
 
 
-bool ReturnStatement::accept(StmtVisitor *visitor)
+bool ReturnStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }
