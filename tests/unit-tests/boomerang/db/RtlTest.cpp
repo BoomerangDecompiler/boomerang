@@ -24,7 +24,7 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/visitor/stmtvisitor/StmtConscriptSetter.h"
+#include "boomerang/visitor/stmtvisitor/StmtConscriptSetter.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/sparc/sparcfrontend.h"
 #include "boomerang/type/type/IntegerType.h"

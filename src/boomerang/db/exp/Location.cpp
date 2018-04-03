@@ -12,8 +12,8 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 

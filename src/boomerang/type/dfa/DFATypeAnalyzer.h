@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 
 
 class Assignment;

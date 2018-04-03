@@ -17,6 +17,7 @@ add_subdirectory(frontend)
 add_subdirectory(passes)
 add_subdirectory(type)
 add_subdirectory(util)
+add_subdirectory(visitor)
 
 
 add_library(boomerang ${boomerang-sources})

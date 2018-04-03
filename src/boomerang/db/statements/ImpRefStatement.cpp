@@ -12,12 +12,12 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/db/visitor/stmtvisitor/StmtVisitor.h"
-#include "boomerang/db/visitor/stmtexpvisitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/stmtmodifier/StmtModifier.h"
-#include "boomerang/db/visitor/stmtmodifier/StmtPartModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
 

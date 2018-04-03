@@ -25,7 +25,7 @@
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/type/type/CompoundType.h"

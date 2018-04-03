@@ -12,8 +12,8 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"

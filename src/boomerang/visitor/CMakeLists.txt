@@ -1,0 +1,57 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+
+list(APPEND boomerang-visitor-sources
+    visitor/expvisitor/BadMemofFinder
+    visitor/expvisitor/ComplexityFinder
+    visitor/expvisitor/ConscriptSetter
+    visitor/expvisitor/ConstFinder
+    visitor/expvisitor/ExpDestCounter
+    visitor/expvisitor/ExpRegMapper
+    visitor/expvisitor/ExpVisitor
+    visitor/expvisitor/FlagsFinder
+    visitor/expvisitor/MemDepthFinder
+    visitor/expvisitor/PrimitiveTester
+    visitor/expvisitor/UsedLocalFinder
+    visitor/expvisitor/UsedLocsFinder
+    visitor/expvisitor/TempToLocalMapper
+
+    visitor/expmodifier/CallBypasser
+    visitor/expmodifier/ConstGlobalConverter
+    visitor/expmodifier/DFALocalMapper
+    visitor/expmodifier/ExpCastInserter
+    visitor/expmodifier/ExpConstCaster
+    visitor/expmodifier/ExpModifier
+    visitor/expmodifier/ExpPropagator
+    visitor/expmodifier/ExpSSAXformer
+    visitor/expmodifier/ExpSubscripter
+    visitor/expmodifier/ImplicitConverter
+    visitor/expmodifier/Localiser
+    visitor/expmodifier/SimpExpModifier
+    visitor/expmodifier/SizeStripper
+
+    visitor/stmtvisitor/StmtCastInserter
+    visitor/stmtvisitor/StmtConscriptSetter
+    visitor/stmtvisitor/StmtVisitor
+
+    visitor/stmtmodifier/PhiStripper
+    visitor/stmtmodifier/StmtImplicitConverter
+    visitor/stmtmodifier/StmtModifier
+    visitor/stmtmodifier/StmtPartModifier
+    visitor/stmtmodifier/StmtSSAXFormer
+    visitor/stmtmodifier/StmtSubscripter
+
+    visitor/stmtexpvisitor/StmtConstFinder
+    visitor/stmtexpvisitor/StmtDestCounter
+    visitor/stmtexpvisitor/StmtExpVisitor
+    visitor/stmtexpvisitor/StmtRegMapper
+    visitor/stmtexpvisitor/UsedLocsVisitor
+)
+
+set(boomerang-sources "${boomerang-sources};${boomerang-visitor-sources}" PARENT_SCOPE)

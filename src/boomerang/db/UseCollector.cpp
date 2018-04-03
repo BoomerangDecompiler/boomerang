@@ -12,7 +12,7 @@
 
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 #include <QString>
 #include <QTextStream>

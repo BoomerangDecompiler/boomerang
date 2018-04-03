@@ -11,8 +11,8 @@
 
 
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 FlagDef::FlagDef(const SharedExp& params, const SharedRTL& _rtl)

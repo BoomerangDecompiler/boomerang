@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/visitor/expmodifier/ImplicitConverter.h"
+#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/db/exp/Location.h"
 
 

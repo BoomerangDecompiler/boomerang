@@ -70,52 +70,6 @@ list(APPEND boomerang-db-sources
     db/statements/Statement
     db/statements/StatementHelper
     db/statements/TypingStatement
-
-    # visitors
-    db/visitor/expvisitor/BadMemofFinder
-    db/visitor/expvisitor/ComplexityFinder
-    db/visitor/expvisitor/ConscriptSetter
-    db/visitor/expvisitor/ConstFinder
-    db/visitor/expvisitor/ExpDestCounter
-    db/visitor/expvisitor/ExpRegMapper
-    db/visitor/expvisitor/ExpVisitor
-    db/visitor/expvisitor/FlagsFinder
-    db/visitor/expvisitor/MemDepthFinder
-    db/visitor/expvisitor/PrimitiveTester
-    db/visitor/expvisitor/UsedLocalFinder
-    db/visitor/expvisitor/UsedLocsFinder
-    db/visitor/expvisitor/TempToLocalMapper
-
-    db/visitor/expmodifier/CallBypasser
-    db/visitor/expmodifier/ConstGlobalConverter
-    db/visitor/expmodifier/DFALocalMapper
-    db/visitor/expmodifier/ExpCastInserter
-    db/visitor/expmodifier/ExpConstCaster
-    db/visitor/expmodifier/ExpModifier
-    db/visitor/expmodifier/ExpPropagator
-    db/visitor/expmodifier/ExpSSAXformer
-    db/visitor/expmodifier/ExpSubscripter
-    db/visitor/expmodifier/ImplicitConverter
-    db/visitor/expmodifier/Localiser
-    db/visitor/expmodifier/SimpExpModifier
-    db/visitor/expmodifier/SizeStripper
-
-    db/visitor/stmtvisitor/StmtCastInserter
-    db/visitor/stmtvisitor/StmtConscriptSetter
-    db/visitor/stmtvisitor/StmtVisitor
-
-    db/visitor/stmtmodifier/PhiStripper
-    db/visitor/stmtmodifier/StmtImplicitConverter
-    db/visitor/stmtmodifier/StmtModifier
-    db/visitor/stmtmodifier/StmtPartModifier
-    db/visitor/stmtmodifier/StmtSSAXFormer
-    db/visitor/stmtmodifier/StmtSubscripter
-
-    db/visitor/stmtexpvisitor/StmtConstFinder
-    db/visitor/stmtexpvisitor/StmtDestCounter
-    db/visitor/stmtexpvisitor/StmtExpVisitor
-    db/visitor/stmtexpvisitor/StmtRegMapper
-    db/visitor/stmtexpvisitor/UsedLocsVisitor
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-db-sources}" PARENT_SCOPE)

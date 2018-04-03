@@ -22,7 +22,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/visitor/expmodifier/ConstGlobalConverter.h"
+#include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FuncType.h"
