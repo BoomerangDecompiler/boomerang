@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 
 

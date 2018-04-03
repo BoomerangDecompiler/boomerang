@@ -15,7 +15,7 @@
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/visitor/ExpCastInserter.h"
+#include "boomerang/db/visitor/expmodifier/ExpCastInserter.h"
 
 
 bool StmtCastInserter::visit(Assign *stmt)

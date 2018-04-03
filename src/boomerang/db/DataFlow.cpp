@@ -19,8 +19,8 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/visitor/ExpSSAXformer.h"
-#include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/db/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>

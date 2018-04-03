@@ -16,7 +16,7 @@
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/visitor/ExpSubscripter.h"
+#include "boomerang/db/visitor/expmodifier/ExpSubscripter.h"
 
 
 StmtSubscripter::StmtSubscripter(ExpSubscripter *es)

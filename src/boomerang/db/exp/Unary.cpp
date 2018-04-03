@@ -19,7 +19,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"

@@ -10,7 +10,8 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/SimpExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/SimpExpModifier.h"
+
 
 class Statement;
 

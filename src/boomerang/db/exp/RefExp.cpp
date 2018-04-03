@@ -18,7 +18,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"

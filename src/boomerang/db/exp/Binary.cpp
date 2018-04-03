@@ -14,7 +14,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/CompoundType.h"

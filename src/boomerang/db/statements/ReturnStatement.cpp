@@ -19,7 +19,7 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/db/visitor/StmtVisitor.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtModifier.h"

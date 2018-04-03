@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/db/visitor/StmtImplicitConverter.h"
 #include "boomerang/util/StatementList.h"
 

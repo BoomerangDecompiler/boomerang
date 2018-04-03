@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 
 
 using SharedType = std::shared_ptr<class Type>;

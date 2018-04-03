@@ -10,7 +10,7 @@
 #include "StmtModifier.h"
 
 
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/db/visitor/expmodifier/ExpModifier.h"
 
 
 StmtModifier::StmtModifier(ExpModifier* em, bool ignnoreCol)

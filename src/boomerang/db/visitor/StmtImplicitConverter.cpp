@@ -13,7 +13,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/visitor/ImplicitConverter.h"
+#include "boomerang/db/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/db/exp/RefExp.h"
 
 
