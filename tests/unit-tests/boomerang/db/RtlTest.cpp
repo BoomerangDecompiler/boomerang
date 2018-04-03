@@ -24,14 +24,14 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/visitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtConscriptSetter.h"
+#include "boomerang/db/visitor/stmtvisitor/StmtConscriptSetter.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/sparc/sparcfrontend.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>
+
 
 #define SWITCH_SPARC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/switch_cc"))
 #define SWITCH_PENT     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/switch_cc"))

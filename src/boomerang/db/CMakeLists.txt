@@ -100,9 +100,11 @@ list(APPEND boomerang-db-sources
     db/visitor/expmodifier/SimpExpModifier
     db/visitor/expmodifier/SizeStripper
 
+    db/visitor/stmtvisitor/StmtCastInserter
+    db/visitor/stmtvisitor/StmtConscriptSetter
+    db/visitor/stmtvisitor/StmtVisitor
+
     db/visitor/PhiStripper
-    db/visitor/StmtCastInserter
-    db/visitor/StmtConscriptSetter
     db/visitor/StmtConstFinder
     db/visitor/StmtDestCounter
     db/visitor/StmtExpVisitor
@@ -112,7 +114,6 @@ list(APPEND boomerang-db-sources
     db/visitor/StmtRegMapper
     db/visitor/StmtSSAXFormer
     db/visitor/StmtSubscripter
-    db/visitor/StmtVisitor
     db/visitor/UsedLocsVisitor
 )
 
