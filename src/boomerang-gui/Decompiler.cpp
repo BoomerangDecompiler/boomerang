@@ -211,7 +211,7 @@ void Decompiler::onFunctionCreated(Function *function)
             params = "<unknown>";
         }
         else {
-            for (size_t i = 0; i < function->getSignature()->getNumParams(); i++) {
+            for (int i = 0; i < function->getSignature()->getNumParams(); i++) {
                 auto ty = function->getSignature()->getParamType(i);
                 params.append(ty->getCtype());
                 params.append(" ");

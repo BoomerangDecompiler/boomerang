@@ -42,7 +42,15 @@ void SignatureTest::testFindReturn()
 
 void SignatureTest::testAddParameter()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addParameter(Location::regOf(25));
+    QCOMPARE(sig.getNumParams(), 1);
+    QVERIFY(*sig.getParamType(0) == *VoidType::get());
+
+    sig.addParameter(Location::regOf(25), IntegerType::get(32, 1));
+    QCOMPARE(sig.getNumParams(), 2);
+    QVERIFY(*sig.getParamType(1) == *IntegerType::get(32, 1));
 }
 
 

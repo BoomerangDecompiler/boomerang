@@ -829,7 +829,7 @@ bool CallStatement::convertToDirect()
     qDeleteAll(m_arguments);
     m_arguments.clear();
 
-    for (unsigned i = 0; i < sig->getNumParams(); i++) {
+    for (int i = 0; i < sig->getNumParams(); i++) {
         SharedExp a   = sig->getParamExp(i);
         Assign    *as = new Assign(VoidType::get(), a->clone(), a->clone());
         as->setProc(m_proc);
@@ -1327,7 +1327,7 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
 
     LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());
 
-    if (m_arguments.size() < m_signature->getNumParams()) {
+    if (static_cast<int>(m_arguments.size()) < m_signature->getNumParams()) {
         Assign *as = makeArgAssign(ty, paramExp);
         m_arguments.append(as);
     }

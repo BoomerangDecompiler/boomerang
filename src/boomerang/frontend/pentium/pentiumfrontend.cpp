@@ -902,7 +902,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
     // looking for function pointers
     auto calledSig = call->getDestProc()->getSignature();
 
-    for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
+    for (int i = 0; i < calledSig->getNumParams(); i++) {
         // check param type
         SharedType paramType = calledSig->getParamType(i);
         SharedType points_to;
@@ -933,7 +933,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
 
         // count pushes backwards to find arg
         SharedExp found = nullptr;
-        unsigned int pushcount = 0;
+        int pushcount = 0;
 
         for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; ++itr) {
             RTL *rtl = itr->get();

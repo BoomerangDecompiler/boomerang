@@ -36,7 +36,7 @@ void CTest::testSignature()
     SharedType t = PointerType::get(CharType::get());
 
     // Pentium signatures used to have esp prepended to the list of parameters; no more?
-    QCOMPARE(sig->getNumParams(), size_t(1));
+    QCOMPARE(sig->getNumParams(), 1);
     QVERIFY(*sig->getParamType(0) == *t);
     QCOMPARE(sig->getParamName(0), QString("fmt"));
     QVERIFY(sig->hasEllipsis());

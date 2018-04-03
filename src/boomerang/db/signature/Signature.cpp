@@ -106,6 +106,11 @@ Signature::Signature(const QString& name)
 }
 
 
+Signature::~Signature()
+{
+}
+
+
 std::shared_ptr<Signature> Signature::clone() const
 {
     auto n = std::make_shared<Signature>(m_name);
@@ -237,9 +242,9 @@ void Signature::removeParameter(const SharedExp& e)
 }
 
 
-void Signature::removeParameter(size_t i)
+void Signature::removeParameter(int i)
 {
-    for (size_t j = i + 1; j < m_params.size(); j++) {
+    for (int j = i + 1; j < static_cast<int>(m_params.size()); j++) {
         m_params[j - 1] = m_params[j];
     }
 
@@ -247,30 +252,30 @@ void Signature::removeParameter(size_t i)
 }
 
 
-void Signature::setNumParams(size_t n)
+void Signature::setNumParams(int n)
 {
-    if (n < m_params.size()) {
+    if (n < static_cast<int>(m_params.size())) {
         // truncate
         m_params.erase(m_params.begin() + n, m_params.end());
     }
     else {
-        for (size_t i = m_params.size(); i < n; i++) {
+        for (int i = static_cast<int>(m_params.size()); i < n; i++) {
             addParameter(nullptr, VoidType::get());
         }
     }
 }
 
 
-const QString& Signature::getParamName(size_t n) const
+const QString& Signature::getParamName(int n) const
 {
-    assert(n < m_params.size());
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
     return m_params[n]->getName();
 }
 
 
 SharedExp Signature::getParamExp(int n) const
 {
-    assert(n < static_cast<int>(m_params.size()));
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
     return m_params[n]->getExp();
 }
 
@@ -279,7 +284,7 @@ SharedType Signature::getParamType(int n) const
 {
     // assert(n < (int)params.size() || ellipsis);
     // With recursion, parameters not set yet. Hack for now:
-    if (n >= static_cast<int>(m_params.size())) {
+    if (!Util::inRange(n, 0, static_cast<int>(m_params.size()))) {
         return nullptr;
     }
 
@@ -289,7 +294,7 @@ SharedType Signature::getParamType(int n) const
 
 QString Signature::getParamBoundMax(int n) const
 {
-    if (n >= static_cast<int>(m_params.size())) {
+    if (!Util::inRange(n, 0, static_cast<int>(m_params.size()))) {
         return QString::null;
     }
 
@@ -305,11 +310,12 @@ QString Signature::getParamBoundMax(int n) const
 
 void Signature::setParamType(int n, SharedType ty)
 {
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
     m_params[n]->setType(ty);
 }
 
 
-void Signature::setParamType(const char *name, SharedType ty)
+void Signature::setParamType(const QString& name, SharedType ty)
 {
     int idx = findParam(name);
 
@@ -335,21 +341,23 @@ void Signature::setParamType(const SharedExp& e, SharedType ty)
 }
 
 
-void Signature::setParamName(int n, const char *_name)
+void Signature::setParamName(int n, const QString& name)
 {
-    m_params[n]->setName(_name);
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
+    m_params[n]->setName(name);
 }
 
 
 void Signature::setParamExp(int n, SharedExp e)
 {
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
     m_params[n]->setExp(e);
 }
 
 
 int Signature::findParam(const SharedExp& e) const
 {
-    for (unsigned i = 0; i < getNumParams(); i++) {
+    for (int i = 0; i < getNumParams(); i++) {
         if (*getParamExp(i) == *e) {
             return i;
         }
@@ -361,7 +369,7 @@ int Signature::findParam(const SharedExp& e) const
 
 void Signature::renameParam(const QString& oldName, const QString& newName)
 {
-    for (unsigned i = 0; i < getNumParams(); i++) {
+    for (int i = 0; i < getNumParams(); i++) {
         if (m_params[i]->getName() == oldName) {
             m_params[i]->setName(newName);
             break;
@@ -372,7 +380,7 @@ void Signature::renameParam(const QString& oldName, const QString& newName)
 
 int Signature::findParam(const QString& name) const
 {
-    for (unsigned i = 0; i < getNumParams(); i++) {
+    for (int i = 0; i < getNumParams(); i++) {
         if (getParamName(i) == name) {
             return i;
         }
@@ -523,11 +531,6 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
         LOG_ERROR("Unknown signature: %1 %2", getConventionName(cc), getPlatformName(plat));
         return nullptr;
     }
-}
-
-
-Signature::~Signature()
-{
 }
 
 

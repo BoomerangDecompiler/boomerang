@@ -40,7 +40,7 @@ public:
     void setName(const QString& name) { m_name = name; }
     void setExp(SharedExp e) { m_exp = e; }
 
-    /// this parameter is the bound of another parameter with name nam
+    /// this parameter is the bound of another parameter with name \p name
     void setBoundMax(const QString& name);
 
 private:

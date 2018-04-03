@@ -107,25 +107,25 @@ public:
                               SharedType type = VoidType::get(), const QString& boundMax = "");
 
     virtual void removeParameter(const SharedExp& e);
-    virtual void removeParameter(size_t i);
+    virtual void removeParameter(int i);
 
     // set the number of parameters using defaults
-    virtual void setNumParams(size_t n);
+    virtual void setNumParams(int n);
 
     // accessors for parameters
-    virtual size_t getNumParams() const { return m_params.size(); }
+    virtual int getNumParams() const { return m_params.size(); }
 
     const std::vector<std::shared_ptr<Parameter>>& getParameters() const { return m_params; }
 
-    virtual const QString& getParamName(size_t n) const;
+    virtual const QString& getParamName(int n) const;
     virtual SharedExp getParamExp(int n) const;
     virtual SharedType getParamType(int n) const;
     virtual QString getParamBoundMax(int n) const;
 
     virtual void setParamType(int n, SharedType ty);
-    virtual void setParamType(const char *name, SharedType ty);
+    virtual void setParamType(const QString& name, SharedType ty);
     virtual void setParamType(const SharedExp& e, SharedType ty);
-    virtual void setParamName(int n, const char *name);
+    virtual void setParamName(int n, const QString& name);
     virtual void setParamExp(int n, SharedExp e);
 
     // Return the index for the given expression, or -1 if not found
