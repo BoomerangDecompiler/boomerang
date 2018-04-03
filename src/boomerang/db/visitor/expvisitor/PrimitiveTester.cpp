@@ -14,7 +14,7 @@
 #include "boomerang/db/exp/RefExp.h"
 
 
-bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*exp*/, bool& visitChildren)
+bool PrimitiveTester::preVisit(const std::shared_ptr<Location>& /*exp*/, bool& visitChildren)
 {
     // We reached a bare (unsubscripted) location. This is certainly not primitive
     visitChildren = false;
@@ -23,7 +23,7 @@ bool PrimitiveTester::visit(const std::shared_ptr<Location>& /*exp*/, bool& visi
 }
 
 
-bool PrimitiveTester::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+bool PrimitiveTester::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     Statement *def = exp->getDef();
 

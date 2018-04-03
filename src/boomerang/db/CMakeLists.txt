@@ -72,28 +72,31 @@ list(APPEND boomerang-db-sources
     db/statements/TypingStatement
 
     # visitors
-    db/visitor/BadMemofFinder
+    db/visitor/expvisitor/BadMemofFinder
+    db/visitor/expvisitor/ComplexityFinder
+    db/visitor/expvisitor/ConscriptSetter
+    db/visitor/expvisitor/ConstFinder
+    db/visitor/expvisitor/ExpDestCounter
+    db/visitor/expvisitor/ExpRegMapper
+    db/visitor/expvisitor/ExpVisitor
+    db/visitor/expvisitor/FlagsFinder
+    db/visitor/expvisitor/MemDepthFinder
+    db/visitor/expvisitor/PrimitiveTester
+    db/visitor/expvisitor/UsedLocalFinder
+    db/visitor/expvisitor/UsedLocsFinder
+
     db/visitor/CallBypasser
-    db/visitor/ComplexityFinder
-    db/visitor/ConscriptSetter
-    db/visitor/ConstFinder
     db/visitor/ConstGlobalConverter
     db/visitor/DFALocalMapper
     db/visitor/ExpCastInserter
     db/visitor/ExpConstCaster
-    db/visitor/ExpDestCounter
     db/visitor/ExpModifier
     db/visitor/ExpPropagator
-    db/visitor/ExpRegMapper
     db/visitor/ExpSSAXformer
     db/visitor/ExpSubscripter
-    db/visitor/ExpVisitor
-    db/visitor/FlagsFinder
     db/visitor/ImplicitConverter
     db/visitor/Localiser
-    db/visitor/MemDepthFinder
     db/visitor/PhiStripper
-    db/visitor/PrimitiveTester
     db/visitor/SimpExpModifier
     db/visitor/SizeStripper
     db/visitor/StmtCastInserter
@@ -109,8 +112,6 @@ list(APPEND boomerang-db-sources
     db/visitor/StmtSubscripter
     db/visitor/StmtVisitor
     db/visitor/TempToLocalMapper
-    db/visitor/UsedLocalFinder
-    db/visitor/UsedLocsFinder
     db/visitor/UsedLocsVisitor
 )
 

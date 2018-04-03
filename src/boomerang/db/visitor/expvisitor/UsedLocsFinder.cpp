@@ -22,7 +22,7 @@ UsedLocsFinder::UsedLocsFinder(LocationSet& used, bool memOnly)
 {}
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool UsedLocsFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (!m_memOnly) {
         m_used->insert(exp->shared_from_this());       // All locations visited are used
@@ -46,7 +46,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChil
 }
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& exp)
+bool UsedLocsFinder::preVisit(const std::shared_ptr<Terminal>& exp)
 {
     if (m_memOnly) {
         return true; // Only interested in m[...]
@@ -76,7 +76,7 @@ bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& exp)
 }
 
 
-bool UsedLocsFinder::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+bool UsedLocsFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     if (m_memOnly) {
         visitChildren = true; // Look inside the ref for m[...]

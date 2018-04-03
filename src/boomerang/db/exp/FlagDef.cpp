@@ -12,7 +12,7 @@
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 
 
 FlagDef::FlagDef(const SharedExp& params, const SharedRTL& _rtl)
@@ -48,7 +48,7 @@ void FlagDef::appendDotFile(QTextStream& of)
 bool FlagDef::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<FlagDef>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<FlagDef>(), visitChildren);
 
     if (!visitChildren) {
         return ret;

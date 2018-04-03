@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 
 
 /// Used by range analysis
@@ -21,8 +21,8 @@ public:
     virtual ~MemDepthFinder() = default;
 
 public:
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     int getDepth() { return depth; }
 

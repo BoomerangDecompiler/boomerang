@@ -16,7 +16,7 @@
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/StatementHelper.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/StmtVisitor.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtModifier.h"

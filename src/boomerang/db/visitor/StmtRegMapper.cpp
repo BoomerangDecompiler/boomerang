@@ -15,7 +15,7 @@
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/visitor/ExpRegMapper.h"
+#include "boomerang/db/visitor/expvisitor/ExpRegMapper.h"
 
 
 StmtRegMapper::StmtRegMapper(ExpRegMapper* erm)

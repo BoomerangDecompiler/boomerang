@@ -10,7 +10,7 @@
 #include "StmtConstFinder.h"
 
 
-#include "boomerang/db/visitor/ConstFinder.h"
+#include "boomerang/db/visitor/expvisitor/ConstFinder.h"
 
 
 StmtConstFinder::StmtConstFinder(ConstFinder* v)

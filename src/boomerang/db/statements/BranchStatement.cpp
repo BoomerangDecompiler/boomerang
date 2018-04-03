@@ -15,7 +15,7 @@
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/statements/StatementHelper.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/StmtVisitor.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtModifier.h"

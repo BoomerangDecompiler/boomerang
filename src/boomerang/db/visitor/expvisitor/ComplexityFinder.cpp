@@ -20,7 +20,7 @@ ComplexityFinder::ComplexityFinder(UserProc* proc)
 }
 
 
-bool ComplexityFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (m_proc && (m_proc->findFirstSymbol(exp) != nullptr)) {
         // This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
@@ -37,7 +37,7 @@ bool ComplexityFinder::visit(const std::shared_ptr<Location>& exp, bool& visitCh
 }
 
 
-bool ComplexityFinder::visit(const std::shared_ptr<Unary>& /*exp*/, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Unary>& /*exp*/, bool& visitChildren)
 {
     m_count++;
 
@@ -46,7 +46,7 @@ bool ComplexityFinder::visit(const std::shared_ptr<Unary>& /*exp*/, bool& visitC
 }
 
 
-bool ComplexityFinder::visit(const std::shared_ptr<Binary>& /*exp*/, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Binary>& /*exp*/, bool& visitChildren)
 {
     m_count++;
     visitChildren = true;
@@ -54,7 +54,7 @@ bool ComplexityFinder::visit(const std::shared_ptr<Binary>& /*exp*/, bool& visit
 }
 
 
-bool ComplexityFinder::visit(const std::shared_ptr<Ternary>& /*exp*/, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Ternary>& /*exp*/, bool& visitChildren)
 {
     m_count++;
     visitChildren = true;

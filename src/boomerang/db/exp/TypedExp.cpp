@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
 
@@ -164,7 +164,7 @@ SharedExp TypedExp::polySimplify(bool& changed)
 bool TypedExp::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<TypedExp>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<TypedExp>(), visitChildren);
 
     if (!visitChildren) {
         return ret;

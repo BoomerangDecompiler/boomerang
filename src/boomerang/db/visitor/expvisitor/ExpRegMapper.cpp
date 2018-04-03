@@ -21,7 +21,7 @@ ExpRegMapper::ExpRegMapper(UserProc *p)
 }
 
 
-bool ExpRegMapper::visit(const std::shared_ptr<RefExp>& e, bool& visitChildren)
+bool ExpRegMapper::preVisit(const std::shared_ptr<RefExp>& e, bool& visitChildren)
 {
     SharedExp base = e->getSubExp1();
 

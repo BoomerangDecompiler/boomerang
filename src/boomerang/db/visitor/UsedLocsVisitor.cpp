@@ -17,7 +17,7 @@
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ReturnStatement.h"
-#include "boomerang/db/visitor/UsedLocsFinder.h"
+#include "boomerang/db/visitor/expvisitor/UsedLocsFinder.h"
 
 
 UsedLocsVisitor::UsedLocsVisitor(ExpVisitor* v, bool cc)

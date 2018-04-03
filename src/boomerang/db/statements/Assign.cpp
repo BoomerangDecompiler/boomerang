@@ -15,7 +15,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Unary.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"
 #include "boomerang/db/visitor/StmtVisitor.h"

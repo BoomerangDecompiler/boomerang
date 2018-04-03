@@ -19,7 +19,7 @@ MemDepthFinder::MemDepthFinder()
 }
 
 
-bool MemDepthFinder::visit(const std::shared_ptr<Location>& e, bool& visitChildren)
+bool MemDepthFinder::preVisit(const std::shared_ptr<Location>& e, bool& visitChildren)
 {
     if (e->isMemOf()) {
         ++depth;

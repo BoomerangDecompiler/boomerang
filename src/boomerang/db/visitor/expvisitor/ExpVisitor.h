@@ -43,31 +43,31 @@ public:
      * \returns true to continue visiting
      * return false to abandon iterating through the expression (terminate the search).
      */
-    virtual bool visit(const std::shared_ptr<Unary>& exp,    bool& visitChildren);
+    virtual bool preVisit(const std::shared_ptr<Unary>& exp,    bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>& exp,   bool& visitChildren);
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Binary>& exp,   bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Ternary>& exp,  bool& visitChildren);
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Ternary>& exp,  bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren);
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<FlagDef>& exp,  bool& visitChildren);
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<FlagDef>& exp,  bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<RefExp>& exp,   bool& visitChildren);
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<RefExp>& exp,   bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren);
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren);
 
-    /// \copydoc ExpVisitor::visit
+    /// \copydoc ExpVisitor::preVisit
     /// A Const does not have children
-    virtual bool visit(const std::shared_ptr<Const>& exp);
+    virtual bool preVisit(const std::shared_ptr<Const>& exp);
 
     /// \copydoc ExpVisitor::visit
     /// A Terminal does not have children
-    virtual bool visit(const std::shared_ptr<Terminal>& exp);
+    virtual bool preVisit(const std::shared_ptr<Terminal>& exp);
 };

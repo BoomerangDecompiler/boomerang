@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/db/visitor/StmtVisitor.h"
 #include "boomerang/db/visitor/StmtExpVisitor.h"

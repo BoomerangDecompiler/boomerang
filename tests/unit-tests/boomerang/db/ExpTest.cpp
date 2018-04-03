@@ -18,7 +18,7 @@
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/visitor/FlagsFinder.h"
+#include "boomerang/db/visitor/expvisitor/FlagsFinder.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/PointerType.h"

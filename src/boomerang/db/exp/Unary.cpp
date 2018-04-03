@@ -18,7 +18,7 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -640,7 +640,7 @@ void Unary::printx(int ind) const
 bool Unary::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<Unary>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<Unary>(), visitChildren);
 
     if (!visitChildren || !ret) {
         return ret; // Override the rest of the accept logic

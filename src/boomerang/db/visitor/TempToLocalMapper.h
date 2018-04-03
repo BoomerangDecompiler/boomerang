@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 
 class UserProc;
 
@@ -26,7 +26,7 @@ public:
 
 public:
     /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
 private:
     UserProc *m_proc; ///< Proc object for storing the symbols

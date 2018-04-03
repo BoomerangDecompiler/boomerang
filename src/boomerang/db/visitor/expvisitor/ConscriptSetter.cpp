@@ -30,7 +30,7 @@ int ConscriptSetter::getLast() const
 }
 
 
-bool ConscriptSetter::visit(const std::shared_ptr<Const>& exp)
+bool ConscriptSetter::preVisit(const std::shared_ptr<Const>& exp)
 {
     if (!m_inLocalGlobal) {
         if (m_clear) {
@@ -46,7 +46,7 @@ bool ConscriptSetter::visit(const std::shared_ptr<Const>& exp)
 }
 
 
-bool ConscriptSetter::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool ConscriptSetter::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     OPER op = exp->getOper();
 
@@ -59,7 +59,7 @@ bool ConscriptSetter::visit(const std::shared_ptr<Location>& exp, bool& visitChi
 }
 
 
-bool ConscriptSetter::visit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+bool ConscriptSetter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
     OPER op = exp->getOper();
 

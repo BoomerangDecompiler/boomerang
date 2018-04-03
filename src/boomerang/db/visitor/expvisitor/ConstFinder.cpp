@@ -19,14 +19,14 @@ ConstFinder::ConstFinder(std::list<std::shared_ptr<Const> >& list)
 }
 
 
-bool ConstFinder::visit(const std::shared_ptr<Const>& exp)
+bool ConstFinder::preVisit(const std::shared_ptr<Const>& exp)
 {
     m_constList.push_back(exp);
     return true;
 }
 
 
-bool ConstFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool ConstFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (exp->isMemOf()) {
         visitChildren = true; // We DO want to see constants in memofs

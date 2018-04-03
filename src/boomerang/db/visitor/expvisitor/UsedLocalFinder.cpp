@@ -23,7 +23,7 @@ UsedLocalFinder::UsedLocalFinder(LocationSet& used, UserProc* proc)
 {
 }
 
-bool UsedLocalFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool UsedLocalFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     visitChildren = true;
 
@@ -35,7 +35,7 @@ bool UsedLocalFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChi
 }
 
 
-bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+bool UsedLocalFinder::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
 {
     visitChildren = true;
     SharedType ty = exp->getType();
@@ -55,7 +55,7 @@ bool UsedLocalFinder::visit(const std::shared_ptr<TypedExp>& exp, bool& visitChi
 }
 
 
-bool UsedLocalFinder::visit(const std::shared_ptr<Terminal>& exp)
+bool UsedLocalFinder::preVisit(const std::shared_ptr<Terminal>& exp)
 {
     if (exp->getOper() == opDefineAll) {
         all = true;

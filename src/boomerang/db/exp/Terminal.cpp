@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -203,7 +203,7 @@ void Terminal::appendDotFile(QTextStream& of)
 
 bool Terminal::accept(ExpVisitor *v)
 {
-    return v->visit(shared_from_base<Terminal>());
+    return v->preVisit(shared_from_base<Terminal>());
 }
 
 

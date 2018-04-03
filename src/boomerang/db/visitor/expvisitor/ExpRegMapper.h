@@ -10,10 +10,12 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
+
 
 class UserProc;
 class Prog;
+
 
 /**
  * Name registers and temporaries.
@@ -27,8 +29,8 @@ public:
     virtual ~ExpRegMapper() = default;
 
 public:
-    /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    /// \copydoc ExpVisitor::preVisit
+    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
 private:
     UserProc *m_proc; ///< Proc object for storing the symbols

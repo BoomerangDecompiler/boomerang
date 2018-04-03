@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/visitor/ExpDestCounter.h"
+#include "boomerang/db/visitor/expvisitor/ExpDestCounter.h"
 
 
 StmtDestCounter::StmtDestCounter(ExpDestCounter* edc)

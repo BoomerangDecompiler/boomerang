@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 
 
 /**
@@ -26,14 +26,14 @@ public:
 public:
     int getLast() const;
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Const>& exp) override;
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Const>& exp) override;
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpVisitor::visit
-    virtual bool visit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+    /// \copydoc ExpVisitor::preVisit
+    virtual bool preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
 private:
     int m_curConscript;

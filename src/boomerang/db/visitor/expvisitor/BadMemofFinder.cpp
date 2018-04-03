@@ -19,7 +19,7 @@ BadMemofFinder::BadMemofFinder()
 {}
 
 
-bool BadMemofFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool BadMemofFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
     if (exp->isMemOf()) {
         m_found = true;       // A bare memof
@@ -31,7 +31,7 @@ bool BadMemofFinder::visit(const std::shared_ptr<Location>& exp, bool& visitChil
 }
 
 
-bool BadMemofFinder::visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
 {
     SharedExp base = exp->getSubExp1();
 

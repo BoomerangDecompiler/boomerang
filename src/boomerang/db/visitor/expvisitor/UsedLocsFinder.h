@@ -9,9 +9,11 @@
 #pragma endregion License
 
 
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
+
 
 class LocationSet;
+
 
 /**
  *
@@ -25,17 +27,17 @@ public:
 public:
     LocationSet *getLocSet() { return m_used; }
 
-    bool isMemOnly() { return m_memOnly; }
+    bool isMemOnly() const { return m_memOnly; }
     void setMemOnly(bool b) { m_memOnly = b; }
 
-    /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    /// \copydoc ExpVisitor::preVisit
+    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    /// \copydoc ExpVisitor::preVisit
+    bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Terminal>& exp) override;
+    /// \copydoc ExpVisitor::preVisit
+    bool preVisit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     LocationSet *m_used; ///< Set of Exps

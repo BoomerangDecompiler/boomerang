@@ -15,7 +15,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/db/visitor/ExpModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -524,7 +524,7 @@ SharedExp Ternary::simplifyAddr()
 bool Ternary::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<Ternary>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<Ternary>(), visitChildren);
 
     if (!visitChildren) {
         return ret;

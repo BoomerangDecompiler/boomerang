@@ -10,7 +10,7 @@
 #include "StmtConscriptSetter.h"
 
 
-#include "boomerang/db/visitor/ConscriptSetter.h"
+#include "boomerang/db/visitor/expvisitor/ConscriptSetter.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"

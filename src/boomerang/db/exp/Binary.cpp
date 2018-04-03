@@ -15,7 +15,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/db/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -1328,7 +1328,7 @@ bool Binary::accept(ExpVisitor *v)
     assert(subExp1 && subExp2);
 
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<Binary>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<Binary>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
