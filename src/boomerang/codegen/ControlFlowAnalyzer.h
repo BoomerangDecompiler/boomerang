@@ -58,6 +58,7 @@ enum class CondType : uint8_t
     Case        ///< nway conditional header (case statement)
 };
 
+
 /// Depth-first traversal constants.
 enum class TravType : uint8_t
 {
