@@ -1408,14 +1408,10 @@ void UserProc::addLocal(SharedType ty, const QString& name, SharedExp e)
 }
 
 
-SharedType UserProc::getLocalType(const QString& name)
+SharedConstType UserProc::getLocalType(const QString& name) const
 {
-    if (m_locals.find(name) == m_locals.end()) {
-        return nullptr;
-    }
-
-    SharedType ty = m_locals[name];
-    return ty;
+    auto it = m_locals.find(name);
+    return (it != m_locals.end()) ? it->second : nullptr;
 }
 
 
@@ -1423,7 +1419,7 @@ void UserProc::setLocalType(const QString& name, SharedType ty)
 {
     m_locals[name] = ty;
 
-    LOG_VERBOSE("Updating type of %1 to %2", name, ty->getCtype());
+    LOG_VERBOSE("Updating type of '%1' to %2", name, ty->getCtype());
 }
 
 
@@ -1471,7 +1467,7 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
         SharedExp currTo = ff->second;
         assert(currTo->isLocal() || currTo->isParam());
         QString    name   = std::static_pointer_cast<Const>(currTo->getSubExp1())->getStr();
-        SharedType currTy = getLocalType(name);
+        SharedConstType currTy = getLocalType(name);
 
         if (currTy == nullptr) {
             currTy = getParamType(name);
@@ -2056,7 +2052,7 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
         auto sym = it->second;
         assert(sym->isLocal() || sym->isParam());
         QString    name = sym->access<Const, 1>()->getStr();
-        SharedType type = getLocalType(name);
+        SharedConstType type = getLocalType(name);
 
         if (type == nullptr) {
             type = getParamType(name); // Ick currently linear search

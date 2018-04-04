@@ -379,7 +379,7 @@ public:
     void addLocal(SharedType ty, const QString& name, SharedExp e);
 
     /// return a local's type
-    SharedType getLocalType(const QString& name);
+    SharedConstType getLocalType(const QString& name) const;
     void setLocalType(const QString& name, SharedType ty);
     SharedType getParamType(const QString& name);
 

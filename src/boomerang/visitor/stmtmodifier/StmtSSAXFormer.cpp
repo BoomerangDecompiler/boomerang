@@ -119,8 +119,8 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
 
         if (procDest && procDest->isLib() && e->isLocal()) {
             UserProc   *_proc = stmt->getProc(); // Enclosing proc
-            SharedType lty    = _proc->getLocalType(e->access<Const, 1>()->getStr());
-            SharedType ty     = as->getType();
+            SharedConstType lty = _proc->getLocalType(e->access<Const, 1>()->getStr());
+            SharedType      ty  = as->getType();
 
             if (ty && lty && (*ty != *lty)) {
                 LOG_WARN("Forcing type of local '%1' from '%2' to '%3' due to library constraints",
