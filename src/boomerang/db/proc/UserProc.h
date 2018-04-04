@@ -416,7 +416,7 @@ public:
 
     /// e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
     /// Find the implicit definition for \a e and lookup a symbol
-    QString lookupParam(SharedExp e);
+    QString lookupParam(SharedConstExp e) const;
 
     /// Check if \a r is already mapped to a local, else add one
     void checkLocalFor(const std::shared_ptr<RefExp>& r);

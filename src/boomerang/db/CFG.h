@@ -49,7 +49,7 @@ using RTLList   = std::list<std::unique_ptr<RTL>>;
 class Cfg
 {
     typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
-    typedef std::map<SharedExp, Statement *, lessExpStar>          ExpStatementMap;
+    typedef std::map<SharedConstExp, Statement *, lessExpStar>     ExpStatementMap;
 
 public:
     typedef MapValueIterator<BBStartMap>                iterator;
@@ -208,7 +208,7 @@ public:
     // Implicit assignments
 
     /// Find the existing implicit assign for x (if any)
-    Statement *findTheImplicitAssign(const SharedExp& x);
+    Statement *findTheImplicitAssign(const SharedConstExp& x) const;
 
     /// Find exiting implicit assign for parameter p
     Statement *findImplicitParamAssign(Parameter *p);

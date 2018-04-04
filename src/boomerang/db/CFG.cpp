@@ -423,8 +423,7 @@ BasicBlock *Cfg::findRetNode()
 
 Statement *Cfg::findOrCreateImplicitAssign(SharedExp exp)
 {
-    std::map<SharedExp, Statement *, lessExpStar>::iterator it = m_implicitMap.find(exp);
-
+    ExpStatementMap::iterator it = m_implicitMap.find(exp);
     if (it != m_implicitMap.end()) {
         // implicit already present, use it
         assert(it->second);
@@ -444,10 +443,10 @@ Statement *Cfg::findOrCreateImplicitAssign(SharedExp exp)
 }
 
 
-Statement *Cfg::findTheImplicitAssign(const SharedExp& x)
+Statement *Cfg::findTheImplicitAssign(const SharedConstExp& x) const
 {
     // As per the above, but don't create an implicit if it doesn't already exist
-    auto it = m_implicitMap.find(x);
+    ExpStatementMap::const_iterator it = m_implicitMap.find(std::const_pointer_cast<Exp>(x));
     return (it != m_implicitMap.end()) ? it->second : nullptr;
 }
 
@@ -458,7 +457,7 @@ Statement *Cfg::findImplicitParamAssign(Parameter *param)
     SharedExp paramExp = param->getExp();
 
     ExpStatementMap::iterator it = std::find_if(m_implicitMap.begin(), m_implicitMap.end(),
-        [paramExp] (const std::pair<const SharedExp&, Statement *>& val) {
+        [paramExp] (const std::pair<const SharedConstExp&, Statement *>& val) {
             return *(val.first) *= *paramExp;
         });
 

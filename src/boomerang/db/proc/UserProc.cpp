@@ -1997,7 +1997,7 @@ bool UserProc::ellipsisProcessing()
 }
 
 
-QString UserProc::lookupParam(SharedExp e)
+QString UserProc::lookupParam(SharedConstExp e) const
 {
     // Originally e.g. m[esp+K]
     Statement *def = m_cfg->findTheImplicitAssign(e);
@@ -2007,9 +2007,8 @@ QString UserProc::lookupParam(SharedExp e)
         return QString::null;
     }
 
-    auto       re = RefExp::get(e, def);
-    SharedType ty = def->getTypeFor(e);
-    return lookupSym(re, ty);
+    SharedConstType ty  = def->getTypeFor(e);
+    return lookupSym(RefExp::get(std::const_pointer_cast<Exp>(e), def), ty);
 }
 
 
