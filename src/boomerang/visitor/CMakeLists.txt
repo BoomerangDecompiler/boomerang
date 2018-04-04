@@ -10,7 +10,6 @@
 list(APPEND boomerang-visitor-sources
     visitor/expvisitor/BadMemofFinder
     visitor/expvisitor/ComplexityFinder
-    visitor/expvisitor/ConscriptSetter
     visitor/expvisitor/ConstFinder
     visitor/expvisitor/ExpDestCounter
     visitor/expvisitor/ExpRegMapper
@@ -24,6 +23,7 @@ list(APPEND boomerang-visitor-sources
 
     visitor/expmodifier/CallBypasser
     visitor/expmodifier/ConstGlobalConverter
+    visitor/expmodifier/ConscriptSetter
     visitor/expmodifier/DFALocalMapper
     visitor/expmodifier/ExpCastInserter
     visitor/expmodifier/ExpConstCaster

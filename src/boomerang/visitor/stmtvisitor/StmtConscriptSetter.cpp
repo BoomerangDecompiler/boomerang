@@ -10,7 +10,7 @@
 #include "StmtConscriptSetter.h"
 
 
-#include "boomerang/visitor/expvisitor/ConscriptSetter.h"
+#include "boomerang/visitor/expmodifier/ConscriptSetter.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
@@ -28,6 +28,7 @@ StmtConscriptSetter::StmtConscriptSetter(int n, bool clear)
     , m_clear(clear)
 {
 }
+
 
 bool StmtConscriptSetter::visit(const Assign *stmt)
 {

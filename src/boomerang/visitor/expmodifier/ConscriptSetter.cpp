@@ -30,43 +30,45 @@ int ConscriptSetter::getLast() const
 }
 
 
-bool ConscriptSetter::preVisit(const std::shared_ptr<Const>& exp)
+SharedExp ConscriptSetter::preModify(const std::shared_ptr<Const>& exp)
 {
     if (!m_inLocalGlobal) {
         if (m_clear) {
+            m_mod |= (exp->getConscript() != 0);
             exp->setConscript(0);
         }
         else {
+            m_mod = true;
             exp->setConscript(++m_curConscript);
         }
     }
 
     m_inLocalGlobal = false;
-    return true; // Continue recursion
+    return exp; // Continue recursion
 }
 
 
-bool ConscriptSetter::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp ConscriptSetter::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
-    OPER op = exp->getOper();
+    const OPER op = exp->getOper();
 
     if ((op == opLocal) || (op == opGlobal) || (op == opRegOf) || (op == opParam)) {
         m_inLocalGlobal = true;
     }
 
     visitChildren = true;
-    return true; // Continue recursion
+    return exp; // Continue recursion
 }
 
 
-bool ConscriptSetter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp ConscriptSetter::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
 {
-    OPER op = exp->getOper();
+    const OPER op = exp->getOper();
 
     if (op == opSize) {
         m_inLocalGlobal = true;
     }
 
     visitChildren = true;
-    return true; // Continue recursion
+    return exp; // Continue recursion
 }
