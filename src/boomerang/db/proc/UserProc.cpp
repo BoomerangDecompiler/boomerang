@@ -179,8 +179,8 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
     SharedConstExp oldExp = expFromSymbol(oldName);
 
     m_locals.erase(oldName);
-    SharedExp oldLoc = getSymbolFor(oldExp, ty);
-    auto      newLoc = Location::local(newName, this);
+    SharedConstExp oldLoc = getSymbolFor(oldExp, ty);
+    SharedExp      newLoc = Location::local(newName, this);
 
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     m_locals[newName] = ty;
@@ -1447,7 +1447,7 @@ SharedType UserProc::getParamType(const QString& name)
 }
 
 
-void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedExp oldTo, SharedExp newTo)
+void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedConstExp oldTo, SharedExp newTo)
 {
     removeSymbolMapping(from, oldTo);
     mapSymbolTo(from, newTo); // The compiler could optimise this call to a fall through
@@ -1471,9 +1471,9 @@ void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
 }
 
 
-SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
+SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstType& ty) const
 {
-    SymbolMap::iterator ff = m_symbolMap.find(from);
+    SymbolMap::const_iterator ff = m_symbolMap.find(from);
 
     while (ff != m_symbolMap.end() && *ff->first == *from) {
         SharedExp currTo = ff->second;
@@ -1496,7 +1496,7 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
 }
 
 
-void UserProc::removeSymbolMapping(const SharedConstExp& from, SharedExp to)
+void UserProc::removeSymbolMapping(const SharedConstExp& from, const SharedConstExp& to)
 {
     SymbolMap::iterator it = m_symbolMap.find(from);
 

@@ -361,7 +361,7 @@ public:
     /// Creates new symbols as needed.
 
     /**
-     * Return an expression that is equivilent to e in terms of local variables.
+     * Return an expression that is equivalent to e in terms of local variables.
      * Creates new locals as needed.
      */
     SharedExp getSymbolExp(SharedExp le, SharedType ty = nullptr, bool lastPass = false);
@@ -396,15 +396,15 @@ public:
     void mapSymbolTo(const SharedConstExp& from, SharedExp to);
 
     /// As above but with replacement
-    void mapSymbolToRepl(const SharedConstExp& from, SharedExp oldTo, SharedExp newTo);
+    void mapSymbolToRepl(const SharedConstExp& from, SharedConstExp oldTo, SharedExp newTo);
 
     /// Remove this mapping
-    void removeSymbolMapping(const SharedConstExp& from, SharedExp to);
+    void removeSymbolMapping(const SharedConstExp& from, const SharedConstExp& to);
 
     // FIXME: is this the same as lookupSym() now?
     /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use the Type* ty to
     /// select from several names in the multimap; the name corresponding to the first compatible type is returned
-    SharedExp getSymbolFor(const SharedConstExp& e, SharedType ty);
+    SharedExp getSymbolFor(const SharedConstExp& e, const SharedConstType& ty) const;
 
     QString lookupSym(const SharedConstExp& e, SharedConstType ty) const;
 
