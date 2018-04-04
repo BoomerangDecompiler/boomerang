@@ -2332,9 +2332,9 @@ QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
 }
 
 
-QString UserProc::findFirstSymbol(const SharedExp& e)
+QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
 {
-    SymbolMap::iterator ff = m_symbolMap.find(e);
+    SymbolMap::const_iterator ff = m_symbolMap.find(exp);
 
     if (ff == m_symbolMap.end()) {
         return QString::null;

@@ -427,7 +427,7 @@ public:
     /// symbol map and the name is in the locals map. If it is a local, return its name, else nullptr
     QString findLocal(const SharedExp& e, SharedType ty);
     QString findLocalFromRef(const std::shared_ptr<RefExp>& r);
-    QString findFirstSymbol(const SharedExp& e);
+    QString findFirstSymbol(const SharedConstExp& e) const;
 
     void renameLocal(const char *oldName, const char *newName);
     virtual void renameParam(const char *oldName, const char *newName) override;
