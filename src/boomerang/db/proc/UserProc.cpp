@@ -1423,6 +1423,18 @@ void UserProc::setLocalType(const QString& name, SharedType ty)
 }
 
 
+SharedConstType UserProc::getParamType(const QString& name) const
+{
+    for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
+        if (name == m_signature->getParamName(i)) {
+            return m_signature->getParamType(i);
+        }
+    }
+
+    return nullptr;
+}
+
+
 SharedType UserProc::getParamType(const QString& name)
 {
     for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
@@ -2037,7 +2049,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
 }
 
 
-QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
+QString UserProc::lookupSym(const SharedConstExp& arg, SharedConstType ty) const
 {
     SharedConstExp e = arg;
 
@@ -2045,13 +2057,13 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
         e = e->getSubExp1();
     }
 
-    SymbolMap::iterator it;
-    it = m_symbolMap.find(e);
+    SymbolMap::const_iterator it = m_symbolMap.find(e);
 
     while (it != m_symbolMap.end() && *it->first == *e) {
         auto sym = it->second;
         assert(sym->isLocal() || sym->isParam());
-        QString    name = sym->access<Const, 1>()->getStr();
+
+        const QString    name = sym->access<Const, 1>()->getStr();
         SharedConstType type = getLocalType(name);
 
         if (type == nullptr) {
@@ -2083,7 +2095,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
     }
     else {
         for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
-            const SharedType ty = getTypeForLocation(it.second);
+            SharedConstType ty = getTypeForLocation(it.second);
             out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
 
             if (html) {
@@ -2133,7 +2145,7 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 void UserProc::dumpSymbolMap() const
 {
     for (const auto& val : m_symbolMap) {
-        SharedType ty = getTypeForLocation(val.second);
+        SharedConstType ty = getTypeForLocation(val.second);
         LOG_MSG("  %1 maps to %2 type %3", val.first, val.second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
     }
 }
@@ -2142,7 +2154,7 @@ void UserProc::dumpSymbolMap() const
 void UserProc::dumpSymbolMapx() const
 {
     for (const auto& val : m_symbolMap) {
-        SharedType ty = getTypeForLocation(val.second);
+        SharedConstType ty = getTypeForLocation(val.second);
         LOG_MSG("  %1 maps to %2 type %3", val.first, val.second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
         val.first->printx(2);
     }
@@ -3034,13 +3046,13 @@ QString UserProc::getRegName(SharedExp r)
 }
 
 
-SharedType UserProc::getTypeForLocation(const SharedConstExp& e)
+SharedType UserProc::getTypeForLocation(const SharedExp& e)
 {
-    QString name = e->access<Const, 1>()->getStr();
-
+    const QString name = e->access<Const, 1>()->getStr();
     if (e->isLocal()) {
-        if (m_locals.find(name) != m_locals.end()) {
-            return m_locals[name];
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
         }
     }
 
@@ -3049,9 +3061,18 @@ SharedType UserProc::getTypeForLocation(const SharedConstExp& e)
 }
 
 
-const SharedType UserProc::getTypeForLocation(const SharedConstExp& e) const
+SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
 {
-    return const_cast<UserProc *>(this)->getTypeForLocation(e);
+    const QString name = e->access<Const, 1>()->getStr();
+    if (e->isLocal()) {
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
+        }
+    }
+
+    // Sometimes parameters use opLocal, so fall through
+    return getParamType(name);
 }
 
 
