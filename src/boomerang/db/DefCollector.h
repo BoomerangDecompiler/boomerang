@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/util/AssignSet.h"
+#include "boomerang/util/StatementSet.h"
 
 #include <deque>
 #include <map>

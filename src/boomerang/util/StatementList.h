@@ -10,16 +10,17 @@
 #pragma once
 
 
-#include <memory>
+#include "StatementSet.h"
+
 #include <list>
 
-class StatementSet;
+
 class LocationSet;
 class Statement;
 class Assignment;
 
 
-using SharedExp = std::shared_ptr<class Exp>;
+using SharedExp      = std::shared_ptr<class Exp>;
 using SharedConstExp = std::shared_ptr<const class Exp>;
 
 

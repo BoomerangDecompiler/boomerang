@@ -10,7 +10,7 @@
 #include "AssignSetTest.h"
 
 
-#include "boomerang/util/AssignSet.h"
+#include "boomerang/util/StatementSet.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Location.h"
 

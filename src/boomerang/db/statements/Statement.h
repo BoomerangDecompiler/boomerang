@@ -12,6 +12,7 @@
 
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/db/statements/Statement.h"
 
 #include <QtCore/QTextStream>
 
@@ -41,7 +42,6 @@ class StmtPartModifier;
 class ICodeGenerator;
 class Assign;
 class RTL;
-class StatementSet;
 class ReturnStatement;
 class LocationSet;
 class Assignment;

@@ -14,7 +14,6 @@
 
 #include <set>
 
-class StatementSet;
 class RefExp;
 class Statement;
 class QTextStream;

@@ -27,7 +27,6 @@ class UserProc;
 class LibProc;
 class Signature;
 class Statement;
-class StatementSet;
 class Module;
 class BinarySection;
 class ICodeGenerator;
