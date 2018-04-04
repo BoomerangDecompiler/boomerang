@@ -262,7 +262,7 @@ public:
      * (from a memory Primitive point of view),
      * only if the definition can be propagated TO this stmt
      */
-    static bool canPropagateToExp(Exp& exp);
+    static bool canPropagateToExp(const Exp& exp);
 
     /**
      * Propagate to this statement.

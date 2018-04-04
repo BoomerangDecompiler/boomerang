@@ -209,20 +209,20 @@ void Statement::dump() const
 }
 
 
-bool Statement::canPropagateToExp(Exp& e)
+bool Statement::canPropagateToExp(const Exp& exp)
 {
-    if (!e.isSubscript()) {
+    if (!exp.isSubscript()) {
         return false;
     }
 
-    const RefExp &re = static_cast<const RefExp &>(e);
+    const RefExp &ref = static_cast<const RefExp &>(exp);
 
-    if (re.isImplicitDef()) {
+    if (ref.isImplicitDef()) {
         // Can't propagate statement "-" or "0" (implicit assignments)
         return false;
     }
 
-    const Statement *def = re.getDef();
+    const Statement *def = ref.getDef();
 
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
