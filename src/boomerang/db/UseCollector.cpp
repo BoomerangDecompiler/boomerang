@@ -99,13 +99,6 @@ char *UseCollector::prints() const
 }
 
 
-void UseCollector::dump() const
-{
-    QTextStream ost(stderr);
-    print(ost);
-}
-
-
 void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 {
     LocationSet   removes, inserts;

@@ -111,13 +111,6 @@ char *DefCollector::prints() const
 }
 
 
-void DefCollector::dump() const
-{
-    QTextStream ost(stderr);
-
-    print(ost);
-}
-
 void DefCollector::makeCloneOf(const DefCollector& other)
 {
     m_initialised = other.m_initialised;
