@@ -290,7 +290,19 @@ void ReturnStatement::getDefinitions(LocationSet& ls) const
 }
 
 
-SharedType ReturnStatement::getTypeFor(SharedExp e) const
+SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
+{
+    for (auto& elem : m_modifieds) {
+        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
+            return static_cast<Assignment *>(elem)->getType();
+        }
+    }
+
+    return nullptr;
+}
+
+
+SharedType ReturnStatement::getTypeFor(SharedExp e)
 {
     for (auto& elem : m_modifieds) {
         if (*static_cast<Assignment *>(elem)->getLeft() == *e) {

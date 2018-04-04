@@ -85,7 +85,10 @@ public:
     void addReturn(Assignment *a);
 
     /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) const override;
+    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+
+    /// \copydoc Statement::getTypeFor
+    virtual SharedType getTypeFor(SharedExp e) override;
 
     /// \copydoc Statement::setTypeFor
     virtual void setTypeFor(SharedExp e, SharedType ty) override;

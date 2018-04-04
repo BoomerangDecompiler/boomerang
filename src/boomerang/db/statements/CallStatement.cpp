@@ -934,7 +934,25 @@ void CallStatement::removeArgument(int i)
 }
 
 
-SharedType CallStatement::getTypeFor(SharedExp e) const
+SharedConstType CallStatement::getTypeFor(SharedConstExp e) const
+{
+    // The defines "cache" what the destination proc is defining
+    const Assignment *as = m_defines.findOnLeft(e);
+
+    if (as != nullptr) {
+        return as->getType();
+    }
+
+    if (e->isPC()) {
+        // Special case: just return void*
+        return PointerType::get(VoidType::get());
+    }
+
+    return VoidType::get();
+}
+
+
+SharedType CallStatement::getTypeFor(SharedExp e)
 {
     // The defines "cache" what the destination proc is defining
     Assignment *as = m_defines.findOnLeft(e);

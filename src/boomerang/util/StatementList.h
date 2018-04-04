@@ -20,6 +20,7 @@ class Assignment;
 
 
 using SharedExp = std::shared_ptr<class Exp>;
+using SharedConstExp = std::shared_ptr<const class Exp>;
 
 
 /**
@@ -97,7 +98,8 @@ public:
     bool existsOnLeft(const SharedExp& loc) const; ///< True if loc exists on the LHS of any Assignment in this list
 
     /// Find the first Assignment with loc on the LHS
-    Assignment *findOnLeft(SharedExp loc) const;   ///< Return the first stmt with loc on the LHS
+    const Assignment *findOnLeft(SharedConstExp loc) const;
+    Assignment *findOnLeft(SharedExp loc);   ///< Return the first stmt with loc on the LHS
 
     char *prints() const;
 

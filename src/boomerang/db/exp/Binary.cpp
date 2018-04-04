@@ -1177,7 +1177,7 @@ SharedExp Binary::polySimplify(bool& changed)
     // FIXME: suspect this was only needed for ADHOC TA
     // check for exp + n where exp is a pointer to a compound type
     // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
-    SharedType ty = nullptr; // Type of subExp1
+    SharedConstType ty = nullptr; // Type of subExp1
 
     if (subExp1->isSubscript()) {
         const Statement *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();

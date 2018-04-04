@@ -49,6 +49,7 @@ class Assignment;
 
 typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::shared_ptr<Type>        SharedType;
+typedef std::shared_ptr<const Type>  SharedConstType;
 
 
 /// Types of Statements, or high-level register transfer lists.
@@ -354,7 +355,9 @@ public:
 
     /// Get the type for the definition, if any, for expression e in this statement
     /// Overridden only by Assignment and CallStatement, and ReturnStatement.
-    virtual SharedType getTypeFor(SharedExp) const { return nullptr; }
+    virtual SharedConstType getTypeFor(SharedConstExp) const { return nullptr; }
+    virtual SharedType getTypeFor(SharedExp) { return nullptr; }
+
     /// Set the type for the definition of e in this Statement
     virtual void setTypeFor(SharedExp, SharedType) { assert(false); }
 

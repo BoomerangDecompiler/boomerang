@@ -140,14 +140,43 @@ Statement *StatementList::removeFirstDefOf(SharedExp loc)
 }
 
 
-Assignment *StatementList::findOnLeft(SharedExp loc) const
+const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
+{
+    if (empty()) {
+        return nullptr;
+    }
+
+    for (const auto& elem : *this) {
+        assert(elem->isAssignment());
+        SharedConstExp left = static_cast<Assignment *>(elem)->getLeft();
+
+        if (*left == *loc) {
+            return static_cast<const Assignment *>(elem);
+        }
+
+        if (left->isLocal()) {
+            auto           l = left->access<Location>();
+            SharedConstExp e = l->getProc()->expFromSymbol(l->access<Const, 1>()->getStr());
+
+            if (e && ((*e == *loc) || (e->isSubscript() && (*e->getSubExp1() == *loc)))) {
+                return static_cast<const Assignment *>(elem);
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+
+Assignment *StatementList::findOnLeft(SharedExp loc)
 {
     if (empty()) {
         return nullptr;
     }
 
     for (auto& elem : *this) {
-        SharedExp left = static_cast<Assignment *>(elem)->getLeft();
+        assert(elem->isAssignment());
+        SharedConstExp left = static_cast<Assignment *>(elem)->getLeft();
 
         if (*left == *loc) {
             return static_cast<Assignment *>(elem);
@@ -165,3 +194,4 @@ Assignment *StatementList::findOnLeft(SharedExp loc) const
 
     return nullptr;
 }
+
