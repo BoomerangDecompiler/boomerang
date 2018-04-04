@@ -2013,33 +2013,33 @@ QString UserProc::lookupParam(SharedExp e)
 }
 
 
-QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
+QString UserProc::lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) const
 {
-    Statement *def = r->getDef();
+    const Statement *def = ref->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
         return QString::null;
     }
 
-    auto       base = r->getSubExp1();
-    SharedType ty   = def->getTypeFor(base);
-    return lookupSym(r, ty);
+    SharedConstExp  base = ref->getSubExp1();
+    SharedConstType ty   = def->getTypeFor(base);
+    return lookupSym(ref, ty);
 }
 
 
-QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
+QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) const
 {
-    Statement *def = r->getDef();
+    const Statement *def = ref->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
         return QString::null;
     }
 
-    SharedExp  base = r->getSubExp1();
-    SharedType ty   = def->getTypeFor(base);
-    QString    ret  = lookupSym(r, ty);
+    SharedConstExp  base = ref->getSubExp1();
+    SharedConstType ty   = def->getTypeFor(base);
+    QString    ret  = lookupSym(ref, ty);
 
     if (!ret.isNull()) {
         return ret;             // Found a specific symbol

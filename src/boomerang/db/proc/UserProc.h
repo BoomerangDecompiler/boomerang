@@ -409,10 +409,10 @@ public:
     QString lookupSym(const SharedConstExp& e, SharedConstType ty) const;
 
     /// Lookup a specific symbol for the given ref
-    QString lookupSymFromRef(const std::shared_ptr<RefExp>& r);
+    QString lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) const;
 
     /// Lookup a specific symbol if any, else the general one if any
-    QString lookupSymFromRefAny(const std::shared_ptr<RefExp>& r);
+    QString lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) const;
 
     /// e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
     /// Find the implicit definition for \a e and lookup a symbol
