@@ -100,7 +100,7 @@ public:
     void alertEndDecompile(UserProc *proc);
 
     /// Called every time before middleDecompile is executed for \p function
-    void alertDiscovered(Function */*unused*/, Function *function);
+    void alertDiscovered(Function *function);
 
     /// Called during the decompilation process when resuming decompilation of this proc.
     void alertDecompiling(UserProc *proc);

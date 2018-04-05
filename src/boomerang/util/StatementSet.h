@@ -10,12 +10,11 @@
 #pragma once
 
 
-#include <unordered_set>
-#include <memory>
-
-
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
+
+#include <unordered_set>
+#include <memory>
 
 
 using SharedExp = std::shared_ptr<class Exp>;

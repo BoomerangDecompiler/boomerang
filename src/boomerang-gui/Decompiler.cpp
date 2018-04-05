@@ -190,9 +190,9 @@ void Decompiler::generateCode()
 }
 
 
-void Decompiler::onFunctionDiscovered(Function *caller, Function *proc)
+void Decompiler::onFunctionDiscovered(Function *proc)
 {
-    emit procDiscovered(caller ? caller->getName() : "", proc->getName());
+    emit procDiscovered("", proc->getName());
 }
 
 

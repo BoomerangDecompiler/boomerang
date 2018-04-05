@@ -232,10 +232,10 @@ void Boomerang::alertEndDecompile(UserProc* proc)
 }
 
 
-void Boomerang::alertDiscovered(Function* caller, Function* function)
+void Boomerang::alertDiscovered(Function* function)
 {
     for (IWatcher *it : m_watchers) {
-        it->onFunctionDiscovered(caller, function);
+        it->onFunctionDiscovered(function);
     }
 }
 

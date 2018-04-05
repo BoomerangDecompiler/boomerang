@@ -66,7 +66,7 @@ void IWatcher::onEndDecompile(UserProc *)
 }
 
 
-void IWatcher::onFunctionDiscovered(Function *, Function *)
+void IWatcher::onFunctionDiscovered(Function *)
 {
 }
 

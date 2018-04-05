@@ -60,7 +60,7 @@ public:
     virtual void onEndDecompile(UserProc *proc);
 
     /// Called every time before middleDecompile is executed for \p function
-    virtual void onFunctionDiscovered(Function *caller, Function *function);
+    virtual void onFunctionDiscovered(Function *function);
 
     /// Called during the decompilation process when resuming decompilation of \p proc.
     virtual void onDecompileInProgress(UserProc *proc);

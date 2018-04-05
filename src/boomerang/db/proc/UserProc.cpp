@@ -627,9 +627,8 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
      *     return child
      */
 
-
     LOG_MSG("%1 procedure '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
-    Boomerang::get()->alertDiscovered(this, this);
+    Boomerang::get()->alertDiscovered(this);
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {

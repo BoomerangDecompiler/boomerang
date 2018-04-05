@@ -37,7 +37,7 @@ public:
     /// IWatcher interface
 public:
     virtual void onDecompileDebugPoint(UserProc *proc, const char *description) override;
-    virtual void onFunctionDiscovered(Function *parent, Function *function) override;
+    virtual void onFunctionDiscovered(Function *function) override;
     virtual void onDecompileInProgress(UserProc *function) override;
     virtual void onFunctionCreated(Function *function) override;
     virtual void onFunctionRemoved(Function *function) override;
@@ -54,7 +54,7 @@ signals: // Decompiler -> ui
     void decompileCompleted();
     void generateCodeCompleted();
 
-    void procDiscovered(const QString& caller, const QString& procName);
+    void procDiscovered(const QString& callerName, const QString& procName);
     void procDecompileStarted(const QString& procName);
 
     void userProcCreated(const QString& name, Address entryAddr);
