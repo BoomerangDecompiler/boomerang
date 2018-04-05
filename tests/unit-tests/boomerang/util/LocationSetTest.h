@@ -37,5 +37,4 @@ private slots:
     void testAddSubscript();
     void testMakeUnion();
     void testMakeDiff();
-    void testSubstitute();
 };

@@ -135,29 +135,25 @@ public:
     LocationSet& operator=(LocationSet&& other) = default;
 
 public:
-    // Given an unsubscripted location e, return true if e{-} or e{0} exists in the set
+    /// Given an unsubscripted location \p e, return true if e{-} or e{0} exists in the set
     bool containsImplicit(SharedExp e) const;
 
     /**
      * Given a not subscripted location \p e, return the subscripted location matching \p e.
-     * Example: Given e == r32, return r32{-}.
+     * Example: Given \p e == r32, return r32{-}.
      * Returns nullptr if not found.
      * \note This set is assumed to be of subscripted locations (e.g. a Collector).
      */
     SharedExp findNS(SharedExp e);
 
-    /// Find a location with a different def, but same expression. For example, pass r28{10},
-    /// return true if r28{20} in the set. If return true, dr points to the first different ref
+    /// Find a location with a different def, but same expression.
+    /// For example, pass r28{10}, return true if r28{20} is in the set.
+    /// If return true, \p dr points to the first different ref
     bool findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr);
 
     /// Add a subscript (to definition \p def) to each element.
     /// Existing exps are not re-subscripted.
     void addSubscript(Statement *def);
-
-
-    /// Substitute all occurrences of the LHS of the assignment
-    /// by the RHS of the assignment
-    void substitute(Assign& a);
 
     char *prints() const;                        ///< Print to string for debugging
 };

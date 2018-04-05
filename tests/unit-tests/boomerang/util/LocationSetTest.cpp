@@ -267,33 +267,4 @@ void LocationSetTest::testMakeDiff()
 }
 
 
-void LocationSetTest::testSubstitute()
-{
-    LocationSet set;
-
-    SharedExp r25 = Location::regOf(25);
-    SharedExp r26 = Location::regOf(26);
-
-    Assign a1(r25, r26);
-    set.substitute(a1);
-    QVERIFY(set.empty());
-
-    set.insert(r25);
-    set.substitute(a1);
-    QCOMPARE(set.prints(), "r25, r26");
-
-    Assign a2(r25, nullptr);
-    set.substitute(a2);
-    QCOMPARE(set.prints(), "r25, r26"); // no change
-
-    Assign a3(r26, r25);
-    set.substitute(a3);
-    QCOMPARE(set.prints(), "r25, r26"); // no change
-
-    Assign a4(r25, Terminal::get(opPC)); // will cause r25 to be removed because of terminal
-    set.substitute(a4);
-    QCOMPARE(set.prints(), "r26");
-}
-
-
 QTEST_MAIN(LocationSetTest)
