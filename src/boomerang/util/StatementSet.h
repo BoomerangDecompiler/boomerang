@@ -12,7 +12,6 @@
 
 #include <unordered_set>
 #include <memory>
-#include <type_traits>
 
 
 #include "boomerang/db/statements/Assign.h"
@@ -25,7 +24,7 @@ using SharedExp = std::shared_ptr<class Exp>;
 /**
  * This class implements an ordered or unordered set of statements.
  * \tparam T Statement type (Statement, Assign, CallStatement etc.)
- * \tparam Sorter Binary functor that defines the sorting order.
+ * \tparam Sorter Binary functor type that defines the sorting order.
  *                If Sorter == void, the set is unordered.
  */
 template<

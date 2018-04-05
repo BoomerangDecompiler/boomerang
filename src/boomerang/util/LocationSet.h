@@ -23,6 +23,12 @@ class QTextStream;
 class Assign;
 
 
+/**
+ * A class ordered or unordered sets of expressions.
+ * \tparam T the type of expression to store in the set
+ * \tparam Sorter Binary functor type that defines the sorting order.
+ *                If Sorter == void, the set is unordered.
+ */
 template<
         typename T,
         typename Sorter = void,
