@@ -138,20 +138,19 @@ void LocationSetTest::testContains()
 }
 
 
-void LocationSetTest::testExistsImplicit()
+void LocationSetTest::testContainsImplicit()
 {
     LocationSet set;
-    QVERIFY(!set.existsImplicit(nullptr));
+    QVERIFY(!set.containsImplicit(nullptr));
 
     set.insert(Location::regOf(30));
-    QVERIFY(!set.existsImplicit(Location::regOf(30)));
-    QVERIFY(!set.existsImplicit(Location::regOf(32)));
+    QVERIFY(!set.containsImplicit(Location::regOf(30)));
+    QVERIFY(!set.containsImplicit(Location::regOf(32)));
 
     set.insert(RefExp::get(Location::regOf(32), nullptr));
-    QVERIFY(set.existsImplicit(Location::regOf(32)));
-    QVERIFY(!set.existsImplicit(Location::regOf(30)));
+    QVERIFY(set.containsImplicit(Location::regOf(32)));
+    QVERIFY(!set.containsImplicit(Location::regOf(30)));
 }
-
 
 
 void LocationSetTest::testFindNS()

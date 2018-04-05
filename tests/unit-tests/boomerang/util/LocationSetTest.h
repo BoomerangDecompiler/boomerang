@@ -31,7 +31,7 @@ private slots:
     void testInsert();
     void testRemove();
     void testContains();
-    void testExistsImplicit();
+    void testContainsImplicit();
     void testFindNS();
     void testFindDifferentRef();
     void testAddSubscript();

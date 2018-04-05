@@ -619,7 +619,7 @@ void StatementTest::testLocationSet()
     theReg.setInt(12);
     ls.insert(rof.clone()); // Note: r12 already inserted
 
-    QCOMPARE(ls.size(), static_cast<size_t>(4));
+    QCOMPARE(ls.size(), 4);
     theReg.setInt(8);
     auto ii = ls.begin();
     QVERIFY(rof == **ii); // First element should be r8
@@ -639,14 +639,14 @@ void StatementTest::testLocationSet()
     ls.insert(mof.clone());                                                                  // ls should be r8 r12 r24 r31 m[r14 + 4]
     ls.insert(mof.clone());
 
-    QCOMPARE(ls.size(), static_cast<size_t>(5)); // Should have 5 elements
+    QCOMPARE(ls.size(), 5); // Should have 5 elements
 
     ii = --ls.end();
     QVERIFY(mof == **ii);   // Last element should be m[r14 + 4] now
     LocationSet ls2 = ls;
     SharedExp   e2  = *ls2.begin();
     QVERIFY(!(e2 == *ls.begin())); // Must be cloned
-    QCOMPARE(ls2.size(), static_cast<size_t>(5));
+    QCOMPARE(ls2.size(), 5);
 
     theReg.setInt(8);
     QVERIFY(rof == **ls2.begin()); // First elements should compare equal
@@ -664,23 +664,23 @@ void StatementTest::testLocationSet()
     std::shared_ptr<RefExp> r2 = RefExp::get(Location::regOf(8), &s20);
     ls.insert(r1); // ls now m[r14 + 4] r8 r12 r24 r31 r8{10} (not sure where r8{10} appears)
 
-    QCOMPARE(ls.size(), static_cast<size_t>(6));
+    QCOMPARE(ls.size(), 6);
     SharedExp dummy;
     QVERIFY(!ls.findDifferentRef(r1, dummy));
     QVERIFY(ls.findDifferentRef(r2, dummy));
 
     SharedExp r8 = Location::regOf(8);
-    QVERIFY(!ls.existsImplicit(r8));
+    QVERIFY(!ls.containsImplicit(r8));
 
     std::shared_ptr<RefExp> r3(new RefExp(Location::regOf(8), nullptr));
     ls.insert(r3);
-    QVERIFY(ls.existsImplicit(r8));
+    QVERIFY(ls.containsImplicit(r8));
     ls.remove(r3);
 
     ImplicitAssign          zero(r8);
     std::shared_ptr<RefExp> r4(new RefExp(Location::regOf(8), &zero));
     ls.insert(r4);
-    QVERIFY(ls.existsImplicit(r8));
+    QVERIFY(ls.containsImplicit(r8));
 }
 
 
@@ -708,11 +708,12 @@ void StatementTest::testWildLocationSet()
     ls.insert(r13_10);
     ls.insert(r13_20);
     ls.insert(r13_0);
-    std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), reinterpret_cast<Statement *>(-1)));
+
+    std::shared_ptr<RefExp> wildr12(new RefExp(rof12.clone(), STMT_WILD));
     QVERIFY(ls.contains(wildr12));
-    std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), reinterpret_cast<Statement *>(-1)));
+    std::shared_ptr<RefExp> wildr13(new RefExp(rof13.clone(), STMT_WILD));
     QVERIFY(ls.contains(wildr13));
-    std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(10), reinterpret_cast<Statement *>(-1)));
+    std::shared_ptr<RefExp> wildr10(new RefExp(Location::regOf(10), STMT_WILD));
     QVERIFY(!ls.contains(wildr10));
 
     // Test findDifferentRef

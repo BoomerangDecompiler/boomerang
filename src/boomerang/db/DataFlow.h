@@ -14,6 +14,7 @@
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/util/LocationSet.h"
 
 #include <vector>
 #include <unordered_map>
@@ -32,8 +33,6 @@ class Type;
 class QTextStream;
 class LocationSet;
 
-typedef std::set<SharedExp, lessExpStar> ExpSet;
-
 
 /**
  * Dominator frontier code largely as per Appel 2002
@@ -41,6 +40,8 @@ typedef std::set<SharedExp, lessExpStar> ExpSet;
  */
 class DataFlow
 {
+    using ExpSet = ExpSet<Exp>;
+
 public:
     DataFlow(UserProc *proc);
     DataFlow(const DataFlow& other) = delete;

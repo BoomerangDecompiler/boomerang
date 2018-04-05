@@ -573,6 +573,3 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
     os << p.get();
     return os;
 }
-
-
-typedef std::set<SharedExp, lessExpStar> ExpSet;

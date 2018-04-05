@@ -50,20 +50,9 @@ public:
     const_iterator end()   const { return m_set.end();   }
 
 public:
-    bool empty() const
-    {
-        return m_set.empty();
-    }
-
-    void clear()
-    {
-        m_set.clear();
-    }
-
-    int size() const
-    {
-        return m_set.size();
-    }
+    bool empty() const  { return m_set.empty(); }
+    void clear()        { m_set.clear(); }
+    int size() const    { return m_set.size(); }
 
     void insert(T *stmt)
     {

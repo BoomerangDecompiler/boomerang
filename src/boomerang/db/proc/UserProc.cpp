@@ -2543,7 +2543,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 LocationSet u;
                 c->getDest()->addUsedLocs(u);
 
-                if (u.existsImplicit(bparam)) {
+                if (u.containsImplicit(bparam)) {
                     return true; // Used by the destination expression
                 }
 
@@ -2560,7 +2560,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                     LocationSet argUses;
                     rhs->addUsedLocs(argUses);
 
-                    if (argUses.existsImplicit(bparam)) {
+                    if (argUses.containsImplicit(bparam)) {
                         SharedExp lloc = static_cast<Assign *>(*aa)->getLeft();
 
                         if ((visited.find(dest) == visited.end()) && dest->checkForGainfulUse(lloc, visited)) {
@@ -2604,7 +2604,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
         LocationSet uses;
         s->addUsedLocs(uses);
 
-        if (uses.existsImplicit(bparam)) {
+        if (uses.containsImplicit(bparam)) {
             return true; // A gainful use
         }
     }                    // for each statement s

@@ -371,7 +371,7 @@ bool DataFlow::placePhiFunctions()
                 m_A_phi[a].insert(y);
 
                 // if a !elementof A_orig[y]
-                if (m_definedAt[y].find(a) == m_definedAt[y].end()) {
+                if (!m_definedAt[y].contains(a)) {
                     // W <- W U {y}
                     W.insert(y);
                 }

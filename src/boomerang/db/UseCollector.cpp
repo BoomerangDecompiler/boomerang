@@ -126,6 +126,7 @@ void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
     }
 }
 
+
 void UseCollector::remove(SharedExp loc)
 {
     m_locs.remove(loc);
@@ -134,6 +135,6 @@ void UseCollector::remove(SharedExp loc)
 
 void UseCollector::remove(iterator it)
 {
-    m_locs.remove(it);
+    m_locs.erase(it);
 }
 
