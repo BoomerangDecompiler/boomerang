@@ -294,7 +294,9 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                     LocationSet rhsComps;
                     rhs->addUsedLocs(rhsComps);
                     LocationSet::iterator rcit;
-                    bool doNotPropagate = false;
+#if USE_DOMINANCE_NUMS
+                    bool doPropagate = true;
+#endif
 
                     for (rcit = rhsComps.begin(); rcit != rhsComps.end(); ++rcit) {
                         if (!(*rcit)->isSubscript()) {
@@ -332,7 +334,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                                 if ((def->getDomNumber() <= OWdef->getDomNumber()) &&
                                     (OWdef->getDomNumber() < m_dominanceNum)) {
                                     // The heuristic kicks in
-                                    doNotPropagate = true;
+                                    doPropagate = false;
                                 }
 #endif
                                 break;
@@ -344,13 +346,15 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                         }
                     }
 
-                    if (doNotPropagate) {
+#if USE_DOMINANCE_NUMS
+                    if (!doPropagate) {
                         LOG_VERBOSE("% propagation of %1 into %2 prevented by "
                                     "the propagate past overwriting statement in loop heuristic",
                                     def->getNumber(), m_number);
 
                         continue;
                     }
+#endif
                 }
             }
 
