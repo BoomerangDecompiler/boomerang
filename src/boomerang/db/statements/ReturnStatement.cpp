@@ -68,10 +68,13 @@ Statement *ReturnStatement::clone() const
 
 ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
 {
-    assert(it != end());
+    auto endIt = end();
+    assert(it != endIt);
+
     Statement *removed = *it;
     it = m_returns.erase(it);
     delete removed;
+
     return it;
 }
 
@@ -478,7 +481,7 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
     // the
     // new list. So read the old modifications in reverse order
-    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); it++) {
+    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); ++it) {
         // Make sure the LHS is still in the collector
         Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();
