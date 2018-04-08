@@ -162,7 +162,7 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
 {
     ParamEntry& param = DetParamMap[s];
 
-    if (param.m_params.size() == 0) {
+    if (param.m_params.empty()) {
         LOG_ERROR("Error in SSL File: Variant operand %1 has no branches. Well that's really useful...", s);
         return;
     }

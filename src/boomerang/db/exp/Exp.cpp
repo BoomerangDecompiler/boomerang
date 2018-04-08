@@ -245,7 +245,7 @@ SharedExp Exp::searchReplaceAll(const Exp& pattern, const SharedExp& replace, bo
         }
     }
 
-    change = (li.size() != 0);
+    change = !li.empty();
     return top;
 }
 
@@ -259,7 +259,7 @@ bool Exp::search(const Exp& pattern, SharedExp& result)
     SharedExp top = shared_from_this();
     doSearch(pattern, top, li, false);
 
-    if (li.size()) {
+    if (!li.empty()) {
         result = *li.front();
         return true;
     }
@@ -340,13 +340,11 @@ void Exp::partitionTerms(std::list<SharedExp>& positives, std::list<SharedExp>& 
 
 SharedExp Exp::accumulate(std::list<SharedExp>& exprs)
 {
-    int n = exprs.size();
-
-    if (n == 0) {
+    if (exprs.empty()) {
         return Const::get(0);
     }
 
-    if (n == 1) {
+    if (exprs.size() == 1) {
         return exprs.front()->clone();
     }
 

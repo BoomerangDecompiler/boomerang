@@ -63,13 +63,10 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
 
         // Now print type for each constant in this Statement
         std::list<std::shared_ptr<Const> >           lc;
-        std::list<std::shared_ptr<Const> >::iterator cc;
         s->findConstants(lc);
 
-        if (lc.size()) {
-            for (cc = lc.begin(); cc != lc.end(); ++cc) {
-                LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
-            }
+        for (auto cc = lc.begin(); cc != lc.end(); ++cc) {
+            LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
         }
 
         // If s is a call, also display its return types

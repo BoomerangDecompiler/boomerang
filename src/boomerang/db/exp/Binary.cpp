@@ -558,7 +558,7 @@ void Binary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bo
     assert(subExp1 && subExp2);
     doSearch(pattern, subExp1, li, once);
 
-    if (once && li.size()) {
+    if (once && !li.empty()) {
         return;
     }
 
@@ -618,8 +618,8 @@ SharedExp Binary::simplifyArith()
     int sum = std::accumulate(integers.begin(), integers.end(), 0);
 
     // Now put all these elements back together and return the result
-    if (positives.size() == 0) {
-        if (negatives.size() == 0) {
+    if (positives.empty()) {
+        if (negatives.empty()) {
             return Const::get(sum);
         }
         else {
@@ -628,7 +628,7 @@ SharedExp Binary::simplifyArith()
         }
     }
 
-    if (negatives.size() == 0) {
+    if (negatives.empty()) {
         // Positives + sum
         if (sum == 0) {
             // Just positives
