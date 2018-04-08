@@ -286,7 +286,7 @@ bool DataFlow::placePhiFunctions()
     m_defsites.clear();
     m_defallsites.clear();
 
-    for (ExpSet& exps : m_definedAt) {
+    for (ExSet& exps : m_definedAt) {
         for (auto iter = exps.begin(); iter != exps.end(); ) {
             if (m_A_phi.find(*iter) == m_A_phi.end()) {
                 iter = exps.erase(iter);
@@ -438,11 +438,11 @@ void DataFlow::convertImplicits()
         m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
     }
 
-    std::vector<ExpSet> definedAtCopy = m_definedAt;
+    std::vector<ExSet> definedAtCopy = m_definedAt;
     m_definedAt.clear();
 
-    for (ExpSet& se : definedAtCopy) {
-        ExpSet se_new;
+    for (ExSet& se : definedAtCopy) {
+        ExSet se_new;
 
         for (const SharedExp& ee : se) {
             SharedExp e = ee->clone()->accept(&ic);

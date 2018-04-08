@@ -40,7 +40,7 @@ class LocationSet;
  */
 class DataFlow
 {
-    using ExpSet = ExpSet<Exp>;
+    using ExSet = ExpSet<Exp>;
 
 public:
     DataFlow(UserProc *proc);
@@ -191,7 +191,7 @@ private:
      * Inserting phi-functions
      */
     /// Array of sets of locations defined in BB n
-    std::vector<ExpSet> m_definedAt; // was: m_A_orig
+    std::vector<ExSet> m_definedAt; // was: m_A_orig
 
     /// For a given expression e, stores the BBs needing a phi for e
     std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;
