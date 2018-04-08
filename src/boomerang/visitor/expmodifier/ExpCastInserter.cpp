@@ -22,26 +22,20 @@
 
 static SharedExp checkSignedness(SharedExp e, int reqSignedness)
 {
-    SharedType ty             = e->ascendType();
+    SharedConstType ty        = e->ascendType();
+    const bool isInt          = ty->resolvesToInteger();
     int        currSignedness = 0;
-    bool       isInt          = ty->resolvesToInteger();
 
     if (isInt) {
         currSignedness = ty->as<IntegerType>()->getSignedness();
         currSignedness = (currSignedness >= 0) ? 1 : -1;
     }
 
-    // if (!isInt || currSignedness != reqSignedness) { // }
     // Don't want to cast e.g. floats to integer
     if (isInt && (currSignedness != reqSignedness)) {
-        std::shared_ptr<IntegerType> newtype;
-
-        if (!isInt) {
-            newtype = IntegerType::get(STD_SIZE, reqSignedness);
-        }
-        else {
-            newtype = IntegerType::get(std::static_pointer_cast<IntegerType>(ty)->getSize(), reqSignedness); // Transfer size
-        }
+        // Transfer size
+        std::shared_ptr<IntegerType> newtype =
+            IntegerType::get(std::static_pointer_cast<const IntegerType>(ty)->getSize(), reqSignedness);
 
         newtype->setSigned(reqSignedness);
         return std::make_shared<TypedExp>(newtype, e);

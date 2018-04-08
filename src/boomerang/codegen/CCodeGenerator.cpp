@@ -1832,7 +1832,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
             int sz = ternaryExp.access<Const, 1>()->getInt();
 
             if ((sz == 8) || (sz == 16)) {
-                bool close = false;
                 str << "*";
                 str << "(unsigned ";
 
@@ -1845,12 +1844,8 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
 
                 str << "*)";
                 openParen(str, curPrec, OpPrec::Unary);
-                close = true;
                 appendExp(str, *ternaryExp.getSubExp3()->getSubExp1(), OpPrec::Unary);
-
-                if (close) {
-                    closeParen(str, curPrec, OpPrec::Unary);
-                }
+                closeParen(str, curPrec, OpPrec::Unary);
 
                 break;
             }
@@ -2088,14 +2083,14 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
         {
             SharedType ty = nullptr;
 
-            if (ty == nullptr) {
+//             if (ty == nullptr) {
                 LOG_MSG("Type failure: no type for subexp1 of %1", binaryExp.shared_from_this());
 
                 // ty = b.getSubExp1()->getType();
                 // No idea why this is hitting! - trentw
                 // str << "/* type failure */ ";
                 // break;
-            }
+//             }
 
             // Trent: what were you thinking here? Fails for things like
             // local11.lhHeight (where local11 is a register)
