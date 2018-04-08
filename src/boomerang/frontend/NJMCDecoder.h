@@ -146,8 +146,8 @@ protected:
     // Dictionary of instruction patterns, and other information summarised from the SSL file
     // (e.g. source machine's endianness)
     RTLInstDict m_rtlDict;
-    Prog *m_prog;
-    BinaryImage *m_image;
+    Prog *m_prog = nullptr;
+    BinaryImage *m_image = nullptr;
 };
 
 
