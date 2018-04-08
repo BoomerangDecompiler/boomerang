@@ -364,13 +364,13 @@ void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, b
 {
     doSearch(pattern, subExp1, li, once);
 
-    if (once && li.size()) {
+    if (once && !li.empty()) {
         return;
     }
 
     doSearch(pattern, subExp2, li, once);
 
-    if (once && li.size()) {
+    if (once && !li.empty()) {
         return;
     }
 
