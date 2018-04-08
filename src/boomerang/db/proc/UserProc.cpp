@@ -989,10 +989,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     m_df.setRenameLocalsParams(true);
 
     // Now we need another pass to inert phis for the memofs, rename them and propagate them
-    ++pass;
-
-    change = PassManager::get()->executePass(PassID::PhiPlacement, this);
-    change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
+    PassManager::get()->executePass(PassID::PhiPlacement, this);
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     debugPrintAll("after setting phis for memofs, renaming them");
     PassManager::get()->executePass(PassID::StatementPropagation, this);
