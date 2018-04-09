@@ -62,7 +62,24 @@ void SignatureTest::testAddParameter()
 
 void SignatureTest::testRemoveParameter()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    // verify it does not crash
+    sig.removeParameter(nullptr);
+    QCOMPARE(sig.getNumParams(), 0);
+
+    sig.removeParameter(0);
+    QCOMPARE(sig.getNumParams(), 0);
+
+    sig.addParameter(Location::regOf(25));
+    sig.removeParameter(0);
+    QCOMPARE(sig.getNumParams(), 0);
+
+    sig.addParameter(Location::regOf(25), IntegerType::get(32, 1));
+    sig.addParameter(Location::regOf(26));
+    sig.removeParameter(Location::regOf(25));
+    QCOMPARE(sig.getNumParams(), 1);
+    QVERIFY(*sig.getParamExp(0) == *Location::regOf(26));
 }
 
 

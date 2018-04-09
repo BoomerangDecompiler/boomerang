@@ -244,11 +244,12 @@ void Signature::removeParameter(const SharedExp& e)
 
 void Signature::removeParameter(int i)
 {
-    for (int j = i + 1; j < static_cast<int>(m_params.size()); j++) {
-        m_params[j - 1] = m_params[j];
+    const int n = m_params.size();
+    if (!Util::inRange(i, 0, n)) {
+        return;
     }
 
-    m_params.resize(m_params.size() - 1);
+    m_params.erase(m_params.begin() + i);
 }
 
 
