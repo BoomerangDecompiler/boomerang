@@ -12,7 +12,7 @@
 
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/util/Util.h"
+#include "boomerang/util/ByteUtil.h"
 
 #include <QString>
 

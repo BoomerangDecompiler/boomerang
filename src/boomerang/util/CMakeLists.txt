@@ -9,6 +9,7 @@
 
 list(APPEND boomerang-util-sources
     util/Address
+    util/ByteUtil
     util/CFGDotWriter
     util/ConnectionGraph
     util/Interval.h

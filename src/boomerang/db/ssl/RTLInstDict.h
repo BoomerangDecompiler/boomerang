@@ -13,7 +13,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/util/Util.h"
+#include "boomerang/util/ByteUtil.h"
 
 #include <QString>
 #include <QTextStream>

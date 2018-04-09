@@ -9,6 +9,8 @@
 #pragma endregion License
 #include "UtilTest.h"
 
+
+#include "boomerang/util/ByteUtil.h"
 #include "boomerang/util/Util.h"
 
 
