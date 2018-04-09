@@ -107,14 +107,14 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     unsigned char      *magic = reinterpret_cast<uint8_t *>(img.data());
     struct mach_header *header; // The Mach-O header
 
-    if ((magic[0] == 0xca) && (magic[1] == 0xfe) && (magic[2] == 0xba) && (magic[3] == 0xbe)) {
-        int nimages = TESTMAGIC4_BE(4);
+    if (TESTMAGIC4(magic, 0, 0xca, 0xfe, 0xba, 0xbe)) {
+        const int nimages = Util::readDWord(magic + 4, Endian::Big);
         DEBUG_PRINT("Binary is universal with %1 images", nimages);
 
         for (int i = 0; i < nimages; i++) {
             int          fbh     = 8 + i * 5 * 4;
-            unsigned int cputype = TESTMAGIC4_BE(fbh);
-            unsigned int offset  = TESTMAGIC4_BE(fbh + 8);
+            unsigned int cputype = Util::readDWord(magic + fbh + 0, Endian::Big);
+            unsigned int offset  = Util::readDWord(magic + fbh + 8, Endian::Big);
             DEBUG_PRINT("cputype:    %1", cputype);
             DEBUG_PRINT("cpusubtype: %1", BE4(fbh + 4));
             DEBUG_PRINT("offset:     %1", BE4(fbh + 8));

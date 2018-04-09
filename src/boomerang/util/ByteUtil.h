@@ -129,12 +129,6 @@ TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 *sizeof(SrcTyp
 #define READ2_BE(x) Util::readWord(&(x), Endian::Big)
 
 
-#define TESTMAGIC4_BE(offset) (   \
-    (magic[(offset) + 0] << 24) | \
-    (magic[(offset) + 1] << 16) | \
-    (magic[(offset) + 2] <<  8) | \
-    (magic[(offset) + 3] <<  0))
-
 #define TESTMAGIC4(buf, off, a, b, c, d) ( \
     buf[off + 0] == a && \
     buf[off + 1] == b && \
