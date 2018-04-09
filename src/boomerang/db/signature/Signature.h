@@ -10,13 +10,13 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
-#include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Operator.h"
-#include "boomerang/frontend/SigEnum.h"   // For enums platform and cc
-
 #include "boomerang/db/signature/Parameter.h"
 #include "boomerang/db/signature/Return.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/frontend/SigEnum.h"   // For enums platform and cc
+#include "boomerang/type/type/VoidType.h"
+
 
 
 class Statement;

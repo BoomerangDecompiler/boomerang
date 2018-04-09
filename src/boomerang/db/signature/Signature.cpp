@@ -405,7 +405,7 @@ int Signature::findReturn(SharedConstExp exp) const
 void Signature::addReturn(SharedType type, SharedExp exp)
 {
     assert(exp);
-    addReturn(std::make_shared<Return>(type, exp));
+    m_returns.emplace_back(std::make_shared<Return>(type, exp));
 }
 
 

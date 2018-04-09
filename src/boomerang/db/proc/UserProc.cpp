@@ -1422,7 +1422,7 @@ void UserProc::setLocalType(const QString& name, SharedType ty)
 
 SharedConstType UserProc::getParamType(const QString& name) const
 {
-    for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
         if (name == m_signature->getParamName(i)) {
             return m_signature->getParamType(i);
         }

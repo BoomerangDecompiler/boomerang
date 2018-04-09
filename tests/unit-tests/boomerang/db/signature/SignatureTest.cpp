@@ -10,6 +10,12 @@
 #include "SignatureTest.h"
 
 
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/IntegerType.h"
+
+
 void SignatureTest::testAddReturn()
 {
     QSKIP("Not implemented.");
