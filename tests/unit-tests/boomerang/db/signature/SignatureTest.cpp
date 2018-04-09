@@ -85,49 +85,101 @@ void SignatureTest::testRemoveParameter()
 
 void SignatureTest::testSetNumParams()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.setNumParams(0);
+    QCOMPARE(sig.getNumParams(), 0);
+
+    sig.addParameter("foo", Location::regOf(25));
+    sig.addParameter("bar", Location::regOf(24));
+
+    sig.setNumParams(1);
+    QCOMPARE(sig.getNumParams(), 1);
 }
 
 
 void SignatureTest::testGetParamName()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addParameter("testParam", Location::regOf(25), VoidType::get());
+    QCOMPARE(sig.getParamName(0), QString("testParam"));
 }
 
 
 void SignatureTest::testGetParamExp()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addParameter(Location::regOf(25));
+    QVERIFY(*sig.getParamExp(0) == *Location::regOf(25));
 }
 
 
 void SignatureTest::testGetParamType()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    QVERIFY(sig.getParamType(0) == nullptr);
+
+    sig.addParameter(Location::regOf(25), IntegerType::get(32, 1));
+    QVERIFY(*sig.getParamType(0) == *IntegerType::get(32, 1));
 }
 
 
 void SignatureTest::testGetParamBoundMax()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QCOMPARE(sig.getParamBoundMax(0), QString());
+
+    sig.addParameter(Location::regOf(25), IntegerType::get(32, 1));
+    QCOMPARE(sig.getParamBoundMax(0), QString());
+
+    sig.addParameter("testParam", Location::regOf(26), IntegerType::get(32, 1), "r25");
+    QCOMPARE(sig.getParamBoundMax(1), QString("r25"));
 }
 
 
 void SignatureTest::testSetParamType()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addParameter("testParam", Location::regOf(25), IntegerType::get(32, 1));
+    sig.setParamType(0, VoidType::get());
+    QVERIFY(*sig.getParamType(0) == *VoidType::get());
+
+    sig.setParamType("testParam", IntegerType::get(32, 0));
+    QVERIFY(*sig.getParamType(0) == *IntegerType::get(32, 0));
 }
 
 
 void SignatureTest::testFindParam()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QCOMPARE(sig.findParam(Location::regOf(24)), -1);
+    QCOMPARE(sig.findParam("testParam"), -1);
+
+    sig.addParameter("testParam", Location::regOf(25), IntegerType::get(32, 1));
+    QCOMPARE(sig.findParam(Location::regOf(25)), 0);
+    QCOMPARE(sig.findParam(Location::regOf(24)), -1);
+    QCOMPARE(sig.findParam("testParam"), 0);
+    QCOMPARE(sig.findParam("Foo"), -1);
 }
 
 
 void SignatureTest::testRenameParam()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(!sig.renameParam("", ""));
+
+    sig.addParameter("testParam", Location::regOf(25));
+    QVERIFY(sig.renameParam("testParam", ""));
+    QCOMPARE(sig.getParamName(0), QString());
+
+    QVERIFY(sig.renameParam("", ""));
+    QVERIFY(sig.renameParam("", "foo"));
+    QVERIFY(!sig.renameParam("bar", "baz"));
+    QCOMPARE(sig.getParamName(0), QString("foo"));
 }
 
 

@@ -178,7 +178,6 @@ void Signature::addParameter(const QString& name, const SharedExp& e,
                              SharedType type, const QString& boundMax)
 {
     if (e == nullptr) {
-        // Else get infinite mutual recursion with the below proc
         LOG_FATAL("No expression for parameter %1 %2",
                   type ? type->getCtype() : "<notype>",
                   !name.isNull() ? qPrintable(name) : "<noname>");
@@ -255,15 +254,8 @@ void Signature::removeParameter(int i)
 
 void Signature::setNumParams(int n)
 {
-    if (n < static_cast<int>(m_params.size())) {
-        // truncate
-        m_params.erase(m_params.begin() + n, m_params.end());
-    }
-    else {
-        for (int i = static_cast<int>(m_params.size()); i < n; i++) {
-            addParameter(nullptr, VoidType::get());
-        }
-    }
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size()+1)));
+    m_params.erase(m_params.begin() + n, m_params.end());
 }
 
 
@@ -368,14 +360,16 @@ int Signature::findParam(const SharedExp& e) const
 }
 
 
-void Signature::renameParam(const QString& oldName, const QString& newName)
+bool Signature::renameParam(const QString& oldName, const QString& newName)
 {
     for (int i = 0; i < getNumParams(); i++) {
         if (m_params[i]->getName() == oldName) {
             m_params[i]->setName(newName);
-            break;
+            return true;
         }
     }
+
+    return false;
 }
 
 

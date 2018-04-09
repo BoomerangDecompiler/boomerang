@@ -132,7 +132,8 @@ public:
     virtual int findParam(const SharedExp& e) const;
     virtual int findParam(const QString& name) const;
 
-    void renameParam(const QString& oldName, const QString& newName);
+    /// returns true if successfully renamed
+    bool renameParam(const QString& oldName, const QString& newName);
 
     // accessor for argument expressions
     virtual SharedExp getArgumentExp(int n) const;
