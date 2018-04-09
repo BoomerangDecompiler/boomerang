@@ -17,6 +17,13 @@
 #include <memory>
 
 
+/**
+ * This class provides file-format independent access to sections and code/data
+ * for binary files.
+ *
+ * \sa BinaryFile
+ * \sa BinarySection
+ */
 class BinaryImage
 {
     typedef std::vector<BinarySection *> SectionList;
@@ -60,18 +67,24 @@ public:
     void reset();
 
     /// Creates a new section with name \p name between \p from and \p to
+    /// \returns the new section, or nullptr on failure.
     BinarySection *createSection(const QString& name, Address from, Address to);
     BinarySection *createSection(const QString& name, Interval<Address> extent);
 
+    /// \returns the section with index \p idx, or nullptr if not found.
     BinarySection *getSectionByIndex(int idx);
     const BinarySection *getSectionByIndex(int idx) const;
 
+    /// \returns the section with name \p sectionName, or nullptr if not found.
     BinarySection *getSectionByName(const QString& sectionName);
     const BinarySection *getSectionByName(const QString& sectionName) const;
 
+    /// \returns the section containing address \p addr, or nullptr if not found.
     BinarySection *getSectionByAddr(Address addr);
     const BinarySection *getSectionByAddr(Address addr) const;
 
+    /// After creating (a) section(s), update the section limits
+    /// beyond which no code or data exists
     void updateTextLimits();
 
     /// \returns the low limit of all sections.
@@ -92,16 +105,16 @@ public:
     float readNativeFloat4(Address addr) const;
     double readNativeFloat8(Address addr) const;
 
-
     bool writeNative4(Address addr, DWord value);
 
+    /// \returns true if \p addr is in a read-only section
     bool isReadOnly(Address addr) const;
 
 private:
     QByteArray m_rawData;
-    Address m_limitTextLow;
-    Address m_limitTextHigh;
-    ptrdiff_t m_textDelta;
+    Address m_limitTextLow = Address::INVALID;
+    Address m_limitTextHigh = Address::INVALID;
+    ptrdiff_t m_textDelta = 0;
     IntervalMap<Address, std::unique_ptr<BinarySection>> m_sectionMap;
     SectionList m_sections; ///< The section info
 };

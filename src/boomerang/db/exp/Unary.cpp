@@ -18,8 +18,8 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -640,7 +640,7 @@ void Unary::printx(int ind) const
 bool Unary::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<Unary>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<Unary>(), visitChildren);
 
     if (!visitChildren || !ret) {
         return ret; // Override the rest of the accept logic
@@ -655,14 +655,14 @@ SharedExp Unary::accept(ExpModifier *v)
     // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
     // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
     bool visitChildren = false;
-    auto ret   = std::dynamic_pointer_cast<Unary>(v->preVisit(shared_from_base<Unary>(), visitChildren));
+    auto ret   = std::dynamic_pointer_cast<Unary>(v->preModify(shared_from_base<Unary>(), visitChildren));
 
     if (visitChildren) {
         subExp1 = subExp1->accept(v);
     }
 
     assert(ret);
-    return v->postVisit(ret);
+    return v->postModify(ret);
 }
 
 

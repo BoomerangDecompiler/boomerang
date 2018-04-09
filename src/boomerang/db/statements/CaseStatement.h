@@ -30,7 +30,7 @@ public:
     virtual Statement *clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;

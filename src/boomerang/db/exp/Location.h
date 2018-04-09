@@ -51,6 +51,7 @@ public:
     static SharedExp param(const QString& name, UserProc *proc = nullptr) { return get(opParam, Const::get(name), proc); }
 
     void setProc(UserProc *p) { m_proc = p; }
+    const UserProc *getProc() const { return m_proc; }
     UserProc *getProc() { return m_proc; }
 
     /// \copydoc Unary::polySimplify

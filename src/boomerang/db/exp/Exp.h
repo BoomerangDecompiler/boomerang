@@ -159,7 +159,7 @@ public:
     /// True if this is the Nil Terminal (terminates lists; "NOP" expression)
     bool isNil() const { return m_oper == opNil; }
     /// True if this is %pc
-    bool isPC() { return m_oper == opPC; }
+    bool isPC() const { return m_oper == opPC; }
 
     /// Returns true if is %afp, %afp+k, %afp-k, or a[m[...]]
     bool isAfpTerm();
@@ -573,6 +573,3 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
     os << p.get();
     return os;
 }
-
-
-typedef std::set<SharedExp, lessExpStar> ExpSet;

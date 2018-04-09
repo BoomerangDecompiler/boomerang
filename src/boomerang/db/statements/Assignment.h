@@ -14,7 +14,8 @@
 
 
 /**
- * Assignment is an abstract subclass of TypingStatement, holding a location
+ * Assignment is the base class of all statements that assign to a
+ * left hand side like ordinary assignments, phi statements or implicit assignments.
  */
 class Assignment : public TypingStatement
 {
@@ -43,7 +44,10 @@ public:
     virtual void printCompact(QTextStream& os, bool html = false) const = 0;
 
     /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) const override;
+    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+
+    /// \copydoc Statement::getTypeFor
+    virtual SharedType getTypeFor(SharedExp e) override;
 
     /// \copydoc Statement::setTypeFor
     virtual void setTypeFor(SharedExp e, SharedType ty) override;

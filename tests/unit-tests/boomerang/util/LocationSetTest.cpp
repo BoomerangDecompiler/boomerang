@@ -138,20 +138,19 @@ void LocationSetTest::testContains()
 }
 
 
-void LocationSetTest::testExistsImplicit()
+void LocationSetTest::testContainsImplicit()
 {
     LocationSet set;
-    QVERIFY(!set.existsImplicit(nullptr));
+    QVERIFY(!set.containsImplicit(nullptr));
 
     set.insert(Location::regOf(30));
-    QVERIFY(!set.existsImplicit(Location::regOf(30)));
-    QVERIFY(!set.existsImplicit(Location::regOf(32)));
+    QVERIFY(!set.containsImplicit(Location::regOf(30)));
+    QVERIFY(!set.containsImplicit(Location::regOf(32)));
 
     set.insert(RefExp::get(Location::regOf(32), nullptr));
-    QVERIFY(set.existsImplicit(Location::regOf(32)));
-    QVERIFY(!set.existsImplicit(Location::regOf(30)));
+    QVERIFY(set.containsImplicit(Location::regOf(32)));
+    QVERIFY(!set.containsImplicit(Location::regOf(30)));
 }
-
 
 
 void LocationSetTest::testFindNS()
@@ -265,35 +264,6 @@ void LocationSetTest::testMakeDiff()
     set1.makeDiff(set2);
     QCOMPARE(set1.prints(), "r25");
     QCOMPARE(set2.prints(), "r26, r27");
-}
-
-
-void LocationSetTest::testSubstitute()
-{
-    LocationSet set;
-
-    SharedExp r25 = Location::regOf(25);
-    SharedExp r26 = Location::regOf(26);
-
-    Assign a1(r25, r26);
-    set.substitute(a1);
-    QVERIFY(set.empty());
-
-    set.insert(r25);
-    set.substitute(a1);
-    QCOMPARE(set.prints(), "r25, r26");
-
-    Assign a2(r25, nullptr);
-    set.substitute(a2);
-    QCOMPARE(set.prints(), "r25, r26"); // no change
-
-    Assign a3(r26, r25);
-    set.substitute(a3);
-    QCOMPARE(set.prints(), "r25, r26"); // no change
-
-    Assign a4(r25, Terminal::get(opPC)); // will cause r25 to be removed because of terminal
-    set.substitute(a4);
-    QCOMPARE(set.prints(), "r26");
 }
 
 

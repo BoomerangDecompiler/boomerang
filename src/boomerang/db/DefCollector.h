@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/util/AssignSet.h"
+#include "boomerang/util/StatementSet.h"
 
 #include <deque>
 #include <map>
@@ -68,11 +68,10 @@ public:
 
     /// Print to string (for debugging)
     char *prints() const;
-    void dump() const;
 
     bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 
-    /*
+    /**
      * Update the definitions with the current set of reaching definitions
      * proc is the enclosing procedure
      */
@@ -90,8 +89,8 @@ public:
 
 private:
     /**
-     * True if initialised. When not initialised, callees should not subscript parameters inserted into the
-     * associated CallStatement
+     * True if initialised. When not initialised, callees should not
+     * subscript parameters inserted into the associated CallStatement
      */
     bool m_initialised = false;
     AssignSet m_defs; ///< The set of definitions.

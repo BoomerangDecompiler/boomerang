@@ -61,7 +61,6 @@ public:
 
     /// Get the program this procedure belongs to.
     Prog *getProg() const { return m_prog; }
-    void setProg(Prog *p) { m_prog = p; }
 
     /// Get the first procedure that calls this procedure (or null for main/start).
     Function *getFirstCaller();

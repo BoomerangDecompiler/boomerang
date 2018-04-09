@@ -11,9 +11,10 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/Type.h"
+#include "boomerang/util/Log.h"
 
 
 TypedExp::TypedExp(SharedExp e1)
@@ -163,7 +164,7 @@ SharedExp TypedExp::polySimplify(bool& changed)
 bool TypedExp::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<TypedExp>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<TypedExp>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -180,7 +181,7 @@ bool TypedExp::accept(ExpVisitor *v)
 SharedExp TypedExp::accept(ExpModifier *v)
 {
     bool visitChildren;
-    auto ret          = v->preVisit(shared_from_base<TypedExp>(), visitChildren);
+    auto ret          = v->preModify(shared_from_base<TypedExp>(), visitChildren);
     auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
 
     if (visitChildren) {
@@ -188,7 +189,7 @@ SharedExp TypedExp::accept(ExpModifier *v)
     }
 
     assert(typedexp_ret);
-    return v->postVisit(typedexp_ret);
+    return v->postModify(typedexp_ret);
 }
 
 

@@ -58,7 +58,7 @@ BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString& name,
         m_nameIndex[name] = sym;
     }
 
-    m_symbolList.push_back(sym);
+    m_symbolList.push_back(sym.get());
     return sym.get();
 }
 

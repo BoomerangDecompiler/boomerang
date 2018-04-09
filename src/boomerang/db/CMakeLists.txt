@@ -70,48 +70,6 @@ list(APPEND boomerang-db-sources
     db/statements/Statement
     db/statements/StatementHelper
     db/statements/TypingStatement
-
-    # visitors
-    db/visitor/BadMemofFinder
-    db/visitor/CallBypasser
-    db/visitor/ComplexityFinder
-    db/visitor/ConscriptSetter
-    db/visitor/ConstFinder
-    db/visitor/ConstGlobalConverter
-    db/visitor/DFALocalMapper
-    db/visitor/ExpCastInserter
-    db/visitor/ExpConstCaster
-    db/visitor/ExpDestCounter
-    db/visitor/ExpModifier
-    db/visitor/ExpPropagator
-    db/visitor/ExpRegMapper
-    db/visitor/ExpSSAXformer
-    db/visitor/ExpSubscripter
-    db/visitor/ExpVisitor
-    db/visitor/FlagsFinder
-    db/visitor/ImplicitConverter
-    db/visitor/Localiser
-    db/visitor/MemDepthFinder
-    db/visitor/PhiStripper
-    db/visitor/PrimitiveTester
-    db/visitor/SimpExpModifier
-    db/visitor/SizeStripper
-    db/visitor/StmtCastInserter
-    db/visitor/StmtConscriptSetter
-    db/visitor/StmtConstFinder
-    db/visitor/StmtDestCounter
-    db/visitor/StmtExpVisitor
-    db/visitor/StmtImplicitConverter
-    db/visitor/StmtModifier
-    db/visitor/StmtPartModifier
-    db/visitor/StmtRegMapper
-    db/visitor/StmtSSAXFormer
-    db/visitor/StmtSubscripter
-    db/visitor/StmtVisitor
-    db/visitor/TempToLocalMapper
-    db/visitor/UsedLocalFinder
-    db/visitor/UsedLocsFinder
-    db/visitor/UsedLocsVisitor
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-db-sources}" PARENT_SCOPE)

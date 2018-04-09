@@ -28,7 +28,7 @@ public:
      * \sa Cfg::isWellFormed
      * \returns true if the Cfg was changed.
      */
-    bool compressCFG(Cfg* cfg);
+    bool compressCFG(Cfg *cfg);
 
 private:
     /// Removes BBs that are not reachable from the entry BB.

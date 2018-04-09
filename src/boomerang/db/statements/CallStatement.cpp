@@ -21,14 +21,14 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/visitor/Localiser.h"
-#include "boomerang/db/visitor/ImplicitConverter.h"
-#include "boomerang/db/visitor/StmtImplicitConverter.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/visitor/expmodifier/Localiser.h"
+#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
+#include "boomerang/visitor/stmtmodifier/StmtImplicitConverter.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
@@ -605,7 +605,7 @@ Statement *CallStatement::clone() const
 }
 
 
-bool CallStatement::accept(StmtVisitor *visitor)
+bool CallStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }
@@ -934,7 +934,25 @@ void CallStatement::removeArgument(int i)
 }
 
 
-SharedType CallStatement::getTypeFor(SharedExp e) const
+SharedConstType CallStatement::getTypeFor(SharedConstExp e) const
+{
+    // The defines "cache" what the destination proc is defining
+    const Assignment *as = m_defines.findOnLeft(e);
+
+    if (as != nullptr) {
+        return as->getType();
+    }
+
+    if (e->isPC()) {
+        // Special case: just return void*
+        return PointerType::get(VoidType::get());
+    }
+
+    return VoidType::get();
+}
+
+
+SharedType CallStatement::getTypeFor(SharedExp e)
 {
     // The defines "cache" what the destination proc is defining
     Assignment *as = m_defines.findOnLeft(e);

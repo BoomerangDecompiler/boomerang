@@ -18,7 +18,8 @@
 #include "boomerang/db/InterferenceFinder.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/util/Log.h"
 
 
 FromSSAFormPass::FromSSAFormPass()

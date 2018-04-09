@@ -127,13 +127,8 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // endianness
     switch (m_elfHeader->e_ident[EI_DATA])
     {
-    case ELFDATA2LSB:
-        m_bigEndian = false;
-        break;
-
-    case ELFDATA2MSB:
-        m_bigEndian = true;
-        break;
+    case ELFDATA2LSB: m_endian = Endian::Little; break;
+    case ELFDATA2MSB: m_endian = Endian::Big; break;
 
     default:
         LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->e_ident[EI_DATA]);
@@ -292,7 +287,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             sect->setBss(par.Bss);
             sect->setCode(par.Code);
             sect->setData(par.Data);
-            sect->setEndian(m_bigEndian);
+            sect->setEndian(m_endian);
             sect->setHostAddr(par.imagePtr);
             sect->setEntrySize(par.entry_size);
 
@@ -755,21 +750,21 @@ void ElfBinaryLoader::markImports()
 SWord ElfBinaryLoader::elfRead2(const SWord *ps) const
 {
     assert(ps);
-    return Util::readWord(ps, m_bigEndian);
+    return Util::readWord(ps, m_endian);
 }
 
 
 DWord ElfBinaryLoader::elfRead4(const DWord *pi) const
 {
     assert(pi);
-    return Util::readDWord(pi, m_bigEndian);
+    return Util::readDWord(pi, m_endian);
 }
 
 
 void ElfBinaryLoader::elfWrite4(DWord *pi, DWord val)
 {
     assert(pi);
-    Util::writeDWord(pi, val, m_bigEndian);
+    Util::writeDWord(pi, val, m_endian);
 }
 
 
@@ -1028,7 +1023,6 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
 }
 
 
-#define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
 int ElfBinaryLoader::canLoad(QIODevice& fl) const
 {
@@ -1039,7 +1033,7 @@ int ElfBinaryLoader::canLoad(QIODevice& fl) const
 
     const Elf32_Ehdr *header = reinterpret_cast<const Elf32_Ehdr *>(contents.constData());
 
-    if (TESTMAGIC4(header->e_ident, EI_MAGO, ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3) == false) {
+    if (Util::testMagic(header->e_ident, { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 }) == false) {
         return 0;
     }
 

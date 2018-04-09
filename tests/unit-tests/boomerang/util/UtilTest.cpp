@@ -9,6 +9,8 @@
 #pragma endregion License
 #include "UtilTest.h"
 
+
+#include "boomerang/util/ByteUtil.h"
 #include "boomerang/util/Util.h"
 
 
@@ -64,13 +66,13 @@ void UtilTest::testSwapEndian()
 
 void UtilTest::testNormEndian()
 {
-    QCOMPARE(Util::normEndian(static_cast<SWord>(            0x1122), false), static_cast<SWord>(            0x1122));
-    QCOMPARE(Util::normEndian(static_cast<DWord>(        0x11223344), false), static_cast<DWord>(        0x11223344));
-    QCOMPARE(Util::normEndian(static_cast<QWord>(0x1122334455667788), false), static_cast<QWord>(0x1122334455667788));
+    QCOMPARE(Util::normEndian(static_cast<SWord>(            0x1122), Endian::Little), static_cast<SWord>(            0x1122));
+    QCOMPARE(Util::normEndian(static_cast<DWord>(        0x11223344), Endian::Little), static_cast<DWord>(        0x11223344));
+    QCOMPARE(Util::normEndian(static_cast<QWord>(0x1122334455667788), Endian::Little), static_cast<QWord>(0x1122334455667788));
 
-    QCOMPARE(Util::normEndian(static_cast<SWord>(            0x1122), true), static_cast<SWord>(            0x2211));
-    QCOMPARE(Util::normEndian(static_cast<DWord>(        0x11223344), true), static_cast<DWord>(        0x44332211));
-    QCOMPARE(Util::normEndian(static_cast<QWord>(0x1122334455667788), true), static_cast<QWord>(0x8877665544332211));
+    QCOMPARE(Util::normEndian(static_cast<SWord>(            0x1122), Endian::Big), static_cast<SWord>(            0x2211));
+    QCOMPARE(Util::normEndian(static_cast<DWord>(        0x11223344), Endian::Big), static_cast<DWord>(        0x44332211));
+    QCOMPARE(Util::normEndian(static_cast<QWord>(0x1122334455667788), Endian::Big), static_cast<QWord>(0x8877665544332211));
 }
 
 
@@ -80,13 +82,13 @@ void UtilTest::testRead()
 
     QCOMPARE(Util::readByte(buffer),        static_cast<Byte> (              0x11));
 
-    QCOMPARE(Util::readWord(buffer,  false), static_cast<SWord>(            0x2211));
-    QCOMPARE(Util::readDWord(buffer, false), static_cast<DWord>(        0x44332211));
-    QCOMPARE(Util::readQWord(buffer, false), static_cast<QWord>(0x8877665544332211));
+    QCOMPARE(Util::readWord(buffer,  Endian::Little), static_cast<SWord>(            0x2211));
+    QCOMPARE(Util::readDWord(buffer, Endian::Little), static_cast<DWord>(        0x44332211));
+    QCOMPARE(Util::readQWord(buffer, Endian::Little), static_cast<QWord>(0x8877665544332211));
 
-    QCOMPARE(Util::readWord(buffer,  true), static_cast<SWord>(            0x1122));
-    QCOMPARE(Util::readDWord(buffer, true), static_cast<DWord>(        0x11223344));
-    QCOMPARE(Util::readQWord(buffer, true), static_cast<QWord>(0x1122334455667788));
+    QCOMPARE(Util::readWord(buffer,  Endian::Big), static_cast<SWord>(            0x1122));
+    QCOMPARE(Util::readDWord(buffer, Endian::Big), static_cast<DWord>(        0x11223344));
+    QCOMPARE(Util::readQWord(buffer, Endian::Big), static_cast<QWord>(0x1122334455667788));
 }
 
 
@@ -98,18 +100,18 @@ void UtilTest::testWrite()
     Util::writeByte(buffer, 0x11);
     QCOMPARE(memcmp(buffer, expectedBuffer, 1), 0);
 
-    Util::writeWord(buffer,                 0x2211, false);
+    Util::writeWord(buffer,                 0x2211, Endian::Little);
     QCOMPARE(memcmp(buffer, expectedBuffer, 2), 0);
-    Util::writeDWord(buffer,            0x44332211, false);
+    Util::writeDWord(buffer,            0x44332211, Endian::Little);
     QCOMPARE(memcmp(buffer, expectedBuffer, 4), 0);
-    Util::writeQWord(buffer, 0x8877665544332211ULL, false);
+    Util::writeQWord(buffer, 0x8877665544332211ULL, Endian::Little);
     QCOMPARE(memcmp(buffer, expectedBuffer, 8), 0);
 
-    Util::writeWord(buffer,                 0x1122, true);
+    Util::writeWord(buffer,                 0x1122, Endian::Big);
     QCOMPARE(memcmp(buffer, expectedBuffer, 2), 0);
-    Util::writeDWord(buffer,            0x11223344, true);
+    Util::writeDWord(buffer,            0x11223344, Endian::Big);
     QCOMPARE(memcmp(buffer, expectedBuffer, 4), 0);
-    Util::writeQWord(buffer, 0x1122334455667788ULL, true);
+    Util::writeQWord(buffer, 0x1122334455667788ULL, Endian::Big);
     QCOMPARE(memcmp(buffer, expectedBuffer, 8), 0);
 }
 

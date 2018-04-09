@@ -25,8 +25,8 @@
 
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
-#define UINT4(p)        Util::readDWord(p, true)
-#define UINT4ADDR(p)    Util::readDWord(p, true)
+#define UINT4(p)        Util::readDWord(p, Endian::Big)
+#define UINT4ADDR(p)    Util::readDWord(p, Endian::Big)
 
 
 HpSomBinaryLoader::HpSomBinaryLoader()
@@ -52,7 +52,7 @@ void HpSomBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbol
 
 int Read4(int *pi)
 {
-    return Util::readDWord(pi, true);
+    return Util::readDWord(pi, Endian::Big);
 }
 
 
@@ -215,7 +215,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     text->setData(false);
     text->setBss(false);
     text->setReadOnly(true);
-    text->setEndian(0);
+    text->setEndian(Endian::Little);
     text->addDefinedArea(Address(AUXHDR(3)), Address(AUXHDR(3) + AUXHDR(2)));
 
     // Section 1: initialised data
@@ -227,7 +227,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     data->setData(true);
     data->setBss(false);
     data->setReadOnly(false);
-    data->setEndian(0);
+    data->setEndian(Endian::Little);
     data->addDefinedArea(Address(AUXHDR(6)), Address(AUXHDR(6) + AUXHDR(5)));
 
     // Section 2: BSS
@@ -241,7 +241,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
     bss->setData(false);
     bss->setBss(true);
     bss->setReadOnly(false);
-    bss->setEndian(0);
+    bss->setEndian(Endian::Little);
 
     // Work through the imports, and find those for which there are stubs using that import entry.
     // Add the addresses of any such stubs.

@@ -9,23 +9,36 @@
 #pragma endregion License
 #pragma once
 
-#include <set>
+
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/exp/Terminal.h"
+
+#include <unordered_set>
 #include <memory>
 
-
-class Statement;
 
 using SharedExp = std::shared_ptr<class Exp>;
 
 
 /**
- * A class to implement sets of statements
+ * This class implements an ordered or unordered set of statements.
+ * \tparam T Statement type (Statement, Assign, CallStatement etc.)
+ * \tparam Sorter Binary functor type that defines the sorting order.
+ *                If Sorter == void, the set is unordered.
  */
-class StatementSet
+template<
+        typename T,
+        typename Sorter = void,
+        typename Enabler = std::enable_if<std::is_base_of<Statement, T>::value>
+    >
+class StmtSet
 {
-    typedef std::set<Statement *> Set;
-    typedef Set::iterator iterator;
-    typedef Set::const_iterator const_iterator;
+    using Set = typename std::conditional<std::is_void<Sorter>::value,
+        std::unordered_set<T *>, std::set<T *, Sorter> >::type;
+
+public:
+    typedef typename Set::iterator       iterator;
+    typedef typename Set::const_iterator const_iterator;
 
 public:
     iterator begin() { return m_set.begin(); }
@@ -35,29 +48,123 @@ public:
     const_iterator end()   const { return m_set.end();   }
 
 public:
-    void insert(Statement *stmt);
+    bool empty() const  { return m_set.empty(); }
+    void clear()        { m_set.clear(); }
+    int size() const    { return m_set.size(); }
+
+    void insert(T *stmt)
+    {
+        assert(stmt != nullptr);
+        m_set.insert(stmt);
+    }
 
     /// Remove this Statement.
     /// \returns true if removed, false if not found
-    bool remove(Statement *s);
+    bool remove(T *s)
+    {
+        if (this->contains(s)) {
+            m_set.erase(s);
+            return true;
+        }
 
-    bool contains(Statement *stmt) const;
+        return false;
+    }
+
+    bool contains(T *stmt) const
+    {
+        return m_set.find(stmt) != m_set.end();
+    }
+
 
     /// \returns true if any statement in this set defines \p loc
-    bool definesLoc(SharedExp loc);
+    bool definesLoc(SharedExp loc) const
+    {
+        if (!loc) {
+            return false;
+        }
+
+        return std::any_of(m_set.begin(), m_set.end(),
+            [loc] (const T *stmt) {
+                return stmt->definesLoc(loc);
+            });
+    }
 
     /// \returns true if this set is a subset of \p other
-    bool isSubSetOf(const StatementSet& other);
+    bool isSubSetOf(const StmtSet& other)
+    {
+        if (m_set.size() > other.m_set.size()) {
+            return false;
+        }
+
+        for (T *stmt : *this) {
+            if (!other.contains(stmt)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     /// Set union: this = this union \p other
-    void makeUnion(const StatementSet& other);
+    void makeUnion(const StmtSet& other)
+    {
+        for (T *stmt : other) {
+            m_set.insert(stmt);
+        }
+    }
 
     /// Set intersection: this = this intersect other
-    void makeIsect(const StatementSet& other);
+    void makeIsect(const StmtSet& other)
+    {
+        for (auto it = m_set.begin(); it != m_set.end(); ) {
+            if (!other.contains(*it)) {
+                // Not in both sets
+                it = m_set.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
 
     /// Set difference: this = this - other
-    void makeDiff(const StatementSet& other);
+    void makeDiff(const StmtSet& other)
+    {
+        if (&other == this) {
+            m_set.clear(); // A \ A == empty set
+            return;
+        }
+
+        for (T *stmt : other) {
+            m_set.erase(stmt);
+        }
+    }
+
+    /// Find a definition for \p loc on the LHS of each assignment in this set.
+    /// If found, return pointer to the Assign with that LHS (else return nullptr)
+    template<typename = std::enable_if<std::is_base_of<Assign, T>::value>>
+    Assign *lookupLoc(SharedExp loc)
+    {
+        if (!loc) {
+            return nullptr;
+        }
+
+        Assign   as(loc, Terminal::get(opWild));
+        iterator ff = m_set.find(&as);
+
+        return (ff != end()) ? *ff : nullptr;
+    }
 
 private:
     Set m_set;
 };
+
+
+struct lessAssign
+{
+    bool operator() (const Assign *as1, const Assign *as2) const;
+};
+
+
+typedef StmtSet<Statement>          StatementSet;
+typedef StmtSet<Assign, lessAssign> AssignSet;

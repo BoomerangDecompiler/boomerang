@@ -25,17 +25,17 @@
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/BadMemofFinder.h"
-#include "boomerang/db/visitor/CallBypasser.h"
-#include "boomerang/db/visitor/ConscriptSetter.h"
-#include "boomerang/db/visitor/ComplexityFinder.h"
-#include "boomerang/db/visitor/ExpSSAXformer.h"
-#include "boomerang/db/visitor/ExpSubscripter.h"
-#include "boomerang/db/visitor/ExpPropagator.h"
-#include "boomerang/db/visitor/FlagsFinder.h"
-#include "boomerang/db/visitor/MemDepthFinder.h"
-#include "boomerang/db/visitor/SizeStripper.h"
-#include "boomerang/db/visitor/UsedLocsFinder.h"
+#include "boomerang/visitor/expmodifier/CallBypasser.h"
+#include "boomerang/visitor/expmodifier/ConscriptSetter.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/ExpSubscripter.h"
+#include "boomerang/visitor/expmodifier/ExpPropagator.h"
+#include "boomerang/visitor/expmodifier/SizeStripper.h"
+#include "boomerang/visitor/expvisitor/BadMemofFinder.h"
+#include "boomerang/visitor/expvisitor/ComplexityFinder.h"
+#include "boomerang/visitor/expvisitor/FlagsFinder.h"
+#include "boomerang/visitor/expvisitor/MemDepthFinder.h"
+#include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
@@ -245,7 +245,7 @@ SharedExp Exp::searchReplaceAll(const Exp& pattern, const SharedExp& replace, bo
         }
     }
 
-    change = (li.size() != 0);
+    change = !li.empty();
     return top;
 }
 
@@ -259,7 +259,7 @@ bool Exp::search(const Exp& pattern, SharedExp& result)
     SharedExp top = shared_from_this();
     doSearch(pattern, top, li, false);
 
-    if (li.size()) {
+    if (!li.empty()) {
         result = *li.front();
         return true;
     }
@@ -340,13 +340,11 @@ void Exp::partitionTerms(std::list<SharedExp>& positives, std::list<SharedExp>& 
 
 SharedExp Exp::accumulate(std::list<SharedExp>& exprs)
 {
-    int n = exprs.size();
-
-    if (n == 0) {
+    if (exprs.empty()) {
         return Const::get(0);
     }
 
-    if (n == 1) {
+    if (exprs.size() == 1) {
         return exprs.front()->clone();
     }
 

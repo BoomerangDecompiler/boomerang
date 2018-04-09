@@ -15,12 +15,12 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Unary.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
@@ -76,7 +76,7 @@ Statement *Assign::clone() const
 }
 
 
-bool Assign::accept(StmtVisitor *visitor)
+bool Assign::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

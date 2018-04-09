@@ -100,13 +100,14 @@ public:
     Address getEntryPoint() override;
 
 private:
-    ExeHeader *m_header;  ///< Pointer to header
-    Byte *m_loadedImage;  ///< Pointer to image buffer
-    int m_imageSize;      ///< Size of image
-    int m_numReloc;       ///< Number of relocation entries
-    DWord *m_relocTable;  ///< The relocation table
-    Address m_uInitPC;    ///< Initial program counter
-    Address m_uInitSP;    ///< Initial stack pointer
-    BinaryImage *m_image;
-    BinarySymbolTable *m_symbols;
+    ExeHeader *m_header = nullptr;          ///< Pointer to header
+    Byte *m_loadedImage = nullptr;          ///< Pointer to image buffer
+    int m_imageSize = 0;                    ///< Size of image
+    int m_numReloc = 0;                     ///< Number of relocation entries
+    DWord *m_relocTable = nullptr;          ///< The relocation table
+    Address m_uInitPC = Address::INVALID;   ///< Initial program counter
+    Address m_uInitSP = Address::INVALID;   ///< Initial stack pointer
+
+    BinaryImage *m_image = nullptr;
+    BinarySymbolTable *m_symbols = nullptr;
 };

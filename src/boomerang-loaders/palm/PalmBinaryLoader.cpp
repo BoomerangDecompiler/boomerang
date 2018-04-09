@@ -23,8 +23,8 @@
 
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
-#define UINT4(p)        Util::readDWord(p, true)
-#define UINT4ADDR(p)    Util::readDWord(reinterpret_cast<const void *>((p).value()), true)
+#define UINT4(p)        Util::readDWord(p, Endian::Big)
+#define UINT4ADDR(p)    Util::readDWord(reinterpret_cast<const void *>((p).value()), Endian::Big)
 
 enum PRCAttr : SWord
 {
@@ -140,7 +140,7 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
         return false;
     }
 
-    const SWord numSections = Util::readWord(&records->resourceCount, true);
+    const SWord numSections = Util::readWord(&records->resourceCount, Endian::Big);
 
     // Iterate through the resource headers (generating section info structs)
     PRCResource *resource = reinterpret_cast<PRCResource *>(m_image + sizeof(PRCHeader) + sizeof(PRCRecordList));
@@ -152,9 +152,9 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
         strncpy(buf, reinterpret_cast<char *>(&resource[i].type), 4);
         buf[4] = 0;
 
-        SWord id = Util::readWord(&resource[i].id, true);
+        SWord id = Util::readWord(&resource[i].id, Endian::Big);
         QString name = QString("%1%2").arg(buf).arg(id);
-        DWord dataOffset = Util::readDWord(&resource[i].dataOffset, true);
+        DWord dataOffset = Util::readDWord(&resource[i].dataOffset, Endian::Big);
 
         Address startAddr(dataOffset);
 
@@ -177,9 +177,9 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
             sect->setHostAddr(props.hostAddr);
             sect->setCode((props.name != "code0") && (props.name.startsWith("code")));
             sect->setData(props.name.startsWith("data"));
-            sect->setEndian(0);                          // little endian
+            sect->setEndian(Endian::Little);             // little endian
             sect->setEntrySize(1);                       // No info available
-            sect->addDefinedArea(props.from, props.to); // no BSS
+            sect->addDefinedArea(props.from, props.to);  // no BSS
         }
     }
 
@@ -324,14 +324,14 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 }
 
 
-#define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 int PalmBinaryLoader::canLoad(QIODevice& dev) const
 {
     unsigned char buf[64];
 
     dev.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
-    if (TESTMAGIC4(buf, 0x3C, 'a', 'p', 'p', 'l') || TESTMAGIC4(buf, 0x3C, 'p', 'a', 'n', 'l')) {
+    if (Util::testMagic(buf + 0x3C, { 'a', 'p', 'p', 'l' }) ||
+        Util::testMagic(buf + 0x3C, { 'p', 'a', 'n', 'l' })) {
         /* PRC Palm-pilot binary */
         return 8;
     }
@@ -416,7 +416,7 @@ int PalmBinaryLoader::getAppID() const
     }
 
     const PRCHeader *prcHeader = reinterpret_cast<PRCHeader *>(m_image);
-    return Util::readDWord(&prcHeader->creator, true);
+    return Util::readDWord(&prcHeader->creator, Endian::Big);
 }
 
 
@@ -478,7 +478,7 @@ const SWord *findPattern(const SWord *start, int size, const SWord *patt, int pa
                 continue;
             }
 
-            const SWord curr = Util::readWord(start + startOffset + i, true);
+            const SWord curr = Util::readWord(start + startOffset + i, Endian::Big);
             if (patt[i] != curr) {
                 // Mismatch, try next pattern
                 allMatched = false;
@@ -517,7 +517,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 
     if (res) {
         // We have the code warrior first jump. Get the addil operand
-        const int addilOp    = static_cast<int>(Util::readDWord((startCode + 5), true));
+        const int addilOp    = static_cast<int>(Util::readDWord((startCode + 5), Endian::Big));
         SWord   *startupCode = reinterpret_cast<SWord *>((HostAddress(startCode) + 10 + addilOp).value());
 
         // Now check the next 60 SWords for the call to PilotMain
@@ -525,7 +525,7 @@ Address PalmBinaryLoader::getMainEntryPoint()
 
         if (res) {
             // Get the addil operand
-            const int _addilOp = Util::readDWord((res + 5), true);
+            const int _addilOp = Util::readDWord((res + 5), Endian::Big);
 
             // That operand plus the address of that operand is PilotMain
             Address offset_loc = Address(reinterpret_cast<const Byte *>(res) - reinterpret_cast<const Byte *>(startCode) + 5);

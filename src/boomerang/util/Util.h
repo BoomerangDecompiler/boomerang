@@ -15,8 +15,6 @@
 
 #include <memory>
 
-#include "boomerang/util/Types.h"
-
 
 class Printable
 {
@@ -79,93 +77,7 @@ void clone(const Container& from, Container& to)
         to[i] = from[i]->clone();
     }
 }
-
-
-/// return a bit mask with exactly \p bitCount of the lowest bits set to 1.
-/// (example: 16 -> 0xFFFF)
-inline QWord getLowerBitMask(DWord bitCount)
-{
-    if (bitCount >= 64) {
-        return 0xFFFFFFFFFFFFFFFF;
-    }
-    return (1ULL << (bitCount % (8 * sizeof(QWord)))) - 1ULL;
 }
 
-
-inline SWord swapEndian(SWord value)
-{
-    value = ((value << 8) & 0xFF00) | ((value >> 8) & 0x00FF);
-    return value;
-}
-
-
-inline DWord swapEndian(DWord value)
-{
-    value = ((value << 16) & 0xFFFF0000) | ((value >> 16) & 0x0000FFFF);
-    value = ((value <<  8) & 0xFF00FF00) | ((value >>  8) & 0x00FF00FF);
-    return value;
-}
-
-
-inline QWord swapEndian(QWord value)
-{
-    value = ((value << 32) & 0xFFFFFFFF00000000ULL) | ((value >> 32) & 0x00000000FFFFFFFFULL);
-    value = ((value << 16) & 0xFFFF0000FFFF0000ULL) | ((value >> 16) & 0x0000FFFF0000FFFFULL);
-    value = ((value <<  8) & 0xFF00FF00FF00FF00ULL) | ((value >>  8) & 0x00FF00FF00FF00FFULL);
-    return value;
-}
-
-
-/**
- * Normalize endianness of a value.
- * Swaps bytes of \p value if the endianness of the source,
- * indicated by \p srcBigEndian, is different from the endianness
- * of the host.
- */
-SWord normEndian(SWord value, bool srcBigEndian);
-DWord normEndian(DWord value, bool srcBigEndian);
-QWord normEndian(QWord value, bool srcBigEndian);
-
-/// Read values, respecting endianness
-/// \sa normEndian
-Byte readByte(const void *src);
-SWord readWord(const void *src, bool srcBigEndian);
-DWord readDWord(const void *src, bool srcBigEndian);
-QWord readQWord(const void *src, bool srcBigEndian);
-
-
-/// Write values to \p dst, respecting endianness
-void writeByte(void *dst, Byte value);
-void writeWord(void *dst, SWord value, bool dstBigEndian);
-void writeDWord(void *dst, DWord value, bool dstBigEndian);
-void writeQWord(void *dst, QWord value, bool dstBigEndian);
-
-
-/**
- * Sign-extend \p src into \a TgtType.
- * Example:
- *   signExtend<int>((unsigned char)0xFF) == -1
- *
- * \param src number to sign-extend
- * \param numSrcBits Number of Bits in the source type
- *        (Mainly to counter int-promption in (blabla & 0xFF))
- */
-template<typename TgtType = int, typename SrcType>
-TgtType signExtend(const SrcType& src, size_t numSrcBits = 8 *sizeof(SrcType))
-{
-    static_assert(std::is_integral<SrcType>::value, "Source type must be an integer!");
-    static_assert(std::is_integral<TgtType>::value && std::is_signed<TgtType>::value, "Target type must be a signed integer!");
-
-    // size difference, in bits
-    const int sizeDifference = 8 * sizeof(TgtType) - numSrcBits;
-    return (static_cast<TgtType>(static_cast<TgtType>(src) << sizeDifference)) >> sizeDifference;
-}
-}
-
-#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kB)
+#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kiB)
 extern char debug_buffer[DEBUG_BUFSIZE];
-
-
-/// Given a pointer p, returns the 16 bits (halfword) in the two bytes
-/// starting at p.
-#define LH(p) Util::readWord(reinterpret_cast<const void *>(p), false)

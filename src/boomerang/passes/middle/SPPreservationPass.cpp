@@ -13,6 +13,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Signature.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/util/Log.h"
 
 
 SPPreservationPass::SPPreservationPass()

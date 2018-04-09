@@ -31,7 +31,8 @@
  */
 class BinarySymbolTable
 {
-    typedef std::vector<std::shared_ptr<BinarySymbol>>   SymbolList;
+    typedef std::vector<BinarySymbol *>        SymbolList;
+
     typedef SymbolList::iterator               iterator;
     typedef SymbolList::const_iterator         const_iterator;
     typedef SymbolList::reverse_iterator       reverse_iterator;

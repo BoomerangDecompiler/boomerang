@@ -15,11 +15,11 @@
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/statements/StatementHelper.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/BooleanType.h"
@@ -359,7 +359,7 @@ Statement *BranchStatement::clone() const
 }
 
 
-bool BranchStatement::accept(StmtVisitor *visitor)
+bool BranchStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

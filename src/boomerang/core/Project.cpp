@@ -260,9 +260,9 @@ void Project::loadPlugins()
         LOG_MSG("Loaded plugins:");
         for (const auto& plugin : m_loaderPlugins) {
             LOG_MSG("  %1 %2 (by '%3')",
-                    plugin->getInfo()->name.c_str(),
-                    plugin->getInfo()->version.c_str(),
-                    plugin->getInfo()->author.c_str()
+                    plugin->getInfo()->name,
+                    plugin->getInfo()->version,
+                    plugin->getInfo()->author
                    );
         }
     }

@@ -29,26 +29,26 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/visitor/StmtConscriptSetter.h"
-#include "boomerang/db/visitor/ExpConstCaster.h"
-#include "boomerang/db/visitor/SizeStripper.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/CallBypasser.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
-#include "boomerang/db/visitor/UsedLocalFinder.h"
-#include "boomerang/db/visitor/UsedLocsFinder.h"
-#include "boomerang/db/visitor/UsedLocsVisitor.h"
-#include "boomerang/db/visitor/ExpSubscripter.h"
-#include "boomerang/db/visitor/StmtSubscripter.h"
-#include "boomerang/db/visitor/ConstFinder.h"
-#include "boomerang/db/visitor/StmtConstFinder.h"
-#include "boomerang/db/visitor/ExpRegMapper.h"
-#include "boomerang/db/visitor/StmtRegMapper.h"
-#include "boomerang/db/visitor/ExpCastInserter.h"
-#include "boomerang/db/visitor/StmtCastInserter.h"
-#include "boomerang/db/visitor/ExpSSAXformer.h"
-#include "boomerang/db/visitor/StmtSSAXFormer.h"
-#include "boomerang/db/visitor/DFALocalMapper.h"
+#include "boomerang/visitor/stmtvisitor/StmtConscriptSetter.h"
+#include "boomerang/visitor/expmodifier/ExpConstCaster.h"
+#include "boomerang/visitor/expmodifier/SizeStripper.h"
+#include "boomerang/visitor/expmodifier/CallBypasser.h"
+#include "boomerang/visitor/expmodifier/ExpSubscripter.h"
+#include "boomerang/visitor/expmodifier/ExpCastInserter.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/DFALocalMapper.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtSubscripter.h"
+#include "boomerang/visitor/stmtmodifier/StmtSSAXFormer.h"
+#include "boomerang/visitor/expvisitor/UsedLocalFinder.h"
+#include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
+#include "boomerang/visitor/stmtexpvisitor/UsedLocsVisitor.h"
+#include "boomerang/visitor/expvisitor/ConstFinder.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtConstFinder.h"
+#include "boomerang/visitor/expvisitor/ExpRegMapper.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtRegMapper.h"
+#include "boomerang/visitor/stmtvisitor/StmtCastInserter.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 
@@ -209,20 +209,20 @@ void Statement::dump() const
 }
 
 
-bool Statement::canPropagateToExp(Exp& e)
+bool Statement::canPropagateToExp(const Exp& exp)
 {
-    if (!e.isSubscript()) {
+    if (!exp.isSubscript()) {
         return false;
     }
 
-    const RefExp &re = static_cast<const RefExp &>(e);
+    const RefExp &ref = static_cast<const RefExp &>(exp);
 
-    if (re.isImplicitDef()) {
+    if (ref.isImplicitDef()) {
         // Can't propagate statement "-" or "0" (implicit assignments)
         return false;
     }
 
-    const Statement *def = re.getDef();
+    const Statement *def = ref.getDef();
 
     //    if (def == this)
     // Don't propagate to self! Can happen with %pc's (?!)
@@ -294,7 +294,9 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                     LocationSet rhsComps;
                     rhs->addUsedLocs(rhsComps);
                     LocationSet::iterator rcit;
-                    bool doNotPropagate = false;
+#if USE_DOMINANCE_NUMS
+                    bool doPropagate = true;
+#endif
 
                     for (rcit = rhsComps.begin(); rcit != rhsComps.end(); ++rcit) {
                         if (!(*rcit)->isSubscript()) {
@@ -332,7 +334,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                                 if ((def->getDomNumber() <= OWdef->getDomNumber()) &&
                                     (OWdef->getDomNumber() < m_dominanceNum)) {
                                     // The heuristic kicks in
-                                    doNotPropagate = true;
+                                    doPropagate = false;
                                 }
 #endif
                                 break;
@@ -344,13 +346,15 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
                         }
                     }
 
-                    if (doNotPropagate) {
+#if USE_DOMINANCE_NUMS
+                    if (!doPropagate) {
                         LOG_VERBOSE("% propagation of %1 into %2 prevented by "
                                     "the propagate past overwriting statement in loop heuristic",
                                     def->getNumber(), m_number);
 
                         continue;
                     }
+#endif
                 }
             }
 

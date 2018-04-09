@@ -14,6 +14,7 @@
 
 #include <set>
 
+
 /**
  * An IntervalSet implements a set as a set of intervals, merging adjoining intervals.
  */

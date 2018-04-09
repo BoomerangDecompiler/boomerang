@@ -18,10 +18,11 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
+#include "boomerang/util/Log.h"
 
 
 RefExp::RefExp(SharedExp e, Statement *d)
@@ -167,7 +168,7 @@ SharedExp RefExp::polySimplify(bool& changed)
 bool RefExp::accept(ExpVisitor *v)
 {
     bool visitChildren = false;
-    bool ret = v->visit(shared_from_base<RefExp>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<RefExp>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -184,7 +185,7 @@ bool RefExp::accept(ExpVisitor *v)
 SharedExp RefExp::accept(ExpModifier *v)
 {
     bool visitChildren = true;
-    auto ret     = v->preVisit(shared_from_base<RefExp>(), visitChildren);
+    auto ret     = v->preModify(shared_from_base<RefExp>(), visitChildren);
     auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
 
     if (visitChildren) {
@@ -193,7 +194,7 @@ SharedExp RefExp::accept(ExpModifier *v)
 
     // TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
     if (ref_ret) {
-        return v->postVisit(ref_ret);
+        return v->postModify(ref_ret);
     }
 
     return ret;

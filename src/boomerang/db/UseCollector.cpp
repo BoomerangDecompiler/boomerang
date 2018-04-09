@@ -12,7 +12,7 @@
 
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 #include <QString>
 #include <QTextStream>
@@ -99,13 +99,6 @@ char *UseCollector::prints() const
 }
 
 
-void UseCollector::dump() const
-{
-    QTextStream ost(stderr);
-    print(ost);
-}
-
-
 void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 {
     LocationSet   removes, inserts;
@@ -133,6 +126,7 @@ void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
     }
 }
 
+
 void UseCollector::remove(SharedExp loc)
 {
     m_locs.remove(loc);
@@ -141,6 +135,6 @@ void UseCollector::remove(SharedExp loc)
 
 void UseCollector::remove(iterator it)
 {
-    m_locs.remove(it);
+    m_locs.erase(it);
 }
 

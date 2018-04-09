@@ -25,7 +25,7 @@
 #include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/type/type/CompoundType.h"
@@ -63,13 +63,10 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
 
         // Now print type for each constant in this Statement
         std::list<std::shared_ptr<Const> >           lc;
-        std::list<std::shared_ptr<Const> >::iterator cc;
         s->findConstants(lc);
 
-        if (lc.size()) {
-            for (cc = lc.begin(); cc != lc.end(); ++cc) {
-                LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
-            }
+        for (auto cc = lc.begin(); cc != lc.end(); ++cc) {
+            LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
         }
 
         // If s is a call, also display its return types

@@ -18,6 +18,7 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/util/Log.h"
 
 
 AssignRemovalPass::AssignRemovalPass()

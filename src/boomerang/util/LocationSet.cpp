@@ -20,10 +20,10 @@
 
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
-    lset.clear();
+    m_set.clear();
 
-    for (ExpSet::const_iterator it = o.lset.begin(); it != o.lset.end(); ++it) {
-        lset.insert((*it)->clone());
+    for (const_iterator it = o.begin(); it != o.end(); ++it) {
+        insert((*it)->clone());
     }
 
     return *this;
@@ -32,10 +32,8 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 
 LocationSet::LocationSet(const LocationSet& o)
 {
-    ExpSet::const_iterator it;
-
-    for (it = o.lset.begin(); it != o.lset.end(); ++it) {
-        lset.insert((*it)->clone());
+    for (auto it = o.begin(); it != o.end(); ++it) {
+        insert((*it)->clone());
     }
 }
 
@@ -45,8 +43,8 @@ char *LocationSet::prints() const
     QString     tgt;
     QTextStream ost(&tgt);
 
-    for (ExpSet::iterator it = lset.begin(); it != lset.end(); ++it) {
-        if (it != lset.begin()) {
+    for (const_iterator it = begin(); it != end(); ++it) {
+        if (it != begin()) {
             ost << ", ";
         }
 
@@ -56,69 +54,6 @@ char *LocationSet::prints() const
     strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
     debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
     return debug_buffer;
-}
-
-
-void LocationSet::print(QTextStream& os) const
-{
-    for (auto it = lset.begin(); it != lset.end(); ++it) {
-        if (it != lset.begin()) {
-            os << ",\t";
-        }
-
-        os << *it;
-    }
-}
-
-
-void LocationSet::remove(SharedExp given)
-{
-    ExpSet::iterator it = lset.find(given);
-
-    if (it == lset.end()) {
-        return;
-    }
-
-    // NOTE: if the below uncommented, things go crazy. Valgrind says that
-    // the deleted value gets used next in LocationSet::operator== ?!
-    // delete *it;          // These expressions were cloned when created
-    lset.erase(it);
-}
-
-
-void LocationSet::makeUnion(const LocationSet& other)
-{
-    for (const SharedExp& exp : other) {
-        lset.insert(exp);
-    }
-}
-
-
-void LocationSet::makeDiff(const LocationSet& other)
-{
-    for (const SharedExp& exp : other) {
-        lset.erase(exp);
-    }
-}
-
-
-bool LocationSet::operator==(const LocationSet& o) const
-{
-    // We want to compare the locations, not the pointers
-    if (size() != o.size()) {
-        return false;
-    }
-
-    return std::equal(lset.begin(), lset.end(), o.lset.begin(),
-        [](const SharedConstExp& e1, const SharedConstExp& e2) {
-            return *e1 == *e2;
-        });
-}
-
-
-bool LocationSet::contains(SharedConstExp e) const
-{
-    return lset.find(std::const_pointer_cast<Exp>(e)) != lset.end();
 }
 
 
@@ -132,9 +67,9 @@ SharedExp LocationSet::findNS(SharedExp e)
     auto ref = RefExp::get(e, nullptr);
 
     // Note: the below assumes that nullptr is less than any other pointer
-    iterator it = lset.lower_bound(ref);
+    iterator it = m_set.lower_bound(ref);
 
-    if (it == lset.end()) {
+    if (it == m_set.end()) {
         return nullptr;
     }
 
@@ -147,17 +82,17 @@ SharedExp LocationSet::findNS(SharedExp e)
 }
 
 
-bool LocationSet::existsImplicit(SharedExp e) const
+bool LocationSet::containsImplicit(SharedExp e) const
 {
     if (e == nullptr) {
         return false;
     }
 
     auto     r(RefExp::get(e, nullptr));
-    iterator it = lset.lower_bound(r); // First element >= r
+    iterator it = m_set.lower_bound(r); // First element >= r
 
     // Note: the below relies on the fact that nullptr is less than any other pointer. Try later entries in the set:
-    while (it != lset.end()) {
+    while (it != m_set.end()) {
         if (!(*it)->isSubscript()) {
             return false;                            // Looking for e{something} (could be e.g. %pc)
         }
@@ -183,14 +118,14 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
         return false;
     }
 
-    auto             search = RefExp::get(e->getSubExp1()->clone(), STMT_WILD);
-    ExpSet::iterator pos    = lset.find(search);
+    auto     search = RefExp::get(e->getSubExp1()->clone(), STMT_WILD);
+    iterator pos    = m_set.find(search);
 
-    if (pos == lset.end()) {
+    if (pos == m_set.end()) {
         return false;
     }
 
-    while (pos != lset.end()) {
+    while (pos != m_set.end()) {
         assert(*pos);
 
         // Exit if we've gone to a new base expression
@@ -216,73 +151,12 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
 
 void LocationSet::addSubscript(Statement *d)
 {
-    ExpSet newSet;
+    Set newSet;
 
-    for (SharedExp it : lset) {
+    for (SharedExp it : m_set) {
         newSet.insert(it->expSubscriptVar(it, d));
     }
 
     // Note: don't delete the old exps; they are copied in the new set
-    lset = newSet;
+    m_set = newSet;
 }
-
-
-void LocationSet::substitute(Assign& a)
-{
-    SharedExp lhs = a.getLeft();
-    SharedExp rhs = a.getRight();
-
-    if (!lhs || !rhs) {
-        return;
-    }
-
-    // Note: it's important not to change the pointer in the set of pointers to expressions, without removing and
-    // inserting again. Otherwise, the set becomes out of order, and operations such as set comparison fail!
-    // To avoid any funny behaviour when iterating the loop, we use the following two sets
-    LocationSet removeSet;       // These will be removed after the loop
-    LocationSet removeAndDelete; // These will be removed then deleted
-    LocationSet insertSet;       // These will be inserted after the loop
-    bool        change;
-
-    for (SharedExp loc : lset) {
-        SharedExp replace;
-        if (!loc->search(*lhs, replace)) {
-            continue;
-        }
-
-        if (rhs->isTerminal()) {
-            // This is no longer a location of interest (e.g. %pc)
-            removeSet.insert(loc);
-            continue;
-        }
-
-        loc = loc->clone()->searchReplaceAll(*lhs, rhs, change);
-
-        if (change) {
-            loc = loc->simplifyArith()->simplify();
-
-            // If the result is no longer a register or memory (e.g.
-            // r[28]-4), then delete this expression and insert any
-            // components it uses (in the example, just r[28])
-            if (!loc->isRegOf() && !loc->isMemOf()) {
-                // Note: can't delete the expression yet, because the
-                // act of insertion into the remove set requires silent
-                // calls to the compare function
-                removeAndDelete.insert(loc);
-                loc->addUsedLocs(insertSet);
-                continue;
-            }
-
-            // Else we just want to replace it
-            // Regardless of whether the top level expression pointer has
-            // changed, remove and insert it from the set of pointers
-            removeSet.insert(loc); // Note: remove the unmodified ptr
-            insertSet.insert(loc);
-        }
-    }
-
-    makeDiff(removeSet);       // Remove the items to be removed
-    makeDiff(removeAndDelete); // These are to be removed as well
-    makeUnion(insertSet);      // Insert the items to be added
-}
-

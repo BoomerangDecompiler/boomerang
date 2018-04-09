@@ -17,12 +17,13 @@
 
 
 /**
- * A class to store connections in a graph, e.g. for interferences of types or live ranges, or the phi_unite relation
- * that phi statements imply
- * If a is connected to b, then b is automatically connected to a
- * \internal This is implemented in a std::multimap, even though Appel suggests a bitmap (e.g. std::vector<bool> does this in a
- * space efficient manner), but then you still need maps from expression to bit number. So here a standard map is used,
- * and when a -> b is inserted, b->a is redundantly inserted.
+ * A class to store connections in an undirected graph, e.g. for interferences
+ * of types or live ranges, or the phi_unite relation that phi statements imply.
+ *
+ * \internal This is implemented in a std::multimap, even though Appel suggests a bitmap
+ * (e.g. std::vector<bool> does this in a space efficient manner),
+ * but then you still need maps from expression to bit number.
+ * So here a standard map is used, and when a -> b is inserted, b->a is redundantly inserted.
  */
 class ConnectionGraph
 {

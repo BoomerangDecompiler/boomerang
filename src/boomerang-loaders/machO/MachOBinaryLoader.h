@@ -16,14 +16,6 @@
 #include <vector>
 
 
-// Given a little endian value x, load its value assuming big endian order
-// Note: must be able to take address of x
-// Note: Unlike the LH macro in BinaryFile.h, the parameter is not a pointer
-#define _BMMH(x)  Util::readDWord(&(x), true)
-#define _BMMH2(x) Util::readDWord((x), true)
-#define _BMMHW(x) Util::readWord(&(x), true)
-
-
 struct mach_header;
 
 

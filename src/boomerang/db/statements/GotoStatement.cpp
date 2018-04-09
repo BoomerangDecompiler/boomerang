@@ -11,11 +11,11 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/util/Log.h"
 
 
@@ -177,7 +177,7 @@ Statement *GotoStatement::clone() const
 }
 
 
-bool GotoStatement::accept(StmtVisitor *visitor)
+bool GotoStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }

@@ -58,7 +58,8 @@ using SharedExp = std::shared_ptr<class Exp>;
 
 
 /**
- * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions without a CTI instruction.
+ * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions
+ * without a CTI instruction.
  * During decompilation, a special RTL with a zero address is prepended.
  * This RTL contains implicit assigns and phi assigns.
  */

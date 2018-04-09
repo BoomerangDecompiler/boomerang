@@ -9299,7 +9299,7 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
  */
 DWord PPCDecoder::getDword(HostAddress lc)
 {
-    return Util::readDWord(reinterpret_cast<const void *>(lc.value()), true);
+    return Util::readDWord(reinterpret_cast<const void *>(lc.value()), Endian::Big);
 }
 
 

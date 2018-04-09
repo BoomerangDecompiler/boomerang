@@ -15,6 +15,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/util/LocationSet.h"
+#include "boomerang/util/Log.h"
 #include "boomerang/util/ConnectionGraph.h"
 
 #include "boomerang/db/exp/RefExp.h"

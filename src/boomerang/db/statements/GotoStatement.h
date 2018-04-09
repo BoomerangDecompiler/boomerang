@@ -43,7 +43,7 @@ public:
     virtual Statement *clone() const override;
 
     /// \copydoc Statement::accept
-    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc Statement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
@@ -80,7 +80,7 @@ public:
      * \todo This should really be removed, once CaseStatement
      * and HLNwayCall are implemented properly
      */
-    void setIsComputed(bool b = true);
+    void setIsComputed(bool computed = true);
 
     /**
      * Returns whether or not this call is computed.

@@ -11,9 +11,10 @@
 
 
 #include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/util/AssignSet.h"
+#include "boomerang/util/StatementSet.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/util/LocationSet.h"
 
 #include <vector>
 #include <unordered_map>
@@ -32,8 +33,6 @@ class Type;
 class QTextStream;
 class LocationSet;
 
-typedef std::set<SharedExp, lessExpStar> ExpSet;
-
 
 /**
  * Dominator frontier code largely as per Appel 2002
@@ -41,6 +40,8 @@ typedef std::set<SharedExp, lessExpStar> ExpSet;
  */
 class DataFlow
 {
+    using ExSet = ExpSet<Exp>;
+
 public:
     DataFlow(UserProc *proc);
     DataFlow(const DataFlow& other) = delete;
@@ -190,7 +191,7 @@ private:
      * Inserting phi-functions
      */
     /// Array of sets of locations defined in BB n
-    std::vector<ExpSet> m_definedAt; // was: m_A_orig
+    std::vector<ExSet> m_definedAt; // was: m_A_orig
 
     /// For a given expression e, stores the BBs needing a phi for e
     std::map<SharedExp, std::set<int>, lessExpStar> m_A_phi;

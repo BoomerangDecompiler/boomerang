@@ -12,6 +12,7 @@
 
 #include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/db/statements/Statement.h"
 
 #include <QtCore/QTextStream>
 
@@ -41,7 +42,6 @@ class StmtPartModifier;
 class ICodeGenerator;
 class Assign;
 class RTL;
-class StatementSet;
 class ReturnStatement;
 class LocationSet;
 class Assignment;
@@ -49,6 +49,7 @@ class Assignment;
 
 typedef std::shared_ptr<Exp>         SharedExp;
 typedef std::shared_ptr<Type>        SharedType;
+typedef std::shared_ptr<const Type>  SharedConstType;
 
 
 /// Types of Statements, or high-level register transfer lists.
@@ -147,7 +148,7 @@ public:
 
     /// Accept a visitor (of various kinds) to this Statement.
     /// \return true to continue visiting
-    virtual bool accept(StmtVisitor *visitor)       = 0;
+    virtual bool accept(StmtVisitor *visitor) const = 0;
     virtual bool accept(StmtExpVisitor *visitor)    = 0;
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;
@@ -262,7 +263,7 @@ public:
      * (from a memory Primitive point of view),
      * only if the definition can be propagated TO this stmt
      */
-    static bool canPropagateToExp(Exp& exp);
+    static bool canPropagateToExp(const Exp& exp);
 
     /**
      * Propagate to this statement.
@@ -354,7 +355,9 @@ public:
 
     /// Get the type for the definition, if any, for expression e in this statement
     /// Overridden only by Assignment and CallStatement, and ReturnStatement.
-    virtual SharedType getTypeFor(SharedExp) const { return nullptr; }
+    virtual SharedConstType getTypeFor(SharedConstExp) const { return nullptr; }
+    virtual SharedType getTypeFor(SharedExp) { return nullptr; }
+
     /// Set the type for the definition of e in this Statement
     virtual void setTypeFor(SharedExp, SharedType) { assert(false); }
 

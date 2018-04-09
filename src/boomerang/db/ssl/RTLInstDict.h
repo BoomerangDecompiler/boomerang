@@ -10,17 +10,18 @@
 #pragma once
 
 
+#include "boomerang/db/Register.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/util/Address.h"
+#include "boomerang/util/ByteUtil.h"
+
 #include <QString>
 #include <QTextStream>
 
 #include <list>
+#include <memory>
 #include <set>
 
-#include <memory>
-
-#include "boomerang/util/Address.h"
-#include "boomerang/db/Register.h"
-#include "boomerang/db/RTL.h"
 
 class Statement;
 
@@ -230,7 +231,7 @@ private:
     /// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
     std::map<QString, QString> fastMap;
 
-    bool m_bigEndian; // True if this source is big endian
+    Endian m_bigEndian; // True if this source is big endian
 
     /// A map from symbolic representation of a special (non-addressable) register to a Register object
     std::map<QString, Register, std::less<QString> > SpecialRegMap;

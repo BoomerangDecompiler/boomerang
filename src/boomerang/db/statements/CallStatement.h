@@ -41,7 +41,7 @@ public:
     virtual Statement *clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;
@@ -66,6 +66,7 @@ public:
 
     /// Return call's arguments
     StatementList& getArguments() { return m_arguments; }
+    const StatementList& getArguments() const { return m_arguments; }
 
     /// Update the arguments based on a callee change
     void updateArguments();
@@ -173,7 +174,10 @@ public:
     virtual void simplify() override;
 
     /// \copydoc Statement::getTypeFor
-    virtual SharedType getTypeFor(SharedExp e) const override;
+    virtual SharedConstType getTypeFor(SharedConstExp e) const override;
+
+    /// \copydoc Statement::getTypeFor
+    virtual SharedType getTypeFor(SharedExp e) override;
 
     /// \copydoc Statement::setTypeFor
     virtual void setTypeFor(SharedExp e, SharedType ty) override;  // Set the type for this location, defined in this statement

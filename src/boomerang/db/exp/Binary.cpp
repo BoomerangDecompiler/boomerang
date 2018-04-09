@@ -14,8 +14,8 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/PointerType.h"
@@ -558,7 +558,7 @@ void Binary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bo
     assert(subExp1 && subExp2);
     doSearch(pattern, subExp1, li, once);
 
-    if (once && li.size()) {
+    if (once && !li.empty()) {
         return;
     }
 
@@ -618,8 +618,8 @@ SharedExp Binary::simplifyArith()
     int sum = std::accumulate(integers.begin(), integers.end(), 0);
 
     // Now put all these elements back together and return the result
-    if (positives.size() == 0) {
-        if (negatives.size() == 0) {
+    if (positives.empty()) {
+        if (negatives.empty()) {
             return Const::get(sum);
         }
         else {
@@ -628,7 +628,7 @@ SharedExp Binary::simplifyArith()
         }
     }
 
-    if (negatives.size() == 0) {
+    if (negatives.empty()) {
         // Positives + sum
         if (sum == 0) {
             // Just positives
@@ -1177,7 +1177,7 @@ SharedExp Binary::polySimplify(bool& changed)
     // FIXME: suspect this was only needed for ADHOC TA
     // check for exp + n where exp is a pointer to a compound type
     // becomes &m[exp].m + r where m is the member at offset n and r is n - the offset to member m
-    SharedType ty = nullptr; // Type of subExp1
+    SharedConstType ty = nullptr; // Type of subExp1
 
     if (subExp1->isSubscript()) {
         const Statement *def = std::static_pointer_cast<RefExp>(subExp1)->getDef();
@@ -1328,7 +1328,7 @@ bool Binary::accept(ExpVisitor *v)
     assert(subExp1 && subExp2);
 
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<Binary>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<Binary>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -1358,7 +1358,7 @@ SharedExp Binary::accept(ExpModifier *v)
     assert(subExp1 && subExp2);
 
     bool      visitChildren = true;
-    SharedExp ret = v->preVisit(shared_from_base<Binary>(), visitChildren);
+    SharedExp ret = v->preModify(shared_from_base<Binary>(), visitChildren);
 
     if (visitChildren) {
         subExp1 = subExp1->accept(v);
@@ -1368,13 +1368,13 @@ SharedExp Binary::accept(ExpModifier *v)
     auto bret = std::dynamic_pointer_cast<Binary>(ret);
 
     if (bret) {
-        return v->postVisit(bret);
+        return v->postModify(bret);
     }
 
     auto uret = std::dynamic_pointer_cast<Unary>(ret);
 
     if (uret) {
-        return v->postVisit(uret);
+        return v->postModify(uret);
     }
 
     Q_ASSERT(false);

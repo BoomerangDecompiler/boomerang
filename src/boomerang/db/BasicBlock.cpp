@@ -27,7 +27,7 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/visitor/ConstGlobalConverter.h"
+#include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FuncType.h"
 #include "boomerang/util/ConnectionGraph.h"

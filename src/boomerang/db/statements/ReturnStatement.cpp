@@ -18,12 +18,12 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
-#include "boomerang/db/visitor/StmtVisitor.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtModifier.h"
-#include "boomerang/db/visitor/StmtPartModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/frontend/Frontend.h"
 
@@ -68,15 +68,19 @@ Statement *ReturnStatement::clone() const
 
 ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
 {
-    assert(it != end());
+    auto endIt = end();
+    Q_UNUSED(endIt);
+    assert(it != endIt);
+
     Statement *removed = *it;
     it = m_returns.erase(it);
     delete removed;
+
     return it;
 }
 
 
-bool ReturnStatement::accept(StmtVisitor *visitor)
+bool ReturnStatement::accept(StmtVisitor *visitor) const
 {
     return visitor->visit(this);
 }
@@ -290,7 +294,19 @@ void ReturnStatement::getDefinitions(LocationSet& ls) const
 }
 
 
-SharedType ReturnStatement::getTypeFor(SharedExp e) const
+SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
+{
+    for (auto& elem : m_modifieds) {
+        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
+            return static_cast<Assignment *>(elem)->getType();
+        }
+    }
+
+    return nullptr;
+}
+
+
+SharedType ReturnStatement::getTypeFor(SharedExp e)
 {
     for (auto& elem : m_modifieds) {
         if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
@@ -466,7 +482,7 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
     // the
     // new list. So read the old modifications in reverse order
-    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); it++) {
+    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); ++it) {
         // Make sure the LHS is still in the collector
         Assignment *as = static_cast<Assignment *>(*it);
         SharedExp  lhs = as->getLeft();

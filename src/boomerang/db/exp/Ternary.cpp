@@ -15,8 +15,8 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -364,13 +364,13 @@ void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, b
 {
     doSearch(pattern, subExp1, li, once);
 
-    if (once && li.size()) {
+    if (once && !li.empty()) {
         return;
     }
 
     doSearch(pattern, subExp2, li, once);
 
-    if (once && li.size()) {
+    if (once && !li.empty()) {
         return;
     }
 
@@ -524,7 +524,7 @@ SharedExp Ternary::simplifyAddr()
 bool Ternary::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(shared_from_base<Ternary>(), visitChildren);
+    bool ret = v->preVisit(shared_from_base<Ternary>(), visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -549,7 +549,7 @@ bool Ternary::accept(ExpVisitor *v)
 SharedExp Ternary::accept(ExpModifier *v)
 {
     bool visitChildren = true;
-    auto ret = std::static_pointer_cast<Ternary>(v->preVisit(shared_from_base<Ternary>(), visitChildren));
+    auto ret = std::static_pointer_cast<Ternary>(v->preModify(shared_from_base<Ternary>(), visitChildren));
 
     if (visitChildren) {
         subExp1 = subExp1->accept(v);
@@ -558,7 +558,7 @@ SharedExp Ternary::accept(ExpModifier *v)
     }
 
     assert(std::dynamic_pointer_cast<Ternary>(ret));
-    return v->postVisit(ret);
+    return v->postModify(ret);
 }
 
 

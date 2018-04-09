@@ -12,6 +12,7 @@
 
 #include "boomerang/db/statements/GotoStatement.h"
 
+
 /**
  * BranchStatement has a condition Exp in addition to the destination of the jump.
  */
@@ -32,7 +33,7 @@ public:
     virtual Statement *clone() const override;
 
     /// \copydoc GotoStatement::accept
-    virtual bool accept(StmtVisitor *visitor) override;
+    virtual bool accept(StmtVisitor *visitor) const override;
 
     /// \copydoc GotoStatement::accept
     virtual bool accept(StmtExpVisitor *visitor) override;

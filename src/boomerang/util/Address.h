@@ -80,7 +80,8 @@ private:
 
 Q_DECLARE_METATYPE(Address)
 
-/// Like above, but only for addresses of the host machine
+
+/// Like \ref Address, but only for addresses of the host machine
 class HostAddress
 {
 public:

@@ -12,8 +12,8 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -203,24 +203,24 @@ void Terminal::appendDotFile(QTextStream& of)
 
 bool Terminal::accept(ExpVisitor *v)
 {
-    return v->visit(shared_from_base<Terminal>());
+    return v->preVisit(shared_from_base<Terminal>());
 }
 
 
 SharedExp Terminal::accept(ExpModifier *v)
 {
     // This is important if we need to modify terminals
-    SharedExp val      = v->preVisit(shared_from_base<Terminal>());
+    SharedExp val      = v->preModify(shared_from_base<Terminal>());
     auto      term_res = std::dynamic_pointer_cast<Terminal>(val);
 
     if (term_res) {
-        return v->postVisit(term_res);
+        return v->postModify(term_res);
     }
 
     auto ref_res = std::dynamic_pointer_cast<RefExp>(val);
 
     if (ref_res) {
-        return v->postVisit(ref_res);
+        return v->postModify(ref_res);
     }
 
     assert(false);

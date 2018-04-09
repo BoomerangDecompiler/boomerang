@@ -14,8 +14,9 @@
 
 
 /**
- * TypingStatement is an abstract subclass of Statement.
- * It has a type, representing the type of a reference or an assignment
+ * TypingStatements are statements that may have a type associated to them.
+ * For example, for assignments to make sense, the types of the left hand side
+ * and the right hand side must match.
  */
 class TypingStatement : public Statement
 {

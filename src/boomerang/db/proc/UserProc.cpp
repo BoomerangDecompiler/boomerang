@@ -31,16 +31,15 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/db/visitor/ExpVisitor.h"
-#include "boomerang/db/visitor/ImplicitConverter.h"
-#include "boomerang/db/visitor/ExpDestCounter.h"
-#include "boomerang/db/visitor/StmtDestCounter.h"
-#include "boomerang/db/visitor/ExpSSAXformer.h"
-#include "boomerang/db/visitor/StmtImplicitConverter.h"
-#include "boomerang/db/visitor/CallBypasser.h"
-#include "boomerang/db/visitor/TempToLocalMapper.h"
-#include "boomerang/db/visitor/StmtExpVisitor.h"
-#include "boomerang/db/visitor/StmtDestCounter.h"
+#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
+#include "boomerang/visitor/expvisitor/ExpDestCounter.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/visitor/expmodifier/CallBypasser.h"
+#include "boomerang/visitor/expvisitor/TempToLocalMapper.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
+#include "boomerang/visitor/stmtmodifier/StmtImplicitConverter.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/type/TypeRecovery.h"
@@ -117,7 +116,7 @@ bool UserProc::isNoReturn() const
 void UserProc::setStatus(ProcStatus s)
 {
     m_status = s;
-    Boomerang::get()->alertProcStatusChange(this);
+    Boomerang::get()->alertProcStatusChanged(this);
 }
 
 
@@ -180,8 +179,8 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
     SharedConstExp oldExp = expFromSymbol(oldName);
 
     m_locals.erase(oldName);
-    SharedExp oldLoc = getSymbolFor(oldExp, ty);
-    auto      newLoc = Location::local(newName, this);
+    SharedConstExp oldLoc = getSymbolFor(oldExp, ty);
+    SharedExp      newLoc = Location::local(newName, this);
 
     mapSymbolToRepl(oldExp, oldLoc, newLoc);
     m_locals[newName] = ty;
@@ -628,9 +627,8 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
      *     return child
      */
 
-
     LOG_MSG("%1 procedure '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
-    Boomerang::get()->alertDiscovered(this, this);
+    Boomerang::get()->alertDiscovered(this);
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
@@ -939,8 +937,6 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             printDFG();
         }
 
-        Boomerang::get()->alertDecompileSSADepth(this, pass); // FIXME: need depth -> pass in GUI code
-
 // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.
@@ -969,13 +965,11 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             debugPrintAll("SSA (after trimming return set)");
         }
 
-        Boomerang::get()->alertDecompileBeforePropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
 
         change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
         change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
-        Boomerang::get()->alertDecompileAfterPropagate(this, pass);
         Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
 
          // this is just to make it readable, do NOT rely on these statements being removed
@@ -995,10 +989,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     m_df.setRenameLocalsParams(true);
 
     // Now we need another pass to inert phis for the memofs, rename them and propagate them
-    ++pass;
-
-    change = PassManager::get()->executePass(PassID::PhiPlacement, this);
-    change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
+    PassManager::get()->executePass(PassID::PhiPlacement, this);
+    PassManager::get()->executePass(PassID::BlockVarRename, this);
 
     debugPrintAll("after setting phis for memofs, renaming them");
     PassManager::get()->executePass(PassID::StatementPropagation, this);
@@ -1094,9 +1086,6 @@ void UserProc::remUnusedStmtEtc()
     }
 
     PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
-
-    Boomerang::get()->alertDecompileAfterRemoveStmts(this, 1);
-
     PassManager::get()->executePass(PassID::FinalParameterSearch, this);
 
     if (SETTING(nameParameters)) {
@@ -1416,14 +1405,10 @@ void UserProc::addLocal(SharedType ty, const QString& name, SharedExp e)
 }
 
 
-SharedType UserProc::getLocalType(const QString& name)
+SharedConstType UserProc::getLocalType(const QString& name) const
 {
-    if (m_locals.find(name) == m_locals.end()) {
-        return nullptr;
-    }
-
-    SharedType ty = m_locals[name];
-    return ty;
+    auto it = m_locals.find(name);
+    return (it != m_locals.end()) ? it->second : nullptr;
 }
 
 
@@ -1431,7 +1416,19 @@ void UserProc::setLocalType(const QString& name, SharedType ty)
 {
     m_locals[name] = ty;
 
-    LOG_VERBOSE("Updating type of %1 to %2", name, ty->getCtype());
+    LOG_VERBOSE("Updating type of '%1' to %2", name, ty->getCtype());
+}
+
+
+SharedConstType UserProc::getParamType(const QString& name) const
+{
+    for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
+        if (name == m_signature->getParamName(i)) {
+            return m_signature->getParamType(i);
+        }
+    }
+
+    return nullptr;
 }
 
 
@@ -1447,7 +1444,7 @@ SharedType UserProc::getParamType(const QString& name)
 }
 
 
-void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedExp oldTo, SharedExp newTo)
+void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedConstExp oldTo, SharedExp newTo)
 {
     removeSymbolMapping(from, oldTo);
     mapSymbolTo(from, newTo); // The compiler could optimise this call to a fall through
@@ -1471,15 +1468,15 @@ void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
 }
 
 
-SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
+SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstType& ty) const
 {
-    SymbolMap::iterator ff = m_symbolMap.find(from);
+    SymbolMap::const_iterator ff = m_symbolMap.find(from);
 
     while (ff != m_symbolMap.end() && *ff->first == *from) {
         SharedExp currTo = ff->second;
         assert(currTo->isLocal() || currTo->isParam());
         QString    name   = std::static_pointer_cast<Const>(currTo->getSubExp1())->getStr();
-        SharedType currTy = getLocalType(name);
+        SharedConstType currTy = getLocalType(name);
 
         if (currTy == nullptr) {
             currTy = getParamType(name);
@@ -1496,7 +1493,7 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp& from, SharedType ty)
 }
 
 
-void UserProc::removeSymbolMapping(const SharedConstExp& from, SharedExp to)
+void UserProc::removeSymbolMapping(const SharedConstExp& from, const SharedConstExp& to)
 {
     SymbolMap::iterator it = m_symbolMap.find(from);
 
@@ -1997,7 +1994,7 @@ bool UserProc::ellipsisProcessing()
 }
 
 
-QString UserProc::lookupParam(SharedExp e)
+QString UserProc::lookupParam(SharedConstExp e) const
 {
     // Originally e.g. m[esp+K]
     Statement *def = m_cfg->findTheImplicitAssign(e);
@@ -2007,39 +2004,38 @@ QString UserProc::lookupParam(SharedExp e)
         return QString::null;
     }
 
-    auto       re = RefExp::get(e, def);
-    SharedType ty = def->getTypeFor(e);
-    return lookupSym(re, ty);
+    SharedConstType ty  = def->getTypeFor(e);
+    return lookupSym(RefExp::get(std::const_pointer_cast<Exp>(e), def), ty);
 }
 
 
-QString UserProc::lookupSymFromRef(const std::shared_ptr<RefExp>& r)
+QString UserProc::lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) const
 {
-    Statement *def = r->getDef();
+    const Statement *def = ref->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
         return QString::null;
     }
 
-    auto       base = r->getSubExp1();
-    SharedType ty   = def->getTypeFor(base);
-    return lookupSym(r, ty);
+    SharedConstExp  base = ref->getSubExp1();
+    SharedConstType ty   = def->getTypeFor(base);
+    return lookupSym(ref, ty);
 }
 
 
-QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
+QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) const
 {
-    Statement *def = r->getDef();
+    const Statement *def = ref->getDef();
 
     if (!def) {
-        LOG_WARN("Unknown def for RefExp '%1' in '%2'", r->toString(), getName());
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
         return QString::null;
     }
 
-    SharedExp  base = r->getSubExp1();
-    SharedType ty   = def->getTypeFor(base);
-    QString    ret  = lookupSym(r, ty);
+    SharedConstExp  base = ref->getSubExp1();
+    SharedConstType ty   = def->getTypeFor(base);
+    QString    ret  = lookupSym(ref, ty);
 
     if (!ret.isNull()) {
         return ret;             // Found a specific symbol
@@ -2049,7 +2045,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<RefExp>& r)
 }
 
 
-QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
+QString UserProc::lookupSym(const SharedConstExp& arg, SharedConstType ty) const
 {
     SharedConstExp e = arg;
 
@@ -2057,14 +2053,14 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedType ty)
         e = e->getSubExp1();
     }
 
-    SymbolMap::iterator it;
-    it = m_symbolMap.find(e);
+    SymbolMap::const_iterator it = m_symbolMap.find(e);
 
     while (it != m_symbolMap.end() && *it->first == *e) {
         auto sym = it->second;
         assert(sym->isLocal() || sym->isParam());
-        QString    name = sym->access<Const, 1>()->getStr();
-        SharedType type = getLocalType(name);
+
+        const QString    name = sym->access<Const, 1>()->getStr();
+        SharedConstType type = getLocalType(name);
 
         if (type == nullptr) {
             type = getParamType(name); // Ick currently linear search
@@ -2095,7 +2091,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
     }
     else {
         for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
-            const SharedType ty = getTypeForLocation(it.second);
+            SharedConstType ty = getTypeForLocation(it.second);
             out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
 
             if (html) {
@@ -2145,7 +2141,7 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 void UserProc::dumpSymbolMap() const
 {
     for (const auto& val : m_symbolMap) {
-        SharedType ty = getTypeForLocation(val.second);
+        SharedConstType ty = getTypeForLocation(val.second);
         LOG_MSG("  %1 maps to %2 type %3", val.first, val.second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
     }
 }
@@ -2154,7 +2150,7 @@ void UserProc::dumpSymbolMap() const
 void UserProc::dumpSymbolMapx() const
 {
     for (const auto& val : m_symbolMap) {
-        SharedType ty = getTypeForLocation(val.second);
+        SharedConstType ty = getTypeForLocation(val.second);
         LOG_MSG("  %1 maps to %2 type %3", val.first, val.second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
         val.first->printx(2);
     }
@@ -2340,9 +2336,9 @@ QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
 }
 
 
-QString UserProc::findFirstSymbol(const SharedExp& e)
+QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
 {
-    SymbolMap::iterator ff = m_symbolMap.find(e);
+    SymbolMap::const_iterator ff = m_symbolMap.find(exp);
 
     if (ff == m_symbolMap.end()) {
         return QString::null;
@@ -2544,7 +2540,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                 LocationSet u;
                 c->getDest()->addUsedLocs(u);
 
-                if (u.existsImplicit(bparam)) {
+                if (u.containsImplicit(bparam)) {
                     return true; // Used by the destination expression
                 }
 
@@ -2561,7 +2557,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
                     LocationSet argUses;
                     rhs->addUsedLocs(argUses);
 
-                    if (argUses.existsImplicit(bparam)) {
+                    if (argUses.containsImplicit(bparam)) {
                         SharedExp lloc = static_cast<Assign *>(*aa)->getLeft();
 
                         if ((visited.find(dest) == visited.end()) && dest->checkForGainfulUse(lloc, visited)) {
@@ -2605,7 +2601,7 @@ bool UserProc::checkForGainfulUse(SharedExp bparam, ProcSet& visited)
         LocationSet uses;
         s->addUsedLocs(uses);
 
-        if (uses.existsImplicit(bparam)) {
+        if (uses.containsImplicit(bparam)) {
             return true; // A gainful use
         }
     }                    // for each statement s
@@ -3046,13 +3042,13 @@ QString UserProc::getRegName(SharedExp r)
 }
 
 
-SharedType UserProc::getTypeForLocation(const SharedConstExp& e)
+SharedType UserProc::getTypeForLocation(const SharedExp& e)
 {
-    QString name = e->access<Const, 1>()->getStr();
-
+    const QString name = e->access<Const, 1>()->getStr();
     if (e->isLocal()) {
-        if (m_locals.find(name) != m_locals.end()) {
-            return m_locals[name];
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
         }
     }
 
@@ -3061,9 +3057,18 @@ SharedType UserProc::getTypeForLocation(const SharedConstExp& e)
 }
 
 
-const SharedType UserProc::getTypeForLocation(const SharedConstExp& e) const
+SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
 {
-    return const_cast<UserProc *>(this)->getTypeForLocation(e);
+    const QString name = e->access<Const, 1>()->getStr();
+    if (e->isLocal()) {
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
+        }
+    }
+
+    // Sometimes parameters use opLocal, so fall through
+    return getParamType(name);
 }
 
 

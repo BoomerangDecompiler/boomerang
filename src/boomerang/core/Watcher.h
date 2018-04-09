@@ -12,8 +12,10 @@
 
 #include "boomerang/util/Address.h"
 
+
 class Function;
 class UserProc;
+
 
 /// Virtual class to monitor the decompilation.
 class IWatcher
@@ -23,24 +25,49 @@ public:
     virtual ~IWatcher() = default;
 
 public:
-    virtual void alert_complete() {}
-    virtual void alertNew(Function *) {}
-    virtual void alertRemove(Function *) {}
-    virtual void alertUpdateSignature(Function *) {}
-    virtual void alertDecode(Address pc, int numBytes) { Q_UNUSED(pc); Q_UNUSED(numBytes); }
-    virtual void alertBadDecode(Address pc) { Q_UNUSED(pc); }
-    virtual void alertStartDecode(Address start, int numBytes) { Q_UNUSED(start); Q_UNUSED(numBytes); }
-    virtual void alertEndDecode() {}
-    virtual void alertDecode(Function *, Address pc, Address last, int numBytes) { Q_UNUSED(pc); Q_UNUSED(last); Q_UNUSED(numBytes); }
-    virtual void alertStartDecompile(UserProc *) {}
-    virtual void alertProcStatusChange(UserProc *) {}
-    virtual void alertDecompileSSADepth(UserProc *, int depth) { Q_UNUSED(depth); }
-    virtual void alertDecompileBeforePropagate(UserProc *, int depth) { Q_UNUSED(depth); }
-    virtual void alertDecompileAfterPropagate(UserProc *, int depth) { Q_UNUSED(depth); }
-    virtual void alertDecompileAfterRemoveStmts(UserProc *, int depth) { Q_UNUSED(depth); }
-    virtual void alertEndDecompile(UserProc *) {}
-    virtual void alert_load(Function *) {}
-    virtual void alertDiscovered(Function *caller, Function *function) { Q_UNUSED(caller); Q_UNUSED(function); }
-    virtual void alertDecompiling(UserProc *) {}
-    virtual void alertDecompileDebugPoint(UserProc *, const char *description) { Q_UNUSED(description); }
+    /// Called once after a function was created.
+    virtual void onFunctionCreated(Function *function);
+
+    /// Called once after a function was removed.
+    virtual void onFunctionRemoved(Function *function);
+
+    /// Called once after the function signature was updated.
+    virtual void onSignatureUpdated(Function *function);
+
+    /// Called once on decode start.
+    virtual void onStartDecode(Address start, int numBytes);
+
+    /// Called every time an instruction is decoded.
+    /// \param numBytes the size of the instruction.
+    virtual void onInstructionDecoded(Address pc, int numBytes);
+
+    /// Called every time a function was decoded completely.
+    virtual void onFunctionDecoded(Function *function, Address pc, Address last, int numBytes);
+
+    /// Called every time an invalid or unrecognized instruction is encountered.
+    virtual void onBadDecode(Address pc);
+
+    /// Called once on decode end.
+    virtual void onEndDecode();
+
+    /// Called once for every function on decompilation start (before earlyDecompile)
+    virtual void onStartDecompile(UserProc *proc);
+
+    /// Called every time the status of \p proc has changed.
+    virtual void onProcStatusChange(UserProc *proc);
+
+    /// Called once for every completely decompiled proc \p proc
+    virtual void onEndDecompile(UserProc *proc);
+
+    /// Called every time before middleDecompile is executed for \p function
+    virtual void onFunctionDiscovered(Function *function);
+
+    /// Called during the decompilation process when resuming decompilation of \p proc.
+    virtual void onDecompileInProgress(UserProc *proc);
+
+    /// Called when a decompilation breakpoint occurs.
+    virtual void onDecompileDebugPoint(UserProc *proc, const char *description);
+
+    /// Called once on decompilation end.
+    virtual void onDecompilationEnd();
 };

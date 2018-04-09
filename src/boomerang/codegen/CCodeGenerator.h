@@ -51,26 +51,29 @@ class BinaryImage;
  */
 
 /// Operator precedence
-enum PREC
+enum class OpPrec : uint8_t
 {
-    PREC_NONE = 0,  ///< Outer level (no parens required)
-    PREC_COMMA,     ///< Comma
-    PREC_ASSIGN,    ///< Assignment
-    PREC_COND,      ///< Conditional
-    PREC_LOG_OR,    ///< Logical OR
-    PREC_LOG_AND,   ///< Logical AND
-    PREC_BIT_IOR,   ///< Bitwise Inclusive OR
-    PREC_BIT_XOR,   ///< Bitwise Exclusive OR
-    PREC_BIT_AND,   ///< Bitwise AND
-    PREC_EQUAL,     ///< Equality
-    PREC_REL,       ///< Relational
-    PREC_BIT_SHIFT, ///< Bitwise Shift
-    PREC_ADD,       ///< Additive
-    PREC_MULT,      ///< Multiplicative
-    PREC_PTR_MEM,   ///< C++ Pointer to Member
-    PREC_UNARY,     ///< Unary
-    PREC_PRIM,      ///< Primary
-    PREC_SCOPE      ///< Primary scope resolution
+    Invalid  =    0,
+    Scope    =    1, ///< (LTR) Primary scope resolution
+    Prim     =    2, ///< (LTR) Primary
+    Unary    =    3, ///< (RTL) Unary
+    PtrMem   =    4, ///< (LTR) C++ Pointer to Member
+    Mult     =    5, ///< (LTR) Multiplicative
+    Add      =    6, ///< (LTR) Additive
+    BitShift =    7, ///< (LTR) Bitwise Shift
+    Comp3Way =    8, ///< (LTR) 3-way comparison operator (C++20)
+    Rel      =    9, ///< (LTR) Relational
+    Equal    =   10, ///< (LTR) Equality
+    BitAnd   =   11, ///< (LTR) Bitwise AND
+    BitXor   =   12, ///< (LTR) Bitwise Exclusive OR
+    BitOr    =   13, ///< (LTR) Bitwise Inclusive OR
+    LogAnd   =   14, ///< (LTR) Logical AND
+    LogOr    =   15, ///< (LTR) Logical OR
+    Cond     =   16, ///< (RTL) Ternary conditional operator
+    Assign   =   16, ///< (RTL) Assignment (same precedence as ?: operator)
+    Comma    =   17, ///< (LTR) Comma
+
+    None     = 0xFF,  ///< Outer level (no parens required)
 };
 
 
@@ -237,7 +240,7 @@ private:
      *
      * \todo This function is 800+ lines, and should possibly be split up.
      */
-    void appendExp(QTextStream& str, const Exp& exp, PREC curPrec, bool allowUnsigned = false);
+    void appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec, bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
     void appendType(QTextStream& str, SharedConstType typ);
@@ -248,10 +251,10 @@ private:
     void appendTypeIdent(QTextStream& str, SharedConstType typ, QString ident);
 
     /// Adds: (
-    void openParen(QTextStream& str, PREC outer, PREC inner);
+    void openParen(QTextStream& str, OpPrec outer, OpPrec inner);
 
     /// Adds: )
-    void closeParen(QTextStream& str, PREC outer, PREC inner);
+    void closeParen(QTextStream& str, OpPrec outer, OpPrec inner);
 
 
     void generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet, std::list<const BasicBlock *>& gotoSet, UserProc *proc);
