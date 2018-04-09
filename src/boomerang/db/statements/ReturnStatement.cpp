@@ -69,6 +69,7 @@ Statement *ReturnStatement::clone() const
 ReturnStatement::iterator ReturnStatement::erase(ReturnStatement::iterator it)
 {
     auto endIt = end();
+    Q_UNUSED(endIt);
     assert(it != endIt);
 
     Statement *removed = *it;
