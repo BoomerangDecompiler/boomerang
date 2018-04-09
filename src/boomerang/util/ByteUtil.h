@@ -13,6 +13,7 @@
 #include "boomerang/util/Types.h"
 
 #include <type_traits>
+#include <initializer_list>
 
 
 enum class Endian
@@ -105,6 +106,13 @@ TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 *sizeof(SrcTyp
     const int sizeDifference = 8 * sizeof(TgtType) - numSrcBits;
     return (static_cast<TgtType>(static_cast<TgtType>(src) << sizeDifference)) >> sizeDifference;
 }
+
+/**
+ * Tests if \p data starts with a specific byte sequence.
+ * \note The size of \p data must not be smaller than \p magic.
+ */
+bool testMagic(const Byte *data, const std::initializer_list<Byte>& magic);
+
 }
 
 
@@ -127,14 +135,3 @@ TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 *sizeof(SrcTyp
 /// Read x as a 2-byte value in big endian order
 /// \deprecated Use Util::readWord instead
 #define READ2_BE(x) Util::readWord(&(x), Endian::Big)
-
-
-#define TESTMAGIC4(buf, off, a, b, c, d) ( \
-    buf[off + 0] == a && \
-    buf[off + 1] == b && \
-    buf[off + 2] == c && \
-    buf[off + 3] == d)
-
-#define TESTMAGIC2(buf, off, a, b) ( \
-    buf[off + 0] == a && \
-    buf[off + 1] == b)

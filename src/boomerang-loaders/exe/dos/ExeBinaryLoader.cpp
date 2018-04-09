@@ -222,7 +222,7 @@ int ExeBinaryLoader::canLoad(QIODevice& fl) const
     Byte buf[4];
     fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
-    if (TESTMAGIC2(buf, 0, 'M', 'Z')) {
+    if (Util::testMagic(buf, { 'M', 'Z' })) {
         /* DOS-based file */
         return 2;
     }

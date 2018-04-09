@@ -1033,7 +1033,7 @@ int ElfBinaryLoader::canLoad(QIODevice& fl) const
 
     const Elf32_Ehdr *header = reinterpret_cast<const Elf32_Ehdr *>(contents.constData());
 
-    if (TESTMAGIC4(header->e_ident, EI_MAGO, ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3) == false) {
+    if (Util::testMagic(header->e_ident, { ELFMAG0, ELFMAG1, ELFMAG2, ELFMAG3 }) == false) {
         return 0;
     }
 

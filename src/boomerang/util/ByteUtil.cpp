@@ -93,4 +93,15 @@ void writeQWord(void *dst, QWord value, Endian dstEndian)
     *reinterpret_cast<QWord *>(dst) = normEndian(value, dstEndian);
 }
 
+
+bool testMagic(const Byte* buf, const std::initializer_list<Byte>& magic)
+{
+    for (std::size_t i = 0; i < magic.size(); i++) {
+        if (buf[i] != *(magic.begin() + i)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 }

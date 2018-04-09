@@ -107,7 +107,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     unsigned char      *magic = reinterpret_cast<uint8_t *>(img.data());
     struct mach_header *header; // The Mach-O header
 
-    if (TESTMAGIC4(magic, 0, 0xca, 0xfe, 0xba, 0xbe)) {
+    if (Util::testMagic(magic, { 0xca, 0xfe, 0xba, 0xbe })) {
         const int nimages = Util::readDWord(magic + 4, Endian::Big);
         DEBUG_PRINT("Binary is universal with %1 images", nimages);
 

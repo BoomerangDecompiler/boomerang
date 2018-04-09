@@ -697,13 +697,13 @@ int Win32BinaryLoader::canLoad(QIODevice& fl) const
 
     fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
-    if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
+    if (Util::testMagic(buf, { 'M', 'Z' })) { /* DOS-based file */
         int peoff = READ4_LE(buf[0x3C]);
 
         if ((peoff != 0) && fl.seek(peoff)) {
             fl.read(reinterpret_cast<char *>(buf), 4);
 
-            if (TESTMAGIC4(buf, 0, 'P', 'E', 0, 0)) {
+            if (Util::testMagic(buf, { 'P', 'E', 0, 0 })) {
                 /* Win32 Binary */
                 return 2 + 4 + 4;
             }

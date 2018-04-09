@@ -332,13 +332,13 @@ int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 
     fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
-    if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
+    if (Util::testMagic(buf, { 'M', 'Z' })) { /* DOS-based file */
         int peoff = READ4_LE(buf[0x3C]);
 
         if ((peoff != 0) && fl.seek(peoff)) {
             fl.read(reinterpret_cast<char *>(buf), 4);
 
-            if (TESTMAGIC2(buf, 0, 'L', 'E')) {
+            if (Util::testMagic(buf, { 'L', 'E' })) {
                 /* Win32 VxD (Linear Executable) or DOS4GW app */
                 return 2 + 4 + 2;
             }

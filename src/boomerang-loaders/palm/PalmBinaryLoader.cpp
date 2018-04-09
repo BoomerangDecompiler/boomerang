@@ -330,7 +330,8 @@ int PalmBinaryLoader::canLoad(QIODevice& dev) const
 
     dev.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
-    if (TESTMAGIC4(buf, 0x3C, 'a', 'p', 'p', 'l') || TESTMAGIC4(buf, 0x3C, 'p', 'a', 'n', 'l')) {
+    if (Util::testMagic(buf + 0x3C, { 'a', 'p', 'p', 'l' }) ||
+        Util::testMagic(buf + 0x3C, { 'p', 'a', 'n', 'l' })) {
         /* PRC Palm-pilot binary */
         return 8;
     }
