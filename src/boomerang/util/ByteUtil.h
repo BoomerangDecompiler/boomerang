@@ -106,3 +106,41 @@ TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 *sizeof(SrcTyp
     return (static_cast<TgtType>(static_cast<TgtType>(src) << sizeDifference)) >> sizeDifference;
 }
 }
+
+
+/// Read 4 bytes in little endian order from the address x points to
+/// \deprecated Use Util::readDWord instead
+#define READ4_LE_P(x) Util::readDWord((x),  Endian::Little)
+
+/// Read x as a 4-byte value in little endian order
+/// \deprecated Use Util::readDWord instead
+#define READ4_LE(x)   Util::readDWord(&(x), Endian::Little)
+
+/// Read x as a 2-byte value in little endian order
+/// \deprecated Use Util::readWord instead
+#define READ2_LE(x)   Util::readWord(&(x), Endian::Little)
+
+/// Read x as a 4-byte value in big endian order
+/// \deprecated Use Util::readDWord instead
+#define READ4_BE(x) Util::readDWord(&(x), Endian::Big)
+
+/// Read x as a 2-byte value in big endian order
+/// \deprecated Use Util::readWord instead
+#define READ2_BE(x) Util::readWord(&(x), Endian::Big)
+
+
+#define TESTMAGIC4_BE(offset) (   \
+    (magic[(offset) + 0] << 24) | \
+    (magic[(offset) + 1] << 16) | \
+    (magic[(offset) + 2] <<  8) | \
+    (magic[(offset) + 3] <<  0))
+
+#define TESTMAGIC4(buf, off, a, b, c, d) ( \
+    buf[off + 0] == a && \
+    buf[off + 1] == b && \
+    buf[off + 2] == c && \
+    buf[off + 3] == d)
+
+#define TESTMAGIC2(buf, off, a, b) ( \
+    buf[off + 0] == a && \
+    buf[off + 1] == b)

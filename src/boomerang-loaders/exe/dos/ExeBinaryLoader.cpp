@@ -65,7 +65,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         }
 
         /* This is a typical DOS kludge! */
-        if (LH(&m_header->relocTabOffset) == 0x40) {
+        if (Util::readWord(&m_header->relocTabOffset, Endian::Little) == 0x40) {
             LOG_ERROR("File is NE format executable");
             return false;
         }
@@ -75,10 +75,12 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
          * less the length of the m_header and reloc table
          * less the number of bytes unused on last page
          */
-        cb = LH(&m_header->numPages) * 512U - LH(&m_header->numParaHeader) * 16U;
+        const SWord numPages = Util::readWord(&m_header->numPages, Endian::Little);
+        const SWord numParaHeader = Util::readWord(&m_header->numParaHeader, Endian::Little);
+        cb = numPages * 512U - numParaHeader * 16U;
 
         if (m_header->lastPageSize > 0) {
-            cb -= 512U - LH(&m_header->lastPageSize);
+            cb -= 512U - Util::readWord(&m_header->lastPageSize, Endian::Little);
         }
 
         /* We quietly ignore minAlloc and maxAlloc since for our
@@ -89,12 +91,12 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
          * to have to load DS from a constant so it'll be pretty
          * obvious.
          */
-        m_numReloc = LH(&m_header->numReloc);
+        m_numReloc = Util::readWord(&m_header->numReloc, Endian::Little);
 
         /* Allocate the relocation table */
         if (m_numReloc) {
             m_relocTable = new DWord[m_numReloc];
-            fp.seek(LH(&m_header->relocTabOffset));
+            fp.seek(Util::readWord(&m_header->relocTabOffset, Endian::Little));
 
             /* Read in seg:offset pairs and convert to Image ptrs */
             Byte    buf[4];
@@ -105,12 +107,17 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         }
 
         /* Seek to start of image */
-        fp.seek(LH(&m_header->numParaHeader) * 16U);
+        fp.seek(Util::readWord(&m_header->numParaHeader, Endian::Little) * 16U);
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
         // the segment in the top half, and offset int he bottom
-        m_uInitPC = Address((LH(&m_header->initCS)) << 16) + Address(LH(&m_header->initIP));
-        m_uInitSP = Address((LH(&m_header->initSS)) << 16) + Address(LH(&m_header->initSP));
+        const DWord initCS = Util::readWord(&m_header->initCS, Endian::Little);
+        const DWord initIP = Util::readWord(&m_header->initIP, Endian::Little);
+        const DWord initSS = Util::readWord(&m_header->initSS, Endian::Little);
+        const DWord initSP = Util::readWord(&m_header->initSP, Endian::Little);
+
+        m_uInitPC = Address((initCS << 16) + initIP);
+        m_uInitSP = Address((initSS << 16) + initSP);
     }
     else {
         /* COM file
@@ -122,7 +129,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
          * This is also the implied start address so if we load the image
          * at offset 100H addresses should all line up properly again.
          */
-        m_uInitPC  = Address(0x100);
+        m_uInitPC  = Address(0x0100);
         m_uInitSP  = Address(0xFFFE);
         m_numReloc = 0;
 
@@ -139,11 +146,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     /* Relocate segment constants */
-    if (m_numReloc) {
-        for (int i = 0; i < m_numReloc; i++) {
-            Byte  *p = &m_loadedImage[m_relocTable[i]];
-            Util::writeWord(p, LH(p), Endian::Little);
-        }
+    for (int i = 0; i < m_numReloc; i++) {
+        Byte  *p = &m_loadedImage[m_relocTable[i]];
+        const SWord value = Util::readWord(p, Endian::Little);
+        Util::writeWord(p, value, Endian::Little);
     }
 
     fp.close();
@@ -203,12 +209,13 @@ Address ExeBinaryLoader::getMainEntryPoint()
 
 Address ExeBinaryLoader::getEntryPoint()
 {
-    // Check this...
-    return Address((LH(&m_header->initCS) << 4) + LH(&m_header->initIP));
+    const DWord initCS = Util::readWord(&m_header->initCS, Endian::Little);
+    const DWord initIP = Util::readWord(&m_header->initIP, Endian::Little);
+
+    // FIXME Check this...
+    return Address((initCS << 4) + initIP);
 }
 
-
-#define TESTMAGIC2(buf, off, a, b)    (buf[off] == a && buf[off + 1] == b)
 
 int ExeBinaryLoader::canLoad(QIODevice& fl) const
 {

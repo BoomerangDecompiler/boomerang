@@ -81,8 +81,3 @@ void clone(const Container& from, Container& to)
 
 #define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kiB)
 extern char debug_buffer[DEBUG_BUFSIZE];
-
-
-/// Given a pointer p, returns the 16 bits (halfword) in the two bytes
-/// starting at p.
-#define LH(p) Util::readWord(reinterpret_cast<const void *>(p), Endian::Little)

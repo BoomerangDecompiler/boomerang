@@ -63,7 +63,7 @@ void DOS4GWBinaryLoader::close()
 
 Address DOS4GWBinaryLoader::getEntryPoint()
 {
-    return Address((LMMH(m_LXObjects[LMMH(m_LXHeader->eipobjectnum)].RelocBaseAddr) + LMMH(m_LXHeader->eip)));
+    return Address((READ4_LE(m_LXObjects[READ4_LE(m_LXHeader->eipobjectnum)].RelocBaseAddr) + READ4_LE(m_LXHeader->eip)));
 }
 
 
@@ -83,7 +83,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
 
     // Search with this crude pattern: call, sub ebp, ebp, call __Cmain in the first 0x300 bytes
     // Start at program entry point
-    unsigned      p = LMMH(m_LXHeader->eip);
+    unsigned      p = READ4_LE(m_LXHeader->eip);
     unsigned      lim = p + 0x300;
     Address       addr;
 
@@ -120,7 +120,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             // An ordinary call
             if (gotSubEbp) {
                 // This is the call we want. Get the offset from the call instruction
-                addr = nativeOrigin + p + 5 + LMMH2(base + p + 1);
+                addr = nativeOrigin + p + 5 + READ4_LE_P(base + p + 1);
                 LOG_VERBOSE("Found __CMain at address %1", addr);
                 return addr;
             }
@@ -181,7 +181,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     buf.read(reinterpret_cast<char *>(&lxoffLE), 4); // Note: peoffLE will be in Little Endian
-    lxoff = LMMH(lxoffLE);
+    lxoff = READ4_LE(lxoffLE);
 
     if (!buf.seek(lxoff)) {
         return false;
@@ -198,56 +198,56 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    if (!buf.seek(lxoff + LMMH(m_LXHeader->objtbloffset))) {
+    if (!buf.seek(lxoff + READ4_LE(m_LXHeader->objtbloffset))) {
         return false;
     }
 
-    m_LXObjects = new LXObject[LMMH(m_LXHeader->numobjsinmodule)];
-    buf.read(reinterpret_cast<char *>(m_LXObjects), sizeof(LXObject) * LMMH(m_LXHeader->numobjsinmodule));
+    m_LXObjects = new LXObject[READ4_LE(m_LXHeader->numobjsinmodule)];
+    buf.read(reinterpret_cast<char *>(m_LXObjects), sizeof(LXObject) * READ4_LE(m_LXHeader->numobjsinmodule));
 
     unsigned npages = 0;
     m_cbImage = 0;
 
-    for (unsigned n = 0; n < LMMH(m_LXHeader->numobjsinmodule); n++) {
-        if (LMMH(m_LXObjects[n].ObjectFlags) & 0x40) {
-            if (LMMH(m_LXObjects[n].PageTblIdx) + LMMH(m_LXObjects[n].NumPageTblEntries) - 1 > npages) {
-                npages = LMMH(m_LXObjects[n].PageTblIdx) + LMMH(m_LXObjects[n].NumPageTblEntries) - 1;
+    for (unsigned n = 0; n < READ4_LE(m_LXHeader->numobjsinmodule); n++) {
+        if (READ4_LE(m_LXObjects[n].ObjectFlags) & 0x40) {
+            if (READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1 > npages) {
+                npages = READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1;
             }
 
-            m_cbImage = LMMH(m_LXObjects[n].RelocBaseAddr) + LMMH(m_LXObjects[n].VirtualSize);
+            m_cbImage = READ4_LE(m_LXObjects[n].RelocBaseAddr) + READ4_LE(m_LXObjects[n].VirtualSize);
         }
     }
 
-    m_cbImage -= LMMH(m_LXObjects[0].RelocBaseAddr);
+    m_cbImage -= READ4_LE(m_LXObjects[0].RelocBaseAddr);
 
     base = reinterpret_cast<char *>(malloc(m_cbImage));
 
-    uint32_t numSections = LMMH(m_LXHeader->numobjsinmodule);
+    uint32_t numSections = READ4_LE(m_LXHeader->numobjsinmodule);
     std::vector<SectionParam> params;
 
     for (unsigned n = 0; n < numSections; n++) {
-        if (LMMH(m_LXObjects[n].ObjectFlags) & 0x40) {
-            printf("vsize %x reloc %x flags %x page %u npage %u\n", LMMH(m_LXObjects[n].VirtualSize),
-                   LMMH(m_LXObjects[n].RelocBaseAddr), LMMH(m_LXObjects[n].ObjectFlags),
-                   LMMH(m_LXObjects[n].PageTblIdx), LMMH(m_LXObjects[n].NumPageTblEntries));
+        if (READ4_LE(m_LXObjects[n].ObjectFlags) & 0x40) {
+            printf("vsize %x reloc %x flags %x page %u npage %u\n", READ4_LE(m_LXObjects[n].VirtualSize),
+                   READ4_LE(m_LXObjects[n].RelocBaseAddr), READ4_LE(m_LXObjects[n].ObjectFlags),
+                   READ4_LE(m_LXObjects[n].PageTblIdx), READ4_LE(m_LXObjects[n].NumPageTblEntries));
 
             SectionParam sect;
-            DWord        Flags = LMMH(m_LXObjects[n].ObjectFlags);
+            DWord        Flags = READ4_LE(m_LXObjects[n].ObjectFlags);
 
             sect.Name         = QString("seg%i").arg(n); // no section names in LX
-            sect.from         = Address(LMMH(m_LXObjects[n].RelocBaseAddr));
+            sect.from         = Address(READ4_LE(m_LXObjects[n].RelocBaseAddr));
             sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
-            sect.Size         = LMMH(m_LXObjects[n].VirtualSize);
+            sect.Size         = READ4_LE(m_LXObjects[n].VirtualSize);
             sect.Bss          = 0; // TODO
             sect.Code         = (Flags & 0x4) ? true  : false;
             sect.Data         = (Flags & 0x4) ? false : true;
             sect.ReadOnly     = (Flags & 0x1) ? false : true;
 
             buf.seek(
-                m_LXHeader->datapagesoffset + (LMMH(m_LXObjects[n].PageTblIdx) - 1) * LMMH(m_LXHeader->pagesize)
+                m_LXHeader->datapagesoffset + (READ4_LE(m_LXObjects[n].PageTblIdx) - 1) * READ4_LE(m_LXHeader->pagesize)
                 );
-            char *p = base + LMMH(m_LXObjects[n].RelocBaseAddr) - LMMH(m_LXObjects[0].RelocBaseAddr);
-            buf.read(p, LMMH(m_LXObjects[n].NumPageTblEntries) * LMMH(m_LXHeader->pagesize));
+            char *p = base + READ4_LE(m_LXObjects[n].RelocBaseAddr) - READ4_LE(m_LXObjects[0].RelocBaseAddr);
+            buf.read(p, READ4_LE(m_LXObjects[n].NumPageTblEntries) * READ4_LE(m_LXHeader->pagesize));
         }
     }
 
@@ -266,7 +266,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     // TODO: decode entry tables
 
     // fixups
-    if (!buf.seek(LMMH(m_LXHeader->fixuppagetbloffset) + lxoff)) {
+    if (!buf.seek(READ4_LE(m_LXHeader->fixuppagetbloffset) + lxoff)) {
         return false;
     }
 
@@ -277,7 +277,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     //    printf("offset for page %i: %x\n", n + 1, fixuppagetbl[n]);
     // printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
 
-    buf.seek(LMMH(m_LXHeader->fixuprecordtbloffset) + lxoff);
+    buf.seek(READ4_LE(m_LXHeader->fixuprecordtbloffset) + lxoff);
     LXFixup  fixup;
     unsigned srcpage = 0;
 
@@ -294,7 +294,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
         // fixup.trgoff);
-        unsigned long  src    = srcpage * LMMH(m_LXHeader->pagesize) + LMMHw(fixup.srcoff);
+        unsigned long  src    = srcpage * READ4_LE(m_LXHeader->pagesize) + READ2_LE(fixup.srcoff);
         unsigned short object = 0;
 
         if (fixup.flags & 0x40) {
@@ -313,11 +313,11 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
             buf.read(reinterpret_cast<char *>(&trgoff), 2);
         }
 
-        unsigned long target = LMMH(m_LXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
+        unsigned long target = READ4_LE(m_LXObjects[object - 1].RelocBaseAddr) + READ2_LE(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
         Util::writeDWord(base + src, target, Endian::Little);
 
-        while (buf.pos() - (LMMH(m_LXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1])) {
+        while (buf.pos() - (READ4_LE(m_LXHeader->fixuprecordtbloffset) + lxoff) >= READ4_LE(fixuppagetbl[srcpage + 1])) {
             srcpage++;
         }
     } while (srcpage < npages);
@@ -326,8 +326,6 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 }
 
 
-#define TESTMAGIC2(buf, off, a, b)    (buf[off] == a && buf[off + 1] == b)
-
 int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 {
     unsigned char buf[64];
@@ -335,7 +333,7 @@ int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
     fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
 
     if (TESTMAGIC2(buf, 0, 'M', 'Z')) { /* DOS-based file */
-        int peoff = LMMH(buf[0x3C]);
+        int peoff = READ4_LE(buf[0x3C]);
 
         if ((peoff != 0) && fl.seek(peoff)) {
             fl.read(reinterpret_cast<char *>(buf), 4);

@@ -324,7 +324,6 @@ bool PalmBinaryLoader::loadFromMemory(QByteArray& img)
 }
 
 
-#define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 int PalmBinaryLoader::canLoad(QIODevice& dev) const
 {
     unsigned char buf[64];

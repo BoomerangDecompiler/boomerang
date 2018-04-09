@@ -1023,7 +1023,6 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
 }
 
 
-#define TESTMAGIC4(buf, off, a, b, c, d)    (buf[off] == a && buf[off + 1] == b && buf[off + 2] == c && buf[off + 3] == d)
 
 int ElfBinaryLoader::canLoad(QIODevice& fl) const
 {

@@ -93,7 +93,6 @@ Address MachOBinaryLoader::getMainEntryPoint()
 }
 
 
-#define BE4(x)    ((magic[(x)] << 24) | (magic[(x) + 1] << 16) | (magic[(x) + 2] << 8) | (magic[(x) + 3]))
 
 bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 {
@@ -109,13 +108,13 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     struct mach_header *header; // The Mach-O header
 
     if ((magic[0] == 0xca) && (magic[1] == 0xfe) && (magic[2] == 0xba) && (magic[3] == 0xbe)) {
-        int nimages = BE4(4);
+        int nimages = TESTMAGIC4_BE(4);
         DEBUG_PRINT("Binary is universal with %1 images", nimages);
 
         for (int i = 0; i < nimages; i++) {
             int          fbh     = 8 + i * 5 * 4;
-            unsigned int cputype = BE4(fbh);
-            unsigned int offset  = BE4(fbh + 8);
+            unsigned int cputype = TESTMAGIC4_BE(fbh);
+            unsigned int offset  = TESTMAGIC4_BE(fbh + 8);
             DEBUG_PRINT("cputype:    %1", cputype);
             DEBUG_PRINT("cpusubtype: %1", BE4(fbh + 4));
             DEBUG_PRINT("offset:     %1", BE4(fbh + 8));
@@ -131,13 +130,13 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
     header = reinterpret_cast<mach_header *>(img.data() + imgoffs);// new mach_header;
     // fp.read((char *)header, sizeof(mach_header));
 
-    if ((header->magic != MH_MAGIC) && (_BMMH(header->magic) != MH_MAGIC)) {
+    if ((header->magic != MH_MAGIC) && (READ4_BE(header->magic) != MH_MAGIC)) {
         LOG_ERROR("Error loading file, bad Mach-O magic");
         return false;
     }
 
     // check for swapped bytes
-    swap_bytes = (_BMMH(header->magic) == MH_MAGIC);
+    swap_bytes = (READ4_BE(header->magic) == MH_MAGIC);
 
     // Determine CPU type
     if (BMMH(header->cputype) == 0x07) {
@@ -513,7 +512,7 @@ DWord MachOBinaryLoader::machORead4(const void *pi) const
 int32_t MachOBinaryLoader::BMMH(int32_t x)
 {
     if (swap_bytes) {
-        return _BMMH(x);
+        return READ4_BE(x);
     }
     else {
         return x;
@@ -524,7 +523,7 @@ int32_t MachOBinaryLoader::BMMH(int32_t x)
 DWord MachOBinaryLoader::BMMH(DWord x)
 {
     if (swap_bytes) {
-        return _BMMH(x);
+        return READ4_BE(x);
     }
     else {
         return x;
@@ -535,7 +534,7 @@ DWord MachOBinaryLoader::BMMH(DWord x)
 SWord MachOBinaryLoader::BMMHW(SWord x)
 {
     if (swap_bytes) {
-        return _BMMHW(x);
+        return READ2_BE(x);
     }
     else {
         return x;
