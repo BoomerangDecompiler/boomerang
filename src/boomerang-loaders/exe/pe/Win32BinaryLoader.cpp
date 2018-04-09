@@ -655,7 +655,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray& arr)
         sect->setData(par.Data);
         sect->setReadOnly(par.ReadOnly);
         sect->setHostAddr(par.ImageAddress);
-        sect->setEndian(0);      // little endian
+        sect->setEndian(Endian::Little);      // little endian
 
         if (!(par.Bss || par.From.isZero())) {
             sect->addDefinedArea(par.From, par.From + par.PhysSize);
@@ -966,13 +966,13 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID
 
 SWord Win32BinaryLoader::win32Read2(const void *src) const
 {
-    return Util::readWord(src, false);
+    return Util::readWord(src, Endian::Little);
 }
 
 
 DWord Win32BinaryLoader::win32Read4(const void *src) const
 {
-    return Util::readDWord(src, false);
+    return Util::readDWord(src, Endian::Little);
 }
 
 

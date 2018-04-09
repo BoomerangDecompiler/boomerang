@@ -1604,7 +1604,15 @@ SSLParser::
         break;
     }
     case 133: {
-        Dict.m_bigEndian = yyvsp[0].str=="BIG";
+        if (yyvsp[0].str.compare("BIG", Qt::CaseInsensitive) == 0) {
+            Dict.m_bigEndian = Endian::Big;
+        }
+        else if (yyvsp[0].str.compare("LITTLE", Qt::CaseInsensitive) == 0) {
+            Dict.m_bigEndian = Endian::Little;
+        }
+        else {
+            Dict.m_bigEndian = Endian::Invalid;
+        }
         ;
         break;
     }

@@ -884,7 +884,7 @@ Byte ST20Decoder::getByte(intptr_t lc)
 SWord ST20Decoder::getWord(intptr_t lc)
 /* get2Bytes - returns next 2-Byte from image pointed to by lc.     */
 {
-    return Util::readWord(reinterpret_cast<const void *>(lc), false);
+    return Util::readWord(reinterpret_cast<const void *>(lc), Endian::Little);
 }
 
 
@@ -896,7 +896,7 @@ SWord ST20Decoder::getWord(intptr_t lc)
 DWord ST20Decoder::getDword(intptr_t lc)
 /* get4Bytes - returns the next 4-Byte word from image pointed to by lc. */
 {
-    return Util::readDWord(reinterpret_cast<const void *>(lc), false);
+    return Util::readDWord(reinterpret_cast<const void *>(lc), Endian::Little);
 }
 
 

@@ -12,6 +12,7 @@
 
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Address.h"
+#include "boomerang/util/Util.h"
 
 #include <QString>
 
@@ -35,7 +36,7 @@ public:
 public:
     HostAddress getHostAddr() const { return m_hostAddr; }
     Address getSourceAddr()   const { return m_nativeAddr; }
-    uint8_t getEndian()       const { return m_endianness; }
+    Endian getEndian()        const { return m_endianness; }
     bool isReadOnly()         const { return m_readOnly; }
     bool isCode()             const { return m_code; }
     bool isData()             const { return m_data; }
@@ -50,7 +51,7 @@ public:
     void setHostAddr(HostAddress v) { m_hostAddr = v; }
     void setSourceAddr(Address v)   { m_nativeAddr = v; }
     void setEntrySize(uint32_t v)   { m_sectionEntrySize = v; }
-    void setEndian(uint8_t v)       { m_endianness = v; }
+    void setEndian(Endian v)        { m_endianness = v; }
 
     void resize(uint32_t newSize);
 
@@ -80,5 +81,5 @@ private:
     unsigned              m_data     : 1;                    ///< Set if section contains data
     unsigned              m_bss      : 1;                    ///< Set if section is BSS (allocated only)
     unsigned              m_readOnly : 1;                    ///< Set if this is a read only section
-    uint8_t               m_endianness = 0;                  ///< 0 Little endian, 1 Big endian
+    Endian                m_endianness = Endian::Little;     ///< Endianness of section bytes
 };

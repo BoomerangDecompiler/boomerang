@@ -325,7 +325,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray& img)
 
         unsigned long l = BMMH(segments[i].initprot);
         sect->setBss(false); // TODO
-        sect->setEndian((machine == Machine::PPC) ? 1 : 0);
+        sect->setEndian((machine == Machine::PPC) ? Endian::Big : Endian::Little);
         sect->setCode((l & VM_PROT_EXECUTE) != 0);
         sect->setData((l & VM_PROT_READ)    != 0);
         sect->setReadOnly((l & VM_PROT_WRITE) == 0);
@@ -500,23 +500,13 @@ void MachOBinaryLoader::unload()
 
 SWord MachOBinaryLoader::machORead2(const void *ps) const
 {
-    if (machine == Machine::PPC) {
-        return Util::readWord(ps, true);
-    }
-    else {
-        return Util::readWord(ps, false);
-    }
+    return Util::readWord(ps, (machine == Machine::PPC) ? Endian::Big : Endian::Little);
 }
 
 
 DWord MachOBinaryLoader::machORead4(const void *pi) const
 {
-    if (machine == Machine::PPC) {
-        return Util::readDWord(pi, true);
-    }
-    else {
-        return Util::readDWord(pi, false);
-    }
+    return Util::readDWord(pi, (machine == Machine::PPC) ? Endian::Big : Endian::Little);
 }
 
 

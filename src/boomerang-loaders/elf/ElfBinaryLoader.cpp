@@ -127,13 +127,8 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     // endianness
     switch (m_elfHeader->e_ident[EI_DATA])
     {
-    case ELFDATA2LSB:
-        m_bigEndian = false;
-        break;
-
-    case ELFDATA2MSB:
-        m_bigEndian = true;
-        break;
+    case ELFDATA2LSB: m_endian = Endian::Little; break;
+    case ELFDATA2MSB: m_endian = Endian::Big; break;
 
     default:
         LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->e_ident[EI_DATA]);
@@ -292,7 +287,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             sect->setBss(par.Bss);
             sect->setCode(par.Code);
             sect->setData(par.Data);
-            sect->setEndian(m_bigEndian);
+            sect->setEndian(m_endian);
             sect->setHostAddr(par.imagePtr);
             sect->setEntrySize(par.entry_size);
 
@@ -755,21 +750,21 @@ void ElfBinaryLoader::markImports()
 SWord ElfBinaryLoader::elfRead2(const SWord *ps) const
 {
     assert(ps);
-    return Util::readWord(ps, m_bigEndian);
+    return Util::readWord(ps, m_endian);
 }
 
 
 DWord ElfBinaryLoader::elfRead4(const DWord *pi) const
 {
     assert(pi);
-    return Util::readDWord(pi, m_bigEndian);
+    return Util::readDWord(pi, m_endian);
 }
 
 
 void ElfBinaryLoader::elfWrite4(DWord *pi, DWord val)
 {
     assert(pi);
-    Util::writeDWord(pi, val, m_bigEndian);
+    Util::writeDWord(pi, val, m_endian);
 }
 
 

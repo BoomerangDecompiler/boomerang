@@ -2447,7 +2447,7 @@ bool SparcDecoder::isRestore(HostAddress hostPC)
 
 DWord SparcDecoder::getDword(HostAddress lc)
 {
-    return Util::readDWord(lc, true);
+    return Util::readDWord(lc, Endian::Big);
 }
 
 

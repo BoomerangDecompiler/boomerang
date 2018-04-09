@@ -28,6 +28,14 @@ public:
 };
 
 
+enum class Endian
+{
+    Invalid = -1,
+    Little = 0,
+    Big = 1
+};
+
+
 namespace Util
 {
 /**
@@ -119,26 +127,26 @@ inline QWord swapEndian(QWord value)
 /**
  * Normalize endianness of a value.
  * Swaps bytes of \p value if the endianness of the source,
- * indicated by \p srcBigEndian, is different from the endianness
+ * indicated by \p srcEndian, is different from the endianness
  * of the host.
  */
-SWord normEndian(SWord value, bool srcBigEndian);
-DWord normEndian(DWord value, bool srcBigEndian);
-QWord normEndian(QWord value, bool srcBigEndian);
+SWord normEndian(SWord value, Endian srcEndian);
+DWord normEndian(DWord value, Endian srcEndian);
+QWord normEndian(QWord value, Endian srcEndian);
 
 /// Read values, respecting endianness
 /// \sa normEndian
 Byte readByte(const void *src);
-SWord readWord(const void *src, bool srcBigEndian);
-DWord readDWord(const void *src, bool srcBigEndian);
-QWord readQWord(const void *src, bool srcBigEndian);
+SWord readWord(const void *src, Endian srcEndian);
+DWord readDWord(const void *src, Endian srcEndian);
+QWord readQWord(const void *src, Endian srcEndian);
 
 
 /// Write values to \p dst, respecting endianness
 void writeByte(void *dst, Byte value);
-void writeWord(void *dst, SWord value, bool dstBigEndian);
-void writeDWord(void *dst, DWord value, bool dstBigEndian);
-void writeQWord(void *dst, QWord value, bool dstBigEndian);
+void writeWord(void *dst, SWord value, Endian dstEndian);
+void writeDWord(void *dst, DWord value, Endian dstEndian);
+void writeQWord(void *dst, QWord value, Endian dstEndian);
 
 
 /**
@@ -162,10 +170,10 @@ TgtType signExtend(const SrcType& src, size_t numSrcBits = 8 *sizeof(SrcType))
 }
 }
 
-#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kB)
+#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kiB)
 extern char debug_buffer[DEBUG_BUFSIZE];
 
 
 /// Given a pointer p, returns the 16 bits (halfword) in the two bytes
 /// starting at p.
-#define LH(p) Util::readWord(reinterpret_cast<const void *>(p), false)
+#define LH(p) Util::readWord(reinterpret_cast<const void *>(p), Endian::Little)

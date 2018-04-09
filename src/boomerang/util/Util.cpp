@@ -75,21 +75,25 @@ QTextStream& alignStream(QTextStream& str, int align)
 }
 
 
-SWord normEndian(SWord value, bool srcBigEndian)
+SWord normEndian(SWord value, Endian srcEndian)
 {
-    return (srcBigEndian == BOOMERANG_BIG_ENDIAN) ? value : swapEndian(value);
+    constexpr Endian myEndian = static_cast<Endian>(BOOMERANG_BIG_ENDIAN);
+    return (myEndian == srcEndian) ? value : swapEndian(value);
 }
 
 
-DWord normEndian(DWord value, bool srcBigEndian)
+DWord normEndian(DWord value, Endian srcEndian)
 {
-    return (srcBigEndian == BOOMERANG_BIG_ENDIAN) ? value : swapEndian(value);
+
+    constexpr Endian myEndian = static_cast<Endian>(BOOMERANG_BIG_ENDIAN);
+    return (myEndian == srcEndian) ? value : swapEndian(value);
 }
 
 
-QWord normEndian(QWord value, bool srcBigEndian)
+QWord normEndian(QWord value, Endian srcEndian)
 {
-    return (srcBigEndian == BOOMERANG_BIG_ENDIAN) ? value : swapEndian(value);
+    constexpr Endian myEndian = static_cast<Endian>(BOOMERANG_BIG_ENDIAN);
+    return (myEndian == srcEndian) ? value : swapEndian(value);
 }
 
 
@@ -100,24 +104,24 @@ Byte readByte(const void *src)
 }
 
 
-SWord readWord(const void *src, bool srcBigEndian)
+SWord readWord(const void *src, Endian srcEndian)
 {
     assert(src);
-    return normEndian(*reinterpret_cast<const SWord *>(src), srcBigEndian);
+    return normEndian(*reinterpret_cast<const SWord *>(src), srcEndian);
 }
 
 
-DWord readDWord(const void *src, bool srcBigEndian)
+DWord readDWord(const void *src, Endian srcEndian)
 {
     assert(src);
-    return normEndian(*reinterpret_cast<const DWord *>(src), srcBigEndian);
+    return normEndian(*reinterpret_cast<const DWord *>(src), srcEndian);
 }
 
 
-QWord readQWord(const void *src, bool srcBigEndian)
+QWord readQWord(const void *src, Endian srcEndian)
 {
     assert(src);
-    return normEndian(*reinterpret_cast<const QWord *>(src), srcBigEndian);
+    return normEndian(*reinterpret_cast<const QWord *>(src), srcEndian);
 }
 
 
@@ -128,23 +132,23 @@ void writeByte(void *dst, Byte value)
 }
 
 
-void writeWord(void *dst, SWord value, bool dstBigEndian)
+void writeWord(void *dst, SWord value, Endian dstEndian)
 {
     assert(dst);
-    *reinterpret_cast<SWord *>(dst) = normEndian(value, dstBigEndian);
+    *reinterpret_cast<SWord *>(dst) = normEndian(value, dstEndian);
 }
 
 
-void writeDWord(void *dst, DWord value, bool dstBigEndian)
+void writeDWord(void *dst, DWord value, Endian dstEndian)
 {
     assert(dst);
-    *reinterpret_cast<DWord *>(dst) = normEndian(value, dstBigEndian);
+    *reinterpret_cast<DWord *>(dst) = normEndian(value, dstEndian);
 }
 
 
-void writeQWord(void *dst, QWord value, bool dstBigEndian)
+void writeQWord(void *dst, QWord value, Endian dstEndian)
 {
     assert(dst);
-    *reinterpret_cast<QWord *>(dst) = normEndian(value, dstBigEndian);
+    *reinterpret_cast<QWord *>(dst) = normEndian(value, dstEndian);
 }
 }

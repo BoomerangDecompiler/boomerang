@@ -100,7 +100,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
             Byte    buf[4];
             for (int i = 0; i < m_numReloc; i++) {
                 fp.read(reinterpret_cast<char *>(buf), 4);
-                m_relocTable[i] = Util::readDWord(buf, false);
+                m_relocTable[i] = Util::readDWord(buf, Endian::Little);
             }
         }
 
@@ -142,7 +142,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     if (m_numReloc) {
         for (int i = 0; i < m_numReloc; i++) {
             Byte  *p = &m_loadedImage[m_relocTable[i]];
-            Util::writeWord(p, LH(p), false);
+            Util::writeWord(p, LH(p), Endian::Little);
         }
     }
 

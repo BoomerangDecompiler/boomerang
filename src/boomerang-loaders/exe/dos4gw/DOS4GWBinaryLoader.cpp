@@ -315,7 +315,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         unsigned long target = LMMH(m_LXObjects[object - 1].RelocBaseAddr) + LMMHw(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
-        Util::writeDWord(base + src, target, false);
+        Util::writeDWord(base + src, target, Endian::Little);
 
         while (buf.pos() - (LMMH(m_LXHeader->fixuprecordtbloffset) + lxoff) >= LMMH(fixuppagetbl[srcpage + 1])) {
             srcpage++;
@@ -359,13 +359,13 @@ void DOS4GWBinaryLoader::unload()
 
 SWord DOS4GWBinaryLoader::dos4gwRead2(const void *src) const
 {
-    return Util::readWord(src, false);
+    return Util::readWord(src, Endian::Little);
 }
 
 
 DWord DOS4GWBinaryLoader::dos4gwRead4(const void *src) const
 {
-    return Util::readDWord(src, false);
+    return Util::readDWord(src, Endian::Little);
 }
 
 

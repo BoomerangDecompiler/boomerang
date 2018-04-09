@@ -129,7 +129,7 @@ private:
     Elf32_Shdr *m_sectionHdrs = nullptr;        ///< Array of section header structs
 
     const char *m_strings = nullptr;            ///< Pointer to the string section
-    bool m_bigEndian = false;                   ///< 1 = Big Endian
+    Endian m_endian = Endian::Little;
 
     const Elf32_Rel *m_relocSection  = nullptr; ///< Pointer to the relocation section
     const Elf32_Sym *m_symbolSection = nullptr; ///< Pointer to loaded symbol section

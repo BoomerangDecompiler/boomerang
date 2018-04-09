@@ -20,9 +20,9 @@ class QFile;
 // Given a little endian value x, load its value assuming little endian order
 // Note: must be able to take address of x
 // Note: Unlike the LH macro in BinaryFile.h, the paraeter is not a pointer
-#define LMMH(x)  Util::readDWord(&(x), false)
-#define LMMH2(x) Util::readDWord((x), false)
-#define LMMHw(x) Util::readWord(&(x), false)
+#define LMMH(x)  Util::readDWord(&(x), Endian::Little)
+#define LMMH2(x) Util::readDWord((x), Endian::Little)
+#define LMMHw(x) Util::readWord(&(x), Endian::Little)
 
 
 typedef struct  /* exe file header, just the signature really */
