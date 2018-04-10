@@ -19,7 +19,7 @@ list(APPEND boomerang-frontend-sources
     frontend/pentium/StringInstructionProcessor
     frontend/ppc/ppcdecoder
     frontend/ppc/ppcfrontend
-    frontend/SigEnum.h
+    frontend/SigEnum
     frontend/sparc/sparcdecoder
     frontend/sparc/sparcfrontend
     frontend/st20/st20decoder

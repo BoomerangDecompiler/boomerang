@@ -186,10 +186,6 @@ public:
     /// procedures that follow the calling convention)
     static void getABIDefines(Prog *prog, StatementList& defs);
 
-    // ascii versions of platform, calling convention name
-    static QString getPlatformName(Platform plat);
-    static QString getConventionName(CallConv cc);
-
     virtual Platform getPlatform()   const { return Platform::GENERIC; }
     virtual CallConv getConvention() const { return CallConv::INVALID; }
 

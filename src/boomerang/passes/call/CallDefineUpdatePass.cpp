@@ -147,4 +147,3 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     return true;
 }
-

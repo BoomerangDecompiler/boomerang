@@ -38,59 +38,6 @@
 #include <sstream>
 
 
-QString Signature::getPlatformName(Platform plat)
-{
-    switch (plat)
-    {
-    case Platform::PENTIUM:
-        return "pentium";
-
-    case Platform::SPARC:
-        return "sparc";
-
-    case Platform::M68K:
-        return "m68k";
-
-    case Platform::PARISC:
-        return "parisc";
-
-    case Platform::PPC:
-        return "ppc";
-
-    case Platform::MIPS:
-        return "mips";
-
-    case Platform::ST20:
-        return "st20";
-
-    default:
-        return "???";
-    }
-}
-
-
-QString Signature::getConventionName(CallConv cc)
-{
-    switch (cc)
-    {
-    case CallConv::C:
-        return "stdc";
-
-    case CallConv::Pascal:
-        return "pascal";
-
-    case CallConv::ThisCall:
-        return "thiscall";
-
-    case CallConv::FastCall:
-        return "fastcall";
-
-    default:
-        return "??";
-    }
-}
-
-
 Signature::Signature(const QString& name)
     : m_ellipsis(false)
     , m_unknown(true)
@@ -520,7 +467,8 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
     // insert other conventions here
     default:
-        LOG_ERROR("Unknown signature: %1 %2", getConventionName(cc), getPlatformName(plat));
+        LOG_ERROR("Unknown signature: %1 %2", Util::getCallConvName(cc),
+                  Util::getPlatformName(plat));
         return nullptr;
     }
 }

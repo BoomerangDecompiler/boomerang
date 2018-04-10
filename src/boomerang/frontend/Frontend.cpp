@@ -192,7 +192,7 @@ void IFrontEnd::readLibraryCatalog()
     }
 
     readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
-    readLibraryCatalog(sig_dir.absoluteFilePath(Signature::getPlatformName(getType()) + ".hs"));
+    readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
 
     if (isWin32()) {
         readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
