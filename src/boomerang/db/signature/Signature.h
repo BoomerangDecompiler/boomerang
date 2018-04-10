@@ -169,7 +169,10 @@ public:
     // For most machines, local variables are not POSITIVE offsets from sp
     virtual bool isLocalOffsetPositive() const { return !isLocalOffsetNegative(); }
 
-    // Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
+    /**
+     * \return true if \p op is compatible with a stack local,
+     * i.e. m[sp OP K] may be a stack local for positive K
+     */
     bool isOpCompatStackLocal(OPER op) const;
 
     // get anything that can be proven as a result of the signature

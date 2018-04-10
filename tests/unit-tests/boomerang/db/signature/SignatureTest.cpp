@@ -12,10 +12,12 @@
 
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Const.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
+#include "boomerang/db/statements/Assign.h"
 
 
 void SignatureTest::testAddReturn()
@@ -249,6 +251,13 @@ void SignatureTest::testIsStackLocal()
     spMinus4 = Binary::get(opPlus, Location::regOf(28), Const::get(-4));
     QVERIFY(!sig.isStackLocal(28, Location::memOf(spPlus4)));
     QVERIFY(sig.isStackLocal(28, Location::memOf(spMinus4)));
+
+    // Check if the subscript is ignored correctly
+    QVERIFY(!sig.isStackLocal(28, RefExp::get(Location::memOf(spPlus4), nullptr)));
+    QVERIFY(sig.isStackLocal(28, RefExp::get(Location::memOf(spMinus4), nullptr)));
+
+    SharedExp spMinusPi = Binary::get(opMinus, Location::regOf(28), Const::get(3.14156));
+    QVERIFY(!sig.isStackLocal(28, Location::memOf(spMinusPi)));
 }
 
 
@@ -268,24 +277,40 @@ void SignatureTest::testIsAddrOfStackLocal()
     spMinus4 = Binary::get(opMinus, Location::regOf(28), Const::get(4));
     QVERIFY(!sig.isAddrOfStackLocal(28, spPlus4));
     QVERIFY(sig.isAddrOfStackLocal(28, spMinus4));
+
+    SharedExp spMinusPi = Binary::get(opMinus, Location::regOf(28), Const::get(3.14156));
+    QVERIFY(!sig.isAddrOfStackLocal(28, spMinusPi));
+
+    // m[sp{4} - 10] is not a stack local
+    Assign asgn(Location::regOf(28), Location::regOf(24));
+    asgn.setNumber(4);
+
+    SharedExp sp4Minus10 = Binary::get(opMinus, RefExp::get(Location::regOf(28), &asgn), Const::get(10));
+    QVERIFY(!sig.isAddrOfStackLocal(28, sp4Minus10));
 }
 
 
 void SignatureTest::testIsLocalOffsetNegative()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(sig.isLocalOffsetNegative());
 }
 
 
 void SignatureTest::testIsLocalOffsetPositive()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(!sig.isLocalOffsetPositive());
 }
 
 
 void SignatureTest::testIsOpCompatStackLocal()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    QVERIFY(sig.isOpCompatStackLocal(opMinus));
+    QVERIFY(!sig.isOpCompatStackLocal(opPlus));
+    QVERIFY(!sig.isOpCompatStackLocal(opAddrOf)); // neither plus nor minus
 }
 
 
