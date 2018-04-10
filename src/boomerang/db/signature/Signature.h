@@ -204,7 +204,6 @@ public:
 
 public:
     void print(QTextStream& out, bool = false) const;
-    char *prints() const; // For debugging
 
 protected:
     QString m_name;                                    ///< name of procedure

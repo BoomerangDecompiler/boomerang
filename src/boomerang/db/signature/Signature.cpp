@@ -74,29 +74,21 @@ std::shared_ptr<Signature> Signature::clone() const
 
 bool Signature::operator==(const Signature& other) const
 {
-    // if (name != other.name) return false;        // MVE: should the name be significant? I'm thinking no
-    if (m_params.size() != other.m_params.size()) {
-        return false;
-    }
-
-    // Only care about the first return location (at present)
-    for (auto it1 = m_params.begin(), it2 = other.m_params.begin(); it1 != m_params.end(); it1++, it2++) {
-        if (!(**it1 == **it2)) {
+    if (m_params.size()  != other.m_params.size() ||
+        m_returns.size() != other.m_returns.size()) {
             return false;
-        }
     }
 
-    if (m_returns.size() != other.m_returns.size()) {
-        return false;
-    }
-
-    for (auto rr1 = m_returns.begin(), rr2 = other.m_returns.begin(); rr1 != m_returns.end(); ++rr1, ++rr2) {
-        if (!(**rr1 == **rr2)) {
-            return false;
-        }
-    }
-
-    return true;
+    return
+        std::equal(m_params.begin(), m_params.end(), other.m_params.begin(),
+            [](const std::shared_ptr<Parameter>& param, const std::shared_ptr<Parameter>& otherParam) {
+                return *param == *otherParam;
+            })
+        &&
+        std::equal(m_returns.begin(), m_returns.end(), other.m_returns.begin(),
+            [](const std::shared_ptr<Return>& ret, const std::shared_ptr<Return>& otherRet) {
+                return *ret == *otherRet;
+            });
 }
 
 
@@ -512,20 +504,6 @@ void Signature::print(QTextStream& out, bool /*html*/) const
     }
 
     out << ")";
-}
-
-
-char *Signature::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    tgt += "\n";
-
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
 }
 
 
