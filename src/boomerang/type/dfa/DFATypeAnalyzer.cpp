@@ -188,7 +188,7 @@ void DFATypeAnalyzer::visit(CallStatement* stmt, bool& visitChildren)
         // Check if we have something like
         //  memcpy(dst, src, 5);
         // In this case, we set the max length of both dst and src to 5
-        if (callee && !callee->getSignature()->getParamBoundMax(n).isNull() && boundArg->getRight()->isIntConst()) {
+        if (callee && !callee->getSignature()->getParamBoundMax(n).isEmpty() && boundArg->getRight()->isIntConst()) {
             const QString boundmax = stmt->getDestProc()->getSignature()->getParamBoundMax(n);
             assert(boundArg->getType()->resolvesToInteger());
 

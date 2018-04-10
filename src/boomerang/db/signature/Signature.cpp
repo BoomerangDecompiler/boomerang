@@ -116,34 +116,28 @@ void Signature::addParameter(const QString& name, const SharedExp& e,
     if (e == nullptr) {
         LOG_FATAL("No expression for parameter %1 %2",
                   type ? type->getCtype() : "<notype>",
-                  !name.isNull() ? qPrintable(name) : "<noname>");
+                  !name.isEmpty() ? qPrintable(name) : "<noname>");
     }
 
-    QString s;
-    QString new_name = name;
+    QString newName = name;
 
-    if (name.isNull()) {
-        size_t n  = m_params.size() + 1;
-        bool   ok = false;
+    if (newName.isEmpty()) {
+        size_t n = m_params.size();
 
-        while (!ok) {
-            s  = QString("param%1").arg(n);
-            ok = true;
+        // try param0, param1 etc. until no collision
+        do {
+            const QString s = QString("param%1").arg(n++);
 
-            for (auto& elem : m_params) {
-                if (s == elem->getName()) {
-                    ok = false;
-                    break;
-                }
+            if (!std::any_of(m_params.begin(), m_params.end(),
+                [&s](const std::shared_ptr<Parameter>& param) {
+                    return param->getName() == s;
+                })) {
+                    newName = s;
             }
-
-            n++;
-        }
-
-        new_name = s;
+        } while (newName.isEmpty());
     }
 
-    addParameter(std::make_shared<Parameter>(type, new_name, e, boundMax));
+    addParameter(std::make_shared<Parameter>(type, newName, e, boundMax));
     // addImplicitParametersFor(p);
 }
 
@@ -154,11 +148,7 @@ void Signature::addParameter(std::shared_ptr<Parameter> param)
     QString    name = param->getName();
     SharedExp  e    = param->getExp();
 
-    if (name.isEmpty()) {
-        name = QString::null;
-    }
-
-    if ((ty == nullptr) || (e == nullptr) || name.isNull()) {
+    if ((ty == nullptr) || (e == nullptr) || name.isEmpty()) {
         addParameter(name, e, ty, param->getBoundMax());
     }
     else {
@@ -223,17 +213,12 @@ SharedType Signature::getParamType(int n) const
 
 QString Signature::getParamBoundMax(int n) const
 {
-    if (!Util::inRange(n, 0, static_cast<int>(m_params.size()))) {
-        return QString::null;
+    if (Util::inRange(n, 0, static_cast<int>(m_params.size()))) {
+        return m_params[n]->getBoundMax();
     }
-
-    QString s = m_params[n]->getBoundMax();
-
-    if (s.isEmpty()) {
-        return QString::null;
+    else {
+        return "";
     }
-
-    return s;
 }
 
 
