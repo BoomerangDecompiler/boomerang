@@ -41,7 +41,8 @@ void DFATypeAnalyzer::visitAssignment(Assignment* stmt, bool& visitChildren)
     // Don't do this for the common case of an ordinary local,
     // since it generates hundreds of implicit references,
     // without any new type information
-    if (stmt->getLeft()->isMemOf() && !sig->isStackLocal(stmt->getProc()->getProg(), stmt->getLeft())) {
+    const int spIndex = Util::getStackRegisterIndex(stmt->getProc()->getProg());
+    if (stmt->getLeft()->isMemOf() && !sig->isStackLocal(spIndex, stmt->getLeft())) {
         SharedExp addr = stmt->getLeft()->getSubExp1();
         // Meet the assignment type with *(type of the address)
         SharedType addrType = addr->ascendType();

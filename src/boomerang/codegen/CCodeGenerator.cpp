@@ -630,7 +630,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             unsigned int n = 0;
             SharedExp    e = proc->getSignature()->getReturnExp(0);
 
-            if (e->isRegN(Signature::getStackRegister(proc->getProg()))) {
+            if (e->isRegN(Util::getStackRegisterIndex(proc->getProg()))) {
                 n = 1;
             }
 

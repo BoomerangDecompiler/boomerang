@@ -10,8 +10,9 @@
 #include "Util.h"
 
 
-#include "boomerang/util/Types.h"
 #include "boomerang/db/exp/Const.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 #include <QMap>
@@ -107,5 +108,20 @@ int getStackOffset(SharedConstExp e, int sp)
 
     return ret;
 }
+
+
+int getStackRegisterIndex(const Prog *prog)
+{
+    switch (prog->getMachine())
+    {
+    case Machine::SPARC:        return 14;
+    case Machine::PENTIUM:      return 28;
+    case Machine::PPC:          return  1;
+    case Machine::ST20:         return  3;
+    case Machine::MIPS:         return 29;
+    default:                    return -1;
+    }
+}
+
 
 }

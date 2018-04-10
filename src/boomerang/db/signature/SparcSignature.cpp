@@ -236,47 +236,24 @@ bool SparcSignature::qualified(UserProc *p, Signature& /*candidate*/)
 
 
 
-bool SparcSignature::isAddrOfStackLocal(Prog *prog, const SharedExp& e) const
+bool SparcSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const
 {
-    OPER op = e->getOper();
-
-    if (op == opAddrOf) {
-        return isStackLocal(prog, e->getSubExp1());
-    }
-
-    // e must be sp -/+ K or just sp
-    static SharedExp sp = Location::regOf(14);
-
-    if ((op != opMinus) && (op != opPlus)) {
-        // Matches if e is sp or sp{0} or sp{-}
-        return(*e == *sp ||
-               (e->isSubscript() && e->access<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
-    }
-
-    SharedExp sub1 = e->getSubExp1();
-    SharedExp sub2 = e->getSubExp2();
-
-    // e must be <sub1> +- K
-    if (!sub2->isIntConst()) {
-        return false;
-    }
-
-    // first operand must be sp or sp{0} or sp{-}
-    if (sub1->isSubscript()) {
-        if (!sub1->access<RefExp>()->isImplicitDef()) {
-            return false;
-        }
-
-        sub1 = sub1->getSubExp1();
-    }
-
-    if (!(*sub1 == *sp)) {
+    if (!Signature::isAddrOfStackLocal(spIndex, e)) {
         return false;
     }
 
     // SPARC specific test: K must be < 92; else it is a parameter
-    int K = sub2->access<Const>()->getInt();
-    return K < 92;
+    SharedConstExp simplified = e->clone()->simplify();
+    if (!simplified->getSubExp2()) {
+        // bare sp
+        return true;
+    }
+    else if (!simplified->getSubExp2()->isIntConst()) {
+        return false;
+    }
+
+    const int offsetFromSP = simplified->getSubExp2()->access<Const>()->getInt();
+    return simplified->getOper() == opMinus && offsetFromSP < 92;
 }
 
 static Unary spPlus64(opMemOf, Binary::get(opPlus, Location::regOf(14), Const::get(64)));

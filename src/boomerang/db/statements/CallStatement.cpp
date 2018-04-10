@@ -1469,7 +1469,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
     if (m_procDest) {
         auto sig = m_procDest->getSignature();
 
-        SharedExp rsp = Location::regOf(m_proc->getSignature()->getStackRegister(m_proc->getProg()));
+        SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
 
         for (Statement *dd : m_defines) {
             SharedExp lhs = static_cast<Assignment *>(dd)->getLeft();

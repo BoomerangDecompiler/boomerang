@@ -48,7 +48,7 @@ bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
     // we can safely remove all assignments to sp, this will make the output
     // more readable for human eyes.
 
-    auto sp(Location::regOf(proc->getSignature()->getStackRegister(proc->getProg())));
+    SharedExp sp = Location::regOf(Util::getStackRegisterIndex(proc->getProg()));
     bool foundone = false;
 
     StatementList stmts;

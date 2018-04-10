@@ -44,7 +44,8 @@ public:
     /// Return a list of locations defined by library calls
     virtual void getLibraryDefines(StatementList& defs) override;
 
-    virtual bool isLocalOffsetPositive() const override { return true; }
+    virtual bool isLocalOffsetNegative() const override { return false; }
+
     virtual bool isPromoted() const override { return true; }
     virtual Platform getPlatform() const override { return Platform::MIPS; }
     virtual CallConv getConvention() const override { return CallConv::C; }

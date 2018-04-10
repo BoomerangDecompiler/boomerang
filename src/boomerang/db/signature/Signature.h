@@ -16,7 +16,7 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/frontend/SigEnum.h"   // For enums platform and cc
 #include "boomerang/type/type/VoidType.h"
-
+#include "boomerang/db/binary/BinaryFile.h" // For Machine
 
 
 class Statement;
@@ -139,7 +139,7 @@ public:
     virtual SharedExp getArgumentExp(int n) const;
 
     void setHasEllipsis(bool yesno)  { m_ellipsis = yesno; }
-    virtual bool hasEllipsis() const { return m_ellipsis; }
+    bool hasEllipsis() const { return m_ellipsis; }
 
     bool isNoReturn() const { return false; }
 
@@ -151,7 +151,6 @@ public:
 
     /// Needed before the signature is promoted
     virtual int getStackRegister() const;
-    static int getStackRegister(Prog *prog);
 
     /**
      * Does expression e represent a local stack-based variable?
@@ -159,16 +158,16 @@ public:
      * stack pointer register
      * Also, I believe that the PA/RISC stack grows away from 0
      */
-    bool isStackLocal(Prog *prog, SharedExp e) const;
+    bool isStackLocal(int spIndex, SharedConstExp e) const;
 
     // Similar to the above, but checks for address of a local (i.e. sp{0} -/+ K)
-    virtual bool isAddrOfStackLocal(Prog *prog, const SharedExp& e) const;
+    virtual bool isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const;
 
     // For most machines, local variables are always NEGATIVE offsets from sp
     virtual bool isLocalOffsetNegative() const { return true; }
 
     // For most machines, local variables are not POSITIVE offsets from sp
-    virtual bool isLocalOffsetPositive() const { return false; }
+    virtual bool isLocalOffsetPositive() const { return !isLocalOffsetNegative(); }
 
     // Is this operator (between the stack pointer and a constant) compatible with a stack local pattern?
     bool isOpCompatStackLocal(OPER op) const;

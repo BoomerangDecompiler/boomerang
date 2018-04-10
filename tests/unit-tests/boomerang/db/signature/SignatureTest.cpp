@@ -11,9 +11,11 @@
 
 
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/db/exp/Const.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/VoidType.h"
 
 
 void SignatureTest::testAddReturn()
@@ -185,25 +187,36 @@ void SignatureTest::testRenameParam()
 
 void SignatureTest::testGetArgumentExp()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addParameter(Location::regOf(25));
+    QVERIFY(*sig.getArgumentExp(0) == *Location::regOf(25));
 }
 
 
 void SignatureTest::testEllipsis()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    QVERIFY(!sig.hasEllipsis());
+    sig.setHasEllipsis(true);
+    QVERIFY(sig.hasEllipsis());
+    sig.setHasEllipsis(false);
+    QVERIFY(!sig.hasEllipsis());
 }
 
 
 void SignatureTest::testIsNoReturn()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(!sig.isNoReturn());
 }
 
 
 void SignatureTest::testIsPromoted()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(!sig.isPromoted());
 }
 
 
@@ -215,19 +228,46 @@ void SignatureTest::testPromote()
 
 void SignatureTest::testGetStackRegister()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QCOMPARE(sig.getStackRegister(), -1);
 }
 
 
 void SignatureTest::testIsStackLocal()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    QVERIFY(sig.isStackLocal(28, Location::memOf(Location::regOf(28))));
+    QVERIFY(!sig.isStackLocal(28, Location::regOf(28)));
+
+    SharedExp spPlus4  = Binary::get(opPlus, Location::regOf(28), Const::get(4));
+    SharedExp spMinus4 = Binary::get(opMinus, Location::regOf(28), Const::get(4));
+    QVERIFY(!sig.isStackLocal(28, Location::memOf(spPlus4)));
+    QVERIFY(sig.isStackLocal(28, Location::memOf(spMinus4)));
+
+    spPlus4  = Binary::get(opMinus, Location::regOf(28), Const::get(-4));
+    spMinus4 = Binary::get(opPlus, Location::regOf(28), Const::get(-4));
+    QVERIFY(!sig.isStackLocal(28, Location::memOf(spPlus4)));
+    QVERIFY(sig.isStackLocal(28, Location::memOf(spMinus4)));
 }
 
 
 void SignatureTest::testIsAddrOfStackLocal()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    QVERIFY(sig.isAddrOfStackLocal(28, Location::regOf(28)));
+    QVERIFY(!sig.isAddrOfStackLocal(28, Location::memOf(Location::regOf(28))));
+
+    SharedExp spPlus4  = Binary::get(opPlus, Location::regOf(28), Const::get(4));
+    SharedExp spMinus4 = Binary::get(opPlus, Location::regOf(28), Const::get(-4));
+    QVERIFY(!sig.isAddrOfStackLocal(28, spPlus4));
+    QVERIFY(sig.isAddrOfStackLocal(28, spMinus4));
+
+    spPlus4  = Binary::get(opMinus, Location::regOf(28), Const::get(-4));
+    spMinus4 = Binary::get(opMinus, Location::regOf(28), Const::get(4));
+    QVERIFY(!sig.isAddrOfStackLocal(28, spPlus4));
+    QVERIFY(sig.isAddrOfStackLocal(28, spMinus4));
 }
 
 

@@ -2253,7 +2253,7 @@ bool UserProc::filterParams(SharedExp e)
             int sp = 999;
 
             if (m_signature) {
-                sp = m_signature->getStackRegister(m_prog);
+                sp = Util::getStackRegisterIndex(m_prog);
             }
 
             int r = e->access<Const, 1>()->getInt();
@@ -2273,7 +2273,7 @@ bool UserProc::filterParams(SharedExp e)
                 int  sp  = 999;
 
                 if (m_signature) {
-                    sp = m_signature->getStackRegister(m_prog);
+                    sp = Util::getStackRegisterIndex(m_prog);
                 }
 
                 if (reg->isRegN(sp)) {

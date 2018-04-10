@@ -484,7 +484,8 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 }
             }
 
-            if (addrExp && proc->getSignature()->isAddrOfStackLocal(_prog, addrExp)) {
+            const int spIndex = Util::getStackRegisterIndex(_prog);
+            if (addrExp && proc->getSignature()->isAddrOfStackLocal(spIndex, addrExp)) {
                 int localAddressOffset = 0;
 
                 if ((addrExp->getArity() == 2) && proc->getSignature()->isOpCompatStackLocal(addrExp->getOper())) {

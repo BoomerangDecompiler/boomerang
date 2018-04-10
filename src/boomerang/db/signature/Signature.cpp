@@ -633,76 +633,51 @@ int Signature::getStackRegister() const
 }
 
 
-int Signature::getStackRegister(Prog *prog)
-{
-    switch (prog->getMachine())
-    {
-    case Machine::SPARC:
-        return 14;
 
-    case Machine::PENTIUM:
-        return 28;
-
-    case Machine::PPC:
-        return 1;
-
-    case Machine::ST20:
-        return 3;
-
-    case Machine::MIPS:
-        return 29;
-
-    default:
-        return -1;
-    }
-}
-
-
-bool Signature::isStackLocal(Prog *prog, SharedExp e) const
+bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
 {
     // e must be m[...]
     if (e->isSubscript()) {
-        return isStackLocal(prog, e->getSubExp1());
+        return isStackLocal(spIndex, e->getSubExp1());
     }
-
-    if (!e->isMemOf()) {
+    else if (!e->isMemOf()) {
         return false;
     }
 
-    SharedExp addr = e->getSubExp1();
-    return isAddrOfStackLocal(prog, addr);
+    return isAddrOfStackLocal(spIndex, e->getSubExp1());
 }
 
 
-bool Signature::isAddrOfStackLocal(Prog *prog, const SharedExp& e) const
+bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const
 {
     OPER op = e->getOper();
 
     if (op == opAddrOf) {
-        return isStackLocal(prog, e->getSubExp1());
+        return isStackLocal(spIndex, e->getSubExp1());
     }
 
     // e must be sp -/+ K or just sp
-    static SharedExp sp = Location::regOf(getStackRegister(prog));
+    SharedConstExp sp = Location::regOf(spIndex);
 
     if ((op != opMinus) && (op != opPlus)) {
         // Matches if e is sp or sp{0} or sp{-}
-        return(*e == *sp ||
-               (e->isSubscript() && e->access<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp));
+        return *e == *sp || (e->isSubscript() &&
+            e->access<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp);
     }
 
-    if ((op == opMinus) && !isLocalOffsetNegative()) {
+    // We may have weird expressions like sp + -4
+    // which is the address of a stack local on x86
+    SharedConstExp exp2 = e->clone()->simplify();
+    op = exp2->getOper();
+
+    if (!isOpCompatStackLocal(op)) {
         return false;
     }
 
-    if ((op == opPlus) && !isLocalOffsetPositive()) {
-        return false;
-    }
+    SharedConstExp sub1 = exp2->getSubExp1();
+    SharedConstExp sub2 = exp2->getSubExp2();
 
-    SharedExp sub1 = e->getSubExp1();
-    SharedExp sub2 = e->getSubExp2();
-
-    // e must be <sub1> +- K
+    // exp2 must be <sub1> +- K
     if (!sub2->isIntConst()) {
         return false;
     }

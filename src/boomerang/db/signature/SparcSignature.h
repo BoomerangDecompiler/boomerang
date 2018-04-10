@@ -49,7 +49,7 @@ public:
 
     /// An override for testing locals
     /// An override for the SPARC: [sp+0] .. [sp+88] are local variables (effectively), but [sp + >=92] are memory parameters
-    virtual bool isAddrOfStackLocal(Prog *prog, const SharedExp& e) const override;
+    virtual bool isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const override;
 
     virtual bool isPromoted() const override { return true; }
     virtual Platform getPlatform() const override { return Platform::SPARC; }
