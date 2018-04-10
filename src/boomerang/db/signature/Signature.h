@@ -52,6 +52,7 @@ public:
 
     /// Check if parameters, returns and name match
     virtual bool operator==(const Signature& other) const;
+    bool operator!=(const Signature& other) const { return !(*this == other); }
 
     /// clone this signature
     virtual std::shared_ptr<Signature> clone() const;
@@ -94,7 +95,7 @@ public:
 
     virtual SharedExp getReturnExp(size_t n) const { return m_returns[n]->getExp(); }
     virtual SharedType getReturnType(size_t n) const { return m_returns[n]->getType(); }
-    virtual size_t getNumReturns() const { return m_returns.size(); }
+    virtual int getNumReturns() const { return m_returns.size(); }
 
     /// \returns the index of the return expression \p exp, or -1 if not found.
     int findReturn(SharedConstExp exp) const;

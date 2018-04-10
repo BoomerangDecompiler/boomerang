@@ -21,6 +21,51 @@
 #include "boomerang/util/StatementList.h"
 
 
+void SignatureTest::testClone()
+{
+    std::shared_ptr<Signature> sig(new Signature("test"));
+    sig->addParameter("firstParam", Location::regOf(26), IntegerType::get(32, 1));
+    sig->addReturn(IntegerType::get(32, 1), Location::regOf(24));
+
+    std::shared_ptr<Signature> cloned = sig->clone();
+    QCOMPARE(cloned->getName(), QString("test"));
+    QCOMPARE(cloned->getNumParams(), 1);
+    QCOMPARE(cloned->getParamName(0), QString("firstParam"));
+    QCOMPARE(cloned->getNumReturns(), 1);
+    QVERIFY(*cloned->getReturnType(0) == *IntegerType::get(32, 1));
+}
+
+
+void SignatureTest::testCompare()
+{
+    Signature sig1("test1");
+    Signature sig2("test2");
+    QVERIFY(sig1 == sig2);
+
+    sig1.addParameter(Location::regOf(26));
+    QVERIFY(sig1 != sig2);
+
+    sig2.addParameter(Location::regOf(24));
+    QVERIFY(sig1 != sig2); // different paarameters
+
+    sig2.addParameter(Location::regOf(26));
+    sig1.addParameter(Location::regOf(24));
+    QVERIFY(sig1 != sig2); // swapped parameters
+
+    sig1.removeParameter(0);
+    sig1.removeParameter(0);
+    sig2.removeParameter(0);
+    sig2.removeParameter(0);
+
+    QVERIFY(sig1 == sig2);
+
+    sig1.addReturn(VoidType::get(), Location::regOf(28));
+    QVERIFY(sig1 != sig2);
+    sig2.addReturn(IntegerType::get(32, 1), Location::regOf(25));
+    QVERIFY(sig1 != sig2);
+}
+
+
 void SignatureTest::testAddReturn()
 {
     QSKIP("Not implemented.");
@@ -355,12 +400,6 @@ void SignatureTest::testPreferredName()
     QCOMPARE(sig.getPreferredName(), QString());
     sig.setPreferredName("Foo");
     QCOMPARE(sig.getPreferredName(), QString("Foo"));
-}
-
-
-void SignatureTest::testCompare()
-{
-    QSKIP("Not implemented.");
 }
 
 

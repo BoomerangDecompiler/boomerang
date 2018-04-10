@@ -31,7 +31,7 @@ void CTest::testSignature()
     // The functions have two return parameters :
     // 0 - ESP
     // 1 - Actual return
-    QCOMPARE(sig->getNumReturns(), size_t(2));
+    QCOMPARE(sig->getNumReturns(), 2);
     QVERIFY(sig->getReturnType(1)->resolvesToInteger());
     SharedType t = PointerType::get(CharType::get());
 

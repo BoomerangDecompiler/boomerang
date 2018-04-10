@@ -18,6 +18,9 @@ class SignatureTest : public QObject
     Q_OBJECT
 
 private slots:
+    void testClone();
+    void testCompare();
+
     void testAddReturn();
     void testGetReturnExp();
     void testGetReturnType();
@@ -55,6 +58,4 @@ private slots:
     void testGetABIDefines();
 
     void testPreferredName();
-
-    void testCompare();
 };

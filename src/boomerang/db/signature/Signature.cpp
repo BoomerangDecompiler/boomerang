@@ -331,9 +331,9 @@ int Signature::findParam(const QString& name) const
 
 int Signature::findReturn(SharedConstExp exp) const
 {
-    for (unsigned i = 0; i < getNumReturns(); i++) {
+    for (int i = 0; i < getNumReturns(); i++) {
         if (*m_returns[i]->getExp() == *exp) {
-            return static_cast<int>(i);
+            return i;
         }
     }
 

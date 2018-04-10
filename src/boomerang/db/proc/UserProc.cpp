@@ -2700,7 +2700,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
             // For each location in the returns, check if in the signature
             bool found = false;
 
-            for (unsigned int i = 0; i < m_signature->getNumReturns(); i++) {
+            for (int i = 0; i < m_signature->getNumReturns(); i++) {
                 if (*m_signature->getReturnExp(i) == *lhs) {
                     found = true;
                     break;
