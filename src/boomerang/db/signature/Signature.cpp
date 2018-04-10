@@ -95,7 +95,6 @@ Signature::Signature(const QString& name)
     : m_ellipsis(false)
     , m_unknown(true)
     , m_forced(false)
-    , m_preferredReturn(nullptr)
 {
     if (name == nullptr) {
         m_name = "<ANON>";
@@ -120,8 +119,6 @@ std::shared_ptr<Signature> Signature::clone() const
 
     n->m_ellipsis        = m_ellipsis;
     n->m_preferredName   = m_preferredName;
-    n->m_preferredReturn = m_preferredReturn ? m_preferredReturn->clone() : nullptr;
-    n->m_preferredParams = m_preferredParams;
     n->m_unknown         = m_unknown;
     n->m_sigFile         = m_sigFile;
     return n;

@@ -54,13 +54,7 @@ private slots:
     void testGetLibraryDefines();
     void testGetABIDefines();
 
-    void testSetPreferredReturn();
-    void testSetPreferredName();
-    void testAddPreferredParameter();
-    void testGetPreferredReturn();
-    void testGetPreferredName();
-    void testGetNumPreferredParams();
-    void testGetPreferredParam();
+    void testPreferredName();
 
     void testCompare();
 };

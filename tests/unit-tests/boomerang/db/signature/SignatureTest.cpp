@@ -10,14 +10,15 @@
 #include "SignatureTest.h"
 
 
-#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/statements/Assign.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
-#include "boomerang/db/statements/Assign.h"
+#include "boomerang/util/StatementList.h"
 
 
 void SignatureTest::testAddReturn()
@@ -319,19 +320,25 @@ void SignatureTest::testIsOpCompatStackLocal()
 
 void SignatureTest::testGetProven()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(sig.getProven(SharedExp()) == nullptr);
 }
 
 
 void SignatureTest::testIsPreserved()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QVERIFY(!sig.isPreserved(SharedExp()));
 }
 
 
 void SignatureTest::testGetLibraryDefines()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    StatementList stmts;
+    sig.getLibraryDefines(stmts);
+    QVERIFY(stmts.empty());
 }
 
 
@@ -341,45 +348,13 @@ void SignatureTest::testGetABIDefines()
 }
 
 
-void SignatureTest::testSetPreferredName()
+void SignatureTest::testPreferredName()
 {
-    QSKIP("Not implemented.");
-}
+    Signature sig("test");
 
-
-void SignatureTest::testSetPreferredReturn()
-{
-    QSKIP("Not implemented.");
-}
-
-
-void SignatureTest::testAddPreferredParameter()
-{
-    QSKIP("Not implemented.");
-}
-
-
-void SignatureTest::testGetPreferredReturn()
-{
-    QSKIP("Not implemented.");
-}
-
-
-void SignatureTest::testGetPreferredName()
-{
-    QSKIP("Not implemented.");
-}
-
-
-void SignatureTest::testGetNumPreferredParams()
-{
-    QSKIP("Not implemented.");
-}
-
-
-void SignatureTest::testGetPreferredParam()
-{
-    QSKIP("Not implemented.");
+    QCOMPARE(sig.getPreferredName(), QString());
+    sig.setPreferredName("Foo");
+    QCOMPARE(sig.getPreferredName(), QString("Foo"));
 }
 
 

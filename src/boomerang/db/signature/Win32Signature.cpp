@@ -62,14 +62,6 @@ std::shared_ptr<Signature> Win32Signature::clone() const
     n->m_ellipsis      = m_ellipsis;
     n->m_preferredName = m_preferredName;
 
-    if (m_preferredReturn) {
-        n->m_preferredReturn = m_preferredReturn->clone();
-    }
-    else {
-        n->m_preferredReturn = nullptr;
-    }
-
-    n->m_preferredParams = m_preferredParams;
     return std::shared_ptr<Signature>(n);
 }
 
@@ -85,14 +77,6 @@ std::shared_ptr<Signature> Win32TcSignature::clone() const
     n->m_ellipsis      = m_ellipsis;
     n->m_preferredName = m_preferredName;
 
-    if (m_preferredReturn) {
-        n->m_preferredReturn = m_preferredReturn->clone();
-    }
-    else {
-        n->m_preferredReturn = nullptr;
-    }
-
-    n->m_preferredParams = m_preferredParams;
     return std::shared_ptr<Signature>(n);
 }
 

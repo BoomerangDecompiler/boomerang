@@ -193,14 +193,9 @@ public:
     virtual Platform getPlatform()   const { return Platform::GENERIC; }
     virtual CallConv getConvention() const { return CallConv::INVALID; }
 
-    // prefered format
-    void setPreferredReturn(SharedType ty) { m_preferredReturn = ty; }
+    // preferred format
     void setPreferredName(const QString& name) { m_preferredName = name; }
-    void addPreferredParameter(int n) { m_preferredParams.push_back(n); }
-    SharedType getPreferredReturn()   { return m_preferredReturn; }
-    const QString& getPreferredName() { return m_preferredName; }
-    size_t getNumPreferredParams()    { return m_preferredParams.size(); }
-    int getPreferredParam(size_t n)   { return m_preferredParams[n]; }
+    const QString& getPreferredName() const { return m_preferredName; }
 
     // A compare function for arguments and returns. Used for sorting returns in calcReturn() etc
 
@@ -223,7 +218,5 @@ protected:
     bool m_ellipsis;
     bool m_unknown;
     bool m_forced;
-    SharedType m_preferredReturn;
     QString m_preferredName;
-    std::vector<int> m_preferredParams;
 };

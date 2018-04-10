@@ -45,8 +45,6 @@ std::shared_ptr<Signature> ST20Signature::clone() const
     n->m_returns         = m_returns;
     n->m_ellipsis        = m_ellipsis;
     n->m_preferredName   = m_preferredName;
-    n->m_preferredReturn = m_preferredReturn;
-    n->m_preferredParams = m_preferredParams;
     n->m_unknown         = m_unknown;
 
     return std::shared_ptr<Signature>(n);

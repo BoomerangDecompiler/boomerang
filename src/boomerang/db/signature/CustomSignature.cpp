@@ -31,8 +31,6 @@ std::shared_ptr<Signature> CustomSignature::clone() const
     result->m_spReg           = m_spReg;
     result->m_forced          = m_forced;
     result->m_preferredName   = m_preferredName;
-    result->m_preferredReturn = m_preferredReturn ? m_preferredReturn->clone() : nullptr;
-    result->m_preferredParams = m_preferredParams;
     result->m_unknown         = m_unknown;
     result->m_sigFile         = m_sigFile;
     return std::shared_ptr<Signature>(result);
