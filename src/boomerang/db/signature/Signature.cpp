@@ -507,19 +507,19 @@ void Signature::print(QTextStream& out, bool /*html*/) const
 }
 
 
-void Signature::getABIDefines(Prog *prog, StatementList& defs)
+bool Signature::getABIDefines(Machine machine, StatementList& defs)
 {
-    if (defs.size() > 0) {
-        return; // Do only once
+    if (machine == Machine::INVALID || !defs.empty()) {
+        return false; // Do only once
     }
 
-    switch (prog->getMachine())
+    switch (machine)
     {
     case Machine::PENTIUM:
         defs.append(new ImplicitAssign(Location::regOf(24))); // eax
         defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
         defs.append(new ImplicitAssign(Location::regOf(26))); // edx
-        break;
+        return true;
 
     case Machine::SPARC:
 
@@ -528,7 +528,7 @@ void Signature::getABIDefines(Prog *prog, StatementList& defs)
         }
 
         defs.append(new ImplicitAssign(Location::regOf(1)));     // %g1
-        break;
+        return true;
 
     case Machine::PPC:
 
@@ -542,11 +542,13 @@ void Signature::getABIDefines(Prog *prog, StatementList& defs)
         defs.append(new ImplicitAssign(Location::regOf(0))); // A
         defs.append(new ImplicitAssign(Location::regOf(1))); // B
         defs.append(new ImplicitAssign(Location::regOf(2))); // C
-        break;
+        return true;
 
     default:
         break;
     }
+
+    return true;
 }
 
 

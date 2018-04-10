@@ -389,7 +389,63 @@ void SignatureTest::testGetLibraryDefines()
 
 void SignatureTest::testGetABIDefines()
 {
-    QSKIP("Not implemented.");
+    StatementList defs;
+
+    QVERIFY(Signature::getABIDefines(Machine::PENTIUM, defs));
+    QVERIFY(defs.size() == 3);
+    QVERIFY(defs.findOnLeft(Location::regOf(24)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(25)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(26)) != nullptr);
+    qDeleteAll(defs);
+    defs.clear();
+
+    QVERIFY(Signature::getABIDefines(Machine::SPARC, defs));
+    QVERIFY(defs.size() == 7);
+    QVERIFY(defs.findOnLeft(Location::regOf( 8)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 9)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(10)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(11)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(12)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(13)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 1)) != nullptr);
+    qDeleteAll(defs);
+    defs.clear();
+
+    QVERIFY(Signature::getABIDefines(Machine::PPC, defs));
+    QVERIFY(defs.size() == 10);
+    QVERIFY(defs.findOnLeft(Location::regOf( 3)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 4)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 5)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 6)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 7)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 8)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf( 9)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(10)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(11)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(12)) != nullptr);
+    qDeleteAll(defs);
+    defs.clear();
+
+    QVERIFY(Signature::getABIDefines(Machine::ST20, defs));
+    QVERIFY(defs.size() == 3);
+
+    QVERIFY(!Signature::getABIDefines(Machine::ST20, defs));
+    QVERIFY(defs.size() == 3);
+
+    QVERIFY(!Signature::getABIDefines(Machine::PPC, defs));
+    QVERIFY(defs.size() == 3);
+
+    // Machine::ST20
+    QVERIFY(defs.findOnLeft(Location::regOf(0)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(1)) != nullptr);
+    QVERIFY(defs.findOnLeft(Location::regOf(2)) != nullptr);
+    qDeleteAll(defs);
+    defs.clear();
+
+    QVERIFY(Signature::getABIDefines(Machine::UNKNOWN, defs));
+    QVERIFY(defs.empty());
+    QVERIFY(!Signature::getABIDefines(Machine::INVALID, defs));
+    QVERIFY(defs.empty());
 }
 
 

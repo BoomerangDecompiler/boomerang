@@ -185,7 +185,7 @@ public:
     /// Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
     /// very late in the decompilation. Get the set of registers that are not saved in library functions (or any
     /// procedures that follow the calling convention)
-    static void getABIDefines(Prog *prog, StatementList& defs);
+    static bool getABIDefines(Machine machine, StatementList& defs);
 
     virtual Platform getPlatform()   const { return Platform::GENERIC; }
     virtual CallConv getConvention() const { return CallConv::INVALID; }
