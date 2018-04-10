@@ -128,6 +128,11 @@ void SignatureTest::testAddParameter()
     sig.addParameter(Location::regOf(25), IntegerType::get(32, 1));
     QCOMPARE(sig.getNumParams(), 2);
     QVERIFY(*sig.getParamType(1) == *IntegerType::get(32, 1));
+
+    // test parameter name collision detection
+    sig.setParamName(1, "param3");
+    sig.addParameter("", Location::regOf(27)); // name = "param3" (taken) -> "param4"
+    QCOMPARE(sig.getParamName(2), QString("param4"));
 }
 
 
