@@ -291,8 +291,12 @@ void Module::addWin32DbgInfo(Function *function)
         dbghelp::SymSetContext(hProcess, &stack, 0);
         dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, function);
 
+        QString str;
+        QTextStream os(&str);
+        function->getSignature()->print(os);
+
         LOG_VERBOSE("Retrieved Win32 debugging information:");
-        LOG_VERBOSE("%1", function->getSignature()->prints());
+        LOG_VERBOSE("%1", str);
     }
 #endif
 }
