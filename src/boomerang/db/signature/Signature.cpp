@@ -323,6 +323,10 @@ int Signature::findParam(const QString& name) const
 
 int Signature::findReturn(SharedConstExp exp) const
 {
+    if (!exp) {
+        return -1;
+    }
+
     for (int i = 0; i < getNumReturns(); i++) {
         if (*m_returns[i]->getExp() == *exp) {
             return i;

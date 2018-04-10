@@ -17,6 +17,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/StatementList.h"
 
@@ -68,31 +69,51 @@ void SignatureTest::testCompare()
 
 void SignatureTest::testAddReturn()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    sig.addReturn(IntegerType::get(32, 1), Location::regOf(24));
+    QVERIFY(*sig.getReturnExp(0) == *Location::regOf(24));
 }
 
 
 void SignatureTest::testGetReturnExp()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addReturn(Location::regOf(24));
+    QVERIFY(*sig.getReturnExp(0) == *Location::regOf(24));
 }
 
 
 void SignatureTest::testGetReturnType()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+
+    sig.addReturn(Location::regOf(24));
+    QVERIFY(*sig.getReturnType(0) == *PointerType::get(VoidType::get()));
+
+    sig.addReturn(IntegerType::get(32, 1), Location::regOf(25));
+    QVERIFY(*sig.getReturnType(1) == *IntegerType::get(32, 1));
 }
 
 
 void SignatureTest::testGetNumReturns()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QCOMPARE(sig.getNumReturns(), 0);
+
+    sig.addReturn(Location::regOf(24));
+    QCOMPARE(sig.getNumReturns(), 1);
 }
 
 
 void SignatureTest::testFindReturn()
 {
-    QSKIP("Not implemented.");
+    Signature sig("test");
+    QCOMPARE(sig.findReturn(nullptr), -1);
+
+    sig.addReturn(IntegerType::get(32, 1), Location::regOf(24));
+    QCOMPARE(sig.findReturn(Location::regOf(24)), 0);
+    QCOMPARE(sig.findReturn(Location::regOf(25)), -1);
 }
 
 
