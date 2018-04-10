@@ -287,6 +287,9 @@ void SignatureTest::testIsAddrOfStackLocal()
 
     SharedExp sp4Minus10 = Binary::get(opMinus, RefExp::get(Location::regOf(28), &asgn), Const::get(10));
     QVERIFY(!sig.isAddrOfStackLocal(28, sp4Minus10));
+
+    // verify a[...] and m[...] cancel out
+    QVERIFY(sig.isAddrOfStackLocal(28, Unary::get(opAddrOf, Location::memOf(spMinus4))));
 }
 
 
