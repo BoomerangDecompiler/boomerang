@@ -134,6 +134,7 @@ endfunction(BOOMERANG_ADD_TEST)
 
 include(CheckCXXCompilerFlag)
 include(CheckCCompilerFlag)
+
 # This function adds the flag(s) to the c/c++ compiler flags
 function(BOOMERANG_ADD_COMPILE_FLAGS)
     set(C_COMPILE_FLAGS "")
