@@ -41,7 +41,7 @@ file(MAKE_DIRECTORY ${BOOMERANG_OUTPUT_DIR}/share)
 if (WIN32)
     string(REPLACE "/" "\\\\" LNK_LOC    "${BOOMERANG_OUTPUT_DIR}/share/boomerang")
     string(REPLACE "/" "\\\\" LNK_TARGET "${CMAKE_SOURCE_DIR}/data/")
-    
+
     # Do not invoke mklink directly. If invoked directly, mklink will fail if the link already exists.
     # But we only want to know if mklink fails because of some other reason.
     set(LNK_COMMAND "if not exist ${LNK_LOC} (mklink /J ${LNK_LOC} ${LNK_TARGET})")
@@ -51,7 +51,7 @@ if (WIN32)
         ERROR_VARIABLE LNK_ERROR
         ERROR_STRIP_TRAILING_WHITESPACE
     )
-    
+
     if (LNK_ERROR)
         message(WARNING "Could not link to data directory:\n"
             "Command '${LNK_COMMAND}' failed with\n"
