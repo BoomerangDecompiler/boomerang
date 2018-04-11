@@ -12,7 +12,9 @@ set(BOOMERANG_VERSION "0.4.0-alpha")
 
 # if git is installed, update version string from git tags
 set(BOOMERANG_VERSION "${PROJECT_VERSION}")
+
 find_package(Git)
+
 if (GIT_FOUND)
     # get current git branch
     execute_process(
@@ -42,7 +44,7 @@ if (GIT_FOUND)
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_QUIET
     )
-    
+
     # do not overwrite default version with empty one
     if (NOT DESCRIBE_FAILED)
         set(BOOMERANG_VERSION "${BOOMERANG_VERSION_TEMP}")

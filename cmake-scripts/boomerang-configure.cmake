@@ -53,7 +53,7 @@ endif ()
 if (CMAKE_SIZEOF_VOID_P EQUAL 8)
     add_definitions(-DBOOMERANG_BITNESS=64)
 elseif (CMAKE_SIZEOF_VOID_P EQUAL 4)
-    message(WARNING "Compiling Boomerang as a 32 bit binary is not officially supported."
+    message(WARNING "Compiling Boomerang as a 32 bit binary is not officially supported. "
             "Please consider compiling Boomerang as a 64 bit binary.")
     add_definitions(-DBOOMERANG_BITNESS=32)
 else ()
