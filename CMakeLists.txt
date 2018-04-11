@@ -6,7 +6,7 @@
 # WARRANTIES.
 #
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8)
 project(Boomerang LANGUAGES C CXX)
 
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
