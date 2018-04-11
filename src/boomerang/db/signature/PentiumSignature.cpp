@@ -48,7 +48,7 @@ std::shared_ptr<Signature> PentiumSignature::clone() const
     Util::clone(m_returns, n->m_returns);
     n->m_ellipsis      = m_ellipsis;
     n->m_preferredName = m_preferredName;
-    n->m_unknown         = m_unknown;
+    n->m_unknown       = m_unknown;
 
     return std::shared_ptr<Signature>(n);
 }
@@ -79,9 +79,9 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
     StatementList internal;
     // p->getInternalStatements(internal);
     internal.append(*p->getCFG()->getReachExit());
-    StmtListIter it;
+    StatementList::iterator it;
 
-    for (Statement *s = internal.getFirst(it); s; s = internal.getNext(it)) {
+    for (Statement *s : internal) {
         Assign *e = dynamic_cast<Assign *>(s);
 
         if (e == nullptr) {
@@ -89,14 +89,14 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
         }
 
         if (e->getLeft()->getOper() == opPC) {
-            if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegOfN(28)) {
+            if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(28)) {
                 LOG_VERBOSE("Got pc = m[r[28]]");
                 gotcorrectret1 = true;
             }
         }
-        else if (e->getLeft()->isRegOfK() && (((Const *)e->getLeft()->getSubExp1())->getInt() == 28)) {
-            if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegOfN(28) &&
-                e->getRight()->getSubExp2()->isIntConst() && (((Const *)e->getRight()->getSubExp2())->getInt() == 4)) {
+        else if (e->getLeft()->isRegOfK() && (e->getLeft()->getSubExp1()->access<Const>()->getInt() == 28)) {
+            if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegN(28) &&
+                e->getRight()->getSubExp2()->isIntConst() && (e->getRight()->getSubExp2()->access<Const>()->getInt() == 4)) {
                 LOG_VERBOSE("Got r[28] = r[28] + 4");
                 gotcorrectret2 = true;
             }

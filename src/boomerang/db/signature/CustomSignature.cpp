@@ -33,7 +33,8 @@ std::shared_ptr<Signature> CustomSignature::clone() const
     result->m_preferredName   = m_preferredName;
     result->m_unknown         = m_unknown;
     result->m_sigFile         = m_sigFile;
-    return std::shared_ptr<Signature>(result);
+
+    return result;
 }
 
 
