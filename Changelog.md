@@ -5,6 +5,7 @@
 - Fixed: Crash when generating code for switch statements.
 - Fixed: Crash when loading MIPS binaries.
 - Fixed: Crash when loading HPPA binaries.
+- Fixed: Crash when loading binaries without sections.
 - Fixed: Crash when decoding backwards relative jumps.
 - Fixed: Crash when decompiling library thunks.
 - Fixed: Crash when the instruction at the entry point is a jump instruction.
@@ -12,6 +13,7 @@
 - Fixed: Crash when decompiling recursive functions containing switch statements or computed calls.
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
+- Fixed: A large number of memory leaks.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
 - Improved: Log output formatting.
 - Improved: Detection of statically imported library functions.
