@@ -14,9 +14,9 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 ### Building prerequisites
 
  - A C++11 compatible compiler (GCC \>= 6, Clang \>= 4, MSVC \>= 2017 are known to work)
- - [CMake 3.1.0 or newer](https://cmake.org/download/)
- - [Qt5](https://www.qt.io/download-open-source/)
- - [Doxygen](http://www.doxygen.nl/) (optional)
+ - [CMake 3.8.0 or newer](https://cmake.org/download/)
+ - [Qt](https://www.qt.io/download-open-source/)
+ - [Doxygen 1.8.13 or newer](http://www.doxygen.nl/) (optional)
 
 ### Building on Linux
 
@@ -47,7 +47,7 @@ Building on macOS is currently not supported. However, patches or pull requests 
 
 ### Unit tests
 
-Boomerang has a unit test suite, which cah be run by `make test` on Linux or by running the RUN_TESTS target in Visual Studio.
+Boomerang has a unit test suite, which can be run by `make test` on Linux or by running the RUN_TESTS target in Visual Studio.
 
 ### Regression tests
 
