@@ -62,4 +62,4 @@ void ParserTest::testExp()
 }
 
 
-QTEST_MAIN(ParserTest)
+QTEST_GUILESS_MAIN(ParserTest)

@@ -27,7 +27,8 @@ DfaLocalMapper::DfaLocalMapper(UserProc *proc)
 bool DfaLocalMapper::processExp(const SharedExp& exp)
 {
     if (m_proc->isLocalOrParamPattern(exp)) { // Check if this is an appropriate pattern for local variables
-        if (m_sig->isStackLocal(m_prog, exp)) {
+        const int spIndex = Util::getStackRegisterIndex(m_prog);
+        if (m_sig->isStackLocal(spIndex, exp)) {
             change = true;                  // We've made a mapping
             // We have probably not even run TA yet, so doing a full descendtype here would be silly
             // Note also that void is compatible with all types, so the symbol effectively covers all types

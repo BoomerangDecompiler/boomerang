@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/exp/Location.h"
@@ -484,7 +484,8 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 }
             }
 
-            if (addrExp && proc->getSignature()->isAddrOfStackLocal(_prog, addrExp)) {
+            const int spIndex = Util::getStackRegisterIndex(_prog);
+            if (addrExp && proc->getSignature()->isAddrOfStackLocal(spIndex, addrExp)) {
                 int localAddressOffset = 0;
 
                 if ((addrExp->getArity() == 2) && proc->getSignature()->isOpCompatStackLocal(addrExp->getOper())) {

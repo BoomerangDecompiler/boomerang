@@ -10,7 +10,7 @@
 #include "FuncType.h"
 
 
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/type/type/SizeType.h"
 
 
@@ -82,7 +82,7 @@ QString FuncType::getCtype(bool final) const
 
     s += " (";
 
-    for (unsigned i = 0; i < signature->getNumParams(); i++) {
+    for (int i = 0; i < signature->getNumParams(); i++) {
         if (i != 0) {
             s += ", ";
         }
@@ -113,7 +113,7 @@ void FuncType::getReturnAndParam(QString& ret, QString& param)
     QString s;
     s += " (";
 
-    for (unsigned i = 0; i < signature->getNumParams(); i++) {
+    for (int i = 0; i < signature->getNumParams(); i++) {
         if (i != 0) {
             s += ", ";
         }
@@ -171,4 +171,3 @@ bool FuncType::isCompatible(const Type& other, bool /*all*/) const
 
     return false;
 }
-

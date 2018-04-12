@@ -10,6 +10,9 @@
 #pragma once
 
 
+#include <QString>
+
+
 /// Needed by both signature.h and frontend.h
 enum class Platform
 {
@@ -32,3 +35,11 @@ enum class CallConv
     ThisCall, ///< MSVC "thiscall": one parameter in register ecx
     FastCall, ///< MSVC fastcall convention ECX,EDX,stack, callee pop
 };
+
+
+namespace Util
+{
+    // ascii versions of platform, calling convention name
+    QString getPlatformName(Platform plat);
+    QString getCallConvName(CallConv cc);
+}

@@ -20,7 +20,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/binary/BinarySection.h"
@@ -192,7 +192,7 @@ void IFrontEnd::readLibraryCatalog()
     }
 
     readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
-    readLibraryCatalog(sig_dir.absoluteFilePath(Signature::getPlatformName(getType()) + ".hs"));
+    readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
 
     if (isWin32()) {
         readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
@@ -492,9 +492,9 @@ void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
     Platform plat = getType();
     p->yyparse(plat, cc);
 
-    for (auto& elem : p->signatures) {
-        m_librarySignatures[elem->getName()] = elem;
-        elem->setSigFile(signatureFile);
+    for (auto& signature : p->signatures) {
+        m_librarySignatures[signature->getName()] = signature;
+        signature->setSigFilePath(signatureFile);
     }
 }
 

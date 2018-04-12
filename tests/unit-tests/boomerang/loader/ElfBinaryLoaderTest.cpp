@@ -115,4 +115,4 @@ void ElfBinaryLoaderTest::testPentiumLoad()
 }
 
 
-QTEST_MAIN(ElfBinaryLoaderTest)
+QTEST_GUILESS_MAIN(ElfBinaryLoaderTest)

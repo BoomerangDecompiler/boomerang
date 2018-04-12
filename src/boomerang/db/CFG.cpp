@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/BasicBlock.h"

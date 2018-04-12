@@ -13,6 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/util/StatementList.h"
@@ -60,7 +61,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
     }
     else if (SETTING(assumeABI)) {
         // Risky: just assume the ABI caller save registers are defined
-        Signature::getABIDefines(proc->getProg(), callStmt->getDefines());
+        Signature::getABIDefines(proc->getProg()->getMachine(), callStmt->getDefines());
         return true;
     }
 
@@ -147,4 +148,3 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     return true;
 }
-

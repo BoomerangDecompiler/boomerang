@@ -11,7 +11,7 @@
 
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/util/Log.h"
 
@@ -26,7 +26,7 @@ bool SPPreservationPass::execute(UserProc *proc)
 {
     bool stdsp = false; // FIXME: are these really used?
     // Note: need this non-virtual version most of the time, since nothing proved yet
-    int sp = proc->getSignature()->getStackRegister(proc->getProg());
+    int sp = Util::getStackRegisterIndex(proc->getProg());
 
     for (int n = 0; n < 2; n++) {
         // may need to do multiple times due to dependencies FIXME: efficiency! Needed any more?

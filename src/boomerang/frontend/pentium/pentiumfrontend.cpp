@@ -20,7 +20,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/Prog.h"              // For findProc()
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/exp/Location.h"
@@ -902,7 +902,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
     // looking for function pointers
     auto calledSig = call->getDestProc()->getSignature();
 
-    for (unsigned int i = 0; i < calledSig->getNumParams(); i++) {
+    for (int i = 0; i < calledSig->getNumParams(); i++) {
         // check param type
         SharedType paramType = calledSig->getParamType(i);
         SharedType points_to;
@@ -933,7 +933,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
 
         // count pushes backwards to find arg
         SharedExp found = nullptr;
-        unsigned int pushcount = 0;
+        int pushcount = 0;
 
         for (RTLList::const_reverse_iterator itr = BB_rtls.rbegin(); itr != BB_rtls.rend() && !found; ++itr) {
             RTL *rtl = itr->get();

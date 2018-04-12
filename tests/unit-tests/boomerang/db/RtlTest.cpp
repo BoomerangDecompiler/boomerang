@@ -295,4 +295,4 @@ void RtlTest::testSetConscripts()
 }
 
 
-QTEST_MAIN(RtlTest)
+QTEST_GUILESS_MAIN(RtlTest)

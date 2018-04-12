@@ -47,4 +47,4 @@ void ProcTest::testName()
 }
 
 
-QTEST_MAIN(ProcTest)
+QTEST_GUILESS_MAIN(ProcTest)

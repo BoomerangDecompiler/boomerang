@@ -37,4 +37,4 @@ void ProgTest::testName()
 }
 
 
-QTEST_MAIN(ProgTest)
+QTEST_GUILESS_MAIN(ProgTest)

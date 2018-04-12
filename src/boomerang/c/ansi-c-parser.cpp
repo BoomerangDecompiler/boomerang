@@ -56,7 +56,7 @@
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/CustomSignature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/util/Log.h"
@@ -847,11 +847,11 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 35 : {
-            yyvsp[-6].sig->setPreferredReturn(yyvsp[-4].type_ident->ty);
+//            yyvsp[-6].sig->setPreferredReturn(yyvsp[-4].type_ident->ty);
             yyvsp[-6].sig->setPreferredName(yyvsp[-4].type_ident->name);
 
             for (std::list<int>::iterator it = yyvsp[-2].num_list->begin(); it != yyvsp[-2].num_list->end(); it++) {
-                yyvsp[-6].sig->addPreferredParameter(*it - 1);
+//                yyvsp[-6].sig->addPreferredParam(*it - 1);
             }
 
             delete yyvsp[-2].num_list;

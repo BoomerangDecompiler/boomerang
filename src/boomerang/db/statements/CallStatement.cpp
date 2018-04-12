@@ -14,7 +14,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
@@ -829,7 +829,7 @@ bool CallStatement::convertToDirect()
     qDeleteAll(m_arguments);
     m_arguments.clear();
 
-    for (unsigned i = 0; i < sig->getNumParams(); i++) {
+    for (int i = 0; i < sig->getNumParams(); i++) {
         SharedExp a   = sig->getParamExp(i);
         Assign    *as = new Assign(VoidType::get(), a->clone(), a->clone());
         as->setProc(m_proc);
@@ -1322,12 +1322,12 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
         ty = PointerType::get(ty);
     }
 
-    m_signature->addParameter(ty);
+    m_signature->addParameter(nullptr, ty);
     SharedExp paramExp = m_signature->getParamExp(m_signature->getNumParams() - 1);
 
     LOG_VERBOSE("EllipsisProcessing: adding parameter %1 of type %2", paramExp, ty->getCtype());
 
-    if (m_arguments.size() < m_signature->getNumParams()) {
+    if (static_cast<int>(m_arguments.size()) < m_signature->getNumParams()) {
         Assign *as = makeArgAssign(ty, paramExp);
         m_arguments.append(as);
     }
@@ -1469,7 +1469,7 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
     if (m_procDest) {
         auto sig = m_procDest->getSignature();
 
-        SharedExp rsp = Location::regOf(m_proc->getSignature()->getStackRegister(m_proc->getProg()));
+        SharedExp rsp = Location::regOf(Util::getStackRegisterIndex(m_proc->getProg()));
 
         for (Statement *dd : m_defines) {
             SharedExp lhs = static_cast<Assignment *>(dd)->getLeft();

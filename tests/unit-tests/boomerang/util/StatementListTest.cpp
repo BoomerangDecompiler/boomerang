@@ -153,4 +153,4 @@ void StatementListTest::testFindOnLeft()
 }
 
 
-QTEST_MAIN(StatementListTest)
+QTEST_GUILESS_MAIN(StatementListTest)

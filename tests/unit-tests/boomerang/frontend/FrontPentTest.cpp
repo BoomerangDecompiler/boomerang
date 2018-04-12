@@ -239,4 +239,4 @@ void FrontPentTest::testFindMain()
 }
 
 
-QTEST_MAIN(FrontPentTest)
+QTEST_GUILESS_MAIN(FrontPentTest)

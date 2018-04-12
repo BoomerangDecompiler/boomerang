@@ -86,4 +86,4 @@ void BinarySectionTest::testAttributes()
     QVERIFY(section.isAttributeInRange("ReadOnly", Address(0x1000), Address(0x2000)));
 }
 
-QTEST_MAIN(BinarySectionTest)
+QTEST_GUILESS_MAIN(BinarySectionTest)

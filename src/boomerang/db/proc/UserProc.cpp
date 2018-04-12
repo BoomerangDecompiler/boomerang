@@ -18,7 +18,7 @@
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/UseCollector.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
@@ -1422,7 +1422,7 @@ void UserProc::setLocalType(const QString& name, SharedType ty)
 
 SharedConstType UserProc::getParamType(const QString& name) const
 {
-    for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
         if (name == m_signature->getParamName(i)) {
             return m_signature->getParamType(i);
         }
@@ -1434,7 +1434,7 @@ SharedConstType UserProc::getParamType(const QString& name) const
 
 SharedType UserProc::getParamType(const QString& name)
 {
-    for (unsigned int i = 0; i < m_signature->getNumParams(); i++) {
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
         if (name == m_signature->getParamName(i)) {
             return m_signature->getParamType(i);
         }
@@ -2194,7 +2194,7 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
         Assignment *a = static_cast<Assignment *>(param);
         QString paramName = QString("param%1").arg(i++);
 
-        m_signature->addParameter(a->getType(), paramName, a->getLeft());
+        m_signature->addParameter(paramName, a->getLeft(), a->getType());
     }
 }
 
@@ -2253,7 +2253,7 @@ bool UserProc::filterParams(SharedExp e)
             int sp = 999;
 
             if (m_signature) {
-                sp = m_signature->getStackRegister(m_prog);
+                sp = Util::getStackRegisterIndex(m_prog);
             }
 
             int r = e->access<Const, 1>()->getInt();
@@ -2273,7 +2273,7 @@ bool UserProc::filterParams(SharedExp e)
                 int  sp  = 999;
 
                 if (m_signature) {
-                    sp = m_signature->getStackRegister(m_prog);
+                    sp = Util::getStackRegisterIndex(m_prog);
                 }
 
                 if (reg->isRegN(sp)) {
@@ -2700,7 +2700,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
             // For each location in the returns, check if in the signature
             bool found = false;
 
-            for (unsigned int i = 0; i < m_signature->getNumReturns(); i++) {
+            for (int i = 0; i < m_signature->getNumReturns(); i++) {
                 if (*m_signature->getReturnExp(i) == *lhs) {
                     found = true;
                     break;
@@ -2815,11 +2815,6 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
             updateSet.erase(proc);
             proc->updateForUseChange(removeRetSet);
         }
-    }
-
-    if (m_retStatement->getNumReturns() == 1) {
-        const Assign *a = static_cast<Assign *>(m_retStatement->getReturns().front());
-        m_signature->setRetType(a->getType());
     }
 
     Boomerang::get()->alertDecompileDebugPoint(this, "after removing unused and redundant returns");

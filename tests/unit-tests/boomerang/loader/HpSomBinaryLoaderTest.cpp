@@ -48,4 +48,4 @@ void HpSomBinaryLoaderTest::testHppaLoad()
 }
 
 
-QTEST_MAIN(HpSomBinaryLoaderTest)
+QTEST_GUILESS_MAIN(HpSomBinaryLoaderTest)

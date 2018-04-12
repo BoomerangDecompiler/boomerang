@@ -16,7 +16,7 @@
 #include "boomerang/db/CFGCompressor.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/TypedExp.h"
@@ -627,10 +627,10 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             s << "void ";
         }
         else {
-            unsigned int n = 0;
+            int n = 0;
             SharedExp    e = proc->getSignature()->getReturnExp(0);
 
-            if (e->isRegN(Signature::getStackRegister(proc->getProg()))) {
+            if (e->isRegN(Util::getStackRegisterIndex(proc->getProg()))) {
                 n = 1;
             }
 

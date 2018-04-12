@@ -562,4 +562,4 @@ void BasicBlockTest::testUpdateBBAddresses()
 }
 
 
-QTEST_MAIN(BasicBlockTest)
+QTEST_GUILESS_MAIN(BasicBlockTest)

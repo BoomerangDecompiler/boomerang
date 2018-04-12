@@ -24,7 +24,7 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
@@ -401,12 +401,11 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
 
         if (symInfo->Flags & SYMFLAG_REGREL) {
             assert(symInfo->Register == 8); // ebp
-            proc->getSignature()->addParameter(
-                ty, symInfo->Name,
-                Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get((int)symInfo->Address - 4))));
+            proc->getSignature()->addParameter(symInfo->Name,
+                Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get((int)symInfo->Address - 4))), ty);
         }
         else if (symInfo->Flags & SYMFLAG_REGISTER) {
-            proc->getSignature()->addParameter(ty, symInfo->Name, Location::regOf(debugRegister(symInfo->Register)));
+            proc->getSignature()->addParameter(symInfo->Name, Location::regOf(debugRegister(symInfo->Register)), ty);
         }
     }
     else if ((symInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {

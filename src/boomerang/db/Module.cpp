@@ -14,7 +14,7 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/util/Log.h"
@@ -291,8 +291,12 @@ void Module::addWin32DbgInfo(Function *function)
         dbghelp::SymSetContext(hProcess, &stack, 0);
         dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, function);
 
+        QString str;
+        QTextStream os(&str);
+        function->getSignature()->print(os);
+
         LOG_VERBOSE("Retrieved Win32 debugging information:");
-        function->getSignature()->printToLog();
+        LOG_VERBOSE("%1", str);
     }
 #endif
 }

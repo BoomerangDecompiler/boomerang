@@ -10,6 +10,8 @@
 #include "Util.h"
 
 
+#include "boomerang/db/exp/Const.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/util/Types.h"
 
 #include <QString>
@@ -72,6 +74,53 @@ QTextStream& alignStream(QTextStream& str, int align)
 {
     str << qSetFieldWidth(align) << " " << qSetFieldWidth(0);
     return str;
+}
+
+
+int getStackOffset(SharedConstExp e, int sp)
+{
+    int ret = 0;
+
+    if (e->isMemOf()) {
+        SharedConstExp sub = e->getSubExp1();
+        OPER      op  = sub->getOper();
+
+        if ((op == opPlus) || (op == opMinus)) {
+            SharedConstExp op1 = sub->getSubExp1();
+
+            if (op1->isSubscript()) {
+                op1 = op1->getSubExp1();
+            }
+
+            if (op1->isRegN(sp)) {
+                SharedConstExp op2 = sub->getSubExp2();
+
+                if (op2->isIntConst()) {
+                    ret = op2->access<const Const>()->getInt();
+                }
+
+                if (op == opMinus) {
+                    ret = -ret;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
+
+
+int getStackRegisterIndex(const Prog *prog)
+{
+    switch (prog->getMachine())
+    {
+    case Machine::SPARC:        return 14;
+    case Machine::PENTIUM:      return 28;
+    case Machine::PPC:          return  1;
+    case Machine::ST20:         return  3;
+    case Machine::MIPS:         return 29;
+    default:                    return -1;
+    }
 }
 
 

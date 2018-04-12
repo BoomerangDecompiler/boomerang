@@ -16,6 +16,9 @@
 #include <memory>
 
 
+class Prog;
+
+
 class Printable
 {
 public:
@@ -24,6 +27,8 @@ public:
 public:
     virtual QString toString() const = 0;
 };
+
+using SharedConstExp = std::shared_ptr<const class Exp>;
 
 
 namespace Util
@@ -77,6 +82,18 @@ void clone(const Container& from, Container& to)
         to[i] = from[i]->clone();
     }
 }
+
+
+// From m[sp +- K] return K (or -K for subtract). sp could be subscripted with {-}
+int getStackOffset(SharedConstExp e, int sp);
+
+
+/**
+ * Return the internal index of the stack register
+ * of an architecture, or -1 if the architecture does not have a stack register.
+ */
+int getStackRegisterIndex(const Prog *prog);
+
 }
 
 #define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kiB)

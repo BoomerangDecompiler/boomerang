@@ -298,4 +298,4 @@ void MicroX86DisTest::testMicroDis2()
 }
 
 
-QTEST_MAIN(MicroX86DisTest)
+QTEST_GUILESS_MAIN(MicroX86DisTest)

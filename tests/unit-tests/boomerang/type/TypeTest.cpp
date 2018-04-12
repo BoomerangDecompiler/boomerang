@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/Prog.h"
@@ -26,8 +26,8 @@
 #include <QTextStream>
 #include <QDebug>
 
-#define HELLO_WINDOWS    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
 
+#define HELLO_WINDOWS    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
 
 
 // TODO: untangle the dynamic-size types from static size types ( Int vs Boolean etc. )
@@ -328,4 +328,4 @@ void TypeTest::testDataIntervalOverlaps()
 }
 
 
-QTEST_MAIN(TypeTest)
+QTEST_GUILESS_MAIN(TypeTest)

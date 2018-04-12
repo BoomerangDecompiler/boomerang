@@ -113,4 +113,4 @@ void BinarySymbolTableTest::testRenameSymbol()
 }
 
 
-QTEST_MAIN(BinarySymbolTableTest)
+QTEST_GUILESS_MAIN(BinarySymbolTableTest)
