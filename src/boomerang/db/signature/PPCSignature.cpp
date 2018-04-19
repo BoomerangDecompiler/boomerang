@@ -27,9 +27,9 @@ namespace StdC
 PPCSignature::PPCSignature(const QString& name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(1));
+    Signature::addReturn(Location::regOf(PPC_REG_G1));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "r1",
-    //                                 Location::regOf(1), nullptr);
+    //                                 Location::regOf(PPC_REG_G1), nullptr);
     // FIXME: Should also add m[r1+4] as an implicit parameter? Holds return address
 }
 
@@ -66,10 +66,10 @@ SharedExp PPCSignature::getArgumentExp(int n) const
     if (n >= 8) {
         // PPCs pass the ninth and subsequent parameters at m[%r1+8],
         // m[%r1+12], etc.
-        e = Location::memOf(Binary::get(opPlus, Location::regOf(1), Const::get(8 + (n - 8) * 4)));
+        e = Location::memOf(Binary::get(opPlus, Location::regOf(PPC_REG_G1), Const::get(8 + (n - 8) * 4)));
     }
     else {
-        e = Location::regOf(3 + n);
+        e = Location::regOf(PPC_REG_G3 + n);
     }
 
     return e;
@@ -83,7 +83,7 @@ void PPCSignature::addReturn(SharedType type, SharedExp e)
     }
 
     if (e == nullptr) {
-        e = Location::regOf(3);
+        e = Location::regOf(PPC_REG_G3);
     }
 
     Signature::addReturn(type, e);
@@ -117,7 +117,7 @@ bool PPCSignature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfK()) {
         int r = e->access<Const, 1>()->getInt();
-        return r == 1;
+        return r == PPC_REG_G1;
     }
 
     return false;
@@ -131,7 +131,7 @@ void PPCSignature::getLibraryDefines(StatementList& defs)
         return; // Do only once
     }
 
-    for (int r = 3; r <= 12; ++r) {
+    for (int r = PPC_REG_G3; r <= PPC_REG_G12; ++r) {
         defs.append(new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
     }
 }

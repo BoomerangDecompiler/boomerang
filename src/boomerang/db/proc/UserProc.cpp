@@ -2250,14 +2250,8 @@ bool UserProc::filterParams(SharedExp e)
 
     case opRegOf:
         {
-            int sp = 999;
-
-            if (m_signature) {
-                sp = Util::getStackRegisterIndex(m_prog);
-            }
-
-            int r = e->access<Const, 1>()->getInt();
-            return r == sp;
+            const int sp = Util::getStackRegisterIndex(m_prog);
+            return e->access<Const, 1>()->getInt() == sp;
         }
 
     case opMemOf:

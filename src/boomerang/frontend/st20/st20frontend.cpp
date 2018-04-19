@@ -39,7 +39,7 @@ std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
     static std::vector<SharedExp> params;
 
     if (params.size() == 0) {
-        params.push_back(Location::memOf(Location::regOf(3)));
+        params.push_back(Location::memOf(Location::regOf(ST20_REG_SP)));
     }
 
     return params;
@@ -50,9 +50,9 @@ std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
 {
     static std::vector<SharedExp> returns;
 
-    if (returns.size() == 0) {
-        returns.push_back(Location::regOf(0));
-        returns.push_back(Location::regOf(3));
+    if (returns.empty()) {
+        returns.push_back(Location::regOf(ST20_REG_A));
+        returns.push_back(Location::regOf(ST20_REG_SP));
         //        returns.push_back(Terminal::get(opPC));
     }
 

@@ -505,32 +505,33 @@ bool Signature::getABIDefines(Machine machine, StatementList& defs)
     switch (machine)
     {
     case Machine::PENTIUM:
-        defs.append(new ImplicitAssign(Location::regOf(24))); // eax
-        defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
-        defs.append(new ImplicitAssign(Location::regOf(26))); // edx
+        defs.append(new ImplicitAssign(Location::regOf(PENT_REG_EAX))); // eax
+        defs.append(new ImplicitAssign(Location::regOf(PENT_REG_ECX))); // ecx
+        defs.append(new ImplicitAssign(Location::regOf(PENT_REG_EDX))); // edx
         return true;
 
     case Machine::SPARC:
-
-        for (int r = 8; r <= 13; ++r) {
-            defs.append(new ImplicitAssign(Location::regOf(r))); // %o0-o5
-        }
-
-        defs.append(new ImplicitAssign(Location::regOf(1)));     // %g1
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O0))); // %o0-o5
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O1)));
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O2)));
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O3)));
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O4)));
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O5)));
+        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_G1))); // %g1
         return true;
 
     case Machine::PPC:
 
-        for (int r = 3; r <= 12; ++r) {
+        for (int r = PPC_REG_G3; r <= PPC_REG_G12; ++r) {
             defs.append(new ImplicitAssign(Location::regOf(r))); // r3-r12
         }
 
         break;
 
     case Machine::ST20:
-        defs.append(new ImplicitAssign(Location::regOf(0))); // A
-        defs.append(new ImplicitAssign(Location::regOf(1))); // B
-        defs.append(new ImplicitAssign(Location::regOf(2))); // C
+        defs.append(new ImplicitAssign(Location::regOf(ST20_REG_A))); // A
+        defs.append(new ImplicitAssign(Location::regOf(ST20_REG_B))); // B
+        defs.append(new ImplicitAssign(Location::regOf(ST20_REG_C))); // C
         return true;
 
     default:

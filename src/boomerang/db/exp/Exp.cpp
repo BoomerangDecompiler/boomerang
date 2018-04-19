@@ -113,7 +113,7 @@ void Exp::createDotFile(const char *name)
 }
 
 
-bool Exp::isRegOfK()
+bool Exp::isRegOfK() const
 {
     if (m_oper != opRegOf) {
         return false;
@@ -125,12 +125,11 @@ bool Exp::isRegOfK()
 
 bool Exp::isRegN(int N) const
 {
-    if (m_oper != opRegOf) {
+    if (!isRegOfK()) {
         return false;
     }
 
-    SharedConstExp sub = static_cast<const Unary *>(this)->getSubExp1();
-    return (sub->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(sub)->getInt() == N);
+    return this->access<Const, 1>()->getInt() == N;
 }
 
 
@@ -512,7 +511,7 @@ SharedExp Exp::fixSuccessor()
         assert(sub2->getOper() == opIntConst);
         // result     sub1    sub2
         // succ(      r[   Const K    ])
-        // Note: we need to clone the r[K] part, since it will be ;//deleted as
+        // Note: we need to clone the r[K] part, since it will be deleted as
         // part of the searchReplace below
         auto replace = sub1->clone();
         auto c       = replace->access<Const, 1>();

@@ -9317,5 +9317,5 @@ SharedExp crBit(int bitNum)
     int crNum = bitNum / 4;
 
     bitNum = bitNum & 3;
-    return std::make_shared<Ternary>(opAt, Location::regOf(64 + crNum), Const::get(bitNum), Const::get(bitNum));
+    return std::make_shared<Ternary>(opAt, Location::regOf(PPC_REG_CR0 + crNum), Const::get(bitNum), Const::get(bitNum));
 }

@@ -152,9 +152,9 @@ SharedExp RefExp::polySimplify(bool& changed)
 
     // another hack, this time for aliasing
     // FIXME: do we really want this now? Pentium specific, and only handles ax/eax (not al or ah)
-    if (subExp1->isRegN(0) &&                                                     // r0 (ax)
-        m_def && m_def->isAssign() && static_cast<const Assign *>(m_def)->getLeft()->isRegN(24)) { // r24 (eax)
-            res  = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(24), m_def));
+    if (subExp1->isRegN(PENT_REG_AX) && m_def && m_def->isAssign() &&
+        static_cast<const Assign *>(m_def)->getLeft()->isRegN(PENT_REG_EAX)) {
+            res  = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(PENT_REG_EAX), m_def));
             changed = true;
             return res;
     }

@@ -24,9 +24,9 @@ namespace CallingConvention
 Win32Signature::Win32Signature(const QString& name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(28));
+    Signature::addReturn(Location::regOf(PENT_REG_ESP));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
-    //                                Location::regOf(28), nullptr);
+    //                                Location::regOf(PENT_REG_ESP), nullptr);
 }
 
 
@@ -39,9 +39,9 @@ Win32Signature::Win32Signature(Signature& old)
 Win32TcSignature::Win32TcSignature(const QString& name)
     : Win32Signature(name)
 {
-    Signature::addReturn(Location::regOf(28));
+    Signature::addReturn(Location::regOf(PENT_REG_ESP));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
-    //                                Location::regOf(28), nullptr);
+    //                                Location::regOf(PENT_REG_ESP), nullptr);
 }
 
 
@@ -87,8 +87,8 @@ bool Win32Signature::operator==(const Signature& other) const
 }
 
 
-static SharedExp savedReturnLocation = Location::memOf(Location::regOf(28));
-static SharedExp stackPlusFour       = Binary::get(opPlus, Location::regOf(28), Const::get(4));
+static SharedExp savedReturnLocation = Location::memOf(Location::regOf(PENT_REG_ESP));
+static SharedExp stackPlusFour       = Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(4));
 
 bool Win32Signature::qualified(UserProc *p, Signature& /*candidate*/)
 {
@@ -107,7 +107,7 @@ bool Win32Signature::qualified(UserProc *p, Signature& /*candidate*/)
     if (gotcorrectret1) {
         LOG_VERBOSE2("got pc = m[r[28]]");
 
-        SharedExp provenSP = p->getProven(Location::regOf(28));
+        SharedExp provenSP = p->getProven(Location::regOf(PENT_REG_ESP));
         gotcorrectret2 = provenSP && *provenSP == *stackPlusFour;
 
         if (gotcorrectret2) {
@@ -129,10 +129,10 @@ void Win32Signature::addReturn(SharedType type, SharedExp e)
 
     if (e == nullptr) {
         if (type->isFloat()) {
-            e = Location::regOf(32);
+            e = Location::regOf(PENT_REG_ST0);
         }
         else {
-            e = Location::regOf(24);
+            e = Location::regOf(PENT_REG_EAX);
         }
     }
 
@@ -153,7 +153,7 @@ SharedExp Win32Signature::getArgumentExp(int n) const
         return Signature::getArgumentExp(n);
     }
 
-    SharedExp esp = Location::regOf(28);
+    SharedExp esp = Location::regOf(PENT_REG_ESP);
 
     if ((m_params.size() != 0) && (*m_params[0]->getExp() == *esp)) {
         n--;
@@ -170,7 +170,7 @@ SharedExp Win32TcSignature::getArgumentExp(int n) const
         return Signature::getArgumentExp(n);
     }
 
-    SharedExp esp = Location::regOf(28);
+    SharedExp esp = Location::regOf(PENT_REG_ESP);
 
     if (!m_params.empty() && (*m_params[0]->getExp() == *esp)) {
         n--;
@@ -178,7 +178,7 @@ SharedExp Win32TcSignature::getArgumentExp(int n) const
 
     if (n == 0) {
         // It's the first parameter, register ecx
-        return Location::regOf(25);
+        return Location::regOf(PENT_REG_ECX);
     }
 
     // Else, it is m[esp+4n)]
@@ -199,28 +199,19 @@ SharedExp Win32Signature::getProven(SharedExp left) const
 {
     size_t nparams = m_params.size();
 
-    if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(28))) {
+    if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(PENT_REG_ESP))) {
         nparams--;
     }
 
     if (left->isRegOfK()) {
         switch (left->access<Const, 1>()->getInt())
         {
-        case 28: // esp
             // Note: assumes callee pop... not true for cdecl functions!
-            return Binary::get(opPlus, Location::regOf(28), Const::get(4 + nparams * 4));
-
-        case 27: // ebx
-            return Location::regOf(27);
-
-        case 29: // ebp
-            return Location::regOf(29);
-
-        case 30: // esi
-            return Location::regOf(30);
-
-        case 31: // edi
-            return Location::regOf(31);
+        case PENT_REG_ESP: return Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(4 + nparams * 4));
+        case PENT_REG_EBX: return Location::regOf(PENT_REG_EBX);
+        case PENT_REG_EBP: return Location::regOf(PENT_REG_EBP);
+        case PENT_REG_ESI: return Location::regOf(PENT_REG_ESI);
+        case PENT_REG_EDI: return Location::regOf(PENT_REG_EDI);
             // there are other things that must be preserved here, look at calling convention
         }
     }
@@ -234,18 +225,17 @@ bool Win32Signature::isPreserved(SharedExp e) const
     if (e->isRegOfK()) {
         switch (e->access<Const, 1>()->getInt())
         {
-        case 29: // ebp
-        case 27: // ebx
-        case 30: // esi
-        case 31: // edi
-        case 3:  // bx
-        case 5:  // bp
-        case 6:  // si
-        case 7:  // di
-        case 11: // bl
-        case 15: // bh
+        case PENT_REG_EBP: // ebp
+        case PENT_REG_EBX: // ebx
+        case PENT_REG_ESI: // esi
+        case PENT_REG_EDI: // edi
+        case PENT_REG_BX:  // bx
+        case PENT_REG_BP:  // bp
+        case PENT_REG_SI:  // si
+        case PENT_REG_DI:  // di
+        case PENT_REG_BL:  // bl
+        case PENT_REG_BH:  // bh
             return true;
-
         default:
             return false;
         }
@@ -261,7 +251,7 @@ void Win32Signature::getLibraryDefines(StatementList& defs)
         return;                           // Do only once
     }
 
-    auto       r24 = Location::regOf(24); // eax
+    auto       r24 = Location::regOf(PENT_REG_EAX); // eax
     SharedType ty  = SizeType::get(32);
 
     if (m_returns.size() > 1) {                  // Ugh - note the stack pointer is the first return still
@@ -269,24 +259,24 @@ void Win32Signature::getLibraryDefines(StatementList& defs)
     }
 
     defs.append(new ImplicitAssign(ty, r24));             // eax
-    defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
-    defs.append(new ImplicitAssign(Location::regOf(26))); // edx
-    defs.append(new ImplicitAssign(Location::regOf(28))); // esp
+    defs.append(new ImplicitAssign(Location::regOf(PENT_REG_ECX))); // ecx
+    defs.append(new ImplicitAssign(Location::regOf(PENT_REG_EDX))); // edx
+    defs.append(new ImplicitAssign(Location::regOf(PENT_REG_ESP))); // esp
 }
 
 
 SharedExp Win32TcSignature::getProven(SharedExp left) const
 {
     if (left->isRegOfK()) {
-        if (left->access<Const, 1>()->getInt() == 28) {
+        if (left->access<Const, 1>()->getInt() == PENT_REG_ESP) {
             int nparams = m_params.size();
 
-            if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(28))) {
+            if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(PENT_REG_ESP))) {
                 nparams--;
             }
 
             // r28 += 4 + nparams*4 - 4        (-4 because ecx is register param)
-            return Binary::get(opPlus, Location::regOf(28), Const::get(4 + nparams * 4 - 4));
+            return Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(4 + nparams * 4 - 4));
         }
     }
 

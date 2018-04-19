@@ -138,7 +138,7 @@ public:
     bool isRegOf() const { return m_oper == opRegOf; }
 
     /// \returns true if the expression is r[K] where K is an integer Const
-    bool isRegOfK();
+    bool isRegOfK() const;
 
     /// \returns true if the expression is r[n] with register number \p n
     bool isRegN(int n) const;
@@ -573,3 +573,129 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
     os << p.get();
     return os;
 }
+
+
+// Hard-coded numbers of register indices.
+
+// pentium
+#define PENT_REG_AX      (0)
+#define PENT_REG_CX      (1)
+#define PENT_REG_DX      (2)
+#define PENT_REG_BX      (3)
+#define PENT_REG_SP      (4)
+#define PENT_REG_BP      (5)
+#define PENT_REG_SI      (6)
+#define PENT_REG_DI      (7)
+#define PENT_REG_AL      (8)
+#define PENT_REG_CL      (9)
+#define PENT_REG_DL     (10)
+#define PENT_REG_BL     (11)
+#define PENT_REG_AH     (12)
+#define PENT_REG_CH     (13)
+#define PENT_REG_DH     (14)
+#define PENT_REG_BH     (15)
+#define PENT_REG_ES     (16)
+#define PENT_REG_CS     (17)
+#define PENT_REG_SS     (18)
+#define PENT_REG_DS     (19)
+
+#define PENT_REG_EAX    (24)
+#define PENT_REG_ECX    (25)
+#define PENT_REG_EDX    (26)
+#define PENT_REG_EBX    (27)
+#define PENT_REG_ESP    (28)
+#define PENT_REG_EBP    (29)
+#define PENT_REG_ESI    (30)
+#define PENT_REG_EDI    (31)
+
+#define PENT_REG_ST0    (32) // FP st register
+#define PENT_REG_ST1    (33)
+#define PENT_REG_ST2    (34)
+#define PENT_REG_ST3    (35)
+#define PENT_REG_ST4    (36)
+#define PENT_REG_ST5    (37)
+#define PENT_REG_ST6    (38)
+#define PENT_REG_ST7    (39)
+#define PENT_REG_FSW    (40)
+#define PENT_REG_FSTP   (41)
+#define PENT_REG_FCW    (42)
+
+
+// sparc
+#define SPARC_REG_G0  (0)
+#define SPARC_REG_G1  (1)
+#define SPARC_REG_G2  (2)
+#define SPARC_REG_G3  (3)
+#define SPARC_REG_G4  (4)
+#define SPARC_REG_G5  (5)
+#define SPARC_REG_G6  (6)
+#define SPARC_REG_G7  (7)
+#define SPARC_REG_O0  (8)
+#define SPARC_REG_O1  (9)
+#define SPARC_REG_O2 (10)
+#define SPARC_REG_O3 (11)
+#define SPARC_REG_O4 (12)
+#define SPARC_REG_O5 (13)
+#define SPARC_REG_O6 (14)
+#define SPARC_REG_O7 (15)
+#define SPARC_REG_L0 (16)
+#define SPARC_REG_L1 (17)
+#define SPARC_REG_L2 (18)
+#define SPARC_REG_L3 (19)
+#define SPARC_REG_L4 (20)
+#define SPARC_REG_L5 (21)
+#define SPARC_REG_L6 (22)
+#define SPARC_REG_L7 (23)
+#define SPARC_REG_I0 (24)
+#define SPARC_REG_I1 (25)
+#define SPARC_REG_I2 (26)
+#define SPARC_REG_I3 (27)
+#define SPARC_REG_I4 (28)
+#define SPARC_REG_I5 (29)
+#define SPARC_REG_I6 (30)
+#define SPARC_REG_I7 (31)
+
+
+#define SPARC_REG_SP (14) // stack pointer
+#define SPARC_REG_FP (30) // frame pointer
+
+#define SPARC_REG_F0    (32)
+#define SPARC_REG_F31   (63)
+#define SPARC_REG_F0TO1 (64)
+#define SPARC_REG_F28TO31 (87)
+
+// mips
+#define MIPS_REG_ZERO   (0)
+#define MIPS_REG_AT     (1)
+#define MIPS_REG_V0     (2)
+#define MIPS_REG_V1     (3)
+
+#define MIPS_REG_T0     (8)
+
+#define MIPS_REG_SP     (29)
+#define MIPS_REG_FP     (30)
+#define MIPS_REG_RA     (31)
+#define MIPS_REG_F0     (32)
+
+
+// ppc
+#define PPC_REG_G1      (1)
+#define PPC_REG_G2      (2)
+#define PPC_REG_G3      (3)
+#define PPC_REG_G4      (4)
+#define PPC_REG_G5      (5)
+#define PPC_REG_G6      (6)
+#define PPC_REG_G7      (7)
+#define PPC_REG_G8      (8)
+#define PPC_REG_G9      (9)
+#define PPC_REG_G10     (10)
+#define PPC_REG_G11     (11)
+#define PPC_REG_G12     (12)
+#define PPC_REG_CR0     (64) // Control register
+
+
+// ST20
+#define ST20_REG_A      (0)
+#define ST20_REG_B      (1)
+#define ST20_REG_C      (2)
+#define ST20_REG_SP     (3)

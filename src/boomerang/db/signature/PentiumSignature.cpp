@@ -27,9 +27,9 @@ namespace StdC
 PentiumSignature::PentiumSignature(const QString& name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(28));
+    Signature::addReturn(Location::regOf(PENT_REG_ESP));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
-    //                                 Location::regOf(28), nullptr);
+    //                                 Location::regOf(PENT_REG_ESP), nullptr);
 }
 
 
@@ -89,13 +89,13 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
         }
 
         if (e->getLeft()->getOper() == opPC) {
-            if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(28)) {
+            if (e->getRight()->isMemOf() && e->getRight()->getSubExp1()->isRegN(PENT_REG_ESP)) {
                 LOG_VERBOSE("Got pc = m[r[28]]");
                 gotcorrectret1 = true;
             }
         }
-        else if (e->getLeft()->isRegOfK() && (e->getLeft()->getSubExp1()->access<Const>()->getInt() == 28)) {
-            if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegN(28) &&
+        else if (e->getLeft()->isRegOfK() && (e->getLeft()->getSubExp1()->access<Const>()->getInt() == PENT_REG_ESP)) {
+            if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegN(PENT_REG_ESP) &&
                 e->getRight()->getSubExp2()->isIntConst() && (e->getRight()->getSubExp2()->access<Const>()->getInt() == 4)) {
                 LOG_VERBOSE("Got r[28] = r[28] + 4");
                 gotcorrectret2 = true;
@@ -117,10 +117,10 @@ void PentiumSignature::addReturn(SharedType type, SharedExp e)
 
     if (e == nullptr) {
         if (type->isFloat()) {
-            e = Location::regOf(32);
+            e = Location::regOf(PENT_REG_ST0);
         }
         else {
-            e = Location::regOf(24);
+            e = Location::regOf(PENT_REG_EAX);
         }
     }
 
@@ -141,7 +141,7 @@ SharedExp PentiumSignature::getArgumentExp(int n) const
         return Signature::getArgumentExp(n);
     }
 
-    SharedExp esp = Location::regOf(28);
+    SharedExp esp = Location::regOf(PENT_REG_ESP);
 
     if ((m_params.size() != 0) && (*m_params[0]->getExp() == *esp)) {
         n--;
@@ -165,13 +165,13 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
 
         switch (r)
         {
-        case 28:                                                            // esp
-            return Binary::get(opPlus, Location::regOf(28), Const::get(4)); // esp+4
+        case PENT_REG_ESP:                                                            // esp
+            return Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(4)); // esp+4
 
-        case 29:
-        case 30:
-        case 31:
-        case 27: // ebp, esi, edi, ebx
+        case PENT_REG_EBP:
+        case PENT_REG_ESI:
+        case PENT_REG_EDI:
+        case PENT_REG_EBX:
             return Location::regOf(r);
         }
     }
@@ -185,16 +185,16 @@ bool PentiumSignature::isPreserved(SharedExp e) const
     if (e->isRegOfK()) {
         switch (e->access<Const, 1>()->getInt())
         {
-        case 29: // ebp
-        case 27: // ebx
-        case 30: // esi
-        case 31: // edi
-        case 3:  // bx
-        case 5:  // bp
-        case 6:  // si
-        case 7:  // di
-        case 11: // bl
-        case 15: // bh
+        case PENT_REG_EBP: // ebp
+        case PENT_REG_EBX: // ebx
+        case PENT_REG_ESI: // esi
+        case PENT_REG_EDI: // edi
+        case PENT_REG_BX:  // bx
+        case PENT_REG_BP:  // bp
+        case PENT_REG_SI:  // si
+        case PENT_REG_DI:  // di
+        case PENT_REG_BL:  // bl
+        case PENT_REG_BH: // bh
             return true;
 
         default:
@@ -213,7 +213,7 @@ void PentiumSignature::getLibraryDefines(StatementList& defs)
         return;
     }
 
-    auto       r24 = Location::regOf(24); // eax
+    auto       r24 = Location::regOf(PENT_REG_EAX); // eax
     SharedType ty  = SizeType::get(32);
 
     if (m_returns.size() > 1) {                  // Ugh - note the stack pointer is the first return still
@@ -221,9 +221,9 @@ void PentiumSignature::getLibraryDefines(StatementList& defs)
     }
 
     defs.append(new ImplicitAssign(ty, r24));             // eax
-    defs.append(new ImplicitAssign(Location::regOf(25))); // ecx
-    defs.append(new ImplicitAssign(Location::regOf(26))); // edx
-    defs.append(new ImplicitAssign(Location::regOf(28))); // esp
+    defs.append(new ImplicitAssign(Location::regOf(PENT_REG_ECX))); // ecx
+    defs.append(new ImplicitAssign(Location::regOf(PENT_REG_EDX))); // edx
+    defs.append(new ImplicitAssign(Location::regOf(PENT_REG_ESP))); // esp
 }
 
 
@@ -233,20 +233,18 @@ bool PentiumSignature::returnCompare(const Assignment& a, const Assignment& b) c
     SharedConstExp lb = b.getLeft();
 
     // Eax is the preferred return location
-    if (la->isRegN(24)) {
+    if (la->isRegN(PENT_REG_EAX)) {
         return true; // r24 is less than anything
     }
-
-    if (lb->isRegN(24)) {
+    else if (lb->isRegN(PENT_REG_EAX)) {
         return false; // Nothing is less than r24
     }
 
-    // Next best is r30 (floating point %st)
-    if (la->isRegN(30)) {
+    // Next best is floating point %st
+    if (la->isRegN(PENT_REG_ST0)) {
         return true; // r30 is less than anything that's left
     }
-
-    if (lb->isRegN(30)) {
+    else if (lb->isRegN(PENT_REG_ST0)) {
         return false; // Nothing left is less than r30
     }
 
@@ -259,8 +257,8 @@ bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();
-    int       ma = Util::getStackOffset(la, 28);
-    int       mb = Util::getStackOffset(lb, 28);
+    int       ma = Util::getStackOffset(la, PENT_REG_ESP);
+    int       mb = Util::getStackOffset(lb, PENT_REG_ESP);
 
     if (ma && mb) {
         return ma < mb;

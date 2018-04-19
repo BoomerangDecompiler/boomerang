@@ -245,13 +245,13 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
 
     if (!SETTING(decompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
         (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
-        int wdth = lhs->access<Const, 1>()->getInt();
+        int regID = lhs->access<Const, 1>()->getInt();
 
         // add some fsize hints to rhs
-        if ((wdth >= 32) && (wdth <= 63)) {
+        if ((regID >= SPARC_REG_F0) && (regID <= SPARC_REG_F31)) {
             rhs = std::make_shared<Ternary>(opFsize, Const::get(32), Const::get(32), rhs);
         }
-        else if ((wdth >= 64) && (wdth <= 87)) {
+        else if ((regID >= SPARC_REG_F0TO1) && (regID <= SPARC_REG_F28TO31)) {
             rhs = std::make_shared<Ternary>(opFsize, Const::get(64), Const::get(64), rhs);
         }
     }

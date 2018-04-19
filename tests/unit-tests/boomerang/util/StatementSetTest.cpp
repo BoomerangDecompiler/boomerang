@@ -19,7 +19,7 @@ void StatementSetTest::testInsert()
 {
     StatementSet set;
 
-    Assign assign(Location::regOf(25), Location::regOf(26));
+    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
     set.insert(&assign);
 
     auto it = set.begin();
@@ -33,7 +33,7 @@ void StatementSetTest::testRemove()
     StatementSet set;
     QVERIFY(!set.remove(nullptr));
 
-    Assign assign(Location::regOf(25), Location::regOf(26));
+    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
 
     set.insert(&assign);
     QVERIFY(set.remove(&assign));
@@ -46,7 +46,7 @@ void StatementSetTest::testContains()
     StatementSet set;
     QVERIFY(!set.contains(nullptr));
 
-    Assign assign(Location::regOf(25), Location::regOf(26));
+    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
     set.insert(&assign);
     QVERIFY(set.contains(&assign));
     set.remove(&assign);
@@ -59,11 +59,11 @@ void StatementSetTest::testDefinesLoc()
     StatementSet set;
     QVERIFY(!set.definesLoc(nullptr));
 
-    Assign assign(Location::regOf(25), Location::regOf(26));
+    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
     set.insert(&assign);
-    QVERIFY(set.definesLoc(Location::regOf(25)));
+    QVERIFY(set.definesLoc(Location::regOf(PENT_REG_ECX)));
     set.remove(&assign);
-    QVERIFY(!set.definesLoc(Location::regOf(25)));
+    QVERIFY(!set.definesLoc(Location::regOf(PENT_REG_ECX)));
 }
 
 
@@ -72,7 +72,7 @@ void StatementSetTest::testIsSubSetOf()
     StatementSet set1, set2;
     QVERIFY(set1.isSubSetOf(set2));
 
-    Assign assign(Location::regOf(25), Location::regOf(26));
+    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
     set1.insert(&assign);
     QVERIFY(!set1.isSubSetOf(set2));
     QVERIFY(set2.isSubSetOf(set1));
@@ -80,7 +80,7 @@ void StatementSetTest::testIsSubSetOf()
     set2.insert(&assign);
     QVERIFY(set1.isSubSetOf(set2));
 
-    Assign assign2(Location::regOf(26), Location::regOf(25));
+    Assign assign2(Location::regOf(PENT_REG_EDX), Location::regOf(PENT_REG_ECX));
     set1.insert(&assign2);
     QVERIFY(!set1.isSubSetOf(set2));
     QVERIFY(set2.isSubSetOf(set1));
@@ -94,9 +94,9 @@ void StatementSetTest::testMakeUnion()
     set1.makeUnion(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    Assign assign1(Location::regOf(25), Location::regOf(26));
-    Assign assign2(Location::regOf(26), Location::regOf(25));
-    Assign assign3(Location::regOf(27), Location::regOf(30));
+    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
+    Assign assign2(Location::regOf(PENT_REG_EDX), Location::regOf(PENT_REG_ECX));
+    Assign assign3(Location::regOf(PENT_REG_EBX), Location::regOf(PENT_REG_ESI));
 
     set1.insert(&assign1);
     set1.insert(&assign2);
@@ -116,9 +116,9 @@ void StatementSetTest::testMakeIsect()
     set1.makeIsect(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    Assign assign1(Location::regOf(25), Location::regOf(26));
-    Assign assign2(Location::regOf(26), Location::regOf(25));
-    Assign assign3(Location::regOf(27), Location::regOf(30));
+    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
+    Assign assign2(Location::regOf(PENT_REG_EDX), Location::regOf(PENT_REG_ECX));
+    Assign assign3(Location::regOf(PENT_REG_EBX), Location::regOf(PENT_REG_ESI));
 
     set1.insert(&assign1);
     set1.insert(&assign2);
@@ -140,9 +140,9 @@ void StatementSetTest::testMakeDiff()
     set1.makeDiff(set2);
     QVERIFY(set1.begin() == set1.end());
 
-    Assign assign1(Location::regOf(25), Location::regOf(26));
-    Assign assign2(Location::regOf(26), Location::regOf(25));
-    Assign assign3(Location::regOf(27), Location::regOf(30));
+    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
+    Assign assign2(Location::regOf(PENT_REG_EDX), Location::regOf(PENT_REG_ECX));
+    Assign assign3(Location::regOf(PENT_REG_EBX), Location::regOf(PENT_REG_ESI));
 
     set1.insert(&assign1);
     set1.insert(&assign2);

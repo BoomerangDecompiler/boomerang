@@ -29,7 +29,7 @@ void LocationSetTest::testAssign()
     set1 = set2;
     QCOMPARE(set1.prints(), "");
 
-    set2.insert(Location::regOf(24));
+    set2.insert(Location::regOf(PENT_REG_EAX));
     set1 = set2;
     QCOMPARE(set1.prints(), "r24");
 }
@@ -41,15 +41,15 @@ void LocationSetTest::testCompare()
     QVERIFY(set1 == set2);
     QVERIFY(!(set1 != set2));
 
-    set1.insert(Location::regOf(25));
+    set1.insert(Location::regOf(PENT_REG_ECX));
     QVERIFY(!(set1 == set2));
     QVERIFY(set1 != set2);
 
-    set2.insert(Location::regOf(25));
+    set2.insert(Location::regOf(PENT_REG_ECX));
     QVERIFY(set1 == set2);
     QVERIFY(!(set1 != set2));
 
-    set1.insert(Location::regOf(30));
+    set1.insert(Location::regOf(PENT_REG_EDI));
     QVERIFY(!(set1 == set2));
     QVERIFY(set1 != set2);
 }
@@ -60,7 +60,7 @@ void LocationSetTest::testEmpty()
     LocationSet set;
     QVERIFY(set.empty());
 
-    set.insert(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_EDI));
     QVERIFY(!set.empty());
 }
 
@@ -70,10 +70,10 @@ void LocationSetTest::testSize()
     LocationSet set;
     QVERIFY(set.size() == 0);
 
-    set.insert(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_ESI));
     QVERIFY(set.size() == 1);
 
-    set.insert(Location::regOf(32));
+    set.insert(Location::regOf(PENT_REG_EDI));
     QVERIFY(set.size() == 2);
 }
 
@@ -85,7 +85,7 @@ void LocationSetTest::testClear()
     set.clear();
     QVERIFY(set.empty());
 
-    set.insert(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_ESI));
     set.clear();
     QVERIFY(set.empty());
 }
@@ -95,13 +95,14 @@ void LocationSetTest::testInsert()
 {
     LocationSet set;
 
-    set.insert(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_ESI));
     QCOMPARE(set.prints(), "r30");
 
-    set.insert(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_ESI));
     QCOMPARE(set.prints(), "r30");
 
-    set.insert(Location::regOf(32));
+    set.insert(Location::regOf(PENT_REG_EDI));
+    QCOMPARE(set.prints(), "r30, r31");
 }
 
 
@@ -111,17 +112,17 @@ void LocationSetTest::testRemove()
     set.remove(nullptr);
     QVERIFY(set.empty());
 
-    set.insert(Location::regOf(30));
-    set.remove(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_ESI));
+    set.remove(Location::regOf(PENT_REG_ESI));
     QVERIFY(set.empty());
 
-    set.insert(Location::regOf(30));
-    set.insert(Location::regOf(32));
-    set.remove(Location::regOf(32));
+    set.insert(Location::regOf(PENT_REG_ESI));
+    set.insert(Location::regOf(PENT_REG_EDI));
+    set.remove(Location::regOf(PENT_REG_EDI));
     QCOMPARE(set.prints(), "r30");
 
     // removing element that does not exist
-    set.remove(Location::regOf(32));
+    set.remove(Location::regOf(PENT_REG_EDI));
     QCOMPARE(set.prints(), "r30");
 }
 
@@ -132,9 +133,9 @@ void LocationSetTest::testContains()
 
     QVERIFY(!set.contains(nullptr));
 
-    set.insert(Location::regOf(30));
-    QVERIFY(set.contains(Location::regOf(30)));
-    QVERIFY(!set.contains(Location::regOf(32)));
+    set.insert(Location::regOf(PENT_REG_ESI));
+    QVERIFY(set.contains(Location::regOf(PENT_REG_ESI)));
+    QVERIFY(!set.contains(Location::regOf(PENT_REG_EDI)));
 }
 
 
@@ -143,13 +144,13 @@ void LocationSetTest::testContainsImplicit()
     LocationSet set;
     QVERIFY(!set.containsImplicit(nullptr));
 
-    set.insert(Location::regOf(30));
-    QVERIFY(!set.containsImplicit(Location::regOf(30)));
-    QVERIFY(!set.containsImplicit(Location::regOf(32)));
+    set.insert(Location::regOf(PENT_REG_ESI));
+    QVERIFY(!set.containsImplicit(Location::regOf(PENT_REG_ESI)));
+    QVERIFY(!set.containsImplicit(Location::regOf(PENT_REG_EDI)));
 
-    set.insert(RefExp::get(Location::regOf(32), nullptr));
-    QVERIFY(set.containsImplicit(Location::regOf(32)));
-    QVERIFY(!set.containsImplicit(Location::regOf(30)));
+    set.insert(RefExp::get(Location::regOf(PENT_REG_EDI), nullptr));
+    QVERIFY(set.containsImplicit(Location::regOf(PENT_REG_EDI)));
+    QVERIFY(!set.containsImplicit(Location::regOf(PENT_REG_ESI)));
 }
 
 
@@ -158,15 +159,15 @@ void LocationSetTest::testFindNS()
     LocationSet set;
     QVERIFY(set.findNS(nullptr) == nullptr);
 
-    set.insert(Location::regOf(30));
-    SharedExp e = set.findNS(Location::regOf(30));
+    set.insert(Location::regOf(PENT_REG_ESI));
+    SharedExp e = set.findNS(Location::regOf(PENT_REG_ESI));
     QVERIFY(e == nullptr);
 
-    set.insert(RefExp::get(Location::regOf(32), nullptr));
-    e = set.findNS(Location::regOf(32));
+    set.insert(RefExp::get(Location::regOf(PENT_REG_EDI), nullptr));
+    e = set.findNS(Location::regOf(PENT_REG_EDI));
     QVERIFY(e != nullptr);
 
-    QCOMPARE(e->prints(), "r32{-}");
+    QCOMPARE(e->prints(), "r31{-}");
 }
 
 
@@ -177,30 +178,30 @@ void LocationSetTest::testFindDifferentRef()
     SharedExp result;
     QVERIFY(!set.findDifferentRef(nullptr, result));
 
-    set.insert(Location::regOf(24));
-    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(24), nullptr), result));
+    set.insert(Location::regOf(PENT_REG_EAX));
+    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(PENT_REG_EAX), nullptr), result));
 
-    set.insert(RefExp::get(Location::regOf(24), nullptr));
-    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(24), nullptr), result));
+    set.insert(RefExp::get(Location::regOf(PENT_REG_EAX), nullptr));
+    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(PENT_REG_EAX), nullptr), result));
 
-    Assign as1(Location::regOf(25), Location::regOf(26));
-    Assign as2(Location::regOf(25), Location::regOf(26));
+    Assign as1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
+    Assign as2(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
 
     as1.setNumber(10);
     as2.setNumber(20);
 
-    set.insert(RefExp::get(Location::regOf(25), &as1));
+    set.insert(RefExp::get(Location::regOf(PENT_REG_ECX), &as1));
     // no other ref
-    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(25), &as1), result));
+    QVERIFY(!set.findDifferentRef(RefExp::get(Location::regOf(PENT_REG_ECX), &as1), result));
 
-    set.insert(RefExp::get(Location::regOf(25), &as2));
+    set.insert(RefExp::get(Location::regOf(PENT_REG_ECX), &as2));
     // return a different ref
-    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(25), &as1), result));
+    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(PENT_REG_ECX), &as1), result));
     QCOMPARE(result->prints(), "r25{20}");
 
     // should work even when the ref is not in the set
-    set.remove(RefExp::get(Location::regOf(25), &as1));
-    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(25), &as1), result));
+    set.remove(RefExp::get(Location::regOf(PENT_REG_ECX), &as1));
+    QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(PENT_REG_ECX), &as1), result));
     QCOMPARE(result->prints(), "r25{20}");
 }
 
@@ -211,12 +212,12 @@ void LocationSetTest::testAddSubscript()
     set.addSubscript(nullptr);
     QCOMPARE(set.prints(), "");
 
-    set.insert(Location::regOf(25));
+    set.insert(Location::regOf(PENT_REG_ECX));
     set.addSubscript(nullptr);
     QCOMPARE(set.prints(), "r25{-}");
 
-    set.insert(Location::regOf(25));
-    Assign as(Location::regOf(25), Location::regOf(26));
+    set.insert(Location::regOf(PENT_REG_ECX));
+    Assign as(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
     as.setNumber(42);
     set.addSubscript(&as);
     QCOMPARE(set.prints(), "r25{-}, r25{42}");
@@ -231,10 +232,10 @@ void LocationSetTest::testMakeUnion()
     QVERIFY(set1.empty());
     QVERIFY(set2.empty());
 
-    set1.insert(Location::regOf(25));
-    set1.insert(Location::regOf(26));
-    set2.insert(Location::regOf(26));
-    set2.insert(Location::regOf(27));
+    set1.insert(Location::regOf(PENT_REG_ECX));
+    set1.insert(Location::regOf(PENT_REG_EDX));
+    set2.insert(Location::regOf(PENT_REG_EDX));
+    set2.insert(Location::regOf(PENT_REG_EBX));
 
     QCOMPARE(set1.prints(), "r25, r26");
     QCOMPARE(set2.prints(), "r26, r27");
@@ -253,10 +254,10 @@ void LocationSetTest::testMakeDiff()
     QVERIFY(set1.empty());
     QVERIFY(set2.empty());
 
-    set1.insert(Location::regOf(25));
-    set1.insert(Location::regOf(26));
-    set2.insert(Location::regOf(26));
-    set2.insert(Location::regOf(27));
+    set1.insert(Location::regOf(PENT_REG_ECX));
+    set1.insert(Location::regOf(PENT_REG_EDX));
+    set2.insert(Location::regOf(PENT_REG_EDX));
+    set2.insert(Location::regOf(PENT_REG_EBX));
 
     QCOMPARE(set1.prints(), "r25, r26");
     QCOMPARE(set2.prints(), "r26, r27");

@@ -282,7 +282,7 @@ void Module::addWin32DbgInfo(Function *function)
         SharedType rtype = typeFromDebugInfo(retType, sym->ModBase);
 
         if (!rtype->isVoid()) {
-            function->getSignature()->addReturn(rtype, Location::regOf(24));
+            function->getSignature()->addReturn(rtype, Location::regOf(PENT_REG_EAX));
         }
 
         // find params and locals

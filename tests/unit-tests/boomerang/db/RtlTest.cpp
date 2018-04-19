@@ -65,7 +65,7 @@ void RtlTest::cleanupTestCase()
 
 void RtlTest::testAppend()
 {
-    Assign *a = new Assign(Location::regOf(8), Binary::get(opPlus, Location::regOf(9), Const::get(99)));
+    Assign *a = new Assign(Location::regOf(SPARC_REG_O0), Binary::get(opPlus, Location::regOf(SPARC_REG_O1), Const::get(99)));
     RTL    r(Address::ZERO, { a });
 
     QString     res;
@@ -268,8 +268,8 @@ void RtlTest::testSetConscripts()
     SharedExp e2 = std::make_shared<Ternary>(opTern, Binary::get(opGtr, Location::local("local0", nullptr), Const::get(0)),
                                              Location::local("local0", nullptr), Location::global("global1", nullptr));
     StatementList args;
-    args.append(new Assign(Location::regOf(8), e1));
-    args.append(new Assign(Location::regOf(9), e2));
+    args.append(new Assign(Location::regOf(SPARC_REG_O0), e1));
+    args.append(new Assign(Location::regOf(SPARC_REG_O1), e2));
     s2->setArguments(args);
 
     RTL rtl(Address(0x1000), { s1, s2 });

@@ -402,7 +402,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
         if (symInfo->Flags & SYMFLAG_REGREL) {
             assert(symInfo->Register == 8); // ebp
             proc->getSignature()->addParameter(symInfo->Name,
-                Location::memOf(Binary::get(opPlus, Location::regOf(28), Const::get((int)symInfo->Address - 4))), ty);
+                Location::memOf(Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get((int)symInfo->Address - 4))), ty);
         }
         else if (symInfo->Flags & SYMFLAG_REGISTER) {
             proc->getSignature()->addParameter(symInfo->Name, Location::regOf(debugRegister(symInfo->Register)), ty);
@@ -413,7 +413,7 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
         assert(symInfo->Flags & SYMFLAG_REGREL);
         assert(symInfo->Register == 8);
         SharedExp memref =
-            Location::memOf(Binary::get(opMinus, Location::regOf(28), Const::get(-((int)symInfo->Address - 4))));
+            Location::memOf(Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Const::get(-((int)symInfo->Address - 4))));
         SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
         uproc->addLocal(ty, symInfo->Name, memref);
     }
