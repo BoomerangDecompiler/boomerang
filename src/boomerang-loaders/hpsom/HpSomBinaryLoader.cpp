@@ -279,7 +279,7 @@ bool HpSomBinaryLoader::loadFromMemory(QByteArray& imgdata)
         // cout << "Exporting " << (dlStrings+UINT4(&export_list[u].name)) << " value " << hex <<
         // UINT4(&export_list[u].value) << endl;
         if (strncmp(dlStrings + UINT4(&export_list[u].name), "main", 4) == 0) {
-            Address callMainAddr(UINT4ADDR(&export_list[u]));
+            Address callMainAddr(UINT4ADDR(&export_list[u].value));
 
             // Enter the symbol "_callmain" for this address
             m_symbols->createSymbol(callMainAddr, "_callmain");
