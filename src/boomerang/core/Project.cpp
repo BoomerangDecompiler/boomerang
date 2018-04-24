@@ -173,7 +173,10 @@ Prog *Project::createProg(BinaryFile* file, const QString& name)
     m_prog.reset(new Prog(name, this));
     m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
 
-    // Cannot check here if  Frontend is valid, since e.g. Palm binaries do not have a frontend.
+    if (!m_fe) {
+        LOG_ERROR("Cannot create Prog without a frontend!");
+        return nullptr;
+    }
 
     m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();

@@ -82,15 +82,15 @@ IFrontEnd *IFrontEnd::instantiate(BinaryFile *binaryFile, Prog *prog)
         return new ST20FrontEnd(binaryFile, prog);
 
     case Machine::HPRISC:
-        LOG_VERBOSE("No frontend for HP RISC");
+        LOG_WARN("No frontend for HP RISC");
         break;
 
     case Machine::PALM:
-        LOG_VERBOSE("No frontend for PALM");
+        LOG_WARN("No frontend for PALM");
         break;
 
     case Machine::M68K:
-        LOG_VERBOSE("No frontend for M68K");
+        LOG_WARN("No frontend for M68K");
         break;
 
     default:
