@@ -493,7 +493,7 @@ bool CommandlineDriver::loadAndDecode(const QString& fname, const QString& pname
 
     const bool ok = m_project->loadBinaryFile(fname);
     if (!ok) {
-        // load failed
+        LOG_ERROR("Loading '%1' failed.", fname);
         return false;
     }
 

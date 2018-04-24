@@ -98,7 +98,11 @@ void Project::unloadBinaryFile()
 bool Project::decodeBinaryFile()
 {
     if (!getProg()) {
-        LOG_WARN("Cannot decode binary file: No binary file is loaded.");
+        LOG_ERROR("Cannot decode binary file: No binary file is loaded.");
+        return false;
+    }
+    else if (!m_fe) {
+        LOG_ERROR("Cannot decode binary file: No suitable frontend found.");
         return false;
     }
 
@@ -140,6 +144,10 @@ bool Project::decompileBinaryFile()
         LOG_ERROR("Cannot decompile binary file: No binary file is loaded.");
         return false;
     }
+    else if (!m_fe) {
+        LOG_ERROR("Cannot decompile binary file: No suitable frontend found.");
+        return false;
+    }
 
     m_prog->decompile();
     return true;
@@ -152,6 +160,10 @@ bool Project::generateCode(Module *module)
         LOG_ERROR("Cannot generate code: No binary file is loaded.");
         return false;
     }
+    else if (!m_fe) {
+        LOG_ERROR("Cannot generate code: No suitable frontend found.");
+        return false;
+    }
 
     LOG_MSG("Generating code...");
     m_codeGenerator->generateCode(getProg(), module);
@@ -159,7 +171,7 @@ bool Project::generateCode(Module *module)
 }
 
 
-Prog *Project::createProg(BinaryFile* file, const QString& name)
+Prog *Project::createProg(BinaryFile *file, const QString& name)
 {
     if (!file) {
         LOG_ERROR("Cannot create Prog without a binary file!");
@@ -172,8 +184,6 @@ Prog *Project::createProg(BinaryFile* file, const QString& name)
 
     m_prog.reset(new Prog(name, this));
     m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
-
-    // Cannot check here if  Frontend is valid, since e.g. Palm binaries do not have a frontend.
 
     m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();
@@ -202,7 +212,7 @@ bool Project::decodeAll()
         LOG_MSG("Decoding entry point...");
     }
 
-    if (!m_fe->decode(SETTING(decodeMain))) {
+    if (!m_fe || !m_fe->decode(SETTING(decodeMain))) {
         LOG_ERROR("Aborting load due to decode failure");
         return false;
     }

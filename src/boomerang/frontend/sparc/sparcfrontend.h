@@ -85,7 +85,7 @@ private:
      *                 is the delay slot of another delayed CTI
      * \returns true if delay instruction can be optimized away
      */
-    bool optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const;
+    bool canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const;
 
     /**
      * Determines if the given call and delay instruction consitute a call
@@ -115,7 +115,7 @@ private:
      * \returns    The basic block containing the single return instruction
      *             if this optimisation applies, nullptr otherwise.
      */
-    BasicBlock *optimise_CallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc);
+    BasicBlock *optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc);
 
     /**
      * Adds the destination of a branch to the queue of address

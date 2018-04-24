@@ -55,43 +55,40 @@ void DEBUG_STMTS(DecodeResult& result)
 }
 
 
-std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<RTL> stmts, const char *name)
+std::unique_ptr<RTL> SparcDecoder::createBranchRTL(const char *insnName, Address pc, std::unique_ptr<RTL> stmts)
 {
     BranchStatement *br  = new BranchStatement();
 
     stmts->append(br);
 
-    if (name[0] == 'F') {
+    if (insnName[0] == 'F') {
         // fbranch is any of [ FBN FBNE FBLG FBUL FBL    FBUG FBG   FBU
         //                       FBA FBE    FBUE FBGE FBUGE FBLE FBULE FBO ],
         // fbranches are not the same as ibranches, so need a whole different set of tests
-        if (name[2] == 'U') {
-            name++; // Just ignore unordered (for now)
+        if (insnName[2] == 'U') {
+            insnName++; // Just ignore unordered (for now)
         }
 
-        switch (name[2])
+        switch (insnName[2])
         {
         case 'E': // FBE
             br->setCondType(BranchType::JE, true);
             break;
 
         case 'L':
-
-            if (name[3] == 'G') { // FBLG
+            if (insnName[3] == 'G') { // FBLG
                 br->setCondType(BranchType::JNE, true);
             }
-            else if (name[3] == 'E') { // FBLE
+            else if (insnName[3] == 'E') { // FBLE
                 br->setCondType(BranchType::JSLE, true);
             }
             else { // FBL
                 br->setCondType(BranchType::JSL, true);
             }
-
             break;
 
         case 'G':
-
-            if (name[3] == 'E') { // FBGE
+            if (insnName[3] == 'E') { // FBGE
                 br->setCondType(BranchType::JSGE, true);
             }
             else { // FBG
@@ -101,8 +98,7 @@ std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<R
             break;
 
         case 'N':
-
-            if (name[3] == 'E') { // FBNE
+            if (insnName[3] == 'E') { // FBNE
                 br->setCondType(BranchType::JNE, true);
             }
 
@@ -110,7 +106,7 @@ std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<R
             break;
 
         default:
-            LOG_WARN("Unknown float branch '%1'", name);
+            LOG_WARN("Unknown float branch '%1'", insnName);
             stmts.reset();
         }
 
@@ -120,16 +116,15 @@ std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<R
     // ibranch is any of [ BN BE  BLE BL  BLEU BCS BNEG BVS
     //                       BA BNE BG  BGE BGU  BCC BPOS BVC ],
     // Note: BPN, BPE, etc handled below
-    switch (name[1])
+    switch (insnName[1])
     {
     case 'E':
         br->setCondType(BranchType::JE); // BE
         break;
 
     case 'L':
-
-        if (name[2] == 'E') {
-            if (name[3] == 'U') {
+        if (insnName[2] == 'E') {
+            if (insnName[3] == 'U') {
                 br->setCondType(BranchType::JULE); // BLEU
             }
             else {
@@ -143,59 +138,51 @@ std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<R
         break;
 
     case 'N':
-
         // BNE, BNEG (won't see BN)
-        if (name[3] == 'G') {
+        if (insnName[3] == 'G') {
             br->setCondType(BranchType::JMI); // BNEG
         }
         else {
             br->setCondType(BranchType::JNE); // BNE
         }
-
         break;
 
     case 'C':
-
         // BCC, BCS
-        if (name[2] == 'C') {
+        if (insnName[2] == 'C') {
             br->setCondType(BranchType::JUGE); // BCC
         }
         else {
             br->setCondType(BranchType::JUL); // BCS
         }
-
         break;
 
     case 'V':
-
         // BVC, BVS; should never see these now
-        if (name[2] == 'C') {
+        if (insnName[2] == 'C') {
             LOG_WARN("Decoded BVC instruction"); // BVC
         }
         else {
             LOG_WARN("Decoded BVS instruction"); // BVS
         }
-
         break;
 
     case 'G':
-
         // BGE, BG, BGU
-        if (name[2] == 'E') {
+        if (insnName[2] == 'E') {
             br->setCondType(BranchType::JSGE); // BGE
         }
-        else if (name[2] == 'U') {
+        else if (insnName[2] == 'U') {
             br->setCondType(BranchType::JUG); // BGU
         }
         else {
             br->setCondType(BranchType::JSG); // BG
         }
-
         break;
 
     case 'P':
 
-        if (name[2] == 'O') {
+        if (insnName[2] == 'O') {
             br->setCondType(BranchType::JPOS); // BPOS
             break;
         }
@@ -204,13 +191,13 @@ std::unique_ptr<RTL> SparcDecoder::createBranchRtl(Address pc, std::unique_ptr<R
         // (recurse)
         // B P P O S ...
         // 0 1 2 3 4 ...
-        char temp[8];
-        temp[0] = 'B';
-        strcpy(temp + 1, name + 2);
-        return createBranchRtl(pc, std::move(stmts), temp);
+        char tempName[8];
+        tempName[0] = 'B';
+        strcpy(tempName + 1, insnName + 2);
+        return createBranchRTL(tempName, pc, std::move(stmts));
 
     default:
-        LOG_WARN("Unknown non-float branch '%1'", name);
+        LOG_WARN("Unknown non-float branch '%1'", insnName);
     }
 
     return stmts;
@@ -448,7 +435,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
                                 rtl->append(new GotoStatement);
                             }
                             else {
-                                rtl = createBranchRtl(pc, std::move(inst.rtl), name);
+                                rtl = createBranchRTL(name, pc, std::move(inst.rtl));
                                 // The BranchStatement will be the last Stmt of the rtl
 
                                 jump = static_cast<GotoStatement *>(rtl->back());
@@ -1881,7 +1868,7 @@ MATCH_label_d0:
                 inst.rtl->append(jump);
             }
             else {
-                inst.rtl = createBranchRtl(pc, std::move(inst.rtl), name);
+                inst.rtl = createBranchRTL(name, pc, std::move(inst.rtl));
                 jump = static_cast<GotoStatement *>(inst.rtl->back());
             }
 
@@ -1946,7 +1933,7 @@ MATCH_label_d1:
                 inst.rtl->append(jump);
             }
             else {
-                inst.rtl = createBranchRtl(pc, std::move(inst.rtl), name);
+                inst.rtl = createBranchRTL(name, pc, std::move(inst.rtl));
                 jump = static_cast<BranchStatement *>(inst.rtl->back());
             }
 
@@ -2010,7 +1997,7 @@ MATCH_label_d2:
                 inst.rtl->append(jump);
             }
             else {
-                inst.rtl  = createBranchRtl(pc, std::move(inst.rtl), name);
+                inst.rtl  = createBranchRTL(name, pc, std::move(inst.rtl));
                 jump = static_cast<GotoStatement *>(inst.rtl->back());
             }
 

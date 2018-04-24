@@ -134,11 +134,15 @@ private:
     /// Private method to get the start and length of a given subspace
     std::pair<Address, int> getSubspaceInfo(const char *ssname);
 
-    Byte *m_loadedImage;            ///< Points to loaded image
-    BinarySymbolTable *m_symbols;  ///< Symbol table object
-    std::set<Address> m_imports;    ///< Set of imported proc addr's
     BinaryImage *m_image;
+    BinarySymbolTable *m_symbols;  ///< Symbol table object
+
+    // file format info
+    struct header *m_header;
+
+    std::set<Address> m_imports;   ///< Set of imported proc addr's
+
 
 public:
-    void processSymbols();
+    void processSymbols(const QByteArray& imgdata);
 };
