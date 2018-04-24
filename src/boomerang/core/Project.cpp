@@ -171,7 +171,7 @@ bool Project::generateCode(Module *module)
 }
 
 
-Prog *Project::createProg(BinaryFile* file, const QString& name)
+Prog *Project::createProg(BinaryFile *file, const QString& name)
 {
     if (!file) {
         LOG_ERROR("Cannot create Prog without a binary file!");

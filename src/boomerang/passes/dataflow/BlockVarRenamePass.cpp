@@ -41,6 +41,10 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 // Subscript dataflow variables
 bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedExp, std::deque<Statement *>, lessExpStar>& stacks)
 {
+    if (proc->getCFG()->getNumBBs() == 0) {
+        return false;
+    }
+
     bool changed = false;
 
     // For each statement S in block n
