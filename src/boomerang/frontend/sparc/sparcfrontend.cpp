@@ -39,7 +39,7 @@
 #include <sstream>
 
 
-bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const
+bool SparcFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const
 {
     // Check that the destination is within the main test section; may not be when we speculatively decode junk
     if ((dest - 4) > upperLimit) {
@@ -53,7 +53,7 @@ bool SparcFrontEnd::optimise_DelayCopy(Address src, Address dest, ptrdiff_t delt
 }
 
 
-BasicBlock *SparcFrontEnd::optimise_CallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc)
+BasicBlock *SparcFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc)
 {
     if (call->isReturnAfterCall()) {
 
@@ -146,7 +146,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
     }
 
     // Get the new return basic block for the special case where the delay instruction is a restore
-    BasicBlock *returnBB = optimise_CallReturn(call_stmt, inst.rtl.get(), delay_rtl, proc);
+    BasicBlock *returnBB = optimizeCallReturn(call_stmt, inst.rtl.get(), delay_rtl, proc);
 
     int disp30 = (call_stmt->getFixedDest().value() - address.value()) >> 2;
 
@@ -258,10 +258,10 @@ void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress
     GotoStatement *SD_stmt   = static_cast<GotoStatement *>(inst.rtl->back());
     RTL           *delay_rtl = delay_inst.rtl.get();
 
-    // Try the "delay instruction has been copied" optimisation, emitting the delay instruction now if the optimisation
-    // won't apply
+    // Try the "delay instruction has been copied" optimisation,
+    // emitting the delay instruction now if the optimisation won't apply
     if (delay_inst.type != NOP) {
-        if (optimise_DelayCopy(address, SD_stmt->getFixedDest(), delta, hiAddress)) {
+        if (canOptimizeDelayCopy(address, SD_stmt->getFixedDest(), delta, hiAddress)) {
             SD_stmt->adjustFixedDest(-4);
         }
         else {
@@ -357,7 +357,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
     if (last->getKind() == StmtType::Call) {
         // Attempt to add a return BB if the delay instruction is a RESTORE
         CallStatement *call_stmt = static_cast<CallStatement *>(last);
-        BasicBlock    *returnBB  = optimise_CallReturn(call_stmt, rtl, delayRTL, proc);
+        BasicBlock    *returnBB  = optimizeCallReturn(call_stmt, rtl, delayRTL, proc);
 
         if (returnBB != nullptr) {
             cfg->addEdge(newBB, returnBB);
@@ -445,7 +445,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
         // Skip the NCT/NOP instruction
         address += 8;
     }
-    else if (optimise_DelayCopy(address, jumpDest, delta, hiAddress)) {
+    else if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
         // We can just branch to the instr before jumpDest. Adjust the destination of the branch
         stmt_jump->adjustFixedDest(-4);
         // Now emit the branch
@@ -516,7 +516,7 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
     Address       jumpDest  = jumpStmt->getFixedDest();
     BasicBlock    *newBB = nullptr;
 
-    if (optimise_DelayCopy(address, jumpDest, delta, hiAddress)) {
+    if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
         // Adjust the destination of the branch
         jumpStmt->adjustFixedDest(-4);
         // Now emit the branch
