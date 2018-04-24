@@ -449,8 +449,9 @@ SharedExp Ternary::polySimplify(bool& changed)
     }
 
     if ((m_oper == opFsize) && (subExp3->getOper() == opMemOf) && (subExp3->getSubExp1()->getOper() == opIntConst)) {
+        assert(subExp3->isLocation());
         Address  u  = subExp3->access<Const, 1>()->getAddr();
-        auto     l  = std::dynamic_pointer_cast<Location>(subExp3);
+        auto     l  = std::static_pointer_cast<Location>(subExp3);
         UserProc *p = l->getProc();
 
         if (p) {
