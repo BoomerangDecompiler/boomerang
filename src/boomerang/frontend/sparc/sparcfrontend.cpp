@@ -393,8 +393,8 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
 bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
                              DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
-    GotoStatement *stmt_jump = static_cast<GotoStatement *>(inst.rtl->back());
-    Address       jumpDest      = stmt_jump->getFixedDest();
+    GotoStatement *jumpStmt = static_cast<GotoStatement *>(inst.rtl->back());
+    Address       jumpDest  = jumpStmt->getFixedDest();
 
     // Assume that if we find a call in the delay slot, it's actually a pattern such as move/call/move
     // MVE: Check this! Only needed for HP PA/RISC
@@ -447,7 +447,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
     }
     else if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
         // We can just branch to the instr before jumpDest. Adjust the destination of the branch
-        stmt_jump->adjustFixedDest(-4);
+        jumpStmt->adjustFixedDest(-4);
         // Now emit the branch
         BB_rtls->push_back(std::move(inst.rtl));
         BasicBlock *newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
@@ -606,10 +606,9 @@ std::vector<SharedExp>& SparcFrontEnd::getDefaultReturns()
 }
 
 
-bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, bool fragment /* = false */,
+bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, bool /*fragment = false */,
                                 bool spec /* = false */)
 {
-    Q_UNUSED(fragment);
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
     TargetQueue _targetQueue;
@@ -645,12 +644,10 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
     while ((addr = _targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::unique_ptr<RTLList> BB_rtls(new RTLList);
-
-        // Keep decoding sequentially until a CTI without a fall through branch
-        // is decoded
-        // ADDRESS start = address;
         DecodeResult inst;
 
+        // Keep decoding sequentially until a CTI
+        // without a fall through branch is decoded
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (SETTING(traceDecoder)) {
@@ -747,8 +744,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                 // some other branch may be discovered to it later.
                 BB_rtls->push_back(std::move(inst.rtl));
 
-                // Then increment the native address pointer
-                addr = addr + 4;
+                addr += 4;
                 break;
 
             case NCT:
@@ -770,16 +766,14 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     // to go to one past the skipped instruction.
                     jumpStmt->setDest(addr + 8);
                     BB_rtls->push_back(std::move(inst.rtl));
-
-                    // Construct the new basic block and save its destination
-                    // address if it hasn't been visited already
                     BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                     assert(newBB);
+
                     handleBranch(addr + 8, m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg, _targetQueue);
 
                     // There is no fall through branch.
                     sequentialDecode = false;
-                    addr           += 8; // Update address for coverage
+                    addr += 8;
                     break;
                 }
 
