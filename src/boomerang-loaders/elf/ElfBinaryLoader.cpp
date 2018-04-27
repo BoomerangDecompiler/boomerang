@@ -549,7 +549,11 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
     }
 
     const SWord symbolType  = elfRead2(&m_elfHeader->e_type);
-    const int strSectionIdx = m_shLink[secIndex]; // sh_link points to the string table
+    const uint32 strSectionIdx = m_shLink[secIndex]; // sh_link points to the string table
+    if (!Util::inRange(strSectionIdx, 0UL, m_elfSections.size())) {
+        return; // cannot read symbol name from invalid string section
+    }
+
     const int numSymbols = section.Size / section.entry_size;
     // Index 0 is a dummy entry
     for (int i = 1; i < numSymbols; i++) {
