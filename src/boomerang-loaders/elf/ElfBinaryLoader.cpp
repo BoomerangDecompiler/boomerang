@@ -192,8 +192,9 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         // Get section information.
         const Elf32_Shdr *sectionHeader = m_sectionHdrs + i;
 
-        if (reinterpret_cast<const Byte *>(sectionHeader) > m_loadedImage + m_loadedImageSize) {
-            LOG_ERROR("Cannot load ELF file: Section header for section %1 is outside of image size", i);
+        // Check if this section header entry is fully contained in this file
+        if (reinterpret_cast<const Byte *>(sectionHeader+1) > m_loadedImage + m_loadedImageSize) {
+            LOG_ERROR("Cannot load ELF file: Section header for section %1 extends past image boundary", i);
             return false;
         }
 
