@@ -525,6 +525,12 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
     const SWord         symbolType    = elfRead2(&m_elfHeader->e_type);
     const SectionParam& section       = m_elfSections[secIndex];
     const int           strSectionIdx = m_shLink[secIndex]; // sh_link points to the string table
+
+    if (!Util::inRange(section.entry_size, 1UL, m_loadedImageSize)) {
+        LOG_WARN("Cannot add symbols for section %1: Invalid section entry size %1", section.entry_size);
+        return;
+    }
+
     const int           numSymbols    = section.Size / section.entry_size;
 
     m_symbolSection = reinterpret_cast<const Elf32_Sym *>(section.imagePtr.value()); // Pointer to symbols
