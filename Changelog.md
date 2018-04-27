@@ -2,6 +2,7 @@
 ----------------------
 - Fixed: Crashes when decompiling SPARC binaries.
 - Fixed: Crashes when decompiling Win32 binaries.
+- Fixed: Crashes when loading corrupted ELF binaries.
 - Fixed: Crash when generating code for switch statements.
 - Fixed: Crash when loading MIPS binaries.
 - Fixed: Crash when loading HPPA binaries.
@@ -11,6 +12,7 @@
 - Fixed: Crash when the instruction at the entry point is a jump instruction.
 - Fixed: Crash when accessing a Phi reference in a removed Basic Block.
 - Fixed: Crash when decompiling recursive functions containing switch statements or computed calls.
+- Fixed: Crash when decompiling x86 binaries that contain a JO/JNO instruction.
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
 - Fixed: A large number of memory leaks.
