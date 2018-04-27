@@ -1055,7 +1055,9 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                             }
                         }
 
-                        extraProcessCall(call, *currentBB->getRTLs());
+                        if (currentBB && currentBB->getRTLs()) {
+                            extraProcessCall(call, *currentBB->getRTLs());
+                        }
 
                         // make sure we already moved the created RTL into a BB
                         assert(BB_rtls == nullptr);
