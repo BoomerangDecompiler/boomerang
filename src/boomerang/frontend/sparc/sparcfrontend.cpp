@@ -681,11 +681,10 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                 QTextStream ost(&instructionString);
 
                 for (int j = 0; j < inst.numBytes; j++) {
-                    ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
-
-                    if (j < inst.numBytes - 1) {
-                        ost << " ";
+                    if (!m_binaryFile->getImage()->getSectionByAddr(addr + delta + j)) {
+                        break;
                     }
+                    ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
                 }
 
                 LOG_ERROR("Invalid or unrecognized instruction at address %1: %2", addr, instructionString);
