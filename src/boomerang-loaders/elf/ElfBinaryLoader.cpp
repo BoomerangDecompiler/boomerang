@@ -435,23 +435,25 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
         if (sym == i) {
             const BinarySection *targetSect = m_binaryImage->getSectionByAddr(Address(elfRead4(pltEntry)));
 
-            if (targetSect->getName().contains("got")) {
-                int c           = elfRead4(pltEntry) - targetSect->getSourceAddr().value();
-                int plt_offset2 = elfRead4(reinterpret_cast<DWord *>((targetSect->getHostAddr() + c).value()));
-                int plt_idx     = (plt_offset2 % pltEntrySize);
+            if (targetSect) {
+                if (targetSect->getName().contains("got")) {
+                    int c           = elfRead4(pltEntry) - targetSect->getSourceAddr().value();
+                    int plt_offset2 = elfRead4(reinterpret_cast<DWord *>((targetSect->getHostAddr() + c).value()));
+                    int plt_idx     = (plt_offset2 % pltEntrySize);
 
-                if (entryType == R_386_JMP_SLOT) {
-                    return Address(plt_offset2 - 6);
+                    if (entryType == R_386_JMP_SLOT) {
+                        return Address(plt_offset2 - 6);
+                    }
+
+                    return addrPlt + plt_idx * pltEntrySize;
                 }
 
-                return addrPlt + plt_idx * pltEntrySize;
+                const int plt_offset = elfRead4(pltEntry) - siPlt->getSourceAddr().value();
+                // Found! Now we want the native address of the associated PLT entry.
+                // For now, assume a size of 0x10 for each PLT entry, and assume that each entry in the .rel.plt section
+                // corresponds exactly to an entry in the .plt (except there is one dummy .plt entry)
+                return addrPlt + plt_offset;
             }
-
-            const int plt_offset = elfRead4(pltEntry) - siPlt->getSourceAddr().value();
-            // Found! Now we want the native address of the associated PLT entry.
-            // For now, assume a size of 0x10 for each PLT entry, and assume that each entry in the .rel.plt section
-            // corresponds exactly to an entry in the .plt (except there is one dummy .plt entry)
-            return addrPlt + plt_offset;
         }
 
         if (--curr < 0) {
