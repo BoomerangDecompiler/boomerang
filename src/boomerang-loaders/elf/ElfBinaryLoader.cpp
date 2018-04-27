@@ -162,6 +162,10 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         LOG_ERROR("Cannot load ELF file: No sections found");
         return false;
     }
+    else if ((const Byte *)(m_sectionHdrs + numSections) > m_loadedImage + m_loadedImageSize) {
+        LOG_ERROR("Cannot load ELF file: Section header information extends past end of file");
+        return false;
+    }
 
     // Set up the m_sh_link and m_sh_info arrays
     if (m_shLink) { delete[] m_shLink; }
@@ -376,8 +380,12 @@ const char *ElfBinaryLoader::getStrPtr(int sectionIdx, int offset)
 
     // Get a pointer to the start of the string table
     const char *stringSym = reinterpret_cast<const char*>(m_elfSections[sectionIdx].imagePtr.value());
-    // Just add the offset
-    return stringSym + offset;
+
+    if (Util::inRange((const Byte *)stringSym + offset, m_loadedImage, m_loadedImage + m_loadedImageSize)) {
+        // Just add the offset
+        return stringSym + offset;
+    }
+    return nullptr;
 }
 
 

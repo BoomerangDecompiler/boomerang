@@ -122,7 +122,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
 void SparcFrontEnd::case_unhandled_stub(Address addr)
 {
-    LOG_ERROR("DCTI couple at address ", addr);
+    LOG_ERROR("Unhandled DCTI couple at address %1", addr);
 }
 
 
