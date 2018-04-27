@@ -161,6 +161,7 @@ bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream&
     function->setEntryBB();
 
     int tos = 0;
+
     processFloatCode(function->getEntryBB(), tos, cfg);
     processFloatCode(cfg);
 
@@ -305,7 +306,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
 {
     // Loop through each RTL this BB
-    RTLList *BB_rtls = bb->getRTLs();
+    RTLList *BB_rtls = bb ? bb->getRTLs() : nullptr;
 
     if (BB_rtls == nullptr) {
         // For example, incomplete BB

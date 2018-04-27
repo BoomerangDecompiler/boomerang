@@ -27315,7 +27315,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 191 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.O", 2, relocd, BranchType::INVALID)
+                            COND_JUMP("Jb.O", 2, relocd, BranchType::JOF)
 
                             /*
                              * Conditional branches, 16 bit offset: 66 0F 8X XX XX
@@ -27329,7 +27329,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                             HostAddress relocd = addressToPC(MATCH_p) + 2 + Util::signExtend<int64_t>((MATCH_w_8_8 & 0xff), 8);
                             nextPC = MATCH_p + 2;
                             // #line 188 "frontend/machine/pentium/decoder.m"
-                            COND_JUMP("Jb.NO", 2, relocd, BranchType::INVALID)
+                            COND_JUMP("Jb.NO", 2, relocd, BranchType::JNOF)
                         }
                         break;
 

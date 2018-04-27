@@ -44,8 +44,8 @@ QTextStream& alignStream(QTextStream& str, int align);
 
 
 /// Check if \p value is in [\p rangeStart, \p rangeEnd)
-template<class T, class U>
-bool inRange(const T& value, const U& rangeStart, const U& rangeEnd)
+template<class T, class U1, class U2>
+bool inRange(const T& value, const U1& rangeStart, const U2& rangeEnd)
 {
     return (value >= rangeStart) && (value < rangeEnd);
 }

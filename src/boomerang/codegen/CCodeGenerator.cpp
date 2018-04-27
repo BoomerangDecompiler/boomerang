@@ -541,8 +541,9 @@ void CCodeGenerator::generateCode(UserProc *proc)
     m_lines.clear();
     m_proc = proc;
 
-    assert(proc->getCFG());
-    assert(proc->getEntryBB());
+    if (!proc->getCFG() || !proc->getEntryBB()) {
+        return;
+    }
 
     m_analyzer.structureCFG(proc->getCFG());
     PassManager::get()->executePass(PassID::UnusedLocalRemoval, proc);

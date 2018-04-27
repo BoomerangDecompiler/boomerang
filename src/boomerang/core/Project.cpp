@@ -58,7 +58,6 @@ bool Project::loadBinaryFile(const QString& filePath)
     m_loadedBinary.reset(new BinaryFile(srcFile.readAll(), loader));
 
     if (loader->loadFromFile(m_loadedBinary.get()) == false) {
-        LOG_WARN("Loading '%1 failed", filePath);
         return false;
     }
 

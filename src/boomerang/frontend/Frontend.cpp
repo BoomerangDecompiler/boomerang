@@ -473,7 +473,14 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 
     const BinarySection *section          = image->getSectionByAddr(pc);
     ptrdiff_t            host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
-    return m_decoder->decodeInstruction(pc, host_native_diff, result);
+
+    try {
+        return m_decoder->decodeInstruction(pc, host_native_diff, result);
+    }
+    catch (std::invalid_argument& e) {
+        LOG_ERROR("%1", e.what());
+        return false;
+    }
 }
 
 
@@ -630,12 +637,13 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
             if (!decodeInstruction(addr, inst)) {
                 QString message;
                 BinaryImage *image = m_program->getBinaryFile()->getImage();
-                message.sprintf("Treating invalid or unrecognized instruction at address %s as NOP: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
+                message.sprintf("Encountered invalid or unrecognized instruction at address %s: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
                                 image->readNative1(addr + 0),
                                 image->readNative1(addr + 1),
                                 image->readNative1(addr + 2),
                                 image->readNative1(addr + 3));
                 LOG_WARN(message);
+                break;
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
@@ -1047,7 +1055,9 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
                             }
                         }
 
-                        extraProcessCall(call, *currentBB->getRTLs());
+                        if (currentBB && currentBB->getRTLs()) {
+                            extraProcessCall(call, *currentBB->getRTLs());
+                        }
 
                         // make sure we already moved the created RTL into a BB
                         assert(BB_rtls == nullptr);

@@ -255,21 +255,14 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString& name, Address natPC,
                                                     const std::vector<SharedExp>& actuals)
 {
-    QTextStream q_cerr(stderr);
-    // If -f is in force, use the fast (but not as precise) name instead
-    QString lname = name;
-
-
-    // Retrieve the dictionary entry for the named instruction
-    auto dict_entry = idict.find(lname);
-
-    if (dict_entry == idict.end()) { /* lname is not in dictionary */
-        q_cerr << "ERROR: unknown instruction " << lname << " at " << natPC << ", ignoring.\n";
-        return nullptr;
+    // TODO try to retrieve fast instruction mappings
+    // before trying the verbose instructions
+    auto dict_entry = idict.find(name);
+    if (dict_entry == idict.end()) {
+        return nullptr; // instruction not found
     }
 
     TableEntry& entry(dict_entry->second);
-
     return instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
 }
 

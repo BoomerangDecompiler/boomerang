@@ -464,6 +464,10 @@ void DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDo
 void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                                 std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi)
 {
+    if (m_BBs.empty()) {
+        return;
+    }
+
     // For each statement this BB
     BasicBlock::RTLIterator       rit;
     StatementList::iterator sit;
