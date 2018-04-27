@@ -45,7 +45,7 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name, cons
     unsigned int numOperands = sig.second;
 
     if (numOperands != args.size()) {
-        QString msg = QString("Disassembled instruction '%1' has %2 arguments,\n"
+        QString msg = QString("Disassembled instruction '%1' has %2 arguments, "
             "but the instruction has %3 parameters in the RTL dictionary")
             .arg(name).arg(args.size()).arg(numOperands);
         throw std::invalid_argument(msg.toStdString());

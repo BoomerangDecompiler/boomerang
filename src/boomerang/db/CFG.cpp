@@ -430,6 +430,10 @@ Statement *Cfg::findOrCreateImplicitAssign(SharedExp exp)
         return it->second;
     }
 
+    if (!m_entryBB) {
+        return nullptr;
+    }
+
     // A use with no explicit definition. Create a new implicit assignment
     exp   = exp->clone(); // In case the original gets changed
     ImplicitAssign *def = m_entryBB->addImplicitAssign(exp);
