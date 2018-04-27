@@ -111,6 +111,11 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     m_loadedImage = reinterpret_cast<Byte *>(img.data());
     m_elfHeader   = reinterpret_cast<Elf32_Ehdr *>(img.data()); // Save a lot of casts
 
+    if (m_loadedImageSize < sizeof(Elf32_Ehdr)) {
+        LOG_ERROR("Cannot load ELF file: File size too small");
+        return false;
+    }
+
     // Basic checks
     if ((m_elfHeader->e_ident[EI_MAGO] != ELFMAG0) ||
         (m_elfHeader->e_ident[EI_MAG1] != ELFMAG1) ||
@@ -131,46 +136,54 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     case ELFDATA2MSB: m_endian = Endian::Big; break;
 
     default:
-        LOG_WARN("Unknown ELF Endianness %1, file may be corrupted.", m_elfHeader->e_ident[EI_DATA]);
+        LOG_ERROR("Cannot load ELF file: Unknown ELF endianness %1", m_elfHeader->e_ident[EI_DATA]);
         return false;
     }
 
-    // Set up program header pointer (in case needed)
+    // Set up program and section header pointer (in case needed)
     const Elf32_Off phOffset = elfRead4(&m_elfHeader->e_phoff);
-
-    if (phOffset > 0) {
-        m_programHdrs = reinterpret_cast<Elf32_Phdr *>(m_loadedImage + phOffset);
-    }
-
-    // Set up section header pointer
     const Elf32_Off shOffset = elfRead4(&m_elfHeader->e_shoff);
 
-    if (shOffset > 0) {
-        m_sectionHdrs = reinterpret_cast<Elf32_Shdr *>(m_loadedImage + shOffset);
+    if (!Util::inRange(phOffset, 1UL, m_loadedImageSize)) {
+        LOG_ERROR("Cannot load ELF file: Invalid program header offset %1", phOffset);
+        return false;
     }
+    else if (!Util::inRange(shOffset, 1UL, m_loadedImageSize)) {
+        LOG_ERROR("Cannot load ELF file: Invalid section header offset %1", shOffset);
+        return false;
+    }
+
+    m_programHdrs = reinterpret_cast<Elf32_Phdr *>(m_loadedImage + phOffset);
+    m_sectionHdrs = reinterpret_cast<Elf32_Shdr *>(m_loadedImage + shOffset);
 
     // Number of sections
     const Elf32_Half numSections = elfRead2(&m_elfHeader->e_shnum);
     if (numSections == 0) {
+        LOG_ERROR("Cannot load ELF file: No sections found");
         return false;
     }
 
     // Set up the m_sh_link and m_sh_info arrays
-    if (m_shLink) {
-        delete[] m_shLink;
-    }
-    if (m_shInfo) {
-        delete[] m_shInfo;
-    }
+    if (m_shLink) { delete[] m_shLink; }
+    if (m_shInfo) { delete[] m_shInfo; }
+
     m_shLink = new Elf32_Word[numSections];
     m_shInfo = new Elf32_Word[numSections];
 
     // Set up section header string table pointer
     const Elf32_Half stringSectionIndex = elfRead2(&m_elfHeader->e_shstrndx);
 
-    if ((stringSectionIndex > 0) && (stringSectionIndex < numSections)) {
-        m_strings = reinterpret_cast<const char *>(m_loadedImage + elfRead4(&m_sectionHdrs[stringSectionIndex].sh_offset));
+    if (!Util::inRange(stringSectionIndex, static_cast<Elf32_Half>(1), numSections)) {
+        LOG_ERROR("Cannot load ELF file: Invalid string section index %1", stringSectionIndex);
+        return false;
     }
+
+    const Elf32_Off stringSectionOffset = elfRead4(&m_sectionHdrs[stringSectionIndex].sh_offset);
+    if (!Util::inRange(stringSectionOffset, 1UL, m_loadedImageSize)) {
+        LOG_ERROR("Cannot load ELF file: Invalid string section offset %1", stringSectionOffset);
+    }
+
+    m_strings = reinterpret_cast<const char *>(m_loadedImage + stringSectionOffset);
 
     bool    seenCode         = false; // True when have seen a code sect
     Address arbitaryLoadAddr = Address(0x08000000);
@@ -180,14 +193,14 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         const Elf32_Shdr *sectionHeader = m_sectionHdrs + i;
 
         if (reinterpret_cast<const Byte *>(sectionHeader) > m_loadedImage + m_loadedImageSize) {
-            LOG_ERROR("Section %1 header is outside of image size", i);
+            LOG_ERROR("Cannot load ELF file: Section header for section %1 is outside of image size", i);
             return false;
         }
 
         const char *sectionName = m_strings + elfRead4(&sectionHeader->sh_name);
 
         if (reinterpret_cast<const Byte *>(sectionName) > m_loadedImage + m_loadedImageSize) {
-            LOG_ERROR("Name for section %1 is outside of image size", i);
+            LOG_ERROR("Cannot load ELF file: Section name for section %1 is outside of image size", i);
             return false;
         }
 
@@ -202,12 +215,17 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
 
         Elf32_Off _off = elfRead4(&sectionHeader->sh_offset);
 
-        if (_off) {
+        if (Util::inRange(_off, 1UL, m_loadedImageSize)) {
             newSection.imagePtr = HostAddress(m_loadedImage) + _off;
         }
 
         newSection.SourceAddr = Address(elfRead4(&sectionHeader->sh_addr));
         newSection.Size       = elfRead4(&sectionHeader->sh_size);
+
+        if (_off + newSection.Size > m_loadedImageSize) {
+            LOG_ERROR("Cannot load ELF file: Section extends past image boundary", i);
+            return false;
+        }
 
         if (newSection.SourceAddr.isZero() && (strncmp(sectionName, ".rel", 4) != 0)) {
             const Elf32_Word align = elfRead4(&sectionHeader->sh_addralign);
@@ -274,14 +292,13 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         if (par.Size == 0) {
             // this is most probably the NULL section; if it is not, warn the user
             if (par.Name != "") {
-                LOG_WARN("Not adding 0 sized section %1", par.Name);
+                LOG_WARN("Not adding 0 sized section '%1'", par.Name);
             }
 
             continue;
         }
 
         BinarySection *sect = m_binaryImage->createSection(par.Name, par.SourceAddr, par.SourceAddr + par.Size);
-        assert(sect);
 
         if (sect) {
             sect->setBss(par.Bss);
