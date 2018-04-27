@@ -886,10 +886,18 @@ void ElfBinaryLoader::applyRelocations()
                     DWord *relocDestination; // Pointer to the word to be relocated
 
                     if (e_type == ET_REL) {
+                        if (!Util::inRange(r_offset, 0UL, m_loadedImageSize)) {
+                            LOG_WARN("Not loading symbol number %1 due to invalid offset %2", u, r_offset);
+                            continue;
+                        }
                         relocDestination = reinterpret_cast<DWord *>((destHostOrigin + r_offset).value());
                     }
                     else {
                         const BinarySection *destSec = m_binaryImage->getSectionByAddr(Address(r_offset));
+                        if (!destSec) {
+                            LOG_WARN("Not loading symbol number %1 due to invalid offset %2", u, r_offset);
+                            continue;
+                        }
                         relocDestination = reinterpret_cast<DWord *>((destSec->getHostAddr() - destSec->getSourceAddr() + r_offset).value());
                         destNatOrigin    = Address::ZERO;
                     }
