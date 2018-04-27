@@ -1058,8 +1058,10 @@ bool ElfBinaryLoader::isRelocationAt(Address addr)
                     }
                     else {
                         const BinarySection *destSec = m_binaryImage->getSectionByAddr(Address(r_offset));
-                        relocDestination = destSec->getSourceAddr() + r_offset;
-                        destNatOrigin    = Address::ZERO;
+                        if (destSec) {
+                            relocDestination = destSec->getSourceAddr() + r_offset;
+                            destNatOrigin    = Address::ZERO;
+                        }
                     }
 
                     if (addr == relocDestination) {
