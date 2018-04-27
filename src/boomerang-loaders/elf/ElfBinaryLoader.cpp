@@ -874,12 +874,21 @@ void ElfBinaryLoader::applyRelocations()
 
                 if (e_type == ET_REL) {
                     Elf32_Word destSection = m_shInfo[i];
+                    if (!Util::inRange(destSection, 0UL, m_elfSections.size())) {
+                        continue;
+                    }
                     destNatOrigin  = m_elfSections[destSection].SourceAddr;
                     destHostOrigin = m_elfSections[destSection].imagePtr;
                 }
 
-                const int       symSection    = m_shLink[i];           // Section index for the associated symbol table
-                const int       strSectionIdx = m_shLink[symSection];  // Section index for the string section assoc with this
+                const uint32 symSection    = m_shLink[i];           // Section index for the associated symbol table
+                if (!Util::inRange(symSection, 0UL, m_elfSections.size())) {
+                    continue;
+                }
+                const uint32 strSectionIdx = m_shLink[symSection];  // Section index for the string section assoc with this
+                if (!Util::inRange(strSectionIdx, 0UL, m_elfSections.size())) {
+                    continue;
+                }
                 const char      *strSection   = reinterpret_cast<const char *>(m_elfSections[strSectionIdx].imagePtr.value());
                 const Elf32_Sym *symOrigin    = reinterpret_cast<const Elf32_Sym *>(m_elfSections[symSection].imagePtr.value());
 
