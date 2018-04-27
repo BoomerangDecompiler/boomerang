@@ -894,7 +894,11 @@ void ElfBinaryLoader::applyRelocations()
 
                 const Elf32_Rel *relEntries = reinterpret_cast<const Elf32_Rel *>(ps.imagePtr.value());
                 const DWord     numEntries  = ps.Size / sizeof(Elf32_Rel);
-                assert(ps.Size % sizeof(Elf32_Rel) == 0);
+                if (ps.Size % sizeof(Elf32_Rel) != 0) {
+                    LOG_WARN("Invalid size %1 of relocation section %2 (must be divisible by %3)",
+                        ps.Size, i, sizeof(Elf32_Rel));
+                    continue;
+                }
 
                 for (unsigned u = 0; u < numEntries; u++) {
                     const Elf32_Addr r_offset    = elfRead4(&relEntries[u].r_offset);
