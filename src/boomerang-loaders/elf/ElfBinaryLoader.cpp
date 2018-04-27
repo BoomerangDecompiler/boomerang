@@ -214,8 +214,11 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         newSection.ReadOnly = false;
 
         Elf32_Off _off = elfRead4(&sectionHeader->sh_offset);
-
-        if (Util::inRange(_off, 1UL, m_loadedImageSize)) {
+        if (!Util::inRange(_off, 0UL, m_loadedImageSize)) {
+            LOG_ERROR("Cannot load ELF file: Section data for section %1 is outside of image size", i);
+            return false;
+        }
+        else if (_off != 0) {
             newSection.imagePtr = HostAddress(m_loadedImage) + _off;
         }
 
