@@ -136,6 +136,11 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         fp.seek(0);
     }
 
+    if (!Util::inRange(cb, 0, data.size())) {
+        LOG_ERROR("Cannot read Exe file: Invalid image size.");
+        return false;
+    }
+
     /* Allocate a block of memory for the image. */
     m_imageSize   = cb;
     m_loadedImage = new uint8_t[m_imageSize];
