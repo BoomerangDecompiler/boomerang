@@ -99,7 +99,7 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
 
             const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
             if (!Util::inRange(offset, 0, data.size() - m_numReloc * sizeof(DWord))) {
-                LOG_WARN("Invalid relocation table at offset %1 with size %2 when readng Exe file", offset, m_numReloc);
+                LOG_WARN("Invalid relocation table at offset %1 with size %2 when reading Exe file", offset, m_numReloc);
                 delete[] m_relocTable;
                 m_relocTable = nullptr;
             }
@@ -115,7 +115,13 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         }
 
         /* Seek to start of image */
-        fp.seek(Util::readWord(&m_header->numParaHeader, Endian::Little) * 16U);
+        const SWord initialPtrOffset = Util::readWord(&m_header->numParaHeader, Endian::Little);
+        if (((initialPtrOffset & 0xF000) != 0) || !Util::inRange(initialPtrOffset * 16, 0, data.size()) ) {
+            LOG_ERROR("Cannot read Exe file: Invalid offset for initial SP/IP values");
+            return false;
+        }
+
+        fp.seek(initialPtrOffset * 16U);
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
         // the segment in the top half, and offset int he bottom
