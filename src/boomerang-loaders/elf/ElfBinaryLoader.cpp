@@ -39,7 +39,7 @@ struct SectionParam
     bool        Bss = false;
     bool        Code = false;
     bool        Data = false;
-    HostAddress imagePtr = HostAddress::INVALID;
+    HostAddress imagePtr = HostAddress::ZERO;
     DWord       sectionType = 0;  ///< Type of section (format dependent)
 };
 
