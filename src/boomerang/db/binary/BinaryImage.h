@@ -115,6 +115,7 @@ private:
     Address m_limitTextLow = Address::INVALID;
     Address m_limitTextHigh = Address::INVALID;
     ptrdiff_t m_textDelta = 0;
-    IntervalMap<Address, std::unique_ptr<BinarySection>> m_sectionMap;
+
     SectionList m_sections; ///< The section info
+    IntervalMap<Address, std::unique_ptr<BinarySection>> m_sectionMap;
 };

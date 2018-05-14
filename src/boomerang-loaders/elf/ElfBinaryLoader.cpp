@@ -32,15 +32,15 @@
 struct SectionParam
 {
     QString     Name;
-    Address     SourceAddr;
-    size_t      Size;
-    DWord       entry_size;
-    bool        ReadOnly;
-    bool        Bss;
-    bool        Code;
-    bool        Data;
-    HostAddress imagePtr;
-    DWord       sectionType;  ///< Type of section (format dependent)
+    Address     SourceAddr = Address::INVALID;
+    size_t      Size = 0;
+    DWord       entry_size = 0;
+    bool        ReadOnly = false;
+    bool        Bss = false;
+    bool        Code = false;
+    bool        Data = false;
+    HostAddress imagePtr = HostAddress::ZERO;
+    DWord       sectionType = 0;  ///< Type of section (format dependent)
 };
 
 // not part of anonymous namespace, since it would create an ambiguity
@@ -536,10 +536,20 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 
 void ElfBinaryLoader::addSymbolsForSection(int secIndex)
 {
+    if (!Util::inRange(secIndex, 0, (int)m_elfSections.size())) {
+        LOG_WARN("Cannot add symbols for section with invalid index %1", secIndex);
+        return;
+    }
+
     const SectionParam& section       = m_elfSections[secIndex];
 
-    if (!Util::inRange(section.entry_size, 1UL, m_loadedImageSize)) {
+    if (!Util::inRange(section.entry_size, sizeof(Elf32_Sym), m_loadedImageSize)) {
         LOG_WARN("Cannot add symbols for section %1: Invalid section entry size %1", section.entry_size);
+        return;
+    }
+    else if (section.Size == 0 || (section.Size % section.entry_size) != 0) {
+        LOG_WARN("Cannot add symbols for section %1: Invalid section size %2 (zero or not divisibe by %3)",
+                 secIndex, section.Size, section.entry_size);
         return;
     }
 
@@ -832,7 +842,16 @@ void ElfBinaryLoader::applyRelocations()
             if ((ps.sectionType != SHT_REL) && (ps.sectionType == SHT_RELA)) {
                 const Elf32_Rela *relaEntries = reinterpret_cast<const Elf32_Rela *>(ps.imagePtr.value());
                 const DWord      numEntries   = ps.Size / sizeof(Elf32_Rela);
-                assert(ps.Size % sizeof(Elf32_Rela) == 0);
+
+                if (relaEntries == nullptr) {
+                    LOG_WARN("Cannot read relocation entries from invalid section %1", i);
+                    continue;
+                }
+                else if (ps.Size % sizeof(Elf32_Rela) != 0) {
+                    LOG_WARN("Cannot read relocation entries from section %1 with invalid size %2 (must be divisible by %3)",
+                        i, ps.Size, sizeof(Elf32_Rela));
+                    continue;
+                }
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!

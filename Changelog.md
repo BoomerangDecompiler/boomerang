@@ -3,6 +3,8 @@
 - Fixed: Crashes when decompiling SPARC binaries.
 - Fixed: Crashes when decompiling Win32 binaries.
 - Fixed: Crashes when loading corrupted ELF binaries.
+- Fixed: Crashes when loading corrupted DOS binaries.
+- Fixed: Crash when supplying an invalid entry address using the -e or -E command line switches.
 - Fixed: Crash when generating code for switch statements.
 - Fixed: Crash when loading MIPS binaries.
 - Fixed: Crash when loading HPPA binaries.

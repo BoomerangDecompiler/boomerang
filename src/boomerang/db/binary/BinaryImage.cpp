@@ -263,10 +263,18 @@ BinarySection *BinaryImage::createSection(const QString& name, Address from, Add
 #endif
 
     BinarySection *sect = new BinarySection(from, (to - from).value(), name);
-    m_sections.push_back(sect);
 
-    m_sectionMap.insert(from, to, std::unique_ptr<BinarySection>(sect));
-    return sect;
+    if (m_sectionMap.insert(from, to, std::unique_ptr<BinarySection>(sect)) == m_sectionMap.end()) {
+        // section already existed
+        BinarySection *existing = getSectionByAddr(from);
+        LOG_ERROR("Could not create section '%1' from address %2 to %3: Section extent matches existing section '%4",
+            name, from, to, existing->getName());
+        return nullptr;
+    }
+    else {
+        m_sections.push_back(sect);
+        return sect;
+    }
 }
 
 

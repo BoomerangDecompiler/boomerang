@@ -148,7 +148,8 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 addr = Address(args[i].toLongLong(&converted, 0));
 
                 if (!converted) {
-                    LOG_FATAL("Bad address: %1", args[i]);
+                    LOG_ERROR("Bad address: %1", args[i]);
+                    return 2;
                 }
 
                 Boomerang::get()->getSettings()->m_entryPoints.push_back(addr);

@@ -94,20 +94,34 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         m_numReloc = Util::readWord(&m_header->numReloc, Endian::Little);
 
         /* Allocate the relocation table */
-        if (m_numReloc) {
+        if (Util::inRange(m_numReloc, 0, data.size() / (int)sizeof(DWord))) {
             m_relocTable = new DWord[m_numReloc];
-            fp.seek(Util::readWord(&m_header->relocTabOffset, Endian::Little));
 
-            /* Read in seg:offset pairs and convert to Image ptrs */
-            Byte    buf[4];
-            for (int i = 0; i < m_numReloc; i++) {
-                fp.read(reinterpret_cast<char *>(buf), 4);
-                m_relocTable[i] = Util::readDWord(buf, Endian::Little);
+            const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
+            if (!Util::inRange(offset, 0, data.size() - m_numReloc * sizeof(DWord))) {
+                LOG_WARN("Invalid relocation table at offset %1 with size %2 when reading Exe file", offset, m_numReloc);
+                delete[] m_relocTable;
+                m_relocTable = nullptr;
+            }
+            else {
+                fp.seek(offset);
+                /* Read in seg:offset pairs and convert to Image ptrs */
+                Byte    buf[4];
+                for (int i = 0; i < m_numReloc; i++) {
+                    fp.read(reinterpret_cast<char *>(buf), 4);
+                    m_relocTable[i] = Util::readDWord(buf, Endian::Little);
+                }
             }
         }
 
         /* Seek to start of image */
-        fp.seek(Util::readWord(&m_header->numParaHeader, Endian::Little) * 16U);
+        const SWord initialPtrOffset = Util::readWord(&m_header->numParaHeader, Endian::Little);
+        if (((initialPtrOffset & 0xF000) != 0) || !Util::inRange(initialPtrOffset * 16, 0, data.size()) ) {
+            LOG_ERROR("Cannot read Exe file: Invalid offset for initial SP/IP values");
+            return false;
+        }
+
+        fp.seek(initialPtrOffset * 16U);
 
         // Initial PC and SP. Note that we fake the seg:offset by putting
         // the segment in the top half, and offset int he bottom
@@ -134,6 +148,11 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
         m_numReloc = 0;
 
         fp.seek(0);
+    }
+
+    if (!Util::inRange(cb, 0, data.size())) {
+        LOG_ERROR("Cannot read Exe file: Invalid image size.");
+        return false;
     }
 
     /* Allocate a block of memory for the image. */
