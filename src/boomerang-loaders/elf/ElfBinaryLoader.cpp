@@ -536,10 +536,20 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 
 void ElfBinaryLoader::addSymbolsForSection(int secIndex)
 {
+    if (!Util::inRange(secIndex, 0, (int)m_elfSections.size())) {
+        LOG_WARN("Cannot add symbols for section with invalid index %1", secIndex);
+        return;
+    }
+
     const SectionParam& section       = m_elfSections[secIndex];
 
-    if (!Util::inRange(section.entry_size, 1UL, m_loadedImageSize)) {
+    if (!Util::inRange(section.entry_size, sizeof(Elf32_Sym), m_loadedImageSize)) {
         LOG_WARN("Cannot add symbols for section %1: Invalid section entry size %1", section.entry_size);
+        return;
+    }
+    else if (section.Size == 0 || (section.Size % section.entry_size) != 0) {
+        LOG_WARN("Cannot add symbols for section %1: Invalid section size %2 (zero or not divisibe by %3)",
+                 secIndex, section.Size, section.entry_size);
         return;
     }
 
