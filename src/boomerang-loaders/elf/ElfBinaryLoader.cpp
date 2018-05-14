@@ -32,15 +32,15 @@
 struct SectionParam
 {
     QString     Name;
-    Address     SourceAddr;
-    size_t      Size;
-    DWord       entry_size;
-    bool        ReadOnly;
-    bool        Bss;
-    bool        Code;
-    bool        Data;
-    HostAddress imagePtr;
-    DWord       sectionType;  ///< Type of section (format dependent)
+    Address     SourceAddr = Address::INVALID;
+    size_t      Size = 0;
+    DWord       entry_size = 0;
+    bool        ReadOnly = false;
+    bool        Bss = false;
+    bool        Code = false;
+    bool        Data = false;
+    HostAddress imagePtr = HostAddress::INVALID;
+    DWord       sectionType = 0;  ///< Type of section (format dependent)
 };
 
 // not part of anonymous namespace, since it would create an ambiguity
