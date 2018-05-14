@@ -842,7 +842,16 @@ void ElfBinaryLoader::applyRelocations()
             if ((ps.sectionType != SHT_REL) && (ps.sectionType == SHT_RELA)) {
                 const Elf32_Rela *relaEntries = reinterpret_cast<const Elf32_Rela *>(ps.imagePtr.value());
                 const DWord      numEntries   = ps.Size / sizeof(Elf32_Rela);
-                assert(ps.Size % sizeof(Elf32_Rela) == 0);
+
+                if (relaEntries == nullptr) {
+                    LOG_WARN("Cannot read relocation entries from invalid section %1", i);
+                    continue;
+                }
+                else if (ps.Size % sizeof(Elf32_Rela) != 0) {
+                    LOG_WARN("Cannot read relocation entries from section %1 with invalid size %2 (must be divisible by %3)",
+                        i, ps.Size, sizeof(Elf32_Rela));
+                    continue;
+                }
 
                 // NOTE: the r_offset is different for .o files (E_REL in the e_type header field) than for exe's
                 // and shared objects!
