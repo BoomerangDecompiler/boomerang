@@ -198,17 +198,32 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    if (!buf.seek(lxoff + READ4_LE(m_LXHeader->objtbloffset))) {
+    const DWord objTableOffset = READ4_LE(m_LXHeader->objtbloffset);
+    if (!Util::inRange(lxoff, sizeof(LXHeader), buf.size()) ||
+        !Util::inRange(objTableOffset, 0U, (DWord)buf.size()) ||
+        !Util::inRange(lxoff + objTableOffset, sizeof(LXHeader), buf.size())) {
+            LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
+            return false;
+    }
+    else if (!buf.seek(lxoff + READ4_LE(m_LXHeader->objtbloffset))) {
+        LOG_ERROR("Cannot read LX object table");
         return false;
     }
 
-    m_LXObjects = new LXObject[READ4_LE(m_LXHeader->numobjsinmodule)];
-    buf.read(reinterpret_cast<char *>(m_LXObjects), sizeof(LXObject) * READ4_LE(m_LXHeader->numobjsinmodule));
+    const DWord numObjsInModule = READ4_LE(m_LXHeader->numobjsinmodule);
+    if (!Util::inRange(numObjsInModule, 0UL, (buf.size() - lxoff - objTableOffset) / sizeof(LXObject))) {
+        LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
+        return false;
+    }
+
+    m_LXObjects = new LXObject[numObjsInModule];
+
+    buf.read(reinterpret_cast<char *>(m_LXObjects), numObjsInModule * sizeof(LXObject));
 
     unsigned npages = 0;
     m_cbImage = 0;
 
-    for (unsigned n = 0; n < READ4_LE(m_LXHeader->numobjsinmodule); n++) {
+    for (unsigned n = 0; n < numObjsInModule; n++) {
         if (READ4_LE(m_LXObjects[n].ObjectFlags) & 0x40) {
             if (READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1 > npages) {
                 npages = READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1;
@@ -218,7 +233,14 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         }
     }
 
-    m_cbImage -= READ4_LE(m_LXObjects[0].RelocBaseAddr);
+    if (numObjsInModule > 0) {
+        m_cbImage -= READ4_LE(m_LXObjects[0].RelocBaseAddr);
+    }
+
+    if (!Util::inRange(m_cbImage, 0, buf.size())) {
+        LOG_ERROR("Cannot allocate %1 bytes for copy of LX image", m_cbImage);
+        return false;
+    }
 
     base = reinterpret_cast<char *>(malloc(m_cbImage));
 
@@ -234,7 +256,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
             SectionParam sect;
             DWord        Flags = READ4_LE(m_LXObjects[n].ObjectFlags);
 
-            sect.Name         = QString("seg%i").arg(n); // no section names in LX
+            sect.Name         = QString("seg%1").arg(n); // no section names in LX
             sect.from         = Address(READ4_LE(m_LXObjects[n].RelocBaseAddr));
             sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
             sect.Size         = READ4_LE(m_LXObjects[n].VirtualSize);
