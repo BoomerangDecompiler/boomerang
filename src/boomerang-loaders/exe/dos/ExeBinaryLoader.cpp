@@ -197,7 +197,9 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
     // as of C++11, std::vector is guaranteed to be contiguous (except for std::vector<bool>),
     // so we can read the relocated values directly from m_relocTable
-    reloc->setHostAddr(HostAddress(&m_relocTable[0]));
+    if (!m_relocTable.empty()) {
+        reloc->setHostAddr(HostAddress(&m_relocTable[0]));
+    }
     reloc->setEntrySize(sizeof(DWord));
     return true;
 }

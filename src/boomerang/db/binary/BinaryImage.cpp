@@ -37,14 +37,14 @@ void BinaryImage::reset()
 
 Byte BinaryImage::readNative1(Address addr) const
 {
-    const BinarySection *si = getSectionByAddr(addr);
+    const BinarySection *section = getSectionByAddr(addr);
 
-    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+    if (section == nullptr || section->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr);
         return 0xFF;
     }
 
-    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
+    HostAddress host = section->getHostAddr() - section->getSourceAddr() + addr;
     return *reinterpret_cast<Byte *>(host.value());
 }
 
