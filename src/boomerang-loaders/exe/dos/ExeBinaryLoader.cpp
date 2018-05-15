@@ -98,8 +98,8 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
             m_numReloc = 0;
         }
 
-        if (!Util::inRange(offset,                                   0, (int)data.size()) ||
-            !Util::inRange(offset + m_numReloc * (int)sizeof(DWord), 0, (int)data.size())) {
+        if (!Util::inRange(offset,                                   0, data.size()) ||
+            !Util::inRange(offset + m_numReloc * (int)sizeof(DWord), 0, data.size())) {
                 LOG_ERROR("Cannot load Exe file: Relocation table extends past file boundary");
                 return false;
         }
@@ -163,13 +163,19 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     m_loadedImage = new uint8_t[m_imageSize];
 
     if (cb != fp.read(reinterpret_cast<char *>(m_loadedImage), cb)) {
-        LOG_ERROR("Cannot read exe file!");
+        LOG_ERROR("Cannot read Exe file: Failed to read loaded image");
         return false;
     }
 
     /* Relocate segment constants */
     for (int i = 0; i < m_numReloc; i++) {
-        Byte  *p = &m_loadedImage[m_relocTable[i]];
+        const DWord fileOffset = m_relocTable[i];
+        if (!Util::inRange(fileOffset, sizeof(ExeHeader), (DWord)data.size())) {
+            LOG_WARN("Cannot read Exe relocation entry %1: Offset %2 is not valid", i, fileOffset);
+            continue;
+        }
+
+        Byte  *p = &m_loadedImage[fileOffset];
         const SWord value = Util::readWord(p, Endian::Little);
         Util::writeWord(p, value, Endian::Little);
     }
