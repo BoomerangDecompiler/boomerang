@@ -92,26 +92,29 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
          * obvious.
          */
         m_numReloc = Util::readWord(&m_header->numReloc, Endian::Little);
+        const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
 
-        /* Allocate the relocation table */
-        if (Util::inRange(m_numReloc, 0, data.size() / (int)sizeof(DWord))) {
-            m_relocTable = new DWord[m_numReloc];
+        if (m_numReloc < 0) {
+            m_numReloc = 0;
+        }
 
-            const SWord offset = Util::readWord(&m_header->relocTabOffset, Endian::Little);
-            if (!Util::inRange(offset, 0, data.size() - m_numReloc * sizeof(DWord))) {
-                LOG_WARN("Invalid relocation table at offset %1 with size %2 when reading Exe file", offset, m_numReloc);
-                delete[] m_relocTable;
-                m_relocTable = nullptr;
+        if (!Util::inRange(offset,                                   0, (int)data.size()) ||
+            !Util::inRange(offset + m_numReloc * (int)sizeof(DWord), 0, (int)data.size())) {
+                LOG_ERROR("Cannot load Exe file: Relocation table extends past file boundary");
+                return false;
+        }
+
+        m_relocTable.resize(m_numReloc);
+
+        fp.seek(offset);
+        /* Read in seg:offset pairs and convert to Image ptrs */
+        Byte    buf[4];
+        for (int i = 0; i < m_numReloc; i++) {
+            if (4 != fp.read(reinterpret_cast<char *>(buf), 4)) {
+                LOG_ERROR("Cannot load Exe file: Cannot read relocation table");
+                return false;
             }
-            else {
-                fp.seek(offset);
-                /* Read in seg:offset pairs and convert to Image ptrs */
-                Byte    buf[4];
-                for (int i = 0; i < m_numReloc; i++) {
-                    fp.read(reinterpret_cast<char *>(buf), 4);
-                    m_relocTable[i] = Util::readDWord(buf, Endian::Little);
-                }
-            }
+            m_relocTable[i] = Util::readDWord(buf, Endian::Little);
         }
 
         /* Seek to start of image */
@@ -186,7 +189,9 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray& data)
     text->setEntrySize(1);
 
     BinarySection *reloc = m_image->createSection("$RELOC", Address(0x4000) + sizeof(ExeHeader), Address(0x4000) + sizeof(ExeHeader) + sizeof(DWord) * m_numReloc);
-    reloc->setHostAddr(HostAddress(m_relocTable));
+    // as of C++11, std::vector is guaranteed to be contiguous (except for std::vector<bool>),
+    // so we can read the relocated values directly from m_relocTable
+    reloc->setHostAddr(HostAddress(&m_relocTable[0]));
     reloc->setEntrySize(sizeof(DWord));
     return true;
 }
@@ -197,7 +202,6 @@ void ExeBinaryLoader::unload()
 {
     delete m_header;
     delete[] m_loadedImage;
-    delete[] m_relocTable;
 }
 
 
