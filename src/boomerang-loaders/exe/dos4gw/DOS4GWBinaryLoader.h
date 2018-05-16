@@ -156,8 +156,8 @@ protected:
 private:
     LXHeader *m_LXHeader  = nullptr;     ///< Pointer to lx header
     LXObject *m_LXObjects = nullptr;     ///< Pointer to lx objects
-    int m_cbImage = 0;                    ///< Size of image
-    char *base = nullptr;                 ///< Beginning of the loaded image
+    int m_cbImage = 0;                   ///< Size of image
+    char *m_imageBase = nullptr;         ///< Beginning of the loaded image
 
     /// Map from address of dynamic pointers to library procedure names:
     BinarySymbolTable *m_symbols = nullptr;

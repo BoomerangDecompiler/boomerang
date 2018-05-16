@@ -91,27 +91,27 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     bool gotSubEbp   = false;                               // True if see sub ebp, ebp
     bool lastWasCall = false;                               // True if the last instruction was a call
 
-    BinarySection *si = m_image->getSectionByName("seg0"); // Assume the first section is text
+    BinarySection *textSection = m_image->getSectionByName("seg0"); // Assume the first section is text
 
-    if (si == nullptr) {
-        si = m_image->getSectionByName(".text");
+    if (textSection == nullptr) {
+        textSection = m_image->getSectionByName(".text");
     }
 
-    if (si == nullptr) {
-        si = m_image->getSectionByName("CODE");
+    if (textSection == nullptr) {
+        textSection = m_image->getSectionByName("CODE");
     }
+    assert(textSection != nullptr);
 
-    assert(si);
-    Address  nativeOrigin = si->getSourceAddr();
-    unsigned textSize     = si->getSize();
+    const Address  nativeOrigin = textSection->getSourceAddr();
+    const unsigned textSize     = textSection->getSize();
 
     if (textSize < 0x300) {
         lim = p + textSize;
     }
 
     while (p < lim) {
-        const Byte op1 = *reinterpret_cast<const Byte *>(base + p + 0);
-        const Byte op2 = *reinterpret_cast<const Byte *>(base + p + 1);
+        const Byte op1 = Util::readByte(m_imageBase + p + 0);
+        const Byte op2 = Util::readByte(m_imageBase + p + 1);
 
         switch (op1)
         {
@@ -120,7 +120,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             // An ordinary call
             if (gotSubEbp) {
                 // This is the call we want. Get the offset from the call instruction
-                addr = nativeOrigin + p + 5 + READ4_LE_P(base + p + 1);
+                addr = nativeOrigin + p + 5 + READ4_LE_P(m_imageBase + p + 1);
                 LOG_VERBOSE("Found __CMain at address %1", addr);
                 return addr;
             }
@@ -154,7 +154,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             continue;     // Don't break, we have the new "pc" set already
         }
 
-        int size = microX86Dis(p + base);
+        int size = microX86Dis(p + m_imageBase);
 
         if (size == 0x40) {
             LOG_WARN("Microdisassembler out of step at offset %1", p);
@@ -242,7 +242,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    base = reinterpret_cast<char *>(malloc(m_cbImage));
+    m_imageBase = reinterpret_cast<char *>(malloc(m_cbImage));
 
     uint32_t numSections = READ4_LE(m_LXHeader->numobjsinmodule);
     std::vector<SectionParam> params;
@@ -258,7 +258,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
             sect.Name         = QString("seg%1").arg(n); // no section names in LX
             sect.from         = Address(READ4_LE(m_LXObjects[n].RelocBaseAddr));
-            sect.ImageAddress = HostAddress(base) + (sect.from - params.front().from).value();
+            sect.ImageAddress = HostAddress(m_imageBase) + (sect.from - params.front().from).value();
             sect.Size         = READ4_LE(m_LXObjects[n].VirtualSize);
             sect.Bss          = 0; // TODO
             sect.Code         = (Flags & 0x4) ? true  : false;
@@ -268,7 +268,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
             buf.seek(
                 m_LXHeader->datapagesoffset + (READ4_LE(m_LXObjects[n].PageTblIdx) - 1) * READ4_LE(m_LXHeader->pagesize)
                 );
-            char *p = base + READ4_LE(m_LXObjects[n].RelocBaseAddr) - READ4_LE(m_LXObjects[0].RelocBaseAddr);
+            char *p = m_imageBase + READ4_LE(m_LXObjects[n].RelocBaseAddr) - READ4_LE(m_LXObjects[0].RelocBaseAddr);
             buf.read(p, READ4_LE(m_LXObjects[n].NumPageTblEntries) * READ4_LE(m_LXHeader->pagesize));
         }
     }
@@ -337,7 +337,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         unsigned long target = READ4_LE(m_LXObjects[object - 1].RelocBaseAddr) + READ2_LE(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
-        Util::writeDWord(base + src, target, Endian::Little);
+        Util::writeDWord(m_imageBase + src, target, Endian::Little);
 
         while (buf.pos() - (READ4_LE(m_LXHeader->fixuprecordtbloffset) + lxoff) >= READ4_LE(fixuppagetbl[srcpage + 1])) {
             srcpage++;
@@ -406,7 +406,7 @@ DWord DOS4GWBinaryLoader::getDelta()
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_peHeader->Imagebase);
-    return intptr_t(base) - m_LXObjects[0].RelocBaseAddr;
+    return intptr_t(m_imageBase) - m_LXObjects[0].RelocBaseAddr;
 }
 
 
