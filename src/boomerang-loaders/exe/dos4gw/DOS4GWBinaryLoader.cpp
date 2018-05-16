@@ -34,9 +34,8 @@ struct SectionParam
     bool        Bss, Code, Data, ReadOnly;
 };
 }
-extern "C" {
-int microX86Dis(void *p); // From microX86dis.c
-}
+
+extern "C" int microX86Dis(void *p); // From microX86dis.c
 
 DOS4GWBinaryLoader::DOS4GWBinaryLoader()
 {
@@ -191,9 +190,9 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    m_LXHeader = new LXHeader;
+    m_LXHeader.reset(new LXHeader);
 
-    if (!buf.read(reinterpret_cast<char *>(m_LXHeader), sizeof(LXHeader))) {
+    if (!buf.read(reinterpret_cast<char *>(m_LXHeader.get()), sizeof(LXHeader))) {
         return false;
     }
 
@@ -220,9 +219,9 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    m_LXObjects = new LXObject[numObjsInModule];
+    m_LXObjects.resize(numObjsInModule);
 
-    buf.read(reinterpret_cast<char *>(m_LXObjects), numObjsInModule * sizeof(LXObject));
+    buf.read(reinterpret_cast<char *>(&m_LXObjects[0]), numObjsInModule * sizeof(LXObject));
 
     unsigned npages = 0;
     m_cbImage = 0;
