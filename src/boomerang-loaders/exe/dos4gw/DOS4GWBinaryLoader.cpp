@@ -62,7 +62,7 @@ void DOS4GWBinaryLoader::close()
 
 Address DOS4GWBinaryLoader::getEntryPoint()
 {
-    return Address((READ4_LE(m_LXObjects[READ4_LE(m_LXHeader->eipobjectnum)].RelocBaseAddr) + READ4_LE(m_LXHeader->eip)));
+    return Address((READ4_LE(m_LXObjects[READ4_LE(m_LXHeader.eipobjectnum)].RelocBaseAddr) + READ4_LE(m_LXHeader.eip)));
 }
 
 
@@ -82,7 +82,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
 
     // Search with this crude pattern: call, sub ebp, ebp, call __Cmain in the first 0x300 bytes
     // Start at program entry point
-    unsigned      p = READ4_LE(m_LXHeader->eip);
+    unsigned      p = READ4_LE(m_LXHeader.eip);
     unsigned      lim = p + 0x300;
     Address       addr;
 
@@ -113,8 +113,8 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     }
 
     while (p < lim) {
-        const Byte op1 = Util::readByte(m_imageBase + p + 0);
-        const Byte op2 = Util::readByte(m_imageBase + p + 1);
+        const Byte op1 = Util::readByte(&m_imageBase[p + 0]);
+        const Byte op2 = Util::readByte(&m_imageBase[p + 1]);
 
         switch (op1)
         {
@@ -123,7 +123,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             // An ordinary call
             if (gotSubEbp) {
                 // This is the call we want. Get the offset from the call instruction
-                addr = nativeOrigin + p + 5 + READ4_LE_P(m_imageBase + p + 1);
+                addr = nativeOrigin + p + 5 + READ4_LE_P(&m_imageBase[p + 1]);
                 LOG_VERBOSE("Found __CMain at address %1", addr);
                 return addr;
             }
@@ -157,7 +157,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             continue;     // Don't break, we have the new "pc" set already
         }
 
-        int size = microX86Dis(p + m_imageBase);
+        int size = microX86Dis(&m_imageBase[p + 0]);
 
         if (size == 0x40) {
             LOG_WARN("Microdisassembler out of step at offset %1", p);
@@ -190,30 +190,29 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         return false;
     }
 
-    m_LXHeader.reset(new LXHeader);
-
-    if (!buf.read(reinterpret_cast<char *>(m_LXHeader.get()), sizeof(LXHeader))) {
+    if (!buf.read(reinterpret_cast<char *>(&m_LXHeader), sizeof(LXHeader))) {
         return false;
     }
 
-    if ((m_LXHeader->sigLo != 'L') || ((m_LXHeader->sigHi != 'X') && (m_LXHeader->sigHi != 'E'))) {
-        LOG_ERROR("Error loading file: bad LE/LX magic");
-        return false;
+    if (!Util::testMagic(&m_LXHeader.sigLo, { 'L', 'X' }) ||
+        !Util::testMagic(&m_LXHeader.sigLo, { 'L', 'E' })) {
+            LOG_ERROR("Error loading file: bad LE/LX magic");
+            return false;
     }
 
-    const DWord objTableOffset = READ4_LE(m_LXHeader->objtbloffset);
+    const DWord objTableOffset = READ4_LE(m_LXHeader.objtbloffset);
     if (!Util::inRange(lxoff, sizeof(LXHeader), buf.size()) ||
         !Util::inRange(objTableOffset, 0U, (DWord)buf.size()) ||
         !Util::inRange(lxoff + objTableOffset, sizeof(LXHeader), buf.size())) {
             LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
             return false;
     }
-    else if (!buf.seek(lxoff + READ4_LE(m_LXHeader->objtbloffset))) {
+    else if (!buf.seek(lxoff + READ4_LE(m_LXHeader.objtbloffset))) {
         LOG_ERROR("Cannot read LX object table");
         return false;
     }
 
-    const DWord numObjsInModule = READ4_LE(m_LXHeader->numobjsinmodule);
+    const DWord numObjsInModule = READ4_LE(m_LXHeader.numobjsinmodule);
     if (!Util::inRange(numObjsInModule, 0UL, (buf.size() - lxoff - objTableOffset) / sizeof(LXObject))) {
         LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
         return false;
@@ -224,7 +223,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     buf.read(reinterpret_cast<char *>(&m_LXObjects[0]), numObjsInModule * sizeof(LXObject));
 
     unsigned npages = 0;
-    m_cbImage = 0;
+    int cbImage = 0;
 
     for (unsigned n = 0; n < numObjsInModule; n++) {
         if (READ4_LE(m_LXObjects[n].ObjectFlags) & 0x40) {
@@ -232,22 +231,22 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
                 npages = READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1;
             }
 
-            m_cbImage = READ4_LE(m_LXObjects[n].RelocBaseAddr) + READ4_LE(m_LXObjects[n].VirtualSize);
+            cbImage = READ4_LE(m_LXObjects[n].RelocBaseAddr) + READ4_LE(m_LXObjects[n].VirtualSize);
         }
     }
 
     if (numObjsInModule > 0) {
-        m_cbImage -= READ4_LE(m_LXObjects[0].RelocBaseAddr);
+        cbImage -= READ4_LE(m_LXObjects[0].RelocBaseAddr);
     }
 
-    if (!Util::inRange(m_cbImage, 0, buf.size())) {
-        LOG_ERROR("Cannot allocate %1 bytes for copy of LX image", m_cbImage);
+    if (!Util::inRange(cbImage, 0, buf.size())) {
+        LOG_ERROR("Cannot allocate %1 bytes for copy of LX image", cbImage);
         return false;
     }
 
-    m_imageBase = reinterpret_cast<char *>(malloc(m_cbImage));
+    m_imageBase.resize(cbImage);
 
-    uint32_t numSections = READ4_LE(m_LXHeader->numobjsinmodule);
+    uint32_t numSections = READ4_LE(m_LXHeader.numobjsinmodule);
     std::vector<SectionParam> params;
 
     for (unsigned n = 0; n < numSections; n++) {
@@ -261,7 +260,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
             sect.Name         = QString("seg%1").arg(n); // no section names in LX
             sect.from         = Address(READ4_LE(m_LXObjects[n].RelocBaseAddr));
-            sect.ImageAddress = HostAddress(m_imageBase) + (sect.from - params.front().from).value();
+            sect.ImageAddress = HostAddress(&m_imageBase[0]) + (sect.from - params.front().from).value();
             sect.Size         = READ4_LE(m_LXObjects[n].VirtualSize);
             sect.Bss          = 0; // TODO
             sect.Code         = (Flags & 0x4) ? true  : false;
@@ -269,10 +268,10 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
             sect.ReadOnly     = (Flags & 0x1) ? false : true;
 
             buf.seek(
-                m_LXHeader->datapagesoffset + (READ4_LE(m_LXObjects[n].PageTblIdx) - 1) * READ4_LE(m_LXHeader->pagesize)
+                m_LXHeader.datapagesoffset + (READ4_LE(m_LXObjects[n].PageTblIdx) - 1) * READ4_LE(m_LXHeader.pagesize)
                 );
-            char *p = m_imageBase + READ4_LE(m_LXObjects[n].RelocBaseAddr) - READ4_LE(m_LXObjects[0].RelocBaseAddr);
-            buf.read(p, READ4_LE(m_LXObjects[n].NumPageTblEntries) * READ4_LE(m_LXHeader->pagesize));
+            char *p = &m_imageBase[0] + READ4_LE(m_LXObjects[n].RelocBaseAddr) - READ4_LE(m_LXObjects[0].RelocBaseAddr);
+            buf.read(p, READ4_LE(m_LXObjects[n].NumPageTblEntries) * READ4_LE(m_LXHeader.pagesize));
         }
     }
 
@@ -291,7 +290,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     // TODO: decode entry tables
 
     // fixups
-    if (!buf.seek(READ4_LE(m_LXHeader->fixuppagetbloffset) + lxoff)) {
+    if (!buf.seek(READ4_LE(m_LXHeader.fixuppagetbloffset) + lxoff)) {
         return false;
     }
 
@@ -302,7 +301,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     //    printf("offset for page %i: %x\n", n + 1, fixuppagetbl[n]);
     // printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
 
-    buf.seek(READ4_LE(m_LXHeader->fixuprecordtbloffset) + lxoff);
+    buf.seek(READ4_LE(m_LXHeader.fixuprecordtbloffset) + lxoff);
     LXFixup  fixup;
     unsigned srcpage = 0;
 
@@ -319,7 +318,7 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
         // fixup.trgoff);
-        unsigned long  src    = srcpage * READ4_LE(m_LXHeader->pagesize) + READ2_LE(fixup.srcoff);
+        unsigned long  src    = srcpage * READ4_LE(m_LXHeader.pagesize) + READ2_LE(fixup.srcoff);
         unsigned short object = 0;
 
         if (fixup.flags & 0x40) {
@@ -340,9 +339,9 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
         unsigned long target = READ4_LE(m_LXObjects[object - 1].RelocBaseAddr) + READ2_LE(trgoff);
         //        printf("relocate dword at %x to point to %x\n", src, target);
-        Util::writeDWord(m_imageBase + src, target, Endian::Little);
+        Util::writeDWord(&m_imageBase[src], target, Endian::Little);
 
-        while (buf.pos() - (READ4_LE(m_LXHeader->fixuprecordtbloffset) + lxoff) >= READ4_LE(fixuppagetbl[srcpage + 1])) {
+        while (buf.pos() - (READ4_LE(m_LXHeader.fixuprecordtbloffset) + lxoff) >= READ4_LE(fixuppagetbl[srcpage + 1])) {
             srcpage++;
         }
     } while (srcpage < npages);
@@ -353,24 +352,31 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
 int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 {
-    unsigned char buf[64];
+    LXHeader testHeader;
 
-    fl.read(reinterpret_cast<char *>(buf), sizeof(buf));
-
-    if (Util::testMagic(buf, { 'M', 'Z' })) { /* DOS-based file */
-        int peoff = READ4_LE(buf[0x3C]);
-
-        if ((peoff != 0) && fl.seek(peoff)) {
-            fl.read(reinterpret_cast<char *>(buf), 4);
-
-            if (Util::testMagic(buf, { 'L', 'E' })) {
-                /* Win32 VxD (Linear Executable) or DOS4GW app */
-                return 2 + 4 + 2;
-            }
-        }
+    if (fl.read(reinterpret_cast<char *>(&testHeader), sizeof(testHeader)) != sizeof(LXHeader)) {
+        return 0;  // file too small
+    }
+    else if (!Util::testMagic(&testHeader.sigLo, { 'M', 'Z' })) {
+        return 0; // not a DOS-based file
     }
 
-    return 0;
+    // read offset 0x3C from beginning of file (pointer to PE header)
+    const DWord peOffset = READ4_LE(testHeader.loadersectionchksum);
+    if (!fl.seek(peOffset)) {
+        return 0; // file corrupted / too small
+    }
+
+    Byte buf[2];
+    if (fl.read(reinterpret_cast<char *>(buf), 2) != 2) {
+        return 0;
+    }
+
+    if (Util::testMagic(buf, { 'L', 'E' })) {
+        return 2 + 4 + 2; // Win32 VxD (Linear Executable) or DOS4GW app
+    }
+
+    return 0; // unrecognized file format
 }
 
 
@@ -409,7 +415,7 @@ DWord DOS4GWBinaryLoader::getDelta()
     // Stupid function anyway: delta depends on section
     // This should work for the header only
     //    return (DWord)base - LMMH(m_peHeader->Imagebase);
-    return intptr_t(m_imageBase) - m_LXObjects[0].RelocBaseAddr;
+    return intptr_t(&m_imageBase[0]) - m_LXObjects[0].RelocBaseAddr;
 }
 
 
