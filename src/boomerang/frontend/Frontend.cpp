@@ -466,13 +466,19 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
     BinaryImage *image = m_program->getBinaryFile()->getImage();
     if (!image || (image->getSectionByAddr(pc) == nullptr)) {
-        LOG_ERROR("attempted to decode outside any known section at address %1");
+        LOG_ERROR("Attempted to decode outside any known section at address %1", pc);
         result.valid = false;
         return false;
     }
 
-    const BinarySection *section          = image->getSectionByAddr(pc);
-    ptrdiff_t            host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
+    const BinarySection *section = image->getSectionByAddr(pc);
+    if (section->getHostAddr() == HostAddress::INVALID) {
+        LOG_ERROR("Attempted to decode instruction in unmapped section '%1' at address %2",
+            section->getName(), pc);
+        return false;
+    }
+
+    ptrdiff_t host_native_diff = (section->getHostAddr() - section->getSourceAddr()).value();
 
     try {
         return m_decoder->decodeInstruction(pc, host_native_diff, result);

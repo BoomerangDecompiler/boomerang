@@ -104,7 +104,7 @@ private:
     Byte *m_loadedImage = nullptr;          ///< Pointer to image buffer
     int m_imageSize = 0;                    ///< Size of image
     int m_numReloc = 0;                     ///< Number of relocation entries
-    DWord *m_relocTable = nullptr;          ///< The relocation table
+    std::vector<DWord> m_relocTable;        ///< The relocation table
     Address m_uInitPC = Address::INVALID;   ///< Initial program counter
     Address m_uInitSP = Address::INVALID;   ///< Initial stack pointer
 

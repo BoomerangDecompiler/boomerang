@@ -154,10 +154,9 @@ protected:
     DWord dos4gwRead4(const void *src) const; ///< Read 4 bytes from native addr
 
 private:
-    LXHeader *m_LXHeader  = nullptr;     ///< Pointer to lx header
-    LXObject *m_LXObjects = nullptr;     ///< Pointer to lx objects
-    int m_cbImage = 0;                    ///< Size of image
-    char *base = nullptr;                 ///< Beginning of the loaded image
+    LXHeader m_LXHeader;                ///< LX header
+    std::vector<LXObject> m_LXObjects;  ///< LX objects
+    std::vector<char> m_imageBase;      ///< LoadedImage
 
     /// Map from address of dynamic pointers to library procedure names:
     BinarySymbolTable *m_symbols = nullptr;

@@ -828,7 +828,11 @@ bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult& r)
     SharedExp     al    = Location::regOf(m_decoder->getRegIdx("%al"));
 
     CallStatement *call = new CallStatement();
-    call->setDestProc(m_program->getOrCreateLibraryProc("outp"));
+
+    LibProc *outp = m_program->getOrCreateLibraryProc("outp");
+
+    call->setDestProc(outp);
+    call->setNumArguments(2);
     call->setArgumentExp(0, dx);
     call->setArgumentExp(1, al);
     r.rtl->append(call);
