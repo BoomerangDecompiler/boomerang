@@ -486,8 +486,9 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
         }
 
         bool first = true;
+        assert(!rets->empty());
 
-        for (Statement *ret : (*rets)) {
+        for (auto retIt = std::next(rets->begin()); retIt != rets->end(); ++retIt) {
             if (first) {
                 first = false;
             }
@@ -495,9 +496,9 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
                 ost << ", ";
             }
 
-            appendExp(ost, *(static_cast<Assign *>(ret))->getLeft(), OpPrec::None);
+            appendExp(ost, *(static_cast<Assign *>(*retIt))->getLeft(), OpPrec::None);
             ost << " := ";
-            appendExp(ost, *(static_cast<Assign *>(ret))->getRight(), OpPrec::None);
+            appendExp(ost, *(static_cast<Assign *>(*retIt))->getRight(), OpPrec::None);
         }
 
         if (n > 1) {
