@@ -100,7 +100,11 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
     if (textSection == nullptr) {
         textSection = m_image->getSectionByName("CODE");
     }
-    assert(textSection != nullptr);
+
+    if (textSection == nullptr) {
+        LOG_ERROR("Could not find text (code) section!");
+        return Address::INVALID;
+    }
 
     const Address  nativeOrigin = textSection->getSourceAddr();
     const unsigned textSize     = textSection->getSize();
