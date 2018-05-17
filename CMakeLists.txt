@@ -7,6 +7,13 @@
 #
 
 cmake_minimum_required(VERSION 3.8)
+
+find_program(CCACHE_PROGRAM ccache)
+if (CCACHE_PROGRAM)
+    set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
+    # There is also the RULE_LAUNCH_LINK property, however ccache only passes the input to the linker. So don't enable ccache on link time.
+endif (CCACHE_PROGRAM)
+
 project(Boomerang LANGUAGES C CXX)
 
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
