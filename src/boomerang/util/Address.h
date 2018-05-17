@@ -78,9 +78,6 @@ private:
     value_type m_value;       ///< Value of this address
 };
 
-Q_DECLARE_METATYPE(Address)
-
-
 /// Like \ref Address, but only for addresses of the host machine
 class HostAddress
 {

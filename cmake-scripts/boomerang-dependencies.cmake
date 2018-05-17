@@ -18,5 +18,3 @@ if (Qt5Xml_FOUND)
 endif (Qt5Xml_FOUND)
 
 find_package(Threads)
-
-set(CMAKE_AUTOMOC ON)

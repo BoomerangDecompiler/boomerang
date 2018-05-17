@@ -23,6 +23,9 @@ class Prog;
 class BinaryFile;
 
 
+Q_DECLARE_METATYPE(Address);
+
+
 /**
  * Interface between libboomerang and the GUI.
  */
