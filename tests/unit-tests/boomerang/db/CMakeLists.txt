@@ -17,12 +17,12 @@ set(TESTS
     binary/BinarySymbolTest
     signature/SignatureTest
     CFGTest
-    DfaTest
+    DFATest
     ExpTest
     ParserTest
     ProgTest
     ProcTest
-    RtlTest
+    RTLTest
 )
 
 # These tests require the ELF loader
