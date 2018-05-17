@@ -82,7 +82,10 @@ else () # GCC / Clang
 
     if (BOOMERANG_ENABLE_CCACHE AND CCache_VERSION VERSION_LESS 3.2.0 AND CMAKE_C_COMPILER MATCHES "[Cc]lang")
         # see https://bugzilla.samba.org/show_bug.cgi?id=8118
-        BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unused-command-line-argument)
+        BOOMERANG_ADD_COMPILE_FLAGS(
+            -Wno-unused-command-line-argument
+            -Wno-error=inconsistent-missing-override
+        )
     endif ()
 
 

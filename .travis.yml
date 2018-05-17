@@ -2,6 +2,7 @@ language: cpp
 
 dist: trusty
 sudo: false
+cache: ccache
 
 matrix:
   include:
