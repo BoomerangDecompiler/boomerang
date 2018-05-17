@@ -65,17 +65,29 @@ else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
-    BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret-cast<float*>(&int) otherwise
+    BOOMERANG_ADD_COMPILE_FLAGS(-fno-strict-aliasing) # Will break *reinterpret_cast<float*>(&int) otherwise
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-gnu-zero-variadic-macro-arguments) # Will break QSKIP() macro on clang otherwise
+
+    # Do not treat specific warnings as errors
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=strict-overflow)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=alloca)
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=implicit-fallthrough)
+
+    # Special workarounds for bugs in dependencies
 
     if (Qt5Core_VERSION VERSION_GREATER 5.6.1)
         # See https://bugreports.qt.io/browse/QTBUG-45291
         BOOMERANG_ADD_COMPILE_FLAGS(-Wzero-as-null-pointer-constant)
     endif ()
 
-    # Do not treat specific warnings as errors
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=strict-overflow)
-    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=alloca)
+    if (BOOMERANG_ENABLE_CCACHE AND CCache_VERSION VERSION_LESS 3.2.0 AND CMAKE_C_COMPILER MATCHES "[Cc]lang")
+        # see https://bugzilla.samba.org/show_bug.cgi?id=8118
+        BOOMERANG_ADD_COMPILE_FLAGS(
+            -Wno-unused-command-line-argument
+            -Wno-error=inconsistent-missing-override
+        )
+    endif ()
+
 
     # Other warnings
 #    BOOMERANG_ADD_COMPILE_FLAGS(-Wcast-qual)

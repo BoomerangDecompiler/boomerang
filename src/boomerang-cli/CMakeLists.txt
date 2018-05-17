@@ -7,6 +7,9 @@
 #
 
 
+set(CMAKE_AUTOMOC ON)
+
+
 set(boomerang-cli-sources
     Console
     CommandlineDriver

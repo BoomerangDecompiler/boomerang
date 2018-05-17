@@ -19,6 +19,9 @@
 #include <iostream>
 
 
+Q_DECLARE_METATYPE(Address)
+
+
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
     , m_kill_timer(this)

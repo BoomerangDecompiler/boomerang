@@ -7,14 +7,26 @@
 #
 
 cmake_minimum_required(VERSION 3.8)
-project(Boomerang LANGUAGES C CXX)
 
 if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
     message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
-endif()
+endif(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
 
 set(CMAKE_WARN_DEPRECATED ON)
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake-scripts")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-scripts")
+find_package(CCache)
+
+if (CCache_FOUND)
+    option(BOOMERANG_ENABLE_CCACHE "Enable CCache build cache" ON)
+    if (BOOMERANG_ENABLE_CCACHE)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCache_EXECUTABLE}")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "${CCache_EXECUTABLE}")
+    endif (BOOMERANG_ENABLE_CCACHE)
+endif (CCache_FOUND)
+
+
+project(Boomerang LANGUAGES C CXX)
+
 
 # CMake does not fill in CMAKE_BUILD_TYPE automatically.
 if (NOT MSVC)
