@@ -23,7 +23,7 @@ class Prog;
 class BinaryFile;
 
 
-Q_DECLARE_METATYPE(Address);
+Q_DECLARE_METATYPE(Address)
 
 
 /**
