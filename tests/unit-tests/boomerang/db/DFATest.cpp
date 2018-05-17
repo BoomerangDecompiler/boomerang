@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "DfaTest.h"
+#include "DFATest.h"
 
 
 #include "boomerang/core/Boomerang.h"
