@@ -80,7 +80,7 @@ void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
         QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.getSubExp1(), v.getDef()));
 
         if (!sym.isNull()) {
-            v.getSubExp1() = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter
+            v.refSubExp1() = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter
         }
     }
 
