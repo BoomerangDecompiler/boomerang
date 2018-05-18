@@ -230,7 +230,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
         newSection.SourceAddr = Address(elfRead4(&sectionHeader->sh_addr));
         newSection.Size       = elfRead4(&sectionHeader->sh_size);
 
-        if (_off + newSection.Size > m_loadedImageSize) {
+        if (_off + newSection.Size > m_loadedImageSize && !newSection.Bss) {
             LOG_ERROR("Cannot load ELF file: Section %1 extends past image boundary", i);
             return false;
         }
