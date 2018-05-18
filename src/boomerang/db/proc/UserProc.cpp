@@ -2035,10 +2035,11 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) 
 
     SharedConstExp  base = ref->getSubExp1();
     SharedConstType ty   = def->getTypeFor(base);
-    QString    ret  = lookupSym(ref, ty);
 
+    // Check for specific symbol
+    const QString   ret  = lookupSym(ref, ty);
     if (!ret.isNull()) {
-        return ret;             // Found a specific symbol
+        return ret;
     }
 
     return lookupSym(base, ty); // Check for a general symbol
@@ -2056,7 +2057,7 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedConstType ty) const
     SymbolMap::const_iterator it = m_symbolMap.find(e);
 
     while (it != m_symbolMap.end() && *it->first == *e) {
-        auto sym = it->second;
+        SharedExp sym = it->second;
         assert(sym->isLocal() || sym->isParam());
 
         const QString    name = sym->access<Const, 1>()->getStr();

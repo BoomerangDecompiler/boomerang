@@ -34,8 +34,8 @@ void StmtSsaXformer::commonLhs(Assignment *as)
     SharedExp lhs = as->getLeft();
 
     lhs = lhs->accept(static_cast<ExpSsaXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
-    QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
 
+    const QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
     if (!sym.isNull()) {
         as->setLeft(Location::local(sym, m_proc));
     }
