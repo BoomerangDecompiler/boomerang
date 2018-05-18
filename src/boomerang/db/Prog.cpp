@@ -959,9 +959,6 @@ void Prog::decompile()
     globalTypeAnalysis();
 
     if (SETTING(decompile) && SETTING(removeReturns)) {
-        // A final pass to remove returns not used by any caller
-        LOG_VERBOSE("Performing global removal of unused returns...");
-
         // Repeat until no change. Not 100% sure if needed.
         while (removeUnusedReturns()) {
         }
@@ -1042,6 +1039,8 @@ void Prog::removeUnusedGlobals()
 
 bool Prog::removeUnusedReturns()
 {
+    LOG_MSG("Removing unused returns...");
+
     // For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
     // procedures not yet processed.
     // Define a workset for the procedures who have to have their returns checked
@@ -1085,7 +1084,7 @@ bool Prog::removeUnusedReturns()
 
 void Prog::fromSSAForm()
 {
-    LOG_MSG("Transforming from SSA form ...");
+    LOG_MSG("Transforming from SSA form...");
 
     for (const auto& module : m_moduleList) {
         for (Function *pp : *module) {
@@ -1107,6 +1106,8 @@ void Prog::fromSSAForm()
 
 void Prog::globalTypeAnalysis()
 {
+    LOG_MSG("Performing global type analysis...");
+
     if (DEBUG_TA) {
         LOG_VERBOSE("### Start global data-flow-based type analysis ###");
     }
