@@ -1383,7 +1383,7 @@ SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /*
 {
     QString localName = (name != nullptr) ? name : newLocalName(e);
 
-    m_locals[name] = ty;
+    m_locals[localName] = ty;
 
     if (ty == nullptr) {
         LOG_FATAL("Null type passed to newLocal");
