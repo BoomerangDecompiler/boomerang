@@ -63,8 +63,8 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
 {
     // Start with the liveness at the bottom of the BB
     LocationSet liveLocs, phiLocs;
-
     getLiveOut(bb, liveLocs, phiLocs);
+
     // Do the livensses that result from phi statements at successors first.
     // FIXME: document why this is necessary
     checkForOverlap(liveLocs, phiLocs, ig, myProc);

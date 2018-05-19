@@ -154,8 +154,8 @@ public:
 
     /// Find a location with a different def, but same expression.
     /// For example, pass r28{10}, return true if r28{20} is in the set.
-    /// If return true, \p dr points to the first different ref
-    bool findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr);
+    /// If return true, \p differentRef points to the first different ref
+    bool findDifferentRef(const std::shared_ptr<RefExp>& ref, SharedExp& differentRef);
 
     /// Add a subscript (to definition \p def) to each element.
     /// Existing exps are not re-subscripted.

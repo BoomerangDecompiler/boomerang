@@ -28,27 +28,26 @@ InterferenceFinder::InterferenceFinder(Cfg* cfg)
 }
 
 
-void InterferenceFinder::findInterferences(ConnectionGraph& cg)
+void InterferenceFinder::findInterferences(ConnectionGraph& ig)
 {
     if (m_cfg->getNumBBs() == 0) {
         return;
     }
 
     std::list<BasicBlock *> workList; // List of BBs still to be processed
-    // Set of the same; used for quick membership test
-    std::set<BasicBlock *> workSet;
+    std::set<BasicBlock *> workSet;   // Set of the same; used for quick membership test
     appendBBs(workList, workSet);
 
     int count = 0;
 
-    while (!workList.empty() && count < 100000) {
-        count++; // prevent infinite loop
-
+    while (!workList.empty() && count++ < 100000) {
         BasicBlock *currBB = workList.back();
         workList.erase(--workList.end());
         workSet.erase(currBB);
+
         // Calculate live locations and interferences
-        bool change = m_livenessAna.calcLiveness(currBB, cg, static_cast<UserProc *>(currBB->getFunction()));
+        assert(currBB->getFunction() && !currBB->getFunction()->isLib());
+        bool change = m_livenessAna.calcLiveness(currBB, ig, static_cast<UserProc *>(currBB->getFunction()));
 
         if (!change) {
             continue;

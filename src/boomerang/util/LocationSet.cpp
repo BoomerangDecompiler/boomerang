@@ -112,13 +112,13 @@ bool LocationSet::containsImplicit(SharedExp e) const
 }
 
 
-bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& dr)
+bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& ref, SharedExp& differentRef)
 {
-    if (!e) {
+    if (!ref) {
         return false;
     }
 
-    auto     search = RefExp::get(e->getSubExp1()->clone(), STMT_WILD);
+    auto     search = RefExp::get(ref->getSubExp1()->clone(), STMT_WILD);
     iterator pos    = m_set.find(search);
 
     if (pos == m_set.end()) {
@@ -132,13 +132,13 @@ bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& e, SharedExp& 
         // E.g. searching for r13{10} and **pos is r14{0}
         // Note: we want a ref-sensitive compare, but with the outer refs stripped off
         // For example: m[r29{10} - 16]{any} is different from m[r29{20} - 16]{any}
-        if (!(*(*pos)->getSubExp1() == *e->getSubExp1())) {
+        if (!(*(*pos)->getSubExp1() == *ref->getSubExp1())) {
             break;
         }
 
         // Bases are the same; return true if only different ref
-        if (!(**pos == *e)) {
-            dr = *pos;
+        if (!(**pos == *ref)) {
+            differentRef = *pos;
             return true;
         }
 
