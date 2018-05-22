@@ -27,11 +27,6 @@ void ControlFlowAnalyzer::structureCFG(Cfg *cfg)
 {
     m_cfg = cfg;
 
-    if (m_structured) {
-        unTraverse();
-        return;
-    }
-
     if (m_cfg->findRetNode() == nullptr) {
         return;
     }
@@ -45,7 +40,7 @@ void ControlFlowAnalyzer::structureCFG(Cfg *cfg)
         checkConds();
     }
 
-    m_structured = true;
+    unTraverse();
 }
 
 

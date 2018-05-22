@@ -240,7 +240,6 @@ public:
 
 private:
     Cfg *m_cfg = nullptr;
-    bool m_structured = false; ///< true if the CFG is structured
 
     std::vector<const BasicBlock *> m_postOrdering;    ///< Ordering of BBs for control flow structuring
     std::vector<const BasicBlock *> m_revPostOrdering; ///< Ordering of BBs for control flow structuring
