@@ -4,85 +4,185 @@ import os
 import shutil
 import subprocess
 import sys
-import time
+import difflib
 
 from collections import defaultdict
+from filecmp import dircmp
 
 
-# ${CMAKE_BINARY_DIR}/tests/regression-tests
-TESTS_DIR = os.getcwd()
-TESTS_INPUT = os.path.abspath(os.path.join(TESTS_DIR, "../../out/share/boomerang/samples/"))
+# These files are used for checking for regressions
+regression_tests = [
+    "elf/hello-clang4-dynamic",
+    "pentium/asgngoto",
+    "pentium/banner",
+    "pentium/branch",
+    "pentium/branch-linux",
+    "pentium/bswap",
+    "pentium/callchain",
+    "pentium/chararray",
+    "pentium/chararray-O4",
+    "pentium/daysofxmas",
+    "pentium/encrypt",
+    "pentium/fbranch",
+    "pentium/fbranch2",
+    "pentium/fedora2_true",
+    "pentium/fedora3_true",
+    "pentium/fib",
+    "pentium/fibo2",
+    "pentium/fibo3",
+    "pentium/fibo4",
+    "pentium/fibo_iter",
+    "pentium/fibo-O4",
+    "pentium/fromssa2",
+    "pentium/frontier",
+    "pentium/funcptr",
+    "pentium/global1",
+    "pentium/hello",
+    "pentium/ifthen",
+    "pentium/line1",
+    "pentium/line1-o4",
+    "pentium/localarray",
+    "pentium/localarray-O4",
+    "pentium/loop",
+    "pentium/manyparams",
+    "pentium/minmax",
+    "pentium/minmax2",
+    "pentium/minmax3",
+    "pentium/nestedswitch",
+    "pentium/param1",
+    "pentium/paramchain",
+    "pentium/phi",
+    "pentium/phi2",
+    "pentium/printpi",
+    "pentium/recursion",
+    "pentium/regalias",
+    "pentium/regalias2",
+    "pentium/restoredparam",
+    "pentium/rux_encrypt",
+    "pentium/semi",
+    "pentium/set",
+    "pentium/shared2",
+    "pentium/short1",
+    "pentium/short2",
+    "pentium/stattest",
+    "pentium/sumarray",
+    "pentium/sumarray-O4",
+    "pentium/superstat",
+    "pentium/suse_true",
+    "pentium/switch_cc",
+    "pentium/switch_gcc",
+    "pentium/testarray1",
+    "pentium/testarray2",
+    "pentium/testset",
+    "pentium/twofib",
+    "pentium/twoproc",
+    "pentium/twoproc2",
+    "pentium/twoproc3",
+    "pentium/uns"
+]
 
-test_results = defaultdict();
+# These files are currently disabled or unused
+disabled_tests = [
+    "pentium/ass2",
+    "pentium/ass3",
+    "pentium/global2",
+    "pentium/global3",
+    "pentium/recursion2",
+]
 
 
-'''
-  Perform the actual test.
-  Parameters:
-    - exepath:     Path to the Boomerang executable.
-    - test_file:   Path to the input binary file.
-    - output_path: Path to the output directory.
-    - args:        additional command line arguments.
 
-  The output directory will be created if it does not exist.
+""" Clean output directories from old data. """
+def clean_old_outputs(base_dir):
+    print("Cleaning up old data ...")
+    output_dir = os.path.join(base_dir, "outputs")
+    if os.path.isdir(output_dir): shutil.rmtree(output_dir)
+    os.makedirs(output_dir)
 
-  Returns:
-    - a character indicatiing test result status (.=success, !=failure etc.)
-    - the full commandline
-    - the input file path
-    - the throughput in B/s
-  as a list.
-'''
-def perform_test(exepath, test_file_path, output_path, args):
-    cmdline   = [exepath] + ['-P', os.path.dirname(exepath), '-o', output_path] + args + [test_file_path]
-    input_file = os.sep.join(test_file_path.split(os.sep)[-1:]) # input file without the path
+
+
+""" Compare directories and print the differences of file content. Returns True if the directories are equal. """
+def compare_directories(dir_left, dir_right):
+    def compare_directories_internal(dcmp):
+        directories_equal = True
+        for different_file_name in dcmp.diff_files:
+            # Found different file
+            directories_equal = False
+
+            with open(os.path.join(dcmp.left,  different_file_name), 'r') as file_left, \
+                 open(os.path.join(dcmp.right, different_file_name), 'r') as file_right:
+                diff = difflib.unified_diff(file_left.readlines(), file_right.readlines(),
+                    fromfile="%s (expected)" % different_file_name,
+                    tofile  ="%s (actual)"   % different_file_name)
+
+                print("")
+                for line in diff:
+                    sys.stdout.write(line)
+                print("")
+
+        for sub_dcmp in dcmp.subdirs.values():
+            directories_equal &= compare_directories_internal(sub_dcmp)
+
+        return directories_equal
+
+    dcmp = dircmp(dir_left, dir_right)
+    return compare_directories_internal(dcmp)
+
+
+""" Perform the actual test on a single input binary """
+def test_single_input(cli_path, input_file, output_path, desired_output_path, args):
+    cmdline   = [cli_path] + ['-P', os.path.dirname(cli_path), '-o', output_path] + args + [input_file]
 
     try:
-        os.makedirs(output_path)
+        with open(os.path.join(output_path, os.path.basename(input_file) + ".stdout"), "w") as test_stdout, \
+             open(os.path.join(output_path, os.path.basename(input_file) + ".stderr"), "w") as test_stderr:
 
-        test_stdout = open(os.path.join(output_path, input_file + ".stdout"), "w")
-        test_stderr = open(os.path.join(output_path, input_file + ".stderr"), "w")
+            try:
+                result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=120)
+                result = '.' if result == 0 else 'f'
 
-        start_t = time.time()
+                if result == '.':
+                    # Perform regression diff
+                    if not compare_directories(desired_output_path, output_path):
+                        result = 'r'
+            except:
+                result = '!'
 
-        try:
-            result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=120)
-            result = '.' if result == 0 else '!'
-        except:
-            result = '!'
-
-        end_t = time.time()
-
-        test_stdout.close()
-        test_stdout.close()
-
-        file_size = os.path.getsize(test_file_path)
-        return [result, ' '.join(cmdline), test_file_path, float(file_size)/(end_t-start_t)]
+        return [result, ' '.join(cmdline), input_file]
     except:
-        return ['d', ' '.join(cmdline), test_file_path, 0]
+        return ['d', ' '.join(cmdline), input_file]
 
 
 
-'''
-  Test the decompiler with all files in a specific directory
-  and all subdirectories.
-'''
-def test_all_inputs_in(dir_path):
-    for f in os.listdir(dir_path):
-        if os.path.isdir(os.path.join(dir_path, f)):
-            # recurse into subdirectories
-            test_all_inputs_in(os.path.join(dir_path, f))
-        else:
-            # test the actual file
-            input_file = os.path.join(dir_path, f)
+""" Perform regression tests on inputs in test_list. Returns true on success (no regressions). """
+def perform_regression_tests(base_dir, test_input_base, test_list):
+    test_results = defaultdict();
 
-            # Find the path relative to TESTS_INPUT and preprend it with TESTS_DIR
-            output_dir = os.path.relpath(input_file, TESTS_INPUT)
-            output_dir = os.path.abspath(os.path.join(TESTS_DIR, "outputs", output_dir))
+    sys.stdout.write("Testing for regressions ")
+    for test_file in test_list:
+        input_file = os.path.join(test_input_base, test_file)
+        desired_output_dir = os.path.join(base_dir, "desired-outputs", test_file)
+        output_dir = os.path.join(base_dir, "outputs", test_file)
+        os.makedirs(output_dir)
 
-            test_results[input_file] = perform_test(sys.argv[1], input_file, output_dir, sys.argv[2:])
-            sys.stdout.write(test_results[input_file][0]) # print status
-            sys.stdout.flush()
+        test_result = test_single_input(sys.argv[1], input_file, output_dir, desired_output_dir, sys.argv[2:])
+        test_results[test_file] = test_result
+
+        sys.stdout.write(test_result[0]) # print status
+        sys.stdout.flush()
+    num_failed = sum(1 for res in test_results.values() if res[0] != '.')
+
+    print("")
+    if num_failed != 0:
+        print("\nRegressions:")
+        for res in test_results.values():
+            if res[0] != '.':
+                sys.stdout.write(res[0] + " " + res[2] + "\n")
+                sys.stdout.flush()
+
+    sys.stdout.flush()
+    return num_failed == 0
+
 
 def main():
     print("")
@@ -90,44 +190,18 @@ def main():
     print("=================================")
     print("")
 
-    # Backup previous output to outputs_prev
-    old_path = os.path.join(TESTS_DIR, "outputs_prev")
-    new_path = os.path.join(TESTS_DIR, "outputs")
+    # ${CMAKE_BINARY_DIR}/tests/regression-tests
+    base_dir = os.getcwd()
+    tests_input_base = os.path.abspath(os.path.join(os.getcwd(), "../../out/share/boomerang/samples/"))
 
-    if os.path.isdir(old_path): shutil.rmtree(old_path)
-    if os.path.isdir(new_path): shutil.move(new_path, old_path)
+    all_ok = True
 
-    sys.stdout.write("Testing ")
-    test_all_inputs_in(TESTS_INPUT)
-    print("\n")
+    clean_old_outputs(base_dir)
+    all_ok &= perform_regression_tests(base_dir, tests_input_base, regression_tests)
 
-    num_tests = len(test_results)
-    num_failed = sum(1 for res in test_results.values() if res[0] != '.')
+    print("Testing finished.\n")
 
-    # Works because items are compared from left to right
-    (min_throughput, min_name) = min((res[3], os.path.relpath(res[2], TESTS_INPUT)) for res in test_results.values() if res[0] == '.')
-
-    print("Summary:")
-    print("========")
-    print("Number of tests: " + str(num_tests))
-    print("Failed tests:    " + str(num_failed))
-    print("Min throughput:  " + str(int(min_throughput) / 1000) + " kB/s (" + min_name + ")")
-    print("")
-    print("Failures:")
-    print("=========")
-
-    some_failed = False
-    for res in test_results.values():
-        if (res[0] != '.'):
-            some_failed = True
-            sys.stdout.write(res[0] + " " + os.path.relpath(res[2], TESTS_INPUT) + "\n")
-
-    # Everything OK?
-    if not some_failed:
-        print("None")
-
-    print("")
-    sys.stdout.flush()
+    sys.exit(not all_ok) # Return with 0 exit status if everything is OK
 
 
 if __name__ == "__main__":
