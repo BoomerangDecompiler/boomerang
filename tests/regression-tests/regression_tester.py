@@ -311,7 +311,7 @@ disabled_tests = [
     "sparc/switch_epc2",
     "sparc/switch_gpc",
     "sparc/twofib",
-    "sparc/twoproc",
+    "sparc/twoproc"
 ]
 
 

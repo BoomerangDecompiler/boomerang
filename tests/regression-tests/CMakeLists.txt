@@ -14,6 +14,12 @@ if (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
     )
 
     add_dependencies(check
+        boomerang-DOS4GWLoader
         boomerang-ElfLoader
+        boomerang-ExeLoader
+        boomerang-HpSomLoader
+        boomerang-MachOLoader
+        boomerang-PalmLoader
+        boomerang-Win32Loader
     )
 endif (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
