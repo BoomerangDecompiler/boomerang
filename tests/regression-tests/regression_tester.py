@@ -14,13 +14,11 @@ from filecmp import dircmp
 regression_tests = [
     "elf/hello-clang4-dynamic",
     "pentium/asgngoto",
-    "pentium/banner",
     "pentium/branch",
     "pentium/branch-linux",
     "pentium/bswap",
     "pentium/callchain",
     "pentium/chararray",
-    "pentium/chararray-O4",
     "pentium/daysofxmas",
     "pentium/encrypt",
     "pentium/fbranch",
@@ -33,16 +31,11 @@ regression_tests = [
     "pentium/fibo4",
     "pentium/fibo_iter",
     "pentium/fibo-O4",
-    "pentium/fromssa2",
     "pentium/frontier",
     "pentium/funcptr",
-    "pentium/global1",
     "pentium/hello",
     "pentium/ifthen",
-    "pentium/line1",
-    "pentium/line1-o4",
     "pentium/localarray",
-    "pentium/localarray-O4",
     "pentium/loop",
     "pentium/manyparams",
     "pentium/minmax",
@@ -51,7 +44,6 @@ regression_tests = [
     "pentium/nestedswitch",
     "pentium/param1",
     "pentium/paramchain",
-    "pentium/phi",
     "pentium/phi2",
     "pentium/printpi",
     "pentium/recursion",
@@ -68,7 +60,6 @@ regression_tests = [
     "pentium/sumarray",
     "pentium/sumarray-O4",
     "pentium/superstat",
-    "pentium/suse_true",
     "pentium/switch_cc",
     "pentium/switch_gcc",
     "pentium/testarray1",
@@ -81,13 +72,23 @@ regression_tests = [
     "pentium/uns"
 ]
 
+
 # These files are currently disabled or unused
 disabled_tests = [
     "pentium/ass2",
     "pentium/ass3",
+    "pentium/banner",
+    "pentium/chararray-O4",
+    "pentium/fromssa2",
+    "pentium/global1",
     "pentium/global2",
     "pentium/global3",
+    "pentium/line1",
+    "pentium/line1-o4",
+    "pentium/localarray-O4",
+    "pentium/phi",
     "pentium/recursion2",
+    "pentium/suse_true"
 ]
 
 
