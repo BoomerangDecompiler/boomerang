@@ -362,7 +362,7 @@ def test_single_input(test_for_regressions, cli_path, input_file, output_path, d
              open(os.path.join(output_path, os.path.basename(input_file) + ".stderr"), "w") as test_stderr:
 
             try:
-                result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=120)
+                result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=360)
                 result = '.' if result == 0 else 'f'
 
                 if result == '.' and test_for_regressions:
