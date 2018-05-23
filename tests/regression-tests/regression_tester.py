@@ -72,11 +72,8 @@ regression_tests = [
     "pentium/uns"
 ]
 
-
-# These files are currently disabled or unused
-disabled_tests = [
-    "pentium/ass2",
-    "pentium/ass3",
+# These files are used for checking for crashes or failures only
+smoke_tests = [
     "pentium/banner",
     "pentium/chararray-O4",
     "pentium/fromssa2",
@@ -89,6 +86,12 @@ disabled_tests = [
     "pentium/phi",
     "pentium/recursion2",
     "pentium/suse_true"
+]
+
+# These files are currently disabled and/or unused
+disabled_tests = [
+    "pentium/ass2",
+    "pentium/ass3",
 ]
 
 
@@ -131,7 +134,7 @@ def compare_directories(dir_left, dir_right):
 
 
 """ Perform the actual test on a single input binary """
-def test_single_input(cli_path, input_file, output_path, desired_output_path, args):
+def test_single_input(test_for_regressions, cli_path, input_file, output_path, desired_output_path, args):
     cmdline   = [cli_path] + ['-P', os.path.dirname(cli_path), '-o', output_path] + args + [input_file]
 
     try:
@@ -142,7 +145,7 @@ def test_single_input(cli_path, input_file, output_path, desired_output_path, ar
                 result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=120)
                 result = '.' if result == 0 else 'f'
 
-                if result == '.':
+                if result == '.' and test_for_regressions:
                     # Perform regression diff
                     if not compare_directories(desired_output_path, output_path):
                         result = 'r'
@@ -166,7 +169,7 @@ def perform_regression_tests(base_dir, test_input_base, test_list):
         output_dir = os.path.join(base_dir, "outputs", test_file)
         os.makedirs(output_dir)
 
-        test_result = test_single_input(sys.argv[1], input_file, output_dir, desired_output_dir, sys.argv[2:])
+        test_result = test_single_input(True, sys.argv[1], input_file, output_dir, desired_output_dir, sys.argv[2:])
         test_results[test_file] = test_result
 
         sys.stdout.write(test_result[0]) # print status
@@ -176,6 +179,37 @@ def perform_regression_tests(base_dir, test_input_base, test_list):
     print("")
     if num_failed != 0:
         print("\nRegressions:")
+        for res in test_results.values():
+            if res[0] != '.':
+                sys.stdout.write(res[0] + " " + res[2] + "\n")
+                sys.stdout.flush()
+
+    sys.stdout.flush()
+    return num_failed == 0
+
+
+
+""" Perform regression tests on inputs in test_list. Returns true on success (no regressions). """
+def perform_smoke_tests(base_dir, test_input_base, test_list):
+    test_results = defaultdict();
+
+    sys.stdout.write("Testing for crashes ")
+    for test_file in test_list:
+        input_file = os.path.join(test_input_base, test_file)
+        desired_output_dir = os.path.join(base_dir, "desired-outputs", test_file)
+        output_dir = os.path.join(base_dir, "outputs", test_file)
+        os.makedirs(output_dir)
+
+        test_result = test_single_input(False, sys.argv[1], input_file, output_dir, desired_output_dir, sys.argv[2:])
+        test_results[test_file] = test_result
+
+        sys.stdout.write(test_result[0]) # print status
+        sys.stdout.flush()
+    num_failed = sum(1 for res in test_results.values() if res[0] != '.')
+
+    print("")
+    if num_failed != 0:
+        print("\nFailures:")
         for res in test_results.values():
             if res[0] != '.':
                 sys.stdout.write(res[0] + " " + res[2] + "\n")
@@ -199,6 +233,7 @@ def main():
 
     clean_old_outputs(base_dir)
     all_ok &= perform_regression_tests(base_dir, tests_input_base, regression_tests)
+    all_ok &= perform_smoke_tests(base_dir, tests_input_base, smoke_tests)
 
     print("Testing finished.\n")
 
