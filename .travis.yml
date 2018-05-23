@@ -62,6 +62,17 @@ matrix:
       env:
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7"
 
+    # GCC 8, RelWithDebInfo, regression tests
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - qt5-default
+            - g++-8
+      script:
+        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DBOOMERANG_BUILD_TESTS=ON .. && make -j2 check
 
 before_script: mkdir build && cd build
 script: cmake -DBOOMERANG_BUILD_TESTS=ON $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
