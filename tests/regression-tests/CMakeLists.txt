@@ -12,4 +12,8 @@ if (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
         DEPENDS copy-regression-script
     )
+
+    add_dependencies(check
+        boomerang-ElfLoader
+    )
 endif (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
