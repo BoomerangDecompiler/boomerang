@@ -169,3 +169,32 @@ function(BOOMERANG_ADD_COMPILE_FLAGS)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_COMPILE_FLAGS}" PARENT_SCOPE)
     set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   ${C_COMPILE_FLAGS}" PARENT_SCOPE)
 endfunction()
+
+
+# Create a soft directory link from LINK_SOURCE to LINK_DEST
+function(BOOMERANG_LINK_DIRECTORY LINK_SOURCE LINK_DEST)
+    # link output data directory to ${CMAKE_SOURCE_DIR}/data"
+    if (WIN32)
+        string(REPLACE "/" "\\\\" LNK_LOC    "${LINK_SOURCE}")
+        string(REPLACE "/" "\\\\" LNK_TARGET "${LINK_DEST}")
+
+        # Do not invoke mklink directly. If invoked directly, mklink will fail if the link already exists.
+        # But we only want to know if mklink fails because of some other reason.
+        set(LNK_COMMAND "if not exist ${LNK_LOC} (mklink /J ${LNK_LOC} ${LNK_TARGET})")
+        execute_process(COMMAND "cmd" /C "${LNK_COMMAND}"
+            WORKING_DIRECTORY "${BOOMERANG_OUTPUT_DIR}"
+            OUTPUT_QUIET
+            ERROR_VARIABLE LNK_ERROR
+            ERROR_STRIP_TRAILING_WHITESPACE
+        )
+
+        if (LNK_ERROR)
+            message(WARNING "Could not link to data directory:\n"
+                "Command '${LNK_COMMAND}' failed with\n"
+                "error message '${LNK_ERROR}'")
+        endif (LNK_ERROR)
+    else () # Linux
+        execute_process(COMMAND ln -sfn "${LINK_DEST}" "${LINK_SOURCE}")
+    endif ()
+endfunction()
+

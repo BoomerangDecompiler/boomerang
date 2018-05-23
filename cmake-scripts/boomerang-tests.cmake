@@ -18,4 +18,6 @@ if (BOOMERANG_BUILD_TESTS)
 
     add_subdirectory(${CMAKE_SOURCE_DIR}/tests/unit-tests)
     add_subdirectory(${CMAKE_SOURCE_DIR}/tests/regression-tests)
+
+    BOOMERANG_LINK_DIRECTORY("${CMAKE_BINARY_DIR}/tests/regression-tests/desired-outputs" "${CMAKE_SOURCE_DIR}/tests/regression-tests/desired-outputs")
 endif (BOOMERANG_BUILD_TESTS)

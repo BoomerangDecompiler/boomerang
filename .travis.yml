@@ -76,3 +76,4 @@ matrix:
 
 before_script: mkdir build && cd build
 script: cmake -DBOOMERANG_BUILD_TESTS=ON $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
+
