@@ -353,6 +353,7 @@ def compare_directories(dir_left, dir_right):
     return compare_directories_internal(dcmp)
 
 
+
 """ Perform the actual test on a single input binary """
 def test_single_input(test_for_regressions, cli_path, input_file, output_path, desired_output_path, args):
     cmdline   = [cli_path] + ['-P', os.path.dirname(cli_path), '-o', output_path] + args + [input_file]
@@ -439,6 +440,7 @@ def perform_smoke_tests(base_dir, test_input_base, test_list):
     return num_failed == 0
 
 
+
 def main():
     print("")
     print("Boomerang 0.4.0 Regression Tester")
@@ -458,6 +460,7 @@ def main():
     print("Testing finished.\n")
 
     sys.exit(not all_ok) # Return with 0 exit status if everything is OK
+
 
 
 if __name__ == "__main__":
