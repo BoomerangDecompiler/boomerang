@@ -21,11 +21,15 @@
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
 - Improved: Log output formatting.
 - Improved: Detection of statically imported library functions.
+- Improved: Unit test coverage.
+- Improved: Regression test coverage.
+- Improved: The regression test script now produces a unified diff when detecting a regression.
 - Feature: Added 'replay' console command to read console commands from a file.
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
 - Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
 - Changed: Slight changes to generated C code.
+- Changed: Split old regression test suite into "real" regression tests and smoke tests (that only check for crashes or failures).
 - Removed: Constraint-based type analysis.
 - Removed: Ability to read/write XML files, to be replaced by new save format.
 - Performance: Slightly increased performance of code generation.
@@ -37,6 +41,5 @@
 - Technical: Removed unused files from the repository.
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
 - Technical: Upgraded code base to C++11.
-- Technical: Added more regression tests.
-- Technical: Added more unit tests.
 - Numerous other small changes and fixes.
+

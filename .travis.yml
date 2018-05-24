@@ -16,6 +16,7 @@ matrix:
             - qt5-default
             - clang-4.0
       env:
+        - JOBNAME="Clang4 Debug"
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0"
 
     # Clang 5, release
@@ -28,6 +29,7 @@ matrix:
             - qt5-default
             - clang-5.0
       env:
+        - JOBNAME="Clang5 Release"
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0"
 
     # GCC 6, debug with code coverage
@@ -41,6 +43,7 @@ matrix:
             - g++-6
             - lcov
       env:
+        - JOBNAME="GCC6 Debug + CodeCov"
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6 -DBOOMERANG_ENABLE_COVERAGE=ON"
       after_success:
         # Create CodeCov report
@@ -60,8 +63,23 @@ matrix:
             - qt5-default
             - g++-7
       env:
+        - JOBNAME="GCC7 Release"
         - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7"
 
+    # GCC 8, RelWithDebInfo, regression tests
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - qt5-default
+            - g++-8
+      env:
+        - JOBNAME="GCC8 RelWithDebInfo Regression"
+      script:
+        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DBOOMERANG_BUILD_TESTS=ON .. && make -j2 check
 
 before_script: mkdir build && cd build
 script: cmake -DBOOMERANG_BUILD_TESTS=ON $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
+
