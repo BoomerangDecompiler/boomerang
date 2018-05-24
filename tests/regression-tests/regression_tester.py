@@ -38,7 +38,6 @@ regression_tests = [
     "OSX/o4/branch",
     "OSX/o4/fbranch",
     "OSX/o4/fromssa2",
-    "OSX/o4/frontier",
     "OSX/o4/funcptr",
     "OSX/o4/global1",
     "OSX/o4/global2",
@@ -237,7 +236,6 @@ regression_tests = [
     "sparc/uns",
     "sparc/worms",
     "windows/hello_release.exe",
-    "windows/switch_borland.exe",
     "windows/typetest.exe"
 ]
 
@@ -256,6 +254,7 @@ smoke_tests = [
     "OSX/o4/fib",
     "OSX/o4/fibo",
     "OSX/o4/fibo2",
+    "OSX/o4/frontier",
     "OSX/o4/phi",
     "pentium/banner",
     "pentium/chararray-O4",
@@ -273,6 +272,7 @@ smoke_tests = [
     "sparc/sumarray-O4",
     "windows/fbranch.exe",
     "windows/hello.exe",
+    "windows/switch_borland.exe",
     "windows/switch_gcc.exe",
     "windows/switch_msvc5.exe"
 ]
