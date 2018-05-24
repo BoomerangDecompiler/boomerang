@@ -327,7 +327,7 @@ def clean_old_outputs(base_dir):
 
 
 """ Compare directories and print the differences of file content. Returns True if the directories are equal. """
-def compare_directories(dir_left, dir_right):
+def compare_directories(dir_expected, dir_actual):
     def compare_directories_internal(dcmp):
         directories_equal = True
 
@@ -335,11 +335,11 @@ def compare_directories(dir_left, dir_right):
             # Found different file
             directories_equal = False
 
-            with open(os.path.join(dcmp.left,  different_file_name), 'r') as file_left, \
-                 open(os.path.join(dcmp.right, different_file_name), 'r') as file_right:
-                diff = difflib.unified_diff(file_left.readlines(), file_right.readlines(),
-                    fromfile="%s (expected)" % file_left.name,
-                    tofile  ="%s (actual)"   % file_right.name)
+            with open(os.path.join(dcmp.left,  different_file_name), 'r') as file_expected, \
+                 open(os.path.join(dcmp.right, different_file_name), 'r') as file_actual:
+                diff = difflib.unified_diff(file_expected.readlines(), file_actual.readlines(),
+                    fromfile=file_expected.name,
+                    tofile  =file_expected.name)
 
                 print("")
                 for line in diff:
@@ -351,7 +351,7 @@ def compare_directories(dir_left, dir_right):
 
         return directories_equal
 
-    dcmp = dircmp(dir_left, dir_right)
+    dcmp = dircmp(dir_expected, dir_actual)
     return compare_directories_internal(dcmp)
 
 
