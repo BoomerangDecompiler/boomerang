@@ -13,6 +13,10 @@ from filecmp import dircmp
 # These files are used for checking for regressions
 regression_tests = [
     "elf/hello-clang4-dynamic",
+    "elf32-ppc/fibo",
+    "elf32-ppc/hello",
+    "elf32-ppc/minmax",
+    "elf32-ppc/switch",
     "pentium/asgngoto",
     "pentium/branch",
     "pentium/branch-linux",
@@ -69,15 +73,8 @@ regression_tests = [
     "pentium/twoproc",
     "pentium/twoproc2",
     "pentium/twoproc3",
-    "pentium/uns"
-]
+    "pentium/uns",
 
-# These files are used for checking for crashes or failures only
-smoke_tests = [
-    "elf32-ppc/fibo",
-    "elf32-ppc/hello",
-    "elf32-ppc/minmax",
-    "elf32-ppc/switch",
     "mips/bcd",
     "mipsel/bcd",
     "mipsel/rain",
@@ -276,6 +273,10 @@ smoke_tests = [
     "windows/typetest.exe"
 ]
 
+# These files are used for checking for crashes or failures only
+smoke_tests = [
+]
+
 # These files are currently disabled and/or unused
 disabled_tests = [
     "elf/hello-clang4-static",
@@ -329,6 +330,7 @@ def clean_old_outputs(base_dir):
 def compare_directories(dir_left, dir_right):
     def compare_directories_internal(dcmp):
         directories_equal = True
+
         for different_file_name in dcmp.diff_files:
             # Found different file
             directories_equal = False
@@ -336,8 +338,8 @@ def compare_directories(dir_left, dir_right):
             with open(os.path.join(dcmp.left,  different_file_name), 'r') as file_left, \
                  open(os.path.join(dcmp.right, different_file_name), 'r') as file_right:
                 diff = difflib.unified_diff(file_left.readlines(), file_right.readlines(),
-                    fromfile="%s (expected)" % different_file_name,
-                    tofile  ="%s (actual)"   % different_file_name)
+                    fromfile="%s (expected)" % file_left.name,
+                    tofile  ="%s (actual)"   % file_right.name)
 
                 print("")
                 for line in diff:
@@ -370,11 +372,15 @@ def test_single_input(cli_path, input_file, output_path, expected_output_path, a
                     # Perform regression diff
                     if not compare_directories(expected_output_path, output_path):
                         result = 'r'
+
+            except KeyboardInterrupt:
+                print("\nAborting regression tests at user request\n")
+                sys.exit(2)
             except:
                 result = '!'
 
         return [result, ' '.join(cmdline), input_file]
-    except:
+    except IOError:
         return ['d', ' '.join(cmdline), input_file]
 
 
@@ -405,6 +411,7 @@ def perform_regression_tests(base_dir, test_input_base, test_list):
             if res[0] != '.':
                 sys.stdout.write(res[0] + " " + res[2] + "\n")
                 sys.stdout.flush()
+        print("")
 
     sys.stdout.flush()
     return num_failed == 0
