@@ -343,7 +343,7 @@ def compare_directories(dir_left, dir_right):
 
                 print("")
                 for line in diff:
-                    sys.stdout.write(line)
+                    sys.stderr.write(line)
                 print("")
 
         for sub_dcmp in dcmp.subdirs.values():
