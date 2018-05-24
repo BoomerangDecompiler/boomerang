@@ -1,3 +1,10 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
 
 # regression tests are executed via the CLI
 if (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
