@@ -235,7 +235,6 @@ regression_tests = [
     "sparc/twoproc2",
     "sparc/uns",
     "sparc/worms",
-    "windows/hello_release.exe",
     "windows/typetest.exe"
 ]
 
@@ -272,6 +271,7 @@ smoke_tests = [
     "sparc/sumarray-O4",
     "windows/fbranch.exe",
     "windows/hello.exe",
+    "windows/hello_release.exe",
     "windows/switch_borland.exe",
     "windows/switch_gcc.exe",
     "windows/switch_msvc5.exe"
