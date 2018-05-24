@@ -2424,7 +2424,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
                                          const BasicBlock *latch, std::list<const BasicBlock *>& followSet)
 {
     // reset this back to LoopCond if it was originally of this type
-    if (m_analyzer.getLatchNode(bb)) {
+    if (m_analyzer.getLatchNode(bb) != nullptr) {
         m_analyzer.setStructType(bb, StructType::LoopCond);
     }
 
@@ -2440,7 +2440,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
     if (m_analyzer.getCondType(bb) == CondType::Case) {
         followSet.push_back(m_analyzer.getCondFollow(bb));
     }
-    else if ((m_analyzer.getCondType(bb) != CondType::Case) && m_analyzer.getCondFollow(bb)) {
+    else if (m_analyzer.getCondFollow(bb) != nullptr) {
         // For a structured two conditional header,
         // its follow is added to the follow set
         // myLoopHead = (sType == LoopCond ? this : loopHead);
@@ -2720,6 +2720,10 @@ void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *de
         else {
             addBreak();
         }
+    }
+    else if (dest->isType(BBType::Ret)) {
+        // a goto to a return -> just emit the return statement
+        writeBB(dest);
     }
     else {
         addGoto(dest);
