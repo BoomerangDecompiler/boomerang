@@ -2722,7 +2722,7 @@ void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *de
         }
     }
     else {
-        addGoto(bb);
+        addGoto(dest);
     }
 }
 
