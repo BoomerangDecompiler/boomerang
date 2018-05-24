@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
             local13 = 10;
         }
         local14 = 0;
+bb0x8048403:
         if (local14 <= 6) {
             local0 = 0;
             while (local0 < local13) {
@@ -50,6 +51,7 @@ int main(int argc, char *argv[])
                     local2 = 0;
                 }
                 local1 = 0;
+bb0x8048448:
                 if (local1 <= 6) {
                     eax_1 = local0 * 8 + esp + local1 - 12;
                     local3 = eax_1 - 112;
@@ -64,11 +66,10 @@ int main(int argc, char *argv[])
                     if (local2 < 0) {
                         local7 = local2 + 7;
                     }
-bb0x80484b4:
                     al = *((local2 - (local7 >> 3) * 8) * 7 + local1 + glyphs[edx]);
                     *(unsigned char*)(eax_1 - 112) = al;
                     local1++;
-                    goto bb0x80484b4;
+                    goto bb0x8048448;
                 }
                 *(int*)(esp + local0 * 8 - 117) = 32;
                 local0++;
@@ -85,9 +86,8 @@ bb0x80484b4:
             }
 bb0x8048531:
             puts(&local8);
-bb0x804853d:
             local14++;
-            goto bb0x804853d;
+            goto bb0x8048403;
         }
         puts("");
         local11 += 4;

@@ -34,16 +34,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     __size32 esp_23; 		// r28{0}
     __size32 esp_24; 		// r28{0}
     __size32 esp_25; 		// r28{0}
-    union { __size32; __size32 *; } esp_26; 		// r28{0}
-    __size32 esp_27; 		// r28{0}
-    __size32 esp_28; 		// r28{0}
+    __size32 esp_26; 		// r28{0}
+    union { unsigned int; void *; } esp_27; 		// r28{0}
+    union { unsigned int; void *; } esp_28; 		// r28{0}
     __size32 esp_29; 		// r28{0}
     __size32 esp_3; 		// r28{0}
     __size32 esp_30; 		// r28{0}
     __size32 esp_31; 		// r28{0}
     __size32 esp_32; 		// r28{0}
-    union { unsigned int; void *; } esp_33; 		// r28{0}
-    union { unsigned int; void *; } esp_34; 		// r28{0}
+    __size32 esp_33; 		// r28{0}
     __size32 esp_4; 		// r28{0}
     __size32 esp_5; 		// r28{0}
     __size32 esp_6; 		// r28{0}
@@ -53,17 +52,17 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     HINSTANCE local0; 		// m[esp + 4]
     HINSTANCE local1; 		// m[esp + 8]
     unsigned int local10; 		// m[esp - 56]
-    int local100; 		// m[esp_33 - 56]{0}
-    int local101; 		// m[esp_33 - 56]{0}
-    int local102; 		// m[esp_33 - 56]{0}
-    int local103; 		// m[esp_33 - 56]{0}
-    int local104; 		// m[esp_33 - 56]{0}
-    int local105; 		// m[esp_33 - 56]{0}
-    int local106; 		// m[esp_33 - 56]{0}
-    int local107; 		// m[esp_33 - 56]{0}
-    int local108; 		// m[esp_33 - 56]{0}
+    int local100; 		// m[esp_27 - 56]{0}
+    int local101; 		// m[esp_27 - 56]{0}
+    int local102; 		// m[esp_27 - 56]{0}
+    int local103; 		// m[esp_27 - 56]{0}
+    int local104; 		// m[esp_27 - 56]{0}
+    int local105; 		// m[esp_27 - 56]{0}
+    int local106; 		// m[esp_27 - 56]{0}
+    int local107; 		// m[esp_27 - 56]{0}
+    int local108; 		// m[esp_27 - 56]{0}
     int local109; 		// %flags{0}
-    int local11; 		// m[esp_33 + 4]{0}
+    int local11; 		// m[esp_27 + 4]{0}
     int local110; 		// %flags{0}
     int local111; 		// %flags{0}
     int local112; 		// %flags{0}
@@ -74,7 +73,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local117; 		// %flags{0}
     int local118; 		// %flags{0}
     int local119; 		// %flags{0}
-    int local12; 		// m[esp_33 + 4]{0}
+    int local12; 		// m[esp_27 + 4]{0}
     int local120; 		// %flags{0}
     int local121; 		// %flags{0}
     int local122; 		// %flags{0}
@@ -85,7 +84,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local127; 		// %flags{0}
     int local128; 		// %flags{0}
     int local129; 		// %ZF{0}
-    int local13; 		// m[esp_33 + 4]{0}
+    int local13; 		// m[esp_27 + 4]{0}
     int local130; 		// %ZF{0}
     int local131; 		// %ZF{0}
     int local132; 		// %ZF{0}
@@ -96,7 +95,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local137; 		// %ZF{0}
     int local138; 		// %ZF{0}
     int local139; 		// %ZF{0}
-    int local14; 		// m[esp_33 + 4]{0}
+    int local14; 		// m[esp_27 + 4]{0}
     int local140; 		// %ZF{0}
     int local141; 		// %ZF{0}
     int local142; 		// %ZF{0}
@@ -107,7 +106,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local147; 		// %ZF{0}
     int local148; 		// %ZF{0}
     int local149; 		// %CF{0}
-    int local15; 		// m[esp_33 + 4]{0}
+    int local15; 		// m[esp_27 + 4]{0}
     int local150; 		// %CF{0}
     int local151; 		// %CF{0}
     int local152; 		// %CF{0}
@@ -118,7 +117,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local157; 		// %CF{0}
     int local158; 		// %CF{0}
     int local159; 		// %CF{0}
-    int local16; 		// m[esp_33 + 4]{0}
+    int local16; 		// m[esp_27 + 4]{0}
     int local160; 		// %CF{0}
     int local161; 		// %CF{0}
     int local162; 		// %CF{0}
@@ -129,109 +128,109 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local167; 		// %CF{0}
     int local168; 		// %CF{0}
     int local169; 		// m[esp - 28]
-    int local17; 		// m[esp_33 + 4]{0}
+    int local17; 		// m[esp_27 + 4]{0}
     __size32 local170; 		// eax{0}
-    __size32 local171; 		// esp_27{0}
+    __size32 local171; 		// esp_29{0}
     int local172; 		// local111{0}
     int local173; 		// local131{0}
     int local174; 		// local151{0}
-    __size32 local175; 		// esp_30{0}
+    __size32 local175; 		// esp_26{0}
     int local176; 		// local114{0}
     int local177; 		// local134{0}
     int local178; 		// local154{0}
     union { __size32 *; __size32; } local179; 		// esp{0}
-    int local18; 		// m[esp_33 + 8]{0}
-    int local19; 		// m[esp_33 + 8]{0}
+    int local18; 		// m[esp_27 + 8]{0}
+    int local19; 		// m[esp_27 + 8]{0}
     LPSTR local2; 		// m[esp + 12]
-    int local20; 		// m[esp_33 + 8]{0}
-    int local21; 		// m[esp_33 + 8]{0}
-    int local22; 		// m[esp_33 + 8]{0}
-    int local23; 		// m[esp_33 + 8]{0}
-    int local24; 		// m[esp_33 + 8]{0}
-    int local25; 		// m[esp_33 + 12]{0}
-    int local26; 		// m[esp_33 + 12]{0}
-    int local27; 		// m[esp_33 + 12]{0}
-    int local28; 		// m[esp_33 + 12]{0}
-    int local29; 		// m[esp_33 + 12]{0}
+    int local20; 		// m[esp_27 + 8]{0}
+    int local21; 		// m[esp_27 + 8]{0}
+    int local22; 		// m[esp_27 + 8]{0}
+    int local23; 		// m[esp_27 + 8]{0}
+    int local24; 		// m[esp_27 + 8]{0}
+    int local25; 		// m[esp_27 + 12]{0}
+    int local26; 		// m[esp_27 + 12]{0}
+    int local27; 		// m[esp_27 + 12]{0}
+    int local28; 		// m[esp_27 + 12]{0}
+    int local29; 		// m[esp_27 + 12]{0}
     int local3; 		// m[esp + 16]
-    int local30; 		// m[esp_33 + 12]{0}
-    int local31; 		// m[esp_33 + 12]{0}
-    int local32; 		// m[esp_33 + 16]{0}
-    int local33; 		// m[esp_33 + 16]{0}
-    int local34; 		// m[esp_33 + 16]{0}
-    int local35; 		// m[esp_33 + 16]{0}
-    int local36; 		// m[esp_33 + 16]{0}
-    int local37; 		// m[esp_33 + 16]{0}
-    int local38; 		// m[esp_33 + 16]{0}
-    int local39; 		// m[esp_33 - 32]{0}
+    int local30; 		// m[esp_27 + 12]{0}
+    int local31; 		// m[esp_27 + 12]{0}
+    int local32; 		// m[esp_27 + 16]{0}
+    int local33; 		// m[esp_27 + 16]{0}
+    int local34; 		// m[esp_27 + 16]{0}
+    int local35; 		// m[esp_27 + 16]{0}
+    int local36; 		// m[esp_27 + 16]{0}
+    int local37; 		// m[esp_27 + 16]{0}
+    int local38; 		// m[esp_27 + 16]{0}
+    int local39; 		// m[esp_27 - 32]{0}
     __size32 local4; 		// m[esp - 32]
-    int local40; 		// m[esp_33 - 32]{0}
-    int local41; 		// m[esp_33 - 32]{0}
-    int local42; 		// m[esp_33 - 32]{0}
-    int local43; 		// m[esp_33 - 32]{0}
-    int local44; 		// m[esp_33 - 32]{0}
-    int local45; 		// m[esp_33 - 32]{0}
-    int local46; 		// m[esp_33 - 32]{0}
-    int local47; 		// m[esp_33 - 32]{0}
-    int local48; 		// m[esp_33 - 32]{0}
-    int local49; 		// m[esp_33 - 36]{0}
+    int local40; 		// m[esp_27 - 32]{0}
+    int local41; 		// m[esp_27 - 32]{0}
+    int local42; 		// m[esp_27 - 32]{0}
+    int local43; 		// m[esp_27 - 32]{0}
+    int local44; 		// m[esp_27 - 32]{0}
+    int local45; 		// m[esp_27 - 32]{0}
+    int local46; 		// m[esp_27 - 32]{0}
+    int local47; 		// m[esp_27 - 32]{0}
+    int local48; 		// m[esp_27 - 32]{0}
+    int local49; 		// m[esp_27 - 36]{0}
     __size32 local5; 		// m[esp - 36]
-    int local50; 		// m[esp_33 - 36]{0}
-    int local51; 		// m[esp_33 - 36]{0}
-    int local52; 		// m[esp_33 - 36]{0}
-    int local53; 		// m[esp_33 - 36]{0}
-    int local54; 		// m[esp_33 - 36]{0}
-    int local55; 		// m[esp_33 - 36]{0}
-    int local56; 		// m[esp_33 - 36]{0}
-    int local57; 		// m[esp_33 - 36]{0}
-    int local58; 		// m[esp_33 - 36]{0}
-    int local59; 		// m[esp_33 - 40]{0}
+    int local50; 		// m[esp_27 - 36]{0}
+    int local51; 		// m[esp_27 - 36]{0}
+    int local52; 		// m[esp_27 - 36]{0}
+    int local53; 		// m[esp_27 - 36]{0}
+    int local54; 		// m[esp_27 - 36]{0}
+    int local55; 		// m[esp_27 - 36]{0}
+    int local56; 		// m[esp_27 - 36]{0}
+    int local57; 		// m[esp_27 - 36]{0}
+    int local58; 		// m[esp_27 - 36]{0}
+    int local59; 		// m[esp_27 - 40]{0}
     int local6; 		// m[esp - 40]
-    int local60; 		// m[esp_33 - 40]{0}
-    int local61; 		// m[esp_33 - 40]{0}
-    int local62; 		// m[esp_33 - 40]{0}
-    int local63; 		// m[esp_33 - 40]{0}
-    int local64; 		// m[esp_33 - 40]{0}
-    int local65; 		// m[esp_33 - 40]{0}
-    int local66; 		// m[esp_33 - 40]{0}
-    int local67; 		// m[esp_33 - 40]{0}
-    int local68; 		// m[esp_33 - 40]{0}
-    int local69; 		// m[esp_33 - 44]{0}
+    int local60; 		// m[esp_27 - 40]{0}
+    int local61; 		// m[esp_27 - 40]{0}
+    int local62; 		// m[esp_27 - 40]{0}
+    int local63; 		// m[esp_27 - 40]{0}
+    int local64; 		// m[esp_27 - 40]{0}
+    int local65; 		// m[esp_27 - 40]{0}
+    int local66; 		// m[esp_27 - 40]{0}
+    int local67; 		// m[esp_27 - 40]{0}
+    int local68; 		// m[esp_27 - 40]{0}
+    int local69; 		// m[esp_27 - 44]{0}
     int local7; 		// m[esp - 44]
-    int local70; 		// m[esp_33 - 44]{0}
-    int local71; 		// m[esp_33 - 44]{0}
-    int local72; 		// m[esp_33 - 44]{0}
-    int local73; 		// m[esp_33 - 44]{0}
-    int local74; 		// m[esp_33 - 44]{0}
-    int local75; 		// m[esp_33 - 44]{0}
-    int local76; 		// m[esp_33 - 44]{0}
-    int local77; 		// m[esp_33 - 44]{0}
-    int local78; 		// m[esp_33 - 44]{0}
-    int local79; 		// m[esp_33 - 48]{0}
+    int local70; 		// m[esp_27 - 44]{0}
+    int local71; 		// m[esp_27 - 44]{0}
+    int local72; 		// m[esp_27 - 44]{0}
+    int local73; 		// m[esp_27 - 44]{0}
+    int local74; 		// m[esp_27 - 44]{0}
+    int local75; 		// m[esp_27 - 44]{0}
+    int local76; 		// m[esp_27 - 44]{0}
+    int local77; 		// m[esp_27 - 44]{0}
+    int local78; 		// m[esp_27 - 44]{0}
+    int local79; 		// m[esp_27 - 48]{0}
     int local8; 		// m[esp - 48]
-    int local80; 		// m[esp_33 - 48]{0}
-    int local81; 		// m[esp_33 - 48]{0}
-    int local82; 		// m[esp_33 - 48]{0}
-    int local83; 		// m[esp_33 - 48]{0}
-    int local84; 		// m[esp_33 - 48]{0}
-    int local85; 		// m[esp_33 - 48]{0}
-    int local86; 		// m[esp_33 - 48]{0}
-    int local87; 		// m[esp_33 - 48]{0}
-    int local88; 		// m[esp_33 - 48]{0}
-    int local89; 		// m[esp_33 - 52]{0}
+    int local80; 		// m[esp_27 - 48]{0}
+    int local81; 		// m[esp_27 - 48]{0}
+    int local82; 		// m[esp_27 - 48]{0}
+    int local83; 		// m[esp_27 - 48]{0}
+    int local84; 		// m[esp_27 - 48]{0}
+    int local85; 		// m[esp_27 - 48]{0}
+    int local86; 		// m[esp_27 - 48]{0}
+    int local87; 		// m[esp_27 - 48]{0}
+    int local88; 		// m[esp_27 - 48]{0}
+    int local89; 		// m[esp_27 - 52]{0}
     HINSTANCE local9; 		// m[esp - 52]
-    int local90; 		// m[esp_33 - 52]{0}
-    int local91; 		// m[esp_33 - 52]{0}
-    int local92; 		// m[esp_33 - 52]{0}
-    int local93; 		// m[esp_33 - 52]{0}
-    int local94; 		// m[esp_33 - 52]{0}
-    int local95; 		// m[esp_33 - 52]{0}
-    int local96; 		// m[esp_33 - 52]{0}
-    int local97; 		// m[esp_33 - 52]{0}
-    int local98; 		// m[esp_33 - 52]{0}
-    int local99; 		// m[esp_33 - 56]{0}
+    int local90; 		// m[esp_27 - 52]{0}
+    int local91; 		// m[esp_27 - 52]{0}
+    int local92; 		// m[esp_27 - 52]{0}
+    int local93; 		// m[esp_27 - 52]{0}
+    int local94; 		// m[esp_27 - 52]{0}
+    int local95; 		// m[esp_27 - 52]{0}
+    int local96; 		// m[esp_27 - 52]{0}
+    int local97; 		// m[esp_27 - 52]{0}
+    int local98; 		// m[esp_27 - 52]{0}
+    int local99; 		// m[esp_27 - 56]{0}
 
-    (*0x45de)(ebx, ebp, hInstance, 0x45de, hInstance, hPrevInstance, lpCmdLine, nCmdShow, esi, edi, 100, 0x4054f4, 103, hInstance, pc, SUBFLAGS32(esp_33, 28, (esp_33 - 28)), esp_33 - 28 == 0, esp_33 < (unsigned int)28);
+    (*0x45de)(ebx, ebp, hInstance, 0x45de, hInstance, hPrevInstance, lpCmdLine, nCmdShow, esi, edi, 100, 0x4054f4, 103, hInstance, pc, SUBFLAGS32(esp_27, 28, (esp_27 - 28)), esp_27 - 28 == 0, esp_27 < (unsigned int)28);
     *(int*)(esp_1 - 4) = 100;
     *(__size32*)(esp_1 - 8) = 0x405490;
     *(int*)(esp_1 - 12) = 109;
@@ -266,15 +265,15 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
             ebp = 0x4590;
             local171 = esp_16;
             do {
-                esp_27 = local171;
+                esp_29 = local171;
                 local111 = local172;
                 local131 = local173;
                 local151 = local174;
-                eax = *(esp_27 + 16);
-                *(__size32*)(esp_27 - 4) = esp_27 + 16;
-                *(__size32*)(esp_27 - 8) = esi;
-                *(__size32*)(esp_27 - 12) = eax;
-                (*ebx)(eax, ecx, esp_27 + 16, ebx, ebp, esi, edi, local13, local20, local27, local34, local42, local52, local62, local72, local82, local92, local102, <all>, local111, local131, local151);
+                eax = *(esp_29 + 16);
+                *(__size32*)(esp_29 - 4) = esp_29 + 16;
+                *(__size32*)(esp_29 - 8) = esi;
+                *(__size32*)(esp_29 - 12) = eax;
+                (*ebx)(eax, ecx, esp_29 + 16, ebx, ebp, esi, edi, local13, local20, local27, local34, local42, local52, local62, local72, local82, local92, local102, <all>, local111, local131, local151);
                 local175 = esp_17;
                 local118 = LOGICALFLAGS32(eax);
                 local176 = local118;
@@ -290,22 +289,22 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
                     ecx = DispatchMessageA(*(esp_20 - 4)); /* Warning: also results in edx, esp_23 */
                     local175 = esp_23;
                 }
-                esp_30 = local175;
+                esp_26 = local175;
                 local114 = local176;
                 local134 = local177;
                 local154 = local178;
-                *(int*)(esp_30 - 4) = 0;
-                *(int*)(esp_30 - 8) = 0;
-                *(int*)(esp_30 - 12) = 0;
-                *(__size32*)(esp_30 - 16) = esp_30 + 16;
-                (*edi)(esp_30 + 16, ecx, edx, ebx, ebp, esi, edi, local16, local23, local30, local37, local41, local51, local61, local71, local81, local91, local101, <all>, local114, local134, local154);
-                local171 = esp_26;
+                *(int*)(esp_26 - 4) = 0;
+                *(int*)(esp_26 - 8) = 0;
+                *(int*)(esp_26 - 12) = 0;
+                *(__size32*)(esp_26 - 16) = esp_26 + 16;
+                (*edi)(esp_26 + 16, ecx, edx, ebx, ebp, esi, edi, local16, local23, local30, local37, local41, local51, local61, local71, local81, local91, local101, <all>, local114, local134, local154);
+                local171 = esp;
                 local126 = LOGICALFLAGS32(eax);
                 local172 = local126;
                 local173 = local146;
                 local174 = local166;
             } while (eax != 0);
-            esp = esp_26 + 8;
+            esp += 8;
             local179 = esp;
         }
         esp = local179;

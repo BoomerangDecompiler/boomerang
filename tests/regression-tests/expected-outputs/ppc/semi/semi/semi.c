@@ -16,15 +16,15 @@ int main(int argc, union { __size32; char *[] *; } argv)
     local1 = argv;
     if (argc <= 2) {
         do {
-bb0x100004e0:
             if (argc != 11) {
+bb0x100004f8:
             }
             else {
-bb0x100004f4:
-                goto bb0x100004f4;
+                goto bb0x1000050c;
             }
-            goto bb0x100004e0;
+            goto bb0x100004f8;
         } while (argc <= 11);
+bb0x1000050c:
     }
     else {
         do {
@@ -34,24 +34,24 @@ bb0x100004f4:
             local3 = argv;
             if (argc <= 2) {
                 if (argc <= 3) {
+bb0x100004a8:
                     printf(0x100008e0);
+bb0x10000484:
                     g3 = printf(0x100008dc); /* Warning: also results in g4 */
                     local2 = g3;
                     local3 = g4;
                 }
                 else {
-bb0x10000470:
                     if (argc > 4) {
-                        goto bb0x10000470;
+                        goto bb0x10000484;
                     }
-bb0x1000049c:
-                    goto bb0x1000049c;
+                    goto bb0x100004c8;
                 }
             }
             else {
-bb0x10000458:
-                goto bb0x10000458;
+                goto bb0x100004a8;
             }
+bb0x100004c8:
             g3_1 = local2;
             g4 = local3;
             local0 = g3_1;

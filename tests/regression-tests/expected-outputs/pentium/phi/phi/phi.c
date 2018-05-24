@@ -23,15 +23,15 @@ int main(int argc, char *argv[])
         ebx = eax_1;
         eax_4 = fib(eax_1 - 1, eax_1 - 1, edx);
         printf("%d", eax_4 + eax_1);
+bb0x8048396:
         eax_10 = ebx;
         local5 = eax_10;
     }
     else {
-bb0x804838c:
         eax_7 = 1;
         local5 = eax_7;
         if (eax_12 != 1) {
-            goto bb0x804838c;
+            goto bb0x8048396;
         }
     }
     eax_11 = local5;
@@ -60,15 +60,15 @@ __size32 fib(int param1, __size32 param2, __size32 param3)
         ecx = printf("%d", eax + eax_1); /* Warning: also results in edx */
         local7 = ecx;
         local8 = edx;
+bb0x80483f7:
         param2 = local7;
         param3 = local8;
         eax = ebx;
     }
     else {
-bb0x80483ed:
         eax = 1;
         if (param1 != 1) {
-            goto bb0x80483ed;
+            goto bb0x80483f7;
         }
     }
     return eax; /* WARNING: Also returning: ecx := param2, edx := param3 */

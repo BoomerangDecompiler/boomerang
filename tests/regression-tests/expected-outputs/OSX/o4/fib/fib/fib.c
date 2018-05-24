@@ -16,7 +16,7 @@ __size32 fib(int param2, __size32 param2)
 {
     __size32 g29_1; 		// r29{0}
     __size32 g29_4; 		// r29{0}
-    __size32 g29_5; 		// r29{0}
+    __size32 g29_7; 		// r29{0}
     int g3; 		// r3
     int g30; 		// r30
     int g30_1; 		// r30{0}
@@ -42,6 +42,6 @@ __size32 fib(int param2, __size32 param2)
     param2 = local5;
     g29_4 = local6;
     g30_4 = local7;
-    return g29_5; /* WARNING: Also returning: g30 := g30, g3 := param2, g29 := g29_5, g29 := g29_5, g29 := g29_4, g30 := g30, g30 := g30, g30 := g30_4 */
+    return g29_7; /* WARNING: Also returning: g30 := g30, g3 := param2, g29 := g29_7, g29 := g29_7, g29 := g29_4, g30 := g30, g30 := g30, g30 := g30_4 */
 }
 

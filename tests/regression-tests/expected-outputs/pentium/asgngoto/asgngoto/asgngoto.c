@@ -43,16 +43,16 @@ void MAIN__(__size32 param1)
     do_lio();
     e_rsle();
     if (param1 != 2) {
+bb0x8048741:
         if (param1 != 3) {
+bb0x804874e:
             if (param1 != 4) {
+bb0x804875b:
             }
-bb0x8048754:
-            goto bb0x8048754;
+            goto bb0x804875b;
         }
-bb0x8048747:
-        goto bb0x8048747;
+        goto bb0x804874e;
     }
-bb0x804873a:
-    goto bb0x804873a;
+    goto bb0x8048741;
 }
 

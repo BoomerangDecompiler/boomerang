@@ -137,8 +137,10 @@ void proc_0x080498b0(union { FILE *; __size32; } param1, union { char[] *; __siz
     }
     if ((unsigned int)ebx_1 > (unsigned int)9) {
         eax = 0x804a574;
+bb0x8049940:
         local5 = eax;
         local13 = local5;
+bb0x8049944:
         local1 = local13;
         eax = dcgettext(0, local1, 5);
         vfprintf(param1, eax, param5);
@@ -146,65 +148,56 @@ void proc_0x080498b0(union { FILE *; __size32; } param1, union { char[] *; __siz
         if (eax < *(param1 + 24)) {
             *(int*)eax = 10;
             *(__size32*)(param1 + 20)++;
+bb0x804996e:
             eax = *0x804b7d0;
             fputs_unlocked(eax, param1);
             eax = *(param1 + 20);
             if (eax < *(param1 + 24)) {
                 *(int*)eax = 10;
                 *(__size32*)(param1 + 20)++;
+bb0x804998d:
                 eax = dcgettext(0, "This is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n", 5);
                 fputs_unlocked(eax, param1);
                 return;
             }
             __overflow();
-bb0x80499ce:
-            goto bb0x80499ce;
+            goto bb0x804998d;
         }
         __overflow();
-bb0x80499e1:
-        goto bb0x80499e1;
+        goto bb0x804996e;
     }
     switch(ebx_2) {
     case 0:
     case 1:
-bb0x804992c:
         eax = 0x804a5bc;
-        goto bb0x804992c;
+        goto bb0x8049940;
     case 2:
-bb0x80499e3:
         local1 = 0x804a5cc;
         local13 = local1;
-        goto bb0x80499e3;
+        goto bb0x8049944;
     case 3:
-bb0x80499fa:
         eax = 0x804a5e3;
-        goto bb0x80499fa;
+        goto bb0x8049940;
     case 4:
-bb0x8049a0d:
         eax = 0x804a478;
-        goto bb0x8049a0d;
+        goto bb0x8049940;
     case 5:
-bb0x8049a20:
         eax = 0x804a498;
-        goto bb0x8049a20;
+        goto bb0x8049940;
     case 6:
-bb0x8049a33:
         local1 = 0x804a4bc;
         local13 = local1;
-        goto bb0x8049a33;
+        goto bb0x8049944;
     case 7:
-bb0x8049a4a:
         local1 = 0x804a4e4;
         local13 = local1;
-        goto bb0x8049a4a;
+        goto bb0x8049944;
     case 8:
-bb0x8049a61:
         eax = 0x804a510;
-        goto bb0x8049a61;
+        goto bb0x8049940;
     case 9:
-bb0x8049a74:
         eax = 0x804a540;
-        goto bb0x8049a74;
+        goto bb0x8049940;
     }
     abort();
     return;

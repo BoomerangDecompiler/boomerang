@@ -14,12 +14,12 @@ int main(int argc, char *argv[])
     o2 = 0x10abc;
     o1 = 0x10aec;
     if (o0 != 0x10a5c) {
+bb0x10be0:
         i1 = 0;
     }
     else {
-bb0x10b9c:
         if (o3 != 0x10a8c || o2 != 0x10abc || o1 != 0x10aec) {
-            goto bb0x10b9c;
+            goto bb0x10be0;
         }
         else {
             i1 = 1;

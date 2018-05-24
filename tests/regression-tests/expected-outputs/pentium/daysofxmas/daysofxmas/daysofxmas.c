@@ -13,14 +13,14 @@ int main(int argc, char *argv[])
     if (argc <= 1) {
         if (argc < 0) {
             if (argc < -72) {
+bb0x80483ba:
                 eax = main(local8, local7);
             }
             else {
                 if (argc >= -50) {
                     if (*local14 == 47) {
                     }
-bb0x80484b3:
-                    goto bb0x80484b3;
+                    goto bb0x80483ba;
                 }
                 else {
                     eax = (int) *local14;
@@ -29,8 +29,7 @@ bb0x80484b3:
                         eax = putchar(eax);
                     }
                     else {
-bb0x8048481:
-                        goto bb0x8048481;
+                        goto bb0x80483ba;
                     }
                 }
             }
@@ -41,20 +40,20 @@ bb0x8048481:
                 dl = *local14;
                 ebx = 0;
                 if (dl == 47) {
+bb0x8048463:
                     ebx = 1;
                 }
                 else {
                     eax = main(-61, (int) dl);
                     eax = main(0, eax);
-bb0x8048458:
                     if (eax != 0) {
-                        goto bb0x8048458;
+                        goto bb0x8048463;
                     }
                 }
             }
             else {
 bb0x80483b8:
-                goto bb0x80483b8;
+                goto bb0x80483ba;
             }
         }
     }
@@ -70,8 +69,7 @@ bb0x80483b8:
         eax = main(-94, argc - 27);
         if (eax != 0 && argc == 2) {
             if (argv <= 12) {
-bb0x80483ab:
-                goto bb0x80483ab;
+                goto bb0x80483b8;
             }
             else {
                 ebx = 9;

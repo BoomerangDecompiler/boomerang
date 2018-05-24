@@ -12,16 +12,16 @@ int main(int argc, char *argv[])
     scanf(0x1000091c);
     f31 = *((float *)&*0x10000980);
     printf(0x10000920);
-bb0x100004bc:
     f1 = local0;
     if (f31 == local0) {
         g3 = puts(0x10000958);
         if (f31 != local0) {
+bb0x100004c8:
             g3 = puts(0x10000934);
         }
     }
     else {
-        goto bb0x100004bc;
+        goto bb0x100004c8;
     }
     if (f31 > local0) {
         g3 = puts(0x10000940);
@@ -30,13 +30,13 @@ bb0x100004bc:
     if (f31 == f0) {
         g3 = puts(0x10000950);
         if (f31 == local0) {
+bb0x10000568:
             g3 = puts(0x10000960);
         }
     }
     else {
-bb0x100004fc:
         if (f31 == f0) {
-            goto bb0x100004fc;
+            goto bb0x10000568;
         }
     }
     f0 = local0;

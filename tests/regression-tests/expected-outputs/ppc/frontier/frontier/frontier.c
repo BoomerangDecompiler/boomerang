@@ -16,35 +16,34 @@ int main(int argc, char *argv[])
             local3 = local1;
             if (local2 <= 1) {
                 if (local1 == 12) {
-                    goto bb0x1000051c;
+bb0x10000514:
+                    return 13;
                 }
+bb0x100004d4:
                 local0 = local3;
             }
             else {
-bb0x10000498:
                 local0 = local1 - 1;
                 local3 = local0;
                 if (local1 > 2) {
-                    goto bb0x1000051c;
+bb0x10000468:
+                    return 13;
                 }
-                goto bb0x10000498;
+                goto bb0x100004d4;
             }
-            goto bb0x1000051c;
+            return 13;
         } while (local0 > 0);
     }
     else {
         if (argc > 5) {
             if (argc == 9) {
-bb0x100004ec:
                 if (argc != 10) {
-bb0x1000050c:
-                    goto bb0x1000050c;
+                    goto bb0x10000514;
                 }
                 else {
-bb0x10000500:
-                    goto bb0x10000500;
+                    goto bb0x10000514;
                 }
-                goto bb0x100004ec;
+                goto bb0x10000514;
             }
             else {
             }
@@ -52,15 +51,13 @@ bb0x10000500:
         else {
             if (argc == 2) {
                 do {
-bb0x10000454:
                 } while (argc > 0);
-                goto bb0x10000454;
+                goto bb0x10000468;
             }
             else {
             }
         }
     }
-bb0x1000051c:
     return 13;
 }
 

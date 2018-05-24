@@ -5,6 +5,7 @@ int main(int argc, char *argv[])
 {
     if (argc >= 3) {
         if (argc <= 3) {
+bb0x10000428:
             printf(0x1000081c);
         }
         else {
@@ -12,8 +13,7 @@ int main(int argc, char *argv[])
         }
     }
     else {
-bb0x10000424:
-        goto bb0x10000424;
+        goto bb0x10000428;
     }
     return 0;
 }

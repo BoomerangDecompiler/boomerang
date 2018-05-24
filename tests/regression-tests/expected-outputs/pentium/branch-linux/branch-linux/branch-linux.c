@@ -9,11 +9,11 @@ int main(int argc, char *argv[])
 
     scanf("%d", &local0);
     scanf("%d", &local1);
-bb0x8048445:
     if (5 == local0) {
         eax = *0x8049854;
         fwrite("Equal\n", 1, 6, eax);
         if (5 != local0) {
+bb0x804844e:
             eax = *0x8049854;
             fwrite("Not Equal\n", 1, 10, eax);
         }
@@ -21,60 +21,62 @@ bb0x8048445:
         }
     }
     else {
-        goto bb0x8048445;
+        goto bb0x804844e;
     }
     if (5 <= local0) {
+bb0x80484a4:
         eax = *0x8049854;
         fwrite("Less or Equal\n", 1, 14, eax);
         if (5 < local0) {
+bb0x80484f8:
             eax = *0x8049854;
             fwrite("Less\n", 1, 5, eax);
         }
         else {
+bb0x80484ce:
             eax = *0x8049854;
             fwrite("Greater or Equal\n", 1, 17, eax);
-bb0x80484f3:
             if (5 < local0) {
-                goto bb0x80484f3;
+                goto bb0x80484f8;
             }
         }
     }
     else {
         eax = *0x8049854;
         fwrite("Greater\n", 1, 8, eax);
-bb0x804849f:
         if (5 > local0) {
-            goto bb0x804849f;
+            goto bb0x80484ce;
         }
         else {
-            goto bb0x804849f;
+            goto bb0x80484a4;
         }
     }
     if (5 <= (unsigned int)local1) {
+bb0x804854c:
         eax = *0x8049854;
         fwrite("Less or Equal Unsigned\n", 1, 23, eax);
         if (5 < (unsigned int)local1) {
+bb0x80485a0:
             eax = *0x8049854;
             fwrite("Carry Set\n", 1, 10, eax);
         }
         else {
+bb0x8048576:
             eax = *0x8049854;
             fwrite("Carry Clear\n", 1, 12, eax);
-bb0x804859b:
             if (5 < (unsigned int)local1) {
-                goto bb0x804859b;
+                goto bb0x80485a0;
             }
         }
     }
     else {
         eax = *0x8049854;
         fwrite("Greater Unsigned\n", 1, 17, eax);
-bb0x8048547:
         if (5 > (unsigned int)local1) {
-            goto bb0x8048547;
+            goto bb0x8048576;
         }
         else {
-            goto bb0x8048547;
+            goto bb0x804854c;
         }
     }
     if (5 - local0 >= 0) {

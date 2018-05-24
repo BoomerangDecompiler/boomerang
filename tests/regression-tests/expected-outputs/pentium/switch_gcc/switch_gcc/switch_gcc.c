@@ -11,31 +11,26 @@ int main(int argc, char *argv[])
     else {
         switch(argc) {
         case 2:
-bb0x804894c:
             local0 = 0x8049458;
-            goto bb0x804894c;
+            goto bb0x8048981;
         case 3:
-bb0x8048954:
             local0 = 0x804945e;
-            goto bb0x8048954;
+            goto bb0x8048981;
         case 4:
-bb0x804895c:
             local0 = 0x8049466;
-            goto bb0x804895c;
+            goto bb0x8048981;
         case 5:
-bb0x8048964:
             local0 = 0x804946d;
-            goto bb0x8048964;
+            goto bb0x8048981;
         case 6:
-bb0x804896c:
             local0 = 0x8049474;
-            goto bb0x804896c;
+            goto bb0x8048981;
         case 7:
-bb0x8048974:
             local0 = 0x804947a;
-            goto bb0x8048974;
+            goto bb0x8048981;
         }
     }
+bb0x8048981:
     printf(local0);
     return 0;
 }

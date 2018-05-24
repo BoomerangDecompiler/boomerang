@@ -33,6 +33,7 @@ int main(int argc, union { char *[] *; int; } argv)
             if (argc <= 0) {
                 g0_1 = *(unsigned char*)g5;
                 if ((int) g0_1 == 47) {
+bb0x2aec:
                     g30_1 = g30;
                     *(int*)(g30 + 64) = 1;
                     local9 = g30_1;
@@ -41,9 +42,8 @@ int main(int argc, union { char *[] *; int; } argv)
                     g3 = main(-61, (int) g0);
                     g3 = main(0, g3); /* Warning: also results in g30 */
                     local9 = g30;
-bb0x2adc:
                     if (g3 != 0) {
-                        goto bb0x2adc;
+                        goto bb0x2aec;
                     }
                     else {
                     }
@@ -99,13 +99,13 @@ bb0x2adc:
         local9 = g30;
         local9 = g30;
         if (g3 == 0) {
+bb0x2964:
             *(int*)(g30 + 64) = 16;
         }
         else {
-bb0x291c:
             g0 = *(g30 + 120);
             if (g0 != 2) {
-                goto bb0x291c;
+                goto bb0x2964;
             }
             else {
                 g0 = *(g30 + 124);
@@ -139,6 +139,7 @@ __size32 __sputc(union { __size32; __size32 *; } param1, unsigned char param2)
     g9 = *(param1 + 8);
     *(int*)(param1 + 8) = g9 - 1;
     if (g9 - 1 >= 0) {
+bb0x2b74:
         g11 = *param1;
         g0 = (param2);
         *(__size8*)g11 = (char) g0;
@@ -149,17 +150,16 @@ __size32 __sputc(union { __size32; __size32 *; } param1, unsigned char param2)
         g9 = *(param1 + 8);
         g0 = *(param1 + 24);
         if (g9 < g0) {
+bb0x2b9c:
             g3 = __swbuf();
             local0 = g3;
         }
         else {
-bb0x2b60:
             if ((int) (param2) != 10) {
-                goto bb0x2b60;
+                goto bb0x2b74;
             }
             else {
-bb0x2b70:
-                goto bb0x2b70;
+                goto bb0x2b9c;
             }
         }
     }

@@ -19,18 +19,17 @@ int main(int argc, char *argv[])
                 if (g3_1 - 1 == 12) {
                     break;
                 }
+bb0x1dc8:
                 g3 = local1;
                 local0 = g3;
             }
             else {
-bb0x1dac:
                 g3 = g3_1 - 2;
                 local1 = g3;
                 if (g3_1 - 1 > 2) {
-bb0x1dbc:
-                    goto bb0x1dbc;
+                    return 13;
                 }
-                goto bb0x1dac;
+                goto bb0x1dc8;
             }
         } while (g3 > 0);
     }

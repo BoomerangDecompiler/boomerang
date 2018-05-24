@@ -23,14 +23,14 @@ int main(int argc, union { char *[] *; int; } argv)
                 local6 = 0;
                 g0_1 = *(unsigned char*)g5;
                 if ((ROTL(g0_1) & 0xff) == 47) {
+bb0x100006e8:
                     local6 = 1;
                 }
                 else {
                     g3 = main(-61, ROTL(g0) & 0xff);
                     g3 = main(0, g3);
-bb0x100006d8:
                     if (g3 != 0) {
-                        goto bb0x100006d8;
+                        goto bb0x100006e8;
                     }
                     else {
                     }

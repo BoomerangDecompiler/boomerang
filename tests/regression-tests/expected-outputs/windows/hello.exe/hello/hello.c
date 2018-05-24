@@ -1,30 +1,31 @@
-unsigned int global150_4298cc = 0;
-unsigned int global337_4298f8 = 0;
+__size32 global16_429638 = 0;// 4 bytes
+int global2239_429838 = 0;
 int HeapAlloc = 0x2c774;
 __size32 GetProcAddress = 0x2c59a;// 4 bytes
+int global2165_429810 = 0;
 unsigned int global2168_42981c = 0;
-__size32 LoadLibraryA = 0x2c5ac;// 4 bytes
 unsigned int global2171_429820 = 0;
-int global2206_42983c = 0;
+union { void *; __size32; } global2208_428d48;
 unsigned int global18_429644 = 0;
-__size32 global16_429638 = 0;// 4 bytes
 unsigned int global24_42aca4;
-int global27_42ac9c;
+int global28_42acac;
 union { void *; int; } global26_42ac98;
 unsigned int global25_42aca8;
 int global21_42aca0;
-int global28_42acac;
-unsigned int global29_42af80;
+int global27_42ac9c;
 int global33_42af90;
-unsigned int global147_4298c8 = 0;
+unsigned int global29_42af80;
 void global124_4298c4;
+unsigned int global147_4298c8 = 0;
 unsigned int global138_4298d0 = 0;
-int global155_428d4c = 1;
+unsigned int global150_4298cc = 0;
 int global160_429848 = 0;
-unsigned char global553_428d58 = 253;
 unsigned int global158_429858 = 0;
+int global155_428d4c = 1;
+unsigned char global553_428d58 = 253;
 unsigned int global253_429630 = 0;
 unsigned int global254_42962c = 0;
+unsigned int global337_4298f8 = 0;
 unsigned int global328_42acb0;
 int global359_42963c = 0;
 unsigned int global422_42af94;
@@ -32,61 +33,61 @@ void global425_42afe0;
 void global431_429220;
 int global1220_428c08 = 3;
 int global478_428c10 = 10;
-int global492_428ec4 = 1;
 int global1218_428c14 = 140;
-void global646_428d1c;
-unsigned char global571_428d59 = 221;
+int global492_428ec4 = 1;
 __size32 global1222_428c0c = 7;// 4 bytes
-void global556_428d5c;
 unsigned char global526_428d5b = 189;
+unsigned char global571_428d59 = 221;
+void global646_428d1c;
+void global556_428d5c;
 void global1444_428c60;
 int global2137_429824 = 0;
-int global2165_429810 = 0;
 unsigned int global2162_429814 = 0;
+unsigned int global2153_42980c = 0;
+unsigned int global2148_4297ec = 0;
 unsigned int global2159_4297e4 = 0;
 __size32 global2156_429818 = 0;// 4 bytes
-unsigned int global2148_4297ec = 0;
-unsigned int global2153_42980c = 0;
+int global2206_42983c = 0;
 unsigned int global2143_4297e8 = 0;
-union { void *; __size32; } global2208_428d48;
+__size32 LoadLibraryA = 0x2c5ac;// 4 bytes
 void global2232_4297fc;
-int global2264_429808 = 0;
 int global2261_429804 = 0;
-int global2258_429800 = 0;
-int global2252_4297f8 = 0;
+int global2264_429808 = 0;
 int global2249_4297f4 = 0;
+int global2252_4297f8 = 0;
 int global2255_4297fc = 0;
-int global2239_429838 = 0;
+int global2258_429800 = 0;
 int global2246_4297f0 = 0;
 unsigned int global2241_4297e0 = 0;
 union { long long; __size32 * x4869; unsigned long long *; } global2304_4251f8[9999999];
-unsigned int global150_4298cc = 0;
-unsigned int global337_4298f8 = 0;
+__size32 global16_429638 = 0;// 4 bytes
+int global2239_429838 = 0;
 int HeapAlloc = 0x2c774;
 __size32 GetProcAddress = 0x2c59a;// 4 bytes
+int global2165_429810 = 0;
 unsigned int global2168_42981c = 0;
-__size32 LoadLibraryA = 0x2c5ac;// 4 bytes
 unsigned int global2171_429820 = 0;
-int global2206_42983c = 0;
+union { void *; __size32; } global2208_428d48;
 unsigned int global18_429644 = 0;
-__size32 global16_429638 = 0;// 4 bytes
 unsigned int global24_42aca4;
-int global27_42ac9c;
+int global28_42acac;
 union { void *; int; } global26_42ac98;
 unsigned int global25_42aca8;
 int global21_42aca0;
-int global28_42acac;
-unsigned int global29_42af80;
+int global27_42ac9c;
 int global33_42af90;
-unsigned int global147_4298c8 = 0;
+unsigned int global29_42af80;
 void global124_4298c4;
+unsigned int global147_4298c8 = 0;
 unsigned int global138_4298d0 = 0;
-int global155_428d4c = 1;
+unsigned int global150_4298cc = 0;
 int global160_429848 = 0;
-unsigned char global553_428d58 = 253;
 unsigned int global158_429858 = 0;
+int global155_428d4c = 1;
+unsigned char global553_428d58 = 253;
 unsigned int global253_429630 = 0;
 unsigned int global254_42962c = 0;
+unsigned int global337_4298f8 = 0;
 unsigned int global328_42acb0;
 int global359_42963c = 0;
 unsigned int global422_42af94;
@@ -94,31 +95,30 @@ void global425_42afe0;
 void global431_429220;
 int global1220_428c08 = 3;
 int global478_428c10 = 10;
-int global492_428ec4 = 1;
 int global1218_428c14 = 140;
-void global646_428d1c;
-unsigned char global571_428d59 = 221;
+int global492_428ec4 = 1;
 __size32 global1222_428c0c = 7;// 4 bytes
-void global556_428d5c;
 unsigned char global526_428d5b = 189;
+unsigned char global571_428d59 = 221;
+void global646_428d1c;
+void global556_428d5c;
 void global1444_428c60;
 int global2137_429824 = 0;
-int global2165_429810 = 0;
 unsigned int global2162_429814 = 0;
+unsigned int global2153_42980c = 0;
+unsigned int global2148_4297ec = 0;
 unsigned int global2159_4297e4 = 0;
 __size32 global2156_429818 = 0;// 4 bytes
-unsigned int global2148_4297ec = 0;
-unsigned int global2153_42980c = 0;
+int global2206_42983c = 0;
 unsigned int global2143_4297e8 = 0;
-union { void *; __size32; } global2208_428d48;
+__size32 LoadLibraryA = 0x2c5ac;// 4 bytes
 void global2232_4297fc;
-int global2264_429808 = 0;
 int global2261_429804 = 0;
-int global2258_429800 = 0;
-int global2252_4297f8 = 0;
+int global2264_429808 = 0;
 int global2249_4297f4 = 0;
+int global2252_4297f8 = 0;
 int global2255_4297fc = 0;
-int global2239_429838 = 0;
+int global2258_429800 = 0;
 int global2246_4297f0 = 0;
 unsigned int global2241_4297e0 = 0;
 union { long long; __size32 * x4869; unsigned long long *; } global2304_4251f8[9999999];
@@ -452,14 +452,14 @@ __size32 proc_0x00414820(__size32 param1)
         eax = proc_0x004147e0();
         global33_42af90 = eax;
         if (*0x42af90 != 3) {
+bb0x414881:
             eax = 1;
         }
         else {
             *(__size32*)(esp + 4LL - 24) = 1016;
             eax = proc_0x0041a6f0(*(esp + 4LL - 24)); /* Warning: also results in edx, esp */
-bb0x414869:
             if (eax != 0) {
-                goto bb0x414869;
+                goto bb0x414881;
             }
             else {
                 *(__size32*)esp = global29_42af80;
@@ -816,6 +816,7 @@ void proc_0x00414260()
                     eax = *(ebp - 100);
                     global425_42afe0[edx] = eax;
                     global422_42af94 += 32;
+bb0x4143a3:
                     eax = *(ebp - 76);
                     if (*(ebp - 100) < global425_42afe0[eax] + 256) {
                         edx = *(ebp - 100);
@@ -824,20 +825,19 @@ void proc_0x00414260()
                         *(__size32*)eax = -1;
                         ecx = *(ebp - 100);
                         *(int*)(ecx + 5) = 10;
-bb0x41439a:
                         edx = *(ebp - 100);
                         *(int*)(ebp - 100) = edx + 8;
-                        goto bb0x41439a;
+                        goto bb0x4143a3;
                     }
                     edx = *(ebp - 76);
                     *(__size32*)(ebp - 76) = edx + 1;
                 }
                 else {
-bb0x414371:
                     *(unsigned int*)(ebp - 88) = global422_42af94;
-                    goto bb0x414371;
+                    goto bb0x4143d6;
                 }
             }
+bb0x4143d6:
             *(__size32*)(ebp - 84) = 0;
             edx = *(ebp - 84);
             while (edx < *(ebp - 88)) {
@@ -849,6 +849,7 @@ bb0x414371:
                         eax = *(ebp - 92);
                         ecx = (int) *eax;
                         if ((ecx & 0x8) != 0) {
+bb0x414430:
                             ecx = *(ebp - 84);
                             edx = *(ebp - 84);
                             *(__size32*)(ebp - 100) = global425_42afe0[(ecx >> 5)] + (edx & 0x1f) * 8;
@@ -866,9 +867,8 @@ bb0x414371:
                             eax = *edx;
                             *(__size32*)(esp - 4) = eax;
                             eax = GetFileType(); /* Warning: also results in esp */
-bb0x41442c:
                             if (eax != 0) {
-                                goto bb0x41442c;
+                                goto bb0x414430;
                             }
                         }
                     }
@@ -899,14 +899,14 @@ bb0x41442c:
                 ecx = *(ebp - 100);
                 *(int*)(ecx + 4) = -127;
                 if (*(ebp - 84) != 0) {
-bb0x4144b0:
                     edx = *(ebp - 84);
                     *(int*)(ebp - 112) = -11 - ((unsigned int)0 < (unsigned int)(edx - 1));
-                    goto bb0x4144b0;
+                    goto bb0x4144c0;
                 }
                 else {
                     *(__size32*)(ebp - 112) = -10;
                 }
+bb0x4144c0:
                 eax = *(ebp - 112);
                 *(__size32*)(esp_1 - 4) = eax;
                 eax = GetStdHandle(*(esp_1 - 4)); /* Warning: also results in esp */
@@ -917,16 +917,15 @@ bb0x41452e:
                     ecx = (int) *(eax + 4);
                     edx = *(ebp - 100);
                     *(__size8*)(edx + 4) = (unsigned char) ecx | 64;
-                    goto bb0x41452e;
+                    goto bb0x41453e;
                 }
                 else {
                     ecx = *(ebp - 96);
                     *(__size32*)(esp_1 + 8LL - 12) = ecx;
                     eax = GetFileType(); /* Warning: also results in esp */
-bb0x4144dd:
                     *(__size32*)(ebp - 80) = eax;
                     if (*(ebp - 80) == 0) {
-                        goto bb0x4144dd;
+                        goto bb0x41452e;
                     }
                     else {
                         edx = *(ebp - 100);
@@ -936,12 +935,11 @@ bb0x4144dd:
                         if ((ecx & 0xff) != 2) {
                             edx = *(ebp - 80);
                             if ((edx & 0xff) == 3) {
-bb0x41451c:
                                 eax = *(ebp - 100);
                                 ecx = (int) *(eax + 4);
                                 edx = *(ebp - 100);
                                 *(__size8*)(edx + 4) = (unsigned char) ecx | 8;
-                                goto bb0x41451c;
+                                goto bb0x41452c;
                             }
                         }
                         else {
@@ -950,8 +948,10 @@ bb0x41451c:
                             ecx = *(ebp - 100);
                             *(__size8*)(ecx + 4) = (unsigned char) eax | 64;
                         }
+bb0x41452c:
                     }
                 }
+bb0x41453e:
                 local0 = esp;
             }
             esp = local0;
@@ -1076,10 +1076,11 @@ void proc_0x00413fc0(unsigned int param1)
     __size32 esp_13; 		// r28{0}
     __size32 esp_16; 		// r28{0}
     __size32 esp_17; 		// r28{0}
+    union { __size32; __size32 *; } esp_18; 		// r28{0}
     __size32 esp_19; 		// r28{0}
     __size32 esp_20; 		// r28{0}
-    union { __size32; __size32 *; } esp_21; 		// r28{0}
-    __size32 esp_22; 		// r28{0}
+    __size32 esp_25; 		// r28{0}
+    __size32 esp_28; 		// r28{0}
     __size32 esp_4; 		// r28{0}
     __size32 esp_7; 		// r28{0}
     unsigned int local0; 		// m[esp - 12]
@@ -1088,19 +1089,19 @@ void proc_0x00413fc0(unsigned int param1)
     int local3; 		// m[esp - 20]
     int local4; 		// m[esp - 4]
     __size32 local5; 		// esp_20{0}
-    __size32 local6; 		// esp_19{0}
+    __size32 local6; 		// esp_16{0}
     __size32 local7; 		// esp{0}
-    __size32 local8; 		// esp_16{0}
+    __size32 local8; 		// esp_25{0}
 
-    ebp = (esp_17 - 4);
-    esp_1 = esp_17 - 28;
+    ebp = (esp_28 - 4);
+    esp_1 = esp_28 - 28;
     local0 = 0;
     local1 = 0;
     local5 = esp_1;
     if (*0x4297d4 == 0) {
         eax = GetEnvironmentStringsW(); /* Warning: also results in esp_4 */
         local5 = esp_4;
-        *(unsigned int*)(esp_17 - 12) = eax;
+        *(unsigned int*)(esp_28 - 12) = eax;
         if (eax == 0) {
             eax = GetLastError(); /* Warning: also results in esp_10 */
             local5 = esp_10;
@@ -1122,23 +1123,23 @@ void proc_0x00413fc0(unsigned int param1)
         else {
             eax = GetEnvironmentStrings(); /* Warning: also results in esp_13 */
             local8 = esp_13;
-            *(int*)(esp_17 - 28) = eax;
+            *(int*)(esp_28 - 28) = eax;
             if (eax != 0) {
-                esp_16 = local8;
-                local3 = *(esp_17 - 28);
-                edx = (int) **(esp_17 - 20);
+                esp_25 = local8;
+                local3 = *(esp_28 - 28);
+                edx = (int) **(esp_28 - 20);
                 while (edx != 0) {
-                    *(union { char *; int; }*)(esp_17 - 20)++;
-                    edx = (int) **(esp_17 - 20);
+                    *(union { char *; int; }*)(esp_28 - 20)++;
+                    edx = (int) **(esp_28 - 20);
                     if (edx == 0) {
-                        *(__size32*)(esp_17 - 20)++;
+                        *(__size32*)(esp_28 - 20)++;
                     }
-                    edx = (int) **(esp_17 - 20);
+                    edx = (int) **(esp_28 - 20);
                 }
-                *(__size32*)(esp_16 - 4) = 140;
-                *(__size32*)(esp_16 - 8) = 0x4256b0;
-                *(int*)(esp_16 - 12) = 2;
-                *(int*)(esp_16 - 16) = *(esp_17 - 20) - *(esp_17 - 28) + 1;
+                *(__size32*)(esp_25 - 4) = 140;
+                *(__size32*)(esp_25 - 8) = 0x4256b0;
+                *(int*)(esp_25 - 12) = 2;
+                *(int*)(esp_25 - 16) = *(esp_28 - 20) - *(esp_28 - 28) + 1;
                 eax = proc_0x004168d0(); /* Warning: also results in esp, ebp, edi */
                 *(__size32*)(ebp - 16) = eax;
                 if (*(ebp - 16) != 0) {
@@ -1164,63 +1165,64 @@ void proc_0x00413fc0(unsigned int param1)
         }
     }
     else {
-        if (*(esp_17 - 12) != 0) {
-            esp_19 = local6;
-            local2 = *(esp_17 - 12);
-            edx = *(unsigned short*)*(esp_17 - 16);
+        if (*(esp_28 - 12) != 0) {
+bb0x414036:
+            esp_16 = local6;
+            local2 = *(esp_28 - 12);
+            edx = *(unsigned short*)*(esp_28 - 16);
             while (edx != 0) {
-                *(union { unsigned short *; unsigned int; }*)(esp_17 - 16) += 2;
-                edx = *(unsigned short*)*(esp_17 - 16);
+                *(union { unsigned short *; unsigned int; }*)(esp_28 - 16) += 2;
+                edx = *(unsigned short*)*(esp_28 - 16);
                 if (edx == 0) {
-                    *(__size32*)(esp_17 - 16) += 2;
+                    *(__size32*)(esp_28 - 16) += 2;
                 }
-                edx = *(unsigned short*)*(esp_17 - 16);
+                edx = *(unsigned short*)*(esp_28 - 16);
             }
-            *(int*)(esp_19 - 4) = 0;
-            *(int*)(esp_19 - 8) = 0;
-            *(int*)(esp_19 - 12) = 0;
-            *(int*)(esp_19 - 16) = 0;
-            *(int*)(esp_19 - 20) = (*(esp_17 - 16) - *(esp_17 - 12) >> 1) + 1;
-            *(unsigned int*)(esp_19 - 24) = *(esp_17 - 12);
-            *(int*)(esp_19 - 28) = 0;
-            *(int*)(esp_19 - 32) = 0;
-            eax = WideCharToMultiByte(); /* Warning: also results in esp */
-            local7 = esp;
+            *(int*)(esp_16 - 4) = 0;
+            *(int*)(esp_16 - 8) = 0;
+            *(int*)(esp_16 - 12) = 0;
+            *(int*)(esp_16 - 16) = 0;
+            *(int*)(esp_16 - 20) = (*(esp_28 - 16) - *(esp_28 - 12) >> 1) + 1;
+            *(unsigned int*)(esp_16 - 24) = *(esp_28 - 12);
+            *(int*)(esp_16 - 28) = 0;
+            *(int*)(esp_16 - 32) = 0;
+            eax = WideCharToMultiByte(); /* Warning: also results in esp_17 */
+            local7 = esp_17;
             if (eax == 0) {
+bb0x4140b3:
                 esp = local7;
                 edx = *(ebp - 8);
                 local4 = edx;
                 FreeEnvironmentStringsW();
             }
             else {
-                *(int*)(esp_19 + 4LL - 40) = 97;
-                *(__size32*)(esp_19 + 4LL - 44) = 0x4256b0;
-                *(int*)(esp_19 + 4LL - 48) = 2;
-                *(int*)(esp_19 + 4LL - 52) = eax;
-                eax = proc_0x004168d0(); /* Warning: also results in dx, al, cl, dl, ah, dh, esp_21, ebp, edi */
-bb0x4140a7:
-                esp_22 = esp_21 + 16;
+                *(int*)(esp_16 + 4LL - 40) = 97;
+                *(__size32*)(esp_16 + 4LL - 44) = 0x4256b0;
+                *(int*)(esp_16 + 4LL - 48) = 2;
+                *(int*)(esp_16 + 4LL - 52) = eax;
+                eax = proc_0x004168d0(); /* Warning: also results in dx, al, cl, dl, ah, dh, esp_18, ebp, edi */
+                esp_19 = esp_18 + 16;
                 *(int*)(ebp - 24) = eax;
-                local7 = esp_22;
+                local7 = esp_19;
                 if (*(ebp - 24) != 0) {
-                    *(int*)(esp_21 + 12) = 0;
-                    *(int*)(esp_21 + 8) = 0;
+                    *(int*)(esp_18 + 12) = 0;
+                    *(int*)(esp_18 + 8) = 0;
                     eax = *(ebp - 4);
-                    *(__size32*)(esp_21 + 4) = eax;
+                    *(__size32*)(esp_18 + 4) = eax;
                     ecx = *(ebp - 24);
-                    *(__size32*)esp_21 = ecx;
+                    *(__size32*)esp_18 = ecx;
                     edx = *(ebp - 20);
-                    *(__size32*)(esp_21 - 4) = edx;
+                    *(__size32*)(esp_18 - 4) = edx;
                     eax = *(ebp - 8);
-                    *(__size32*)(esp_21 - 8) = eax;
-                    *(int*)(esp_21 - 12) = 0;
-                    *(int*)(esp_21 - 16) = 0;
+                    *(__size32*)(esp_18 - 8) = eax;
+                    *(int*)(esp_18 - 12) = 0;
+                    *(int*)(esp_18 - 16) = 0;
                     eax = WideCharToMultiByte(); /* Warning: also results in edx, esp */
                     if (eax == 0) {
-                        *(int*)(esp_21 + 4LL - 24) = 2;
+                        *(int*)(esp_18 + 4LL - 24) = 2;
                         ecx = *(ebp - 24);
-                        *(__size32*)(esp_21 + 4LL - 28) = ecx;
-                        esp = proc_0x004175b0(ax, dx, al, cl, dl, ah, dh, eax, ecx, edx, ebp, param1, edi, *(esp_21 + 4LL - 44), *(esp_21 + 4LL - 96), *(esp_21 + 4LL - 100), *(esp_21 + 4LL - 104), *(esp_21 + 4LL - 112), *(esp_21 + 4LL - 116), *(esp_21 + 4LL - 124), *(esp_21 + 4LL - 128), *(esp_21 + 4LL - 132), *(esp_21 + 4LL - 136), *(esp_21 + 4LL - 140), *(esp_21 + 4LL - 152), *(esp_21 + 4LL - 156), *(esp_21 + 4LL - 168), *(esp_21 + 4LL - 176), *(esp_21 + 4LL - 444), *(esp_21 + 4LL - 448), *(esp_21 + 4LL - 452)); /* Warning: also results in ebp */
+                        *(__size32*)(esp_18 + 4LL - 28) = ecx;
+                        esp = proc_0x004175b0(ax, dx, al, cl, dl, ah, dh, eax, ecx, edx, ebp, param1, edi, *(esp_18 + 4LL - 44), *(esp_18 + 4LL - 96), *(esp_18 + 4LL - 100), *(esp_18 + 4LL - 104), *(esp_18 + 4LL - 112), *(esp_18 + 4LL - 116), *(esp_18 + 4LL - 124), *(esp_18 + 4LL - 128), *(esp_18 + 4LL - 132), *(esp_18 + 4LL - 136), *(esp_18 + 4LL - 140), *(esp_18 + 4LL - 152), *(esp_18 + 4LL - 156), *(esp_18 + 4LL - 168), *(esp_18 + 4LL - 176), *(esp_18 + 4LL - 444), *(esp_18 + 4LL - 448), *(esp_18 + 4LL - 452)); /* Warning: also results in ebp */
                         esp += 8;
                         *(__size32*)(ebp - 24) = 0;
                     }
@@ -1229,17 +1231,16 @@ bb0x4140a7:
                     FreeEnvironmentStringsW();
                 }
                 else {
-                    goto bb0x4140a7;
+                    goto bb0x4140b3;
                 }
             }
         }
         else {
             eax = GetEnvironmentStringsW(); /* Warning: also results in esp_7 */
             local6 = esp_7;
-bb0x414026:
-            *(unsigned int*)(esp_17 - 12) = eax;
+            *(unsigned int*)(esp_28 - 12) = eax;
             if (eax != 0) {
-                goto bb0x414026;
+                goto bb0x414036;
             }
             else {
             }
@@ -1270,15 +1271,15 @@ void proc_0x00413a60(__size16 param1, short param2, unsigned char param5, __size
     GetModuleFileNameA(*(esp - 12), *(esp - 8), *(esp - 4));
     *(__size32*)(&global556_428d5c + 0x90c) = 0x429698;
     if (*0x42b100 == 0) {
+bb0x413ab7:
         eax = *(&global556_428d5c + 0x90c);
         *(__size32*)(ebp - 20) = eax;
     }
     else {
-bb0x413aa0:
         eax = *0x42b100;
         ecx = (int) *eax;
         if (ecx == 0) {
-            goto bb0x413aa0;
+            goto bb0x413ab7;
         }
         else {
             edx = *(&global425_42afe0 + 288);
@@ -1410,6 +1411,7 @@ void proc_0x00413880(__size16 param1, short param2, unsigned char param5, __size
                 eax = (int) *edx;
                 local4 = esp_2;
                 if (eax == 61) {
+bb0x4139be:
                     esp = local4;
                     ecx = *(ebp - 4);
                     ecx += *(ebp - 16);
@@ -1432,12 +1434,11 @@ void proc_0x00413880(__size16 param1, short param2, unsigned char param5, __size
                         ecx = *eax;
                         *(__size32*)(esp + 8) = ecx;
                         dx = proc_0x0041a040(*(esp + 8), *(esp + 12), dx, dh, edx, edi); /* Warning: also results in dl, dh, esp, edi */
-bb0x4139b2:
                         esp += 8;
                         edx = *(ebp - 12);
                         *(int*)(ebp - 12) = edx + 4;
                         local4 = esp;
-                        goto bb0x4139b2;
+                        goto bb0x4139be;
                     }
                     else {
                         *(int*)(esp + 12) = 2;
@@ -1447,7 +1448,7 @@ bb0x4139b2:
                         *(__size32*)(&global556_428d5c + 0x8fc) = 0;
                     }
                 }
-                goto bb0x4139f2;
+                return;
                 esp_1 = esp;
                 edx = *(ebp - 4);
                 eax = (int) *edx;
@@ -1466,7 +1467,6 @@ bb0x4139b2:
     }
     else {
     }
-bb0x4139f2:
     return;
 }
 
@@ -1552,6 +1552,7 @@ void proc_0x00413780(__size16 param1, short param2, unsigned char param5, __size
         edx = *(ebp - 4);
         eax = *(unsigned char*)edx;
         if ((int)eax > 32) {
+bb0x4137d6:
             eax = *(ebp - 4);
             ecx = *(unsigned char*)eax;
             if (ecx == 34) {
@@ -1570,11 +1571,10 @@ void proc_0x00413780(__size16 param1, short param2, unsigned char param5, __size
             eax = *(ebp - 4);
             *(__size32*)(ebp - 4) = eax + 1;
         }
-bb0x4137c6:
         ecx = *(ebp - 4);
         edx = *(unsigned char*)ecx;
         if ( ~(edx == 0 || *(ebp - 8) == 0)) {
-            goto bb0x4137c6;
+            goto bb0x4137d6;
         }
     }
     ecx = *(ebp - 4);
@@ -1907,12 +1907,12 @@ __size32 proc_0x00414cd0(HMODULE param1, int param2, __size16 param3, short para
             *(int*)(esp_11 - 8)++;
         }
         else {
-bb0x414d09:
-            goto bb0x414d09;
+            goto bb0x414d0d;
         }
         param10 = local8;
         local9 = param10;
     }
+bb0x414d0d:
     edx = local9;
     eax = *(esp_11 - 8);
     if (param2 == global1444_428c60[(*(esp_11 - 8))]) {
@@ -2300,6 +2300,7 @@ __size32 proc_0x004175b0(int param1, int param2, int param3, int param4, int par
         tmp1 = *(ebp_1 + 12) - 1;
         flags = SUBFLAGS32(*(ebp_1 + 12), 1, tmp1);
         if (*(ebp_1 + 12) != 1) {
+bb0x417665:
             eax = local30;
             *(int*)(esp_9 - 4) = 0;
             *(int*)(esp_9 - 8) = 0;
@@ -2535,6 +2536,7 @@ __size32 proc_0x004175b0(int param1, int param2, int param3, int param4, int par
                 else {
                     ecx = *(ebp - 4);
                     if (*(ecx + 12) != 0xfedcbabc) {
+bb0x41781a:
                         local0 = 0x426360;
                         local1 = 0;
                         local2 = 1161;
@@ -2547,10 +2549,9 @@ __size32 proc_0x004175b0(int param1, int param2, int param3, int param4, int par
                         }
                     }
                     else {
-bb0x417811:
                         edx_25 = *(ebp - 4);
                         if (*(edx_25 + 24) != 0) {
-                            goto bb0x417811;
+                            goto bb0x41781a;
                         }
                     }
                     ecx = *(ebp - 4);
@@ -2598,10 +2599,9 @@ bb0x417811:
             *(int*)(esp_9 - 12) = (ecx_1 & ~0x3) - 4;
             eax = proc_0x00417d50(*(esp_9 - 12), *(esp_9 - 8), *(esp_9 - 4), edx_24);
             local30 = eax;
-bb0x41763a:
             flags = LOGICALFLAGS32(eax);
             if (eax == 0) {
-                goto bb0x41763a;
+                goto bb0x417665;
             }
             else {
                 edx = *(ebp_1 + 8);
@@ -2665,6 +2665,7 @@ __size32 proc_0x0041a230(unsigned int param1, unsigned int param2, unsigned int 
             }
             switch(param3) {
             case 0:
+bb0x41a528:
                 ebp = param5;
                 esp = esp_4;
                 local2 = esp;
@@ -2673,17 +2674,15 @@ bb0x41a38c:
                 esi = *esp;
                 edi = *(esp + 4);
                 ebp = *ebp;
-                goto bb0x41a38c;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             case 1:
-bb0x41a530:
                 al = *(param3 + param2 - 1);
                 *(unsigned char*)(param3 + param1 - 1) = al;
                 esi = param6;
                 edi = param6;
                 ebp = param5;
-                goto bb0x41a530;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             case 2:
-bb0x41a540:
                 al = *(param3 + param2 - 1);
                 *(unsigned char*)(param3 + param1 - 1) = al;
                 al = *(param3 + param2 - 2);
@@ -2691,9 +2690,8 @@ bb0x41a540:
                 esi = param6;
                 edi = param6;
                 ebp = param5;
-                goto bb0x41a540;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             case 3:
-bb0x41a554:
                 al = *(param3 + param2 - 1);
                 *(unsigned char*)(param3 + param1 - 1) = al;
                 al = *(param3 + param2 - 2);
@@ -2703,15 +2701,13 @@ bb0x41a554:
                 esi = param6;
                 edi = param6;
                 ebp = param5;
-                goto bb0x41a554;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             }
         }
         else {
-bb0x41a3dc:
             ecx = param3 / 4;
             if (param3 / 4 < (unsigned int)8) {
-bb0x41a50f:
-                goto bb0x41a50f;
+                goto bb0x41a528;
             }
             else {
                 if (param3 / 4 != 0) {
@@ -2720,10 +2716,9 @@ bb0x41a50f:
                     edi +=  (DF == 0) ? 4 : -4;
                     ecx = ecx - 1;
                 }
-bb0x41a3ea:
-                goto bb0x41a3ea;
+                goto bb0x41a528;
             }
-            goto bb0x41a3dc;
+            goto bb0x41a528;
         }
     }
     else {
@@ -2733,7 +2728,6 @@ bb0x41a3ea:
             }
 /* goto global1546_41a38c[param3 - 4] */
         }
-bb0x41a258:
         ecx = param3 / 4;
         if (param3 / 4 < (unsigned int)8) {
             switch(param3 / 4) {
@@ -2742,40 +2736,39 @@ bb0x41a258:
 bb0x41a360:
                 eax = *(param2 + (param3 / 4 - 1) * 4);
                 *(__size32*)(param1 + (param3 / 4 - 1) * 4) = eax;
-                goto bb0x41a360;
+                goto bb0x41a373;
             case 2:
 bb0x41a358:
                 eax = *(param2 + param3 / 4 * 4 - 8);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 8) = eax;
-                goto bb0x41a358;
+                goto bb0x41a360;
             case 3:
 bb0x41a350:
                 eax = *(param2 + param3 / 4 * 4 - 12);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 12) = eax;
-                goto bb0x41a350;
+                goto bb0x41a358;
             case 4:
 bb0x41a348:
                 eax = *(param2 + param3 / 4 * 4 - 16);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 16) = eax;
-                goto bb0x41a348;
+                goto bb0x41a350;
             case 5:
 bb0x41a340:
                 eax = *(param2 + param3 / 4 * 4 - 20);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 20) = eax;
-                goto bb0x41a340;
+                goto bb0x41a348;
             case 6:
 bb0x41a338:
                 eax = *(param2 + param3 / 4 * 4 - 24);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 24) = eax;
-                goto bb0x41a338;
+                goto bb0x41a340;
             case 7:
-bb0x41a330:
                 eax = *(param2 + param3 / 4 * 4 - 28);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 28) = eax;
-                goto bb0x41a330;
+                goto bb0x41a338;
             }
 bb0x41a373:
-            goto bb0x41a373;
+            goto bb0x41a38c;
         }
         else {
             if (param3 / 4 != 0) {
@@ -2784,10 +2777,9 @@ bb0x41a373:
                 edi +=  (DF == 0) ? 4 : -4;
                 ecx = ecx - 1;
             }
-bb0x41a265:
-            goto bb0x41a265;
+            goto bb0x41a38c;
         }
-        goto bb0x41a258;
+        goto bb0x41a38c;
     }
     return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
 }
@@ -2874,13 +2866,13 @@ void proc_0x00413b80(unsigned int param1, union { unsigned int *; unsigned int; 
             ecx = *param5;
             *(__size32*)param5 = ecx + 1;
             if (param3 != 0) {
-bb0x413bf9:
                 dl = *local7;
                 *(unsigned char*)param3 = dl;
                 local3 = param3 + 1;
                 local23 = local3;
-                goto bb0x413bf9;
+                goto bb0x413c0c;
             }
+bb0x413c0c:
             local3 = local23;
             dl = *local7;
             local10 = local7 + 1;
@@ -2895,11 +2887,10 @@ bb0x413bf9:
                     *(unsigned char*)local3 = dl;
                     local3++;
                 }
-bb0x413c53:
                 local0 = local10 + 1;
                 local24 = local3;
                 local25 = local0;
-                goto bb0x413c53;
+                goto bb0x413c5c;
             }
         }
         else {
@@ -2908,6 +2899,7 @@ bb0x413c53:
             local9 = local7 + 1;
             local25 = local9;
         }
+bb0x413c5c:
         local3 = local24;
         local8 = local25;
         local4 = *local7;
@@ -2939,18 +2931,18 @@ bb0x413c53:
         eax = (int) *local0;
         al = (unsigned char) eax;
         if (eax != 0) {
+bb0x413cb5:
             edx = (int) *local0;
             if (edx == 32) {
 bb0x413ccb:
                 local0++;
-                goto bb0x413ccb;
+                goto bb0x413cb5;
             }
-bb0x413cc0:
             eax = local0;
             al = (unsigned char) local0;
             ecx = (int) *local0;
             if (ecx == 9) {
-                goto bb0x413cc0;
+                goto bb0x413ccb;
             }
         }
         ecx = (int) *local0;
@@ -2962,15 +2954,16 @@ bb0x413cc0:
             eax = *param4;
             *(int*)param4 = eax + 1;
             local27 = local1;
+bb0x413d09:
             local5 = 1;
             local6 = 0;
+bb0x413d17:
             eax = (int) *local0;
             local28 = local6;
             if (eax == 92) {
-bb0x413d22:
                 local0++;
                 local6++;
-                goto bb0x413d22;
+                goto bb0x413d17;
             }
             ecx = (int) *local0;
             if (ecx == 34) {
@@ -2978,27 +2971,28 @@ bb0x413d22:
                 tmp2 = 2;
                 if ((local6) % 2 == 0) {
                     if (local2 == 0) {
-bb0x413d77:
                         local5 = 0;
-                        goto bb0x413d77;
+                        goto bb0x413d7e;
                     }
                     else {
                         eax = (int) *(local0 + 1);
                         if (eax != 34) {
-bb0x413d6e:
                             local5 = 0;
-                            goto bb0x413d6e;
+                            goto bb0x413d75;
                         }
                         else {
                             local0++;
                         }
+bb0x413d75:
                     }
+bb0x413d7e:
                     dl =  (local2 == 0) ? 1 : 0;
                     local2 = 0 >> 8 & 0xffffff | (dl);
                 }
                 local6 = local6 / 2;
                 local28 = local6;
             }
+bb0x413d92:
             local15 = local28;
             local16 = local15 - 1;
             local28 = local16;
@@ -3007,14 +3001,14 @@ bb0x413d6e:
                     *(int*)local3 = 92;
                     local3++;
                 }
-bb0x413db7:
                 eax = *param5;
                 *(int*)param5 = eax + 1;
-                goto bb0x413db7;
+                goto bb0x413d92;
             }
             eax = (int) *local0;
             if (eax != 0) {
                 if (local2 != 0) {
+bb0x413df1:
                     if (local5 != 0) {
                         if (local3 == 0) {
                             eax = *(unsigned char*)local0;
@@ -3043,17 +3037,15 @@ bb0x413db7:
                         ecx = *param5;
                         *(int*)param5 = ecx + 1;
                     }
-bb0x413e86:
                     local0++;
-                    goto bb0x413e86;
+                    goto bb0x413d09;
                 }
                 else {
                     edx = (int) *local0;
                     if (edx != 32) {
-bb0x413de1:
                         ecx = (int) *local0;
                         if (ecx != 9) {
-                            goto bb0x413de1;
+                            goto bb0x413df1;
                         }
                     }
                 }
@@ -3116,6 +3108,7 @@ bb0x41a1b0:
             if ((unsigned char) eax == 0) {
                 ecx = param1;
                 local3 = ecx;
+bb0x41a1e3:
                 ecx = local3;
                 param3 = local4;
                 eax = ecx - param1 - 1;
@@ -3136,14 +3129,14 @@ bb0x41a1b0:
                         al = (unsigned char) ecx_4 - param1 + 2;
                     }
                     else {
-bb0x41a1da:
                         if ((eax & ~0xffffff) == 0) {
-                            goto bb0x41a1da;
+                            goto bb0x41a1e3;
                         }
                     }
                 }
             }
-            goto bb0x41a1ec;
+            edx = local5;
+            return eax; /* WARNING: Also returning: al := al, ah := ah, edx := edx */
 bb0x41a1b0:
             ecx_4 = local2;
             eax = *ecx_4;
@@ -3161,7 +3154,6 @@ bb0x41a1b0:
     }
     else {
         do {
-bb0x41a18c:
             param2 = local0;
             ecx_1 = local1;
             al = *ecx_1;
@@ -3172,16 +3164,14 @@ bb0x41a18c:
             local2 = ecx_2;
             local3 = ecx_2;
             if (al == 0) {
-                goto bb0x41a18c;
+                goto bb0x41a1e3;
             }
             else {
             }
-            goto bb0x41a18c;
+            goto bb0x41a1e3;
         } while ((ecx_1 + 1 & 0x3) != 0);
-bb0x41a19d:
-        goto bb0x41a19d;
+        goto bb0x41a1b0;
     }
-bb0x41a1ec:
     edx = local5;
     return eax; /* WARNING: Also returning: al := al, ah := ah, edx := edx */
 }
@@ -3197,35 +3187,35 @@ __size32 proc_0x0041a040(int param1, __size32 param2, short param3, char param4,
     union { __size32; unsigned char *; } ecx_1; 		// r25{0}
     __size32 ecx_2; 		// r25{0}
     int edi; 		// r31
-    union { int; unsigned int *; __size16 *; } edi_1; 		// r31{0}
-    int edi_2; 		// r31{0}
-    __size32 edi_3; 		// r31{0}
-    union { int; __size16 *; unsigned int *; } edi_6; 		// r31{0}
+    union { int; unsigned int *; __size16 *; } edi_3; 		// r31{0}
+    int edi_4; 		// r31{0}
+    __size32 edi_5; 		// r31{0}
+    union { int; __size16 *; unsigned int *; } edi_8; 		// r31{0}
     int edx; 		// r26
     __size32 esp; 		// r28
     __size32 esp_1; 		// r28{0}
     __size32 esp_4; 		// r28{0}
-    int local0; 		// m[edi_1]{0}
+    int local0; 		// m[edi_3]{0}
     union { int *; __size32; } local10; 		// ecx{0}
-    union { __size16 *; int; unsigned int *; } local11; 		// edi_1{0}
+    union { __size16 *; int; unsigned int *; } local11; 		// edi_3{0}
     char local12; 		// param4{0}
     __size32 local13; 		// ecx{0}
     union { __size32 *; __size32; } local14; 		// esp{0}
     union { unsigned int *; __size32; __size16 *; } local15; 		// edi{0}
     char local16; 		// dh{0}
-    __size16 local2; 		// m[edi_1]{0}
-    __size16 local4; 		// m[edi_1]{0}
+    __size16 local2; 		// m[edi_3]{0}
+    __size16 local4; 		// m[edi_3]{0}
     short local6; 		// param3{0}
     union { unsigned char *; __size32; } local7; 		// ecx_1{0}
     int local8; 		// param5{0}
-    union { unsigned int *; int; __size16 *; } local9; 		// edi_6{0}
+    union { unsigned int *; int; __size16 *; } local9; 		// edi_8{0}
 
     esp_1 = (esp_4 - 4);
-    edi_2 = param1;
+    edi_4 = param1;
     local6 = param3;
     local8 = param5;
-    local9 = edi_2;
-    local11 = edi_2;
+    local9 = edi_4;
+    local11 = edi_4;
     local12 = param4;
     local14 = esp_1;
     local14 = esp_1;
@@ -3234,8 +3224,9 @@ __size32 proc_0x0041a040(int param1, __size32 param2, short param3, char param4,
     local10 = ecx;
     if ((param2 & 0x3) == 0) {
         for(;;) {
+bb0x41a0de:
             ecx = local10;
-            edi_1 = local11;
+            edi_3 = local11;
             eax = *ecx;
             eax = eax ^ -1 ^ eax + 0x7efefeff;
             edx = *ecx;
@@ -3248,15 +3239,17 @@ __size32 proc_0x0041a040(int param1, __size32 param2, short param3, char param4,
             local12 = dh;
             local13 = ecx;
             local13 = ecx;
-            local15 = edi_1;
+            local15 = edi_3;
             local16 = dh;
             local16 = dh;
             if (((eax ^ -1 ^ eax + 0x7efefeff) & 0x81010100) == 0) {
+bb0x41a0d9:
                 local0 = edx;
-                edi = edi_1 + 4;
+                edi = edi_3 + 4;
                 local11 = edi;
             }
             if ((unsigned char) edx == 0) {
+bb0x41a130:
                 param4 = local12;
                 ecx = local13;
                 esp = local14;
@@ -3268,19 +3261,18 @@ __size32 proc_0x0041a040(int param1, __size32 param2, short param3, char param4,
             }
             else {
                 if ((edx >> 8 & 0xff) == 0) {
-bb0x41a127:
                     local2 = (unsigned short) edx;
                     edi = param6;
                     esp = esp_4;
                     local14 = esp;
                     local15 = edi;
-                    goto bb0x41a127;
+                    goto bb0x41a130;
                 }
                 else {
                     if ((edx & 0xff0000) == 0) {
                         local4 = (unsigned short) edx;
                         eax = param1;
-                        *(int*)(edi_1 + 2) = 0;
+                        *(int*)(edi_3 + 2) = 0;
                         edi = param6;
                     }
                     else {
@@ -3288,25 +3280,24 @@ bb0x41a127:
                             break;
                         }
                         else {
-bb0x41a110:
-                            goto bb0x41a110;
+                            goto bb0x41a0d9;
                         }
                     }
                 }
             }
-            goto bb0x41a137;
+            dh = local16;
+            return eax; /* WARNING: Also returning: dx := dx, dl := dl, dh := dh, ecx := ecx, edx := edx, edi := edi */
         }
-        *(int*)edi_1 = edx;
+        *(int*)edi_3 = edx;
         eax = param1;
         edi = param6;
     }
     else {
         do {
-bb0x41a0c1:
             param3 = local6;
             ecx_1 = local7;
             param5 = local8;
-            edi_6 = local9;
+            edi_8 = local9;
             dl = *ecx_1;
             dx = param3 >> 8 & 0xff | (dl);
             edx = param5 >> 8 & 0xffffff | (dl);
@@ -3316,22 +3307,20 @@ bb0x41a0c1:
             local8 = edx;
             local10 = ecx_2;
             local13 = ecx_2;
-            local15 = edi_6;
+            local15 = edi_8;
             if (dl == 0) {
-                goto bb0x41a0c1;
+                goto bb0x41a130;
             }
             else {
-                *(unsigned char*)edi_6 = dl;
-                edi_3 = edi_6 + 1;
-                local9 = edi_3;
-                local11 = edi_3;
+                *(unsigned char*)edi_8 = dl;
+                edi_5 = edi_8 + 1;
+                local9 = edi_5;
+                local11 = edi_5;
             }
-            goto bb0x41a0c1;
+            goto bb0x41a130;
         } while ((ecx_1 + 1 & 0x3) != 0);
-bb0x41a0d7:
-        goto bb0x41a0d7;
+        goto bb0x41a0de;
     }
-bb0x41a137:
     dh = local16;
     return eax; /* WARNING: Also returning: dx := dx, dl := dl, dh := dh, ecx := ecx, edx := edx, edi := edi */
 }
@@ -3347,28 +3336,28 @@ __size32 proc_0x00413460(__size32 param1, __size32 param2, __size32 param3)
     __size32 esp_1; 		// r28{0}
     __size32 esp_4; 		// r28{0}
     __size32 esp_5; 		// r28{0}
-    __size32 esp_7; 		// r28{0}
+    __size32 esp_6; 		// r28{0}
     __size32 local0; 		// m[esp - 4]
     __size32 local1; 		// m[esp - 8]
-    int local10; 		// m[esp_5 - 8]{0}
+    int local10; 		// m[esp_6 - 8]{0}
     __size32 local14; 		// param1{0}
     __size32 local15; 		// param2{0}
-    __size32 local16; 		// esp_4{0}
+    __size32 local16; 		// esp_5{0}
     __size32 local17; 		// local3{0}
     __size32 local18; 		// local9{0}
     __size32 local19; 		// edx{0}
-    __size32 local2; 		// m[esp_5 - 4]{0}
-    __size32 local20; 		// esp_7{0}
-    __size32 local21; 		// m[esp_5 - 4]{0}
-    __size32 local22; 		// m[esp_5 - 8]{0}
-    __size32 local3; 		// m[esp_5 - 4]{0}
-    int local4; 		// m[esp_5 - 4]{0}
-    __size32 local8; 		// m[esp_5 - 8]{0}
-    __size32 local9; 		// m[esp_5 - 8]{0}
+    __size32 local2; 		// m[esp_6 - 4]{0}
+    __size32 local20; 		// esp{0}
+    __size32 local21; 		// m[esp_6 - 4]{0}
+    __size32 local22; 		// m[esp_6 - 8]{0}
+    __size32 local3; 		// m[esp_6 - 4]{0}
+    int local4; 		// m[esp_6 - 4]{0}
+    __size32 local8; 		// m[esp_6 - 8]{0}
+    __size32 local9; 		// m[esp_6 - 8]{0}
 
     local0 = param3;
-    ebp = esp_5 - 4;
-    esp_1 = esp_5 - 8;
+    ebp = esp_6 - 4;
+    esp_1 = esp_6 - 8;
     local1 = 0;
     local14 = param1;
     local15 = param2;
@@ -3377,12 +3366,12 @@ __size32 proc_0x00413460(__size32 param1, __size32 param2, __size32 param3)
     local18 = local8;
     param1 = local14;
     param2 = local15;
-    esp_4 = local16;
+    esp_5 = local16;
     local3 = local17;
     local9 = local18;
     eax = *(ebp + 8);
     local19 = param2;
-    local20 = esp_4;
+    local20 = esp_5;
     local21 = local3;
     local22 = local9;
     while ( ~(eax >= *(ebp + 12) || *(ebp - 4) != 0)) {
@@ -3392,30 +3381,30 @@ __size32 proc_0x00413460(__size32 param1, __size32 param2, __size32 param3)
             edx = *(ebp + 8);
             (***(ebp + 8))(local9, local3, eax, ecx, edx, ebp, SUBFLAGS32(*ecx, 0, tmp1), tmp1 == 0, *ecx < (unsigned int)0);
             local19 = edx;
-            local20 = esp;
+            local20 = esp_4;
             local21 = local4;
             local22 = local10;
             *(unsigned int*)(ebp - 4) = eax;
         }
         edx = local19;
-        esp_7 = local20;
-        *(__size32*)(esp_5 - 4) = local21;
-        *(__size32*)(esp_5 - 8) = local22;
+        esp = local20;
+        *(__size32*)(esp_6 - 4) = local21;
+        *(__size32*)(esp_6 - 8) = local22;
         eax = *(ebp + 8);
         *(__size32*)(ebp + 8) = eax + 4;
         local14 = ecx;
         local15 = edx;
-        local16 = esp_7;
-        local17 = *(esp_5 - 4);
-        local18 = *(esp_5 - 8);
+        local16 = esp;
+        local17 = *(esp_6 - 4);
+        local18 = *(esp_6 - 8);
         param1 = local14;
         param2 = local15;
-        esp_4 = local16;
+        esp_5 = local16;
         local3 = local17;
         local9 = local18;
         eax = *(ebp + 8);
         local19 = param2;
-        local20 = esp_4;
+        local20 = esp_5;
         local21 = local3;
         local22 = local9;
     }
@@ -3736,6 +3725,7 @@ __size8 proc_0x00412350(unsigned int param1, __size32 param2, int param3, short 
             local19 = param2;
             local20 = param1;
             if (edx_1 != 0xcccccccc) {
+bb0x412388:
                 eax = *(param8 + 4);
                 ecx_3 = *(eax + edi * 12 + 8);
                 local2 = ecx_3;
@@ -3748,10 +3738,9 @@ __size8 proc_0x00412350(unsigned int param1, __size32 param2, int param3, short 
                 local20 = local4;
             }
             else {
-bb0x41237a:
                 edx_4 = *(eax + edi * 12 + 4);
                 if (*(edx_4 + ecx_1 + param7) != 0xcccccccc) {
-                    goto bb0x41237a;
+                    goto bb0x412388;
                 }
             }
             al = local16;
@@ -3837,10 +3826,10 @@ void proc_0x004132b0(unsigned int param1, __size32 param2, __size32 param3, __si
     int local0; 		// m[esp - 4]
     int local1; 		// m[esp - 8]
     __size32 local13; 		// m[esp_9 + 8]{0}
-    int local14; 		// m[esp_9 + 8]{0}
+    int local16; 		// m[esp_9 + 8]{0}
     int local2; 		// m[esp - 12]
     unsigned char local20; 		// m[esp_9 + 12]{0}
-    int local21; 		// m[esp_9 + 12]{0}
+    int local23; 		// m[esp_9 + 12]{0}
     __size32 local27; 		// m[esp_9 - 4]{0}
     __size32 local28; 		// m[esp_9 - 4]{0}
     int local29; 		// m[esp_9 - 4]{0}
@@ -3995,8 +3984,8 @@ void proc_0x004132b0(unsigned int param1, __size32 param2, __size32 param3, __si
                     local76 = dx;
                     local77 = dh;
                     local78 = local7;
-                    local79 = local14;
-                    local80 = local21;
+                    local79 = local16;
+                    local80 = local23;
                 }
                 ax_2 = local65;
                 al_2 = local66;
@@ -4109,8 +4098,8 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     __size8 ah_14; 		// r12{0}
     __size8 ah_15; 		// r12{0}
     __size8 ah_16; 		// r12{0}
+    __size8 ah_19; 		// r12{0}
     __size8 ah_2; 		// r12{0}
-    __size8 ah_25; 		// r12{0}
     int ah_3; 		// r12{0}
     __size8 ah_5; 		// r12{0}
     __size8 ah_8; 		// r12{0}
@@ -4264,27 +4253,27 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     int edx_4; 		// r26{0}
     int edx_7; 		// r26{0}
     __size32 esi; 		// r30
-    int esp; 		// r28
     union { __size32; void *; long long x630; } esp_1; 		// r28{0}
     int esp_10; 		// r28{0}
     int esp_100; 		// r28{0}
     int esp_101; 		// r28{0}
     int esp_102; 		// r28{0}
-    int esp_103; 		// r28{0}
-    int esp_104; 		// r28{0}
-    int esp_106; 		// r28{0}
-    int esp_107; 		// r28{0}
-    __size32 esp_108; 		// r28{0}
+    int esp_105; 		// r28{0}
+    int esp_108; 		// r28{0}
     int esp_109; 		// r28{0}
     int esp_11; 		// r28{0}
-    __size32 esp_110; 		// r28{0}
-    int esp_111; 		// r28{0}
     int esp_112; 		// r28{0}
-    int esp_113; 		// r28{0}
-    int esp_115; 		// r28{0}
+    __size32 esp_115; 		// r28{0}
+    __size32 esp_118; 		// r28{0}
     int esp_12; 		// r28{0}
+    int esp_121; 		// r28{0}
+    int esp_124; 		// r28{0}
+    int esp_127; 		// r28{0}
     int esp_13; 		// r28{0}
+    int esp_130; 		// r28{0}
+    int esp_133; 		// r28{0}
     int esp_14; 		// r28{0}
+    int esp_140; 		// r28{0}
     int esp_17; 		// r28{0}
     int esp_20; 		// r28{0}
     int esp_23; 		// r28{0}
@@ -4323,34 +4312,34 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     int esp_98; 		// r28{0}
     int esp_99; 		// r28{0}
     int local100; 		// edx_29{0}
-    int local101; 		// esp_112{0}
+    int local101; 		// esp_109{0}
     int local102; 		// ebp_28{0}
     __size32 local103; 		// edi_51{0}
     __size8 local104; 		// cl_12{0}
     short local105; 		// dx_38{0}
     char local106; 		// dh_38{0}
     int local107; 		// edx_28{0}
-    int local108; 		// esp_111{0}
+    int local108; 		// esp_112{0}
     __size32 local109; 		// edi_50{0}
     short local110; 		// dx_37{0}
     char local111; 		// dh_37{0}
     int local112; 		// eax_38{0}
-    __size32 local113; 		// esp_110{0}
+    __size32 local113; 		// esp_115{0}
     __size32 local114; 		// edi_49{0}
     short local115; 		// dx_35{0}
     __size8 local116; 		// ah_15{0}
     char local117; 		// dh_35{0}
-    __size32 local118; 		// esp_108{0}
+    __size32 local118; 		// esp_118{0}
     __size32 local119; 		// edi_34{0}
     short local120; 		// dx_36{0}
     __size8 local121; 		// dl_16{0}
     char local122; 		// dh_36{0}
-    int local123; 		// esp_109{0}
+    int local123; 		// esp_124{0}
     __size32 local124; 		// edi_48{0}
     short local125; 		// dx_34{0}
     __size8 local126; 		// dl_15{0}
     char local127; 		// dh_34{0}
-    int local128; 		// esp_107{0}
+    int local128; 		// esp_121{0}
     int local129; 		// ebp_27{0}
     __size32 local130; 		// edi_47{0}
     __size8 local131; 		// cl_11{0}
@@ -4362,8 +4351,8 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     __size8 local137; 		// dl_3{0}
     __size8 local138; 		// ah_2{0}
     char local139; 		// dh_4{0}
-    __size32 local14; 		// m[esp_104 - 4]{0}
-    int local140; 		// esp_106{0}
+    __size32 local14; 		// m[esp_140 - 4]{0}
+    int local140; 		// esp_127{0}
     int local141; 		// ebp_26{0}
     __size32 local142; 		// edi_3{0}
     __size32 local143; 		// local17{0}
@@ -4378,25 +4367,25 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     int local152; 		// local85{0}
     unsigned short local153; 		// ax{0}
     __size32 local154; 		// esi{0}
-    int local155; 		// esp_103{0}
+    int local155; 		// esp_133{0}
     short local156; 		// dx_3{0}
     __size8 local157; 		// cl_1{0}
     __size8 local158; 		// dl_2{0}
     __size8 local159; 		// ah_1{0}
     char local160; 		// dh_3{0}
-    int local161; 		// esp_102{0}
+    int local161; 		// esp_130{0}
     int local162; 		// ebp_25{0}
     __size32 local163; 		// edi_2{0}
-    __size32 local164; 		// m[esp_104 - 4]{0}
-    int local165; 		// m[esp_104 - 8]{0}
-    __size32 local166; 		// m[esp_104 - 16]{0}
-    int local167; 		// m[esp_104 - 0x1013]{0}
-    int local168; 		// m[esp_104 - 0x1014]{0}
-    int local169; 		// m[esp_104 - 0x2013]{0}
-    __size32 local17; 		// m[esp_104 - 4]{0}
-    int local170; 		// m[esp_104 - 0x2014]{0}
-    int local171; 		// m[esp_104 - 0x3013]{0}
-    int local172; 		// m[esp_104 - 0x3014]{0}
+    __size32 local164; 		// m[esp_140 - 4]{0}
+    int local165; 		// m[esp_140 - 8]{0}
+    __size32 local166; 		// m[esp_140 - 16]{0}
+    int local167; 		// m[esp_140 - 0x1013]{0}
+    int local168; 		// m[esp_140 - 0x1014]{0}
+    int local169; 		// m[esp_140 - 0x2013]{0}
+    __size32 local17; 		// m[esp_140 - 4]{0}
+    int local170; 		// m[esp_140 - 0x2014]{0}
+    int local171; 		// m[esp_140 - 0x3013]{0}
+    int local172; 		// m[esp_140 - 0x3014]{0}
     int local173; 		// param1{0}
     unsigned short local174; 		// ax{0}
     __size32 local175; 		// esi{0}
@@ -4404,50 +4393,50 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     int local177; 		// esp_99{0}
     int local178; 		// ebp_4{0}
     int local179; 		// esp_98{0}
-    int local18; 		// m[esp_104 - 4]{0}
+    int local18; 		// m[esp_140 - 4]{0}
     int local180; 		// esp_91{0}
     int local181; 		// esp_92{0}
     int local182; 		// esp_13{0}
     int local183; 		// esp_12{0}
     unsigned short local184; 		// param6{0}
     __size32 local185; 		// param12{0}
-    int local22; 		// m[esp_104 - 8]{0}
-    int local25; 		// m[esp_104 - 8]{0}
-    int local26; 		// m[esp_104 - 8]{0}
-    __size32 local30; 		// m[esp_104 - 16]{0}
-    __size32 local33; 		// m[esp_104 - 16]{0}
-    int local34; 		// m[esp_104 - 16]{0}
-    int local38; 		// m[esp_104 - 0x1013]{0}
-    int local41; 		// m[esp_104 - 0x1013]{0}
-    int local42; 		// m[esp_104 - 0x1013]{0}
-    int local46; 		// m[esp_104 - 0x1014]{0}
-    int local49; 		// m[esp_104 - 0x1014]{0}
-    int local50; 		// m[esp_104 - 0x1014]{0}
-    int local54; 		// m[esp_104 - 0x2013]{0}
-    int local55; 		// m[esp_104 - 0x2013]{0}
-    int local59; 		// m[esp_104 - 0x2013]{0}
-    int local61; 		// m[esp_104 - 0x2014]{0}
-    int local64; 		// m[esp_104 - 0x2014]{0}
-    int local65; 		// m[esp_104 - 0x2014]{0}
-    int local69; 		// m[esp_104 - 0x3013]{0}
-    int local72; 		// m[esp_104 - 0x3013]{0}
-    int local73; 		// m[esp_104 - 0x3013]{0}
-    int local77; 		// m[esp_104 - 0x3014]{0}
-    int local80; 		// m[esp_104 - 0x3014]{0}
-    int local81; 		// m[esp_104 - 0x3014]{0}
-    int local85; 		// m[esp_104 - 0x3018]{0}
-    int local86; 		// m[esp_104 - 0x3018]{0}
+    int local22; 		// m[esp_140 - 8]{0}
+    int local25; 		// m[esp_140 - 8]{0}
+    int local26; 		// m[esp_140 - 8]{0}
+    __size32 local30; 		// m[esp_140 - 16]{0}
+    __size32 local33; 		// m[esp_140 - 16]{0}
+    int local34; 		// m[esp_140 - 16]{0}
+    int local38; 		// m[esp_140 - 0x1013]{0}
+    int local41; 		// m[esp_140 - 0x1013]{0}
+    int local42; 		// m[esp_140 - 0x1013]{0}
+    int local46; 		// m[esp_140 - 0x1014]{0}
+    int local49; 		// m[esp_140 - 0x1014]{0}
+    int local50; 		// m[esp_140 - 0x1014]{0}
+    int local54; 		// m[esp_140 - 0x2013]{0}
+    int local55; 		// m[esp_140 - 0x2013]{0}
+    int local57; 		// m[esp_140 - 0x2013]{0}
+    int local61; 		// m[esp_140 - 0x2014]{0}
+    int local64; 		// m[esp_140 - 0x2014]{0}
+    int local65; 		// m[esp_140 - 0x2014]{0}
+    int local69; 		// m[esp_140 - 0x3013]{0}
+    int local72; 		// m[esp_140 - 0x3013]{0}
+    int local73; 		// m[esp_140 - 0x3013]{0}
+    int local77; 		// m[esp_140 - 0x3014]{0}
+    int local80; 		// m[esp_140 - 0x3014]{0}
+    int local81; 		// m[esp_140 - 0x3014]{0}
+    int local85; 		// m[esp_140 - 0x3018]{0}
+    int local86; 		// m[esp_140 - 0x3018]{0}
     union { int *; int; } local92; 		// edi_52{0}
-    int local93; 		// esp{0}
-    int local94; 		// esp_115{0}
+    int local93; 		// esp_108{0}
+    int local94; 		// esp_105{0}
     int local95; 		// param1{0}
     int local96; 		// edx_30{0}
-    int local97; 		// esp_113{0}
+    int local97; 		// esp_102{0}
     short local98; 		// dx_39{0}
     char local99; 		// dh_39{0}
 
     local14 = param11;
-    ebp_1 = esp_104 - 4;
+    ebp_1 = esp_140 - 4;
     esp_1 = proc_0x00414c20(0x3038);
     local95 = param1;
     local96 = param10;
@@ -4470,7 +4459,7 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     *(__size32*)(esp_1 - 4) = param13;
     esp_4 = esp_1 - 4;
     local61 = 0;
-    edi = esp_104 - 0x2013;
+    edi = esp_140 - 0x2013;
     local92 = edi;
     local97 = esp_4;
     local145 = local30;
@@ -4478,50 +4467,51 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
     local166 = local30;
     local170 = local61;
     local183 = esp_4;
-    edi_4 = esp_104 + ( (DF == 0) ? 4 : -4) - 0x2013;
+    edi_4 = esp_140 + ( (DF == 0) ? 4 : -4) - 0x2013;
     local92 = edi_4;
     edi_52 = local92;
-    local59 = 0;
+    local57 = 0;
     *(int*)edi_52 = 0;
     *(__size8*)(edi_52 + ( (DF == 0) ? 2 : -2)) = 0;
     local46 = 0;
     local38 = 0;
-    edi_7 = esp_104 + ( (DF == 0) ? 4 : -4) - 0x1013;
+    edi_7 = esp_140 + ( (DF == 0) ? 4 : -4) - 0x1013;
     *(int*)edi_7 = 0;
     *(__size8*)(edi_7 + ( (DF == 0) ? 2 : -2)) = 0;
     local77 = 0;
     local69 = 0;
-    edi_10 = esp_104 + ( (DF == 0) ? 4 : -4) - 0x3013;
+    edi_10 = esp_140 + ( (DF == 0) ? 4 : -4) - 0x3013;
     *(int*)edi_10 = 0;
     edi_13 = edi_10 + ( (DF == 0) ? 2 : -2);
     *(__size8*)edi_13 = 0;
     edi_16 = edi_13 + ( (DF == 0) ? 1 : -1);
-    local22 = (esp_104 + 24);
+    local22 = (esp_140 + 24);
     local103 = edi_16;
     local144 = local22;
     local146 = local38;
     local147 = local46;
-    local148 = local59;
+    local148 = local57;
     local150 = local69;
     local151 = local77;
     local165 = local22;
     local167 = local38;
     local168 = local46;
-    local169 = local59;
+    local169 = local57;
     local171 = local69;
     local172 = local77;
     if (param2 >= 0 && param2 < 3) {
         if (param2 != 2) {
+bb0x4154b5:
             edx_30 = local96;
-            esp_113 = local97;
+            esp_102 = local97;
             local100 = edx_30;
-            local101 = esp_113;
+            local101 = esp_102;
             if (param5 != 0) {
-                *(int*)(esp_113 - 4) = (esp_104 + 24);
-                *(int*)(esp_113 - 8) = param5;
-                *(__size32*)(esp_113 - 12) = 0xfeb;
-                *(int*)(esp_113 - 16) = esp_104 - 0x3014;
-                eax_14 = proc_0x0041d670(*(esp_113 - 68), *(esp_113 - 8), param6, param7, (unsigned char) (esp_104 + 24), ah_25, param9, param12, edi_16); /* Warning: also results in dx_7, cl_5, dh_7, edx_7, esp_17, ebp_8, edi_19 */
+                *(int*)(esp_102 - 4) = (esp_140 + 24);
+                *(int*)(esp_102 - 8) = param5;
+                *(__size32*)(esp_102 - 12) = 0xfeb;
+                *(int*)(esp_102 - 16) = esp_140 - 0x3014;
+                eax_14 = proc_0x0041d670(*(esp_102 - 68), *(esp_102 - 8), param6, param7, (unsigned char) (esp_140 + 24), ah_19, param9, param12, edi_16); /* Warning: also results in dx_7, cl_5, dh_7, edx_7, esp_17, ebp_8, edi_19 */
                 local98 = dx_7;
                 local99 = dh_7;
                 local100 = edx_7;
@@ -4547,14 +4537,14 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
             dx_39 = local98;
             dh_39 = local99;
             edx_29 = local100;
-            esp_112 = local101;
+            esp_109 = local101;
             ebp_28 = local102;
             edi_51 = local103;
             cl_12 = local104;
             local105 = dx_39;
             local106 = dh_39;
             local107 = edx_29;
-            local108 = esp_112;
+            local108 = esp_109;
             local109 = edi_51;
             local129 = ebp_28;
             local131 = cl_12;
@@ -4566,9 +4556,9 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
                     *(__size32*)(ebp_28 - 0x3034) = 0x425bfc;
                 }
                 ecx_8 = *(ebp_28 - 0x3034);
-                *(__size32*)(esp_112 - 4) = ecx_8;
-                *(int*)(esp_112 - 8) = ebp_28 - 0x2010;
-                dx_28 = proc_0x0041a040(*(esp_112 - 8), *(esp_112 - 4), dx_39, dh_39, ebp_28 - 0x2010, edi_51); /* Warning: also results in dh_28, edx_22, esp_63, edi_41 */
+                *(__size32*)(esp_109 - 4) = ecx_8;
+                *(int*)(esp_109 - 8) = ebp_28 - 0x2010;
+                dx_28 = proc_0x0041a040(*(esp_109 - 8), *(esp_109 - 4), dx_39, dh_39, ebp_28 - 0x2010, edi_51); /* Warning: also results in dh_28, edx_22, esp_63, edi_41 */
                 local105 = dx_28;
                 local106 = dh_28;
                 local107 = edx_22;
@@ -4579,11 +4569,11 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
             dx_38 = local105;
             dh_38 = local106;
             edx_28 = local107;
-            esp_111 = local108;
+            esp_112 = local108;
             edi_50 = local109;
-            *(int*)(esp_111 - 4) = ebp_28 - 0x3010;
-            *(int*)(esp_111 - 8) = ebp_28 - 0x2010;
-            dx_13 = proc_0x0041a050(*(esp_111 - 8), *(esp_111 - 4), dx_38, dh_38, ebp_28 - 0x3010, edx_28, edi_50); /* Warning: also results in ah_5, dh_13, esp_33, edi_25 */
+            *(int*)(esp_112 - 4) = ebp_28 - 0x3010;
+            *(int*)(esp_112 - 8) = ebp_28 - 0x2010;
+            dx_13 = proc_0x0041a050(*(esp_112 - 8), *(esp_112 - 4), dx_38, dh_38, ebp_28 - 0x3010, edx_28, edi_50); /* Warning: also results in ah_5, dh_13, esp_33, edi_25 */
             local110 = dx_13;
             local111 = dh_13;
             local114 = edi_25;
@@ -4612,11 +4602,11 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
                 dx_37 = local110;
                 dh_37 = local111;
                 eax_38 = local112;
-                esp_110 = local113;
+                esp_115 = local113;
                 edi_49 = local114;
-                *(__size32*)(esp_110 - 4) = 0x425bdc;
-                *(int*)(esp_110 - 8) = ebp_28 - 0x2010;
-                dx_19 = proc_0x0041a050(*(esp_110 - 8), *(esp_110 - 4), dx_37, dh_37, eax_38, ebp_28 - 0x2010, edi_49); /* Warning: also results in ah_8, dh_19, esp_45, edi_31 */
+                *(__size32*)(esp_115 - 4) = 0x425bdc;
+                *(int*)(esp_115 - 8) = ebp_28 - 0x2010;
+                dx_19 = proc_0x0041a050(*(esp_115 - 8), *(esp_115 - 4), dx_37, dh_37, eax_38, ebp_28 - 0x2010, edi_49); /* Warning: also results in ah_8, dh_19, esp_45, edi_31 */
                 local115 = dx_19;
                 local116 = ah_8;
                 local117 = dh_19;
@@ -4627,13 +4617,13 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
             dx_35 = local115;
             ah_15 = local116;
             dh_35 = local117;
-            esp_108 = local118;
+            esp_118 = local118;
             edi_34 = local119;
             local132 = ah_15;
             if (*(ebp_28 + 12) == 0) {
-                *(int*)(esp_108 - 4) = ebp_28 - 0x2010;
-                *(int*)(esp_108 - 8) = ebp_28 - 0x1010;
-                dx_31 = proc_0x0041a040(*(esp_108 - 8), *(esp_108 - 4), dx_35, dh_35, ebp_28 - 0x2010, edi_34); /* Warning: also results in dl_12, dh_31, esp_69, edi_44 */
+                *(int*)(esp_118 - 4) = ebp_28 - 0x2010;
+                *(int*)(esp_118 - 8) = ebp_28 - 0x1010;
+                dx_31 = proc_0x0041a040(*(esp_118 - 8), *(esp_118 - 4), dx_35, dh_35, ebp_28 - 0x2010, edi_34); /* Warning: also results in dl_12, dh_31, esp_69, edi_44 */
                 local125 = dx_31;
                 local126 = dl_12;
                 local127 = dh_31;
@@ -4642,15 +4632,15 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
                 local128 = esp_72;
             }
             else {
-                *(int*)(esp_108 - 4) = ebp_28 - 0x2010;
+                *(int*)(esp_118 - 4) = ebp_28 - 0x2010;
                 ecx_5 = *(ebp_28 + 16);
-                *(__size32*)(esp_108 - 8) = ecx_5;
+                *(__size32*)(esp_118 - 8) = ecx_5;
                 edx_16 = *(ebp_28 + 12);
-                *(__size32*)(esp_108 - 12) = edx_16;
-                *(__size32*)(esp_108 - 16) = 0x425bcc;
-                *(__size32*)(esp_108 - 20) = 0x1000;
-                *(int*)(esp_108 - 24) = ebp_28 - 0x1010;
-                eax_23 = proc_0x0041d540(*(esp_108 - 80), *(esp_108 - 16), param6, param12); /* Warning: also results in ax, dx_22, cl_8, dl_6, ah_11, dh_22, edx_19, esp_51, ebp_12, esi, edi_35 */
+                *(__size32*)(esp_118 - 12) = edx_16;
+                *(__size32*)(esp_118 - 16) = 0x425bcc;
+                *(__size32*)(esp_118 - 20) = 0x1000;
+                *(int*)(esp_118 - 24) = ebp_28 - 0x1010;
+                eax_23 = proc_0x0041d540(*(esp_118 - 80), *(esp_118 - 16), param6, param12); /* Warning: also results in ax, dx_22, cl_8, dl_6, ah_11, dh_22, edx_19, esp_51, ebp_12, esi, edi_35 */
                 local120 = dx_22;
                 local121 = dl_6;
                 local122 = dh_22;
@@ -4676,18 +4666,18 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
                 dx_36 = local120;
                 dl_16 = local121;
                 dh_36 = local122;
-                esp_109 = local123;
+                esp_124 = local123;
                 edi_48 = local124;
                 local125 = dx_36;
                 local126 = dl_16;
                 local127 = dh_36;
-                local128 = esp_109;
+                local128 = esp_124;
                 local130 = edi_48;
             }
             dx_34 = local125;
             dl_15 = local126;
             dh_34 = local127;
-            esp_107 = local128;
+            esp_121 = local128;
             ebp_27 = local129;
             edi_47 = local130;
             cl_11 = local131;
@@ -4699,7 +4689,7 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
             local137 = dl_15;
             local138 = ah_14;
             local139 = dh_34;
-            local140 = esp_107;
+            local140 = esp_121;
             local141 = ebp_27;
             local142 = edi_47;
             local153 = param6;
@@ -4709,36 +4699,38 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
             local158 = dl_15;
             local159 = ah_14;
             local160 = dh_34;
-            local161 = esp_107;
+            local161 = esp_121;
             local162 = ebp_27;
             local163 = edi_47;
             local174 = param6;
             local175 = param12;
             if (*0x42af7c == 0) {
+bb0x415641:
                 dx_3 = local156;
                 cl_1 = local157;
                 dl_2 = local158;
                 ah_1 = local159;
                 dh_3 = local160;
-                esp_102 = local161;
+                esp_130 = local161;
                 ebp_25 = local162;
                 edi_2 = local163;
-                *(__size32*)(esp_104 - 4) = local164;
-                *(int*)(esp_104 - 8) = local165;
-                *(__size32*)(esp_104 - 16) = local166;
-                *(int*)(esp_104 - 0x1013) = local167;
-                *(int*)(esp_104 - 0x1014) = local168;
-                *(int*)(esp_104 - 0x2013) = local169;
-                *(int*)(esp_104 - 0x2014) = local170;
-                *(int*)(esp_104 - 0x3013) = local171;
-                *(int*)(esp_104 - 0x3014) = local172;
+                *(__size32*)(esp_140 - 4) = local164;
+                *(int*)(esp_140 - 8) = local165;
+                *(__size32*)(esp_140 - 16) = local166;
+                *(int*)(esp_140 - 0x1013) = local167;
+                *(int*)(esp_140 - 0x1014) = local168;
+                *(int*)(esp_140 - 0x2013) = local169;
+                *(int*)(esp_140 - 0x2014) = local170;
+                *(int*)(esp_140 - 0x3013) = local171;
+                *(int*)(esp_140 - 0x3014) = local172;
                 param1 = local173;
                 ax = local174;
                 esi = local175;
                 tmp1 = *(&global646_428d1c + 0x2250);
-                local177 = esp_102;
+                local177 = esp_130;
                 local178 = ebp_25;
                 if (*0x42af6c == 0) {
+bb0x41567f:
                     esp_99 = local177;
                     ebp_4 = local178;
                     edx_25 = *(ebp_4 + 8);
@@ -4818,20 +4810,19 @@ __size32 proc_0x00415390(HMODULE param1, int param2, __size32 param3, __size32 p
                     }
                 }
                 else {
-                    *(int*)(esp_102 - 4) = ebp_25 - 8;
-                    *(int*)(esp_102 - 8) = ebp_25 - 0x1010;
+                    *(int*)(esp_130 - 4) = ebp_25 - 8;
+                    *(int*)(esp_130 - 8) = ebp_25 - 0x1010;
                     ecx_14 = *(ebp_25 + 8);
-                    *(__size32*)(esp_102 - 12) = ecx_14;
-                    (*global431_429220)(param1, *(esp_104 - 0x3014), *(esp_104 - 0x3013), *(esp_104 - 0x2014), *(esp_104 - 0x2013), *(esp_104 - 0x1014), *(esp_104 - 0x1013), *(esp_104 - 16), *(esp_104 - 8), *(esp_104 - 4), param2, param3, param4, param5, ax, dx_3, (unsigned char) ebp_25 - 0x1010, cl_1, dl_2, ah_1, dh_3, ebp_25 - 0x1010, ecx_14, ebp_25 - 8, ebp_25, esi, edi_2, SUBFLAGS32(*(&global646_428d1c + 0x2250), 0, tmp1), tmp1 == 0, *(&global646_428d1c + 0x2250) < (unsigned int)0);
+                    *(__size32*)(esp_130 - 12) = ecx_14;
+                    (*global431_429220)(param1, *(esp_140 - 0x3014), *(esp_140 - 0x3013), *(esp_140 - 0x2014), *(esp_140 - 0x2013), *(esp_140 - 0x1014), *(esp_140 - 0x1013), *(esp_140 - 16), *(esp_140 - 8), *(esp_140 - 4), param2, param3, param4, param5, ax, dx_3, (unsigned char) ebp_25 - 0x1010, cl_1, dl_2, ah_1, dh_3, ebp_25 - 0x1010, ecx_14, ebp_25 - 8, ebp_25, esi, edi_2, SUBFLAGS32(*(&global646_428d1c + 0x2250), 0, tmp1), tmp1 == 0, *(&global646_428d1c + 0x2250) < (unsigned int)0);
                     local178 = ebp_15;
                     local184 = ax;
                     local185 = esi;
-bb0x41565f:
                     esp_78 = esp_75 + 12;
                     local176 = esp_78;
                     local177 = esp_78;
                     if (eax_26 == 0) {
-                        goto bb0x41565f;
+                        goto bb0x41567f;
                     }
                     else {
                         if (*(ebp_15 + 8) == 2) {
@@ -4847,13 +4838,12 @@ bb0x41565f:
             else {
                 ecx_11 = *(&global646_428d1c + 0x2260);
                 *(int*)(ebp_27 - 0x3018) = ecx_11;
-bb0x4155fe:
                 dx_4 = local135;
                 cl_2 = local136;
                 dl_3 = local137;
                 ah_2 = local138;
                 dh_4 = local139;
-                esp_106 = local140;
+                esp_127 = local140;
                 ebp_26 = local141;
                 edi_3 = local142;
                 local17 = local143;
@@ -4874,7 +4864,7 @@ bb0x4155fe:
                 local158 = dl_3;
                 local159 = ah_2;
                 local160 = dh_4;
-                local161 = esp_106;
+                local161 = esp_127;
                 local162 = ebp_26;
                 local163 = edi_3;
                 local164 = local17;
@@ -4890,10 +4880,10 @@ bb0x4155fe:
                 local174 = ax;
                 local175 = esi;
                 while (*(ebp_26 - 0x3018) != 0) {
-                    *(int*)(esp_106 - 4) = ebp_26 - 8;
-                    *(int*)(esp_106 - 8) = ebp_26 - 0x1010;
+                    *(int*)(esp_127 - 4) = ebp_26 - 8;
+                    *(int*)(esp_127 - 8) = ebp_26 - 0x1010;
                     eax_27 = *(ebp_26 + 8);
-                    *(__size32*)(esp_106 - 12) = eax_27;
+                    *(__size32*)(esp_127 - 12) = eax_27;
                     ecx_17 = *(ebp_26 - 0x3018);
                     (**(*(ebp_26 - 0x3018) + 12))(local85, local80, local72, local64, local54, local49, local41, local33, local25, local17, param2, param3, param4, param5, ax, dx_4, (unsigned char) eax_27, cl_2, dl_3, ah_2, dh_4, eax_27, ecx_17, ebp_26 - 0x1010, ebp_26, esi, edi_3, SUBFLAGS32(*(ebp_26 - 0x3018), 0, tmp1), tmp1 == 0, *(ebp_26 - 0x3018) < (unsigned int)0);
                     local135 = dx_40;
@@ -4931,17 +4921,16 @@ bb0x4155fe:
                             esp_88 = InterlockedDecrement(*(esp_82 + 8));
                             local155 = esp_88;
                         }
-                        esp_103 = local155;
-                        local183 = esp_103;
+                        esp_133 = local155;
+                        local183 = esp_133;
                     }
                     goto bb0x415772;
-bb0x4155fe:
                     dx_4 = local135;
                     cl_2 = local136;
                     dl_3 = local137;
                     ah_2 = local138;
                     dh_4 = local139;
-                    esp_106 = local140;
+                    esp_127 = local140;
                     ebp_26 = local141;
                     edi_3 = local142;
                     local17 = local143;
@@ -4962,7 +4951,7 @@ bb0x4155fe:
                     local158 = dl_3;
                     local159 = ah_2;
                     local160 = dh_4;
-                    local161 = esp_106;
+                    local161 = esp_127;
                     local162 = ebp_26;
                     local163 = edi_3;
                     local164 = local17;
@@ -4978,7 +4967,7 @@ bb0x4155fe:
                     local174 = ax;
                     local175 = esi;
                 }
-                goto bb0x4155fe;
+                goto bb0x415641;
             }
         }
         else {
@@ -4987,21 +4976,21 @@ bb0x4155fe:
             local94 = esp_7;
             local96 = edx_1;
             local97 = esp_7;
-bb0x415420:
             if (eax_5 <= 0) {
-                goto bb0x415420;
+                goto bb0x4154b5;
             }
             else {
                 tmp1 = *(&global556_428d5c + 0xa80);
                 flags = SUBFLAGS32(*0x4297dc, 0, tmp1);
                 if (*0x4297dc != 0) {
-                    esp_115 = local94;
+bb0x415473:
+                    esp_105 = local94;
                     param1 = local95;
-                    *(__size32*)(esp_115 - 4) = param4;
-                    *(__size32*)(esp_115 - 8) = param3;
-                    *(__size32*)(esp_115 - 12) = 0x425c48;
-                    *(int*)(esp_115 - 16) = esp_104 - 0x1014;
-                    (*global431_429220)(param1, 0, 0, 0, 0, 0, 0, eax_2, (esp_104 + 24), param11, param2, param3, param4, param5, param6, param7, (unsigned char) param3, param8, dl, ah_25, param9, param3, esp_104 - 0x1014, param4, esp_104 - 4, param12, edi_16, flags, ZF, CF);
+                    *(__size32*)(esp_105 - 4) = param4;
+                    *(__size32*)(esp_105 - 8) = param3;
+                    *(__size32*)(esp_105 - 12) = 0x425c48;
+                    *(int*)(esp_105 - 16) = esp_140 - 0x1014;
+                    (*global431_429220)(param1, 0, 0, 0, 0, 0, 0, eax_2, (esp_140 + 24), param11, param2, param3, param4, param5, param6, param7, (unsigned char) param3, param8, dl, ah_19, param9, param3, esp_140 - 0x1014, param4, esp_140 - 4, param12, edi_16, flags, ZF, CF);
                     local184 = ax;
                     local185 = esi;
                     *(__size32*)(esp_29 + 12) = ebp_11 - 0x1010;
@@ -5015,11 +5004,12 @@ bb0x415420:
                     *(__size32*)(esp_1 + 8LL - 16) = 0x425c90;
                     eax_8 = LoadLibraryA(*(esp_1 + 8LL - 16)); /* Warning: also results in esp_10 */
                     local93 = esp_10;
-                    *(HMODULE*)(esp_104 - 0x3018) = eax_8;
-                    local95 = *(esp_104 - 0x3018);
+                    *(HMODULE*)(esp_140 - 0x3018) = eax_8;
+                    local95 = *(esp_140 - 0x3018);
                     if (eax_8 == 0) {
-                        esp = local93;
-                        local183 = esp;
+bb0x41546b:
+                        esp_108 = local93;
+                        local183 = esp_108;
                     }
                     else {
                         *(__size32*)(esp_1 + 8LL + 8LL - 24) = 0x425c84;
@@ -5027,15 +5017,14 @@ bb0x415420:
                         eax_1 = GetProcAddress(*(esp_1 + 8LL + 8LL - 24), *(esp_1 + 8LL + 8LL - 28)); /* Warning: also results in esp_11 */
                         local93 = esp_11;
                         local94 = esp_11;
-bb0x41545d:
                         *(union { int; FARPROC; }*)0x4297dc = eax_1;
                         tmp1 = *(&global556_428d5c + 0xa80);
                         flags = SUBFLAGS32(*0x4297dc, 0, tmp1);
                         if (*0x4297dc != 0) {
-                            goto bb0x41545d;
+                            goto bb0x415473;
                         }
                         else {
-                            goto bb0x41545d;
+                            goto bb0x41546b;
                         }
                     }
                 }
@@ -5192,6 +5181,7 @@ __size32 proc_0x0041cf80(int param1, __size32 param2, unsigned int param3, char 
     local46 = param5;
     local47 = param7;
     if (param3 == 0) {
+bb0x41d01f:
         param4 = local25;
         param5 = local26;
         param7 = local27;
@@ -5242,7 +5232,7 @@ bb0x41cfe6:
                     local26 = param5;
                     local27 = param7;
                     local28 = esp;
-                    goto bb0x41cfe6;
+                    goto bb0x41d01f;
                 }
                 else {
                     if (al == 0) {
@@ -5256,6 +5246,7 @@ bb0x41d00c:
                             local23 = edi_18;
                             local37 = edi_18;
                             if (SHRFLAGS32(ecx_6 / 4, ecx_6, 2)) {
+bb0x41d087:
                                 param4 = local33;
                                 param5 = local34;
                                 param7 = local35;
@@ -5277,6 +5268,7 @@ bb0x41d00c:
                                     local42 = ecx_12;
                                     local44 = edi_21;
                                 } while (ecx_11 != 1);
+bb0x41d093:
                                 al = 0;
                                 dl = local40;
                                 dh = local41;
@@ -5297,6 +5289,7 @@ bb0x41d00c:
                                 local47 = edx;
                                 if ((ebx_8 & 0x3) != 0) {
                                     do {
+bb0x41d013:
                                         param4 = local18;
                                         param5 = local19;
                                         param7 = local20;
@@ -5306,6 +5299,7 @@ bb0x41d00c:
                                         *(unsigned char*)edi = al;
                                         edi++;
                                         local24 = ebx;
+bb0x41d018:
                                         dl = param4;
                                         dh = param5;
                                         edx = param7;
@@ -5321,12 +5315,12 @@ bb0x41d00c:
                                         local26 = dh;
                                         local27 = edx;
                                     } while (ebx_5 != 1);
-bb0x41d01d:
                                     esp = esp_4 - 4;
                                     local28 = esp;
-                                    goto bb0x41d01d;
+                                    goto bb0x41d01f;
                                 }
                                 else {
+bb0x41d09c:
                                     param4 = local45;
                                     param5 = local46;
                                     param7 = local47;
@@ -5335,12 +5329,11 @@ bb0x41d01d:
                                 }
                             }
                             else {
-                                goto bb0x41d00c;
+                                goto bb0x41d013;
                             }
                         }
                         else {
                             do {
-bb0x41cff6:
                                 ecx_5 = local14;
                                 edi_19 = local15;
                                 *(unsigned char*)edi_19 = al;
@@ -5351,19 +5344,21 @@ bb0x41cff6:
                                 local16 = ecx;
                                 local17 = edi_8;
                                 if (ecx_5 == 1) {
-                                    goto bb0x41cff6;
+                                    goto bb0x41d09c;
                                 }
                                 else {
                                 }
-                                goto bb0x41cff6;
+                                goto bb0x41d09c;
                             } while ((edi_19 + 1 & 0x3) != 0);
-                            goto bb0x41cff6;
+                            goto bb0x41d00c;
                         }
                     }
                 }
-                goto bb0x41d024;
+                dl = param4;
+                dh = param5;
+                edx = param7;
+                return eax; /* WARNING: Also returning: dl := dl, dh := dh, edx := edx, edi := edi */
             } while ((esi_1 + 1 & 0x3) != 0);
-bb0x41cfc7:
             ebx = ecx_1 - 1;
             ecx = (ecx_1 - 1) / 4;
             local7 = ecx;
@@ -5388,6 +5383,7 @@ bb0x41d02f:
                     local32 = edx_1;
                     local36 = esi;
                     if ((eax & 0x81010100) == 0) {
+bb0x41d025:
                         *(int*)edi_17 = edx_1;
                         edi_11 = edi_17 + 4;
                         ecx_8 = ecx_7 - 1;
@@ -5417,44 +5413,43 @@ bb0x41d07d:
                             local43 = edx;
                             local44 = edi_14;
                             if (ecx_7 != 1) {
-                                goto bb0x41d07d;
+                                goto bb0x41d087;
                             }
-                            goto bb0x41d07d;
+                            goto bb0x41d093;
                         }
                         else {
                             if ((edx_1 >> 8 & 0xff) == 0) {
-bb0x41d06f:
                                 edx_4 = edx_1 & 0xff;
                                 dh = (edx_1 & 0xff) >> 8 & 0xff;
                                 dl = (unsigned char) edx_1 & 0xff;
                                 *(int*)edi_17 = edx_1 & 0xff;
                                 local32 = edx_4;
-                                goto bb0x41d06f;
+                                goto bb0x41d07d;
                             }
                             else {
                                 if ((edx_1 & 0xff0000) == 0) {
-bb0x41d065:
                                     edx_6 = edx_1 & 0xffff;
                                     dh = (edx_1 & 0xffff) >> 8 & 0xff;
                                     dl = (unsigned char) edx_1 & 0xffff;
                                     *(int*)edi_17 = edx_1 & 0xffff;
                                     local32 = edx_6;
-                                    goto bb0x41d065;
+                                    goto bb0x41d07d;
                                 }
                                 else {
-bb0x41d059:
                                     if ((edx_1 & ~0xffffff) == 0) {
-bb0x41d061:
                                         *(int*)edi_17 = edx_1;
-                                        goto bb0x41d061;
+                                        goto bb0x41d07d;
                                     }
-                                    goto bb0x41d059;
+                                    goto bb0x41d025;
                                 }
                             }
                         }
-                        goto bb0x41d024;
+                        dl = param4;
+                        dh = param5;
+                        edx = param7;
+                        return eax; /* WARNING: Also returning: dl := dl, dh := dh, edx := edx, edi := edi */
                     }
-                    goto bb0x41d02f;
+                    goto bb0x41d025;
                 } while (ecx_7 == 1);
 bb0x41cfce:
                 param4 = local5;
@@ -5469,7 +5464,7 @@ bb0x41cfce:
                 local12 = ebx;
                 local13 = edi;
                 if ((ebx_1 & 0x3) == 0) {
-                    goto bb0x41cfce;
+                    goto bb0x41cfe6;
                 }
                 else {
                     do {
@@ -5486,36 +5481,33 @@ bb0x41cfd3:
                         local13 = edi;
                         local24 = ebx_2;
                         if (al == 0) {
-                            goto bb0x41cfd3;
+                            goto bb0x41d018;
                         }
                         else {
                             ebx_3 = ebx_2 - 1;
                             local12 = ebx_3;
                         }
-                        goto bb0x41cfd3;
+                        goto bb0x41d018;
                     } while (ebx_2 != 1);
-                    goto bb0x41cfd3;
+                    goto bb0x41cfe6;
                 }
-                goto bb0x41cfce;
+                goto bb0x41d01f;
             }
             else {
-                goto bb0x41cfc7;
+                goto bb0x41cfce;
             }
         }
         else {
-bb0x41cfa1:
             ecx = param3 / 4;
             local29 = ecx;
             if (SHRFLAGS32(param3 / 4, param3, 2)) {
-                goto bb0x41cfa1;
+                goto bb0x41d02f;
             }
             else {
-bb0x41cfaa:
-                goto bb0x41cfaa;
+                goto bb0x41cfd3;
             }
         }
     }
-bb0x41d024:
     dl = param4;
     dh = param5;
     edx = param7;
@@ -5623,6 +5615,7 @@ bb0x41a070:
                     }
                     else {
                         if ((eax & ~0xffffff) == 0) {
+bb0x41a0a3:
                             param3 = local9;
                             param4 = local10;
                             ecx = local11;
@@ -5664,7 +5657,6 @@ bb0x41a070:
     }
     else {
         do {
-bb0x41a05d:
             param5 = local6;
             ecx_1 = local7;
             al = *ecx_1;
@@ -5675,14 +5667,13 @@ bb0x41a05d:
             local8 = ecx_2;
             local11 = ecx_2;
             if (al == 0) {
-                goto bb0x41a05d;
+                goto bb0x41a0a3;
             }
             else {
             }
-            goto bb0x41a05d;
+            goto bb0x41a0a3;
         } while ((ecx_1 + 1 & 0x3) != 0);
-bb0x41a06e:
-        goto bb0x41a06e;
+        goto bb0x41a070;
     }
 bb0x41a0b5:
     dx = local13;
@@ -5696,6 +5687,7 @@ bb0x41a0b5:
     local20 = edi_10;
     if ((param2 & 0x3) == 0) {
         for(;;) {
+bb0x41a0de:
             ecx = local19;
             edi_1 = local20;
             eax = *ecx;
@@ -5707,11 +5699,13 @@ bb0x41a0b5:
             local19 = ecx;
             local22 = edi_1;
             if (((eax ^ -1 ^ eax + 0x7efefeff) & 0x81010100) == 0) {
+bb0x41a0d9:
                 local0 = edx;
                 edi = edi_1 + 4;
                 local20 = edi;
             }
             if ((unsigned char) edx == 0) {
+bb0x41a130:
                 esp = local21;
                 edi = local22;
                 *(unsigned char*)edi = dl;
@@ -5722,13 +5716,12 @@ bb0x41a0b5:
             }
             else {
                 if ((edx >> 8 & 0xff) == 0) {
-bb0x41a127:
                     local2 = (unsigned short) edx;
                     edi = param7;
                     esp = esp_4;
                     local21 = esp;
                     local22 = edi;
-                    goto bb0x41a127;
+                    goto bb0x41a130;
                 }
                 else {
                     if ((edx & 0xff0000) == 0) {
@@ -5744,13 +5737,12 @@ bb0x41a127:
                             break;
                         }
                         else {
-bb0x41a110:
-                            goto bb0x41a110;
+                            goto bb0x41a0d9;
                         }
                     }
                 }
             }
-            goto bb0x41a137;
+            return eax; /* WARNING: Also returning: dx := dx, al := al, dl := dl, ah := ah, dh := dh, edx := edx, edi := edi */
         }
         *(int*)edi_1 = edx;
         eax = param1;
@@ -5760,7 +5752,6 @@ bb0x41a110:
     }
     else {
         do {
-bb0x41a0c1:
             ecx_7 = local17;
             edi_9 = local18;
             dl = *ecx_7;
@@ -5771,7 +5762,7 @@ bb0x41a0c1:
             local19 = ecx_8;
             local22 = edi_9;
             if (dl == 0) {
-                goto bb0x41a0c1;
+                goto bb0x41a130;
             }
             else {
                 *(unsigned char*)edi_9 = dl;
@@ -5779,12 +5770,10 @@ bb0x41a0c1:
                 local18 = edi_4;
                 local20 = edi_4;
             }
-            goto bb0x41a0c1;
+            goto bb0x41a130;
         } while ((ecx_7 + 1 & 0x3) != 0);
-bb0x41a0d7:
-        goto bb0x41a0d7;
+        goto bb0x41a0de;
     }
-bb0x41a137:
     return eax; /* WARNING: Also returning: dx := dx, al := al, dl := dl, ah := ah, dh := dh, edx := edx, edi := edi */
 }
 
@@ -5900,6 +5889,7 @@ __size32 proc_0x0041cdb0(__size32 param1, int param2, int param3)
     local48 = ebp_1;
     local54 = ebp_1;
     if (*0x4298c4 != 0) {
+bb0x41ce6b:
         param1 = local39;
         param2 = local40;
         param3 = local41;
@@ -5914,6 +5904,7 @@ __size32 proc_0x0041cdb0(__size32 param1, int param2, int param3)
             *(__size32*)(ebp - 16) = eax;
             tmp1 = *(ebp - 16);
             if (*(ebp - 16) == 0) {
+bb0x41cea5:
                 esp_19 = local43;
                 *(__size32*)(ebp - 28) = 1;
                 local44 = eax;
@@ -5936,17 +5927,15 @@ __size32 proc_0x0041cdb0(__size32 param1, int param2, int param3)
                 local45 = ecx;
                 local47 = esp_5;
                 local48 = ebp;
-bb0x41ce99:
                 if (eax == 0) {
-                    goto bb0x41ce99;
+                    goto bb0x41cea5;
                 }
                 else {
-bb0x41ce9d:
                     edx_1 = *(ebp - 4);
                     edx = edx_1 & 0x1;
                     local46 = edx;
                     if ((edx_1 & 0x1) == 0) {
-                        goto bb0x41ce9d;
+                        goto bb0x41cea5;
                     }
                 }
             }
@@ -6022,13 +6011,13 @@ bb0x41ce9d:
     else {
         eax_2 = LoadLibraryA("user32.dll"); /* Warning: also results in edx */
         if (eax_2 == 0) {
+bb0x41ce02:
             eax = 0;
         }
         else {
             *(__size32*)(esp_26 + 8LL - 48) = 0x426a1c;
             *(HMODULE*)(esp_26 + 8LL - 52) = eax_2;
             eax_4 = GetProcAddress(*(esp_26 + 8LL - 48), *(esp_26 + 8LL - 52)); /* Warning: also results in edx */
-bb0x41cdf4:
             *(union { FARPROC; __size32; }*)0x4298c4 = eax_4;
             if (*0x4298c4 != 0) {
                 *(__size32*)(esp_26 + 8LL + 12LL - 60) = 0x426a08;
@@ -6042,7 +6031,6 @@ bb0x41cdf4:
                 local40 = ecx;
                 local41 = edx;
                 local42 = esp_8;
-bb0x41ce2c:
                 *(union { FARPROC; __size32; }*)0x4298cc = eax_6;
                 if (*0x429638 == 2) {
                     *(__size32*)(esp_26 + 8LL + 12LL + 12LL + 12LL - 84) = 0x4269d0;
@@ -6052,7 +6040,6 @@ bb0x41ce2c:
                     local40 = ecx;
                     local41 = edx;
                     local42 = esp_9;
-bb0x41ce49:
                     *(union { FARPROC; __size32; }*)0x4298d4 = eax_9;
                     if (*0x4298d4 != 0) {
                         *(__size32*)(esp_26 + 8LL + 12LL + 12LL + 12LL + 12LL - 96) = 0x4269b4;
@@ -6062,16 +6049,15 @@ bb0x41ce49:
                         local40 = ecx;
                         local41 = edx;
                         local42 = esp_10;
-bb0x41ce66:
                         *(union { FARPROC; __size32; }*)0x4298d0 = eax_1;
-                        goto bb0x41ce66;
+                        goto bb0x41ce6b;
                     }
-                    goto bb0x41ce49;
+                    goto bb0x41ce6b;
                 }
-                goto bb0x41ce2c;
+                goto bb0x41ce6b;
             }
             else {
-                goto bb0x41cdf4;
+                goto bb0x41ce02;
             }
         }
     }
@@ -6120,19 +6106,20 @@ __size32 proc_0x00416940()
             esp += 4;
             if (eax == 0) {
                 eax = 0;
-                goto bb0x416986;
+                ebp = *ebp;
+                return eax; /* WARNING: Also returning: dx := dx, al := al, cl := cl, dl := dl, ah := ah, dh := dh, ecx := ecx, edx := edx, ebp := ebp, edi := edi */
             }
         }
         else {
             goto bb0x41696b;
         }
-bb0x416986:
         ebp = *ebp;
         return eax; /* WARNING: Also returning: dx := dx, al := al, cl := cl, dl := dl, ah := ah, dh := dh, ecx := ecx, edx := edx, ebp := ebp, edi := edi */
     }
 bb0x41696b:
     eax = *(ebp - 4);
-    goto bb0x41696b;
+    ebp = *ebp;
+    return eax; /* WARNING: Also returning: dx := dx, al := al, cl := cl, dl := dl, ah := ah, dh := dh, ecx := ecx, edx := edx, ebp := ebp, edi := edi */
 }
 
 /** address: 0x00417db0 */
@@ -6177,19 +6164,19 @@ __size32 proc_0x00417db0(int param1, int param2, int param3, int param4, int par
     int ecx; 		// r25
     __size32 edi; 		// r31
     __size32 edi_1; 		// r31{0}
-    __size32 edi_16; 		// r31{0}
-    __size32 edi_17; 		// r31{0}
-    __size32 edi_18; 		// r31{0}
-    __size32 edi_19; 		// r31{0}
     __size32 edi_2; 		// r31{0}
     __size32 edi_3; 		// r31{0}
+    __size32 edi_4; 		// r31{0}
+    __size32 edi_5; 		// r31{0}
     __size32 edi_6; 		// r31{0}
+    __size32 edi_7; 		// r31{0}
+    __size32 edi_8; 		// r31{0}
     __size32 edi_9; 		// r31{0}
     int edx; 		// r26
     int esp; 		// r28
     union { void *; __size32; } esp_2; 		// r28{0}
-    union { __size32; void *; } esp_3; 		// r28{0}
-    void *esp_4; 		// r28{0}
+    void *esp_3; 		// r28{0}
+    union { __size32; void *; } esp_4; 		// r28{0}
     __size32 esp_5; 		// r28{0}
     int local0; 		// m[esp - 4]
     int local1; 		// m[esp - 28]
@@ -6204,17 +6191,17 @@ __size32 proc_0x00417db0(int param1, int param2, int param3, int param4, int par
     unsigned char local31; 		// param21{0}
     __size8 local32; 		// param22{0}
     char local33; 		// dh_7{0}
-    __size32 local34; 		// edi_6{0}
+    __size32 local34; 		// edi_7{0}
     short local35; 		// dx_6{0}
     unsigned char local36; 		// dl{0}
     __size8 local37; 		// ah{0}
     char local38; 		// dh_6{0}
-    union { void *; __size32; } local39; 		// esp_3{0}
-    __size32 local40; 		// edi_3{0}
+    union { void *; __size32; } local39; 		// esp_4{0}
+    __size32 local40; 		// edi_6{0}
     short local41; 		// dx_5{0}
     unsigned char local42; 		// cl_5{0}
     char local43; 		// dh_5{0}
-    __size32 local44; 		// edi_9{0}
+    __size32 local44; 		// edi_5{0}
     short local45; 		// dx_2{0}
     unsigned char local46; 		// cl_2{0}
     char local47; 		// dh_2{0}
@@ -6223,7 +6210,7 @@ __size32 proc_0x00417db0(int param1, int param2, int param3, int param4, int par
     short local50; 		// dx_8{0}
     unsigned char local51; 		// cl_7{0}
     char local52; 		// dh_8{0}
-    __size32 local53; 		// edi_16{0}
+    __size32 local53; 		// edi_8{0}
     short local54; 		// dx{0}
     unsigned char local55; 		// al{0}
     unsigned char local56; 		// cl{0}
@@ -6263,85 +6250,83 @@ __size32 proc_0x00417db0(int param1, int param2, int param3, int param4, int par
             param21 = local31;
             param22 = local32;
             dh_7 = local33;
-            esp_4 = esp;
-            edi_6 = local34;
+            esp_3 = esp;
+            edi_7 = local34;
             local35 = dx_7;
             local36 = param21;
             local37 = param22;
             local38 = dh_7;
-            local40 = edi_6;
+            local40 = edi_7;
             local54 = dx_7;
             local55 = param19;
             local56 = cl_6;
             local57 = param21;
             local58 = param22;
             local59 = dh_7;
-            local60 = edi_6;
+            local60 = edi_7;
             while (*(ebp - 4) != 0) {
                 *(__size32*)(ebp - 16) = 1;
                 eax = *(ebp - 4);
                 ecx = *(eax + 20);
                 if ((ecx & 0xffff) == 4) {
+bb0x417f1e:
                     eax = *(ebp - 4);
                     ecx = *(eax + 20);
                     edx = global646_428d1c[(ecx & 0xffff)];
                     *(unsigned int*)(ebp - 20) = global646_428d1c[(ecx & 0xffff)];
                 }
                 else {
-bb0x417efb:
                     edx = *(ebp - 4);
                     if (*(edx + 20) == 1) {
-                        goto bb0x417efb;
+                        goto bb0x417f1e;
                     }
                     else {
-bb0x417f04:
                         eax = *(ebp - 4);
                         ecx = *(eax + 20);
                         if ((ecx & 0xffff) == 2) {
-                            goto bb0x417f04;
+                            goto bb0x417f1e;
                         }
                         else {
-bb0x417f15:
                             edx = *(ebp - 4);
                             if (*(edx + 20) != 3) {
-bb0x417f36:
                                 *(__size32*)(ebp - 20) = 0x426540;
-                                goto bb0x417f36;
+                                goto bb0x417f3d;
                             }
                             else {
-                                goto bb0x417f15;
+                                goto bb0x417f1e;
                             }
                         }
                     }
                 }
+bb0x417f3d:
                 eax = *(ebp - 4);
-                *(int*)(esp_4 - 4) = 4;
+                *(int*)(esp_3 - 4) = 4;
                 al = global553_428d58;
-                *(int*)(esp_4 - 8) = eax >> 8 & 0xffffff | (global553_428d58);
+                *(int*)(esp_3 - 8) = eax >> 8 & 0xffffff | (global553_428d58);
                 ecx = *(ebp - 4);
-                *(__size32*)(esp_4 - 12) = ecx + 28;
-                eax = proc_0x00417d50(*(esp_4 - 12), *(esp_4 - 8), *(esp_4 - 4), edx); /* Warning: also results in ecx */
-                esp_2 = esp_4;
+                *(__size32*)(esp_3 - 12) = ecx + 28;
+                eax = proc_0x00417d50(*(esp_3 - 12), *(esp_3 - 8), *(esp_3 - 4), edx); /* Warning: also results in ecx */
+                esp_2 = esp_3;
                 local39 = esp_2;
                 if (eax == 0) {
                     edx = *(ebp - 4);
-                    *(__size32*)(esp_4 - 4) = edx + 32;
+                    *(__size32*)(esp_3 - 4) = edx + 32;
                     eax = *(ebp - 4);
                     ecx = *(eax + 24);
-                    *(__size32*)(esp_4 - 8) = ecx;
+                    *(__size32*)(esp_3 - 8) = ecx;
                     edx = *(ebp - 20);
-                    *(int*)(esp_4 - 12) = edx;
-                    *(__size32*)(esp_4 - 16) = 0x4263dc;
-                    *(int*)(esp_4 - 20) = 0;
-                    *(int*)(esp_4 - 24) = 0;
-                    *(int*)(esp_4 - 28) = 0;
-                    *(int*)(esp_4 - 32) = 0;
-                    eax = proc_0x00415390(*(esp_4 - 0x303c), *(esp_4 - 32), *(esp_4 - 28), *(esp_4 - 24), *(esp_4 - 16), param19, dx_7, cl_6, dh_7, edx, ebp, param26, edi_6); /* Warning: also results in dx_3, al, dl, ah, dh_3, ecx, esp, ebp, edi_17 */
+                    *(int*)(esp_3 - 12) = edx;
+                    *(__size32*)(esp_3 - 16) = 0x4263dc;
+                    *(int*)(esp_3 - 20) = 0;
+                    *(int*)(esp_3 - 24) = 0;
+                    *(int*)(esp_3 - 28) = 0;
+                    *(int*)(esp_3 - 32) = 0;
+                    eax = proc_0x00415390(*(esp_3 - 0x303c), *(esp_3 - 32), *(esp_3 - 28), *(esp_3 - 24), *(esp_3 - 16), param19, dx_7, cl_6, dh_7, edx, ebp, param26, edi_7); /* Warning: also results in dx_3, al, dl, ah, dh_3, ecx, esp, ebp, edi_3 */
                     local35 = dx_3;
                     local36 = dl;
                     local37 = ah;
                     local38 = dh_3;
-                    local40 = edi_17;
+                    local40 = edi_3;
                     esp += 32;
                     local39 = esp;
                     if (eax == 1) {
@@ -6353,39 +6338,39 @@ bb0x417f36:
                 dl = local36;
                 ah = local37;
                 dh_6 = local38;
-                esp_3 = local39;
-                edi_3 = local40;
-                *(int*)(esp_3 - 4) = 4;
+                esp_4 = local39;
+                edi_6 = local40;
+                *(int*)(esp_4 - 4) = 4;
                 cl_3 = global553_428d58;
-                *(int*)(esp_3 - 8) = ecx >> 8 & 0xffffff | (global553_428d58);
+                *(int*)(esp_4 - 8) = ecx >> 8 & 0xffffff | (global553_428d58);
                 edx = *(ebp - 4);
                 eax = *(edx + 16);
                 ecx = *(ebp - 4);
-                *(__size32*)(esp_3 - 12) = ecx + eax + 32;
-                eax = proc_0x00417d50(*(esp_3 - 12), *(esp_3 - 8), *(esp_3 - 4), ecx + eax + 32);
+                *(__size32*)(esp_4 - 12) = ecx + eax + 32;
+                eax = proc_0x00417d50(*(esp_4 - 12), *(esp_4 - 8), *(esp_4 - 4), ecx + eax + 32);
                 local41 = dx_6;
                 local42 = cl_3;
                 local43 = dh_6;
-                local44 = edi_3;
-                esp = esp_3;
+                local44 = edi_6;
+                esp = esp_4;
                 if (eax == 0) {
                     eax = *(ebp - 4);
-                    *(__size32*)(esp_3 - 4) = eax + 32;
+                    *(__size32*)(esp_4 - 4) = eax + 32;
                     ecx = *(ebp - 4);
                     edx = *(ecx + 24);
-                    *(int*)(esp_3 - 8) = edx;
+                    *(int*)(esp_4 - 8) = edx;
                     eax = *(ebp - 20);
-                    *(__size32*)(esp_3 - 12) = eax;
-                    *(__size32*)(esp_3 - 16) = 0x4263ac;
-                    *(int*)(esp_3 - 20) = 0;
-                    *(int*)(esp_3 - 24) = 0;
-                    *(int*)(esp_3 - 28) = 0;
-                    *(int*)(esp_3 - 32) = 0;
-                    eax = proc_0x00415390(*(esp_3 - 0x303c), *(esp_3 - 32), *(esp_3 - 28), *(esp_3 - 24), *(esp_3 - 16), param19, dx_6, global553_428d58, dh_6, edx, ebp, param26, edi_3); /* Warning: also results in dx_4, al, cl_4, dl, ah, dh_4, esp, ebp, edi_18 */
+                    *(__size32*)(esp_4 - 12) = eax;
+                    *(__size32*)(esp_4 - 16) = 0x4263ac;
+                    *(int*)(esp_4 - 20) = 0;
+                    *(int*)(esp_4 - 24) = 0;
+                    *(int*)(esp_4 - 28) = 0;
+                    *(int*)(esp_4 - 32) = 0;
+                    eax = proc_0x00415390(*(esp_4 - 0x303c), *(esp_4 - 32), *(esp_4 - 28), *(esp_4 - 24), *(esp_4 - 16), param19, dx_6, global553_428d58, dh_6, edx, ebp, param26, edi_6); /* Warning: also results in dx_4, al, cl_4, dl, ah, dh_4, esp, ebp, edi_4 */
                     local41 = dx_4;
                     local42 = cl_4;
                     local43 = dh_4;
-                    local44 = edi_18;
+                    local44 = edi_4;
                     esp += 32;
                     if (eax == 1) {
                         __debugbreak();
@@ -6396,7 +6381,7 @@ bb0x417f36:
                 cl_5 = local42;
                 dh_5 = local43;
                 esp_5 = esp;
-                edi_9 = local44;
+                edi_5 = local44;
                 edx = *(ebp - 4);
                 local45 = dx_5;
                 local45 = dx_5;
@@ -6405,17 +6390,17 @@ bb0x417f36:
                 local47 = dh_5;
                 local47 = dh_5;
                 local48 = esp_5;
-                local49 = edi_9;
-                local49 = edi_9;
+                local49 = edi_5;
+                local49 = edi_5;
                 if (*(edx + 20) == 0) {
                     eax = *(ebp - 4);
                     ecx = *(eax + 16);
                     *(__size32*)(esp_5 - 4) = ecx;
-                    dl = *(&global646_428d1c + 61);
-                    *(int*)(esp_5 - 8) = edx >> 8 & 0xffffff | (dl);
+                    dl = global571_428d59;
+                    *(int*)(esp_5 - 8) = edx >> 8 & 0xffffff | (global571_428d59);
                     eax = *(ebp - 4);
                     *(__size32*)(esp_5 - 12) = eax + 32;
-                    eax = proc_0x00417d50(*(esp_5 - 12), *(esp_5 - 8), *(esp_5 - 4), edx >> 8 & 0xffffff | (dl)); /* Warning: also results in edx */
+                    eax = proc_0x00417d50(*(esp_5 - 12), *(esp_5 - 8), *(esp_5 - 4), edx >> 8 & 0xffffff | (global571_428d59)); /* Warning: also results in edx */
                     esp = esp_5;
                     local48 = esp;
                     if (eax == 0) {
@@ -6426,11 +6411,11 @@ bb0x417f36:
                         *(int*)(esp_5 - 16) = 0;
                         *(int*)(esp_5 - 20) = 0;
                         *(int*)(esp_5 - 24) = 0;
-                        eax = proc_0x00415390(*(esp_5 - 0x3034), *(esp_5 - 24), *(esp_5 - 20), *(esp_5 - 16), *(esp_5 - 8), param19, dx_5, cl_5, dh_5, edx, ebp, param26, edi_9); /* Warning: also results in dx_9, al, cl_8, dl, ah, dh_9, esp, ebp, edi_19 */
+                        eax = proc_0x00415390(*(esp_5 - 0x3034), *(esp_5 - 24), *(esp_5 - 20), *(esp_5 - 16), *(esp_5 - 8), param19, dx_5, cl_5, dh_5, edx, ebp, param26, edi_5); /* Warning: also results in dx_9, al, cl_8, dl, ah, dh_9, esp, ebp, edi_9 */
                         local45 = dx_9;
                         local46 = cl_8;
                         local47 = dh_9;
-                        local49 = edi_19;
+                        local49 = edi_9;
                         esp += 24;
                         local48 = esp;
                         if (eax == 1) {
@@ -6496,14 +6481,14 @@ bb0x417f36:
                 dx_8 = local50;
                 cl_7 = local51;
                 dh_8 = local52;
-                edi_16 = local53;
+                edi_8 = local53;
                 local28 = dx_8;
                 local29 = al;
                 local30 = cl_7;
                 local31 = dl;
                 local32 = ah;
                 local33 = dh_8;
-                local34 = edi_16;
+                local34 = edi_8;
                 ecx = *(ebp - 4);
                 edx = *ecx;
                 *(unsigned int*)(ebp - 4) = edx;
@@ -6513,20 +6498,20 @@ bb0x417f36:
                 param21 = local31;
                 param22 = local32;
                 dh_7 = local33;
-                esp_4 = esp;
-                edi_6 = local34;
+                esp_3 = esp;
+                edi_7 = local34;
                 local35 = dx_7;
                 local36 = param21;
                 local37 = param22;
                 local38 = dh_7;
-                local40 = edi_6;
+                local40 = edi_7;
                 local54 = dx_7;
                 local55 = param19;
                 local56 = cl_6;
                 local57 = param21;
                 local58 = param22;
                 local59 = dh_7;
-                local60 = edi_6;
+                local60 = edi_7;
             }
         }
         else {
@@ -6543,31 +6528,28 @@ bb0x417f36:
                     if (eax == 1) {
                         __debugbreak();
                     }
-bb0x417e92:
-                    goto bb0x417e92;
+                    goto bb0x417eb4;
                 case 1:
                     eax = proc_0x00415390(param1, 0, 0, 0, 0x426074, param19, param18, param20, param23, eax_4 + 6, esp - 4, param26, param26); /* Warning: also results in dx, al, cl, dl, ah, dh, edx, ebp, edi */
                     if (eax == 1) {
                         __debugbreak();
                     }
-bb0x417e70:
-                    goto bb0x417e70;
+                    goto bb0x417eb4;
                 case 2:
                     eax = proc_0x00415390(param1, 0, 0, 0, 0x426074, param19, param18, param20, param23, eax_4 + 6, esp - 4, param26, param26); /* Warning: also results in dx, al, cl, dl, ah, dh, edx, ebp, edi */
                     if (eax == 1) {
                         __debugbreak();
                     }
-bb0x417e4e:
-                    goto bb0x417e4e;
+                    goto bb0x417eb4;
                 case 3:
                     eax = proc_0x00415390(param1, 0, 0, 0, 0x426074, param19, param18, param20, param23, eax_4 + 6, esp - 4, param26, param26); /* Warning: also results in dx, al, cl, dl, ah, dh, edx, ebp, edi */
                     if (eax == 1) {
                         __debugbreak();
                     }
-bb0x417e29:
-                    goto bb0x417e29;
+                    goto bb0x417eb4;
                 }
             }
+bb0x417eb4:
             *(__size32*)(ebp - 12) = 0;
             local54 = dx;
             local55 = al;
@@ -6729,6 +6711,7 @@ __size32 proc_0x0041dd20(unsigned int param1, unsigned char param2, unsigned int
         local4 = esp_1;
         if (param3 < (unsigned int)4) {
             do {
+bb0x41dd6b:
                 edx_4 = local2;
                 *(unsigned char*)edi = al;
                 edi++;
@@ -6750,7 +6733,6 @@ __size32 proc_0x0041dd20(unsigned int param1, unsigned char param2, unsigned int
                     local1 = ecx_2;
                 } while (ecx_1 != 1);
             }
-bb0x41dd4d:
             edx_1 = edx;
             eax = eax * 0x1010000 + eax * 257;
             al = (unsigned char) eax;
@@ -6760,7 +6742,7 @@ bb0x41dd4d:
             local2 = edx_2;
             local3 = edx_2;
             if (SHRFLAGS32(edx_1 / 4, edx_1, 2)) {
-                goto bb0x41dd4d;
+                goto bb0x41dd6b;
             }
             else {
                 if (edx_1 / 4 != 0) {
@@ -6768,9 +6750,8 @@ bb0x41dd4d:
                     edi +=  (DF == 0) ? 4 : -4;
                     ecx = ecx - 1;
                 }
-bb0x41dd67:
                 if ((edx_1 & 0x3) != 0) {
-                    goto bb0x41dd67;
+                    goto bb0x41dd6b;
                 }
             }
         }
@@ -6941,6 +6922,7 @@ __size8 proc_0x00419680(__size32 param1, __size16 param2, short param3, unsigned
                         edx = *(ebp - 8);
                         eax = *(ebp - 4);
                         *(int*)(ebp - 12) = edx * 48 + eax * 8 + 0x428d90;
+bb0x419754:
                         eax = *(ebp - 12);
                         ecx = *(unsigned char*)eax;
                         if (ecx != 0) {
@@ -6964,10 +6946,9 @@ __size8 proc_0x00419680(__size32 param1, __size16 param2, short param3, unsigned
                                     ecx = *(ebp - 12);
                                     edx = *(unsigned char*)(ecx + 1);
                                 }
-bb0x41974b:
                                 edx = *(ebp - 12);
                                 *(int*)(ebp - 12) = edx + 2;
-                                goto bb0x41974b;
+                                goto bb0x419754;
                             }
                         }
                         ecx = *(ebp - 4);
@@ -7057,6 +7038,7 @@ bb0x41974b:
                             edx = *(ebp - 44);
                             eax = *(unsigned char*)edx;
                             *(unsigned int*)(ebp - 16) = eax;
+bb0x4198b3:
                             edx = *(ebp - 44);
                             eax = *(unsigned char*)(edx + 1);
                             if (*(ebp - 16) <= eax) {
@@ -7064,10 +7046,9 @@ bb0x41974b:
                                 edx = *(unsigned char*)(ecx + 0x42ad41);
                                 eax = *(ebp - 16);
                                 *(__size8*)(eax + 0x42ad41) = (unsigned char) edx | 4;
-bb0x4198aa:
                                 ecx = *(ebp - 16);
                                 *(int*)(ebp - 16) = ecx + 1;
-                                goto bb0x4198aa;
+                                goto bb0x4198b3;
                             }
                             eax = *(ebp - 44);
                             *(int*)(ebp - 44) = eax + 2;
@@ -7148,6 +7129,7 @@ __size32 proc_0x00416700(int param1, int param2, int param3, int param4, int par
     ecx = *(&global425_42afe0 + 272);
     ecx = ecx - *(&global425_42afe0 + 276);
     if (*(ebp - 8) >= (unsigned int)(ecx + 4)) {
+bb0x4167c2:
         edx = *0x42b0f0;
         eax = *(ebp + 8);
         *(__size32*)edx = eax;
@@ -7181,7 +7163,7 @@ bb0x41679f:
             *(__size32*)(&global425_42afe0 + 272) = edx + (ecx >> 2) * 4;
             ecx = *(ebp - 4);
             *(int*)(&global425_42afe0 + 276) = ecx;
-            goto bb0x41679f;
+            goto bb0x4167c2;
         }
         else {
             *(__size32*)(esp + 16) = 131;
@@ -7192,10 +7174,9 @@ bb0x41679f:
             eax = *(&global425_42afe0 + 276);
             *(__size32*)esp = eax;
             eax = proc_0x00416e80(*(esp - 476), *(esp - 472), *(esp - 468), *(esp - 200), *(esp - 192), *(esp - 180), *(esp - 176), *(esp - 164), *(esp - 160), *(esp - 156), *(esp - 152), *(esp - 148), *(esp - 140), *(esp - 136), *(esp - 128), *(esp - 124), *(esp - 120), *(esp - 88), *(esp + 4), *(esp + 8), ax, dx, al, cl, dl, ah, dh, esi, edi, *esp); /* Warning: also results in ecx, edx, ebp */
-bb0x41678f:
             *(__size32*)(ebp - 4) = eax;
             if (*(ebp - 4) != 0) {
-                goto bb0x41678f;
+                goto bb0x41679f;
             }
             else {
             }
@@ -7217,6 +7198,7 @@ __size32 proc_0x00419600(unsigned char param1, int param2, int param3)
     edx = *(unsigned char*)(eax + 0x42ad41);
     edx = edx & param3;
     if ((edx & param3) != 0) {
+bb0x41964d:
         local1 = 1;
     }
     else {
@@ -7229,9 +7211,8 @@ __size32 proc_0x00419600(unsigned char param1, int param2, int param3)
             edx = edx & param2;
             local0 = edx & param2;
         }
-bb0x41963e:
         if (local0 != 0) {
-            goto bb0x41963e;
+            goto bb0x41964d;
         }
         else {
             local1 = 0;
@@ -7452,7 +7433,7 @@ __size32 proc_0x0041d670(int param1, __size32 param2, unsigned short param4, sho
     __size32 edx_1; 		// r26{0}
     int esp; 		// r28
     union { void *; __size32; } esp_1; 		// r28{0}
-    __size32 esp_4; 		// r28{0}
+    __size32 esp_2; 		// r28{0}
     int local0; 		// m[esp - 4]
     union { void *; __size32; } local11; 		// esp{0}
     short local12; 		// param3{0}
@@ -7467,7 +7448,7 @@ __size32 proc_0x0041d670(int param1, __size32 param2, unsigned short param4, sho
     __size32 local21; 		// edi{0}
     int local3; 		// m[esp - 12]
 
-    ebp = esp_4 - 4;
+    ebp = esp_2 - 4;
     esp_1 = &param1;
     local11 = esp_1;
     local12 = param3;
@@ -7476,7 +7457,7 @@ __size32 proc_0x0041d670(int param1, __size32 param2, unsigned short param4, sho
     local15 = param7;
     local16 = param8;
     if (param2 == 0) {
-        eax = proc_0x00415390(param1, 2, 0x426aa0, 90, 0x426a8c, param4, param3, cl, param7, edx, esp_4 - 4, param9, param8); /* Warning: also results in dx, al, ah, dh, esp, ebp, edi */
+        eax = proc_0x00415390(param1, 2, 0x426aa0, 90, 0x426a8c, param4, param3, cl, param7, edx, esp_2 - 4, param9, param8); /* Warning: also results in dx, al, ah, dh, esp, ebp, edi */
         local12 = dx;
         local13 = al;
         local14 = ah;
@@ -7588,8 +7569,8 @@ __size32 proc_0x0041d540(int param1, __size32 param2, unsigned short param3, __s
     __size8 cl_3; 		// r9{0}
     unsigned short cx; 		// r1
     char dh; 		// r14
-    __size8 dh_1; 		// r14{0}
-    char dh_2; 		// r14{0}
+    char dh_1; 		// r14{0}
+    __size8 dh_2; 		// r14{0}
     __size8 dh_3; 		// r14{0}
     __size8 dl; 		// r10
     short dx; 		// r2
@@ -7636,7 +7617,7 @@ __size32 proc_0x0041d540(int param1, __size32 param2, unsigned short param3, __s
         *(int*)(esp - 12) = 94;
         local3 = 0x426a54;
         *(int*)(esp - 20) = 2;
-        eax = proc_0x00415390(*(esp - 0x3030), *(esp - 20), *(esp - 16), *(esp - 12), *(esp - 4), param3, dx_1, cl_2, dh_2, edx, ebp, param4, edi_2); /* Warning: also results in esp, ebp */
+        eax = proc_0x00415390(*(esp - 0x3030), *(esp - 20), *(esp - 16), *(esp - 12), *(esp - 4), param3, dx_2, cl_2, dh_1, edx, ebp, param4, edi_2); /* Warning: also results in esp, ebp */
         esp += 20;
         if (eax == 1) {
             __debugbreak();
@@ -7679,7 +7660,7 @@ __size32 proc_0x0041d540(int param1, __size32 param2, unsigned short param3, __s
             eax = *(ebp - 12);
             *(__size32*)(esp + 8) = eax;
             *(int*)(esp + 4) = 0;
-            eax = proc_0x0041fa90(*(esp - 24), *(esp + 8), ax, dx_2, al, cl_1, ah_1, dh_1, esi, edi_1); /* Warning: also results in dx, cl, dl, ah, dh, ecx, edx, ebp, edi */
+            eax = proc_0x0041fa90(*(esp - 24), *(esp + 8), ax, dx_1, al, cl_1, ah_1, dh_2, esi, edi_1); /* Warning: also results in dx, cl, dl, ah, dh, ecx, edx, ebp, edi */
             local13 = dx;
             local14 = cl;
             local15 = dh;
@@ -8443,6 +8424,7 @@ __size32 proc_0x004169c0(HMODULE param1, int param2, int param3, int param4, int
             *(__size32*)(ebp - 4) = 1;
         }
         if (*(ebp + 8) > (unsigned int)-32) {
+bb0x416aef:
             edx = *(ebp + 8);
             *(int*)(esp_7 + 24) = edx;
             *(__size32*)(esp_7 + 20) = 0x426048;
@@ -8457,7 +8439,6 @@ __size32 proc_0x004169c0(HMODULE param1, int param2, int param3, int param4, int
             eax = 0;
         }
         else {
-bb0x416ae4:
             ecx = *(ebp + 8);
             if ((unsigned int)(ecx + 36) <= (unsigned int)-32) {
                 ecx = *(ebp + 12);
@@ -8575,7 +8556,7 @@ bb0x416ae4:
                 }
             }
             else {
-                goto bb0x416ae4;
+                goto bb0x416aef;
             }
         }
     }
@@ -8629,6 +8610,7 @@ __size32 proc_0x0041dce0(__size32 param1, __size32 param2)
     local5 = param2;
     local6 = ebp_1;
     if (global337_4298f8 == 0) {
+bb0x41dd00:
         param2 = local5;
         ebp = local6;
         eax = 0;
@@ -8639,12 +8621,11 @@ __size32 proc_0x0041dce0(__size32 param1, __size32 param2)
         local5 = ecx;
         local6 = ebp;
         local7 = ecx;
-bb0x41dcf9:
         if (eax != 0) {
             eax = 1;
         }
         else {
-            goto bb0x41dcf9;
+            goto bb0x41dd00;
         }
     }
     ecx = local7;
@@ -8692,6 +8673,7 @@ __size32 proc_0x00418270(__size32 param1, __size32 param2, __size32 param3, __si
 
     local1 = param4;
     if (param1 == 0) {
+bb0x4182ad:
         param4 = local1;
         local0 = 0;
         local2 = param4;
@@ -8699,12 +8681,12 @@ __size32 proc_0x00418270(__size32 param1, __size32 param2, __size32 param3, __si
     else {
         eax = IsBadReadPtr(); /* Warning: also results in edx */
         local1 = edx;
-bb0x418288:
         if (eax != 0) {
-            goto bb0x418288;
+            goto bb0x4182ad;
         }
         else {
             if (param3 == 0) {
+bb0x4182a4:
                 local0 = 1;
                 local2 = edx;
             }
@@ -8713,12 +8695,11 @@ bb0x418288:
                 *(__size32*)(esp + 4LL - 28) = param1;
                 eax = IsBadWritePtr(); /* Warning: also results in edx */
                 local1 = edx;
-bb0x4182a0:
                 if (eax != 0) {
-                    goto bb0x4182a0;
+                    goto bb0x4182ad;
                 }
                 else {
-                    goto bb0x4182a0;
+                    goto bb0x4182a4;
                 }
             }
         }
@@ -8740,12 +8721,11 @@ __size32 proc_0x0041a770(unsigned int param1)
         ecx = param1 - *(local0 + 12);
         if (ecx < 0x100000) {
             eax = local0;
-            goto bb0x41a7bf;
+            return eax; /* WARNING: Also returning: ecx := ecx, edx := local0 */
         }
         local0 += 20;
     }
     eax = 0;
-bb0x41a7bf:
     return eax; /* WARNING: Also returning: ecx := ecx, edx := local0 */
 }
 
@@ -8761,13 +8741,13 @@ __size32 proc_0x0041a7e0(__size32 param1, unsigned int param2)
     edx = ecx / 0x8000;
     eax = (unsigned int)0x80000000 >> ecx / 0x8000 & *(param1 + 8);
     if (eax != 0) {
+bb0x41a828:
         local0 = 0;
     }
     else {
-bb0x41a80d:
         edx = ecx & 0xf;
         if ((ecx & 0xf) != 0 || (ecx & 0xfff) == 0) {
-            goto bb0x41a80d;
+            goto bb0x41a828;
         }
         else {
             local0 = 1;
@@ -9176,13 +9156,12 @@ __size8 proc_0x00419c00(CPINFO param1, __size16 param2, __size16 param3, unsigne
                     local5 = 0;
                 }
                 else {
-bb0x419ecd:
                     ecx = *(unsigned char*)(*(esp_6 - 1304) + 0x42ad41);
                     *(__size8*)(*(esp_6 - 1304) + 0x42ad41) = (unsigned char) ecx | 32;
                     ecx = *(esp_6 - 1304);
                     cl = (unsigned char) *(esp_6 - 1304);
                     *(__size8*)(*(esp_6 - 1304) + 0x42ae60) = (unsigned char) *(esp_6 - 1304) - 32;
-                    goto bb0x419ecd;
+                    goto bb0x419f0d;
                 }
             }
             else {
@@ -9192,6 +9171,7 @@ bb0x419ecd:
                 cl = (unsigned char) *(esp_6 - 1304) + 32;
                 local4 = (unsigned char) *(esp_6 - 1304) + 32;
             }
+bb0x419f0d:
             dl = (unsigned char) *(esp_6 - 1304);
             local11 = dl;
             *(union { void *; unsigned long long; }*)(esp_6 - 1304)++;
@@ -9211,12 +9191,12 @@ bb0x419ecd:
         while (edx != 0) {
             ecx = *(unsigned char*)*(esp_6 - 1040);
             *(unsigned long long*)(esp_6 - 1304) = ecx;
+bb0x419cbb:
             ecx = *(unsigned char*)(*(esp_6 - 1040) + 1);
             if (*(esp_6 - 1304) <= ecx) {
                 *(int*)(esp_6 + *(esp_6 - 1304) - 1300) = 32;
-bb0x419cac:
                 *(int*)(esp_6 - 1304)++;
-                goto bb0x419cac;
+                goto bb0x419cbb;
             }
             *(__size32*)(esp_6 - 1040) += 2;
             edx = *(unsigned char*)*(esp_6 - 1040);
@@ -9272,7 +9252,6 @@ bb0x419cac:
                     *(int*)(edx + 0x42ae60) = 0;
                 }
                 else {
-bb0x419dfd:
                     edx = *(ebp - 1300);
                     eax = *(unsigned char*)(edx + 0x42ad41);
                     r[25] = *(ebp - 1300);
@@ -9282,7 +9261,7 @@ bb0x419dfd:
                     eax = *(ebp - 1300);
                     cl = *(ebp + eax - 1032);
                     *(unsigned int*)(edx + 0x42ae60) = cl;
-                    goto bb0x419dfd;
+                    goto bb0x419e41;
                 }
             }
             else {
@@ -9295,6 +9274,7 @@ bb0x419dfd:
                 dl = *(ebp + ecx - 776);
                 *(unsigned char*)(eax + 0x42ae60) = dl;
             }
+bb0x419e41:
             eax = *(ebp - 1300);
             *(int*)(ebp - 1300) = eax + 1;
             local13 = dl;
@@ -9321,28 +9301,23 @@ __size32 proc_0x00419ac0(unsigned int param1)
     if ((unsigned int)(param1 - 932) > (unsigned int)18) {
 bb0x419b09:
         eax = 0;
-        goto bb0x419b09;
+        return eax;
     }
-bb0x419adc:
     switch(eax) {
     case 0:
-bb0x419aed:
         eax = 1041;
-        goto bb0x419aed;
+        return eax;
     case 1:
-bb0x419af4:
         eax = 0x804;
-        goto bb0x419af4;
+        return eax;
     case 2:
-bb0x419afb:
         eax = 1042;
-        goto bb0x419afb;
+        return eax;
     case 3:
-bb0x419b02:
         eax = 1028;
-        goto bb0x419b02;
+        return eax;
     case 4:
-        goto bb0x419adc;
+        goto bb0x419b09;
     }
     return eax;
 }
@@ -9596,7 +9571,7 @@ void proc_0x00412930(int param1, union { unsigned char *; int; } param2, short p
     __size32 esi_1; 		// r30{0}
     __size32 esi_2; 		// r30{0}
     __size32 esi_3; 		// r30{0}
-    __size32 esi_4; 		// r30{0}
+    __size32 esi_6; 		// r30{0}
     __size32 esp_1; 		// r28{0}
     __size32 esp_2; 		// r28{0}
     __size32 esp_5; 		// r28{0}
@@ -9633,6 +9608,7 @@ void proc_0x00412930(int param1, union { unsigned char *; int; } param2, short p
         eax = eax_5 >> 8 & 0xffffff | 1;
         local18 = al;
         local20 = eax;
+bb0x4129b9:
         param3 = local17;
         al_3 = local18;
         param4 = local19;
@@ -9642,11 +9618,12 @@ void proc_0x00412930(int param1, union { unsigned char *; int; } param2, short p
         esi_3 = local23;
         edi_3 = local24;
         if (esi_3 == 0) {
+bb0x412a0f:
             DebugBreak();
         }
         else {
             if (al_3 != 0) {
-                proc_0x004130a0(pc, 0x1002, *(esp_7 - 32), edi, esi_4, ebx_6, eax_2, ebp, *(esp_7 + 4), param1, param2, param3, al_3, param4, eax_1, ecx, edx, ebx_5, esp_7 - 4, esi_3, edi_3, LOGICALFLAGS8(al_3), LOGICALFLAGS8(al_3), LOGICALFLAGS8(al_3));
+                proc_0x004130a0(pc, 0x1002, *(esp_7 - 32), edi, esi_6, ebx_6, eax_2, ebp, *(esp_7 + 4), param1, param2, param3, al_3, param4, eax_1, ecx, edx, ebx_5, esp_7 - 4, esi_3, edi_3, LOGICALFLAGS8(al_3), LOGICALFLAGS8(al_3), LOGICALFLAGS8(al_3));
             }
             proc_0x00414c20(r[24]);
             *(__size32*)(r[28] - 4) = r[24];
@@ -9663,9 +9640,8 @@ void proc_0x00412930(int param1, union { unsigned char *; int; } param2, short p
             *(__size32*)(r[28] - 4) = r[30];
             *(__size32*)(r[28] - 4) = r[26];
             (**(r[29] - 12))();
-bb0x412a07:
             if ( ~flags) {
-                goto bb0x412a07;
+                goto bb0x412a0f;
             }
         }
     }
@@ -9722,12 +9698,11 @@ bb0x412a07:
         esp_5 = esp_2;
         local22 = esp_5;
         if (eax_16 == 0) {
-bb0x4129b3:
             al_2 = 0;
             eax_19 = eax_16 >> 8 & 0xffffff | (0);
             local18 = al_2;
             local20 = eax_19;
-            goto bb0x4129b3;
+            goto bb0x4129b9;
         }
     }
     return;
@@ -9749,7 +9724,7 @@ __size16 proc_0x00418530(int param2, union { int; __size32 *; } param2, __size16
     int edx; 		// r26
     int esp; 		// r28
     union { void *; __size32; } esp_1; 		// r28{0}
-    __size32 esp_2; 		// r28{0}
+    __size32 esp_4; 		// r28{0}
     int local0; 		// m[esp - 4]
     int local1; 		// m[esp - 12]
     union { void *; __size32; } local11; 		// esp{0}
@@ -9777,7 +9752,7 @@ __size16 proc_0x00418530(int param2, union { int; __size32 *; } param2, __size16
     int local5; 		// m[esp - 28]
     int local9; 		// m[esp - 8]
 
-    ebp = esp_2 - 4;
+    ebp = esp_4 - 4;
     esp_1 = &param2;
     local11 = esp_1;
     local12 = param3;
@@ -9790,11 +9765,11 @@ __size16 proc_0x00418530(int param2, union { int; __size32 *; } param2, __size16
     if (param2 != 0) {
         edx = *(&global646_428d1c + 0xb34);
         *(__size32*)param2 = edx;
-        *(int*)(esp_2 - 8) = 0;
-        while (*(esp_2 - 8) < 5) {
-            *(__size32*)(param2 + *(esp_2 - 8) * 4 + 24) = 0;
-            *(__size32*)(param2 + (*(esp_2 - 8) + 1) * 4) = 0;
-            *(int*)(esp_2 - 8)++;
+        *(int*)(esp_4 - 8) = 0;
+        while (*(esp_4 - 8) < 5) {
+            *(__size32*)(param2 + *(esp_4 - 8) * 4 + 24) = 0;
+            *(__size32*)(param2 + (*(esp_4 - 8) + 1) * 4) = 0;
+            *(int*)(esp_4 - 8)++;
         }
         esp = local11;
         param3 = local12;
@@ -9819,6 +9794,7 @@ __size16 proc_0x00418530(int param2, union { int; __size32 *; } param2, __size16
             edx = *(ebp - 8);
             eax = *(edx + 20);
             if ((eax & 0xffff) < 0) {
+bb0x418632:
                 edx = *(ebp - 8);
                 local0 = edx;
                 local9 = 0x426628;
@@ -9840,11 +9816,10 @@ __size16 proc_0x00418530(int param2, union { int; __size32 *; } param2, __size16
                 }
             }
             else {
-bb0x4185cc:
                 ecx = *(ebp - 8);
                 edx = *(ecx + 20);
                 if ((edx & 0xffff) >= 5) {
-                    goto bb0x4185cc;
+                    goto bb0x418632;
                 }
                 else {
                     eax = *(ebp - 8);
@@ -9913,7 +9888,7 @@ bb0x4185cc:
         *(__size32*)(eax + 48) = ecx;
     }
     else {
-        eax = proc_0x00415390(*(esp_2 - 0x3040), 0, 0, 0, 0x426074, param4, param3, param7, param8, param11, esp_2 - 4, param12, param13); /* Warning: also results in dx, cl, dh, edx, ebp, edi */
+        eax = proc_0x00415390(*(esp_4 - 0x3040), 0, 0, 0, 0x426074, param4, param3, param7, param8, param11, esp_4 - 4, param12, param13); /* Warning: also results in dx, cl, dh, edx, ebp, edi */
         local26 = dx;
         local27 = cl;
         local28 = dh;
@@ -10103,8 +10078,8 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     __size32 esp_35; 		// r28{0}
     int esp_36; 		// r28{0}
     int esp_37; 		// r28{0}
-    int esp_38; 		// r28{0}
-    int esp_39; 		// r28{0}
+    __size32 esp_38; 		// r28{0}
+    __size32 esp_39; 		// r28{0}
     int esp_4; 		// r28{0}
     int esp_40; 		// r28{0}
     int esp_41; 		// r28{0}
@@ -10112,8 +10087,6 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     int esp_43; 		// r28{0}
     int esp_44; 		// r28{0}
     int esp_45; 		// r28{0}
-    __size32 esp_46; 		// r28{0}
-    __size32 esp_47; 		// r28{0}
     int esp_5; 		// r28{0}
     int esp_6; 		// r28{0}
     int esp_7; 		// r28{0}
@@ -10121,10 +10094,10 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     union { __size32; int *; } esp_9; 		// r28{0}
     int local0; 		// m[esp - 4]
     int local1; 		// m[esp - 12]
-    __size32 local10; 		// m[esp_46 - 4]{0}
+    __size32 local10; 		// m[esp_38 - 4]{0}
     __size8 local100; 		// cl_2{0}
     __size32 local101; 		// ebx_1{0}
-    int local102; 		// esp_38{0}
+    int local102; 		// esp_42{0}
     __size32 local103; 		// edi_2{0}
     __size32 local104; 		// local11{0}
     __size32 local105; 		// local21{0}
@@ -10132,18 +10105,18 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     __size32 local107; 		// local41{0}
     int local108; 		// local51{0}
     int local109; 		// local61{0}
-    __size32 local11; 		// m[esp_46 - 4]{0}
+    __size32 local11; 		// m[esp_38 - 4]{0}
     int local110; 		// local71{0}
     int local111; 		// local81{0}
     unsigned int local112; 		// local91{0}
     short local113; 		// dx_2{0}
     char local114; 		// dh_2{0}
-    int local115; 		// esp_41{0}
+    int local115; 		// esp_40{0}
     __size8 local116; 		// cl_10{0}
     __size32 local117; 		// ebx_9{0}
-    int local118; 		// esp_45{0}
+    int local118; 		// esp_43{0}
     __size32 local119; 		// edi_10{0}
-    int local12; 		// m[esp_46 - 4]{0}
+    int local12; 		// m[esp_38 - 4]{0}
     __size32 local120; 		// local15{0}
     __size32 local121; 		// local25{0}
     __size32 local122; 		// local35{0}
@@ -10154,117 +10127,117 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     int local127; 		// local85{0}
     unsigned int local128; 		// local95{0}
     short local129; 		// dx_10{0}
-    int local13; 		// m[esp_46 - 4]{0}
+    int local13; 		// m[esp_38 - 4]{0}
     char local130; 		// dh_10{0}
     __size8 local131; 		// cl_3{0}
     __size32 local132; 		// ebx_2{0}
-    int local133; 		// esp_44{0}
+    int local133; 		// esp{0}
     __size32 local134; 		// edi_3{0}
     __size32 local135; 		// local14{0}
     __size32 local136; 		// local24{0}
     __size32 local137; 		// local34{0}
     __size32 local138; 		// local44{0}
     int local139; 		// local54{0}
-    __size32 local14; 		// m[esp_46 - 4]{0}
+    __size32 local14; 		// m[esp_38 - 4]{0}
     int local140; 		// local64{0}
     int local141; 		// local74{0}
     int local142; 		// local84{0}
     unsigned int local143; 		// local94{0}
     short local144; 		// dx_3{0}
     char local145; 		// dh_3{0}
-    __size32 local15; 		// m[esp_46 - 4]{0}
-    __size32 local16; 		// m[esp_46 - 4]{0}
-    __size32 local17; 		// m[esp_46 - 4]{0}
-    __size32 local18; 		// m[esp_46 - 4]{0}
-    __size32 local19; 		// m[esp_46 - 4]{0}
+    __size32 local15; 		// m[esp_38 - 4]{0}
+    __size32 local16; 		// m[esp_38 - 4]{0}
+    __size32 local17; 		// m[esp_38 - 4]{0}
+    __size32 local18; 		// m[esp_38 - 4]{0}
+    __size32 local19; 		// m[esp_38 - 4]{0}
     int local2; 		// m[esp - 16]
-    __size32 local20; 		// m[esp_46 - 12]{0}
-    __size32 local21; 		// m[esp_46 - 12]{0}
-    int local22; 		// m[esp_46 - 12]{0}
-    int local23; 		// m[esp_46 - 12]{0}
-    __size32 local24; 		// m[esp_46 - 12]{0}
-    __size32 local25; 		// m[esp_46 - 12]{0}
-    __size32 local26; 		// m[esp_46 - 12]{0}
-    __size32 local27; 		// m[esp_46 - 12]{0}
-    __size32 local28; 		// m[esp_46 - 12]{0}
-    __size32 local29; 		// m[esp_46 - 12]{0}
+    __size32 local20; 		// m[esp_38 - 12]{0}
+    __size32 local21; 		// m[esp_38 - 12]{0}
+    int local22; 		// m[esp_38 - 12]{0}
+    int local23; 		// m[esp_38 - 12]{0}
+    __size32 local24; 		// m[esp_38 - 12]{0}
+    __size32 local25; 		// m[esp_38 - 12]{0}
+    __size32 local26; 		// m[esp_38 - 12]{0}
+    __size32 local27; 		// m[esp_38 - 12]{0}
+    __size32 local28; 		// m[esp_38 - 12]{0}
+    __size32 local29; 		// m[esp_38 - 12]{0}
     int local3; 		// m[esp - 20]
-    __size32 local30; 		// m[esp_46 - 16]{0}
-    __size32 local31; 		// m[esp_46 - 16]{0}
-    int local32; 		// m[esp_46 - 16]{0}
-    int local33; 		// m[esp_46 - 16]{0}
-    __size32 local34; 		// m[esp_46 - 16]{0}
-    __size32 local35; 		// m[esp_46 - 16]{0}
-    __size32 local36; 		// m[esp_46 - 16]{0}
-    __size32 local37; 		// m[esp_46 - 16]{0}
-    __size32 local38; 		// m[esp_46 - 16]{0}
-    __size32 local39; 		// m[esp_46 - 16]{0}
+    __size32 local30; 		// m[esp_38 - 16]{0}
+    __size32 local31; 		// m[esp_38 - 16]{0}
+    int local32; 		// m[esp_38 - 16]{0}
+    int local33; 		// m[esp_38 - 16]{0}
+    __size32 local34; 		// m[esp_38 - 16]{0}
+    __size32 local35; 		// m[esp_38 - 16]{0}
+    __size32 local36; 		// m[esp_38 - 16]{0}
+    __size32 local37; 		// m[esp_38 - 16]{0}
+    __size32 local38; 		// m[esp_38 - 16]{0}
+    __size32 local39; 		// m[esp_38 - 16]{0}
     int local4; 		// m[esp - 24]
-    __size32 local40; 		// m[esp_46 - 20]{0}
-    __size32 local41; 		// m[esp_46 - 20]{0}
-    int local42; 		// m[esp_46 - 20]{0}
-    int local43; 		// m[esp_46 - 20]{0}
-    __size32 local44; 		// m[esp_46 - 20]{0}
-    __size32 local45; 		// m[esp_46 - 20]{0}
-    __size32 local46; 		// m[esp_46 - 20]{0}
-    __size32 local47; 		// m[esp_46 - 20]{0}
-    __size32 local48; 		// m[esp_46 - 20]{0}
-    __size32 local49; 		// m[esp_46 - 20]{0}
+    __size32 local40; 		// m[esp_38 - 20]{0}
+    __size32 local41; 		// m[esp_38 - 20]{0}
+    int local42; 		// m[esp_38 - 20]{0}
+    int local43; 		// m[esp_38 - 20]{0}
+    __size32 local44; 		// m[esp_38 - 20]{0}
+    __size32 local45; 		// m[esp_38 - 20]{0}
+    __size32 local46; 		// m[esp_38 - 20]{0}
+    __size32 local47; 		// m[esp_38 - 20]{0}
+    __size32 local48; 		// m[esp_38 - 20]{0}
+    __size32 local49; 		// m[esp_38 - 20]{0}
     int local5; 		// m[esp - 28]
-    int local50; 		// m[esp_46 - 24]{0}
-    int local51; 		// m[esp_46 - 24]{0}
-    int local52; 		// m[esp_46 - 24]{0}
-    int local53; 		// m[esp_46 - 24]{0}
-    int local54; 		// m[esp_46 - 24]{0}
-    int local55; 		// m[esp_46 - 24]{0}
-    int local56; 		// m[esp_46 - 24]{0}
-    int local57; 		// m[esp_46 - 24]{0}
-    int local58; 		// m[esp_46 - 24]{0}
-    int local59; 		// m[esp_46 - 24]{0}
+    int local50; 		// m[esp_38 - 24]{0}
+    int local51; 		// m[esp_38 - 24]{0}
+    int local52; 		// m[esp_38 - 24]{0}
+    int local53; 		// m[esp_38 - 24]{0}
+    int local54; 		// m[esp_38 - 24]{0}
+    int local55; 		// m[esp_38 - 24]{0}
+    int local56; 		// m[esp_38 - 24]{0}
+    int local57; 		// m[esp_38 - 24]{0}
+    int local58; 		// m[esp_38 - 24]{0}
+    int local59; 		// m[esp_38 - 24]{0}
     int local6; 		// m[esp - 32]
-    int local60; 		// m[esp_46 - 28]{0}
-    int local61; 		// m[esp_46 - 28]{0}
-    int local62; 		// m[esp_46 - 28]{0}
-    int local63; 		// m[esp_46 - 28]{0}
-    int local64; 		// m[esp_46 - 28]{0}
-    int local65; 		// m[esp_46 - 28]{0}
-    int local66; 		// m[esp_46 - 28]{0}
-    int local67; 		// m[esp_46 - 28]{0}
-    int local68; 		// m[esp_46 - 28]{0}
-    int local69; 		// m[esp_46 - 28]{0}
+    int local60; 		// m[esp_38 - 28]{0}
+    int local61; 		// m[esp_38 - 28]{0}
+    int local62; 		// m[esp_38 - 28]{0}
+    int local63; 		// m[esp_38 - 28]{0}
+    int local64; 		// m[esp_38 - 28]{0}
+    int local65; 		// m[esp_38 - 28]{0}
+    int local66; 		// m[esp_38 - 28]{0}
+    int local67; 		// m[esp_38 - 28]{0}
+    int local68; 		// m[esp_38 - 28]{0}
+    int local69; 		// m[esp_38 - 28]{0}
     int local7; 		// m[esp - 36]
-    int local70; 		// m[esp_46 - 32]{0}
-    int local71; 		// m[esp_46 - 32]{0}
-    int local72; 		// m[esp_46 - 32]{0}
-    int local73; 		// m[esp_46 - 32]{0}
-    int local74; 		// m[esp_46 - 32]{0}
-    int local75; 		// m[esp_46 - 32]{0}
-    int local76; 		// m[esp_46 - 32]{0}
-    int local77; 		// m[esp_46 - 32]{0}
-    int local78; 		// m[esp_46 - 32]{0}
-    int local79; 		// m[esp_46 - 32]{0}
+    int local70; 		// m[esp_38 - 32]{0}
+    int local71; 		// m[esp_38 - 32]{0}
+    int local72; 		// m[esp_38 - 32]{0}
+    int local73; 		// m[esp_38 - 32]{0}
+    int local74; 		// m[esp_38 - 32]{0}
+    int local75; 		// m[esp_38 - 32]{0}
+    int local76; 		// m[esp_38 - 32]{0}
+    int local77; 		// m[esp_38 - 32]{0}
+    int local78; 		// m[esp_38 - 32]{0}
+    int local79; 		// m[esp_38 - 32]{0}
     int local8; 		// m[esp - 40]
-    int local80; 		// m[esp_46 - 36]{0}
-    int local81; 		// m[esp_46 - 36]{0}
-    int local82; 		// m[esp_46 - 36]{0}
-    int local83; 		// m[esp_46 - 36]{0}
-    int local84; 		// m[esp_46 - 36]{0}
-    int local85; 		// m[esp_46 - 36]{0}
-    int local86; 		// m[esp_46 - 36]{0}
-    int local87; 		// m[esp_46 - 36]{0}
-    int local88; 		// m[esp_46 - 36]{0}
-    int local89; 		// m[esp_46 - 36]{0}
+    int local80; 		// m[esp_38 - 36]{0}
+    int local81; 		// m[esp_38 - 36]{0}
+    int local82; 		// m[esp_38 - 36]{0}
+    int local83; 		// m[esp_38 - 36]{0}
+    int local84; 		// m[esp_38 - 36]{0}
+    int local85; 		// m[esp_38 - 36]{0}
+    int local86; 		// m[esp_38 - 36]{0}
+    int local87; 		// m[esp_38 - 36]{0}
+    int local88; 		// m[esp_38 - 36]{0}
+    int local89; 		// m[esp_38 - 36]{0}
     HMODULE local9; 		// m[esp - 0x3040]
-    unsigned int local90; 		// m[esp_46 - 40]{0}
-    unsigned int local91; 		// m[esp_46 - 40]{0}
-    int local92; 		// m[esp_46 - 40]{0}
-    int local93; 		// m[esp_46 - 40]{0}
-    unsigned int local94; 		// m[esp_46 - 40]{0}
-    unsigned int local95; 		// m[esp_46 - 40]{0}
-    unsigned int local96; 		// m[esp_46 - 40]{0}
-    unsigned int local97; 		// m[esp_46 - 40]{0}
-    unsigned int local98; 		// m[esp_46 - 40]{0}
-    unsigned int local99; 		// m[esp_46 - 40]{0}
+    unsigned int local90; 		// m[esp_38 - 40]{0}
+    unsigned int local91; 		// m[esp_38 - 40]{0}
+    int local92; 		// m[esp_38 - 40]{0}
+    int local93; 		// m[esp_38 - 40]{0}
+    unsigned int local94; 		// m[esp_38 - 40]{0}
+    unsigned int local95; 		// m[esp_38 - 40]{0}
+    unsigned int local96; 		// m[esp_38 - 40]{0}
+    unsigned int local97; 		// m[esp_38 - 40]{0}
+    unsigned int local98; 		// m[esp_38 - 40]{0}
+    unsigned int local99; 		// m[esp_38 - 40]{0}
 
     local10 = param8;
     local20 = 0;
@@ -10274,7 +10247,7 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     local60 = 0;
     local70 = 0;
     local80 = 0;
-    eax = proc_0x00415390(param1, 0, 0, 0, 0x426074, param2, param3, param4, param5, param6, esp_46 - 4, param9, param10); /* Warning: also results in ax, dx_4, al, cl_4, dl, ah, dh_4, esp_1, ebp, esi, edi_4 */
+    eax = proc_0x00415390(param1, 0, 0, 0, 0x426074, param2, param3, param4, param5, param6, esp_38 - 4, param9, param10); /* Warning: also results in ax, dx_4, al, cl_4, dl, ah, dh_4, esp_1, ebp, esi, edi_4 */
     local100 = cl_4;
     local101 = param7;
     local103 = edi_4;
@@ -10303,7 +10276,7 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     *(int*)(ebp - 4) = eax;
     cl_2 = local100;
     ebx_1 = local101;
-    esp_38 = local102;
+    esp_42 = local102;
     edi_2 = local103;
     local11 = local104;
     local21 = local105;
@@ -10316,10 +10289,10 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
     local91 = local112;
     dx_2 = local113;
     dh_2 = local114;
-    local115 = esp_38;
+    local115 = esp_42;
     local131 = cl_2;
     local132 = ebx_1;
-    local133 = esp_38;
+    local133 = esp_42;
     local134 = edi_2;
     local135 = local11;
     local136 = local21;
@@ -10338,40 +10311,39 @@ __size32 proc_0x00418830(HMODULE param1, __size16 param2, short param3, __size8 
             ecx = *(ebp - 4);
             edx_3 = *(ecx + 20);
             if ((edx_3 & 0xffff) == 3) {
+bb0x4188cd:
             }
             else {
-bb0x4188a4:
                 eax = *(ebp - 4);
                 ecx = *(eax + 20);
                 if ((ecx & 0xffff) == 0) {
-                    goto bb0x4188a4;
+                    goto bb0x4188cd;
                 }
                 else {
-bb0x4188b2:
                     edx_6 = *(ebp - 4);
                     eax = *(edx_6 + 20);
                     if ((eax & 0xffff) != 2 || (global155_428d4c & 0x10) != 0) {
                         edx_9 = *(ebp - 4);
                         if (*(edx_9 + 8) != 0) {
-                            *(int*)(esp_38 - 4) = 0;
-                            *(int*)(esp_38 - 8) = 1;
+                            *(int*)(esp_42 - 4) = 0;
+                            *(int*)(esp_42 - 8) = 1;
                             eax = *(ebp - 4);
                             ecx = *(eax + 8);
-                            *(__size32*)(esp_38 - 12) = ecx;
-                            eax = proc_0x00418270(*(esp_38 - 12), *(esp_38 - 8), *(esp_38 - 4), edx_9);
+                            *(__size32*)(esp_42 - 12) = ecx;
+                            eax = proc_0x00418270(*(esp_42 - 12), *(esp_42 - 8), *(esp_42 - 4), edx_9);
                             if (eax != 0) {
                                 edx_27 = *(ebp - 4);
                                 eax = *(edx_27 + 12);
-                                *(__size32*)(esp_38 - 4) = eax;
+                                *(__size32*)(esp_42 - 4) = eax;
                                 ecx = *(ebp - 4);
                                 edx_28 = *(ecx + 8);
-                                *(int*)(esp_38 - 8) = edx_28;
-                                *(__size32*)(esp_38 - 12) = 0x426780;
-                                *(int*)(esp_38 - 16) = 0;
-                                *(int*)(esp_38 - 20) = 0;
-                                *(int*)(esp_38 - 24) = 0;
-                                *(int*)(esp_38 - 28) = 0;
-                                eax = proc_0x00415390(*(esp_38 - 0x3038), *(esp_38 - 28), *(esp_38 - 24), *(esp_38 - 20), *(esp_38 - 12), ax, dx_2, cl_2, dh_2, edx_28, ebp, esi, edi_2); /* Warning: also results in esp_20, ebp */
+                                *(int*)(esp_42 - 8) = edx_28;
+                                *(__size32*)(esp_42 - 12) = 0x426780;
+                                *(int*)(esp_42 - 16) = 0;
+                                *(int*)(esp_42 - 20) = 0;
+                                *(int*)(esp_42 - 24) = 0;
+                                *(int*)(esp_42 - 28) = 0;
+                                eax = proc_0x00415390(*(esp_42 - 0x3038), *(esp_42 - 28), *(esp_42 - 24), *(esp_42 - 20), *(esp_42 - 12), ax, dx_2, cl_2, dh_2, edx_28, ebp, esi, edi_2); /* Warning: also results in esp_20, ebp */
                                 esp_23 = esp_20 + 28;
                                 local115 = esp_23;
                                 if (eax == 1) {
@@ -10381,13 +10353,13 @@ bb0x4188b2:
                             else {
                                 edx_12 = *(ebp - 4);
                                 eax = *(edx_12 + 12);
-                                *(__size32*)(esp_38 - 4) = eax;
-                                *(__size32*)(esp_38 - 8) = 0x426790;
-                                *(int*)(esp_38 - 12) = 0;
-                                *(int*)(esp_38 - 16) = 0;
-                                *(int*)(esp_38 - 20) = 0;
-                                *(int*)(esp_38 - 24) = 0;
-                                eax = proc_0x00415390(*(esp_38 - 0x3034), *(esp_38 - 24), *(esp_38 - 20), *(esp_38 - 16), *(esp_38 - 8), ax, dx_2, cl_2, dh_2, edx_12, ebp, esi, edi_2); /* Warning: also results in esp_3, ebp */
+                                *(__size32*)(esp_42 - 4) = eax;
+                                *(__size32*)(esp_42 - 8) = 0x426790;
+                                *(int*)(esp_42 - 12) = 0;
+                                *(int*)(esp_42 - 16) = 0;
+                                *(int*)(esp_42 - 20) = 0;
+                                *(int*)(esp_42 - 24) = 0;
+                                eax = proc_0x00415390(*(esp_42 - 0x3034), *(esp_42 - 24), *(esp_42 - 20), *(esp_42 - 16), *(esp_42 - 8), ax, dx_2, cl_2, dh_2, edx_12, ebp, esi, edi_2); /* Warning: also results in esp_3, ebp */
                                 esp_6 = esp_3 + 24;
                                 local115 = esp_6;
                                 if (eax == 1) {
@@ -10396,7 +10368,7 @@ bb0x4188b2:
                             }
                         }
                         ebx_16 = ebx_1;
-                        esp_41 = local115;
+                        esp_40 = local115;
                         local16 = local11;
                         local26 = local21;
                         local36 = local31;
@@ -10408,13 +10380,13 @@ bb0x4188b2:
                         local96 = local91;
                         ecx = *(ebp - 4);
                         edx_15 = *(ecx + 24);
-                        *(int*)(esp_41 - 4) = edx_15;
-                        *(__size32*)(esp_41 - 8) = 0x426778;
-                        *(int*)(esp_41 - 12) = 0;
-                        *(int*)(esp_41 - 16) = 0;
-                        *(int*)(esp_41 - 20) = 0;
-                        *(int*)(esp_41 - 24) = 0;
-                        eax = proc_0x00415390(*(esp_41 - 0x3034), *(esp_41 - 24), *(esp_41 - 20), *(esp_41 - 16), *(esp_41 - 8), ax, dx_1, cl_1, dh_1, edx_15, ebp, esi, edi_1); /* Warning: also results in ax, dx_5, al, cl_5, dl, ah, dh_5, esp_9, ebp, esi, edi_5 */
+                        *(int*)(esp_40 - 4) = edx_15;
+                        *(__size32*)(esp_40 - 8) = 0x426778;
+                        *(int*)(esp_40 - 12) = 0;
+                        *(int*)(esp_40 - 16) = 0;
+                        *(int*)(esp_40 - 20) = 0;
+                        *(int*)(esp_40 - 24) = 0;
+                        eax = proc_0x00415390(*(esp_40 - 0x3034), *(esp_40 - 24), *(esp_40 - 20), *(esp_40 - 16), *(esp_40 - 8), ax, dx_1, cl_1, dh_1, edx_15, ebp, esi, edi_1); /* Warning: also results in ax, dx_5, al, cl_5, dl, ah, dh_5, esp_9, ebp, esi, edi_5 */
                         local120 = local16;
                         local121 = local26;
                         local122 = local36;
@@ -10517,10 +10489,9 @@ bb0x4188b2:
                                 esp_19 = esp_18 + 8;
                                 local118 = esp_19;
                             }
-bb0x4189d8:
                             cl_10 = local116;
                             ebx_9 = local117;
-                            esp_45 = local118;
+                            esp_43 = local118;
                             edi_10 = local119;
                             local15 = local120;
                             local25 = local121;
@@ -10535,7 +10506,7 @@ bb0x4189d8:
                             dh_10 = local130;
                             local131 = cl_10;
                             local132 = ebx_9;
-                            local133 = esp_45;
+                            local133 = esp_43;
                             local134 = edi_10;
                             local135 = local15;
                             local136 = local25;
@@ -10548,7 +10519,7 @@ bb0x4189d8:
                             local143 = local95;
                             local144 = dx_10;
                             local145 = dh_10;
-                            goto bb0x4189d8;
+                            goto bb0x418a72;
                         }
                         ecx = *(ebp - 4);
                         if (*(ecx + 20) == 1) {
@@ -10574,10 +10545,9 @@ bb0x4189d8:
                             local134 = edi_11;
                             local144 = dx_11;
                             local145 = dh_11;
-bb0x418a18:
                             esp_30 = esp_29 + 4;
                             local133 = esp_30;
-                            goto bb0x418a18;
+                            goto bb0x418a72;
                         }
                         ecx = *(ebp - 4);
                         edx_35 = *(ecx + 20);
@@ -10607,20 +10577,20 @@ bb0x418a18:
                             local134 = edi;
                             local144 = dx;
                             local145 = dh;
-bb0x418a6f:
                             esp_37 = esp_36 + 4;
                             local133 = esp_37;
-                            goto bb0x418a6f;
+                            goto bb0x418a72;
                         }
                     }
                     else {
-                        goto bb0x4188b2;
+                        goto bb0x4188cd;
                     }
                 }
             }
+bb0x418a72:
             cl_3 = local131;
             ebx_2 = local132;
-            esp_44 = local133;
+            esp = local133;
             edi_3 = local134;
             local14 = local135;
             local24 = local136;
@@ -10635,7 +10605,7 @@ bb0x418a6f:
             dh_3 = local145;
             local100 = cl_3;
             local101 = ebx_2;
-            local102 = esp_44;
+            local102 = esp;
             local103 = edi_3;
             local104 = local14;
             local105 = local24;
@@ -10654,7 +10624,7 @@ bb0x418a6f:
         }
         cl_2 = local100;
         ebx_1 = local101;
-        esp_38 = local102;
+        esp_42 = local102;
         edi_2 = local103;
         local11 = local104;
         local21 = local105;
@@ -10667,10 +10637,10 @@ bb0x418a6f:
         local91 = local112;
         dx_2 = local113;
         dh_2 = local114;
-        local115 = esp_38;
+        local115 = esp_42;
         local131 = cl_2;
         local132 = ebx_1;
-        local133 = esp_38;
+        local133 = esp_42;
         local134 = edi_2;
         local135 = local11;
         local136 = local21;
@@ -10684,13 +10654,13 @@ bb0x418a6f:
         local144 = dx_2;
         local145 = dh_2;
     }
-    *(__size32*)(esp_38 - 4) = 0x4266b0;
-    *(__size32*)(esp_38 - 8) = 0x426074;
-    *(int*)(esp_38 - 12) = 0;
-    *(int*)(esp_38 - 16) = 0;
-    *(int*)(esp_38 - 20) = 0;
-    *(int*)(esp_38 - 24) = 0;
-    eax = proc_0x00415390(*(esp_38 - 0x3034), *(esp_38 - 24), *(esp_38 - 20), *(esp_38 - 16), *(esp_38 - 8), ax, dx_2, cl_2, dh_2, edx_1, ebp, esi, edi_2); /* Warning: also results in ebp */
+    *(__size32*)(esp_42 - 4) = 0x4266b0;
+    *(__size32*)(esp_42 - 8) = 0x426074;
+    *(int*)(esp_42 - 12) = 0;
+    *(int*)(esp_42 - 16) = 0;
+    *(int*)(esp_42 - 20) = 0;
+    *(int*)(esp_42 - 24) = 0;
+    eax = proc_0x00415390(*(esp_42 - 0x3034), *(esp_42 - 24), *(esp_42 - 20), *(esp_42 - 16), *(esp_42 - 8), ax, dx_2, cl_2, dh_2, edx_1, ebp, esi, edi_2); /* Warning: also results in ebp */
     if (eax == 1) {
         __debugbreak();
     }
@@ -10785,18 +10755,18 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size8 dh_17; 		// r14{0}
     __size8 dh_18; 		// r14{0}
     __size8 dh_19; 		// r14{0}
-    char dh_2; 		// r14{0}
+    __size8 dh_2; 		// r14{0}
     __size8 dh_20; 		// r14{0}
     __size8 dh_21; 		// r14{0}
     __size8 dh_22; 		// r14{0}
     __size8 dh_23; 		// r14{0}
     __size8 dh_24; 		// r14{0}
-    char dh_25; 		// r14{0}
-    char dh_26; 		// r14{0}
+    __size8 dh_25; 		// r14{0}
+    __size8 dh_26; 		// r14{0}
     __size8 dh_27; 		// r14{0}
     __size8 dh_28; 		// r14{0}
     __size8 dh_29; 		// r14{0}
-    __size8 dh_3; 		// r14{0}
+    char dh_3; 		// r14{0}
     __size8 dh_30; 		// r14{0}
     __size8 dh_31; 		// r14{0}
     __size8 dh_32; 		// r14{0}
@@ -10807,7 +10777,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size8 dh_37; 		// r14{0}
     __size8 dh_38; 		// r14{0}
     __size8 dh_39; 		// r14{0}
-    __size8 dh_4; 		// r14{0}
+    char dh_4; 		// r14{0}
     __size8 dh_40; 		// r14{0}
     __size8 dh_41; 		// r14{0}
     __size8 dh_42; 		// r14{0}
@@ -10818,7 +10788,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size8 dh_47; 		// r14{0}
     __size8 dh_48; 		// r14{0}
     __size8 dh_49; 		// r14{0}
-    __size8 dh_5; 		// r14{0}
+    char dh_5; 		// r14{0}
     __size8 dh_50; 		// r14{0}
     __size8 dh_51; 		// r14{0}
     __size8 dh_52; 		// r14{0}
@@ -11455,7 +11425,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int edx_77; 		// r26{0}
     __size32 edx_78; 		// r26{0}
     __size32 edx_79; 		// r26{0}
-    int edx_8; 		// r26{0}
+    __size32 edx_8; 		// r26{0}
     __size32 edx_80; 		// r26{0}
     __size32 edx_81; 		// r26{0}
     __size32 edx_82; 		// r26{0}
@@ -11466,7 +11436,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int edx_87; 		// r26{0}
     int edx_88; 		// r26{0}
     int edx_89; 		// r26{0}
-    __size32 edx_9; 		// r26{0}
+    int edx_9; 		// r26{0}
     __size32 edx_90; 		// r26{0}
     __size32 edx_91; 		// r26{0}
     __size32 edx_92; 		// r26{0}
@@ -11480,9 +11450,9 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     unsigned int esi; 		// r30
     int esp; 		// r28
     int esp_1; 		// r28{0}
-    union { __size32; __size32 *; } esp_10; 		// r28{0}
-    union { __size32; __size32 *; } esp_11; 		// r28{0}
-    __size32 esp_12; 		// r28{0}
+    union { int; void *; } esp_10; 		// r28{0}
+    __size32 esp_11; 		// r28{0}
+    int esp_12; 		// r28{0}
     __size32 esp_13; 		// r28{0}
     __size32 esp_14; 		// r28{0}
     __size32 esp_15; 		// r28{0}
@@ -11512,7 +11482,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size32 esp_37; 		// r28{0}
     __size32 esp_38; 		// r28{0}
     __size32 esp_39; 		// r28{0}
-    union { void *; __size32; } esp_4; 		// r28{0}
+    union { __size32; __size32 *; } esp_4; 		// r28{0}
     __size32 esp_40; 		// r28{0}
     int esp_41; 		// r28{0}
     int esp_42; 		// r28{0}
@@ -11523,7 +11493,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int esp_47; 		// r28{0}
     int esp_48; 		// r28{0}
     int esp_49; 		// r28{0}
-    union { void *; __size32; } esp_5; 		// r28{0}
+    union { __size32; __size32 *; } esp_5; 		// r28{0}
     union { void *; __size32; } esp_50; 		// r28{0}
     union { __size32; void *; } esp_51; 		// r28{0}
     union { __size32; void *; } esp_52; 		// r28{0}
@@ -11534,7 +11504,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int esp_57; 		// r28{0}
     __size32 esp_58; 		// r28{0}
     __size32 esp_59; 		// r28{0}
-    union { void *; __size32; } esp_6; 		// r28{0}
+    union { __size32; __size32 *; } esp_6; 		// r28{0}
     union { void *; __size32; } esp_60; 		// r28{0}
     union { void *; __size32; } esp_61; 		// r28{0}
     union { void *; __size32; } esp_62; 		// r28{0}
@@ -11545,7 +11515,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     union { void *; __size32; } esp_67; 		// r28{0}
     int esp_68; 		// r28{0}
     union { void *; __size32; } esp_69; 		// r28{0}
-    union { int; void *; } esp_7; 		// r28{0}
+    union { void *; __size32; } esp_7; 		// r28{0}
     union { void *; __size32; } esp_70; 		// r28{0}
     union { void *; __size32; } esp_71; 		// r28{0}
     union { void *; __size32; } esp_72; 		// r28{0}
@@ -11556,7 +11526,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int esp_77; 		// r28{0}
     int esp_78; 		// r28{0}
     union { void *; __size32; } esp_79; 		// r28{0}
-    int esp_8; 		// r28{0}
+    union { void *; __size32; } esp_8; 		// r28{0}
     union { void *; __size32; } esp_80; 		// r28{0}
     union { __size32; void *; } esp_81; 		// r28{0}
     union { __size32; void *; } esp_82; 		// r28{0}
@@ -11567,7 +11537,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size32 esp_87; 		// r28{0}
     __size32 esp_88; 		// r28{0}
     __size32 esp_89; 		// r28{0}
-    union { __size32; __size32 *; } esp_9; 		// r28{0}
+    union { void *; __size32; } esp_9; 		// r28{0}
     __size32 esp_90; 		// r28{0}
     __size32 esp_91; 		// r28{0}
     __size32 esp_92; 		// r28{0}
@@ -11581,10 +11551,10 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int local101; 		// m[esp_2 - 592]{0}
     int local102; 		// m[esp_2 - 592]{0}
     int local103; 		// m[esp_2 - 592]{0}
-    int local104; 		// m[esp_2 - 592]{0}
-    __size32 local105; 		// m[esp_2 - 592]{0}
+    __size32 local104; 		// m[esp_2 - 592]{0}
+    int local105; 		// m[esp_2 - 592]{0}
     int local106; 		// m[esp_2 - 592]{0}
-    int local107; 		// m[esp_2 - 592]{0}
+    __size32 local107; 		// m[esp_2 - 592]{0}
     __size32 local108; 		// m[esp_2 - 592]{0}
     __size32 local109; 		// m[esp_2 - 592]{0}
     int local11; 		// m[esp_2 - 4]{0}
@@ -11593,7 +11563,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size32 local112; 		// m[esp_2 - 592]{0}
     __size32 local113; 		// m[esp_2 - 592]{0}
     __size32 local114; 		// m[esp_2 - 592]{0}
-    __size32 local115; 		// m[esp_2 - 592]{0}
+    int local115; 		// m[esp_2 - 704]{0}
     int local116; 		// m[esp_2 - 704]{0}
     int local117; 		// m[esp_2 - 704]{0}
     int local118; 		// m[esp_2 - 704]{0}
@@ -11614,131 +11584,129 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int local131; 		// m[esp_2 - 704]{0}
     int local132; 		// m[esp_2 - 704]{0}
     int local133; 		// m[esp_2 - 704]{0}
-    int local134; 		// m[esp_2 - 704]{0}
-    int local135; 		// m[esp_2 - 704]{0}
-    unsigned short local136; 		// param2{0}
-    short local137; 		// dx_3{0}
-    unsigned short local138; 		// dl_3{0}
-    __size8 local139; 		// ah_2{0}
+    unsigned short local134; 		// param2{0}
+    short local135; 		// dx_3{0}
+    unsigned short local136; 		// dl_3{0}
+    __size8 local137; 		// ah_2{0}
+    __size8 local138; 		// dh_2{0}
+    union { void *; __size32; } local139; 		// esp_51{0}
     __size32 local14; 		// m[esp_2 - 4]{0}
-    __size8 local140; 		// dh_3{0}
-    union { void *; __size32; } local141; 		// esp_51{0}
-    __size32 local142; 		// edi_3{0}
-    __size32 local143; 		// local19{0}
-    __size32 local144; 		// local35{0}
-    __size32 local145; 		// local53{0}
-    int local146; 		// local72{0}
-    __size32 local147; 		// local90{0}
-    __size32 local148; 		// local108{0}
-    int local149; 		// local116{0}
+    __size32 local140; 		// edi_2{0}
+    __size32 local141; 		// local17{0}
+    __size32 local142; 		// local35{0}
+    __size32 local143; 		// local53{0}
+    int local144; 		// local71{0}
+    __size32 local145; 		// local89{0}
+    __size32 local146; 		// local107{0}
+    int local147; 		// local132{0}
+    union { __size32; void *; } local148; 		// esp_60{0}
+    unsigned short local149; 		// cx{0}
     int local15; 		// m[esp_2 - 4]{0}
-    union { __size32; void *; } local150; 		// esp_60{0}
+    unsigned short local150; 		// dl_59{0}
     unsigned short local151; 		// cx{0}
-    unsigned short local152; 		// dl_59{0}
-    unsigned short local153; 		// cx{0}
-    short local154; 		// dx_18{0}
-    unsigned short local155; 		// dl_58{0}
-    __size8 local156; 		// ah_25{0}
-    short local157; 		// dx_20{0}
-    short local158; 		// dx_15{0}
-    short local159; 		// dx_19{0}
+    short local152; 		// dx_18{0}
+    unsigned short local153; 		// dl_58{0}
+    __size8 local154; 		// ah_25{0}
+    short local155; 		// dx_20{0}
+    short local156; 		// dx_15{0}
+    short local157; 		// dx_19{0}
+    unsigned short local158; 		// dl_42{0}
+    unsigned short local159; 		// dl_41{0}
     int local16; 		// m[esp_2 - 4]{0}
-    unsigned short local160; 		// dl_42{0}
-    unsigned short local161; 		// dl_41{0}
-    __size8 local162; 		// ah_24{0}
-    __size8 local163; 		// dh_11{0}
-    union { __size32; void *; } local164; 		// esp_50{0}
-    __size32 local165; 		// edi_28{0}
-    short local166; 		// dx_31{0}
-    unsigned short local167; 		// dl_40{0}
-    __size8 local168; 		// ah_14{0}
-    __size8 local169; 		// dh_8{0}
+    __size8 local160; 		// ah_24{0}
+    __size8 local161; 		// dh_28{0}
+    union { __size32; void *; } local162; 		// esp_50{0}
+    __size32 local163; 		// edi_28{0}
+    short local164; 		// dx_31{0}
+    unsigned short local165; 		// dl_40{0}
+    __size8 local166; 		// ah_14{0}
+    __size8 local167; 		// dh_27{0}
+    int local168; 		// edx_216{0}
+    int local169; 		// esp_1{0}
     __size32 local17; 		// m[esp_2 - 4]{0}
-    int local170; 		// edx_216{0}
-    int local171; 		// esp_1{0}
-    __size32 local172; 		// edi_27{0}
-    __size32 local173; 		// local14{0}
-    __size32 local174; 		// local32{0}
-    __size32 local175; 		// local50{0}
-    int local176; 		// local69{0}
-    __size32 local177; 		// local87{0}
-    __size32 local178; 		// local105{0}
-    int local179; 		// local125{0}
+    __size32 local170; 		// edi_27{0}
+    __size32 local171; 		// local14{0}
+    __size32 local172; 		// local32{0}
+    __size32 local173; 		// local50{0}
+    int local174; 		// local68{0}
+    __size32 local175; 		// local86{0}
+    __size32 local176; 		// local104{0}
+    int local177; 		// local116{0}
+    short local178; 		// dx_27{0}
+    unsigned short local179; 		// dl_39{0}
     __size32 local18; 		// m[esp_2 - 4]{0}
-    short local180; 		// dx_27{0}
-    unsigned short local181; 		// dl_39{0}
-    __size8 local182; 		// dh_6{0}
-    int local183; 		// edx_215{0}
-    int local184; 		// esp_68{0}
-    __size32 local185; 		// edi_9{0}
-    __size32 local186; 		// m[esp_2 - 4]{0}
-    __size32 local187; 		// m[esp_2 - 36]{0}
-    __size32 local188; 		// m[esp_2 - 40]{0}
-    int local189; 		// m[esp_2 - 56]{0}
+    __size8 local180; 		// dh_8{0}
+    int local181; 		// edx_215{0}
+    int local182; 		// esp_68{0}
+    __size32 local183; 		// edi_8{0}
+    __size32 local184; 		// m[esp_2 - 4]{0}
+    __size32 local185; 		// m[esp_2 - 36]{0}
+    __size32 local186; 		// m[esp_2 - 40]{0}
+    int local187; 		// m[esp_2 - 56]{0}
+    __size32 local188; 		// m[esp_2 - 576]{0}
+    __size32 local189; 		// m[esp_2 - 592]{0}
     __size32 local19; 		// m[esp_2 - 4]{0}
-    __size32 local190; 		// m[esp_2 - 576]{0}
-    __size32 local191; 		// m[esp_2 - 592]{0}
-    int local192; 		// local131{0}
-    short local193; 		// dx_14{0}
-    int local194; 		// eax{0}
-    int local195; 		// edx_214{0}
-    unsigned short local196; 		// cx{0}
-    short local197; 		// dx_8{0}
-    unsigned short local198; 		// dl_5{0}
-    __size8 local199; 		// ah_4{0}
+    int local190; 		// m[esp_2 - 704]{0}
+    short local191; 		// dx_14{0}
+    int local192; 		// eax{0}
+    int local193; 		// edx_214{0}
+    unsigned short local194; 		// cx{0}
+    short local195; 		// dx_8{0}
+    unsigned short local196; 		// dl_5{0}
+    __size8 local197; 		// ah_4{0}
+    __size8 local198; 		// dh_7{0}
+    union { __size32; void *; } local199; 		// esp_65{0}
     int local2; 		// m[esp - 56]
     __size32 local20; 		// m[esp_2 - 4]{0}
-    __size8 local200; 		// dh_5{0}
-    union { __size32; void *; } local201; 		// esp_65{0}
-    __size32 local202; 		// edi_8{0}
-    __size32 local203; 		// local21{0}
-    __size32 local204; 		// local37{0}
-    __size32 local205; 		// local55{0}
-    int local206; 		// local74{0}
-    __size32 local207; 		// local92{0}
-    __size32 local208; 		// local110{0}
-    int local209; 		// local130{0}
+    __size32 local200; 		// edi_7{0}
+    __size32 local201; 		// local19{0}
+    __size32 local202; 		// local37{0}
+    __size32 local203; 		// local55{0}
+    int local204; 		// local73{0}
+    __size32 local205; 		// local91{0}
+    __size32 local206; 		// local109{0}
+    int local207; 		// local119{0}
+    union { void *; __size32; } local208; 		// esp_81{0}
+    unsigned short local209; 		// dl_85{0}
     __size32 local21; 		// m[esp_2 - 4]{0}
-    union { void *; __size32; } local210; 		// esp_81{0}
-    unsigned short local211; 		// dl_85{0}
-    __size8 local212; 		// ah_48{0}
-    __size8 local213; 		// dh_21{0}
-    __size32 local214; 		// esp_86{0}
-    __size32 local215; 		// edi_48{0}
-    unsigned short local216; 		// dl_88{0}
-    __size8 local217; 		// ah_51{0}
-    __size8 local218; 		// dh_20{0}
-    __size32 local219; 		// esp_89{0}
+    __size8 local210; 		// ah_48{0}
+    __size8 local211; 		// dh_48{0}
+    __size32 local212; 		// esp_86{0}
+    __size32 local213; 		// edi_48{0}
+    unsigned short local214; 		// dl_88{0}
+    __size8 local215; 		// ah_51{0}
+    __size8 local216; 		// dh_51{0}
+    __size32 local217; 		// esp_89{0}
+    __size32 local218; 		// edi_51{0}
+    unsigned short local219; 		// dl_91{0}
     __size32 local22; 		// m[esp_2 - 4]{0}
-    __size32 local220; 		// edi_51{0}
-    unsigned short local221; 		// dl_91{0}
-    unsigned short local222; 		// dl_92{0}
-    __size8 local223; 		// ah_54{0}
-    __size8 local224; 		// dh_18{0}
-    __size32 local225; 		// esp_66{0}
-    __size32 local226; 		// edi_54{0}
-    short local227; 		// dx_6{0}
-    unsigned short local228; 		// dl_82{0}
-    __size8 local229; 		// ah_45{0}
+    unsigned short local220; 		// dl_92{0}
+    __size8 local221; 		// ah_54{0}
+    __size8 local222; 		// dh_54{0}
+    __size32 local223; 		// esp_66{0}
+    __size32 local224; 		// edi_54{0}
+    short local225; 		// dx_6{0}
+    unsigned short local226; 		// dl_82{0}
+    __size8 local227; 		// ah_45{0}
+    __size8 local228; 		// dh_45{0}
+    union { void *; __size32; } local229; 		// esp_64{0}
     __size32 local23; 		// m[esp_2 - 4]{0}
-    __size8 local230; 		// dh_15{0}
-    union { void *; __size32; } local231; 		// esp_64{0}
-    __size32 local232; 		// edi_45{0}
-    unsigned short local233; 		// cx{0}
-    short local234; 		// dx_4{0}
-    unsigned short local235; 		// dl_65{0}
-    __size8 local236; 		// ah_34{0}
-    __size8 local237; 		// dh_13{0}
-    union { void *; __size32; } local238; 		// esp_52{0}
-    __size32 local239; 		// edi_34{0}
+    __size32 local230; 		// edi_45{0}
+    unsigned short local231; 		// cx{0}
+    short local232; 		// dx_4{0}
+    unsigned short local233; 		// dl_65{0}
+    __size8 local234; 		// ah_34{0}
+    __size8 local235; 		// dh_34{0}
+    union { void *; __size32; } local236; 		// esp_52{0}
+    __size32 local237; 		// edi_34{0}
+    __size32 local238; 		// local18{0}
+    __size32 local239; 		// local36{0}
     __size32 local24; 		// m[esp_2 - 4]{0}
-    __size32 local240; 		// local20{0}
-    __size32 local241; 		// local36{0}
-    __size32 local242; 		// local54{0}
-    int local243; 		// local73{0}
-    __size32 local244; 		// local91{0}
-    __size32 local245; 		// local109{0}
-    int local246; 		// m[esp_2 - 704]{0}
+    __size32 local240; 		// local54{0}
+    int local241; 		// local72{0}
+    __size32 local242; 		// local90{0}
+    __size32 local243; 		// local108{0}
+    int local244; 		// local115{0}
     __size32 local25; 		// m[esp_2 - 36]{0}
     int local26; 		// m[esp_2 - 36]{0}
     int local27; 		// m[esp_2 - 36]{0}
@@ -11779,7 +11747,7 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size32 local59; 		// m[esp_2 - 40]{0}
     int local6; 		// m[esp - 36]
     __size32 local60; 		// m[esp_2 - 40]{0}
-    __size32 local61; 		// m[esp_2 - 40]{0}
+    int local61; 		// m[esp_2 - 56]{0}
     int local62; 		// m[esp_2 - 56]{0}
     int local63; 		// m[esp_2 - 56]{0}
     int local64; 		// m[esp_2 - 56]{0}
@@ -11798,18 +11766,18 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     int local76; 		// m[esp_2 - 56]{0}
     int local77; 		// m[esp_2 - 56]{0}
     int local78; 		// m[esp_2 - 56]{0}
-    int local79; 		// m[esp_2 - 56]{0}
+    __size32 local79; 		// m[esp_2 - 576]{0}
     int local8; 		// m[esp_2 - 4]{0}
-    __size32 local80; 		// m[esp_2 - 576]{0}
+    int local80; 		// m[esp_2 - 576]{0}
     int local81; 		// m[esp_2 - 576]{0}
     int local82; 		// m[esp_2 - 576]{0}
     int local83; 		// m[esp_2 - 576]{0}
     int local84; 		// m[esp_2 - 576]{0}
     int local85; 		// m[esp_2 - 576]{0}
-    int local86; 		// m[esp_2 - 576]{0}
-    __size32 local87; 		// m[esp_2 - 576]{0}
+    __size32 local86; 		// m[esp_2 - 576]{0}
+    int local87; 		// m[esp_2 - 576]{0}
     int local88; 		// m[esp_2 - 576]{0}
-    int local89; 		// m[esp_2 - 576]{0}
+    __size32 local89; 		// m[esp_2 - 576]{0}
     int local9; 		// m[esp_2 - 4]{0}
     __size32 local90; 		// m[esp_2 - 576]{0}
     __size32 local91; 		// m[esp_2 - 576]{0}
@@ -11818,274 +11786,274 @@ __size32 proc_0x0041fd80(int param1, unsigned short param2, __size32 param3)
     __size32 local94; 		// m[esp_2 - 576]{0}
     __size32 local95; 		// m[esp_2 - 576]{0}
     __size32 local96; 		// m[esp_2 - 576]{0}
-    __size32 local97; 		// m[esp_2 - 576]{0}
-    __size32 local98; 		// m[esp_2 - 592]{0}
+    __size32 local97; 		// m[esp_2 - 592]{0}
+    int local98; 		// m[esp_2 - 592]{0}
     int local99; 		// m[esp_2 - 592]{0}
 
     local7 = param3;
     ebp = esp_2 - 4;
-    esp_4 = &param1;
+    esp_7 = &param1;
     eax = *(&global646_428d1c + 404);
-    local62 = eax;
+    local61 = eax;
     local43 = 0;
-    local80 = 0;
-    local98 = 0;
+    local79 = 0;
+    local97 = 0;
     local25 = 0;
-    local136 = param2;
-    local137 = dx;
-    local138 = dl;
-    local139 = ah;
-    local140 = dh;
-    local141 = esp_4;
-    local142 = edi;
-    local143 = local7;
-    local144 = local25;
-    local145 = local43;
-    local146 = local62;
-    local147 = local80;
-    local148 = local98;
-    local149 = param1;
-    param2 = local136;
-    dx_3 = local137;
-    dl_3 = local138;
-    ah_2 = local139;
-    dh_3 = local140;
-    esp_51 = local141;
-    edi_3 = local142;
-    local19 = local143;
-    local35 = local144;
-    local53 = local145;
-    local72 = local146;
-    local90 = local147;
-    local108 = local148;
-    local116 = local149;
+    local134 = param2;
+    local135 = dx;
+    local136 = dl;
+    local137 = ah;
+    local138 = dh;
+    local139 = esp_7;
+    local140 = edi;
+    local141 = local7;
+    local142 = local25;
+    local143 = local43;
+    local144 = local61;
+    local145 = local79;
+    local146 = local97;
+    local147 = param1;
+    param2 = local134;
+    dx_3 = local135;
+    dl_3 = local136;
+    ah_2 = local137;
+    dh_2 = local138;
+    esp_51 = local139;
+    edi_2 = local140;
+    local17 = local141;
+    local35 = local142;
+    local53 = local143;
+    local71 = local144;
+    local89 = local145;
+    local107 = local146;
+    local132 = local147;
     eax = *(ebp + 12);
     cl_2 = *eax;
     *(unsigned char*)(ebp - 577) = cl_2;
-    edx_8 = (int) *(ebp - 577);
+    edx_10 = (int) *(ebp - 577);
     eax = *(ebp + 12);
     *(int*)(ebp + 12) = eax + 1;
-    local150 = esp_51;
+    local148 = esp_51;
+    local149 = param2;
+    local150 = dl_3;
     local151 = param2;
-    local152 = dl_3;
-    local153 = param2;
-    local156 = ah_2;
-    local156 = ah_2;
-    local161 = dl_3;
-    local162 = ah_2;
-    local163 = dh_3;
-    local164 = esp_51;
-    local165 = edi_3;
-    local196 = param2;
-    local196 = param2;
-    local198 = dl_3;
-    local198 = dl_3;
-    local198 = dl_3;
-    local199 = ah_2;
-    local199 = ah_2;
-    local199 = ah_2;
-    local199 = ah_2;
-    local199 = ah_2;
-    local199 = ah_2;
-    local199 = ah_2;
-    local199 = ah_2;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local200 = dh_3;
-    local201 = esp_51;
-    local201 = esp_51;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local202 = edi_3;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local203 = local19;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local204 = local35;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local205 = local53;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local206 = local72;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local207 = local90;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local208 = local108;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local209 = local116;
-    local233 = param2;
-    local233 = param2;
-    local233 = param2;
-    local233 = param2;
-    local233 = param2;
-    local233 = param2;
-    local233 = param2;
-    local233 = param2;
-    local234 = dx_3;
-    local234 = dx_3;
-    local234 = dx_3;
-    local234 = dx_3;
-    local234 = dx_3;
-    local234 = dx_3;
-    local234 = dx_3;
-    local235 = dl_3;
-    local235 = dl_3;
-    local235 = dl_3;
-    local235 = dl_3;
-    local235 = dl_3;
-    local235 = dl_3;
-    local235 = dl_3;
-    local236 = ah_2;
-    local236 = ah_2;
-    local236 = ah_2;
-    local236 = ah_2;
-    local236 = ah_2;
-    local236 = ah_2;
-    local236 = ah_2;
-    local237 = dh_3;
-    local237 = dh_3;
-    local237 = dh_3;
-    local237 = dh_3;
-    local237 = dh_3;
-    local237 = dh_3;
-    local237 = dh_3;
-    local238 = esp_51;
-    local238 = esp_51;
-    local238 = esp_51;
-    local238 = esp_51;
-    local238 = esp_51;
-    local239 = edi_3;
-    local239 = edi_3;
-    local239 = edi_3;
-    local239 = edi_3;
-    local239 = edi_3;
-    local239 = edi_3;
-    local239 = edi_3;
-    local240 = local19;
-    local240 = local19;
-    local240 = local19;
-    local240 = local19;
-    local240 = local19;
-    local240 = local19;
-    local240 = local19;
-    local240 = local19;
-    local241 = local35;
-    local241 = local35;
-    local241 = local35;
-    local241 = local35;
-    local241 = local35;
-    local241 = local35;
-    local241 = local35;
-    local241 = local35;
-    local242 = local53;
-    local242 = local53;
-    local242 = local53;
-    local242 = local53;
-    local242 = local53;
-    local242 = local53;
-    local242 = local53;
-    local242 = local53;
-    local243 = local72;
-    local243 = local72;
-    local243 = local72;
-    local243 = local72;
-    local243 = local72;
-    local243 = local72;
-    local243 = local72;
-    local243 = local72;
-    local244 = local90;
-    local244 = local90;
-    local244 = local90;
-    local244 = local90;
-    local244 = local90;
-    local244 = local90;
-    local244 = local90;
-    local244 = local90;
-    local245 = local108;
-    local245 = local108;
-    local245 = local108;
-    local245 = local108;
-    local245 = local108;
-    local245 = local108;
-    local245 = local108;
-    local245 = local108;
-    local246 = local116;
-    local246 = local116;
-    local246 = local116;
-    local246 = local116;
-    local246 = local116;
-    local246 = local116;
-    local246 = local116;
-    local246 = local116;
-    while ( ~(edx_8 == 0 || *(ebp - 572) < 0)) {
+    local154 = ah_2;
+    local154 = ah_2;
+    local159 = dl_3;
+    local160 = ah_2;
+    local161 = dh_2;
+    local162 = esp_51;
+    local163 = edi_2;
+    local194 = param2;
+    local194 = param2;
+    local196 = dl_3;
+    local196 = dl_3;
+    local196 = dl_3;
+    local197 = ah_2;
+    local197 = ah_2;
+    local197 = ah_2;
+    local197 = ah_2;
+    local197 = ah_2;
+    local197 = ah_2;
+    local197 = ah_2;
+    local197 = ah_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local198 = dh_2;
+    local199 = esp_51;
+    local199 = esp_51;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local200 = edi_2;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local201 = local17;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local202 = local35;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local203 = local53;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local204 = local71;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local205 = local89;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local206 = local107;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local207 = local132;
+    local231 = param2;
+    local231 = param2;
+    local231 = param2;
+    local231 = param2;
+    local231 = param2;
+    local231 = param2;
+    local231 = param2;
+    local231 = param2;
+    local232 = dx_3;
+    local232 = dx_3;
+    local232 = dx_3;
+    local232 = dx_3;
+    local232 = dx_3;
+    local232 = dx_3;
+    local232 = dx_3;
+    local233 = dl_3;
+    local233 = dl_3;
+    local233 = dl_3;
+    local233 = dl_3;
+    local233 = dl_3;
+    local233 = dl_3;
+    local233 = dl_3;
+    local234 = ah_2;
+    local234 = ah_2;
+    local234 = ah_2;
+    local234 = ah_2;
+    local234 = ah_2;
+    local234 = ah_2;
+    local234 = ah_2;
+    local235 = dh_2;
+    local235 = dh_2;
+    local235 = dh_2;
+    local235 = dh_2;
+    local235 = dh_2;
+    local235 = dh_2;
+    local235 = dh_2;
+    local236 = esp_51;
+    local236 = esp_51;
+    local236 = esp_51;
+    local236 = esp_51;
+    local236 = esp_51;
+    local237 = edi_2;
+    local237 = edi_2;
+    local237 = edi_2;
+    local237 = edi_2;
+    local237 = edi_2;
+    local237 = edi_2;
+    local237 = edi_2;
+    local238 = local17;
+    local238 = local17;
+    local238 = local17;
+    local238 = local17;
+    local238 = local17;
+    local238 = local17;
+    local238 = local17;
+    local238 = local17;
+    local239 = local35;
+    local239 = local35;
+    local239 = local35;
+    local239 = local35;
+    local239 = local35;
+    local239 = local35;
+    local239 = local35;
+    local239 = local35;
+    local240 = local53;
+    local240 = local53;
+    local240 = local53;
+    local240 = local53;
+    local240 = local53;
+    local240 = local53;
+    local240 = local53;
+    local240 = local53;
+    local241 = local71;
+    local241 = local71;
+    local241 = local71;
+    local241 = local71;
+    local241 = local71;
+    local241 = local71;
+    local241 = local71;
+    local241 = local71;
+    local242 = local89;
+    local242 = local89;
+    local242 = local89;
+    local242 = local89;
+    local242 = local89;
+    local242 = local89;
+    local242 = local89;
+    local242 = local89;
+    local243 = local107;
+    local243 = local107;
+    local243 = local107;
+    local243 = local107;
+    local243 = local107;
+    local243 = local107;
+    local243 = local107;
+    local243 = local107;
+    local244 = local132;
+    local244 = local132;
+    local244 = local132;
+    local244 = local132;
+    local244 = local132;
+    local244 = local132;
+    local244 = local132;
+    local244 = local132;
+    while ( ~(edx_10 == 0 || *(ebp - 572) < 0)) {
         ecx_7 = (int) *(ebp - 577);
         if (ecx_7 < 32) {
+bb0x41fe14:
             *(__size32*)(ebp - 676) = 0;
         }
         else {
-bb0x41fdef:
-            edx_10 = (int) *(ebp - 577);
-            if (edx_10 > 120) {
-                goto bb0x41fdef;
+            edx_9 = (int) *(ebp - 577);
+            if (edx_9 > 120) {
+                goto bb0x41fe14;
             }
             else {
                 eax = (int) *(ebp - 577);
@@ -12104,6 +12072,7 @@ bb0x41fdef:
         if (*(ebp - 680) <= (unsigned int)7) {
             switch(edx_1 >> 4) {
             case 0:
+bb0x41fe6d:
                 *(__size32*)(ebp - 12) = 0;
                 edx_17 = *(unsigned char*)(ebp - 577);
                 eax = *(&global646_428d1c + 440);
@@ -12114,8 +12083,8 @@ bb0x41fdef:
                     *(__size32*)(esp_51 - 8) = eax;
                     cl_3 = *(ebp - 577);
                     *(int*)(esp_51 - 12) = (ecx_12 & 0x8000) >> 8 & 0xffffff | (cl_3);
-                    eax = proc_0x00420ec0(*(esp_51 - 12), *(esp_51 - 8), *(esp_51 - 4), dx_3, cl_3, dl_3, ah_2, dh_3, edi_3); /* Warning: also results in dx_2, dh_2, esp_9, ebp, edi_4 */
-                    esp_12 = esp_9 + 12;
+                    eax = proc_0x00420ec0(*(esp_51 - 12), *(esp_51 - 8), *(esp_51 - 4), dx_3, cl_3, dl_3, ah_2, dh_2, edi_2); /* Warning: also results in dx_2, dh_3, esp_4, ebp, edi_3 */
+                    esp_13 = esp_4 + 12;
                     edx_20 = *(ebp + 12);
                     al = *edx_20;
                     eax = eax >> 8 & 0xffffff | (al);
@@ -12123,39 +12092,37 @@ bb0x41fdef:
                     ecx_15 = *(ebp + 12);
                     *(int*)(ebp + 12) = ecx_15 + 1;
                     edx_23 = (int) *(ebp - 577);
-                    local150 = esp_12;
+                    local148 = esp_13;
                     if (edx_23 == 0) {
-                        *(__size32*)(esp_9 + 8) = 0x427470;
-                        *(int*)(esp_9 + 4) = 0;
-                        *(__size32*)esp_9 = 402;
-                        *(__size32*)(esp_9 - 4) = 0x427464;
-                        *(int*)(esp_9 - 8) = 2;
-                        eax = proc_0x00415390(*(esp_9 - 0x3024), *(esp_9 - 8), *(esp_9 - 4), *(esp_9 + 8), ax, dx_2, (unsigned char) ecx_15 + 1, dh_2, edx_23, ebp, esi, edi_4, *esp_9); /* Warning: also results in esp_15, ebp */
-                        esp_16 = esp_15 + 20;
-                        local150 = esp_16;
+                        *(__size32*)(esp_4 + 8) = 0x427470;
+                        *(int*)(esp_4 + 4) = 0;
+                        *(__size32*)esp_4 = 402;
+                        *(__size32*)(esp_4 - 4) = 0x427464;
+                        *(int*)(esp_4 - 8) = 2;
+                        eax = proc_0x00415390(*(esp_4 - 0x3024), *(esp_4 - 8), *(esp_4 - 4), *(esp_4 + 8), ax, dx_2, (unsigned char) ecx_15 + 1, dh_3, edx_23, ebp, esi, edi_3, *esp_4); /* Warning: also results in esp_16, ebp */
+                        esp_11 = esp_16 + 20;
+                        local148 = esp_11;
                         if (eax == 1) {
                             __debugbreak();
                         }
                     }
                 }
-                esp_60 = local150;
+                esp_60 = local148;
                 *(__size32*)(esp_60 - 4) = ebp - 572;
-                edx_9 = *(ebp + 8);
-                *(__size32*)(esp_60 - 8) = edx_9;
+                edx_8 = *(ebp + 8);
+                *(__size32*)(esp_60 - 8) = edx_8;
                 al = *(ebp - 577);
                 *(int*)(esp_60 - 12) = eax >> 8 & 0xffffff | (al);
-                dx_5 = proc_0x00420ec0(*(esp_60 - 12), *(esp_60 - 8), *(esp_60 - 4), dx_1, (unsigned char) ebp - 572, dl_2, ah_1, dh_1, edi_1); /* Warning: also results in dl_6, ah_5, dh_14, esp_8, ebp, edi_2 */
-                local234 = dx_5;
-                local235 = dl_6;
-                local236 = ah_5;
-                local237 = dh_14;
-                local239 = edi_2;
-bb0x41fefd:
-                esp_7 = esp_8 + 12;
-                local238 = esp_7;
-                goto bb0x41fefd;
+                dx_5 = proc_0x00420ec0(*(esp_60 - 12), *(esp_60 - 8), *(esp_60 - 4), dx_1, (unsigned char) ebp - 572, dl_2, ah_1, dh_1, edi_1); /* Warning: also results in dl_6, ah_5, dh_9, esp_12, ebp, edi_9 */
+                local232 = dx_5;
+                local233 = dl_6;
+                local234 = ah_5;
+                local235 = dh_9;
+                local237 = edi_9;
+                esp_10 = esp_12 + 12;
+                local236 = esp_10;
+                goto bb0x420a31;
             case 1:
-bb0x41ff05:
                 *(__size32*)(ebp - 44) = 0;
                 ecx_18 = *(ebp - 44);
                 *(__size32*)(ebp - 40) = ecx_18;
@@ -12166,7 +12133,7 @@ bb0x41ff05:
                 *(__size32*)(ebp - 16) = 0;
                 *(__size32*)(ebp - 48) = -1;
                 *(__size32*)(ebp - 12) = 0;
-                goto bb0x41ff05;
+                goto bb0x420a31;
             case 2:
                 ecx_19 = (int) *(ebp - 577);
                 *(int*)(ebp - 684) = ecx_19;
@@ -12175,35 +12142,30 @@ bb0x41ff05:
                 if (*(ebp - 684) <= (unsigned int)16) {
                     switch(ecx_1) {
                     case 0:
-bb0x41ff87:
                         ecx_21 = *(ebp - 16);
                         *(int*)(ebp - 16) = ecx_21 | 2;
-                        goto bb0x41ff87;
+                        goto bb0x41ffa9;
                     case 1:
-bb0x41ff92:
                         edx_30 = *(ebp - 16);
                         *(int*)(ebp - 16) = edx_30 | 128;
-                        goto bb0x41ff92;
+                        goto bb0x41ffa9;
                     case 2:
-bb0x41ff7c:
                         eax = *(ebp - 16);
                         *(int*)(ebp - 16) = eax | 1;
-                        goto bb0x41ff7c;
+                        goto bb0x41ffa9;
                     case 3:
-bb0x41ff71:
                         edx_31 = *(ebp - 16);
                         *(int*)(ebp - 16) = edx_31 | 4;
-                        goto bb0x41ff71;
+                        goto bb0x41ffa9;
                     case 4:
-bb0x41ffa0:
                         eax = *(ebp - 16);
                         *(int*)(ebp - 16) = eax | 8;
-                        goto bb0x41ffa0;
+                        goto bb0x41ffa9;
                     case 5:
                     }
                 }
 bb0x41ffa9:
-                goto bb0x41ffa9;
+                goto bb0x420a31;
             case 3:
                 ecx_22 = (int) *(ebp - 577);
                 if (ecx_22 != 42) {
@@ -12222,14 +12184,12 @@ bb0x41ffa9:
                         *(int*)(ebp - 24) = 0 - ecx_25;
                     }
                 }
-bb0x41fff6:
                 esp_63 = esp_51;
-                local238 = esp_63;
-                goto bb0x41fff6;
+                local236 = esp_63;
+                goto bb0x420a31;
             case 4:
-bb0x41fffb:
                 *(__size32*)(ebp - 48) = 0;
-                goto bb0x41fffb;
+                goto bb0x420a31;
             case 5:
                 edx_33 = (int) *(ebp - 577);
                 if (edx_33 != 42) {
@@ -12245,21 +12205,17 @@ bb0x41fffb:
                         *(__size32*)(ebp - 48) = -1;
                     }
                 }
-bb0x420045:
                 esp_67 = esp_51;
-                local238 = esp_67;
-                goto bb0x420045;
+                local236 = esp_67;
+                goto bb0x420a31;
             case 6:
-bb0x42004a:
                 ecx_27 = (int) *(ebp - 577);
                 *(int*)(ebp - 688) = ecx_27;
                 edx_37 = *(ebp - 688);
                 *(int*)(ebp - 688) = edx_37 - 73;
                 if (*(ebp - 688) <= (unsigned int)46) {
-bb0x420073:
                     switch(ecx_4) {
                     case 0:
-bb0x420095:
                         eax = *(ebp + 12);
                         ecx_29 = (int) *eax;
                         if (ecx_29 == 54) {
@@ -12270,8 +12226,9 @@ bb0x420095:
                                 *(int*)(ebp + 12) = ecx_32 + 2;
                                 edx_43 = *(ebp - 16);
                                 *(int*)(ebp - 16) = edx_43 | 0x8000;
+bb0x420147:
 bb0x420160:
-                                goto bb0x420160;
+                                goto bb0x420a31;
                             }
 bb0x4200c6:
                             eax = *(ebp + 12);
@@ -12280,30 +12237,25 @@ bb0x4200c6:
                                 edx_44 = *(ebp + 12);
                                 eax = (int) *(edx_44 + 1);
                                 if (eax == 50) {
-bb0x4200dd:
                                     ecx_34 = *(ebp + 12);
                                     *(int*)(ebp + 12) = ecx_34 + 2;
                                     edx_47 = *(ebp - 16);
                                     *(int*)(ebp - 16) = edx_47 & ~0x8000;
-                                    goto bb0x4200dd;
+                                    goto bb0x420147;
                                 }
 bb0x4200f4:
                                 eax = *(ebp + 12);
                                 ecx_35 = (int) *eax;
                                 if (ecx_35 != 100) {
-bb0x4200ff:
                                     edx_48 = *(ebp + 12);
                                     eax = (int) *edx_48;
                                     if (eax != 105) {
-bb0x42010a:
                                         ecx_38 = *(ebp + 12);
                                         edx_49 = (int) *ecx_38;
                                         if (edx_49 != 111) {
-bb0x420115:
                                             eax = *(ebp + 12);
                                             ecx_41 = (int) *eax;
                                             if (ecx_41 != 117) {
-bb0x420120:
                                                 edx_52 = *(ebp + 12);
                                                 eax = (int) *edx_52;
                                                 if (eax != 120) {
@@ -12311,45 +12263,41 @@ bb0x420120:
                                                     edx_55 = (int) *ecx_44;
                                                     if (edx_55 == 88) {
 bb0x420136:
-                                                        goto bb0x420136;
+                                                        goto bb0x420147;
                                                     }
-bb0x420138:
                                                     *(__size32*)(ebp - 588) = 0;
-                                                    goto bb0x420138;
+                                                    goto bb0x41fe6d;
                                                 }
-                                                goto bb0x420120;
+                                                goto bb0x420136;
                                             }
-                                            goto bb0x420115;
+                                            goto bb0x420136;
                                         }
-                                        goto bb0x42010a;
+                                        goto bb0x420136;
                                     }
-                                    goto bb0x4200ff;
+                                    goto bb0x420136;
                                 }
-                                goto bb0x4200f4;
+                                goto bb0x420136;
                             }
-                            goto bb0x4200c6;
+                            goto bb0x4200f4;
                         }
-                        goto bb0x420095;
+                        goto bb0x4200c6;
                     case 1:
-bb0x420149:
                         eax = *(ebp - 16);
                         *(int*)(ebp - 16) = eax | 32;
-                        goto bb0x420149;
+                        goto bb0x420160;
                     case 2:
-bb0x420087:
                         edx_59 = *(ebp - 16);
                         *(int*)(ebp - 16) = edx_59 | 16;
-                        goto bb0x420087;
+                        goto bb0x420160;
                     case 3:
-bb0x420154:
                         ecx_49 = *(ebp - 16);
                         *(int*)(ebp - 16) = ecx_49 | 0x800;
-                        goto bb0x420154;
+                        goto bb0x420160;
                     case 4:
-                        goto bb0x420073;
+                        goto bb0x420160;
                     }
                 }
-                goto bb0x42004a;
+                goto bb0x420160;
             case 7:
                 edx_60 = (int) *(ebp - 577);
                 dx_11 = (unsigned short) edx_60;
@@ -12357,13 +12305,12 @@ bb0x420154:
                 eax = *(ebp - 692);
                 ax = (unsigned short) eax - 67;
                 *(int*)(ebp - 692) = eax - 67;
-                local197 = dx_11;
+                local195 = dx_11;
                 if (*(ebp - 692) <= (unsigned int)53) {
-bb0x42018e:
                     ecx_46 = *(ebp - 692);
                     edx_56 = *(unsigned char*)(ecx_46 + 0x420b10);
                     dx_12 = (unsigned short) edx_56;
-                    local197 = dx_12;
+                    local195 = dx_12;
                     switch(edx_5) {
                     case 0:
                         eax = *(ebp - 16);
@@ -12371,6 +12318,7 @@ bb0x42018e:
                             ecx_53 = *(ebp - 16);
                             *(int*)(ebp - 16) = ecx_53 | 0x800;
                         }
+bb0x4201b8:
                         edx_63 = *(ebp - 16);
                         if ((edx_63 & 0x810) == 0) {
                             ax = (unsigned short) ebp + 16;
@@ -12389,24 +12337,23 @@ bb0x42018e:
                             *(int*)(esp_51 - 4) = ecx_56 >> 16 & 0xffff | (cx);
                             *(__size32*)(esp_51 - 8) = ebp - 568;
                             eax = proc_0x00421e40(*(esp_51 - 8), *(esp_51 - 4), dl_3, ecx_56 >> 16 & 0xffff | (cx)); /* Warning: also results in dl_7 */
-                            local151 = cx;
-                            local152 = dl_7;
+                            local149 = cx;
+                            local150 = dl_7;
                             *(int*)(ebp - 36) = eax;
                             if (*(ebp - 36) < 0) {
                                 *(__size32*)(ebp - 40) = 1;
                             }
                         }
-bb0x420225:
-                        cx = local151;
-                        dl_59 = local152;
+                        cx = local149;
+                        dl_59 = local150;
                         esp_69 = esp_51;
                         dx_13 = (unsigned short) ebp - 568;
                         *(int*)(ebp - 4) = ebp - 568;
-                        local196 = cx;
-                        local197 = dx_13;
-                        local198 = dl_59;
-                        local201 = esp_69;
-                        goto bb0x420225;
+                        local194 = cx;
+                        local195 = dx_13;
+                        local196 = dl_59;
+                        local199 = esp_69;
+                        goto bb0x42085d;
                     case 1:
                         *(__size32*)(ebp - 44) = 1;
                         ecx_97 = (int) *(ebp - 577);
@@ -12417,6 +12364,7 @@ bb0x420225:
                             ecx_127 = *(ebp - 16);
                             *(int*)(ebp - 16) = ecx_127 | 0x800;
                         }
+bb0x4202df:
                         if (*(ebp - 48) != -1) {
                             edx_146 = *(ebp - 48);
                             *(unsigned int*)(ebp - 696) = edx_146;
@@ -12431,7 +12379,7 @@ bb0x420225:
                         esp_58 = esp_51;
                         *(__size32*)(ebp - 4) = eax;
                         edx_149 = *(ebp - 16);
-                        local201 = esp_58;
+                        local199 = esp_58;
                         if ((edx_149 & 0x810) == 0) {
                             if (*(ebp - 4) == 0) {
                                 edx_143 = *(&global646_428d1c + 468);
@@ -12444,7 +12392,7 @@ bb0x420225:
                             edx_152 = *(ebp - 608);
                             dx_21 = (unsigned short) edx_152 - 1;
                             *(int*)(ebp - 608) = edx_152 - 1;
-                            local158 = dx_21;
+                            local156 = dx_21;
                             while (ecx_130 != 0) {
                                 eax = *(ebp - 604);
                                 ecx_133 = (int) *eax;
@@ -12459,7 +12407,7 @@ bb0x420225:
                                 edx_152 = *(ebp - 608);
                                 dx_21 = (unsigned short) edx_152 - 1;
                                 *(int*)(ebp - 608) = edx_152 - 1;
-                                local158 = dx_21;
+                                local156 = dx_21;
                             }
                             eax = *(ebp - 604);
                             eax = eax - *(ebp - 4);
@@ -12479,12 +12427,12 @@ bb0x420225:
                             eax = *(ebp - 608);
                             ax = (unsigned short) eax - 1;
                             *(int*)(ebp - 608) = eax - 1;
-                            local157 = dx_30;
+                            local155 = dx_30;
                             while (edx_137 != 0) {
                                 ecx_124 = *(ebp - 612);
                                 edx_140 = *(unsigned short*)ecx_124;
                                 dx_29 = (unsigned short) edx_140;
-                                local157 = dx_29;
+                                local155 = dx_29;
                                 if (edx_140 == 0) {
                                     break;
                                 }
@@ -12495,22 +12443,23 @@ bb0x420225:
                                 eax = *(ebp - 608);
                                 ax = (unsigned short) eax - 1;
                                 *(int*)(ebp - 608) = eax - 1;
-                                local157 = dx_30;
+                                local155 = dx_30;
                             }
-                            dx_20 = local157;
+                            dx_20 = local155;
                             ecx_136 = *(ebp - 612);
                             ecx_139 = ecx_136 - *(ebp - 4);
                             cx = (unsigned short) ecx_139 >> 1;
                             *(int*)(ebp - 36) = ecx_139 >> 1;
-                            local158 = dx_20;
+                            local156 = dx_20;
                         }
-bb0x4203e0:
-                        dx_15 = local158;
-                        local196 = cx;
-                        local197 = dx_15;
-                        goto bb0x4203e0;
+                        dx_15 = local156;
+                        local194 = cx;
+                        local195 = dx_15;
+                        goto bb0x42085d;
                     case 3:
+bb0x4205a7:
                         *(__size32*)(ebp - 592) = 7;
+bb0x4205bd:
                         *(__size32*)(ebp - 8) = 16;
                         eax = *(ebp - 16);
                         if ((eax & 0x80) != 0) {
@@ -12519,6 +12468,7 @@ bb0x4203e0:
                             *(__size8*)(ebp - 19) = (unsigned char) ecx_145 + 81;
                             *(__size32*)(ebp - 28) = 2;
                         }
+bb0x420604:
                         ecx_148 = *(ebp - 16);
                         if ((ecx_148 & 0x8000) == 0) {
                             eax = *(ebp - 16);
@@ -12603,10 +12553,11 @@ bb0x4203e0:
                             edx_173 = *(ebp - 48);
                             eax = *(ebp - 48);
                             *(__size32*)(ebp - 48) = eax - 1;
-                            local201 = esp_79;
-                            local201 = esp_79;
-                            local201 = esp_79;
+                            local199 = esp_79;
+                            local199 = esp_79;
+                            local199 = esp_79;
                             if (edx_173 > 0) {
+bb0x42079d:
                                 eax = *(ebp - 8);
                                 *(__size32*)(esp_51 - 4) =  (eax < 0) ? -1 : 0;
                                 *(__size32*)(esp_51 - 8) = eax;
@@ -12637,11 +12588,10 @@ bb0x4203e0:
                                 eax = *(ebp - 4);
                                 *(int*)(ebp - 4) = eax - 1;
                             }
-bb0x42078f:
                             ecx_160 = *(ebp - 648);
                             ecx_163 = ecx_160 | *(ebp - 644);
                             if (ecx_163 != 0) {
-                                goto bb0x42078f;
+                                goto bb0x42079d;
                             }
                         }
                         ecx_172 = ebp - *(ebp - 4) - 57;
@@ -12653,17 +12603,16 @@ bb0x42078f:
                         *(int*)(ebp - 4) = edx_185 + 1;
                         eax = *(ebp - 16);
                         ax = (unsigned short) eax & 0x200;
-                        local196 = cx;
-                        local196 = cx;
-                        local197 = dx_16;
-                        local197 = dx_16;
-                        local198 = dl_36;
-                        local198 = dl_36;
+                        local194 = cx;
+                        local194 = cx;
+                        local195 = dx_16;
+                        local195 = dx_16;
+                        local196 = dl_36;
+                        local196 = dl_36;
                         if ((eax & 0x200) != 0) {
                             ecx_175 = *(ebp - 4);
                             edx_188 = (int) *ecx_175;
                             if ( ~(edx_188 == 48 && *(ebp - 36) != 0)) {
-bb0x420845:
                                 eax = *(ebp - 4);
                                 ax = (unsigned short) eax - 1;
                                 *(int*)(ebp - 4) = eax - 1;
@@ -12674,10 +12623,10 @@ bb0x420845:
                                 dl_43 = (unsigned char) edx_191 + 1;
                                 dx_17 = (unsigned short) edx_191 + 1;
                                 *(int*)(ebp - 36) = edx_191 + 1;
-                                local196 = cx;
-                                local197 = dx_17;
-                                local198 = dl_43;
-                                goto bb0x420845;
+                                local194 = cx;
+                                local195 = dx_17;
+                                local196 = dl_43;
+                                goto bb0x42085d;
                             }
                             goto bb0x42085d;
                         }
@@ -12686,7 +12635,8 @@ bb0x420845:
                         eax = proc_0x00421070(*(esp_51 - 4));
                         *(__size32*)(ebp - 600) = eax;
                         if (*(ebp - 600) == 0) {
-                            cx = local153;
+bb0x42025a:
+                            cx = local151;
                             edx_193 = *(&global646_428d1c + 468);
                             dl_46 = (unsigned char) edx_193;
                             dx_22 = (unsigned short) edx_193;
@@ -12695,16 +12645,15 @@ bb0x420845:
                             ax = (unsigned short) eax;
                             *(int*)(esp_51 - 4) = eax;
                             eax = proc_0x0041a180(*(esp_51 - 4), eax, edx_193); /* Warning: also results in ah_29 */
-                            local154 = dx_22;
-                            local155 = dl_46;
-                            local156 = ah_29;
+                            local152 = dx_22;
+                            local153 = dl_46;
+                            local154 = ah_29;
                             *(int*)(ebp - 36) = eax;
                         }
                         else {
-bb0x42024e:
                             ecx_180 = *(ebp - 600);
                             cx = (unsigned short) ecx_180;
-                            local153 = cx;
+                            local151 = cx;
                             if (*(ecx_180 + 4) != 0) {
                                 ecx_183 = *(ebp - 16);
                                 if ((ecx_183 & 0x800) == 0) {
@@ -12719,8 +12668,8 @@ bb0x42024e:
                                     dl_52 = (unsigned char) edx_202;
                                     dx_24 = (unsigned short) edx_202;
                                     *(int*)(ebp - 36) = edx_202;
-                                    local154 = dx_24;
-                                    local155 = dl_52;
+                                    local152 = dx_24;
+                                    local153 = dl_52;
                                 }
                                 else {
                                     edx_196 = *(ebp - 600);
@@ -12735,48 +12684,46 @@ bb0x42024e:
                                     ax = (unsigned short) eax >> 1;
                                     *(int*)(ebp - 36) = eax >> 1;
                                     *(__size32*)(ebp - 12) = 1;
-                                    local154 = dx_23;
-                                    local155 = dl_49;
+                                    local152 = dx_23;
+                                    local153 = dl_49;
                                 }
                             }
                             else {
-                                goto bb0x42024e;
+                                goto bb0x42025a;
                             }
                         }
-bb0x4202c4:
-                        dx_18 = local154;
-                        dl_58 = local155;
-                        ah_25 = local156;
+                        dx_18 = local152;
+                        dl_58 = local153;
+                        ah_25 = local154;
                         esp_72 = esp_51;
-                        local196 = cx;
-                        local197 = dx_18;
-                        local198 = dl_58;
-                        local199 = ah_25;
-                        local201 = esp_72;
-                        goto bb0x4202c4;
+                        local194 = cx;
+                        local195 = dx_18;
+                        local196 = dl_58;
+                        local197 = ah_25;
+                        local199 = esp_72;
+                        goto bb0x42085d;
                     case 5:
-                        goto bb0x42018e;
+                        goto bb0x4201b8;
                     case 6:
-bb0x420585:
                         edx_205 = *(ebp - 16);
                         *(int*)(ebp - 16) = edx_205 | 64;
                         *(__size32*)(ebp - 8) = 10;
-                        goto bb0x420585;
+                        goto bb0x420604;
                     case 7:
                         edx_101 = *(ebp - 16);
                         *(int*)(ebp - 16) = edx_101 | 64;
                         *(int*)(ebp - 4) = ebp - 568;
                         if (*(ebp - 48) >= 0) {
                             if (*(ebp - 48) != 0) {
+bb0x42047e:
                                 if (*(ebp - 48) > 512) {
                                     *(__size32*)(ebp - 48) = 512;
                                 }
                             }
                             else {
-bb0x420469:
                                 ecx_100 = (int) *(ebp - 577);
                                 if (ecx_100 != 103) {
-                                    goto bb0x420469;
+                                    goto bb0x42047e;
                                 }
                                 else {
                                     *(__size32*)(ebp - 48) = 1;
@@ -12792,19 +12739,19 @@ bb0x420469:
                             *(int*)(esp_51 - 12) = 2;
                             edx_104 = *(ebp - 48);
                             *(__size32*)(esp_51 - 16) = edx_104 + 349;
-                            eax = proc_0x004168d0(); /* Warning: also results in dl_21, ah_18, dh_12, esp_35, ebp, edi_18 */
-                            local161 = dl_21;
-                            local161 = dl_21;
-                            local162 = ah_18;
-                            local162 = ah_18;
-                            local163 = dh_12;
-                            local163 = dh_12;
-                            local165 = edi_18;
-                            local165 = edi_18;
+                            eax = proc_0x004168d0(); /* Warning: also results in dl_21, ah_18, dh_18, esp_35, ebp, edi_18 */
+                            local159 = dl_21;
+                            local159 = dl_21;
+                            local160 = ah_18;
+                            local160 = ah_18;
+                            local161 = dh_18;
+                            local161 = dh_18;
+                            local163 = edi_18;
+                            local163 = edi_18;
                             esp_38 = esp_35 + 16;
                             *(int*)(ebp - 32) = eax;
-                            local164 = esp_38;
-                            local164 = esp_38;
+                            local162 = esp_38;
+                            local162 = esp_38;
                             if (*(ebp - 32) == 0) {
                                 *(__size32*)(ebp - 48) = 163;
                             }
@@ -12813,11 +12760,11 @@ bb0x420469:
                                 *(int*)(ebp - 4) = eax;
                             }
                         }
-                        dl_41 = local161;
-                        ah_24 = local162;
-                        dh_11 = local163;
-                        esp_50 = local164;
-                        edi_28 = local165;
+                        dl_41 = local159;
+                        ah_24 = local160;
+                        dh_28 = local161;
+                        esp_50 = local162;
+                        edi_28 = local163;
                         ecx_103 = *(ebp + 16);
                         *(__size32*)(ebp + 16) = ecx_103 + 8;
                         edx_107 = *(ebp + 16);
@@ -12834,180 +12781,179 @@ bb0x420469:
                         edx_113 = *(ebp - 4);
                         *(__size32*)(esp_50 - 16) = edx_113;
                         *(int*)(esp_50 - 20) = ebp - 624;
-                        (*global511_429200)(local116, local108, local90, local72, local53, local35, local19, (unsigned short) ebp - 624, (unsigned short) ecx_109, (unsigned short) edx_113, (unsigned char) ebp - 624, (unsigned char) ecx_109, dl_41, ah_24, dh_11, ebp - 624, ecx_109, edx_113, ebp, esi, edi_28, ADDFLAGS32(ecx_103, 8, ecx_103 + 8), ADDFLAGS32(ecx_103, 8, ecx_103 + 8), ADDFLAGS32(ecx_103, 8, ecx_103 + 8));
-                        local166 = dx_34;
-                        local166 = dx_34;
-                        local167 = dl_24;
-                        local167 = dl_24;
-                        local168 = ah_21;
-                        local168 = ah_21;
-                        local169 = dh_10;
-                        local169 = dh_10;
-                        local170 = edx_116;
-                        local170 = edx_116;
-                        local172 = edi_21;
-                        local172 = edi_21;
-                        local173 = local8;
-                        local173 = local8;
-                        local174 = local26;
-                        local174 = local26;
-                        local175 = local44;
-                        local175 = local44;
-                        local176 = local63;
-                        local176 = local63;
-                        local177 = local81;
-                        local177 = local81;
-                        local178 = local99;
-                        local178 = local99;
-                        local179 = local119;
-                        local179 = local119;
+                        (*global511_429200)(local132, local107, local89, local71, local53, local35, local17, (unsigned short) ebp - 624, (unsigned short) ecx_109, (unsigned short) edx_113, (unsigned char) ebp - 624, (unsigned char) ecx_109, dl_41, ah_24, dh_28, ebp - 624, ecx_109, edx_113, ebp, esi, edi_28, ADDFLAGS32(ecx_103, 8, ecx_103 + 8), ADDFLAGS32(ecx_103, 8, ecx_103 + 8), ADDFLAGS32(ecx_103, 8, ecx_103 + 8));
+                        local164 = dx_34;
+                        local164 = dx_34;
+                        local165 = dl_24;
+                        local165 = dl_24;
+                        local166 = ah_21;
+                        local166 = ah_21;
+                        local167 = dh_21;
+                        local167 = dh_21;
+                        local168 = edx_116;
+                        local168 = edx_116;
+                        local170 = edi_21;
+                        local170 = edi_21;
+                        local171 = local8;
+                        local171 = local8;
+                        local172 = local26;
+                        local172 = local26;
+                        local173 = local44;
+                        local173 = local44;
+                        local174 = local62;
+                        local174 = local62;
+                        local175 = local80;
+                        local175 = local80;
+                        local176 = local98;
+                        local176 = local98;
+                        local177 = local122;
+                        local177 = local122;
                         esp_44 = esp_41 + 20;
                         ecx_112 = *(ebp - 16);
-                        local171 = esp_44;
-                        local171 = esp_44;
+                        local169 = esp_44;
+                        local169 = esp_44;
                         if ((ecx_112 & 0x80) != 0) {
                             tmp1 = *(ebp - 48);
                             if (*(ebp - 48) == 0) {
                                 edx_119 = *(ebp - 4);
                                 *(__size32*)(esp_41 + 16) = edx_119;
-                                (*global512_42920c)(local119, local99, local81, local63, local44, local26, local8, ax, (unsigned short) ecx_112 & 0x80, (unsigned short) edx_119, al, (unsigned char) ecx_112 & 0x80, dl_24, ah_21, dh_10, eax, ecx_112 & 0x80, edx_119, ebp, esi, edi_21, <all>, SUBFLAGS32(*(ebp - 48), 0, tmp1), tmp1 == 0, *(ebp - 48) < (unsigned int)0);
-                                local166 = dx_35;
-                                local167 = dl_27;
-                                local168 = ah_26;
-                                local169 = dh_9;
-                                local170 = edx_122;
-                                local172 = edi_24;
-                                local173 = local11;
-                                local174 = local29;
-                                local175 = local47;
-                                local176 = local66;
-                                local177 = local84;
-                                local178 = local102;
-                                local179 = local122;
+                                (*global512_42920c)(local122, local98, local80, local62, local44, local26, local8, ax, (unsigned short) ecx_112 & 0x80, (unsigned short) edx_119, al, (unsigned char) ecx_112 & 0x80, dl_24, ah_21, dh_21, eax, ecx_112 & 0x80, edx_119, ebp, esi, edi_21, <all>, SUBFLAGS32(*(ebp - 48), 0, tmp1), tmp1 == 0, *(ebp - 48) < (unsigned int)0);
+                                local164 = dx_35;
+                                local165 = dl_27;
+                                local166 = ah_26;
+                                local167 = dh_24;
+                                local168 = edx_122;
+                                local170 = edi_24;
+                                local171 = local11;
+                                local172 = local29;
+                                local173 = local47;
+                                local174 = local65;
+                                local175 = local83;
+                                local176 = local101;
+                                local177 = local125;
                                 esp_53 = esp_47 + 4;
-                                local171 = esp_53;
+                                local169 = esp_53;
                             }
                         }
-                        dx_31 = local166;
-                        dl_40 = local167;
-                        ah_14 = local168;
-                        dh_8 = local169;
-                        edx_216 = local170;
-                        esp_1 = local171;
-                        edi_27 = local172;
-                        local14 = local173;
-                        local32 = local174;
-                        local50 = local175;
-                        local69 = local176;
-                        local87 = local177;
-                        local105 = local178;
-                        local125 = local179;
+                        dx_31 = local164;
+                        dl_40 = local165;
+                        ah_14 = local166;
+                        dh_27 = local167;
+                        edx_216 = local168;
+                        esp_1 = local169;
+                        edi_27 = local170;
+                        local14 = local171;
+                        local32 = local172;
+                        local50 = local173;
+                        local68 = local174;
+                        local86 = local175;
+                        local104 = local176;
+                        local116 = local177;
                         eax = (int) *(ebp - 577);
-                        local180 = dx_31;
-                        local180 = dx_31;
-                        local181 = dl_40;
-                        local181 = dl_40;
-                        local182 = dh_8;
-                        local182 = dh_8;
-                        local183 = edx_216;
-                        local183 = edx_216;
-                        local184 = esp_1;
-                        local184 = esp_1;
-                        local185 = edi_27;
-                        local185 = edi_27;
-                        local186 = local14;
-                        local186 = local14;
-                        local187 = local32;
-                        local187 = local32;
-                        local188 = local50;
-                        local188 = local50;
-                        local189 = local69;
-                        local189 = local69;
-                        local190 = local87;
-                        local190 = local87;
-                        local191 = local105;
-                        local191 = local105;
-                        local192 = local125;
-                        local192 = local125;
+                        local178 = dx_31;
+                        local178 = dx_31;
+                        local179 = dl_40;
+                        local179 = dl_40;
+                        local180 = dh_27;
+                        local180 = dh_27;
+                        local181 = edx_216;
+                        local181 = edx_216;
+                        local182 = esp_1;
+                        local182 = esp_1;
+                        local183 = edi_27;
+                        local183 = edi_27;
+                        local184 = local14;
+                        local184 = local14;
+                        local185 = local32;
+                        local185 = local32;
+                        local186 = local50;
+                        local186 = local50;
+                        local187 = local68;
+                        local187 = local68;
+                        local188 = local86;
+                        local188 = local86;
+                        local189 = local104;
+                        local189 = local104;
+                        local190 = local116;
+                        local190 = local116;
                         if (eax == 103) {
                             ecx_115 = *(ebp - 16);
                             if ((ecx_115 & 0x80) == 0) {
                                 edx_125 = *(ebp - 4);
                                 *(__size32*)(esp_1 - 4) = edx_125;
-                                (*global513_429204)(local125, local105, local87, local69, local50, local32, local14, (unsigned short) eax, (unsigned short) ecx_115 & 0x80, (unsigned short) edx_125, (unsigned char) eax, (unsigned char) ecx_115 & 0x80, dl_40, ah_14, dh_8, eax, ecx_115 & 0x80, edx_125, ebp, esi, edi_27, <all>, LOGICALFLAGS32(ecx_115 & 0x80), LOGICALFLAGS32(ecx_115 & 0x80), LOGICALFLAGS32(ecx_115 & 0x80));
-                                local180 = dx_32;
-                                local181 = dl_30;
-                                local182 = dh_7;
-                                local183 = edx_128;
-                                local185 = edi_29;
-                                local186 = local15;
-                                local187 = local33;
-                                local188 = local51;
-                                local189 = local70;
-                                local190 = local88;
-                                local191 = local106;
-                                local192 = local126;
+                                (*global513_429204)(local116, local104, local86, local68, local50, local32, local14, (unsigned short) eax, (unsigned short) ecx_115 & 0x80, (unsigned short) edx_125, (unsigned char) eax, (unsigned char) ecx_115 & 0x80, dl_40, ah_14, dh_27, eax, ecx_115 & 0x80, edx_125, ebp, esi, edi_27, <all>, LOGICALFLAGS32(ecx_115 & 0x80), LOGICALFLAGS32(ecx_115 & 0x80), LOGICALFLAGS32(ecx_115 & 0x80));
+                                local178 = dx_32;
+                                local179 = dl_30;
+                                local180 = dh_29;
+                                local181 = edx_128;
+                                local183 = edi_29;
+                                local184 = local15;
+                                local185 = local33;
+                                local186 = local51;
+                                local187 = local69;
+                                local188 = local87;
+                                local189 = local105;
+                                local190 = local128;
                                 esp_57 = esp_56 + 4;
-                                local184 = esp_57;
+                                local182 = esp_57;
                             }
                         }
-                        dx_27 = local180;
-                        dl_39 = local181;
-                        dh_6 = local182;
-                        edx_215 = local183;
-                        esp_68 = local184;
-                        edi_9 = local185;
-                        *(__size32*)(esp_2 - 4) = local186;
-                        *(__size32*)(esp_2 - 36) = local187;
-                        *(__size32*)(esp_2 - 40) = local188;
-                        *(int*)(esp_2 - 56) = local189;
-                        *(__size32*)(esp_2 - 576) = local190;
-                        *(__size32*)(esp_2 - 592) = local191;
-                        local131 = local192;
+                        dx_27 = local178;
+                        dl_39 = local179;
+                        dh_8 = local180;
+                        edx_215 = local181;
+                        esp_68 = local182;
+                        edi_8 = local183;
+                        *(__size32*)(esp_2 - 4) = local184;
+                        *(__size32*)(esp_2 - 36) = local185;
+                        *(__size32*)(esp_2 - 40) = local186;
+                        *(int*)(esp_2 - 56) = local187;
+                        *(__size32*)(esp_2 - 576) = local188;
+                        *(__size32*)(esp_2 - 592) = local189;
+                        *(esp_2 - 704) = local190;
                         eax = *(ebp - 4);
                         ax = (unsigned short) eax;
                         ecx_118 = (int) *eax;
-                        local193 = dx_27;
-                        local194 = eax;
-                        local195 = edx_215;
-                        local198 = dl_39;
-                        local200 = dh_6;
-                        local202 = edi_9;
-                        local203 = *(esp_2 - 4);
-                        local204 = *(esp_2 - 36);
-                        local205 = *(esp_2 - 40);
-                        local206 = *(esp_2 - 56);
-                        local207 = *(esp_2 - 576);
-                        local208 = *(esp_2 - 592);
-                        local209 = local131;
+                        local191 = dx_27;
+                        local192 = eax;
+                        local193 = edx_215;
+                        local196 = dl_39;
+                        local198 = dh_8;
+                        local200 = edi_8;
+                        local201 = *(esp_2 - 4);
+                        local202 = *(esp_2 - 36);
+                        local203 = *(esp_2 - 40);
+                        local204 = *(esp_2 - 56);
+                        local205 = *(esp_2 - 576);
+                        local206 = *(esp_2 - 592);
+                        local207 = *(esp_2 - 704);
                         if (ecx_118 == 45) {
                             edx_131 = *(ebp - 16);
                             edx_134 = edx_131 | 256;
                             dx_28 = (unsigned short) edx_131 | 256;
                             *(int*)(ebp - 16) = edx_131 | 256;
-                            eax_4 = *(ebp - 4);
-                            eax_1 = eax_4 + 1;
-                            ax = (unsigned short) eax_4 + 1;
-                            *(int*)(ebp - 4) = eax_4 + 1;
-                            local193 = dx_28;
-                            local194 = eax_1;
-                            local195 = edx_134;
+                            eax_1 = *(ebp - 4);
+                            eax_4 = eax_1 + 1;
+                            ax = (unsigned short) eax_1 + 1;
+                            *(int*)(ebp - 4) = eax_1 + 1;
+                            local191 = dx_28;
+                            local192 = eax_4;
+                            local193 = edx_134;
                         }
-                        dx_14 = local193;
-                        eax = local194;
-                        edx_214 = local195;
+                        dx_14 = local191;
+                        eax = local192;
+                        edx_214 = local193;
                         ecx_94 = *(ebp - 4);
                         cx = (unsigned short) ecx_94;
                         *(__size32*)(esp_68 - 4) = ecx_94;
                         eax = proc_0x0041a180(*(esp_68 - 4), eax, edx_214); /* Warning: also results in ah_15 */
-                        local196 = cx;
-                        local197 = dx_14;
-                        local199 = ah_15;
-bb0x42057a:
+                        local194 = cx;
+                        local195 = dx_14;
+                        local197 = ah_15;
                         esp_34 = esp_68;
                         *(int*)(ebp - 36) = eax;
-                        local201 = esp_34;
-                        goto bb0x42057a;
+                        local199 = esp_34;
+                        goto bb0x42085d;
                     case 8:
                         cx = (unsigned short) ebp + 16;
                         *(int*)(esp_51 - 4) = ebp + 16;
@@ -13017,9 +12963,9 @@ bb0x42057a:
                         edx_208 = *(ebp - 16);
                         dl_55 = (unsigned char) edx_208 & 0x20;
                         dx_25 = (unsigned short) edx_208 & 0x20;
-                        local159 = dx_25;
-                        local160 = dl_55;
-                        local201 = esp_59;
+                        local157 = dx_25;
+                        local158 = dl_55;
+                        local199 = esp_59;
                         if ((edx_208 & 0x20) == 0) {
                             edx_211 = *(ebp - 616);
                             dl_60 = (unsigned char) edx_211;
@@ -13027,8 +12973,8 @@ bb0x42057a:
                             eax = *(ebp - 572);
                             ax = (unsigned short) eax;
                             *(__size32*)edx_211 = eax;
-                            local159 = dx_26;
-                            local160 = dl_60;
+                            local157 = dx_26;
+                            local158 = dl_60;
                         }
                         else {
                             eax = *(ebp - 616);
@@ -13036,80 +12982,74 @@ bb0x42057a:
                             cx = *(ebp - 572);
                             *(unsigned short*)eax = cx;
                         }
-bb0x42041f:
-                        dx_19 = local159;
-                        dl_42 = local160;
+                        dx_19 = local157;
+                        dl_42 = local158;
                         *(__size32*)(ebp - 40) = 1;
-                        local196 = cx;
-                        local197 = dx_19;
-                        local198 = dl_42;
-                        goto bb0x42041f;
+                        local194 = cx;
+                        local195 = dx_19;
+                        local196 = dl_42;
+                        goto bb0x42085d;
                     case 9:
-bb0x4205e7:
                         *(__size32*)(ebp - 8) = 8;
                         edx_217 = *(ebp - 16);
                         if ((edx_217 & 0x80) != 0) {
-bb0x4205f9:
                             eax = *(ebp - 16);
                             *(int*)(ebp - 16) = eax | 512;
-                            goto bb0x4205f9;
+                            goto bb0x420604;
                         }
-                        goto bb0x4205e7;
+                        goto bb0x420604;
                     case 10:
-bb0x4205a0:
                         *(__size32*)(ebp - 48) = 8;
-                        goto bb0x4205a0;
+                        goto bb0x4205a7;
                     case 11:
-                        goto bb0x42018e;
+                        goto bb0x4202df;
                     case 12:
-bb0x420597:
                         *(__size32*)(ebp - 8) = 10;
-                        goto bb0x420597;
+                        goto bb0x420604;
                     case 13:
-bb0x4205b3:
                         *(__size32*)(ebp - 592) = 39;
-                        goto bb0x4205b3;
+                        goto bb0x4205bd;
                     case 14:
                     }
                 }
 bb0x42085d:
-                cx = local196;
-                dx_8 = local197;
-                dl_5 = local198;
-                ah_4 = local199;
-                dh_5 = local200;
-                esp_65 = local201;
-                edi_8 = local202;
-                local21 = local203;
-                local37 = local204;
-                local55 = local205;
-                local74 = local206;
-                local92 = local207;
-                local110 = local208;
-                local130 = local209;
-                local210 = esp_65;
-                local227 = dx_8;
-                local228 = dl_5;
-                local229 = ah_4;
-                local230 = dh_5;
-                local231 = esp_65;
-                local232 = edi_8;
-                local233 = cx;
-                local233 = cx;
-                local240 = local21;
-                local240 = local21;
-                local241 = local37;
-                local241 = local37;
-                local242 = local55;
-                local242 = local55;
-                local243 = local74;
-                local243 = local74;
-                local244 = local92;
-                local244 = local92;
-                local245 = local110;
-                local245 = local110;
-                local246 = local130;
-                local246 = local130;
+                cx = local194;
+                dx_8 = local195;
+                dl_5 = local196;
+                ah_4 = local197;
+                dh_7 = local198;
+                esp_65 = local199;
+                edi_7 = local200;
+                local19 = local201;
+                local37 = local202;
+                local55 = local203;
+                local73 = local204;
+                local91 = local205;
+                local109 = local206;
+                local119 = local207;
+                local208 = esp_65;
+                local225 = dx_8;
+                local226 = dl_5;
+                local227 = ah_4;
+                local228 = dh_7;
+                local229 = esp_65;
+                local230 = edi_7;
+                local231 = cx;
+                local231 = cx;
+                local238 = local19;
+                local238 = local19;
+                local239 = local37;
+                local239 = local37;
+                local240 = local55;
+                local240 = local55;
+                local241 = local73;
+                local241 = local73;
+                local242 = local91;
+                local242 = local91;
+                local243 = local109;
+                local243 = local109;
+                local244 = local119;
+                local244 = local119;
                 if (*(ebp - 40) == 0) {
                     eax = *(ebp - 16);
                     if ((eax & 0x40) != 0) {
@@ -13117,17 +13057,15 @@ bb0x42085d:
                         if ((ecx_50 & 0x100) == 0) {
                             edx_87 = *(ebp - 16);
                             if ((edx_87 & 0x1) != 0) {
-bb0x42088f:
                                 *(int*)(ebp - 20) = 43;
                                 *(__size32*)(ebp - 28) = 1;
-                                goto bb0x42088f;
+                                goto bb0x4208af;
                             }
                             eax = *(ebp - 16);
                             if ((eax & 0x2) != 0) {
-bb0x4208a4:
                                 *(int*)(ebp - 20) = 32;
                                 *(__size32*)(ebp - 28) = 1;
-                                goto bb0x4208a4;
+                                goto bb0x4208af;
                             }
                         }
                         else {
@@ -13135,6 +13073,7 @@ bb0x4208a4:
                             *(__size32*)(ebp - 28) = 1;
                         }
                     }
+bb0x4208af:
                     ecx_59 = *(ebp - 24);
                     ecx_62 = ecx_59 - *(ebp - 36);
                     ecx_65 = ecx_62 - *(ebp - 28);
@@ -13147,30 +13086,30 @@ bb0x4208a4:
                         edx_69 = *(ebp - 652);
                         *(__size32*)(esp_65 - 12) = edx_69;
                         *(int*)(esp_65 - 16) = 32;
-                        esp_19 = proc_0x00420f90((unsigned short) edx_69, (unsigned char) ecx_68, dl_5, ah_4, dh_5, edx_69, edi_8); /* Warning: also results in ebp */
+                        esp_19 = proc_0x00420f90((unsigned short) edx_69, (unsigned char) ecx_68, dl_5, ah_4, dh_7, edx_69, edi_7); /* Warning: also results in ebp */
                         esp_20 = esp_19 + 16;
-                        local210 = esp_20;
+                        local208 = esp_20;
                     }
-                    esp_81 = local210;
+                    esp_81 = local208;
                     *(int*)(esp_81 - 4) = ebp - 572;
                     ecx_71 = *(ebp + 8);
                     *(__size32*)(esp_81 - 8) = ecx_71;
                     edx_72 = *(ebp - 28);
                     *(__size32*)(esp_81 - 12) = edx_72;
                     *(int*)(esp_81 - 16) = ebp - 20;
-                    dl_11 = proc_0x00420fe0(*(esp_81 - 12), *(esp_81 - 8), *(esp_81 - 4), (unsigned short) edx_72, (unsigned char) ecx_71, dl_4, ah_3, dh_4, edx_72, edi_7); /* Warning: also results in ah_7, dh_23, esp_21, ebp, edi_11 */
-                    local211 = dl_11;
-                    local211 = dl_11;
-                    local212 = ah_7;
-                    local212 = ah_7;
-                    local213 = dh_23;
-                    local213 = dh_23;
-                    local215 = edi_11;
-                    local215 = edi_11;
+                    dl_11 = proc_0x00420fe0(*(esp_81 - 12), *(esp_81 - 8), *(esp_81 - 4), (unsigned short) edx_72, (unsigned char) ecx_71, dl_4, ah_3, dh_6, edx_72, edi_6); /* Warning: also results in ah_7, dh_11, esp_21, ebp, edi_11 */
+                    local209 = dl_11;
+                    local209 = dl_11;
+                    local210 = ah_7;
+                    local210 = ah_7;
+                    local211 = dh_11;
+                    local211 = dh_11;
+                    local213 = edi_11;
+                    local213 = edi_11;
                     esp_24 = esp_21 + 16;
                     ecx_74 = *(ebp - 16);
-                    local214 = esp_24;
-                    local214 = esp_24;
+                    local212 = esp_24;
+                    local212 = esp_24;
                     if ((ecx_74 & 0x8) != 0) {
                         edx_75 = *(ebp - 16);
                         if ((edx_75 & 0x4) == 0) {
@@ -13180,25 +13119,25 @@ bb0x4208a4:
                             edx_78 = *(ebp - 652);
                             *(__size32*)(esp_21 + 4) = edx_78;
                             *(int*)esp_21 = 48;
-                            dl_14 = proc_0x00420f90((unsigned short) edx_78, (unsigned char) ecx_77, dl_11, ah_7, dh_23, edx_78, edi_11); /* Warning: also results in ah_10, dh_24, esp_26, ebp, edi_14 */
-                            local211 = dl_14;
-                            local212 = ah_10;
-                            local213 = dh_24;
-                            local215 = edi_14;
+                            dl_14 = proc_0x00420f90((unsigned short) edx_78, (unsigned char) ecx_77, dl_11, ah_7, dh_11, edx_78, edi_11); /* Warning: also results in ah_10, dh_14, esp_26, ebp, edi_14 */
+                            local209 = dl_14;
+                            local210 = ah_10;
+                            local211 = dh_14;
+                            local213 = edi_14;
                             esp_27 = esp_26 + 16;
-                            local214 = esp_27;
+                            local212 = esp_27;
                         }
                     }
-                    dl_85 = local211;
-                    ah_48 = local212;
-                    dh_21 = local213;
-                    esp_86 = local214;
-                    edi_48 = local215;
-                    local216 = dl_85;
-                    local217 = ah_48;
-                    local218 = dh_21;
-                    local219 = esp_86;
-                    local220 = edi_48;
+                    dl_85 = local209;
+                    ah_48 = local210;
+                    dh_48 = local211;
+                    esp_86 = local212;
+                    edi_48 = local213;
+                    local214 = dl_85;
+                    local215 = ah_48;
+                    local216 = dh_48;
+                    local217 = esp_86;
+                    local218 = edi_48;
                     if (*(ebp - 12) == 0 || *(ebp - 36) <= 0) {
                         *(int*)(esp_86 - 4) = ebp - 572;
                         edx_90 = *(ebp + 8);
@@ -13208,34 +13147,34 @@ bb0x4208a4:
                         *(__size32*)(esp_86 - 12) = eax;
                         ecx_86 = *(ebp - 4);
                         *(__size32*)(esp_86 - 16) = ecx_86;
-                        dl_18 = proc_0x00420fe0(*(esp_86 - 12), *(esp_86 - 8), *(esp_86 - 4), (unsigned short) edx_90, (unsigned char) ecx_86, dl_85, ah_48, dh_21, edx_90, edi_48); /* Warning: also results in ah_11, dh_19, esp_28, ebp, edi_15 */
-                        local222 = dl_18;
-                        local223 = ah_11;
-                        local224 = dh_19;
-                        local226 = edi_15;
-bb0x4209ef:
+                        dl_18 = proc_0x00420fe0(*(esp_86 - 12), *(esp_86 - 8), *(esp_86 - 4), (unsigned short) edx_90, (unsigned char) ecx_86, dl_85, ah_48, dh_48, edx_90, edi_48); /* Warning: also results in ah_11, dh_15, esp_28, ebp, edi_15 */
+                        local220 = dl_18;
+                        local221 = ah_11;
+                        local222 = dh_15;
+                        local224 = edi_15;
                         esp_29 = esp_28 + 16;
-                        local225 = esp_29;
-                        goto bb0x4209ef;
+                        local223 = esp_29;
+                        goto bb0x4209f2;
                     }
                     else {
                         eax = *(ebp - 4);
                         *(__size32*)(ebp - 656) = eax;
                         ecx_80 = *(ebp - 36);
                         *(__size32*)(ebp - 660) = ecx_80;
-                        dl_88 = local216;
-                        ah_51 = local217;
-                        dh_20 = local218;
-                        esp_89 = local219;
-                        edi_51 = local220;
+bb0x42094f:
+                        dl_88 = local214;
+                        ah_51 = local215;
+                        dh_51 = local216;
+                        esp_89 = local217;
+                        edi_51 = local218;
                         edx_81 = *(ebp - 660);
                         eax = *(ebp - 660);
                         ax = (unsigned short) eax - 1;
                         *(int*)(ebp - 660) = eax - 1;
-                        local221 = dl_88;
-                        local223 = ah_51;
-                        local224 = dh_20;
-                        local226 = edi_51;
+                        local219 = dl_88;
+                        local221 = ah_51;
+                        local222 = dh_51;
+                        local224 = edi_51;
                         if (edx_81 != 0) {
                             ecx_83 = *(ebp - 656);
                             dx_33 = *ecx_83;
@@ -13244,7 +13183,7 @@ bb0x4209ef:
                             *(int*)(esp_89 - 4) = eax - 1 >> 16 & 0xffff | (ax);
                             *(int*)(esp_89 - 8) = ebp - 672;
                             eax = proc_0x00421e40(*(esp_89 - 8), *(esp_89 - 4), dl_88, ebp - 672); /* Warning: also results in dl_15 */
-                            local221 = dl_15;
+                            local219 = dl_15;
                             *(int*)(ebp - 664) = eax;
                             edx_84 = *(ebp - 656);
                             *(__size32*)(ebp - 656) = edx_84 + 2;
@@ -13255,37 +13194,37 @@ bb0x4209ef:
                                 edx_98 = *(ebp - 664);
                                 *(__size32*)(esp_89 - 12) = edx_98;
                                 *(int*)(esp_89 - 16) = ebp - 672;
-                                dl_20 = proc_0x00420fe0(*(esp_89 - 12), *(esp_89 - 8), *(esp_89 - 4), (unsigned short) edx_98, (unsigned char) ecx_91, dl_15, ah_51, dh_20, edx_98, edi_51); /* Warning: also results in ah_13, dh_22, esp_32, ebp, edi_17 */
-                                local216 = dl_20;
-                                local217 = ah_13;
-                                local218 = dh_22;
-                                local220 = edi_17;
-bb0x4209cd:
+                                dl_20 = proc_0x00420fe0(*(esp_89 - 12), *(esp_89 - 8), *(esp_89 - 4), (unsigned short) edx_98, (unsigned char) ecx_91, dl_15, ah_51, dh_51, edx_98, edi_51); /* Warning: also results in ah_13, dh_17, esp_32, ebp, edi_17 */
+                                local214 = dl_20;
+                                local215 = ah_13;
+                                local216 = dh_17;
+                                local218 = edi_17;
                                 esp_33 = esp_32 + 16;
-                                local219 = esp_33;
-                                goto bb0x4209cd;
+                                local217 = esp_33;
+                                goto bb0x42094f;
                             }
                             else {
                             }
                         }
-                        dl_91 = local221;
+                        dl_91 = local219;
                         esp = esp_89;
-                        local222 = dl_91;
-                        local225 = esp;
+                        local220 = dl_91;
+                        local223 = esp;
                     }
-                    dl_92 = local222;
-                    ah_54 = local223;
-                    dh_18 = local224;
-                    esp_66 = local225;
-                    edi_54 = local226;
+bb0x4209f2:
+                    dl_92 = local220;
+                    ah_54 = local221;
+                    dh_54 = local222;
+                    esp_66 = local223;
+                    edi_54 = local224;
                     edx_93 = *(ebp - 16);
                     dx_10 = (unsigned short) edx_93 & 0x4;
-                    local227 = dx_10;
-                    local228 = dl_92;
-                    local229 = ah_54;
-                    local230 = dh_18;
-                    local231 = esp_66;
-                    local232 = edi_54;
+                    local225 = dx_10;
+                    local226 = dl_92;
+                    local227 = ah_54;
+                    local228 = dh_54;
+                    local229 = esp_66;
+                    local230 = edi_54;
                     if ((edx_93 & 0x4) != 0) {
                         ax = (unsigned short) ebp - 572;
                         *(int*)(esp_66 - 4) = ebp - 572;
@@ -13294,28 +13233,28 @@ bb0x4209cd:
                         edx_96 = *(ebp - 652);
                         *(__size32*)(esp_66 - 12) = edx_96;
                         *(int*)(esp_66 - 16) = 32;
-                        dx_9 = proc_0x00420f90((unsigned short) edx_96, (unsigned char) ecx_89, dl_92, ah_54, dh_18, edx_96, edi_54); /* Warning: also results in dl_19, ah_12, dh_17, esp_30, ebp, edi_16 */
-                        local227 = dx_9;
-                        local228 = dl_19;
-                        local229 = ah_12;
-                        local230 = dh_17;
-                        local232 = edi_16;
+                        dx_9 = proc_0x00420f90((unsigned short) edx_96, (unsigned char) ecx_89, dl_92, ah_54, dh_54, edx_96, edi_54); /* Warning: also results in dl_19, ah_12, dh_16, esp_30, ebp, edi_16 */
+                        local225 = dx_9;
+                        local226 = dl_19;
+                        local227 = ah_12;
+                        local228 = dh_16;
+                        local230 = edi_16;
                         esp_31 = esp_30 + 16;
-                        local231 = esp_31;
+                        local229 = esp_31;
                     }
                 }
-                dx_6 = local227;
-                dl_82 = local228;
-                ah_45 = local229;
-                dh_15 = local230;
-                esp_64 = local231;
-                edi_45 = local232;
-                local234 = dx_6;
-                local235 = dl_82;
-                local236 = ah_45;
-                local237 = dh_15;
-                local238 = esp_64;
-                local239 = edi_45;
+                dx_6 = local225;
+                dl_82 = local226;
+                ah_45 = local227;
+                dh_45 = local228;
+                esp_64 = local229;
+                edi_45 = local230;
+                local232 = dx_6;
+                local233 = dl_82;
+                local234 = ah_45;
+                local235 = dh_45;
+                local236 = esp_64;
+                local237 = edi_45;
                 if (*(ebp - 32) == 0) {
                     goto bb0x420a31;
                 }
@@ -13323,285 +13262,284 @@ bb0x4209cd:
                 eax = *(ebp - 32);
                 ax = (unsigned short) eax;
                 *(int*)(esp_64 - 8) = eax;
-                dx_7 = proc_0x004175b0(*(esp_64 - 432), *(esp_64 - 428), *(esp_64 - 424), *(esp_64 - 156), *(esp_64 - 148), *(esp_64 - 136), *(esp_64 - 132), *(esp_64 - 120), *(esp_64 - 116), *(esp_64 - 112), *(esp_64 - 108), *(esp_64 - 104), *(esp_64 - 96), *(esp_64 - 92), *(esp_64 - 84), *(esp_64 - 80), *(esp_64 - 76), *(esp_64 - 24), (unsigned short) eax, dx_6, (unsigned char) eax, cl_1, dl_82, ah_45, dh_15, eax, ecx_45, edx_4, ebp, esi, edi_45); /* Warning: also results in dl_10, ah_6, dh_16, esp_17, ebp, esi, edi_10 */
-                local234 = dx_7;
-                local235 = dl_10;
-                local236 = ah_6;
-                local237 = dh_16;
-                local239 = edi_10;
-bb0x420a27:
+                dx_7 = proc_0x004175b0(*(esp_64 - 432), *(esp_64 - 428), *(esp_64 - 424), *(esp_64 - 156), *(esp_64 - 148), *(esp_64 - 136), *(esp_64 - 132), *(esp_64 - 120), *(esp_64 - 116), *(esp_64 - 112), *(esp_64 - 108), *(esp_64 - 104), *(esp_64 - 96), *(esp_64 - 92), *(esp_64 - 84), *(esp_64 - 80), *(esp_64 - 76), *(esp_64 - 24), (unsigned short) eax, dx_6, (unsigned char) eax, cl_1, dl_82, ah_45, dh_45, eax, ecx_45, edx_4, ebp, esi, edi_45); /* Warning: also results in dl_10, ah_6, dh_10, esp_17, ebp, esi, edi_10 */
+                local232 = dx_7;
+                local233 = dl_10;
+                local234 = ah_6;
+                local235 = dh_10;
+                local237 = edi_10;
                 esp_18 = esp_17 + 8;
                 *(__size32*)(ebp - 32) = 0;
-                local238 = esp_18;
-                goto bb0x420a27;
+                local236 = esp_18;
+                goto bb0x420a31;
             }
         }
 bb0x420a31:
-        cx = local233;
-        dx_4 = local234;
-        dl_65 = local235;
-        ah_34 = local236;
-        dh_13 = local237;
-        esp_52 = local238;
-        edi_34 = local239;
-        local20 = local240;
-        local36 = local241;
-        local54 = local242;
-        local73 = local243;
-        local91 = local244;
-        local109 = local245;
-        *(esp_2 - 704) = local246;
-        local136 = cx;
-        local137 = dx_4;
-        local138 = dl_65;
-        local139 = ah_34;
-        local140 = dh_13;
-        local141 = esp_52;
-        local142 = edi_34;
-        local143 = local20;
-        local144 = local36;
-        local145 = local54;
-        local146 = local73;
-        local147 = local91;
-        local148 = local109;
-        local149 = *(esp_2 - 704);
-        param2 = local136;
-        dx_3 = local137;
-        dl_3 = local138;
-        ah_2 = local139;
-        dh_3 = local140;
-        esp_51 = local141;
-        edi_3 = local142;
-        local19 = local143;
-        local35 = local144;
-        local53 = local145;
-        local72 = local146;
-        local90 = local147;
-        local108 = local148;
-        local116 = local149;
+        cx = local231;
+        dx_4 = local232;
+        dl_65 = local233;
+        ah_34 = local234;
+        dh_34 = local235;
+        esp_52 = local236;
+        edi_34 = local237;
+        local18 = local238;
+        local36 = local239;
+        local54 = local240;
+        local72 = local241;
+        local90 = local242;
+        local108 = local243;
+        local115 = local244;
+        local134 = cx;
+        local135 = dx_4;
+        local136 = dl_65;
+        local137 = ah_34;
+        local138 = dh_34;
+        local139 = esp_52;
+        local140 = edi_34;
+        local141 = local18;
+        local142 = local36;
+        local143 = local54;
+        local144 = local72;
+        local145 = local90;
+        local146 = local108;
+        local147 = local115;
+        param2 = local134;
+        dx_3 = local135;
+        dl_3 = local136;
+        ah_2 = local137;
+        dh_2 = local138;
+        esp_51 = local139;
+        edi_2 = local140;
+        local17 = local141;
+        local35 = local142;
+        local53 = local143;
+        local71 = local144;
+        local89 = local145;
+        local107 = local146;
+        local132 = local147;
         eax = *(ebp + 12);
         cl_2 = *eax;
         *(unsigned char*)(ebp - 577) = cl_2;
-        edx_8 = (int) *(ebp - 577);
+        edx_10 = (int) *(ebp - 577);
         eax = *(ebp + 12);
         *(int*)(ebp + 12) = eax + 1;
-        local150 = esp_51;
+        local148 = esp_51;
+        local149 = param2;
+        local150 = dl_3;
         local151 = param2;
-        local152 = dl_3;
-        local153 = param2;
-        local156 = ah_2;
-        local156 = ah_2;
-        local161 = dl_3;
-        local162 = ah_2;
-        local163 = dh_3;
-        local164 = esp_51;
-        local165 = edi_3;
-        local196 = param2;
-        local196 = param2;
-        local198 = dl_3;
-        local198 = dl_3;
-        local198 = dl_3;
-        local199 = ah_2;
-        local199 = ah_2;
-        local199 = ah_2;
-        local199 = ah_2;
-        local199 = ah_2;
-        local199 = ah_2;
-        local199 = ah_2;
-        local199 = ah_2;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local200 = dh_3;
-        local201 = esp_51;
-        local201 = esp_51;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local202 = edi_3;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local203 = local19;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local204 = local35;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local205 = local53;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local206 = local72;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local207 = local90;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local208 = local108;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local209 = local116;
-        local233 = param2;
-        local233 = param2;
-        local233 = param2;
-        local233 = param2;
-        local233 = param2;
-        local233 = param2;
-        local233 = param2;
-        local233 = param2;
-        local234 = dx_3;
-        local234 = dx_3;
-        local234 = dx_3;
-        local234 = dx_3;
-        local234 = dx_3;
-        local234 = dx_3;
-        local234 = dx_3;
-        local235 = dl_3;
-        local235 = dl_3;
-        local235 = dl_3;
-        local235 = dl_3;
-        local235 = dl_3;
-        local235 = dl_3;
-        local235 = dl_3;
-        local236 = ah_2;
-        local236 = ah_2;
-        local236 = ah_2;
-        local236 = ah_2;
-        local236 = ah_2;
-        local236 = ah_2;
-        local236 = ah_2;
-        local237 = dh_3;
-        local237 = dh_3;
-        local237 = dh_3;
-        local237 = dh_3;
-        local237 = dh_3;
-        local237 = dh_3;
-        local237 = dh_3;
-        local238 = esp_51;
-        local238 = esp_51;
-        local238 = esp_51;
-        local238 = esp_51;
-        local238 = esp_51;
-        local239 = edi_3;
-        local239 = edi_3;
-        local239 = edi_3;
-        local239 = edi_3;
-        local239 = edi_3;
-        local239 = edi_3;
-        local239 = edi_3;
-        local240 = local19;
-        local240 = local19;
-        local240 = local19;
-        local240 = local19;
-        local240 = local19;
-        local240 = local19;
-        local240 = local19;
-        local240 = local19;
-        local241 = local35;
-        local241 = local35;
-        local241 = local35;
-        local241 = local35;
-        local241 = local35;
-        local241 = local35;
-        local241 = local35;
-        local241 = local35;
-        local242 = local53;
-        local242 = local53;
-        local242 = local53;
-        local242 = local53;
-        local242 = local53;
-        local242 = local53;
-        local242 = local53;
-        local242 = local53;
-        local243 = local72;
-        local243 = local72;
-        local243 = local72;
-        local243 = local72;
-        local243 = local72;
-        local243 = local72;
-        local243 = local72;
-        local243 = local72;
-        local244 = local90;
-        local244 = local90;
-        local244 = local90;
-        local244 = local90;
-        local244 = local90;
-        local244 = local90;
-        local244 = local90;
-        local244 = local90;
-        local245 = local108;
-        local245 = local108;
-        local245 = local108;
-        local245 = local108;
-        local245 = local108;
-        local245 = local108;
-        local245 = local108;
-        local245 = local108;
-        local246 = local116;
-        local246 = local116;
-        local246 = local116;
-        local246 = local116;
-        local246 = local116;
-        local246 = local116;
-        local246 = local116;
-        local246 = local116;
+        local154 = ah_2;
+        local154 = ah_2;
+        local159 = dl_3;
+        local160 = ah_2;
+        local161 = dh_2;
+        local162 = esp_51;
+        local163 = edi_2;
+        local194 = param2;
+        local194 = param2;
+        local196 = dl_3;
+        local196 = dl_3;
+        local196 = dl_3;
+        local197 = ah_2;
+        local197 = ah_2;
+        local197 = ah_2;
+        local197 = ah_2;
+        local197 = ah_2;
+        local197 = ah_2;
+        local197 = ah_2;
+        local197 = ah_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local198 = dh_2;
+        local199 = esp_51;
+        local199 = esp_51;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local200 = edi_2;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local201 = local17;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local202 = local35;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local203 = local53;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local204 = local71;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local205 = local89;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local206 = local107;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local207 = local132;
+        local231 = param2;
+        local231 = param2;
+        local231 = param2;
+        local231 = param2;
+        local231 = param2;
+        local231 = param2;
+        local231 = param2;
+        local231 = param2;
+        local232 = dx_3;
+        local232 = dx_3;
+        local232 = dx_3;
+        local232 = dx_3;
+        local232 = dx_3;
+        local232 = dx_3;
+        local232 = dx_3;
+        local233 = dl_3;
+        local233 = dl_3;
+        local233 = dl_3;
+        local233 = dl_3;
+        local233 = dl_3;
+        local233 = dl_3;
+        local233 = dl_3;
+        local234 = ah_2;
+        local234 = ah_2;
+        local234 = ah_2;
+        local234 = ah_2;
+        local234 = ah_2;
+        local234 = ah_2;
+        local234 = ah_2;
+        local235 = dh_2;
+        local235 = dh_2;
+        local235 = dh_2;
+        local235 = dh_2;
+        local235 = dh_2;
+        local235 = dh_2;
+        local235 = dh_2;
+        local236 = esp_51;
+        local236 = esp_51;
+        local236 = esp_51;
+        local236 = esp_51;
+        local236 = esp_51;
+        local237 = edi_2;
+        local237 = edi_2;
+        local237 = edi_2;
+        local237 = edi_2;
+        local237 = edi_2;
+        local237 = edi_2;
+        local237 = edi_2;
+        local238 = local17;
+        local238 = local17;
+        local238 = local17;
+        local238 = local17;
+        local238 = local17;
+        local238 = local17;
+        local238 = local17;
+        local238 = local17;
+        local239 = local35;
+        local239 = local35;
+        local239 = local35;
+        local239 = local35;
+        local239 = local35;
+        local239 = local35;
+        local239 = local35;
+        local239 = local35;
+        local240 = local53;
+        local240 = local53;
+        local240 = local53;
+        local240 = local53;
+        local240 = local53;
+        local240 = local53;
+        local240 = local53;
+        local240 = local53;
+        local241 = local71;
+        local241 = local71;
+        local241 = local71;
+        local241 = local71;
+        local241 = local71;
+        local241 = local71;
+        local241 = local71;
+        local241 = local71;
+        local242 = local89;
+        local242 = local89;
+        local242 = local89;
+        local242 = local89;
+        local242 = local89;
+        local242 = local89;
+        local242 = local89;
+        local242 = local89;
+        local243 = local107;
+        local243 = local107;
+        local243 = local107;
+        local243 = local107;
+        local243 = local107;
+        local243 = local107;
+        local243 = local107;
+        local243 = local107;
+        local244 = local132;
+        local244 = local132;
+        local244 = local132;
+        local244 = local132;
+        local244 = local132;
+        local244 = local132;
+        local244 = local132;
+        local244 = local132;
     }
     eax = *(ebp - 572);
     ecx = *(ebp - 52);
-    proc_0x0041d0f0(dx_3, dh_3, ecx);
+    proc_0x0041d0f0(dx_3, dh_2, ecx);
     ebp = *ebp;
-    return eax; /* WARNING: Also returning: ax := ax, dx := dx_3, cl := (unsigned char) ecx, dl_1 := dl_3, ah := ah_2, dh := dh_3, ecx := ecx, edx := edx_8, ebp := ebp, esi := esi, edi := edi_3 */
+    return eax; /* WARNING: Also returning: ax := ax, dx := dx_3, cl := (unsigned char) ecx, dl_1 := dl_3, ah := ah_2, dh := dh_2, ecx := ecx, edx := edx_10, ebp := ebp, esi := esi, edi := edi_2 */
 }
 
 /** address: 0x0041fa90 */
@@ -13715,6 +13653,7 @@ __size32 proc_0x0041fa90(int param1, __size32 param2, __size16 param4, short par
     local29 = param10;
     local29 = param10;
     if ((edx & 0x82) == 0) {
+bb0x41fae2:
         edx = *(ebp - 8);
         dl = (unsigned char) edx;
         eax = *(edx + 12);
@@ -13724,13 +13663,13 @@ __size32 proc_0x0041fa90(int param1, __size32 param2, __size16 param4, short par
         local24 = edx;
     }
     else {
-bb0x41fad7:
         eax = *(ebp - 8);
         ecx = *(eax + 12);
         if ((ecx & 0x40) == 0) {
             edx = *(ebp - 8);
             eax = *(edx + 12);
             if ((eax & 0x1) == 0) {
+bb0x41fb4c:
                 ecx = *(ebp - 8);
                 edx = *(ecx + 12);
                 eax = *(ebp - 8);
@@ -13748,6 +13687,7 @@ bb0x41fad7:
                 ecx = *(eax + 12);
                 if ((ecx & 0x10c) == 0) {
                     if (*(ebp - 8) != 0x428f20 && *(ebp - 8) != 0x428f40) {
+bb0x41fbb1:
                         eax = *(ebp - 8);
                         *(__size32*)(esp_4 - 4) = eax;
                         dx = proc_0x00421b60(*(esp_4 - 4), param4, param10); /* Warning: also results in al, cl_2, ah, dh, esp, ebp, edi */
@@ -13764,11 +13704,10 @@ bb0x41fad7:
                         edx = *(ebp - 16);
                         *(int*)(esp_4 - 4) = edx;
                         eax = proc_0x00421c50(*(esp_4 - 4));
-bb0x41fbaa:
                         esp = esp_4;
                         local15 = esp;
                         if (eax == 0) {
-                            goto bb0x41fbaa;
+                            goto bb0x41fbb1;
                         }
                     }
                 }
@@ -13907,7 +13846,6 @@ bb0x41fbaa:
                     local24 = edx_5;
                 }
                 else {
-bb0x41fb19:
                     ecx = *(ebp - 8);
                     edx = *(ebp - 8);
                     eax = *(edx + 8);
@@ -13916,12 +13854,12 @@ bb0x41fb19:
                     edx = *(ecx + 12);
                     eax = *(ebp - 8);
                     *(int*)(eax + 12) = edx & ~0x1;
-                    goto bb0x41fb19;
+                    goto bb0x41fb4c;
                 }
             }
         }
         else {
-            goto bb0x41fad7;
+            goto bb0x41fae2;
         }
     }
     cl = local23;
@@ -14035,9 +13973,8 @@ void proc_0x0041da00(unsigned int param1, int param2, int param3, int param4, un
     local18 = param4;
     if (*(esp_10 - 28) > (unsigned int)20) {
 bb0x41da8c:
-        goto bb0x41da8c;
+        return;
     }
-bb0x41da1b:
     edx = *(esp_10 - 28);
     eax = *(unsigned char*)(*(esp_10 - 28) + 0x41db9b);
     local10 = eax;
@@ -14048,6 +13985,7 @@ bb0x41da1b:
         ecx = 0x4298dc;
         edx = *(&global646_428d1c + 0xbc0);
         *(unsigned int*)(esp_10 - 8) = edx;
+bb0x41da94:
         eax = local10;
         esp_4 = esp_10 - 28;
         param2 = local11;
@@ -14105,13 +14043,13 @@ bb0x41da1b:
             if (param6 != 8) {
                 *(int*)(esp_7 - 4) = param6;
                 (**(esp_10 - 8))(*(esp_10 - 36), *(esp_10 - 32), param6 - 2, param3, *(esp_10 - 20), param4, param5, *(esp_10 - 8), param7, param6, eax, ecx, param6, esp_10 - 4, SUBFLAGS32(param6, 8, tmp1), tmp1 == 0, (unsigned int)param6 < (unsigned int)8);
-                local19 = ebp;
+                local19 = ebp_1;
             }
             else {
                 *(__size32*)(esp_7 - 4) = global1218_428c14;
                 *(int*)(esp_7 - 8) = 8;
                 (**(esp_10 - 8))(*(esp_10 - 36), *(esp_10 - 32), param6 - 2, param3, *(esp_10 - 20), param4, param5, *(esp_10 - 8), param7, param6, eax, global1218_428c14, edx, esp_10 - 4, SUBFLAGS32(param6, 8, tmp1), tmp1 == 0, (unsigned int)param6 < (unsigned int)8);
-                local19 = ebp_1;
+                local19 = ebp;
             }
             ebp = local19;
             if ( ~( ~(*(ebp + 8) == 8 || *(ebp + 8) == 11) && *(ebp + 8) != 4)) {
@@ -14122,51 +14060,45 @@ bb0x41da1b:
                     global1218_428c14 = ecx;
                 }
             }
-bb0x41db7d:
-            goto bb0x41db7d;
+            return;
         }
         else {
-bb0x41da9a:
-            goto bb0x41da9a;
+            return;
         }
     case 1:
         *(int*)(esp_10 - 32) = param6;
         eax_2 = proc_0x0041dc20(param6);
         local11 = *(esp_10 - 32);
         local12 = *(esp_10 - 36);
-bb0x41da79:
         eax_5 = eax_2 + 8;
         *(int*)(esp_10 - 20) = eax_2 + 8;
         ecx = eax_2 + 8;
         edx = *(eax_2 + 8);
         *(unsigned int*)(esp_10 - 8) = edx;
         local10 = eax_5;
-        goto bb0x41da79;
+        goto bb0x41da94;
     case 2:
-bb0x41da5f:
         *(__size32*)(esp_10 - 20) = 0x4298e8;
         ecx = 0x4298e8;
         edx = *(&global646_428d1c + 0xbcc);
         *(unsigned int*)(esp_10 - 8) = edx;
-        goto bb0x41da5f;
+        goto bb0x41da94;
     case 3:
-bb0x41da3d:
         *(__size32*)(esp_10 - 20) = 0x4298e0;
         eax = 0x4298e0;
         ecx = *(&global646_428d1c + 0xbc4);
         *(unsigned int*)(esp_10 - 8) = ecx;
         local10 = eax;
-        goto bb0x41da3d;
+        goto bb0x41da94;
     case 4:
-bb0x41da4e:
         *(__size32*)(esp_10 - 20) = 0x4298e4;
         edx = 0x4298e4;
         eax = *(&global646_428d1c + 0xbc8);
         *(unsigned int*)(esp_10 - 8) = eax;
         local10 = eax;
-        goto bb0x41da4e;
+        goto bb0x41da94;
     case 5:
-        goto bb0x41da1b;
+        goto bb0x41da8c;
     }
     return;
 }
@@ -14205,6 +14137,7 @@ __size32 proc_0x0041de40(unsigned int param1, __size8 param2, __size8 param3)
     local5 = param3;
     local6 = param1;
     if (*0x42af90 != 3 || param1 > global24_42aca4) {
+bb0x41de72:
         param2 = local4;
         param3 = local5;
         local8 = param2;
@@ -14230,9 +14163,8 @@ __size32 proc_0x0041de40(unsigned int param1, __size8 param2, __size8 param3)
         local5 = dl;
         local8 = al;
         local9 = dl;
-bb0x41de61:
         if (eax == 0) {
-            goto bb0x41de61;
+            goto bb0x41de72;
         }
         else {
             local10 = eax;
@@ -14263,12 +14195,12 @@ __size32 proc_0x0041c260(int param1, int param2, int param3, int param4, int par
     int ecx_7; 		// r25{0}
     int edx; 		// r26
     void *esp_1; 		// r28{0}
+    __size32 esp_10; 		// r28{0}
     void *esp_12; 		// r28{0}
     void *esp_13; 		// r28{0}
     void *esp_14; 		// r28{0}
     void *esp_4; 		// r28{0}
     void *esp_7; 		// r28{0}
-    __size32 esp_8; 		// r28{0}
     int local0; 		// m[esp - 60]
     int local1; 		// m[esp - 368]
     union { int; __size32 *; } local10; 		// m[esp - 48]
@@ -14321,52 +14253,53 @@ __size32 proc_0x0041c260(int param1, int param2, int param3, int param4, int par
         param3 = local16;
         param2 = local17;
         param1 = local18;
-        while (*(esp_8 - 368) < global27_42ac9c) {
-            eax_1 = *(*(esp_8 - 60) + 16);
+        while (*(esp_10 - 368) < global27_42ac9c) {
+            eax_1 = *(*(esp_10 - 60) + 16);
             *(__size32*)(esp_14 - 4) = 0x41c4;
             *(int*)(esp_14 - 8) = eax_1;
             eax_4 = IsBadWritePtr(); /* Warning: also results in esp_4 */
             local26 = esp_4;
             if (eax_4 == 0) {
-                eax_7 = *(*(esp_8 - 60) + 12);
+                eax_7 = *(*(esp_10 - 60) + 12);
                 local19 = eax_7;
                 local20 = eax_1 + 324;
-                eax_10 = *(*(esp_8 - 60) + 8);
+                eax_10 = *(*(esp_10 - 60) + 8);
                 local21 = eax_10;
                 local22 = 0;
                 local23 = 0;
                 local24 = 0;
+bb0x41c328:
                 esp_12 = local26;
                 local25 = esp_12;
                 local27 = esp_12;
-                if (*(esp_8 - 32) >= 32) {
-                    if (*(esp_8 - 56) == **(esp_8 - 60) && *(esp_8 - 84) == *(*(esp_8 - 60) + 4)) {
-                        *(__size32*)(esp_8 - 60) += 20;
-                        *(int*)(esp_8 - 368)++;
+                if (*(esp_10 - 32) >= 32) {
+                    if (*(esp_10 - 56) == **(esp_10 - 60) && *(esp_10 - 84) == *(*(esp_10 - 60) + 4)) {
+                        *(__size32*)(esp_10 - 60) += 20;
+                        *(int*)(esp_10 - 368)++;
                     }
                     else {
                         eax = -17;
                     }
                 }
                 else {
-                    *(int*)(esp_8 - 16) = 0;
-                    *(int*)(esp_8 - 8) = 0;
-                    *(int*)(esp_8 - 24) = 0;
-                    *(int*)(esp_8 - 364) = 0;
-                    while (*(esp_8 - 364) < 64) {
-                        *(__size32*)(esp_8 + *(esp_8 - 364) * 4 - 348) = 0;
-                        *(int*)(esp_8 - 364)++;
+                    *(int*)(esp_10 - 16) = 0;
+                    *(int*)(esp_10 - 8) = 0;
+                    *(int*)(esp_10 - 24) = 0;
+                    *(int*)(esp_10 - 364) = 0;
+                    while (*(esp_10 - 364) < 64) {
+                        *(__size32*)(esp_10 + *(esp_10 - 364) * 4 - 348) = 0;
+                        *(int*)(esp_10 - 364)++;
                     }
-                    if (*(esp_8 - 352) < 0) {
+                    if (*(esp_10 - 352) < 0) {
+bb0x41c6ee:
                         esp_13 = local27;
                         local26 = esp_13;
-                        if (*(esp_8 - 16) == *(eax_1 + *(esp_8 - 32) * 4 + 68) && *(esp_8 - 8) == *(eax_1 + *(esp_8 - 32) * 4 + 196)) {
-                            *(union { unsigned int; int *; }*)(esp_8 - 20) += 0x8000;
-                            *(__size32*)(esp_8 - 72) += 516;
-                            *(unsigned int*)(esp_8 - 352) = *(esp_8 - 352) * 2;
-bb0x41c31f:
-                            *(int*)(esp_8 - 32)++;
-                            goto bb0x41c31f;
+                        if (*(esp_10 - 16) == *(eax_1 + *(esp_10 - 32) * 4 + 68) && *(esp_10 - 8) == *(eax_1 + *(esp_10 - 32) * 4 + 196)) {
+                            *(union { unsigned int; int *; }*)(esp_10 - 20) += 0x8000;
+                            *(__size32*)(esp_10 - 72) += 516;
+                            *(unsigned int*)(esp_10 - 352) = *(esp_10 - 352) * 2;
+                            *(int*)(esp_10 - 32)++;
+                            goto bb0x41c328;
                         }
                         else {
                             eax = -16;
@@ -14374,59 +14307,59 @@ bb0x41c31f:
                     }
                     else {
                         *(__size32*)(esp_12 - 4) = 0x8000;
-                        *(int*)(esp_12 - 8) = *(esp_8 - 20);
+                        *(int*)(esp_12 - 8) = *(esp_10 - 20);
                         eax_13 = IsBadWritePtr(); /* Warning: also results in esp_7 */
                         local27 = esp_7;
                         if (eax_13 == 0) {
-                            *(union { int *; int; }*)(esp_8 - 44) = *(esp_8 - 20);
-                            *(int*)(esp_8 - 28) = 0;
-                            while (*(esp_8 - 28) < 8) {
-                                *(int*)(esp_8 - 40) = *(esp_8 - 44) + 12;
-                                *(union { int; int *; }*)(esp_8 - 52) = *(esp_8 - 40) + 0xff0;
-                                if (*(*(esp_8 - 40) - 4) == -1 && **(esp_8 - 52) == -1) {
+                            *(union { int *; int; }*)(esp_10 - 44) = *(esp_10 - 20);
+                            *(int*)(esp_10 - 28) = 0;
+                            while (*(esp_10 - 28) < 8) {
+                                *(int*)(esp_10 - 40) = *(esp_10 - 44) + 12;
+                                *(union { int; int *; }*)(esp_10 - 52) = *(esp_10 - 40) + 0xff0;
+                                if (*(*(esp_10 - 40) - 4) == -1 && **(esp_10 - 52) == -1) {
                                     do {
-                                        eax_16 = **(esp_8 - 40);
-                                        *(int*)(esp_8 - 64) = eax_16;
-                                        *(int*)(esp_8 - 356) = eax_16;
+                                        eax_16 = **(esp_10 - 40);
+                                        *(int*)(esp_10 - 64) = eax_16;
+                                        *(int*)(esp_10 - 356) = eax_16;
                                         if ((eax_16 & 0x1) == 0) {
-                                            *(int*)(esp_8 - 364) = (eax_16 >> 4) - 1;
+                                            *(int*)(esp_10 - 364) = (eax_16 >> 4) - 1;
                                             if ((eax_16 >> 4) - 1 > 63) {
-bb0x41c455:
-                                                *(int*)(esp_8 - 364) = 63;
-                                                goto bb0x41c455;
+                                                *(int*)(esp_10 - 364) = 63;
+                                                goto bb0x41c45f;
                                             }
-                                            ecx = *(esp_8 + *(esp_8 - 364) * 4 - 348);
-                                            *(int*)(esp_8 + *(esp_8 - 364) * 4 - 348) = ecx + 1;
-                                            if ( ~(*(esp_8 - 64) < 16 || (*(esp_8 - 64) & 0xf) != 0) && *(esp_8 - 64) <= 0xff0) {
-                                                ecx = *(esp_8 - 40) + *(esp_8 - 64);
-                                                edx = *(*(esp_8 - 40) + *(esp_8 - 64) - 4);
+bb0x41c45f:
+                                            ecx = *(esp_10 + *(esp_10 - 364) * 4 - 348);
+                                            *(int*)(esp_10 + *(esp_10 - 364) * 4 - 348) = ecx + 1;
+bb0x41c47c:
+                                            if ( ~(*(esp_10 - 64) < 16 || (*(esp_10 - 64) & 0xf) != 0) && *(esp_10 - 64) <= 0xff0) {
+                                                ecx = *(esp_10 - 40) + *(esp_10 - 64);
+                                                edx = *(*(esp_10 - 40) + *(esp_10 - 64) - 4);
                                                 if (edx != eax_16) {
                                                     eax = -8;
-                                                    goto bb0x41c76c;
+                                                    return eax;
                                                 }
-                                                eax_19 = *(esp_8 - 40) + *(esp_8 - 64);
-                                                *(int*)(esp_8 - 40) = eax_19;
+                                                eax_19 = *(esp_10 - 40) + *(esp_10 - 64);
+                                                *(int*)(esp_10 - 40) = eax_19;
                                             }
                                             else {
                                                 eax = -7;
                                             }
                                         }
                                         else {
-                                            *(int*)(esp_8 - 64) = eax_16 - 1;
+                                            *(int*)(esp_10 - 64) = eax_16 - 1;
                                             if (eax_16 - 1 <= 1024) {
-bb0x41c432:
-                                                *(int*)(esp_8 - 24)++;
-                                                goto bb0x41c432;
+                                                *(int*)(esp_10 - 24)++;
+                                                goto bb0x41c47c;
                                             }
                                             else {
                                                 eax = -6;
                                             }
                                         }
-                                        goto bb0x41c76c;
-                                    } while ((unsigned int)eax_19 < *(esp_8 - 52));
-                                    if (eax_19 == *(esp_8 - 52)) {
-                                        *(int*)(esp_8 - 44) += 0x1000;
-                                        *(int*)(esp_8 - 28)++;
+                                        return eax;
+                                    } while ((unsigned int)eax_19 < *(esp_10 - 52));
+                                    if (eax_19 == *(esp_10 - 52)) {
+                                        *(int*)(esp_10 - 44) += 0x1000;
+                                        *(int*)(esp_10 - 28)++;
                                     }
                                     else {
                                         eax = -8;
@@ -14435,37 +14368,37 @@ bb0x41c432:
                                 else {
                                     eax = -5;
                                 }
-                                goto bb0x41c76c;
+                                return eax;
                             }
-                            edx = **(esp_8 - 72);
-                            if (edx == *(esp_8 - 24)) {
-                                *(int*)(esp_8 - 68) = *(esp_8 - 72);
-                                *(int*)(esp_8 - 360) = 0;
-bb0x41c524:
-                                while (*(esp_8 - 360) < 64) {
-                                    *(int*)(esp_8 - 88) = 0;
-                                    *(int*)(esp_8 - 40) = *(esp_8 - 68);
-                                    ecx_1 = *(*(esp_8 - 40) + 4);
-                                    *(__size32*)(esp_8 - 12) = ecx_1;
-                                    if (ecx_1 == *(esp_8 - 68) || *(esp_8 - 88) == *(esp_8 + *(esp_8 - 360) * 4 - 348)) {
-                                        if (*(esp_8 - 88) != 0) {
-                                            if (*(esp_8 - 360) >= 32) {
-bb0x41c678:
-                                                *(int*)(esp_8 - 8) = (unsigned int)0x80000000 >> *(esp_8 - 360) - 32 | *(esp_8 - 8);
-                                                *(int*)(esp_8 - 84) = (unsigned int)0x80000000 >> *(esp_8 - 360) - 32 | *(esp_8 - 84);
-                                                goto bb0x41c678;
+                            edx = **(esp_10 - 72);
+                            if (edx == *(esp_10 - 24)) {
+                                *(int*)(esp_10 - 68) = *(esp_10 - 72);
+                                *(int*)(esp_10 - 360) = 0;
+                                while (*(esp_10 - 360) < 64) {
+                                    *(int*)(esp_10 - 88) = 0;
+                                    *(int*)(esp_10 - 40) = *(esp_10 - 68);
+bb0x41c53e:
+                                    ecx_1 = *(*(esp_10 - 40) + 4);
+                                    *(__size32*)(esp_10 - 12) = ecx_1;
+                                    if (ecx_1 == *(esp_10 - 68) || *(esp_10 - 88) == *(esp_10 + *(esp_10 - 360) * 4 - 348)) {
+                                        if (*(esp_10 - 88) != 0) {
+                                            if (*(esp_10 - 360) >= 32) {
+                                                *(int*)(esp_10 - 8) = (unsigned int)0x80000000 >> *(esp_10 - 360) - 32 | *(esp_10 - 8);
+                                                *(int*)(esp_10 - 84) = (unsigned int)0x80000000 >> *(esp_10 - 360) - 32 | *(esp_10 - 84);
+                                                goto bb0x41c6a4;
                                             }
                                             else {
-                                                *(int*)(esp_8 - 16) = (unsigned int)0x80000000 >> *(esp_8 - 360) | *(esp_8 - 16);
-                                                *(int*)(esp_8 - 56) = (unsigned int)0x80000000 >> *(esp_8 - 360) | *(esp_8 - 56);
+                                                *(int*)(esp_10 - 16) = (unsigned int)0x80000000 >> *(esp_10 - 360) | *(esp_10 - 16);
+                                                *(int*)(esp_10 - 56) = (unsigned int)0x80000000 >> *(esp_10 - 360) | *(esp_10 - 56);
                                             }
                                         }
-                                        edx = *(*(esp_8 - 40) + 4);
-                                        if (edx == *(esp_8 - 68) && *(esp_8 - 88) == *(esp_8 + *(esp_8 - 360) * 4 - 348)) {
-                                            eax_22 = *(*(esp_8 - 68) + 8);
-                                            if (eax_22 == *(esp_8 - 40)) {
-                                                *(int*)(esp_8 - 68) += 8;
-                                                *(int*)(esp_8 - 360)++;
+bb0x41c6a4:
+                                        edx = *(*(esp_10 - 40) + 4);
+                                        if (edx == *(esp_10 - 68) && *(esp_10 - 88) == *(esp_10 + *(esp_10 - 360) * 4 - 348)) {
+                                            eax_22 = *(*(esp_10 - 68) + 8);
+                                            if (eax_22 == *(esp_10 - 40)) {
+                                                *(int*)(esp_10 - 68) += 8;
+                                                *(int*)(esp_10 - 360)++;
                                             }
                                             else {
                                                 eax = -15;
@@ -14476,31 +14409,30 @@ bb0x41c678:
                                         }
                                     }
                                     else {
-                                        if (ecx_1 >= *(esp_8 - 20) && ecx_1 < *(esp_8 - 20) + 0x8000) {
-                                            *(int*)(esp_8 - 80) = ecx_1 & ~0xfff;
-                                            *(int*)(esp_8 - 48) = (ecx_1 & ~0xfff) + 12;
-                                            *(int*)(esp_8 - 36) = (ecx_1 & ~0xfff) + 0xffc;
-                                            while (*(esp_8 - 48) != (ecx_1 & ~0xfff) + 0xffc) {
-                                                if (*(esp_8 - 48) == ecx_1) {
-bb0x41c5b8:
-                                                    goto bb0x41c5b8;
+                                        if (ecx_1 >= *(esp_10 - 20) && ecx_1 < *(esp_10 - 20) + 0x8000) {
+                                            *(int*)(esp_10 - 80) = ecx_1 & ~0xfff;
+                                            *(int*)(esp_10 - 48) = (ecx_1 & ~0xfff) + 12;
+                                            *(int*)(esp_10 - 36) = (ecx_1 & ~0xfff) + 0xffc;
+                                            while (*(esp_10 - 48) != (ecx_1 & ~0xfff) + 0xffc) {
+                                                if (*(esp_10 - 48) == ecx_1) {
+                                                    goto bb0x41c5ca;
                                                 }
-                                                ecx_4 = **(esp_8 - 48);
-                                                *(int*)(esp_8 - 48) = (ecx_4 & ~0x1) + *(esp_8 - 48);
+                                                ecx_4 = **(esp_10 - 48);
+                                                *(int*)(esp_10 - 48) = (ecx_4 & ~0x1) + *(esp_10 - 48);
                                             }
-                                            if (*(esp_8 - 48) != (ecx_1 & ~0xfff) + 0xffc) {
+bb0x41c5ca:
+                                            if (*(esp_10 - 48) != (ecx_1 & ~0xfff) + 0xffc) {
                                                 ecx_7 = *ecx_1;
-                                                *(int*)(esp_8 - 364) = (ecx_7 >> 4) - 1;
+                                                *(int*)(esp_10 - 364) = (ecx_7 >> 4) - 1;
                                                 if ((ecx_7 >> 4) - 1 > 63) {
-                                                    *(int*)(esp_8 - 364) = 63;
+                                                    *(int*)(esp_10 - 364) = 63;
                                                 }
-                                                if (*(esp_8 - 364) == *(esp_8 - 360)) {
+                                                if (*(esp_10 - 364) == *(esp_10 - 360)) {
                                                     ecx_10 = *(ecx_1 + 8);
-                                                    if (ecx_10 == *(esp_8 - 40)) {
-bb0x41c62d:
-                                                        *(union { int; int *; }*)(esp_8 - 40) = ecx_1;
-                                                        *(int*)(esp_8 - 88)++;
-                                                        goto bb0x41c62d;
+                                                    if (ecx_10 == *(esp_10 - 40)) {
+                                                        *(union { int; int *; }*)(esp_10 - 40) = ecx_1;
+                                                        *(int*)(esp_10 - 88)++;
+                                                        goto bb0x41c53e;
                                                     }
                                                     else {
                                                         eax = -13;
@@ -14518,10 +14450,9 @@ bb0x41c62d:
                                             eax = -10;
                                         }
                                     }
-                                    goto bb0x41c76c;
-bb0x41c524:
+                                    return eax;
                                 }
-                                goto bb0x41c524;
+                                goto bb0x41c6ee;
                             }
                             else {
                                 eax = -9;
@@ -14536,7 +14467,7 @@ bb0x41c524:
             else {
                 eax = -2;
             }
-            goto bb0x41c76c;
+            return eax;
             esp_14 = local25;
             param17 = local2;
             param16 = local3;
@@ -14561,7 +14492,6 @@ bb0x41c524:
     else {
         eax = eax | -1;
     }
-bb0x41c76c:
     return eax;
 }
 
@@ -14594,6 +14524,7 @@ __size32 proc_0x0041f170(unsigned int param1, unsigned int param2, unsigned int 
             }
             switch(param3) {
             case 0:
+bb0x41f468:
                 ebp = param5;
                 esp = esp_4;
                 local2 = esp;
@@ -14602,17 +14533,15 @@ bb0x41f2cc:
                 esi = *esp;
                 edi = *(esp + 4);
                 ebp = *ebp;
-                goto bb0x41f2cc;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             case 1:
-bb0x41f470:
                 al = *(param3 + param2 - 1);
                 *(unsigned char*)(param3 + param1 - 1) = al;
                 esi = param6;
                 edi = param6;
                 ebp = param5;
-                goto bb0x41f470;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             case 2:
-bb0x41f480:
                 al = *(param3 + param2 - 1);
                 *(unsigned char*)(param3 + param1 - 1) = al;
                 al = *(param3 + param2 - 2);
@@ -14620,9 +14549,8 @@ bb0x41f480:
                 esi = param6;
                 edi = param6;
                 ebp = param5;
-                goto bb0x41f480;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             case 3:
-bb0x41f494:
                 al = *(param3 + param2 - 1);
                 *(unsigned char*)(param3 + param1 - 1) = al;
                 al = *(param3 + param2 - 2);
@@ -14632,15 +14560,13 @@ bb0x41f494:
                 esi = param6;
                 edi = param6;
                 ebp = param5;
-                goto bb0x41f494;
+                return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
             }
         }
         else {
-bb0x41f31c:
             ecx = param3 / 4;
             if (param3 / 4 < (unsigned int)8) {
-bb0x41f44f:
-                goto bb0x41f44f;
+                goto bb0x41f468;
             }
             else {
                 if (param3 / 4 != 0) {
@@ -14649,10 +14575,9 @@ bb0x41f44f:
                     edi +=  (DF == 0) ? 4 : -4;
                     ecx = ecx - 1;
                 }
-bb0x41f32a:
-                goto bb0x41f32a;
+                goto bb0x41f468;
             }
-            goto bb0x41f31c;
+            goto bb0x41f468;
         }
     }
     else {
@@ -14662,7 +14587,6 @@ bb0x41f32a:
             }
 /* goto global372_41f2cc[param3 - 4] */
         }
-bb0x41f198:
         ecx = param3 / 4;
         if (param3 / 4 < (unsigned int)8) {
             switch(param3 / 4) {
@@ -14671,40 +14595,39 @@ bb0x41f198:
 bb0x41f2a0:
                 eax = *(param2 + (param3 / 4 - 1) * 4);
                 *(__size32*)(param1 + (param3 / 4 - 1) * 4) = eax;
-                goto bb0x41f2a0;
+                goto bb0x41f2b3;
             case 2:
 bb0x41f298:
                 eax = *(param2 + param3 / 4 * 4 - 8);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 8) = eax;
-                goto bb0x41f298;
+                goto bb0x41f2a0;
             case 3:
 bb0x41f290:
                 eax = *(param2 + param3 / 4 * 4 - 12);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 12) = eax;
-                goto bb0x41f290;
+                goto bb0x41f298;
             case 4:
 bb0x41f288:
                 eax = *(param2 + param3 / 4 * 4 - 16);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 16) = eax;
-                goto bb0x41f288;
+                goto bb0x41f290;
             case 5:
 bb0x41f280:
                 eax = *(param2 + param3 / 4 * 4 - 20);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 20) = eax;
-                goto bb0x41f280;
+                goto bb0x41f288;
             case 6:
 bb0x41f278:
                 eax = *(param2 + param3 / 4 * 4 - 24);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 24) = eax;
-                goto bb0x41f278;
+                goto bb0x41f280;
             case 7:
-bb0x41f270:
                 eax = *(param2 + param3 / 4 * 4 - 28);
                 *(unsigned int*)(param1 + param3 / 4 * 4 - 28) = eax;
-                goto bb0x41f270;
+                goto bb0x41f278;
             }
 bb0x41f2b3:
-            goto bb0x41f2b3;
+            goto bb0x41f2cc;
         }
         else {
             if (param3 / 4 != 0) {
@@ -14713,10 +14636,9 @@ bb0x41f2b3:
                 edi +=  (DF == 0) ? 4 : -4;
                 ecx = ecx - 1;
             }
-bb0x41f1a5:
-            goto bb0x41f1a5;
+            goto bb0x41f2cc;
         }
-        goto bb0x41f198;
+        goto bb0x41f2cc;
     }
     return ebp; /* WARNING: Also returning: esi := esi, edi := edi */
 }
@@ -14841,6 +14763,7 @@ __size32 proc_0x0041ee30(__size32 param1, __size32 param2, int param3, int param
                 al = proc_0x0041dd20(*(esp_7 - 12), *(esp_7 - 8), *(esp_7 - 4)); /* Warning: also results in esp_10 */
                 esp = esp_10 + 12;
                 if (esp_7 != 0) {
+bb0x41f054:
                     ah = param9;
                     esp_13 = esp;
                     param7 = local26;
@@ -14904,10 +14827,9 @@ __size32 proc_0x0041ee30(__size32 param1, __size32 param2, int param3, int param
                     esp += 20;
                     *(__size32*)(ebp - 60) = eax_7;
                     if (*(ebp - 60) != 0) {
-bb0x41f04b:
                         ecx = *(ebp - 56);
                         *(__size32*)(ebp - 56) = ecx + 1;
-                        goto bb0x41f04b;
+                        goto bb0x41f054;
                     }
                     else {
                         eax = 0;
@@ -14940,6 +14862,7 @@ bb0x41f04b:
         if (*(ebp - 36) != -1) {
             ecx = *(ebp - 36);
             if (ecx == *(ebp + 24)) {
+bb0x41ef28:
                 ecx = *(ebp + 20);
                 local0 = ecx;
                 edx = *(ebp + 16);
@@ -14981,10 +14904,9 @@ bb0x41f04b:
                 esp += 24;
                 *(__size32*)(ebp - 32) = eax;
                 if (*(ebp - 32) != 0) {
-bb0x41ef22:
                     eax = *(ebp - 32);
                     *(__size32*)(ebp + 12) = eax;
-                    goto bb0x41ef22;
+                    goto bb0x41ef28;
                 }
                 else {
                     eax = 0;
@@ -15031,7 +14953,7 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
     union { __size32; unsigned int *; } esp_10; 		// r28{0}
     unsigned long long esp_11; 		// r28{0}
     union { __size32; void *; long long x3152; } esp_12; 		// r28{0}
-    union { unsigned long long; void *; } esp_15; 		// r28{0}
+    union { unsigned long long; void *; } esp_13; 		// r28{0}
     union { void *; long long x3152; __size32; } esp_2; 		// r28{0}
     union { __size32; int *; } esp_3; 		// r28{0}
     union { void *; long long x3152; __size32; } esp_4; 		// r28{0}
@@ -15072,9 +14994,9 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
     unsigned long long local8; 		// param1{0}
     __size32 local9; 		// esp{0}
 
-    ebp = (esp_15 - 4);
-    *(__size32*)0 = (esp_15 - 20);
-    esp_1 = (esp_15 - 104);
+    ebp = (esp_13 - 4);
+    *(__size32*)0 = (esp_13 - 20);
+    esp_1 = (esp_13 - 104);
     local6 = esp_1;
     local7 = param3;
     local8 = param1;
@@ -15119,7 +15041,7 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
         *(__size32*)(esp_12 - 8) = param2;
         eax = proc_0x0041edd0(*(esp_12 - 8), *(esp_12 - 4));
         local0 = eax;
-        local7 = *(esp_15 + 16);
+        local7 = *(esp_13 + 16);
     }
     param3 = local7;
     if (*0x429924 != 2 && *0x429924 != 0) {
@@ -15129,7 +15051,7 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
             if (param4 == 0) {
                 eax = *(&global556_428d5c + 0xbb8);
                 local2 = eax;
-                local10 = *(esp_15 + 28);
+                local10 = *(esp_13 + 28);
             }
             param4 = local10;
             *(int*)(esp_12 - 4) = 0;
@@ -15143,6 +15065,7 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
             if (eax != 0) {
                 esp = proc_0x00414c20(eax * 2 + 3 & ~0x3);
                 if (esp != 0) {
+bb0x41eaa1:
                     param7 = local11;
                     param9 = local12;
                     param10 = local13;
@@ -15226,6 +15149,7 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
                                 *(unsigned long long*)(ebp - 52) = edx;
                                 *(__size32*)(ebp - 4) = -1;
                                 if (*(ebp - 52) != 0) {
+bb0x41ebba:
                                     dx = local17;
                                     cl = local18;
                                     dl = local19;
@@ -15332,10 +15256,9 @@ __size16 proc_0x0041e710(unsigned long long param1, __size32 param2, int param3,
                                     esp += 16;
                                     *(int*)(ebp - 52) = eax;
                                     if (*(ebp - 52) != 0) {
-bb0x41ebb1:
                                         r[25] = *(ebp - 76);
                                         *(__size32*)(ebp - 76) = r[25] + 1;
-                                        goto bb0x41ebb1;
+                                        goto bb0x41ebba;
                                     }
                                     else {
                                     }
@@ -15343,6 +15266,7 @@ bb0x41ebb1:
                             }
                             else {
                                 if (*(ebp + 28) == 0) {
+bb0x41eb33:
                                 }
                                 else {
                                     eax = *(ebp - 56);
@@ -15360,9 +15284,8 @@ bb0x41ebb1:
                                         eax = *(ebp + 8);
                                         *(__size32*)(esp_11 + 28LL + 4LL - 80) = eax;
                                         eax = LCMapStringW(); /* Warning: also results in ecx, edx, esp */
-bb0x41eb2a:
                                         if (eax != 0) {
-                                            goto bb0x41eb2a;
+                                            goto bb0x41eb33;
                                         }
                                         else {
                                         }
@@ -15422,10 +15345,9 @@ bb0x41eb2a:
                     esp += 16;
                     *(__size32*)(ebp - 64) = eax;
                     if (*(ebp - 64) != 0) {
-bb0x41ea98:
                         ecx = *(ebp - 60);
                         *(long long*)(ebp - 60) = ecx + 1;
-                        goto bb0x41ea98;
+                        goto bb0x41eaa1;
                     }
                     else {
                     }
@@ -15439,7 +15361,7 @@ bb0x41ea98:
         if (param1 == 0) {
             edx = *(&global556_428d5c + 0xba8);
             local1 = edx;
-            local8 = *(esp_15 + 4);
+            local8 = *(esp_13 + 4);
         }
         param1 = local8;
         if (param4 == 0) {
@@ -15471,6 +15393,7 @@ bb0x41ea98:
                 *(__size32*)(esp_3 - 20) = r[25];
                 eax = LCMapStringA(); /* Warning: also results in ecx, esp */
                 *(int*)(ebp - 48) = eax;
+bb0x41e99d:
                 if (*(ebp - 28) != 0) {
                     local3 = 2;
                     edx = *(ebp - 28);
@@ -15531,6 +15454,7 @@ bb0x41ea98:
                         *(__size32*)(ebp - 4) = -1;
                         local9 = esp_9;
                         if (*(ebp - 40) != 0) {
+bb0x41e902:
                             esp = local9;
                             r[25] = *(ebp - 32);
                             local3 = r[25];
@@ -15587,12 +15511,11 @@ bb0x41ea98:
                                 edx_1 = *(ebp - 40);
                                 *(__size32*)(esp_10 + 4) = edx_1;
                                 al = proc_0x0041dd20(*(esp_10 + 4), *(esp_10 + 8), *(esp_10 + 12)); /* Warning: also results in esp, edi */
-bb0x41e8f6:
                                 esp += 12;
                                 eax = *(ebp - 44);
                                 *(__size32*)(ebp - 44) = eax + 1;
                                 local9 = esp;
-                                goto bb0x41e8f6;
+                                goto bb0x41e902;
                             }
                             else {
                                 *(__size32*)(ebp - 48) = 0;
@@ -15608,8 +15531,7 @@ bb0x41e8f6:
                         eax = proc_0x004175b0(*(esp - 432), *(esp - 428), *(esp - 424), *(esp - 156), *(esp - 148), *(esp - 136), *(esp - 132), *(esp - 120), *(esp - 116), *(esp - 112), *(esp - 108), *(esp - 104), *(esp - 96), *(esp - 92), *(esp - 84), *(esp - 80), *(esp - 76), *(esp - 24), ax, dx, al, cl, dl, ah, dh, eax, r[25], edx, ebp, esi, edi); /* Warning: also results in dx, al, cl, dl, ah, dh, ecx, esp, ebp, esi, edi */
                         esp += 8;
                     }
-bb0x41e97a:
-                    goto bb0x41e97a;
+                    goto bb0x41e99d;
                 }
                 else {
                 }
@@ -15644,10 +15566,9 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
     __size32 eax; 		// r24
     __size32 ebp; 		// r29
     __size32 ebp_1; 		// r29{0}
-    __size32 ebp_11; 		// r29{0}
-    __size32 ebp_12; 		// r29{0}
+    __size32 ebp_2; 		// r29{0}
     __size32 ebp_4; 		// r29{0}
-    __size32 ebp_7; 		// r29{0}
+    __size32 ebp_5; 		// r29{0}
     __size32 ebp_8; 		// r29{0}
     int ecx; 		// r25
     __size32 edi; 		// r31
@@ -15674,7 +15595,7 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
     int local39; 		// m[esp - 24]
     __size16 local40; 		// param23{0}
     void *local41; 		// esp_19{0}
-    __size32 local42; 		// ebp_11{0}
+    __size32 local42; 		// ebp_4{0}
     unsigned int local43; 		// param31{0}
     short local44; 		// param24{0}
     unsigned char local45; 		// param25{0}
@@ -15683,14 +15604,14 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
     __size8 local48; 		// param28{0}
     char local49; 		// param29{0}
     union { void *; __size32; } local50; 		// esp_16{0}
-    __size32 local51; 		// ebp_8{0}
+    __size32 local51; 		// ebp_1{0}
     __size32 local52; 		// param32{0}
     int local53; 		// edx{0}
     int local54; 		// esp{0}
     __size16 local55; 		// param23{0}
     unsigned int local56; 		// param31{0}
 
-    ebp_1 = esp_20 - 4;
+    ebp_5 = esp_20 - 4;
     esp_1 = (esp_20 - 24);
     local40 = param23;
     local43 = param31;
@@ -15708,8 +15629,8 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
     local49 = param29;
     local50 = esp_1;
     local50 = esp_1;
-    local51 = ebp_1;
-    local51 = ebp_1;
+    local51 = ebp_5;
+    local51 = ebp_5;
     local52 = param32;
     local52 = param32;
     local55 = param23;
@@ -15722,18 +15643,18 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
                     global160_429848++;
                 }
                 else {
-                    eax = proc_0x00417db0(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param23, param24, param25, param26, param27, param28, param29, param31, param32); /* Warning: also results in dx, al, cl, dl, ah, dh, edx, esp_4, ebp_4, edi */
+                    eax = proc_0x00417db0(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param23, param24, param25, param26, param27, param28, param29, param31, param32); /* Warning: also results in dx, al, cl, dl, ah, dh, edx, esp_4, ebp_8, edi */
                     local41 = esp_4;
-                    local42 = ebp_4;
+                    local42 = ebp_8;
                     if (eax == 0) {
                         *(__size32*)(esp_4 - 4) = 0x4260ec;
                         *(int*)(esp_4 - 8) = 0;
                         *(__size32*)(esp_4 - 12) = 612;
                         *(__size32*)(esp_4 - 16) = 0x4260e0;
                         *(int*)(esp_4 - 20) = 2;
-                        eax = proc_0x00415390(*(esp_4 - 0x3030), *(esp_4 - 20), *(esp_4 - 16), *(esp_4 - 12), *(esp_4 - 4), param23, dx, cl, dh, edx, ebp_4, param31, edi); /* Warning: also results in ax, dx, al, cl, dl, ah, dh, esp_7, ebp_7, esi, edi */
+                        eax = proc_0x00415390(*(esp_4 - 0x3030), *(esp_4 - 20), *(esp_4 - 16), *(esp_4 - 12), *(esp_4 - 4), param23, dx, cl, dh, edx, ebp_8, param31, edi); /* Warning: also results in ax, dx, al, cl, dl, ah, dh, esp_7, ebp, esi, edi */
                         local40 = ax;
-                        local42 = ebp_7;
+                        local42 = ebp;
                         local43 = esi;
                         esp_8 = esp_7 + 20;
                         local41 = esp_8;
@@ -15743,7 +15664,7 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
                     }
                     param23 = local40;
                     esp_19 = local41;
-                    ebp_11 = local42;
+                    ebp_4 = local42;
                     param31 = local43;
                     global160_429848 = 0;
                     local44 = dx;
@@ -15753,7 +15674,7 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
                     local48 = ah;
                     local49 = dh;
                     local50 = esp_19;
-                    local51 = ebp_11;
+                    local51 = ebp_4;
                     local52 = edi;
                 }
             }
@@ -15764,38 +15685,39 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
             param28 = local48;
             param29 = local49;
             esp_16 = local50;
-            ebp_8 = local51;
+            ebp_1 = local51;
             param32 = local52;
             eax = *(&global1444_428c60 + 240);
-            *(__size32*)(ebp_8 - 20) = eax;
+            *(__size32*)(ebp_1 - 20) = eax;
             tmp1 = *(&global1444_428c60 + 244) + 1;
             flags = SUBFLAGS32(*0x428d54, -1, tmp1);
             if (*0x428d54 != -1) {
-                ecx = *(ebp_8 - 20);
+                ecx = *(ebp_1 - 20);
                 tmp1 = ecx - *(&global1444_428c60 + 244);
                 flags = SUBFLAGS32(ecx, *0x428d54, tmp1);
                 if (ecx == *0x428d54) {
                     __debugbreak();
                 }
             }
-            edx = *(ebp_8 + 24);
+            edx = *(ebp_1 + 24);
             *(__size32*)(esp_16 - 4) = edx;
-            eax = *(ebp_8 + 20);
+            eax = *(ebp_1 + 20);
             *(__size32*)(esp_16 - 8) = eax;
-            ecx = *(ebp_8 - 20);
+            ecx = *(ebp_1 - 20);
             *(__size32*)(esp_16 - 12) = ecx;
-            edx = *(ebp_8 + 16);
+            edx = *(ebp_1 + 16);
             *(__size32*)(esp_16 - 16) = edx;
-            eax = *(ebp_8 + 12);
+            eax = *(ebp_1 + 12);
             *(__size32*)(esp_16 - 20) = eax;
-            ecx = *(ebp_8 + 8);
+            ecx = *(ebp_1 + 8);
             *(__size32*)(esp_16 - 24) = ecx;
             *(int*)(esp_16 - 28) = 2;
-            (*global556_428d5c)(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, *(esp_20 - 44), *(esp_20 - 40), *(esp_20 - 28), 0, ebp_12, param19, param20, param21, *(esp_20 + 16), *(esp_20 + 20), param22, param23, param24, param25, param26, param27, param28, param29, eax, ecx, edx, ebp_8, param31, param32, flags, ZF, CF);
+            (*global556_428d5c)(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, param11, param12, param13, param14, param15, param16, param17, param18, *(esp_20 - 44), *(esp_20 - 40), *(esp_20 - 28), 0, ebp_2, param19, param20, param21, *(esp_20 + 16), *(esp_20 + 20), param22, param23, param24, param25, param26, param27, param28, param29, eax, ecx, edx, ebp_1, param31, param32, flags, ZF, CF);
             local53 = edx;
             if (eax != 0) {
                 if (*(ebp + 12) <= (unsigned int)-37) {
                     if (*(ebp + 16) == 1) {
+bb0x417076:
                         edx = local53;
                         *(int*)(esp_9 + 24) = 4;
                         dl = global526_428d5b;
@@ -15805,6 +15727,7 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
                         eax = proc_0x00417d50(*(esp_9 + 16), *(esp_9 + 20), *(esp_9 + 24), edx >> 8 & 0xffffff | (global526_428d5b)); /* Warning: also results in edx */
                         esp = esp_9 + 28;
                         if (eax == 0) {
+bb0x4170bb:
                             esp_10 = esp;
                             eax = *(ebp + 8);
                             *(__size32*)(esp_10 - 4) = eax;
@@ -15843,6 +15766,7 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
                             else {
                                 ecx = *(ebp - 8);
                                 if (*(ecx + 12) != 0xfedcbabc) {
+bb0x417120:
                                     local32 = 0x426180;
                                     local31 = 0;
                                     *(__size32*)(esp - 12) = 673;
@@ -15855,10 +15779,9 @@ __size32 proc_0x00416ec0(int param1, int param2, int param3, int param4, int par
                                     }
                                 }
                                 else {
-bb0x417117:
                                     edx = *(ebp - 8);
                                     if (*(edx + 24) != 0) {
-                                        goto bb0x417117;
+                                        goto bb0x417120;
                                     }
                                 }
                             }
@@ -15873,6 +15796,7 @@ bb0x417117:
                                 eax = proc_0x0041dee0(*(esp - 20), *(esp - 8), *(esp - 4), al, cl, dl, ecx, edx); /* Warning: also results in al, cl, dl, ecx, edx */
                                 *(unsigned int*)(ebp - 12) = eax;
                                 if (*(ebp - 12) != 0) {
+bb0x4171b6:
                                     edx = *(&global1444_428c60 + 240);
                                     *(__size32*)(&global1444_428c60 + 240) = edx + 1;
                                     if (*(ebp - 4) == 0) {
@@ -15939,6 +15863,7 @@ bb0x417117:
                                     *(__size32*)(eax + 16) = ecx;
                                     if (*(ebp + 28) == 0) {
                                         if (*(ebp + 28) != 0) {
+bb0x4172b5:
                                             *(__size32*)(esp_11 + 8) = 0x426144;
                                             *(int*)(esp_11 + 4) = 0;
                                             *(__size32*)esp_11 = 747;
@@ -15952,10 +15877,9 @@ bb0x417117:
                                             }
                                         }
                                         else {
-bb0x4172ad:
                                             edx = *(ebp - 12);
                                             if (edx != *(ebp - 8)) {
-                                                goto bb0x4172ad;
+                                                goto bb0x4172b5;
                                             }
                                         }
                                     }
@@ -16053,8 +15977,7 @@ bb0x4172ad:
                                 esp += 8;
                                 *(unsigned int*)(ebp - 12) = eax;
                                 if (*(ebp - 12) != 0) {
-bb0x417191:
-                                    goto bb0x417191;
+                                    goto bb0x4171b6;
                                 }
                                 else {
                                     eax = 0;
@@ -16079,19 +16002,17 @@ bb0x417191:
                         }
                     }
                     else {
-bb0x417039:
                         edx_1 = *(ebp + 16);
                         edx_4 = edx_1 & 0xffff;
                         local53 = edx_4;
                         local53 = edx_4;
                         if ((edx_1 & 0xffff) == 4) {
-                            goto bb0x417039;
+                            goto bb0x417076;
                         }
                         else {
-bb0x417047:
                             eax = *(ebp + 16);
                             if ((eax & 0xffff) == 2) {
-                                goto bb0x417047;
+                                goto bb0x417076;
                             }
                             else {
                                 *(__size32*)(esp_9 + 24) = 0x42600c;
@@ -16105,8 +16026,7 @@ bb0x417047:
                                 if (eax == 1) {
                                     __debugbreak();
                                 }
-bb0x417074:
-                                goto bb0x417074;
+                                goto bb0x4170bb;
                             }
                         }
                     }
@@ -16230,21 +16150,21 @@ void proc_0x004130a0()
 
     eax = *(&global1444_428c60 + 0x9c8);
     if (eax != 0) {
+bb0x4130ca:
 /* goto m[0x429610] */
     }
     eax = proc_0x004130e0();
     if (eax != 0) {
 bb0x4130c0:
         *(__size32*)(&global1444_428c60 + 0x9c8) = 1;
-        goto bb0x4130c0;
+        goto bb0x4130ca;
     }
-bb0x4130b2:
     *(__size32*)(esp - 4) = eax;
     *(__size32*)(esp - 8) = eax;
     *(__size32*)(esp - 12) = eax;
     *(__size32*)(esp - 16) = 0xc0000135;
     RaiseException();
-    goto bb0x4130b2;
+    goto bb0x4130c0;
 }
 
 /** address: 0x00415c40 */
@@ -16333,7 +16253,7 @@ void proc_0x00415c40(__size32 param1, union { int *; __size32; } param2, union {
     unsigned int esi_6; 		// r30{0}
     unsigned int esi_7; 		// r30{0}
     unsigned int esi_8; 		// r30{0}
-    int esp; 		// r28
+    __size32 esp; 		// r28
     __size32 esp_1; 		// r28{0}
     void *esp_10; 		// r28{0}
     __size32 esp_11; 		// r28{0}
@@ -16405,100 +16325,99 @@ void proc_0x00415c40(__size32 param1, union { int *; __size32; } param2, union {
     __size32 esp_71; 		// r28{0}
     __size32 esp_72; 		// r28{0}
     __size32 esp_73; 		// r28{0}
-    __size32 esp_74; 		// r28{0}
     void *esp_8; 		// r28{0}
     void *esp_9; 		// r28{0}
     unsigned int local0; 		// m[esp - 72]
     unsigned int local1; 		// m[esp - 68]
     union { __size32 *; __size32; } local10; 		// m[esp + 20]
-    int local100; 		// m[esp_73 - 16]{0}
-    int local101; 		// m[esp_73 - 16]{0}
-    int local102; 		// m[esp_73 - 16]{0}
-    int local103; 		// m[esp_73 - 16]{0}
-    int local104; 		// m[esp_73 - 16]{0}
-    int local105; 		// m[esp_73 - 16]{0}
-    int local106; 		// m[esp_73 - 16]{0}
-    int local107; 		// m[esp_73 - 16]{0}
-    int local108; 		// m[esp_73 - 16]{0}
-    __size32 local109; 		// m[esp_73 - 16]{0}
-    int local11; 		// m[esp_73 + 4]{0}
-    __size32 local110; 		// m[esp_73 - 16]{0}
-    __size32 local111; 		// m[esp_73 - 16]{0}
-    __size32 local112; 		// m[esp_73 - 16]{0}
-    int local113; 		// m[esp_73 - 32]{0}
-    int local114; 		// m[esp_73 - 32]{0}
-    int local115; 		// m[esp_73 - 32]{0}
-    int local116; 		// m[esp_73 - 32]{0}
-    int local117; 		// m[esp_73 - 32]{0}
-    int local118; 		// m[esp_73 - 32]{0}
-    int local119; 		// m[esp_73 - 32]{0}
-    int local12; 		// m[esp_73 + 4]{0}
-    int local120; 		// m[esp_73 - 32]{0}
-    int local121; 		// m[esp_73 - 32]{0}
-    __size32 local122; 		// m[esp_73 - 32]{0}
-    __size32 local123; 		// m[esp_73 - 32]{0}
-    __size32 local124; 		// m[esp_73 - 32]{0}
-    __size32 local125; 		// m[esp_73 - 32]{0}
-    int local126; 		// m[esp_73 - 60]{0}
-    int local127; 		// m[esp_73 - 60]{0}
-    int local128; 		// m[esp_73 - 60]{0}
-    int local129; 		// m[esp_73 - 60]{0}
-    int local13; 		// m[esp_73 + 4]{0}
-    int local130; 		// m[esp_73 - 60]{0}
-    int local131; 		// m[esp_73 - 60]{0}
-    int local132; 		// m[esp_73 - 60]{0}
-    int local133; 		// m[esp_73 - 60]{0}
-    int local134; 		// m[esp_73 - 60]{0}
-    __size32 local135; 		// m[esp_73 - 60]{0}
-    __size32 local136; 		// m[esp_73 - 60]{0}
-    __size32 local137; 		// m[esp_73 - 60]{0}
-    __size32 local138; 		// m[esp_73 - 60]{0}
-    int local139; 		// m[esp_73 - 64]{0}
-    int local14; 		// m[esp_73 + 4]{0}
-    int local140; 		// m[esp_73 - 64]{0}
-    int local141; 		// m[esp_73 - 64]{0}
-    int local142; 		// m[esp_73 - 64]{0}
-    int local143; 		// m[esp_73 - 64]{0}
-    int local144; 		// m[esp_73 - 64]{0}
-    int local145; 		// m[esp_73 - 64]{0}
-    int local146; 		// m[esp_73 - 64]{0}
-    int local147; 		// m[esp_73 - 64]{0}
-    __size32 local148; 		// m[esp_73 - 64]{0}
-    __size32 local149; 		// m[esp_73 - 64]{0}
-    int local15; 		// m[esp_73 + 4]{0}
-    __size32 local150; 		// m[esp_73 - 64]{0}
-    __size32 local151; 		// m[esp_73 - 64]{0}
-    int local152; 		// m[esp_73 - 68]{0}
-    int local153; 		// m[esp_73 - 68]{0}
-    int local154; 		// m[esp_73 - 68]{0}
-    int local155; 		// m[esp_73 - 68]{0}
-    int local156; 		// m[esp_73 - 68]{0}
-    int local157; 		// m[esp_73 - 68]{0}
-    int local158; 		// m[esp_73 - 68]{0}
-    int local159; 		// m[esp_73 - 68]{0}
-    int local16; 		// m[esp_73 + 4]{0}
-    int local160; 		// m[esp_73 - 68]{0}
-    __size32 local161; 		// m[esp_73 - 68]{0}
-    __size32 local162; 		// m[esp_73 - 68]{0}
-    __size32 local163; 		// m[esp_73 - 68]{0}
-    __size32 local164; 		// m[esp_73 - 68]{0}
-    int local165; 		// m[esp_73 - 72]{0}
-    int local166; 		// m[esp_73 - 72]{0}
-    int local167; 		// m[esp_73 - 72]{0}
-    int local168; 		// m[esp_73 - 72]{0}
-    int local169; 		// m[esp_73 - 72]{0}
-    int local17; 		// m[esp_73 + 4]{0}
-    int local170; 		// m[esp_73 - 72]{0}
-    int local171; 		// m[esp_73 - 72]{0}
-    int local172; 		// m[esp_73 - 72]{0}
-    int local173; 		// m[esp_73 - 72]{0}
-    unsigned int local174; 		// m[esp_73 - 72]{0}
-    unsigned int local175; 		// m[esp_73 - 72]{0}
-    unsigned int local176; 		// m[esp_73 - 72]{0}
-    unsigned int local177; 		// m[esp_73 - 72]{0}
+    int local100; 		// m[esp_55 - 16]{0}
+    int local101; 		// m[esp_55 - 16]{0}
+    int local102; 		// m[esp_55 - 16]{0}
+    int local103; 		// m[esp_55 - 16]{0}
+    int local104; 		// m[esp_55 - 16]{0}
+    int local105; 		// m[esp_55 - 16]{0}
+    int local106; 		// m[esp_55 - 16]{0}
+    int local107; 		// m[esp_55 - 16]{0}
+    int local108; 		// m[esp_55 - 16]{0}
+    __size32 local109; 		// m[esp_55 - 16]{0}
+    int local11; 		// m[esp_55 + 4]{0}
+    __size32 local110; 		// m[esp_55 - 16]{0}
+    __size32 local111; 		// m[esp_55 - 16]{0}
+    __size32 local112; 		// m[esp_55 - 16]{0}
+    int local113; 		// m[esp_55 - 32]{0}
+    int local114; 		// m[esp_55 - 32]{0}
+    int local115; 		// m[esp_55 - 32]{0}
+    int local116; 		// m[esp_55 - 32]{0}
+    int local117; 		// m[esp_55 - 32]{0}
+    int local118; 		// m[esp_55 - 32]{0}
+    int local119; 		// m[esp_55 - 32]{0}
+    int local12; 		// m[esp_55 + 4]{0}
+    int local120; 		// m[esp_55 - 32]{0}
+    int local121; 		// m[esp_55 - 32]{0}
+    __size32 local122; 		// m[esp_55 - 32]{0}
+    __size32 local123; 		// m[esp_55 - 32]{0}
+    __size32 local124; 		// m[esp_55 - 32]{0}
+    __size32 local125; 		// m[esp_55 - 32]{0}
+    int local126; 		// m[esp_55 - 60]{0}
+    int local127; 		// m[esp_55 - 60]{0}
+    int local128; 		// m[esp_55 - 60]{0}
+    int local129; 		// m[esp_55 - 60]{0}
+    int local13; 		// m[esp_55 + 4]{0}
+    int local130; 		// m[esp_55 - 60]{0}
+    int local131; 		// m[esp_55 - 60]{0}
+    int local132; 		// m[esp_55 - 60]{0}
+    int local133; 		// m[esp_55 - 60]{0}
+    int local134; 		// m[esp_55 - 60]{0}
+    __size32 local135; 		// m[esp_55 - 60]{0}
+    __size32 local136; 		// m[esp_55 - 60]{0}
+    __size32 local137; 		// m[esp_55 - 60]{0}
+    __size32 local138; 		// m[esp_55 - 60]{0}
+    int local139; 		// m[esp_55 - 64]{0}
+    int local14; 		// m[esp_55 + 4]{0}
+    int local140; 		// m[esp_55 - 64]{0}
+    int local141; 		// m[esp_55 - 64]{0}
+    int local142; 		// m[esp_55 - 64]{0}
+    int local143; 		// m[esp_55 - 64]{0}
+    int local144; 		// m[esp_55 - 64]{0}
+    int local145; 		// m[esp_55 - 64]{0}
+    int local146; 		// m[esp_55 - 64]{0}
+    int local147; 		// m[esp_55 - 64]{0}
+    __size32 local148; 		// m[esp_55 - 64]{0}
+    __size32 local149; 		// m[esp_55 - 64]{0}
+    int local15; 		// m[esp_55 + 4]{0}
+    __size32 local150; 		// m[esp_55 - 64]{0}
+    __size32 local151; 		// m[esp_55 - 64]{0}
+    int local152; 		// m[esp_55 - 68]{0}
+    int local153; 		// m[esp_55 - 68]{0}
+    int local154; 		// m[esp_55 - 68]{0}
+    int local155; 		// m[esp_55 - 68]{0}
+    int local156; 		// m[esp_55 - 68]{0}
+    int local157; 		// m[esp_55 - 68]{0}
+    int local158; 		// m[esp_55 - 68]{0}
+    int local159; 		// m[esp_55 - 68]{0}
+    int local16; 		// m[esp_55 + 4]{0}
+    int local160; 		// m[esp_55 - 68]{0}
+    __size32 local161; 		// m[esp_55 - 68]{0}
+    __size32 local162; 		// m[esp_55 - 68]{0}
+    __size32 local163; 		// m[esp_55 - 68]{0}
+    __size32 local164; 		// m[esp_55 - 68]{0}
+    int local165; 		// m[esp_55 - 72]{0}
+    int local166; 		// m[esp_55 - 72]{0}
+    int local167; 		// m[esp_55 - 72]{0}
+    int local168; 		// m[esp_55 - 72]{0}
+    int local169; 		// m[esp_55 - 72]{0}
+    int local17; 		// m[esp_55 + 4]{0}
+    int local170; 		// m[esp_55 - 72]{0}
+    int local171; 		// m[esp_55 - 72]{0}
+    int local172; 		// m[esp_55 - 72]{0}
+    int local173; 		// m[esp_55 - 72]{0}
+    unsigned int local174; 		// m[esp_55 - 72]{0}
+    unsigned int local175; 		// m[esp_55 - 72]{0}
+    unsigned int local176; 		// m[esp_55 - 72]{0}
+    unsigned int local177; 		// m[esp_55 - 72]{0}
     __size8 local178; 		// param6{0}
-    __size32 local179; 		// esp_63{0}
-    int local18; 		// m[esp_73 + 4]{0}
+    __size32 local179; 		// esp_67{0}
+    int local18; 		// m[esp_55 + 4]{0}
     union { __size32 *; __size32; } local180; 		// ebp{0}
     unsigned int local181; 		// esi{0}
     unsigned int local182; 		// edi{0}
@@ -16509,7 +16428,7 @@ void proc_0x00415c40(__size32 param1, union { int *; __size32; } param2, union {
     int local187; 		// edi_2{0}
     int local188; 		// edi_8{0}
     unsigned char local189; 		// dl{0}
-    int local19; 		// m[esp_73 + 4]{0}
+    int local19; 		// m[esp_55 + 4]{0}
     union { unsigned int; unsigned char *; } local190; 		// eax_15{0}
     unsigned char local191; 		// dl{0}
     unsigned int local192; 		// esi{0}
@@ -16517,98 +16436,98 @@ void proc_0x00415c40(__size32 param1, union { int *; __size32; } param2, union {
     int local194; 		// ebx{0}
     __size32 local195; 		// edi{0}
     int local196; 		// eax{0}
-    __size32 local197; 		// esp_70{0}
+    __size32 local197; 		// esp_65{0}
     __size32 local198; 		// edi{0}
-    __size32 local199; 		// esp_67{0}
+    __size32 local199; 		// esp_60{0}
     __size32 local2; 		// m[esp - 64]
-    int local20; 		// m[esp_73 + 4]{0}
-    __size32 local200; 		// esp_64{0}
-    int local21; 		// m[esp_73 + 4]{0}
-    int local22; 		// m[esp_73 + 4]{0}
-    int local23; 		// m[esp_73 + 4]{0}
-    int local24; 		// m[esp_73 + 4]{0}
-    int local25; 		// m[esp_73 + 4]{0}
-    int local26; 		// m[esp_73 + 4]{0}
-    int local27; 		// m[esp_73 + 4]{0}
-    __size32 local28; 		// m[esp_73 + 4]{0}
-    __size32 local29; 		// m[esp_73 + 4]{0}
+    int local20; 		// m[esp_55 + 4]{0}
+    __size32 local200; 		// esp_54{0}
+    int local21; 		// m[esp_55 + 4]{0}
+    int local22; 		// m[esp_55 + 4]{0}
+    int local23; 		// m[esp_55 + 4]{0}
+    int local24; 		// m[esp_55 + 4]{0}
+    int local25; 		// m[esp_55 + 4]{0}
+    int local26; 		// m[esp_55 + 4]{0}
+    int local27; 		// m[esp_55 + 4]{0}
+    __size32 local28; 		// m[esp_55 + 4]{0}
+    __size32 local29; 		// m[esp_55 + 4]{0}
     __size32 local3; 		// m[esp - 60]
-    int local30; 		// m[esp_73 + 8]{0}
-    int local31; 		// m[esp_73 + 8]{0}
-    int local32; 		// m[esp_73 + 8]{0}
-    int local33; 		// m[esp_73 + 8]{0}
-    int local34; 		// m[esp_73 + 8]{0}
-    int local35; 		// m[esp_73 + 8]{0}
-    int local36; 		// m[esp_73 + 8]{0}
-    int local37; 		// m[esp_73 + 8]{0}
-    int local38; 		// m[esp_73 + 8]{0}
-    int local39; 		// m[esp_73 + 8]{0}
+    int local30; 		// m[esp_55 + 8]{0}
+    int local31; 		// m[esp_55 + 8]{0}
+    int local32; 		// m[esp_55 + 8]{0}
+    int local33; 		// m[esp_55 + 8]{0}
+    int local34; 		// m[esp_55 + 8]{0}
+    int local35; 		// m[esp_55 + 8]{0}
+    int local36; 		// m[esp_55 + 8]{0}
+    int local37; 		// m[esp_55 + 8]{0}
+    int local38; 		// m[esp_55 + 8]{0}
+    int local39; 		// m[esp_55 + 8]{0}
     int local4; 		// m[esp - 32]
-    int local40; 		// m[esp_73 + 8]{0}
-    int local41; 		// m[esp_73 + 8]{0}
-    int local42; 		// m[esp_73 + 8]{0}
-    int local43; 		// m[esp_73 + 8]{0}
-    int local44; 		// m[esp_73 + 8]{0}
-    int local45; 		// m[esp_73 + 8]{0}
-    int local46; 		// m[esp_73 + 8]{0}
-    union { __size32; int *; } local47; 		// m[esp_73 + 8]{0}
-    union { __size32; int *; } local48; 		// m[esp_73 + 8]{0}
-    int local49; 		// m[esp_73 + 16]{0}
+    int local40; 		// m[esp_55 + 8]{0}
+    int local41; 		// m[esp_55 + 8]{0}
+    int local42; 		// m[esp_55 + 8]{0}
+    int local43; 		// m[esp_55 + 8]{0}
+    int local44; 		// m[esp_55 + 8]{0}
+    int local45; 		// m[esp_55 + 8]{0}
+    int local46; 		// m[esp_55 + 8]{0}
+    union { __size32; int *; } local47; 		// m[esp_55 + 8]{0}
+    union { __size32; int *; } local48; 		// m[esp_55 + 8]{0}
+    int local49; 		// m[esp_55 + 16]{0}
     __size32 local5; 		// m[esp - 16]
-    int local50; 		// m[esp_73 + 16]{0}
-    int local51; 		// m[esp_73 + 16]{0}
-    int local52; 		// m[esp_73 + 16]{0}
-    int local53; 		// m[esp_73 + 16]{0}
-    int local54; 		// m[esp_73 + 16]{0}
-    int local55; 		// m[esp_73 + 16]{0}
-    int local56; 		// m[esp_73 + 16]{0}
-    int local57; 		// m[esp_73 + 16]{0}
-    int local58; 		// m[esp_73 + 16]{0}
-    int local59; 		// m[esp_73 + 16]{0}
+    int local50; 		// m[esp_55 + 16]{0}
+    int local51; 		// m[esp_55 + 16]{0}
+    int local52; 		// m[esp_55 + 16]{0}
+    int local53; 		// m[esp_55 + 16]{0}
+    int local54; 		// m[esp_55 + 16]{0}
+    int local55; 		// m[esp_55 + 16]{0}
+    int local56; 		// m[esp_55 + 16]{0}
+    int local57; 		// m[esp_55 + 16]{0}
+    int local58; 		// m[esp_55 + 16]{0}
+    int local59; 		// m[esp_55 + 16]{0}
     __size32 local6; 		// m[esp - 4]
-    int local60; 		// m[esp_73 + 16]{0}
-    int local61; 		// m[esp_73 + 16]{0}
-    int local62; 		// m[esp_73 + 16]{0}
-    int local63; 		// m[esp_73 + 16]{0}
-    int local64; 		// m[esp_73 + 16]{0}
-    int local65; 		// m[esp_73 + 16]{0}
-    union { __size32; __size32 *; } local66; 		// m[esp_73 + 16]{0}
-    union { __size32; __size32 *; } local67; 		// m[esp_73 + 16]{0}
-    int local68; 		// m[esp_73 + 20]{0}
-    int local69; 		// m[esp_73 + 20]{0}
+    int local60; 		// m[esp_55 + 16]{0}
+    int local61; 		// m[esp_55 + 16]{0}
+    int local62; 		// m[esp_55 + 16]{0}
+    int local63; 		// m[esp_55 + 16]{0}
+    int local64; 		// m[esp_55 + 16]{0}
+    int local65; 		// m[esp_55 + 16]{0}
+    union { __size32; __size32 *; } local66; 		// m[esp_55 + 16]{0}
+    union { __size32; __size32 *; } local67; 		// m[esp_55 + 16]{0}
+    int local68; 		// m[esp_55 + 20]{0}
+    int local69; 		// m[esp_55 + 20]{0}
     __size32 local7; 		// m[esp + 4]
-    int local70; 		// m[esp_73 + 20]{0}
-    int local71; 		// m[esp_73 + 20]{0}
-    int local72; 		// m[esp_73 + 20]{0}
-    int local73; 		// m[esp_73 + 20]{0}
-    int local74; 		// m[esp_73 + 20]{0}
-    int local75; 		// m[esp_73 + 20]{0}
-    int local76; 		// m[esp_73 + 20]{0}
-    int local77; 		// m[esp_73 + 20]{0}
-    int local78; 		// m[esp_73 + 20]{0}
-    int local79; 		// m[esp_73 + 20]{0}
+    int local70; 		// m[esp_55 + 20]{0}
+    int local71; 		// m[esp_55 + 20]{0}
+    int local72; 		// m[esp_55 + 20]{0}
+    int local73; 		// m[esp_55 + 20]{0}
+    int local74; 		// m[esp_55 + 20]{0}
+    int local75; 		// m[esp_55 + 20]{0}
+    int local76; 		// m[esp_55 + 20]{0}
+    int local77; 		// m[esp_55 + 20]{0}
+    int local78; 		// m[esp_55 + 20]{0}
+    int local79; 		// m[esp_55 + 20]{0}
     union { int *; __size32; } local8; 		// m[esp + 8]
-    int local80; 		// m[esp_73 + 20]{0}
-    int local81; 		// m[esp_73 + 20]{0}
-    int local82; 		// m[esp_73 + 20]{0}
-    int local83; 		// m[esp_73 + 20]{0}
-    int local84; 		// m[esp_73 + 20]{0}
-    union { __size32; __size32 *; } local85; 		// m[esp_73 + 20]{0}
-    union { __size32; __size32 *; } local86; 		// m[esp_73 + 20]{0}
-    int local87; 		// m[esp_73 - 4]{0}
-    int local88; 		// m[esp_73 - 4]{0}
-    int local89; 		// m[esp_73 - 4]{0}
+    int local80; 		// m[esp_55 + 20]{0}
+    int local81; 		// m[esp_55 + 20]{0}
+    int local82; 		// m[esp_55 + 20]{0}
+    int local83; 		// m[esp_55 + 20]{0}
+    int local84; 		// m[esp_55 + 20]{0}
+    union { __size32; __size32 *; } local85; 		// m[esp_55 + 20]{0}
+    union { __size32; __size32 *; } local86; 		// m[esp_55 + 20]{0}
+    int local87; 		// m[esp_55 - 4]{0}
+    int local88; 		// m[esp_55 - 4]{0}
+    int local89; 		// m[esp_55 - 4]{0}
     union { __size32 *; __size32; } local9; 		// m[esp + 16]
-    int local90; 		// m[esp_73 - 4]{0}
-    int local91; 		// m[esp_73 - 4]{0}
-    int local92; 		// m[esp_73 - 4]{0}
-    int local93; 		// m[esp_73 - 4]{0}
-    int local94; 		// m[esp_73 - 4]{0}
-    int local95; 		// m[esp_73 - 4]{0}
-    __size32 local96; 		// m[esp_73 - 4]{0}
-    __size32 local97; 		// m[esp_73 - 4]{0}
-    __size32 local98; 		// m[esp_73 - 4]{0}
-    __size32 local99; 		// m[esp_73 - 4]{0}
+    int local90; 		// m[esp_55 - 4]{0}
+    int local91; 		// m[esp_55 - 4]{0}
+    int local92; 		// m[esp_55 - 4]{0}
+    int local93; 		// m[esp_55 - 4]{0}
+    int local94; 		// m[esp_55 - 4]{0}
+    int local95; 		// m[esp_55 - 4]{0}
+    __size32 local96; 		// m[esp_55 - 4]{0}
+    __size32 local97; 		// m[esp_55 - 4]{0}
+    __size32 local98; 		// m[esp_55 - 4]{0}
+    __size32 local99; 		// m[esp_55 - 4]{0}
 
     esp_1 = proc_0x00414c20(1024);
     local178 = param6;
@@ -16623,6 +16542,8 @@ void proc_0x00415c40(__size32 param1, union { int *; __size32; } param2, union {
     local179 = esp_7;
     local182 = edi_1;
     if (eax == 0) {
+bb0x415fca:
+bb0x415d6b:
     }
     else {
         ecx = *(eax + 4);
@@ -16634,7 +16555,7 @@ void proc_0x00415c40(__size32 param1, union { int *; __size32; } param2, union {
         if (global2239_429838 != 0) {
 bb0x415d81:
             param6 = local178;
-            esp_63 = local179;
+            esp_67 = local179;
             ebp = local180;
             esi = local181;
             edi = local182;
@@ -16647,14 +16568,14 @@ bb0x415d81:
             *(unsigned int*)(ebp - 16) = edx;
             local183 = ebx;
             if (dx <= (unsigned int)0) {
-                goto bb0x415d81;
+                goto bb0x415fca;
             }
             else {
                 ecx = *(edi + 20);
                 do {
-bb0x415da0:
                     ebx_2 = local183;
                     if (*(ecx + (bx) * 40 + 12) >= esi) {
+bb0x415dc1:
                         ebx_3 = ebx_2 + 1;
                         bx = (unsigned short) ebx_2 + 1;
                         local183 = ebx_3;
@@ -16664,7 +16585,6 @@ bb0x415da0:
                         eax = (bx) * 40 + edx;
                         edx = esi - *(eax + 12);
                         if (edx < *(eax + 16)) {
-bb0x415dd4:
                             esi = esi - *(ecx + (bx) * 40 + 12);
                             *(int*)(ebp - 32) = esi;
                             if (esi != -1) {
@@ -16680,7 +16600,6 @@ bb0x415dd4:
                                 *(__size32*)(esp_30 - 28) = 0x4250ec;
                                 *(__size32*)(esp_30 - 32) = ecx;
                                 (*global2229_4297f0)(local177, local164, local151, local138, local125, local112, local99, param1, param2, param3, param4, (unsigned short) edx, bx, param6, cl, (unsigned char) edx, bl, ebp - 48, ecx, edx, ebx_2, ebp, esi, edi, SUBFLAGS32(esi, -1, esi + 1), esi + 1 == 0, (unsigned int)esi < (unsigned int)-1);
-bb0x415e1a:
                                 if (eax_2 != 0) {
                                     eax_5 = *(ebp - 24);
                                     *(__size32*)(esp_33 + 28) = ebp - 20;
@@ -16732,7 +16651,7 @@ bb0x415e1a:
                                                     *(union { LPVOID; __size32; }*)(esp_44 + 4LL + 16LL - 16) = eax_11;
                                                     *(__size32*)(esp_44 + 4LL + 16LL - 20) = eax_13;
                                                     *(union { LPVOID; __size32; }*)(ebp - 16) = eax_11;
-                                                    (*global2233_4297fc)(*(esp_73 - 72), *(esp_73 - 68), *(esp_73 - 64), *(esp_73 - 60), *(esp_73 - 32), *(esp_73 - 16), *(esp_73 - 4), local26, local45, local64, local83, (unsigned short) ebp - 4, bx, al, cl, (unsigned char) ebp - 4, bl, eax_13, ecx, ebp - 4, ebx, ebp, esi, eax_11, <all>, LOGICALFLAGS32(eax_7), LOGICALFLAGS32(eax_7), LOGICALFLAGS32(eax_7));
+                                                    (*global2233_4297fc)(*(esp_55 - 72), *(esp_55 - 68), *(esp_55 - 64), *(esp_55 - 60), *(esp_55 - 32), *(esp_55 - 16), *(esp_55 - 4), local26, local45, local64, local83, (unsigned short) ebp - 4, bx, al, cl, (unsigned char) ebp - 4, bl, eax_13, ecx, ebp - 4, ebx, ebp, esi, eax_11, <all>, LOGICALFLAGS32(eax_7), LOGICALFLAGS32(eax_7), LOGICALFLAGS32(eax_7));
                                                     local195 = edi_3;
                                                     local195 = edi_3;
                                                     local196 = eax;
@@ -16750,7 +16669,6 @@ bb0x415e1a:
                                                         local194 = ebx;
                                                         if ((int)eax > 0) {
                                                             do {
-bb0x415ed2:
                                                                 ebx = local184;
                                                                 eax = *(edi_3 + (ebx + 1) * 4);
                                                                 edx = *(unsigned short*)(eax + edi_3);
@@ -16761,6 +16679,7 @@ bb0x415ed2:
                                                                 ecx = 0;
                                                                 local185 = ecx;
                                                                 if ((int)edx <= 0) {
+bb0x415f06:
                                                                     ebx_5 = ebx;
                                                                     eax = *(unsigned short*)edi_3;
                                                                     ebx_6 = ebx_5 + 1;
@@ -16772,12 +16691,12 @@ bb0x415ed2:
                                                                 }
                                                                 else {
                                                                     do {
-bb0x415ef0:
                                                                         ecx_1 = local185;
                                                                         ebx = *(ebp - 32);
                                                                         bx = (unsigned short) ebx;
                                                                         local194 = ebx;
                                                                         if (*(esi + ecx_1 * 8) <= (unsigned int)ebx && (unsigned int)ebx <= *(esi + ecx_1 * 8 + 4)) {
+bb0x415f16:
                                                                             eax = *(eax + edi_3 + (ecx_1 + 1) * 4);
                                                                             esi = *(unsigned short*)(eax + edi_3 + 2);
                                                                             *(__size32*)(ebp - 32) = eax + edi_3 + (esi + 1) * 4;
@@ -16825,12 +16744,14 @@ bb0x415ef0:
                                                                                     local190 = eax_16;
                                                                                     local191 = dl;
                                                                                     if (dl == 0) {
+bb0x415f82:
                                                                                         dl = local191;
                                                                                         esi = local192;
                                                                                         edi = *(ebp + 16);
                                                                                         flags = SUBFLAGS32(ecx, edi, ecx - edi);
                                                                                         local193 = esi;
                                                                                         if (ecx >= edi) {
+bb0x415f86:
                                                                                             esi = local193;
                                                                                             edi = *(ebp + 16);
                                                                                             ecx = edi - 1;
@@ -16842,12 +16763,11 @@ bb0x415ef0:
                                                                                         local192 = esi_7;
                                                                                         local193 = esi_7;
                                                                                         do {
-bb0x415f70:
                                                                                             dl = local189;
                                                                                             eax_15 = local190;
                                                                                             flags = SUBFLAGS32(ecx, edi, ecx - edi);
                                                                                             if (ecx >= edi) {
-                                                                                                goto bb0x415f70;
+                                                                                                goto bb0x415f86;
                                                                                             }
                                                                                             else {
                                                                                                 dl_1 = *eax_15;
@@ -16861,9 +16781,9 @@ bb0x415f70:
                                                                                                 local190 = eax;
                                                                                                 local191 = dl_4;
                                                                                             }
-                                                                                            goto bb0x415f70;
+                                                                                            goto bb0x415f86;
                                                                                         } while (dl_4 != 0);
-                                                                                        goto bb0x415f70;
+                                                                                        goto bb0x415f82;
                                                                                     }
                                                                                     eax = *(ebp + 12);
                                                                                     *(int*)(ecx + eax) = 0;
@@ -16877,13 +16797,12 @@ bb0x415f70:
                                                                             ecx_2 = ecx_1 + 1;
                                                                             local185 = ecx_2;
                                                                         }
-                                                                        goto bb0x415ef0;
+                                                                        goto bb0x415f16;
                                                                     } while (ecx_1 + 1 < (int)edx);
-bb0x415f03:
                                                                     ebx = *(ebp - 12);
-                                                                    goto bb0x415f03;
+                                                                    goto bb0x415f06;
                                                                 }
-                                                                goto bb0x415ed2;
+                                                                goto bb0x415f06;
                                                             } while (ebx_5 + 1 < (int)eax);
                                                         }
 bb0x415f93:
@@ -16894,119 +16813,109 @@ bb0x415f93:
                                                         eax = GetProcessHeap();
                                                         local198 = edi;
                                                         *(__size32*)(esp_50 + 4LL - 4) = eax;
-                                                        eax = HeapFree(*(esp_50 + 4LL + 4), *(esp_50 + 4LL), *(esp_50 + 4LL - 4)); /* Warning: also results in edx, esp_62 */
+                                                        eax = HeapFree(*(esp_50 + 4LL + 4), *(esp_50 + 4LL), *(esp_50 + 4LL - 4)); /* Warning: also results in edx, esp */
                                                         local196 = eax;
-                                                        local197 = esp_62;
+                                                        local197 = esp;
                                                     }
                                                 }
                                             }
                                             eax = local196;
-                                            esp_70 = local197;
+                                            esp_65 = local197;
                                             edi = local198;
                                             ecx = *(ebp - 8);
-                                            *(__size32*)(esp_70 - 4) = ecx;
-                                            (*global2234_429800)(local176, local163, local150, local137, local124, local111, local98, local26, local45, local64, local83, dx, bx, al, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
-                                            esp_61 = esp_58 + 4;
-                                            flags = ADDFLAGS32(esp_58, 4, esp_58 + 4);
-                                            local199 = esp_61;
+                                            *(__size32*)(esp_65 - 4) = ecx;
+                                            (*global2234_429800)(local176, local163, local150, local135, local124, local111, local96, local26, local45, local64, local83, dx, bx, al, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
+                                            esp_66 = esp_62 + 4;
+                                            flags = ADDFLAGS32(esp_62, 4, esp_62 + 4);
+                                            local199 = esp_66;
                                         }
-                                        esp_67 = local199;
+                                        esp_60 = local199;
                                         edx = *(ebp - 20);
-                                        *(__size32*)(esp_67 - 4) = edx;
-                                        (*global2235_429804)(local175, local162, local149, local136, local123, local109, local97, local23, local42, local61, local80, (unsigned short) edx, bx, al, cl, (unsigned char) edx, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
-                                        esp_57 = esp_54 + 4;
-                                        flags = ADDFLAGS32(esp_54, 4, esp_54 + 4);
-                                        local200 = esp_57;
+                                        *(__size32*)(esp_60 - 4) = edx;
+                                        (*global2235_429804)(local175, local162, local149, local137, local122, local109, local98, local23, local42, local61, local80, (unsigned short) edx, bx, al, cl, (unsigned char) edx, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
+                                        esp_61 = esp_57 + 4;
+                                        flags = ADDFLAGS32(esp_57, 4, esp_57 + 4);
+                                        local200 = esp_61;
                                     }
-                                    esp_64 = local200;
+                                    esp_54 = local200;
                                     eax = *(ebp - 24);
-                                    *(__size32*)(esp_64 - 4) = eax;
-                                    (*global2236_429808)(local174, local161, local148, local135, local122, local110, local96, local20, local39, local58, local77, dx, bx, al, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
-bb0x415fc7:
-                                    goto bb0x415fc7;
+                                    *(__size32*)(esp_54 - 4) = eax;
+                                    (*global2236_429808)(local174, local161, local148, local136, local123, local110, local97, local20, local39, local58, local77, dx, bx, al, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
+                                    goto bb0x415fca;
                                 }
-                                goto bb0x415e1a;
+                                goto bb0x415fca;
                             }
-                            goto bb0x415dd4;
+                            goto bb0x415fca;
                         }
                         else {
-bb0x415dbe:
                             edx = *(ebp - 16);
                             dl = (unsigned char) edx;
                             dx = (unsigned short) edx;
-                            goto bb0x415dbe;
+                            goto bb0x415dc1;
                         }
-                        goto bb0x415d76;
+                        return;
                     }
-                    goto bb0x415da0;
+                    goto bb0x415dc1;
                 } while ((unsigned short) ebx_2 + 1 < dx);
             }
         }
         else {
-bb0x415ca9:
             if (global2241_4297e0 != 0) {
-                goto bb0x415ca9;
+                goto bb0x415fca;
             }
             else {
                 eax = proc_0x00416570((unsigned char) edx_1, ecx, edx_1); /* Warning: also results in al, dl, ecx, edx, esp_8, ebp_4, esi_3, edi */
-bb0x415cbb:
                 global2241_4297e0 = eax;
                 if (eax == 0) {
-                    goto bb0x415cbb;
+                    goto bb0x415fca;
                 }
                 else {
                     *(__size32*)(esp_8 - 4) = 0x425e80;
                     *(unsigned int*)(esp_8 - 8) = eax;
                     (*GetProcAddress)(pc, param8, esi, ebx, 0, esp_1, ebp_5, param1, param2, param3, param4, (unsigned short) edx_1, (unsigned short) GetProcAddress, al, cl, dl, bl, eax, ecx, edx, GetProcAddress, ebp_4, esi_3, edi, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x415cd6:
                     global2246_4297f0 = eax;
                     if (eax == 0) {
-                        goto bb0x415cd6;
+                        goto bb0x415d6b;
                     }
                     else {
                         *(__size32*)(esp_11 - 4) = 0x425e70;
                         *(__size32*)(esp_11 - 8) = global2241_4297e0;
                         (*ebx)(local165, local152, local139, local126, local113, local100, local87, local11, local30, local49, local68, dx, bx, al, cl, dl, bl, global2241_4297e0, ecx, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x415cf0:
                         global2249_4297f4 = eax;
                         if (eax == 0) {
-                            goto bb0x415cf0;
+                            goto bb0x415d6b;
                         }
                         else {
                             *(__size32*)(esp_14 - 4) = 0x425e58;
                             *(__size32*)(esp_14 - 8) = global2241_4297e0;
                             (*ebx)(local166, local153, local140, local127, local114, local101, local88, local14, local33, local52, local71, dx, bx, al, cl, dl, bl, eax, global2241_4297e0, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x415d07:
                             global2252_4297f8 = eax;
                             if (eax == 0) {
-                                goto bb0x415d07;
+                                goto bb0x415d6b;
                             }
                             else {
                                 *(__size32*)(esp_17 - 4) = 0x425e48;
                                 *(__size32*)(esp_17 - 8) = global2241_4297e0;
                                 (*ebx)(local167, local154, local141, local128, local115, local102, local89, local15, local34, local53, local72, (unsigned short) global2241_4297e0, bx, al, cl, (unsigned char) global2241_4297e0, bl, eax, ecx, global2241_4297e0, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x415d1e:
                                 global2255_4297fc = eax;
                                 if (eax == 0) {
-                                    goto bb0x415d1e;
+                                    goto bb0x415d6b;
                                 }
                                 else {
                                     *(__size32*)(esp_20 - 4) = 0x425e3c;
                                     *(__size32*)(esp_20 - 8) = global2241_4297e0;
                                     (*ebx)(local168, local155, local142, local129, local116, local103, local90, local16, local35, local54, local73, dx, bx, al, cl, dl, bl, global2241_4297e0, ecx, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x415d34:
                                     global2258_429800 = eax;
                                     if (eax == 0) {
-                                        goto bb0x415d34;
+                                        goto bb0x415d6b;
                                     }
                                     else {
                                         *(__size32*)(esp_23 - 4) = 0x425e30;
                                         *(__size32*)(esp_23 - 8) = global2241_4297e0;
                                         (*ebx)(local169, local156, local143, local130, local117, local104, local91, local17, local36, local55, local74, dx, bx, al, cl, dl, bl, eax, global2241_4297e0, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x415d4b:
                                         global2261_429804 = eax;
                                         if (eax == 0) {
-                                            goto bb0x415d4b;
+                                            goto bb0x415d6b;
                                         }
                                         else {
                                             *(__size32*)(esp_26 - 4) = 0x425e24;
@@ -17017,15 +16926,13 @@ bb0x415d4b:
                                             local180 = ebp;
                                             local181 = esi;
                                             local182 = edi;
-bb0x415d62:
                                             global2264_429808 = eax;
                                             if (eax != 0) {
-bb0x415d77:
                                                 global2239_429838 = 1;
-                                                goto bb0x415d77;
+                                                goto bb0x415d81;
                                             }
                                             else {
-                                                goto bb0x415d62;
+                                                goto bb0x415d6b;
                                             }
                                         }
                                     }
@@ -17037,7 +16944,6 @@ bb0x415d77:
             }
         }
     }
-bb0x415d76:
     return;
 }
 
@@ -17303,170 +17209,169 @@ __size32 proc_0x00421780(int param1, unsigned char param2, int param3, unsigned 
     union { void *; __size32; } esp_1; 		// r28{0}
     union { int; void *; } esp_10; 		// r28{0}
     __size32 esp_13; 		// r28{0}
-    __size32 esp_16; 		// r28{0}
-    union { __size32; void *; } esp_19; 		// r28{0}
+    union { __size32; void *; } esp_16; 		// r28{0}
+    union { int; void *; } esp_17; 		// r28{0}
+    union { long long; void *; } esp_18; 		// r28{0}
     __size32 esp_20; 		// r28{0}
-    __size32 esp_23; 		// r28{0}
-    union { int; void *; } esp_24; 		// r28{0}
-    union { long long; void *; } esp_27; 		// r28{0}
+    __size32 esp_21; 		// r28{0}
+    __size32 esp_22; 		// r28{0}
     union { int; void *; } esp_4; 		// r28{0}
     __size32 esp_7; 		// r28{0}
     unsigned int local17; 		// edx_18{0}
-    __size32 local18; 		// esp_20{0}
+    __size32 local18; 		// esp_21{0}
     unsigned char local19; 		// param2{0}
-    unsigned char local20; 		// m[esp_27 - 0x42d]{0}
+    unsigned char local20; 		// m[esp_18 - 0x42d]{0}
     unsigned int local21; 		// edx_16{0}
-    __size32 local22; 		// esp_23{0}
+    __size32 local22; 		// esp_20{0}
     unsigned int local23; 		// edx_1{0}
-    union { void *; int; } local24; 		// esp_24{0}
-    union { void *; __size32; } local25; 		// esp_19{0}
+    union { void *; int; } local24; 		// esp_17{0}
+    union { void *; __size32; } local25; 		// esp_16{0}
 
     esp_1 = &param1;
     local19 = param2;
     local25 = esp_1;
     local25 = esp_1;
     if (param4 >= global422_42af94) {
+bb0x4217b9:
         global254_42962c = 9;
         global253_429630 = 0;
     }
     else {
-bb0x42179c:
         ecx_1 = (int) *(global425_42afe0[((int)param4 >> 5)] + (param4 & 0x1f) * 8 + 4);
         if ((ecx_1 & 0x1) != 0) {
-            *(int*)(esp_27 - 1052) = 0;
-            *(int*)(esp_27 - 1068) = 0;
+            *(int*)(esp_18 - 1052) = 0;
+            *(int*)(esp_18 - 1068) = 0;
             if (param6 != 0) {
                 edx = global425_42afe0[((int)param4 >> 5)];
                 eax_5 = (int) *(global425_42afe0[((int)param4 >> 5)] + (param4 & 0x1f) * 8 + 4);
                 if ((eax_5 & 0x20) != 0) {
                     proc_0x00422710(param4, 0, 2);
                 }
-                esp_16 = esp_27 - 1072;
+                esp_22 = esp_18 - 1072;
                 edx_5 = (int) *(global425_42afe0[((int)param4 >> 5)] + (param4 & 0x1f) * 8 + 4);
                 edx_8 = edx_5 & 0x80;
                 local17 = edx_8;
-                local18 = esp_16;
+                local18 = esp_22;
                 if ((edx_5 & 0x80) == 0) {
                     eax_6 = *(global425_42afe0[((int)param4 >> 5)] + (param4 & 0x1f) * 8);
-                    eax_7 = WriteFile(eax_6, param5, param6, esp_27 - 1060, 0); /* Warning: also results in edx_9, esp_4 */
+                    eax_7 = WriteFile(eax_6, param5, param6, esp_18 - 1060, 0); /* Warning: also results in edx_9, esp_4 */
                     local23 = edx_9;
                     local24 = esp_4;
                     if (eax_7 == 0) {
                         eax_11 = GetLastError(); /* Warning: also results in edx_17, esp_10 */
                         local23 = edx_17;
                         local24 = esp_10;
-                        *(int*)(esp_27 - 1056) = eax_11;
+                        *(int*)(esp_18 - 1056) = eax_11;
                     }
                     else {
-                        *(int*)(esp_27 - 1056) = 0;
-                        *(int*)(esp_27 - 1052) = param3;
+                        *(int*)(esp_18 - 1056) = 0;
+                        *(int*)(esp_18 - 1052) = param3;
                     }
                 }
                 else {
-                    *(unsigned int*)(esp_27 - 1048) = param5;
-                    *(int*)(esp_27 - 1056) = 0;
+                    *(unsigned int*)(esp_18 - 1048) = param5;
+                    *(int*)(esp_18 - 1056) = 0;
                     edx_18 = local17;
-                    esp_20 = local18;
+                    esp_21 = local18;
                     param2 = local19;
-                    ecx = *(esp_27 - 1048) - param5;
+                    ecx = *(esp_18 - 1048) - param5;
                     local20 = param2;
                     local21 = edx_18;
-                    local22 = esp_20;
-                    while ((unsigned int)(*(esp_27 - 1048) - param5) < param6) {
-                        *(__size32*)(esp_27 - 1064) = esp_27 - 1044;
-                        *(unsigned char*)(esp_27 - 1069) = local20;
-                        local19 = *(esp_27 - 1069);
-                        if ( ~(*(esp_27 - 1064) - esp_27 + 1044 >= 1024 || *(esp_27 - 1048) - param5 >= param6)) {
-                            cl_4 = **(esp_27 - 1048);
-                            *(unsigned char*)(esp_27 - 1069) = cl_4;
-                            *(__size32*)(esp_27 - 1048)++;
-                            local20 = *(esp_27 - 1069);
+                    local22 = esp_21;
+                    while ((unsigned int)(*(esp_18 - 1048) - param5) < param6) {
+                        *(__size32*)(esp_18 - 1064) = esp_18 - 1044;
+bb0x42187c:
+                        *(unsigned char*)(esp_18 - 1069) = local20;
+                        local19 = *(esp_18 - 1069);
+                        if ( ~(*(esp_18 - 1064) - esp_18 + 1044 >= 1024 || *(esp_18 - 1048) - param5 >= param6)) {
+                            cl_4 = **(esp_18 - 1048);
+                            *(unsigned char*)(esp_18 - 1069) = cl_4;
+                            *(__size32*)(esp_18 - 1048)++;
+                            local20 = *(esp_18 - 1069);
                             if ((int) cl_4 == 10) {
-                                *(int*)(esp_27 - 1068)++;
-                                *(int*)*(esp_27 - 1064) = 13;
-                                *(__size32*)(esp_27 - 1064)++;
+                                *(int*)(esp_18 - 1068)++;
+                                *(int*)*(esp_18 - 1064) = 13;
+                                *(__size32*)(esp_18 - 1064)++;
                             }
-bb0x4218f3:
-                            *(__size8*)*(esp_27 - 1064) = cl_4;
-                            *(__size32*)(esp_27 - 1064)++;
-                            goto bb0x4218f3;
+                            *(__size8*)*(esp_18 - 1064) = cl_4;
+                            *(__size32*)(esp_18 - 1064)++;
+                            goto bb0x42187c;
                         }
-                        *(int*)(esp_20 - 4) = 0;
-                        *(int*)(esp_20 - 8) = esp_27 - 1060;
-                        *(__size32*)(esp_20 - 12) = *(esp_27 - 1064) - esp_27 + 1044;
-                        *(int*)(esp_20 - 16) = esp_27 - 1044;
+                        *(int*)(esp_21 - 4) = 0;
+                        *(int*)(esp_21 - 8) = esp_18 - 1060;
+                        *(__size32*)(esp_21 - 12) = *(esp_18 - 1064) - esp_18 + 1044;
+                        *(int*)(esp_21 - 16) = esp_18 - 1044;
                         edx_10 = *(global425_42afe0[((int)param4 >> 5)] + (param4 & 0x1f) * 8);
-                        *(__size32*)(esp_20 - 20) = edx_10;
-                        eax_8 = WriteFile(*(esp_20 - 20), *(esp_20 - 16), *(esp_20 - 12), *(esp_20 - 8), *(esp_20 - 4)); /* Warning: also results in esp_7 */
+                        *(__size32*)(esp_21 - 20) = edx_10;
+                        eax_8 = WriteFile(*(esp_21 - 20), *(esp_21 - 16), *(esp_21 - 12), *(esp_21 - 8), *(esp_21 - 4)); /* Warning: also results in esp_7 */
                         local18 = esp_7;
                         local22 = esp_7;
                         if (eax_8 == 0) {
                             eax_12 = GetLastError(); /* Warning: also results in edx, esp_13 */
                             local21 = edx;
                             local22 = esp_13;
-bb0x421987:
-                            *(int*)(esp_27 - 1056) = eax_12;
-                            goto bb0x421987;
+                            *(int*)(esp_18 - 1056) = eax_12;
+                            goto bb0x421994;
                         }
                         else {
-                            *(int*)(esp_27 - 1052) += param3;
-                            edx_13 = esp_27 - 1044;
+                            *(int*)(esp_18 - 1052) += param3;
+                            edx_13 = esp_18 - 1044;
                             local17 = edx_13;
                             local21 = edx_13;
-                            if (param3 >= *(esp_27 - 1064) - esp_27 + 1044) {
+                            if (param3 >= *(esp_18 - 1064) - esp_18 + 1044) {
                             }
                             else {
-bb0x42197d:
-                                goto bb0x42197d;
+                                goto bb0x421994;
                             }
                         }
                         edx_18 = local17;
-                        esp_20 = local18;
+                        esp_21 = local18;
                         param2 = local19;
-                        ecx = *(esp_27 - 1048) - param5;
+                        ecx = *(esp_18 - 1048) - param5;
                         local20 = param2;
                         local21 = edx_18;
-                        local22 = esp_20;
+                        local22 = esp_21;
                     }
+bb0x421994:
                     edx_16 = local21;
-                    esp_23 = local22;
+                    esp_20 = local22;
                     local23 = edx_16;
-                    local24 = esp_23;
+                    local24 = esp_20;
                 }
                 edx_1 = local23;
-                esp_24 = local24;
-                local25 = esp_24;
-                local25 = esp_24;
-                local25 = esp_24;
-                if (*(esp_27 - 1052) != 0) {
+                esp_17 = local24;
+                local25 = esp_17;
+                local25 = esp_17;
+                local25 = esp_17;
+                if (*(esp_18 - 1052) != 0) {
                 }
                 else {
-                    if (*(esp_27 - 1056) == 0) {
+                    if (*(esp_18 - 1056) == 0) {
                         ecx = (int) *(global425_42afe0[((int)param4 >> 5)] + (param4 & 0x1f) * 8 + 4);
                         if ((ecx & 0x40) == 0) {
+bb0x421a63:
                             global254_42962c = 28;
                             global253_429630 = 0;
                         }
                         else {
-bb0x421a54:
                             eax = (int) *param5;
                             if (eax != 26) {
-                                goto bb0x421a54;
+                                goto bb0x421a63;
                             }
                             else {
                             }
                         }
                     }
                     else {
-                        if (*(esp_27 - 1056) != 5) {
-                            *(int*)(esp_24 - 4) = *(esp_27 - 1056);
-                            proc_0x00422140(*(esp_24 - 4), edx_1);
+                        if (*(esp_18 - 1056) != 5) {
+                            *(int*)(esp_17 - 4) = *(esp_18 - 1056);
+                            proc_0x00422140(*(esp_17 - 4), edx_1);
                         }
                         else {
                             global254_42962c = 9;
-                            global253_429630 = *(esp_27 - 1056);
+                            global253_429630 = *(esp_18 - 1056);
                         }
-                        esp = esp_24;
+                        esp = esp_17;
                         local25 = esp;
                     }
                 }
@@ -17475,10 +17380,10 @@ bb0x421a54:
             }
         }
         else {
-            goto bb0x42179c;
+            goto bb0x4217b9;
         }
     }
-    esp_19 = local25;
+    esp_16 = local25;
     proc_0x0041d0f0(dx, dh, eax_1);
     ebp = *ebp;
     return eax_4; /* WARNING: Also returning: cl := cl_1, dl := dl, ecx := ecx_2, edx := edx_2, ebp := ebp */
@@ -17505,6 +17410,7 @@ __size8 proc_0x00421650(unsigned int param1, LONG param2, unsigned int param3, c
     local5 = param4;
     local6 = param5;
     if (param1 >= global422_42af94) {
+bb0x42167e:
         param4 = local5;
         param5 = local6;
         global254_42962c = 9;
@@ -17513,7 +17419,6 @@ __size8 proc_0x00421650(unsigned int param1, LONG param2, unsigned int param3, c
         local9 = param5;
     }
     else {
-bb0x421661:
         edx = param1 & 0x1f;
         ecx = (int) *(global425_42afe0[((int)param1 >> 5)] + (param1 & 0x1f) * 8 + 4);
         cl = (unsigned char) ecx & 0x1;
@@ -17556,7 +17461,7 @@ bb0x421661:
             }
         }
         else {
-            goto bb0x421661;
+            goto bb0x42167e;
         }
     }
     cl = local8;
@@ -17624,17 +17529,19 @@ __size32 proc_0x0041af80(int param1)
         eax = local2 & *local4;
         edx = local3 & *(local4 + 4);
         if ((eax | edx) != 0) {
-bb0x41b004:
-            goto bb0x41b004;
+            goto bb0x41b011;
         }
         local4 += 20;
     }
+bb0x41b011:
     if (local4 != global27_42ac9c * 20 + global21_42aca0) {
+bb0x41b0f8:
         global25_42aca8 = local4;
         eax_1 = *(local4 + 16);
         edx_1 = *eax_1;
         local6 = edx_1;
         if (edx_1 == -1) {
+bb0x41b139:
             local6 = 0;
             ecx = local2 & *(eax_1 + local6 * 4 + 68);
             esi = local3 & *(eax_1 + local6 * 4 + 196);
@@ -17645,11 +17552,10 @@ bb0x41b004:
             }
         }
         else {
-bb0x41b118:
             edx = local2 & *(eax_1 + edx_1 * 4 + 68);
             esi = local3 & *(eax_1 + edx_1 * 4 + 196);
             if ((edx | esi) == 0) {
-                goto bb0x41b118;
+                goto bb0x41b139;
             }
         }
         local7 = eax_1 + local6 * 516 + 324;
@@ -17766,26 +17672,25 @@ bb0x41b118:
             edx = local2 & *local4;
             ecx = local3 & *(local4 + 4);
             if ((edx | ecx) != 0) {
-bb0x41b046:
-                goto bb0x41b046;
+                goto bb0x41b053;
             }
             local4 += 20;
         }
 bb0x41b053:
         if (local4 != *0x42aca8) {
-            goto bb0x41b053;
+            goto bb0x41b0f8;
         }
         else {
             while (local4 < global27_42ac9c * 20 + global21_42aca0) {
                 if (*(local4 + 8) != 0) {
-bb0x41b073:
-                    goto bb0x41b073;
+                    goto bb0x41b080;
                 }
                 local4 += 20;
             }
+bb0x41b080:
             if (local4 != global27_42ac9c * 20 + global21_42aca0) {
+bb0x41b0d2:
                 eax = proc_0x0041b730(local4);
-bb0x41b0db:
                 ecx = *(local4 + 16);
                 *(__size32*)ecx = eax;
                 edx = local4;
@@ -17793,7 +17698,7 @@ bb0x41b0db:
                 eax = *(local4 + 16);
                 local12 = edx;
                 if (*eax != -1) {
-                    goto bb0x41b0db;
+                    goto bb0x41b0f8;
                 }
                 else {
                     eax = 0;
@@ -17806,23 +17711,21 @@ bb0x41b0db:
                 local4 = global21_42aca0;
                 while (local4 < global25_42aca8) {
                     if (*(local4 + 8) != 0) {
-bb0x41b0a5:
-                        goto bb0x41b0a5;
+                        goto bb0x41b0b2;
                     }
                     dl = (unsigned char) local4 + 20;
                     local4 += 20;
                 }
 bb0x41b0b2:
                 if (local4 != *0x42aca8) {
-                    goto bb0x41b0b2;
+                    goto bb0x41b0d2;
                 }
                 else {
                     eax = proc_0x0041b5e0(); /* Warning: also results in ecx, edx */
                     local12 = edx;
-bb0x41b0c2:
                     local4 = eax;
                     if (eax != 0) {
-                        goto bb0x41b0c2;
+                        goto bb0x41b0d2;
                     }
                     else {
                         eax = 0;
@@ -18013,6 +17916,7 @@ __size32 proc_0x00421300(CPINFO param1, int param2, int param3, int param4, int 
     local39 = param7;
     local40 = param9;
     if (param3 == param4) {
+bb0x421569:
         esp_10 = local31;
         ebp_9 = local32;
         param7 = local33;
@@ -18071,6 +17975,7 @@ __size32 proc_0x00421300(CPINFO param1, int param2, int param3, int param4, int 
         local24 = esp_43;
         local25 = param2;
         if (*(esp_49 - 40) != 0) {
+bb0x4213e2:
             esp_44 = local24;
             *(int*)(esp_49 - 44) = local25;
             esp_14 = proc_0x00414c20(*(esp_49 - 44) * 2 + 3 & ~0x3);
@@ -18081,6 +17986,7 @@ __size32 proc_0x00421300(CPINFO param1, int param2, int param3, int param4, int 
             esp_20 = esp_17 + 12;
             local26 = esp_20;
             if (esp_14 != 0) {
+bb0x421474:
                 esp_36 = local26;
                 ebp_17 = local27;
                 param7 = local28;
@@ -18108,12 +18014,10 @@ __size32 proc_0x00421300(CPINFO param1, int param2, int param3, int param4, int 
                 local34 = param9;
                 local34 = param9;
                 local34 = param9;
-bb0x421490:
                 if (eax_18 != 0) {
-bb0x421498:
                     if (*(ebp_17 + 24) == 0) {
-bb0x4214cd:
                         if (*(ebp_17 - 36) != 0) {
+bb0x4214f8:
                             esp_35 = local30;
                             *(__size32*)(esp_35 - 4) = 161;
                             *(__size32*)(esp_35 - 8) = 0x427484;
@@ -18131,7 +18035,6 @@ bb0x4214cd:
                             local34 = dh;
                             local34 = dh;
                             local34 = dh;
-bb0x42150f:
                             esp_31 = esp_28 + 20;
                             *(int*)(ebp_13 - 32) = eax_24;
                             local31 = esp_31;
@@ -18152,18 +18055,15 @@ bb0x42150f:
                                 eax_27 = WideCharToMultiByte(); /* Warning: also results in edx_10, esp_32 */
                                 local31 = esp_32;
                                 local31 = esp_32;
-bb0x42153b:
                                 *(int*)(ebp_13 - 40) = eax_27;
                                 if (*(ebp_13 - 40) != 0) {
-bb0x42155b:
                                     if (*(ebp_13 - 28) != -1) {
-bb0x421561:
                                         edx = *(ebp_13 + 20);
                                         eax = *(ebp_13 - 40);
                                         *(int*)edx = eax;
-                                        goto bb0x421561;
+                                        goto bb0x421569;
                                     }
-                                    goto bb0x42155b;
+                                    goto bb0x421569;
                                 }
                                 else {
                                     *(int*)(esp_28 + 4LL - 20) = 2;
@@ -18173,15 +18073,14 @@ bb0x421561:
                                     local32 = ebp_15;
                                     local33 = dx;
                                     local34 = dh;
-bb0x42154f:
                                     esp_37 = esp_34 + 8;
                                     *(__size32*)(ebp_15 - 32) = 0;
                                     local31 = esp_37;
-                                    goto bb0x42154f;
+                                    goto bb0x421569;
                                 }
-                                goto bb0x42153b;
+                                goto bb0x421569;
                             }
-                            goto bb0x42150f;
+                            goto bb0x421569;
                         }
                         else {
                             *(int*)(esp_36 + 28LL - 32) = 0;
@@ -18198,14 +18097,13 @@ bb0x42154f:
                             eax_23 = WideCharToMultiByte(); /* Warning: also results in esp_27 */
                             local30 = esp_27;
                             local31 = esp_27;
-bb0x4214ef:
                             *(int*)(ebp_17 - 40) = eax_23;
                             if (*(ebp_17 - 40) != 0) {
-                                goto bb0x4214ef;
+                                goto bb0x4214f8;
                             }
-                            goto bb0x4214ef;
+                            goto bb0x421569;
                         }
-                        goto bb0x4214cd;
+                        goto bb0x421569;
                     }
                     else {
                         *(int*)(esp_36 + 28LL - 32) = 0;
@@ -18227,12 +18125,11 @@ bb0x4214ef:
                             eax_21 = *(ebp_17 + 24);
                             *(int*)(ebp_17 - 32) = eax_21;
                         }
-bb0x4214c8:
-                        goto bb0x4214c8;
+                        goto bb0x421569;
                     }
-                    goto bb0x421498;
+                    goto bb0x421569;
                 }
-                goto bb0x421490;
+                goto bb0x421569;
             }
             else {
                 *(int*)(esp_17 + 8) = 126;
@@ -18251,10 +18148,9 @@ bb0x4214c8:
                 *(__size32*)(ebp_10 - 48) = eax_15;
                 local26 = esp_22;
                 if (*(ebp_10 - 48) != 0) {
-bb0x42146b:
                     ecx_15 = *(ebp_10 - 44);
                     *(__size32*)(ebp_10 - 44) = ecx_15 + 1;
-                    goto bb0x42146b;
+                    goto bb0x421474;
                 }
                 else {
                 }
@@ -18269,11 +18165,10 @@ bb0x42146b:
             *(int*)(esp_40 - 24) = param3;
             eax_11 = MultiByteToWideChar(*(esp_40 - 24), *(esp_40 - 20), *(esp_40 - 16), *(esp_40 - 12), *(esp_40 - 8), *(esp_40 - 4)); /* Warning: also results in esp_13 */
             local24 = esp_13;
-bb0x4213d2:
             *(int*)(esp_49 - 44) = eax_11;
             local25 = *(esp_49 - 44);
             if (eax_11 != 0) {
-                goto bb0x4213d2;
+                goto bb0x4213e2;
             }
             else {
             }
@@ -18474,13 +18369,25 @@ __size32 proc_0x0041dfe0(unsigned int param1, unsigned int param2, int param3, c
                         local34 = esp;
                         if (eax == 0) {
                             eax = 0;
-                            goto bb0x41e231;
+                            param4 = local37;
+                            param5 = local38;
+                            param6 = local39;
+                            param9 = local40;
+                            param10 = local41;
+                            ebp = *ebp;
+                            return eax; /* WARNING: Also returning: al := param4, cl := param5, dl := param6, ecx := ecx, edx := edx, ebp := ebp, esi := param9, edi := param10 */
                         }
                     }
                     else {
                         goto bb0x41e216;
                     }
-                    goto bb0x41e231;
+                    param4 = local37;
+                    param5 = local38;
+                    param6 = local39;
+                    param9 = local40;
+                    param10 = local41;
+                    ebp = *ebp;
+                    return eax; /* WARNING: Also returning: al := param4, cl := param5, dl := param6, ecx := ecx, edx := edx, ebp := ebp, esi := param9, edi := param10 */
                 }
 bb0x41e216:
                 eax = *(ebp - 4);
@@ -18585,10 +18492,9 @@ bb0x41e216:
                                         local14 = dl;
                                         local16 = esi;
                                         local17 = edi;
-bb0x41e0e9:
                                         esp += 8;
                                         local15 = esp;
-                                        goto bb0x41e0e9;
+                                        goto bb0x41e0ec;
                                     }
                                 }
                                 else {
@@ -18596,6 +18502,7 @@ bb0x41e0e9:
                                     *(__size32*)(ebp - 4) = edx;
                                 }
                             }
+bb0x41e0ec:
                             al = local12;
                             cl = local13;
                             dl = local14;
@@ -18632,15 +18539,15 @@ bb0x41e0e9:
                                     *(__size32*)(ebp - 12) = ecx - 1;
                                     edx = *(ebp - 12);
                                     if (edx >= *(ebp + 12)) {
-bb0x41e143:
                                         ecx = *(ebp + 12);
                                         *(__size32*)(ebp - 24) = ecx;
-                                        goto bb0x41e143;
+                                        goto bb0x41e149;
                                     }
                                     else {
                                         eax = *(ebp - 12);
                                         *(__size32*)(ebp - 24) = eax;
                                     }
+bb0x41e149:
                                     edx = *(ebp - 24);
                                     *(__size32*)(esp_8 + 16LL - 20) = edx;
                                     eax = *(ebp + 8);
@@ -18734,13 +18641,25 @@ bb0x41e143:
                         local9 = esp;
                         if (eax == 0) {
                             eax = 0;
-                            goto bb0x41e231;
+                            param4 = local37;
+                            param5 = local38;
+                            param6 = local39;
+                            param9 = local40;
+                            param10 = local41;
+                            ebp = *ebp;
+                            return eax; /* WARNING: Also returning: al := param4, cl := param5, dl := param6, ecx := ecx, edx := edx, ebp := ebp, esi := param9, edi := param10 */
                         }
                     }
                     else {
                         goto bb0x41e1b5;
                     }
-                    goto bb0x41e231;
+                    param4 = local37;
+                    param5 = local38;
+                    param6 = local39;
+                    param9 = local40;
+                    param10 = local41;
+                    ebp = *ebp;
+                    return eax; /* WARNING: Also returning: al := param4, cl := param5, dl := param6, ecx := ecx, edx := edx, ebp := ebp, esi := param9, edi := param10 */
                 }
 bb0x41e1b5:
                 eax = *(ebp - 4);
@@ -18761,7 +18680,6 @@ bb0x41e1b5:
         local37 = al;
         local39 = dl;
     }
-bb0x41e231:
     param4 = local37;
     param5 = local38;
     param6 = local39;
@@ -18868,6 +18786,7 @@ __size32 proc_0x004130e0()
     eax_1 = GetProcAddress(*(esp + 8LL - 20), *(esp + 8LL - 24));
     *(union { FARPROC; __size32; }*)0x429610 = eax_1;
     if (eax_1 != 0) {
+bb0x41314b:
     }
     else {
         esp = proc_0x00414c20(148);
@@ -18875,8 +18794,7 @@ __size32 proc_0x004130e0()
         *(__size32*)esp = 148;
         eax = GetVersionExA(*(esp - 4));
         if (eax == 0 || *(esp + 16) != 1 || *(esp + 4) != 4) {
-bb0x413146:
-            goto bb0x413146;
+            goto bb0x41314b;
         }
     }
     cl =  (1) ? 1 : 0;
@@ -19257,6 +19175,7 @@ __size32 proc_0x004160c0(unsigned int param1, unsigned char param2, unsigned int
     local175 = param5;
     local183 = ebp_1;
     if (global2137_429824 == 0) {
+bb0x416113:
         param2 = local166;
         param3 = local167;
         esp_66 = local168;
@@ -19266,6 +19185,7 @@ __size32 proc_0x004160c0(unsigned int param1, unsigned char param2, unsigned int
         local172 = esp_66;
         local174 = esi_1;
         if (global2143_4297e8 != 0) {
+bb0x416207:
             dl = local170;
             edx = local171;
             esp_69 = local172;
@@ -19277,10 +19197,13 @@ __size32 proc_0x004160c0(unsigned int param1, unsigned char param2, unsigned int
                 *(int*)(esp_69 - 8) = 8;
                 (*global2156_429818)(local153, local121, local89, local57, param1, cl, dl, (unsigned char) HeapAlloc, global2156_429818, ecx, edx, HeapAlloc, ebp, esi, param5, LOGICALFLAGS32(global2156_429818), LOGICALFLAGS32(global2156_429818), LOGICALFLAGS32(global2156_429818));
                 if (eax_6 == -1) {
+bb0x41639a:
                     eax = 0;
                     local183 = ebp;
+bb0x41639c:
                     ebp = local183;
                     ebp = *ebp;
+bb0x4161c5:
                     esi = *(ebp - 0x818);
                     ebx = *(ebp - 0x814);
                     bl = (unsigned char) ebx;
@@ -19296,13 +19219,16 @@ __size32 proc_0x004160c0(unsigned int param1, unsigned char param2, unsigned int
                     local179 = esp_41;
                     flags = LOGICALFLAGS32(eax);
                     if (eax == 0) {
+bb0x416334:
                         esp_82 = local179;
                         *(unsigned int*)(esp_82 - 4) = edi;
                         ecx = CloseHandle(*(esp_82 - 4)); /* Warning: also results in esp_50 */
                         local180 = esp_50;
+bb0x41633b:
                         esp_72 = local180;
                         eax = global2137_429824;
                         local181 = esp_72;
+bb0x416340:
                         esp_73 = local181;
                         flags = LOGICALFLAGS32(eax);
                         esi = eax;
@@ -19314,31 +19240,30 @@ bb0x416446:
                             ecx = eax;
                             cl = (unsigned char) eax;
                             if (eax == 0) {
-                                goto bb0x416446;
+                                goto bb0x41639a;
                             }
                             else {
                                 do {
-bb0x416450:
                                     edx = *(ecx + 4);
                                     esi = *(ebp + 8);
                                     if (edx <= esi && (unsigned int)(esi - edx) <= *(ecx + 8)) {
+bb0x41646d:
                                         eax = ecx;
                                         esi = *(ebp - 0x818);
                                         ebx = *(ebp - 0x814);
                                         bl = (unsigned char) ebx;
                                         ebp = *ebp;
-                                        goto bb0x4161d1;
+                                        return eax; /* WARNING: Also returning: cl := cl, bl := bl, ebx := ebx, ebp := ebp, esi := esi */
                                     }
                                     else {
                                         ecx = *(ecx + 28);
                                         cl = (unsigned char) ecx;
                                     }
-                                    goto bb0x416450;
+                                    goto bb0x41646d;
                                 } while (ecx != 0);
 bb0x416358:
                                 if (eax != 0) {
                                     do {
-bb0x416360:
                                         ecx = *(eax + 24);
                                         cl = (unsigned char) ecx;
                                         esi = *(eax + 28);
@@ -19358,9 +19283,9 @@ bb0x416360:
                                         eax = esi;
                                         global2137_429824 = esi;
                                     } while (esi != 0);
-                                    goto bb0x416360;
+                                    goto bb0x41639a;
                                 }
-                                goto bb0x416358;
+                                goto bb0x41639a;
                             }
                         }
                         else {
@@ -19385,7 +19310,7 @@ bb0x416360:
 bb0x416353:
                                     esp = local182;
                                     eax = global2137_429824;
-                                    goto bb0x416353;
+                                    goto bb0x416358;
                                 }
                                 else {
                                     cl = *esp_54;
@@ -19415,10 +19340,9 @@ bb0x416353:
                                     local182 = esp_60;
                                     local184 = esp_60;
                                     local188 = esp_60;
-bb0x416416:
                                     *(unsigned int*)(esi + 24) = eax;
                                     if (eax == 0) {
-                                        goto bb0x416416;
+                                        goto bb0x416353;
                                     }
                                     else {
                                         eax = 0;
@@ -19441,17 +19365,15 @@ bb0x416416:
                                         bl = (unsigned char) HeapAlloc;
                                     }
                                 }
-                                goto bb0x4161d1;
+                                return eax; /* WARNING: Also returning: cl := cl, bl := bl, ebx := ebx, ebp := ebp, esi := esi */
                             }
-bb0x416441:
                             eax = global2137_429824;
-                            goto bb0x416441;
+                            goto bb0x416446;
                         }
                     }
                     else {
                         cl = (unsigned char) ecx;
                         do {
-bb0x4162f0:
                             esp_79 = local178;
                             *(int*)(esp_79 - 4) = 32;
                             *(int*)(esp_79 - 8) = 0;
@@ -19459,11 +19381,10 @@ bb0x4162f0:
                             *(__size32*)(esp_79 + 4LL - 16) = eax;
                             (*ebx)(local152, local120, local88, local56, local27, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
                             if (eax == 0) {
-bb0x41634c:
                                 *(unsigned int*)(esp_44 - 4) = edi;
                                 esp = CloseHandle(*(esp_44 - 4));
                                 local182 = esp;
-                                goto bb0x41634c;
+                                goto bb0x416353;
                             }
                             else {
                                 edx = *(esi + 28);
@@ -19482,9 +19403,9 @@ bb0x41634c:
                                 local179 = esp_47;
                                 flags = LOGICALFLAGS32(eax);
                             }
-                            goto bb0x4161d1;
+                            return eax; /* WARNING: Also returning: cl := cl, bl := bl, ebx := ebx, ebp := ebp, esi := esi */
                         } while (eax != 0);
-                        goto bb0x4162f0;
+                        goto bb0x416334;
                     }
                 }
             }
@@ -19497,19 +19418,17 @@ bb0x41634c:
                 (*global1444_428c60)(local153, local121, local89, local57, param1, (unsigned char) ebp - 4, (unsigned char) ebp - 0x810, (unsigned char) HeapAlloc, eax, ebp - 4, ebp - 0x810, HeapAlloc, ebp, esi, eax, LOGICALFLAGS32(global2156_429818), LOGICALFLAGS32(global2156_429818), LOGICALFLAGS32(global2156_429818));
                 local176 = esp_26;
                 local180 = esp_26;
-bb0x416239:
                 if (eax == 0) {
-                    goto bb0x416239;
+                    goto bb0x41639a;
                 }
                 else {
-bb0x416241:
                     eax = *(ebp - 4);
                     esi = 0;
                     flags = LOGICALFLAGS32(eax / 4);
                     *(unsigned int*)(ebp - 4) = eax / 4;
                     local177 = esi;
                     if (eax / 4 <= (unsigned int)0) {
-                        goto bb0x416241;
+                        goto bb0x41633b;
                     }
                     else {
                         do {
@@ -19521,7 +19440,6 @@ bb0x416241:
                             *(__size32*)(esp_76 - 12) = ecx;
                             *(unsigned int*)(esp_76 - 16) = edi;
                             (*global1444_428c60)(local154, local122, local90, local58, local17, (unsigned char) ecx, dl, bl, ebp - 16, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
-bb0x416269:
                             if (eax_1 != 0) {
                                 *(int*)(esp_27 - 4) = 32;
                                 *(int*)(esp_27 - 8) = 0;
@@ -19531,7 +19449,6 @@ bb0x416269:
                                 local176 = esp_30;
                                 local181 = esp_30;
                                 local182 = esp_30;
-bb0x41627e:
                                 if (eax != 0) {
                                     edx = *(ebp + esi_4 * 4 - 0x810);
                                     *(__size32*)(eax + 12) = edx;
@@ -19549,12 +19466,11 @@ bb0x41627e:
                                     global2137_429824 = eax;
                                     local177 = esi_7;
                                 }
-                                goto bb0x41627e;
+                                goto bb0x416353;
                             }
-                            goto bb0x416269;
+                            goto bb0x41639a;
                         } while ((unsigned int)(esi_4 + 1) < ecx);
-bb0x4162b9:
-                        goto bb0x4162b9;
+                        goto bb0x416340;
                     }
                 }
             }
@@ -19565,20 +19481,18 @@ bb0x4162b9:
             *(__size32*)(esp_7 - 4) = 0x425f24;
             global2148_4297ec = eax;
             (*edi)(local133, local101, local69, local37, local5, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, flags, ZF, CF);
-bb0x416139:
             cl = (unsigned char) global2148_4297ec;
             global2143_4297e8 = eax;
             if (global2148_4297ec == 0 || eax == 0) {
-                goto bb0x416139;
+                goto bb0x41639a;
             }
             else {
                 *(__size32*)(esp_10 - 4) = 0x425f14;
                 *(unsigned int*)(esp_10 - 8) = eax;
                 (*GetProcAddress)(local134, local102, local70, local38, local8, (unsigned char) global2148_4297ec, dl, bl, eax, global2148_4297ec, edx, ebx, ebp, GetProcAddress, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x416162:
                 global2153_42980c = eax;
                 if (eax == 0) {
-                    goto bb0x416162;
+                    goto bb0x41639a;
                 }
                 else {
                     *(__size32*)(esp_13 - 4) = 0x425ef4;
@@ -19589,10 +19503,9 @@ bb0x416162:
                         *(__size32*)(esp_16 - 4) = 0x425ea4;
                         *(__size32*)(esp_16 - 8) = global2148_4297ec;
                         (*esi)(local136, local104, local72, local40, local10, cl, (unsigned char) global2148_4297ec, bl, eax, ecx, global2148_4297ec, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x4161e0:
                         global2168_42981c = eax;
                         if (eax == 0) {
-                            goto bb0x4161e0;
+                            goto bb0x41639a;
                         }
                         else {
                             *(__size32*)(esp_33 - 4) = 0x425e94;
@@ -19604,32 +19517,29 @@ bb0x4161e0:
                             local173 = ebp;
                             local174 = esi;
                             local175 = edi;
-bb0x4161fa:
                             global2171_429820 = eax;
                             if (eax == 0) {
-                                goto bb0x4161fa;
+                                goto bb0x41639a;
                             }
                             else {
-                                goto bb0x4161fa;
+                                goto bb0x416207;
                             }
                         }
                     }
                     else {
                         *(__size32*)(esp_16 - 4) = 0x425ee8;
                         (*edi)(local136, local104, local72, local40, local10, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x41618c:
                         global2159_4297e4 = eax;
                         if (eax == 0) {
-                            goto bb0x41618c;
+                            goto bb0x41639a;
                         }
                         else {
                             *(__size32*)(esp_19 - 4) = 0x425ed0;
                             *(unsigned int*)(esp_19 - 8) = eax;
                             (*esi)(local139, local107, local75, local43, local13, cl, dl, bl, eax, ecx, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(eax), LOGICALFLAGS32(eax), LOGICALFLAGS32(eax));
-bb0x4161a1:
                             global2162_429814 = eax;
                             if (eax == 0) {
-                                goto bb0x4161a1;
+                                goto bb0x41639a;
                             }
                             else {
                                 *(__size32*)(esp_22 - 4) = 0x425eb4;
@@ -19641,13 +19551,12 @@ bb0x4161a1:
                                 local173 = ebp;
                                 local174 = esi;
                                 local175 = edi;
-bb0x4161bc:
                                 global2165_429810 = eax;
                                 if (eax != 0) {
-                                    goto bb0x4161bc;
+                                    goto bb0x416207;
                                 }
                                 else {
-                                    goto bb0x4161bc;
+                                    goto bb0x4161c5;
                                 }
                             }
                         }
@@ -19658,20 +19567,18 @@ bb0x4161bc:
     }
     else {
         do {
-bb0x4160d8:
             edx = *(eax + 4);
             dl = (unsigned char) edx;
             local166 = dl;
             if (edx <= param1 && (unsigned int)(param1 - edx) <= *(eax + 8)) {
-                goto bb0x4160d8;
+                goto bb0x41639c;
             }
             else {
                 eax = *(eax + 28);
             }
-            goto bb0x4160d8;
+            goto bb0x41639c;
         } while (eax != 0);
         do {
-bb0x4160f4:
             esp_63 = local165;
             esi_2 = *(ecx + 28);
             *(int*)(esp_63 - 4) = ecx;
@@ -19687,9 +19594,8 @@ bb0x4160f4:
             cl = (unsigned char) esi_2;
             global2137_429824 = esi_2;
         } while (esi_2 != 0);
-        goto bb0x4160f4;
+        goto bb0x416113;
     }
-bb0x4161d1:
     return eax; /* WARNING: Also returning: cl := cl, bl := bl, ebx := ebx, ebp := ebp, esi := esi */
 }
 
@@ -19802,6 +19708,7 @@ __size32 proc_0x00416570(unsigned char param1, __size32 param2, __size32 param3)
         global2206_42983c = 1;
         (*LoadLibraryA)(pc, global2208_428d48, edi, esi, ebx, ebp, (unsigned char) global2208_428d48, param1, global2208_428d48, param2, param3, ebx, esp_26 - 4, LoadLibraryA, edi, LOGICALFLAGS32(global2206_42983c), LOGICALFLAGS32(global2206_42983c), LOGICALFLAGS32(global2206_42983c));
         if (eax != 0) {
+bb0x4166a4:
             ebp = *ebp;
             local48 = dl;
             local49 = ecx;
@@ -19907,10 +19814,9 @@ __size32 proc_0x00416570(unsigned char param1, __size32 param2, __size32 param3)
                                             edi_2 = edi_1 - 1;
                                             local52 = edi_2;
                                         } while (edi_1 - 1 != 0);
-bb0x41669d:
                                         *(int*)(esp + 8LL - 12) = esi;
                                         ecx = LoadLibraryA(*(esp + 8LL - 12)); /* Warning: also results in edx */
-                                        goto bb0x41669d;
+                                        goto bb0x4166a4;
                                     }
                                 }
                             }
@@ -20155,25 +20061,25 @@ void proc_0x00422710(unsigned int param1, int param2, unsigned int param3)
     int esp; 		// r28
 
     if (param1 >= global422_42af94) {
+bb0x42273e:
         global254_42962c = 9;
         global253_429630 = 0;
     }
     else {
-bb0x422721:
         ecx = (int) *(global425_42afe0[((int)param1 >> 5)] + (param1 & 0x1f) * 8 + 4);
         if ((ecx & 0x1) != 0) {
             eax = proc_0x00422550(param1, param2);
             if (eax != -1) {
                 eax = SetFilePointer(eax, param2, (esp - 8), param3);
                 if (eax != -1) {
+bb0x4227d2:
                     ecx = (int) *(global425_42afe0[((int)param1 >> 5)] + (param1 & 0x1f) * 8 + 4);
                     *(__size8*)(global425_42afe0[((int)param1 >> 5)] + (param1 & 0x1f) * 8 + 4) = (unsigned char) ecx & ~0x2;
                 }
                 else {
                     eax = GetLastError(); /* Warning: also results in edx */
-bb0x4227b5:
                     if (eax == 0) {
-                        goto bb0x4227b5;
+                        goto bb0x4227d2;
                     }
                     else {
                         *(int*)(esp + 20LL + 4LL - 48) = eax;
@@ -20186,7 +20092,7 @@ bb0x4227b5:
             }
         }
         else {
-            goto bb0x422721;
+            goto bb0x42273e;
         }
     }
     return;
@@ -20225,27 +20131,27 @@ __size32 proc_0x00422140(unsigned int param1, unsigned int param2)
         local2 = param2;
         local2 = param2;
     }
-bb0x422187:
     if (param1 < (unsigned int)19 || param1 > (unsigned int)36) {
-bb0x42219f:
         if (param1 < 188 || param1 > 202) {
-bb0x4221bd:
             global254_42962c = 22;
-            goto bb0x4221bd;
+            edx = local2;
+            return edx;
         }
         else {
-bb0x4221b1:
             global254_42962c = 8;
-            goto bb0x4221b1;
+            edx = local2;
+            return edx;
         }
-        goto bb0x42219f;
+        edx = local2;
+        return edx;
     }
     else {
-bb0x422193:
         global254_42962c = 13;
-        goto bb0x422193;
+        edx = local2;
+        return edx;
     }
-    goto bb0x422187;
+    edx = local2;
+    return edx;
 }
 
 /** address: 0x00422550 */
@@ -20260,6 +20166,7 @@ __size32 proc_0x00422550(unsigned int param1, int param2)
     eax = param1;
     local0 = param2;
     if (param1 >= global422_42af94) {
+bb0x422593:
         param2 = local0;
         global254_42962c = 9;
         global253_429630 = 0;
@@ -20267,13 +20174,12 @@ __size32 proc_0x00422550(unsigned int param1, int param2)
         local1 = param2;
     }
     else {
-bb0x42255e:
         edx = param1 & 0x1f;
         eax = global425_42afe0[((int)param1 >> 5)];
         ecx = (int) *(eax + (param1 & 0x1f) * 8 + 4);
         local0 = edx;
         if ((ecx & 0x1) == 0) {
-            goto bb0x42255e;
+            goto bb0x422593;
         }
         else {
             edx = (int)param1 >> 5;
@@ -20374,6 +20280,7 @@ __size32 proc_0x0041b5e0()
 
     esp = (esp - 8);
     if (global27_42ac9c != *0x42acac) {
+bb0x41b63b:
         eax_1 = global27_42ac9c * 20 + *0x42aca0;
         *(__size32*)(esp - 4) = 0x41c4;
         local0 = 8;
@@ -20417,10 +20324,9 @@ __size32 proc_0x0041b5e0()
     else {
         eax = HeapReAlloc(); /* Warning: also results in ecx, edx, esp */
         if (eax != 0) {
-bb0x41b623:
             global21_42aca0 = eax;
             global28_42acac += 16;
-            goto bb0x41b623;
+            goto bb0x41b63b;
         }
         else {
             eax = 0;
@@ -20712,6 +20618,7 @@ __size32 proc_0x0041b9a0(union { int *; int; } param1, union { int *; unsigned i
             local7 = ecx;
             local8 = edx;
         }
+bb0x41bf5d:
         ecx = local7;
         edx = local8;
         eax = 1;
@@ -20721,12 +20628,12 @@ __size32 proc_0x0041b9a0(union { int *; int; } param1, union { int *; unsigned i
         ecx = edx_10 & 0x1;
         cl = (unsigned char) edx_10 & 0x1;
         if ((edx_10 & 0x1) != 0) {
+bb0x41ba2a:
             edx = local6;
             eax = 0;
             al = 0;
         }
         else {
-bb0x41ba1f:
             edx_13 = edx_7 + edx_10 - 1;
             dl = (unsigned char) edx_7 + edx_10 - 1;
             local6 = edx_13;
@@ -20822,7 +20729,6 @@ bb0x41ba1f:
                     *(int*)edx_29 = ecx_10;
                     *(int*)(edx_29 + ecx_10 - 4) = ecx_10;
                 }
-bb0x41bc94:
                 ecx = local1;
                 cl = (unsigned char) local1;
                 *(int*)local1 = local0 + 1;
@@ -20832,10 +20738,10 @@ bb0x41bc94:
                 *(int*)(local1 + local0 - 4) = local0 + 1;
                 local7 = ecx;
                 local8 = edx;
-                goto bb0x41bc94;
+                goto bb0x41bf5d;
             }
             else {
-                goto bb0x41ba1f;
+                goto bb0x41ba2a;
             }
         }
     }
@@ -20905,13 +20811,13 @@ __size32 proc_0x00422bd0(unsigned int param1, __size16 param2, __size8 param4, _
             if (eax != 0) {
                 ecx = *(unsigned short*)(ebp - 2);
                 if (ecx != 0) {
+bb0x422c5f:
                     *(__size32*)(ebp - 12) = 0;
                 }
                 else {
-bb0x422c4d:
                     edx = *(unsigned short*)(ebp - 4);
                     if ((edx & 0x8) == 0) {
-                        goto bb0x422c4d;
+                        goto bb0x422c5f;
                     }
                     else {
                         *(__size32*)(ebp - 12) = 1;
@@ -21022,13 +20928,23 @@ __size32 proc_0x0041ddd0(unsigned int param1, __size8 param2, __size8 param3, __
                 local6 = esp;
                 if (eax == 0) {
                     eax = 0;
-                    goto bb0x41de23;
+                    param2 = local11;
+                    param3 = local12;
+                    param4 = local13;
+                    param5 = local14;
+                    ebp = *ebp;
+                    return eax; /* WARNING: Also returning: al := param2, dl := param3, ecx := param4, edx := param5, ebp := ebp */
                 }
             }
             else {
                 goto bb0x41de08;
             }
-            goto bb0x41de23;
+            param2 = local11;
+            param3 = local12;
+            param4 = local13;
+            param5 = local14;
+            ebp = *ebp;
+            return eax; /* WARNING: Also returning: al := param2, dl := param3, ecx := param4, edx := param5, ebp := ebp */
         }
 bb0x41de08:
         eax = *(ebp - 4);
@@ -21036,7 +20952,6 @@ bb0x41de08:
     else {
         eax = 0;
     }
-bb0x41de23:
     param2 = local11;
     param3 = local12;
     param4 = local13;
@@ -21062,13 +20977,13 @@ __size32 proc_0x0041dc20(int param1)
         ecx = *(local0 + 4);
     }
     if (local0 >= (unsigned int)(global478_428c10 * 12 + 0x428b90)) {
+bb0x41dc77:
         eax = 0;
     }
     else {
-bb0x41dc67:
         eax = *(local0 + 4);
         if (eax != param1) {
-            goto bb0x41dc67;
+            goto bb0x41dc77;
         }
         else {
             eax = local0;
@@ -21090,7 +21005,7 @@ __size32 proc_0x00420ec0(union { char; unsigned char; } param1, union { __size32
     __size32 eax; 		// r24
     __size32 eax_1; 		// r24{0}
     __size32 eax_4; 		// r24{0}
-    __size32 eax_7; 		// r24{0}
+    __size32 eax_6; 		// r24{0}
     __size32 eax_9; 		// r24{0}
     __size32 ebp; 		// r29
     int ecx; 		// r25
@@ -21135,11 +21050,11 @@ __size32 proc_0x00420ec0(union { char; unsigned char; } param1, union { __size32
             edx = *param2;
             *(unsigned char*)edx = param1;
             edx = param2;
-            eax_4 = *param2;
-            eax_7 = eax_4 + 1;
-            al = (unsigned char) eax_4 + 1;
-            *(__size32*)param2 = eax_4 + 1;
-            local6 = eax_7;
+            eax_1 = *param2;
+            eax_4 = eax_1 + 1;
+            al = (unsigned char) eax_1 + 1;
+            *(__size32*)param2 = eax_1 + 1;
+            local6 = eax_4;
         }
         eax = local6;
         param4 = local7;
@@ -21151,12 +21066,12 @@ __size32 proc_0x00420ec0(union { char; unsigned char; } param1, union { __size32
         local13 = eax;
         if (*(ebp - 4) != -1) {
             edx = *(ebp + 16);
-            eax_9 = *edx;
-            eax_1 = eax_9 + 1;
-            al = (unsigned char) eax_9 + 1;
+            eax_6 = *edx;
+            eax_9 = eax_6 + 1;
+            al = (unsigned char) eax_6 + 1;
             ecx = *(ebp + 16);
-            *(__size32*)ecx = eax_9 + 1;
-            local13 = eax_1;
+            *(__size32*)ecx = eax_6 + 1;
+            local13 = eax_9;
         }
         else {
             ecx = *(ebp + 16);
@@ -21282,8 +21197,16 @@ __size32 proc_0x00420f90(__size16 param1, __size8 param3, __size8 param4, __size
         local3 = esp;
         local11 = edx;
         if (*edx == -1) {
-bb0x420fbf:
-            goto bb0x420fbf;
+            cl = local9;
+            ecx = local10;
+            edx = local11;
+            dx = local12;
+            dl = local13;
+            ah = local14;
+            dh = local15;
+            edi = local16;
+            ebp = *esp;
+            return eax; /* WARNING: Also returning: dx := dx, cl := cl, dl := dl, ah := ah, dh := dh, ecx := ecx, edx := edx, ebp := ebp, edi := edi */
         }
         param3 = local1;
         param7 = local2;
@@ -21337,7 +21260,7 @@ __size32 proc_0x00420fe0(int param1, int param2, union { int *; int; } param3, _
     int edx; 		// r26
     __size32 esp; 		// r28
     __size32 esp_1; 		// r28{0}
-    __size32 esp_4; 		// r28{0}
+    __size32 esp_2; 		// r28{0}
     int local0; 		// m[esp - 4]
     int local1; 		// m[esp - 8]
     __size32 local10; 		// edx{0}
@@ -21354,8 +21277,8 @@ __size32 proc_0x00420fe0(int param1, int param2, union { int *; int; } param3, _
     __size8 local8; 		// param8{0}
     __size32 local9; 		// param10{0}
 
-    ebp = esp_4 - 4;
-    esp_1 = esp_4 - 8;
+    ebp = esp_2 - 4;
+    esp_1 = esp_2 - 8;
     ecx = *(param2 + 12);
     local2 = param9;
     local3 = esp_1;
@@ -21377,6 +21300,7 @@ __size32 proc_0x00420fe0(int param1, int param2, union { int *; int; } param3, _
     local13 = param8;
     local14 = param10;
     if ((ecx & 0x40) == 0) {
+bb0x421007:
         param9 = local2;
         esp = local3;
         param4 = local4;
@@ -21425,9 +21349,15 @@ __size32 proc_0x00420fe0(int param1, int param2, union { int *; int; } param3, _
             local3 = esp;
             local10 = edx;
             if (*edx == -1) {
-bb0x421044:
-                goto bb0x421044;
+                edx = local10;
+                param6 = local11;
+                param7 = local12;
+                param8 = local13;
+                param10 = local14;
+                ebp = *ebp;
+                return eax; /* WARNING: Also returning: al := al, dl := param6, ah := param7, dh := param8, ecx := ecx, edx := edx, ebp := ebp, edi := param10 */
             }
+bb0x421007:
             param9 = local2;
             esp = local3;
             param4 = local4;
@@ -21449,11 +21379,10 @@ bb0x421044:
         }
     }
     else {
-bb0x420fef:
         edx = param2;
         local2 = edx;
         if (*(param2 + 8) != 0) {
-            goto bb0x420fef;
+            goto bb0x421007;
         }
         else {
             eax = param3;
@@ -21633,10 +21562,10 @@ __size32 proc_0x0041f960(unsigned long long param1, unsigned long long param2, u
     unsigned long long ebx_2; 		// r27{0}
     unsigned int ecx; 		// r25
     unsigned int ecx_1; 		// r25{0}
-    unsigned int ecx_2; 		// r25{0}
+    unsigned int ecx_4; 		// r25{0}
     unsigned long long edx; 		// r26
     unsigned long long edx_2; 		// r26{0}
-    unsigned long long edx_3; 		// r26{0}
+    unsigned long long edx_5; 		// r26{0}
     unsigned long long esi; 		// r30
     unsigned long long local0; 		// tmpl{0}
     unsigned int local10; 		// ecx_1{0}
@@ -21661,12 +21590,12 @@ __size32 proc_0x0041f960(unsigned long long param1, unsigned long long param2, u
             edx_2 = local11;
             ebx_1 = local12;
             ebx_2 = ROTRC(ebx_1);
-            edx_3 = edx_2 / 2;
+            edx_5 = edx_2 / 2;
             eax_5 = ROTRC(eax_2);
-            ecx_2 = ecx_1 / 2;
+            ecx_4 = ecx_1 / 2;
             local9 = eax_5;
-            local10 = ecx_2;
-            local11 = edx_3;
+            local10 = ecx_4;
+            local11 = edx_5;
             local12 = ebx_2;
         } while (ecx_1 / 2 != 0);
         local0 = (edx_2 / 2) << 32 | (ROTRC(eax_2));

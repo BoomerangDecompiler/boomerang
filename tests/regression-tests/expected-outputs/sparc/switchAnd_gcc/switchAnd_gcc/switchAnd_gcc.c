@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
     o0_1 = 0x107c8;
     local0 = o0_1;
     if (argc <= 1) {
+bb0x106b0:
         o0 = local0;
         puts(o0);
     }
@@ -17,44 +18,38 @@ int main(int argc, char *argv[])
         if ((unsigned int)(argc - 2 & 0x7) > (unsigned int)7) {
         }
         else {
-bb0x10694:
             switch(argc - 2 & 0x7) {
             case 0:
-bb0x106a8:
                 o0 = 0x107d0;
                 local0 = o0;
-                goto bb0x106a8;
+                goto bb0x106b0;
             case 1:
-bb0x106bc:
                 o0 = 0x107d8;
                 local0 = o0;
-                goto bb0x106bc;
+                goto bb0x106b0;
             case 2:
-bb0x106c8:
                 o0 = 0x107e0;
                 local0 = o0;
-                goto bb0x106c8;
+                goto bb0x106b0;
             case 3:
-bb0x106d4:
                 o0 = 0x107e8;
                 local0 = o0;
-                goto bb0x106d4;
+                goto bb0x106b0;
             case 4:
-bb0x106e0:
                 o0 = 0x107f0;
                 local0 = o0;
-                goto bb0x106e0;
+                goto bb0x106b0;
             case 5:
 bb0x106ec:
                 o0 = 0x107f8;
                 local0 = o0;
-                goto bb0x106ec;
+                goto bb0x106b0;
             case 6:
-                goto bb0x10694;
+                goto bb0x106ec;
             case 7:
-                goto bb0x10694;
+                goto bb0x106ec;
             }
-            goto bb0x10694;
+            goto bb0x106b0;
         }
     }
     return 0;

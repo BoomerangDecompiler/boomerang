@@ -11,31 +11,26 @@ int main(int argc, char *argv[])
     else {
         switch(argc) {
         case 2:
-bb0x10a94:
             o0 = 0x11648;
-            goto bb0x10a94;
+            goto bb0x10ae4;
         case 3:
-bb0x10aa0:
             o0 = 0x11650;
-            goto bb0x10aa0;
+            goto bb0x10ae4;
         case 4:
-bb0x10aac:
             o0 = 0x11658;
-            goto bb0x10aac;
+            goto bb0x10ae4;
         case 5:
-bb0x10ab8:
             o0 = 0x11660;
-            goto bb0x10ab8;
+            goto bb0x10ae4;
         case 6:
-bb0x10ac4:
             o0 = 0x11668;
-            goto bb0x10ac4;
+            goto bb0x10ae4;
         case 7:
-bb0x10ad0:
             o0 = 0x11670;
-            goto bb0x10ad0;
+            goto bb0x10ae4;
         }
     }
+bb0x10ae4:
     printf(o0);
     return 0;
 }

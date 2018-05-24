@@ -8,33 +8,27 @@ int main(int argc, char *argv[])
         case 2:
             printf("Two!\n");
 bb0x804890c:
-            goto bb0x804890c;
+            return 0;
         case 3:
             printf("Three!\n");
-bb0x8048932:
-            goto bb0x8048932;
+            return 0;
         case 4:
             printf("Four!\n");
-bb0x8048946:
-            goto bb0x8048946;
+            return 0;
         case 5:
             printf("Five!\n");
-bb0x804895a:
-            goto bb0x804895a;
+            return 0;
         case 6:
             printf("Six!\n");
-bb0x804896e:
-            goto bb0x804896e;
+            return 0;
         case 7:
             printf("Seven!\n");
-bb0x8048989:
-            goto bb0x8048989;
+            return 0;
         }
     }
     else {
-bb0x8048902:
         printf("Other!\n");
-        goto bb0x8048902;
+        goto bb0x804890c;
     }
     return 0;
 }

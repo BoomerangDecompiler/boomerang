@@ -15,20 +15,21 @@ int main(int argc, char *argv[])
             g3 = puts(0x10000994);
         }
         if (5 > local0) {
+bb0x100005b4:
             g3 = puts(0x10000a18);
         }
         if (5 <= local0) {
+bb0x10000498:
             g3 = puts(0x100009a0);
         }
     }
     else {
         puts(0x10000994);
-bb0x1000048c:
         if (5 > local0) {
-            goto bb0x1000048c;
+            goto bb0x100005b4;
         }
         else {
-            goto bb0x1000048c;
+            goto bb0x10000498;
         }
     }
     if (5 >= local0) {

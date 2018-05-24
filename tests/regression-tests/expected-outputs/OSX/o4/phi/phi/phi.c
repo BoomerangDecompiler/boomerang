@@ -90,6 +90,7 @@ __size32 fib(__size32 param1, __size32 param1, int param2, __size32 param3, __si
     local16 = g31_1;
     if (param2 <= 1) {
         if (param2 != 1) {
+bb0x1d50:
             param3 = local4;
             param4 = local5;
             param5 = local6;
@@ -124,8 +125,7 @@ __size32 fib(__size32 param1, __size32 param1, int param2, __size32 param3, __si
         local9 = g10;
         local10 = g11;
         local11 = g12;
-bb0x1d40:
-        goto bb0x1d40;
+        goto bb0x1d50;
     }
     g30_5 = local15;
     g31_7 = local16;

@@ -152,53 +152,45 @@ void version_etc_va(union { FILE *; __size32; } param1, union { char[] *; __size
 bb0x8049951:
         local5 = eax;
         local13 = local5;
-        goto bb0x8049951;
+        goto bb0x8049955;
     }
     else {
         switch(ebx_2) {
         case 0:
             abort();
         case 1:
-bb0x8049a7a:
             eax = 0x804a607;
-            goto bb0x8049a7a;
+            goto bb0x8049951;
         case 2:
-bb0x8049a63:
             local1 = 0x804a5f0;
             local13 = local1;
-            goto bb0x8049a63;
+            goto bb0x8049955;
         case 3:
-bb0x8049a50:
             eax = 0x804a5d4;
-            goto bb0x8049a50;
+            goto bb0x8049951;
         case 4:
-bb0x8049a3d:
             eax = 0x804a5a8;
-            goto bb0x8049a3d;
+            goto bb0x8049951;
         case 5:
-bb0x8049a2a:
             eax = 0x804a584;
-            goto bb0x8049a2a;
+            goto bb0x8049951;
         case 6:
-bb0x8049a13:
             local1 = 0x804a55c;
             local13 = local1;
-            goto bb0x8049a13;
+            goto bb0x8049955;
         case 7:
-bb0x80499fc:
             local1 = 0x804a530;
             local13 = local1;
-            goto bb0x80499fc;
+            goto bb0x8049955;
         case 8:
-bb0x80499e9:
             eax = 0x804a500;
-            goto bb0x80499e9;
+            goto bb0x8049951;
         case 9:
-bb0x80499d6:
             eax = 0x804a4cc;
-            goto bb0x80499d6;
+            goto bb0x8049951;
         }
     }
+bb0x8049955:
     local1 = local13;
     r[24] = dcgettext(0, local1, 5);
     vfprintf(param1, r[24], param5);

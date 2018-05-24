@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
             local6 = 10;
         }
         local7 = 0;
+bb0x10794:
         if (local7 <= 6) {
             local0 = 0;
             while (local0 < local6) {
@@ -49,8 +50,8 @@ int main(int argc, char *argv[])
                     local2 = 0;
                 }
                 local1 = 0;
+bb0x10804:
                 if (local1 <= 6) {
-bb0x1081c:
                     o1 = local0 * 8 + o6 - 16;
                     o3 = o1 + local1;
                     o4 = 0x220b4;
@@ -59,7 +60,7 @@ bb0x1081c:
                     o0_5 = *(unsigned char*)((local2 - ((int)(local2 + (local2 >> 31) / 0x20000000) >> 3) * 8) * 7 + local1 + o0);
                     *(__size8*)(o1 + local1 - 112) = (char) o0_5;
                     local1++;
-                    goto bb0x1081c;
+                    goto bb0x10804;
                 }
                 *(int*)(local0 * 8 + o6 - 121) = 32;
                 local0++;
@@ -75,9 +76,8 @@ bb0x1081c:
             }
 bb0x10960:
             o2 = puts(&local3); /* Warning: also results in o3, o4 */
-bb0x1096c:
             local7++;
-            goto bb0x1096c;
+            goto bb0x10794;
         }
         puts(0x11f28);
         local5 += 4;

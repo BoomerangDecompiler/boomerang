@@ -10,37 +10,37 @@ int main(int argc, char *argv[])
     eax = 0;
     if (argc <= 2) {
         do {
-bb0x80483bf:
             if (argc != 11) {
+bb0x80483ce:
             }
             else {
-bb0x80483cc:
-                goto bb0x80483cc;
+                goto bb0x80483db;
             }
-            goto bb0x80483bf;
+            goto bb0x80483ce;
         } while (argc <= 11);
+bb0x80483db:
     }
     else {
         do {
             if (argc <= 2) {
                 if (argc <= 3) {
+bb0x8048390:
                     printf("9");
+bb0x804836e:
                     local0 = 0x804849c;
                     eax = printf("5");
                 }
                 else {
-bb0x8048361:
                     if (argc > 4) {
-                        goto bb0x8048361;
+                        goto bb0x804836e;
                     }
-bb0x8048387:
-                    goto bb0x8048387;
+                    goto bb0x80483b0;
                 }
             }
             else {
-bb0x8048352:
-                goto bb0x8048352;
+                goto bb0x8048390;
             }
+bb0x80483b0:
         } while (argc <= 5);
     }
     return 7;

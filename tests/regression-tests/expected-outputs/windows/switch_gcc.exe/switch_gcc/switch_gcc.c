@@ -12,39 +12,40 @@ void proc_0x00401670(unsigned int param1, unsigned int param2, __size32 param3);
 void proc_0x00401470(__size32 param1)
 {
     __size32 eax; 		// r24
+    __size32 esp; 		// r28
     __size32 esp_1; 		// r28{0}
-    __size32 esp_11; 		// r28{0}
-    __size32 esp_12; 		// r28{0}
     __size32 esp_2; 		// r28{0}
     __size32 esp_5; 		// r28{0}
     __size32 esp_6; 		// r28{0}
+    __size32 esp_9; 		// r28{0}
     __size32 local0; 		// m[esp - 28]
-    __size32 local3; 		// esp_11{0}
+    int local2; 		// m[esp - 4]
+    __size32 local3; 		// esp{0}
     __size32 local4; 		// esp_5{0}
 
     local0 = param1;
-    eax = proc_0x00401530(param1, 0, (esp_12 - 4));
-    esp_2 = esp_12 - 28;
+    eax = proc_0x00401530(param1, 0, (esp_9 - 4));
+    esp_2 = esp_9 - 28;
     local3 = esp_2;
     local4 = esp_2;
     if (eax == 0) {
+bb0x4014a3:
         esp_5 = local4;
         *(__size32*)(esp_5 - 168) = 0;
         *(__size32*)(esp_5 - 172) = esp_5 - 168;
         *(__size32*)(esp_5 - 176) = param1;
-        proc_0x00401530(*(esp_5 - 176), *(esp_5 - 172), esp_12 - 4);
+        proc_0x00401530(*(esp_5 - 176), *(esp_5 - 172), esp_9 - 4);
         esp_6 = esp_5 - 176;
         *(__size32*)(esp_5 - 176) = esp_5 - 168;
         local3 = esp_6;
 bb0x40149d:
-        esp_11 = local3;
+        esp = local3;
         esp_1 = dll_crt0__FP11per_process();
         local4 = esp_1;
-        goto bb0x40149d;
+        goto bb0x4014a3;
     }
-bb0x401496:
-    *(__size32*)(esp_12 - 28) = 0;
-    goto bb0x401496;
+    *(__size32*)(esp_9 - 28) = 0;
+    goto bb0x40149d;
 }
 
 /** address: 0x00401000 */
@@ -76,7 +77,6 @@ __size32 proc_0x00401530(__size32 param1, __size32 param2, __size32 param3)
     union { __size32 *; __size32; } local1; 		// esp_5{0}
     int local2; 		// eax{0}
 
-bb0x401530:
     eax = 0;
     esp_1 = (esp_6 - 12);
     ebx = param2;
@@ -89,6 +89,7 @@ bb0x401530:
         if (eax_1 != -1) {
             ebx = eax_1;
             eax = 1;
+bb0x401544:
             esp_5 = local1;
             *(__size32*)(ebx + 4) = 168;
             *(__size32*)(ebx + 8) = 1005;
@@ -130,7 +131,7 @@ bb0x401530:
         }
     }
     else {
-        goto bb0x401530;
+        goto bb0x401544;
     }
     eax = local2;
     return eax;

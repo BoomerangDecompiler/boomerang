@@ -15,14 +15,14 @@ int main(int argc, char *argv[])
     printf(0x108d0);
     f1 = *0x10938;
     if (f1 != local0) {
+bb0x10768:
         puts(0x108e8);
     }
     else {
         puts(0x108f8);
         f5 = *0x10938;
         if (f5 != local0) {
-bb0x10764:
-            goto bb0x10764;
+            goto bb0x10768;
         }
     }
     f6 = *0x10938;

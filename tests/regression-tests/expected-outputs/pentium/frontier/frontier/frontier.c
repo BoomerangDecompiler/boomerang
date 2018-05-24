@@ -17,36 +17,35 @@ int main(int argc, char *argv[])
             local4 = local1;
             if (local2 <= 1) {
                 if (local1 == 12) {
-                    goto bb0x80483b9;
+bb0x80483b2:
+                    return 13;
                 }
+bb0x8048386:
                 local0 = local4;
                 local3 = local0;
             }
             else {
-bb0x8048363:
                 local0 = local1 - 1;
                 local4 = local0;
                 if (local1 > 2) {
-                    goto bb0x80483b9;
+bb0x8048347:
+                    return 13;
                 }
-                goto bb0x8048363;
+                goto bb0x8048386;
             }
-            goto bb0x80483b9;
+            return 13;
         } while (local0 > 0);
     }
     else {
         if (argc > 5) {
             if (argc == 9) {
-bb0x8048395:
                 if (argc != 10) {
-bb0x80483ab:
-                    goto bb0x80483ab;
+                    goto bb0x80483b2;
                 }
                 else {
-bb0x80483a2:
-                    goto bb0x80483a2;
+                    goto bb0x80483b2;
                 }
-                goto bb0x8048395;
+                goto bb0x80483b2;
             }
             else {
             }
@@ -54,15 +53,13 @@ bb0x80483a2:
         else {
             if (argc == 2) {
                 do {
-bb0x804833a:
                 } while (argc > 0);
-                goto bb0x804833a;
+                goto bb0x8048347;
             }
             else {
             }
         }
     }
-bb0x80483b9:
     return 13;
 }
 

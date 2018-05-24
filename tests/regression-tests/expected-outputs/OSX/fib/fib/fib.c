@@ -17,7 +17,7 @@ __size32 fib(int param2, __size32 param3, __size32 param3)
 {
     __size32 g1; 		// r1
     __size32 g29_1; 		// r29{0}
-    __size32 g29_2; 		// r29{0}
+    __size32 g29_4; 		// r29{0}
     __size32 g29_5; 		// r29{0}
     __size32 g29_6; 		// r29{0}
     int g3; 		// r3
@@ -36,12 +36,12 @@ __size32 fib(int param2, __size32 param3, __size32 param3)
     local9 = g30_1;
     if (param2 > 1) {
         g3 = fib(param2 - 1, param2, param3);
-        g3 = fib(g9 - 2, g9, g3); /* Warning: also results in g9, g29_2, g30_2 */
+        g3 = fib(g9 - 2, g9, g3); /* Warning: also results in g9, g29_1, g30_2 */
         local7 = g9;
         local9 = g30_2;
-        g29_1 = g29_2 + g3;
-        *(__size32*)(g30_2 + 64) = g29_2 + g3;
-        local8 = g29_1;
+        g29_4 = g29_1 + g3;
+        *(__size32*)(g30_2 + 64) = g29_1 + g3;
+        local8 = g29_4;
     }
     else {
     }

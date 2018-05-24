@@ -36,39 +36,39 @@ __size32 fib2(int param1)
     __size32 g1; 		// r1
     __size32 g29; 		// r29
     __size32 g29_1; 		// r29{0}
-    __size32 g29_4; 		// r29{0}
+    __size32 g29_2; 		// r29{0}
     __size32 g29_5; 		// r29{0}
     __size32 g29_6; 		// r29{0}
     int g3; 		// r3
     __size32 g30_1; 		// r30{0}
-    __size32 g30_4; 		// r30{0}
+    __size32 g30_2; 		// r30{0}
     __size32 g30_5; 		// r30{0}
-    __size32 g30_8; 		// r30{0}
-    __size32 g30_9; 		// r30{0}
+    __size32 g30_6; 		// r30{0}
+    __size32 g30_7; 		// r30{0}
     __size32 g9; 		// r9
-    __size32 local7; 		// g29_5{0}
-    __size32 local8; 		// g30_8{0}
-    __size32 local9; 		// g30_1{0}
+    __size32 local7; 		// g29_1{0}
+    __size32 local8; 		// g30_5{0}
+    __size32 local9; 		// g30_6{0}
 
-    g30_4 = g1 - 96;
+    g30_1 = g1 - 96;
     local7 = g29;
-    local8 = g30_4;
-    local9 = g30_4;
+    local8 = g30_1;
+    local9 = g30_1;
     if (param1 <= 1) {
     }
     else {
         fib1();
-        g3 = fib1(); /* Warning: also results in g9, g29_1, g30_5 */
-        local8 = g30_5;
-        local9 = g30_5;
-        g29_4 = g29_1 + g3;
-        *(__size32*)(g30_5 + 64) = g29_1 + g3;
-        local7 = g29_4;
+        g3 = fib1(); /* Warning: also results in g9, g29_2, g30_2 */
+        local8 = g30_2;
+        local9 = g30_2;
+        g29_5 = g29_2 + g3;
+        *(__size32*)(g30_2 + 64) = g29_2 + g3;
+        local7 = g29_5;
     }
-    g29_5 = local7;
-    g30_8 = local8;
-    g30_1 = local9;
-    g3 = *(g30_8 + 64);
-    return g29_6; /* WARNING: Also returning: g30 := g30_1, g30 := g30_9, g3 := g3, g9 := g9, g29 := g29_6, g29 := g29_6, g29 := g29_6, g29 := g29_6, g29 := g29_5, g30 := g30_1, g30 := g30_9, g30 := g30_1, g30 := g30_9, g30 := g30_1, g30 := g30_9, g30 := g30_9, g30 := g30_8 */
+    g29_1 = local7;
+    g30_5 = local8;
+    g30_6 = local9;
+    g3 = *(g30_5 + 64);
+    return g29_6; /* WARNING: Also returning: g30 := g30_6, g30 := g30_7, g3 := g3, g9 := g9, g29 := g29_6, g29 := g29_6, g29 := g29_6, g29 := g29_6, g29 := g29_1, g30 := g30_6, g30 := g30_7, g30 := g30_6, g30 := g30_7, g30 := g30_6, g30 := g30_7, g30 := g30_7, g30 := g30_5 */
 }
 

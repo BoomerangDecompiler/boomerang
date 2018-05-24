@@ -4,8 +4,8 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     objc_msgSend();
+bb0x2d34:
     objc_msgSend();
-bb0x2d4c:
-    goto bb0x2d4c;
+    goto bb0x2d34;
 }
 

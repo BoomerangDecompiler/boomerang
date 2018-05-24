@@ -6,59 +6,55 @@ int main(int argc, char *argv[])
     if ((unsigned int)argc > (unsigned int)7) {
 bb0x80483a8:
         puts("Other!");
-        goto bb0x80483a8;
+        goto bb0x80483b5;
     }
-bb0x8048397:
     switch(argc) {
     case 0:
-        goto bb0x8048397;
+        goto bb0x80483a8;
     case 1:
-        goto bb0x8048397;
+        goto bb0x80483a8;
     case 2:
+bb0x80483bc:
         puts("Two!");
 bb0x80483b5:
-        goto bb0x80483b5;
+        return 0;
     case 3:
+bb0x804840c:
         puts("Three!");
-bb0x8048419:
-        goto bb0x8048419;
+        return 0;
     case 4:
         if ((unsigned int)(7 - argc) <= (unsigned int)5) {
-bb0x8048420:
             switch(7 - argc) {
             case 0:
+bb0x80483d0:
                 puts("Seven!");
-bb0x80483dd:
-                goto bb0x80483dd;
+                return 0;
             case 1:
+bb0x80483e4:
                 puts("Six!");
-bb0x80483f1:
-                goto bb0x80483f1;
+                return 0;
             case 2:
+bb0x80483f8:
                 puts("Five!");
-bb0x8048405:
-                goto bb0x8048405;
+                return 0;
             case 3:
                 puts("Four!");
-bb0x8048434:
-                goto bb0x8048434;
+                return 0;
             case 4:
-                goto bb0x8048420;
+                goto bb0x804840c;
             case 5:
-                goto bb0x8048420;
+                goto bb0x80483bc;
             }
-            goto bb0x80483bb;
+            return 0;
         }
-bb0x80483a6:
-        goto bb0x80483a6;
+        goto bb0x80483a8;
     case 5:
-        goto bb0x8048397;
+        goto bb0x80483f8;
     case 6:
-        goto bb0x8048397;
+        goto bb0x80483e4;
     case 7:
-        goto bb0x8048397;
+        goto bb0x80483d0;
     }
-bb0x80483bb:
     return 0;
 }
 

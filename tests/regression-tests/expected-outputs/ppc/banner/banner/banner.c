@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
             local6 = 10;
         }
         local7 = 0;
+bb0x10000500:
         if (local7 <= 6) {
             local2 = 0;
             while (local2 < local6) {
@@ -45,15 +46,15 @@ int main(int argc, char *argv[])
                     local0 = 0;
                 }
                 local1 = 0;
+bb0x10000564:
                 if (local1 <= 6) {
-bb0x10000574:
                     g10 = (ROTL(local2) & ~0x7) + g1 + local1 - 96;
                     g11 = (ROTL((rs * 7 + local7)) & ~0x3) + 0x100120f4;
                     g0 = *g11;
                     g0 = *(unsigned char*)(rs * 7 + local1 + g0);
                     *(__size8*)g10 = (char) g0;
                     local1++;
-                    goto bb0x10000574;
+                    goto bb0x10000564;
                 }
                 *(int*)((ROTL(local2) & ~0x7) + g1 - 89) = 32;
                 local2++;
@@ -69,9 +70,8 @@ bb0x10000574:
             }
 bb0x10000688:
             g10 = puts(&local3); /* Warning: also results in g11 */
-bb0x10000694:
             local7++;
-            goto bb0x10000694;
+            goto bb0x10000500;
         }
         puts(0x10001e00);
         local5 += 4;

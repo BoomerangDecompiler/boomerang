@@ -18,40 +18,33 @@ __size32 proc_0x00404c97(unsigned long long param1, unsigned long long param2, u
 int main(int argc, char *argv[])
 {
     if ((unsigned int)argc > (unsigned int)7) {
+bb0x4011d0:
         proc_0x004038e4(0x40a152);
-bb0x4011da:
-        goto bb0x4011da;
+        return 0;
     }
-bb0x40115b:
     switch(argc) {
     case 0:
-        goto bb0x40115b;
+        goto bb0x4011d0;
     case 1:
-        goto bb0x40115b;
+        goto bb0x4011d0;
     case 2:
         proc_0x004038e4(0x40a128);
-bb0x40118c:
-        goto bb0x40118c;
+        return 0;
     case 3:
         proc_0x004038e4(0x40a12e);
-bb0x401199:
-        goto bb0x401199;
+        return 0;
     case 4:
         proc_0x004038e4(0x40a136);
-bb0x4011a6:
-        goto bb0x4011a6;
+        return 0;
     case 5:
         proc_0x004038e4(0x40a13d);
-bb0x4011b3:
-        goto bb0x4011b3;
+        return 0;
     case 6:
         proc_0x004038e4(0x40a144);
-bb0x4011c0:
-        goto bb0x4011c0;
+        return 0;
     case 7:
         proc_0x004038e4(0x40a14a);
-bb0x4011cd:
-        goto bb0x4011cd;
+        return 0;
     }
     return 0;
 }
@@ -82,8 +75,10 @@ void proc_0x00403ad0(__size32 param1)
     }
     else {
     }
+bb0x403b18:
     while ( ~flags) {
         if (flags) {
+bb0x403b30:
             if ( ~(flags || flags)) {
                 *(__size32*)(r[28] - 4) = r[26];
                 *(__size32*)(r[28] - 4) = r[27];
@@ -104,56 +99,50 @@ void proc_0x00403ad0(__size32 param1)
                 do {
 bb0x403b8b:
                     if (flags || flags) {
+bb0x4043d8:
                         *(__size32*)(r[29] - 20)++;
                         while (flags) {
                             *(__size32*)(r[28] - 4) = r[26];
                             *(__size32*)(r[28] - 4) = r[24];
                             proc_0x00403a68(*(r[28] + 8), r[25], r[26]);
+bb0x4043d8:
                             *(__size32*)(r[29] - 20)++;
                         }
                         goto bb0x4043e4;
                     }
                     else {
                     }
-                    goto bb0x403b8b;
+                    goto bb0x4043d8;
                 } while (flags);
-bb0x403bb9:
                 switch(0 >> 8 & 0xffffff | *(unsigned char*)((0 >> 8 & 0xffffff | ((unsigned char) (ebx >> 8 & 0xffffff | *(unsigned char*)esi) - 32)) + 0x40b1fa)) {
                 case 0:
-bb0x403c4c:
                     if (flags) {
-                        goto bb0x403c4c;
+                        goto bb0x4043d8;
                     }
                     else {
-bb0x403c54:
                         if (flags) {
-                            goto bb0x403c54;
+                            goto bb0x403b8b;
                         }
-bb0x403c5e:
                         local1 = r[11];
-                        goto bb0x403c5e;
+                        goto bb0x403b8b;
                     }
                 case 1:
-bb0x403c2c:
                     if (flags) {
-                        goto bb0x403c2c;
+                        goto bb0x4043d8;
                     }
                     else {
-bb0x403c34:
-                        goto bb0x403c34;
+                        goto bb0x403b8b;
                     }
                 case 2:
                     *(__size32*)(r[29] + 28) += 4;
                     *(__size32*)(r[29] - 48) = r[25];
                     if (flags) {
-bb0x403cd2:
                         if (flags) {
-                            goto bb0x403cd2;
+                            goto bb0x4043d8;
                         }
                         else {
-bb0x403cdb:
                             *(__size32*)(r[29] - 8) = r[26];
-                            goto bb0x403cdb;
+                            goto bb0x403b8b;
                         }
                     }
                     else {
@@ -163,78 +152,64 @@ bb0x403cdb:
                         else {
                             *(__size32*)(r[29] - 4) = r[24];
                         }
-bb0x403cc8:
-                        goto bb0x403cc8;
+                        goto bb0x403b8b;
                     }
                 case 3:
-bb0x403c3c:
                     if (flags) {
-                        goto bb0x403c3c;
+                        goto bb0x4043d8;
                     }
                     else {
-bb0x403c44:
-                        goto bb0x403c44;
+                        goto bb0x403b8b;
                     }
                 case 4:
-bb0x403ce7:
                     if (flags) {
-                        goto bb0x403ce7;
+                        goto bb0x4043d8;
                     }
                     else {
-bb0x403cf0:
                         *(__size32*)(r[29] - 8)++;
-                        goto bb0x403cf0;
+                        goto bb0x403b8b;
                     }
                 case 5:
+bb0x403cfd:
                     if (flags) {
-bb0x403d30:
                         if (flags) {
-                            goto bb0x403d30;
+                            goto bb0x4043d8;
                         }
                         else {
-bb0x403d39:
                             *(__size32*)(r[29] - 8) = r[25];
-                            goto bb0x403d39;
+                            goto bb0x403b8b;
                         }
                     }
                     else {
-bb0x403d05:
                         if (flags) {
-bb0x403d1b:
                             *(__size32*)(r[29] - 4) = r[25];
-                            goto bb0x403d1b;
+                            goto bb0x403b8b;
                         }
                         else {
-bb0x403d10:
                             *(__size32*)(r[29] - 4) = r[26];
-                            goto bb0x403d10;
+                            goto bb0x403b8b;
                         }
-                        goto bb0x403d05;
+                        goto bb0x403b8b;
                     }
                 case 6:
-bb0x403d4e:
-                    goto bb0x403d4e;
+                    goto bb0x403b8b;
                 case 7:
-bb0x403d5b:
-                    goto bb0x403d5b;
+                    goto bb0x403b8b;
                 case 8:
-bb0x403d6e:
-                    goto bb0x403d6e;
+                    goto bb0x403b8b;
                 case 9:
-bb0x403c80:
                     if (flags) {
-                        goto bb0x403c80;
+                        goto bb0x403cfd;
                     }
                     else {
-bb0x403c84:
                         if (flags) {
-                            goto bb0x403c84;
+                            goto bb0x403b8b;
                         }
-bb0x403c90:
-                        goto bb0x403c90;
+                        goto bb0x403b8b;
                     }
                 case 10:
                     *(__size32*)(r[29] - 56) = 10;
+bb0x403e34:
                     if (flags) {
                         if (flags) {
                             if (flags) {
@@ -282,6 +257,7 @@ bb0x403c90:
                     }
                     *(__size32*)(r[29] - 24) = r[24];
                     if (flags || flags) {
+bb0x403f0a:
                         *(__size32*)(r[28] - 4) = r[24];
                         *(__size32*)(r[28] - 4) = r[25];
                         *(__size32*)(r[28] - 4) = r[26];
@@ -291,15 +267,15 @@ bb0x403c90:
                         proc_0x00405090(*(r[28] + 4), *(r[28] + 8), *(r[28] + 12), *(r[28] + 16), *(r[28] + 20), *(r[28] + 24));
                     }
                     else {
-bb0x403ef9:
                         if (flags) {
-                            goto bb0x403ef9;
+                            goto bb0x403f0a;
                         }
                         else {
                             local6 = 0;
                         }
                     }
                     if (flags) {
+bb0x404148:
                         if ( ~(flags || flags)) {
                             *(__size32*)(r[28] - 4) = r[26];
                             proc_0x00402250(*(r[28] + 4));
@@ -343,6 +319,7 @@ bb0x403ef9:
                             *(__size32*)(r[29] - 16) = r[25];
                         }
                     }
+bb0x4041b6:
                     if ( ~flags) {
                         if (flags) {
                             if ( ~( ~flags && flags)) {
@@ -400,7 +377,6 @@ bb0x403ef9:
                         *(__size32*)(r[29] - 76) = r[26];
                         *(__size32*)(r[29] - 84) = r[25];
                         do {
-bb0x40430b:
                             *(__size32*)(r[29] - 84) = *(r[29] - 84) - 1;
                             if (flags) {
                                 *(__size32*)(r[29] - 68) += 2;
@@ -418,10 +394,11 @@ bb0x40430b:
                             *(__size32*)(r[29] - 24) = r[26];
                             *(__size32*)(r[29] - 64) = r[25];
                             goto bb0x404325;
+bb0x4042fc:
                             local10 = r[11];
                             *(__size32*)(r[29] - 76)++;
                         } while (flags);
-                        goto bb0x40430b;
+                        goto bb0x4042fc;
                     }
 bb0x404325:
                     if ( ~flags) {
@@ -442,73 +419,68 @@ bb0x404325:
                         proc_0x00403a68(*(r[28] + 8), r[25], r[26]);
                         *(__size32*)(r[29] - 4) = *(r[29] - 4) - 1;
                     }
-bb0x404374:
-                    goto bb0x404374;
+                    goto bb0x403b18;
                 case 11:
                     *(__size32*)(r[29] - 56) = 8;
 bb0x403e23:
                     *(int*)(r[29] - 9) = 0;
-                    goto bb0x403e23;
+                    goto bb0x403e34;
                 case 12:
-bb0x403e0d:
                     *(__size32*)(r[29] - 56) = 10;
-                    goto bb0x403e0d;
+                    goto bb0x403e23;
                 case 13:
-bb0x403e16:
                     *(__size32*)(r[29] - 56) = 16;
                     *(__size8*)(r[29] - 29) = r[10];
-                    goto bb0x403e16;
+                    goto bb0x403e23;
                 case 14:
                     *(__size32*)(r[29] + 28) += 4;
                     *(__size32*)(r[29] - 24) = r[26];
                     *(__size32*)(r[28] - 4) = r[25];
                     *(__size32*)(r[28] - 4) = r[24];
                     proc_0x00403a9c(*(r[28] + 4), *(r[28] + 8));
-bb0x403f97:
                     *(int*)(r[29] - 176) = 0;
                     *(__size32*)(r[29] - 24) = r[26];
-                    goto bb0x403f97;
+                    goto bb0x404148;
                 case 15:
                     if ( ~flags) {
+bb0x404101:
                         *(__size32*)(r[28] - 4) = r[24];
                         *(__size32*)(r[28] - 4) = r[26];
                         *(__size32*)(r[28] - 4) = r[27];
                         *(__size32*)(r[29] - 24) = r[25];
                         *(__size32*)(r[28] - 4) = r[25];
                         if ( ~flags) {
+bb0x404123:
                             *(__size32*)(r[28] - 4) = r[24];
                             *(__size32*)(r[28] - 4) = r[26];
                             proc_0x00404fc8();
                         }
-bb0x404120:
-                        goto bb0x404120;
+                        goto bb0x404123;
                     }
-bb0x4040fc:
-                    goto bb0x4040fc;
+                    goto bb0x404101;
                 case 16:
 bb0x403fbd:
                     if (flags) {
-bb0x403ffc:
                         *(__size32*)(r[29] + 28) += 4;
                         local3 = r[8];
                         *(int*)(r[29] - 183) = 0;
                         *(__size32*)(r[29] - 24) = r[26];
                         *(__size32*)(r[29] - 28) = r[25];
                         *(__size32*)(r[29] - 64) = 1;
-                        goto bb0x403ffc;
+                        goto bb0x4041b6;
                     }
                     else {
-bb0x403fc5:
                         *(__size32*)(r[29] + 28) += 4;
                         local2 = r[0];
                         *(int*)(r[29] - 182) = 0;
                         *(__size32*)(r[29] - 28) = 1;
                         *(__size32*)(r[29] - 24) = r[26];
                         *(__size32*)(r[29] - 64) = 1;
-                        goto bb0x403fc5;
+                        goto bb0x4041b6;
                     }
-                    goto bb0x403fbd;
+                    goto bb0x4041b6;
                 case 17:
+bb0x404038:
                     if (flags) {
                         *(__size32*)(r[29] + 28) += 4;
                         *(__size32*)(r[29] - 24) = r[24];
@@ -525,23 +497,19 @@ bb0x403fc5:
                             *(__size32*)(r[29] - 24) = 0x40b1ec;
                         }
                     }
-bb0x404082:
                     if (flags) {
                         if (flags) {
                         }
                         else {
                         }
                         *(__size32*)(r[29] - 64) = r[25];
-bb0x4040db:
                         while ( ~flags) {
                             if ( ~flags) {
-bb0x4040e8:
-                                goto bb0x4040e8;
+                                goto bb0x4041b6;
                             }
                             *(__size32*)(r[29] - 64)++;
-bb0x4040db:
                         }
-                        goto bb0x4040db;
+                        goto bb0x4041b6;
                     }
                     else {
                         if (flags) {
@@ -549,100 +517,81 @@ bb0x4040db:
                         else {
                         }
                         *(__size32*)(r[29] - 64) = r[25];
-bb0x4040a9:
                         while ( ~flags) {
                             if ( ~flags) {
-bb0x4040b7:
-                                goto bb0x4040b7;
+                                goto bb0x4041b6;
                             }
                             *(__size32*)(r[29] - 64)++;
-bb0x4040a9:
                         }
-                        goto bb0x4040a9;
+                        goto bb0x4041b6;
                     }
-                    goto bb0x404082;
+                    goto bb0x4041b6;
                 case 18:
-bb0x403fb2:
                     if ( ~flags) {
-bb0x403fba:
-                        goto bb0x403fba;
+                        goto bb0x403fbd;
                     }
-                    goto bb0x403fb2;
+                    goto bb0x403fbd;
                 case 19:
-bb0x40402d:
                     if ( ~flags) {
-bb0x404035:
-                        goto bb0x404035;
+                        goto bb0x404038;
                     }
-                    goto bb0x40402d;
+                    goto bb0x404038;
                 case 20:
-bb0x404379:
                     *(__size32*)(r[29] + 28) += 4;
                     *(__size32*)(r[29] - 24) = r[25];
                     if (flags) {
-bb0x40439e:
                         if (flags) {
-bb0x4043b8:
                             *(__size32*)r[26] = r[25];
-                            goto bb0x4043b8;
+                            goto bb0x403b18;
                         }
                         else {
-bb0x4043a6:
                             local5 = r[0];
-                            goto bb0x4043a6;
+                            goto bb0x403b18;
                         }
-                        goto bb0x40439e;
+                        goto bb0x403b18;
                     }
                     else {
-bb0x40438e:
                         *(__size32*)r[24] = r[26];
-                        goto bb0x40438e;
+                        goto bb0x403b18;
                     }
-                    goto bb0x404379;
+                    goto bb0x403b18;
                 case 21:
-                    goto bb0x403bb9;
+                    goto bb0x4043d8;
                 case 22:
-                    goto bb0x403bb9;
+                    goto bb0x4043d8;
                 case 23:
-                    goto bb0x403bb9;
+                    goto bb0x4043d8;
                 case 24:
-bb0x403c66:
-                    goto bb0x403c66;
+                    goto bb0x403b8b;
                 case 25:
-bb0x403c73:
-                    goto bb0x403c73;
+                    goto bb0x403b8b;
                 case 26:
                     if (flags || flags) {
                         if (flags || flags) {
                             if (flags || flags) {
-bb0x403dea:
                                 if (flags) {
-                                    goto bb0x403dea;
+                                    goto bb0x403b8b;
                                 }
-bb0x403df3:
-                                goto bb0x403df3;
+                                goto bb0x403b8b;
                             }
                             else {
-bb0x403dd1:
-                                goto bb0x403dd1;
+                                goto bb0x403b8b;
                             }
                         }
                         else {
-bb0x403db0:
-                            goto bb0x403db0;
+                            goto bb0x403b8b;
                         }
                     }
                     else {
-bb0x403d8c:
-                        goto bb0x403d8c;
+                        goto bb0x403b8b;
                     }
                 }
             }
             else {
-bb0x403b2f:
-                goto bb0x403b2f;
+                goto bb0x403b30;
             }
         }
+bb0x403b18:
     }
 bb0x4043e4:
     *(__size32*)(r[28] - 4) = r[25];
@@ -694,6 +643,7 @@ __size32 proc_0x00403a68(__size32 param1, unsigned int param2, unsigned int para
     local6 = param3;
     local7 = param2;
     if (eax == 0) {
+bb0x403a8a:
         edx = local6;
         ecx = *(ebx + 80);
         al = *(ebp + 8);
@@ -703,11 +653,10 @@ __size32 proc_0x00403a68(__size32 param1, unsigned int param2, unsigned int para
         local7 = ecx;
     }
     else {
-bb0x403a83:
         edx = *eax;
         local6 = edx;
         if (edx > *(ebx + 92)) {
-            goto bb0x403a83;
+            goto bb0x403a8a;
         }
     }
     ecx = local7;
@@ -803,6 +752,7 @@ void proc_0x00405090(unsigned long long param1, int param2, union { int *; __siz
     if ( ~((long long)param4 < 2 || (long long)param4 > 36)) {
         if (param2 != 0) {
             if (param2 < 0) {
+bb0x4050c1:
                 if (param5 != 0) {
                     *(int*)param3 = 45;
                     esi = param3 + 1;
@@ -815,8 +765,7 @@ void proc_0x00405090(unsigned long long param1, int param2, union { int *; __siz
         }
         else {
             if (param1 < (unsigned long long)0) {
-bb0x4050bd:
-                goto bb0x4050bd;
+                goto bb0x4050c1;
             }
         }
         param1 = local11;
@@ -838,6 +787,7 @@ bb0x4050bd:
             local13 = local0;
             local14 = local1;
         } while (edx != 0 || eax_2 != 0);
+bb0x40512d:
         eax_9 = local15;
         ebx_1 = local16;
         while (ebx_1 != esp - 72) {
@@ -847,18 +797,18 @@ bb0x4050bd:
             local16 = ebx_2;
             local16 = ebx_2;
             if ((int)al < 10) {
-bb0x40511d:
                 eax_3 = eax_6 + 48;
                 local8 = (unsigned char) eax_6 + 48;
                 esi++;
                 local15 = eax_3;
-                goto bb0x40511d;
+                goto bb0x40512d;
             }
             al = (al + param6);
             eax = (eax_6 >> 8 & 0xffffff | (al)) >> 8 & 0xffffff | (al - 10);
             local9 = al - 10;
             esi++;
             local15 = eax;
+bb0x40512d:
             eax_9 = local15;
             ebx_1 = local16;
         }
@@ -873,24 +823,24 @@ void proc_0x00402250(union { int; char *; } param1)
     union { char *; int * x590; int; } eax; 		// r24
     int edx; 		// r26
 
-bb0x402250:
     eax = param1;
     tmpb = (unsigned char) param1 & 0x3;
     if (((unsigned char) param1 & 0x3) != 0) {
         tmpb = *param1 & 0xff;
         if (tmpb == 0) {
+bb0x40229f:
+bb0x4022a0:
+bb0x4022a1:
         }
         else {
-bb0x40228e:
             tmpb = *(param1 + 1) & 0xff;
             if (tmpb == 0) {
-                goto bb0x40228e;
+                goto bb0x4022a0;
             }
             else {
-bb0x402294:
                 tmpb = *(param1 + 2) & 0xff;
                 if (tmpb == 0) {
-                    goto bb0x402294;
+                    goto bb0x4022a1;
                 }
                 else {
                     eax = param1 + 3 >> 8 & 0xffffff | ((unsigned char) param1 + 3 & ~0x3);
@@ -905,19 +855,16 @@ bb0x402258:
                             edx = edx - 0x1010101 & 0x80808080 &  ~edx;
                         }
                     } while (edx == 0);
-bb0x402273:
                     if ((unsigned char) edx != 0) {
-                        goto bb0x402273;
+                        goto bb0x40229f;
                     }
                     else {
-bb0x402277:
                         if ((edx >> 8 & 0xff) != 0) {
-                            goto bb0x402277;
+                            goto bb0x4022a0;
                         }
                         else {
-bb0x40227b:
                             if ((edx & 0xff0000) != 0) {
-                                goto bb0x40227b;
+                                goto bb0x4022a1;
                             }
                             else {
                             }
@@ -928,7 +875,7 @@ bb0x40227b:
         }
     }
     else {
-        goto bb0x402250;
+        goto bb0x402258;
     }
     return;
 }
@@ -938,7 +885,6 @@ void proc_0x0040487c(union { int; unsigned int *; } param1, unsigned int param2)
 {
     __size32 eax; 		// r24
 
-bb0x40487c:
     if (param1 != 0) {
         if (*(global54_40b59c + 8) == 0) {
             eax = WideCharToMultiByte();
@@ -952,11 +898,12 @@ bb0x40487c:
                 *(unsigned int*)param1 = param2;
             }
             else {
+bb0x404887:
             }
         }
     }
     else {
-        goto bb0x40487c;
+        goto bb0x404887;
     }
     return;
 }
