@@ -355,7 +355,7 @@ def compare_directories(dir_left, dir_right):
 
 
 """ Perform the actual test on a single input binary """
-def test_single_input(test_for_regressions, cli_path, input_file, output_path, desired_output_path, args):
+def test_single_input(cli_path, input_file, output_path, expected_output_path, args):
     cmdline   = [cli_path] + ['-P', os.path.dirname(cli_path), '-o', output_path] + args + [input_file]
 
     try:
@@ -366,9 +366,9 @@ def test_single_input(test_for_regressions, cli_path, input_file, output_path, d
                 result = subprocess.call(cmdline, stdout=test_stdout, stderr=test_stderr, timeout=360)
                 result = '.' if result == 0 else 'f'
 
-                if result == '.' and test_for_regressions:
+                if result == '.' and expected_output_path != "":
                     # Perform regression diff
-                    if not compare_directories(desired_output_path, output_path):
+                    if not compare_directories(expected_output_path, output_path):
                         result = 'r'
             except:
                 result = '!'
@@ -386,15 +386,16 @@ def perform_regression_tests(base_dir, test_input_base, test_list):
     sys.stdout.write("Testing for regressions ")
     for test_file in test_list:
         input_file = os.path.join(test_input_base, test_file)
-        desired_output_dir = os.path.join(base_dir, "desired-outputs", test_file)
+        expected_output_dir = os.path.join(base_dir, "expected-outputs", test_file)
         output_dir = os.path.join(base_dir, "outputs", test_file)
         os.makedirs(output_dir)
 
-        test_result = test_single_input(True, sys.argv[1], input_file, output_dir, desired_output_dir, sys.argv[2:])
+        test_result = test_single_input(sys.argv[1], input_file, output_dir, expected_output_dir, sys.argv[2:])
         test_results[test_file] = test_result
 
         sys.stdout.write(test_result[0]) # print status
         sys.stdout.flush()
+
     num_failed = sum(1 for res in test_results.values() if res[0] != '.')
 
     print("")
@@ -417,15 +418,15 @@ def perform_smoke_tests(base_dir, test_input_base, test_list):
     sys.stdout.write("Testing for crashes ")
     for test_file in test_list:
         input_file = os.path.join(test_input_base, test_file)
-        desired_output_dir = os.path.join(base_dir, "desired-outputs", test_file)
         output_dir = os.path.join(base_dir, "outputs", test_file)
         os.makedirs(output_dir)
 
-        test_result = test_single_input(False, sys.argv[1], input_file, output_dir, desired_output_dir, sys.argv[2:])
+        test_result = test_single_input(sys.argv[1], input_file, output_dir, "", sys.argv[2:])
         test_results[test_file] = test_result
 
         sys.stdout.write(test_result[0]) # print status
         sys.stdout.flush()
+
     num_failed = sum(1 for res in test_results.values() if res[0] != '.')
 
     print("")
