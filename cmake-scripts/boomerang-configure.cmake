@@ -82,13 +82,16 @@ add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a 
                                       # CTI instruction is flagged as an error
 
 # Boomerang configuration options
-option(BOOMERANG_BUILD_TESTS     "Build the unit and regression tests. Requires Qt5Test." OFF)
-option(BOOMERANG_BUILD_GUI       "Build the GUI. Requires Qt5Widgets." ON)
-option(BOOMERANG_BUILD_CLI       "Build the command line interface." ON)
+option(BOOMERANG_BUILD_GUI              "Build the GUI. Requires Qt5Widgets." ON)
+option(BOOMERANG_BUILD_CLI              "Build the command line interface." ON)
+option(BOOMERANG_BUILD_UNIT_TESTS       "Build the unit tests. Requires Qt5Test." OFF)
 
-if (BOOMERANG_BUILD_TESTS AND "${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+if (BOOMERANG_BUILD_CLI)
+    option(BOOMERANG_BUILD_REGRESSION_TESTS "Build the regression tests. Requires Python 3." OFF)
+endif (BOOMERANG_BUILD_CLI)
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     option(BOOMERANG_ENABLE_COVERAGE "Build with coverage compiler flags enabled." OFF)
-endif ()
+endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 
 option(BOOMERANG_INSTALL_SAMPLES "Install sample binaries." OFF)
-

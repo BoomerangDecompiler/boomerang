@@ -6,16 +6,17 @@
 # WARRANTIES.
 #
 
-# regression tests are executed via the CLI
-if (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
+if (BOOMERANG_BUILD_REGRESSION_TESTS)
+    find_package(PythonInterp 3 REQUIRED)
+
     add_custom_command(OUTPUT copy-regression-script
-        COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/regression_tester.py ${CMAKE_CURRENT_BINARY_DIR}/
-        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/regression_tester.py"
+        COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/regression-tester.py ${CMAKE_CURRENT_BINARY_DIR}/
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/regression-tester.py"
     )
 
     # run regression suite by 'make check'
     add_custom_target(check
-        "${CMAKE_CURRENT_SOURCE_DIR}/full_regression.sh" "$<TARGET_FILE:boomerang-cli>"
+        "${PYTHON_EXECUTABLE}" "./regression-tester.py" "$<TARGET_FILE:boomerang-cli>"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/"
         DEPENDS copy-regression-script
     )
@@ -29,4 +30,4 @@ if (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
         boomerang-PalmLoader
         boomerang-Win32Loader
     )
-endif (BOOMERANG_BUILD_TESTS AND BOOMERANG_BUILD_CLI)
+endif (BOOMERANG_BUILD_REGRESSION_TESTS)

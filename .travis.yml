@@ -4,6 +4,11 @@ dist: trusty
 sudo: false
 cache: ccache
 
+addons:
+  apt:
+    update: false
+
+
 matrix:
   include:
     # Clang 4, debug
@@ -17,7 +22,8 @@ matrix:
             - clang-4.0
       env:
         - JOBNAME="Clang4 Debug"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0 -DBOOMERANG_BUILD_UNIT_TESTS=ON"
+
 
     # Clang 5, release
     - os: linux
@@ -30,7 +36,8 @@ matrix:
             - clang-5.0
       env:
         - JOBNAME="Clang5 Release"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 -DBOOMERANG_BUILD_UNIT_TESTS=ON"
+
 
     # GCC 6, debug with code coverage
     - os: linux
@@ -44,7 +51,7 @@ matrix:
             - lcov
       env:
         - JOBNAME="GCC6 Debug + CodeCov"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6 -DBOOMERANG_ENABLE_COVERAGE=ON"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6 -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON"
       after_success:
         # Create CodeCov report
         - cd ${TRAVIS_BUILD_DIR}
@@ -52,6 +59,7 @@ matrix:
         - lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info
         - lcov --list coverage.info
         - bash <(curl -s https://codecov.io/bash) -X gcov -F unittests || echo "Codecov did not collect coverage reports"
+
 
     # GCC 7, release
     - os: linux
@@ -64,7 +72,8 @@ matrix:
             - g++-7
       env:
         - JOBNAME="GCC7 Release"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DBOOMERANG_BUILD_UNIT_TESTS=ON"
+
 
     # GCC 8, RelWithDebInfo, regression tests
     - os: linux
@@ -77,9 +86,11 @@ matrix:
             - g++-8
       env:
         - JOBNAME="GCC8 RelWithDebInfo Regression"
+        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DBOOMERANG_BUILD_REGRESSION_TESTS=ON"
       script:
-        cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DBOOMERANG_BUILD_TESTS=ON .. && make -j2 check
+        cmake $BOOMERANG_CMAKE_OPTS .. && make -j2 check
+
 
 before_script: mkdir build && cd build
-script: cmake -DBOOMERANG_BUILD_TESTS=ON $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
+script: cmake $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
 
