@@ -38,7 +38,7 @@ bool CFGCompressor::compressCFG(Cfg* cfg)
 
             if (jmpBB->getRTLs()->size() != 1 ||
                 jmpBB->getRTLs()->front()->size() != 1 ||
-                jmpBB->getRTLs()->front()->front()->isGoto()) {
+                !jmpBB->getRTLs()->front()->front()->isGoto()) {
                 continue;
             }
 
