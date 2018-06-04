@@ -120,6 +120,10 @@ public:
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
+    /// Add an entry procedure at the specified address.
+    /// This will fail if \p entryAddr is already the entry address of a LibProc.
+    /// \returns the new or exising entry procedure, or nullptr on failure.
+    Function *addEntryPoint(Address entryAddr);
 
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
@@ -127,58 +131,8 @@ public:
     // globals
     const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
 
-
-    // Decoding
-
-    /// Decode from entry point given as an agrument
-    void decodeEntryPoint(Address entryAddr);
-
-    /// Add an entry procedure at the specified address.
-    /// This will fail if \p entryAddr is already the entry address of a LibProc.
-    /// \returns the new or exising entry procedure, or nullptr on failure.
-    Function *addEntryPoint(Address entryAddr);
-
-    /// Decode a procedure fragment of \p proc starting at address \p addr.
-    void decodeFragment(UserProc *proc, Address addr);
-
-    /// Re-decode this proc from scratch
-    bool reDecode(UserProc *proc);
-
-    /// last fixes after decoding everything
-    void finishDecode();
-
     /// Check the wellformedness of all the procedures/cfgs in this program
     bool isWellFormed() const;
-
-    /// Do the main non-global decompilation steps
-    void decompile();
-
-    /// Do global type analysis.
-    /// \note For now, it just does local type analysis for every procedure of the program.
-    void globalTypeAnalysis();
-
-    /// As the name suggests, removes globals unused in the decompiled code.
-    void removeUnusedGlobals();
-
-    /**
-     * Remove unused return locations.
-     * This is the global removing of unused and redundant returns. The initial idea
-     * is simple enough: remove some returns according to the formula:
-     * returns(p) = modifieds(p) isect union(live at c) for all c calling p.
-     *
-     * However, removing returns reduces the uses, leading to three effects:
-     * 1) The statement that defines the return, if only used by that return, becomes unused
-     * 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
-     * 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
-     *    the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
-     *    child.
-     * \returns true if any change
-     */
-    bool removeUnusedReturns();
-
-    /// Have to transform out of SSA form after the above final pass
-    /// Convert from SSA form
-    void fromSSAForm();
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;
@@ -271,17 +225,61 @@ public:
 
     void updateLibrarySignatures();
 
+
+    // Decompilation related
+
+    /// Decode from entry point given as an agrument
+    void decodeEntryPoint(Address entryAddr);
+
+    /// Decode a procedure fragment of \p proc starting at address \p addr.
+    void decodeFragment(UserProc *proc, Address addr);
+
+    /// Re-decode this proc from scratch
+    bool reDecode(UserProc *proc);
+
+    /// last fixes after decoding everything
+    void finishDecode();
+
+    /// Do the main non-global decompilation steps
+    void decompile();
+
+    /// Do global type analysis.
+    /// \note For now, it just does local type analysis for every procedure of the program.
+    void globalTypeAnalysis();
+
+    /// As the name suggests, removes globals unused in the decompiled code.
+    void removeUnusedGlobals();
+
+    /**
+     * Remove unused return locations.
+     * This is the global removing of unused and redundant returns. The initial idea
+     * is simple enough: remove some returns according to the formula:
+     * returns(p) = modifieds(p) isect union(live at c) for all c calling p.
+     *
+     * However, removing returns reduces the uses, leading to three effects:
+     * 1) The statement that defines the return, if only used by that return, becomes unused
+     * 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
+     * 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
+     *    the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
+     *    child.
+     * \returns true if any change
+     */
+    bool removeUnusedReturns();
+
+    /// Have to transform out of SSA form after the above final pass
+    /// Convert from SSA form
+    void fromSSAForm();
+
 private:
-    QString m_name;             ///< name of the program
+    QString m_name;                         ///< name of the program
     Project *m_project = nullptr;
-    BinaryFile *m_binaryFile;
-    Module *m_rootModule;       ///< Root of the module tree
-    ModuleList m_moduleList;    ///< The Modules that make up this program
+    BinaryFile *m_binaryFile = nullptr;
+    IFrontEnd *m_defaultFrontend = nullptr; ///< Pointer to the FrontEnd object for the project
+    Module *m_rootModule = nullptr;         ///< Root of the module tree
+    ModuleList m_moduleList;                ///< The Modules that make up this program
 
     /// list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;
-
-    IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<std::shared_ptr<Global>> m_globals; ///< globals to print at code generation time

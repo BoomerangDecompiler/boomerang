@@ -535,13 +535,17 @@ LibProc *Prog::getOrCreateLibraryProc(const QString& name)
 
 Platform Prog::getFrontEndId() const
 {
-    return m_defaultFrontend->getType();
+    return m_defaultFrontend
+        ? m_defaultFrontend->getType()
+        : Platform::GENERIC;
 }
 
 
 std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
 {
-    return m_defaultFrontend->getDefaultSignature(name);
+    return m_defaultFrontend
+        ? m_defaultFrontend->getDefaultSignature(name)
+        : nullptr;
 }
 
 
