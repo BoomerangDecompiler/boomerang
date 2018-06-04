@@ -15,6 +15,7 @@
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/ProgDecompiler.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 
@@ -148,7 +149,9 @@ bool Project::decompileBinaryFile()
         return false;
     }
 
-    m_prog->decompile();
+    ProgDecompiler dcomp(m_prog.get());
+    dcomp.decompile();
+
     return true;
 }
 
@@ -193,7 +196,7 @@ void Project::loadSymbols()
 {
     // Add symbols from -s switch(es)
     for (const std::pair<Address, QString>& elem : Boomerang::get()->getSettings()->m_symbolMap) {
-        m_fe->addSymbol(elem.first, elem.second);
+        m_loadedBinary->getSymbols()->createSymbol(elem.first, elem.second);
     }
 
     m_fe->readLibraryCatalog(); // Needed before readSymbolFile()

@@ -40,7 +40,7 @@ Decompiler::~Decompiler()
 void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 {
     m_userEntrypoints.push_back(entryAddr);
-    m_project.getProg()->getFrontEnd()->addSymbol(entryAddr, name);
+    m_project.getLoadedBinaryFile()->getSymbols()->createSymbol(entryAddr, name);
 }
 
 

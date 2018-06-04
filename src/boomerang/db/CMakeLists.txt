@@ -20,6 +20,7 @@ list(APPEND boomerang-db-sources
     db/LivenessAnalyzer
     db/Module
     db/Prog
+    db/ProgDecompiler
     db/Register
     db/RTL
     db/Table

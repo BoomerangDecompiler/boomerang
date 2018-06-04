@@ -101,13 +101,6 @@ IFrontEnd *IFrontEnd::instantiate(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-
-void IFrontEnd::addSymbol(Address addr, const QString& name)
-{
-    m_program->getBinaryFile()->getSymbols()->createSymbol(addr, name);
-}
-
-
 QString IFrontEnd::getRegName(int idx) const
 {
     return m_decoder->getRegName(idx);

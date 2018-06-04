@@ -590,7 +590,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     LOG_WARN("main function not found, falling back to entry point");
 
     if (symbols->findSymbolByAddress(start) == nullptr) {
-        this->addSymbol(start, "_start");
+        symbols->createSymbol(start, "_start");
     }
 
     return start;

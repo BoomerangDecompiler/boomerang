@@ -29,6 +29,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/ProgDecompiler.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/Log.h"
@@ -818,7 +819,8 @@ void StatementTest::testRecursion()
     cfg->setEntryAndExitBB(first);
 
     // decompile the "proc"
-    prog->decompile();
+    ProgDecompiler dcomp(prog);
+    dcomp.decompile();
 
     // print cfg to a string
     QString     actual;

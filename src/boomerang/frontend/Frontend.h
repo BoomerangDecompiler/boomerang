@@ -110,9 +110,6 @@ public:
     virtual std::vector<SharedExp>& getDefaultReturns() = 0;
 
 
-    /// Add a symbol to the loader
-    void addSymbol(Address addr, const QString& name);
-
     /// Add a "hint" that an instruction at the given address references a named global
     void addRefHint(Address addr, const QString& name) { m_refHints[addr] = name; }
 
