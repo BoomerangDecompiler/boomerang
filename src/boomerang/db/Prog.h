@@ -100,6 +100,9 @@ public:
      */
     Function *getOrCreateFunction(Address entryAddr);
 
+    /// lookup a library procedure by name; create if does not exist
+    LibProc *getOrCreateLibraryProc(const QString& name);
+
     /// \returns the function with entry address \p entryAddr,
     /// or nullptr if no such function exists.
     Function *getFunctionByAddr(Address entryAddr) const;
@@ -175,9 +178,6 @@ public:
     /// Have to transform out of SSA form after the above final pass
     /// Convert from SSA form
     void fromSSAForm();
-
-    /// lookup a library procedure by name; create if does not exist
-    LibProc *getOrCreateLibraryProc(const QString& name);
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;

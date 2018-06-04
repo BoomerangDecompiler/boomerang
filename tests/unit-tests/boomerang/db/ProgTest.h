@@ -30,6 +30,7 @@ private slots:
     void testCreateModule();
 
     void testGetOrCreateFunction();
+    void testGetOrCreateLibraryProc();
     void testGetFunctionByAddr();
     void testGetFunctionByName();
     void testRemoveFunction();

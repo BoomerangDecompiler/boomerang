@@ -448,9 +448,9 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
 
     // insert other conventions here
     default:
-        LOG_ERROR("Unknown signature: %1 %2", Util::getCallConvName(cc),
+        LOG_WARN("Unknown signature: %1 %2", Util::getCallConvName(cc),
                   Util::getPlatformName(plat));
-        return nullptr;
+        return std::make_shared<Signature>(name);
     }
 }
 

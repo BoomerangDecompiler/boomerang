@@ -13,7 +13,7 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/LibProc.h"
 
 
 #define HELLO_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
@@ -74,6 +74,20 @@ void ProgTest::testGetOrCreateFunction()
     QVERIFY(func != nullptr);
     QCOMPARE(func->getName(), QString("proc_0x00001000"));
     QCOMPARE(func->getEntryAddress(), Address(0x1000));
+}
+
+
+void ProgTest::testGetOrCreateLibraryProc()
+{
+    Prog prog("test", nullptr);
+
+    LibProc *libProc = prog.getOrCreateLibraryProc("");
+    QVERIFY(libProc == nullptr);
+
+    libProc = prog.getOrCreateLibraryProc("testProc");
+    QVERIFY(libProc != nullptr);
+    QCOMPARE(libProc->getEntryAddress(), Address::INVALID);
+    QCOMPARE(prog.getOrCreateLibraryProc("testProc"), libProc);
 }
 
 

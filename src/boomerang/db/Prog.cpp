@@ -519,6 +519,10 @@ Function *Prog::getFunctionByName(const QString& name) const
 
 LibProc *Prog::getOrCreateLibraryProc(const QString& name)
 {
+    if (name == "") {
+        return nullptr;
+    }
+
     Function *existingProc = getFunctionByName(name);
 
     if (existingProc && existingProc->isLib()) {
