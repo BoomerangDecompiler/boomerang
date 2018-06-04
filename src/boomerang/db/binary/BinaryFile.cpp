@@ -49,37 +49,37 @@ const BinarySymbolTable *BinaryFile::getSymbols() const
 
 LoadFmt BinaryFile::getFormat() const
 {
-    return m_loader->getFormat();
+    return m_loader ? m_loader->getFormat() : LoadFmt::INVALID;
 }
 
 
 Machine BinaryFile::getMachine() const
 {
-    return m_loader->getMachine();
+    return m_loader ? m_loader->getMachine() : Machine::INVALID;
 }
 
 
 Address BinaryFile::getEntryPoint() const
 {
-    return m_loader->getEntryPoint();
+    return m_loader ? m_loader->getEntryPoint() : Address::INVALID;
 }
 
 
 Address BinaryFile::getMainEntryPoint() const
 {
-    return m_loader->getMainEntryPoint();
+    return m_loader ? m_loader->getMainEntryPoint() : Address::INVALID;
 }
 
 
 bool BinaryFile::isRelocationAt(Address addr) const
 {
-    return m_loader->isRelocationAt(addr);
+    return m_loader ? m_loader->isRelocationAt(addr) : false;
 }
 
 
 Address BinaryFile::getJumpTarget(Address addr) const
 {
-    return m_loader->getJumpTarget(addr);
+    return m_loader ? m_loader->getJumpTarget(addr) : Address::INVALID;
 }
 
 

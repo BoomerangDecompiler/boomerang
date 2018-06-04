@@ -380,7 +380,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         bool       ok        = true;
 
         if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
-            Function *p = proc->getProg()->findFunction(const_arg->getAddr());
+            Function *p = proc->getProg()->getFunctionByAddr(const_arg->getAddr());
 
             if (p) {
                 s << p->getName();

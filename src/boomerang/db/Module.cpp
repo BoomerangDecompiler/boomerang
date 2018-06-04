@@ -350,5 +350,7 @@ Function *Module::getFunction(Address loc) const
 
 std::shared_ptr<Signature> Module::getLibSignature(const QString& name)
 {
-    return m_currentFrontend->getLibSignature(name);
+    return m_currentFrontend
+        ? m_currentFrontend->getLibSignature(name)
+        : nullptr;
 }

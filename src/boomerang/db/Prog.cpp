@@ -202,34 +202,39 @@ Module *Prog::getModuleForSymbol(const QString& symbolName)
 }
 
 
-Function *Prog::createFunction(Address startAddress)
+Function *Prog::getOrCreateFunction(Address startAddress)
 {
-    // this test fails when decoding sparc, why?  Please investigate - trent
-    // Likely because it is in the Procedure Linkage Table (.plt), which for Sparc is in the data section
-    // assert(startAddress >= limitTextLow && startAddress < limitTextHigh);
+    if (startAddress == Address::INVALID) {
+        return nullptr;
+    }
 
     // Check if we already have this proc
-    Function *existingFunction = findFunction(startAddress);
+    Function *existingFunction = getFunctionByAddr(startAddress);
 
     if (existingFunction) {      // Exists already ?
         return existingFunction; // Yes, we are done
     }
 
-    Address other = m_binaryFile->getJumpTarget(startAddress);
+    Address tgt = m_binaryFile
+        ? m_binaryFile->getJumpTarget(startAddress)
+        : Address::INVALID;
 
-    if (other != Address::INVALID) {
-        startAddress = other;
+
+    if (tgt != Address::INVALID) {
+        startAddress = tgt;
     }
 
-    existingFunction = findFunction(startAddress);
+    existingFunction = getFunctionByAddr(startAddress);
 
     if (existingFunction) {      // Exists already ?
         return existingFunction; // Yes, we are done
     }
 
     QString             procName;
-    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(startAddress);
     bool                isLibFunction = false;
+    const BinarySymbol *sym = m_binaryFile
+        ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
+        : nullptr;
 
     if (sym) {
         isLibFunction = sym->isImportedFunction() || sym->isStaticFunction();
@@ -424,15 +429,18 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
 #endif
 
 
-void Prog::removeFunction(const QString& name)
+bool Prog::removeFunction(const QString& name)
 {
-    Function *function = findFunction(name);
+    Function *function = getFunctionByName(name);
 
     if (function) {
         function->removeFromModule();
         Boomerang::get()->alertFunctionRemoved(function);
         // FIXME: this function removes the function from module, but it leaks it
+        return true;
     }
+
+    return false;
 }
 
 
@@ -479,7 +487,7 @@ int Prog::getNumFunctions(bool userOnly) const
 }
 
 
-Function *Prog::findFunction(Address entryAddr) const
+Function *Prog::getFunctionByAddr(Address entryAddr) const
 {
     for (const auto& m : m_moduleList) {
         Function *proc = m->getFunction(entryAddr);
@@ -494,7 +502,7 @@ Function *Prog::findFunction(Address entryAddr) const
 }
 
 
-Function *Prog::findFunction(const QString& name) const
+Function *Prog::getFunctionByName(const QString& name) const
 {
     for (const auto& module : m_moduleList) {
         Function *f = module->getFunction(name);
@@ -511,7 +519,7 @@ Function *Prog::findFunction(const QString& name) const
 
 LibProc *Prog::getOrCreateLibraryProc(const QString& name)
 {
-    Function *existingProc = findFunction(name);
+    Function *existingProc = getFunctionByName(name);
 
     if (existingProc && existingProc->isLib()) {
         return static_cast<LibProc *>(existingProc);
@@ -855,7 +863,7 @@ int Prog::readNative4(Address a) const
 
 void Prog::decodeEntryPoint(Address entryAddr)
 {
-    Function *func = findFunction(entryAddr);
+    Function *func = getFunctionByAddr(entryAddr);
 
     if (!func || (!func->isLib() && !static_cast<UserProc *>(func)->isDecoded())) {
         if (!Util::inRange(entryAddr, m_binaryFile->getImage()->getLimitTextLow(), m_binaryFile->getImage()->getLimitTextHigh())) {
@@ -869,14 +877,14 @@ void Prog::decodeEntryPoint(Address entryAddr)
 
 
     if (!func) {
-        func = findFunction(entryAddr);
+        func = getFunctionByAddr(entryAddr);
 
         // Chek if there is a library thunk at entryAddr
         if (!func) {
             Address jumpTarget = m_binaryFile->getJumpTarget(entryAddr);
 
             if (jumpTarget != Address::INVALID) {
-                func = findFunction(jumpTarget);
+                func = getFunctionByAddr(jumpTarget);
             }
         }
     }
@@ -891,9 +899,9 @@ void Prog::decodeEntryPoint(Address entryAddr)
 
 void Prog::addEntryPoint(Address entryAddr)
 {
-    Function *func = findFunction(entryAddr);
+    Function *func = getFunctionByAddr(entryAddr);
     if (!func) {
-        func = createFunction(entryAddr);
+        func = getOrCreateFunction(entryAddr);
     }
 
     if (func && !func->isLib()) {

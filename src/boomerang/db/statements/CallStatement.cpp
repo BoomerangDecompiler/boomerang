@@ -796,11 +796,11 @@ bool CallStatement::convertToDirect()
         return false;     // Not a valid proc pointer
     }
 
-    Function *p        = prog->findFunction(name);
+    Function *p        = prog->getFunctionByName(name);
     const bool isNewProc = p == nullptr;
 
     if (isNewProc) {
-        p = prog->createFunction(dest);
+        p = prog->getOrCreateFunction(dest);
     }
 
     LOG_VERBOSE("%1 procedure for call to global '%2' is %3",

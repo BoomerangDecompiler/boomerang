@@ -14401,7 +14401,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 // Set the destination
                                 call->setDest(nativeDest);
                                 result.rtl->push_back(call);
-                                Function *destProc = m_prog->createFunction(nativeDest);
+                                Function *destProc = m_prog->getOrCreateFunction(nativeDest);
 
                                 if (destProc == reinterpret_cast<Function *>(-1)) {
                                     destProc = nullptr; // In case a deleted Proc

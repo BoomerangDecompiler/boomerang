@@ -1199,7 +1199,7 @@ void UserProc::assignProcsToCalls()
             CallStatement *call = static_cast<CallStatement *>(rtl->back());
 
             if ((call->getDestProc() == nullptr) && !call->isComputed()) {
-                Function *p = m_prog->findFunction(call->getFixedDest());
+                Function *p = m_prog->getFunctionByAddr(call->getFixedDest());
 
                 if (p == nullptr) {
                     LOG_FATAL("Cannot find proc for dest %1 in call at %2",

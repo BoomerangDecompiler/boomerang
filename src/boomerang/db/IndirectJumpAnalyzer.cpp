@@ -662,7 +662,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
             Address pfunc = Address(prog->readNative4(addr));
 
-            if (prog->findFunction(pfunc) == nullptr) {
+            if (prog->getFunctionByAddr(pfunc) == nullptr) {
                 // A new, undecoded procedure
                 if (!SETTING(decodeChildren)) {
                     return false;

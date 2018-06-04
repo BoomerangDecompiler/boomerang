@@ -250,7 +250,7 @@ void Decompiler::onSignatureUpdated(Function *p)
 
 bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
 {
-    Function *p = m_project.getProg()->findFunction(name);
+    Function *p = m_project.getProg()->getFunctionByName(name);
 
     if (p->isLib()) {
         return false;
@@ -286,7 +286,7 @@ void Decompiler::stopWaiting()
 
 QString Decompiler::getSigFilePath(const QString& name)
 {
-    Function *function = m_project.getProg()->findFunction(name);
+    Function *function = m_project.getProg()->getFunctionByName(name);
 
     if (!function || !function->isLib() || !function->getSignature()) {
         return "";
@@ -311,7 +311,7 @@ void Decompiler::rereadLibSignatures()
 
 void Decompiler::renameProc(const QString& oldName, const QString& newName)
 {
-    Function *proc = m_project.getProg()->findFunction(oldName);
+    Function *proc = m_project.getProg()->getFunctionByName(oldName);
 
     if (proc) {
         proc->setName(newName);

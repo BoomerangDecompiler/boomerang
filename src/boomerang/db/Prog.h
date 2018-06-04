@@ -98,23 +98,25 @@ public:
      * \returns Pointer to the Function, or nullptr if this is a deleted
      * (not to be decoded) address
      */
-    Function *createFunction(Address entryAddr);
+    Function *getOrCreateFunction(Address entryAddr);
+
+    /// \returns the function with entry address \p entryAddr,
+    /// or nullptr if no such function exists.
+    Function *getFunctionByAddr(Address entryAddr) const;
+
+    /// \returns the function with name \p name,
+    /// or nullptr if no such function exists.
+    Function *getFunctionByName(const QString& name) const;
 
     /// Removes the function with name \p name.
     /// If there is no such function, nothing happens.
-    void removeFunction(const QString& name);
+    /// \returns true if function was found and removed.
+    bool removeFunction(const QString& name);
 
     /// \param userOnly If true, only count user functions, not lbrary functions.
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
-    /// \returns the function with entry address \p entryAddr,
-    /// or nullptr if no such function exists.
-    Function *findFunction(Address entryAddr) const;
-
-    /// \returns the function with name \p name,
-    /// or nullptr if no such function exists.
-    Function *findFunction(const QString& name) const;
 
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }

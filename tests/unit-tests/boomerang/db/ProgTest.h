@@ -27,6 +27,14 @@ private slots:
     /// Test setting and reading name
     void testName();
 
+    void testCreateModule();
+
+    void testGetOrCreateFunction();
+    void testGetFunctionByAddr();
+    void testGetFunctionByName();
+    void testRemoveFunction();
+    void testGetNumFunctions();
+
 private:
     Prog *m_prog;
 };

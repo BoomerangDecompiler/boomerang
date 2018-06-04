@@ -148,7 +148,7 @@ void Function::setParent(Module *c)
 Function *Function::getFirstCaller()
 {
     if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
-        m_firstCaller     = m_prog->findFunction(m_firstCallerAddr);
+        m_firstCaller     = m_prog->getFunctionByAddr(m_firstCallerAddr);
         m_firstCallerAddr = Address::INVALID;
     }
 
