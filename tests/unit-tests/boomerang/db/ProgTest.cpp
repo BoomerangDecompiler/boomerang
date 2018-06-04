@@ -148,5 +148,23 @@ void ProgTest::testGetNumFunctions()
 }
 
 
+void ProgTest::testAddEntryPoint()
+{
+    Prog prog("test", nullptr);
+
+    QVERIFY(prog.addEntryPoint(Address::INVALID) == nullptr);
+
+    Function *entry = prog.addEntryPoint(Address(0x1000));
+    QVERIFY(entry != nullptr);
+
+    // add existing entry point
+    QCOMPARE(prog.addEntryPoint(Address(0x1000)), entry);
+
+    // add entry point that is blocked by a lib proc
+    LibProc *libProc = prog.getOrCreateLibraryProc("testProc");
+    libProc->setEntryAddress(Address(0x2000));
+    QVERIFY(prog.addEntryPoint(Address(0x2000)) == nullptr);
+}
+
 
 QTEST_GUILESS_MAIN(ProgTest)

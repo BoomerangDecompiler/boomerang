@@ -133,9 +133,10 @@ public:
     /// Decode from entry point given as an agrument
     void decodeEntryPoint(Address entryAddr);
 
-    /// If \p entryAddress is the entry address of a function,
-    /// add the function to the list of entry points.
-    void addEntryPoint(Address entryAddr);
+    /// Add an entry procedure at the specified address.
+    /// This will fail if \p entryAddr is already the entry address of a LibProc.
+    /// \returns the new or exising entry procedure, or nullptr on failure.
+    Function *addEntryPoint(Address entryAddr);
 
     /// Decode a procedure fragment of \p proc starting at address \p addr.
     void decodeFragment(UserProc *proc, Address addr);

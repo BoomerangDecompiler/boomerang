@@ -230,7 +230,7 @@ void Module::setLocationMap(Address loc, Function *fnc)
     if (fnc == nullptr) {
         size_t count = m_labelsToProcs.erase(loc);
         Q_UNUSED(count);
-        assert(count == 1);
+        assert(count <= 1);
     }
     else {
         m_labelsToProcs[loc] = fnc;
@@ -340,9 +340,9 @@ Function *Module::getFunction(const QString& name) const
 }
 
 
-Function *Module::getFunction(Address loc) const
+Function *Module::getFunction(Address entryAddr) const
 {
-    auto iter = m_labelsToProcs.find(loc);
+    auto iter = m_labelsToProcs.find(entryAddr);
 
     return (iter != m_labelsToProcs.end()) ? iter->second : nullptr;
 }

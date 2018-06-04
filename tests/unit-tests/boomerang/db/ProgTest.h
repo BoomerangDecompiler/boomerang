@@ -36,6 +36,8 @@ private slots:
     void testRemoveFunction();
     void testGetNumFunctions();
 
+    void testAddEntryPoint();
+
 private:
     Prog *m_prog;
 };

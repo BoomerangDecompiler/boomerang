@@ -901,7 +901,7 @@ void Prog::decodeEntryPoint(Address entryAddr)
 }
 
 
-void Prog::addEntryPoint(Address entryAddr)
+Function *Prog::addEntryPoint(Address entryAddr)
 {
     Function *func = getFunctionByAddr(entryAddr);
     if (!func) {
@@ -910,6 +910,10 @@ void Prog::addEntryPoint(Address entryAddr)
 
     if (func && !func->isLib()) {
         m_entryProcs.push_back(static_cast<UserProc *>(func));
+        return func;
+    }
+    else {
+        return nullptr;
     }
 }
 
