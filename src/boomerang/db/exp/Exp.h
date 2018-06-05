@@ -679,6 +679,9 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 
 
 // ppc
+#define PPC_REG_SP      (1)
+
+#define PPC_REG_G0      (0)
 #define PPC_REG_G1      (1)
 #define PPC_REG_G2      (2)
 #define PPC_REG_G3      (3)
@@ -691,6 +694,8 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 #define PPC_REG_G10     (10)
 #define PPC_REG_G11     (11)
 #define PPC_REG_G12     (12)
+#define PPC_REG_G13     (13)
+#define PPC_REG_G31     (31)
 #define PPC_REG_CR0     (64) // Control register
 
 
