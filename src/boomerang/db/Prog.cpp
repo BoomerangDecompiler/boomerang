@@ -153,21 +153,19 @@ void Prog::finishDecode()
 
             UserProc *p = static_cast<UserProc *>(func);
 
-            if (!p->isDecoded()) {
-                continue;
+            if (p->isDecoded()) {
+                p->assignProcsToCalls();
+                p->finalSimplify();
             }
-
-            p->assignProcsToCalls();
-            p->finalSimplify();
         }
     }
 }
 
 
-bool Prog::isModuleUsed(Module *c) const
+bool Prog::isModuleUsed(Module *module) const
 {
     // TODO: maybe module can have no procedures and still be used ?
-    return !c->empty();
+    return !module->empty();
 }
 
 

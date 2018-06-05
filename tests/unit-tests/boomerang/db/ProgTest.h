@@ -38,6 +38,8 @@ private slots:
 
     void testAddEntryPoint();
 
+    void testIsModuleUsed();
+
 private:
     Prog *m_prog;
 };

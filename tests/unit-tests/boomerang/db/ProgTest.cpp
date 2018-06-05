@@ -167,4 +167,15 @@ void ProgTest::testAddEntryPoint()
 }
 
 
+void ProgTest::testIsModuleUsed()
+{
+    Prog prog("test", nullptr);
+
+    QVERIFY(!prog.isModuleUsed(prog.getRootModule())); // no functions present in module
+
+    prog.getOrCreateFunction(Address(0x1000));
+    QVERIFY(prog.isModuleUsed(prog.getRootModule()));
+}
+
+
 QTEST_GUILESS_MAIN(ProgTest)
