@@ -32,18 +32,9 @@ void rux_encrypt(__size32 param1)
     unsigned char cl; 		// r9
     unsigned int eax; 		// r24
     unsigned int ecx; 		// r25
-    __size32 edi; 		// r31
-    __size32 esi; 		// r30
     __size32 esp; 		// r28
     int local0; 		// m[esp - 6]
 
-    edi = (esp - 40);
-    esi = 0x8048614;
-    ecx = 8;
-    *(__size32*)edi = *esi;
-    esi +=  (DF == 0) ? 4 : -4;
-    edi +=  (DF == 0) ? 4 : -4;
-    ecx = ecx - 1;
     local0 = 0;
     while (local0 <= (unsigned int)3) {
         bl_1 = *((local0) + param1);

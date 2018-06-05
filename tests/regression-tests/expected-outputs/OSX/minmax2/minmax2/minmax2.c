@@ -4,16 +4,16 @@ __size32 test(__size32 param1, int param2);
 /** address: 0x00001d44 */
 int main(int argc, char *argv[])
 {
-    __size64 f29; 		// r61
     int g3; 		// r3
     __size32 g30; 		// r30
+    __size32 g31; 		// r31
 
-    f29 = test(f29, -5);
-    f29 = test(f29, -2);
-    g30 = test(f29, 0); /* Warning: also results in f29 */
+    g31 = test(g31, -5);
+    g31 = test(g31, -2);
+    g30 = test(g31, 0); /* Warning: also results in g31 */
     g3 = *(g30 + 104);
-    f29 = test(f29, g3);
-    test(f29, 5);
+    g31 = test(g31, g3);
+    test(g31, 5);
     return 0;
 }
 
@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
 __size32 test(__size32 param1, int param2)
 {
     __size32 g1; 		// r1
-    __size32 g30; 		// r30
     int local0; 		// m[g1 + 24]
 
     local0 = param2;
@@ -31,6 +30,6 @@ __size32 test(__size32 param1, int param2)
     if (local0 > 3) {
     }
     printf(/* machine specific */ (int) LR + 772);
-    return g30; /* WARNING: Also returning: f29 := param1, g30 := (g1 - 80), f29_1 := param1 */
+    return param1; /* WARNING: Also returning: g31 := param1, g30 := (g1 - 80), g31 := /* machine specific */ (int) LR */
 }
 

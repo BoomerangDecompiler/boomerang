@@ -12,8 +12,8 @@ int main(int argc, char *argv[])
     union { char *[] *; __size32; } g4; 		// r4
     __size32 g9; 		// r9
     int local0; 		// m[g1 + 8]
-    __size32 local1; 		// m[g1 + 112]
-    __size32 local2; 		// m[g1 + 116]
+    __size32 local1; 		// m[g1 - 4]
+    __size32 local2; 		// m[g1 - 8]
     __size32 local3; 		// m[g1 - 32]
     __size32 local4; 		// m[g1 - 96]
     __size32 tmp + 30; 		// r[tmp + 30]

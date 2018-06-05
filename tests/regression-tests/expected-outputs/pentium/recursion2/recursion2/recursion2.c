@@ -1,36 +1,36 @@
-int res;
-int h_i = 3;
 int f_g = 3;
-int c_d = 3;
-int g_f = 3;
-int j_k = 3;
+int res;
 int e_c = 3;
 int d_e = 3;
+int g_f = 3;
+int h_i = 3;
 int c_j = 3;
 int k_e = 3;
-int b_c = 3;
 int l_b = 3;
+int j_k = 3;
+int c_f = 3;
+int c_d = 3;
+int b_c = 3;
 int c_h = 3;
 int c_l = 3;
-int c_f = 3;
-int res;
-int h_i = 3;
 int f_g = 3;
-int c_d = 3;
-int g_f = 3;
-int j_k = 3;
+int res;
 int e_c = 3;
 int d_e = 3;
+int g_f = 3;
+int h_i = 3;
 int c_j = 3;
 int k_e = 3;
-int b_c = 3;
 int l_b = 3;
+int j_k = 3;
+int c_f = 3;
+int c_d = 3;
+int b_c = 3;
 int c_h = 3;
 int c_l = 3;
-int c_f = 3;
 int main(int argc, char *argv[]);
 __size32 b(__size32 param1, __size32 param2);
-__size32 c(int param1, __size32 param2, __size32 param3);
+__size32 c(__size32 param1, __size32 param2);
 __size32 d(__size32 param1, __size32 param2);
 void f();
 void h();
@@ -59,56 +59,53 @@ __size32 b(__size32 param1, __size32 param2)
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
     __size32 edx_1; 		// r26{0}
-    __size32 local4; 		// param1{0}
-    __size32 local5; 		// param2{0}
+    __size32 local3; 		// param1{0}
+    __size32 local4; 		// param2{0}
 
     b_c = b_c - 1;
-    local4 = param1;
-    local5 = param2;
+    local3 = param1;
+    local4 = param2;
     if (b_c >= 0) {
-        ecx = c(param1, param2, param1); /* Warning: also results in edx_1 */
+        ecx = c(param2, param1); /* Warning: also results in edx_1 */
         edx = ecx;
         ecx = edx_1;
-        local4 = ecx;
-        local5 = edx;
+        local3 = ecx;
+        local4 = edx;
     }
-    param1 = local4;
-    param2 = local5;
+    param1 = local3;
+    param2 = local4;
     res += 2;
     return param1; /* WARNING: Also returning: edx := param2 */
 }
 
 /** address: 0x08048408 */
-__size32 c(int param1, __size32 param2, __size32 param3)
+__size32 c(__size32 param1, __size32 param2)
 {
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
     __size32 edx_1; 		// r26{0}
     __size32 edx_2; 		// r26{0}
     __size32 edx_3; 		// r26{0}
-    __size32 esp; 		// r28
-    int local0; 		// m[esp - 4]
-    __size32 local3; 		// param2{0}
-    __size32 local4; 		// param3{0}
+    __size32 local3; 		// param1{0}
+    __size32 local4; 		// param2{0}
     __size32 local5; 		// ecx{0}
     __size32 local6; 		// edx{0}
 
-    esp = &param1;
     c_d = c_d - 1;
-    local3 = param2;
-    local4 = param3;
+    local3 = param1;
+    local4 = param2;
     if (c_d >= 0) {
-        ecx = d(param3, param2); /* Warning: also results in edx_1, esp */
+        ecx = d(param2, param1); /* Warning: also results in edx_1 */
         edx = ecx;
         ecx = edx_1;
         local3 = ecx;
         local4 = edx;
     }
-    param2 = local3;
-    param3 = local4;
+    param1 = local3;
+    param2 = local4;
     c_f = c_f - 1;
-    local5 = param2;
-    local6 = param3;
+    local5 = param1;
+    local6 = param2;
     if (c_f >= 0) {
         f();
     }
@@ -118,7 +115,7 @@ __size32 c(int param1, __size32 param2, __size32 param3)
     }
     c_j = c_j - 1;
     if (c_j >= 0) {
-        ecx = j(param3, param2); /* Warning: also results in edx_2 */
+        ecx = j(param2, param1); /* Warning: also results in edx_2 */
         edx = ecx;
         ecx = edx_2;
         local5 = ecx;
@@ -239,21 +236,21 @@ __size32 e(__size32 param1, __size32 param2)
     __size32 ecx; 		// r25
     __size32 edx; 		// r26
     __size32 edx_1; 		// r26{0}
-    __size32 local4; 		// param1{0}
-    __size32 local5; 		// param2{0}
+    __size32 local3; 		// param1{0}
+    __size32 local4; 		// param2{0}
 
     e_c = e_c - 1;
-    local4 = param1;
-    local5 = param2;
+    local3 = param1;
+    local4 = param2;
     if (e_c >= 0) {
-        ecx = c(param1, param2, param1); /* Warning: also results in edx_1 */
+        ecx = c(param2, param1); /* Warning: also results in edx_1 */
         edx = ecx;
         ecx = edx_1;
-        local4 = ecx;
-        local5 = edx;
+        local3 = ecx;
+        local4 = edx;
     }
-    param1 = local4;
-    param2 = local5;
+    param1 = local3;
+    param2 = local4;
     res += 7;
     return param1; /* WARNING: Also returning: edx := param2 */
 }

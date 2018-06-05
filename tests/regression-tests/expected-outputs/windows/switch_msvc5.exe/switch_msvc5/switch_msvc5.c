@@ -1,13 +1,13 @@
 union { __size32 *; int; } global120_408908[9999999];
-int global55_408770 = 0x406750;
 unsigned int global0_408ce0;
+__size32 global45_406754 = 0x406750;// 4 bytes
+__size32 global36_406760 = -1;// 4 bytes
 __size32 global2_408be0[9999999];
 int global38_406750 = 0x406750;
-__size32 global36_406760 = -1;// 4 bytes
 __size32 global54_408bd4;// 4 bytes
-__size32 global45_406754 = 0x406750;// 4 bytes
 unsigned int global90_408774 = 480;
 int global94_408bd0;
+int global55_408770 = 0x406750;
 int global107_408bcc;
 __size32 global118_408910 = 0;// 4 bytes
 unsigned int global142_408794[9999999];
@@ -15,15 +15,15 @@ union { void *; __size32; } global279_406540;
 int global302_406070 = 0x40507c;
 int global311_406074 = 0x40506c;
 union { __size32 *; int; } global120_408908[9999999];
-int global55_408770 = 0x406750;
 unsigned int global0_408ce0;
+__size32 global45_406754 = 0x406750;// 4 bytes
+__size32 global36_406760 = -1;// 4 bytes
 __size32 global2_408be0[9999999];
 int global38_406750 = 0x406750;
-__size32 global36_406760 = -1;// 4 bytes
 __size32 global54_408bd4;// 4 bytes
-__size32 global45_406754 = 0x406750;// 4 bytes
 unsigned int global90_408774 = 480;
 int global94_408bd0;
+int global55_408770 = 0x406750;
 int global107_408bcc;
 __size32 global118_408910 = 0;// 4 bytes
 unsigned int global142_408794[9999999];
@@ -47,7 +47,7 @@ __size32 proc_0x004043d0(unsigned int param1);
 __size32 proc_0x00403940(int param1, __size8 param2, unsigned char param3, int param4, int param5, int param6, int param7);
 __size32 proc_0x00404380(unsigned int param1, unsigned int param2);
 __size32 proc_0x00403b80(union { unsigned int; __size32 *; } param1, unsigned int param2, union { unsigned char *; unsigned int; } param3, __size32 param4, unsigned int param5, __size32 param6, unsigned int param7);
-__size32 proc_0x004035e0(unsigned char param1, __size32 param2, int param3);
+__size32 proc_0x004035e0(unsigned char param1, int param2, int param3);
 __size32 proc_0x00401cc0(int param1, union { __size32 *; __size32; } param2, __size8 param3, unsigned char param4, __size8 param5, int param6, __size32 param7, __size32 param8, __size32 param9, __size32 param10);
 __size32 proc_0x00401d90(union { __size32 *; __size32; } param1);
 __size32 proc_0x00401d10(__size32 param1, int param2, __size32 param3, __size32 param4, __size8 param5, __size8 param6, unsigned char param7, __size8 param8, int param9, int param10);
@@ -373,18 +373,18 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     __size32 eax_15; 		// r24{0}
     __size32 eax_16; 		// r24{0}
     __size32 eax_17; 		// r24{0}
-    int eax_18; 		// r24{0}
-    int eax_19; 		// r24{0}
+    __size32 eax_18; 		// r24{0}
+    __size32 eax_19; 		// r24{0}
     __size32 eax_2; 		// r24{0}
     int eax_20; 		// r24{0}
-    __size32 eax_21; 		// r24{0}
-    __size32 eax_22; 		// r24{0}
+    int eax_21; 		// r24{0}
+    int eax_22; 		// r24{0}
     int eax_23; 		// r24{0}
-    int eax_24; 		// r24{0}
-    int eax_25; 		// r24{0}
-    int eax_26; 		// r24{0}
-    unsigned int eax_27; 		// r24{0}
-    unsigned int eax_28; 		// r24{0}
+    unsigned int eax_24; 		// r24{0}
+    unsigned int eax_25; 		// r24{0}
+    unsigned int eax_26; 		// r24{0}
+    int eax_27; 		// r24{0}
+    int eax_28; 		// r24{0}
     int eax_29; 		// r24{0}
     __size32 eax_3; 		// r24{0}
     int eax_30; 		// r24{0}
@@ -595,7 +595,7 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     __size32 edi_17; 		// r31{0}
     __size32 edi_18; 		// r31{0}
     int edi_19; 		// r31{0}
-    __size32 edi_2; 		// r31{0}
+    union { int; unsigned int *; } edi_2; 		// r31{0}
     int edi_20; 		// r31{0}
     union { unsigned int *; int; } edi_21; 		// r31{0}
     __size32 edi_22; 		// r31{0}
@@ -606,7 +606,7 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     __size32 edi_27; 		// r31{0}
     __size32 edi_28; 		// r31{0}
     __size32 edi_29; 		// r31{0}
-    union { unsigned char *; int; } edi_3; 		// r31{0}
+    __size32 edi_3; 		// r31{0}
     int edi_30; 		// r31{0}
     int edi_31; 		// r31{0}
     int edi_32; 		// r31{0}
@@ -617,7 +617,7 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     union { __size32; int *; } edi_37; 		// r31{0}
     int edi_38; 		// r31{0}
     __size32 edi_39; 		// r31{0}
-    union { unsigned char *; int; } edi_4; 		// r31{0}
+    __size32 edi_4; 		// r31{0}
     __size32 edi_40; 		// r31{0}
     union { __size32; int *; } edi_41; 		// r31{0}
     union { __size32; int *; } edi_42; 		// r31{0}
@@ -628,15 +628,15 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     int edi_47; 		// r31{0}
     int edi_48; 		// r31{0}
     int edi_49; 		// r31{0}
-    union { unsigned char *; int; } edi_5; 		// r31{0}
+    __size32 edi_5; 		// r31{0}
     int edi_50; 		// r31{0}
     int edi_51; 		// r31{0}
     union { int; unsigned int *; } edi_52; 		// r31{0}
     union { int; unsigned int *; } edi_53; 		// r31{0}
-    union { int; unsigned int *; } edi_6; 		// r31{0}
-    __size32 edi_7; 		// r31{0}
-    __size32 edi_8; 		// r31{0}
-    __size32 edi_9; 		// r31{0}
+    __size32 edi_6; 		// r31{0}
+    union { unsigned char *; int; } edi_7; 		// r31{0}
+    union { unsigned char *; int; } edi_8; 		// r31{0}
+    union { unsigned char *; int; } edi_9; 		// r31{0}
     int edx; 		// r26
     int edx_1; 		// r26{0}
     int edx_10; 		// r26{0}
@@ -679,13 +679,13 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     unsigned int esi_13; 		// r30{0}
     int esi_14; 		// r30{0}
     int esi_15; 		// r30{0}
-    unsigned int esi_16; 		// r30{0}
-    int esi_17; 		// r30{0}
-    int esi_18; 		// r30{0}
+    int esi_16; 		// r30{0}
+    unsigned int esi_17; 		// r30{0}
+    unsigned int esi_18; 		// r30{0}
     unsigned int esi_19; 		// r30{0}
     unsigned int esi_2; 		// r30{0}
     unsigned int esi_20; 		// r30{0}
-    unsigned int esi_21; 		// r30{0}
+    int esi_21; 		// r30{0}
     int esi_22; 		// r30{0}
     int esi_23; 		// r30{0}
     int esi_24; 		// r30{0}
@@ -852,9 +852,9 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     __size32 local100; 		// m[esp_115 - 592]{0}
     __size32 local101; 		// m[esp_115 - 592]{0}
     __size32 local102; 		// m[esp_115 - 592]{0}
-    __size32 local103; 		// m[esp_115 - 596]{0}
-    __size32 local104; 		// m[esp_115 - 596]{0}
-    __size32 local105; 		// m[esp_115 - 596]{0}
+    __size32 local103; 		// m[esp_115 - 592]{0}
+    __size32 local104; 		// m[esp_115 - 592]{0}
+    __size32 local105; 		// m[esp_115 - 592]{0}
     __size32 local106; 		// m[esp_115 - 596]{0}
     int local107; 		// m[esp_115 - 596]{0}
     int local108; 		// m[esp_115 - 596]{0}
@@ -872,75 +872,75 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     __size32 local119; 		// m[esp_115 - 596]{0}
     int local12; 		// m[esp_115 + 8]{0}
     __size32 local120; 		// m[esp_115 - 596]{0}
-    unsigned int local121; 		// m[esp_115 - 600]{0}
-    int local122; 		// m[esp_115 - 600]{0}
-    int local123; 		// m[esp_115 - 600]{0}
-    int local124; 		// m[esp_115 - 600]{0}
-    int local125; 		// m[esp_115 - 600]{0}
+    __size32 local121; 		// m[esp_115 - 596]{0}
+    __size32 local122; 		// m[esp_115 - 596]{0}
+    __size32 local123; 		// m[esp_115 - 596]{0}
+    __size32 local124; 		// m[esp_115 - 596]{0}
+    unsigned int local125; 		// m[esp_115 - 600]{0}
     int local126; 		// m[esp_115 - 600]{0}
     int local127; 		// m[esp_115 - 600]{0}
-    unsigned int local128; 		// m[esp_115 - 600]{0}
+    int local128; 		// m[esp_115 - 600]{0}
     int local129; 		// m[esp_115 - 600]{0}
     int local13; 		// m[esp_115 + 8]{0}
     int local130; 		// m[esp_115 - 600]{0}
-    unsigned int local131; 		// m[esp_115 - 600]{0}
+    int local131; 		// m[esp_115 - 600]{0}
     unsigned int local132; 		// m[esp_115 - 600]{0}
-    unsigned int local133; 		// m[esp_115 - 600]{0}
-    unsigned int local134; 		// m[esp_115 - 600]{0}
+    int local133; 		// m[esp_115 - 600]{0}
+    int local134; 		// m[esp_115 - 600]{0}
     unsigned int local135; 		// m[esp_115 - 600]{0}
     unsigned int local136; 		// m[esp_115 - 600]{0}
     unsigned int local137; 		// m[esp_115 - 600]{0}
     unsigned int local138; 		// m[esp_115 - 600]{0}
-    __size32 local139; 		// m[esp_115 - 604]{0}
+    unsigned int local139; 		// m[esp_115 - 600]{0}
     int local14; 		// m[esp_115 + 8]{0}
-    int local140; 		// m[esp_115 - 604]{0}
-    int local141; 		// m[esp_115 - 604]{0}
-    int local142; 		// m[esp_115 - 604]{0}
-    int local143; 		// m[esp_115 - 604]{0}
+    unsigned int local140; 		// m[esp_115 - 600]{0}
+    unsigned int local141; 		// m[esp_115 - 600]{0}
+    unsigned int local142; 		// m[esp_115 - 600]{0}
+    __size32 local143; 		// m[esp_115 - 604]{0}
     int local144; 		// m[esp_115 - 604]{0}
     int local145; 		// m[esp_115 - 604]{0}
-    __size32 local146; 		// m[esp_115 - 604]{0}
+    int local146; 		// m[esp_115 - 604]{0}
     int local147; 		// m[esp_115 - 604]{0}
     int local148; 		// m[esp_115 - 604]{0}
-    __size32 local149; 		// m[esp_115 - 604]{0}
+    int local149; 		// m[esp_115 - 604]{0}
     __size32 local15; 		// m[esp_115 + 8]{0}
     __size32 local150; 		// m[esp_115 - 604]{0}
-    __size32 local151; 		// m[esp_115 - 604]{0}
-    __size32 local152; 		// m[esp_115 - 604]{0}
+    int local151; 		// m[esp_115 - 604]{0}
+    int local152; 		// m[esp_115 - 604]{0}
     __size32 local153; 		// m[esp_115 - 604]{0}
     __size32 local154; 		// m[esp_115 - 604]{0}
     __size32 local155; 		// m[esp_115 - 604]{0}
     __size32 local156; 		// m[esp_115 - 604]{0}
-    int local157; 		// tmph{0}
-    int local158; 		// tmph{0}
-    __size16 local159; 		// tmph{0}
+    __size32 local157; 		// m[esp_115 - 604]{0}
+    __size32 local158; 		// m[esp_115 - 604]{0}
+    __size32 local159; 		// m[esp_115 - 604]{0}
     int local16; 		// m[esp_115 + 8]{0}
-    __size16 local160; 		// tmph{0}
+    __size32 local160; 		// m[esp_115 - 604]{0}
     int local161; 		// tmph{0}
     int local162; 		// tmph{0}
     __size16 local163; 		// tmph{0}
-    int local164; 		// tmph{0}
-    __size16 local165; 		// tmph{0}
-    __size16 local166; 		// tmph{0}
+    __size16 local164; 		// tmph{0}
+    int local165; 		// tmph{0}
+    int local166; 		// tmph{0}
     __size16 local167; 		// tmph{0}
     int local168; 		// tmph{0}
-    int local169; 		// tmph{0}
+    __size16 local169; 		// tmph{0}
     int local17; 		// m[esp_115 + 8]{0}
-    int local170; 		// tmph{0}
-    int local171; 		// tmph{0}
+    __size16 local170; 		// tmph{0}
+    __size16 local171; 		// tmph{0}
     int local172; 		// tmph{0}
     int local173; 		// tmph{0}
-    __size16 local174; 		// tmph{0}
+    int local174; 		// tmph{0}
     int local175; 		// tmph{0}
     int local176; 		// tmph{0}
     int local177; 		// tmph{0}
-    int local178; 		// tmph{0}
+    __size16 local178; 		// tmph{0}
     int local179; 		// tmph{0}
     __size32 local18; 		// m[esp_115 + 8]{0}
-    __size16 local180; 		// tmph{0}
-    __size16 local181; 		// tmph{0}
-    __size16 local182; 		// tmph{0}
-    __size16 local183; 		// tmph{0}
+    int local180; 		// tmph{0}
+    int local181; 		// tmph{0}
+    int local182; 		// tmph{0}
+    int local183; 		// tmph{0}
     __size16 local184; 		// tmph{0}
     __size16 local185; 		// tmph{0}
     __size16 local186; 		// tmph{0}
@@ -954,195 +954,199 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     __size16 local193; 		// tmph{0}
     __size16 local194; 		// tmph{0}
     __size16 local195; 		// tmph{0}
-    int local196; 		// tmph{0}
-    int local197; 		// tmph{0}
-    int local198; 		// tmph{0}
+    __size16 local196; 		// tmph{0}
+    __size16 local197; 		// tmph{0}
+    __size16 local198; 		// tmph{0}
     __size16 local199; 		// tmph{0}
     unsigned int local2; 		// m[esp - 600]
     __size32 local20; 		// m[esp_115 + 8]{0}
-    __size16 local200; 		// tmph{0}
-    __size16 local201; 		// tmph{0}
-    __size16 local202; 		// tmph{0}
+    int local200; 		// tmph{0}
+    int local201; 		// tmph{0}
+    int local202; 		// tmph{0}
     __size16 local203; 		// tmph{0}
     __size16 local204; 		// tmph{0}
     __size16 local205; 		// tmph{0}
-    unsigned short local206; 		// param3{0}
-    unsigned short local207; 		// param4{0}
-    unsigned char local208; 		// param5{0}
-    unsigned int local209; 		// param6{0}
+    __size16 local206; 		// tmph{0}
+    __size16 local207; 		// tmph{0}
+    __size16 local208; 		// tmph{0}
+    __size16 local209; 		// tmph{0}
     __size32 local21; 		// m[esp_115 + 8]{0}
-    unsigned char local210; 		// param7{0}
-    union { char; unsigned int; } local211; 		// bl_1{0}
-    char local212; 		// param8{0}
-    char local213; 		// param9{0}
-    char local214; 		// param10{0}
-    char local215; 		// param11{0}
-    int local216; 		// ebx_24{0}
-    int local217; 		// esp_12{0}
-    int local218; 		// ebp_11{0}
-    unsigned int local219; 		// esi_16{0}
+    unsigned short local210; 		// param3{0}
+    unsigned short local211; 		// param4{0}
+    unsigned char local212; 		// param5{0}
+    unsigned int local213; 		// param6{0}
+    unsigned char local214; 		// param7{0}
+    union { char; unsigned int; } local215; 		// bl_1{0}
+    char local216; 		// param8{0}
+    char local217; 		// param9{0}
+    char local218; 		// param10{0}
+    char local219; 		// param11{0}
     __size32 local22; 		// m[esp_115 + 8]{0}
-    union { unsigned int *; int; } local220; 		// edi_6{0}
-    __size16 local221; 		// local160{0}
-    __size32 local222; 		// local20{0}
-    unsigned char local223; 		// local39{0}
-    int local224; 		// local78{0}
-    __size32 local225; 		// local95{0}
-    __size32 local226; 		// local118{0}
-    unsigned int local227; 		// local131{0}
-    __size32 local228; 		// local149{0}
-    unsigned char local229; 		// al{0}
+    int local220; 		// ebx_24{0}
+    int local221; 		// esp_12{0}
+    int local222; 		// ebp_11{0}
+    unsigned int local223; 		// esi_20{0}
+    union { unsigned int *; int; } local224; 		// edi_2{0}
+    __size16 local225; 		// local164{0}
+    __size32 local226; 		// local18{0}
+    unsigned char local227; 		// local40{0}
+    int local228; 		// local80{0}
+    __size32 local229; 		// local99{0}
     __size32 local23; 		// m[esp_115 + 8]{0}
-    int local230; 		// eax_8{0}
-    unsigned int local231; 		// cl{0}
-    char local232; 		// ah{0}
-    unsigned char local233; 		// dl{0}
-    union { unsigned int; __size8; char; } local234; 		// bl_30{0}
-    int local235; 		// ebx_26{0}
-    int local236; 		// esp_83{0}
-    union { int; unsigned int *; } local237; 		// edi_21{0}
-    unsigned short local238; 		// ax{0}
-    unsigned short local239; 		// cx{0}
+    __size32 local230; 		// local116{0}
+    unsigned int local231; 		// local135{0}
+    __size32 local232; 		// local153{0}
+    unsigned char local233; 		// al{0}
+    int local234; 		// eax_7{0}
+    unsigned int local235; 		// cl{0}
+    char local236; 		// ah{0}
+    unsigned char local237; 		// dl{0}
+    union { unsigned int; __size8; char; } local238; 		// bl_30{0}
+    int local239; 		// ebx_26{0}
     __size32 local24; 		// m[esp_115 + 8]{0}
-    int local240; 		// esp_86{0}
-    int local241; 		// ebp_14{0}
-    int local242; 		// ecx{0}
-    union { int *; __size32; } local243; 		// edi_37{0}
-    int local244; 		// ecx_10{0}
-    int local245; 		// esi_18{0}
-    union { __size16 *; int; } local246; 		// eax_125{0}
-    unsigned int local247; 		// esi_25{0}
-    int local248; 		// eax_39{0}
-    __size16 local249; 		// local167{0}
+    int local240; 		// esp_83{0}
+    union { int; unsigned int *; } local241; 		// edi_21{0}
+    unsigned short local242; 		// ax{0}
+    unsigned short local243; 		// cx{0}
+    int local244; 		// esp_86{0}
+    int local245; 		// ebp_14{0}
+    int local246; 		// ecx{0}
+    union { int *; __size32; } local247; 		// edi_37{0}
+    int local248; 		// ecx_10{0}
+    int local249; 		// esi_16{0}
     __size32 local25; 		// m[esp_115 + 8]{0}
-    union { unsigned int *; int; } local250; 		// eax_126{0}
-    unsigned int local251; 		// esi_30{0}
-    int local252; 		// eax_40{0}
-    union { unsigned int; __size8; char; } local253; 		// bl_43{0}
-    int local254; 		// ebx_23{0}
-    __size8 local255; 		// cl_5{0}
-    __size8 local256; 		// bl_41{0}
-    int local257; 		// eax_128{0}
-    int local258; 		// ebx_20{0}
-    int local259; 		// esp_91{0}
-    __size32 local26; 		// m[esp_115 + 8]{0}
-    __size32 local260; 		// ebp_25{0}
-    unsigned int local261; 		// esi_45{0}
-    __size32 local262; 		// edi{0}
-    __size16 local263; 		// local159{0}
-    __size32 local264; 		// local15{0}
-    unsigned char local265; 		// local36{0}
-    int local266; 		// local75{0}
-    __size32 local267; 		// local92{0}
-    __size32 local268; 		// local113{0}
-    unsigned int local269; 		// local128{0}
+    union { __size16 *; int; } local250; 		// eax_125{0}
+    unsigned int local251; 		// esi_25{0}
+    int local252; 		// eax_39{0}
+    __size16 local253; 		// local171{0}
+    union { unsigned int *; int; } local254; 		// eax_126{0}
+    unsigned int local255; 		// esi_30{0}
+    int local256; 		// eax_40{0}
+    union { unsigned int; __size8; char; } local257; 		// bl_43{0}
+    int local258; 		// ebx_23{0}
+    __size8 local259; 		// cl_5{0}
+    union { unsigned char *; int; } local26; 		// m[esp_115 + 8]{0}
+    __size8 local260; 		// bl_41{0}
+    int local261; 		// eax_128{0}
+    int local262; 		// ebx_20{0}
+    int local263; 		// esp_91{0}
+    __size32 local264; 		// ebp_25{0}
+    unsigned int local265; 		// esi_45{0}
+    __size32 local266; 		// edi{0}
+    __size16 local267; 		// local163{0}
+    __size32 local268; 		// local15{0}
+    unsigned char local269; 		// local35{0}
     union { unsigned char *; int; } local27; 		// m[esp_115 + 8]{0}
-    __size32 local270; 		// local146{0}
-    unsigned int local271; 		// local53{0}
-    int local272; 		// ebx_29{0}
-    int local273; 		// esp_94{0}
-    __size16 local274; 		// local166{0}
-    __size32 local275; 		// m[esp_115 + 8]{0}
-    unsigned char local276; 		// m[esp_115 - 540]{0}
-    int local277; 		// m[esp_115 - 576]{0}
-    __size32 local278; 		// m[esp_115 - 592]{0}
-    __size32 local279; 		// m[esp_115 - 596]{0}
-    union { unsigned char *; int; } local28; 		// m[esp_115 + 8]{0}
-    unsigned int local280; 		// local134{0}
-    __size32 local281; 		// m[esp_115 - 604]{0}
-    unsigned int local282; 		// local57{0}
-    int local283; 		// ecx{0}
-    union { int *; __size32; } local284; 		// edi_25{0}
-    int local285; 		// ecx_4{0}
-    int local286; 		// eax_129{0}
-    int local287; 		// ebx_39{0}
-    int local288; 		// esi_48{0}
-    int local289; 		// edi_43{0}
-    unsigned char local29; 		// m[esp_115 - 540]{0}
-    int local290; 		// edi_38{0}
-    int local291; 		// ebx_31{0}
-    union { int *; int; } local292; 		// eax_41{0}
-    int local293; 		// ebx_30{0}
-    int local294; 		// esi_33{0}
-    int local295; 		// edi_26{0}
-    char local296; 		// bl_32{0}
-    int local297; 		// ebx_32{0}
-    unsigned short local298; 		// ax{0}
-    unsigned short local299; 		// cx{0}
+    int local270; 		// local68{0}
+    __size32 local271; 		// local87{0}
+    __size32 local272; 		// local113{0}
+    unsigned int local273; 		// local132{0}
+    __size32 local274; 		// local150{0}
+    unsigned int local275; 		// local53{0}
+    int local276; 		// ebx_29{0}
+    int local277; 		// esp_94{0}
+    __size16 local278; 		// local170{0}
+    __size32 local279; 		// local23{0}
+    unsigned char local28; 		// m[esp_115 - 540]{0}
+    unsigned char local280; 		// m[esp_115 - 540]{0}
+    int local281; 		// m[esp_115 - 576]{0}
+    __size32 local282; 		// m[esp_115 - 592]{0}
+    __size32 local283; 		// m[esp_115 - 596]{0}
+    unsigned int local284; 		// m[esp_115 - 600]{0}
+    __size32 local285; 		// m[esp_115 - 604]{0}
+    unsigned int local286; 		// local57{0}
+    int local287; 		// ecx{0}
+    union { int *; __size32; } local288; 		// edi_25{0}
+    int local289; 		// ecx_4{0}
+    int local29; 		// m[esp_115 - 540]{0}
+    int local290; 		// eax_129{0}
+    int local291; 		// ebx_39{0}
+    int local292; 		// esi_48{0}
+    int local293; 		// edi_43{0}
+    int local294; 		// edi_38{0}
+    int local295; 		// ebx_31{0}
+    union { int *; int; } local296; 		// eax_41{0}
+    int local297; 		// ebx_30{0}
+    int local298; 		// esi_33{0}
+    int local299; 		// edi_26{0}
     __size32 local3; 		// m[esp - 604]
     int local30; 		// m[esp_115 - 540]{0}
-    unsigned int local300; 		// cl{0}
-    unsigned char local301; 		// dl{0}
-    char local302; 		// ch{0}
-    char local303; 		// dh{0}
-    char local304; 		// bh{0}
-    int local305; 		// ecx{0}
-    int local306; 		// ebx_27{0}
-    int local307; 		// esp_24{0}
-    int local308; 		// ebp_13{0}
-    __size16 local309; 		// local165{0}
+    char local300; 		// bl_32{0}
+    int local301; 		// ebx_32{0}
+    unsigned short local302; 		// ax{0}
+    unsigned short local303; 		// cx{0}
+    unsigned int local304; 		// cl{0}
+    unsigned char local305; 		// dl{0}
+    char local306; 		// ch{0}
+    char local307; 		// dh{0}
+    char local308; 		// bh{0}
+    int local309; 		// ecx{0}
     int local31; 		// m[esp_115 - 540]{0}
-    __size32 local310; 		// local22{0}
-    unsigned char local311; 		// local41{0}
-    int local312; 		// local81{0}
-    __size32 local313; 		// local97{0}
-    __size32 local314; 		// local103{0}
-    unsigned int local315; 		// local133{0}
-    __size32 local316; 		// local152{0}
-    unsigned int local317; 		// local56{0}
-    char local318; 		// bl_42{0}
-    int local319; 		// esp_25{0}
+    int local310; 		// ebx_27{0}
+    int local311; 		// esp_24{0}
+    int local312; 		// ebp_13{0}
+    __size16 local313; 		// local169{0}
+    __size32 local314; 		// local22{0}
+    unsigned char local315; 		// local42{0}
+    int local316; 		// local82{0}
+    __size32 local317; 		// local101{0}
+    __size32 local318; 		// local118{0}
+    unsigned int local319; 		// local137{0}
     int local32; 		// m[esp_115 - 540]{0}
-    char local320; 		// bl_31{0}
-    int local321; 		// esp_101{0}
-    char local322; 		// bl_33{0}
-    int local323; 		// eax_127{0}
-    int local324; 		// ebx_8{0}
-    int local325; 		// esp_104{0}
-    union { unsigned short *; unsigned int; } local326; 		// esi_53{0}
-    int local327; 		// edx_27{0}
-    int local328; 		// esp_110{0}
-    int local329; 		// bl_29{0}
+    __size32 local320; 		// local155{0}
+    unsigned int local321; 		// local56{0}
+    char local322; 		// bl_42{0}
+    int local323; 		// esp_25{0}
+    char local324; 		// bl_31{0}
+    int local325; 		// esp_101{0}
+    char local326; 		// bl_33{0}
+    int local327; 		// eax_127{0}
+    int local328; 		// ebx_8{0}
+    int local329; 		// esp_104{0}
     int local33; 		// m[esp_115 - 540]{0}
-    int local330; 		// edx_26{0}
-    int local331; 		// ebx_28{0}
-    int local332; 		// esp_107{0}
-    unsigned short local333; 		// ax{0}
-    unsigned short local334; 		// cx{0}
-    unsigned int local335; 		// cl{0}
-    unsigned char local336; 		// dl{0}
-    char local337; 		// ah{0}
-    char local338; 		// ch{0}
-    char local339; 		// dh{0}
+    union { unsigned short *; unsigned int; } local330; 		// esi_53{0}
+    int local331; 		// edx_27{0}
+    int local332; 		// esp_110{0}
+    int local333; 		// bl_29{0}
+    int local334; 		// edx_26{0}
+    int local335; 		// ebx_28{0}
+    int local336; 		// esp_107{0}
+    unsigned short local337; 		// ax{0}
+    unsigned short local338; 		// cx{0}
+    unsigned int local339; 		// cl{0}
     int local34; 		// m[esp_115 - 540]{0}
-    char local340; 		// bh{0}
-    int local341; 		// edx{0}
-    int local342; 		// ebx_25{0}
-    int local343; 		// esp_80{0}
-    int local344; 		// ebp_12{0}
-    __size16 local345; 		// local163{0}
-    __size32 local346; 		// local21{0}
-    unsigned char local347; 		// local40{0}
-    int local348; 		// local80{0}
-    __size32 local349; 		// local96{0}
-    int local35; 		// m[esp_115 - 540]{0}
-    __size32 local350; 		// local120{0}
-    unsigned int local351; 		// m[esp_115 - 600]{0}
-    __size32 local352; 		// local151{0}
-    unsigned int local353; 		// local55{0}
-    unsigned short local354; 		// param3{0}
-    unsigned short local355; 		// param4{0}
-    unsigned char local356; 		// param5{0}
-    unsigned int local357; 		// param6{0}
-    unsigned char local358; 		// param7{0}
-    char local359; 		// param9{0}
-    unsigned char local36; 		// m[esp_115 - 540]{0}
-    char local360; 		// param10{0}
-    char local361; 		// param11{0}
-    int local362; 		// param12{0}
-    union { __size32 *; int; } local363; 		// esp{0}
+    unsigned char local340; 		// dl{0}
+    char local341; 		// ah{0}
+    char local342; 		// ch{0}
+    char local343; 		// dh{0}
+    char local344; 		// bh{0}
+    int local345; 		// edx{0}
+    int local346; 		// ebx_25{0}
+    int local347; 		// esp_80{0}
+    int local348; 		// ebp_12{0}
+    __size16 local349; 		// local167{0}
+    unsigned char local35; 		// m[esp_115 - 540]{0}
+    __size32 local350; 		// m[esp_115 + 8]{0}
+    unsigned char local351; 		// local41{0}
+    int local352; 		// local81{0}
+    __size32 local353; 		// local100{0}
+    __size32 local354; 		// local117{0}
+    unsigned int local355; 		// local136{0}
+    __size32 local356; 		// local154{0}
+    unsigned int local357; 		// local55{0}
+    unsigned short local358; 		// param3{0}
+    unsigned short local359; 		// param4{0}
+    int local36; 		// m[esp_115 - 540]{0}
+    unsigned char local360; 		// param5{0}
+    unsigned int local361; 		// param6{0}
+    unsigned char local362; 		// param7{0}
+    char local363; 		// param9{0}
+    char local364; 		// param10{0}
+    char local365; 		// param11{0}
+    int local366; 		// param12{0}
+    union { __size32 *; int; } local367; 		// esp{0}
     int local37; 		// m[esp_115 - 540]{0}
-    int local38; 		// m[esp_115 - 540]{0}
+    unsigned char local38; 		// m[esp_115 - 540]{0}
     unsigned char local39; 		// m[esp_115 - 540]{0}
     int local4; 		// m[esp - 576]
     unsigned char local40; 		// m[esp_115 - 540]{0}
@@ -1194,21 +1198,21 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     int local82; 		// m[esp_115 - 576]{0}
     int local83; 		// m[esp_115 - 576]{0}
     int local84; 		// m[esp_115 - 576]{0}
-    __size32 local85; 		// m[esp_115 - 592]{0}
-    int local86; 		// m[esp_115 - 592]{0}
-    int local87; 		// m[esp_115 - 592]{0}
-    int local88; 		// m[esp_115 - 592]{0}
-    int local89; 		// m[esp_115 - 592]{0}
+    int local85; 		// m[esp_115 - 576]{0}
+    int local86; 		// m[esp_115 - 576]{0}
+    __size32 local87; 		// m[esp_115 - 592]{0}
+    __size32 local88; 		// m[esp_115 - 592]{0}
+    __size32 local89; 		// m[esp_115 - 592]{0}
     int local9; 		// m[esp_115 + 8]{0}
-    int local90; 		// m[esp_115 - 592]{0}
+    __size32 local90; 		// m[esp_115 - 592]{0}
     int local91; 		// m[esp_115 - 592]{0}
-    __size32 local92; 		// m[esp_115 - 592]{0}
+    int local92; 		// m[esp_115 - 592]{0}
     int local93; 		// m[esp_115 - 592]{0}
     int local94; 		// m[esp_115 - 592]{0}
-    __size32 local95; 		// m[esp_115 - 592]{0}
-    __size32 local96; 		// m[esp_115 - 592]{0}
-    __size32 local97; 		// m[esp_115 - 592]{0}
-    __size32 local98; 		// m[esp_115 - 592]{0}
+    int local95; 		// m[esp_115 - 592]{0}
+    int local96; 		// m[esp_115 - 592]{0}
+    int local97; 		// m[esp_115 - 592]{0}
+    int local98; 		// m[esp_115 - 592]{0}
     __size32 local99; 		// m[esp_115 - 592]{0}
 
     local0 = param13;
@@ -1224,784 +1228,784 @@ __size16 proc_0x00401330(unsigned int param1, union { int; unsigned char *; } pa
     edi_1 = param2 + 1;
     local5 = bl_5;
     local6 = param2 + 1;
-    local206 = param3;
-    local207 = param4;
-    local208 = param5;
-    local209 = param6;
-    local210 = param7;
-    local211 = bl_5;
-    local212 = param8;
-    local213 = param9;
-    local214 = param10;
-    local215 = param11;
-    local216 = ebx_1;
-    local217 = esp_4;
-    local218 = ebp_1;
-    local220 = edi_1;
-    local221 = tmph;
-    local222 = local8;
-    local223 = local29;
-    local224 = local68;
-    local225 = local85;
-    local226 = local106;
-    local227 = local121;
-    local228 = local139;
-    local354 = param3;
-    local355 = param4;
-    local356 = param5;
-    local357 = param6;
-    local358 = param7;
-    local359 = param9;
-    local360 = param10;
-    local361 = param11;
-    local362 = param12;
-    local363 = esp_4;
+    local210 = param3;
+    local211 = param4;
+    local212 = param5;
+    local213 = param6;
+    local214 = param7;
+    local215 = bl_5;
+    local216 = param8;
+    local217 = param9;
+    local218 = param10;
+    local219 = param11;
+    local220 = ebx_1;
+    local221 = esp_4;
+    local222 = ebp_1;
+    local224 = edi_1;
+    local225 = tmph;
+    local226 = local8;
+    local227 = local28;
+    local228 = local71;
+    local229 = local90;
+    local230 = local106;
+    local231 = local125;
+    local232 = local143;
+    local358 = param3;
+    local359 = param4;
+    local360 = param5;
+    local361 = param6;
+    local362 = param7;
+    local363 = param9;
+    local364 = param10;
+    local365 = param11;
+    local366 = param12;
+    local367 = esp_4;
     if (bl_5 != 0) {
         esi_1 = param1;
-        local219 = esi_1;
-        param3 = local206;
-        param4 = local207;
-        param5 = local208;
-        param6 = local209;
-        param7 = local210;
-        bl_1 = local211;
-        param8 = local212;
-        param9 = local213;
-        param10 = local214;
-        param11 = local215;
-        ebx_24 = local216;
-        esp_12 = local217;
-        ebp_11 = local218;
-        esi_16 = local219;
-        edi_6 = local220;
-        local160 = local221;
-        local20 = local222;
-        local39 = local223;
-        local78 = local224;
-        local95 = local225;
-        local118 = local226;
-        local131 = local227;
-        local149 = local228;
-        eax_9 = *(esp_12 + 28);
+        local223 = esi_1;
+        param3 = local210;
+        param4 = local211;
+        param5 = local212;
+        param6 = local213;
+        param7 = local214;
+        bl_1 = local215;
+        param8 = local216;
+        param9 = local217;
+        param10 = local218;
+        param11 = local219;
+        ebx_24 = local220;
+        esp_12 = local221;
+        ebp_11 = local222;
+        esi_20 = local223;
+        edi_2 = local224;
+        local164 = local225;
+        local18 = local226;
+        local40 = local227;
+        local80 = local228;
+        local99 = local229;
+        local116 = local230;
+        local135 = local231;
+        local153 = local232;
+        eax_4 = *(esp_12 + 28);
         edx = 0;
-        local229 = param5;
-        local231 = param6;
-        local232 = param8;
-        local233 = param7;
-        local234 = bl_1;
-        local235 = ebx_24;
-        local236 = esp_12;
-        local237 = edi_6;
-        local238 = param3;
-        local239 = param4;
-        local249 = local160;
-        local253 = bl_1;
-        local254 = ebx_24;
-        local298 = param3;
-        local298 = param3;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local299 = param4;
-        local300 = param6;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local301 = param7;
-        local302 = param9;
-        local302 = param9;
-        local302 = param9;
-        local302 = param9;
-        local302 = param9;
-        local302 = param9;
-        local302 = param9;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local303 = param10;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local304 = param11;
-        local305 = ecx;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local306 = ebx_24;
-        local307 = esp_12;
-        local307 = esp_12;
-        local308 = ebp_11;
-        local308 = ebp_11;
-        local308 = ebp_11;
-        local308 = ebp_11;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local309 = local160;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local310 = local20;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local311 = local39;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local312 = local78;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local313 = local95;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local314 = local118;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local315 = local131;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local316 = local149;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local317 = local54;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local333 = param3;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local334 = param4;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local335 = param6;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local336 = param7;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local337 = param8;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local338 = param9;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local339 = param10;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local340 = param11;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local341 = edx;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local342 = ebx_24;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local343 = esp_12;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local344 = ebp_11;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local345 = local160;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local346 = local20;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local347 = local39;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local348 = local78;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local349 = local95;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local350 = local118;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local351 = local131;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local352 = local149;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local353 = local54;
-        local354 = param3;
-        local355 = param4;
-        local356 = param5;
-        local357 = param6;
-        local358 = param7;
-        local359 = param9;
-        local360 = param10;
-        local361 = param11;
-        local362 = edx;
-        local363 = esp_12;
-        while (eax_9 >= 0) {
+        local233 = param5;
+        local235 = param6;
+        local236 = param8;
+        local237 = param7;
+        local238 = bl_1;
+        local239 = ebx_24;
+        local240 = esp_12;
+        local241 = edi_2;
+        local242 = param3;
+        local243 = param4;
+        local253 = local164;
+        local257 = bl_1;
+        local258 = ebx_24;
+        local302 = param3;
+        local302 = param3;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local303 = param4;
+        local304 = param6;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local305 = param7;
+        local306 = param9;
+        local306 = param9;
+        local306 = param9;
+        local306 = param9;
+        local306 = param9;
+        local306 = param9;
+        local306 = param9;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local307 = param10;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local308 = param11;
+        local309 = ecx;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local310 = ebx_24;
+        local311 = esp_12;
+        local311 = esp_12;
+        local312 = ebp_11;
+        local312 = ebp_11;
+        local312 = ebp_11;
+        local312 = ebp_11;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local313 = local164;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local314 = local18;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local315 = local40;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local316 = local80;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local317 = local99;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local318 = local116;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local319 = local135;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local320 = local153;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local321 = local54;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local337 = param3;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local338 = param4;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local339 = param6;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local340 = param7;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local341 = param8;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local342 = param9;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local343 = param10;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local344 = param11;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local345 = edx;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local346 = ebx_24;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local347 = esp_12;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local348 = ebp_11;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local349 = local164;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local350 = local18;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local351 = local40;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local352 = local80;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local353 = local99;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local354 = local116;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local355 = local135;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local356 = local153;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local357 = local54;
+        local358 = param3;
+        local359 = param4;
+        local360 = param5;
+        local361 = param6;
+        local362 = param7;
+        local363 = param9;
+        local364 = param10;
+        local365 = param11;
+        local366 = edx;
+        local367 = esp_12;
+        while (eax_4 >= 0) {
             if (bl_1 < 32 || bl_1 > 120) {
-                eax_5 = 0;
-                local230 = eax_5;
+                eax_9 = 0;
+                local234 = eax_9;
             }
             else {
                 al = *((int) bl_1 + 0x404ff0);
-                eax_4 = ((int) bl_1 >> 8 & 0xffffff | (al)) & 0xf;
-                local229 = al;
-                local230 = eax_4;
+                eax_8 = ((int) bl_1 >> 8 & 0xffffff | (al)) & 0xf;
+                local233 = al;
+                local234 = eax_8;
             }
-            al = local229;
-            eax_8 = local230;
-            eax_6 = (int) *(ecx + eax_8 * 8 + 0x405010);
-            *(int*)(esp_12 + 60) = eax_6 >> 4;
-            if ((unsigned int)(eax_6 >> 4) <= (unsigned int)7) {
+            al = local233;
+            eax_7 = local234;
+            eax_5 = (int) *(ecx + eax_7 * 8 + 0x405010);
+            *(int*)(esp_12 + 60) = eax_5 >> 4;
+            if ((unsigned int)(eax_5 >> 4) <= (unsigned int)7) {
                 switch(eax_1 >> 4) {
                 case 0:
 bb0x401530:
-                    cl = local231;
-                    ah = local232;
+                    cl = local235;
+                    ah = local236;
                     *(int*)(esp_12 + 44) = 0;
                     edx = *(esp_12 + 64);
                     tmpb = *(global279_406540 + (edx & 0xff) * 2 + 1) & 0x80;
-                    local337 = ah;
+                    local341 = ah;
                     if (tmpb != 0) {
                         edx = *(esp_12 + 608);
                         *(int*)(esp_12 - 4) = esp_12 + 28;
                         *(int*)(esp_12 - 8) = edx;
                         *(int*)(esp_12 - 12) = (int) bl_1;
-                        cl = proc_0x00401cc0(*(esp_12 - 12), *(esp_12 - 8), cl, param7, bl_1, edx, ebx_24, ebp_11, esi_16, edi_6); /* Warning: also results in dl, esp_1 */
-                        local233 = dl;
-                        bl_8 = *edi_6;
-                        ebx_2 = ebx_24 >> 8 & 0xffffff | (bl_8);
+                        cl = proc_0x00401cc0(*(esp_12 - 12), *(esp_12 - 8), cl, param7, bl_1, edx, ebx_24, ebp_11, esi_20, edi_2); /* Warning: also results in dl, esp_1 */
+                        local237 = dl;
+                        bl_11 = *edi_2;
+                        ebx_2 = ebx_24 >> 8 & 0xffffff | (bl_11);
                         esp_7 = esp_1 + 12;
-                        edi_7 = edi_6 + 1;
-                        *(__size32*)(esp_1 + 624) = edi_6 + 1;
-                        local234 = bl_8;
-                        local235 = ebx_2;
-                        local236 = esp_7;
-                        local237 = edi_7;
+                        edi_3 = edi_2 + 1;
+                        *(__size32*)(esp_1 + 624) = edi_2 + 1;
+                        local238 = bl_11;
+                        local239 = ebx_2;
+                        local240 = esp_7;
+                        local241 = edi_3;
                     }
-                    dl = local233;
-                    bl_30 = local234;
-                    ebx_26 = local235;
-                    esp_83 = local236;
-                    edi_21 = local237;
+                    dl = local237;
+                    bl_30 = local238;
+                    ebx_26 = local239;
+                    esp_83 = local240;
+                    edi_21 = local241;
                     edx = *(esp_83 + 608);
                     *(int*)(esp_83 - 4) = esp_83 + 28;
                     *(int*)(esp_83 - 8) = edx;
                     *(int*)(esp_83 - 12) = (int) bl_30;
-                    al = proc_0x00401cc0(*(esp_83 - 12), *(esp_83 - 8), cl, dl, bl_30, edx, ebx_26, ebp_11, esi_16, edi_21); /* Warning: also results in cl, dl, ecx, edx, esp_10 */
-                    local335 = cl;
-                    local336 = dl;
-                    local341 = edx;
-                    local342 = ebx_26;
+                    al = proc_0x00401cc0(*(esp_83 - 12), *(esp_83 - 8), cl, dl, bl_30, edx, ebx_26, ebp_11, esi_20, edi_21); /* Warning: also results in cl, dl, ecx, edx, esp_10 */
+                    local339 = cl;
+                    local340 = dl;
+                    local345 = edx;
+                    local346 = ebx_26;
                     esp_11 = esp_10 + 12;
-                    local343 = esp_11;
+                    local347 = esp_11;
                     goto bb0x401b6a;
                 case 1:
                     *(int*)(esp_12 + 68) = 0;
@@ -2017,12 +2021,12 @@ bb0x401530:
                     if ((unsigned int)((int) bl_1 - 32) <= (unsigned int)16) {
                         cl = *((int) bl_1 + 0x401bc4);
                         ecx = 0 >> 8 & 0xffffff | (cl);
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
                         switch(0 >> 8 & 0xffffff | *(unsigned char*)((int) bl_2 + 0x401bc4)) {
                         case 0:
                             eax_10 = *(esp_12 + 16);
@@ -2045,9 +2049,9 @@ bb0x401530:
                             *(int*)(esp_12 + 16) = eax_16 >> 8 & 0xffffff | ((unsigned char) eax_16 | 4);
                             goto bb0x401b6a;
                         case 4:
-                            eax_21 = *(esp_12 + 16);
-                            al = (unsigned char) eax_21 | 8;
-                            *(int*)(esp_12 + 16) = eax_21 >> 8 & 0xffffff | ((unsigned char) eax_21 | 8);
+                            eax_18 = *(esp_12 + 16);
+                            al = (unsigned char) eax_18 | 8;
+                            *(int*)(esp_12 + 16) = eax_18 >> 8 & 0xffffff | ((unsigned char) eax_18 | 8);
                             goto bb0x401b6a;
                         case 5:
                             goto bb0x401b6a;
@@ -2058,30 +2062,30 @@ bb0x401530:
                     if (bl_1 == 42) {
                         edx = esp_12 + 616;
                         *(int*)(esp_12 - 4) = esp_12 + 616;
-                        eax_23 = proc_0x00401d90(*(esp_12 - 4)); /* Warning: also results in ecx */
-                        local341 = edx;
+                        eax_20 = proc_0x00401d90(*(esp_12 - 4)); /* Warning: also results in ecx */
+                        local345 = edx;
                         esp_13 = esp_12;
-                        *(int*)(esp_12 + 40) = eax_23;
-                        local343 = esp_13;
-                        local343 = esp_13;
-                        if (eax_23 < 0) {
+                        *(int*)(esp_12 + 40) = eax_20;
+                        local347 = esp_13;
+                        local347 = esp_13;
+                        if (eax_20 < 0) {
                             edx_1 = *(esp_12 + 16);
                             edx_4 = edx_1 | 4;
-                            al = (unsigned char) 0 - eax_23;
+                            al = (unsigned char) 0 - eax_20;
                             *(int*)(esp_12 + 16) = edx_1 | 4;
-                            *(int*)(esp_12 + 40) = 0 - eax_23;
-                            local341 = edx_4;
+                            *(int*)(esp_12 + 40) = 0 - eax_20;
+                            local345 = edx_4;
                             goto bb0x401b6a;
                         }
                         goto bb0x401b6a;
                     }
                     ecx = (int) bl_1;
                     cl = (unsigned char) (int) bl_1;
-                    al = (unsigned char) esi_16 * 5;
-                    edx = (int) bl_1 + esi_16 * 10 - 48;
+                    al = (unsigned char) esi_20 * 5;
+                    edx = (int) bl_1 + esi_20 * 10 - 48;
                     *(int*)(esp_12 + 40) = edx;
-                    local335 = cl;
-                    local341 = edx;
+                    local339 = cl;
+                    local345 = edx;
                     goto bb0x401b6a;
                 case 4:
                     *(int*)(esp_12 + 24) = 0;
@@ -2090,51 +2094,51 @@ bb0x401530:
                     if (bl_1 == 42) {
                         al = (unsigned char) esp_12 + 616;
                         *(int*)(esp_12 - 4) = esp_12 + 616;
-                        eax_25 = proc_0x00401d90(*(esp_12 - 4)); /* Warning: also results in ecx */
+                        eax_22 = proc_0x00401d90(*(esp_12 - 4)); /* Warning: also results in ecx */
                         esp_16 = esp_12;
-                        *(int*)(esp_12 + 24) = eax_25;
-                        local343 = esp_16;
-                        local343 = esp_16;
-                        if (eax_25 < 0) {
+                        *(int*)(esp_12 + 24) = eax_22;
+                        local347 = esp_16;
+                        local347 = esp_16;
+                        if (eax_22 < 0) {
                             *(__size32*)(esp_12 + 24) = -1;
                             goto bb0x401b6a;
                         }
                         goto bb0x401b6a;
                     }
-                    eax_27 = *(esp_12 + 24);
+                    eax_24 = *(esp_12 + 24);
                     edx = (int) bl_1;
-                    ecx = eax_27 * 5;
-                    cl = (unsigned char) eax_27 * 5;
-                    eax_18 = (int) bl_1 + eax_27 * 10 - 48;
-                    al = (unsigned char) eax_18;
-                    *(int*)(esp_12 + 24) = eax_18;
-                    local335 = cl;
-                    local341 = edx;
+                    ecx = eax_24 * 5;
+                    cl = (unsigned char) eax_24 * 5;
+                    eax_27 = (int) bl_1 + eax_24 * 10 - 48;
+                    al = (unsigned char) eax_27;
+                    *(int*)(esp_12 + 24) = eax_27;
+                    local339 = cl;
+                    local345 = edx;
                     goto bb0x401b6a;
                 case 6:
                     ah = (int) bl_1 - 73 >> 8 & 0xff;
                     al = (unsigned char) (int) bl_1 - 73;
-                    local232 = ah;
-                    local337 = ah;
-                    local337 = ah;
+                    local236 = ah;
+                    local341 = ah;
+                    local341 = ah;
                     if ((unsigned int)((int) bl_1 - 73) <= (unsigned int)46) {
                         cl = *((int) bl_1 + 0x401bc3);
                         ecx = 0 >> 8 & 0xffffff | (cl);
-                        local231 = cl;
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
-                        local335 = cl;
+                        local235 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
+                        local339 = cl;
                         switch(0 >> 8 & 0xffffff | *(unsigned char*)((int) bl_2 + 0x401bc3)) {
                         case 0:
-                            if ( ~(*edi_6 != 54 || *(edi_6 + 1) != 52)) {
+                            if ( ~(*edi_2 != 54 || *(edi_2 + 1) != 52)) {
                                 eax_29 = *(esp_12 + 16);
                                 al = (unsigned char) eax_29;
                                 ah = eax_29 >> 8 & 0xff | -128;
-                                *(__size32*)(esp_12 + 612) = edi_6 + 2;
+                                *(__size32*)(esp_12 + 612) = edi_2 + 2;
                                 *(int*)(esp_12 + 16) = eax_29 & ~0xff00 | (eax_29 >> 8 & 0xff | -128) * 256;
-                                local337 = ah;
+                                local341 = ah;
                                 goto bb0x401b6a;
                             }
                             *(int*)(esp_12 + 60) = 0;
@@ -2144,21 +2148,21 @@ bb0x401530:
                             ah = eax_31 >> 8 & 0xff;
                             al = (unsigned char) eax_31 | 32;
                             *(int*)(esp_12 + 16) = eax_31 >> 8 & 0xffffff | ((unsigned char) eax_31 | 32);
-                            local337 = ah;
+                            local341 = ah;
                             goto bb0x401b6a;
                         case 2:
                             eax_33 = *(esp_12 + 16);
                             ah = eax_33 >> 8 & 0xff;
                             al = (unsigned char) eax_33 | 16;
                             *(int*)(esp_12 + 16) = eax_33 >> 8 & 0xffffff | ((unsigned char) eax_33 | 16);
-                            local337 = ah;
+                            local341 = ah;
                             goto bb0x401b6a;
                         case 3:
                             eax_35 = *(esp_12 + 16);
                             al = (unsigned char) eax_35;
                             ah = eax_35 >> 8 & 0xff | 8;
                             *(int*)(esp_12 + 16) = eax_35 & ~0xff00 | (eax_35 >> 8 & 0xff | 8) * 256;
-                            local337 = ah;
+                            local341 = ah;
                             goto bb0x401b6a;
                         case 4:
                             goto bb0x401b6a;
@@ -2170,8 +2174,8 @@ bb0x401530:
                     if ((unsigned int)((int) bl_1 - 67) <= (unsigned int)53) {
                         cl = *((int) bl_1 + 0x401c3d);
                         ecx = 0 >> 8 & 0xffffff | (cl);
-                        local300 = cl;
-                        local305 = ecx;
+                        local304 = cl;
+                        local309 = ecx;
                         switch(0 >> 8 & 0xffffff | *(unsigned char*)((int) bl_2 + 0x401c3d)) {
                         case 0:
                             eax_42 = *(esp_12 + 16);
@@ -2184,21 +2188,21 @@ bb0x4015da:
                             if (tmp1 != 0) {
                                 *(int*)(esp_12 - 4) = esp_12 + 616;
                                 eax_45 = proc_0x00401dd0(*(esp_12 - 4)); /* Warning: also results in ax, ecx */
-                                local238 = ax;
-                                local298 = ax;
+                                local242 = ax;
+                                local302 = ax;
                                 *(__size32*)(esp_12 - 4) = eax_45;
                                 *(int*)(esp_12 - 8) = esp_12 + 92;
                                 eax_46 = proc_0x004031e0(*(esp_12 - 8), *(esp_12 - 4), param4, cl, ecx, esp_12 + 616); /* Warning: also results in cx, cl, ecx, esp_19 */
-                                local239 = cx;
-                                local299 = cx;
-                                local300 = cl;
-                                local305 = ecx;
+                                local243 = cx;
+                                local303 = cx;
+                                local304 = cl;
+                                local309 = ecx;
                                 ebp_2 = eax_46;
                                 esp_22 = esp_19 + 8;
-                                local240 = esp_22;
-                                local241 = ebp_2;
-                                local307 = esp_22;
-                                local308 = ebp_2;
+                                local244 = esp_22;
+                                local245 = ebp_2;
+                                local311 = esp_22;
+                                local312 = ebp_2;
                                 if (eax_46 < 0) {
                                     edx = esp_19 + 100;
                                     *(__size32*)(esp_19 + 60) = 1;
@@ -2206,18 +2210,18 @@ bb0x4015da:
                                     goto bb0x401a50;
                                 }
 bb0x401636:
-                                ax = local238;
-                                cx = local239;
-                                esp_86 = local240;
-                                ebp_14 = local241;
+                                ax = local242;
+                                cx = local243;
+                                esp_86 = local244;
+                                ebp_14 = local245;
                                 edx = esp_86 + 92;
                                 *(int*)(esp_86 + 20) = esp_86 + 92;
-                                local298 = ax;
-                                local299 = cx;
-                                local300 = cl;
-                                local305 = ecx;
-                                local307 = esp_86;
-                                local308 = ebp_14;
+                                local302 = ax;
+                                local303 = cx;
+                                local304 = cl;
+                                local309 = ecx;
+                                local311 = esp_86;
+                                local312 = ebp_14;
                                 goto bb0x401a50;
                             }
                             cl = (unsigned char) esp_12 + 616;
@@ -2226,32 +2230,32 @@ bb0x401636:
                             esp_32 = esp_12;
                             *(unsigned int*)(esp_12 + 92) = al;
                             ebp_5 = 1;
-                            local240 = esp_32;
-                            local241 = ebp_5;
+                            local244 = esp_32;
+                            local245 = ebp_5;
                             goto bb0x401636;
                         case 1:
 bb0x401797:
                             *(__size32*)(esp_12 + 68) = 1;
                             bl_34 = bl_1 + 32;
                             ebx_33 = ebx_24 >> 8 & 0xffffff | (bl_1 + 32);
-                            local253 = bl_34;
-                            local254 = ebx_33;
+                            local257 = bl_34;
+                            local258 = ebx_33;
                         case 2:
                             goto bb0x401797;
                         case 3:
-                            eax_80 = *(esp_12 + 16);
-                            if ((eax_80 & 0x830) == 0) {
-                                *(int*)(esp_12 + 16) = eax_80 & ~0xff00 | (eax_80 >> 8 & 0xff | 8) * 256;
+                            eax_83 = *(esp_12 + 16);
+                            if ((eax_83 & 0x830) == 0) {
+                                *(int*)(esp_12 + 16) = eax_83 & ~0xff00 | (eax_83 >> 8 & 0xff | 8) * 256;
                             }
 bb0x4016be:
-                            eax_83 = *(esp_12 + 24);
-                            esi_22 = 0x7fffffff;
-                            local245 = esi_22;
-                            if (eax_83 != -1) {
-                                esi_17 = eax_83;
-                                local245 = esi_17;
+                            eax_86 = *(esp_12 + 24);
+                            esi_21 = 0x7fffffff;
+                            local249 = esi_21;
+                            if (eax_86 != -1) {
+                                esi_24 = eax_86;
+                                local249 = esi_24;
                             }
-                            esi_18 = local245;
+                            esi_16 = local249;
                             *(int*)(esp_12 - 4) = esp_12 + 616;
                             eax_75 = proc_0x00401d90(*(esp_12 - 4));
                             ecx = eax_75;
@@ -2259,48 +2263,48 @@ bb0x4016be:
                             eax_78 = *(esp_12 + 16);
                             esp_71 = esp_12;
                             *(int*)(esp_12 + 20) = eax_75;
-                            local307 = esp_71;
-                            local307 = esp_71;
+                            local311 = esp_71;
+                            local311 = esp_71;
                             if ((eax_78 & 0x810) != 0) {
                                 if (eax_75 == 0) {
                                     ecx = global311_406074;
                                     cl = (unsigned char) global311_406074;
                                     *(int*)(esp_12 + 20) = global311_406074;
                                 }
-                                edx = esi_18;
-                                esi_19 = esi_18 - 1;
+                                edx = esi_16;
+                                esi_17 = esi_16 - 1;
                                 *(__size32*)(esp_12 + 44) = 1;
-                                eax_86 = ecx;
-                                local246 = eax_86;
-                                local247 = esi_19;
-                                local248 = eax_86;
-                                local300 = cl;
-                                local305 = ecx;
-                                if (esi_18 != 0) {
+                                eax_80 = ecx;
+                                local250 = eax_80;
+                                local251 = esi_17;
+                                local252 = eax_80;
+                                local304 = cl;
+                                local309 = ecx;
+                                if (esi_16 != 0) {
                                     do {
-                                        eax_125 = local246;
-                                        esi_25 = local247;
-                                        local180 = *eax_125;
-                                        local248 = eax_125;
-                                        local249 = local180;
-                                        local249 = local180;
+                                        eax_125 = local250;
+                                        esi_25 = local251;
+                                        local184 = *eax_125;
+                                        local252 = eax_125;
+                                        local253 = local184;
+                                        local253 = local184;
                                         if (*eax_125 != 0) {
                                             eax_89 = eax_125 + 2;
                                             edx = esi_25;
                                             esi_26 = esi_25 - 1;
-                                            local246 = eax_89;
-                                            local247 = esi_26;
-                                            local248 = eax_89;
+                                            local250 = eax_89;
+                                            local251 = esi_26;
+                                            local252 = eax_89;
                                         }
                                     } while (esi_25 != 0);
                                 }
-                                eax_39 = local248;
-                                local167 = local249;
+                                eax_39 = local252;
+                                local171 = local253;
                                 ax = (unsigned short) eax_39 - ecx >> 1;
                                 ebp_16 = eax_39 - ecx >> 1;
-                                local298 = ax;
-                                local308 = ebp_16;
-                                local309 = local167;
+                                local302 = ax;
+                                local312 = ebp_16;
+                                local313 = local171;
                                 goto bb0x401a50;
                             }
                             if (eax_75 == 0) {
@@ -2308,34 +2312,34 @@ bb0x4016be:
                                 cl = (unsigned char) global302_406070;
                                 *(int*)(esp_12 + 20) = global302_406070;
                             }
-                            edx = esi_18;
-                            esi_28 = esi_18 - 1;
+                            edx = esi_16;
+                            esi_28 = esi_16 - 1;
                             eax_90 = ecx;
-                            local250 = eax_90;
-                            local251 = esi_28;
-                            local252 = eax_90;
-                            local300 = cl;
-                            local305 = ecx;
-                            if (esi_18 != 0) {
+                            local254 = eax_90;
+                            local255 = esi_28;
+                            local256 = eax_90;
+                            local304 = cl;
+                            local309 = ecx;
+                            if (esi_16 != 0) {
                                 do {
-                                    eax_126 = local250;
-                                    esi_30 = local251;
-                                    local252 = eax_126;
+                                    eax_126 = local254;
+                                    esi_30 = local255;
+                                    local256 = eax_126;
                                     if (*eax_126 != 0) {
                                         eax_93 = eax_126 + 1;
                                         edx = esi_30;
                                         esi_31 = esi_30 - 1;
-                                        local250 = eax_93;
-                                        local251 = esi_31;
-                                        local252 = eax_93;
+                                        local254 = eax_93;
+                                        local255 = esi_31;
+                                        local256 = eax_93;
                                     }
                                 } while (esi_30 != 0);
                             }
-                            eax_40 = local252;
+                            eax_40 = local256;
                             ax = (unsigned short) eax_40 - ecx;
                             ebp_17 = eax_40 - ecx;
-                            local298 = ax;
-                            local308 = ebp_17;
+                            local302 = ax;
+                            local312 = ebp_17;
                             goto bb0x401a50;
                         case 4:
 bb0x4018a0:
@@ -2352,19 +2356,19 @@ bb0x4018b2:
 bb0x4018f7:
                             ebx_36 = *(esp_12 + 16);
                             bh = ebx_36 >> 8 & 0xff;
-                            local287 = ebx_36;
+                            local291 = ebx_36;
                             if ((ebx_36 >> 8 & 0xff & 0x80) == 0) {
                                 if (((unsigned char) ebx_36 & 0x20) == 0) {
                                     if (((unsigned char) ebx_36 & 0x40) == 0) {
                                         *(int*)(esp_12 - 4) = esp_12 + 616;
                                         eax_105 = proc_0x00401d90(*(esp_12 - 4));
-                                        local286 = eax_105;
+                                        local290 = eax_105;
                                         edx = 0;
                                     }
                                     else {
                                         *(int*)(esp_12 - 4) = esp_12 + 616;
                                         eax_98 = proc_0x00401d90(*(esp_12 - 4));
-                                        local286 = eax_98;
+                                        local290 = eax_98;
                                         edx =  (eax_98 < 0) ? -1 : 0;
                                     }
                                 }
@@ -2374,28 +2378,28 @@ bb0x4018f7:
                                         eax_101 = proc_0x00401d90(*(esp_12 - 4));
                                         eax_104 = eax_101 & 0xffff;
                                         edx =  ((eax_101 & 0xffff) < 0) ? -1 : 0;
-                                        local286 = eax_104;
+                                        local290 = eax_104;
                                     }
                                     else {
                                         *(int*)(esp_12 - 4) = esp_12 + 616;
                                         proc_0x00401d90(*(esp_12 - 4));
                                         eax_95 = (int) (unsigned short) esp_12 + 616;
                                         edx =  (eax_95 < 0) ? -1 : 0;
-                                        local286 = eax_95;
+                                        local290 = eax_95;
                                     }
                                 }
                             }
                             else {
                                 *(int*)(esp_12 - 4) = esp_12 + 616;
                                 eax_94 = proc_0x00401db0(*(esp_12 - 4)); /* Warning: also results in edx */
-                                local286 = eax_94;
+                                local290 = eax_94;
                             }
-                            eax_129 = local286;
+                            eax_129 = local290;
                             if (((unsigned char) ebx_36 & 0x40) == 0 || edx > 0 || edx >= 0 && (unsigned int)eax_129 >= (unsigned int)0) {
                                 esi_35 = eax_129;
                                 edi_31 = edx;
-                                local288 = esi_35;
-                                local289 = edi_31;
+                                local292 = esi_35;
+                                local293 = edi_31;
                             }
                             else {
                                 esi_34 = 0 - eax_129;
@@ -2403,53 +2407,53 @@ bb0x4018f7:
                                 ebx_47 = ebx_36 & ~0xff00 | (ebx_36 >> 8 & 0xff | 1) * 256;
                                 edi_30 = 0 - edx + ((unsigned int)0 < (unsigned int)eax_129);
                                 *(int*)(esp_12 + 16) = ebx_47;
-                                local287 = ebx_47;
-                                local288 = esi_34;
-                                local289 = edi_30;
+                                local291 = ebx_47;
+                                local292 = esi_34;
+                                local293 = edi_30;
                             }
-                            ebx_39 = local287;
-                            esi_48 = local288;
-                            edi_43 = local289;
-                            local290 = edi_43;
-                            local291 = ebx_39;
-                            local294 = esi_48;
+                            ebx_39 = local291;
+                            esi_48 = local292;
+                            edi_43 = local293;
+                            local294 = edi_43;
+                            local295 = ebx_39;
+                            local298 = esi_48;
                             if ((bh & 0x80) == 0) {
                                 edi_32 = 0;
-                                local290 = edi_32;
+                                local294 = edi_32;
                             }
-                            edi_38 = local290;
+                            edi_38 = local294;
                             ecx = *(esp_12 + 24);
-                            local295 = edi_38;
+                            local299 = edi_38;
                             if (ecx >= 0) {
                                 ebx_40 = ebx_39 & ~0x8;
                                 bh = (ebx_39 & ~0x8) >> 8 & 0xff;
                                 *(int*)(esp_12 + 16) = ebx_39 & ~0x8;
-                                local291 = ebx_40;
+                                local295 = ebx_40;
                             }
                             else {
                                 ecx = 1;
                             }
-                            ebx_31 = local291;
-                            local293 = ebx_31;
+                            ebx_31 = local295;
+                            local297 = ebx_31;
                             if ((esi_48 | edi_38) == 0) {
                                 *(__size32*)(esp_12 + 36) = 0;
                             }
                             eax_106 = esp_12 + 603;
                             *(int*)(esp_12 + 20) = esp_12 + 603;
-                            local292 = eax_106;
-                            eax_41 = local292;
-                            ebx_30 = local293;
+                            local296 = eax_106;
+                            eax_41 = local296;
+                            ebx_30 = local297;
                             esp_97 = esp_12;
-                            esi_33 = local294;
-                            edi_26 = local295;
+                            esi_33 = local298;
+                            edi_26 = local299;
                             edx = ecx;
                             *(int*)(esp_12 + 24) = ecx - 1;
-                            local304 = bh;
-                            local304 = bh;
-                            local306 = ebx_30;
-                            local306 = ebx_30;
-                            local307 = esp_97;
-                            local307 = esp_97;
+                            local308 = bh;
+                            local308 = bh;
+                            local310 = ebx_30;
+                            local310 = ebx_30;
+                            local311 = esp_97;
+                            local311 = esp_97;
                             while ( ~(ecx <= 0 && (esi_33 | edi_26) == 0)) {
                                 eax_107 = *(esp_12 + 48);
                                 *(__size32*)(esp_12 - 4) =  (eax_107 < 0) ? -1 : 0;
@@ -2467,41 +2471,41 @@ bb0x4018f7:
                                 bh = eax_110 + 48 >> 8 & 0xff;
                                 bl_38 = (unsigned char) eax_110 + 48;
                                 eax_113 = proc_0x00403260(*(esp_12 - 16), *(esp_12 - 12), *(esp_12 - 8), *(esp_12 - 4)); /* Warning: also results in edx */
-                                local296 = bl_38;
-                                local297 = ebx_42;
+                                local300 = bl_38;
+                                local301 = ebx_42;
                                 esi_36 = eax_113;
                                 edi_33 = edx;
-                                local294 = esi_36;
-                                local295 = edi_33;
+                                local298 = esi_36;
+                                local299 = edi_33;
                                 if (eax_110 + 48 > 57) {
                                     ebx_45 = eax_110 + *(esp_12 + 56) + 48;
                                     bh = ebx_45 >> 8 & 0xff;
                                     bl = (unsigned char) ebx_45;
-                                    local296 = bl;
-                                    local297 = ebx_45;
+                                    local300 = bl;
+                                    local301 = ebx_45;
                                 }
-                                bl_32 = local296;
-                                ebx_32 = local297;
+                                bl_32 = local300;
+                                ebx_32 = local301;
                                 eax_115 = *(esp_12 + 20);
                                 ecx = *(esp_12 + 24);
                                 *(char*)eax_115 = bl_32;
                                 eax_118 = eax_115 - 1;
                                 *(__size32*)(esp_12 + 20) = eax_115 - 1;
-                                local292 = eax_118;
-                                local293 = ebx_32;
-                                eax_41 = local292;
-                                ebx_30 = local293;
+                                local296 = eax_118;
+                                local297 = ebx_32;
+                                eax_41 = local296;
+                                ebx_30 = local297;
                                 esp_97 = esp_12;
-                                esi_33 = local294;
-                                edi_26 = local295;
+                                esi_33 = local298;
+                                edi_26 = local299;
                                 edx = ecx;
                                 *(int*)(esp_12 + 24) = ecx - 1;
-                                local304 = bh;
-                                local304 = bh;
-                                local306 = ebx_30;
-                                local306 = ebx_30;
-                                local307 = esp_97;
-                                local307 = esp_97;
+                                local308 = bh;
+                                local308 = bh;
+                                local310 = ebx_30;
+                                local310 = ebx_30;
+                                local311 = esp_97;
+                                local311 = esp_97;
                             }
                             ecx = *(esp_12 + 16);
                             ch = ecx >> 8 & 0xff;
@@ -2509,60 +2513,60 @@ bb0x4018f7:
                             ebp_18 = esp_12 - eax_41 + 603;
                             ax = (unsigned short) eax_41 + 1;
                             *(__size32*)(esp_12 + 20) = eax_41 + 1;
-                            local298 = ax;
-                            local300 = cl;
-                            local300 = cl;
-                            local302 = ch;
-                            local302 = ch;
-                            local305 = ecx;
-                            local305 = ecx;
-                            local308 = ebp_18;
+                            local302 = ax;
+                            local304 = cl;
+                            local304 = cl;
+                            local306 = ch;
+                            local306 = ch;
+                            local309 = ecx;
+                            local309 = ecx;
+                            local312 = ebp_18;
                             if ( ~((ecx >> 8 & 0xff & 0x2) == 0 || *(eax_41 + 1) == 48 && esp_12 - eax_41 + 603 != 0)) {
                                 ax = (unsigned short) eax_41;
                                 ebp_21 = esp_12 - eax_41 + 604;
                                 *(__size32*)(esp_12 + 20) = eax_41;
                                 *(int*)eax_41 = 48;
-                                local298 = ax;
-                                local308 = ebp_21;
+                                local302 = ax;
+                                local312 = ebp_21;
                                 goto bb0x401a50;
                             }
                         case 5:
                             ax = (unsigned short) esp_12 + 616;
                             *(int*)(esp_12 - 4) = esp_12 + 616;
                             eax_120 = proc_0x00401d90(*(esp_12 - 4)); /* Warning: also results in ecx */
-                            local298 = ax;
-                            local298 = ax;
+                            local302 = ax;
+                            local302 = ax;
                             esp_74 = esp_12;
-                            local307 = esp_74;
-                            local307 = esp_74;
-                            local307 = esp_74;
+                            local311 = esp_74;
+                            local311 = esp_74;
+                            local311 = esp_74;
                             if (eax_120 != 0) {
                                 ecx = *(eax_120 + 4);
                                 ch = ecx >> 8 & 0xff;
                                 cl = (unsigned char) ecx;
-                                local300 = cl;
-                                local300 = cl;
-                                local302 = ch;
-                                local302 = ch;
-                                local305 = ecx;
-                                local305 = ecx;
+                                local304 = cl;
+                                local304 = cl;
+                                local306 = ch;
+                                local306 = ch;
+                                local309 = ecx;
+                                local309 = ecx;
                                 if (ecx != 0) {
                                     edx = *(esp_12 + 16);
                                     dh = edx >> 8 & 0xff;
-                                    local303 = dh;
-                                    local303 = dh;
+                                    local307 = dh;
+                                    local307 = dh;
                                     if ((edx >> 8 & 0xff & 0x8) != 0) {
                                         ebp_22 = (int) *eax_120;
                                         *(int*)(esp_12 + 20) = ecx;
                                         *(__size32*)(esp_12 + 44) = 1;
                                         ebp_23 = ebp_22 / 2;
-                                        local308 = ebp_23;
+                                        local312 = ebp_23;
                                         goto bb0x401a50;
                                     }
                                     ebp = (int) *eax_120;
                                     *(__size32*)(esp_12 + 44) = 0;
                                     *(int*)(esp_12 + 20) = ecx;
-                                    local308 = ebp;
+                                    local312 = ebp;
                                     goto bb0x401a50;
                                 }
 bb0x401691:
@@ -2571,31 +2575,31 @@ bb0x401691:
                                 ecx_8 = ecx_7 | -1;
                                 ax = 0;
                                 *(__size32*)(esp_12 + 20) = global302_406070;
-                                local242 = ecx_8;
-                                local243 = edi_34;
-                                local244 = ecx_8;
-                                local298 = ax;
+                                local246 = ecx_8;
+                                local247 = edi_34;
+                                local248 = ecx_8;
+                                local302 = ax;
                                 if ((ecx_7 | -1) != 0) {
                                     do {
-                                        ecx = local242;
-                                        edi_37 = local243;
+                                        ecx = local246;
+                                        edi_37 = local247;
                                         tmpb = 0 - *edi_37;
                                         edi_39 = edi_37 + ( (DF == 0) ? 1 : -1);
                                         ecx = ecx - 1;
-                                        local242 = ecx;
-                                        local243 = edi_39;
-                                        local244 = ecx;
+                                        local246 = ecx;
+                                        local247 = edi_39;
+                                        local248 = ecx;
                                     } while (tmpb != 0);
                                 }
-                                ecx_10 = local244;
+                                ecx_10 = local248;
                                 ecx_11 =  ~ecx_10 - 1;
                                 ch =  ~ecx_10 - 1 >> 8 & 0xff;
                                 cl = (unsigned char)  ~ecx_10 - 1;
                                 ebp_24 =  ~ecx_10 - 1;
-                                local300 = cl;
-                                local302 = ch;
-                                local305 = ecx_11;
-                                local308 = ebp_24;
+                                local304 = cl;
+                                local306 = ch;
+                                local309 = ecx_11;
+                                local312 = ebp_24;
                                 goto bb0x401a50;
                             }
                             goto bb0x401691;
@@ -2608,8 +2612,8 @@ bb0x40187a:
                             *(int*)(esp_12 + 16) = eax_122 >> 8 & 0xffffff | ((unsigned char) eax_122 | 64);
                             goto bb0x4018f7;
                         case 8:
-                            bl_43 = local253;
-                            ebx_23 = local254;
+                            bl_43 = local257;
+                            ebx_23 = local258;
                             edx = *(esp_12 + 16);
                             *(int*)(esp_12 + 20) = esp_12 + 92;
                             eax_64 = *(esp_12 + 24);
@@ -2635,121 +2639,121 @@ bb0x40187a:
                             *(int*)(esp_12 - 12) = (int) bl_43;
                             *(int*)(esp_12 - 16) = esp_12 + 92;
                             *(int*)(esp_12 - 20) = esp_12 + 76;
-                            (*global244_406528)(local149, local131, local118, local95, local78, param1, local39, local20, (unsigned short) esp_12 + 76, param4, (unsigned char) esp_12 + 76, (unsigned char) (int) bl_43, param7, bl_43, esp_12 + 76 >> 8 & 0xff, param9, param10, param11, esp_12 + 76, (int) bl_43, esp_12 + 92, ebx_23, ebp_11, esi_16, edi_16, ADDFLAGS32(eax_67, 8, eax_67 + 8), ADDFLAGS32(eax_67, 8, eax_67 + 8), ADDFLAGS32(eax_67, 8, eax_67 + 8));
-                            local255 = cl_4;
-                            local256 = bl_20;
-                            local257 = eax_61;
-                            local258 = ebx_14;
-                            local260 = ebp_6;
-                            local262 = edi_13;
-                            local263 = local157;
-                            local264 = local9;
-                            local265 = local30;
-                            local266 = local69;
-                            local267 = local86;
-                            local268 = local107;
-                            local269 = local122;
-                            local270 = local140;
-                            local271 = local47;
+                            (*global244_406528)(local153, local135, local116, local99, local80, param1, local40, local18, (unsigned short) esp_12 + 76, param4, (unsigned char) esp_12 + 76, (unsigned char) (int) bl_43, param7, bl_43, esp_12 + 76 >> 8 & 0xff, param9, param10, param11, esp_12 + 76, (int) bl_43, esp_12 + 92, ebx_23, ebp_11, esi_20, edi_16, ADDFLAGS32(eax_67, 8, eax_67 + 8), ADDFLAGS32(eax_67, 8, eax_67 + 8), ADDFLAGS32(eax_67, 8, eax_67 + 8));
+                            local259 = cl_4;
+                            local260 = bl_20;
+                            local261 = eax_61;
+                            local262 = ebx_14;
+                            local264 = ebp_6;
+                            local266 = edi_13;
+                            local267 = local161;
+                            local268 = local9;
+                            local269 = local29;
+                            local270 = local72;
+                            local271 = local91;
+                            local272 = local107;
+                            local273 = local126;
+                            local274 = local144;
+                            local275 = local47;
                             esi_8 = *(esp_57 + 36);
                             esp_60 = esp_57 + 20;
                             esi_11 = esi_8 & 0x80;
-                            local259 = esp_60;
-                            local261 = esi_11;
+                            local263 = esp_60;
+                            local265 = esi_11;
                             if ( ~((esi_8 & 0x80) == 0 || edi_13 != 0)) {
                                 *(int*)(esp_57 + 16) = esp_57 + 112;
-                                (*global245_406534)(local140, local122, local107, local86, local69, local47, local30, local9, ax, cx, al, (unsigned char) esp_57 + 112, dl, bl_20, ah, ch, dh, bh, eax_61, esp_57 + 112, edx, ebx_14, ebp_6, esi_8 & 0x80, edi_13, <all>, LOGICALFLAGS32(edi_13), LOGICALFLAGS32(edi_13), LOGICALFLAGS32(edi_13));
-                                local255 = cl_1;
-                                local256 = bl_37;
-                                local257 = eax_73;
-                                local258 = ebx_17;
-                                local260 = ebp_9;
-                                local261 = esi_14;
-                                local262 = edi_19;
-                                local263 = local169;
-                                local264 = local12;
-                                local265 = local33;
-                                local266 = local72;
-                                local267 = local89;
-                                local268 = local110;
-                                local269 = local125;
-                                local270 = local143;
-                                local271 = local50;
+                                (*global245_406534)(local144, local126, local107, local91, local72, local47, local29, local9, ax, cx, al, (unsigned char) esp_57 + 112, dl, bl_20, ah, ch, dh, bh, eax_61, esp_57 + 112, edx, ebx_14, ebp_6, esi_8 & 0x80, edi_13, <all>, LOGICALFLAGS32(edi_13), LOGICALFLAGS32(edi_13), LOGICALFLAGS32(edi_13));
+                                local259 = cl_1;
+                                local260 = bl_37;
+                                local261 = eax_73;
+                                local262 = ebx_17;
+                                local264 = ebp_9;
+                                local265 = esi_14;
+                                local266 = edi_19;
+                                local267 = local173;
+                                local268 = local12;
+                                local269 = local32;
+                                local270 = local75;
+                                local271 = local94;
+                                local272 = local110;
+                                local273 = local129;
+                                local274 = local147;
+                                local275 = local50;
                                 esp_66 = esp_63 + 4;
-                                local259 = esp_66;
+                                local263 = esp_66;
                             }
-                            cl_5 = local255;
-                            bl_41 = local256;
-                            eax_128 = local257;
-                            ebx_20 = local258;
-                            esp_91 = local259;
-                            ebp_25 = local260;
-                            esi_45 = local261;
-                            edi = local262;
-                            local159 = local263;
-                            local15 = local264;
-                            local36 = local265;
-                            local75 = local266;
-                            local92 = local267;
-                            local113 = local268;
-                            local128 = local269;
-                            local146 = local270;
-                            local53 = local271;
-                            local272 = ebx_20;
-                            local273 = esp_91;
-                            local274 = local159;
-                            local275 = local15;
-                            local276 = local36;
-                            local277 = local75;
-                            local278 = local92;
-                            local279 = local113;
-                            local280 = local128;
-                            local281 = local146;
-                            local282 = local53;
+                            cl_5 = local259;
+                            bl_41 = local260;
+                            eax_128 = local261;
+                            ebx_20 = local262;
+                            esp_91 = local263;
+                            ebp_25 = local264;
+                            esi_45 = local265;
+                            edi = local266;
+                            local163 = local267;
+                            local15 = local268;
+                            local35 = local269;
+                            local68 = local270;
+                            local87 = local271;
+                            local113 = local272;
+                            local132 = local273;
+                            local150 = local274;
+                            local53 = local275;
+                            local276 = ebx_20;
+                            local277 = esp_91;
+                            local278 = local163;
+                            local279 = local15;
+                            local280 = local35;
+                            local281 = local68;
+                            local282 = local87;
+                            local283 = local113;
+                            local284 = local132;
+                            local285 = local150;
+                            local286 = local53;
                             if ( ~(bl_41 != 103 || esi_45 != 0)) {
                                 *(int*)(esp_91 - 4) = esp_91 + 92;
-                                (*global246_40652c)(local146, local128, local113, local92, local75, local47, local36, local15, ax, cx, al, cl_5, dl, bl_41, ah, ch, dh, bh, eax_128, ecx, esp_91 + 92, ebx_20, ebp_25, esi_45, edi, <all>, LOGICALFLAGS32(esi_45), LOGICALFLAGS32(esi_45), LOGICALFLAGS32(esi_45));
-                                local272 = ebx_21;
-                                local274 = local175;
-                                local275 = local16;
-                                local276 = local37;
-                                local277 = local76;
-                                local278 = local93;
-                                local279 = local114;
-                                local280 = local129;
-                                local281 = local147;
-                                local282 = local58;
+                                (*global246_40652c)(local150, local132, local113, local87, local68, local47, local35, local15, ax, cx, al, cl_5, dl, bl_41, ah, ch, dh, bh, eax_128, ecx, esp_91 + 92, ebx_20, ebp_25, esi_45, edi, <all>, LOGICALFLAGS32(esi_45), LOGICALFLAGS32(esi_45), LOGICALFLAGS32(esi_45));
+                                local276 = ebx_21;
+                                local278 = local179;
+                                local279 = local16;
+                                local280 = local36;
+                                local281 = local78;
+                                local282 = local97;
+                                local283 = local114;
+                                local284 = local133;
+                                local285 = local151;
+                                local286 = local58;
                                 esp_70 = esp_69 + 4;
-                                local273 = esp_70;
+                                local277 = esp_70;
                             }
                             ecx_1 = ecx;
-                            ebx_29 = local272;
-                            esp_94 = local273;
-                            local166 = local274;
-                            *(__size32*)(esp_115 + 8) = local275;
-                            *(unsigned char*)(esp_115 - 540) = local276;
-                            *(int*)(esp_115 - 576) = local277;
-                            *(__size32*)(esp_115 - 592) = local278;
-                            *(__size32*)(esp_115 - 596) = local279;
-                            local134 = local280;
-                            *(__size32*)(esp_115 - 604) = local281;
-                            local57 = local282;
-                            local299 = cx;
-                            local301 = dl;
-                            local302 = ch;
-                            local303 = dh;
-                            local304 = bh;
-                            local306 = ebx_29;
-                            local307 = esp_94;
-                            local309 = local166;
-                            local310 = *(esp_115 + 8);
-                            local311 = *(esp_115 - 540);
-                            local312 = *(esp_115 - 576);
-                            local313 = *(esp_115 - 592);
-                            local314 = *(esp_115 - 596);
-                            local315 = local134;
-                            local316 = *(esp_115 - 604);
-                            local317 = local57;
+                            ebx_29 = local276;
+                            esp_94 = local277;
+                            local170 = local278;
+                            local23 = local279;
+                            *(unsigned char*)(esp_115 - 540) = local280;
+                            *(int*)(esp_115 - 576) = local281;
+                            *(__size32*)(esp_115 - 592) = local282;
+                            *(__size32*)(esp_115 - 596) = local283;
+                            *(unsigned int*)(esp_115 - 600) = local284;
+                            *(__size32*)(esp_115 - 604) = local285;
+                            local57 = local286;
+                            local303 = cx;
+                            local305 = dl;
+                            local306 = ch;
+                            local307 = dh;
+                            local308 = bh;
+                            local310 = ebx_29;
+                            local311 = esp_94;
+                            local313 = local170;
+                            local314 = local23;
+                            local315 = *(esp_115 - 540);
+                            local316 = *(esp_115 - 576);
+                            local317 = *(esp_115 - 592);
+                            local318 = *(esp_115 - 596);
+                            local319 = *(esp_115 - 600);
+                            local320 = *(esp_115 - 604);
+                            local321 = local57;
                             if (*(esp_94 + 92) == 45) {
                                 eax_74 = *(esp_94 + 16);
                                 *(int*)(esp_94 + 16) = eax_74 & ~0xff00 | (eax_74 >> 8 & 0xff | 1) * 256;
@@ -2758,29 +2762,29 @@ bb0x40187a:
                             edi_22 = *(esp_94 + 20);
                             ecx_2 = ecx_1 | -1;
                             ax = 0;
-                            local283 = ecx_2;
-                            local284 = edi_22;
-                            local285 = ecx_2;
-                            local298 = ax;
+                            local287 = ecx_2;
+                            local288 = edi_22;
+                            local289 = ecx_2;
+                            local302 = ax;
                             if ((ecx_1 | -1) != 0) {
                                 do {
-                                    ecx = local283;
-                                    edi_25 = local284;
+                                    ecx = local287;
+                                    edi_25 = local288;
                                     tmpb = 0 - *edi_25;
                                     edi_27 = edi_25 + ( (DF == 0) ? 1 : -1);
                                     ecx = ecx - 1;
-                                    local283 = ecx;
-                                    local284 = edi_27;
-                                    local285 = ecx;
+                                    local287 = ecx;
+                                    local288 = edi_27;
+                                    local289 = ecx;
                                 } while (tmpb != 0);
                             }
-                            ecx_4 = local285;
+                            ecx_4 = local289;
                             ecx_5 =  ~ecx_4 - 1;
                             cl = (unsigned char)  ~ecx_4 - 1;
                             ebp_15 =  ~ecx_4 - 1;
-                            local300 = cl;
-                            local305 = ecx_5;
-                            local308 = ebp_15;
+                            local304 = cl;
+                            local309 = ecx_5;
+                            local312 = ebp_15;
                             goto bb0x401a50;
                         case 9:
                             goto bb0x40187a;
@@ -2788,17 +2792,17 @@ bb0x40187a:
                             ax = (unsigned short) esp_12 + 616;
                             *(int*)(esp_12 - 4) = esp_12 + 616;
                             eax_123 = proc_0x00401d90(*(esp_12 - 4)); /* Warning: also results in ecx */
-                            local298 = ax;
-                            local298 = ax;
+                            local302 = ax;
+                            local302 = ax;
                             cl = *(esp_12 + 16);
                             cx = param4 >> 8 & 0xff | (cl);
                             ecx = ecx >> 8 & 0xffffff | (cl);
                             esp_77 = esp_12;
-                            local299 = cx;
-                            local300 = cl;
-                            local305 = ecx;
-                            local307 = esp_77;
-                            local307 = esp_77;
+                            local303 = cx;
+                            local304 = cl;
+                            local309 = ecx;
+                            local311 = esp_77;
+                            local311 = esp_77;
                             if ((cl & 0x20) != 0) {
                                 cx = *(esp_12 + 28);
                                 ch = cx >> 8 & 0xff;
@@ -2806,17 +2810,17 @@ bb0x40187a:
                                 ecx = ecx >> 16 & 0xffff | (cx);
                                 *(__size32*)(esp_12 + 52) = 1;
                                 *(unsigned short*)eax_123 = cx;
-                                local299 = cx;
-                                local300 = cl;
-                                local302 = ch;
-                                local305 = ecx;
+                                local303 = cx;
+                                local304 = cl;
+                                local306 = ch;
+                                local309 = ecx;
                                 goto bb0x401a50;
                             }
                             edx = *(esp_12 + 28);
                             dh = edx >> 8 & 0xff;
                             *(__size32*)(esp_12 + 52) = 1;
                             *(int*)eax_123 = edx;
-                            local303 = dh;
+                            local307 = dh;
                             goto bb0x401a50;
                         case 11:
                             al = *(esp_12 + 16);
@@ -2842,83 +2846,83 @@ bb0x40187a:
                         }
                     }
 bb0x401a50:
-                    ax = local298;
-                    cx = local299;
-                    cl = local300;
-                    dl = local301;
-                    ch = local302;
-                    dh = local303;
-                    bh = local304;
-                    ecx = local305;
-                    ebx_27 = local306;
-                    esp_24 = local307;
-                    ebp_13 = local308;
-                    local165 = local309;
-                    local22 = local310;
-                    local41 = local311;
-                    local81 = local312;
-                    local97 = local313;
-                    local103 = local314;
-                    local133 = local315;
-                    local152 = local316;
-                    local56 = local317;
+                    ax = local302;
+                    cx = local303;
+                    cl = local304;
+                    dl = local305;
+                    ch = local306;
+                    dh = local307;
+                    bh = local308;
+                    ecx = local309;
+                    ebx_27 = local310;
+                    esp_24 = local311;
+                    ebp_13 = local312;
+                    local169 = local313;
+                    local22 = local314;
+                    local42 = local315;
+                    local82 = local316;
+                    local101 = local317;
+                    local118 = local318;
+                    local137 = local319;
+                    local155 = local320;
+                    local56 = local321;
                     eax_37 = *(esp_24 + 52);
                     ah = eax_37 >> 8 & 0xff;
                     al = (unsigned char) eax_37;
-                    local319 = esp_24;
-                    local333 = ax;
-                    local334 = cx;
-                    local335 = cl;
-                    local336 = dl;
-                    local337 = ah;
-                    local338 = ch;
-                    local338 = ch;
-                    local338 = ch;
-                    local339 = dh;
-                    local339 = dh;
-                    local339 = dh;
-                    local340 = bh;
-                    local341 = edx;
-                    local342 = ebx_27;
-                    local343 = esp_24;
-                    local344 = ebp_13;
-                    local344 = ebp_13;
-                    local344 = ebp_13;
-                    local345 = local165;
-                    local345 = local165;
-                    local345 = local165;
-                    local346 = local22;
-                    local346 = local22;
-                    local346 = local22;
-                    local347 = local41;
-                    local347 = local41;
-                    local347 = local41;
-                    local348 = local81;
-                    local348 = local81;
-                    local348 = local81;
-                    local349 = local97;
-                    local349 = local97;
-                    local349 = local97;
-                    local350 = local103;
-                    local350 = local103;
-                    local350 = local103;
-                    local351 = local133;
-                    local351 = local133;
-                    local351 = local133;
-                    local352 = local152;
-                    local352 = local152;
-                    local352 = local152;
-                    local353 = local56;
-                    local353 = local56;
-                    local353 = local56;
+                    local323 = esp_24;
+                    local337 = ax;
+                    local338 = cx;
+                    local339 = cl;
+                    local340 = dl;
+                    local341 = ah;
+                    local342 = ch;
+                    local342 = ch;
+                    local342 = ch;
+                    local343 = dh;
+                    local343 = dh;
+                    local343 = dh;
+                    local344 = bh;
+                    local345 = edx;
+                    local346 = ebx_27;
+                    local347 = esp_24;
+                    local348 = ebp_13;
+                    local348 = ebp_13;
+                    local348 = ebp_13;
+                    local349 = local169;
+                    local349 = local169;
+                    local349 = local169;
+                    local350 = local22;
+                    local350 = local22;
+                    local350 = local22;
+                    local351 = local42;
+                    local351 = local42;
+                    local351 = local42;
+                    local352 = local82;
+                    local352 = local82;
+                    local352 = local82;
+                    local353 = local101;
+                    local353 = local101;
+                    local353 = local101;
+                    local354 = local118;
+                    local354 = local118;
+                    local354 = local118;
+                    local355 = local137;
+                    local355 = local137;
+                    local355 = local137;
+                    local356 = local155;
+                    local356 = local155;
+                    local356 = local155;
+                    local357 = local56;
+                    local357 = local56;
+                    local357 = local56;
                     if (eax_37 != 0) {
                         goto bb0x401b6a;
                     }
                     ebx_4 = *(esp_24 + 16);
                     bh = ebx_4 >> 8 & 0xff;
                     bl_23 = (unsigned char) ebx_4;
-                    local318 = bl_23;
-                    local331 = ebx_4;
+                    local322 = bl_23;
+                    local335 = ebx_4;
                     if (((unsigned char) ebx_4 & 0x40) != 0) {
                         if ((ebx_4 >> 8 & 0xff & 0x1) == 0) {
                             if (((unsigned char) ebx_4 & 0x1) != 0) {
@@ -2948,13 +2952,13 @@ bb0x401a87:
                         *(int*)(esp_24 - 12) = edi_10 - edx_6 + ebp_13;
                         *(int*)(esp_24 - 16) = 32;
                         dl = proc_0x00401d10(*(esp_24 - 16), *(esp_24 - 12), *(esp_24 - 8), *(esp_24 - 4), (unsigned char) esp_24 + 28, cl, dl, (unsigned char) ebx_4, ecx, edx_6); /* Warning: also results in bl_14, esp_26 */
-                        local318 = bl_14;
+                        local322 = bl_14;
                         esp_29 = esp_26 + 16;
-                        local319 = esp_29;
+                        local323 = esp_29;
                     }
 bb0x401ac1:
-                    bl_42 = local318;
-                    esp_25 = local319;
+                    bl_42 = local322;
+                    esp_25 = local323;
                     esi_54 = *(esp_24 + 608);
                     edx_9 = *(esp_25 + 36);
                     *(int*)(esp_25 - 4) = esp_25 + 28;
@@ -2962,24 +2966,24 @@ bb0x401ac1:
                     *(int*)(esp_25 - 12) = edx_9;
                     *(int*)(esp_25 - 16) = esp_25 + 34;
                     al = proc_0x00401d50(*(esp_25 - 16), *(esp_25 - 12), *(esp_25 - 8), *(esp_25 - 4), (unsigned char) esp_25 + 34, (unsigned char) esp_25 + 28, dl, bl_42, esp_25 + 28, edx_9); /* Warning: also results in cl, dl, bl_15, ecx, edx_12, esp_35 */
-                    local320 = bl_15;
+                    local324 = bl_15;
                     esp_38 = esp_35 + 16;
-                    local321 = esp_38;
+                    local325 = esp_38;
                     if ( ~((bl_15 & 0x8) == 0 || (bl_15 & 0x4) != 0)) {
                         *(__size32*)(esp_35 + 12) = esp_35 + 44;
                         *(unsigned int*)(esp_35 + 8) = esi_54;
                         *(int*)(esp_35 + 4) = edi_10 - edx_6 + ebp_13;
                         *(int*)esp_35 = 48;
                         cl = proc_0x00401d10(*(esp_35 + 4), *(esp_35 + 8), *(esp_35 + 12), al, (unsigned char) esp_35 + 44, dl, bl_15, esp_35 + 44, edx_12, *esp_35); /* Warning: also results in dl, bl_18, ecx, esp_40 */
-                        local320 = bl_18;
+                        local324 = bl_18;
                         esp_41 = esp_40 + 16;
-                        local321 = esp_41;
+                        local325 = esp_41;
                     }
-                    bl_31 = local320;
-                    esp_101 = local321;
+                    bl_31 = local324;
+                    esp_101 = local325;
                     eax_49 = *(esp_101 + 44);
-                    local323 = eax_49;
-                    local325 = esp_101;
+                    local327 = eax_49;
+                    local329 = esp_101;
                     if (eax_49 == 0 || ebp_13 <= 0) {
                         eax_58 = *(esp_101 + 20);
                         ah = eax_58 >> 8 & 0xff;
@@ -2988,25 +2992,25 @@ bb0x401ac1:
                         *(int*)(esp_101 - 12) = ebp_13;
                         *(__size32*)(esp_101 - 16) = eax_58;
                         al = proc_0x00401d50(*(esp_101 - 16), *(esp_101 - 12), *(esp_101 - 8), *(esp_101 - 4), (unsigned char) eax_58, cl, dl, bl_31, ecx, esp_101 + 28); /* Warning: also results in cl, dl, bl_19, ecx, edx_28, esp_55 */
-                        local329 = bl_19;
-                        local330 = edx_28;
+                        local333 = bl_19;
+                        local334 = edx_28;
                         esp_56 = esp_55 + 16;
-                        local332 = esp_56;
+                        local336 = esp_56;
                         goto bb0x401b4d;
                     }
                     else {
                         esi_4 = *(esp_101 + 20);
                         ebx_7 = ebp_13 - 1;
                         bl_24 = (unsigned char) ebp_13 - 1;
-                        local322 = bl_24;
-                        local324 = ebx_7;
-                        local326 = esi_4;
+                        local326 = bl_24;
+                        local328 = ebx_7;
+                        local330 = esi_4;
                         do {
-                            bl_33 = local322;
-                            eax_127 = local323;
-                            ebx_8 = local324;
-                            esp_104 = local325;
-                            esi_53 = local326;
+                            bl_33 = local326;
+                            eax_127 = local327;
+                            ebx_8 = local328;
+                            esp_104 = local329;
+                            esi_53 = local330;
                             ax = *esi_53;
                             ah = ax >> 8 & 0xff;
                             al = (unsigned char) eax_127;
@@ -3014,10 +3018,10 @@ bb0x401ac1:
                             *(int*)(esp_104 - 8) = esp_104 + 72;
                             esi_5 = esi_53 + 2;
                             eax_52 = proc_0x004031e0(*(esp_104 - 8), *(esp_104 - 4), cx, cl, ecx, esp_104 + 72); /* Warning: also results in cx, cl, ecx, edx_15, esp_42 */
-                            local326 = esi_5;
-                            local327 = edx_15;
+                            local330 = esi_5;
+                            local331 = edx_15;
                             esp_45 = esp_42 + 8;
-                            local328 = esp_45;
+                            local332 = esp_45;
                             if (eax_52 > 0) {
                                 edx_18 = *(esp_42 + 616);
                                 *(__size32*)(esp_42 + 4) = esp_42 + 36;
@@ -3026,48 +3030,48 @@ bb0x401ac1:
                                 ah = esp_42 + 80 >> 8 & 0xff;
                                 *(__size32*)(esp_42 - 8) = esp_42 + 80;
                                 eax_55 = proc_0x00401d50(*(esp_42 - 8), *(esp_42 - 4), *(esp_42 + 4), (unsigned char) esp_42 + 80, (unsigned char) esp_42 + 36, dl, bl_33, esp_42 + 36, edx_18, *esp_42); /* Warning: also results in al, dl, edx_21, esp_47 */
-                                local323 = eax_55;
-                                local327 = edx_21;
+                                local327 = eax_55;
+                                local331 = edx_21;
                                 esp_50 = esp_47 + 16;
                                 ecx = ebx_8;
                                 cl = (unsigned char) ebx_8;
                                 ebx_9 = ebx_8 - 1;
                                 bl_25 = (unsigned char) ebx_8 - 1;
-                                local322 = bl_25;
-                                local324 = ebx_9;
-                                local325 = esp_50;
-                                local328 = esp_50;
+                                local326 = bl_25;
+                                local328 = ebx_9;
+                                local329 = esp_50;
+                                local332 = esp_50;
                             }
                         } while (ebx_8 != 0);
-                        edx_27 = local327;
-                        esp_110 = local328;
+                        edx_27 = local331;
+                        esp_110 = local332;
                         ebx_11 = *(esp_110 + 16);
                         bh = ebx_11 >> 8 & 0xff;
                         bl_28 = (unsigned char) ebx_11;
-                        local329 = bl_28;
-                        local330 = edx_27;
-                        local331 = ebx_11;
-                        local332 = esp_110;
+                        local333 = bl_28;
+                        local334 = edx_27;
+                        local335 = ebx_11;
+                        local336 = esp_110;
                     }
 bb0x401b4d:
-                    bl_29 = local329;
-                    edx_26 = local330;
-                    ebx_28 = local331;
-                    esp_107 = local332;
-                    local333 = ax;
-                    local333 = ax;
-                    local334 = cx;
-                    local334 = cx;
-                    local335 = cl;
-                    local336 = dl;
-                    local337 = ah;
-                    local337 = ah;
-                    local340 = bh;
-                    local340 = bh;
-                    local341 = edx_26;
-                    local342 = ebx_28;
-                    local342 = ebx_28;
-                    local343 = esp_107;
+                    bl_29 = local333;
+                    edx_26 = local334;
+                    ebx_28 = local335;
+                    esp_107 = local336;
+                    local337 = ax;
+                    local337 = ax;
+                    local338 = cx;
+                    local338 = cx;
+                    local339 = cl;
+                    local340 = dl;
+                    local341 = ah;
+                    local341 = ah;
+                    local344 = bh;
+                    local344 = bh;
+                    local345 = edx_26;
+                    local346 = ebx_28;
+                    local346 = ebx_28;
+                    local347 = esp_107;
                     if ((bl_29 & 0x4) == 0) {
                         goto bb0x401b6a;
                     }
@@ -3077,777 +3081,777 @@ bb0x401b4d:
                     *(int*)(esp_107 - 12) = edi_10 - edx_6 + ebp_13;
                     *(int*)(esp_107 - 16) = 32;
                     al = proc_0x00401d10(*(esp_107 - 16), *(esp_107 - 12), *(esp_107 - 8), *(esp_107 - 4), al, (unsigned char) esp_107 + 28, dl, bl_29, esp_107 + 28, edx_24); /* Warning: also results in cl, dl, ecx, edx, esp_53 */
-                    local335 = cl;
-                    local336 = dl;
-                    local341 = edx;
+                    local339 = cl;
+                    local340 = dl;
+                    local345 = edx;
                     esp_54 = esp_53 + 16;
-                    local343 = esp_54;
+                    local347 = esp_54;
                     goto bb0x401b6a;
                 }
             }
 bb0x401b6a:
-            ax = local333;
-            cx = local334;
-            cl = local335;
-            dl = local336;
-            ah = local337;
-            ch = local338;
-            dh = local339;
-            bh = local340;
-            edx = local341;
-            ebx_25 = local342;
-            esp_80 = local343;
-            ebp_12 = local344;
-            local163 = local345;
-            local21 = local346;
-            local40 = local347;
-            local80 = local348;
-            local96 = local349;
-            local120 = local350;
-            *(unsigned int*)(esp_115 - 600) = local351;
-            local151 = local352;
-            local55 = local353;
-            edi_3 = *(esp_80 + 612);
-            bl_11 = *edi_3;
-            ebx_3 = ebx_25 >> 8 & 0xffffff | (bl_11);
-            edi_2 = edi_3 + 1;
-            *(unsigned char*)(esp_80 + 64) = bl_11;
-            *(__size32*)(esp_80 + 612) = edi_3 + 1;
-            local206 = ax;
-            local207 = cx;
-            local208 = al;
-            local209 = cl;
-            local210 = dl;
-            local211 = bl_11;
-            local212 = ah;
-            local213 = ch;
-            local214 = dh;
-            local215 = bh;
-            local216 = ebx_3;
-            local217 = esp_80;
-            local218 = ebp_12;
-            local220 = edi_2;
-            local221 = local163;
-            local222 = local21;
-            local223 = local40;
-            local224 = local80;
-            local225 = local96;
-            local226 = local120;
-            local227 = *(esp_115 - 600);
-            local228 = local151;
-            local354 = ax;
-            local355 = cx;
-            local356 = al;
-            local357 = cl;
-            local358 = dl;
-            local359 = ch;
-            local360 = dh;
-            local361 = bh;
-            local362 = edx;
-            local363 = esp_80;
-            if (bl_11 == 0) {
+            ax = local337;
+            cx = local338;
+            cl = local339;
+            dl = local340;
+            ah = local341;
+            ch = local342;
+            dh = local343;
+            bh = local344;
+            edx = local345;
+            ebx_25 = local346;
+            esp_80 = local347;
+            ebp_12 = local348;
+            local167 = local349;
+            *(__size32*)(esp_115 + 8) = local350;
+            local41 = local351;
+            local81 = local352;
+            local100 = local353;
+            local117 = local354;
+            local136 = local355;
+            local154 = local356;
+            local55 = local357;
+            edi_7 = *(esp_80 + 612);
+            bl_8 = *edi_7;
+            ebx_3 = ebx_25 >> 8 & 0xffffff | (bl_8);
+            edi_6 = edi_7 + 1;
+            *(unsigned char*)(esp_80 + 64) = bl_8;
+            *(__size32*)(esp_80 + 612) = edi_7 + 1;
+            local210 = ax;
+            local211 = cx;
+            local212 = al;
+            local213 = cl;
+            local214 = dl;
+            local215 = bl_8;
+            local216 = ah;
+            local217 = ch;
+            local218 = dh;
+            local219 = bh;
+            local220 = ebx_3;
+            local221 = esp_80;
+            local222 = ebp_12;
+            local224 = edi_6;
+            local225 = local167;
+            local226 = *(esp_115 + 8);
+            local227 = local41;
+            local228 = local81;
+            local229 = local100;
+            local230 = local117;
+            local231 = local136;
+            local232 = local154;
+            local358 = ax;
+            local359 = cx;
+            local360 = al;
+            local361 = cl;
+            local362 = dl;
+            local363 = ch;
+            local364 = dh;
+            local365 = bh;
+            local366 = edx;
+            local367 = esp_80;
+            if (bl_8 == 0) {
                 break;
             }
             esi_2 = *(esp_80 + 40);
             ecx = *(esp_80 + 60);
-            local219 = esi_2;
-            param3 = local206;
-            param4 = local207;
-            param5 = local208;
-            param6 = local209;
-            param7 = local210;
-            bl_1 = local211;
-            param8 = local212;
-            param9 = local213;
-            param10 = local214;
-            param11 = local215;
-            ebx_24 = local216;
-            esp_12 = local217;
-            ebp_11 = local218;
-            esi_16 = local219;
-            edi_6 = local220;
-            local160 = local221;
-            local20 = local222;
-            local39 = local223;
-            local78 = local224;
-            local95 = local225;
-            local118 = local226;
-            local131 = local227;
-            local149 = local228;
-            eax_9 = *(esp_12 + 28);
+            local223 = esi_2;
+            param3 = local210;
+            param4 = local211;
+            param5 = local212;
+            param6 = local213;
+            param7 = local214;
+            bl_1 = local215;
+            param8 = local216;
+            param9 = local217;
+            param10 = local218;
+            param11 = local219;
+            ebx_24 = local220;
+            esp_12 = local221;
+            ebp_11 = local222;
+            esi_20 = local223;
+            edi_2 = local224;
+            local164 = local225;
+            local18 = local226;
+            local40 = local227;
+            local80 = local228;
+            local99 = local229;
+            local116 = local230;
+            local135 = local231;
+            local153 = local232;
+            eax_4 = *(esp_12 + 28);
             edx = 0;
-            local229 = param5;
-            local231 = param6;
-            local232 = param8;
-            local233 = param7;
-            local234 = bl_1;
-            local235 = ebx_24;
-            local236 = esp_12;
-            local237 = edi_6;
-            local238 = param3;
-            local239 = param4;
-            local249 = local160;
-            local253 = bl_1;
-            local254 = ebx_24;
-            local298 = param3;
-            local298 = param3;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local299 = param4;
-            local300 = param6;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local301 = param7;
-            local302 = param9;
-            local302 = param9;
-            local302 = param9;
-            local302 = param9;
-            local302 = param9;
-            local302 = param9;
-            local302 = param9;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local303 = param10;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local304 = param11;
-            local305 = ecx;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local306 = ebx_24;
-            local307 = esp_12;
-            local307 = esp_12;
-            local308 = ebp_11;
-            local308 = ebp_11;
-            local308 = ebp_11;
-            local308 = ebp_11;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local309 = local160;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local310 = local20;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local311 = local39;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local312 = local78;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local313 = local95;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local314 = local118;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local315 = local131;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local316 = local149;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local317 = local54;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local333 = param3;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local334 = param4;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local335 = param6;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local336 = param7;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local337 = param8;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local338 = param9;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local339 = param10;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local340 = param11;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local341 = edx;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local342 = ebx_24;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local343 = esp_12;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local344 = ebp_11;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local345 = local160;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local346 = local20;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local347 = local39;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local348 = local78;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local349 = local95;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local350 = local118;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local351 = local131;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local352 = local149;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local353 = local54;
-            local354 = param3;
-            local355 = param4;
-            local356 = param5;
-            local357 = param6;
-            local358 = param7;
-            local359 = param9;
-            local360 = param10;
-            local361 = param11;
-            local362 = edx;
-            local363 = esp_12;
+            local233 = param5;
+            local235 = param6;
+            local236 = param8;
+            local237 = param7;
+            local238 = bl_1;
+            local239 = ebx_24;
+            local240 = esp_12;
+            local241 = edi_2;
+            local242 = param3;
+            local243 = param4;
+            local253 = local164;
+            local257 = bl_1;
+            local258 = ebx_24;
+            local302 = param3;
+            local302 = param3;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local303 = param4;
+            local304 = param6;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local305 = param7;
+            local306 = param9;
+            local306 = param9;
+            local306 = param9;
+            local306 = param9;
+            local306 = param9;
+            local306 = param9;
+            local306 = param9;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local307 = param10;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local308 = param11;
+            local309 = ecx;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local310 = ebx_24;
+            local311 = esp_12;
+            local311 = esp_12;
+            local312 = ebp_11;
+            local312 = ebp_11;
+            local312 = ebp_11;
+            local312 = ebp_11;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local313 = local164;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local314 = local18;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local315 = local40;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local316 = local80;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local317 = local99;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local318 = local116;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local319 = local135;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local320 = local153;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local321 = local54;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local337 = param3;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local338 = param4;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local339 = param6;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local340 = param7;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local341 = param8;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local342 = param9;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local343 = param10;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local344 = param11;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local345 = edx;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local346 = ebx_24;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local347 = esp_12;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local348 = ebp_11;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local349 = local164;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local350 = local18;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local351 = local40;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local352 = local80;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local353 = local99;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local354 = local116;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local355 = local135;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local356 = local153;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local357 = local54;
+            local358 = param3;
+            local359 = param4;
+            local360 = param5;
+            local361 = param6;
+            local362 = param7;
+            local363 = param9;
+            local364 = param10;
+            local365 = param11;
+            local366 = edx;
+            local367 = esp_12;
         }
     }
-    param3 = local354;
-    param4 = local355;
-    param5 = local356;
-    param6 = local357;
-    param7 = local358;
-    param9 = local359;
-    param10 = local360;
-    param11 = local361;
-    param12 = local362;
-    esp = local363;
+    param3 = local358;
+    param4 = local359;
+    param5 = local360;
+    param6 = local361;
+    param7 = local362;
+    param9 = local363;
+    param10 = local364;
+    param11 = local365;
+    param12 = local366;
+    esp = local367;
     ebx = *(esp + 12);
     return param3; /* WARNING: Also returning: cx := param4, al := param5, cl_1 := param6, dl := param7, bl := (unsigned char) ebx, ch := param9, dh := param10, bh := param11, ecx := ecx, edx := param12 */
 }
@@ -5593,7 +5597,7 @@ bb0x403c38:
 }
 
 /** address: 0x004035e0 */
-__size32 proc_0x004035e0(unsigned char param1, __size32 param2, int param3)
+__size32 proc_0x004035e0(unsigned char param1, int param2, int param3)
 {
     char al; 		// r8
     unsigned char dl; 		// r10
@@ -5622,11 +5626,11 @@ __size32 proc_0x004035e0(unsigned char param1, __size32 param2, int param3)
     int edx_4; 		// r26{0}
     int edx_5; 		// r26{0}
     __size32 esi; 		// r30
-    union { unsigned int; union { int *; int; } *; } esi_1; 		// r30{0}
-    unsigned int esi_2; 		// r30{0}
-    unsigned int esi_3; 		// r30{0}
-    union { unsigned int; union { int *; int; } *; } esi_4; 		// r30{0}
-    union { unsigned int; union { int *; int; } *; } esi_5; 		// r30{0}
+    union { int *; __size32; } esi_1; 		// r30{0}
+    __size32 esi_2; 		// r30{0}
+    __size32 esi_3; 		// r30{0}
+    union { int *; __size32; } esi_4; 		// r30{0}
+    union { int *; __size32; } esi_5; 		// r30{0}
     int esp; 		// r28
     __size32 esp_1; 		// r28{0}
     __size32 esp_10; 		// r28{0}
@@ -5641,13 +5645,13 @@ __size32 proc_0x004035e0(unsigned char param1, __size32 param2, int param3)
     HANDLE local0; 		// m[esp - 24]
     int local1; 		// m[esp - 20]
     unsigned int local10; 		// m[esp_9 - 28]{0}
-    __size32 local11; 		// param2{0}
+    int local11; 		// param2{0}
     int local12; 		// param3{0}
     __size32 local13; 		// esp_6{0}
     __size32 local14; 		// ebp_3{0}
     int local15; 		// eax_1{0}
     union { int *; __size32; } local16; 		// ecx_1{0}
-    union { union { int *; int; } *; unsigned int; } local17; 		// esi_1{0}
+    union { __size32; int *; } local17; 		// esi_1{0}
     int local18; 		// edx{0}
     __size32 local19; 		// esp{0}
     DWORD local2; 		// m[esp - 16]
@@ -5736,8 +5740,8 @@ bb0x403725:
                         }
                     }
                     ecx = ebp + 24;
-                    *(int*)(ebp + 20) = esi + 0x400000;
-                    *(unsigned int*)(ebp + 16) = esi;
+                    *(__size32*)(ebp + 20) = esi + 0x400000;
+                    *(__size32*)(ebp + 16) = esi;
                     *(__size32*)(ebp + 8) = ebp + 24;
                     *(__size32*)(ebp + 12) = ebp + 152;
                     r[24] = 0;
@@ -5757,17 +5761,13 @@ bb0x403725:
                         local18 = edx;
                         local20 = dl;
                     } while (eax_1 + 1 < 1024);
-                    ecx = 0x4000;
-                    edi = esi;
-                    *(int*)edi = 0;
-                    edi +=  (DF == 0) ? 4 : -4;
-                    ecx = ecx - 1;
+                    *(int*)esi = 0;
                     r[24] = *(ebp + 16);
                     if (esi < (unsigned int)(r[24] + 0x10000)) {
                         do {
                             esi_1 = local17;
                             *(__size32*)(esi_1 + 4) = 240;
-                            *(union { unsigned int; int *; }*)esi_1 = esi_1 + 8;
+                            *(__size32*)esi_1 = esi_1 + 8;
                             *(int*)(esi_1 + 248) = -1;
                             edx_1 = *(ebp + 16);
                             esi_2 = esi_1 + 0x1000;

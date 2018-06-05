@@ -1,5 +1,5 @@
 int main(int argc, union { char *[] *; int; } argv);
-__size32 __sputc(union { __size32; __size32 *; } param1, unsigned char param2);
+__size32 __sputc(__size32 param1, union { __size32; __size32 *; } param2, unsigned char param3);
 
 /** address: 0x00002838 */
 int main(int argc, union { char *[] *; int; } argv)
@@ -71,7 +71,7 @@ bb0x2aec:
                     }
                     else {
                         g4 = *(/* machine specific */ (int) LR + 0x810);
-                        g3 = __sputc(g4 + 88, local8); /* Warning: also results in g30 */
+                        g3 = __sputc(/* machine specific */ (int) LR, g4 + 88, local8); /* Warning: also results in g30 */
                         local9 = g30;
                         *(int*)(g30 + 64) = g3;
                     }
@@ -126,36 +126,35 @@ bb0x2964:
 }
 
 /** address: 0x00002b10 */
-__size32 __sputc(union { __size32; __size32 *; } param1, unsigned char param2)
+__size32 __sputc(__size32 param1, union { __size32; __size32 *; } param2, unsigned char param3)
 {
     int g0; 		// r0
     __size32 g1; 		// r1
     int g11; 		// r11
     int g3; 		// r3
-    __size32 g30; 		// r30
     int g9; 		// r9
     int local0; 		// m[g1 - 32]
 
-    g9 = *(param1 + 8);
-    *(int*)(param1 + 8) = g9 - 1;
+    g9 = *(param2 + 8);
+    *(int*)(param2 + 8) = g9 - 1;
     if (g9 - 1 >= 0) {
 bb0x2b74:
-        g11 = *param1;
-        g0 = (param2);
+        g11 = *param2;
+        g0 = (param3);
         *(__size8*)g11 = (char) g0;
-        *(__size32*)param1 = g11 + 1;
+        *(__size32*)param2 = g11 + 1;
         local0 = ROTL(g0) & 0xff;
     }
     else {
-        g9 = *(param1 + 8);
-        g0 = *(param1 + 24);
+        g9 = *(param2 + 8);
+        g0 = *(param2 + 24);
         if (g9 < g0) {
 bb0x2b9c:
             g3 = __swbuf();
             local0 = g3;
         }
         else {
-            if ((int) (param2) != 10) {
+            if ((int) (param3) != 10) {
                 goto bb0x2b74;
             }
             else {
@@ -163,6 +162,6 @@ bb0x2b9c:
             }
         }
     }
-    return g30; /* WARNING: Also returning: g3 := local0, g30 := (g1 - 96) */
+    return param1; /* WARNING: Also returning: g3 := local0, g30 := (g1 - 96) */
 }
 
