@@ -125,11 +125,7 @@ bool Exp::isRegOfConst() const
 
 bool Exp::isRegN(int N) const
 {
-    if (!isRegOfConst()) {
-        return false;
-    }
-
-    return this->access<Const, 1>()->getInt() == N;
+    return isRegOfConst() && access<Const, 1>()->getInt() == N;
 }
 
 
