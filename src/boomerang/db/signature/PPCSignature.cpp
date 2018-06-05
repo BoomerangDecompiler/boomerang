@@ -99,25 +99,22 @@ void PPCSignature::addParameter(const QString& name, const SharedExp& e,
 
 SharedExp PPCSignature::getProven(SharedExp left) const
 {
-    if (left->isRegOfConst()) {
-        int r = left->access<Const, 1>()->getInt();
-
-        switch (r)
-        {
-        case 1: // stack
-            return left;
-        }
+    if (!left->isRegOfConst()) {
+        return nullptr;
     }
 
-    return nullptr;
+    const int regIdx = left->access<Const, 1>()->getInt();
+    return (regIdx == PPC_REG_G1) ? left : nullptr;
 }
 
 
 bool PPCSignature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfConst()) {
-        int r = e->access<Const, 1>()->getInt();
-        return r == PPC_REG_G1;
+        const int regIdx = e->access<Const, 1>()->getInt();
+        if (regIdx == PPC_REG_G1) {
+            return true;
+        }
     }
 
     return false;
