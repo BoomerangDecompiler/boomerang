@@ -73,7 +73,6 @@ PassManager::PassManager()
     m_passes[static_cast<size_t>(PassID::FinalParameterSearch     )].reset(new FinalParameterSearchPass());
     m_passes[static_cast<size_t>(PassID::UnusedStatementRemoval   )].reset(new UnusedStatementRemovalPass());
     m_passes[static_cast<size_t>(PassID::ParameterSymbolMap       )].reset(new ParameterSymbolMapPass());
-    m_passes[static_cast<size_t>(PassID::BBSimplify               )].reset(new BBSimplifyPass());
     m_passes[static_cast<size_t>(PassID::UnusedLocalRemoval       )].reset(new UnusedLocalRemovalPass());
     m_passes[static_cast<size_t>(PassID::ImplicitPlacement        )].reset(new ImplicitPlacementPass());
 
