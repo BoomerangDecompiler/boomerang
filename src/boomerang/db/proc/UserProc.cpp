@@ -816,6 +816,7 @@ void UserProc::earlyDecompile()
     Boomerang::get()->alertDecompileDebugPoint(this, "Before Initialise");
 
     PassManager::get()->executePass(PassID::StatementInit, this);
+    PassManager::get()->executePass(PassID::BBSimplify, this); // Remove branches with false guards
     PassManager::get()->executePass(PassID::Dominators, this);
 
     if (!SETTING(decompile)) {
