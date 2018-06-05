@@ -104,7 +104,7 @@ void ST20Signature::addParameter(const QString& name, const SharedExp& e,
 
 SharedExp ST20Signature::getProven(SharedExp left) const
 {
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
 
         switch (r)

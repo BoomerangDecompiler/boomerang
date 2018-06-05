@@ -375,7 +375,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
                     //                    TypedExp* te = (TypedExp*)cur->getSubExp1();
                     SharedExp s = cur->getSubExp1();
 
-                    if (s->isRegOfK()) {
+                    if (s->isRegOfConst()) {
                         auto c = s->access<Const, 1>();
                         int  K = c->getInt(); // Old register number
 
@@ -616,7 +616,7 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
         s->addUsedLocs(locs);
 
         for (SharedExp l : locs) {
-            if (!l->isRegOfK()) {
+            if (!l->isRegOfConst()) {
                 continue;
             }
 

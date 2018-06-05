@@ -113,7 +113,7 @@ void Exp::createDotFile(const char *name)
 }
 
 
-bool Exp::isRegOfK() const
+bool Exp::isRegOfConst() const
 {
     if (m_oper != opRegOf) {
         return false;
@@ -125,7 +125,7 @@ bool Exp::isRegOfK() const
 
 bool Exp::isRegN(int N) const
 {
-    if (!isRegOfK()) {
+    if (!isRegOfConst()) {
         return false;
     }
 

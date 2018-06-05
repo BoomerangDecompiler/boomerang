@@ -203,7 +203,7 @@ SharedExp Win32Signature::getProven(SharedExp left) const
         nparams--;
     }
 
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         switch (left->access<Const, 1>()->getInt())
         {
             // Note: assumes callee pop... not true for cdecl functions!
@@ -222,7 +222,7 @@ SharedExp Win32Signature::getProven(SharedExp left) const
 
 bool Win32Signature::isPreserved(SharedExp e) const
 {
-    if (e->isRegOfK()) {
+    if (e->isRegOfConst()) {
         switch (e->access<Const, 1>()->getInt())
         {
         case PENT_REG_EBP: // ebp
@@ -267,7 +267,7 @@ void Win32Signature::getLibraryDefines(StatementList& defs)
 
 SharedExp Win32TcSignature::getProven(SharedExp left) const
 {
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         if (left->access<Const, 1>()->getInt() == PENT_REG_ESP) {
             int nparams = m_params.size();
 

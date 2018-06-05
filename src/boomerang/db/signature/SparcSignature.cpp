@@ -114,7 +114,7 @@ std::shared_ptr<Signature> SparcSignature::promote(UserProc * /*p*/)
 
 SharedExp SparcSignature::getProven(SharedExp left) const
 {
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
 
         switch (r)
@@ -140,7 +140,7 @@ SharedExp SparcSignature::getProven(SharedExp left) const
 
 bool SparcSignature::isPreserved(SharedExp e) const
 {
-    if (e->isRegOfK()) {
+    if (e->isRegOfConst()) {
         int r = e->access<Const, 1>()->getInt();
 
         switch (r)
@@ -187,7 +187,7 @@ void SparcSignature::getLibraryDefines(StatementList& defs)
 
 SharedExp SparcLibSignature::getProven(SharedExp left) const
 {
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
 
         switch (r)

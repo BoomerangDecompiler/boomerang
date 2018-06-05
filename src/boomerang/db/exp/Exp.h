@@ -138,7 +138,7 @@ public:
     bool isRegOf() const { return m_oper == opRegOf; }
 
     /// \returns true if the expression is r[K] where K is an integer Const
-    bool isRegOfK() const;
+    bool isRegOfConst() const;
 
     /// \returns true if the expression is r[n] with register number \p n
     bool isRegN(int n) const;

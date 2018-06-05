@@ -117,7 +117,7 @@ void MIPSSignature::addParameter(const QString& name, const SharedExp& e,
 
 SharedExp MIPSSignature::getProven(SharedExp left) const
 {
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
 
         if (r == getStackRegister()) {
@@ -131,7 +131,7 @@ SharedExp MIPSSignature::getProven(SharedExp left) const
 
 bool MIPSSignature::isPreserved(SharedExp e) const
 {
-    if (e->isRegOfK()) {
+    if (e->isRegOfConst()) {
         int r = e->access<Const, 1>()->getInt();
         return r == getStackRegister();
     }

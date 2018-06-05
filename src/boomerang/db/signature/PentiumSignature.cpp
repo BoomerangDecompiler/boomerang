@@ -94,7 +94,7 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
                 gotcorrectret1 = true;
             }
         }
-        else if (e->getLeft()->isRegOfK() && (e->getLeft()->getSubExp1()->access<Const>()->getInt() == PENT_REG_ESP)) {
+        else if (e->getLeft()->isRegOfConst() && (e->getLeft()->getSubExp1()->access<Const>()->getInt() == PENT_REG_ESP)) {
             if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegN(PENT_REG_ESP) &&
                 e->getRight()->getSubExp2()->isIntConst() && (e->getRight()->getSubExp2()->access<Const>()->getInt() == 4)) {
                 LOG_VERBOSE("Got r[28] = r[28] + 4");
@@ -160,7 +160,7 @@ std::shared_ptr<Signature> PentiumSignature::promote(UserProc * /*p*/)
 
 SharedExp PentiumSignature::getProven(SharedExp left) const
 {
-    if (left->isRegOfK()) {
+    if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
 
         switch (r)
@@ -182,7 +182,7 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
 
 bool PentiumSignature::isPreserved(SharedExp e) const
 {
-    if (e->isRegOfK()) {
+    if (e->isRegOfConst()) {
         switch (e->access<Const, 1>()->getInt())
         {
         case PENT_REG_EBP: // ebp
