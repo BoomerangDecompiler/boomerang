@@ -63,6 +63,51 @@ void ProgTest::testCreateModule()
 }
 
 
+void ProgTest::testGetOrInsertModule()
+{
+    Prog prog("test", nullptr);
+
+    // get module
+    QCOMPARE(prog.getOrInsertModule("test"), prog.getRootModule());
+
+    Module *mod = prog.getOrInsertModule("");
+    QVERIFY(mod != nullptr);
+    QVERIFY(mod != prog.getRootModule());
+
+    QCOMPARE(prog.getOrInsertModule("foo"), prog.getOrInsertModule("foo"));
+}
+
+
+void ProgTest::testGetRootModule()
+{
+    Prog prog("test", nullptr);
+    QVERIFY(prog.getRootModule() != nullptr);
+}
+
+
+void ProgTest::testFindModule()
+{
+    Prog prog("test", nullptr);
+    QCOMPARE(prog.findModule("test"), prog.getRootModule());
+
+    QVERIFY(prog.findModule("foo") == nullptr);
+
+    Module *foo = prog.getOrInsertModule("foo");
+    QCOMPARE(prog.findModule("foo"), foo);
+}
+
+
+void ProgTest::testIsModuleUsed()
+{
+    Prog prog("test", nullptr);
+
+    QVERIFY(!prog.isModuleUsed(prog.getRootModule())); // no functions present in module
+
+    prog.getOrCreateFunction(Address(0x1000));
+    QVERIFY(prog.isModuleUsed(prog.getRootModule()));
+}
+
+
 void ProgTest::testGetOrCreateFunction()
 {
     Prog prog("test", nullptr);
@@ -164,17 +209,6 @@ void ProgTest::testAddEntryPoint()
     LibProc *libProc = prog.getOrCreateLibraryProc("testProc");
     libProc->setEntryAddress(Address(0x2000));
     QVERIFY(prog.addEntryPoint(Address(0x2000)) == nullptr);
-}
-
-
-void ProgTest::testIsModuleUsed()
-{
-    Prog prog("test", nullptr);
-
-    QVERIFY(!prog.isModuleUsed(prog.getRootModule())); // no functions present in module
-
-    prog.getOrCreateFunction(Address(0x1000));
-    QVERIFY(prog.isModuleUsed(prog.getRootModule()));
 }
 
 

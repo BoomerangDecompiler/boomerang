@@ -48,7 +48,7 @@ public:
     Prog(const Prog& other) = delete;
     Prog(Prog&& other) = default;
 
-    virtual ~Prog();
+    ~Prog();
 
     Prog& operator=(const Prog& other) = delete;
     Prog& operator=(Prog&& other) = default;
@@ -84,6 +84,14 @@ public:
      * \param name retrieve/create module with this name.
      */
     Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
+
+    Module *getRootModule() { return m_rootModule; }
+    Module *getRootModule() const { return m_rootModule; }
+
+    Module *findModule(const QString& name);
+    const Module *findModule(const QString& name) const;
+
+    bool isModuleUsed(Module *module) const;
 
     const ModuleList& getModuleList() const { return m_moduleList; }
 
@@ -125,12 +133,10 @@ public:
     /// \returns the new or exising entry procedure, or nullptr on failure.
     Function *addEntryPoint(Address entryAddr);
 
+
+
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
-
-    // globals
-    std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }
-    const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
 
     /// Check the wellformedness of all the procedures/cfgs in this program
     bool isWellFormed() const;
@@ -142,34 +148,6 @@ public:
 
     /// Returns true if this is a win32 program
     bool isWin32() const;
-
-    /// Get a global variable if possible, looking up the loader's symbol table if necessary
-    QString getGlobalName(Address addr) const;
-
-    /// Get a named global variable if possible, looking up the loader's symbol table if necessary
-    Address getGlobalAddr(const QString& name) const;
-    Global *getGlobal(const QString& name) const;
-
-    /// Make up a name for a new global at address \a uaddr
-    /// (or return an existing name if address already used)
-    QString newGlobalName(Address uaddr);
-
-    /// Guess a global's type based on its name and address
-    SharedType guessGlobalType(const QString& name, Address addr) const;
-
-    /// Make an array type for the global array starting at \p startAddr.
-    /// Mainly, set the length sensibly
-    std::shared_ptr<ArrayType> makeArrayType(Address startAddr, SharedType baseType);
-
-    /// Indicate that a given global has been seen used in the program.
-    /// \returns true on success, false on failure (e.g. existing incompatible type already present)
-    bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
-
-    /// Get the type of a global variable
-    SharedType getGlobalType(const QString& name) const;
-
-    /// Set the type of a global variable
-    void setGlobalType(const QString& name, SharedType ty);
 
     /// get a string constant at a given address if appropriate
     /// if knownString, it is already known to be a char*
@@ -206,12 +184,8 @@ public:
     void printSymbolsToFile() const;
     void printCallGraph(const QString &fileName = "callgraph.dot") const;
 
-    Module *getRootModule() const { return m_rootModule; }
-    Module *findModule(const QString& name) const;
-
     /// \returns the default module for a symbol with name \p name.
     Module *getModuleForSymbol(const QString& symbolName);
-    bool isModuleUsed(Module *module) const;
 
     /// Add the given RTL to the front end's map from address to already-decoded-RTL
     void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
@@ -242,6 +216,38 @@ public:
     void finishDecode();
 
     const std::list<UserProc *> getEntryProcs() const { return m_entryProcs; }
+
+    // globals
+    std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }
+    const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
+
+    /// Get a global variable if possible, looking up the loader's symbol table if necessary
+    QString getGlobalName(Address addr) const;
+
+    /// Get a named global variable if possible, looking up the loader's symbol table if necessary
+    Address getGlobalAddr(const QString& name) const;
+    Global *getGlobal(const QString& name) const;
+
+    /// Make up a name for a new global at address \a uaddr
+    /// (or return an existing name if address already used)
+    QString newGlobalName(Address uaddr);
+
+    /// Guess a global's type based on its name and address
+    SharedType guessGlobalType(const QString& name, Address addr) const;
+
+    /// Make an array type for the global array starting at \p startAddr.
+    /// Mainly, set the length sensibly
+    std::shared_ptr<ArrayType> makeArrayType(Address startAddr, SharedType baseType);
+
+    /// Indicate that a given global has been seen used in the program.
+    /// \returns true on success, false on failure (e.g. existing incompatible type already present)
+    bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
+
+    /// Get the type of a global variable
+    SharedType getGlobalType(const QString& name) const;
+
+    /// Set the type of a global variable
+    void setGlobalType(const QString& name, SharedType ty);
 
 private:
     QString m_name;                         ///< name of the program

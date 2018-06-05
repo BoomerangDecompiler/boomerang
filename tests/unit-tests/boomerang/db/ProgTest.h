@@ -28,6 +28,10 @@ private slots:
     void testName();
 
     void testCreateModule();
+    void testGetOrInsertModule();
+    void testGetRootModule();
+    void testFindModule();
+    void testIsModuleUsed();
 
     void testGetOrCreateFunction();
     void testGetOrCreateLibraryProc();
@@ -37,8 +41,6 @@ private slots:
     void testGetNumFunctions();
 
     void testAddEntryPoint();
-
-    void testIsModuleUsed();
 
 private:
     Prog *m_prog;

@@ -89,20 +89,6 @@ Prog::~Prog()
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, IFrontEnd *frontEnd)
-{
-    for (const auto& m : m_moduleList) {
-        if (m->getName() == name) {
-            return m.get();
-        }
-    }
-
-    Module *m = fact.create(name, this, frontEnd ? frontEnd : m_defaultFrontend);
-    m_moduleList.push_back(std::unique_ptr<Module>(m));
-    return m;
-}
-
-
 void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
     if (m_defaultFrontend) {
@@ -124,6 +110,72 @@ void Prog::setName(const QString& name)
         m_rootModule->setName(name);
     }
 }
+
+
+Module *Prog::createModule(const QString& name, Module *parentModule, const ModuleFactory& factory)
+{
+    if (parentModule == nullptr) {
+        parentModule = m_rootModule;
+    }
+
+    Module *module = m_rootModule->find(name);
+
+    if (module && (module->getUpstream() == parentModule)) {
+        // a module already exists
+        return nullptr;
+    }
+
+    module = factory.create(name, this, this->getFrontEnd());
+    parentModule->addChild(module);
+    m_moduleList.push_back(std::unique_ptr<Module>(module));
+    return module;
+}
+
+
+Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, IFrontEnd *frontEnd)
+{
+    for (const auto& m : m_moduleList) {
+        if (m->getName() == name) {
+            return m.get();
+        }
+    }
+
+    Module *m = fact.create(name, this, frontEnd ? frontEnd : m_defaultFrontend);
+    m_moduleList.push_back(std::unique_ptr<Module>(m));
+    return m;
+}
+
+
+Module *Prog::findModule(const QString& name)
+{
+    auto it = std::find_if(m_moduleList.begin(), m_moduleList.end(),
+        [name](const std::unique_ptr<Module>& mod) {
+            return mod->getName() == name;
+        });
+
+    return (it != m_moduleList.end()) ? it->get() : nullptr;
+}
+
+
+const Module *Prog::findModule(const QString& name) const
+{
+    auto it = std::find_if(m_moduleList.begin(), m_moduleList.end(),
+                           [name](const std::unique_ptr<Module>& mod) {
+                               return mod->getName() == name;
+                           });
+
+    return (it != m_moduleList.end()) ? it->get() : nullptr;
+}
+
+
+bool Prog::isModuleUsed(Module *module) const
+{
+    // TODO: maybe module can have no procedures and still be used ?
+    return !module->empty();
+}
+
+
+
 
 
 bool Prog::isWellFormed() const
@@ -162,21 +214,14 @@ void Prog::finishDecode()
 }
 
 
-bool Prog::isModuleUsed(Module *module) const
-{
-    // TODO: maybe module can have no procedures and still be used ?
-    return !module->empty();
-}
-
-
 Module *Prog::getModuleForSymbol(const QString& symbolName)
 {
-    QString             sourceFileName;
     const BinarySymbol *sym = nullptr;
     if (m_binaryFile) {
         sym = m_binaryFile->getSymbols()->findSymbolByName(symbolName);
     }
 
+    QString sourceFileName;
     if (sym) {
         sourceFileName = sym->belongsToSourceFile();
     }
@@ -439,26 +484,6 @@ bool Prog::removeFunction(const QString& name)
     }
 
     return false;
-}
-
-
-Module *Prog::createModule(const QString& name, Module *parentModule, const ModuleFactory& factory)
-{
-    if (parentModule == nullptr) {
-        parentModule = m_rootModule;
-    }
-
-    Module *module = m_rootModule->find(name);
-
-    if (module && (module->getUpstream() == parentModule)) {
-        // a module already exists
-        return nullptr;
-    }
-
-    module = factory.create(name, this, this->getFrontEnd());
-    parentModule->addChild(module);
-    m_moduleList.push_back(std::unique_ptr<Module>(module));
-    return module;
 }
 
 
@@ -1073,12 +1098,6 @@ void Prog::printSymbolsToFile() const
     f.flush();
     tgt.commit();
     LOG_VERBOSE("Leaving Prog::printSymbolsToFile");
-}
-
-
-Module *Prog::findModule(const QString& name) const
-{
-    return m_rootModule->find(name);
 }
 
 
