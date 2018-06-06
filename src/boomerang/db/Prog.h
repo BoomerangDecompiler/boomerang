@@ -183,9 +183,6 @@ public:
 
     void readSymbolFile(const QString& fname);
 
-    /// Add the given RTL to the front end's map from address to already-decoded-RTL
-    void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
-
     /**
      * This does extra processing on a constant. The expression \p e
      * is expected to be a Const, and the Address \p location

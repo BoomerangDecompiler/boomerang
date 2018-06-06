@@ -203,7 +203,7 @@ public:
      * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
      * incomplete in these cases, and needs to be restarted from scratch
      */
-    void addDecodedRTL(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
+    void saveDecodedRTL(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
     void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL);
     void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 

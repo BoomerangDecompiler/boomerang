@@ -2935,10 +2935,10 @@ void UserProc::processDecodedICTs()
         RTL *rtl = bb->getLastRTL();
 
         if (DEBUG_SWITCH) {
-            LOG_MSG("Saving high level switch statement %1", rtl);
+            LOG_MSG("Saving high level switch statement:\n%1", rtl);
         }
 
-        m_prog->addDecodedRTL(bb->getHiAddr(), rtl);
+        m_prog->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
         // Now decode those new targets, adding out edges as well
         //        if (last->isCase())
         //            bb->processSwitch(this);
