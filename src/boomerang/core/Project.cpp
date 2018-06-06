@@ -19,6 +19,7 @@
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/ProgSymbolWriter.h"
+#include "boomerang/util/CallGraphDotWriter.h"
 
 
 Project::Project()
@@ -132,7 +133,7 @@ bool Project::decodeBinaryFile()
     }
 
     if (SETTING(generateCallGraph)) {
-        m_prog->printCallGraph();
+        CallGraphDotWriter().writeCallGraph(getProg(), "callgraph.dot");
     }
 
     return true;

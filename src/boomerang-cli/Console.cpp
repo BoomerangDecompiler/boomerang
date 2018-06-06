@@ -17,6 +17,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/util/CallGraphDotWriter.h"
 
 #include <QFile>
 #include <QString>
@@ -727,12 +728,14 @@ CommandStatus Console::handlePrint(const QStringList& args)
         return CommandStatus::Success;
     }
     else if (args[0] == "callgraph") {
-        if (args.size() > 1) {
-            std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
+        if (args.size() > 2) {
+            std::cerr << "Wrong number of arguments for command; Expected 1 or 2, got " << args.size() << "." << std::endl;
             return CommandStatus::ParseError;
         }
 
-        prog->printCallGraph();
+        const QString dstName = (args.size() == 2) ? args[1] : "callgraph.dot";
+
+        CallGraphDotWriter().writeCallGraph(prog, dstName);
         return CommandStatus::Success;
     }
     else if (args[0] == "cfg") {
@@ -795,29 +798,25 @@ CommandStatus Console::handleHelp(const QStringList& args)
     std::cout <<
         "Available commands:\n"
         "  decode <file>                      : Loads and decodes the specified binary.\n"
-        "  decompile [proc1 [proc2 [...]]]    : Decompiles the program or specified function(s).\n"
-        "  codegen [module1 [module2 [...]]]  : Generates code for the program or a\n"
-        "                                       specified module.\n"
+        "  decompile [<proc1> [<proc2>...]]   : Decompiles the program or specified function(s).\n"
+        "  codegen [<module1> [<module2>...]] : Generates code for the program or a specified module.\n"
         "  info prog                          : Print info about the program.\n"
         "  info module <module>               : Print info about a module.\n"
         "  info proc <proc>                   : Print info about a proc.\n"
-        "  move proc <proc> <module>          : Moves the specified proc to the specified\n"
-        "                                       module.\n"
-        "  move module <module> <parent>      : Moves the specified module to the\n"
-        "                                       specified parent module.\n"
-        "  add module <module> [<parent>]     : Adds a new module to the root/specified\n"
-        "                                       module.\n"
+        "  move proc <proc> <module>          : Moves the specified proc to the specified module.\n"
+        "  move module <module> <parent>      : Moves the specified module to the specified parent module.\n"
+        "  add module <module> [<parent>]     : Adds a new module to the root/specified module.\n"
         "  delete module <module> [...]       : Deletes empty modules.\n"
         "  rename proc <proc> <newname>       : Renames the specified proc.\n"
         "  rename module <module> <newname>   : Renames the specified module.\n"
-        "  print callgraph                    : prints the call graph of the program.\n"
-        "  print cfg [<proc1> [proc2 [...]]]  : prints the Control Flow Graph of the program\n"
-        "                                       or a set of procedures.\n"
-        "  print rtl [<proc1> [proc2 [...]]]  : Print the RTL for a proc.\n"
+        "  print callgraph [<filename>]       : prints the call graph of the program. (filename defaults to 'callgraph.dot')\n"
+        "  print cfg [<proc1> [<proc2>...]]   : prints the Control Flow Graph of the program or a set of procedures.\n"
+        "  print rtl [<proc1> [<proc2>...]]   : Print the RTL for a proc.\n"
         "  replay <file>                      : Reads file and executes commands line by line.\n"
-
+        "\n"
         "  help                               : This help.\n"
-        "  exit                               : Quit Boomerang.\n";
+        "  exit                               : Quit Boomerang.\n"
+        "\n";
     std::cout.flush();
     return CommandStatus::Success;
 }

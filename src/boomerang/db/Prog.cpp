@@ -962,59 +962,6 @@ const QString& Prog::getDynamicProcName(Address addr) const
 }
 
 
-void Prog::printCallGraph(const QString &filename) const
-{
-    QSaveFile saveFile(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
-
-    if (!saveFile.open(QFile::WriteOnly)) {
-        LOG_ERROR("Cannot open output file '%1' for callgraph output", filename);
-        return;
-    }
-
-    QTextStream ost(&saveFile);
-
-    ost << "digraph callgraph\n";
-    ost << "{\n";
-
-    std::queue<Function *>           procList;
-    std::unordered_set<Function *>   seen;
-
-    for (Function *entry : m_entryProcs) {
-        // We have to explicitly write entry procedures here
-        // because not every entry procedure has callees (e.g. hello world main)
-        ost << "    " << entry->getName() << ";\n";
-        procList.push(entry);
-    }
-
-    while (!procList.empty()) {
-        Function *currentProc = procList.front();
-        procList.pop();
-
-        if (currentProc == reinterpret_cast<Function *>(-1)) {
-            continue;
-        }
-        else if (seen.find(currentProc) != seen.end()) {
-            continue; // already processed
-        }
-        seen.insert(currentProc);
-
-        UserProc *up = static_cast<UserProc *>(currentProc);
-
-        for (Function *callee : up->getCallees()) {
-            ost << "    " << up->getName() << " -> " << callee->getName() << ";\n";
-
-            if (seen.find(callee) == seen.end() && !callee->isLib()) {
-                procList.push(callee);
-            }
-        }
-    }
-
-    ost << "}\n";
-
-    ost.flush();
-    saveFile.commit();
-}
-
 
 void Prog::updateLibrarySignatures()
 {
