@@ -18,6 +18,7 @@
 #include "boomerang/db/ProgDecompiler.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/ProgSymbolWriter.h"
 
 
 Project::Project()
@@ -127,7 +128,7 @@ bool Project::decodeBinaryFile()
     LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
 
     if (SETTING(generateSymbols)) {
-        m_prog->printSymbolsToFile();
+        ProgSymbolWriter().writeSymbolsToFile(getProg(), "symbols.h");
     }
 
     if (SETTING(generateCallGraph)) {

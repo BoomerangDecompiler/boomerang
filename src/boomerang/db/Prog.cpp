@@ -1016,41 +1016,6 @@ void Prog::printCallGraph(const QString &filename) const
 }
 
 
-void printProcsRecursive(Function *function, int indent, QTextStream& f, std::set<Function *>& seen)
-{
-    bool fisttime = false;
-
-    if (seen.find(function) == seen.end()) {
-        seen.insert(function);
-        fisttime = true;
-    }
-
-    for (int i = 0; i < indent; i++) {
-        f << "     ";
-    }
-
-    if (!function->isLib() && fisttime) { // seen lib proc
-        f << function->getEntryAddress();
-        f << " __nodecode __incomplete void " << function->getName() << "();\n";
-
-        UserProc *proc = static_cast<UserProc *>(function);
-
-        for (Function *callee : proc->getCallees()) {
-            printProcsRecursive(callee, indent + 1, f, seen);
-        }
-
-        for (int i = 0; i < indent; i++) {
-            f << "     ";
-        }
-
-        f << "// End of " << function->getName() << "\n";
-    }
-    else {
-        f << "// " << function->getName() << "();\n";
-    }
-}
-
-
 void Prog::updateLibrarySignatures()
 {
     for (const auto& m : m_moduleList) {
@@ -1062,43 +1027,6 @@ void Prog::updateLibrarySignatures()
 Machine Prog::getMachine() const
 {
     return m_binaryFile->getMachine();
-}
-
-
-void Prog::printSymbolsToFile() const
-{
-    LOG_VERBOSE("Entering Prog::printSymbolsToFile");
-    QString   fname = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath("symbols.h");
-    QSaveFile tgt(fname);
-
-    if (!tgt.open(QFile::WriteOnly)) {
-        LOG_ERROR("Cannot open %1 for writing", fname);
-        return;
-    }
-
-    QTextStream f(&tgt);
-
-    /* Print procs */
-    f << "/* Functions: */\n";
-    std::set<Function *> seen;
-
-    for (UserProc *up : m_entryProcs) {
-        printProcsRecursive(up, 0, f, seen);
-    }
-
-    f << "/* Leftovers: */\n";
-
-    for (const auto& m : m_moduleList) {
-        for (Function *pp : *m) {
-            if (!pp->isLib() && (seen.find(pp) == seen.end())) {
-                printProcsRecursive(pp, 0, f, seen);
-            }
-        }
-    }
-
-    f.flush();
-    tgt.commit();
-    LOG_VERBOSE("Leaving Prog::printSymbolsToFile");
 }
 
 

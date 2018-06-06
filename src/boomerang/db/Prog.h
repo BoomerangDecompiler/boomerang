@@ -183,7 +183,6 @@ public:
 
     void readSymbolFile(const QString& fname);
 
-    void printSymbolsToFile() const;
     void printCallGraph(const QString &fileName = "callgraph.dot") const;
 
     /// Add the given RTL to the front end's map from address to already-decoded-RTL
