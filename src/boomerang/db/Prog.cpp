@@ -49,16 +49,18 @@
 #include <QtCore/QDir>
 #include <QtCore/QString>
 
+#include <algorithm>
 #include <cassert>
+#include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <vector>
-#include <algorithm>
-#include <cmath>
 #include <queue>
 #include <unordered_set>
+
 
 #ifdef _WIN32
 #  include <windows.h>
