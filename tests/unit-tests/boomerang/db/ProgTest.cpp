@@ -108,6 +108,25 @@ void ProgTest::testIsModuleUsed()
 }
 
 
+void ProgTest::testAddEntryPoint()
+{
+    Prog prog("test", nullptr);
+
+    QVERIFY(prog.addEntryPoint(Address::INVALID) == nullptr);
+
+    Function *entry = prog.addEntryPoint(Address(0x1000));
+    QVERIFY(entry != nullptr);
+
+    // add existing entry point
+    QCOMPARE(prog.addEntryPoint(Address(0x1000)), entry);
+
+    // add entry point that is blocked by a lib proc
+    LibProc *libProc = prog.getOrCreateLibraryProc("testProc");
+    libProc->setEntryAddress(Address(0x2000));
+    QVERIFY(prog.addEntryPoint(Address(0x2000)) == nullptr);
+}
+
+
 void ProgTest::testGetOrCreateFunction()
 {
     Prog prog("test", nullptr);
@@ -193,22 +212,201 @@ void ProgTest::testGetNumFunctions()
 }
 
 
-void ProgTest::testAddEntryPoint()
+void ProgTest::testIsWellFormed()
 {
-    Prog prog("test", nullptr);
+    QSKIP("TODO");
+}
 
-    QVERIFY(prog.addEntryPoint(Address::INVALID) == nullptr);
 
-    Function *entry = prog.addEntryPoint(Address(0x1000));
-    QVERIFY(entry != nullptr);
+void ProgTest::testIsWin32()
+{
+    QSKIP("TODO");
+}
 
-    // add existing entry point
-    QCOMPARE(prog.addEntryPoint(Address(0x1000)), entry);
 
-    // add entry point that is blocked by a lib proc
-    LibProc *libProc = prog.getOrCreateLibraryProc("testProc");
-    libProc->setEntryAddress(Address(0x2000));
-    QVERIFY(prog.addEntryPoint(Address(0x2000)) == nullptr);
+void ProgTest::testGetRegName()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetRegSize()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetFrontEndId()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetMachine()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetDefaultSignature()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetStringConstant()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetFloatConstant()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetSymbolNameByAddr()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetSectionByAddr()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetLimitText()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testIsReadOnly()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testIsStringConstant()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testIsDynamicallyLinkedProcPointer()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetDynamicProcName()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetModuleForSymbol()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testRead()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testReadSymbolFile()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testAddDecodedRTL()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testAddReloc()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testDecodeEntryPoint()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testDecodeFragment()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testReDecode()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testFinishDecode()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetGlobalName()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetGlobalAddr()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGetGlobal()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testNewGlobalName()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGuessGlobalType()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testMakeArrayType()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testMarkGlobalUsed()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testGlobalType()
+{
+    QSKIP("TODO");
 }
 
 

@@ -12,7 +12,6 @@
 
 #include <QtTest/QTest>
 
-class Prog;
 
 /**
  * Test the Prog class.
@@ -33,6 +32,7 @@ private slots:
     void testFindModule();
     void testIsModuleUsed();
 
+    void testAddEntryPoint();
     void testGetOrCreateFunction();
     void testGetOrCreateLibraryProc();
     void testGetFunctionByAddr();
@@ -40,8 +40,43 @@ private slots:
     void testRemoveFunction();
     void testGetNumFunctions();
 
-    void testAddEntryPoint();
+    void testIsWellFormed();
+    void testIsWin32();
+    void testGetRegName();
+    void testGetRegSize();
 
-private:
-    Prog *m_prog;
+    void testGetFrontEndId();
+    void testGetMachine();
+    void testGetDefaultSignature();
+
+    void testGetStringConstant();
+    void testGetFloatConstant();
+    void testGetSymbolNameByAddr();
+    void testGetSectionByAddr();
+    void testGetLimitText();
+    void testIsReadOnly();
+    void testIsStringConstant(); // isStringConstant / isCFStringConstant
+    void testIsDynamicallyLinkedProcPointer();
+    void testGetDynamicProcName();
+    void testGetModuleForSymbol();
+
+    void testRead(); // readNative[1, 2, 4, As]
+    void testReadSymbolFile();
+
+    void testAddDecodedRTL();
+    void testAddReloc();
+
+    void testDecodeEntryPoint();
+    void testDecodeFragment();
+    void testReDecode();
+    void testFinishDecode();
+
+    void testGetGlobalName();
+    void testGetGlobalAddr();
+    void testGetGlobal();
+    void testNewGlobalName();
+    void testGuessGlobalType();
+    void testMakeArrayType();
+    void testMarkGlobalUsed();
+    void testGlobalType(); // getGlobalType/setGlobalType
 };

@@ -111,7 +111,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);
-        emit entryPointAdded(entryPoint, m_project.getProg()->getSymbolNameByAddress(entryPoint));
+        emit entryPointAdded(entryPoint, m_project.getProg()->getSymbolNameByAddr(entryPoint));
     }
 
     for (const BinarySection *section : *m_project.getLoadedBinaryFile()->getImage()) {

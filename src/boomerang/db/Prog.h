@@ -95,6 +95,11 @@ public:
 
     const ModuleList& getModuleList() const { return m_moduleList; }
 
+    /// Add an entry procedure at the specified address.
+    /// This will fail if \p entryAddr is already the entry address of a LibProc.
+    /// \returns the new or exising entry procedure, or nullptr on failure.
+    Function *addEntryPoint(Address entryAddr);
+
     /**
      * Create a new unnamed function at address \p addr.
      * Call this method when a function is discovered (usually by
@@ -128,26 +133,25 @@ public:
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
-    /// Add an entry procedure at the specified address.
-    /// This will fail if \p entryAddr is already the entry address of a LibProc.
-    /// \returns the new or exising entry procedure, or nullptr on failure.
-    Function *addEntryPoint(Address entryAddr);
 
+    /// Check the wellformedness of all the procedures/cfgs in this program
+    bool isWellFormed() const;
+
+    /// Returns true if this is a win32 program
+    bool isWin32() const;
 
 
     QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
     int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
 
-    /// Check the wellformedness of all the procedures/cfgs in this program
-    bool isWellFormed() const;
-
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;
 
+    /// Get a code for the machine e.g. MACHINE_SPARC
+    Machine getMachine() const;
+
     std::shared_ptr<Signature> getDefaultSignature(const char *name) const;
 
-    /// Returns true if this is a win32 program
-    bool isWin32() const;
 
     /// get a string constant at a given address if appropriate
     /// if knownString, it is already known to be a char*
@@ -155,12 +159,8 @@ public:
     const char *getStringConstant(Address uaddr, bool knownString = false) const;
     double getFloatConstant(Address uaddr, bool& ok, int bits = 64) const;
 
-    // Hacks for Mike
-    /// Get a code for the machine e.g. MACHINE_SPARC
-    Machine getMachine() const;
-
     /// Get a symbol from an address
-    QString getSymbolNameByAddress(Address dest) const;
+    QString getSymbolNameByAddr(Address dest) const;
 
     const BinarySection *getSectionByAddr(Address a) const;
     Address getLimitTextLow() const;
@@ -169,6 +169,11 @@ public:
     bool isReadOnly(Address a) const;
     bool isStringConstant(Address a) const;
     bool isCFStringConstant(Address a) const;
+    bool isDynamicLinkedProcPointer(Address dest) const;
+    const QString& getDynamicProcName(Address addr) const;
+
+    /// \returns the default module for a symbol with name \p name.
+    Module *getModuleForSymbol(const QString& symbolName);
 
     // Read 1, 2, 4, or 8 bytes given a native address
     int readNative1(Address a) const;
@@ -176,16 +181,10 @@ public:
     int readNative4(Address a) const;
     SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
-    bool isDynamicLinkedProcPointer(Address dest) const;
-    const QString& getDynamicProcName(Address addr) const;
-
     void readSymbolFile(const QString& fname);
 
     void printSymbolsToFile() const;
     void printCallGraph(const QString &fileName = "callgraph.dot") const;
-
-    /// \returns the default module for a symbol with name \p name.
-    Module *getModuleForSymbol(const QString& symbolName);
 
     /// Add the given RTL to the front end's map from address to already-decoded-RTL
     void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
@@ -215,7 +214,7 @@ public:
     /// last fixes after decoding everything
     void finishDecode();
 
-    const std::list<UserProc *> getEntryProcs() const { return m_entryProcs; }
+    const std::list<UserProc *>& getEntryProcs() const { return m_entryProcs; }
 
     // globals
     std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }

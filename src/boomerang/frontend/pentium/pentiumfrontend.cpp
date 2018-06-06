@@ -422,7 +422,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         return false;
     }
 
-    QString name = m_program->getSymbolNameByAddress(dest);
+    QString name = m_program->getSymbolNameByAddr(dest);
 
     if (name.isEmpty()) {
         return false;
@@ -550,7 +550,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         }
 
         if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
-            const QString destSym = m_program->getSymbolNameByAddress(dest);
+            const QString destSym = m_program->getSymbolNameByAddr(dest);
 
             if (destSym == "__libc_start_main") {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.

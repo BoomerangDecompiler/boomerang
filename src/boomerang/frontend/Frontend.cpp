@@ -319,7 +319,7 @@ bool IFrontEnd::decode(bool decodeMain)
     }
 
     static const char *mainName[] = { "main", "WinMain", "DriverEntry" };
-    QString           name        = m_program->getSymbolNameByAddress(a);
+    QString           name        = m_program->getSymbolNameByAddr(a);
 
     if (name == nullptr) {
         name = mainName[0];
@@ -1009,7 +1009,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
-                            QString name = m_program->getSymbolNameByAddress(callAddr);
+                            QString name = m_program->getSymbolNameByAddr(callAddr);
 
                             if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
                                 Address a = call->getDest()->access<Const, 1>()->getAddr();

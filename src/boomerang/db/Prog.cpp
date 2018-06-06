@@ -160,9 +160,9 @@ Module *Prog::findModule(const QString& name)
 const Module *Prog::findModule(const QString& name) const
 {
     auto it = std::find_if(m_moduleList.begin(), m_moduleList.end(),
-                           [name](const std::unique_ptr<Module>& mod) {
-                               return mod->getName() == name;
-                           });
+        [name](const std::unique_ptr<Module>& mod) {
+            return mod->getName() == name;
+        });
 
     return (it != m_moduleList.end()) ? it->get() : nullptr;
 }
@@ -173,6 +173,157 @@ bool Prog::isModuleUsed(Module *module) const
     // TODO: maybe module can have no procedures and still be used ?
     return !module->empty();
 }
+
+
+Function *Prog::addEntryPoint(Address entryAddr)
+{
+    Function *func = getFunctionByAddr(entryAddr);
+    if (!func) {
+        func = getOrCreateFunction(entryAddr);
+    }
+
+    if (func && !func->isLib()) {
+        m_entryProcs.push_back(static_cast<UserProc *>(func));
+        return func;
+    }
+    else {
+        return nullptr;
+    }
+}
+
+
+Function *Prog::getOrCreateFunction(Address startAddress)
+{
+    if (startAddress == Address::INVALID) {
+        return nullptr;
+    }
+
+    // Check if we already have this proc
+    Function *existingFunction = getFunctionByAddr(startAddress);
+
+    if (existingFunction) {      // Exists already ?
+        return existingFunction; // Yes, we are done
+    }
+
+    Address tgt = m_binaryFile
+    ? m_binaryFile->getJumpTarget(startAddress)
+    : Address::INVALID;
+
+
+    if (tgt != Address::INVALID) {
+        startAddress = tgt;
+    }
+
+    existingFunction = getFunctionByAddr(startAddress);
+
+    if (existingFunction) {      // Exists already ?
+        return existingFunction; // Yes, we are done
+    }
+
+    QString             procName;
+    bool                isLibFunction = false;
+    const BinarySymbol *sym = m_binaryFile
+    ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
+    : nullptr;
+
+    if (sym) {
+        isLibFunction = sym->isImportedFunction() || sym->isStaticFunction();
+        procName      = sym->getName();
+    }
+
+    if (procName.isEmpty()) {
+        // No name. Give it the name of the start address.
+        procName = QString("proc_%1").arg(startAddress.toString());
+        LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
+    }
+
+    return m_rootModule->createFunction(procName, startAddress, isLibFunction);
+}
+
+
+LibProc *Prog::getOrCreateLibraryProc(const QString& name)
+{
+    if (name == "") {
+        return nullptr;
+    }
+
+    Function *existingProc = getFunctionByName(name);
+
+    if (existingProc && existingProc->isLib()) {
+        return static_cast<LibProc *>(existingProc);
+    }
+
+    return static_cast<LibProc *>(m_rootModule->createFunction(name, Address::INVALID, true));
+}
+
+
+Function *Prog::getFunctionByAddr(Address entryAddr) const
+{
+    for (const auto& m : m_moduleList) {
+        Function *proc = m->getFunction(entryAddr);
+
+        if (proc != nullptr) {
+            assert(proc != reinterpret_cast<Function *>(-1));
+            return proc;
+        }
+    }
+
+    return nullptr;
+}
+
+
+Function *Prog::getFunctionByName(const QString& name) const
+{
+    for (const auto& module : m_moduleList) {
+        Function *f = module->getFunction(name);
+
+        if (f) {
+            assert(f != reinterpret_cast<Function*>(-1));
+            return f;
+        }
+    }
+
+    return nullptr;
+}
+
+bool Prog::removeFunction(const QString& name)
+{
+    Function *function = getFunctionByName(name);
+
+    if (function) {
+        function->removeFromModule();
+        Boomerang::get()->alertFunctionRemoved(function);
+        // FIXME: this function removes the function from module, but it leaks it
+        return true;
+    }
+
+    return false;
+}
+
+
+int Prog::getNumFunctions(bool userOnly) const
+{
+    int n = 0;
+
+    if (userOnly) {
+        for (const auto& m : m_moduleList) {
+            for (Function *proc : *m) {
+                if (!proc->isLib()) {
+                    n++;
+                }
+            }
+        }
+    }
+    else {
+        for (const auto& module : m_moduleList) {
+            n += module->size();
+        }
+    }
+
+    return n;
+}
+
+
 
 
 
@@ -242,55 +393,6 @@ Module *Prog::getModuleForSymbol(const QString& symbolName)
     }
 
     return module;
-}
-
-
-Function *Prog::getOrCreateFunction(Address startAddress)
-{
-    if (startAddress == Address::INVALID) {
-        return nullptr;
-    }
-
-    // Check if we already have this proc
-    Function *existingFunction = getFunctionByAddr(startAddress);
-
-    if (existingFunction) {      // Exists already ?
-        return existingFunction; // Yes, we are done
-    }
-
-    Address tgt = m_binaryFile
-        ? m_binaryFile->getJumpTarget(startAddress)
-        : Address::INVALID;
-
-
-    if (tgt != Address::INVALID) {
-        startAddress = tgt;
-    }
-
-    existingFunction = getFunctionByAddr(startAddress);
-
-    if (existingFunction) {      // Exists already ?
-        return existingFunction; // Yes, we are done
-    }
-
-    QString             procName;
-    bool                isLibFunction = false;
-    const BinarySymbol *sym = m_binaryFile
-        ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
-        : nullptr;
-
-    if (sym) {
-        isLibFunction = sym->isImportedFunction() || sym->isStaticFunction();
-        procName      = sym->getName();
-    }
-
-    if (procName.isEmpty()) {
-        // No name. Give it the name of the start address.
-        procName = QString("proc_%1").arg(startAddress.toString());
-        LOG_VERBOSE("Assigning name %1 to address %2", procName, startAddress);
-    }
-
-    return m_rootModule->createFunction(procName, startAddress, isLibFunction);
 }
 
 
@@ -472,90 +574,6 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
 #endif
 
 
-bool Prog::removeFunction(const QString& name)
-{
-    Function *function = getFunctionByName(name);
-
-    if (function) {
-        function->removeFromModule();
-        Boomerang::get()->alertFunctionRemoved(function);
-        // FIXME: this function removes the function from module, but it leaks it
-        return true;
-    }
-
-    return false;
-}
-
-
-int Prog::getNumFunctions(bool userOnly) const
-{
-    int n = 0;
-
-    if (userOnly) {
-        for (const auto& m : m_moduleList) {
-            for (Function *proc : *m) {
-                if (!proc->isLib()) {
-                    n++;
-                }
-            }
-        }
-    }
-    else {
-        for (const auto& module : m_moduleList) {
-            n += module->size();
-        }
-    }
-
-    return n;
-}
-
-
-Function *Prog::getFunctionByAddr(Address entryAddr) const
-{
-    for (const auto& m : m_moduleList) {
-        Function *proc = m->getFunction(entryAddr);
-
-        if (proc != nullptr) {
-            assert(proc != reinterpret_cast<Function *>(-1));
-            return proc;
-        }
-    }
-
-    return nullptr;
-}
-
-
-Function *Prog::getFunctionByName(const QString& name) const
-{
-    for (const auto& module : m_moduleList) {
-        Function *f = module->getFunction(name);
-
-        if (f) {
-            assert(f != reinterpret_cast<Function*>(-1));
-            return f;
-        }
-    }
-
-    return nullptr;
-}
-
-
-LibProc *Prog::getOrCreateLibraryProc(const QString& name)
-{
-    if (name == "") {
-        return nullptr;
-    }
-
-    Function *existingProc = getFunctionByName(name);
-
-    if (existingProc && existingProc->isLib()) {
-        return static_cast<LibProc *>(existingProc);
-    }
-
-    return static_cast<LibProc *>(m_rootModule->createFunction(name, Address::INVALID, true));
-}
-
-
 Platform Prog::getFrontEndId() const
 {
     return m_defaultFrontend
@@ -587,7 +605,7 @@ QString Prog::getGlobalName(Address uaddr) const
         }
     }
 
-    return getSymbolNameByAddress(uaddr);
+    return getSymbolNameByAddr(uaddr);
 }
 
 
@@ -842,7 +860,7 @@ double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
 }
 
 
-QString Prog::getSymbolNameByAddress(Address dest) const
+QString Prog::getSymbolNameByAddr(Address dest) const
 {
     auto sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
 
@@ -928,26 +946,9 @@ void Prog::decodeEntryPoint(Address entryAddr)
 }
 
 
-Function *Prog::addEntryPoint(Address entryAddr)
-{
-    Function *func = getFunctionByAddr(entryAddr);
-    if (!func) {
-        func = getOrCreateFunction(entryAddr);
-    }
-
-    if (func && !func->isLib()) {
-        m_entryProcs.push_back(static_cast<UserProc *>(func));
-        return func;
-    }
-    else {
-        return nullptr;
-    }
-}
-
-
 bool Prog::isDynamicLinkedProcPointer(Address dest) const
 {
-    auto sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
+    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
     return sym && sym->isImportedFunction();
 }
 
@@ -955,7 +956,7 @@ bool Prog::isDynamicLinkedProcPointer(Address dest) const
 const QString& Prog::getDynamicProcName(Address addr) const
 {
     static QString dyn("dynamic");
-    auto           sym = m_binaryFile->getSymbols()->findSymbolByAddress(addr);
+    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(addr);
 
     return sym ? sym->getName() : dyn;
 }

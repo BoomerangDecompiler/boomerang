@@ -169,7 +169,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
         const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddress(dest) == "")) {
+        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddr(dest) == "")) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -219,7 +219,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
             bool ret = true;
             // Check for _exit; probably should check for other "never return" functions
-            QString name = m_program->getSymbolNameByAddress(dest);
+            QString name = m_program->getSymbolNameByAddr(dest);
 
             if (name == "_exit") {
                 // Don't keep decoding after this call
@@ -1164,7 +1164,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         return false;
     }
 
-    QString name = m_program->getSymbolNameByAddress(dest);
+    QString name = m_program->getSymbolNameByAddr(dest);
 
     if (name.isEmpty()) {
         LOG_ERROR("Can't find symbol for PLT address %1", dest);
