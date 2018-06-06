@@ -14,9 +14,18 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/core/Project.h"
 
 
-#define HELLO_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define HELLO_PENTIUM (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define HELLO_WIN     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
+
+
+void ProgTest::initTestCase()
+{
+    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+}
 
 
 void ProgTest::cleanupTestCase()
@@ -214,13 +223,31 @@ void ProgTest::testGetNumFunctions()
 
 void ProgTest::testIsWellFormed()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    const Prog *hello = pro.getProg();
+    QVERIFY(hello->isWellFormed());
+    QVERIFY(pro.decodeBinaryFile());
+    QVERIFY(hello->isWellFormed());
+    QVERIFY(pro.decompileBinaryFile());
+    QVERIFY(hello->isWellFormed());
+
+    Prog testProg("test", nullptr);
+    QVERIFY(testProg.isWellFormed());
 }
 
 
 void ProgTest::testIsWin32()
 {
-    QSKIP("TODO");
+    Prog testProg("test", nullptr);
+    QVERIFY(!testProg.isWin32());
+
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(!pro.getProg()->isWin32());
+    QVERIFY(pro.loadBinaryFile(HELLO_WIN));
+    QVERIFY(pro.getProg()->isWin32());
 }
 
 
@@ -238,25 +265,59 @@ void ProgTest::testGetRegSize()
 
 void ProgTest::testGetFrontEndId()
 {
-    QSKIP("TODO");
+    Prog testProg("test", nullptr);
+    QCOMPARE(testProg.getFrontEndId(), Platform::GENERIC);
+
+    Project pro;
+    pro.loadBinaryFile(HELLO_PENTIUM);
+    QCOMPARE(pro.getProg()->getFrontEndId(), Platform::PENTIUM);
 }
 
 
 void ProgTest::testGetMachine()
 {
-    QSKIP("TODO");
+    Prog testProg("test", nullptr);
+    QCOMPARE(testProg.getMachine(), Machine::INVALID);
+
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QCOMPARE(pro.getProg()->getMachine(), Machine::PENTIUM);
 }
 
 
 void ProgTest::testGetDefaultSignature()
 {
-    QSKIP("TODO");
+    Prog testProg("test", nullptr);
+    QVERIFY(testProg.getDefaultSignature("foo") == nullptr);
+
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    auto sig = pro.getProg()->getDefaultSignature("foo");
+    QVERIFY(sig != nullptr);
+    QCOMPARE(sig->getName(), QString("foo"));
 }
 
 
 void ProgTest::testGetStringConstant()
 {
-    QSKIP("TODO");
+    Prog testProg("test", nullptr);
+    QVERIFY(testProg.getStringConstant(Address(0x1000), true ) == nullptr);
+    QVERIFY(testProg.getStringConstant(Address(0x1000), false) == nullptr);
+    QVERIFY(testProg.getStringConstant(Address::INVALID) == nullptr);
+
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    const char *hello1 = pro.getProg()->getStringConstant(Address(0x80483FC), false);
+    QVERIFY(hello1 != nullptr);
+    QCOMPARE(hello1, "Hello, world!\n");
+
+    const char *hello2 = pro.getProg()->getStringConstant(Address(0x80483FC), true);
+    QCOMPARE(hello2, hello1);
+
+    // zero length string
+    const char *world1 = pro.getProg()->getStringConstant(Address(0x804840A), false);
+    QVERIFY(world1 != nullptr);
+    QCOMPARE(world1, "");
 }
 
 
