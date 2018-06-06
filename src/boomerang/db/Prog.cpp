@@ -793,47 +793,51 @@ void Prog::setGlobalType(const QString& name, SharedType ty)
 }
 
 
-const char *Prog::getStringConstant(Address uaddr, bool knownString /* = false */) const
+const char *Prog::getStringConstant(Address addr, bool knownString /* = false */) const
 {
-    const BinarySection *si = m_binaryFile->getImage()->getSectionByAddr(uaddr);
+    if (!m_binaryFile || addr == Address::INVALID) {
+        return nullptr;
+    }
 
-    // Too many compilers put constants, including string constants, into read/write sections
-    // if (si && si->bReadOnly)
-    if (si && !si->isAddressBss(uaddr)) {
-        // At this stage, only support ascii, null terminated, non unicode strings.
-        // At least 4 of the first 6 chars should be printable ascii
-        char *p = reinterpret_cast<char *>((si->getHostAddr() - si->getSourceAddr() + uaddr).value());
+    const BinarySection *sect = m_binaryFile->getImage()->getSectionByAddr(addr);
 
-        if (knownString) {
-            // No need to guess... this is hopefully a known string
-            return p;
+    // Too many compilers put constants, including string constants,
+    // into read/write sections, so we cannot check if the address is in a readonly section
+    if (!sect || sect->isAddressBss(addr)) {
+        return nullptr;
+    }
+
+    // At this stage, only support ascii, null terminated, non unicode strings.
+    // At least 4 of the first 6 chars should be printable ascii
+    const char *p = reinterpret_cast<const char *>((sect->getHostAddr() - sect->getSourceAddr() + addr).value());
+
+    if (knownString) {
+        // No need to guess... this is hopefully a known string
+        return p;
+    }
+
+    // this address is not known to be a string -> use heuristic
+    int numPrintables = 0;
+    int numControl = 0; // Control characters like \n, \r, \t
+    int numTotal = 0;
+
+    for (int i = 0; i < 6; i++, numTotal++) {
+        if (p[i] == 0) {
+            break;
         }
-
-        int  printable = 0;
-        char last      = 0;
-
-        for (int i = 0; i < 6; i++) {
-            char c = p[i];
-
-            if (c == 0) {
-                break;
-            }
-
-            if ((c >= ' ') && (c < '\x7F')) {
-                printable++;
-            }
-
-            last = c;
+        else if (std::isprint(static_cast<Byte>(p[i]))) {
+            numPrintables++;
         }
-
-        if (printable >= 4) {
-            return p;
+        else if (*p == '\n' || *p == '\t' || *p == '\r') {
+            numControl++;
         }
+    }
 
-        // Just a hack while type propagations are not yet ready
-        if ((last == '\n') && (printable >= 2)) {
-            return p;
-        }
+    if (numTotal == 0) {
+        return "";
+    }
+    else if (numTotal - numPrintables - numControl < 2) {
+        return p;
     }
 
     return nullptr;
