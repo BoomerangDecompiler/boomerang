@@ -977,7 +977,9 @@ void Prog::updateLibrarySignatures()
 
 Machine Prog::getMachine() const
 {
-    return m_binaryFile->getMachine();
+    return m_binaryFile
+        ? m_binaryFile->getMachine()
+        : Machine::INVALID;
 }
 
 
