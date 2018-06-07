@@ -337,19 +337,35 @@ void ProgTest::testGetFloatConstant()
 
 void ProgTest::testGetSymbolNameByAddr()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    // "Hello, world!" string is not a symbol
+    QCOMPARE(pro.getProg()->getSymbolNameByAddr(Address(0x080483FC)), QString(""));
+    QCOMPARE(pro.getProg()->getSymbolNameByAddr(Address(0x08048268)), QString("printf"));
 }
 
 
 void ProgTest::testGetSectionByAddr()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    QVERIFY(pro.getProg()->getSectionByAddr(Address::INVALID) == nullptr);
+
+    const BinarySection *sect = pro.getProg()->getSectionByAddr(Address(0x08048331));
+    QVERIFY(sect != nullptr);
+    QCOMPARE(sect->getName(), QString(".text"));
 }
 
 
 void ProgTest::testGetLimitText()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    QCOMPARE(pro.getProg()->getLimitTextLow(),  Address(0x08048230));
+    QCOMPARE(pro.getProg()->getLimitTextHigh(), Address(0x080483f3));
 }
 
 

@@ -162,7 +162,7 @@ public:
     /// Get a symbol from an address
     QString getSymbolNameByAddr(Address dest) const;
 
-    const BinarySection *getSectionByAddr(Address a) const;
+    const BinarySection *getSectionByAddr(Address addr) const;
     Address getLimitTextLow() const;
     Address getLimitTextHigh() const;
 

@@ -872,8 +872,7 @@ bool Prog::getFloatConstant(Address addr, double& value, int bits) const
 
 QString Prog::getSymbolNameByAddr(Address dest) const
 {
-    auto sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
-
+    const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
     return sym ? sym->getName() : "";
 }
 
