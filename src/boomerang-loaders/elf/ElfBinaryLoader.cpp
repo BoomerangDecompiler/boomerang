@@ -318,6 +318,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             sect->setEndian(m_endian);
             sect->setHostAddr(par.imagePtr);
             sect->setEntrySize(par.entry_size);
+            sect->setReadOnly(par.ReadOnly);
 
             if (!(par.Bss || par.SourceAddr.isZero())) {
                 sect->addDefinedArea(par.SourceAddr, par.SourceAddr + par.Size);
