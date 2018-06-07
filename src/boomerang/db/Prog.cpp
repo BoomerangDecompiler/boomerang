@@ -36,9 +36,6 @@
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/SizeType.h"
 #include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/FuncType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/BooleanType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc
@@ -48,22 +45,8 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QSaveFile>
 #include <QtCore/QDir>
-#include <QtCore/QString>
 
-#include <algorithm>
-#include <cassert>
 #include <cctype>
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <queue>
-#include <unordered_set>
-
-
-#include <sys/types.h>
 
 
 Prog::Prog(const QString& name, Project *project)
@@ -199,8 +182,8 @@ Function *Prog::getOrCreateFunction(Address startAddress)
     }
 
     Address tgt = m_binaryFile
-    ? m_binaryFile->getJumpTarget(startAddress)
-    : Address::INVALID;
+        ? m_binaryFile->getJumpTarget(startAddress)
+        : Address::INVALID;
 
 
     if (tgt != Address::INVALID) {
@@ -216,8 +199,8 @@ Function *Prog::getOrCreateFunction(Address startAddress)
     QString             procName;
     bool                isLibFunction = false;
     const BinarySymbol *sym = m_binaryFile
-    ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
-    : nullptr;
+        ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
+        : nullptr;
 
     if (sym) {
         isLibFunction = sym->isImportedFunction() || sym->isStaticFunction();
@@ -343,24 +326,24 @@ bool Prog::isWin32() const
 Platform Prog::getFrontEndId() const
 {
     return m_defaultFrontend
-    ? m_defaultFrontend->getType()
-    : Platform::GENERIC;
+        ? m_defaultFrontend->getType()
+        : Platform::GENERIC;
 }
 
 
 Machine Prog::getMachine() const
 {
     return m_binaryFile
-    ? m_binaryFile->getMachine()
-    : Machine::INVALID;
+        ? m_binaryFile->getMachine()
+        : Machine::INVALID;
 }
 
 
 std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
 {
     return m_defaultFrontend
-    ? m_defaultFrontend->getDefaultSignature(name)
-    : nullptr;
+        ? m_defaultFrontend->getDefaultSignature(name)
+        : nullptr;
 }
 
 

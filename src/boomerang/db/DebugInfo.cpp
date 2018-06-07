@@ -10,8 +10,19 @@
 #include "DebugInfo.h"
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/BooleanType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/util/Log.h"
 
+#include <cassert>
 
 #ifdef _WIN32
 #  include <windows.h>
@@ -212,16 +223,16 @@ SharedType typeFromDebugInfo(const QString& name, Address addr)
     sym->SizeOfStruct = sizeof(*sym);
     sym->MaxNameLen   = 1000;
     sym->Name[0]      = 0;
-    BOOL got = dbghelp::SymFromAddr(hProcess, globAddr.value(), 0, sym);
+    BOOL got = dbghelp::SymFromAddr(hProcess, addr.value(), 0, sym);
 
     if (got && *sym->Name && sym->TypeIndex) {
-        assert(globalName == sym->Name);
-        return typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
+        assert(name == sym->Name);
+        return ::typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
 #else
     Q_UNUSED(name);
     Q_UNUSED(addr);
-    return nullptr;
 #endif
+    return nullptr;
 }
 }
