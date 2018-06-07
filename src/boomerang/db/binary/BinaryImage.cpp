@@ -103,40 +103,42 @@ QWord BinaryImage::readNative8(Address addr) const
 }
 
 
-float BinaryImage::readNativeFloat4(Address addr) const
+bool BinaryImage::readNativeFloat4(Address addr, float& value) const
 {
-    const BinarySection *si = getSectionByAddr(addr);
+    const BinarySection *sect = getSectionByAddr(addr);
 
-    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+    if (sect == nullptr || sect->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
-        return 0.0f;
+        return false;
     }
-    else if (addr + 4 > si->getSourceAddr() + si->getSize()) {
+    else if (addr + 4 > sect->getSourceAddr() + sect->getSize()) {
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
-        return 0.0f;
+        return false;
     }
 
     DWord raw = readNative4(addr);
 
-    return *reinterpret_cast<float *>(&raw); // Note: cast, not convert
+    value = *reinterpret_cast<float *>(&raw); // Note: cast, not convert
+    return true;
 }
 
 
-double BinaryImage::readNativeFloat8(Address addr) const
+bool BinaryImage::readNativeFloat8(Address addr, double& value) const
 {
-    const BinarySection *si = getSectionByAddr(addr);
+    const BinarySection *sect = getSectionByAddr(addr);
 
-    if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
+    if (sect == nullptr || sect->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Invalid read at address %1: Address is not mapped to a section", addr.toString());
-        return 0.0;
+        return false;
     }
-    else if (addr + 8 > si->getSourceAddr() + si->getSize()) {
+    else if (addr + 8 > sect->getSourceAddr() + sect->getSize()) {
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
-        return 0.0;
+        return false;
     }
 
     QWord raw = readNative8(addr);
-    return *reinterpret_cast<double *>(&raw);
+    value = *reinterpret_cast<double *>(&raw);
+    return true;
 }
 
 

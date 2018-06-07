@@ -846,23 +846,27 @@ const char *Prog::getStringConstant(Address addr, bool knownString /* = false */
 }
 
 
-double Prog::getFloatConstant(Address uaddr, bool& ok, int bits) const
+bool Prog::getFloatConstant(Address addr, double& value, int bits) const
 {
-    ok = true;
-    const BinarySection *si = m_binaryFile->getImage()->getSectionByAddr(uaddr);
-
-    if (si && si->isReadOnly()) {
-        if (bits == 64) { // TODO: handle 80bit floats ?
-            return m_binaryFile->getImage()->readNativeFloat8(uaddr);
-        }
-        else {
-            assert(bits == 32);
-            return m_binaryFile->getImage()->readNativeFloat4(uaddr);
-        }
+    const BinarySection *section = m_binaryFile->getImage()->getSectionByAddr(addr);
+    if (!section || !section->isReadOnly()) {
+        return false;
     }
 
-    ok = false;
-    return 0.0;
+    if (bits == 64) { // TODO: handle 80bit floats ?
+        return m_binaryFile->getImage()->readNativeFloat8(addr, value);
+    }
+    else {
+        assert(bits == 32);
+        float val;
+        if (m_binaryFile->getImage()->readNativeFloat4(addr, val)) {
+            value = val;
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 }
 
 
@@ -1182,11 +1186,20 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 
     switch (type->as<FloatType>()->getSize())
     {
-    case 32:
-        return Const::get(m_binaryFile->getImage()->readNativeFloat4(uaddr));
-
-    case 64:
-        return Const::get(m_binaryFile->getImage()->readNativeFloat8(uaddr));
+    case 32: {
+        float val;
+        if (m_binaryFile->getImage()->readNativeFloat4(uaddr, val)) {
+            return Const::get(val);
+        }
+        return nullptr;
+    }
+    case 64: {
+        double val;
+        if (m_binaryFile->getImage()->readNativeFloat8(uaddr, val)) {
+            return Const::get(val);
+        }
+        return nullptr;
+    }
     }
 
     return e;

@@ -156,8 +156,8 @@ public:
     /// get a string constant at a given address if appropriate
     /// if knownString, it is already known to be a char*
     /// get a string constant at a give address if appropriate
-    const char *getStringConstant(Address uaddr, bool knownString = false) const;
-    double getFloatConstant(Address uaddr, bool& ok, int bits = 64) const;
+    const char *getStringConstant(Address addr, bool knownString = false) const;
+    bool getFloatConstant(Address addr, double& value, int bits = 64) const;
 
     /// Get a symbol from an address
     QString getSymbolNameByAddr(Address dest) const;

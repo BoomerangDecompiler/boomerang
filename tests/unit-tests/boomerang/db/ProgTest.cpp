@@ -16,9 +16,11 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/core/Project.h"
 
+#define SAMPLE(path)    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
 
-#define HELLO_PENTIUM (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
-#define HELLO_WIN     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
+#define HELLO_PENTIUM   SAMPLE("pentium/hello")
+#define FBRANCH_PENTIUM SAMPLE("pentium/fbranch")
+#define HELLO_WIN       SAMPLE("windows/hello.exe")
 
 
 void ProgTest::initTestCase()
@@ -323,7 +325,13 @@ void ProgTest::testGetStringConstant()
 
 void ProgTest::testGetFloatConstant()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(FBRANCH_PENTIUM));
+    QVERIFY(pro.decodeBinaryFile());
+
+    double result;
+    QVERIFY(pro.getProg()->getFloatConstant(Address(0x080485CC), result, 32));
+    QCOMPARE(result, 5.0);
 }
 
 
