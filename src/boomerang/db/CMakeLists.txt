@@ -12,6 +12,7 @@ list(APPEND boomerang-db-sources
     db/CFG
     db/CFGCompressor
     db/DataFlow
+    db/DebugInfo
     db/DefCollector
     db/Global
     db/IndirectJumpAnalyzer

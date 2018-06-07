@@ -133,9 +133,9 @@ public:
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
-
     /// Check the wellformedness of all the procedures/cfgs in this program
     bool isWellFormed() const;
+
 
     /// Returns true if this is a win32 program
     bool isWin32() const;
@@ -221,20 +221,20 @@ public:
     Address getGlobalAddr(const QString& name) const;
     Global *getGlobal(const QString& name) const;
 
-    /// Make up a name for a new global at address \a uaddr
-    /// (or return an existing name if address already used)
-    QString newGlobalName(Address uaddr);
-
-    /// Guess a global's type based on its name and address
-    SharedType guessGlobalType(const QString& name, Address addr) const;
+    /// Indicate that a given global has been seen used in the program.
+    /// \returns true on success, false on failure (e.g. existing incompatible type already present)
+    bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
 
     /// Make an array type for the global array starting at \p startAddr.
     /// Mainly, set the length sensibly
     std::shared_ptr<ArrayType> makeArrayType(Address startAddr, SharedType baseType);
 
-    /// Indicate that a given global has been seen used in the program.
-    /// \returns true on success, false on failure (e.g. existing incompatible type already present)
-    bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
+    /// Guess a global's type based on its name and address
+    SharedType guessGlobalType(const QString& name, Address addr) const;
+
+    /// Make up a name for a new global at address \a uaddr
+    /// (or return an existing name if address already used)
+    QString newGlobalName(Address uaddr);
 
     /// Get the type of a global variable
     SharedType getGlobalType(const QString& name) const;
