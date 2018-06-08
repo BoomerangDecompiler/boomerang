@@ -172,7 +172,7 @@ public:
     const QString& getDynamicProcName(Address addr) const;
 
     /// \returns the default module for a symbol with name \p name.
-    Module *getModuleForSymbol(const QString& symbolName);
+    Module *getOrInsertModuleForSymbol(const QString& symbolName);
 
     // Read 1, 2, 4, or 8 bytes given a native address
     int readNative1(Address a) const;

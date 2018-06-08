@@ -475,7 +475,7 @@ const QString& Prog::getDynamicProcName(Address addr) const
 }
 
 
-Module *Prog::getModuleForSymbol(const QString& symbolName)
+Module *Prog::getOrInsertModuleForSymbol(const QString& symbolName)
 {
     const BinarySymbol *sym = nullptr;
     if (m_binaryFile) {
@@ -496,12 +496,12 @@ Module *Prog::getModuleForSymbol(const QString& symbolName)
     moduleName.chop(2); // remove .c
 
     Module *module = findModule(moduleName);
-
-    if (module == nullptr) {
-        module = getOrInsertModule(moduleName);
-        m_rootModule->addChild(module);
+    if (module) {
+        return module;
     }
 
+    module = getOrInsertModule(moduleName);
+    m_rootModule->addChild(module);
     return module;
 }
 
@@ -705,7 +705,7 @@ void Prog::readSymbolFile(const QString& fname)
     for (Symbol *sym : parser->symbols) {
         if (sym->sig) {
             QString name = sym->sig->getName();
-            targetModule = getModuleForSymbol(name);
+            targetModule = getOrInsertModuleForSymbol(name);
             auto bin_sym       = m_binaryFile->getSymbols()->findSymbolByAddress(sym->addr);
             bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
             // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,

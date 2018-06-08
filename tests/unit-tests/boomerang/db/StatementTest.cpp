@@ -1173,7 +1173,7 @@ void StatementTest::testSubscriptVars()
 
 //    BinaryFile bf(QByteArray{}, nullptr);
     Prog   *prog = new Prog("testSubscriptVars", nullptr);
-    Module *mod  = prog->getModuleForSymbol("test");
+    Module *mod  = prog->getOrInsertModuleForSymbol("test");
 
     argl.append(new Assign(Location::memOf(Location::regOf(PENT_REG_EBX)), Const::get(1)));
     argl.append(new Assign(Location::regOf(PENT_REG_ESP), Const::get(2)));

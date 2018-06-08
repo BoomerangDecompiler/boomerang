@@ -59,7 +59,7 @@ private slots:
     void testIsInStringsSection();
     void testIsDynamicallyLinkedProcPointer();
     void testGetDynamicProcName();
-    void testGetModuleForSymbol();
+    void testGetOrInsertModuleForSymbol();
 
     void testReadNative(); // readNative[1, 2, 4]
     void testReadNativeAs();

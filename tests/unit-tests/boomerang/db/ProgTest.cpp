@@ -413,9 +413,24 @@ void ProgTest::testGetDynamicProcName()
 }
 
 
-void ProgTest::testGetModuleForSymbol()
+void ProgTest::testGetOrInsertModuleForSymbol()
 {
-    QSKIP("TODO");
+    {
+        Prog prog("test", nullptr);
+        QCOMPARE(prog.getOrInsertModuleForSymbol(""),     prog.getRootModule());
+        QCOMPARE(prog.getOrInsertModuleForSymbol("test"), prog.getRootModule());
+    }
+
+    Project pro;
+    pro.loadBinaryFile(HELLO_PENTIUM);
+    QCOMPARE(pro.getProg()->getOrInsertModuleForSymbol(""), pro.getProg()->getRootModule());
+    QCOMPARE(pro.getProg()->getOrInsertModuleForSymbol("printf"), pro.getProg()->getRootModule());
+
+    BinarySymbol *mainSym = pro.getLoadedBinaryFile()->getSymbols()->findSymbolByName("main");
+    QVERIFY(mainSym != nullptr);
+    mainSym->setAttribute("SourceFile", "foo.c");
+
+    QCOMPARE(pro.getProg()->getOrInsertModuleForSymbol(mainSym->getName()), pro.getProg()->getOrInsertModule("foo"));
 }
 
 
