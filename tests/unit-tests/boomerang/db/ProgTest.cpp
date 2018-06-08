@@ -393,13 +393,23 @@ void ProgTest::testIsInStringsSection()
 
 void ProgTest::testIsDynamicallyLinkedProcPointer()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    QVERIFY(!pro.getProg()->isDynamicallyLinkedProcPointer(Address::INVALID));
+    QVERIFY(!pro.getProg()->isDynamicallyLinkedProcPointer(Address(0x080483f4)));
+    QVERIFY( pro.getProg()->isDynamicallyLinkedProcPointer(Address(0x08048268))); // address of printf
 }
 
 
 void ProgTest::testGetDynamicProcName()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    QCOMPARE(pro.getProg()->getDynamicProcName(Address::INVALID),    QString(""));
+    QCOMPARE(pro.getProg()->getDynamicProcName(Address(0x080483f4)), QString(""));
+    QCOMPARE(pro.getProg()->getDynamicProcName(Address(0x08048268)), QString("printf"));
 }
 
 

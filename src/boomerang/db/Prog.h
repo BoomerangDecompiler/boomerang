@@ -168,7 +168,7 @@ public:
 
     bool isReadOnly(Address a) const;
     bool isInStringsSection(Address a) const;
-    bool isDynamicLinkedProcPointer(Address dest) const;
+    bool isDynamicallyLinkedProcPointer(Address dest) const;
     const QString& getDynamicProcName(Address addr) const;
 
     /// \returns the default module for a symbol with name \p name.

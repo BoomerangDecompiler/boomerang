@@ -460,7 +460,7 @@ bool Prog::isInStringsSection(Address a) const
 }
 
 
-bool Prog::isDynamicLinkedProcPointer(Address dest) const
+bool Prog::isDynamicallyLinkedProcPointer(Address dest) const
 {
     const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
     return sym && sym->isImportedFunction();
@@ -469,10 +469,9 @@ bool Prog::isDynamicLinkedProcPointer(Address dest) const
 
 const QString& Prog::getDynamicProcName(Address addr) const
 {
-    static QString dyn("dynamic");
+    static const QString defaultName("");
     const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(addr);
-
-    return sym ? sym->getName() : dyn;
+    return (sym && sym->isImportedFunction()) ? sym->getName() : defaultName;
 }
 
 
