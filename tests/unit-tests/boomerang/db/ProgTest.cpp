@@ -373,17 +373,21 @@ void ProgTest::testIsReadOnly()
 {
     Project pro;
     QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
-    QVERIFY(pro.decodeBinaryFile());
 
     QVERIFY(!pro.getProg()->isReadOnly(Address::INVALID));
     QVERIFY(!pro.getProg()->isReadOnly(Address(0x080496a8))); // address in .ctors
-    QVERIFY( pro.getProg()->isReadOnly(Address(0x080483F4))); // address in .rodata
+    QVERIFY( pro.getProg()->isReadOnly(Address(0x080483f4))); // address in .rodata
 }
 
 
-void ProgTest::testIsStringConstant()
+void ProgTest::testIsInStringsSection()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    QVERIFY(!pro.getProg()->isInStringsSection(Address::INVALID));
+    QVERIFY(!pro.getProg()->isInStringsSection(Address(0x080483f4))); // address in .rodata
+    QVERIFY( pro.getProg()->isInStringsSection(Address(0x080481a0))); // address in .dynstr
 }
 
 

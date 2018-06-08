@@ -56,7 +56,7 @@ private slots:
     void testGetSectionByAddr();
     void testGetLimitText();
     void testIsReadOnly();
-    void testIsStringConstant();
+    void testIsInStringsSection();
     void testIsDynamicallyLinkedProcPointer();
     void testGetDynamicProcName();
     void testGetModuleForSymbol();

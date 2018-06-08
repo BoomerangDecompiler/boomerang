@@ -1034,7 +1034,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
                     Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);
 
-                    if (_proc->getProg()->isStringConstant(addr)) {
+                    if (_proc->getProg()->isInStringsSection(addr)) {
                         LOG_MSG("Making arg %1 of call c*", i);
                         setArgumentType(i, PointerType::get(CharType::get()));
                         change = true;

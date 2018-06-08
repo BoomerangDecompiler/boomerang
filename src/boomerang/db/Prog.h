@@ -167,7 +167,7 @@ public:
     Address getLimitTextHigh() const;
 
     bool isReadOnly(Address a) const;
-    bool isStringConstant(Address a) const;
+    bool isInStringsSection(Address a) const;
     bool isDynamicLinkedProcPointer(Address dest) const;
     const QString& getDynamicProcName(Address addr) const;
 
