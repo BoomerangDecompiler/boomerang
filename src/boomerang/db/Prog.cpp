@@ -814,7 +814,7 @@ Global *Prog::createGlobal(Address addr, SharedType ty, QString name)
         name = newGlobalName(addr);
     }
 
-    if (ty == nullptr) {
+    if (ty == nullptr || ty->isVoid()) {
         ty = guessGlobalType(name, addr);
     }
 

@@ -205,6 +205,14 @@ public:
     const std::list<UserProc *>& getEntryProcs() const { return m_entryProcs; }
 
     // globals
+
+    /**
+     * Create a new global variable at address \p addr.
+     * If \p ty and \p name are not specified, they are assigned sensible values automatically
+     * using heuristics.
+     * This function will fail if the global already exists.
+     * \returns the newly created global on success, or nullptr on failure.
+     */
     Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = QString());
 
     std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }
