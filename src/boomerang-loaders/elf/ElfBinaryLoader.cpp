@@ -190,7 +190,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
     m_strings = reinterpret_cast<const char *>(m_loadedImage + stringSectionOffset);
 
     bool    seenCode         = false; // True when have seen a code sect
-    Address arbitaryLoadAddr = Address(0x08000000);
+    Address arbitaryLoadAddr = Address(0x80000000);
 
     for (Elf32_Half i = 0; i < numSections; i++) {
         // Get section information.
@@ -235,7 +235,7 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             return false;
         }
 
-        if (newSection.SourceAddr.isZero() && (strncmp(sectionName, ".rel", 4) != 0)) {
+        if (newSection.SourceAddr.isZero() && !QString(sectionName).startsWith(".rel")) {
             const Elf32_Word align = elfRead4(&sectionHeader->sh_addralign);
 
             if (align > 1) {
@@ -306,7 +306,10 @@ bool ElfBinaryLoader::loadFromMemory(QByteArray& img)
             continue;
         }
 
-        BinarySection *sect = m_binaryImage->createSection(par.Name, par.SourceAddr, par.SourceAddr + par.Size);
+        const Address lowAddr  = par.SourceAddr;
+        const Address highAddr = par.SourceAddr + par.Size;
+
+        BinarySection *sect = m_binaryImage->createSection(par.Name, lowAddr, highAddr);
 
         if (sect) {
             sect->setBss(par.Bss);
