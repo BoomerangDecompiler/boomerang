@@ -993,7 +993,7 @@ QString Prog::newGlobalName(Address uaddr)
         return globalName;
     }
 
-    globalName = QString("global%1_%2").arg(m_globals.size()).arg(uaddr.value(), 0, 16);
+    globalName = QString("global_%1").arg(uaddr.toString());
     LOG_VERBOSE("Naming new global '%1' at address %2", globalName, uaddr);
     return globalName;
 }

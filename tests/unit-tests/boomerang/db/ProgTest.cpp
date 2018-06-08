@@ -11,10 +11,12 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/core/Project.h"
+#include "boomerang/type/type/IntegerType.h"
+
 
 #define SAMPLE(path)    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
 
@@ -502,25 +504,37 @@ void ProgTest::testCreateGlobal()
 
 void ProgTest::testGetGlobalName()
 {
-    QSKIP("TODO");
+    Prog prog("test", nullptr);
+    QCOMPARE(prog.getGlobalName(Address::INVALID), QString(""));
+
+    prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
+    QCOMPARE(prog.getGlobalName(Address(0x08000000)), QString("foo"));
 }
 
 
 void ProgTest::testGetGlobalAddr()
 {
-    QSKIP("TODO");
+    Prog prog("test", nullptr);
+    prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
+    QCOMPARE(prog.getGlobalAddr("foo"), Address(0x08000000));
 }
 
 
 void ProgTest::testGetGlobal()
 {
-    QSKIP("TODO");
+    Prog prog("test", nullptr);
+    QVERIFY(prog.getGlobal("foo") == nullptr);
+
+    Global *global = prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
+    QCOMPARE(prog.getGlobal("foo"), global);
 }
 
 
 void ProgTest::testNewGlobalName()
 {
-    QSKIP("TODO");
+    Prog prog("test", nullptr);
+    QCOMPARE(prog.newGlobalName(Address(0x1000)), QString("global_0x00001000"));
+    QCOMPARE(prog.newGlobalName(Address(0x1000)), QString("global_0x00001000"));
 }
 
 

@@ -1,7 +1,7 @@
-int b = 7;
 long long a = 0x7048860ddf79LL;
 int b = 7;
 long long a = 0x7048860ddf79LL;
+int b = 7;
 int main(int argc, char *argv[]);
 void foo1();
 void foo2();
