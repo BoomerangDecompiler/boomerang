@@ -506,18 +506,6 @@ Module *Prog::getOrInsertModuleForSymbol(const QString& symbolName)
 }
 
 
-int Prog::readNative1(Address a) const
-{
-    return m_binaryFile->getImage()->readNative1(a);
-}
-
-
-int Prog::readNative2(Address a) const
-{
-    return m_binaryFile->getImage()->readNative2(a);
-}
-
-
 int Prog::readNative4(Address a) const
 {
     return m_binaryFile->getImage()->readNative4(a);

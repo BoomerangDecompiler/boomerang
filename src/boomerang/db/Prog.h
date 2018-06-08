@@ -174,9 +174,6 @@ public:
     /// \returns the default module for a symbol with name \p name.
     Module *getOrInsertModuleForSymbol(const QString& symbolName);
 
-    // Read 1, 2, 4, or 8 bytes given a native address
-    int readNative1(Address a) const;
-    int readNative2(Address a) const;
     int readNative4(Address a) const;
     SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
