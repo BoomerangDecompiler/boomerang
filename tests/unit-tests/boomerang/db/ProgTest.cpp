@@ -371,7 +371,13 @@ void ProgTest::testGetLimitText()
 
 void ProgTest::testIsReadOnly()
 {
-    QSKIP("TODO");
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(pro.decodeBinaryFile());
+
+    QVERIFY(!pro.getProg()->isReadOnly(Address::INVALID));
+    QVERIFY(!pro.getProg()->isReadOnly(Address(0x080496a8))); // address in .ctors
+    QVERIFY( pro.getProg()->isReadOnly(Address(0x080483F4))); // address in .rodata
 }
 
 
@@ -399,7 +405,13 @@ void ProgTest::testGetModuleForSymbol()
 }
 
 
-void ProgTest::testRead()
+void ProgTest::testReadNative()
+{
+    QSKIP("TODO");
+}
+
+
+void ProgTest::testReadNativeAs()
 {
     QSKIP("TODO");
 }

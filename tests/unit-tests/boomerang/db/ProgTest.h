@@ -61,7 +61,8 @@ private slots:
     void testGetDynamicProcName();
     void testGetModuleForSymbol();
 
-    void testRead(); // readNative[1, 2, 4, As]
+    void testReadNative(); // readNative[1, 2, 4]
+    void testReadNativeAs();
     void testReadSymbolFile();
 
     void testAddDecodedRTL();
