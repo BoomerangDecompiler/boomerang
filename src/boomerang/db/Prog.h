@@ -168,7 +168,6 @@ public:
 
     bool isReadOnly(Address a) const;
     bool isStringConstant(Address a) const;
-    bool isCFStringConstant(Address a) const;
     bool isDynamicLinkedProcPointer(Address dest) const;
     const QString& getDynamicProcName(Address addr) const;
 

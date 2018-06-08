@@ -51,20 +51,10 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
 
             switch (assgn->getType()->getSize())
             {
-            case 8:
-                val = proc->getProg()->readNative1(addr);
-                break;
-
-            case 16:
-                val = proc->getProg()->readNative2(addr);
-                break;
-
-            case 32:
-                val = proc->getProg()->readNative4(addr);
-                break;
-
-            default:
-                assert(false);
+            case 8:  val = proc->getProg()->readNative1(addr); break;
+            case 16: val = proc->getProg()->readNative2(addr); break;
+            case 32: val = proc->getProg()->readNative4(addr); break;
+            default: assert(false);
             }
 
             assgn->setRight(Const::get(val));

@@ -461,12 +461,6 @@ bool Prog::isStringConstant(Address a) const
 }
 
 
-bool Prog::isCFStringConstant(Address a) const
-{
-    return isStringConstant(a);
-}
-
-
 bool Prog::isDynamicLinkedProcPointer(Address dest) const
 {
     const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);

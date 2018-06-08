@@ -1039,14 +1039,6 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
                         setArgumentType(i, PointerType::get(CharType::get()));
                         change = true;
                     }
-                    else if (_proc->getProg()->isCFStringConstant(addr)) {
-                        Address addr2 = Address(_proc->getProg()->readNative4(addr + 8));
-                        LOG_MSG("Arg %1 of call is a cfstring", i);
-                        setArgumentType(i, PointerType::get(CharType::get()));
-                        // TODO: we'd really like to change this to CFSTR(addr)
-                        setArgumentExp(i, Const::get(addr2));
-                        change = true;
-                    }
                 }
             }
 
