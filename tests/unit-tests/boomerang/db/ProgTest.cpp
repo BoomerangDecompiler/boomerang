@@ -330,6 +330,7 @@ void ProgTest::testGetFloatConstant()
     QVERIFY(pro.decodeBinaryFile());
 
     double result;
+    QVERIFY(!pro.getProg()->getFloatConstant(Address::INVALID, result, 32));
     QVERIFY(pro.getProg()->getFloatConstant(Address(0x080485CC), result, 32));
     QCOMPARE(result, 5.0);
 }
@@ -485,6 +486,17 @@ void ProgTest::testReDecode()
 void ProgTest::testFinishDecode()
 {
     QSKIP("TODO");
+}
+
+
+void ProgTest::testCreateGlobal()
+{
+    Prog prog("test", nullptr);
+
+    QVERIFY(prog.createGlobal(Address::INVALID) == nullptr);
+
+    Global *global = prog.createGlobal(Address(0x08000000));
+    QVERIFY(global != nullptr);
 }
 
 

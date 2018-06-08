@@ -424,6 +424,10 @@ bool Prog::getFloatConstant(Address addr, double& value, int bits) const
 
 QString Prog::getSymbolNameByAddr(Address dest) const
 {
+    if (m_binaryFile == nullptr) {
+        return "";
+    }
+
     const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(dest);
     return sym ? sym->getName() : "";
 }
@@ -814,7 +818,11 @@ Global *Prog::createGlobal(Address addr, SharedType ty, QString name)
         name = newGlobalName(addr);
     }
 
-    if (ty == nullptr || ty->isVoid()) {
+    if (ty == nullptr) {
+        ty = VoidType::get();
+    }
+
+    if (ty->isVoid()) {
         ty = guessGlobalType(name, addr);
     }
 
@@ -940,6 +948,9 @@ SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) co
     SharedType type = DebugInfo::typeFromDebugInfo(globalName, globAddr);
     if (type) {
         return type;
+    }
+    else if (!m_binaryFile) {
+        return VoidType::get();
     }
 
     auto symbol = m_binaryFile->getSymbols()->findSymbolByName(globalName);

@@ -73,6 +73,7 @@ private slots:
     void testReDecode();
     void testFinishDecode();
 
+    void testCreateGlobal();
     void testGetGlobalName();
     void testGetGlobalAddr();
     void testGetGlobal();
