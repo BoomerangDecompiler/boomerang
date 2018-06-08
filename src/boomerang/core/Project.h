@@ -120,6 +120,8 @@ private:
      */
     void loadSymbols();
 
+    bool readSymbolFile(const QString& fname);
+
     /**
      * Disassemble the whole binary file.
      * \returns false iff an error occurred.

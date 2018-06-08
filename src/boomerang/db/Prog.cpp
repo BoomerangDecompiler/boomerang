@@ -672,63 +672,6 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 }
 
 
-void Prog::readSymbolFile(const QString& fname)
-{
-    std::unique_ptr<AnsiCParser> parser = nullptr;
-
-    try {
-        parser.reset(new AnsiCParser(qPrintable(fname), false));
-    }
-    catch (const char *) {
-        LOG_ERROR("Cannot read symbol file '%1'", fname);
-        return;
-    }
-
-    Platform plat = getFrontEndId();
-    CallConv cc   = isWin32() ? CallConv::Pascal : CallConv::C;
-
-    parser->yyparse(plat, cc);
-    Module *targetModule = getRootModule();
-
-    for (Symbol *sym : parser->symbols) {
-        if (sym->sig) {
-            QString name = sym->sig->getName();
-            targetModule = getOrInsertModuleForSymbol(name);
-            auto bin_sym       = m_binaryFile->getSymbols()->findSymbolByAddress(sym->addr);
-            bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
-            // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
-            // to specifically specify that this function obeys library calling conventions
-            sym->mods->noDecode;
-            Function *p = targetModule->createFunction(name, sym->addr, do_not_decode);
-
-            if (!sym->mods->incomplete) {
-                p->setSignature(sym->sig->clone());
-                p->getSignature()->setForced(true);
-            }
-        }
-        else {
-            QString name = sym->name;
-
-            if (sym->name.isEmpty()) {
-                name = newGlobalName(sym->addr);
-            }
-
-            SharedType ty = sym->ty;
-
-            if (ty == nullptr) {
-                ty = guessGlobalType(name, sym->addr);
-            }
-
-            m_globals.insert(std::make_shared<Global>(ty, sym->addr, name, this));
-        }
-    }
-
-    for (SymbolRef *ref : parser->refs) {
-        m_defaultFrontend->addRefHint(ref->m_addr, ref->m_name);
-    }
-}
-
-
 SharedExp Prog::addReloc(SharedExp e, Address location)
 {
     assert(e->isConst());
@@ -858,6 +801,25 @@ void Prog::finishDecode()
             }
         }
     }
+}
+
+
+Global *Prog::createGlobal(Address addr, SharedType ty, QString name)
+{
+    if (addr == Address::INVALID) {
+        return nullptr;
+    }
+
+    if (name.isEmpty()) {
+        name = newGlobalName(addr);
+    }
+
+    if (ty == nullptr) {
+        ty = guessGlobalType(name, addr);
+    }
+
+    auto pair = m_globals.insert(std::make_shared<Global>(ty, addr, name, this));
+    return (pair.second) ? pair.first->get() : nullptr;
 }
 
 

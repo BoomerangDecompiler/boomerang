@@ -177,8 +177,6 @@ public:
     int readNative4(Address a) const;
     SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
-    void readSymbolFile(const QString& fname);
-
     /**
      * This does extra processing on a constant. The expression \p e
      * is expected to be a Const, and the Address \p location
@@ -207,6 +205,8 @@ public:
     const std::list<UserProc *>& getEntryProcs() const { return m_entryProcs; }
 
     // globals
+    Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = QString());
+
     std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }
     const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
 

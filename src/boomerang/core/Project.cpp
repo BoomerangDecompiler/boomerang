@@ -10,6 +10,7 @@
 #include "Project.h"
 
 
+#include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
@@ -205,8 +206,58 @@ void Project::loadSymbols()
 
     for (auto& elem : Boomerang::get()->getSettings()->m_symbolFiles) {
         LOG_MSG("Reading symbol file '%1'", elem);
-        m_prog->readSymbolFile(elem);
+        readSymbolFile(elem);
     }
+}
+
+
+bool Project::readSymbolFile(const QString& fname)
+{
+    std::unique_ptr<AnsiCParser> parser = nullptr;
+
+    try {
+        parser.reset(new AnsiCParser(qPrintable(fname), false));
+    }
+    catch (const char *) {
+        LOG_ERROR("Cannot read symbol file '%1'", fname);
+        return false;
+    }
+
+    Platform plat = m_prog->getFrontEndId();
+    CallConv cc   = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
+
+    parser->yyparse(plat, cc);
+    Module *targetModule = m_prog->getRootModule();
+
+    for (Symbol *sym : parser->symbols) {
+        if (sym->sig) {
+            QString name = sym->sig->getName();
+            targetModule = m_prog->getOrInsertModuleForSymbol(name);
+            auto bin_sym       = m_loadedBinary->getSymbols()->findSymbolByAddress(sym->addr);
+            bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
+            // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
+            // to specifically specify that this function obeys library calling conventions
+            sym->mods->noDecode;
+            Function *p = targetModule->createFunction(name, sym->addr, do_not_decode);
+
+            if (!sym->mods->incomplete) {
+                p->setSignature(sym->sig->clone());
+                p->getSignature()->setForced(true);
+            }
+        }
+        else {
+            QString name = sym->name;
+            SharedType ty = sym->ty;
+
+            m_prog->createGlobal(sym->addr, sym->ty, sym->name);
+        }
+    }
+
+    for (SymbolRef *ref : parser->refs) {
+        m_prog->getFrontEnd()->addRefHint(ref->m_addr, ref->m_name);
+    }
+
+    return true;
 }
 
 
