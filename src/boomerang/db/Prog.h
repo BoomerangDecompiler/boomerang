@@ -175,7 +175,6 @@ public:
     Module *getOrInsertModuleForSymbol(const QString& symbolName);
 
     int readNative4(Address a) const;
-    SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
     /**
      * This does extra processing on a constant. The expression \p c

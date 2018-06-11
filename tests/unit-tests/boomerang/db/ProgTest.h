@@ -64,7 +64,6 @@ private slots:
     void testGetOrInsertModuleForSymbol();
 
     void testReadNative4();
-    void testReadNativeAs();
 
     void testAddReloc();
 

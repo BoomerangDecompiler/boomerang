@@ -19,6 +19,7 @@ set(TESTS
     CFGTest
     DFATest
     ExpTest
+    GlobalTest
     ParserTest
     ProgTest
     ProcTest
