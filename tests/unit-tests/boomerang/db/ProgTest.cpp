@@ -435,12 +435,28 @@ void ProgTest::testReadNative4()
 
 void ProgTest::testReadNativeAs()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
-    QVERIFY(m_project.getProg()->readNativeAs(Address(0x80483FC), PointerType::get(CharType::get())) == nullptr);
 
-    SharedExp e = m_project.getProg()->readNativeAs(Address(0x80483FC), ArrayType::get(CharType::get()));
-    QVERIFY(e->isConst());
-    QCOMPARE(e->access<Const>()->getStr(), QString("Hello, world!\n"));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.getProg()->readNativeAs(Address::INVALID, VoidType::get()) == nullptr);
+
+    SharedExp result = m_project.getProg()->readNativeAs(Address(0x080483de), PointerType::get(VoidType::get()));
+    QVERIFY(result && result->isConst());
+    QCOMPARE(result->access<Const>()->getInt(), 0);
+
+
+    const Address helloworld = Address(0x80483FC); // address of hello world string
+    QVERIFY(m_project.getProg()->readNativeAs(helloworld, PointerType::get(CharType::get())) == nullptr);
+
+    result = m_project.getProg()->readNativeAs(helloworld, ArrayType::get(CharType::get()));
+    QVERIFY(result && result->isConst());
+    QCOMPARE(result->access<Const>()->getStr(), QString("Hello, world!\n"));
+
+    std::shared_ptr<CompoundType> ct = CompoundType::get();
+    ct->addType(ArrayType::get(CharType::get(), 15), "m_greeting");
+
+    result = m_project.getProg()->readNativeAs(helloworld, ct);
+    QVERIFY(result);
+    QCOMPARE(QString(result->prints()), QString("\"Hello, world!\n\""));
 }
 
 
