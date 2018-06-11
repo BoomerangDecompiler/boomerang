@@ -16,6 +16,8 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/CharType.h"
 
 
 #define SAMPLE(path)    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
@@ -540,7 +542,17 @@ void ProgTest::testNewGlobalName()
 
 void ProgTest::testGuessGlobalType()
 {
-    QSKIP("TODO");
+    {
+        Prog prog("test", nullptr);
+        SharedType ty = prog.guessGlobalType("test", Address(0x1000));
+        QVERIFY(*ty == *VoidType::get());
+    }
+
+    Project pro;
+    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+
+    SharedType ty = pro.getProg()->guessGlobalType("helloworld", Address(0x80483FC));
+    QVERIFY(*ty == *PointerType::get(CharType::get()));
 }
 
 
