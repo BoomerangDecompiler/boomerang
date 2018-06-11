@@ -55,6 +55,7 @@ void GlobalTest::testGetInitialValue()
 
 
     QVERIFY(m_project.loadBinaryFile(FBRANCH_PENTIUM));
+    prog = m_project.getProg();
 
     // float constant
     Global *five = prog->createGlobal(Address(0x080485CC), FloatType::get(32));
