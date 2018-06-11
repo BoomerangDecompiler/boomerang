@@ -321,6 +321,11 @@ void ProgTest::testGetStringConstant()
     const char *world1 = m_project.getProg()->getStringConstant(Address(0x804840A), false);
     QVERIFY(world1 != nullptr);
     QCOMPARE(world1, "");
+
+    // with control characters
+    const char *ld1 = m_project.getProg()->getStringConstant(Address(0x08048406), false);
+    QVERIFY(ld1 != nullptr);
+    QCOMPARE(ld1, "ld!\n");
 }
 
 
