@@ -225,8 +225,15 @@ public:
     Address getGlobalAddr(const QString& name) const;
     Global *getGlobal(const QString& name) const;
 
-    /// Indicate that a given global has been seen used in the program.
-    /// \returns true on success, false on failure (e.g. existing incompatible type already present)
+    /**
+     * Indicate that a given global is used in the program.
+     * The global variable will be created if it does not yet exist.
+     *
+     * \param uaddr the start address of the global variable in memory
+     * \param knownType If not nullptr, update type information of the global by meeting types.
+     *
+     * \returns true on success, false if the global variable could not be created.
+     */
     bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
 
     /// Make an array type for the global array starting at \p startAddr.
