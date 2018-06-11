@@ -97,22 +97,6 @@ void Exp::dump()
 }
 
 
-void Exp::createDotFile(const char *name)
-{
-    QFile fl(name);
-
-    if (!fl.open(QFile::WriteOnly)) {
-        LOG_ERROR("Could not open %1 to write dotty file", name);
-        return;
-    }
-
-    QTextStream of(&fl);
-    of << "digraph Exp {\n";
-    appendDotFile(of);
-    of << "}";
-}
-
-
 bool Exp::isRegOfConst() const
 {
     if (m_oper != opRegOf) {

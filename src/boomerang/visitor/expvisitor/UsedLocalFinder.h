@@ -40,7 +40,7 @@ public:
     virtual bool preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<Terminal>& exp) override;
+    virtual bool visit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     LocationSet *m_used; // Set of used locals' names

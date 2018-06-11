@@ -118,12 +118,6 @@ public:
     /// Print to standard error (for debugging)
     void dump();
 
-    /// Write the contents of this expression to \p file in graphviz dot format.
-    void createDotFile(const char *name);
-
-    /// Append this expression to \p os
-    virtual void appendDotFile(QTextStream& os) = 0;
-
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
     virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc

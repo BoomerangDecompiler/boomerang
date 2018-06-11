@@ -19,7 +19,7 @@ ConstFinder::ConstFinder(std::list<std::shared_ptr<Const> >& list)
 }
 
 
-bool ConstFinder::preVisit(const std::shared_ptr<Const>& exp)
+bool ConstFinder::visit(const std::shared_ptr<Const>& exp)
 {
     m_constList.push_back(exp);
     return true;

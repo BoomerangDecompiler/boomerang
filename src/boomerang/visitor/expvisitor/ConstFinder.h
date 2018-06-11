@@ -29,7 +29,7 @@ public:
     virtual bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<Const>& exp) override;
+    virtual bool visit(const std::shared_ptr<Const>& exp) override;
 
 private:
     std::list<std::shared_ptr<Const> >& m_constList;

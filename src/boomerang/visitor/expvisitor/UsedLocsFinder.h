@@ -37,7 +37,7 @@ public:
     bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Terminal>& exp) override;
+    bool visit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     LocationSet *m_used; ///< Set of Exps

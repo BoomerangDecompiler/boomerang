@@ -55,9 +55,6 @@ public:
     /// \copydoc Unary::printx
     virtual void printx(int ind) const override;
 
-    /// \copydoc Unary::appendDotFile
-    virtual void appendDotFile(QTextStream& of) override;
-
     /// Get and set the type
     SharedType getType()       { return m_type; }
     SharedConstType getType() const { return m_type; }

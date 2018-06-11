@@ -51,9 +51,6 @@ public:
     /// \copydoc Exp::printx
     virtual void printx(int ind) const override;
 
-    /// \copydoc Exp::appendDotFile
-    virtual void appendDotFile(QTextStream& of) override;
-
     /// \copydoc Exp::getArity
     virtual int getArity() const override { return 1; }
 

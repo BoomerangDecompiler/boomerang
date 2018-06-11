@@ -55,7 +55,7 @@ bool UsedLocalFinder::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visit
 }
 
 
-bool UsedLocalFinder::preVisit(const std::shared_ptr<Terminal>& exp)
+bool UsedLocalFinder::visit(const std::shared_ptr<Terminal>& exp)
 {
     if (exp->getOper() == opDefineAll) {
         all = true;

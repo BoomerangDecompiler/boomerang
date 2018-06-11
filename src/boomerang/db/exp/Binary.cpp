@@ -538,21 +538,6 @@ void Binary::print(QTextStream& os, bool html) const
 }
 
 
-void Binary::appendDotFile(QTextStream& of)
-{
-    // First a node for this Binary object
-    of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
-    of << operToString(m_oper) << "\\n" << HostAddress(this) << " | ";
-    of << "{<p1> | <p2>}";
-    of << " }\"];\n";
-    subExp1->appendDotFile(of);
-    subExp2->appendDotFile(of);
-    // Now an edge for each subexpression
-    of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
-    of << "e_" << HostAddress(this) << ":p2->e_" << HostAddress(subExp2.get()) << ";\n";
-}
-
-
 void Binary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     assert(subExp1 && subExp2);
@@ -1328,21 +1313,17 @@ bool Binary::accept(ExpVisitor *v)
     assert(subExp1 && subExp2);
 
     bool visitChildren = true;
-    bool ret = v->preVisit(shared_from_base<Binary>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    if (!v->preVisit(shared_from_base<Binary>(), visitChildren)) {
+        return false;
     }
 
-    if (ret) {
-        ret = subExp1->accept(v);
+    if (visitChildren) {
+        if (!subExp1->accept(v) || !subExp2->accept(v)) {
+            return false;
+        }
     }
 
-    if (ret) {
-        ret = subExp2->accept(v);
-    }
-
-    return ret;
+    return v->postVisit(shared_from_base<Binary>());
 }
 
 

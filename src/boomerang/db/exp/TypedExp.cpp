@@ -133,17 +133,6 @@ void TypedExp::print(QTextStream& os, bool html) const
 }
 
 
-void TypedExp::appendDotFile(QTextStream& of)
-{
-    of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
-    of << "opTypedExp\\n" << HostAddress(this) << " | ";
-    // Just display the C type for now
-    of << m_type->getCtype() << " | <p1>";
-    of << " }\"];\n";
-    subExp1->appendDotFile(of);
-    of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
-}
-
 
 SharedExp TypedExp::polySimplify(bool& changed)
 {
@@ -164,17 +153,17 @@ SharedExp TypedExp::polySimplify(bool& changed)
 bool TypedExp::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->preVisit(shared_from_base<TypedExp>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    if (!v->preVisit(shared_from_base<TypedExp>(), visitChildren)) {
+        return false;
     }
 
-    if (ret) {
-        ret = subExp1->accept(v);
+    if (visitChildren) {
+        if (!getSubExp1()->accept(v)) {
+            return false;
+        }
     }
 
-    return ret;
+    return v->postVisit(shared_from_base<TypedExp>());
 }
 
 

@@ -55,9 +55,6 @@ public:
     /// \copydoc Unary::printx
     virtual void printx(int ind) const override;
 
-    /// \copydoc Unary::appendDotFile
-    virtual void appendDotFile(QTextStream& of) override;
-
     /// \copydoc Exp::getSubExp2
     SharedExp getSubExp2() override;
     SharedConstExp getSubExp2() const override;

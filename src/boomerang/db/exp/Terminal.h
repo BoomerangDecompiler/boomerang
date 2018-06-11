@@ -51,9 +51,6 @@ public:
     /// \copydoc Exp::printx
     void printx(int ind) const override;
 
-    /// \copydoc Exp::appendDotFile
-    void appendDotFile(QTextStream& of) override;
-
     /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }
 

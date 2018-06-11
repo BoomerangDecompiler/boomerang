@@ -46,7 +46,7 @@ bool UsedLocsFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitC
 }
 
 
-bool UsedLocsFinder::preVisit(const std::shared_ptr<Terminal>& exp)
+bool UsedLocsFinder::visit(const std::shared_ptr<Terminal>& exp)
 {
     if (m_memOnly) {
         return true; // Only interested in m[...]

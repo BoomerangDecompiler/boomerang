@@ -14,6 +14,7 @@
 
 class RTL;
 typedef std::shared_ptr<RTL> SharedRTL;
+typedef std::shared_ptr<const RTL> SharedConstRTL;
 
 
 /**
@@ -32,10 +33,9 @@ public:
     FlagDef& operator=(const FlagDef& other) = default;
     FlagDef& operator=(FlagDef&& other) = default;
 
-public:
-    /// \copydoc Unary::appendDotFile
-    virtual void appendDotFile(QTextStream& of) override;
+    SharedConstRTL getRTL() const { return m_rtl; }
 
+public:
     /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
 

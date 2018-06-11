@@ -57,9 +57,6 @@ public:
     /// \copydoc Binary::printx
     virtual void printx(int ind) const override;
 
-    /// \copydoc Binary::appendDotFile
-    virtual void appendDotFile(QTextStream& of) override;
-
     /// \copydoc Exp::setSubExp3
     void setSubExp3(SharedExp e) override;
 

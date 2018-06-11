@@ -406,23 +406,6 @@ void Unary::print(QTextStream& os, bool html) const
 }
 
 
-void Unary::appendDotFile(QTextStream& of)
-{
-    // First a node for this Unary object
-    of << "e_" << HostAddress(this).toString() << " [shape=record,label=\"{";
-    // The (int) cast is to print the address, not the expression!
-    of << operToString(m_oper) << "\\n" << HostAddress(this).toString() << " | ";
-    of << "<p1>";
-    of << " }\"];\n";
-
-    // Now recurse to the subexpression.
-    subExp1->appendDotFile(of);
-
-    // Finally an edge for the subexpression
-    of << "e_" << HostAddress(this) << "->e_" << HostAddress(subExp1.get()) << ";\n";
-}
-
-
 void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     if (m_oper != opInitValueOf) { // don't search child
@@ -640,13 +623,17 @@ void Unary::printx(int ind) const
 bool Unary::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->preVisit(shared_from_base<Unary>(), visitChildren);
-
-    if (!visitChildren || !ret) {
-        return ret; // Override the rest of the accept logic
+    if (!v->preVisit(shared_from_base<Unary>(), visitChildren)) {
+        return false;
     }
 
-    return subExp1->accept(v);
+    if (visitChildren) {
+        if (!subExp1->accept(v)) {
+            return false;
+        }
+    }
+
+    return v->postVisit(shared_from_base<Unary>());
 }
 
 

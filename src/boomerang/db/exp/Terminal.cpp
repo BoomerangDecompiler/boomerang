@@ -184,26 +184,9 @@ void Terminal::print(QTextStream& os, bool) const
 }
 
 
-void Terminal::appendDotFile(QTextStream& of)
-{
-    of << "e_" << HostAddress(this).toString() << " [shape=parallelogram,label=\"";
-
-    if (m_oper == opWild) {
-        // Note: value is -1, so can't index array
-        of << "WILD";
-    }
-    else {
-        of << operToString(m_oper);
-    }
-
-    of << "\\n" << HostAddress(this).toString();
-    of << "\"];\n";
-}
-
-
 bool Terminal::accept(ExpVisitor *v)
 {
-    return v->preVisit(shared_from_base<Terminal>());
+    return v->visit(shared_from_base<Terminal>());
 }
 
 

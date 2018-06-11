@@ -167,18 +167,18 @@ SharedExp RefExp::polySimplify(bool& changed)
 
 bool RefExp::accept(ExpVisitor *v)
 {
-    bool visitChildren = false;
-    bool ret = v->preVisit(shared_from_base<RefExp>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    bool visitChildren = true;
+    if (!v->preVisit(shared_from_base<RefExp>(), visitChildren)) {
+        return false;
     }
 
-    if (ret) {
-        ret = subExp1->accept(v);
+    if (visitChildren) {
+        if (!subExp1->accept(v)) {
+            return false;
+        }
     }
 
-    return ret;
+    return v->postVisit(shared_from_base<RefExp>());
 }
 
 

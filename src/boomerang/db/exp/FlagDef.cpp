@@ -27,38 +27,20 @@ FlagDef::~FlagDef()
 }
 
 
-void FlagDef::appendDotFile(QTextStream& of)
-{
-    of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
-    of << "opFlagDef \\n" << HostAddress(this) << "| ";
-    // Display the RTL as "RTL <r1> <r2>..." vertically (curly brackets)
-    of << "{ RTL ";
-    const size_t n = m_rtl->size();
-
-    for (size_t i = 0; i < n; i++) {
-        of << "| <r" << i << "> ";
-    }
-
-    of << "} | <p1> }\"];\n";
-    subExp1->appendDotFile(of);
-    of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
-}
-
-
 bool FlagDef::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->preVisit(shared_from_base<FlagDef>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    if (!v->preVisit(shared_from_base<FlagDef>(), visitChildren)) {
+        return false;
     }
 
-    if (ret) {
-        ret = subExp1->accept(v);
+    if (visitChildren) {
+        if (!subExp1->accept(v)) {
+            return false;
+        }
     }
 
-    return ret;
+    return v->postVisit(shared_from_base<FlagDef>());
 }
 
 

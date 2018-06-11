@@ -108,17 +108,17 @@ void Location::getDefinitions(LocationSet& defs)
 bool Location::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->preVisit(shared_from_base<Location>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    if (!v->preVisit(shared_from_base<Location>(), visitChildren)) {
+        return false;
     }
 
-    if (ret) {
-        ret &= subExp1->accept(v);
+    if (visitChildren) {
+        if (!subExp1->accept(v)) {
+            return false;
+        }
     }
 
-    return ret;
+    return v->postVisit(shared_from_base<Location>());
 }
 
 

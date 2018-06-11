@@ -101,9 +101,6 @@ public:
     /// Print "recursive" (extra parens not wanted at outer levels)
     void printNoQuotes(QTextStream& os) const;
 
-    /// \copydoc Exp:;:appendDotFile
-    virtual void appendDotFile(QTextStream& of) override;
-
     /// \copydoc Exp::accept
     virtual bool accept(ExpVisitor *v) override;
 

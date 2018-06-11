@@ -26,18 +26,21 @@
 #include "boomerang/util/Log.h"
 
 
-Assign::Assign(SharedExp lhs, SharedExp r, SharedExp guard)
+#include "boomerang/util/ExpDotWriter.h"
+
+
+Assign::Assign(SharedExp lhs, SharedExp rhs, SharedExp guard)
     : Assignment(lhs)
-    , m_rhs(r)
+    , m_rhs(rhs)
     , m_guard(guard)
 {
     m_kind = StmtType::Assign;
 }
 
 
-Assign::Assign(SharedType ty, SharedExp lhs, SharedExp r, SharedExp guard)
+Assign::Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard)
     : Assignment(ty, lhs)
-    , m_rhs(r)
+    , m_rhs(rhs)
     , m_guard(guard)
 {
     m_kind = StmtType::Assign;

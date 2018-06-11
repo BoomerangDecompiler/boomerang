@@ -343,23 +343,6 @@ void Ternary::print(QTextStream& os, bool html) const
 }
 
 
-void Ternary::appendDotFile(QTextStream& of)
-{
-    // First a node for this Ternary object
-    of << "e_" << HostAddress(this) << " [shape=record,label=\"{";
-    of << operToString(m_oper) << "\\n" << HostAddress(this) << " | ";
-    of << "{<p1> | <p2> | <p3>}";
-    of << " }\"];\n";
-    subExp1->appendDotFile(of);
-    subExp2->appendDotFile(of);
-    subExp3->appendDotFile(of);
-    // Now an edge for each subexpression
-    of << "e_" << HostAddress(this) << ":p1->e_" << HostAddress(subExp1.get()) << ";\n";
-    of << "e_" << HostAddress(this) << ":p2->e_" << HostAddress(subExp2.get()) << ";\n";
-    of << "e_" << HostAddress(this) << ":p3->e_" << HostAddress(subExp3.get()) << ";\n";
-}
-
-
 void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     doSearch(pattern, subExp1, li, once);
@@ -525,25 +508,17 @@ SharedExp Ternary::simplifyAddr()
 bool Ternary::accept(ExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->preVisit(shared_from_base<Ternary>(), visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    if (!v->preVisit(shared_from_base<Ternary>(), visitChildren)) {
+        return false;
     }
 
-    if (ret) {
-        ret = subExp1->accept(v);
+    if (visitChildren) {
+        if (!subExp1->accept(v) || !subExp2->accept(v) || !subExp3->accept(v)) {
+            return false;
+        }
     }
 
-    if (ret) {
-        ret = subExp2->accept(v);
-    }
-
-    if (ret) {
-        ret = subExp3->accept(v);
-    }
-
-    return ret;
+    return v->postVisit(shared_from_base<Ternary>());
 }
 
 

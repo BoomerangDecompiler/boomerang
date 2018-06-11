@@ -152,7 +152,7 @@ QString Const::getFuncName() const
 
 bool Const::accept(ExpVisitor *v)
 {
-    return v->preVisit(shared_from_base<Const>());
+    return v->visit(shared_from_base<Const>());
 }
 
 
@@ -264,39 +264,6 @@ void Const::printNoQuotes(QTextStream& os) const
     else {
         print(os);
     }
-}
-
-
-void Const::appendDotFile(QTextStream& of)
-{
-    // We define a unique name for each node as "e_0x123456" if the address of "this" == 0x123456
-    of << "e_" << HostAddress(this).toString() << " [shape=record,label=\"{";
-    of << operToString(m_oper) << "\\n" << HostAddress(this).toString() << " | ";
-
-    switch (m_oper)
-    {
-    case opIntConst:
-        of << m_value.i;
-        break;
-
-    case opFltConst:
-        of << m_value.d;
-        break;
-
-    case opStrConst:
-        of << "\\\"" << m_string << "\\\"";
-        break;
-
-    // Might want to distinguish this better, e.g. "(func*)myProc"
-    case opFuncConst:
-        of << m_value.pp->getName();
-        break;
-
-    default:
-        break;
-    }
-
-    of << " }\"];\n";
 }
 
 
