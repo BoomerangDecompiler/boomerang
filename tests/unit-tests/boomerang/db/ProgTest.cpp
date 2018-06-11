@@ -456,19 +456,29 @@ void ProgTest::testAddReloc()
 
 void ProgTest::testDecodeEntryPoint()
 {
-    QSKIP("TODO");
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(!m_project.getProg()->decodeEntryPoint(Address::INVALID));
+    QVERIFY(m_project.getProg()->decodeEntryPoint(m_project.getLoadedBinaryFile()->getEntryPoint()));
 }
 
 
 void ProgTest::testDecodeFragment()
 {
-    QSKIP("TODO");
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    UserProc *mainProc = (UserProc *)m_project.getProg()->getOrCreateFunction(Address(0x08048328));
+    QVERIFY(!m_project.getProg()->decodeFragment(mainProc, Address::INVALID));
+    QVERIFY(m_project.getProg()->decodeFragment(mainProc, Address(0x08048328)));
 }
 
 
 void ProgTest::testReDecode()
 {
-    QSKIP("TODO");
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    UserProc *mainProc = (UserProc *)m_project.getProg()->getOrCreateFunction(Address(0x08048328));
+
+    QVERIFY(!m_project.getProg()->reDecode(nullptr));
+    QVERIFY(m_project.getProg()->reDecode(mainProc)); // actually processing for the first time
+    QVERIFY(m_project.getProg()->reDecode(mainProc)); // actual re-decode
 }
 
 
@@ -542,7 +552,23 @@ void ProgTest::testGuessGlobalType()
 
 void ProgTest::testMakeArrayType()
 {
-    QSKIP("TODO");
+    Prog prog("test", nullptr);
+
+    std::shared_ptr<ArrayType> ty = prog.makeArrayType(Address::INVALID, CharType::get());
+    QVERIFY(*ty == *ArrayType::get(CharType::get()));
+
+    m_project.loadBinaryFile(HELLO_PENTIUM);
+    BinarySymbol *helloworld = m_project.getLoadedBinaryFile()->getSymbols()
+        ->createSymbol(Address(0x80483FC), "helloworld");
+
+    helloworld->setSize(15);
+
+    // type of hello world
+    ty = m_project.getProg()->makeArrayType(Address(0x80483FC), CharType::get());
+    QCOMPARE(ty->prints(), QString("char[15]"));
+
+    ty = m_project.getProg()->makeArrayType(Address(0x80483FC), VoidType::get());
+    QCOMPARE(ty->prints(), QString("void[15]"));
 }
 
 

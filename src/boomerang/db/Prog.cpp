@@ -733,14 +733,14 @@ void Prog::updateLibrarySignatures()
 }
 
 
-void Prog::decodeEntryPoint(Address entryAddr)
+bool Prog::decodeEntryPoint(Address entryAddr)
 {
     Function *func = getFunctionByAddr(entryAddr);
 
     if (!func || (!func->isLib() && !static_cast<UserProc *>(func)->isDecoded())) {
         if (!Util::inRange(entryAddr, m_binaryFile->getImage()->getLimitTextLow(), m_binaryFile->getImage()->getLimitTextHigh())) {
             LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", entryAddr);
-            return;
+            return false;
         }
 
         m_defaultFrontend->decode(entryAddr);
@@ -761,29 +761,37 @@ void Prog::decodeEntryPoint(Address entryAddr)
         }
     }
 
-    assert(func);
+    if (!func) {
+        return false;
+    }
 
     if (!func->isLib()) { // -sf procs marked as __nodecode are treated as library procs (?)
         m_entryProcs.push_back(static_cast<UserProc *>(func));
     }
+
+    return true;
 }
 
 
-void Prog::decodeFragment(UserProc *proc, Address a)
+bool Prog::decodeFragment(UserProc *proc, Address a)
 {
     if ((a >= m_binaryFile->getImage()->getLimitTextLow()) && (a < m_binaryFile->getImage()->getLimitTextHigh())) {
-        m_defaultFrontend->decodeFragment(proc, a);
+        return m_defaultFrontend->decodeFragment(proc, a);
     }
     else {
         LOG_ERROR("Attempt to decode fragment at address %1 outside text area", a);
+        return false;
     }
 }
 
 
 bool Prog::reDecode(UserProc *proc)
 {
-    QTextStream os(stderr); // rtl output target
+    if (!proc) {
+        return false;
+    }
 
+    QTextStream os(stderr); // rtl output target
     return m_defaultFrontend->processProc(proc->getEntryAddress(), proc, os);
 }
 
@@ -926,7 +934,9 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
     QString name = newGlobalName(startAddr);
 
     // TODO: fix the case of missing symbol table interface
-    auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
+    const BinarySymbol *symbol = m_binaryFile
+        ? m_binaryFile->getSymbols()->findSymbolByName(name)
+        : nullptr;
 
     if (!symbol || (symbol->getSize() == 0)) {
         return ArrayType::get(baseType); // An "unbounded" array

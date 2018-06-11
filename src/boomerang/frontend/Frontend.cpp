@@ -371,8 +371,7 @@ bool IFrontEnd::decode(Address addr)
             LOG_MSG("No proc found at address %1", addr);
             return false;
         }
-
-        if (proc->isLib()) {
+        else if (proc->isLib()) {
             LOG_MSG("NOT decoding library proc at address %1", addr);
             return false;
         }

@@ -191,10 +191,10 @@ public:
     // Decompilation related
 
     /// Decode from entry point given as an agrument
-    void decodeEntryPoint(Address entryAddr);
+    bool decodeEntryPoint(Address entryAddr);
 
     /// Decode a procedure fragment of \p proc starting at address \p addr.
-    void decodeFragment(UserProc *proc, Address addr);
+    bool decodeFragment(UserProc *proc, Address addr);
 
     /// Re-decode this proc from scratch
     bool reDecode(UserProc *proc);
