@@ -178,12 +178,12 @@ public:
     SharedExp readNativeAs(Address uaddr, SharedType type) const;
 
     /**
-     * This does extra processing on a constant. The expression \p e
+     * This does extra processing on a constant. The expression \p c
      * is expected to be a Const, and the Address \p location
      * is the native location from which the constant was read.
      * \returns processed Exp
      */
-    SharedExp addReloc(SharedExp e, Address location);
+    SharedExp addReloc(SharedExp c, Address location);
 
     void updateLibrarySignatures();
 

@@ -75,7 +75,8 @@ public:
     /// Relocation functions
     virtual bool isRelocationAt(Address addr) { Q_UNUSED(addr); return false; }
 
-    /// \returns the target of the jmp/jXX instruction at address \p addr
+    /// \returns the target of the jmp/jXX instruction at address \p addr.
+    /// If there is no jump at address \p addr, returns Address::INVALID.
     virtual Address getJumpTarget(Address addr) const { Q_UNUSED(addr); return Address::INVALID; }
     virtual bool hasDebugInfo() const { return false; }
 };

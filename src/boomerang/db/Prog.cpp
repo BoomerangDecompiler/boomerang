@@ -675,18 +675,18 @@ SharedExp Prog::readNativeAs(Address uaddr, SharedType type) const
 }
 
 
-SharedExp Prog::addReloc(SharedExp e, Address location)
+SharedExp Prog::addReloc(SharedExp c, Address location)
 {
-    assert(e->isConst());
+    assert(c && c->isConst());
 
-    if (!m_binaryFile->isRelocationAt(location)) {
-        return e;
+    if (!m_binaryFile || !m_binaryFile->isRelocationAt(location)) {
+        return c;
     }
 
     // relocations have been applied to the constant, so if there is a
     // relocation for this lc then we should be able to replace the constant
     // with a symbol.
-    Address c_addr = e->access<Const>()->getAddr();
+    Address c_addr = c->access<Const>()->getAddr();
     const BinarySymbol *bin_sym = m_binaryFile->getSymbols()->findSymbolByAddress(c_addr);
 
     if (bin_sym != nullptr) {
@@ -702,7 +702,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         const char *str = getStringConstant(c_addr);
 
         if (str) {
-            e = Const::get(str);
+            c = Const::get(str);
         }
         else {
             // check for accesses into the middle of symbols
@@ -711,7 +711,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
 
                 if ((sym->getLocation() < c_addr) && ((sym->getLocation() + sz) > c_addr)) {
                     int off = (c_addr - sym->getLocation()).value();
-                    e = Binary::get(opPlus,
+                    c = Binary::get(opPlus,
                                     Unary::get(opAddrOf,
                                                Location::global(sym->getName(), nullptr)),
                                     Const::get(off));
@@ -721,7 +721,7 @@ SharedExp Prog::addReloc(SharedExp e, Address location)
         }
     }
 
-    return e;
+    return c;
 }
 
 

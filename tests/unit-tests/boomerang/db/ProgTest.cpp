@@ -444,20 +444,12 @@ void ProgTest::testReadNativeAs()
 }
 
 
-void ProgTest::testReadSymbolFile()
-{
-    QSKIP("TODO");
-}
-
-
-void ProgTest::testAddDecodedRTL()
-{
-    QSKIP("TODO");
-}
-
-
 void ProgTest::testAddReloc()
 {
+    Prog prog("test", nullptr);
+    SharedExp e = prog.addReloc(Const::get(0x1000), Address::INVALID);
+    QVERIFY(*e == *Const::get(0x1000));
+
     QSKIP("TODO");
 }
 

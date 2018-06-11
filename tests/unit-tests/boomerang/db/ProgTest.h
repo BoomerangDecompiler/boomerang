@@ -65,9 +65,7 @@ private slots:
 
     void testReadNative4();
     void testReadNativeAs();
-    void testReadSymbolFile();
 
-    void testAddDecodedRTL();
     void testAddReloc();
 
     void testDecodeEntryPoint();
