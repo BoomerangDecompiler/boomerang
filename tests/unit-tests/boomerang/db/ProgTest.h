@@ -12,6 +12,8 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
 
 /**
  * Test the Prog class.
@@ -61,7 +63,7 @@ private slots:
     void testGetDynamicProcName();
     void testGetOrInsertModuleForSymbol();
 
-    void testReadNative(); // readNative[1, 2, 4]
+    void testReadNative4();
     void testReadNativeAs();
     void testReadSymbolFile();
 
@@ -82,4 +84,7 @@ private slots:
     void testMakeArrayType();
     void testMarkGlobalUsed();
     void testGlobalType(); // getGlobalType/setGlobalType
+
+private:
+    Project m_project;
 };

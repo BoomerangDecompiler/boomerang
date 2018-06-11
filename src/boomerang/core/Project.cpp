@@ -27,7 +27,6 @@ Project::Project()
     : m_typeRecovery(new DFATypeRecovery())
     , m_codeGenerator(new CCodeGenerator())
 {
-    loadPlugins();
 }
 
 

@@ -18,6 +18,9 @@
 
 #include <QtTest/QtTest>
 
+#include "boomerang/core/Project.h"
+
+
 /**
  * Provides the interface for the StatementTest class, which
  *  tests the dataflow subsystems
@@ -78,4 +81,7 @@ private slots:
 
     /// Test the visitor code that finds constants
     void testFindConstants();
+
+private:
+    Project m_project;
 };

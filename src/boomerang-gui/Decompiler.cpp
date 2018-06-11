@@ -29,6 +29,7 @@ Decompiler::Decompiler()
     : QObject()
 {
     Boomerang::get()->addWatcher(this);
+    m_project.loadPlugins();
 }
 
 

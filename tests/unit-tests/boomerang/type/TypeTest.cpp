@@ -16,7 +16,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/ArrayType.h"
@@ -39,8 +38,7 @@ struct ComplexTypeComp
     {
         QString  memberName; // Member name if offset
         unsigned index;      // Constant index if array
-    }
-         u;
+    } u;
 };
 
 typedef std::list<ComplexTypeComp> ComplexTypeCompList;
@@ -97,6 +95,8 @@ void TypeTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
@@ -127,9 +127,8 @@ void TypeTest::testNotEqual()
 
 void TypeTest::testCompound()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_WINDOWS));
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(HELLO_WINDOWS));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     fe->readLibraryCatalog(); // Read definitions

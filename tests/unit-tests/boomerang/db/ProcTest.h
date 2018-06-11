@@ -13,10 +13,15 @@
 #include <QtTest/QTest>
 #include <memory>
 
+#include "boomerang/core/Project.h"
+
 
 class ProcTest : public QObject
 {
 private slots:
     /// Test setting and reading name, constructor, native address
     void testName();
+
+private:
+    Project m_project;
 };

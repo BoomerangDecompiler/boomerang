@@ -11,7 +11,6 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 
@@ -25,6 +24,8 @@ void Win32BinaryLoaderTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
@@ -36,11 +37,11 @@ void Win32BinaryLoaderTest::cleanupTestCase()
 
 void Win32BinaryLoaderTest::testWinLoad()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(SWITCH_BORLAND));
+    QVERIFY(m_project.loadBinaryFile(SWITCH_BORLAND));
 
     // Borland
-    BinaryFile *binary = project.getLoadedBinaryFile();
+    BinaryFile *binary = m_project.getLoadedBinaryFile();
+    QVERIFY(binary != nullptr);
     QCOMPARE(binary->getMainEntryPoint(), Address(0x00401150));
 }
 

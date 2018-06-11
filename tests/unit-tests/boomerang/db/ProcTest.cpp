@@ -12,7 +12,6 @@
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/core/Boomerang.h"
 
@@ -24,12 +23,11 @@
 
 void ProcTest::testName()
 {
-    Project project;
-    project.loadBinaryFile(HELLO_PENTIUM);
-    Prog *prog = project.getProg();
+    m_project.loadBinaryFile(HELLO_PENTIUM);
+    Prog *prog = m_project.getProg();
     QVERIFY(prog != nullptr);
 
-    IFrontEnd *fe = new PentiumFrontEnd(project.getLoadedBinaryFile(), prog);
+    IFrontEnd *fe = new PentiumFrontEnd(m_project.getLoadedBinaryFile(), prog);
     QVERIFY(fe != nullptr);
     prog->setFrontEnd(fe);
 

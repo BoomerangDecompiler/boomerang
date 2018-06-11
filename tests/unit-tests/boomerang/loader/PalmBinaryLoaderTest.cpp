@@ -13,8 +13,8 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
+
 
 #define STARTER_PALM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/mc68328/Starter.prc"))
 
@@ -23,6 +23,8 @@ void PalmBinaryLoaderTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
@@ -34,10 +36,9 @@ void PalmBinaryLoaderTest::cleanupTestCase()
 
 void PalmBinaryLoaderTest::testPalmLoad()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(STARTER_PALM));
+    QVERIFY(m_project.loadBinaryFile(STARTER_PALM));
 
-    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
+    BinaryImage *image = m_project.getLoadedBinaryFile()->getImage();
 
     QCOMPARE(image->getNumSections(), 8);
     QCOMPARE(image->getSectionByIndex(0)->getName(), QString("code1"));

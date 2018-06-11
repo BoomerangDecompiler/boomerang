@@ -12,6 +12,9 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
+
 class FrontPentTest : public QObject
 {
     Q_OBJECT
@@ -25,4 +28,7 @@ private slots:
     void test3();
     void testFindMain();
     void testBranch();
+
+private:
+    Project m_project;
 };

@@ -12,6 +12,8 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
 
 class TypeTest : public QObject
 {
@@ -28,4 +30,7 @@ private slots:
     // Test the DataIntervalMap class
     void testDataInterval();
     void testDataIntervalOverlaps();
+
+private:
+    Project m_project;
 };

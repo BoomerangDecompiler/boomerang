@@ -17,7 +17,6 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 
@@ -34,6 +33,8 @@ void FrontSparcTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
@@ -45,10 +46,9 @@ void FrontSparcTest::cleanupTestCase()
 
 void FrontSparcTest::test1()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
+    QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
-    Prog      *prog = project.getProg();
+    Prog      *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     bool    gotMain;
@@ -61,8 +61,7 @@ void FrontSparcTest::test1()
     QString     actual;
     QTextStream strm(&actual);
 
-
-    fe->decodeInstruction(addr, inst);
+    QVERIFY(fe->decodeInstruction(addr, inst));
     QVERIFY(inst.rtl != nullptr);
     inst.rtl->print(strm);
 
@@ -113,8 +112,7 @@ void FrontSparcTest::test1()
 
 void FrontSparcTest::test2()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
+    QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     DecodeResult inst;
     QString      expected;
@@ -122,7 +120,7 @@ void FrontSparcTest::test2()
     QTextStream  strm(&actual);
 
 
-    Prog *prog = project.getProg();
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     fe->decodeInstruction(Address(0x00010690), inst);
@@ -157,10 +155,9 @@ void FrontSparcTest::test2()
 
 void FrontSparcTest::test3()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_SPARC));
+    QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
-    Prog *prog = project.getProg();
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
@@ -221,10 +218,8 @@ void FrontSparcTest::testBranch()
     QString      actual;
     QTextStream  strm(&actual);
 
-    Project project;
-    QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
-
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     // bne
@@ -256,10 +251,8 @@ void FrontSparcTest::testBranch()
 
 void FrontSparcTest::testDelaySlot()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(BRANCH_SPARC));
-
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared

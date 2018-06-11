@@ -12,6 +12,9 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
+
 class HpSomBinaryLoaderTest : public QObject
 {
     Q_OBJECT
@@ -21,4 +24,7 @@ private slots:
     void cleanupTestCase();
 
     void testHppaLoad();
+
+public:
+    Project m_project;
 };

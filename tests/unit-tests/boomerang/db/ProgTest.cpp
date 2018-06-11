@@ -11,13 +11,14 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/CharType.h"
 
 
 #define SAMPLE(path)    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
@@ -31,6 +32,7 @@ void ProgTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+    m_project.loadPlugins();
 }
 
 
@@ -229,14 +231,13 @@ void ProgTest::testGetNumFunctions()
 
 void ProgTest::testIsWellFormed()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    const Prog *hello = pro.getProg();
+    const Prog *hello = m_project.getProg();
     QVERIFY(hello->isWellFormed());
-    QVERIFY(pro.decodeBinaryFile());
+    QVERIFY(m_project.decodeBinaryFile());
     QVERIFY(hello->isWellFormed());
-    QVERIFY(pro.decompileBinaryFile());
+    QVERIFY(m_project.decompileBinaryFile());
     QVERIFY(hello->isWellFormed());
 
     Prog testProg("test", nullptr);
@@ -249,11 +250,10 @@ void ProgTest::testIsWin32()
     Prog testProg("test", nullptr);
     QVERIFY(!testProg.isWin32());
 
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
-    QVERIFY(!pro.getProg()->isWin32());
-    QVERIFY(pro.loadBinaryFile(HELLO_WIN));
-    QVERIFY(pro.getProg()->isWin32());
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(!m_project.getProg()->isWin32());
+    QVERIFY(m_project.loadBinaryFile(HELLO_WIN));
+    QVERIFY(m_project.getProg()->isWin32());
 }
 
 
@@ -274,9 +274,8 @@ void ProgTest::testGetFrontEndId()
     Prog testProg("test", nullptr);
     QCOMPARE(testProg.getFrontEndId(), Platform::GENERIC);
 
-    Project pro;
-    pro.loadBinaryFile(HELLO_PENTIUM);
-    QCOMPARE(pro.getProg()->getFrontEndId(), Platform::PENTIUM);
+    m_project.loadBinaryFile(HELLO_PENTIUM);
+    QCOMPARE(m_project.getProg()->getFrontEndId(), Platform::PENTIUM);
 }
 
 
@@ -285,9 +284,8 @@ void ProgTest::testGetMachine()
     Prog testProg("test", nullptr);
     QCOMPARE(testProg.getMachine(), Machine::INVALID);
 
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
-    QCOMPARE(pro.getProg()->getMachine(), Machine::PENTIUM);
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QCOMPARE(m_project.getProg()->getMachine(), Machine::PENTIUM);
 }
 
 
@@ -296,9 +294,8 @@ void ProgTest::testGetDefaultSignature()
     Prog testProg("test", nullptr);
     QVERIFY(testProg.getDefaultSignature("foo") == nullptr);
 
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
-    auto sig = pro.getProg()->getDefaultSignature("foo");
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    auto sig = m_project.getProg()->getDefaultSignature("foo");
     QVERIFY(sig != nullptr);
     QCOMPARE(sig->getName(), QString("foo"));
 }
@@ -311,17 +308,16 @@ void ProgTest::testGetStringConstant()
     QVERIFY(testProg.getStringConstant(Address(0x1000), false) == nullptr);
     QVERIFY(testProg.getStringConstant(Address::INVALID) == nullptr);
 
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
-    const char *hello1 = pro.getProg()->getStringConstant(Address(0x80483FC), false);
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    const char *hello1 = m_project.getProg()->getStringConstant(Address(0x80483FC), false);
     QVERIFY(hello1 != nullptr);
     QCOMPARE(hello1, "Hello, world!\n");
 
-    const char *hello2 = pro.getProg()->getStringConstant(Address(0x80483FC), true);
+    const char *hello2 = m_project.getProg()->getStringConstant(Address(0x80483FC), true);
     QCOMPARE(hello2, hello1);
 
     // zero length string
-    const char *world1 = pro.getProg()->getStringConstant(Address(0x804840A), false);
+    const char *world1 = m_project.getProg()->getStringConstant(Address(0x804840A), false);
     QVERIFY(world1 != nullptr);
     QCOMPARE(world1, "");
 }
@@ -329,36 +325,33 @@ void ProgTest::testGetStringConstant()
 
 void ProgTest::testGetFloatConstant()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(FBRANCH_PENTIUM));
-    QVERIFY(pro.decodeBinaryFile());
+    QVERIFY(m_project.loadBinaryFile(FBRANCH_PENTIUM));
+    QVERIFY(m_project.decodeBinaryFile());
 
     double result;
-    QVERIFY(!pro.getProg()->getFloatConstant(Address::INVALID, result, 32));
-    QVERIFY(pro.getProg()->getFloatConstant(Address(0x080485CC), result, 32));
+    QVERIFY(!m_project.getProg()->getFloatConstant(Address::INVALID, result, 32));
+    QVERIFY(m_project.getProg()->getFloatConstant(Address(0x080485CC), result, 32));
     QCOMPARE(result, 5.0);
 }
 
 
 void ProgTest::testGetSymbolNameByAddr()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
     // "Hello, world!" string is not a symbol
-    QCOMPARE(pro.getProg()->getSymbolNameByAddr(Address(0x080483FC)), QString(""));
-    QCOMPARE(pro.getProg()->getSymbolNameByAddr(Address(0x08048268)), QString("printf"));
+    QCOMPARE(m_project.getProg()->getSymbolNameByAddr(Address(0x080483FC)), QString(""));
+    QCOMPARE(m_project.getProg()->getSymbolNameByAddr(Address(0x08048268)), QString("printf"));
 }
 
 
 void ProgTest::testGetSectionByAddr()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    QVERIFY(pro.getProg()->getSectionByAddr(Address::INVALID) == nullptr);
+    QVERIFY(m_project.getProg()->getSectionByAddr(Address::INVALID) == nullptr);
 
-    const BinarySection *sect = pro.getProg()->getSectionByAddr(Address(0x08048331));
+    const BinarySection *sect = m_project.getProg()->getSectionByAddr(Address(0x08048331));
     QVERIFY(sect != nullptr);
     QCOMPARE(sect->getName(), QString(".text"));
 }
@@ -366,80 +359,72 @@ void ProgTest::testGetSectionByAddr()
 
 void ProgTest::testGetLimitText()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    QCOMPARE(pro.getProg()->getLimitTextLow(),  Address(0x08048230));
-    QCOMPARE(pro.getProg()->getLimitTextHigh(), Address(0x080483f3));
+    QCOMPARE(m_project.getProg()->getLimitTextLow(),  Address(0x08048230));
+    QCOMPARE(m_project.getProg()->getLimitTextHigh(), Address(0x080483f3));
 }
 
 
 void ProgTest::testIsReadOnly()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    QVERIFY(!pro.getProg()->isReadOnly(Address::INVALID));
-    QVERIFY(!pro.getProg()->isReadOnly(Address(0x080496a8))); // address in .ctors
-    QVERIFY( pro.getProg()->isReadOnly(Address(0x080483f4))); // address in .rodata
+    QVERIFY(!m_project.getProg()->isReadOnly(Address::INVALID));
+    QVERIFY(!m_project.getProg()->isReadOnly(Address(0x080496a8))); // address in .ctors
+    QVERIFY( m_project.getProg()->isReadOnly(Address(0x080483f4))); // address in .rodata
 }
 
 
 void ProgTest::testIsInStringsSection()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    QVERIFY(!pro.getProg()->isInStringsSection(Address::INVALID));
-    QVERIFY(!pro.getProg()->isInStringsSection(Address(0x080483f4))); // address in .rodata
-    QVERIFY( pro.getProg()->isInStringsSection(Address(0x080481a0))); // address in .dynstr
+    QVERIFY(!m_project.getProg()->isInStringsSection(Address::INVALID));
+    QVERIFY(!m_project.getProg()->isInStringsSection(Address(0x080483f4))); // address in .rodata
+    QVERIFY( m_project.getProg()->isInStringsSection(Address(0x080481a0))); // address in .dynstr
 }
 
 
 void ProgTest::testIsDynamicallyLinkedProcPointer()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    QVERIFY(!pro.getProg()->isDynamicallyLinkedProcPointer(Address::INVALID));
-    QVERIFY(!pro.getProg()->isDynamicallyLinkedProcPointer(Address(0x080483f4)));
-    QVERIFY( pro.getProg()->isDynamicallyLinkedProcPointer(Address(0x08048268))); // address of printf
+    QVERIFY(!m_project.getProg()->isDynamicallyLinkedProcPointer(Address::INVALID));
+    QVERIFY(!m_project.getProg()->isDynamicallyLinkedProcPointer(Address(0x080483f4)));
+    QVERIFY( m_project.getProg()->isDynamicallyLinkedProcPointer(Address(0x08048268))); // address of printf
 }
 
 
 void ProgTest::testGetDynamicProcName()
 {
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    QCOMPARE(pro.getProg()->getDynamicProcName(Address::INVALID),    QString(""));
-    QCOMPARE(pro.getProg()->getDynamicProcName(Address(0x080483f4)), QString(""));
-    QCOMPARE(pro.getProg()->getDynamicProcName(Address(0x08048268)), QString("printf"));
+    QCOMPARE(m_project.getProg()->getDynamicProcName(Address::INVALID),    QString(""));
+    QCOMPARE(m_project.getProg()->getDynamicProcName(Address(0x080483f4)), QString(""));
+    QCOMPARE(m_project.getProg()->getDynamicProcName(Address(0x08048268)), QString("printf"));
 }
 
 
 void ProgTest::testGetOrInsertModuleForSymbol()
 {
-    {
-        Prog prog("test", nullptr);
-        QCOMPARE(prog.getOrInsertModuleForSymbol(""),     prog.getRootModule());
-        QCOMPARE(prog.getOrInsertModuleForSymbol("test"), prog.getRootModule());
-    }
+    Prog prog("test", nullptr);
+    QCOMPARE(prog.getOrInsertModuleForSymbol(""),     prog.getRootModule());
+    QCOMPARE(prog.getOrInsertModuleForSymbol("test"), prog.getRootModule());
 
-    Project pro;
-    pro.loadBinaryFile(HELLO_PENTIUM);
-    QCOMPARE(pro.getProg()->getOrInsertModuleForSymbol(""), pro.getProg()->getRootModule());
-    QCOMPARE(pro.getProg()->getOrInsertModuleForSymbol("printf"), pro.getProg()->getRootModule());
+    m_project.loadBinaryFile(HELLO_PENTIUM);
+    QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol(""), m_project.getProg()->getRootModule());
+    QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol("printf"), m_project.getProg()->getRootModule());
 
-    BinarySymbol *mainSym = pro.getLoadedBinaryFile()->getSymbols()->findSymbolByName("main");
+    BinarySymbol *mainSym = m_project.getLoadedBinaryFile()->getSymbols()->findSymbolByName("main");
     QVERIFY(mainSym != nullptr);
     mainSym->setAttribute("SourceFile", "foo.c");
 
-    QCOMPARE(pro.getProg()->getOrInsertModuleForSymbol(mainSym->getName()), pro.getProg()->getOrInsertModule("foo"));
+    QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol(mainSym->getName()), m_project.getProg()->getOrInsertModule("foo"));
 }
 
 
-void ProgTest::testReadNative()
+void ProgTest::testReadNative4()
 {
     QSKIP("TODO");
 }
@@ -548,10 +533,9 @@ void ProgTest::testGuessGlobalType()
         QVERIFY(*ty == *VoidType::get());
     }
 
-    Project pro;
-    QVERIFY(pro.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
-    SharedType ty = pro.getProg()->guessGlobalType("helloworld", Address(0x80483FC));
+    SharedType ty = m_project.getProg()->guessGlobalType("helloworld", Address(0x80483FC));
     QVERIFY(*ty == *PointerType::get(CharType::get()));
 }
 
