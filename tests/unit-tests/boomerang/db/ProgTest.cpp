@@ -17,6 +17,7 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
 
@@ -455,8 +456,14 @@ void ProgTest::testReadNativeAs()
     ct->addType(ArrayType::get(CharType::get(), 15), "m_greeting");
 
     result = m_project.getProg()->readNativeAs(helloworld, ct);
-    QVERIFY(result);
+    QVERIFY(result != nullptr);
     QCOMPARE(QString(result->prints()), QString("\"Hello, world!\n\""));
+
+    // float const
+    m_project.loadBinaryFile(FBRANCH_PENTIUM);
+    result = m_project.getProg()->readNativeAs(Address(0x080485CC), FloatType::get(32));
+    QVERIFY(result && result->isFltConst());
+    QCOMPARE(result->access<Const>()->getFlt(), 5.0f);
 }
 
 
