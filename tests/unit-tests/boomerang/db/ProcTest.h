@@ -19,6 +19,8 @@
 class ProcTest : public QObject
 {
 private slots:
+    void initTestCase();
+
     /// Test setting and reading name, constructor, native address
     void testName();
 
