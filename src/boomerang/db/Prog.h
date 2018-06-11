@@ -176,14 +176,6 @@ public:
 
     int readNative4(Address a) const;
 
-    /**
-     * This does extra processing on a constant. The expression \p c
-     * is expected to be a Const, and the Address \p location
-     * is the native location from which the constant was read.
-     * \returns processed Exp
-     */
-    SharedExp addReloc(SharedExp c, Address location);
-
     void updateLibrarySignatures();
 
 

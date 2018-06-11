@@ -515,56 +515,6 @@ int Prog::readNative4(Address a) const
 }
 
 
-SharedExp Prog::addReloc(SharedExp c, Address location)
-{
-    assert(c && c->isConst());
-
-    if (!m_binaryFile || !m_binaryFile->isRelocationAt(location)) {
-        return c;
-    }
-
-    // relocations have been applied to the constant, so if there is a
-    // relocation for this lc then we should be able to replace the constant
-    // with a symbol.
-    Address c_addr = c->access<Const>()->getAddr();
-    const BinarySymbol *bin_sym = m_binaryFile->getSymbols()->findSymbolByAddress(c_addr);
-
-    if (bin_sym != nullptr) {
-        unsigned int sz = bin_sym->getSize(); // TODO: fix the case of missing symbol table interface
-
-        if (getGlobal(bin_sym->getName()) == nullptr) {
-            m_globals.insert(std::make_shared<Global>(SizeType::get(sz * 8), c_addr, bin_sym->getName(), this));
-        }
-
-        return Unary::get(opAddrOf, Location::global(bin_sym->getName(), nullptr));
-    }
-    else {
-        const char *str = getStringConstant(c_addr);
-
-        if (str) {
-            c = Const::get(str);
-        }
-        else {
-            // check for accesses into the middle of symbols
-            for (const BinarySymbol *sym : *m_binaryFile->getSymbols()) {
-                unsigned int sz = sym->getSize();
-
-                if ((sym->getLocation() < c_addr) && ((sym->getLocation() + sz) > c_addr)) {
-                    int off = (c_addr - sym->getLocation()).value();
-                    c = Binary::get(opPlus,
-                                    Unary::get(opAddrOf,
-                                               Location::global(sym->getName(), nullptr)),
-                                    Const::get(off));
-                    break;
-                }
-            }
-        }
-    }
-
-    return c;
-}
-
-
 void Prog::updateLibrarySignatures()
 {
     for (const auto& m : m_moduleList) {

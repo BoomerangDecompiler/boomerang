@@ -434,16 +434,6 @@ void ProgTest::testReadNative4()
 }
 
 
-void ProgTest::testAddReloc()
-{
-    Prog prog("test", nullptr);
-    SharedExp e = prog.addReloc(Const::get(0x1000), Address::INVALID);
-    QVERIFY(*e == *Const::get(0x1000));
-
-    QSKIP("TODO");
-}
-
-
 void ProgTest::testDecodeEntryPoint()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));

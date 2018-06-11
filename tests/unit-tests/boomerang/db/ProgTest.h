@@ -65,8 +65,6 @@ private slots:
 
     void testReadNative4();
 
-    void testAddReloc();
-
     void testDecodeEntryPoint();
     void testDecodeFragment();
     void testReDecode();
