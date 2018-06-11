@@ -274,7 +274,7 @@ void ProgTest::testGetFrontEndId()
     Prog testProg("test", nullptr);
     QCOMPARE(testProg.getFrontEndId(), Platform::GENERIC);
 
-    m_project.loadBinaryFile(HELLO_PENTIUM);
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     QCOMPARE(m_project.getProg()->getFrontEndId(), Platform::PENTIUM);
 }
 
@@ -412,7 +412,7 @@ void ProgTest::testGetOrInsertModuleForSymbol()
     QCOMPARE(prog.getOrInsertModuleForSymbol(""),     prog.getRootModule());
     QCOMPARE(prog.getOrInsertModuleForSymbol("test"), prog.getRootModule());
 
-    m_project.loadBinaryFile(HELLO_PENTIUM);
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol(""), m_project.getProg()->getRootModule());
     QCOMPARE(m_project.getProg()->getOrInsertModuleForSymbol("printf"), m_project.getProg()->getRootModule());
 
@@ -426,13 +426,21 @@ void ProgTest::testGetOrInsertModuleForSymbol()
 
 void ProgTest::testReadNative4()
 {
-    QSKIP("TODO");
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+
+    QCOMPARE(m_project.getProg()->readNative4(Address::INVALID), 0);
+    QCOMPARE(m_project.getProg()->readNative4(Address(0x80483FC)), 0x6c6c6548);
 }
 
 
 void ProgTest::testReadNativeAs()
 {
-    QSKIP("TODO");
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.getProg()->readNativeAs(Address(0x80483FC), PointerType::get(CharType::get())) == nullptr);
+
+    SharedExp e = m_project.getProg()->readNativeAs(Address(0x80483FC), ArrayType::get(CharType::get()));
+    QVERIFY(e->isConst());
+    QCOMPARE(e->access<Const>()->getStr(), QString("Hello, world!\n"));
 }
 
 
