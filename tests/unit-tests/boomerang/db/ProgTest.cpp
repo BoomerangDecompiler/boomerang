@@ -574,13 +574,33 @@ void ProgTest::testMakeArrayType()
 
 void ProgTest::testMarkGlobalUsed()
 {
-    QSKIP("TODO");
+    Prog prog("test", nullptr);
+    QVERIFY(!prog.markGlobalUsed(Address::INVALID));
+
+    m_project.loadBinaryFile(HELLO_PENTIUM);
+    QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC)));
+    QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), IntegerType::get(32, 1)));
+    QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), ArrayType::get(CharType::get(), 15)));
 }
 
 
 void ProgTest::testGlobalType()
 {
-    QSKIP("TODO");
+    m_project.loadBinaryFile(HELLO_PENTIUM);
+    QVERIFY(m_project.getProg()->getGlobalType("") == nullptr);
+    QVERIFY(m_project.getProg()->getGlobals().empty());
+
+    m_project.getProg()->createGlobal(Address(0x80483FC),
+        ArrayType::get(CharType::get(), 15), QString("helloworld"));
+
+    SharedType ty = m_project.getProg()->getGlobalType("helloworld");
+    QVERIFY(ty != nullptr);
+    QCOMPARE(ty->prints(), QString("char[15]"));
+
+    m_project.getProg()->setGlobalType("helloworld", IntegerType::get(32, 1));
+    ty = m_project.getProg()->getGlobalType("helloworld");
+    QVERIFY(ty != nullptr);
+    QCOMPARE(ty->prints(), QString("int"));
 }
 
 
