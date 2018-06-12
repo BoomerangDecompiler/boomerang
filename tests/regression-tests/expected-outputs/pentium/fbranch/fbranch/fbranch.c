@@ -1,5 +1,3 @@
-float global3_80485cc = 5.;
-float global3_80485cc = 5.;
 int main(int argc, char *argv[]);
 
 /** address: 0x08048390 */
@@ -18,13 +16,13 @@ int main(int argc, char *argv[])
         eax = puts("Equal");
     }
     st7 = local0;
-    eax = (eax & ~0xff00 | SETFFLAGS(global3_80485cc, st7) * 256) >> 8 & 0xffffff & ~0xff00 | (SETFFLAGS(global3_80485cc, st7) & 0x45) * 256;
-    if (global3_80485cc != st7) {
+    eax = (eax & ~0xff00 | SETFFLAGS(5., st7) * 256) >> 8 & 0xffffff & ~0xff00 | (SETFFLAGS(5., st7) & 0x45) * 256;
+    if (5. != st7) {
         eax = puts("Not Equal");
     }
     st7 = local0;
-    eax = (eax & ~0xff00 | SETFFLAGS(global3_80485cc, st7) * 256) >> 8 & 0xffffff;
-    if (global3_80485cc > st7) {
+    eax = (eax & ~0xff00 | SETFFLAGS(5., st7) * 256) >> 8 & 0xffffff;
+    if (5. > st7) {
         eax = puts("Greater");
     }
     st7 = local0;
@@ -33,13 +31,13 @@ int main(int argc, char *argv[])
         eax = puts("Less or Equal");
     }
     st7 = local0;
-    eax = (eax & ~0xff00 | SETFFLAGS(global3_80485cc, st7) * 256) >> 8 & 0xffffff;
-    if (global3_80485cc >= st7) {
+    eax = (eax & ~0xff00 | SETFFLAGS(5., st7) * 256) >> 8 & 0xffffff;
+    if (5. >= st7) {
         eax = puts("Greater or Equal");
     }
     st7 = local0;
-    eax = (eax & ~0xff00 | SETFFLAGS(st7, global3_80485cc) * 256) >> 8 & 0xffffff;
-    if (st7 > global3_80485cc) {
+    eax = (eax & ~0xff00 | SETFFLAGS(st7, 5.) * 256) >> 8 & 0xffffff;
+    if (st7 > 5.) {
         eax = puts("Less");
     }
     return eax;

@@ -1,5 +1,5 @@
-int global32_80486c4[9999999];
-int global32_80486c4[9999999];
+int global_0x080486c4[9999999];
+int global_0x080486c4[9999999];
 int main(int argc, char *argv[]);
 __size32 b(int param1);
 __size32 c(unsigned int param1);
@@ -42,7 +42,7 @@ __size32 c(unsigned int param1)
 
     eax = printf("c(%d)\n", param1); /* Warning: also results in ecx, edx */
     if (param1 <= (unsigned int)6) {
-        eax = global32_80486c4[param1];
+        eax = global_0x080486c4[param1];
         switch(param1) {
         case 0:
         case 1:

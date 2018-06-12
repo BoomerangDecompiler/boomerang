@@ -12,6 +12,8 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
 
 class SparcBinaryLoaderTest : public QObject
 {
@@ -23,4 +25,7 @@ private slots:
 
     /// Test loading the sparc hello world program
     void testSparcLoad();
+
+private:
+    Project m_project;
 };

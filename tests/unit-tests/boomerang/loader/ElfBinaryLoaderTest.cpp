@@ -11,10 +11,8 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
 #include <QLibrary>
@@ -40,14 +38,15 @@ void ElfBinaryLoaderTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
 void ElfBinaryLoaderTest::testElfLoadClang()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
-    BinaryFile *binary = project.getLoadedBinaryFile();
+    QVERIFY(m_project.loadBinaryFile(HELLO_CLANG4));
+    BinaryFile *binary = m_project.getLoadedBinaryFile();
 
     // test the loader
     QVERIFY(binary != nullptr);
@@ -73,15 +72,14 @@ void ElfBinaryLoaderTest::testElfLoadClang()
 void ElfBinaryLoaderTest::testPentiumLoad()
 {
     // Load Pentium hello world
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_PENTIUM));
-    BinaryFile *binary = project.getLoadedBinaryFile();
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    BinaryFile *binary = m_project.getLoadedBinaryFile();
 
     QVERIFY(binary != nullptr);
     QCOMPARE(binary->getFormat(), LoadFmt::ELF);
     QCOMPARE(binary->getMachine(), Machine::PENTIUM);
 
-    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
+    BinaryImage *image = m_project.getLoadedBinaryFile()->getImage();
     QVERIFY(image != nullptr);
 
     QCOMPARE(image->getNumSections(), 33);

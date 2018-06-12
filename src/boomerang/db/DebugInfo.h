@@ -10,20 +10,16 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include "boomerang/util/Address.h"
+
 #include <memory>
 
-#include "boomerang/core/Project.h"
+
+class QString;
+using SharedType = std::shared_ptr<class Type>;
 
 
-class ProcTest : public QObject
+namespace DebugInfo
 {
-private slots:
-    void initTestCase();
-
-    /// Test setting and reading name, constructor, native address
-    void testName();
-
-private:
-    Project m_project;
-};
+    SharedType typeFromDebugInfo(const QString& name, Address addr);
+}

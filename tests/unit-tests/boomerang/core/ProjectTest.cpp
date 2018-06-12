@@ -35,6 +35,7 @@ void ProjectTest::cleanupTestCase()
 void ProjectTest::testLoadBinaryFile()
 {
     Project project;
+    project.loadPlugins();
 
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
@@ -65,6 +66,7 @@ void ProjectTest::testWriteSaveFile()
 void ProjectTest::testIsBinaryLoaded()
 {
     Project project;
+    project.loadPlugins();
 
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
     QVERIFY(project.isBinaryLoaded());
@@ -84,6 +86,7 @@ void ProjectTest::testIsBinaryLoaded()
 void ProjectTest::testDecodeBinaryFile()
 {
     Project project;
+    project.loadPlugins();
 
     QVERIFY(!project.decodeBinaryFile());
 
@@ -96,6 +99,7 @@ void ProjectTest::testDecodeBinaryFile()
 void ProjectTest::testDecompileBinaryFile()
 {
     Project project;
+    project.loadPlugins();
 
     QVERIFY(!project.decodeBinaryFile());
 
@@ -108,6 +112,7 @@ void ProjectTest::testDecompileBinaryFile()
 void ProjectTest::testGenerateCode()
 {
     Project project;
+    project.loadPlugins();
 
     QVERIFY(!project.generateCode());
 

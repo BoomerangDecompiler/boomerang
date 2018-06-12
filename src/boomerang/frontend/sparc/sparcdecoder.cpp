@@ -585,7 +585,7 @@ bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& 
 
                     Address nativeDest = Address(addr.value() - delta);
                     newCall->setDest(nativeDest);
-                    Function *destProc = m_prog->createFunction(nativeDest);
+                    Function *destProc = m_prog->getOrCreateFunction(nativeDest);
 
                     if (destProc == reinterpret_cast<Function *>(-1)) {
                         destProc = nullptr;

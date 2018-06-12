@@ -12,6 +12,8 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
 
 class Win32BinaryLoaderTest : public QObject
 {
@@ -23,4 +25,7 @@ private slots:
 
     /// Test loading Windows programs
     void testWinLoad();
+
+private:
+    Project m_project;
 };

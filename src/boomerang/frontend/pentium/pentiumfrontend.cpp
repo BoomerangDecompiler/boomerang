@@ -422,7 +422,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         return false;
     }
 
-    QString name = m_program->getSymbolNameByAddress(dest);
+    QString name = m_program->getSymbolNameByAddr(dest);
 
     if (name.isEmpty()) {
         return false;
@@ -550,7 +550,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         }
 
         if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
-            const QString destSym = m_program->getSymbolNameByAddress(dest);
+            const QString destSym = m_program->getSymbolNameByAddr(dest);
 
             if (destSym == "__libc_start_main") {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
@@ -590,7 +590,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
     LOG_WARN("main function not found, falling back to entry point");
 
     if (symbols->findSymbolByAddress(start) == nullptr) {
-        this->addSymbol(start, "_start");
+        symbols->createSymbol(start, "_start");
     }
 
     return start;
@@ -967,11 +967,11 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
             QString name = found->access<Const, 1, 1>()->getStr();
 
-            if (m_program->getGlobal(name) == nullptr) {
+            if (m_program->getGlobalByName(name) == nullptr) {
                 continue;
             }
 
-            a = m_program->getGlobalAddr(name);
+            a = m_program->getGlobalAddrByName(name);
         }
         else {
             continue;
@@ -981,7 +981,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         if (paramIsFuncPointer) {
             LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to '%2'.",
                         a, call->getDestProc()->getName());
-            Function *proc = m_program->createFunction(a);
+            Function *proc = m_program->getOrCreateFunction(a);
             auto     sig   = paramType->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
             sig->setName(proc->getName());
             sig->setForced(true);
@@ -1001,7 +1001,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
                 LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
                             d, call->getDestProc()->getName());
 
-                Function *proc = m_program->createFunction(d);
+                Function *proc = m_program->getOrCreateFunction(d);
                 auto     sig   = compound->getTypeAtIdx(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);

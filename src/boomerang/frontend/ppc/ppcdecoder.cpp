@@ -1030,7 +1030,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         result.rtl->append(newCall);
 
-                        Function *destProc = m_prog->createFunction(Address(reladdr.value() - delta));
+                        Function *destProc = m_prog->getOrCreateFunction(Address(reladdr.value() - delta));
 
                         if (destProc == reinterpret_cast<Function *>(-1)) {
                             destProc = nullptr;

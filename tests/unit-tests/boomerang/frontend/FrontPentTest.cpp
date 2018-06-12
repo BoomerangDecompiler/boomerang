@@ -14,7 +14,6 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/frontend/Decoder.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
@@ -35,6 +34,8 @@ void FrontPentTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
@@ -46,10 +47,8 @@ void FrontPentTest::cleanupTestCase()
 
 void FrontPentTest::test1()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_PENT));
-
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     QString     expected;
@@ -89,9 +88,8 @@ void FrontPentTest::test1()
 
 void FrontPentTest::test2()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_PENT));
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
@@ -123,10 +121,8 @@ void FrontPentTest::test2()
 
 void FrontPentTest::test3()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_PENT));
-
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
@@ -157,10 +153,8 @@ void FrontPentTest::test3()
 
 void FrontPentTest::testBranch()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(BRANCH_PENT));
-
-    Prog *prog = project.getProg();
+    QVERIFY(m_project.loadBinaryFile(BRANCH_PENT));
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
@@ -199,12 +193,10 @@ void FrontPentTest::testFindMain()
 {
     // Test the algorithm for finding main, when there is a call to __libc_start_main
     // Also tests the loader hack
-    Project project;
-
     {
-        QVERIFY(project.loadBinaryFile(FEDORA2_TRUE));
+        QVERIFY(m_project.loadBinaryFile(FEDORA2_TRUE));
 
-        Prog *prog = project.getProg();
+        Prog *prog = m_project.getProg();
         IFrontEnd *fe = prog->getFrontEnd();
 
         bool    found;
@@ -214,9 +206,8 @@ void FrontPentTest::testFindMain()
     }
 
     {
-        QVERIFY(project.loadBinaryFile(FEDORA3_TRUE));
-
-        Prog *prog = project.getProg();
+        QVERIFY(m_project.loadBinaryFile(FEDORA3_TRUE));
+        Prog *prog = m_project.getProg();
         IFrontEnd *fe = prog->getFrontEnd();
 
         bool found;
@@ -226,9 +217,9 @@ void FrontPentTest::testFindMain()
     }
 
     {
-        QVERIFY(project.loadBinaryFile(SUSE_TRUE));
+        QVERIFY(m_project.loadBinaryFile(SUSE_TRUE));
 
-        Prog *prog = project.getProg();
+        Prog *prog = m_project.getProg();
         IFrontEnd *fe = prog->getFrontEnd();
 
         bool found;

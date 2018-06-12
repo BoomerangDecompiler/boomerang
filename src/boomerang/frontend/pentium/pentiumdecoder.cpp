@@ -14401,7 +14401,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 // Set the destination
                                 call->setDest(nativeDest);
                                 result.rtl->push_back(call);
-                                Function *destProc = m_prog->createFunction(nativeDest);
+                                Function *destProc = m_prog->getOrCreateFunction(nativeDest);
 
                                 if (destProc == reinterpret_cast<Function *>(-1)) {
                                     destProc = nullptr; // In case a deleted Proc
@@ -49396,7 +49396,6 @@ SharedExp PentiumDecoder::dis_Mem(HostAddress pc)
 {
     SharedExp expr = nullptr;
 
-    lastDwordLc = Address::INVALID;
     // #line 2148 "frontend/machine/pentium/decoder.m"
     {
         HostAddress             MATCH_p = pc;
@@ -49773,9 +49772,5 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
 
 SharedExp PentiumDecoder::addReloc(const SharedExp& e)
 {
-    if (lastDwordLc != Address::INVALID) {
-        return m_prog->addReloc(e, lastDwordLc);
-    }
-
     return e;
 }

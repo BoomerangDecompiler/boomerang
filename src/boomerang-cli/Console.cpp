@@ -13,9 +13,11 @@
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/ProgDecompiler.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/util/CallGraphDotWriter.h"
 
 #include <QFile>
 #include <QString>
@@ -239,7 +241,8 @@ CommandStatus Console::handleDecompile(const QStringList& args)
     assert(prog != nullptr);
 
     if (args.empty()) {
-        prog->decompile();
+        ProgDecompiler dcomp(prog);
+        dcomp.decompile();
         return CommandStatus::Success;
     }
     else {
@@ -247,7 +250,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         ProcSet procSet;
 
         for (const QString& procName : args) {
-            Function *proc = prog->findFunction(procName);
+            Function *proc = prog->getFunctionByName(procName);
 
             if (proc == nullptr) {
                 std::cerr << "Cannot find function '" << procName.toStdString() << "'\n";
@@ -338,7 +341,7 @@ CommandStatus Console::handleMove(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Function *proc = prog->findFunction(args[1]);
+        Function *proc = prog->getFunctionByName(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
@@ -506,14 +509,14 @@ CommandStatus Console::handleRename(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        Function *proc = prog->findFunction(args[1]);
+        Function *proc = prog->getFunctionByName(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
             return CommandStatus::Failure;
         }
 
-        Function *nproc = prog->findFunction(args[2]);
+        Function *nproc = prog->getFunctionByName(args[2]);
 
         if (nproc != nullptr) {
             std::cerr << "Proc " << args[2].toStdString() << " already exists" << std::endl;
@@ -644,7 +647,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
             return CommandStatus::ParseError;
         }
 
-        Function *proc = prog->findFunction(args[1]);
+        Function *proc = prog->getFunctionByName(args[1]);
 
         if (proc == nullptr) {
             std::cerr << "Cannot find proc " << args[1].toStdString() << std::endl;
@@ -702,7 +705,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
         }
 
         for (int i = 1; i < args.size(); i++) {
-            Function *proc = prog->findFunction(args[i]);
+            Function *proc = prog->getFunctionByName(args[i]);
 
             if (proc == nullptr) {
                 std::cerr << "Cannot find procedure " << args[i].toStdString() << std::endl;
@@ -725,12 +728,14 @@ CommandStatus Console::handlePrint(const QStringList& args)
         return CommandStatus::Success;
     }
     else if (args[0] == "callgraph") {
-        if (args.size() > 1) {
-            std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
+        if (args.size() > 2) {
+            std::cerr << "Wrong number of arguments for command; Expected 1 or 2, got " << args.size() << "." << std::endl;
             return CommandStatus::ParseError;
         }
 
-        prog->printCallGraph();
+        const QString dstName = (args.size() == 2) ? args[1] : "callgraph.dot";
+
+        CallGraphDotWriter().writeCallGraph(prog, dstName);
         return CommandStatus::Success;
     }
     else if (args[0] == "cfg") {
@@ -742,7 +747,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
             ProcSet procs;
 
             for (int i = 1; i < args.size(); i++) {
-                Function *proc = prog->findFunction(args[i]);
+                Function *proc = prog->getFunctionByName(args[i]);
 
                 if (!proc) {
                     std::cerr << "Procedure '" << args[i].toStdString() << "' not found.";
@@ -793,29 +798,25 @@ CommandStatus Console::handleHelp(const QStringList& args)
     std::cout <<
         "Available commands:\n"
         "  decode <file>                      : Loads and decodes the specified binary.\n"
-        "  decompile [proc1 [proc2 [...]]]    : Decompiles the program or specified function(s).\n"
-        "  codegen [module1 [module2 [...]]]  : Generates code for the program or a\n"
-        "                                       specified module.\n"
+        "  decompile [<proc1> [<proc2>...]]   : Decompiles the program or specified function(s).\n"
+        "  codegen [<module1> [<module2>...]] : Generates code for the program or a specified module.\n"
         "  info prog                          : Print info about the program.\n"
         "  info module <module>               : Print info about a module.\n"
         "  info proc <proc>                   : Print info about a proc.\n"
-        "  move proc <proc> <module>          : Moves the specified proc to the specified\n"
-        "                                       module.\n"
-        "  move module <module> <parent>      : Moves the specified module to the\n"
-        "                                       specified parent module.\n"
-        "  add module <module> [<parent>]     : Adds a new module to the root/specified\n"
-        "                                       module.\n"
+        "  move proc <proc> <module>          : Moves the specified proc to the specified module.\n"
+        "  move module <module> <parent>      : Moves the specified module to the specified parent module.\n"
+        "  add module <module> [<parent>]     : Adds a new module to the root/specified module.\n"
         "  delete module <module> [...]       : Deletes empty modules.\n"
         "  rename proc <proc> <newname>       : Renames the specified proc.\n"
         "  rename module <module> <newname>   : Renames the specified module.\n"
-        "  print callgraph                    : prints the call graph of the program.\n"
-        "  print cfg [<proc1> [proc2 [...]]]  : prints the Control Flow Graph of the program\n"
-        "                                       or a set of procedures.\n"
-        "  print rtl [<proc1> [proc2 [...]]]  : Print the RTL for a proc.\n"
+        "  print callgraph [<filename>]       : prints the call graph of the program. (filename defaults to 'callgraph.dot')\n"
+        "  print cfg [<proc1> [<proc2>...]]   : prints the Control Flow Graph of the program or a set of procedures.\n"
+        "  print rtl [<proc1> [<proc2>...]]   : Print the RTL for a proc.\n"
         "  replay <file>                      : Reads file and executes commands line by line.\n"
-
+        "\n"
         "  help                               : This help.\n"
-        "  exit                               : Quit Boomerang.\n";
+        "  exit                               : Quit Boomerang.\n"
+        "\n";
     std::cout.flush();
     return CommandStatus::Success;
 }

@@ -29,6 +29,7 @@ Decompiler::Decompiler()
     : QObject()
 {
     Boomerang::get()->addWatcher(this);
+    m_project.loadPlugins();
 }
 
 
@@ -40,7 +41,7 @@ Decompiler::~Decompiler()
 void Decompiler::addEntryPoint(Address entryAddr, const QString& name)
 {
     m_userEntrypoints.push_back(entryAddr);
-    m_project.getProg()->getFrontEnd()->addSymbol(entryAddr, name);
+    m_project.getLoadedBinaryFile()->getSymbols()->createSymbol(entryAddr, name);
 }
 
 
@@ -111,7 +112,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);
-        emit entryPointAdded(entryPoint, m_project.getProg()->getSymbolNameByAddress(entryPoint));
+        emit entryPointAdded(entryPoint, m_project.getProg()->getSymbolNameByAddr(entryPoint));
     }
 
     for (const BinarySection *section : *m_project.getLoadedBinaryFile()->getImage()) {
@@ -250,7 +251,7 @@ void Decompiler::onSignatureUpdated(Function *p)
 
 bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
 {
-    Function *p = m_project.getProg()->findFunction(name);
+    Function *p = m_project.getProg()->getFunctionByName(name);
 
     if (p->isLib()) {
         return false;
@@ -286,7 +287,7 @@ void Decompiler::stopWaiting()
 
 QString Decompiler::getSigFilePath(const QString& name)
 {
-    Function *function = m_project.getProg()->findFunction(name);
+    Function *function = m_project.getProg()->getFunctionByName(name);
 
     if (!function || !function->isLib() || !function->getSignature()) {
         return "";
@@ -311,7 +312,7 @@ void Decompiler::rereadLibSignatures()
 
 void Decompiler::renameProc(const QString& oldName, const QString& newName)
 {
-    Function *proc = m_project.getProg()->findFunction(oldName);
+    Function *proc = m_project.getProg()->getFunctionByName(oldName);
 
     if (proc) {
         proc->setName(newName);

@@ -14,6 +14,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/db/binary/BinaryImage.h"
 
 
 GlobalConstReplacePass::GlobalConstReplacePass()
@@ -26,6 +27,8 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
 {
     StatementList stmts;
     proc->getStatements(stmts);
+
+    const BinaryImage *image = proc->getProg()->getBinaryFile()->getImage();
 
     for (Statement *st : stmts) {
         Assign *assgn = dynamic_cast<Assign *>(st);
@@ -51,20 +54,10 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
 
             switch (assgn->getType()->getSize())
             {
-            case 8:
-                val = proc->getProg()->readNative1(addr);
-                break;
-
-            case 16:
-                val = proc->getProg()->readNative2(addr);
-                break;
-
-            case 32:
-                val = proc->getProg()->readNative4(addr);
-                break;
-
-            default:
-                assert(false);
+            case  8: val = image->readNative1(addr); break;
+            case 16: val = image->readNative2(addr); break;
+            case 32: val = image->readNative4(addr); break;
+            default: assert(false);
             }
 
             assgn->setRight(Const::get(val));

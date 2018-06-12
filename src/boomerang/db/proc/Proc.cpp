@@ -101,6 +101,11 @@ Address Function::getEntryAddress() const
 
 void Function::setEntryAddress(Address entryAddr)
 {
+    if (m_module) {
+        m_module->setLocationMap(m_entryAddress, nullptr);
+        m_module->setLocationMap(entryAddr,      this);
+    }
+
     m_entryAddress = entryAddr;
 }
 
@@ -132,23 +137,23 @@ void Function::removeFromModule()
 }
 
 
-void Function::setParent(Module *c)
+void Function::setParent(Module *module)
 {
-    if (c == m_module) {
+    if (module == m_module) {
         return;
     }
 
     removeFromModule();
-    m_module = c;
-    c->getFunctionList().push_back(this);
-    c->setLocationMap(m_entryAddress, this);
+    m_module = module;
+    module->getFunctionList().push_back(this);
+    module->setLocationMap(m_entryAddress, this);
 }
 
 
 Function *Function::getFirstCaller()
 {
     if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
-        m_firstCaller     = m_prog->findFunction(m_firstCallerAddr);
+        m_firstCaller     = m_prog->getFunctionByAddr(m_firstCallerAddr);
         m_firstCallerAddr = Address::INVALID;
     }
 

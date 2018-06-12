@@ -21,6 +21,10 @@ LibProc::LibProc(Address addr, const QString& name, Module *module)
     if (module) {
         m_signature = module->getLibSignature(name);
     }
+
+    if (!m_signature) {
+        m_signature = Signature::instantiate(Platform::GENERIC, CallConv::INVALID, name);
+    }
 }
 
 

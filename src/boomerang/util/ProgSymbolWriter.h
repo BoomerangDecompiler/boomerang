@@ -10,21 +10,17 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include <QString>
 
 
-class HpSomBinaryLoaderTest : public QObject
+class Prog;
+
+
+/**
+ * Prints symbols of a Prog to a file.
+ */
+class ProgSymbolWriter
 {
-    Q_OBJECT
-
-private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
-    void testHppaLoad();
-
 public:
-    Project m_project;
+    bool writeSymbolsToFile(const Prog *prog, const QString& dstFileName = "symbols.h");
 };

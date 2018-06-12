@@ -74,7 +74,7 @@ void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 {
     for (auto& glob : prog->getGlobals()) {
         // Check for an initial value
-        SharedExp initialValue = glob->getInitialValue(prog);
+        SharedExp initialValue = glob->getInitialValue();
 
         if (initialValue) {
             addGlobal(glob->getName(), glob->getType(), initialValue);
@@ -149,7 +149,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 
             for (auto& elem : prog->getGlobals()) {
                 // Check for an initial value
-                SharedExp e = elem->getInitialValue(prog);
+                SharedExp e = elem->getInitialValue();
                 // if (e) {
                 addGlobal(elem->getName(), elem->getType(), e);
                 global = true;
@@ -380,7 +380,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         bool       ok        = true;
 
         if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
-            Function *p = proc->getProg()->findFunction(const_arg->getAddr());
+            Function *p = proc->getProg()->getFunctionByAddr(const_arg->getAddr());
 
             if (p) {
                 s << p->getName();

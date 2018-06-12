@@ -456,8 +456,8 @@ SharedExp Ternary::polySimplify(bool& changed)
 
         if (p) {
             Prog   *prog = p->getProg();
-            bool   ok;
-            double d = prog->getFloatConstant(u, ok, std::static_pointer_cast<const Const>(subExp1)->getInt());
+            double d;
+            const bool   ok =  prog->getFloatConstant(u, d, std::static_pointer_cast<const Const>(subExp1)->getInt());
 
             if (ok) {
                 LOG_VERBOSE("Replacing %1 with %2 in %3", subExp3, d, shared_from_this());

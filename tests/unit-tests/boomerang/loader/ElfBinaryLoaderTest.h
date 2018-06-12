@@ -12,6 +12,8 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
 
 class ElfBinaryLoaderTest : public QObject
 {
@@ -27,4 +29,7 @@ private slots:
     /// Test loading the pentium (Solaris) hello world program
     void testPentiumLoad();
     void testPentiumLoad_data();
+
+private:
+    Project m_project;
 };

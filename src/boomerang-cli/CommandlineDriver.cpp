@@ -441,6 +441,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 int CommandlineDriver::interactiveMain()
 {
     m_project.reset(new Project);
+    m_project->loadPlugins();
     m_console.reset(new Console(m_project.get()));
 
     CommandStatus status = m_console->replayFile(SETTING(replayFile));
@@ -479,7 +480,7 @@ int CommandlineDriver::decompile()
     QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
 
     m_project.reset(new Project());
-
+    m_project->loadPlugins();
     return decompile(inf.absoluteFilePath(), inf.baseName());
 }
 

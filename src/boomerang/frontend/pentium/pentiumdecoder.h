@@ -68,7 +68,4 @@ private:
     Byte getByte(HostAddress addr)   { return *reinterpret_cast<const Byte *>(addr.value()); }
     SWord getWord(HostAddress addr)  { return *reinterpret_cast<const SWord *>(addr.value()); }
     DWord getDword(HostAddress addr) { return *reinterpret_cast<const DWord *>(addr.value()); }
-
-private:
-    Address lastDwordLc;
 };

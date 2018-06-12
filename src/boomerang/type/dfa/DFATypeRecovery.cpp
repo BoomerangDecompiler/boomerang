@@ -138,7 +138,7 @@ void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
         SharedExp idx = l->getSubExp1();
 
         // Replace with the array expression
-        QString name = prog->getGlobalName(K2);
+        QString name = prog->getGlobalNameByAddr(K2);
 
         if (name.isEmpty()) {
             name = prog->newGlobalName(K2);
@@ -334,10 +334,10 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 else if (baseType->resolvesToInteger() || baseType->resolvesToFloat() || baseType->resolvesToSize()) {
                     Address addr = Address(con->getInt()); // TODO: use getAddr
                     _prog->markGlobalUsed(addr, baseType);
-                    QString gloName = _prog->getGlobalName(addr);
+                    QString gloName = _prog->getGlobalNameByAddr(addr);
 
                     if (!gloName.isEmpty()) {
-                        Address   r = addr - _prog->getGlobalAddr(gloName);
+                        Address   r = addr - _prog->getGlobalAddrByName(gloName);
                         SharedExp ne;
 
                         if (!r.isZero()) { // TODO: what if r is NO_ADDR ?
@@ -399,7 +399,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                         Address   K   = Address(constK->getInt());
                         SharedExp idx = bin_rr->getSubExp1();
                         SharedExp arr = Unary::get(
-                            opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalName(K), proc), idx));
+                            opAddrOf, Binary::get(opArrayIndex, Location::global(_prog->getGlobalNameByAddr(K), proc), idx));
                         // Beware of changing expressions in implicit assignments... map can become invalid
                         bool isImplicit = s->isImplicit();
 

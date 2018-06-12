@@ -13,7 +13,6 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 
 #define HELLO_HPPA    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/hppa/hello"))
@@ -37,9 +36,8 @@ void HpSomBinaryLoaderTest::testHppaLoad()
     QSKIP("Disabled.");
 
     // Load HPPA hello world
-    Project project;
-    QVERIFY(project.loadBinaryFile(HELLO_HPPA));
-    BinaryImage *image = project.getLoadedBinaryFile()->getImage();
+    QVERIFY(m_project.loadBinaryFile(HELLO_HPPA));
+    BinaryImage *image = m_project.getLoadedBinaryFile()->getImage();
 
     QCOMPARE(image->getNumSections(), 3);
     QCOMPARE(image->getSectionByIndex(0)->getName(), QString("$TEXT$"));

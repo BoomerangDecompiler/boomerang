@@ -786,7 +786,7 @@ bool CallStatement::convertToDirect()
 
     QString name    = e->access<Const, 1>()->getStr();
     Prog    *prog   = m_proc->getProg();
-    Address gloAddr = prog->getGlobalAddr(name);
+    Address gloAddr = prog->getGlobalAddrByName(name);
     Address dest    = Address(prog->readNative4(gloAddr));
 
     // We'd better do some limit checking on the value.
@@ -796,11 +796,11 @@ bool CallStatement::convertToDirect()
         return false;     // Not a valid proc pointer
     }
 
-    Function *p        = prog->findFunction(name);
+    Function *p        = prog->getFunctionByName(name);
     const bool isNewProc = p == nullptr;
 
     if (isNewProc) {
-        p = prog->createFunction(dest);
+        p = prog->getOrCreateFunction(dest);
     }
 
     LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
@@ -1034,17 +1034,9 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
                     Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);
 
-                    if (_proc->getProg()->isStringConstant(addr)) {
+                    if (_proc->getProg()->isInStringsSection(addr)) {
                         LOG_MSG("Making arg %1 of call c*", i);
                         setArgumentType(i, PointerType::get(CharType::get()));
-                        change = true;
-                    }
-                    else if (_proc->getProg()->isCFStringConstant(addr)) {
-                        Address addr2 = Address(_proc->getProg()->readNative4(addr + 8));
-                        LOG_MSG("Arg %1 of call is a cfstring", i);
-                        setArgumentType(i, PointerType::get(CharType::get()));
-                        // TODO: we'd really like to change this to CFSTR(addr)
-                        setArgumentExp(i, Const::get(addr2));
                         change = true;
                     }
                 }

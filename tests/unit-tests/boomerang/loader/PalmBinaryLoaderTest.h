@@ -12,6 +12,9 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
+
 class PalmBinaryLoaderTest : public QObject
 {
     Q_OBJECT
@@ -22,4 +25,7 @@ private slots:
 
     /// Test loading the Palm 68328 Starter.prc program
     void testPalmLoad();
+
+private:
+    Project m_project;
 };

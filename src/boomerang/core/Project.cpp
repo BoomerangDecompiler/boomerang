@@ -10,20 +10,23 @@
 #include "Project.h"
 
 
+#include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/ProgDecompiler.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/ProgSymbolWriter.h"
+#include "boomerang/util/CallGraphDotWriter.h"
 
 
 Project::Project()
     : m_typeRecovery(new DFATypeRecovery())
     , m_codeGenerator(new CCodeGenerator())
 {
-    loadPlugins();
 }
 
 
@@ -126,11 +129,11 @@ bool Project::decodeBinaryFile()
     LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
 
     if (SETTING(generateSymbols)) {
-        m_prog->printSymbolsToFile();
+        ProgSymbolWriter().writeSymbolsToFile(getProg(), "symbols.h");
     }
 
     if (SETTING(generateCallGraph)) {
-        m_prog->printCallGraph();
+        CallGraphDotWriter().writeCallGraph(getProg(), "callgraph.dot");
     }
 
     return true;
@@ -148,7 +151,9 @@ bool Project::decompileBinaryFile()
         return false;
     }
 
-    m_prog->decompile();
+    ProgDecompiler dcomp(m_prog.get());
+    dcomp.decompile();
+
     return true;
 }
 
@@ -193,15 +198,65 @@ void Project::loadSymbols()
 {
     // Add symbols from -s switch(es)
     for (const std::pair<Address, QString>& elem : Boomerang::get()->getSettings()->m_symbolMap) {
-        m_fe->addSymbol(elem.first, elem.second);
+        m_loadedBinary->getSymbols()->createSymbol(elem.first, elem.second);
     }
 
     m_fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
     for (auto& elem : Boomerang::get()->getSettings()->m_symbolFiles) {
         LOG_MSG("Reading symbol file '%1'", elem);
-        m_prog->readSymbolFile(elem);
+        readSymbolFile(elem);
     }
+}
+
+
+bool Project::readSymbolFile(const QString& fname)
+{
+    std::unique_ptr<AnsiCParser> parser = nullptr;
+
+    try {
+        parser.reset(new AnsiCParser(qPrintable(fname), false));
+    }
+    catch (const char *) {
+        LOG_ERROR("Cannot read symbol file '%1'", fname);
+        return false;
+    }
+
+    Platform plat = m_prog->getFrontEndId();
+    CallConv cc   = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
+
+    parser->yyparse(plat, cc);
+    Module *targetModule = m_prog->getRootModule();
+
+    for (Symbol *sym : parser->symbols) {
+        if (sym->sig) {
+            QString name = sym->sig->getName();
+            targetModule = m_prog->getOrInsertModuleForSymbol(name);
+            auto bin_sym       = m_loadedBinary->getSymbols()->findSymbolByAddress(sym->addr);
+            bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
+            // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
+            // to specifically specify that this function obeys library calling conventions
+            sym->mods->noDecode;
+            Function *p = targetModule->createFunction(name, sym->addr, do_not_decode);
+
+            if (!sym->mods->incomplete) {
+                p->setSignature(sym->sig->clone());
+                p->getSignature()->setForced(true);
+            }
+        }
+        else {
+            QString name = sym->name;
+            SharedType ty = sym->ty;
+
+            m_prog->createGlobal(sym->addr, sym->ty, sym->name);
+        }
+    }
+
+    for (SymbolRef *ref : parser->refs) {
+        m_prog->getFrontEnd()->addRefHint(ref->m_addr, ref->m_name);
+    }
+
+    return true;
 }
 
 

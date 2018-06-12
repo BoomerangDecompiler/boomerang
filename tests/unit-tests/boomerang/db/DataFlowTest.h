@@ -12,6 +12,9 @@
 
 #include <QtTest/QTest>
 
+#include "boomerang/core/Project.h"
+
+
 /**
  * Test for basic data-flow related code
  */
@@ -34,4 +37,7 @@ private slots:
 
     /// Test the renaming of variables
     void testRenameVars();
+
+private:
+    Project m_project;
 };

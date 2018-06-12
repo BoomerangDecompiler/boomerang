@@ -102,8 +102,9 @@ public:
     SWord readNative2(Address addr) const;
     DWord readNative4(Address addr) const;
     QWord readNative8(Address addr) const;
-    float readNativeFloat4(Address addr) const;
-    double readNativeFloat8(Address addr) const;
+
+    bool readNativeFloat4(Address addr, float& value) const;
+    bool readNativeFloat8(Address addr, double& value) const;
 
     bool writeNative4(Address addr, DWord value);
 

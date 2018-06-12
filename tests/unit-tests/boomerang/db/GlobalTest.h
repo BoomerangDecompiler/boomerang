@@ -15,21 +15,14 @@
 #include "boomerang/core/Project.h"
 
 
-class TypeTest : public QObject
+class GlobalTest : public QObject
 {
     Q_OBJECT
 
 private slots:
     void initTestCase();
-    void cleanupTestCase();
 
-    void testTypeLong();
-    void testNotEqual();
-    void testCompound();
-
-    // Test the DataIntervalMap class
-    void testDataInterval();
-    void testDataIntervalOverlaps();
+    void testGetInitialValue();
 
 private:
     Project m_project;

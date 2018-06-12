@@ -26,7 +26,8 @@ class IFileLoader;
 /// compiler specific features
 enum class LoadFmt : uint8_t
 {
-    ELF,
+    INVALID = 0xFF,
+    ELF     = 0,
     PE,
     PALM,
     PAR,

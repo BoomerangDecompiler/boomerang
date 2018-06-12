@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     int g3; 		// r3
     int g3_1; 		// r3{0}
-    int g3_2; 		// r3{0}
+    int g3_4; 		// r3{0}
     int local0; 		// g3_1{0}
     int local1; 		// g3{0}
 
@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
     if (argc == 5) {
         do {
             g3_1 = local0;
-            g3_2 = g3_1 - 1;
-            local1 = g3_2;
+            g3_4 = g3_1 - 1;
+            local1 = g3_4;
             if (g3_1 <= 1) {
                 if (g3_1 - 1 == 12) {
                     break;

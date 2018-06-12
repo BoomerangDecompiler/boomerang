@@ -48,15 +48,14 @@ public:
     Prog(const Prog& other) = delete;
     Prog(Prog&& other) = default;
 
-    virtual ~Prog();
+    ~Prog();
 
     Prog& operator=(const Prog& other) = delete;
     Prog& operator=(Prog&& other) = default;
 
 public:
-    /// Change the FrontEnd. Takes ownership of the pointer.
     void setFrontEnd(IFrontEnd *fe);
-    IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
+    IFrontEnd *getFrontEnd() const { return m_fe; }
 
     Project *getProject() { return m_project; }
     const Project *getProject() const { return m_project; }
@@ -85,7 +84,20 @@ public:
      */
     Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
 
+    Module *getRootModule() { return m_rootModule; }
+    Module *getRootModule() const { return m_rootModule; }
+
+    Module *findModule(const QString& name);
+    const Module *findModule(const QString& name) const;
+
+    bool isModuleUsed(Module *module) const;
+
     const ModuleList& getModuleList() const { return m_moduleList; }
+
+    /// Add an entry procedure at the specified address.
+    /// This will fail if \p entryAddr is already the entry address of a LibProc.
+    /// \returns the new or exising entry procedure, or nullptr on failure.
+    Function *addEntryPoint(Address entryAddr);
 
     /**
      * Create a new unnamed function at address \p addr.
@@ -98,42 +110,81 @@ public:
      * \returns Pointer to the Function, or nullptr if this is a deleted
      * (not to be decoded) address
      */
-    Function *createFunction(Address entryAddr);
+    Function *getOrCreateFunction(Address entryAddr);
+
+    /// lookup a library procedure by name; create if does not exist
+    LibProc *getOrCreateLibraryProc(const QString& name);
+
+    /// \returns the function with entry address \p entryAddr,
+    /// or nullptr if no such function exists.
+    Function *getFunctionByAddr(Address entryAddr) const;
+
+    /// \returns the function with name \p name,
+    /// or nullptr if no such function exists.
+    Function *getFunctionByName(const QString& name) const;
 
     /// Removes the function with name \p name.
     /// If there is no such function, nothing happens.
-    void removeFunction(const QString& name);
+    /// \returns true if function was found and removed.
+    bool removeFunction(const QString& name);
 
     /// \param userOnly If true, only count user functions, not lbrary functions.
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
-    /// \returns the function with entry address \p entryAddr,
-    /// or nullptr if no such function exists.
-    Function *findFunction(Address entryAddr) const;
-
-    /// \returns the function with name \p name,
-    /// or nullptr if no such function exists.
-    Function *findFunction(const QString& name) const;
-
-    QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
-    int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
-
-    // globals
-    const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
+    /// Check the wellformedness of all the procedures/cfgs in this program
+    bool isWellFormed() const;
 
 
-    // Decoding
+    /// Returns true if this is a win32 program
+    bool isWin32() const;
+
+
+    QString getRegName(int idx) const { return m_fe->getRegName(idx); }
+    int getRegSize(int idx) const { return m_fe->getRegSize(idx); }
+
+    /// Get the front end id used to make this prog
+    Platform getFrontEndId() const;
+
+    /// Get a code for the machine e.g. MACHINE_SPARC
+    Machine getMachine() const;
+
+    std::shared_ptr<Signature> getDefaultSignature(const char *name) const;
+
+
+    /// get a string constant at a given address if appropriate
+    /// if knownString, it is already known to be a char*
+    /// get a string constant at a give address if appropriate
+    const char *getStringConstant(Address addr, bool knownString = false) const;
+    bool getFloatConstant(Address addr, double& value, int bits = 64) const;
+
+    /// Get a symbol from an address
+    QString getSymbolNameByAddr(Address dest) const;
+
+    const BinarySection *getSectionByAddr(Address addr) const;
+    Address getLimitTextLow() const;
+    Address getLimitTextHigh() const;
+
+    bool isReadOnly(Address a) const;
+    bool isInStringsSection(Address a) const;
+    bool isDynamicallyLinkedProcPointer(Address dest) const;
+    const QString& getDynamicProcName(Address addr) const;
+
+    /// \returns the default module for a symbol with name \p name.
+    Module *getOrInsertModuleForSymbol(const QString& symbolName);
+
+    int readNative4(Address a) const;
+
+    void updateLibrarySignatures();
+
+
+    // Decompilation related
 
     /// Decode from entry point given as an agrument
-    void decodeEntryPoint(Address entryAddr);
-
-    /// If \p entryAddress is the entry address of a function,
-    /// add the function to the list of entry points.
-    void addEntryPoint(Address entryAddr);
+    bool decodeEntryPoint(Address entryAddr);
 
     /// Decode a procedure fragment of \p proc starting at address \p addr.
-    void decodeFragment(UserProc *proc, Address addr);
+    bool decodeFragment(UserProc *proc, Address addr);
 
     /// Re-decode this proc from scratch
     bool reDecode(UserProc *proc);
@@ -141,71 +192,50 @@ public:
     /// last fixes after decoding everything
     void finishDecode();
 
-    /// Check the wellformedness of all the procedures/cfgs in this program
-    bool isWellFormed() const;
+    const std::list<UserProc *>& getEntryProcs() const { return m_entryProcs; }
 
-    /// Do the main non-global decompilation steps
-    void decompile();
-
-    /// Do global type analysis.
-    /// \note For now, it just does local type analysis for every procedure of the program.
-    void globalTypeAnalysis();
-
-    /// As the name suggests, removes globals unused in the decompiled code.
-    void removeUnusedGlobals();
+    // globals
 
     /**
-     * Remove unused return locations.
-     * This is the global removing of unused and redundant returns. The initial idea
-     * is simple enough: remove some returns according to the formula:
-     * returns(p) = modifieds(p) isect union(live at c) for all c calling p.
-     *
-     * However, removing returns reduces the uses, leading to three effects:
-     * 1) The statement that defines the return, if only used by that return, becomes unused
-     * 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
-     * 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
-     *    the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
-     *    child.
-     * \returns true if any change
+     * Create a new global variable at address \p addr.
+     * If \p ty and \p name are not specified, they are assigned sensible values automatically
+     * using heuristics.
+     * This function will fail if the global already exists.
+     * \returns the newly created global on success, or nullptr on failure.
      */
-    bool removeUnusedReturns();
+    Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = QString());
 
-    /// Have to transform out of SSA form after the above final pass
-    /// Convert from SSA form
-    void fromSSAForm();
-
-    /// lookup a library procedure by name; create if does not exist
-    LibProc *getOrCreateLibraryProc(const QString& name);
-
-    /// Get the front end id used to make this prog
-    Platform getFrontEndId() const;
-
-    std::shared_ptr<Signature> getDefaultSignature(const char *name) const;
-
-    /// Returns true if this is a win32 program
-    bool isWin32() const;
+    std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }
+    const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
 
     /// Get a global variable if possible, looking up the loader's symbol table if necessary
-    QString getGlobalName(Address addr) const;
+    QString getGlobalNameByAddr(Address addr) const;
 
     /// Get a named global variable if possible, looking up the loader's symbol table if necessary
-    Address getGlobalAddr(const QString& name) const;
-    Global *getGlobal(const QString& name) const;
+    Address getGlobalAddrByName(const QString& name) const;
+    Global *getGlobalByName(const QString& name) const;
 
-    /// Make up a name for a new global at address \a uaddr
-    /// (or return an existing name if address already used)
-    QString newGlobalName(Address uaddr);
-
-    /// Guess a global's type based on its name and address
-    SharedType guessGlobalType(const QString& name, Address addr) const;
+    /**
+     * Indicate that a given global is used in the program.
+     * The global variable will be created if it does not yet exist.
+     *
+     * \param uaddr the start address of the global variable in memory
+     * \param knownType If not nullptr, update type information of the global by meeting types.
+     *
+     * \returns true on success, false if the global variable could not be created.
+     */
+    bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
 
     /// Make an array type for the global array starting at \p startAddr.
     /// Mainly, set the length sensibly
     std::shared_ptr<ArrayType> makeArrayType(Address startAddr, SharedType baseType);
 
-    /// Indicate that a given global has been seen used in the program.
-    /// \returns true on success, false on failure (e.g. existing incompatible type already present)
-    bool markGlobalUsed(Address uaddr, SharedType knownType = nullptr);
+    /// Guess a global's type based on its name and address
+    SharedType guessGlobalType(const QString& name, Address addr) const;
+
+    /// Make up a name for a new global at address \a uaddr
+    /// (or return an existing name if address already used)
+    QString newGlobalName(Address uaddr);
 
     /// Get the type of a global variable
     SharedType getGlobalType(const QString& name) const;
@@ -213,72 +243,16 @@ public:
     /// Set the type of a global variable
     void setGlobalType(const QString& name, SharedType ty);
 
-    /// get a string constant at a given address if appropriate
-    /// if knownString, it is already known to be a char*
-    /// get a string constant at a give address if appropriate
-    const char *getStringConstant(Address uaddr, bool knownString = false) const;
-    double getFloatConstant(Address uaddr, bool& ok, int bits = 64) const;
-
-    // Hacks for Mike
-    /// Get a code for the machine e.g. MACHINE_SPARC
-    Machine getMachine() const;
-
-    /// Get a symbol from an address
-    QString getSymbolNameByAddress(Address dest) const;
-
-    const BinarySection *getSectionByAddr(Address a) const;
-    Address getLimitTextLow() const;
-    Address getLimitTextHigh() const;
-
-    bool isReadOnly(Address a) const;
-    bool isStringConstant(Address a) const;
-    bool isCFStringConstant(Address a) const;
-
-    // Read 1, 2, 4, or 8 bytes given a native address
-    int readNative1(Address a) const;
-    int readNative2(Address a) const;
-    int readNative4(Address a) const;
-    SharedExp readNativeAs(Address uaddr, SharedType type) const;
-
-    bool isDynamicLinkedProcPointer(Address dest) const;
-    const QString& getDynamicProcName(Address addr) const;
-
-    void readSymbolFile(const QString& fname);
-
-    void printSymbolsToFile() const;
-    void printCallGraph(const QString &fileName = "callgraph.dot") const;
-
-    Module *getRootModule() const { return m_rootModule; }
-    Module *findModule(const QString& name) const;
-
-    /// \returns the default module for a symbol with name \p name.
-    Module *getModuleForSymbol(const QString& symbolName);
-    bool isModuleUsed(Module *module) const;
-
-    /// Add the given RTL to the front end's map from address to already-decoded-RTL
-    void addDecodedRTL(Address a, RTL *rtl) { m_defaultFrontend->addDecodedRTL(a, rtl); }
-
-    /**
-     * This does extra processing on a constant. The expression \p e
-     * is expected to be a Const, and the Address \p location
-     * is the native location from which the constant was read.
-     * \returns processed Exp
-     */
-    SharedExp addReloc(SharedExp e, Address location);
-
-    void updateLibrarySignatures();
-
 private:
-    QString m_name;             ///< name of the program
+    QString m_name;                         ///< name of the program
     Project *m_project = nullptr;
-    BinaryFile *m_binaryFile;
-    Module *m_rootModule;       ///< Root of the module tree
-    ModuleList m_moduleList;    ///< The Modules that make up this program
+    BinaryFile *m_binaryFile = nullptr;
+    IFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project
+    Module *m_rootModule = nullptr;         ///< Root of the module tree
+    ModuleList m_moduleList;                ///< The Modules that make up this program
 
     /// list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;
-
-    IFrontEnd *m_defaultFrontend; ///< Pointer to the FrontEnd object for the project
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
     std::set<std::shared_ptr<Global>> m_globals; ///< globals to print at code generation time

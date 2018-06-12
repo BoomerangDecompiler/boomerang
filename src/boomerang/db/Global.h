@@ -47,11 +47,14 @@ public:
     bool containsAddress(Address addr) const;
 
     /// Get the initial value as an expression (or nullptr if not initialised)
-    SharedExp getInitialValue(const Prog *prog) const;
+    SharedExp getInitialValue() const;
+
+private:
+    SharedExp readInitialValue(Address addr, SharedType ty) const;
 
 private:
     SharedType m_type;
     Address m_addr;
     QString m_name;
-    Prog *m_program;
+    Prog *m_prog;
 };

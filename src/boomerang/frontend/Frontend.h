@@ -110,9 +110,6 @@ public:
     virtual std::vector<SharedExp>& getDefaultReturns() = 0;
 
 
-    /// Add a symbol to the loader
-    void addSymbol(Address addr, const QString& name);
-
     /// Add a "hint" that an instruction at the given address references a named global
     void addRefHint(Address addr, const QString& name) { m_refHints[addr] = name; }
 
@@ -206,7 +203,7 @@ public:
      * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
      * incomplete in these cases, and needs to be restarted from scratch
      */
-    void addDecodedRTL(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
+    void saveDecodedRTL(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
     void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL);
     void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 

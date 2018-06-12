@@ -12,6 +12,7 @@
 
 #include "boomerang/type/type/Type.h"
 
+
 /**
  * The compound type represents aggregate types like structures or classes.
  */

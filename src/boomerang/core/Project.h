@@ -39,6 +39,9 @@ public:
     Project& operator=(Project&& other) = default;
 
 public:
+    /// Load all plugins from the plugin directory.
+    void loadPlugins();
+
     /**
      * Import a binary file from \p filePath.
      * Loads the binary file and decodes it.
@@ -104,9 +107,6 @@ public:
     const ITypeRecovery *getTypeRecoveryEngine() const { return m_typeRecovery.get(); }
 
 private:
-    /// Load all plugins from the plugin directory.
-    void loadPlugins();
-
     /// Get the best loader that is able to load the file at \p filePath
     IFileLoader *getBestLoader(const QString& filePath) const;
 
@@ -119,6 +119,8 @@ private:
      * Define symbols from symbol files and command line switches ("-s")
      */
     void loadSymbols();
+
+    bool readSymbolFile(const QString& fname);
 
     /**
      * Disassemble the whole binary file.

@@ -10,6 +10,7 @@
 list(APPEND boomerang-util-sources
     util/Address
     util/ByteUtil
+    util/CallGraphDotWriter
     util/CFGDotWriter
     util/ConnectionGraph
     util/Interval.h
@@ -17,6 +18,7 @@ list(APPEND boomerang-util-sources
     util/IntervalSet.h
     util/LocationSet
     util/Log
+    util/ProgSymbolWriter
     util/StatementList
     util/StatementSet
     util/Types.h

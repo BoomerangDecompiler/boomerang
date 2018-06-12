@@ -105,7 +105,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 
     // If the destination address is the same as this very instruction, we have a call with iDisp30 == 0. Don't treat
     // this as the start of a real procedure.
-    if ((dest != address) && (proc->getProg()->findFunction(dest) == nullptr)) {
+    if ((dest != address) && (proc->getProg()->getFunctionByAddr(dest) == nullptr)) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
         if (SETTING(traceDecoder)) {
@@ -169,7 +169,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
         const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
         // Special check for calls to weird PLT entries which don't have symbols
-        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddress(dest) == "")) {
+        if ((symb && symb->isImportedFunction()) && (m_program->getSymbolNameByAddr(dest) == "")) {
             // This is one of those. Flag this as an invalid instruction
             inst.valid = false;
         }
@@ -219,7 +219,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
             bool ret = true;
             // Check for _exit; probably should check for other "never return" functions
-            QString name = m_program->getSymbolNameByAddress(dest);
+            QString name = m_program->getSymbolNameByAddr(dest);
 
             if (name == "_exit") {
                 // Don't keep decoding after this call
@@ -1111,7 +1111,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
             // Don't visit the destination of a register call
             // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
             if (dest != Address::INVALID) {
-                proc->getProg()->createFunction(dest);
+                proc->getProg()->getOrCreateFunction(dest);
             }
         }
     }
@@ -1164,7 +1164,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         return false;
     }
 
-    QString name = m_program->getSymbolNameByAddress(dest);
+    QString name = m_program->getSymbolNameByAddr(dest);
 
     if (name.isEmpty()) {
         LOG_ERROR("Can't find symbol for PLT address %1", dest);

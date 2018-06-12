@@ -11,7 +11,6 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/exp/Location.h"
@@ -49,6 +48,8 @@ void DataFlowTest::initTestCase()
 {
     Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
     Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+
+    m_project.loadPlugins();
 }
 
 
@@ -129,11 +130,10 @@ void DataFlowTest::testCalculateDominators()
 
 void DataFlowTest::testPlacePhi()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
-    QVERIFY(project.decodeBinaryFile());
+    QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(m_project.decodeBinaryFile());
 
-    Prog *prog = project.getProg();
+    Prog *prog = m_project.getProg();
     Type::clearNamedTypes();
 
     const auto& module = *prog->getModuleList().begin();
@@ -166,11 +166,10 @@ void DataFlowTest::testPlacePhi()
 
 void DataFlowTest::testPlacePhi2()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(IFTHEN_PENTIUM));
-    QVERIFY(project.decodeBinaryFile());
+    QVERIFY(m_project.loadBinaryFile(IFTHEN_PENTIUM));
+    QVERIFY(m_project.decodeBinaryFile());
 
-    Prog *prog = project.getProg();
+    Prog *prog = m_project.getProg();
     Type::clearNamedTypes();
 
     const Module *m = (*prog->getModuleList().begin()).get();
@@ -199,10 +198,9 @@ void DataFlowTest::testPlacePhi2()
 
 void DataFlowTest::testRenameVars()
 {
-    Project project;
-    QVERIFY(project.loadBinaryFile(FRONTIER_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
 
-    Prog *prog = project.getProg();
+    Prog *prog = m_project.getProg();
     IFrontEnd *fe  = prog->getFrontEnd();
     Type::clearNamedTypes();
     fe->decode();

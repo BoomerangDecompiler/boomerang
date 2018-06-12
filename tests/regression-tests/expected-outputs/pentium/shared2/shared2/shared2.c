@@ -1,4 +1,5 @@
 void gcc2_compiled.();
+void gcc2_compiled.();
 
 /** address: 0x080487a0 */
 void gcc2_compiled.()
@@ -92,7 +93,7 @@ void gcc2_compiled.()
     *(__size32*)(eax + 28) = 7;
     *(__size32*)(eax + 44) = 0x8049c10;
     *(__size32*)(eax + 32) = 8;
-    (*global1_8049c18)(pc, eax + 36, ebx, esi, edi, ebp, eax + 36, ecx, edx, eax + 16, esp_16 - 4, eax, edi, SUBFLAGS32(esp_16 - 16, 24, (esp_16 - 40)), esp_16 - 40 == 0, (unsigned int)(esp_16 - 16) < (unsigned int)24);
+    ecx = gcc2_compiled.(pc, eax + 36, ebx, esi, edi, ebp, eax + 36, ecx, edx, eax + 16, esp_16 - 4, eax, edi, SUBFLAGS32(esp_16 - 16, 24, (esp_16 - 40)), esp_16 - 40 == 0, (unsigned int)(esp_16 - 16) < (unsigned int)24); /* Warning: also results in edx, ebx, esp_1, ebp, esi, edi */
     eax = *(esi + 12);
     *(__size32*)esp_1 = esi;
     (**(*(esi + 12) + 8))(local27, local23, local19, local15, local11, local7, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local31, local35, local39);
@@ -116,6 +117,17 @@ void gcc2_compiled.()
     eax = *(ebx + 8);
     *(__size32*)esp_13 = ebx;
     (**(*(ebx + 8) + 8))(*(esp_16 - 48), *(esp_16 - 44), *(esp_16 - 16), *(esp_16 - 12), *(esp_16 - 8), *(esp_16 - 4), al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local34, local38, local42);
+    return;
+}
+
+/** address: 0x080488d0 */
+void gcc2_compiled.()
+{
+    __ls__7ostreamPCc();
+    hex__FR3ios();
+    __ls__7ostreamPCv();
+    __ls__7ostreamPCc();
+    endl__FR7ostream();
     return;
 }
 

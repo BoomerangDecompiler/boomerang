@@ -10,21 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include <QString>
 
 
-class HpSomBinaryLoaderTest : public QObject
+class Prog;
+
+
+class CallGraphDotWriter
 {
-    Q_OBJECT
-
-private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
-    void testHppaLoad();
-
 public:
-    Project m_project;
+    bool writeCallGraph(const Prog *prog, const QString& dstFileName = "callgraph.dot");
 };
