@@ -348,6 +348,10 @@ void ProgTest::testGetStringConstant()
     const char *ld1 = m_project.getProg()->getStringConstant(Address(0x08048406), false);
     QVERIFY(ld1 != nullptr);
     QCOMPARE(ld1, "ld!\n");
+
+    // no string constant can be extracted from .bss
+    QVERIFY(m_project.getProg()->getStringConstant(Address(0x08049510), false) == nullptr);
+    QVERIFY(m_project.getProg()->getStringConstant(Address(0x08049510), true) == nullptr);
 }
 
 
