@@ -26,9 +26,6 @@
 #include "boomerang/util/Log.h"
 
 
-#include "boomerang/util/ExpDotWriter.h"
-
-
 Assign::Assign(SharedExp lhs, SharedExp rhs, SharedExp guard)
     : Assignment(lhs)
     , m_rhs(rhs)
