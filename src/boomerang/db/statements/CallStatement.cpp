@@ -786,7 +786,7 @@ bool CallStatement::convertToDirect()
 
     QString name    = e->access<Const, 1>()->getStr();
     Prog    *prog   = m_proc->getProg();
-    Address gloAddr = prog->getGlobalAddr(name);
+    Address gloAddr = prog->getGlobalAddrByName(name);
     Address dest    = Address(prog->readNative4(gloAddr));
 
     // We'd better do some limit checking on the value.

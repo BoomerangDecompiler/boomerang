@@ -623,7 +623,7 @@ Global *Prog::createGlobal(Address addr, SharedType ty, QString name)
 }
 
 
-QString Prog::getGlobalName(Address uaddr) const
+QString Prog::getGlobalNameByAddr(Address uaddr) const
 {
     // FIXME: inefficient
     for (auto& glob : m_globals) {
@@ -636,9 +636,9 @@ QString Prog::getGlobalName(Address uaddr) const
 }
 
 
-Address Prog::getGlobalAddr(const QString& name) const
+Address Prog::getGlobalAddrByName(const QString& name) const
 {
-    Global *glob = getGlobal(name);
+    Global *glob = getGlobalByName(name);
 
     if (glob) {
         return glob->getAddress();
@@ -649,7 +649,7 @@ Address Prog::getGlobalAddr(const QString& name) const
 }
 
 
-Global *Prog::getGlobal(const QString& name) const
+Global *Prog::getGlobalByName(const QString& name) const
 {
     auto iter = std::find_if(m_globals.begin(), m_globals.end(),
         [&name](const std::shared_ptr<Global>& g) -> bool {
@@ -781,7 +781,7 @@ SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) co
 
 QString Prog::newGlobalName(Address uaddr)
 {
-    QString globalName = getGlobalName(uaddr);
+    QString globalName = getGlobalNameByAddr(uaddr);
 
     if (!globalName.isEmpty()) {
         return globalName;

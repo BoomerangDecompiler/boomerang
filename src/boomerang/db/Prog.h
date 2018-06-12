@@ -209,11 +209,11 @@ public:
     const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
 
     /// Get a global variable if possible, looking up the loader's symbol table if necessary
-    QString getGlobalName(Address addr) const;
+    QString getGlobalNameByAddr(Address addr) const;
 
     /// Get a named global variable if possible, looking up the loader's symbol table if necessary
-    Address getGlobalAddr(const QString& name) const;
-    Global *getGlobal(const QString& name) const;
+    Address getGlobalAddrByName(const QString& name) const;
+    Global *getGlobalByName(const QString& name) const;
 
     /**
      * Indicate that a given global is used in the program.

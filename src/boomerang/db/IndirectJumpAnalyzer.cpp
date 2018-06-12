@@ -191,7 +191,7 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp& expr, Address& T)
             QString  gloName = con->getStr();
             UserProc *p      = std::static_pointer_cast<Location>(base)->getProc();
             Prog     *prog   = p->getProg();
-            T    = prog->getGlobalAddr(gloName);
+            T    = prog->getGlobalAddrByName(gloName);
             expr = e->getSubExp2();
             break;
         }
@@ -533,7 +533,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                 }
 
                 std::shared_ptr<Const> con     = std::static_pointer_cast<Const>(e->getSubExp1()); // e is <name>
-                Global                 *global = prog->getGlobal(con->getStr());
+                Global                 *global = prog->getGlobalByName(con->getStr());
                 assert(global);
                 // Set the type to pointer to function, if not already
                 SharedType ty = global->getType();

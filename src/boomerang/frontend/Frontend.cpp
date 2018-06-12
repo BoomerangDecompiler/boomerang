@@ -720,7 +720,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, b
 
                 if (m_refHints.find(inst.rtl->getAddress()) != m_refHints.end()) {
                     const QString& name(m_refHints[inst.rtl->getAddress()]);
-                    Address        globAddr = m_program->getGlobalAddr(name);
+                    Address        globAddr = m_program->getGlobalAddrByName(name);
 
                     if (globAddr != Address::INVALID) {
                         s->searchAndReplace(Const(globAddr), Unary::get(opAddrOf, Location::global(name, proc)));

@@ -967,11 +967,11 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         else if (found->isAddrOf() && found->getSubExp1()->isGlobal()) {
             QString name = found->access<Const, 1, 1>()->getStr();
 
-            if (m_program->getGlobal(name) == nullptr) {
+            if (m_program->getGlobalByName(name) == nullptr) {
                 continue;
             }
 
-            a = m_program->getGlobalAddr(name);
+            a = m_program->getGlobalAddrByName(name);
         }
         else {
             continue;

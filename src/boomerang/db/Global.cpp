@@ -76,7 +76,7 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
             return Const::get(0);
         }
 
-        QString name = m_prog->getGlobalName(init);
+        QString name = m_prog->getGlobalNameByAddr(init);
 
         if (!name.isEmpty()) {
             // TODO: typecast?
@@ -131,7 +131,7 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
 
     if (type->resolvesToArray()) {
         int  nelems  = -1;
-        QString name     = m_prog->getGlobalName(uaddr);
+        QString name     = m_prog->getGlobalNameByAddr(uaddr);
         int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
 
         if (!name.isEmpty()) {
