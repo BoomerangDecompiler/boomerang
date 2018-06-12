@@ -300,231 +300,43 @@ void Binary::print(QTextStream& os, bool html) const
 
     switch (m_oper)
     {
-    case opPlus:
-        os << " + ";
-        break;
-
-    case opMinus:
-        os << " - ";
-        break;
-
-    case opMult:
-        os << " * ";
-        break;
-
-    case opMults:
-        os << " *! ";
-        break;
-
-    case opDiv:
-        os << " / ";
-        break;
-
-    case opDivs:
-        os << " /! ";
-        break;
-
-    case opMod:
-        os << " % ";
-        break;
-
-    case opMods:
-        os << " %! ";
-        break;
-
-    case opFPlus:
-        os << " +f ";
-        break;
-
-    case opFMinus:
-        os << " -f ";
-        break;
-
-    case opFMult:
-        os << " *f ";
-        break;
-
-    case opFDiv:
-        os << " /f ";
-        break;
-
-    case opPow:
-        os << " pow ";
-        break;     // Raising to power
-
-    case opAnd:
-        os << " and ";
-        break;
-
-    case opOr:
-        os << " or ";
-        break;
-
-    case opBitAnd:
-        os << " & ";
-        break;
-
-    case opBitOr:
-        os << " | ";
-        break;
-
-    case opBitXor:
-        os << " ^ ";
-        break;
-
-    case opEquals:
-        os << " = ";
-        break;
-
-    case opNotEqual:
-        os << " ~= ";
-        break;
-
-    case opLess:
-
-        if (html) {
-            os << " &lt; ";
-        }
-        else {
-            os << " < ";
-        }
-
-        break;
-
-    case opGtr:
-
-        if (html) {
-            os << " &gt; ";
-        }
-        else {
-            os << " > ";
-        }
-
-        break;
-
-    case opLessEq:
-
-        if (html) {
-            os << " &lt;= ";
-        }
-        else {
-            os << " <= ";
-        }
-
-        break;
-
-    case opGtrEq:
-
-        if (html) {
-            os << " &gt;= ";
-        }
-        else {
-            os << " >= ";
-        }
-
-        break;
-
-    case opLessUns:
-
-        if (html) {
-            os << " &lt;u ";
-        }
-        else {
-            os << " <u ";
-        }
-
-        break;
-
-    case opGtrUns:
-
-        if (html) {
-            os << " &gt;u ";
-        }
-        else {
-            os << " >u ";
-        }
-
-        break;
-
-    case opLessEqUns:
-
-        if (html) {
-            os << " &lt;u ";
-        }
-        else {
-            os << " <=u ";
-        }
-
-        break;
-
-    case opGtrEqUns:
-
-        if (html) {
-            os << " &gt;=u ";
-        }
-        else {
-            os << " >=u ";
-        }
-
-        break;
-
-    case opUpper:
-        os << " GT ";
-        break;
-
-    case opLower:
-        os << " LT ";
-        break;
-
-    case opShiftL:
-
-        if (html) {
-            os << " &lt;&lt; ";
-        }
-        else {
-            os << " << ";
-        }
-
-        break;
-
-    case opShiftR:
-
-        if (html) {
-            os << " &gt;&gt; ";
-        }
-        else {
-            os << " >> ";
-        }
-
-        break;
-
-    case opShiftRA:
-
-        if (html) {
-            os << " &gt;&gt;A ";
-        }
-        else {
-            os << " >>A ";
-        }
-
-        break;
-
-    case opRotateL:
-        os << " rl ";
-        break;
-
-    case opRotateR:
-        os << " rr ";
-        break;
-
-    case opRotateLC:
-        os << " rlc ";
-        break;
-
-    case opRotateRC:
-        os << " rrc ";
-        break;
-
+    case opPlus:    os << " + ";    break;
+    case opMinus:   os << " - ";    break;
+    case opMult:    os << " * ";    break;
+    case opMults:   os << " *! ";   break;
+    case opDiv:     os << " / ";    break;
+    case opDivs:    os << " /! ";   break;
+    case opMod:     os << " % ";    break;
+    case opMods:    os << " %! ";   break;
+    case opFPlus:   os << " +f ";   break;
+    case opFMinus:  os << " -f ";   break;
+    case opFMult:   os << " *f ";   break;
+    case opFDiv:    os << " /f ";   break;
+    case opPow:     os << " pow ";  break;     // Raising to power
+    case opAnd:     os << " and ";  break;
+    case opOr:      os << " or ";   break;
+    case opBitAnd:  os << " & ";    break;
+    case opBitOr:   os << " | ";    break;
+    case opBitXor:  os << " ^ ";    break;
+    case opEquals:  os << " = ";    break;
+    case opNotEqual:os << " ~= ";   break;
+    case opLess:    os << (html ? " &lt; "  : " < ");  break;
+    case opGtr:     os << (html ? " &gt; "  : " > ");  break;
+    case opLessEq:  os << (html ? " &lt;= " : " <= "); break;
+    case opGtrEq:   os << (html ? " &gt;= " : " >= "); break;
+    case opLessUns: os << (html ? " &lt;u " : " <u "); break;
+    case opGtrUns:  os << (html ? " &gt;u " : " >u "); break;
+    case opLessEqUns:os<< (html ? " &lt;u " : " <=u "); break;
+    case opGtrEqUns:os << (html ? " &gt;=u " : " >=u "); break;
+    case opUpper:   os << " GT "; break;
+    case opLower:   os << " LT "; break;
+    case opShiftL:  os << (html ? " &lt;&lt; " : " << "); break;
+    case opShiftR:  os << (html ? " &gt;&gt; " : " >> "); break;
+    case opShiftRA: os << (html ? " &gt;&gt;A " : " >>A "); break;
+    case opRotateL: os << " rl "; break;
+    case opRotateR: os << " rr "; break;
+    case opRotateLC:os << " rlc "; break;
+    case opRotateRC:os << " rrc "; break;
     default:
         LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
