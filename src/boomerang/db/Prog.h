@@ -54,9 +54,8 @@ public:
     Prog& operator=(Prog&& other) = default;
 
 public:
-    /// Change the FrontEnd. Takes ownership of the pointer.
     void setFrontEnd(IFrontEnd *fe);
-    IFrontEnd *getFrontEnd() const { return m_defaultFrontend; }
+    IFrontEnd *getFrontEnd() const { return m_fe; }
 
     Project *getProject() { return m_project; }
     const Project *getProject() const { return m_project; }
@@ -141,8 +140,8 @@ public:
     bool isWin32() const;
 
 
-    QString getRegName(int idx) const { return m_defaultFrontend->getRegName(idx); }
-    int getRegSize(int idx) const { return m_defaultFrontend->getRegSize(idx); }
+    QString getRegName(int idx) const { return m_fe->getRegName(idx); }
+    int getRegSize(int idx) const { return m_fe->getRegSize(idx); }
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;
@@ -248,7 +247,7 @@ private:
     QString m_name;                         ///< name of the program
     Project *m_project = nullptr;
     BinaryFile *m_binaryFile = nullptr;
-    IFrontEnd *m_defaultFrontend = nullptr; ///< Pointer to the FrontEnd object for the project
+    IFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project
     Module *m_rootModule = nullptr;         ///< Root of the module tree
     ModuleList m_moduleList;                ///< The Modules that make up this program
 

@@ -52,7 +52,7 @@ Prog::Prog(const QString& name, Project *project)
     : m_name(name)
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
-    , m_defaultFrontend(nullptr)
+    , m_fe(nullptr)
 {
     m_rootModule    = getOrInsertModule(getName());
     assert(m_rootModule != nullptr);
@@ -66,12 +66,7 @@ Prog::~Prog()
 
 void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
-    if (m_defaultFrontend) {
-        delete m_defaultFrontend;
-        m_defaultFrontend = nullptr;
-    }
-
-    m_defaultFrontend = frontEnd;
+    m_fe = frontEnd;
 
     m_moduleList.clear();
     m_rootModule = getOrInsertModule(m_name);
@@ -115,7 +110,7 @@ Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, 
         }
     }
 
-    Module *m = fact.create(name, this, frontEnd ? frontEnd : m_defaultFrontend);
+    Module *m = fact.create(name, this, frontEnd ? frontEnd : m_fe);
     m_moduleList.push_back(std::unique_ptr<Module>(m));
     return m;
 }
@@ -318,14 +313,14 @@ bool Prog::isWellFormed() const
 
 bool Prog::isWin32() const
 {
-    return m_defaultFrontend && m_defaultFrontend->isWin32();
+    return m_fe && m_fe->isWin32();
 }
 
 
 Platform Prog::getFrontEndId() const
 {
-    return m_defaultFrontend
-        ? m_defaultFrontend->getType()
+    return m_fe
+        ? m_fe->getType()
         : Platform::GENERIC;
 }
 
@@ -340,8 +335,8 @@ Machine Prog::getMachine() const
 
 std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
 {
-    return m_defaultFrontend
-        ? m_defaultFrontend->getDefaultSignature(name)
+    return m_fe
+        ? m_fe->getDefaultSignature(name)
         : nullptr;
 }
 
@@ -533,7 +528,7 @@ bool Prog::decodeEntryPoint(Address entryAddr)
             return false;
         }
 
-        m_defaultFrontend->decode(entryAddr);
+        m_fe->decode(entryAddr);
         finishDecode();
     }
 
@@ -566,7 +561,7 @@ bool Prog::decodeEntryPoint(Address entryAddr)
 bool Prog::decodeFragment(UserProc *proc, Address a)
 {
     if ((a >= m_binaryFile->getImage()->getLimitTextLow()) && (a < m_binaryFile->getImage()->getLimitTextHigh())) {
-        return m_defaultFrontend->decodeFragment(proc, a);
+        return m_fe->decodeFragment(proc, a);
     }
     else {
         LOG_ERROR("Attempt to decode fragment at address %1 outside text area", a);
@@ -582,7 +577,7 @@ bool Prog::reDecode(UserProc *proc)
     }
 
     QTextStream os(stderr); // rtl output target
-    return m_defaultFrontend->processProc(proc->getEntryAddress(), proc, os);
+    return m_fe->processProc(proc->getEntryAddress(), proc, os);
 }
 
 
