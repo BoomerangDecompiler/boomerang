@@ -510,7 +510,7 @@ void ProgTest::testCreateGlobal()
 }
 
 
-void ProgTest::testGetGlobalName()
+void ProgTest::testGetGlobalNameByAddr()
 {
     Prog prog("test", nullptr);
     QCOMPARE(prog.getGlobalNameByAddr(Address::INVALID), QString(""));
@@ -520,20 +520,21 @@ void ProgTest::testGetGlobalName()
 }
 
 
-void ProgTest::testGetGlobalAddr()
+void ProgTest::testGetGlobalAddrByName()
 {
     Prog prog("test", nullptr);
     prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
     QCOMPARE(prog.getGlobalAddrByName("foo"), Address(0x08000000));
+    QCOMPARE(prog.getGlobalAddrByName("bar"), Address::INVALID);
 }
 
 
-void ProgTest::testGetGlobal()
+void ProgTest::testGetGlobalByName()
 {
     Prog prog("test", nullptr);
     QVERIFY(prog.getGlobalByName("foo") == nullptr);
 
-    Global *global = prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
+    const Global *global = prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
     QCOMPARE(prog.getGlobalByName("foo"), global);
 }
 

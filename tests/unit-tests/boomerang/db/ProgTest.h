@@ -71,9 +71,9 @@ private slots:
     void testFinishDecode();
 
     void testCreateGlobal();
-    void testGetGlobalName();
-    void testGetGlobalAddr();
-    void testGetGlobal();
+    void testGetGlobalNameByAddr();
+    void testGetGlobalAddrByName();
+    void testGetGlobalByName();
     void testNewGlobalName();
     void testGuessGlobalType();
     void testMakeArrayType();
