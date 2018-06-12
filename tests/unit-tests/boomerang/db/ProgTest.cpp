@@ -15,6 +15,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
@@ -40,6 +41,27 @@ void ProgTest::initTestCase()
 void ProgTest::cleanupTestCase()
 {
     Boomerang::destroy();
+}
+
+
+void ProgTest::testFrontend()
+{
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+
+    m_project.getProg()->setFrontEnd(nullptr);
+    QVERIFY(m_project.getProg()->getFrontEnd() == nullptr);
+    QVERIFY(m_project.getProg()->getModuleList().size() == 1);
+    QVERIFY(m_project.getProg()->getRootModule() != nullptr);
+    QVERIFY(m_project.getProg()->getRootModule()->getName() == m_project.getProg()->getName());
+
+    m_project.getProg()->createModule("foo");
+    QVERIFY(m_project.getProg()->getModuleList().size() == 2);
+
+    m_project.getProg()->setFrontEnd(new PentiumFrontEnd(nullptr, m_project.getProg()));
+    QVERIFY(m_project.getProg()->getFrontEnd() != nullptr);
+    QVERIFY(m_project.getProg()->getModuleList().size() == 1);
+    QVERIFY(m_project.getProg()->getRootModule() != nullptr);
+    QVERIFY(m_project.getProg()->getRootModule()->getName() == m_project.getProg()->getName());
 }
 
 

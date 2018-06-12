@@ -26,8 +26,8 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
 
-    /// Test setting and reading name
-    void testName();
+    void testFrontend(); // getFrontend() / setFrontend()
+    void testName();     // getName() / setName()
 
     void testCreateModule();
     void testGetOrInsertModule();
