@@ -526,6 +526,9 @@ void ProgTest::testGetGlobalAddrByName()
     prog.createGlobal(Address(0x08000000), IntegerType::get(32), "foo");
     QCOMPARE(prog.getGlobalAddrByName("foo"), Address(0x08000000));
     QCOMPARE(prog.getGlobalAddrByName("bar"), Address::INVALID);
+
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QCOMPARE(m_project.getProg()->getGlobalAddrByName("baz"), Address::INVALID);
 }
 
 

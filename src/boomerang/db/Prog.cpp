@@ -638,13 +638,12 @@ QString Prog::getGlobalNameByAddr(Address uaddr) const
 
 Address Prog::getGlobalAddrByName(const QString& name) const
 {
-    Global *glob = getGlobalByName(name);
-
+    const Global *glob = getGlobalByName(name);
     if (glob) {
         return glob->getAddress();
     }
 
-    auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
+    auto symbol = m_binaryFile ? m_binaryFile->getSymbols()->findSymbolByName(name) : nullptr;
     return symbol ? symbol->getLocation() : Address::INVALID;
 }
 
