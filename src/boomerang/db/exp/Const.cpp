@@ -150,18 +150,6 @@ QString Const::getFuncName() const
 }
 
 
-bool Const::accept(ExpVisitor *v)
-{
-    return v->visit(shared_from_base<Const>());
-}
-
-
-SharedExp Const::accept(ExpModifier *mod)
-{
-    return mod->postModify(shared_from_base<Const>());
-}
-
-
 void Const::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
@@ -368,4 +356,28 @@ void Const::descendType(SharedType parentType, bool& changed, Statement *)
 
         // May be other cases
     }
+}
+
+
+bool Const::accept(ExpVisitor *v)
+{
+    return v->visit(shared_from_base<Const>());
+}
+
+
+SharedExp Const::accept(ExpModifier *mod)
+{
+    return postAccept(mod);
+}
+
+
+SharedExp Const::preAccept(ExpModifier* , bool& )
+{
+    return shared_from_this();
+}
+
+
+SharedExp Const::postAccept(ExpModifier* mod)
+{
+    return mod->postModify(access<Const>());
 }

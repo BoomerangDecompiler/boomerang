@@ -190,13 +190,6 @@ bool Terminal::accept(ExpVisitor *v)
 }
 
 
-SharedExp Terminal::accept(ExpModifier *mod)
-{
-    // This is important if we need to modify terminals
-    return mod->postModify(shared_from_base<Terminal>());
-}
-
-
 void Terminal::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
@@ -227,8 +220,28 @@ SharedType Terminal::ascendType()
     }
 }
 
+
 void Terminal::descendType(SharedType, bool& changed, Statement*)
 {
     changed = false;
 }
 
+
+SharedExp Terminal::accept(ExpModifier *mod)
+{
+    // This is important if we need to modify terminals
+    return mod->postModify(shared_from_base<Terminal>());
+}
+
+
+SharedExp Terminal::preAccept(ExpModifier *, bool& )
+{
+    //return mod->preModify(access<Terminal>(), visitChildren));
+    return access<Terminal>();
+}
+
+
+SharedExp Terminal::postAccept(ExpModifier *mod)
+{
+    return mod->postModify(access<Terminal>());
+}

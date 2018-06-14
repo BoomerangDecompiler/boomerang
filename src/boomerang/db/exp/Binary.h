@@ -94,9 +94,11 @@ public:
     /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
-protected:
+    /// \copydoc Unary::preAccept
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
-    virtual SharedExp postAccept(ExpModifier *) override;
+
+    /// \copydoc Unary::postAccept
+    virtual SharedExp postAccept(ExpModifier *mod) override;
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer
