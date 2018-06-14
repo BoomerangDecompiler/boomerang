@@ -48,7 +48,7 @@ SharedExp ExpSubscripter::preModify(const std::shared_ptr<Binary>& exp, bool& vi
 }
 
 
-SharedExp ExpSubscripter::modify(const std::shared_ptr<Terminal>& exp)
+SharedExp ExpSubscripter::postModify(const std::shared_ptr<Terminal>& exp)
 {
     if (*exp == *m_search) {
         return RefExp::get(exp, m_def);

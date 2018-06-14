@@ -27,7 +27,7 @@ public:
     int getLast() const;
 
     /// \copydoc ExpVisitor::preModify
-    virtual SharedExp modify(const std::shared_ptr<Const>& exp) override;
+    virtual SharedExp postModify(const std::shared_ptr<Const>& exp) override;
 
     /// \copydoc ExpVisitor::preModify
     virtual SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;

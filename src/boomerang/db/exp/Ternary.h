@@ -81,17 +81,21 @@ public:
     /// \copydoc Binary::simplifyAddr
     SharedExp simplifyAddr() override;
 
-    /// \copydoc Binary::accept
-    bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Binary::accept
-    SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Binary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Binary::descendType
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Binary::accept
+    bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Binary::accept
+    SharedExp accept(ExpModifier *mod) override;
+
+protected:
+    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
 
 private:
     SharedExp subExp3; ///< Third subexpression pointer

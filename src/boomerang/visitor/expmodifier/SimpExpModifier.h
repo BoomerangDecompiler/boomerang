@@ -68,10 +68,10 @@ public:
 
 
     /// \copydoc ExpModifier::modify
-    SharedExp modify(const std::shared_ptr<Const>& exp)  override;
+    SharedExp postModify(const std::shared_ptr<Const>& exp)  override;
 
     /// \copydoc ExpModifier::modify
-    SharedExp modify(const std::shared_ptr<Terminal>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Terminal>& exp) override;
 
 
     unsigned getUnchanged() { return m_unchanged; }

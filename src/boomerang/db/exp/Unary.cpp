@@ -637,22 +637,6 @@ bool Unary::accept(ExpVisitor *v)
 }
 
 
-SharedExp Unary::accept(ExpModifier *mod)
-{
-    // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
-    // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
-    bool visitChildren = false;
-    auto ret   = mod->preModify(shared_from_base<Unary>(), visitChildren);
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
-    }
-
-    assert(std::dynamic_pointer_cast<Unary>(ret) != nullptr);
-    return mod->postModify(ret->access<Unary>());
-}
-
-
 SharedType Unary::ascendType()
 {
     SharedType ta = subExp1->ascendType();
@@ -821,4 +805,26 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
     default:
         break;
     }
+}
+
+
+SharedExp Unary::accept(ExpModifier *mod)
+{
+    // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
+    // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
+    bool visitChildren = false;
+    auto ret = preAccept(mod, visitChildren);
+
+    if (visitChildren) {
+        subExp1 = subExp1->accept(mod);
+    }
+
+    assert(std::dynamic_pointer_cast<Unary>(ret) != nullptr);
+    return mod->postModify(ret->access<Unary>());
+}
+
+
+SharedExp Unary::preAccept(ExpModifier* mod, bool& visitChildren)
+{
+    return mod->preModify(access<Unary>(), visitChildren);
 }

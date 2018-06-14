@@ -193,7 +193,7 @@ bool Terminal::accept(ExpVisitor *v)
 SharedExp Terminal::accept(ExpModifier *mod)
 {
     // This is important if we need to modify terminals
-    return mod->modify(shared_from_base<Terminal>());
+    return mod->postModify(shared_from_base<Terminal>());
 }
 
 

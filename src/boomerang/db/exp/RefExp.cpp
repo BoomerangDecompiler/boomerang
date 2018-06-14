@@ -182,25 +182,6 @@ bool RefExp::accept(ExpVisitor *v)
 }
 
 
-SharedExp RefExp::accept(ExpModifier *mod)
-{
-    bool visitChildren = true;
-    auto ret     = mod->preModify(shared_from_base<RefExp>(), visitChildren);
-    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
-    }
-
-    // TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
-    if (ref_ret) {
-        return mod->postModify(ref_ret);
-    }
-
-    return ret;
-}
-
-
 void RefExp::printx(int ind) const
 {
     LOG_VERBOSE("%1%2", QString(ind, ' '), operToString(m_oper));
@@ -307,4 +288,28 @@ void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
     SharedType newType = m_def->meetWithFor(parentType, subExp1, changed);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, changed, s);
+}
+
+SharedExp RefExp::accept(ExpModifier *mod)
+{
+    bool visitChildren = true;
+    auto ret     = mod->preModify(shared_from_base<RefExp>(), visitChildren);
+    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
+
+    if (visitChildren) {
+        subExp1 = subExp1->accept(mod);
+    }
+
+    // TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
+    if (ref_ret) {
+        return mod->postModify(ref_ret);
+    }
+
+    return ret;
+}
+
+
+SharedExp RefExp::preAccept(ExpModifier *mod, bool& visitChildren)
+{
+    return mod->preModify(access<RefExp>(), visitChildren);
 }

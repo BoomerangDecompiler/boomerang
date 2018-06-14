@@ -59,11 +59,15 @@ public:
 
     void getDefinitions(LocationSet& defs);
 
+public:
     /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
 
     /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
+
+protected:
+    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
 
 private:
     UserProc *m_proc;

@@ -23,7 +23,7 @@ ExpConstCaster::ExpConstCaster(int num, SharedType ty)
 }
 
 
-SharedExp ExpConstCaster::modify(const std::shared_ptr<Const>& exp)
+SharedExp ExpConstCaster::postModify(const std::shared_ptr<Const>& exp)
 {
     if (exp->getConscript() == m_num) {
         m_changed = true;

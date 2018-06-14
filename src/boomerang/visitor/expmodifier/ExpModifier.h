@@ -104,19 +104,11 @@ public:
     /// \copydoc ExpModifier::postModify
     virtual SharedExp postModify(const std::shared_ptr<Location>& exp);
 
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Const>& exp);
 
-    /**
-     * Modify \p exp.
-     * \note \ref modify functions are allowed to return an expression of a different type,
-     * unlike \ref preModify.
-     *
-     * \param exp the expression to modify.
-     * \returns the modified expression.
-     */
-    virtual SharedExp modify(const std::shared_ptr<Const>& exp);
-
-    /// \copydoc ExpModifier::modify
-    virtual SharedExp modify(const std::shared_ptr<Terminal>& exp);
+    /// \copydoc ExpModifier::postModify
+    virtual SharedExp postModify(const std::shared_ptr<Terminal>& exp);
 
 protected:
     bool m_modified = false; ///< Set if there is any change. Don't have to implement

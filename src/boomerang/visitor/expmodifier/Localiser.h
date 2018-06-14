@@ -38,7 +38,7 @@ public:
 
     /// \copydoc SimpExpModifier::postModify
     /// We want to be able to localise a few terminals, in particular <all>
-    SharedExp modify(const std::shared_ptr<Terminal>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     CallStatement *m_call; ///< The call to localise to

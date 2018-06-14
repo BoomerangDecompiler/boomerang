@@ -78,17 +78,21 @@ public:
     /// \copydoc Exp::simplifyAddr
     virtual SharedExp simplifyAddr() override;
 
+    /// \copydoc Exp::ascendType
+    virtual SharedType ascendType() override;
+
+    /// \copydoc Exp::descendType
+    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
     /// \copydoc Exp::accept
     virtual bool accept(ExpVisitor *v) override;
 
     /// \copydoc Exp::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
-    /// \copydoc Exp::ascendType
-    virtual SharedType ascendType() override;
-
-    /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+protected:
+    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
 
 protected:
     SharedExp subExp1; ///< One subexpression pointer

@@ -30,7 +30,7 @@ int ConscriptSetter::getLast() const
 }
 
 
-SharedExp ConscriptSetter::modify(const std::shared_ptr<Const>& exp)
+SharedExp ConscriptSetter::postModify(const std::shared_ptr<Const>& exp)
 {
     if (!m_inLocalGlobal) {
         if (m_clear) {

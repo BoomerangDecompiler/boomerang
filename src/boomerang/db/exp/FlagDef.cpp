@@ -47,7 +47,7 @@ bool FlagDef::accept(ExpVisitor *v)
 SharedExp FlagDef::accept(ExpModifier *mod)
 {
     bool visitChildren = true;
-    SharedExp ret        = mod->preModify(shared_from_base<FlagDef>(), visitChildren);
+    SharedExp ret = preAccept(mod, visitChildren);
     std::shared_ptr<FlagDef> flgdef_ret = std::dynamic_pointer_cast<FlagDef>(ret);
 
     if (visitChildren) {
@@ -57,3 +57,11 @@ SharedExp FlagDef::accept(ExpModifier *mod)
     assert(flgdef_ret);
     return mod->postModify(flgdef_ret);
 }
+
+
+SharedExp FlagDef::preAccept(ExpModifier* mod, bool& visitChildren)
+{
+    return mod->preModify(shared_from_base<FlagDef>(), visitChildren);
+}
+
+

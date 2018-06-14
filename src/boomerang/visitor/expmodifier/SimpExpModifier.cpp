@@ -83,7 +83,7 @@ SharedExp SimpExpModifier::preModify(const std::shared_ptr<Location>& exp, bool&
 }
 
 
-SharedExp SimpExpModifier::modify(const std::shared_ptr<Const>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Const>& exp)
 {
     m_mask <<= 1;
     m_mask >>= 1;
@@ -91,7 +91,7 @@ SharedExp SimpExpModifier::modify(const std::shared_ptr<Const>& exp)
 }
 
 
-SharedExp SimpExpModifier::modify(const std::shared_ptr<Terminal>& exp)
+SharedExp SimpExpModifier::postModify(const std::shared_ptr<Terminal>& exp)
 {
     m_mask <<= 1;
     m_mask >>= 1;

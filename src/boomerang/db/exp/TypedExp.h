@@ -64,17 +64,21 @@ public:
     /// \copydoc Unary::polySimplify
     virtual SharedExp polySimplify(bool& changed) override;
 
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
     virtual void descendType(SharedType, bool&, Statement *) override;
+
+public:
+    /// \copydoc Unary::accept
+    virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Unary::accept
+    virtual SharedExp accept(ExpModifier *mod) override;
+
+protected:
+    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
 
 private:
     SharedType m_type;

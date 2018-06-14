@@ -167,21 +167,6 @@ bool TypedExp::accept(ExpVisitor *v)
 }
 
 
-SharedExp TypedExp::accept(ExpModifier *mod)
-{
-    bool visitChildren;
-    auto ret          = mod->preModify(shared_from_base<TypedExp>(), visitChildren);
-    auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
-    }
-
-    assert(typedexp_ret);
-    return mod->postModify(typedexp_ret);
-}
-
-
 void TypedExp::printx(int ind) const
 {
     LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), m_type->getCtype());
@@ -194,5 +179,28 @@ SharedType TypedExp::ascendType()
     return m_type;
 }
 
-void TypedExp::descendType(SharedType, bool&, Statement*) {}
 
+void TypedExp::descendType(SharedType, bool&, Statement*)
+{
+}
+
+
+SharedExp TypedExp::accept(ExpModifier *mod)
+{
+    bool visitChildren;
+    auto ret = preAccept(mod, visitChildren);
+    auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
+
+    if (visitChildren) {
+        subExp1 = subExp1->accept(mod);
+    }
+
+    assert(typedexp_ret);
+    return mod->postModify(typedexp_ret);
+}
+
+
+SharedExp TypedExp::preAccept(ExpModifier *mod, bool& visitChildren)
+{
+    return mod->preModify(access<TypedExp>(), visitChildren);
+}

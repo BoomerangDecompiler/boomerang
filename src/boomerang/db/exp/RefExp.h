@@ -79,17 +79,21 @@ public:
      */
     bool isImplicitDef() const;
 
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Unary::accept
+    virtual bool accept(ExpVisitor *v) override;
+
+    /// \copydoc Unary::accept
+    virtual SharedExp accept(ExpModifier *mod) override;
+
+protected:
+    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
 
 private:
     Statement *m_def; ///< The defining statement

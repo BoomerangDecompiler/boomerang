@@ -111,13 +111,13 @@ SharedExp ExpModifier::postModify(const std::shared_ptr<Location>& exp)
 }
 
 
-SharedExp ExpModifier::modify(const std::shared_ptr<Const>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Const>& exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::modify(const std::shared_ptr<Terminal>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Terminal>& exp)
 {
     return exp;
 }

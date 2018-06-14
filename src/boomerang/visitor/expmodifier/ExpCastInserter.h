@@ -44,5 +44,5 @@ public:
 
 
     /// \copydoc ExpModifier::modify
-    SharedExp modify(const std::shared_ptr<Const>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Const>& exp) override;
 };
