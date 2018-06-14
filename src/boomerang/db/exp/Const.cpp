@@ -158,11 +158,7 @@ bool Const::accept(ExpVisitor *v)
 
 SharedExp Const::accept(ExpModifier *v)
 {
-    auto ret       = v->preModify(shared_from_base<Const>());
-    auto const_ret = std::dynamic_pointer_cast<Const>(ret);
-
-    assert(const_ret);
-    return v->postModify(const_ret);
+    return v->modify(shared_from_base<Const>());
 }
 
 

@@ -130,7 +130,7 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary>& exp)
 }
 
 
-SharedExp ExpCastInserter::postModify(const std::shared_ptr<Const>& exp)
+SharedExp ExpCastInserter::modify(const std::shared_ptr<Const>& exp)
 {
     if (exp->isIntConst()) {
         bool       naturallySigned = exp->getInt() < 0;

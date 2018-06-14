@@ -71,12 +71,6 @@ public:
     /// \copydoc ExpModifier::preModify
     virtual SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preModify
-    virtual SharedExp preModify(const std::shared_ptr<Const>& exp);
-
-    /// \copydoc ExpModifier::preModify
-    virtual SharedExp preModify(const std::shared_ptr<Terminal>& exp);
-
     /**
      * Modify the expression after modifying children.
      * The default behaviour is to not modify the expression.
@@ -104,11 +98,12 @@ public:
     /// \copydoc ExpModifier::postModify
     virtual SharedExp postModify(const std::shared_ptr<Location>& exp);
 
-    /// \copydoc ExpModifier::postModify
-    virtual SharedExp postModify(const std::shared_ptr<Const>& exp);
 
-    /// \copydoc ExpModifier::postModify
-    virtual SharedExp postModify(const std::shared_ptr<Terminal>& exp);
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp modify(const std::shared_ptr<Const>& exp);
+
+    /// \copydoc ExpModifier::preModify
+    virtual SharedExp modify(const std::shared_ptr<Terminal>& exp);
 
 protected:
     bool m_mod = false; ///< Set if there is any change. Don't have to implement

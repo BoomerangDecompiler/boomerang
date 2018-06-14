@@ -69,18 +69,6 @@ SharedExp ExpModifier::preModify(const std::shared_ptr<Location>& exp, bool& vis
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<Const>& exp)
-{
-    return exp;
-}
-
-
-SharedExp ExpModifier::preModify(const std::shared_ptr<Terminal>& exp)
-{
-    return exp;
-}
-
-
 SharedExp ExpModifier::postModify(const std::shared_ptr<Unary>& exp)
 {
     return exp;
@@ -123,13 +111,13 @@ SharedExp ExpModifier::postModify(const std::shared_ptr<Location>& exp)
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Const>& exp)
+SharedExp ExpModifier::modify(const std::shared_ptr<Const>& exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Terminal>& exp)
+SharedExp ExpModifier::modify(const std::shared_ptr<Terminal>& exp)
 {
     return exp;
 }

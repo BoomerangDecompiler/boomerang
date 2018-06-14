@@ -901,34 +901,23 @@ void ExpTest::testTypeOf()
 
 void ExpTest::testSetConscripts()
 {
-    QString     actual;
-    QTextStream ost(&actual);
-
     // m[1000] + 1000
     SharedExp e = Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000));
-
     e->setConscripts(0, false);
-    ost << e;
-    QCOMPARE(actual, QString("m[1000\\1\\] + 1000\\2\\"));
+    QCOMPARE(e->toString(), QString("m[1000\\1\\] + 1000\\2\\"));
 
     // Clear them
-    actual = "";
     e->setConscripts(0, true);
-    ost << e;
-    QCOMPARE(actual, QString("m[1000] + 1000"));
+    QCOMPARE(e->toString(), QString("m[1000] + 1000"));
 
     // m[r28 + 1000]
-    actual = "";
     e      = Location::memOf(Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(1000)));
     e->setConscripts(0, false);
-    ost << e;
-    QCOMPARE(actual, QString("m[r28 + 1000\\1\\]"));
+    QCOMPARE(e->toString(), QString("m[r28 + 1000\\1\\]"));
 
     // Clear
-    actual = "";
     e->setConscripts(0, true);
-    ost << e;
-    QCOMPARE(actual, QString("m[r28 + 1000]"));
+    QCOMPARE(e->toString(), QString("m[r28 + 1000]"));
 }
 
 

@@ -64,7 +64,7 @@ SharedExp Localiser::postModify(const std::shared_ptr<Location>& exp)
 }
 
 
-SharedExp Localiser::postModify(const std::shared_ptr<Terminal>& exp)
+SharedExp Localiser::modify(const std::shared_ptr<Terminal>& exp)
 {
     SharedExp ret = exp;
 
