@@ -94,8 +94,8 @@ public:
     /// \copydoc Binary::accept
     SharedExp accept(ExpModifier *mod) override;
 
-protected:
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp postAccept(ExpModifier *mod) override;
 
 private:
     SharedExp subExp3; ///< Third subexpression pointer

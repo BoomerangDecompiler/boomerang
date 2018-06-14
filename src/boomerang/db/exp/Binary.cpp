@@ -1501,22 +1501,17 @@ SharedExp Binary::accept(ExpModifier *mod)
         subExp2 = subExp2->accept(mod);
     }
 
-    auto bret = std::dynamic_pointer_cast<Binary>(ret);
-    auto uret = std::dynamic_pointer_cast<Unary>(ret);
-
-    if (bret) {
-        return mod->postModify(bret);
-    }
-    else if (uret) {
-        return mod->postModify(uret);
-    }
-
-    Q_ASSERT(false);
-    return nullptr;
+    return ret->postAccept(mod);
 }
 
 
 SharedExp Binary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Binary>(), visitChildren);
+}
+
+
+SharedExp Binary::postAccept(ExpModifier *mod)
+{
+    return mod->postModify(access<Binary>());
 }

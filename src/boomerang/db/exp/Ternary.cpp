@@ -581,7 +581,7 @@ void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s
 SharedExp Ternary::accept(ExpModifier *mod)
 {
     bool visitChildren = true;
-    auto ret = preAccept(mod, visitChildren);
+    SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
         subExp1 = subExp1->accept(mod);
@@ -589,12 +589,17 @@ SharedExp Ternary::accept(ExpModifier *mod)
         subExp3 = subExp3->accept(mod);
     }
 
-    assert(std::dynamic_pointer_cast<Ternary>(ret) != nullptr);
-    return mod->postModify(ret->access<Ternary>());
+    return ret->postAccept(mod);
 }
 
 
-SharedExp Ternary::preAccept(ExpModifier* mod, bool& visitChildren)
+SharedExp Ternary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Ternary>(), visitChildren);
+}
+
+
+SharedExp Ternary::postAccept(ExpModifier *mod)
+{
+    return mod->postModify(access<Ternary>());
 }

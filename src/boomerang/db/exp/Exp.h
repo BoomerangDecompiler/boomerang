@@ -542,8 +542,8 @@ public:
     virtual bool accept(ExpVisitor *v)         = 0;
     virtual SharedExp accept(ExpModifier *mod) = 0;
 
-protected:
     virtual SharedExp preAccept(ExpModifier *, bool&) { return shared_from_this(); }
+    virtual SharedExp postAccept(ExpModifier *) { return shared_from_this(); }
 
 protected:
     template<typename CHILD>

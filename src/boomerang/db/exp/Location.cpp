@@ -139,22 +139,17 @@ SharedExp Location::accept(ExpModifier *mod)
         subExp1 = subExp1->accept(mod);
     }
 
-    auto loc_ret = std::dynamic_pointer_cast<Location>(ret);
-    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
-
-    if (loc_ret) {
-        return mod->postModify(loc_ret);
-    }
-    else if (ref_ret) {
-        return mod->postModify(ref_ret);
-    }
-
-    assert(false);
-    return nullptr;
+    return ret->postAccept(mod);
 }
 
 
 SharedExp Location::preAccept(ExpModifier* mod, bool& visitChildren)
 {
     return mod->preModify(access<Location>(), visitChildren);
+}
+
+
+SharedExp Location::postAccept(ExpModifier* mod)
+{
+    return mod->postModify(access<Location>());
 }

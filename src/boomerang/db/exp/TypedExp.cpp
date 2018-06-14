@@ -189,14 +189,12 @@ SharedExp TypedExp::accept(ExpModifier *mod)
 {
     bool visitChildren;
     auto ret = preAccept(mod, visitChildren);
-    auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
 
     if (visitChildren) {
         subExp1 = subExp1->accept(mod);
     }
 
-    assert(typedexp_ret);
-    return mod->postModify(typedexp_ret);
+    return ret->postAccept(mod);
 }
 
 
@@ -204,3 +202,10 @@ SharedExp TypedExp::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<TypedExp>(), visitChildren);
 }
+
+
+SharedExp TypedExp::postAccept(ExpModifier *mod)
+{
+    return mod->postModify(access<TypedExp>());
+}
+

@@ -96,6 +96,7 @@ public:
 
 protected:
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp postAccept(ExpModifier *) override;
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer

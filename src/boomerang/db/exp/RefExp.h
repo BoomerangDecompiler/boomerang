@@ -92,8 +92,8 @@ public:
     /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *mod) override;
 
-protected:
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp postAccept(ExpModifier *mod) override;
 
 private:
     Statement *m_def; ///< The defining statement

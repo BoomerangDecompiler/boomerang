@@ -290,19 +290,19 @@ void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
     subExp1->descendType(newType, changed, s);
 }
 
+
 SharedExp RefExp::accept(ExpModifier *mod)
 {
     bool visitChildren = true;
-    auto ret     = mod->preModify(shared_from_base<RefExp>(), visitChildren);
-    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
+    SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
         subExp1 = subExp1->accept(mod);
     }
 
     // TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
-    if (ref_ret) {
-        return mod->postModify(ref_ret);
+    if (std::dynamic_pointer_cast<RefExp>(ret) != nullptr) {
+        return ret->postAccept(mod);
     }
 
     return ret;
@@ -312,4 +312,10 @@ SharedExp RefExp::accept(ExpModifier *mod)
 SharedExp RefExp::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<RefExp>(), visitChildren);
+}
+
+
+SharedExp RefExp::postAccept(ExpModifier* mod)
+{
+    return mod->postModify(access<RefExp>());
 }

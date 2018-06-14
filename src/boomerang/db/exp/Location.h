@@ -66,8 +66,8 @@ public:
     /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
-protected:
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp postAccept(ExpModifier *mod) override;
 
 private:
     UserProc *m_proc;
