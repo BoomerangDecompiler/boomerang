@@ -54,7 +54,7 @@ SharedExp Localiser::postModify(const std::shared_ptr<Location>& exp)
 
         ret          = ret->bypass();
         m_unchanged &= ~m_mask;
-        m_mod        = true;
+        m_modified   = true;
     }
     else {
         ret = RefExp::get(ret, nullptr); // No definition reaches, so subscript with {-}
@@ -78,7 +78,7 @@ SharedExp Localiser::modify(const std::shared_ptr<Terminal>& exp)
     if (r) {
         ret          = r->clone()->bypass();
         m_unchanged &= ~m_mask;
-        m_mod        = true;
+        m_modified   = true;
     }
     else {
         ret = RefExp::get(ret, nullptr); // No definition reaches, so subscript with {-}

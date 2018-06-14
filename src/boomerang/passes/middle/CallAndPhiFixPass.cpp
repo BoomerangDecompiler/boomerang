@@ -149,7 +149,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
         first = first->propagateAll(); // Propagate everything repeatedly
 
-        if (cb.isMod()) {              // Modified?
+        if (cb.isModified()) {              // Modified?
             // if first is of the form lhs{x}
             if (first->isSubscript() && (*first->getSubExp1() == *lhs)) {
                 // replace first with x
@@ -171,7 +171,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
             current = current->propagateAll();
 
-            if (cb2.isMod()) { // Modified?
+            if (cb2.isModified()) {
                 // if current is of the form lhs{x}
                 if (current->isSubscript() && (*current->getSubExp1() == *lhs)) {
                     // replace current with x
@@ -227,7 +227,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         CallBypasser cb(nullptr);
         addr = addr->accept(&cb);
 
-        if (cb.isMod()) {
+        if (cb.isModified()) {
             cc->setSubExp1(addr);
         }
     }

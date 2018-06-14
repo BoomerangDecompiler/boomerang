@@ -34,11 +34,11 @@ SharedExp ConscriptSetter::modify(const std::shared_ptr<Const>& exp)
 {
     if (!m_inLocalGlobal) {
         if (m_clear) {
-            m_mod |= (exp->getConscript() != 0);
+            m_modified |= (exp->getConscript() != 0);
             exp->setConscript(0);
         }
         else {
-            m_mod = true;
+            m_modified = true;
             exp->setConscript(++m_curConscript);
         }
     }

@@ -88,13 +88,13 @@ bool ImpRefStatement::accept(StmtModifier *v)
     v->visit(this, visitChildren);
 
     if (v->m_mod) {
-        v->m_mod->clearMod();
+        v->m_mod->clearModified();
 
         if (visitChildren) {
             m_addressExp = m_addressExp->accept(v->m_mod);
         }
 
-        if (v->m_mod->isMod()) {
+        if (v->m_mod->isModified()) {
             LOG_VERBOSE("ImplicitRef changed: now %1", this);
         }
     }
@@ -107,13 +107,13 @@ bool ImpRefStatement::accept(StmtPartModifier *v)
     bool visitChildren;
 
     v->visit(this, visitChildren);
-    v->mod->clearMod();
+    v->mod->clearModified();
 
     if (visitChildren) {
         m_addressExp = m_addressExp->accept(v->mod);
     }
 
-    if (v->mod->isMod()) {
+    if (v->mod->isModified()) {
         LOG_VERBOSE("ImplicitRef changed: now %1", this);
     }
 

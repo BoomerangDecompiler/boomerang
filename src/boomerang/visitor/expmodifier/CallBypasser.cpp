@@ -42,7 +42,7 @@ SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp>& exp)
 
         if (ch) {
             m_unchanged &= ~m_mask;
-            m_mod        = true;
+            setModified(true);
             // Now have to recurse to do any further bypassing that may be required
             // E.g. bypass the two recursive calls in fibo?? FIXME: check!
             CallBypasser *bp = new CallBypasser(m_enclosingStmt);
