@@ -1120,56 +1120,10 @@ SharedExp Binary::simplifyAddr()
 }
 
 
-bool Binary::accept(ExpVisitor *v)
-{
-    assert(subExp1 && subExp2);
-
-    bool visitChildren = true;
-    if (!v->preVisit(shared_from_base<Binary>(), visitChildren)) {
-        return false;
-    }
-
-    if (visitChildren) {
-        if (!subExp1->accept(v) || !subExp2->accept(v)) {
-            return false;
-        }
-    }
-
-    return v->postVisit(shared_from_base<Binary>());
-}
-
-
 SharedConstExp Binary::getSubExp2() const
 {
     assert(subExp1 && subExp2);
     return subExp2;
-}
-
-
-SharedExp Binary::accept(ExpModifier *mod)
-{
-    assert(subExp1 && subExp2);
-
-    bool      visitChildren = true;
-    SharedExp ret = mod->preModify(shared_from_base<Binary>(), visitChildren);
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
-        subExp2 = subExp2->accept(mod);
-    }
-
-    auto bret = std::dynamic_pointer_cast<Binary>(ret);
-    auto uret = std::dynamic_pointer_cast<Unary>(ret);
-
-    if (bret) {
-        return mod->postModify(bret);
-    }
-    else if (uret) {
-        return mod->postModify(uret);
-    }
-
-    Q_ASSERT(false);
-    return nullptr;
 }
 
 
@@ -1515,3 +1469,54 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
     }
 }
 
+
+bool Binary::accept(ExpVisitor *v)
+{
+    assert(subExp1 && subExp2);
+
+    bool visitChildren = true;
+    if (!v->preVisit(shared_from_base<Binary>(), visitChildren)) {
+        return false;
+    }
+
+    if (visitChildren) {
+        if (!subExp1->accept(v) || !subExp2->accept(v)) {
+            return false;
+        }
+    }
+
+    return v->postVisit(shared_from_base<Binary>());
+}
+
+
+SharedExp Binary::accept(ExpModifier *mod)
+{
+    assert(subExp1 && subExp2);
+
+    bool      visitChildren = true;
+    SharedExp ret = preAccept(mod, visitChildren);
+
+    if (visitChildren) {
+        subExp1 = subExp1->accept(mod);
+        subExp2 = subExp2->accept(mod);
+    }
+
+    auto bret = std::dynamic_pointer_cast<Binary>(ret);
+    auto uret = std::dynamic_pointer_cast<Unary>(ret);
+
+    if (bret) {
+        return mod->postModify(bret);
+    }
+    else if (uret) {
+        return mod->postModify(uret);
+    }
+
+    Q_ASSERT(false);
+    return nullptr;
+}
+
+
+SharedExp Binary::preAccept(ExpModifier *mod, bool& visitChildren)
+{
+    return mod->preModify(access<Binary>(), visitChildren);
+}

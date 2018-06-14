@@ -497,11 +497,6 @@ public:
     // what is wanted!
     SharedExp fromSSAleft(UserProc *proc, Statement *d);
 
-    /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
-    /// function called each time is different for each class (because "this" is different each time)
-    virtual bool accept(ExpVisitor *v)       = 0;
-    virtual SharedExp accept(ExpModifier *v) = 0;
-
     /// Set or clear the constant subscripts
     void setConscripts(int n, bool clear);
 
@@ -539,6 +534,16 @@ public:
     virtual void descendType(SharedType /*parentType*/, bool& /*ch*/, Statement * /*s*/);
 
     static SharedExp convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<CompoundType>& c, unsigned n);
+
+
+public:
+    /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
+    /// function called each time is different for each class (because "this" is different each time)
+    virtual bool accept(ExpVisitor *v)         = 0;
+    virtual SharedExp accept(ExpModifier *mod) = 0;
+
+protected:
+    virtual SharedExp preAccept(ExpModifier *, bool&) { return shared_from_this(); }
 
 protected:
     template<typename CHILD>

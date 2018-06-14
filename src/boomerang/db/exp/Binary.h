@@ -81,17 +81,21 @@ public:
     /// \copydoc Unary::simplifyAddr
     SharedExp simplifyAddr() override;
 
+    /// \copydoc Unary::ascendType
+    virtual SharedType ascendType() override;
+
+    /// \copydoc Unary::ascendType
+    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
     /// \copydoc Unary::accept
     virtual bool accept(ExpVisitor *v) override;
 
     /// \copydoc Unary::accept
     virtual SharedExp accept(ExpModifier *v) override;
 
-    /// \copydoc Unary::ascendType
-    virtual SharedType ascendType() override;
-
-    /// \copydoc Unary::ascendType
-    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+protected:
+    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer
