@@ -1146,28 +1146,26 @@ SharedConstExp Binary::getSubExp2() const
 }
 
 
-SharedExp Binary::accept(ExpModifier *v)
+SharedExp Binary::accept(ExpModifier *mod)
 {
     assert(subExp1 && subExp2);
 
     bool      visitChildren = true;
-    SharedExp ret = v->preModify(shared_from_base<Binary>(), visitChildren);
+    SharedExp ret = mod->preModify(shared_from_base<Binary>(), visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(v);
-        subExp2 = subExp2->accept(v);
+        subExp1 = subExp1->accept(mod);
+        subExp2 = subExp2->accept(mod);
     }
 
     auto bret = std::dynamic_pointer_cast<Binary>(ret);
-
-    if (bret) {
-        return v->postModify(bret);
-    }
-
     auto uret = std::dynamic_pointer_cast<Unary>(ret);
 
-    if (uret) {
-        return v->postModify(uret);
+    if (bret) {
+        return mod->postModify(bret);
+    }
+    else if (uret) {
+        return mod->postModify(uret);
     }
 
     Q_ASSERT(false);

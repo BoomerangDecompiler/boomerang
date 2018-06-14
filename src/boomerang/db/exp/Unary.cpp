@@ -637,19 +637,19 @@ bool Unary::accept(ExpVisitor *v)
 }
 
 
-SharedExp Unary::accept(ExpModifier *v)
+SharedExp Unary::accept(ExpModifier *mod)
 {
     // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
     // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
     bool visitChildren = false;
-    auto ret   = std::dynamic_pointer_cast<Unary>(v->preModify(shared_from_base<Unary>(), visitChildren));
+    auto ret   = mod->preModify(shared_from_base<Unary>(), visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(v);
+        subExp1 = subExp1->accept(mod);
     }
 
-    assert(ret);
-    return v->postModify(ret);
+    assert(std::dynamic_pointer_cast<Unary>(ret) != nullptr);
+    return mod->postModify(ret->access<Unary>());
 }
 
 

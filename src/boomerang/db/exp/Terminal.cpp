@@ -190,10 +190,10 @@ bool Terminal::accept(ExpVisitor *v)
 }
 
 
-SharedExp Terminal::accept(ExpModifier *v)
+SharedExp Terminal::accept(ExpModifier *mod)
 {
     // This is important if we need to modify terminals
-    return v->modify(shared_from_base<Terminal>());
+    return mod->modify(shared_from_base<Terminal>());
 }
 
 

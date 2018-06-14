@@ -156,9 +156,9 @@ bool Const::accept(ExpVisitor *v)
 }
 
 
-SharedExp Const::accept(ExpModifier *v)
+SharedExp Const::accept(ExpModifier *mod)
 {
-    return v->modify(shared_from_base<Const>());
+    return mod->modify(shared_from_base<Const>());
 }
 
 

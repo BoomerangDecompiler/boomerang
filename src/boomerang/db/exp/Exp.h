@@ -307,10 +307,10 @@ public:
      * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
      */
     template<class T>
-    std::shared_ptr<T> access() { return shared_from_base<T>(); }
+    inline std::shared_ptr<T> access() { return shared_from_base<T>(); }
 
     template<class T>
-    std::shared_ptr<const T> access() const { return shared_from_base<const T>(); }
+    inline std::shared_ptr<const T> access() const { return shared_from_base<const T>(); }
 
     /// Access sub-expressions recursively
     template<class T, int SUB_IDX, int ... Path>

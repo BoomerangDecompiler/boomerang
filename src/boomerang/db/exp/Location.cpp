@@ -122,27 +122,25 @@ bool Location::accept(ExpVisitor *v)
 }
 
 
-SharedExp Location::accept(ExpModifier *v)
+SharedExp Location::accept(ExpModifier *mod)
 {
     // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
     // important here!  (it makes a call to a different visitor member function).
     bool      visitChildren = true;
-    SharedExp ret = v->preModify(shared_from_base<Location>(), visitChildren);
+    SharedExp ret = mod->preModify(shared_from_base<Location>(), visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(v);
+        subExp1 = subExp1->accept(mod);
     }
 
     auto loc_ret = std::dynamic_pointer_cast<Location>(ret);
-
-    if (loc_ret) {
-        return v->postModify(loc_ret);
-    }
-
     auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
 
-    if (ref_ret) {
-        return v->postModify(ref_ret);
+    if (loc_ret) {
+        return mod->postModify(loc_ret);
+    }
+    else if (ref_ret) {
+        return mod->postModify(ref_ret);
     }
 
     assert(false);

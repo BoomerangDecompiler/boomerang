@@ -182,19 +182,19 @@ bool RefExp::accept(ExpVisitor *v)
 }
 
 
-SharedExp RefExp::accept(ExpModifier *v)
+SharedExp RefExp::accept(ExpModifier *mod)
 {
     bool visitChildren = true;
-    auto ret     = v->preModify(shared_from_base<RefExp>(), visitChildren);
+    auto ret     = mod->preModify(shared_from_base<RefExp>(), visitChildren);
     auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(v);
+        subExp1 = subExp1->accept(mod);
     }
 
     // TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
     if (ref_ret) {
-        return v->postModify(ref_ret);
+        return mod->postModify(ref_ret);
     }
 
     return ret;
