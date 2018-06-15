@@ -505,7 +505,7 @@ SharedExp Ternary::simplifyAddr()
 }
 
 
-bool Ternary::accept(ExpVisitor *v)
+bool Ternary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Ternary>(), visitChildren)) {
@@ -513,7 +513,7 @@ bool Ternary::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v) || !subExp2->accept(v) || !subExp3->accept(v)) {
+        if (!subExp1->acceptVisitor(v) || !subExp2->acceptVisitor(v) || !subExp3->acceptVisitor(v)) {
             return false;
         }
     }
@@ -578,19 +578,6 @@ void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s
 }
 
 
-SharedExp Ternary::accept(ExpModifier *mod)
-{
-    bool visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
-}
-
-
 SharedExp Ternary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Ternary>(), visitChildren);
@@ -599,9 +586,9 @@ SharedExp Ternary::preAccept(ExpModifier *mod, bool& visitChildren)
 
 SharedExp Ternary::childAccept(ExpModifier* mod)
 {
-    subExp1 = subExp1->accept(mod);
-    subExp2 = subExp2->accept(mod);
-    subExp3 = subExp3->accept(mod);
+    subExp1 = subExp1->acceptModifier(mod);
+    subExp2 = subExp2->acceptModifier(mod);
+    subExp3 = subExp3->acceptModifier(mod);
     return shared_from_this();
 }
 

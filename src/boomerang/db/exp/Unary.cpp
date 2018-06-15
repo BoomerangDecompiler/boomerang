@@ -620,7 +620,7 @@ void Unary::printx(int ind) const
 }
 
 
-bool Unary::accept(ExpVisitor *v)
+bool Unary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Unary>(), visitChildren)) {
@@ -628,7 +628,7 @@ bool Unary::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -808,21 +808,6 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
 }
 
 
-SharedExp Unary::accept(ExpModifier *mod)
-{
-    // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
-    // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
-    bool visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
-}
-
-
 SharedExp Unary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Unary>(), visitChildren);
@@ -831,7 +816,7 @@ SharedExp Unary::preAccept(ExpModifier *mod, bool& visitChildren)
 
 SharedExp Unary::childAccept(ExpModifier *mod)
 {
-    subExp1 = subExp1->accept(mod);
+    subExp1 = subExp1->acceptModifier(mod);
     return shared_from_this();
 }
 

@@ -184,7 +184,7 @@ void Terminal::print(QTextStream& os, bool) const
 }
 
 
-bool Terminal::accept(ExpVisitor *v)
+bool Terminal::acceptVisitor(ExpVisitor *v)
 {
     return v->visit(shared_from_base<Terminal>());
 }
@@ -224,19 +224,6 @@ SharedType Terminal::ascendType()
 void Terminal::descendType(SharedType, bool& changed, Statement*)
 {
     changed = false;
-}
-
-
-SharedExp Terminal::accept(ExpModifier *mod)
-{
-    bool      visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 

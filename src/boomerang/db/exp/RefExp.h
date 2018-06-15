@@ -87,10 +87,7 @@ public:
 
 public:
     /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *mod) override;
+    virtual bool acceptVisitor(ExpVisitor *v) override;
 
     /// \copydoc Unary::preAccept
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;

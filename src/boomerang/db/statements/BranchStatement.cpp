@@ -400,11 +400,11 @@ bool BranchStatement::accept(StmtExpVisitor *v)
 
     // Destination will always be a const for X86, so the below will never be used in practice
     if (ret && m_dest) {
-        ret = m_dest->accept(v->ev);
+        ret = m_dest->acceptVisitor(v->ev);
     }
 
     if (ret && m_cond) {
-        ret = m_cond->accept(v->ev);
+        ret = m_cond->acceptVisitor(v->ev);
     }
 
     return ret;
@@ -417,11 +417,11 @@ bool BranchStatement::accept(StmtPartModifier *v)
     v->visit(this, visitChildren);
 
     if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->mod);
+        m_dest = m_dest->acceptModifier(v->mod);
     }
 
     if (m_cond && visitChildren) {
-        m_cond = m_cond->accept(v->mod);
+        m_cond = m_cond->acceptModifier(v->mod);
     }
 
     return true;
@@ -436,11 +436,11 @@ bool BranchStatement::accept(StmtModifier *v)
 
     if (v->m_mod) {
         if (m_dest && visitChildren) {
-            m_dest = m_dest->accept(v->m_mod);
+            m_dest = m_dest->acceptModifier(v->m_mod);
         }
 
         if (m_cond && visitChildren) {
-            m_cond = m_cond->accept(v->m_mod);
+            m_cond = m_cond->acceptModifier(v->m_mod);
         }
     }
 

@@ -425,7 +425,7 @@ void DataFlow::convertImplicits()
 
     for (std::pair<SharedExp, std::set<int> > it : A_phi_copy) {
         SharedExp e = it.first->clone();
-        e          = e->accept(&ic);
+        e          = e->acceptModifier(&ic);
         m_A_phi[e] = it.second;       // Copy the set (doesn't have to be deep)
     }
 
@@ -434,7 +434,7 @@ void DataFlow::convertImplicits()
 
     for (std::pair<SharedExp, std::set<int> > dd : defsites_copy) {
         SharedExp e = dd.first->clone();
-        e             = e->accept(&ic);
+        e             = e->acceptModifier(&ic);
         m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
     }
 
@@ -445,7 +445,7 @@ void DataFlow::convertImplicits()
         ExSet se_new;
 
         for (const SharedExp& ee : se) {
-            SharedExp e = ee->clone()->accept(&ic);
+            SharedExp e = ee->clone()->acceptModifier(&ic);
             se_new.insert(e);
         }
 

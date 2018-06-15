@@ -165,7 +165,7 @@ SharedExp RefExp::polySimplify(bool& changed)
 }
 
 
-bool RefExp::accept(ExpVisitor *v)
+bool RefExp::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<RefExp>(), visitChildren)) {
@@ -173,7 +173,7 @@ bool RefExp::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -288,19 +288,6 @@ void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
     SharedType newType = m_def->meetWithFor(parentType, subExp1, changed);
     // In case subExp1 is a m[...]
     subExp1->descendType(newType, changed, s);
-}
-
-
-SharedExp RefExp::accept(ExpModifier *mod)
-{
-    bool visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 

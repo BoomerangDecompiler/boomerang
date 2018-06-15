@@ -89,10 +89,7 @@ public:
 
 public:
     /// \copydoc Binary::accept
-    bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Binary::accept
-    SharedExp accept(ExpModifier *mod) override;
+    bool acceptVisitor(ExpVisitor *v) override;
 
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
     virtual SharedExp childAccept(ExpModifier *mod) override;

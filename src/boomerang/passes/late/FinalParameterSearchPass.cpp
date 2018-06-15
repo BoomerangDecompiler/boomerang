@@ -43,7 +43,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
             for (auto cc = components.begin(); cc != components.end(); ++cc) {
                 if (*cc != paramLoc) {                       // Don't subscript outer level
                     paramLoc->expSubscriptVar(*cc, nullptr); // E.g. r28 -> r28{-}
-                    paramLoc->accept(&ic);                   // E.g. r28{-} -> r28{0}
+                    paramLoc->acceptModifier(&ic);                   // E.g. r28{-} -> r28{0}
                 }
             }
 

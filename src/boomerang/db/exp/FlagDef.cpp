@@ -27,7 +27,7 @@ FlagDef::~FlagDef()
 }
 
 
-bool FlagDef::accept(ExpVisitor *v)
+bool FlagDef::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<FlagDef>(), visitChildren)) {
@@ -35,25 +35,12 @@ bool FlagDef::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
 
     return v->postVisit(shared_from_base<FlagDef>());
-}
-
-
-SharedExp FlagDef::accept(ExpModifier *mod)
-{
-    bool visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 

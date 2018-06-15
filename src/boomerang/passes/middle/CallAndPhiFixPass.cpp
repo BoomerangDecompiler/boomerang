@@ -141,7 +141,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
         // bypass to first
         CallBypasser cb(phi);
-        first = first->accept(&cb);
+        first = first->acceptModifier(&cb);
 
         if (cb.isTopChanged()) {
             first = first->simplify();
@@ -163,7 +163,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             RefExp&      phi_inf2 = *phi_iter;
             SharedExp    current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
             CallBypasser cb2(phi);
-            current = current->accept(&cb2);
+            current = current->acceptModifier(&cb2);
 
             if (cb2.isTopChanged()) {
                 current = current->simplify();
@@ -225,7 +225,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
         auto         addr = cc->getSubExp1();
         CallBypasser cb(nullptr);
-        addr = addr->accept(&cb);
+        addr = addr->acceptModifier(&cb);
 
         if (cb.isModified()) {
             cc->setSubExp1(addr);

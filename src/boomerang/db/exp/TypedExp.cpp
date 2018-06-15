@@ -150,7 +150,7 @@ SharedExp TypedExp::polySimplify(bool& changed)
 }
 
 
-bool TypedExp::accept(ExpVisitor *v)
+bool TypedExp::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<TypedExp>(), visitChildren)) {
@@ -158,7 +158,7 @@ bool TypedExp::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!getSubExp1()->accept(v)) {
+        if (!getSubExp1()->acceptVisitor(v)) {
             return false;
         }
     }
@@ -182,19 +182,6 @@ SharedType TypedExp::ascendType()
 
 void TypedExp::descendType(SharedType, bool&, Statement*)
 {
-}
-
-
-SharedExp TypedExp::accept(ExpModifier *mod)
-{
-    bool visitChildren;
-    auto ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 

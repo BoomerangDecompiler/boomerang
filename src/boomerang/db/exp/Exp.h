@@ -539,8 +539,8 @@ public:
 public:
     /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
     /// function called each time is different for each class (because "this" is different each time)
-    virtual bool accept(ExpVisitor *v)         = 0;
-    virtual SharedExp accept(ExpModifier *mod) = 0;
+    virtual bool acceptVisitor(ExpVisitor *v)         = 0;
+    SharedExp acceptModifier(ExpModifier *mod);
 
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) = 0;
     virtual SharedExp childAccept(ExpModifier *) { return shared_from_this(); }

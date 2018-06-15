@@ -228,11 +228,11 @@ bool Assign::accept(StmtExpVisitor *v)
     }
 
     if (ret && m_lhs) {
-        ret = m_lhs->accept(v->ev);
+        ret = m_lhs->acceptVisitor(v->ev);
     }
 
     if (ret && m_rhs) {
-        ret = m_rhs->accept(v->ev);
+        ret = m_rhs->acceptVisitor(v->ev);
     }
 
     return ret;
@@ -249,11 +249,11 @@ bool Assign::accept(StmtModifier *v)
         v->m_mod->clearModified();
 
         if (visitChildren) {
-            m_lhs = m_lhs->accept(v->m_mod);
+            m_lhs = m_lhs->acceptModifier(v->m_mod);
         }
 
         if (visitChildren) {
-            m_rhs = m_rhs->accept(v->m_mod);
+            m_rhs = m_rhs->acceptModifier(v->m_mod);
         }
 
         if (v->m_mod->isModified()) {
@@ -272,11 +272,11 @@ bool Assign::accept(StmtPartModifier *v)
     v->mod->clearModified();
 
     if (visitChildren && m_lhs->isMemOf()) {
-        m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
+        m_lhs->setSubExp1(m_lhs->getSubExp1()->acceptModifier(v->mod));
     }
 
     if (visitChildren) {
-        m_rhs = m_rhs->accept(v->mod);
+        m_rhs = m_rhs->acceptModifier(v->mod);
     }
 
     if (v->mod->isModified()) {

@@ -49,7 +49,7 @@ bool ImplicitPlacementPass::makeSymbolsImplicit(UserProc* proc)
     ImplicitConverter ic(proc->getCFG());
 
     for (auto it = sm2.begin(); it != sm2.end(); ++it) {
-        SharedExp impFrom = std::const_pointer_cast<Exp>(it->first)->accept(&ic);
+        SharedExp impFrom = std::const_pointer_cast<Exp>(it->first)->acceptModifier(&ic);
         proc->mapSymbolTo(impFrom, it->second);
     }
 

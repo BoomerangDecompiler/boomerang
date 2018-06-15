@@ -208,13 +208,13 @@ bool PhiAssign::accept(StmtExpVisitor *visitor)
     }
 
     if (ret && m_lhs) {
-        ret = m_lhs->accept(visitor->ev);
+        ret = m_lhs->acceptVisitor(visitor->ev);
     }
 
     for (auto& refExp : *this) {
         assert(refExp.getSubExp1() != nullptr);
         // RefExp *re = RefExp::get(v.second.e, v.second.def());
-        ret = RefExp::get(refExp.getSubExp1(), refExp.getDef())->accept(visitor->ev);
+        ret = RefExp::get(refExp.getSubExp1(), refExp.getDef())->acceptVisitor(visitor->ev);
 
         if (ret == false) {
             return false;
@@ -234,7 +234,7 @@ bool PhiAssign::accept(StmtModifier *v)
         v->m_mod->clearModified();
 
         if (visitChildren) {
-            m_lhs = m_lhs->accept(v->m_mod);
+            m_lhs = m_lhs->acceptModifier(v->m_mod);
         }
 
         if (v->m_mod->isModified()) {
@@ -253,7 +253,7 @@ bool PhiAssign::accept(StmtPartModifier *v)
     v->mod->clearModified();
 
     if (visitChildren && m_lhs->isMemOf()) {
-        m_lhs->setSubExp1(m_lhs->getSubExp1()->accept(v->mod));
+        m_lhs->setSubExp1(m_lhs->getSubExp1()->acceptModifier(v->mod));
     }
 
     if (v->mod->isModified()) {

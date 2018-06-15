@@ -112,10 +112,7 @@ public:
 
 public:
     /// \copydoc Exp::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Exp::accept
-    virtual SharedExp accept(ExpModifier *v) override;
+    virtual bool acceptVisitor(ExpVisitor *v) override;
 
     /// \copydoc Exp::preAccept
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;

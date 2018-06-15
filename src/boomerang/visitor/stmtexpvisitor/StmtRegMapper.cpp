@@ -30,7 +30,7 @@ bool StmtRegMapper::common(Assignment *stmt, bool& visitChildren)
     SharedExp lhs = stmt->getLeft();
     auto      re  = RefExp::get(lhs, stmt);
 
-    re->accept(static_cast<ExpRegMapper *>(ev));
+    re->acceptVisitor(ev);
     visitChildren = true;
     return true;
 }

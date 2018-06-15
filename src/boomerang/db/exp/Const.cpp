@@ -359,22 +359,9 @@ void Const::descendType(SharedType parentType, bool& changed, Statement *)
 }
 
 
-bool Const::accept(ExpVisitor *v)
+bool Const::acceptVisitor(ExpVisitor *v)
 {
     return v->visit(shared_from_base<Const>());
-}
-
-
-SharedExp Const::accept(ExpModifier *mod)
-{
-    bool      visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 

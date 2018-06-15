@@ -33,7 +33,7 @@ void StmtSsaXformer::commonLhs(Assignment *as)
 {
     SharedExp lhs = as->getLeft();
 
-    lhs = lhs->accept(static_cast<ExpSsaXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
+    lhs = lhs->acceptModifier(static_cast<ExpSsaXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
 
     const QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
     if (!sym.isNull()) {
@@ -46,7 +46,7 @@ void StmtSsaXformer::visit(BoolAssign *stmt, bool& visitChildren)
 {
     commonLhs(stmt);
     SharedExp condExp = stmt->getCondExpr();
-    condExp = condExp->accept(static_cast<ExpSsaXformer *>(m_mod));
+    condExp = condExp->acceptModifier(static_cast<ExpSsaXformer *>(m_mod));
     stmt->setCondExpr(condExp);
     visitChildren = false; // TODO: verify recur setting
 }
@@ -56,7 +56,7 @@ void StmtSsaXformer::visit(Assign *stmt, bool& visitChildren)
 {
     commonLhs(stmt);
     SharedExp rhs = stmt->getRight();
-    rhs = rhs->accept(m_mod);
+    rhs = rhs->acceptModifier(m_mod);
     stmt->setRight(rhs);
     visitChildren = false; // TODO: verify recur setting
 }
@@ -93,7 +93,7 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
     SharedExp callDest = stmt->getDest();
 
     if (callDest) {
-        stmt->setDest(callDest->accept(static_cast<ExpSsaXformer*>(m_mod)));
+        stmt->setDest(callDest->acceptModifier(static_cast<ExpSsaXformer*>(m_mod)));
     }
 
     const StatementList& arguments = stmt->getArguments();

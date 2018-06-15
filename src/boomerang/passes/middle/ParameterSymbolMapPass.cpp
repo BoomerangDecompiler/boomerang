@@ -29,7 +29,7 @@ bool ParameterSymbolMapPass::execute(UserProc* proc)
     for (auto it = proc->getParameters().begin(); it != proc->getParameters().end(); ++it, ++i) {
         SharedExp lhs = static_cast<Assignment *>(*it)->getLeft();
         lhs = lhs->expSubscriptAllNull();
-        lhs = lhs->accept(&ic);
+        lhs = lhs->acceptModifier(&ic);
         SharedExp to = Location::param(proc->getSignature()->getParamName(i), proc);
         proc->mapSymbolTo(lhs, to);
     }

@@ -28,12 +28,12 @@ void StmtSubscripter::visit(Assign *stmt, bool& visitChildren)
 {
     SharedExp rhs = stmt->getRight();
 
-    stmt->setRight(rhs->accept(m_mod));
+    stmt->setRight(rhs->acceptModifier(m_mod));
     // Don't subscript the LHS of an assign, ever
     SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf() || lhs->isRegOf()) {
-        lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
+        lhs->setSubExp1(lhs->getSubExp1()->acceptModifier(m_mod));
     }
 
     visitChildren = false;
@@ -45,7 +45,7 @@ void StmtSubscripter::visit(PhiAssign *stmt, bool& visitChildren)
     SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
-        lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
+        lhs->setSubExp1(lhs->getSubExp1()->acceptModifier(m_mod));
     }
 
     visitChildren = false;
@@ -57,7 +57,7 @@ void StmtSubscripter::visit(ImplicitAssign *stmt, bool& visitChildren)
     SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
-        lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
+        lhs->setSubExp1(lhs->getSubExp1()->acceptModifier(m_mod));
     }
 
     visitChildren = false;
@@ -69,11 +69,11 @@ void StmtSubscripter::visit(BoolAssign *stmt, bool& visitChildren)
     SharedExp lhs = stmt->getLeft();
 
     if (lhs->isMemOf()) {
-        lhs->setSubExp1(lhs->getSubExp1()->accept(m_mod));
+        lhs->setSubExp1(lhs->getSubExp1()->acceptModifier(m_mod));
     }
 
     SharedExp rhs = stmt->getCondExpr();
-    stmt->setCondExpr(rhs->accept(m_mod));
+    stmt->setCondExpr(rhs->acceptModifier(m_mod));
     visitChildren = false;
 }
 
@@ -83,7 +83,7 @@ void StmtSubscripter::visit(CallStatement *stmt, bool& visitChildren)
     SharedExp condExp = stmt->getDest();
 
     if (condExp) {
-        stmt->setDest(condExp->accept(m_mod));
+        stmt->setDest(condExp->acceptModifier(m_mod));
     }
 
     // Subscript the ordinary arguments

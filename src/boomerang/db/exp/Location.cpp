@@ -105,7 +105,7 @@ void Location::getDefinitions(LocationSet& defs)
 }
 
 
-bool Location::accept(ExpVisitor *v)
+bool Location::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Location>(), visitChildren)) {
@@ -113,7 +113,7 @@ bool Location::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -125,21 +125,6 @@ bool Location::accept(ExpVisitor *v)
 std::shared_ptr<Location> Location::local(const QString& name, UserProc *p)
 {
     return std::make_shared<Location>(opLocal, Const::get(name), p);
-}
-
-
-SharedExp Location::accept(ExpModifier *mod)
-{
-    // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
-    // important here!  (it makes a call to a different visitor member function).
-    bool      visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 

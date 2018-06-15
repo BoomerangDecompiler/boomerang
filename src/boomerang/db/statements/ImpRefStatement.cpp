@@ -75,7 +75,7 @@ bool ImpRefStatement::accept(StmtExpVisitor *v)
     }
 
     if (ret) {
-        ret = m_addressExp->accept(v->ev);
+        ret = m_addressExp->acceptVisitor(v->ev);
     }
 
     return ret;
@@ -91,7 +91,7 @@ bool ImpRefStatement::accept(StmtModifier *v)
         v->m_mod->clearModified();
 
         if (visitChildren) {
-            m_addressExp = m_addressExp->accept(v->m_mod);
+            m_addressExp = m_addressExp->acceptModifier(v->m_mod);
         }
 
         if (v->m_mod->isModified()) {
@@ -110,7 +110,7 @@ bool ImpRefStatement::accept(StmtPartModifier *v)
     v->mod->clearModified();
 
     if (visitChildren) {
-        m_addressExp = m_addressExp->accept(v->mod);
+        m_addressExp = m_addressExp->acceptModifier(v->mod);
     }
 
     if (v->mod->isModified()) {

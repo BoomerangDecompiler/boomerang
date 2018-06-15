@@ -107,7 +107,7 @@ void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 
     for (it = m_locs.begin(); it != m_locs.end(); ++it) {
         auto      ref = RefExp::get(*it, def); // Wrap it in a def
-        SharedExp ret = ref->accept(&esx);
+        SharedExp ret = ref->acceptModifier(&esx);
 
         // If there is no change, ret will equal *it again (i.e. fromSSAForm just removed the subscript)
         if (ret != *it) { // Pointer comparison

@@ -1470,7 +1470,7 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
 }
 
 
-bool Binary::accept(ExpVisitor *v)
+bool Binary::acceptVisitor(ExpVisitor *v)
 {
     assert(subExp1 && subExp2);
 
@@ -1480,27 +1480,12 @@ bool Binary::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v) || !subExp2->accept(v)) {
+        if (!subExp1->acceptVisitor(v) || !subExp2->acceptVisitor(v)) {
             return false;
         }
     }
 
     return v->postVisit(shared_from_base<Binary>());
-}
-
-
-SharedExp Binary::accept(ExpModifier *mod)
-{
-    assert(subExp1 && subExp2);
-
-    bool      visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
-
-    if (visitChildren) {
-        this->childAccept(mod);
-    }
-
-    return ret->postAccept(mod);
 }
 
 
@@ -1512,8 +1497,8 @@ SharedExp Binary::preAccept(ExpModifier *mod, bool& visitChildren)
 
 SharedExp Binary::childAccept(ExpModifier* mod)
 {
-    subExp1 = subExp1->accept(mod);
-    subExp2 = subExp2->accept(mod);
+    subExp1 = subExp1->acceptModifier(mod);
+    subExp2 = subExp2->acceptModifier(mod);
     return shared_from_this();
 }
 

@@ -33,7 +33,7 @@ bool UsedLocsVisitor::visit(Assign *stmt, bool& visitChildren)
     SharedExp rhs = stmt->getRight();
 
     if (rhs) {
-        rhs->accept(ev);
+        rhs->acceptVisitor(ev);
     }
 
     // Special logic for the LHS. Note: PPC can have r[tmp + 30] on LHS
@@ -46,23 +46,23 @@ bool UsedLocsVisitor::visit(Assign *stmt, bool& visitChildren)
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
             ulf->setMemOnly(false);
-            child->accept(ev);
+            child->acceptVisitor(ev);
             ulf->setMemOnly(wasMemOnly);
         }
     }
     else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
         SharedExp subExp1 = lhs->getSubExp1(); // array(base, index) and member(base, offset)?? use
-        subExp1->accept(ev);                   // base and index
+        subExp1->acceptVisitor(ev);                   // base and index
         SharedExp subExp2 = lhs->getSubExp2();
-        subExp2->accept(ev);
+        subExp2->acceptVisitor(ev);
     }
     else if (lhs->getOper() == opAt) {   // foo@[first:last] uses foo, first, and last
         SharedExp subExp1 = lhs->getSubExp1();
-        subExp1->accept(ev);
+        subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();
-        subExp2->accept(ev);
+        subExp2->acceptVisitor(ev);
         SharedExp subExp3 = lhs->getSubExp3();
-        subExp3->accept(ev);
+        subExp3->acceptVisitor(ev);
     }
 
     visitChildren = false; // Don't do the usual accept logic
@@ -82,15 +82,15 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& visitChildren)
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
             ulf->setMemOnly(false);
-            child->accept(ev);
+            child->acceptVisitor(ev);
             ulf->setMemOnly(wasMemOnly);
         }
     }
     else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
         SharedExp subExp1 = lhs->getSubExp1();
-        subExp1->accept(ev);
+        subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();
-        subExp2->accept(ev);
+        subExp2->acceptVisitor(ev);
     }
 
     for (RefExp& refExp : *stmt) {
@@ -100,7 +100,7 @@ bool UsedLocsVisitor::visit(PhiAssign *stmt, bool& visitChildren)
         // 0, 1, and 3; inserting the phi parameter at index 3 will cause a null entry at 2
         assert(refExp.getSubExp1());
         auto temp = RefExp::get(refExp.getSubExp1(), refExp.getDef());
-        temp->accept(ev);
+        temp->acceptVisitor(ev);
     }
 
     visitChildren = false; // Don't do the usual accept logic
@@ -120,15 +120,15 @@ bool UsedLocsVisitor::visit(ImplicitAssign *stmt, bool& visitChildren)
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
             ulf->setMemOnly(false);
-            child->accept(ev);
+            child->acceptVisitor(ev);
             ulf->setMemOnly(wasMemOnly);
         }
     }
     else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
         SharedExp subExp1 = lhs->getSubExp1();
-        subExp1->accept(ev);
+        subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();
-        subExp2->accept(ev);
+        subExp2->acceptVisitor(ev);
     }
 
     visitChildren = false; // Don't do the usual accept logic
@@ -141,7 +141,7 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
     SharedExp condExp = stmt->getDest();
 
     if (condExp) {
-        condExp->accept(ev);
+        condExp->acceptVisitor(ev);
     }
 
 
@@ -151,7 +151,7 @@ bool UsedLocsVisitor::visit(CallStatement *stmt, bool& visitChildren)
         // Don't want to ever collect anything from the lhs
         const Assign *retval = dynamic_cast<const Assign *>(s);
         if (retval) {
-            retval->getRight()->accept(ev);
+            retval->getRight()->acceptVisitor(ev);
         }
     }
 
@@ -199,7 +199,7 @@ bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& visitChildren)
     SharedExp condExp = stmt->getCondExpr();
 
     if (condExp) {
-        condExp->accept(ev); // Condition is used
+        condExp->acceptVisitor(ev); // Condition is used
     }
 
     SharedExp lhs = stmt->getLeft();
@@ -212,15 +212,15 @@ bool UsedLocsVisitor::visit(BoolAssign *stmt, bool& visitChildren)
         if (ulf) {
             bool wasMemOnly = ulf->isMemOnly();
             ulf->setMemOnly(false);
-            x->accept(ev);
+            x->acceptVisitor(ev);
             ulf->setMemOnly(wasMemOnly);
         }
     }
     else if ((lhs->getOper() == opArrayIndex) || (lhs->getOper() == opMemberAccess)) {
         SharedExp subExp1 = lhs->getSubExp1();
-        subExp1->accept(ev);
+        subExp1->acceptVisitor(ev);
         SharedExp subExp2 = lhs->getSubExp2();
-        subExp2->accept(ev);
+        subExp2->acceptVisitor(ev);
     }
 
     visitChildren = false; // Don't do the normal accept logic

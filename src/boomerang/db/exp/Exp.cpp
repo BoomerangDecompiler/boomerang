@@ -571,7 +571,7 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
 {
     auto r = RefExp::get(shared_from_this(), def); // "Wrap" in a ref
     ExpSsaXformer *xformer = new ExpSsaXformer(proc);
-    SharedExp result = r->accept(xformer);
+    SharedExp result = r->acceptModifier(xformer);
     delete xformer;
     return result;
 }
@@ -580,14 +580,14 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
 void Exp::setConscripts(int n, bool clear)
 {
     ConscriptSetter sc(n, clear);
-    this->accept(&sc);
+    this->acceptModifier(&sc);
 }
 
 
 SharedExp Exp::stripSizes()
 {
     SizeStripper ss;
-    return this->accept(&ss);
+    return this->acceptModifier(&ss);
 }
 
 
@@ -619,7 +619,7 @@ void Exp::addUsedLocs(LocationSet& used, bool memOnly)
 {
     UsedLocsFinder ulf(used, memOnly);
 
-    accept(&ulf);
+    acceptVisitor(&ulf);
 }
 
 
@@ -627,7 +627,7 @@ SharedExp Exp::expSubscriptVar(const SharedExp& e, Statement *def)
 {
     ExpSubscripter es(e, def);
 
-    return accept(&es);
+    return acceptModifier(&es);
 }
 
 
@@ -647,7 +647,7 @@ SharedExp Exp::bypass()
 {
     CallBypasser cb(nullptr);
 
-    return accept(&cb);
+    return acceptModifier(&cb);
 }
 
 
@@ -655,7 +655,7 @@ int Exp::getComplexityDepth(UserProc *proc)
 {
     ComplexityFinder cf(proc);
 
-    accept(&cf);
+    acceptVisitor(&cf);
     return cf.getDepth();
 }
 
@@ -664,7 +664,7 @@ int Exp::getMemDepth()
 {
     MemDepthFinder mdf;
 
-    accept(&mdf);
+    acceptVisitor(&mdf);
     return mdf.getDepth();
 }
 
@@ -673,7 +673,7 @@ SharedExp Exp::propagateAll()
 {
     ExpPropagator ep;
 
-    return accept(&ep);
+    return acceptModifier(&ep);
 }
 
 
@@ -686,7 +686,7 @@ SharedExp Exp::propagateAllRpt(bool& changed)
 
     while (true) {
         ep.clearChanged(); // Want to know if changed this *last* accept()
-        ret = ret->accept(&ep);
+        ret = ret->acceptModifier(&ep);
 
         if (ep.isChanged()) {
             changed = true;
@@ -704,7 +704,7 @@ bool Exp::containsFlags()
 {
     FlagsFinder ff;
 
-    accept(&ff);
+    acceptVisitor(&ff);
     return ff.isFound();
 }
 
@@ -713,6 +713,19 @@ bool Exp::containsBadMemof()
 {
     BadMemofFinder bmf;
 
-    accept(&bmf);
+    acceptVisitor(&bmf);
     return bmf.isFound();
+}
+
+
+SharedExp Exp::acceptModifier(ExpModifier* mod)
+{
+    bool      visitChildren = true;
+    SharedExp ret = preAccept(mod, visitChildren);
+
+    if (visitChildren) {
+        this->childAccept(mod);
+    }
+
+    return ret->postAccept(mod);
 }
