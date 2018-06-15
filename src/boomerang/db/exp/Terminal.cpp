@@ -229,8 +229,14 @@ void Terminal::descendType(SharedType, bool& changed, Statement*)
 
 SharedExp Terminal::accept(ExpModifier *mod)
 {
-    // This is important if we need to modify terminals
-    return postAccept(mod);
+    bool      visitChildren = true;
+    SharedExp ret = preAccept(mod, visitChildren);
+
+    if (visitChildren) {
+        this->childAccept(mod);
+    }
+
+    return ret->postAccept(mod);
 }
 
 

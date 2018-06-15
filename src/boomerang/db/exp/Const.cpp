@@ -367,7 +367,14 @@ bool Const::accept(ExpVisitor *v)
 
 SharedExp Const::accept(ExpModifier *mod)
 {
-    return postAccept(mod);
+    bool      visitChildren = true;
+    SharedExp ret = preAccept(mod, visitChildren);
+
+    if (visitChildren) {
+        this->childAccept(mod);
+    }
+
+    return ret->postAccept(mod);
 }
 
 
