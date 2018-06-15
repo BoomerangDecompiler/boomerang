@@ -128,13 +128,13 @@ std::shared_ptr<Location> Location::local(const QString& name, UserProc *p)
 }
 
 
-SharedExp Location::preAccept(ExpModifier* mod, bool& visitChildren)
+SharedExp Location::acceptPreModifier(ExpModifier* mod, bool& visitChildren)
 {
     return mod->preModify(access<Location>(), visitChildren);
 }
 
 
-SharedExp Location::postAccept(ExpModifier* mod)
+SharedExp Location::acceptPostModifier(ExpModifier* mod)
 {
     return mod->postModify(access<Location>());
 }

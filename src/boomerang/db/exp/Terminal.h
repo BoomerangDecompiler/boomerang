@@ -61,9 +61,13 @@ public:
     void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
 public:
-    /// \copydoc Exp::accept
+    /// \copydoc Exp::acceptVisitor
     bool acceptVisitor(ExpVisitor *v) override;
 
-    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
-    virtual SharedExp postAccept(ExpModifier *mod) override;
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 };

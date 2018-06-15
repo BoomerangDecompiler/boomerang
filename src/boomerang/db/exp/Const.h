@@ -111,14 +111,15 @@ public:
     void setConscript(int cs) { m_conscript = cs; }
 
 public:
-    /// \copydoc Exp::accept
+    /// \copydoc Exp::acceptVisitor
     virtual bool acceptVisitor(ExpVisitor *v) override;
 
-    /// \copydoc Exp::preAccept
-    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
 
-    /// \copydoc Exp::postAccept
-    virtual SharedExp postAccept(ExpModifier *mod) override;
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     Data m_value;      ///< The value of this constant

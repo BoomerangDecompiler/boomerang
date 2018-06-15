@@ -71,11 +71,15 @@ public:
     virtual void descendType(SharedType, bool&, Statement *) override;
 
 public:
-    /// \copydoc Unary::accept
+    /// \copydoc Unary::acceptVisitor
     virtual bool acceptVisitor(ExpVisitor *v) override;
 
-    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
-    virtual SharedExp postAccept(ExpModifier *mod) override;
+protected:
+    /// \copydoc Unary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Unary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedType m_type;

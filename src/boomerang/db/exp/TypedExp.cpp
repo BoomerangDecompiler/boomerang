@@ -185,13 +185,13 @@ void TypedExp::descendType(SharedType, bool&, Statement*)
 }
 
 
-SharedExp TypedExp::preAccept(ExpModifier *mod, bool& visitChildren)
+SharedExp TypedExp::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<TypedExp>(), visitChildren);
 }
 
 
-SharedExp TypedExp::postAccept(ExpModifier *mod)
+SharedExp TypedExp::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<TypedExp>());
 }

@@ -44,13 +44,13 @@ bool FlagDef::acceptVisitor(ExpVisitor *v)
 }
 
 
-SharedExp FlagDef::preAccept(ExpModifier* mod, bool& visitChildren)
+SharedExp FlagDef::acceptPreModifier(ExpModifier* mod, bool& visitChildren)
 {
     return mod->preModify(access<FlagDef>(), visitChildren);
 }
 
 
-SharedExp FlagDef::postAccept(ExpModifier *mod)
+SharedExp FlagDef::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<FlagDef>());
 }

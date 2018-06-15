@@ -88,12 +88,18 @@ public:
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
 public:
-    /// \copydoc Binary::accept
+    /// \copydoc Binary::acceptVisitor
     bool acceptVisitor(ExpVisitor *v) override;
 
-    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
-    virtual SharedExp childAccept(ExpModifier *mod) override;
-    virtual SharedExp postAccept(ExpModifier *mod) override;
+protected:
+    /// \copydoc Binary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Binary::acceptChildModifier
+    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+
+    /// \copydoc Binary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedExp subExp3; ///< Third subexpression pointer

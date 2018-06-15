@@ -808,20 +808,20 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
 }
 
 
-SharedExp Unary::preAccept(ExpModifier *mod, bool& visitChildren)
+SharedExp Unary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Unary>(), visitChildren);
 }
 
 
-SharedExp Unary::childAccept(ExpModifier *mod)
+SharedExp Unary::acceptChildModifier(ExpModifier *mod)
 {
     subExp1 = subExp1->acceptModifier(mod);
     return shared_from_this();
 }
 
 
-SharedExp Unary::postAccept(ExpModifier *mod)
+SharedExp Unary::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<Unary>());
 }

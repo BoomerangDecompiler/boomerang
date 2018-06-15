@@ -291,13 +291,13 @@ void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
 }
 
 
-SharedExp RefExp::preAccept(ExpModifier *mod, bool& visitChildren)
+SharedExp RefExp::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<RefExp>(), visitChildren);
 }
 
 
-SharedExp RefExp::postAccept(ExpModifier* mod)
+SharedExp RefExp::acceptPostModifier(ExpModifier* mod)
 {
     return mod->postModify(access<RefExp>());
 }

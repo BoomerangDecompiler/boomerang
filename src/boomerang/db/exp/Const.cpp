@@ -365,13 +365,13 @@ bool Const::acceptVisitor(ExpVisitor *v)
 }
 
 
-SharedExp Const::preAccept(ExpModifier* , bool& )
+SharedExp Const::acceptPreModifier(ExpModifier* , bool& )
 {
     return shared_from_this();
 }
 
 
-SharedExp Const::postAccept(ExpModifier* mod)
+SharedExp Const::acceptPostModifier(ExpModifier* mod)
 {
     return mod->postModify(access<Const>());
 }

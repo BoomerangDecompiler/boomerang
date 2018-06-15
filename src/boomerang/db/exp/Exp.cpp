@@ -721,11 +721,11 @@ bool Exp::containsBadMemof()
 SharedExp Exp::acceptModifier(ExpModifier* mod)
 {
     bool      visitChildren = true;
-    SharedExp ret = preAccept(mod, visitChildren);
+    SharedExp ret = acceptPreModifier(mod, visitChildren);
 
     if (visitChildren) {
-        this->childAccept(mod);
+        this->acceptChildModifier(mod);
     }
 
-    return ret->postAccept(mod);
+    return ret->acceptPostModifier(mod);
 }

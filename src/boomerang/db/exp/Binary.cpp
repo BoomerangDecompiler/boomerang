@@ -1489,13 +1489,13 @@ bool Binary::acceptVisitor(ExpVisitor *v)
 }
 
 
-SharedExp Binary::preAccept(ExpModifier *mod, bool& visitChildren)
+SharedExp Binary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Binary>(), visitChildren);
 }
 
 
-SharedExp Binary::childAccept(ExpModifier* mod)
+SharedExp Binary::acceptChildModifier(ExpModifier* mod)
 {
     subExp1 = subExp1->acceptModifier(mod);
     subExp2 = subExp2->acceptModifier(mod);
@@ -1503,7 +1503,7 @@ SharedExp Binary::childAccept(ExpModifier* mod)
 }
 
 
-SharedExp Binary::postAccept(ExpModifier *mod)
+SharedExp Binary::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<Binary>());
 }

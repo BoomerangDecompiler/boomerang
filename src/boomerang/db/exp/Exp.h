@@ -537,14 +537,23 @@ public:
 
 
 public:
-    /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
-    /// function called each time is different for each class (because "this" is different each time)
+    /// Accept an expression visitor to visit this expression.
+    /// \returns true to continue visiting parent and sibling expressions.
     virtual bool acceptVisitor(ExpVisitor *v)         = 0;
+
+    /// Accept an expression modifier to modify this expression and all subexpressions.
+    /// \returns the modified expression.
     SharedExp acceptModifier(ExpModifier *mod);
 
-    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) = 0;
-    virtual SharedExp childAccept(ExpModifier *) { return shared_from_this(); }
-    virtual SharedExp postAccept(ExpModifier *mod) = 0;
+protected:
+    /// Accept an expression modifier to modify this expression before modifying all subexpressions.
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) = 0;
+
+    /// Accept an expression modifier to modify all subexpressions (children) of this expression.
+    virtual SharedExp acceptChildModifier(ExpModifier *) { return shared_from_this(); }
+
+    /// Accept an exppression modifier to modify this expression after modifying all subexpressions.
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) = 0;
 
 protected:
     template<typename CHILD>

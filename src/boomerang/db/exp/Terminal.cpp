@@ -227,14 +227,14 @@ void Terminal::descendType(SharedType, bool& changed, Statement*)
 }
 
 
-SharedExp Terminal::preAccept(ExpModifier *, bool& )
+SharedExp Terminal::acceptPreModifier(ExpModifier *, bool& )
 {
     //return mod->preModify(access<Terminal>(), visitChildren));
     return access<Terminal>();
 }
 
 
-SharedExp Terminal::postAccept(ExpModifier *mod)
+SharedExp Terminal::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<Terminal>());
 }

@@ -578,13 +578,13 @@ void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s
 }
 
 
-SharedExp Ternary::preAccept(ExpModifier *mod, bool& visitChildren)
+SharedExp Ternary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Ternary>(), visitChildren);
 }
 
 
-SharedExp Ternary::childAccept(ExpModifier* mod)
+SharedExp Ternary::acceptChildModifier(ExpModifier* mod)
 {
     subExp1 = subExp1->acceptModifier(mod);
     subExp2 = subExp2->acceptModifier(mod);
@@ -593,7 +593,7 @@ SharedExp Ternary::childAccept(ExpModifier* mod)
 }
 
 
-SharedExp Ternary::postAccept(ExpModifier *mod)
+SharedExp Ternary::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<Ternary>());
 }

@@ -88,17 +88,18 @@ public:
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
 
 public:
-    /// \copydoc Unary::accept
+    /// \copydoc Unary::acceptVisitor
     virtual bool acceptVisitor(ExpVisitor *v) override;
 
-    /// \copydoc Unary::preAccept
-    virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+protected:
+    /// \copydoc Unary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
 
-    /// \copydoc Unary::childAccept
-    virtual SharedExp childAccept(ExpModifier *mod) override;
+    /// \copydoc Unary::acceptChildModifier
+    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
 
-    /// \copydoc Unary::postAccept
-    virtual SharedExp postAccept(ExpModifier *mod) override;
+    /// \copydoc Unary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer
