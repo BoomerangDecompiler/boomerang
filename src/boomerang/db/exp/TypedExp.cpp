@@ -133,23 +133,6 @@ void TypedExp::print(QTextStream& os, bool html) const
 }
 
 
-
-SharedExp TypedExp::polySimplify(bool& changed)
-{
-    SharedExp res = shared_from_this();
-
-    if (subExp1->getOper() == opRegOf) {
-        // type cast on a reg of.. hmm.. let's remove this
-        res  = res->getSubExp1();
-        changed = true;
-        return res;
-    }
-
-    subExp1 = subExp1->simplify();
-    return res;
-}
-
-
 bool TypedExp::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;

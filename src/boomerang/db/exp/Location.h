@@ -54,9 +54,6 @@ public:
     const UserProc *getProc() const { return m_proc; }
     UserProc *getProc() { return m_proc; }
 
-    /// \copydoc Unary::polySimplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
     void getDefinitions(LocationSet& defs);
 
 public:

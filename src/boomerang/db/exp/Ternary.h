@@ -72,9 +72,6 @@ public:
     /// \copydoc Binary::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
-    /// \copydoc Binary::polySimplify
-    SharedExp polySimplify(bool& changed) override;
-
     /// \copydoc Binary::simplifyArith
     SharedExp simplifyArith() override;
 

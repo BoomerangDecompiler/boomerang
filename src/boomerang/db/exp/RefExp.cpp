@@ -128,42 +128,6 @@ bool RefExp::operator*=(const Exp& o) const
 }
 
 
-SharedExp RefExp::polySimplify(bool& changed)
-{
-    SharedExp res = shared_from_this();
-
-    SharedExp tmp = subExp1->polySimplify(changed);
-
-    if (changed) {
-        subExp1 = tmp;
-        return res;
-    }
-
-    /*
-     * This is a nasty hack.  We assume that %DF{0} is 0.  This happens when string instructions are used without first
-     * clearing the direction flag.  By convention, the direction flag is assumed to be clear on entry to a
-     * procedure.
-     */
-    if ((subExp1->getOper() == opDF) && (m_def == nullptr)) {
-        res  = Const::get(int(0));
-        changed = true;
-        return res;
-    }
-
-    // another hack, this time for aliasing
-    // FIXME: do we really want this now? Pentium specific, and only handles ax/eax (not al or ah)
-    if (subExp1->isRegN(PENT_REG_AX) && m_def && m_def->isAssign() &&
-        static_cast<const Assign *>(m_def)->getLeft()->isRegN(PENT_REG_EAX)) {
-            res  = std::make_shared<TypedExp>(IntegerType::get(16), RefExp::get(Location::regOf(PENT_REG_EAX), m_def));
-            changed = true;
-            return res;
-    }
-
-    // Was code here for bypassing phi statements that are now redundant
-
-    return res;
-}
-
 
 bool RefExp::acceptVisitor(ExpVisitor *v)
 {

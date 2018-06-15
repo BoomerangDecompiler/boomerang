@@ -530,7 +530,7 @@ void ExpTest::testSimplifyBinary()
 
     // r2 * 77
     Binary exp(opMults, m_rof2->clone(), Const::get(77));
-    QVERIFY(*b == exp);
+    QCOMPARE(b->toString(), exp.toString());
 
     // x*1
     std::shared_ptr<Const> subExp = std::dynamic_pointer_cast<Const>(b->getSubExp2());

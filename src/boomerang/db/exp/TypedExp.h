@@ -61,9 +61,6 @@ public:
 
     void setType(SharedType ty) { m_type = ty; }
 
-    /// \copydoc Unary::polySimplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 

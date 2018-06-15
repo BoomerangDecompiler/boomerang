@@ -69,9 +69,6 @@ public:
     /// \copydoc Exp::refSubExp1
     SharedExp& refSubExp1() override;
 
-    /// \copydoc Exp::polySimplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
     /// \copydoc Exp::simplifyArith
     virtual SharedExp simplifyArith() override;
 

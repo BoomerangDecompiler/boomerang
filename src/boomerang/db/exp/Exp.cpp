@@ -27,6 +27,7 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
+#include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
 #include "boomerang/visitor/expmodifier/ExpPropagator.h"
@@ -355,13 +356,11 @@ SharedExp Exp::simplify()
     bool   changed = false; // True if simplified at this or lower level
     SharedExp res  = shared_from_this();
 
-    // res = ExpTransformer::applyAllTo(res, changed);
-    // return res;
     do {
-        changed = false;
-        // SharedExp before = res->clone();
-        res = res->polySimplify(changed); // Call the polymorphic simplify
-    } while (changed);                    // If modified at this (or a lower) level, redo
+        ExpSimplifier es;
+        res = res->acceptModifier(&es);
+        changed = es.isModified();
+    } while (changed); // If modified at this (or a lower) level, redo
 
     // The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
     // No! This slows everything down, and it's slow enough as it is. Call only where needed:

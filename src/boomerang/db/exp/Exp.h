@@ -446,17 +446,6 @@ public:
     SharedExp simplify();
 
     /**
-     * Do the work of simplification
-     * \note         Address simplification (a[ m[ x ]] == x) is done separately
-     * \returns      Ptr to the simplified expression
-     */
-    virtual SharedExp polySimplify(bool& changed)
-    {
-        changed = false;
-        return shared_from_this();
-    }
-
-    /**
      * Just do addressof simplification:
      *     a[ m[ any ]] == any,
      *     m[ a[ any ]] = any,

@@ -71,8 +71,6 @@ public:
 
     bool references(const Statement *s) const { return m_def == s; }
 
-    virtual SharedExp polySimplify(bool& changed) override;
-
     /**
      * Before type analysis, implicit definitions are nullptr.
      * During and after TA, they point to an implicit assignment statement.

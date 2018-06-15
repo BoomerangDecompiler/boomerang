@@ -71,30 +71,6 @@ SharedExp Location::clone() const
 }
 
 
-SharedExp Location::polySimplify(bool& changed)
-{
-    SharedExp res = Unary::polySimplify(changed);
-
-    if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf)) {
-        LOG_VERBOSE("polySimplify %1", res);
-
-        res  = res->getSubExp1()->getSubExp1();
-        changed = true;
-        return res;
-    }
-
-    // check for m[a[loc.x]] becomes loc.x
-    if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf) &&
-        (res->getSubExp1()->getSubExp1()->getOper() == opMemberAccess)) {
-        res  = subExp1->getSubExp1();
-        changed = true;
-        return res;
-    }
-
-    return res;
-}
-
-
 void Location::getDefinitions(LocationSet& defs)
 {
     // This is a hack to fix aliasing (replace with something general)
