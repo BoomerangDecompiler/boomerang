@@ -191,7 +191,7 @@ SharedExp TypedExp::accept(ExpModifier *mod)
     auto ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
+        this->childAccept(mod);
     }
 
     return ret->postAccept(mod);

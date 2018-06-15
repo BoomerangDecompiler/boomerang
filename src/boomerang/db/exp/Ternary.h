@@ -95,6 +95,7 @@ public:
     SharedExp accept(ExpModifier *mod) override;
 
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp childAccept(ExpModifier *mod) override;
     virtual SharedExp postAccept(ExpModifier *mod) override;
 
 private:

@@ -584,9 +584,7 @@ SharedExp Ternary::accept(ExpModifier *mod)
     SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
-        subExp2 = subExp2->accept(mod);
-        subExp3 = subExp3->accept(mod);
+        this->childAccept(mod);
     }
 
     return ret->postAccept(mod);
@@ -596,6 +594,15 @@ SharedExp Ternary::accept(ExpModifier *mod)
 SharedExp Ternary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Ternary>(), visitChildren);
+}
+
+
+SharedExp Ternary::childAccept(ExpModifier* mod)
+{
+    subExp1 = subExp1->accept(mod);
+    subExp2 = subExp2->accept(mod);
+    subExp3 = subExp3->accept(mod);
+    return shared_from_this();
 }
 
 

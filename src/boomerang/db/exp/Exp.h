@@ -543,6 +543,7 @@ public:
     virtual SharedExp accept(ExpModifier *mod) = 0;
 
     virtual SharedExp preAccept(ExpModifier *mod, bool& visitChildren) = 0;
+    virtual SharedExp childAccept(ExpModifier *) { return shared_from_this(); }
     virtual SharedExp postAccept(ExpModifier *mod) = 0;
 
 protected:

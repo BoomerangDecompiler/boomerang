@@ -1497,8 +1497,7 @@ SharedExp Binary::accept(ExpModifier *mod)
     SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
-        subExp2 = subExp2->accept(mod);
+        this->childAccept(mod);
     }
 
     return ret->postAccept(mod);
@@ -1508,6 +1507,14 @@ SharedExp Binary::accept(ExpModifier *mod)
 SharedExp Binary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Binary>(), visitChildren);
+}
+
+
+SharedExp Binary::childAccept(ExpModifier* mod)
+{
+    subExp1 = subExp1->accept(mod);
+    subExp2 = subExp2->accept(mod);
+    return shared_from_this();
 }
 
 

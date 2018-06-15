@@ -50,7 +50,7 @@ SharedExp FlagDef::accept(ExpModifier *mod)
     SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
+        this->childAccept(mod);
     }
 
     return ret->postAccept(mod);

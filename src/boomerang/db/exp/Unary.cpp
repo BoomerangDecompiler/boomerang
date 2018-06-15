@@ -816,16 +816,23 @@ SharedExp Unary::accept(ExpModifier *mod)
     SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
+        this->childAccept(mod);
     }
 
     return ret->postAccept(mod);
 }
 
 
-SharedExp Unary::preAccept(ExpModifier* mod, bool& visitChildren)
+SharedExp Unary::preAccept(ExpModifier *mod, bool& visitChildren)
 {
     return mod->preModify(access<Unary>(), visitChildren);
+}
+
+
+SharedExp Unary::childAccept(ExpModifier *mod)
+{
+    subExp1 = subExp1->accept(mod);
+    return shared_from_this();
 }
 
 

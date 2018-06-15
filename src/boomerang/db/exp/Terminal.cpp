@@ -230,7 +230,7 @@ void Terminal::descendType(SharedType, bool& changed, Statement*)
 SharedExp Terminal::accept(ExpModifier *mod)
 {
     // This is important if we need to modify terminals
-    return mod->postModify(shared_from_base<Terminal>());
+    return postAccept(mod);
 }
 
 

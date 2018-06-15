@@ -297,15 +297,10 @@ SharedExp RefExp::accept(ExpModifier *mod)
     SharedExp ret = preAccept(mod, visitChildren);
 
     if (visitChildren) {
-        subExp1 = subExp1->accept(mod);
+        this->childAccept(mod);
     }
 
-    // TODO: handle the case where Exp modifier changed type of Exp, currently just not calling postVisit!
-    if (std::dynamic_pointer_cast<RefExp>(ret) != nullptr) {
-        return ret->postAccept(mod);
-    }
-
-    return ret;
+    return ret->postAccept(mod);
 }
 
 
