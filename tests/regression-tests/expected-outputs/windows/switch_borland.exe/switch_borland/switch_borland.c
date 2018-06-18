@@ -1,5 +1,5 @@
-int global54_40b59c = 0x40b570;
-int global54_40b59c = 0x40b570;
+int global_0x0040b59c = 0x40b570;
+int global_0x0040b59c = 0x40b570;
 int main(int argc, char *argv[]);
 __size32 proc_0x004038e4(__size32 param1);
 void proc_0x00403ad0(__size32 param1);
@@ -886,7 +886,7 @@ void proc_0x0040487c(union { int; unsigned int *; } param1, unsigned int param2)
     __size32 eax; 		// r24
 
     if (param1 != 0) {
-        if (*(global54_40b59c + 8) == 0) {
+        if (*(global_0x0040b59c + 8) == 0) {
             eax = WideCharToMultiByte();
             if (eax == 0) {
             }
@@ -933,7 +933,7 @@ void proc_0x00403a9c(unsigned int param1, __size32 param2)
         esi = esi / 16;
         ecx = ecx_1 - 1;
         eax = eax - 1;
-    } while (ecx_1 - 1 >= 0);
+    } while (ecx_1 >= 1);
     return;
 }
 

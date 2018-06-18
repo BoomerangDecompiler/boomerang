@@ -52,7 +52,6 @@ __size32 fib(__size32 param1, __size32 param1, int param2, __size32 param3, __si
     __size32 g9; 		// r9
     __size32 local10; 		// param9{0}
     __size32 local11; 		// param10{0}
-    int local12; 		// g30{0}
     __size32 local4; 		// param3{0}
     __size32 local5; 		// param4{0}
     __size32 local6; 		// param5{0}
@@ -70,7 +69,6 @@ __size32 fib(__size32 param1, __size32 param1, int param2, __size32 param3, __si
     local9 = param8;
     local10 = param9;
     local11 = param10;
-    local12 = g30;
     if (param2 <= 1) {
         if (param2 != 1) {
 bb0x1d50:
@@ -83,8 +81,7 @@ bb0x1d50:
             param9 = local10;
             param10 = local11;
             g30_1 = g30;
-            g3 = g30;
-            local12 = g30_1;
+            g3 = g30_1;
         }
         else {
             g3 = 1;
@@ -104,7 +101,6 @@ bb0x1d50:
         local11 = g12;
         goto bb0x1d50;
     }
-    g30 = local12;
     return param1; /* WARNING: Also returning: g3 := g3, g5 := param3, g6 := param4, g7 := param5, g8 := param6, g9 := param7, g10 := param8, g11 := param9, g12 := param10, g30 := param1, g30 := param1, g30 := g30, g31 := g31 */
 }
 

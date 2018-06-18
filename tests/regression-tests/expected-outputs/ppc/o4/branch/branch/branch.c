@@ -50,10 +50,10 @@ bb0x10000498:
     if ((unsigned int)5 < local1) {
         g3 = puts(0x100009d4);
     }
-    if (5 - local0 >= 0) {
+    if (5 >= local0) {
         g3 = puts(0x100009cc);
     }
-    if (5 - local0 < 0) {
+    if (5 < local0) {
         g3 = puts(0x10000a20);
     }
     return g3;

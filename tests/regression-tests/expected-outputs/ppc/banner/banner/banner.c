@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
     local5 = g3_1 + 4;
     local8 = local4;
     local4 = local8 - 1;
-    while (local8 - 1 != 0) {
+    while (local8 != 1) {
         g3 = *local5;
         g3 = strlen(g3); /* Warning: also results in g10, g11 */
         local6 = g3;

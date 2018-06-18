@@ -496,33 +496,32 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         }
     }
 
-    /*
-     *  // Check for -x compare y, becomes x compare -y
-     *  // doesn't count as a change
-     *  if (    isComparison() &&
-     *                  opSub1 == opNeg) {
-     *          SharedExp e = exp->getSubExp1();
-     *          exp->getSubExp1() = e->getSubExp1()->clone();
-     *          ;//delete e;
-     *          exp->getSubExp2() = Unary::get(opNeg, exp->getSubExp2());
-     *  }
-     *
-     *  // Check for (x + y) compare 0, becomes x compare -y
-     *  if (    isComparison() &&
-     *                  opSub2 == opIntConst && ((Const*)exp->getSubExp2())->getInt() == 0 &&
-     *                  opSub1 == opPlus) {
-     *          ;//delete exp->getSubExp2();
-     *          Binary *b = (Binary*)exp->getSubExp1();
-     *          exp->getSubExp2() = b->exp->getSubExp2();
-     *          b->exp->getSubExp2() = 0;
-     *          exp->getSubExp1() = b->exp->getSubExp1();
-     *          b->exp->getSubExp1() = 0;
-     *          ;//delete b;
-     *          exp->getSubExp2() = Unary::get(opNeg, exp->getSubExp2());
-     *          changed = true;
-     *          return res;
-     *  }
-     */
+
+    // Check for -x compare y, becomes x compare -y
+    if (exp->isComparison() && opSub1 == opNeg) {
+        exp->setSubExp1(exp->access<Exp, 1, 1>());
+        exp->setSubExp2(Unary::get(opNeg, exp->getSubExp2()));
+        changed = true;
+        return exp;
+    }
+
+    // Check for (x + y) compare 0, becomes x compare -y
+    if (exp->isComparison() && opSub2 == opIntConst &&
+        exp->access<Const, 2>()->getInt() == 0) {
+
+        if (opSub1 == opPlus) {
+            exp->setSubExp2(Unary::get(opNeg, exp->access<Exp, 1, 2>()));
+            exp->setSubExp1(exp->access<Exp, 1, 1>());
+            changed = true;
+            return exp;
+        }
+        else if (opSub1 == opMinus) {
+            exp->setSubExp2(exp->access<Exp, 1, 2>());
+            exp->setSubExp1(exp->access<Exp, 1, 1>());
+            changed = true;
+            return exp;
+        }
+    }
 
     // Check for (x == y) == 1, becomes x == y
     if ((exp->getOper() == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt() == 1) && (opSub1 == opEquals)) {

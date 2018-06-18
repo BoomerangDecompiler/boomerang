@@ -38,10 +38,10 @@ int main(int argc, char *argv[])
     if ((unsigned int)5 < local1) {
         printf(0x10000a34);
     }
-    if (5 - local0 >= 0) {
+    if (5 >= local0) {
         printf(0x10000a40);
     }
-    if (5 - local0 < 0) {
+    if (5 < local0) {
         printf(0x10000a48);
     }
     return 5 - local0;

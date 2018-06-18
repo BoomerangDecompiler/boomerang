@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     local5 = o0_1 + 4;
     local8 = local4;
     local4 = local8 - 1;
-    while (local8 - 1 != 0) {
+    while (local8 != 1) {
         o0 = *local5;
         o0_2 = strlen(o0); /* Warning: also results in o2, o3, o4 */
         local6 = o0_2;

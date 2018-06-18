@@ -137,7 +137,7 @@ __size32 __sputc(__size32 param1, union { __size32; __size32 *; } param2, unsign
 
     g9 = *(param2 + 8);
     *(int*)(param2 + 8) = g9 - 1;
-    if (g9 - 1 >= 0) {
+    if (g9 >= 1) {
 bb0x2b74:
         g11 = *param2;
         g0 = (param3);

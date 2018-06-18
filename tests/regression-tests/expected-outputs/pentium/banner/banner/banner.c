@@ -47,7 +47,7 @@ bb0x8048403:
                 eax = local0 + *local11;
                 eax_5 = (int) *eax;
                 local2 = eax_5 - 32;
-                if (eax_5 - 32 < 0) {
+                if (eax_5 < 32) {
                     local2 = 0;
                 }
                 local1 = 0;

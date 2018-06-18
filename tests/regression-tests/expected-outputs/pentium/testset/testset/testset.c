@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     printf("Hello, set\n");
     dl =  ((unsigned int)argc < (unsigned int)3) ? 1 : 0;
     printf("argc <u 3: %d\n", 0 >> 8 & 0xffffff | (dl));
-    cl =  (argc - 4 >= 0) ? 1 : 0;
+    cl =  (argc >= 4) ? 1 : 0;
     printf("(argc - 4) >= 0: %d\n", 0 >> 8 & 0xffffff | (cl));
     return 0;
 }

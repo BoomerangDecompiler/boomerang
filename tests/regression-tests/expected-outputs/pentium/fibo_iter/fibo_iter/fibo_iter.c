@@ -36,7 +36,7 @@ __size32 fib(int param1)
                 ecx = ecx_1 + ebx;
                 edx = edx_1 - 1;
                 ebx = ecx_1;
-            } while (edx_1 - 1 != 0);
+            } while (edx_1 != 1);
         }
         eax = ecx;
     }
