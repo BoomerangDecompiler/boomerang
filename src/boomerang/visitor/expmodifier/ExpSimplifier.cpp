@@ -26,136 +26,65 @@
 SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary>& exp)
 {
     bool& changed = m_modified;
-    SharedExp res = exp;
+
     if (exp->getOper() == opNot || exp->getOper() == opLNot) {
-        switch (exp->getSubExp1()->getOper())
-        {
-        case opEquals:
+
+        OPER oper = exp->getSubExp1()->getOper();
+
+        switch (oper) {
+        case opEquals:      oper = opNotEqual;  break;
+        case opNotEqual:    oper = opEquals;    break;
+        case opLess:        oper = opGtrEq;     break;
+        case opGtr:         oper = opLessEq;    break;
+        case opLessEq:      oper = opGtr;       break;
+        case opGtrEq:       oper = opLess;      break;
+        case opLessUns:     oper = opGtrEqUns;  break;
+        case opGtrUns:      oper = opLessEqUns; break;
+        case opLessEqUns:   oper = opGtrUns;    break;
+        case opGtrEqUns:    oper = opLessUns;   break;
+        default: break;
+        }
+
+        if (oper != exp->getSubExp1()->getOper()) {
             changed = true;
-            exp->getSubExp1()->setOper(opNotEqual);
+            exp->getSubExp1()->setOper(oper);
             return exp->getSubExp1();
-
-        case opNotEqual:
-            changed = true;
-            exp->getSubExp1()->setOper(opEquals);
-            return exp->getSubExp1();
-
-        case opLess:
-            res = res->getSubExp1();
-            res->setOper(opGtrEq);
-            changed = true;
-            return res;
-
-        case opLessEq:
-            res = res->getSubExp1();
-            res->setOper(opGtr);
-            changed = true;
-            return res;
-
-        case opGtr:
-            res = res->getSubExp1();
-            res->setOper(opLessEq);
-            changed = true;
-            return res;
-
-        case opGtrEq:
-            res = res->getSubExp1();
-            res->setOper(opLess);
-            changed = true;
-            return res;
-
-        case opLessUns:
-            res = res->getSubExp1();
-            res->setOper(opGtrEqUns);
-            changed = true;
-            return res;
-
-        case opLessEqUns:
-            res = res->getSubExp1();
-            res->setOper(opGtrUns);
-            changed = true;
-            return res;
-
-        case opGtrUns:
-            res = res->getSubExp1();
-            res->setOper(opLessEqUns);
-            changed = true;
-            return res;
-
-        case opGtrEqUns:
-            res = res->getSubExp1();
-            res->setOper(opLessUns);
-            changed = true;
-            return res;
-
-        default:
-            break;
         }
     }
 
-    switch (exp->getOper())
-    {
-    case opNeg:
-    case opNot:
-    case opLNot:
-    case opSize:
-        {
-            OPER subOP = exp->getSubExp1()->getOper();
-
-            if (subOP == opIntConst) {
+    if (exp->getOper() == opNeg ||
+        exp->getOper() == opNot ||
+        exp->getOper() == opLNot ||
+        exp->getOper() == opSize) {
+            if (exp->getSubExp1()->isIntConst()) {
                 // -k, ~k, or !k
-                OPER op2 = exp->getOper();
-                res = res->getSubExp1();
-                int k = std::static_pointer_cast<Const>(res)->getInt();
+                int k = exp->access<Const, 1>()->getInt();
 
-                switch (op2)
+                switch (exp->getOper())
                 {
-                case opNeg:
-                    k = -k;
-                    break;
-
-                case opNot:
-                    k = ~k;
-                    break;
-
-                case opLNot:
-                    k = !k;
-                    break;
-
+                case opNeg: k = -k; break;
+                case opNot: k = ~k; break;
+                case opLNot:k = !k; break;
                 case opSize: /* No change required */
-                    break;
-
-                default:
-                    break;
+                default:            break;
                 }
 
-                std::static_pointer_cast<Const>(res)->setInt(k);
                 changed = true;
+                exp->access<Const, 1>()->setInt(k);
+                return exp->getSubExp1();
             }
-            else if (exp->getOper() == subOP) {
-                res  = res->getSubExp1();
-                res  = res->getSubExp1();
-                changed = true;
-                break;
+            else if (exp->getOper() == exp->getSubExp1()->getOper()) {
+                return exp->access<Exp, 1, 1>();
             }
-        }
-        break;
-
-    case opAddrOf:
-        // check for a[m[x]], becomes x
-        if (exp->getSubExp1()->getOper() == opMemOf) {
-            res  = res->getSubExp1();
-            res  = res->getSubExp1();
-            changed = true;
-            return res;
-        }
-        break;
-
-    default:
-        break;
     }
 
-    return res;
+    if ((exp->getOper() == opMemOf  && exp->getSubExp1()->getOper() == opAddrOf) ||
+        (exp->getOper() == opAddrOf && exp->getSubExp1()->getOper() == opMemOf )) {
+            changed = true;
+            return exp->getSubExp1()->getSubExp1();
+    }
+
+    return exp;
 }
 
 
@@ -304,8 +233,13 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
 
     if ((exp->getOper() == opEquals) && (*exp->getSubExp1() == *exp->getSubExp2())) {
         // x == x: result is true
-        // delete this;
         res  = std::make_shared<Terminal>(opTrue);
+        changed = true;
+        return res;
+    }
+    else if ((exp->getOper() == opNotEqual) && (*exp->getSubExp1() == *exp->getSubExp2())) {
+        // x != x: result is false
+        res  = std::make_shared<Terminal>(opFalse);
         changed = true;
         return res;
     }
@@ -411,7 +345,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         return res;
     }
 
-    // Check for SharedExp 1
+    // Check for SharedExp * 1
     if (((exp->getOper() == opMult) || (exp->getOper() == opMults)) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt() == 1)) {
         res  = res->getSubExp1();
         changed = true;
@@ -440,9 +374,18 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         return res;
     }
 
-    // Check for SharedExp x % x, becomes 0
-    if (((exp->getOper() == opMod) || (exp->getOper() == opMods)) && ((opSub1 == opMult) || (opSub1 == opMults)) &&
-        (*exp->getSubExp2() == *exp->getSubExp1()->getSubExp2())) {
+    // Check for SharedExp  (a * x) % x, becomes 0
+    if ((exp->getOper() == opMod || exp->getOper() == opMods) &&
+        (opSub1 == opMult || opSub1 == opMults) &&
+        (*exp->getSubExp2() == *exp->getSubExp1()->getSubExp2() ||
+         *exp->getSubExp2() == *exp->getSubExp1()->getSubExp1())) {
+            res  = Const::get(0);
+            changed = true;
+            return res;
+    }
+    // Check for SharedExp  x % x, becomes 0
+    else if ((exp->getOper() == opMod || exp->getOper() == opMods) &&
+        *exp->getSubExp2() == *exp->getSubExp1()) {
         res  = Const::get(0);
         changed = true;
         return res;
@@ -501,8 +444,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     if (exp->isComparison() && opSub1 == opNeg) {
         exp->setSubExp1(exp->access<Exp, 1, 1>());
         exp->setSubExp2(Unary::get(opNeg, exp->getSubExp2()));
-        changed = true;
-        return exp;
+            changed = true;
+            return exp;
     }
 
     // Check for (x + y) compare 0, becomes x compare -y
@@ -525,8 +468,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
 
     // Check for (x == y) == 1, becomes x == y
     if ((exp->getOper() == opEquals) && (opSub2 == opIntConst) && (std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt() == 1) && (opSub1 == opEquals)) {
-        exp->setSubExp1(exp->access<Exp, 1, 1>());
         exp->setSubExp2(exp->access<Exp, 1, 2>());
+        exp->setSubExp1(exp->access<Exp, 1, 1>());
         changed    = true;
         return res;
     }
@@ -603,14 +546,47 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     auto b1 = std::dynamic_pointer_cast<Binary>(exp->getSubExp1());
     auto b2 = std::dynamic_pointer_cast<Binary>(exp->getSubExp2());
 
-    // Check for (x <= y) || (x == y), becomes x <= y
     if ((exp->getOper() == opOr) && (opSub2 == opEquals) &&
         ((opSub1 == opGtrEq) || (opSub1 == opLessEq) || (opSub1 == opGtrEqUns) || (opSub1 == opLessEqUns)) &&
         (((*b1->getSubExp1() == *b2->getSubExp1()) && (*b1->getSubExp2() == *b2->getSubExp2())) ||
          ((*b1->getSubExp1() == *b2->getSubExp2()) && (*b1->getSubExp2() == *b2->getSubExp1())))) {
-        res  = res->getSubExp1();
-        changed = true;
-        return res;
+            res  = res->getSubExp1();
+            changed = true;
+            return res;
+    }
+
+    // Check for (x <  y) || (x == y), becomes x <= y
+    // Check for (x <= y) || (x == y), becomes x <= y
+    if (exp->getOper() == opOr && opSub2 == opEquals &&
+        exp->getSubExp1()->isComparison() && exp->getSubExp2()->isComparison() &&
+        (exp->getSubExp1()->isEquality() || exp->getSubExp2()->isEquality())) {
+            OPER otherOper = exp->getSubExp1()->isEquality()
+                ? exp->getSubExp2()->getOper()
+                : exp->getSubExp1()->getOper();
+
+            switch (otherOper) {
+            case opGtr:
+            case opGtrEq:       otherOper = opGtrEq;     break;
+            case opGtrUns:
+            case opGtrEqUns:    otherOper = opGtrEqUns;  break;
+            case opLess:
+            case opLessEq:      otherOper = opLessEq;    break;
+            case opLessUns:
+            case opLessEqUns:   otherOper = opLessEqUns; break;
+            case opEquals: { // (a || a) == a
+                changed = true;
+                return exp->getSubExp1();
+            }
+            case opNotEqual: { // (a || !a) == true
+                changed = true;
+                return Terminal::get(opTrue);
+            }
+            default: break;
+            }
+
+            changed = true;
+            exp->getSubExp1()->setOper(otherOper);
+            return exp->getSubExp1();
     }
 
     // For (a || b) or (a && b) recurse on a and b
@@ -686,7 +662,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         }
     }
 
-    if ((exp->getOper() == opFMinus) && (exp->getSubExp1()->getOper() == opFltConst) && (std::static_pointer_cast<const Const>(exp->getSubExp1())->getFlt() == 0.0)) {
+    if (exp->getOper() == opFMinus && exp->getSubExp1()->isFltConst() && exp->access<Const, 1>()->getFlt() == 0.0) {
         res  = Unary::get(opFNeg, exp->getSubExp2());
         changed = true;
         return res;

@@ -200,8 +200,10 @@ public:
     bool isConjunction() const { return m_oper == opAnd; }
     /// \returns true if this is a boolean constant
     bool isBoolConst() const { return m_oper == opTrue || m_oper == opFalse; }
-    /// \returns true if this is an equality (== or !=)
-    bool isEquality() const { return m_oper == opEquals /*|| op == opNotEqual*/; }
+    /// \returns true if this is an equality comparison using ==
+    bool isEquality() const { return m_oper == opEquals; }
+    /// \returns true if this is an equality comparison using !=
+    bool isNotEquality() const { return m_oper == opNotEqual; }
 
     /// \returns true if this is a comparison
     bool isComparison() const
