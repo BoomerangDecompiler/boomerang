@@ -137,18 +137,11 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
             break;
 
         case opShiftL:
-
-            if (k2 >= 32) {
-                k1 = 0;
-            }
-            else {
-                k1 = k1 << k2;
-            }
-
+            k1 = (k2 < 32) ? k1 << k2 : 0;
             break;
 
         case opShiftR:
-            k1 = k1 >> k2;
+            k1 = (k2 < 32) ? k1 >> k2 : 0;
             break;
 
         case opShiftRA:
