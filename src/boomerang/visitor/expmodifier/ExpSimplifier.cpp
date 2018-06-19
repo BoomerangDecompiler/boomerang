@@ -204,11 +204,14 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     }
 
     // Similarly for adding stuff to the addresses of globals
-    if (exp->getSubExp2()->isAddrOf() && exp->getSubExp2()->getSubExp1()->isSubscript() && exp->getSubExp2()->getSubExp1()->getSubExp1()->isGlobal() && (exp->getOper() == opPlus)) {
-        exp->commute();
-        // Swap opSub1 and opSub2 as well
-        std::swap(opSub1, opSub2);
-        // This is not counted as a modification
+    if (exp->getOper() == opPlus &&
+        exp->access<Exp, 2>()->isAddrOf() &&
+        exp->access<Exp, 2, 1>()->isSubscript() &&
+        exp->access<Exp, 2, 1, 1>()->isGlobal()) {
+            exp->commute();
+            // Swap opSub1 and opSub2 as well
+            std::swap(opSub1, opSub2);
+            // This is not counted as a modification
     }
 
     // check for (x + a) + b where a and b are constants, becomes x + a+b
