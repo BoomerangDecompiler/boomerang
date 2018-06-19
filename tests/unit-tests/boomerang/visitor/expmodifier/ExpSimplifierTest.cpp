@@ -350,6 +350,34 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(5)),
                       Const::get(-8));
 
+        TEST_SIMPLIFY("BinaryNegCmpPos",
+                      Binary::get(opLess,
+                                  Unary::get(opNeg, Location::regOf(PENT_REG_EAX)),
+                                  Location::regOf(PENT_REG_ECX)),
+                      Binary::get(opLess,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Unary::get(opNeg, Location::regOf(PENT_REG_ECX))));
+
+        TEST_SIMPLIFY("BinaryXplusYless0",
+                      Binary::get(opLess,
+                                  Binary::get(opPlus,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(0)),
+                      Binary::get(opLess,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Unary::get(opNeg, Location::regOf(PENT_REG_ECX))));
+
+        TEST_SIMPLIFY("BinaryXminusYequal0",
+                      Binary::get(opEquals,
+                                  Binary::get(opMinus,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(0)),
+                      Binary::get(opEquals,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
+
         TEST_SIMPLIFY("BinaryDoubleEquality",
                       Binary::get(opEquals,
                                   Binary::get(opEquals,
