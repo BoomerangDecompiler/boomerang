@@ -13,7 +13,10 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/type/type/IntegerType.h"
 
 
 /// HACK to work around limitations of QMetaType which does not allow templates
@@ -456,6 +459,37 @@ void ExpSimplifierTest::testSimplify_data()
                                    Const::get(16),
                                    Const::get((int)0xF000F)),
                       Const::get(15));
+    }
+
+    // TypedExp
+    {
+        TEST_SIMPLIFY("TypedExp",
+                      std::make_shared<TypedExp>(IntegerType::get(32, 1), Location::memOf(Const::get(0x1000), nullptr)),
+                      std::make_shared<TypedExp>(IntegerType::get(32, 1), Location::memOf(Const::get(0x1000), nullptr)));
+
+        TEST_SIMPLIFY("TypedExpRegOf",
+                      std::make_shared<TypedExp>(IntegerType::get(32, 1), Location::regOf(PENT_REG_EAX)),
+                      Location::regOf(PENT_REG_EAX));
+    }
+
+
+    // Location
+    {
+        TEST_SIMPLIFY("LocAddrOfMemOf",
+                      Location::memOf(Location::get(opAddrOf, Const::get(0x10), nullptr), nullptr),
+                      Const::get(0x10));
+
+        TEST_SIMPLIFY("LocMemOfAddrOf",
+                      Location::get(opAddrOf, Location::memOf(Const::get(0x10), nullptr), nullptr),
+                      Const::get(0x10));
+    }
+
+
+    // RefExp
+    {
+        TEST_SIMPLIFY("RefFirstDF",
+                      RefExp::get(Terminal::get(opDF), nullptr),
+                      Const::get(0));
     }
 }
 

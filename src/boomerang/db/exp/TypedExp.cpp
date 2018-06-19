@@ -126,8 +126,14 @@ bool TypedExp::operator*=(const Exp& o) const
 
 void TypedExp::print(QTextStream& os, bool html) const
 {
-    os << " ";
-    m_type->starPrint(os);
+    if (m_type) {
+        m_type->starPrint(os);
+        os << " ";
+    }
+    else {
+        os << "*v* ";
+    }
+
     SharedConstExp p1 = this->getSubExp1();
     p1->print(os, html);
 }

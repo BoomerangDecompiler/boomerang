@@ -853,12 +853,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Location>& exp)
         changed = true;
         return exp->getSubExp1()->getSubExp1();
     }
-
-    // check for m[a[loc.x]] becomes loc.x
-    if (exp->isMemOf() && exp->getSubExp1()->isAddrOf() &&
-        exp->getSubExp1()->getSubExp1()->isMemberOf()) {
-            changed = true;
-            return exp->getSubExp1()->getSubExp1();
+    else if (exp->isAddrOf() && exp->getSubExp1()->isMemOf()) {
+        return exp->getSubExp1()->getSubExp1();
     }
 
     return exp;
@@ -884,16 +880,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<RefExp>& exp)
         return Const::get(int(0));
     }
 
-    // another hack, this time for aliasing
-    // FIXME: do we really want this now? Pentium specific,
-    // and only handles ax/eax (not al or ah)
-    if (exp->getSubExp1()->isRegN(PENT_REG_AX) && exp->getDef() && exp->getDef()->isAssign() &&
-        static_cast<const Assign *>(exp->getDef())->getLeft()->isRegN(PENT_REG_EAX)) {
-            changed = true;
-            return std::make_shared<TypedExp>(IntegerType::get(16),
-                RefExp::get(Location::regOf(PENT_REG_EAX), exp->getDef()));
-    }
-
     // Was code here for bypassing phi statements that are now redundant
+
     return exp;
 }

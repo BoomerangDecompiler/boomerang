@@ -228,7 +228,7 @@ RESOLVES_TO_TYPE(Size)
 
 void Type::starPrint(QTextStream& os)
 {
-    os << "*" << this << "*";
+    os << "*" << *this << "*";
 }
 
 
