@@ -380,6 +380,77 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(0x40)),
                       Const::get(0));
     }
+
+
+    // Ternary
+    {
+        TEST_SIMPLIFY("TernToBool",
+                      Ternary::get(opTern,
+                                   Location::regOf(PENT_REG_EAX),
+                                   Const::get(1),
+                                   Const::get(0)),
+                      Location::regOf(PENT_REG_EAX)); // or %eax != 0
+
+        TEST_SIMPLIFY("TernConst0",
+                      Ternary::get(opTern,
+                                   Const::get(0),
+                                   Location::regOf(PENT_REG_EAX),
+                                   Location::regOf(PENT_REG_ECX)),
+                      Location::regOf(PENT_REG_ECX));
+
+        TEST_SIMPLIFY("TernConst1",
+                      Ternary::get(opTern,
+                                   Const::get(1),
+                                   Location::regOf(PENT_REG_EAX),
+                                   Location::regOf(PENT_REG_ECX)),
+                      Location::regOf(PENT_REG_EAX));
+
+        TEST_SIMPLIFY("TernNoChoice",
+                      Ternary::get(opTern,
+                                   Binary::get(opEquals,
+                                               Location::regOf(PENT_REG_ECX),
+                                               Const::get(0)),
+                                   Location::regOf(PENT_REG_EAX),
+                                   Location::regOf(PENT_REG_EAX)),
+                      Location::regOf(PENT_REG_EAX));
+
+        TEST_SIMPLIFY("SgnExConst",
+                      Ternary::get(opSgnEx,
+                                   Const::get(8),
+                                   Const::get(32),
+                                   Const::get(-10)),
+                      Const::get(-10));
+
+
+        /// TODO What about zfill(8, 32, -10) ?
+        TEST_SIMPLIFY("ZFillConst",
+                      Ternary::get(opZfill,
+                                   Const::get(8),
+                                   Const::get(32),
+                                   Const::get(10)),
+                      Const::get(10));
+
+        TEST_SIMPLIFY("FSizeFloatConst",
+                      Ternary::get(opFsize,
+                                   Const::get(32),
+                                   Const::get(80),
+                                   Const::get(5.0f)),
+                      Const::get(5.0f));
+
+        TEST_SIMPLIFY("TruncuConst",
+                      Ternary::get(opTruncu,
+                                   Const::get(32),
+                                   Const::get(16),
+                                   Const::get(0x12345678)),
+                      Const::get(0x00005678));
+
+        TEST_SIMPLIFY("TruncsConst",
+                      Ternary::get(opTruncs,
+                                   Const::get(32),
+                                   Const::get(16),
+                                   Const::get((int)0xF000F)),
+                      Const::get(15));
+    }
 }
 
 QTEST_GUILESS_MAIN(ExpSimplifierTest)

@@ -20,6 +20,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
+#include "boomerang/util/ByteUtil.h"
 #include "boomerang/util/Log.h"
 
 
@@ -802,6 +803,12 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
             return (val != 0) ? exp->getSubExp2() : exp->getSubExp3();
     }
 
+    // a ? x : x
+    if (exp->getOper() == opTern && *exp->getSubExp2() == *exp->getSubExp3()) {
+        changed = true;
+        return exp->getSubExp2();
+    }
+
     /// sign-extend constant value
     if ((exp->getOper() == opSgnEx || exp->getOper() == opZfill) &&
         exp->getSubExp3()->isIntConst()) {
@@ -809,8 +816,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
             return exp->getSubExp3();
     }
 
-    if (exp->getOper() == opFsize &&
-        exp->getSubExp3()->getOper() == opItof &&
+    if (exp->getOper() == opFsize && exp->getSubExp3()->getOper() == opItof &&
         *exp->getSubExp1() == *exp->access<Exp, 3, 2>() &&
         *exp->getSubExp2() == *exp->access<Exp, 3, 1>()) {
             changed = true;
@@ -857,16 +863,9 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
         int          to   = exp->access<Const, 2>()->getInt();
         unsigned int val  = exp->access<Const, 3>()->getInt();
 
-        if (from == 32) {
-            if (to == 16) {
-                changed = true;
-                return Const::get(Address(val & 0xffff));
-            }
-
-            if (to == 8) {
-                changed = true;
-                return  Const::get(Address(val & 0xff));
-            }
+        if (from > to) {
+            changed = true;
+            return Const::get(Address(val & (int)Util::getLowerBitMask(to)));
         }
     }
 
@@ -875,16 +874,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
         int to   = exp->access<Const, 2>()->getInt();
         int val  = exp->access<Const, 3>()->getInt();
 
-        if (from == 32) {
-            if (to == 16) {
-                changed = true;
-                return Const::get(val & 0xffff);
-            }
-
-            if (to == 8) {
-                changed = true;
-                return  Const::get(val & 0xff);
-            }
+        if (from > to) {
+            return Const::get(val & (int)Util::getLowerBitMask(to));
         }
     }
 
