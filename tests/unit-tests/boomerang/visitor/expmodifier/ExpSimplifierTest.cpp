@@ -320,8 +320,8 @@ void ExpSimplifierTest::testSimplify_data()
                                   Terminal::get(opTrue)),
                       Terminal::get(opTrue));
 
-        TEST_SIMPLIFY("BinaryConstSarConst",
-                      Binary::get(opShiftRA,
+        TEST_SIMPLIFY("BinaryConstShrConst",
+                      Binary::get(opShiftR,
                                   Const::get(0x100),
                                   Const::get(4)),
                       Const::get(0x010));
