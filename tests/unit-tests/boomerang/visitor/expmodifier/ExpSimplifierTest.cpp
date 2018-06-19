@@ -296,8 +296,32 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(PENT_REG_EAX)),
                       Const::get(0));
 
-        TEST_SIMPLIFY("BinaryConstShrConst",
-                      Binary::get(opShiftR,
+        TEST_SIMPLIFY("BinaryXandMinus1",
+                      Binary::get(opBitAnd,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Const::get(-1)),
+                      Location::regOf(PENT_REG_EAX));
+
+        TEST_SIMPLIFY("BinaryXandTrue",
+                      Binary::get(opAnd,
+                                  Binary::get(opGtr,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Terminal::get(opTrue)),
+                      Binary::get(opGtr,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
+
+        TEST_SIMPLIFY("BinaryXorTrue",
+                      Binary::get(opOr,
+                                  Binary::get(opGtr,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Terminal::get(opTrue)),
+                      Terminal::get(opTrue));
+
+        TEST_SIMPLIFY("BinaryConstSarConst",
+                      Binary::get(opShiftRA,
                                   Const::get(0x100),
                                   Const::get(4)),
                       Const::get(0x010));
