@@ -51,7 +51,7 @@ void ExpSimplifierTest::testSimplify()
     QString expected(expectedResult->prints());
 
     QCOMPARE(actual, expected);
-};
+}
 
 #define TEST_SIMPLIFY(name, exp, result) \
     QTest::newRow(name) << SharedExpWrapper(exp) << SharedExpWrapper(result)
