@@ -299,6 +299,12 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(32)),
                       Const::get(0));
 
+        TEST_SIMPLIFY("BinaryConstSarConst",
+                      Binary::get(opShiftRA,
+                                  Const::get(-256),
+                                  Const::get(5)),
+                      Const::get(-8));
+
         TEST_SIMPLIFY("BinaryDoubleEquality",
                       Binary::get(opEquals,
                                   Binary::get(opEquals,

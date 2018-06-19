@@ -105,98 +105,46 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
 
         switch (exp->getOper())
         {
-        case opPlus:
-            k1 = k1 + k2;
-            break;
+        case opPlus:        k1 = k1 + k2;       break;
+        case opMinus:       k1 = k1 - k2;       break;
+        case opMults:       k1 = k1 * k2;       break;
+        case opDivs:        k1 = k1 / k2;       break;
+        case opMods:        k1 = k1 % k2;       break;
+        case opShiftL:      k1 = (k2 < 32) ? k1 << k2 : 0; break;
+        case opShiftR:      k1 = (k2 < 32) ? k1 >> k2 : 0; break;
+        case opShiftRA: {
+            assert(k2 < 32);
+            k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2)); break;
+        }
 
-        case opMinus:
-            k1 = k1 - k2;
-            break;
-
-        case opDiv:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) / static_cast<unsigned>(k2));
-            break;
-
-        case opDivs:
-            k1 = k1 / k2;
-            break;
-
-        case opMod:
-            k1 = static_cast<int>(static_cast<unsigned>(k1) % static_cast<unsigned>(k2));
-            break;
-
-        case opMods:
-            k1 = k1 % k2;
-            break;
+        case opBitAnd:      k1 = k1 & k2;       break;
+        case opBitOr:       k1 = k1 | k2;       break;
+        case opBitXor:      k1 = k1 ^ k2;       break;
+        case opEquals:      k1 = (k1 == k2);    break;
+        case opNotEqual:    k1 = (k1 != k2);    break;
+        case opLess:        k1 = (k1 < k2);     break;
+        case opGtr:         k1 = (k1 > k2);     break;
+        case opLessEq:      k1 = (k1 <= k2);    break;
+        case opGtrEq:       k1 = (k1 >= k2);    break;
 
         case opMult:
             k1 = static_cast<int>(static_cast<unsigned>(k1) * static_cast<unsigned>(k2));
             break;
-
-        case opMults:
-            k1 = k1 * k2;
+        case opDiv:
+            k1 = static_cast<int>(static_cast<unsigned>(k1) / static_cast<unsigned>(k2));
             break;
-
-        case opShiftL:
-            k1 = (k2 < 32) ? k1 << k2 : 0;
+        case opMod:
+            k1 = static_cast<int>(static_cast<unsigned>(k1) % static_cast<unsigned>(k2));
             break;
-
-        case opShiftR:
-            k1 = (k2 < 32) ? k1 >> k2 : 0;
-            break;
-
-        case opShiftRA:
-            k1 = (k1 >> k2) | (((1 << k2) - 1) << (32 - k2));
-            break;
-
-        case opBitOr:
-            k1 = k1 | k2;
-            break;
-
-        case opBitAnd:
-            k1 = k1 & k2;
-            break;
-
-        case opBitXor:
-            k1 = k1 ^ k2;
-            break;
-
-        case opEquals:
-            k1 = (k1 == k2);
-            break;
-
-        case opNotEqual:
-            k1 = (k1 != k2);
-            break;
-
-        case opLess:
-            k1 = (k1 < k2);
-            break;
-
-        case opGtr:
-            k1 = (k1 > k2);
-            break;
-
-        case opLessEq:
-            k1 = (k1 <= k2);
-            break;
-
-        case opGtrEq:
-            k1 = (k1 >= k2);
-            break;
-
         case opLessUns:
             k1 = static_cast<unsigned>(k1) < static_cast<unsigned>(k2);
             break;
-
         case opGtrUns:
             k1 = static_cast<unsigned>(k1) > static_cast<unsigned>(k2);
             break;
-
         case opLessEqUns:
             k1 = static_cast<unsigned>(k1) <= static_cast<unsigned>(k2);
             break;
-
         case opGtrEqUns:
             k1 = static_cast<unsigned>(k1) >= static_cast<unsigned>(k2);
             break;
