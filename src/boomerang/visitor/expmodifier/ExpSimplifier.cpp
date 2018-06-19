@@ -189,7 +189,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         (exp->getOper() == opPlus ||
          exp->getOper() == opMult ||
          exp->getOper() == opMults ||
-         exp->getOper() == opBitOr || exp->getOper() == opBitAnd)) {
+         exp->getOper() == opBitOr ||
+         exp->getOper() == opBitAnd)) {
             exp->commute();
             // Swap opSub1 and opSub2 as well
             std::swap(opSub1, opSub2);

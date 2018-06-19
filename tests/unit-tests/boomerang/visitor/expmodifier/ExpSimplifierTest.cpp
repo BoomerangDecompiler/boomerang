@@ -167,6 +167,16 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(PENT_REG_EAX),
                                   Const::get(100)));
 
+        TEST_SIMPLIFY("BinaryCommuteGlobalAddr",
+                      Binary::get(opPlus,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Unary::get(opAddrOf,
+                                             RefExp::get(Location::global("test", nullptr), nullptr))),
+                      Binary::get(opPlus,
+                                  Unary::get(opAddrOf,
+                                             RefExp::get(Location::global("test", nullptr), nullptr)),
+                                  Location::regOf(PENT_REG_EAX)));
+
         TEST_SIMPLIFY("BinaryCollapseConstPlus",
                       Binary::get(opPlus,
                                   Binary::get(opPlus,
@@ -388,16 +398,6 @@ void ExpSimplifierTest::testSimplify_data()
                                                           Const::get(0x80))),
                                   Const::get(0x40)),
                       Const::get(0));
-
-        TEST_SIMPLIFY("BinarySwapGlobalAddr",
-                      Binary::get(opPlus,
-                                  Const::get(0x100),
-                                  Unary::get(opAddrOf,
-                                             RefExp::get(Location::global("test", nullptr), nullptr))),
-                      Binary::get(opPlus,
-                                  Unary::get(opAddrOf,
-                                             RefExp::get(Location::global("test", nullptr), nullptr)),
-                                  Const::get(0x100)));
     }
 
 
