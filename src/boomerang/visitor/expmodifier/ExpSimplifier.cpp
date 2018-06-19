@@ -302,7 +302,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
             return res->getSubExp1();
     }
 
-    // Check for SharedExp x / x
+    // Check for SharedExp (a * x) / x -> a
     if ((exp->getOper() == opDiv || exp->getOper() == opDivs) &&
         (opSub1 == opMult || opSub1 == opMults) &&
         *exp->getSubExp2() == *exp->getSubExp1()->getSubExp2()) {
