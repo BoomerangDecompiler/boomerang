@@ -476,11 +476,11 @@ void ExpSimplifierTest::testSimplify_data()
     // Location
     {
         TEST_SIMPLIFY("LocAddrOfMemOf",
-                      Location::memOf(Location::get(opAddrOf, Const::get(0x10), nullptr), nullptr),
+                      Location::memOf(Unary::get(opAddrOf, Const::get(0x10)), nullptr),
                       Const::get(0x10));
 
         TEST_SIMPLIFY("LocMemOfAddrOf",
-                      Location::get(opAddrOf, Location::memOf(Const::get(0x10), nullptr), nullptr),
+                      Unary::get(opAddrOf, Location::memOf(Const::get(0x10), nullptr)),
                       Const::get(0x10));
     }
 
