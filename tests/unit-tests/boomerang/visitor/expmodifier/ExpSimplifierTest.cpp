@@ -378,6 +378,16 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(PENT_REG_EAX),
                                   Location::regOf(PENT_REG_ECX)));
 
+        TEST_SIMPLIFY("BinaryXplusNegConstEqual0",
+                      Binary::get(opEquals,
+                                  Binary::get(opPlus,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Const::get(-10)),
+                                  Const::get(0)),
+                      Binary::get(opEquals,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Const::get(10)));
+
         TEST_SIMPLIFY("BinaryDoubleEquality",
                       Binary::get(opEquals,
                                   Binary::get(opEquals,
