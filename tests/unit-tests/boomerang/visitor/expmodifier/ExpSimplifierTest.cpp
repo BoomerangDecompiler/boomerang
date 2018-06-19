@@ -98,8 +98,8 @@ void ExpSimplifierTest::testSimplify_data()
                       Const::get(0x1000));
 
         TEST_SIMPLIFY("UnaryDoubleNeg",
-                      Unary::get(opNeg, Unary::get(opNeg, Const::get(0x1000))),
-                      Const::get(0x1000));
+                      Unary::get(opNeg, Unary::get(opNeg, Location::regOf(PENT_REG_EAX))),
+                      Location::regOf(PENT_REG_EAX));
 
         TEST_SIMPLIFY("UnaryDoubleNot",
                       Unary::get(opNot, Unary::get(opNot, Const::get(0x1000))),
