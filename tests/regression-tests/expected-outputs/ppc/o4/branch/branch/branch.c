@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
 
     scanf(0x10000990);
     scanf(0x10000990);
-    if (5 == local0) {
+    if (local0 == 5) {
         g3 = puts(0x100009a8);
-        if (5 != local0) {
+        if (local0 != 5) {
             g3 = puts(0x10000994);
         }
         if (5 > local0) {

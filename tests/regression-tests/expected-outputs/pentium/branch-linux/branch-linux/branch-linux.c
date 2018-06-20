@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
 
     scanf("%d", &local0);
     scanf("%d", &local1);
-    if (5 == local0) {
+    if (local0 == 5) {
         eax = *0x8049854;
         fwrite("Equal\n", 1, 6, eax);
-        if (5 != local0) {
+        if (local0 != 5) {
 bb0x804844e:
             eax = *0x8049854;
             fwrite("Not Equal\n", 1, 10, eax);

@@ -1,7 +1,7 @@
-unsigned int global_0x00403000;
 int global_0x00403024;
 unsigned int global_0x00403000;
 int global_0x00403024;
+unsigned int global_0x00403000;
 void proc_0x00401470(__size32 param1);
 void _start(unsigned short param1);
 __size32 proc_0x00401530(__size32 param1, __size32 param2, __size32 param3);

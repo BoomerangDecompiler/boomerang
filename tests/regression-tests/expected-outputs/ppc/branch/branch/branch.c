@@ -8,10 +8,10 @@ int main(int argc, char *argv[])
 
     scanf(0x100009a8);
     scanf(0x100009a8);
-    if (5 == local0) {
+    if (local0 == 5) {
         printf(0x100009ac);
     }
-    if (5 != local0) {
+    if (local0 != 5) {
         printf(0x100009b4);
     }
     if (5 > local0) {

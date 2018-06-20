@@ -116,28 +116,28 @@ void version_etc_va(union { FILE *; __size32; } param1, union { char[] *; __size
     int ebx_1; 		// r27{0}
     __size32 ebx_2; 		// r27{0}
     int ebx_5; 		// r27{0}
-    int ebx_6; 		// r27{0}
+    int ebx_8; 		// r27{0}
     int ebx_9; 		// r27{0}
     int edx; 		// r26
     char *local1; 		// m[esp - 40]
-    int local11; 		// ebx_5{0}
+    int local11; 		// ebx_8{0}
     int local12; 		// ebx_1{0}
     union { char *; int; } local13; 		// local1{0}
     int local5; 		// m[esp - 40]
 
-    ebx_9 = 0;
+    ebx_5 = 0;
     edx = param5 + 4;
     eax = *param5;
-    local11 = ebx_9;
-    local12 = ebx_9;
+    local11 = ebx_5;
+    local12 = ebx_5;
     if (eax != 0) {
         do {
-            ebx_5 = local11;
-            ebx_6 = ebx_5 + 1;
+            ebx_8 = local11;
+            ebx_9 = ebx_8 + 1;
             eax = *edx;
             edx += 4;
-            local11 = ebx_6;
-            local12 = ebx_6;
+            local11 = ebx_9;
+            local12 = ebx_9;
         } while (eax != 0);
     }
     ebx_1 = local12;

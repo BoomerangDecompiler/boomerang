@@ -8,10 +8,10 @@ int main(int argc, char *argv[])
 
     scanf(/* machine specific */ (int) LR + 1052);
     scanf(/* machine specific */ (int) LR + 1052);
-    if (5 == local0) {
+    if (local0 == 5) {
         printf(/* machine specific */ (int) LR + 1056);
     }
-    if (5 != local0) {
+    if (local0 != 5) {
         printf(/* machine specific */ (int) LR + 1064);
     }
     if (5 > local0) {

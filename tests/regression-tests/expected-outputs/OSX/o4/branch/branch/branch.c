@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
 
     scanf(/* machine specific */ (int) LR + 988);
     scanf(/* machine specific */ (int) LR + 988);
-    if (5 == local0) {
+    if (local0 == 5) {
         puts(/* machine specific */ (int) LR + 992);
     }
-    if (5 != local0) {
+    if (local0 != 5) {
         puts(/* machine specific */ (int) LR + 1000);
     }
     if (5 > local0) {

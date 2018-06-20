@@ -452,8 +452,8 @@ void ExpSimplifierTest::testSimplify_data()
                                               Location::regOf(PENT_REG_EAX)),
                                   Const::get(0)),
                       Binary::get(opNotEqual,
-                                  Const::get(0),
-                                  Location::regOf(PENT_REG_EAX)));
+                                  Location::regOf(PENT_REG_EAX),
+                                  Const::get(0)));
 
         TEST_SIMPLIFY("BinaryXcompareYequal0",
                       Binary::get(opEquals,
