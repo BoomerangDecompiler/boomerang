@@ -389,6 +389,20 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(PENT_REG_EAX),
                                   Const::get(10)));
 
+        TEST_SIMPLIFY("BinaryUnsignedLess0",
+                      Binary::get(opLessEqUns,
+                                  Const::get(0),
+                                  Const::get(PENT_REG_EAX)),
+                      Const::get(1));
+
+        TEST_SIMPLIFY("BinaryUnsignedLessEqual0",
+                      Binary::get(opLessUns,
+                                  Const::get(0),
+                                  Location::regOf(PENT_REG_EAX)),
+                      Binary::get(opNotEqual,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Const::get(0)));
+
         TEST_SIMPLIFY("BinaryDoubleEquality0",
                       Binary::get(opEquals,
                                   Binary::get(opEquals,
@@ -539,7 +553,39 @@ void ExpSimplifierTest::testSimplify_data()
                                               Location::regOf(PENT_REG_ECX),
                                               Const::get(2))));
 
-        TEST_SIMPLIFY("BinaryDistributeMod",
+        TEST_SIMPLIFY("BinaryDistributeModLeft",
+                      Binary::get(opMod,
+                                  Binary::get(opPlus,
+                                              Binary::get(opMult,
+                                                          Location::regOf(PENT_REG_EAX),
+                                                          Const::get(0x100)),
+                                              Binary::get(opMult,
+                                                          Location::regOf(PENT_REG_ECX),
+                                                          Const::get(0x70))),
+                                  Const::get(0x40)),
+                      Binary::get(opMod,
+                                  Binary::get(opMult,
+                                              Location::regOf(PENT_REG_ECX),
+                                              Const::get(0x70)),
+                                  Const::get(0x40)));
+
+        TEST_SIMPLIFY("BinaryDistributeModRight",
+                      Binary::get(opMod,
+                                  Binary::get(opPlus,
+                                              Binary::get(opMult,
+                                                          Location::regOf(PENT_REG_EAX),
+                                                          Const::get(0x70)),
+                                              Binary::get(opMult,
+                                                          Location::regOf(PENT_REG_ECX),
+                                                          Const::get(0x60))),
+                                  Const::get(0x30)),
+                      Binary::get(opMod,
+                                  Binary::get(opMult,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Const::get(0x70)),
+                                  Const::get(0x30)));
+
+        TEST_SIMPLIFY("BinaryDistributeModBoth",
                       Binary::get(opMod,
                                   Binary::get(opPlus,
                                               Binary::get(opMult,
