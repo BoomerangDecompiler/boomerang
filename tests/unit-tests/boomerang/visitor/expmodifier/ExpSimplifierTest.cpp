@@ -389,7 +389,17 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(PENT_REG_EAX),
                                   Const::get(10)));
 
-        TEST_SIMPLIFY("BinaryDoubleEquality",
+        TEST_SIMPLIFY("BinaryDoubleEquality0",
+                      Binary::get(opEquals,
+                                  Binary::get(opEquals,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(0)),
+                      Binary::get(opNotEqual,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
+
+        TEST_SIMPLIFY("BinaryDoubleEquality1",
                       Binary::get(opEquals,
                                   Binary::get(opEquals,
                                               Location::regOf(PENT_REG_EAX),
@@ -398,6 +408,42 @@ void ExpSimplifierTest::testSimplify_data()
                       Binary::get(opEquals,
                                   Location::regOf(PENT_REG_EAX),
                                   Location::regOf(PENT_REG_ECX)));
+
+        TEST_SIMPLIFY("BinaryDoubleEquality2",
+                      Binary::get(opEquals,
+                                  Binary::get(opEquals,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(2)),
+                      Terminal::get(opFalse));
+
+        TEST_SIMPLIFY("BinaryDoubleNotEquality0",
+                      Binary::get(opNotEqual,
+                                  Binary::get(opEquals,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(0)),
+                      Binary::get(opEquals,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
+
+        TEST_SIMPLIFY("BinaryDoubleNotEquality1",
+                      Binary::get(opNotEqual,
+                                  Binary::get(opEquals,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(1)),
+                      Binary::get(opNotEqual,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
+
+        TEST_SIMPLIFY("BinaryDoubleNotEquality2",
+                      Binary::get(opNotEqual,
+                                  Binary::get(opEquals,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(2)),
+                      Terminal::get(opTrue));
 
         TEST_SIMPLIFY("BinaryEqualLessEqual",
                       Binary::get(opOr,
