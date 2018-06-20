@@ -521,14 +521,19 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     if ((exp->getOper() == opOr) || (exp->getOper() == opAnd)) {
         exp->refSubExp1() = exp->getSubExp1()->acceptModifier(this);
         exp->refSubExp2() = exp->getSubExp2()->acceptModifier(this);
+
+        if (!m_modified && *exp->getSubExp1() == *exp->getSubExp2()) {
+            m_modified = true;
+            return exp->getSubExp1();
+        }
         return res;
     }
 
     // check for (x & x), becomes x
-    if ((exp->getOper() == opBitAnd) && (*exp->getSubExp1() == *exp->getSubExp2())) {
-        res  = res->getSubExp1();
-        changed = true;
-        return res;
+    if ((exp->getOper() == opBitAnd || exp->getOper() == opAnd) &&
+        *exp->getSubExp1() == *exp->getSubExp2()) {
+            changed = true;
+            return res->getSubExp1();
     }
 
     // check for a + a*n, becomes a*(n+1) where n is an int

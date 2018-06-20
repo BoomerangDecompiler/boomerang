@@ -489,6 +489,21 @@ void ExpSimplifierTest::testSimplify_data()
                                   Location::regOf(PENT_REG_EAX),
                                   Location::regOf(PENT_REG_ECX)));
 
+        TEST_SIMPLIFY("BinaryAndRecurse",
+                      Binary::get(opAnd,
+                                  Binary::get(opOr,
+                                              Binary::get(opGtr,
+                                                          Location::regOf(PENT_REG_EAX),
+                                                          Location::regOf(PENT_REG_ECX)),
+                                              Binary::get(opEquals,
+                                                          Location::regOf(PENT_REG_EAX),
+                                                          Location::regOf(PENT_REG_ECX))),
+                                  Binary::get(opGtrEq,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX))),
+                      Binary::get(opGtrEq,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
 
         TEST_SIMPLIFY("BinaryDoubleMultConst",
                       Binary::get(opMult,
