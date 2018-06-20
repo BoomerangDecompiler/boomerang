@@ -96,10 +96,10 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     OPER opSub1 = exp->getSubExp1()->getOper();
     OPER opSub2 = exp->getSubExp2()->getOper();
 
-    if ((opSub1 == opIntConst) && (opSub2 == opIntConst)) {
+    if (opSub1 == opIntConst && opSub2 == opIntConst) {
         // k1 op k2, where k1 and k2 are integer constants
-        int  k1     = std::static_pointer_cast<Const>(exp->getSubExp1())->getInt();
-        int  k2     = std::static_pointer_cast<Const>(exp->getSubExp2())->getInt();
+        int  k1     = exp->access<Const, 1>()->getInt();
+        int  k2     = exp->access<Const, 2>()->getInt();
         bool change = true;
 
         switch (exp->getOper())
@@ -200,8 +200,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     }
 
     // Similarly for boolean constants
-    if (exp->getSubExp1()->isBoolConst() &&
-        !exp->getSubExp2()->isBoolConst() &&
+    if (exp->getSubExp1()->isBoolConst() && !exp->getSubExp2()->isBoolConst() &&
         (exp->getOper() == opAnd || exp->getOper() == opOr)) {
             exp->commute();
             // Swap opSub1 and opSub2 as well
@@ -334,8 +333,9 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
             changed = true;
             return Const::get(0);
     }
+
     // Check for SharedExp  x % x, becomes 0
-    else if ((exp->getOper() == opMod || exp->getOper() == opMods) &&
+    if ((exp->getOper() == opMod || exp->getOper() == opMods) &&
         *exp->getSubExp2() == *exp->getSubExp1()) {
             changed = true;
             return Const::get(0);
@@ -538,19 +538,25 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
 
     // check for ((x * a) + (y * b)) / c where a, b and c are all integers and a and b divide evenly by c
     // becomes: (x * a/c) + (y * b/c)
-    if ((exp->getOper() == opDiv) && (exp->getSubExp1()->getOper() == opPlus) && (exp->getSubExp2()->getOper() == opIntConst) &&
-        (exp->getSubExp1()->getSubExp1()->getOper() == opMult) && (exp->getSubExp1()->getSubExp2()->getOper() == opMult) &&
-        (exp->getSubExp1()->access<Exp, 1, 2>()->getOper() == opIntConst) &&
-        (exp->getSubExp1()->access<Exp, 2, 2>()->getOper() == opIntConst)) {
-        int a = exp->getSubExp1()->access<Const, 1, 2>()->getInt();
-        int b = exp->getSubExp1()->access<Const, 2, 2>()->getInt();
-        int c = std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt();
+    if (exp->getOper() == opDiv && exp->getSubExp1()->getOper() == opPlus && exp->getSubExp2()->isIntConst()) {
+        SharedExp leftOfPlus  = exp->getSubExp1()->getSubExp1();
+        SharedExp rightOfPlus = exp->getSubExp1()->getSubExp2();
 
-        if (((a % c) == 0) && ((b % c) == 0)) {
-            res = Binary::get(opPlus, Binary::get(opMult, exp->getSubExp1()->getSubExp1()->getSubExp1(), Const::get(a / c)),
-                              Binary::get(opMult, exp->getSubExp1()->access<Exp, 2, 1>(), Const::get(b / c)));
-            changed = true;
-            return res;
+        if (leftOfPlus->getOper() == opMult &&
+            rightOfPlus->getOper() == opMult &&
+            leftOfPlus->getSubExp2()->isIntConst() &&
+            rightOfPlus->getSubExp2()->isIntConst()) {
+                const int a = leftOfPlus->access<Const, 2>()->getInt();
+                const int b = rightOfPlus->access<Const, 2>()->getInt();
+                const int c = exp->access<Const, 2>()->getInt();
+
+                if ((a % c == 0) && (b % c == 0)) {
+                    changed = true;
+                    leftOfPlus->access<Const, 2>()->setInt(a / c);
+                    rightOfPlus->access<Const, 2>()->setInt(b / c);
+
+                    return exp->getSubExp1();
+                }
         }
     }
 
@@ -558,30 +564,30 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     // becomes: (y * b) % c if a divides evenly by c
     // becomes: (x * a) % c if b divides evenly by c
     // becomes: 0            if both a and b divide evenly by c
-    if ((exp->getOper() == opMod) && (exp->getSubExp1()->getOper() == opPlus) && (exp->getSubExp2()->getOper() == opIntConst) &&
-        (exp->getSubExp1()->getSubExp1()->getOper() == opMult) && (exp->getSubExp1()->getSubExp2()->getOper() == opMult) &&
-        (exp->getSubExp1()->getSubExp1()->getSubExp2()->getOper() == opIntConst) &&
-        (exp->getSubExp1()->getSubExp2()->getSubExp2()->getOper() == opIntConst)) {
-        int a = exp->getSubExp1()->access<Const, 1, 2>()->getInt();
-        int b = exp->getSubExp1()->access<Const, 2, 2>()->getInt();
-        int c = std::static_pointer_cast<const Const>(exp->getSubExp2())->getInt();
+    if (exp->getOper() == opMod && exp->getSubExp1()->getOper() == opPlus && exp->getSubExp2()->isIntConst()) {
+        SharedExp leftOfPlus = exp->getSubExp1()->getSubExp1();
+        SharedExp rightOfPlus = exp->getSubExp1()->getSubExp2();
 
-        if (((a % c) == 0) && ((b % c) == 0)) {
-            res  = Const::get(0);
-            changed = true;
-            return res;
-        }
+        if (leftOfPlus->getOper() == opMult &&
+            rightOfPlus->getOper() == opMult &&
+            leftOfPlus->getSubExp2()->isIntConst() &&
+            rightOfPlus->getSubExp2()->isIntConst()) {
+                const int a = leftOfPlus->access<Const, 2>()->getInt();
+                const int b = rightOfPlus->access<Const, 2>()->getInt();
+                const int c = exp->access<Const, 2>()->getInt();
 
-        if ((a % c) == 0) {
-            res  = Binary::get(opMod, exp->getSubExp1()->getSubExp2()->clone(), Const::get(c));
-            changed = true;
-            return res;
-        }
-
-        if ((b % c) == 0) {
-            res  = Binary::get(opMod, exp->getSubExp1()->getSubExp1()->clone(), Const::get(c));
-            changed = true;
-            return res;
+                if ((a % c == 0) && (b % c == 0)) {
+                    changed = true;
+                    return Const::get(0);
+                }
+                if ((a % c) == 0) {
+                    changed = true;
+                    return Binary::get(opMod, rightOfPlus, Const::get(c));
+                }
+                if ((b % c) == 0) {
+                    changed = true;
+                    return Binary::get(opMod, leftOfPlus, Const::get(c));
+                }
         }
     }
 
@@ -619,15 +625,14 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
     }
 
     // Const ? x : y
-    if (exp->getOper() == opTern &&
-        exp->getSubExp1()->isIntConst()) {
-            const int val = exp->access<Const, 1>()->getInt();
-            if (val != 1 && val != 0) {
-                LOG_VERBOSE("Treating constant value %1 as true in Ternary '%2'", val, exp);
-            }
+    if (exp->getOper() == opTern && exp->getSubExp1()->isIntConst()) {
+        const int val = exp->access<Const, 1>()->getInt();
+        if (val != 1 && val != 0) {
+            LOG_VERBOSE("Treating constant value %1 as true in Ternary '%2'", val, exp);
+        }
 
-            changed = true;
-            return (val != 0) ? exp->getSubExp2() : exp->getSubExp3();
+        changed = true;
+        return (val != 0) ? exp->getSubExp2() : exp->getSubExp3();
     }
 
     // a ? x : x
