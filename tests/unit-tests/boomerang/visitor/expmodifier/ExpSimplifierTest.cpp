@@ -193,17 +193,6 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(100)),
                       Binary::get(opPlus, Location::regOf(PENT_REG_EAX), Const::get(70)));
 
-        TEST_SIMPLIFY("BinaryLinearizeConstPlus",
-                      Binary::get(opPlus,
-                                  Binary::get(opMult,
-                                              Location::regOf(PENT_REG_EAX),
-                                              Location::regOf(PENT_REG_EDX)),
-                                  Location::regOf(PENT_REG_EAX)),
-                      Binary::get(opMult,
-                                  Location::regOf(PENT_REG_EAX),
-                                  Binary::get(opPlus,
-                                              Location::regOf(PENT_REG_EDX),
-                                              Const::get(1))));
 
         TEST_SIMPLIFY("BinaryLinearizeConstMinus",
                       Binary::get(opMinus,
@@ -214,6 +203,18 @@ void ExpSimplifierTest::testSimplify_data()
                       Binary::get(opMults,
                                   Location::regOf(PENT_REG_EAX),
                                   Binary::get(opMinus,
+                                              Location::regOf(PENT_REG_EDX),
+                                              Const::get(1))));
+
+        TEST_SIMPLIFY("BinaryLinearizeConstPlus",
+                      Binary::get(opPlus,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Binary::get(opMult,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_EDX))),
+                      Binary::get(opMult,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Binary::get(opPlus,
                                               Location::regOf(PENT_REG_EDX),
                                               Const::get(1))));
 

@@ -375,17 +375,6 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         }
     }
 
-    if (exp->getOper() == opShiftRA && opSub2 == opIntConst) {
-        const int k = exp->access<Const, 1>()->getInt();
-
-        if (Util::inRange(k, 0, 32)) {
-            exp->setOper(opDiv);
-            exp->access<Const, 2>()->setInt(1 << k);
-            changed = true;
-            return exp;
-        }
-    }
-
     // Check for -x compare y, becomes x compare -y
     if (exp->isComparison() && opSub1 == opNeg) {
         exp->setSubExp1(exp->access<Exp, 1, 1>());
