@@ -550,6 +550,16 @@ void ExpSimplifierTest::testSimplify_data()
                                                           Const::get(0x80))),
                                   Const::get(0x40)),
                       Const::get(0));
+
+        TEST_SIMPLIFY("BinaryComplexBitAnd",
+                      Binary::get(opBitAnd,
+                                  Binary::get(opMinus,
+                                              Const::get(0),
+                                              Binary::get(opLessEqUns,
+                                                          Const::get(0),
+                                                          Location::regOf(PENT_REG_ECX))),
+                                  Location::regOf(PENT_REG_EAX)),
+                      Location::regOf(PENT_REG_EAX));
     }
 
 

@@ -401,6 +401,21 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         }
     }
 
+    // Check for 0 <=u x, or for x >=u 0, becomes true
+    if ((exp->getOper() == opLessEqUns && exp->getSubExp1()->isIntConst() && exp->access<Const, 1>()->getInt() == 0) ||
+        (exp->getOper() == opGtrEqUns  && exp->getSubExp2()->isIntConst() && exp->access<Const, 2>()->getInt() == 0)) {
+            changed = true;
+            return Const::get(1);
+    }
+
+    // Check for 0 <u x, or for x >u 0, becomes x != 0
+    if ((exp->getOper() == opLessUns && exp->getSubExp1()->isIntConst() && exp->access<Const, 1>()->getInt() == 0) ||
+        (exp->getOper() == opGtrUns  && exp->getSubExp2()->isIntConst() && exp->access<Const, 2>()->getInt() == 0)) {
+            changed = true;
+            exp->setOper(opNotEqual);
+            return exp;
+    }
+
     // Check for (x == y) == 1, becomes x == y
     // Check for (x == y) == 0, becomes x != y
     if (exp->getOper() == opEquals && opSub1 == opEquals && opSub2 == opIntConst) {
@@ -565,25 +580,6 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary>& exp)
             res  = Binary::get(opMod, exp->getSubExp1()->getSubExp1()->clone(), Const::get(c));
             changed = true;
             return res;
-        }
-    }
-
-    // Check for 0 - (0 <u exp1) & exp2 => exp2
-    if ((exp->getOper() == opBitAnd) && (opSub1 == opMinus)) {
-        SharedExp leftOfMinus = exp->getSubExp1()->getSubExp1();
-
-        if (leftOfMinus->isIntConst() && (std::static_pointer_cast<const Const>(leftOfMinus)->getInt() == 0)) {
-            SharedExp rightOfMinus = exp->getSubExp1()->getSubExp2();
-
-            if (rightOfMinus->getOper() == opLessUns) {
-                SharedExp leftOfLess = rightOfMinus->getSubExp1();
-
-                if (leftOfLess->isIntConst() && (std::static_pointer_cast<const Const>(leftOfLess)->getInt() == 0)) {
-                    res  = exp->getSubExp2();
-                    changed = true;
-                    return res;
-                }
-            }
         }
     }
 
