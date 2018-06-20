@@ -445,6 +445,26 @@ void ExpSimplifierTest::testSimplify_data()
                                   Const::get(2)),
                       Terminal::get(opTrue));
 
+        TEST_SIMPLIFY("Binary0minusXnotequal0",
+                      Binary::get(opNotEqual,
+                                  Binary::get(opMinus,
+                                              Const::get(0),
+                                              Location::regOf(PENT_REG_EAX)),
+                                  Const::get(0)),
+                      Binary::get(opNotEqual,
+                                  Const::get(0),
+                                  Location::regOf(PENT_REG_EAX)));
+
+        TEST_SIMPLIFY("BinaryXcompareYequal0",
+                      Binary::get(opEquals,
+                                  Binary::get(opLess,
+                                              Location::regOf(PENT_REG_EAX),
+                                              Location::regOf(PENT_REG_ECX)),
+                                  Const::get(0)),
+                      Binary::get(opGtrEq,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Location::regOf(PENT_REG_ECX)));
+
         TEST_SIMPLIFY("BinaryEqualLessEqual",
                       Binary::get(opOr,
                                   Binary::get(opLessEq,
