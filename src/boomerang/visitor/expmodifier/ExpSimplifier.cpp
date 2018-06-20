@@ -600,7 +600,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
 {
     bool& changed = m_modified;
 
-    // p ? 1 : 0 -> p
+    // p ? 1 : 0 -> p != 0
+    // p ? 0 : 1 -> p == 0
     if (exp->getOper() == opTern &&
         exp->getSubExp2()->isIntConst() &&
         exp->getSubExp3()->isIntConst()) {
@@ -609,11 +610,11 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary>& exp)
 
             if (val2 == 1 && val3 == 0) {
                 changed = true;
-                return exp->getSubExp1();
+                return Binary::get(opNotEqual, exp->getSubExp1(), Const::get(0));
             }
             else if (val2 == 0 && val3 == 1) {
                 changed = true;
-                return Unary::get(opLNot, exp->getSubExp1());
+                return Binary::get(opEquals, exp->getSubExp1(), Const::get(0));
             }
     }
 
@@ -729,9 +730,6 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Location>& exp)
 
     if (exp->isMemOf() && exp->getSubExp1()->isAddrOf()) {
         changed = true;
-        return exp->getSubExp1()->getSubExp1();
-    }
-    else if (exp->isAddrOf() && exp->getSubExp1()->isMemOf()) {
         return exp->getSubExp1()->getSubExp1();
     }
 

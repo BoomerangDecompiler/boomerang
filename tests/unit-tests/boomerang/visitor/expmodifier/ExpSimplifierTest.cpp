@@ -616,7 +616,18 @@ void ExpSimplifierTest::testSimplify_data()
                                    Location::regOf(PENT_REG_EAX),
                                    Const::get(1),
                                    Const::get(0)),
-                      Location::regOf(PENT_REG_EAX)); // or %eax != 0
+                      Binary::get(opNotEqual,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Const::get(0)));
+
+        TEST_SIMPLIFY("TernToNotBool",
+                      Ternary::get(opTern,
+                                   Location::regOf(PENT_REG_EAX),
+                                   Const::get(0),
+                                   Const::get(1)),
+                      Binary::get(opEquals,
+                                  Location::regOf(PENT_REG_EAX),
+                                  Const::get(0)));
 
         TEST_SIMPLIFY("TernConst0",
                       Ternary::get(opTern,
@@ -626,6 +637,13 @@ void ExpSimplifierTest::testSimplify_data()
                       Location::regOf(PENT_REG_ECX));
 
         TEST_SIMPLIFY("TernConst1",
+                      Ternary::get(opTern,
+                                   Const::get(1),
+                                   Location::regOf(PENT_REG_EAX),
+                                   Location::regOf(PENT_REG_ECX)),
+                      Location::regOf(PENT_REG_EAX));
+
+        TEST_SIMPLIFY("TernConst2",
                       Ternary::get(opTern,
                                    Const::get(1),
                                    Location::regOf(PENT_REG_EAX),
@@ -693,12 +711,8 @@ void ExpSimplifierTest::testSimplify_data()
 
     // Location
     {
-        TEST_SIMPLIFY("LocAddrOfMemOf",
-                      Location::memOf(Unary::get(opAddrOf, Const::get(0x10)), nullptr),
-                      Const::get(0x10));
-
         TEST_SIMPLIFY("LocMemOfAddrOf",
-                      Unary::get(opAddrOf, Location::memOf(Const::get(0x10), nullptr)),
+                      Location::memOf(Unary::get(opAddrOf, Const::get(0x10)), nullptr),
                       Const::get(0x10));
     }
 
