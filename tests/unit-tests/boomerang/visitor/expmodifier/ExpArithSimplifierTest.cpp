@@ -54,6 +54,27 @@ void ExpArithSimplifierTest::testSimplifyBinary()
                               Const::get(5),
                               Location::regOf(PENT_REG_EAX)));
 
+    // positives + negatives + int const
+    TEST_SIMPLIFY(Binary::get(opMinus,
+                              Location::regOf(PENT_REG_EAX),
+                              Binary::get(opMinus,
+                                          Location::regOf(PENT_REG_ECX),
+                                          Binary::get(opPlus,
+                                                      Binary::get(opMinus,
+                                                                  Location::regOf(PENT_REG_EBX),
+                                                                  Location::regOf(PENT_REG_EDX)),
+                                                      Const::get(-5)))),
+                  Binary::get(opMinus,
+                              Binary::get(opMinus,
+                                          Binary::get(opPlus,
+                                                      Location::regOf(PENT_REG_EAX),
+                                                      Location::regOf(PENT_REG_EBX)),
+                                          Binary::get(opPlus,
+                                                      Location::regOf(PENT_REG_ECX),
+                                                      Location::regOf(PENT_REG_EDX))),
+                              Const::get(5)));
+
+
     // afp + 108 + n - (afp + 92)
     TEST_SIMPLIFY(Binary::get(opMinus,
                               Binary::get(opPlus,
