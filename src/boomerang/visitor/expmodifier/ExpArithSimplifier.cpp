@@ -37,35 +37,7 @@ SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     exp->partitionTerms(positives, negatives, integers, false);
 
     // Now reduce these lists by cancelling pairs
-    // Note: can't improve this algorithm using multisets, since can't instantiate multisets of type Exp (only Exp*).
-    // The Exp* in the multisets would be sorted by address, not by value of the expression.
-    // So they would be unsorted, same as lists!
-    std::list<SharedExp>::iterator pp = positives.begin();
-    std::list<SharedExp>::iterator nn = negatives.begin();
-
-    while (pp != positives.end()) {
-        bool inc = true;
-
-        while (nn != negatives.end()) {
-            if (**pp == **nn) {
-                // A positive and a negative that are equal; therefore they cancel
-                pp  = positives.erase(pp); // Erase the pointers, not the Exps
-                nn  = negatives.erase(nn);
-                inc = false;               // Don't increment pp now
-                break;
-            }
-
-            ++nn;
-        }
-
-        if (pp == positives.end()) {
-            break;
-        }
-
-        if (inc) {
-            ++pp;
-        }
-    }
+    cancelDuplicates(positives, negatives);
 
     // Summarise the set of integers to a single number.
     int sum = std::accumulate(integers.begin(), integers.end(), 0);
@@ -115,4 +87,34 @@ SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary>& exp)
 
     return Binary::get(_op, Binary::get(opMinus, Exp::accumulate(positives), Exp::accumulate(negatives)),
                        Const::get(sum));
+
+}
+
+void ExpArithSimplifier::cancelDuplicates(std::list<SharedExp>& left, std::list<SharedExp>& right)
+{
+    // Note: can't improve this algorithm using multisets, since can't instantiate multisets of type Exp (only Exp*).
+    // The Exp* in the multisets would be sorted by address, not by value of the expression.
+    // So they would be unsorted, same as lists!
+    auto itLeft = left.begin();
+
+    while (itLeft != left.end()) {
+        auto itRight = right.begin();
+        bool removedOne = false;
+
+        while (itRight != right.end()) {
+            if (**itLeft == **itRight) {
+                removedOne = true;
+                itLeft  = left.erase(itLeft);
+                itRight = right.erase(itRight);
+                break;
+            }
+            else {
+                itRight++;
+            }
+        }
+
+        if (!removedOne) {
+            itLeft++;
+        }
+    }
 }
