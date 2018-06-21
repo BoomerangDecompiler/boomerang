@@ -465,14 +465,6 @@ public:
      */
     SharedExp fixSuccessor(); // succ(r2) -> r3
 
-    /**
-     * Remove size operations such as zero fill, sign extend
-     * \note         Could change top level expression
-     * \note         Does not handle truncation at present
-     * \returns      Fixed expression
-     */
-    SharedExp killFill();
-
     /// Do the work of finding used locations. If memOnly set, only look inside m[...]
     /// Find the locations used by this expression. Use the UsedLocsFinder visitor class
     /// If memOnly is true, only look inside m[...]
@@ -522,9 +514,6 @@ public:
 
     /// Push type information down the expression tree
     virtual void descendType(SharedType /*parentType*/, bool& /*ch*/, Statement * /*s*/);
-
-    static SharedExp convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<CompoundType>& c, unsigned n);
-
 
 public:
     /// Accept an expression visitor to visit this expression.

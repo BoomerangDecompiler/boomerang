@@ -119,9 +119,6 @@ private slots:
     /// Test succ(r[k]) == r[k+1]
     void testFixSuccessor();
 
-    /// Test removal of zero fill, sign extend, truncates
-    void testKillFill();
-
     /// Test that a+K+b is the same as a+b+K when each is simplified
     void testAssociativity();
 

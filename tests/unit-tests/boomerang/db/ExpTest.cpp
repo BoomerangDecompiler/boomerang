@@ -764,34 +764,6 @@ void ExpTest::testFixSuccessor()
 }
 
 
-void ExpTest::testKillFill()
-{
-    // r18 + sgnex(16,32,m[r16 + 16])
-    SharedExp e = Binary::get(opPlus,
-                              Location::regOf(SPARC_REG_L2),
-                              Ternary::get(opSgnEx, Const::get(16), Const::get(32),
-                                           Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_L0), Const::get(16)))));
-    SharedExp res = e->killFill();
-
-    QString     actual;
-    QTextStream ost(&actual);
-
-    res->print(ost);
-    QCOMPARE(actual, QString("r18 + m[r16 + 16]"));
-
-    // Note: e2 has to be a pointer, not a local Ternary, because it
-    // gets changed at the top level (and so would die in its destructor)
-    SharedExp e2 = Ternary::get(opZfill, Const::get(SPARC_REG_L0), Const::get(32),
-                                Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_L0), Const::get(16))));
-
-    // Try again but at top level
-    actual = "";
-    res    = e2->killFill();
-    res->print(ost);
-    QCOMPARE(actual, QString("m[r16 + 16]"));
-}
-
-
 void ExpTest::testAssociativity()
 {
     // (r8 + m[m[r8 + 12] + -12]) + 12
@@ -799,15 +771,21 @@ void ExpTest::testAssociativity()
                                Binary::get(opPlus,
                                            Location::regOf(SPARC_REG_O0),
                                            Location::memOf(Binary::get(opPlus,
-                                                                       Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_O0), Const::get(12))),
+                                                                       Location::memOf(Binary::get(opPlus,
+                                                                                                   Location::regOf(SPARC_REG_O0),
+                                                                                                   Const::get(12))),
                                                                        Const::get(-12)))),
                                Const::get(12));
 
     // (r8 + 12) + m[m[r8 + 12] + -12]
     SharedExp e2 = Binary::get(opPlus,
-                               Binary::get(opPlus, Location::regOf(SPARC_REG_O0), Const::get(12)),
+                               Binary::get(opPlus,
+                                           Location::regOf(SPARC_REG_O0),
+                                           Const::get(12)),
                                Location::memOf(Binary::get(opPlus,
-                                                           Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_O0), Const::get(12))),
+                                                           Location::memOf(Binary::get(opPlus,
+                                                                                       Location::regOf(SPARC_REG_O0),
+                                                                                       Const::get(12))),
                                                            Const::get(-12))));
 
     // Note: at one stage, simplifyArith was part of simplify().

@@ -383,57 +383,6 @@ SharedExp Exp::simplifyAddr()
 }
 
 
-SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c, int n)
-{
-    unsigned   r    = c->getOffsetRemainder(n * 8);
-    QString    name = c->getNameAtOffset(n * 8);
-    SharedType t    = c->getTypeAtOffset(n * 8);
-    SharedExp  res = Binary::get(opMemberAccess, parent, Const::get(name));
-
-    assert((r % 8) == 0);
-
-    if (t->resolvesToCompound()) {
-        res = accessMember(res, t->as<CompoundType>(), r / 8);
-    }
-    else if (t->resolvesToPointer() && t->as<PointerType>()->getPointsTo()->resolvesToCompound()) {
-        if (r != 0) {
-            assert(false);
-        }
-    }
-    else if (t->resolvesToArray()) {
-        std::shared_ptr<ArrayType> a = t->as<ArrayType>();
-        SharedType                 array_member_type = a->getBaseType();
-        int b = array_member_type->getSize() / 8;
-        assert(array_member_type->getSize() % 8);
-
-        res = Binary::get(opArrayIndex, res, Const::get(n / b));
-
-        if (array_member_type->resolvesToCompound()) {
-            res = accessMember(res, array_member_type->as<CompoundType>(), n % b);
-        }
-    }
-
-    return res;
-}
-
-
-SharedExp Exp::convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<CompoundType>& c, unsigned n)
-{
-    if (n * 8 >= c->getSize()) {
-        return nullptr;
-    }
-
-    QString name = c->getNameAtOffset(n * 8);
-
-    if (!name.isNull() && (name != "pad")) {
-        SharedExp l = Location::memOf(parent);
-        return Unary::get(opAddrOf, accessMember(l, c, n));
-    }
-
-    return nullptr;
-}
-
-
 const char *Exp::getOperName() const
 {
     return operToString(m_oper);
@@ -512,25 +461,6 @@ SharedExp Exp::fixSuccessor()
 }
 
 
-SharedExp Exp::killFill()
-{
-    static Ternary srch1(opZfill, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
-    static Ternary srch2(opSgnEx, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
-    SharedExp      res = shared_from_this();
-
-    std::list<SharedExp *> result;
-    doSearch(srch1, res, result, false);
-    doSearch(srch2, res, result, false);
-
-    for (SharedExp *it : result) {
-        // Kill the sign extend bits
-        *it = (*it)->getSubExp3();
-    }
-
-    return res;
-}
-
-
 bool Exp::isTemp() const
 {
     if (m_oper == opTemp) {
@@ -577,9 +507,9 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
 {
     auto r = RefExp::get(shared_from_this(), def); // "Wrap" in a ref
-    ExpSsaXformer *xformer = new ExpSsaXformer(proc);
-    SharedExp result = r->acceptModifier(xformer);
-    delete xformer;
+
+    ExpSsaXformer xformer(proc);
+    SharedExp result = r->acceptModifier(&xformer);
     return result;
 }
 
@@ -618,7 +548,7 @@ QString Exp::getAnyStrConst()
         return QString::null;
     }
 
-    return std::static_pointer_cast<const Const>(e)->getStr();
+    return e->access<Const>()->getStr();
 }
 
 
@@ -686,13 +616,11 @@ SharedExp Exp::propagateAll()
 
 SharedExp Exp::propagateAllRpt(bool& changed)
 {
-    ExpPropagator ep;
-
     changed = false;
     SharedExp ret = shared_from_this();
 
     while (true) {
-        ep.clearChanged(); // Want to know if changed this *last* accept()
+        ExpPropagator ep;
         ret = ret->acceptModifier(&ep);
 
         if (ep.isChanged()) {
