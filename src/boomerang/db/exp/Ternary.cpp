@@ -370,15 +370,6 @@ SharedExp Ternary::simplifyArith()
 }
 
 
-SharedExp Ternary::simplifyAddr()
-{
-    subExp1 = subExp1->simplifyAddr();
-    subExp2 = subExp2->simplifyAddr();
-    subExp3 = subExp3->simplifyAddr();
-    return shared_from_this();
-}
-
-
 bool Ternary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;

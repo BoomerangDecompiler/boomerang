@@ -75,9 +75,6 @@ public:
     /// \copydoc Binary::simplifyArith
     SharedExp simplifyArith() override;
 
-    /// \copydoc Binary::simplifyAddr
-    SharedExp simplifyAddr() override;
-
     /// \copydoc Binary::ascendType
     virtual SharedType ascendType() override;
 

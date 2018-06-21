@@ -72,9 +72,6 @@ public:
     /// \copydoc Exp::simplifyArith
     virtual SharedExp simplifyArith() override;
 
-    /// \copydoc Exp::simplifyAddr
-    virtual SharedExp simplifyAddr() override;
-
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;
 

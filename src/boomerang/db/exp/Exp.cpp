@@ -27,6 +27,7 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
+#include "boomerang/visitor/expmodifier/ExpAddressSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
@@ -372,6 +373,13 @@ SharedExp Exp::simplify()
     }
 #endif
     return res;
+}
+
+
+SharedExp Exp::simplifyAddr()
+{
+    ExpAddressSimplifier eas;
+    return this->acceptModifier(&eas);
 }
 
 

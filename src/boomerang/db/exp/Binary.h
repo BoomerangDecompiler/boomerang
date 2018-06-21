@@ -75,9 +75,6 @@ public:
     /// \copydoc Unary::simplifyArith
     SharedExp simplifyArith() override;
 
-    /// \copydoc Unary::simplifyAddr
-    SharedExp simplifyAddr() override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 

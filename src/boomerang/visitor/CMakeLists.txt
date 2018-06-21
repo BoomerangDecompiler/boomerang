@@ -25,6 +25,7 @@ list(APPEND boomerang-visitor-sources
     visitor/expmodifier/ConstGlobalConverter
     visitor/expmodifier/ConscriptSetter
     visitor/expmodifier/DFALocalMapper
+    visitor/expmodifier/ExpAddressSimplifier
     visitor/expmodifier/ExpCastInserter
     visitor/expmodifier/ExpConstCaster
     visitor/expmodifier/ExpModifier

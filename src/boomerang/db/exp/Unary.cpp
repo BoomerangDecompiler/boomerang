@@ -421,43 +421,6 @@ SharedExp Unary::simplifyArith()
 }
 
 
-SharedExp Unary::simplifyAddr()
-{
-    SharedExp sub;
-
-    if ((m_oper == opMemOf) && subExp1->isAddrOf()) {
-        return getSubExp1()->getSubExp1();
-    }
-
-    if (m_oper != opAddrOf) {
-        // Not a[ anything ]. Recurse
-        subExp1 = subExp1->simplifyAddr();
-        return shared_from_this();
-    }
-
-    if (subExp1->getOper() == opMemOf) {
-        return getSubExp1()->getSubExp1();
-    }
-
-    if (subExp1->getOper() == opSize) {
-        sub = subExp1->getSubExp2();
-
-        if (sub->getOper() == opMemOf) {
-            // Remove the a[
-            auto b = getSubExp1();
-            // Remove the size[
-            auto u = b->getSubExp2();
-            // Remove the m[
-            return u->getSubExp1();
-        }
-    }
-
-    // a[ something else ]. Still recurse, just in case
-    subExp1 = subExp1->simplifyAddr();
-    return shared_from_this();
-}
-
-
 void Unary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));

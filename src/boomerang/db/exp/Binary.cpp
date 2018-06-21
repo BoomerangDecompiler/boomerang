@@ -462,16 +462,6 @@ SharedExp Binary::simplifyArith()
 }
 
 
-SharedExp Binary::simplifyAddr()
-{
-    assert(subExp1 && subExp2);
-
-    subExp1 = subExp1->simplifyAddr();
-    subExp2 = subExp2->simplifyAddr();
-    return shared_from_this();
-}
-
-
 SharedConstExp Binary::getSubExp2() const
 {
     assert(subExp1 && subExp2);

@@ -454,10 +454,9 @@ public:
      * and also
      *     a[ size m[ any ]] == any
      *
-     * \todo         Replace with a visitor some day
-     * \returns      Ptr to the simplified expression
+     * \returns Ptr to the simplified expression
      */
-    virtual SharedExp simplifyAddr() { return shared_from_this(); }
+    virtual SharedExp simplifyAddr();
 
     /**
      * Replace succ(r[k]) by r[k+1]
