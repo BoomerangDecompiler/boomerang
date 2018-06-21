@@ -30,6 +30,30 @@ void ExpArithSimplifierTest::testSimplifyUnary()
 
 void ExpArithSimplifierTest::testSimplifyBinary()
 {
+    // 5 > 3 (only handled by simplify, not simpilfyArith)
+    TEST_SIMPLIFY(Binary::get(opGtr, Const::get(5), Const::get(3)),
+                  Binary::get(opGtr, Const::get(5), Const::get(3)));
+
+    TEST_SIMPLIFY(Binary::get(opPlus, Const::get(5), Const::get(3)),
+                  Const::get(8));
+
+    TEST_SIMPLIFY(Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(-4)),
+                  Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Const::get(4)));
+
+    // Cancel duplicates
+    TEST_SIMPLIFY(Binary::get(opMinus,
+                              Location::regOf(PENT_REG_EAX),
+                              Location::regOf(PENT_REG_EAX)),
+                  Const::get(0));
+
+    // positive const, negative reg
+    TEST_SIMPLIFY(Binary::get(opMinus,
+                              Const::get(5),
+                              Location::regOf(PENT_REG_EAX)),
+                  Binary::get(opMinus,
+                              Const::get(5),
+                              Location::regOf(PENT_REG_EAX)));
+
     // afp + 108 + n - (afp + 92)
     TEST_SIMPLIFY(Binary::get(opMinus,
                               Binary::get(opPlus,
