@@ -19,6 +19,8 @@ set(test_LIBRARIES
 
 
 set(TESTS
+    ExpAddrSimplifierTest
+    ExpArithSimplifierTest
     ExpSimplifierTest
 )
 

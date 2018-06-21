@@ -421,38 +421,6 @@ void ExpTest::testPartitionTerms()
 }
 
 
-void ExpTest::testSimplifyArith()
-{
-    // afp + 108 + n - (afp + 92)
-    SharedExp e = Binary::get(opMinus, Binary::get(opPlus, Binary::get(opPlus, Terminal::get(opAFP), Const::get(108)),
-                                                   Unary::get(opVar, Const::get("n"))),
-                              Binary::get(opPlus, Terminal::get(opAFP), Const::get(92)));
-
-    e = e->simplifyArith();
-
-    QString     actual;
-    QTextStream ost(&actual);
-    e->print(ost);
-    QCOMPARE(actual, QString("v[n] + 16"));
-
-    // m[(r28 + -4) + 8]
-    SharedExp mm = Location::memOf(Binary::get(opPlus, Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(-4)), Const::get(8)));
-    mm = mm->simplifyArith();
-    actual = "";
-    mm->print(ost);
-    QCOMPARE(actual, QString("m[r28 + 4]"));
-
-    // r24 + m[(r28 - 4) - 4]
-    mm = Binary::get(
-        opPlus, Location::regOf(PENT_REG_EAX),
-        Location::memOf(Binary::get(opMinus, Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Const::get(4)), Const::get(4))));
-    mm = mm->simplifyArith();
-    actual = "";
-    mm->print(ost);
-    QCOMPARE(actual, QString("r24 + m[r28 - 8]"));
-}
-
-
 void ExpTest::testSimplifyUnary()
 {
     // Unaries with integer constant argument

@@ -13,8 +13,10 @@
 #include <QtTest/QTest>
 #include <memory>
 
+
 class Const;
 class Location;
+
 
 /**
  * Test the Exp class and subclasses
@@ -92,9 +94,6 @@ private slots:
 
     /// Test the Accumulate function
     void testAccumulate();
-
-    /// Test the simplifyArith function
-    void testSimplifyArith();
 
     /// Test the simplifyArith function
     void testSimplifyUnary();
