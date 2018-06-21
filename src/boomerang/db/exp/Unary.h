@@ -69,9 +69,6 @@ public:
     /// \copydoc Exp::refSubExp1
     SharedExp& refSubExp1() override;
 
-    /// \copydoc Exp::simplifyArith
-    virtual SharedExp simplifyArith() override;
-
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;
 

@@ -72,9 +72,6 @@ public:
     /// \copydoc Unary::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
-    /// \copydoc Unary::simplifyArith
-    SharedExp simplifyArith() override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 

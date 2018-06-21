@@ -361,15 +361,6 @@ void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, b
 }
 
 
-SharedExp Ternary::simplifyArith()
-{
-    subExp1 = subExp1->simplifyArith();
-    subExp2 = subExp2->simplifyArith();
-    subExp3 = subExp3->simplifyArith();
-    return shared_from_this();
-}
-
-
 bool Ternary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;

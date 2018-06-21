@@ -410,17 +410,6 @@ void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, boo
 }
 
 
-SharedExp Unary::simplifyArith()
-{
-    if ((m_oper == opMemOf) || (m_oper == opRegOf) || (m_oper == opAddrOf) || (m_oper == opSubscript)) {
-        // assume we want to simplify the subexpression
-        subExp1 = subExp1->simplifyArith();
-    }
-
-    return shared_from_this(); // Else, do nothing
-}
-
-
 void Unary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));

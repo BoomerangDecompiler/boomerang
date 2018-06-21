@@ -408,17 +408,6 @@ public:
                         bool negate);
 
     /**
-     * This method simplifies an expression consisting of + and - at the top level.
-     * For example,
-     *     (%sp + 100) - (%sp + 92) will be simplified to 8.
-     *
-     * \note         Any expression can be so simplified
-     * \note         Overridden in subclasses
-     * \returns      Ptr to the simplified expression
-     */
-    virtual SharedExp simplifyArith() { return shared_from_this(); }
-
-    /**
      * This method creates an expression that is the sum of all expressions in a list.
      * E.g. given the list <4, r[8], m[14]> the resulting expression is 4+r[8]+m[14].
      *
@@ -456,7 +445,18 @@ public:
      *
      * \returns Ptr to the simplified expression
      */
-    virtual SharedExp simplifyAddr();
+    SharedExp simplifyAddr();
+
+    /**
+     * This method simplifies an expression consisting of + and - at the top level.
+     * For example,
+     *     (%sp + 100) - (%sp + 92) will be simplified to 8.
+     *
+     * \note         Any expression can be so simplified
+     * \note         Overridden in subclasses
+     * \returns      Ptr to the simplified expression
+     */
+    SharedExp simplifyArith();
 
     /**
      * Replace succ(r[k]) by r[k+1]

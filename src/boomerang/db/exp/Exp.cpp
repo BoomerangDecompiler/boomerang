@@ -28,6 +28,7 @@
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
 #include "boomerang/visitor/expmodifier/ExpAddressSimplifier.h"
+#include "boomerang/visitor/expmodifier/ExpArithSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
@@ -294,7 +295,7 @@ void Exp::partitionTerms(std::list<SharedExp>& positives, std::list<SharedExp>& 
 
     case opIntConst:
         {
-            int k = static_cast<Const *>(this)->getInt();
+            int k = access<Const>()->getInt();
 
             if (negate) {
                 integers.push_back(-k);
@@ -379,6 +380,13 @@ SharedExp Exp::simplify()
 SharedExp Exp::simplifyAddr()
 {
     ExpAddressSimplifier eas;
+    return this->acceptModifier(&eas);
+}
+
+
+SharedExp Exp::simplifyArith()
+{
+    ExpArithSimplifier eas;
     return this->acceptModifier(&eas);
 }
 
