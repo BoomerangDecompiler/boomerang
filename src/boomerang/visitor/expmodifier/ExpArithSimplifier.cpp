@@ -13,6 +13,8 @@
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Const.h"
 
+#include <numeric>
+
 
 SharedExp ExpArithSimplifier::preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren)
 {
