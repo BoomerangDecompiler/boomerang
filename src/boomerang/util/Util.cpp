@@ -114,8 +114,8 @@ int getStackRegisterIndex(const Prog *prog)
 {
     switch (prog->getMachine())
     {
-    case Machine::SPARC:        return SPARC_REG_SP;
-    case Machine::PENTIUM:      return PENT_REG_ESP;
+    case Machine::SPARC:        return REG_SPARC_SP;
+    case Machine::PENTIUM:      return REG_PENT_ESP;
     case Machine::PPC:          return  1;
     case Machine::ST20:         return  3;
     case Machine::MIPS:         return 29;

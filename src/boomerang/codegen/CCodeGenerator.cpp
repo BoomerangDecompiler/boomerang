@@ -248,10 +248,10 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         int regID = lhs->access<Const, 1>()->getInt();
 
         // add some fsize hints to rhs
-        if ((regID >= SPARC_REG_F0) && (regID <= SPARC_REG_F31)) {
+        if ((regID >= REG_SPARC_F0) && (regID <= REG_SPARC_F31)) {
             rhs = std::make_shared<Ternary>(opFsize, Const::get(32), Const::get(32), rhs);
         }
-        else if ((regID >= SPARC_REG_F0TO1) && (regID <= SPARC_REG_F28TO31)) {
+        else if ((regID >= REG_SPARC_F0TO1) && (regID <= REG_SPARC_F28TO31)) {
             rhs = std::make_shared<Ternary>(opFsize, Const::get(64), Const::get(64), rhs);
         }
     }

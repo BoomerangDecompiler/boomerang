@@ -26,7 +26,7 @@ namespace StdC
 MIPSSignature::MIPSSignature(const QString& _name)
     : Signature(_name)
 {
-    Signature::addReturn(Location::regOf(MIPS_REG_V0));
+    Signature::addReturn(Location::regOf(REG_MIPS_V0));
 }
 
 
@@ -69,13 +69,13 @@ void MIPSSignature::addReturn(SharedType type, SharedExp e)
 
     if (e == nullptr) {
         if (type->isInteger() || type->isPointer()) {
-            e = Location::regOf(MIPS_REG_V0); // register $2
+            e = Location::regOf(REG_MIPS_V0); // register $2
         }
         else if (type->isFloat()) {
-            e = Location::regOf(MIPS_REG_F0); // register $f0
+            e = Location::regOf(REG_MIPS_F0); // register $f0
         }
         else {
-            e = Location::regOf(MIPS_REG_V0); // register $2
+            e = Location::regOf(REG_MIPS_V0); // register $2
         }
     }
 
@@ -97,11 +97,11 @@ SharedExp MIPSSignature::getArgumentExp(int n) const
         // m[%esp+home_locations], etc.
         //
         e = Location::memOf(Binary::get(opPlus,
-                                        Location::regOf(MIPS_REG_SP), // %o6 == %sp
+                                        Location::regOf(REG_MIPS_SP), // %o6 == %sp
                                         Const::get(4 * 4 + (n - 4) * 4)));
     }
     else {
-        e = Location::regOf(MIPS_REG_T0 + n);
+        e = Location::regOf(REG_MIPS_T0 + n);
     }
 
     return e;
@@ -150,7 +150,7 @@ void MIPSSignature::getLibraryDefines(StatementList& defs)
         defs.append(new ImplicitAssign(Location::regOf(r))); // Registers 16-23 are volatile (caller save)
     }
 
-    defs.append(new ImplicitAssign(Location::regOf(MIPS_REG_FP)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_MIPS_FP)));
 }
 
 }

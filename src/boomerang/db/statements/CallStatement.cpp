@@ -646,8 +646,8 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
     if (!SETTING(decompile)) {
         if (m_procDest->getSignature()->getNumReturns() > 0) {
             Assign *as = new Assign(IntegerType::get(STD_SIZE),
-                                    Unary::get(opRegOf, Const::get(PENT_REG_EAX)),
-                                    Unary::get(opRegOf, Const::get(PENT_REG_EAX)));
+                                    Unary::get(opRegOf, Const::get(REG_PENT_EAX)),
+                                    Unary::get(opRegOf, Const::get(REG_PENT_EAX)));
             as->setProc(m_proc);
             as->setBB(const_cast<BasicBlock *>(parentBB));
             results->append(as);

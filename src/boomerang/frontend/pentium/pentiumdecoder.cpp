@@ -29478,7 +29478,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                         // Special hack to ignore and $0xfffffff0, %esp
                                         SharedExp oper = dis_Eaddr(Eaddr, 32);
 
-                                        if ((i8 != -16) || !(*oper == *Location::regOf(PENT_REG_ESP))) {
+                                        if ((i8 != -16) || !(*oper == *Location::regOf(REG_PENT_ESP))) {
                                             result.rtl = instantiate(pc, "ANDiodb", { DIS_EADDR32, DIS_I8 });
                                         }
                                     }
@@ -41848,7 +41848,7 @@ MATCH_label_c516:
             // Special hack to ignore and $0xfffffff0, %esp
             SharedExp oper = dis_Eaddr(Eaddr, 32);
 
-            if ((i8 != -16) || !(*oper == *Location::regOf(PENT_REG_ESP))) {
+            if ((i8 != -16) || !(*oper == *Location::regOf(REG_PENT_ESP))) {
                 result.rtl = instantiate(pc, "ANDiodb", { DIS_EADDR32, DIS_I8 });
             }
         }
@@ -41863,7 +41863,7 @@ MATCH_label_c517:
             // Special hack to ignore and $0xfffffff0, %esp
             SharedExp oper = dis_Eaddr(Eaddr, 32);
 
-            if ((i8 != -16) || !(*oper == *Location::regOf(PENT_REG_ESP))) {
+            if ((i8 != -16) || !(*oper == *Location::regOf(REG_PENT_ESP))) {
                 result.rtl = instantiate(pc, "ANDiodb", { DIS_EADDR32, DIS_I8 });
             }
         }
@@ -41878,7 +41878,7 @@ MATCH_label_c518:
             // Special hack to ignore and $0xfffffff0, %esp
             SharedExp oper = dis_Eaddr(Eaddr, 32);
 
-            if ((i8 != -16) || !(*oper == *Location::regOf(PENT_REG_ESP))) {
+            if ((i8 != -16) || !(*oper == *Location::regOf(REG_PENT_ESP))) {
                 result.rtl = instantiate(pc, "ANDiodb", { DIS_EADDR32, DIS_I8 });
             }
         }
@@ -41893,7 +41893,7 @@ MATCH_label_c519:
             // Special hack to ignore and $0xfffffff0, %esp
             SharedExp oper = dis_Eaddr(Eaddr, 32);
 
-            if ((i8 != -16) || !(*oper == *Location::regOf(PENT_REG_ESP))) {
+            if ((i8 != -16) || !(*oper == *Location::regOf(REG_PENT_ESP))) {
                 result.rtl = instantiate(pc, "ANDiodb", { DIS_EADDR32, DIS_I8 });
             }
         }

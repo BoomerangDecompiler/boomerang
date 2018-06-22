@@ -62,7 +62,7 @@ BasicBlock *SparcFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 
         // If the delay slot is a single assignment to %o7, we want to see the semantics for it, so that preservation
         // or otherwise of %o7 is correct
-        if ((delay->size() == 1) && delay->front()->isAssign() && static_cast<Assign *>(delay->front())->getLeft()->isRegN(SPARC_REG_O7)) {
+        if ((delay->size() == 1) && delay->front()->isAssign() && static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
             ls->push_back(delay->front());
         }
 
@@ -577,10 +577,10 @@ std::vector<SharedExp>& SparcFrontEnd::getDefaultParams()
         // i registers have higher register numbers (e.g. i1=r25, o1=r9)
         // it helps the prover to process higher register numbers first!
         // But do r30 first (%i6, saves %o6, the stack pointer)
-        params.push_back(Location::regOf(SPARC_REG_I6));
-        params.push_back(Location::regOf(SPARC_REG_I7));
+        params.push_back(Location::regOf(REG_SPARC_I6));
+        params.push_back(Location::regOf(REG_SPARC_I7));
 
-        for (int r = SPARC_REG_I5; r > SPARC_REG_G0; r--) {
+        for (int r = REG_SPARC_I5; r > REG_SPARC_G0; r--) {
             params.push_back(Location::regOf(r));
         }
     }
@@ -594,10 +594,10 @@ std::vector<SharedExp>& SparcFrontEnd::getDefaultReturns()
     static std::vector<SharedExp> returns;
 
     if (returns.size() == 0) {
-        returns.push_back(Location::regOf(SPARC_REG_I6));
-        returns.push_back(Location::regOf(SPARC_REG_I7));
+        returns.push_back(Location::regOf(REG_SPARC_I6));
+        returns.push_back(Location::regOf(REG_SPARC_I7));
 
-        for (int r = SPARC_REG_I5; r > SPARC_REG_G0; r--) {
+        for (int r = REG_SPARC_I5; r > REG_SPARC_G0; r--) {
             returns.push_back(Location::regOf(r));
         }
     }
@@ -839,7 +839,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                                 //     add %o7, K, %o7
                                 // is equivalent to call foo / ba .+K
                                 SharedExp rhs = static_cast<Assign *>(a)->getRight();
-                                auto      o7(Location::regOf(SPARC_REG_O7));
+                                auto      o7(Location::regOf(REG_SPARC_O7));
 
                                 if ((rhs->getOper() == opPlus) && (rhs->access<Exp, 2>()->getOper() == opIntConst) &&
                                     (*rhs->getSubExp1() == *o7)) {
@@ -1134,7 +1134,7 @@ void SparcFrontEnd::emitNop(RTLList& rtls, Address addr)
 void SparcFrontEnd::emitCopyPC(RTLList& rtls, Address addr)
 {
     // Emit %o7 = %pc
-    Assign *asgn = new Assign(Location::regOf(SPARC_REG_O7), Terminal::get(opPC));
+    Assign *asgn = new Assign(Location::regOf(REG_SPARC_O7), Terminal::get(opPC));
 
     // Add the RTL to the list of RTLs, but to the second last position
     rtls.insert(--rtls.end(), std::unique_ptr<RTL>(new RTL(addr, { asgn })));
@@ -1149,8 +1149,8 @@ void SparcFrontEnd::appendAssignment(const SharedExp& lhs, const SharedExp& rhs,
 
 void SparcFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
 {
-    SharedExp lhs = Location::memOf(Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_SP), Const::get(64))));
-    SharedExp rhs = Binary::get(op, Location::memOf(Location::regOf(SPARC_REG_O0)), Location::memOf(Location::regOf(SPARC_REG_O1)));
+    SharedExp lhs = Location::memOf(Location::memOf(Binary::get(opPlus, Location::regOf(REG_SPARC_SP), Const::get(64))));
+    SharedExp rhs = Binary::get(op, Location::memOf(Location::regOf(REG_SPARC_O0)), Location::memOf(Location::regOf(REG_SPARC_O1)));
 
     appendAssignment(lhs, rhs, FloatType::get(128), addr, lrtl);
 }
@@ -1175,27 +1175,27 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 
     if (name == ".umul") {
         // %o0 * %o1
-        rhs = Binary::get(opMult, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opMult, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".mul") {
         // %o0 *! %o1
-        rhs = Binary::get(opMults, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opMults, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".udiv") {
         // %o0 / %o1
-        rhs = Binary::get(opDiv, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opDiv, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".div") {
         // %o0 /! %o1
-        rhs = Binary::get(opDivs, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opDivs, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".urem") {
         // %o0 % %o1
-        rhs = Binary::get(opMod, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opMod, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".rem") {
         // %o0 %! %o1
-        rhs = Binary::get(opMods, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opMods, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
         //    } else if (name.substr(0, 6) == ".stret") {
         //        // No operation. Just use %o0
         //        rhs->push(idRegOf); rhs->push(idIntConst); rhs->push(8);
@@ -1224,7 +1224,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
     }
 
     // Need to make an RTAssgn with %o0 = rhs
-    SharedExp lhs = Location::regOf(SPARC_REG_O0);
+    SharedExp lhs = Location::regOf(REG_SPARC_O0);
 
     lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { new Assign(lhs, rhs) })));
     return true;
@@ -1238,15 +1238,15 @@ void SparcFrontEnd::gen32op32gives64(OPER op, RTLList& lrtl, Address addr)
     // tmp[tmpl] = sgnex(32, 64, r8) op sgnex(32, 64, r9)
     Statement *a = new Assign(64, Location::tempOf(Const::get("tmpl")),
                               Binary::get(op, // opMult or opMults
-                                          new Ternary(opSgnEx, Const(32), Const(64), Location::regOf(SPARC_REG_O0)),
-                                          new Ternary(opSgnEx, Const(32), Const(64), Location::regOf(SPARC_REG_O1))));
+                                          new Ternary(opSgnEx, Const(32), Const(64), Location::regOf(REG_SPARC_O0)),
+                                          new Ternary(opSgnEx, Const(32), Const(64), Location::regOf(REG_SPARC_O1))));
     ls->push_back(a);
     // r8 = truncs(64, 32, tmp[tmpl]);
-    a = new Assign(32, Location::regOf(SPARC_REG_O0),
+    a = new Assign(32, Location::regOf(REG_SPARC_O0),
                    new Ternary(opTruncs, Const::get(64), Const::get(32), Location::tempOf(Const::get("tmpl"))));
     ls->push_back(a);
     // r9 = r[tmpl]@32:63;
-    a = new Assign(32, Location::regOf(SPARC_REG_O1),
+    a = new Assign(32, Location::regOf(REG_SPARC_O1),
                    new Ternary(opAt, Location::tempOf(Const::get("tmpl")), Const::get(32), Const::get(63)));
     ls->push_back(a);
 #else
@@ -1259,13 +1259,13 @@ void SparcFrontEnd::gen32op32gives64(OPER op, RTLList& lrtl, Address addr)
     // r[tmp] = r8 op r9
     Assign *a = new Assign(Location::tempOf(Const::get(const_cast<char *>("tmp"))),
                            Binary::get(op, // opMult or opMults
-                                       Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1)));
+                                       Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1)));
     ls->push_back(a);
     // r8 = r[tmp];     /* low-order bits */
-    a = new Assign(Location::regOf(SPARC_REG_O0), Location::tempOf(Const::get(const_cast<char *>("tmp"))));
+    a = new Assign(Location::regOf(REG_SPARC_O0), Location::tempOf(Const::get(const_cast<char *>("tmp"))));
     ls->push_back(a);
     // r9 = %Y;         /* high-order bits */
-    a = new Assign(Location::regOf(SPARC_REG_O0), Unary::get(opMachFtr, Const::get(const_cast<char *>("%Y"))));
+    a = new Assign(Location::regOf(REG_SPARC_O0), Unary::get(opMachFtr, Const::get(const_cast<char *>("%Y"))));
     ls->push_back(a);
 #endif /* V9_ONLY */
 
@@ -1290,19 +1290,19 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
     }
     else if (name == ".udiv") {
         // %o0 / %o1
-        rhs = Binary::get(opDiv, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opDiv, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".div") {
         // %o0 /! %o1
-        rhs = Binary::get(opDivs, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opDivs, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".urem") {
         // %o0 % %o1
-        rhs = Binary::get(opMod, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opMod, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
     }
     else if (name == ".rem") {
         // %o0 %! %o1
-        rhs = Binary::get(opMods, Location::regOf(SPARC_REG_O0), Location::regOf(SPARC_REG_O1));
+        rhs = Binary::get(opMods, Location::regOf(REG_SPARC_O0), Location::regOf(REG_SPARC_O1));
         //    } else if (name.substr(0, 6) == ".stret") {
         //        // No operation. Just use %o0
         //        rhs->push(idRegOf); rhs->push(idIntConst); rhs->push(8);
@@ -1331,7 +1331,7 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
     }
 
     // Need to make an RTAssgn with %o0 = rhs
-    lhs = Location::regOf(SPARC_REG_O0);
+    lhs = Location::regOf(REG_SPARC_O0);
     appendAssignment(lhs, rhs, IntegerType::get(32), addr, lrtl);
     return true;
 }

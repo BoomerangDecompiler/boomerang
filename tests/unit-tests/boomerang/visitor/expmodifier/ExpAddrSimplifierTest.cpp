@@ -40,8 +40,8 @@ void ExpAddrSimplifierTest::testSimplifyLocation()
     TEST_SIMPLIFY(Location::memOf(Unary::get(opAddrOf, Const::get(0x1000))),
                   Const::get(0x1000));
 
-    TEST_SIMPLIFY(Location::memOf(Location::regOf(PENT_REG_EAX)),
-                  Location::memOf(Location::regOf(PENT_REG_EAX)));
+    TEST_SIMPLIFY(Location::memOf(Location::regOf(REG_PENT_EAX)),
+                  Location::memOf(Location::regOf(REG_PENT_EAX)));
 }
 
 

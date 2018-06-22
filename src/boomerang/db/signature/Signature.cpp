@@ -505,33 +505,33 @@ bool Signature::getABIDefines(Machine machine, StatementList& defs)
     switch (machine)
     {
     case Machine::PENTIUM:
-        defs.append(new ImplicitAssign(Location::regOf(PENT_REG_EAX))); // eax
-        defs.append(new ImplicitAssign(Location::regOf(PENT_REG_ECX))); // ecx
-        defs.append(new ImplicitAssign(Location::regOf(PENT_REG_EDX))); // edx
+        defs.append(new ImplicitAssign(Location::regOf(REG_PENT_EAX))); // eax
+        defs.append(new ImplicitAssign(Location::regOf(REG_PENT_ECX))); // ecx
+        defs.append(new ImplicitAssign(Location::regOf(REG_PENT_EDX))); // edx
         return true;
 
     case Machine::SPARC:
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O0))); // %o0-o5
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O1)));
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O2)));
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O3)));
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O4)));
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O5)));
-        defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_G1))); // %g1
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O0))); // %o0-o5
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O1)));
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O2)));
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O3)));
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O4)));
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O5)));
+        defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_G1))); // %g1
         return true;
 
     case Machine::PPC:
 
-        for (int r = PPC_REG_G3; r <= PPC_REG_G12; ++r) {
+        for (int r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
             defs.append(new ImplicitAssign(Location::regOf(r))); // r3-r12
         }
 
         break;
 
     case Machine::ST20:
-        defs.append(new ImplicitAssign(Location::regOf(ST20_REG_A))); // A
-        defs.append(new ImplicitAssign(Location::regOf(ST20_REG_B))); // B
-        defs.append(new ImplicitAssign(Location::regOf(ST20_REG_C))); // C
+        defs.append(new ImplicitAssign(Location::regOf(REG_ST20_A))); // A
+        defs.append(new ImplicitAssign(Location::regOf(REG_ST20_B))); // B
+        defs.append(new ImplicitAssign(Location::regOf(REG_ST20_C))); // C
         return true;
 
     default:

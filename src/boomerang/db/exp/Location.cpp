@@ -75,8 +75,8 @@ void Location::getDefinitions(LocationSet& defs)
 {
     // This is a hack to fix aliasing (replace with something general)
     // FIXME! This is x86 specific too. Use -O for overlapped registers!
-    if ((m_oper == opRegOf) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == PENT_REG_EAX)) {
-        defs.insert(Location::regOf(PENT_REG_AX));
+    if ((m_oper == opRegOf) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == REG_PENT_EAX)) {
+        defs.insert(Location::regOf(REG_PENT_AX));
     }
 }
 

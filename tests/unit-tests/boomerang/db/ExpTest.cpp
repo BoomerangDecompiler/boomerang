@@ -31,7 +31,7 @@
 void ExpTest::initTestCase()
 {
     m_99 = Const::get(99);
-    m_rof2.reset(new Location(opRegOf, Const::get(SPARC_REG_G2), nullptr));
+    m_rof2.reset(new Location(opRegOf, Const::get(REG_SPARC_G2), nullptr));
 }
 
 
@@ -188,7 +188,7 @@ void ExpTest::testCompare3()
 
 void ExpTest::testCompare4()
 {
-    Location regOf2(opRegOf, Const::get(SPARC_REG_G2), nullptr);
+    Location regOf2(opRegOf, Const::get(REG_SPARC_G2), nullptr);
 
     QVERIFY(regOf2 == *m_rof2);
 }
@@ -349,18 +349,18 @@ void ExpTest::testSearchAll()
     std::list<SharedExp> result;
     SharedExp            e = Binary::get(opPlus,
                                          Binary::get(opMult, m_rof2->clone(), m_99->clone()),
-                                         Binary::get(opMult, Location::regOf(PENT_REG_AL), Const::get(4)));
+                                         Binary::get(opMult, Location::regOf(REG_PENT_AL), Const::get(4)));
     QVERIFY(e->searchAll(*search, result));
     QVERIFY(result.size() == 2);
     QVERIFY(*result.front() == *m_rof2);
-    Location rof8(opRegOf, Const::get(SPARC_REG_O0), nullptr);
+    Location rof8(opRegOf, Const::get(REG_SPARC_O0), nullptr);
     QVERIFY(*result.back() == rof8);
 }
 
 
 void ExpTest::testAccumulate()
 {
-    SharedExp rof2     = Location::get(opRegOf, Const::get(SPARC_REG_G2), nullptr);
+    SharedExp rof2     = Location::get(opRegOf, Const::get(REG_SPARC_G2), nullptr);
     SharedExp nineNine = Const::get(99);
 
     // Zero terms
@@ -552,7 +552,7 @@ void ExpTest::testSimplifyBinary()
     QCOMPARE(actual, QString("v[a]"));
 
     // r27 := m[r29 + -4]
-    std::shared_ptr<Assign> as(new Assign(Location::regOf(PENT_REG_EBX), Location::memOf(Binary::get(opPlus, Location::regOf(PENT_REG_EBP), Const::get(-4)))));
+    std::shared_ptr<Assign> as(new Assign(Location::regOf(REG_PENT_EBX), Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_EBP), Const::get(-4)))));
     as->simplify();
     actual = "";
     as->print(ost);
@@ -569,7 +569,7 @@ void ExpTest::testSimplifyAddr()
                                            Unary::get(opAddrOf,
                                                       Binary::get(opSize,
                                                                   Const::get(64),
-                                                                  Location::memOf(Location::regOf(SPARC_REG_G2)))),
+                                                                  Location::memOf(Location::regOf(REG_SPARC_G2)))),
                                            Const::get(0),
                                            Const::get(15)));
     QCOMPARE(QString(e->simplifyAddr()->prints()), QString("1000 - (r2@0:15)"));
@@ -625,7 +625,7 @@ void ExpTest::testMapOfExp()
                                           Binary::get(opMult, Const::get(2), Const::get(3)),
                                           Binary::get(opMult, Const::get(4), Const::get(5))));
     m[e] = -100;
-    SharedExp rof2 = Location::get(opRegOf, Const::get(SPARC_REG_G2), nullptr);
+    SharedExp rof2 = Location::get(opRegOf, Const::get(REG_SPARC_G2), nullptr);
     m[rof2] = 2; // Should overwrite
 
     QCOMPARE(m.size(), static_cast<size_t>(3));
@@ -725,7 +725,7 @@ void ExpTest::testFixSuccessor()
     QCOMPARE(actual, QString("99 - r2"));
 
     actual = "";
-    SharedExp u = Unary::get(opSuccessor, Location::regOf(SPARC_REG_G2));
+    SharedExp u = Unary::get(opSuccessor, Location::regOf(REG_SPARC_G2));
     e = u->fixSuccessor();
     e->print(ost);
     QCOMPARE(actual, QString("r3"));
@@ -737,10 +737,10 @@ void ExpTest::testAssociativity()
     // (r8 + m[m[r8 + 12] + -12]) + 12
     SharedExp e1 = Binary::get(opPlus,
                                Binary::get(opPlus,
-                                           Location::regOf(SPARC_REG_O0),
+                                           Location::regOf(REG_SPARC_O0),
                                            Location::memOf(Binary::get(opPlus,
                                                                        Location::memOf(Binary::get(opPlus,
-                                                                                                   Location::regOf(SPARC_REG_O0),
+                                                                                                   Location::regOf(REG_SPARC_O0),
                                                                                                    Const::get(12))),
                                                                        Const::get(-12)))),
                                Const::get(12));
@@ -748,11 +748,11 @@ void ExpTest::testAssociativity()
     // (r8 + 12) + m[m[r8 + 12] + -12]
     SharedExp e2 = Binary::get(opPlus,
                                Binary::get(opPlus,
-                                           Location::regOf(SPARC_REG_O0),
+                                           Location::regOf(REG_SPARC_O0),
                                            Const::get(12)),
                                Location::memOf(Binary::get(opPlus,
                                                            Location::memOf(Binary::get(opPlus,
-                                                                                       Location::regOf(SPARC_REG_O0),
+                                                                                       Location::regOf(REG_SPARC_O0),
                                                                                        Const::get(12))),
                                                            Const::get(-12))));
 
@@ -774,11 +774,11 @@ void ExpTest::testAssociativity()
 void ExpTest::testSubscriptVar()
 {
     // m[r28 - 4] := r28 + r29
-    SharedExp left = Location::memOf(Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Const::get(4)));
-    Assign    *ae  = new Assign(left->clone(), Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Location::regOf(PENT_REG_EBP)));
+    SharedExp left = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(4)));
+    Assign    *ae  = new Assign(left->clone(), Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EBP)));
 
     // Subtest 1: should do nothing
-    SharedExp r28   = Location::regOf(PENT_REG_ESP);
+    SharedExp r28   = Location::regOf(REG_PENT_ESP);
     Statement *def1 = new Assign(r28->clone(), r28->clone());
 
     def1->setNumber(12);
@@ -802,7 +802,7 @@ void ExpTest::testSubscriptVar()
     // 99: r28 := 0
     // Note: behaviour has changed. Now, we don't allow re-renaming, so it should stay the same
     actual = "";
-    Statement *def3 = new Assign(Location::regOf(PENT_REG_ESP), Const::get(0));
+    Statement *def3 = new Assign(Location::regOf(REG_PENT_ESP), Const::get(0));
     def3->setNumber(99);
     ae->subscriptVar(r28, def3);
     ost << ae;
@@ -823,8 +823,8 @@ void ExpTest::testTypeOf()
     s5->setNumber(5);
     s9->setNumber(9);
     SharedExp e = Binary::get(opEquals,
-        Unary::get(opTypeOf, RefExp::get(Location::regOf(PENT_REG_EAX), s5)),
-        Unary::get(opTypeOf, RefExp::get(Location::regOf(PENT_REG_ECX), s9)));
+        Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_EAX), s5)),
+        Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_ECX), s9)));
 
     QString     actual;
     QTextStream ost(&actual);
@@ -848,7 +848,7 @@ void ExpTest::testSetConscripts()
     QCOMPARE(e->toString(), QString("m[1000] + 1000"));
 
     // m[r28 + 1000]
-    e      = Location::memOf(Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(1000)));
+    e      = Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(1000)));
     e->setConscripts(0, false);
     QCOMPARE(e->toString(), QString("m[r28 + 1000\\1\\]"));
 
@@ -884,7 +884,7 @@ void ExpTest::testAddUsedLocs()
     // Simple location: r28
     l.clear();
     actual = "";
-    e      = Location::regOf(PENT_REG_ESP);
+    e      = Location::regOf(REG_PENT_ESP);
     e->addUsedLocs(l);
     l.print(ost);
     QCOMPARE(actual, QString("r28"));
@@ -892,7 +892,7 @@ void ExpTest::testAddUsedLocs()
     // Memory location: m[r28-4]
     l.clear();
     actual = "";
-    e      = Location::memOf(Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Const::get(4)));
+    e      = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(4)));
     e->addUsedLocs(l);
     l.print(ost);
     QCOMPARE(actual, QString("r28,\tm[r28 - 4]"));
@@ -908,7 +908,7 @@ void ExpTest::testAddUsedLocs()
     // Binary: r24 + r25
     l.clear();
     actual = "";
-    e      = Binary::get(opPlus, Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX));
+    e      = Binary::get(opPlus, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
     e->addUsedLocs(l);
     l.print(ost);
     QCOMPARE(actual, QString("r24,\tr25"));
@@ -916,7 +916,7 @@ void ExpTest::testAddUsedLocs()
     // Ternary: r24@r25:r26
     l.clear();
     actual = "";
-    e      = Ternary::get(opAt, Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EDX));
+    e      = Ternary::get(opAt, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
     e->addUsedLocs(l);
     l.print(ost);
     QCOMPARE(actual, QString("r24,\tr25,\tr26"));
@@ -926,7 +926,7 @@ void ExpTest::testAddUsedLocs()
     actual = "";
     Assign a(e, e);
     a.setNumber(2);
-    e = RefExp::get(Location::regOf(PENT_REG_ESP), &a);
+    e = RefExp::get(Location::regOf(REG_PENT_ESP), &a);
     e->addUsedLocs(l);
     l.print(ost);
     QCOMPARE(actual, QString("r28{2}"));
@@ -935,7 +935,7 @@ void ExpTest::testAddUsedLocs()
     Assign t(e, e);
     actual = "";
     t.setNumber(3);
-    e = RefExp::get(Location::memOf(Binary::get(opMinus, RefExp::get(Location::regOf(PENT_REG_ESP), &a), Const::get(4))), &t);
+    e = RefExp::get(Location::memOf(Binary::get(opMinus, RefExp::get(Location::regOf(REG_PENT_ESP), &a), Const::get(4))), &t);
     e->addUsedLocs(l);
     l.print(ost);
     QCOMPARE(actual, QString("r28{2},\tm[r28{2} - 4]{3}"));
@@ -951,7 +951,7 @@ void ExpTest::testSubscriptVars()
     Assign s9(Terminal::get(opNil), Terminal::get(opNil));
 
     s9.setNumber(9);
-    SharedExp search = Location::regOf(PENT_REG_ESP);
+    SharedExp search = Location::regOf(REG_PENT_ESP);
     SharedExp e      = Terminal::get(opPC);
     e = e->expSubscriptVar(search, &s9);
     ost << e;
@@ -974,7 +974,7 @@ void ExpTest::testSubscriptVars()
 
     // m[r28] + r28
     actual = "";
-    e      = Binary::get(opPlus, Location::memOf(Location::regOf(PENT_REG_ESP)), Location::regOf(PENT_REG_ESP));
+    e      = Binary::get(opPlus, Location::memOf(Location::regOf(REG_PENT_ESP)), Location::regOf(REG_PENT_ESP));
     e      = e->expSubscriptVar(search, &s9);
     ost << e;
     QCOMPARE(actual, QString("m[r28{9}] + r28{9}"));
@@ -993,7 +993,7 @@ void ExpTest::testSubscriptVars()
     actual = "";
     Assign s8(Terminal::get(opNil), Terminal::get(opNil));
     s8.setNumber(8);
-    e = RefExp::get(Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(PENT_REG_ESP), &s7), Const::get(4))), &s8);
+    e = RefExp::get(Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ESP), &s7), Const::get(4))), &s8);
     e = e->expSubscriptVar(search, &s9);
     ost << e;
     QCOMPARE(actual, QString("m[r28{7} + 4]{8}"));
@@ -1001,7 +1001,7 @@ void ExpTest::testSubscriptVars()
     // r24{7} with r24{7} and 0: should not change: RefExps should not compare
     // at the top level, only with their base expression (here r24, not r24{7})
     actual = "";
-    e      = RefExp::get(Location::regOf(PENT_REG_EAX), &s7);
+    e      = RefExp::get(Location::regOf(REG_PENT_EAX), &s7);
     e      = e->expSubscriptVar(e->clone(), nullptr);
     ost << e;
     QCOMPARE(actual, QString("r24{7}"));
@@ -1020,7 +1020,7 @@ void ExpTest::testVisitors()
                                                              Binary::get(opList,
                                                                          Location::memOf( // A bare memof
                                                                              Const::get(0x1000)),
-                                                                         Binary::get(opList, Location::regOf(PENT_REG_AL), Terminal::get(opNil))))),
+                                                                         Binary::get(opList, Location::regOf(REG_PENT_AL), Terminal::get(opNil))))),
                                  &s7);
 
     // m[0x2000]
@@ -1028,7 +1028,7 @@ void ExpTest::testVisitors()
 
     // r1+m[1000]{7}*4
     SharedExp e3 = Binary::get(opPlus,
-                               Location::regOf(PENT_REG_AX),
+                               Location::regOf(REG_PENT_AX),
                                Binary::get(opMult, RefExp::get(Location::memOf(Const::get(1000)), &s7), Const::get(4)));
 
     QVERIFY(e1->containsFlags());

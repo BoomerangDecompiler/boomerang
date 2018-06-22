@@ -22,7 +22,7 @@ void AssignSetTest::testClear()
     set.clear();
     QVERIFY(set.empty());
 
-    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
+    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
     set.insert(&assign);
 
     set.clear();
@@ -36,7 +36,7 @@ void AssignSetTest::testEmpty()
     QVERIFY(set.empty());
     QVERIFY(set.size() == 0);
 
-    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
+    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
     set.insert(&assign);
     QVERIFY(!set.empty());
     QVERIFY(set.size() == 1);
@@ -48,7 +48,7 @@ void AssignSetTest::testSize()
     AssignSet set;
     QVERIFY(set.size() == 0);
 
-    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
+    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
     set.insert(&assign);
     QVERIFY(set.size() == 1);
 }
@@ -58,7 +58,7 @@ void AssignSetTest::testInsert()
 {
     AssignSet set;
 
-    Assign assign(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
+    Assign assign(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
     set.insert(&assign);
 
     AssignSet::iterator it = set.begin();
@@ -73,8 +73,8 @@ void AssignSetTest::testInsert()
 void AssignSetTest::testRemove()
 {
     AssignSet set;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
-    Assign assign2(Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
+    Assign assign2(Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
 
     QCOMPARE(set.remove(&assign1), false);
     QVERIFY(set.empty());
@@ -93,8 +93,8 @@ void AssignSetTest::testRemove()
 void AssignSetTest::testMakeUnion()
 {
     AssignSet set1, set2;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
-    Assign assign2(Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
+    Assign assign2(Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
 
     set1.insert(&assign1);
     set1.makeUnion(set2);
@@ -118,8 +118,8 @@ void AssignSetTest::testMakeUnion()
 void AssignSetTest::testMakeDiff()
 {
     AssignSet set1, set2;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
-    Assign assign2(Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
+    Assign assign2(Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
 
     set1.insert(&assign1);
     QVERIFY(set1.size() == 1);
@@ -137,8 +137,8 @@ void AssignSetTest::testMakeDiff()
 void AssignSetTest::testMakeIsect()
 {
     AssignSet set1, set2;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
-    Assign assign2(Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
+    Assign assign2(Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
 
     set1.insert(&assign1);
     set1.makeIsect(set2);
@@ -160,8 +160,8 @@ void AssignSetTest::testMakeIsect()
 void AssignSetTest::testIsSubSetOf()
 {
     AssignSet set1, set2;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
-    Assign assign2(Location::regOf(PENT_REG_EAX), Location::regOf(PENT_REG_ECX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
+    Assign assign2(Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
 
     QVERIFY(set1.isSubSetOf(set2));
     set2.insert(&assign2);
@@ -180,24 +180,24 @@ void AssignSetTest::testIsSubSetOf()
 void AssignSetTest::testDefinesLoc()
 {
     AssignSet set1;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
     set1.insert(&assign1);
 
     QVERIFY(!set1.definesLoc(nullptr));
-    QVERIFY(!set1.definesLoc(Location::regOf(PENT_REG_EAX)));
-    QVERIFY(set1.definesLoc(Location::regOf(PENT_REG_ECX)));
+    QVERIFY(!set1.definesLoc(Location::regOf(REG_PENT_EAX)));
+    QVERIFY(set1.definesLoc(Location::regOf(REG_PENT_ECX)));
 }
 
 
 void AssignSetTest::testLookupLoc()
 {
     AssignSet set1;
-    Assign assign1(Location::regOf(PENT_REG_ECX), Location::regOf(PENT_REG_EAX));
+    Assign assign1(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EAX));
     set1.insert(&assign1);
 
     QVERIFY(set1.lookupLoc(nullptr) == nullptr);
-    QCOMPARE(set1.lookupLoc(Location::regOf(PENT_REG_ECX)), &assign1);
-    QVERIFY(set1.lookupLoc(Location::regOf(PENT_REG_EAX)) == nullptr);
+    QCOMPARE(set1.lookupLoc(Location::regOf(REG_PENT_ECX)), &assign1);
+    QVERIFY(set1.lookupLoc(Location::regOf(REG_PENT_EAX)) == nullptr);
 }
 
 

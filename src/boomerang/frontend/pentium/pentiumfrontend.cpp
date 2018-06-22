@@ -73,7 +73,7 @@ bool PentiumFrontEnd::isDecAh(const RTL *r) const
 
     const Assign    *asgn = static_cast<const Assign *>(mid);
     SharedExp rhs   = asgn->getRight();
-    Binary    ahm1(opMinus, Binary::get(opSize, Const::get(8), Location::regOf(PENT_REG_AH)), Const::get(1));
+    Binary    ahm1(opMinus, Binary::get(opSize, Const::get(8), Location::regOf(REG_PENT_AH)), Const::get(1));
     return *rhs == ahm1;
 }
 
@@ -180,15 +180,15 @@ std::vector<SharedExp>& PentiumFrontEnd::getDefaultParams()
     static std::vector<SharedExp> params;
 
     if (params.size() == 0) {
-        params.push_back(Location::regOf(PENT_REG_EAX));
-        params.push_back(Location::regOf(PENT_REG_ECX));
-        params.push_back(Location::regOf(PENT_REG_EDX));
-        params.push_back(Location::regOf(PENT_REG_EBX));
-        params.push_back(Location::regOf(PENT_REG_ESP));
-        params.push_back(Location::regOf(PENT_REG_EBP));
-        params.push_back(Location::regOf(PENT_REG_ESI));
-        params.push_back(Location::regOf(PENT_REG_EDI));
-        params.push_back(Location::memOf(Location::regOf(PENT_REG_ESP)));
+        params.push_back(Location::regOf(REG_PENT_EAX));
+        params.push_back(Location::regOf(REG_PENT_ECX));
+        params.push_back(Location::regOf(REG_PENT_EDX));
+        params.push_back(Location::regOf(REG_PENT_EBX));
+        params.push_back(Location::regOf(REG_PENT_ESP));
+        params.push_back(Location::regOf(REG_PENT_EBP));
+        params.push_back(Location::regOf(REG_PENT_ESI));
+        params.push_back(Location::regOf(REG_PENT_EDI));
+        params.push_back(Location::memOf(Location::regOf(REG_PENT_ESP)));
     }
 
     return params;
@@ -200,22 +200,22 @@ std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
     static std::vector<SharedExp> returns;
 
     if (returns.size() == 0) {
-        returns.push_back(Location::regOf(PENT_REG_EAX));
-        returns.push_back(Location::regOf(PENT_REG_ECX));
-        returns.push_back(Location::regOf(PENT_REG_EDX));
-        returns.push_back(Location::regOf(PENT_REG_EBX));
-        returns.push_back(Location::regOf(PENT_REG_ESP));
-        returns.push_back(Location::regOf(PENT_REG_EBP));
-        returns.push_back(Location::regOf(PENT_REG_ESI));
-        returns.push_back(Location::regOf(PENT_REG_EDI));
-        returns.push_back(Location::regOf(PENT_REG_ST0));
-        returns.push_back(Location::regOf(PENT_REG_ST1));
-        returns.push_back(Location::regOf(PENT_REG_ST2));
-        returns.push_back(Location::regOf(PENT_REG_ST3));
-        returns.push_back(Location::regOf(PENT_REG_ST4));
-        returns.push_back(Location::regOf(PENT_REG_ST5));
-        returns.push_back(Location::regOf(PENT_REG_ST6));
-        returns.push_back(Location::regOf(PENT_REG_ST7));
+        returns.push_back(Location::regOf(REG_PENT_EAX));
+        returns.push_back(Location::regOf(REG_PENT_ECX));
+        returns.push_back(Location::regOf(REG_PENT_EDX));
+        returns.push_back(Location::regOf(REG_PENT_EBX));
+        returns.push_back(Location::regOf(REG_PENT_ESP));
+        returns.push_back(Location::regOf(REG_PENT_EBP));
+        returns.push_back(Location::regOf(REG_PENT_ESI));
+        returns.push_back(Location::regOf(REG_PENT_EDI));
+        returns.push_back(Location::regOf(REG_PENT_ST0));
+        returns.push_back(Location::regOf(REG_PENT_ST1));
+        returns.push_back(Location::regOf(REG_PENT_ST2));
+        returns.push_back(Location::regOf(REG_PENT_ST3));
+        returns.push_back(Location::regOf(REG_PENT_ST4));
+        returns.push_back(Location::regOf(REG_PENT_ST5));
+        returns.push_back(Location::regOf(REG_PENT_ST6));
+        returns.push_back(Location::regOf(REG_PENT_ST7));
         returns.push_back(Terminal::get(opPC));
     }
 
@@ -244,23 +244,23 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
                 if (st->isFpush()) {
                     Assign *asgn = new Assign(FloatType::get(80),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
-                                                 Location::regOf(PENT_REG_ST7));
+                                                 Location::regOf(REG_PENT_ST7));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST7), Location::regOf(PENT_REG_ST6));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::regOf(REG_PENT_ST6));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST6), Location::regOf(PENT_REG_ST5));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST5));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST5), Location::regOf(PENT_REG_ST4));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST4));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST4), Location::regOf(PENT_REG_ST3));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST3));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST3), Location::regOf(PENT_REG_ST2));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST2));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST2), Location::regOf(PENT_REG_ST1));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST1));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST1), Location::regOf(PENT_REG_ST0));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST0));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST0),
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
 
@@ -271,23 +271,23 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
                 else if (st->isFpop()) {
                     Assign *asgn = new Assign(FloatType::get(80),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))),
-                                                 Location::regOf(PENT_REG_ST0));
+                                                 Location::regOf(REG_PENT_ST0));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST0), Location::regOf(PENT_REG_ST1));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::regOf(REG_PENT_ST1));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST1), Location::regOf(PENT_REG_ST2));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST2));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST2), Location::regOf(PENT_REG_ST3));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST3));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST3), Location::regOf(PENT_REG_ST4));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST4));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST4), Location::regOf(PENT_REG_ST5));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST5));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST5), Location::regOf(PENT_REG_ST6));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST6));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST6), Location::regOf(PENT_REG_ST7));
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST7));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
-                    asgn = new Assign(FloatType::get(80), Location::regOf(PENT_REG_ST7),
+                    asgn = new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7),
                                                  Location::tempOf(Const::get(const_cast<char *>("tmpD9"))));
                     asgn->setBB(bb); rtl->insert(iter, asgn);
 
@@ -354,8 +354,8 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
                     if (tos != 0) {
                         // Substitute all occurrences of r[x] (where 32 <= x <= 39) with r[y] where
                         // y = 32 + (x + tos) & 7
-                        bumpRegisterAll(lhs, PENT_REG_ST0, PENT_REG_ST7, tos, 7);
-                        bumpRegisterAll(rhs, PENT_REG_ST0, PENT_REG_ST7, tos, 7);
+                        bumpRegisterAll(lhs, REG_PENT_ST0, REG_PENT_ST7, tos, 7);
+                        bumpRegisterAll(rhs, REG_PENT_ST0, REG_PENT_ST7, tos, 7);
                     }
                 }
             }
@@ -380,7 +380,7 @@ void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
                         int  K = c->getInt(); // Old register number
 
                         // Change to new register number, if in range
-                        if ((K >= PENT_REG_ST0) && (K <= PENT_REG_ST0)) {
+                        if ((K >= REG_PENT_ST0) && (K <= REG_PENT_ST0)) {
                             s->setSubExp1(Const::get(32 + ((K - 32 + tos) & 7)));
                         }
                     }
@@ -436,13 +436,13 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
         // r[24] = trunc(64, 32, r[tmpl])
         // r[26] = r[tmpl] >> 32
         Statement *a = new Assign(IntegerType::get(64), Location::tempOf(Const::get(const_cast<char *>("tmpl"))),
-                                  std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(PENT_REG_ST0)));
+                                  std::make_shared<Ternary>(opFtoi, Const::get(64), Const::get(32), Location::regOf(REG_PENT_ST0)));
         std::unique_ptr<RTL> newRTL(new RTL(addr));
         newRTL->append(a);
-        a = new Assign(Location::regOf(PENT_REG_EAX), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
+        a = new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Ternary>(opTruncs, Const::get(64), Const::get(32),
                                                                       Location::tempOf(Const::get(const_cast<char *>("tmpl")))));
         newRTL->append(a);
-        a = new Assign(Location::regOf(PENT_REG_EDX),
+        a = new Assign(Location::regOf(REG_PENT_EDX),
                        Binary::get(opShiftR, Location::tempOf(Const::get(const_cast<char *>("tmpl"))), Const::get(32)));
         newRTL->append(a);
 
@@ -454,7 +454,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
     }
     else if (name == "__mingw_allocstack") {
         std::unique_ptr<RTL> newRTL(new RTL(addr));
-        newRTL->append(new Assign(Location::regOf(PENT_REG_ESP), Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Location::regOf(PENT_REG_EAX))));
+        newRTL->append(new Assign(Location::regOf(REG_PENT_ESP), Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Location::regOf(REG_PENT_EAX))));
         lrtl.push_back(std::move(newRTL));
         m_program->removeFunction(name);
         return true;
@@ -533,7 +533,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
             if (decodeInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
                 const Assign *asgn = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
 
-                if (asgn && (*asgn->getRight() == *Location::regOf(PENT_REG_EAX))) {
+                if (asgn && (*asgn->getRight() == *Location::regOf(REG_PENT_EAX))) {
                     decodeInstruction(addr + oldInstLength + inst.numBytes, inst);
 
                     if (!inst.rtl->empty()) {
@@ -666,111 +666,111 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 
         switch (r)
         {
-        case PENT_REG_EAX:
-        case PENT_REG_ECX:
-        case PENT_REG_EDX:
-        case PENT_REG_EBX:
+        case REG_PENT_EAX:
+        case REG_PENT_ECX:
+        case REG_PENT_EDX:
+        case REG_PENT_EBX:
             //    eax         ecx      edx       ebx
             // Emit *16* r<off> := trunc(32, 16, r<24+off>)
-            if (usedRegs.find(PENT_REG_AX + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(16), Location::regOf(PENT_REG_AX + off),
-                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(PENT_REG_EAX + off)));
+            if (usedRegs.find(REG_PENT_AX + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(16), Location::regOf(REG_PENT_AX + off),
+                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(REG_PENT_EAX + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
-            if (usedRegs.find(PENT_REG_AL + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(PENT_REG_AL + off),
-                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(8), Location::regOf(PENT_REG_EAX + off)));
+            if (usedRegs.find(REG_PENT_AL + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AL + off),
+                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(8), Location::regOf(REG_PENT_EAX + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<12+off> := r<24+off>@[15:8]
-            if (usedRegs.find(PENT_REG_AH + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(PENT_REG_AH + off),
-                               std::make_shared<Ternary>(opAt, Location::regOf(PENT_REG_EAX + off), Const::get(15), Const::get(8)));
+            if (usedRegs.find(REG_PENT_AH + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AH + off),
+                               std::make_shared<Ternary>(opAt, Location::regOf(REG_PENT_EAX + off), Const::get(15), Const::get(8)));
                 proc->insertStatementAfter(s, a);
             }
             break;
 
-        case PENT_REG_AX:
-        case PENT_REG_CX:
-        case PENT_REG_DX:
-        case PENT_REG_BX:
+        case REG_PENT_AX:
+        case REG_PENT_CX:
+        case REG_PENT_DX:
+        case REG_PENT_BX:
             //    ax        cx        dx        bx
             // Emit *32* r<24+off> := r<24+off>@[31:16] | zfill(16, 32, r<off>)
-            if (usedRegs.find(PENT_REG_EAX + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(32), Location::regOf(PENT_REG_EAX + off),
+            if (usedRegs.find(REG_PENT_EAX + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
                                Binary::get(opBitOr,
-                                           std::make_shared<Ternary>(opAt, Location::regOf(PENT_REG_EAX + off), Const::get(31), Const::get(16)),
+                                           std::make_shared<Ternary>(opAt, Location::regOf(REG_PENT_EAX + off), Const::get(31), Const::get(16)),
                                            std::make_shared<Ternary>(opZfill, Const::get(16), Const::get(32), Location::regOf(off))));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<8+off> := trunc(16, 8, r<off>)
-            if (usedRegs.find(PENT_REG_AL + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(PENT_REG_AL + off),
-                               std::make_shared<Ternary>(opTruncu, Const::get(16), Const::get(8), Location::regOf(PENT_REG_EAX + off)));
+            if (usedRegs.find(REG_PENT_AL + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AL + off),
+                               std::make_shared<Ternary>(opTruncu, Const::get(16), Const::get(8), Location::regOf(REG_PENT_EAX + off)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *8* r<12+off> := r<off>@[15:8]
-            if (usedRegs.find(PENT_REG_AH + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(PENT_REG_AH + off),
+            if (usedRegs.find(REG_PENT_AH + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AH + off),
                                std::make_shared<Ternary>(opAt, Location::regOf(off), Const::get(15), Const::get(8)));
                 proc->insertStatementAfter(s, a);
             }
 
             break;
 
-        case PENT_REG_AL:
-        case PENT_REG_CL:
-        case PENT_REG_DL:
-        case PENT_REG_BL:
+        case REG_PENT_AL:
+        case REG_PENT_CL:
+        case REG_PENT_DL:
+        case REG_PENT_BL:
             //    al        cl         dl          bl
             // Emit *32* r<24+off> := r<24+off>@[31:8] | zfill(8, 32, r<8+off>)
-            if (usedRegs.find(PENT_REG_EAX + off) != usedRegs.end()) {
+            if (usedRegs.find(REG_PENT_EAX + off) != usedRegs.end()) {
                 Assign *a = new Assign(
-                    IntegerType::get(32), Location::regOf(PENT_REG_EAX + off),
-                    Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(PENT_REG_EAX + off), Const::get(31), Const::get(8)),
-                                std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(32), Location::regOf(PENT_REG_AL + off))));
+                    IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
+                    Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(REG_PENT_EAX + off), Const::get(31), Const::get(8)),
+                                std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(32), Location::regOf(REG_PENT_AL + off))));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *16* r<off> := r<off>@[15:8] | zfill(8, 16, r<8+off>)
-            if (usedRegs.find(PENT_REG_AX + off) != usedRegs.end()) {
+            if (usedRegs.find(REG_PENT_AX + off) != usedRegs.end()) {
                 Assign *a = new Assign(
-                    IntegerType::get(16), Location::regOf(PENT_REG_AX + off),
-                    Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(PENT_REG_AX + off), Const::get(15), Const::get(8)),
-                                std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(16), Location::regOf(PENT_REG_AL + off))));
+                    IntegerType::get(16), Location::regOf(REG_PENT_AX + off),
+                    Binary::get(opBitOr, std::make_shared<Ternary>(opAt, Location::regOf(REG_PENT_AX + off), Const::get(15), Const::get(8)),
+                                std::make_shared<Ternary>(opZfill, Const::get(8), Const::get(16), Location::regOf(REG_PENT_AL + off))));
                 proc->insertStatementAfter(s, a);
             }
 
             break;
 
-        case PENT_REG_AH:
-        case PENT_REG_CH:
-        case PENT_REG_DH:
-        case PENT_REG_BH:
+        case REG_PENT_AH:
+        case REG_PENT_CH:
+        case REG_PENT_DH:
+        case REG_PENT_BH:
             //     ah          ch       dh        bh
             // Emit *32* r<24+off> := r<24+off> & 0xFFFF00FF
             //        *32* r<24+off> := r<24+off> | r<12+off> << 8
-            if (usedRegs.find(PENT_REG_EAX + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(32), Location::regOf(PENT_REG_EAX + off),
-                               Binary::get(opBitOr, Location::regOf(PENT_REG_EAX + off),
-                                           Binary::get(opShiftL, Location::regOf(PENT_REG_AH + off), Const::get(8))));
+            if (usedRegs.find(REG_PENT_EAX + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
+                               Binary::get(opBitOr, Location::regOf(REG_PENT_EAX + off),
+                                           Binary::get(opShiftL, Location::regOf(REG_PENT_AH + off), Const::get(8))));
                 proc->insertStatementAfter(s, a);
-                a = new Assign(IntegerType::get(32), Location::regOf(PENT_REG_EAX + off),
-                               Binary::get(opBitAnd, Location::regOf(PENT_REG_EAX + off), Const::get(0xFFFF00FF)));
+                a = new Assign(IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
+                               Binary::get(opBitAnd, Location::regOf(REG_PENT_EAX + off), Const::get(0xFFFF00FF)));
                 proc->insertStatementAfter(s, a);
             }
 
             // Emit *16* r<off> := r<off> & 0x00FF
             //      *16* r<off> := r<off> | r<12+off> << 8
-            if (usedRegs.find(PENT_REG_AX + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(16), Location::regOf(PENT_REG_AX + off),
-                               Binary::get(opBitOr, Location::regOf(PENT_REG_AX + off),
-                                           Binary::get(opShiftL, Location::regOf(PENT_REG_AH + off), Const::get(8))));
+            if (usedRegs.find(REG_PENT_AX + off) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(16), Location::regOf(REG_PENT_AX + off),
+                               Binary::get(opBitOr, Location::regOf(REG_PENT_AX + off),
+                                           Binary::get(opShiftL, Location::regOf(REG_PENT_AH + off), Const::get(8))));
                 proc->insertStatementAfter(s, a);
                 a = new Assign(IntegerType::get(16), Location::regOf(off),
                                Binary::get(opBitAnd, Location::regOf(off), Const::get(0x00FF)));
@@ -778,30 +778,30 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             }
             break;
 
-        case PENT_REG_BP:
-        case PENT_REG_SI:
-        case PENT_REG_DI:
+        case REG_PENT_BP:
+        case REG_PENT_SI:
+        case REG_PENT_DI:
             //    bp        si        di
             // Emit *32* r<24+off_mod8> := r<24+off_mod8>@[31:16] | zfill(16, 32, r<off_mod8>)
-            if (usedRegs.find(PENT_REG_EAX + off_mod8) != usedRegs.end()) {
+            if (usedRegs.find(REG_PENT_EAX + off_mod8) != usedRegs.end()) {
                 Assign *a = new Assign(
-                    IntegerType::get(32), Location::regOf(PENT_REG_EAX + off_mod8),
+                    IntegerType::get(32), Location::regOf(REG_PENT_EAX + off_mod8),
                     Binary::get(opBitOr,
-                                std::make_shared<Ternary>(opAt, Location::regOf(PENT_REG_EAX + off_mod8), Const::get(31), Const::get(16)),
-                                std::make_shared<Ternary>(opZfill, Const::get(16), Const::get(32), Location::regOf(PENT_REG_AX + off_mod8))));
+                                std::make_shared<Ternary>(opAt, Location::regOf(REG_PENT_EAX + off_mod8), Const::get(31), Const::get(16)),
+                                std::make_shared<Ternary>(opZfill, Const::get(16), Const::get(32), Location::regOf(REG_PENT_AX + off_mod8))));
                 proc->insertStatementAfter(s, a);
             }
 
             break;
 
-        case PENT_REG_EBP:
-        case PENT_REG_ESI:
-        case PENT_REG_EDI:
+        case REG_PENT_EBP:
+        case REG_PENT_ESI:
+        case REG_PENT_EDI:
             //    ebp         esi      edi
             // Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
-            if (usedRegs.find(PENT_REG_AX + off_mod8) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(16), Location::regOf(PENT_REG_AX + off_mod8),
-                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(PENT_REG_EAX + off_mod8)));
+            if (usedRegs.find(REG_PENT_AX + off_mod8) != usedRegs.end()) {
+                Assign *a = new Assign(IntegerType::get(16), Location::regOf(REG_PENT_AX + off_mod8),
+                               std::make_shared<Ternary>(opTruncu, Const::get(32), Const::get(16), Location::regOf(REG_PENT_EAX + off_mod8)));
                 proc->insertStatementAfter(s, a);
             }
 
@@ -941,12 +941,12 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
                 if (stmt->isAssign()) {
                     Assign *asgn = static_cast<Assign *>(stmt);
 
-                    if (asgn->getLeft()->isRegN(PENT_REG_ESP) && (asgn->getRight()->getOper() == opMinus)) {
+                    if (asgn->getLeft()->isRegN(REG_PENT_ESP) && (asgn->getRight()->getOper() == opMinus)) {
                         pushcount++;
                     }
                     else if ((pushcount == i + 2) && asgn->getLeft()->isMemOf() &&
                              (asgn->getLeft()->getSubExp1()->getOper() == opMinus) &&
-                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(PENT_REG_ESP) &&
+                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(REG_PENT_ESP) &&
                              asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
                         found = asgn->getRight();
                         break;
@@ -1027,11 +1027,11 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
                 if (stmt->isAssign()) {
                     Assign *asgn = static_cast<Assign *>(stmt);
 
-                    if (asgn->getLeft()->isRegN(PENT_REG_ESP) && (asgn->getRight()->getOper() == opMinus)) {
+                    if (asgn->getLeft()->isRegN(REG_PENT_ESP) && (asgn->getRight()->getOper() == opMinus)) {
                         pushcount++;
                     }
                     else if (asgn->getLeft()->isMemOf() && (asgn->getLeft()->getSubExp1()->getOper() == opMinus) &&
-                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(PENT_REG_ESP) &&
+                             asgn->getLeft()->getSubExp1()->getSubExp1()->isRegN(REG_PENT_ESP) &&
                              asgn->getLeft()->getSubExp1()->getSubExp2()->isIntConst()) {
                         if (asgn->getRight()->isIntConst()) {
                             int n = asgn->getRight()->access<Const>()->getInt();

@@ -28,9 +28,9 @@ namespace StdC
 SparcSignature::SparcSignature(const QString& name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(SPARC_REG_SP));
+    Signature::addReturn(Location::regOf(REG_SPARC_SP));
     // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp",
-    //                                Location::regOf(SPARC_REG_SP), nullptr);
+    //                                Location::regOf(REG_SPARC_SP), nullptr);
 }
 
 
@@ -68,7 +68,7 @@ void SparcSignature::addReturn(SharedType type, SharedExp e)
     }
 
     if (e == nullptr) {
-        e = Location::regOf(SPARC_REG_O0);
+        e = Location::regOf(REG_SPARC_O0);
     }
 
     Signature::addReturn(type, e);
@@ -94,11 +94,11 @@ SharedExp SparcSignature::getArgumentExp(int n) const
         // SPARCs pass the seventh and subsequent parameters at m[%sp+92],
         // m[%esp+96], etc.
         e = Location::memOf(Binary::get(opPlus,
-                                        Location::regOf(SPARC_REG_SP), // %o6 == %sp
+                                        Location::regOf(REG_SPARC_SP), // %o6 == %sp
                                         Const::get(92 + (n - 6) * 4)));
     }
     else {
-        e = Location::regOf(SPARC_REG_O0 + n);
+        e = Location::regOf(REG_SPARC_O0 + n);
     }
 
     return e;
@@ -120,15 +120,15 @@ SharedExp SparcSignature::getProven(SharedExp left) const
         switch (r)
         {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
-        case SPARC_REG_SP: // sp
-        case SPARC_REG_I0:
-        case SPARC_REG_I1:
-        case SPARC_REG_I2:
-        case SPARC_REG_I3: // i0-i3
-        case SPARC_REG_I4:
-        case SPARC_REG_I5:
-        case SPARC_REG_I6:
-        case SPARC_REG_I7: // i4-i7
+        case REG_SPARC_SP: // sp
+        case REG_SPARC_I0:
+        case REG_SPARC_I1:
+        case REG_SPARC_I2:
+        case REG_SPARC_I3: // i0-i3
+        case REG_SPARC_I4:
+        case REG_SPARC_I5:
+        case REG_SPARC_I6:
+        case REG_SPARC_I7: // i4-i7
             // NOTE: Registers %g2 to %g4 are NOT preserved in ordinary application (non library) code
             return left;
         }
@@ -146,15 +146,15 @@ bool SparcSignature::isPreserved(SharedExp e) const
         switch (r)
         {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
-        case SPARC_REG_SP: // sp
-        case SPARC_REG_I0:
-        case SPARC_REG_I1:
-        case SPARC_REG_I2:
-        case SPARC_REG_I3: // i0-i3
-        case SPARC_REG_I4:
-        case SPARC_REG_I5:
-        case SPARC_REG_I6:
-        case SPARC_REG_I7: // i4-i7
+        case REG_SPARC_SP: // sp
+        case REG_SPARC_I0:
+        case REG_SPARC_I1:
+        case REG_SPARC_I2:
+        case REG_SPARC_I3: // i0-i3
+        case REG_SPARC_I4:
+        case REG_SPARC_I5:
+        case REG_SPARC_I6:
+        case REG_SPARC_I7: // i4-i7
             // NOTE: Registers %g2 to %g4 are NOT preserved in ordinary application (non library) code
             return true;
 
@@ -174,14 +174,14 @@ void SparcSignature::getLibraryDefines(StatementList& defs)
     }
 
     // o0-o7 (r8-r15) modified
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O0)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O1)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O2)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O3)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O4)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O5)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O6)));
-    defs.append(new ImplicitAssign(Location::regOf(SPARC_REG_O7)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O0)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O1)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O2)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O3)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O4)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O5)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O6)));
+    defs.append(new ImplicitAssign(Location::regOf(REG_SPARC_O7)));
 }
 
 
@@ -193,21 +193,21 @@ SharedExp SparcLibSignature::getProven(SharedExp left) const
         switch (r)
         {
         // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
-        case SPARC_REG_SP:
-        case SPARC_REG_I0:
-        case SPARC_REG_I1:
-        case SPARC_REG_I2:
-        case SPARC_REG_I3:
-        case SPARC_REG_I4:
-        case SPARC_REG_I5:
-        case SPARC_REG_I6:
-        case SPARC_REG_I7:
+        case REG_SPARC_SP:
+        case REG_SPARC_I0:
+        case REG_SPARC_I1:
+        case REG_SPARC_I2:
+        case REG_SPARC_I3:
+        case REG_SPARC_I4:
+        case REG_SPARC_I5:
+        case REG_SPARC_I6:
+        case REG_SPARC_I7:
         // Also the "application global registers" g2-g4 (2-4) (preserved
         // by library functions, but apparently don't have to be preserved
         // by application code)
-        case SPARC_REG_G2:
-        case SPARC_REG_G3:
-        case SPARC_REG_G4: // g2-g4
+        case REG_SPARC_G2:
+        case REG_SPARC_G3:
+        case REG_SPARC_G4: // g2-g4
             // The system global registers (g5-g7) are also preserved, but
             // should never be changed in an application anyway
             return left;
@@ -254,7 +254,7 @@ bool SparcSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) co
     return simplified->getOper() == opMinus && offsetFromSP < 92;
 }
 
-static Unary spPlus64(opMemOf, Binary::get(opPlus, Location::regOf(SPARC_REG_SP), Const::get(64)));
+static Unary spPlus64(opMemOf, Binary::get(opPlus, Location::regOf(REG_SPARC_SP), Const::get(64)));
 
 bool SparcSignature::returnCompare(const Assignment& a, const Assignment& b) const
 {
@@ -262,29 +262,29 @@ bool SparcSignature::returnCompare(const Assignment& a, const Assignment& b) con
     SharedConstExp lb = b.getLeft();
 
     // %o0 (r8) is the preferred return location
-    if (la->isRegN(SPARC_REG_O0)) {
+    if (la->isRegN(REG_SPARC_O0)) {
         return true; // r24 is less than anything
     }
 
-    if (lb->isRegN(SPARC_REG_O0)) {
+    if (lb->isRegN(REG_SPARC_O0)) {
         return false; // Nothing is less than r24
     }
 
     // Next best is %f0 (r32)
-    if (la->isRegN(SPARC_REG_F0)) {
+    if (la->isRegN(REG_SPARC_F0)) {
         return true; // r32 is less than anything that's left
     }
 
-    if (lb->isRegN(SPARC_REG_F0)) {
+    if (lb->isRegN(REG_SPARC_F0)) {
         return false; // Nothing left is less than r32
     }
 
     // Next best is %f0-1 (r64)
-    if (la->isRegN(SPARC_REG_F0TO1)) {
+    if (la->isRegN(REG_SPARC_F0TO1)) {
         return true; // r64 is less than anything that's left
     }
 
-    if (lb->isRegN(SPARC_REG_F0TO1)) {
+    if (lb->isRegN(REG_SPARC_F0TO1)) {
         return false; // Nothing left is less than r64
     }
 
@@ -312,7 +312,7 @@ bool SparcSignature::argumentCompare(const Assignment& a, const Assignment& b) c
     if (la->isRegOf()) {
         int r = la->access<Const, 1>()->getInt();
 
-        if ((r >= SPARC_REG_O0) && (r <= SPARC_REG_O5)) {
+        if ((r >= REG_SPARC_O0) && (r <= REG_SPARC_O5)) {
             ra = r;
         }
     }
@@ -320,7 +320,7 @@ bool SparcSignature::argumentCompare(const Assignment& a, const Assignment& b) c
     if (lb->isRegOf()) {
         int r = lb->access<Const, 1>()->getInt();
 
-        if ((r >= SPARC_REG_O0) && (r <= SPARC_REG_O5)) {
+        if ((r >= REG_SPARC_O0) && (r <= REG_SPARC_O5)) {
             rb = r;
         }
     }
@@ -337,8 +337,8 @@ bool SparcSignature::argumentCompare(const Assignment& a, const Assignment& b) c
         return false; // Nothing else is less than r8-r13
     }
 
-    const int ma = Util::getStackOffset(la, SPARC_REG_FP);
-    const int mb = Util::getStackOffset(lb, SPARC_REG_FP);
+    const int ma = Util::getStackOffset(la, REG_SPARC_FP);
+    const int mb = Util::getStackOffset(lb, REG_SPARC_FP);
 
     if (ma && mb) {
         return ma < mb; // Both m[sp + K]: order by memory offset

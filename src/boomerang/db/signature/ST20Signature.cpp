@@ -25,8 +25,8 @@ namespace StdC
 ST20Signature::ST20Signature(const QString& name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(ST20_REG_C));
-    // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp", Location::regOf(ST20_REG_SP), nullptr);
+    Signature::addReturn(Location::regOf(REG_ST20_C));
+    // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp", Location::regOf(REG_ST20_SP), nullptr);
     // FIXME: Should also add m[sp+0] as an implicit parameter? Holds return address
 }
 
@@ -64,7 +64,7 @@ SharedExp ST20Signature::getArgumentExp(int n) const
     }
 
     // m[%sp+4], etc.
-    SharedExp sp = Location::regOf(ST20_REG_SP);
+    SharedExp sp = Location::regOf(REG_ST20_SP);
 
     if ((m_params.size() != 0) && (*m_params[0]->getExp() == *sp)) {
         n--;
@@ -81,7 +81,7 @@ void ST20Signature::addReturn(SharedType type, SharedExp e)
     }
 
     if (e == nullptr) {
-        e = Location::regOf(ST20_REG_A);
+        e = Location::regOf(REG_ST20_A);
     }
 
     Signature::addReturn(type, e);
@@ -109,12 +109,12 @@ SharedExp ST20Signature::getProven(SharedExp left) const
 
         switch (r)
         {
-        case ST20_REG_SP:
+        case REG_ST20_SP:
             return left;
 
-        case ST20_REG_A:
-        case ST20_REG_B:
-        case ST20_REG_C:
+        case REG_ST20_A:
+        case REG_ST20_B:
+        case REG_ST20_C:
             // Registers A, B, and C are callee save
             return Location::regOf(r);
         }
