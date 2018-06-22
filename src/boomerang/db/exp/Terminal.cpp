@@ -184,30 +184,9 @@ void Terminal::print(QTextStream& os, bool) const
 }
 
 
-bool Terminal::accept(ExpVisitor *v)
+bool Terminal::acceptVisitor(ExpVisitor *v)
 {
     return v->visit(shared_from_base<Terminal>());
-}
-
-
-SharedExp Terminal::accept(ExpModifier *v)
-{
-    // This is important if we need to modify terminals
-    SharedExp val      = v->preModify(shared_from_base<Terminal>());
-    auto      term_res = std::dynamic_pointer_cast<Terminal>(val);
-
-    if (term_res) {
-        return v->postModify(term_res);
-    }
-
-    auto ref_res = std::dynamic_pointer_cast<RefExp>(val);
-
-    if (ref_res) {
-        return v->postModify(ref_res);
-    }
-
-    assert(false);
-    return nullptr;
 }
 
 
@@ -241,8 +220,21 @@ SharedType Terminal::ascendType()
     }
 }
 
+
 void Terminal::descendType(SharedType, bool& changed, Statement*)
 {
     changed = false;
 }
 
+
+SharedExp Terminal::acceptPreModifier(ExpModifier *, bool& )
+{
+    //return mod->preModify(access<Terminal>(), visitChildren));
+    return access<Terminal>();
+}
+
+
+SharedExp Terminal::acceptPostModifier(ExpModifier *mod)
+{
+    return mod->postModify(access<Terminal>());
+}

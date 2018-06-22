@@ -34,8 +34,8 @@ bool StmtConscriptSetter::visit(const Assign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    stmt->getLeft()->accept(&sc);
-    stmt->getRight()->accept(&sc);
+    stmt->getLeft()->acceptModifier(&sc);
+    stmt->getRight()->acceptModifier(&sc);
     m_curConscript = sc.getLast();
     return true;
 }
@@ -45,7 +45,7 @@ bool StmtConscriptSetter::visit(const PhiAssign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    stmt->getLeft()->accept(&sc);
+    stmt->getLeft()->acceptModifier(&sc);
     m_curConscript = sc.getLast();
     return true;
 }
@@ -55,7 +55,7 @@ bool StmtConscriptSetter::visit(const ImplicitAssign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    stmt->getLeft()->accept(&sc);
+    stmt->getLeft()->acceptModifier(&sc);
     m_curConscript = sc.getLast();
     return true;
 }
@@ -80,7 +80,7 @@ bool StmtConscriptSetter::visit(const CaseStatement *stmt)
     const SwitchInfo   *si = stmt->getSwitchInfo();
 
     if (si) {
-        si->switchExp->accept(&sc);
+        si->switchExp->acceptModifier(&sc);
         m_curConscript = sc.getLast();
     }
 
@@ -105,8 +105,8 @@ bool StmtConscriptSetter::visit(const BoolAssign *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    stmt->getCondExpr()->accept(&sc);
-    stmt->getLeft()->accept(&sc);
+    stmt->getCondExpr()->acceptModifier(&sc);
+    stmt->getLeft()->acceptModifier(&sc);
     m_curConscript = sc.getLast();
     return true;
 }
@@ -116,7 +116,7 @@ bool StmtConscriptSetter::visit(const BranchStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    stmt->getCondExpr()->accept(&sc);
+    stmt->getCondExpr()->acceptModifier(&sc);
     m_curConscript = sc.getLast();
     return true;
 }
@@ -126,7 +126,7 @@ bool StmtConscriptSetter::visit(const ImpRefStatement *stmt)
 {
     ConscriptSetter sc(m_curConscript, m_clear);
 
-    stmt->getAddressExp()->accept(&sc);
+    stmt->getAddressExp()->acceptModifier(&sc);
     m_curConscript = sc.getLast();
     return true;
 }

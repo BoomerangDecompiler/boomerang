@@ -39,17 +39,21 @@ public:
     virtual ~ExpModifier() = default;
 
 public:
-    bool isMod() const { return m_mod; }
-    void clearMod() { m_mod = false; }
+    bool isModified() const { return m_modified; }
+    void setModified(bool modified = true) { m_modified = modified; }
+    void clearModified() { m_modified = false; }
 
     /**
      * Change the expression before visiting children.
      * The default behaviour is to not modify the expression
      * and to recurse to all child expressions.
+     * \note preModify() functions must not change the type of the expression,
+     * e.g. from Binary to Const
      *
      * \param[in]  exp           the expression to change
      * \param[out] visitChildren true to continue visiting children.
-     * \returns the modified expression
+     * \returns the modified expression. Note that this is not necessarily the same expression
+     * as \p exp, but an expression of the same type as \p exp.
      */
     virtual SharedExp preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren);
 
@@ -71,15 +75,11 @@ public:
     /// \copydoc ExpModifier::preModify
     virtual SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren);
 
-    /// \copydoc ExpModifier::preModify
-    virtual SharedExp preModify(const std::shared_ptr<Const>& exp);
-
-    /// \copydoc ExpModifier::preModify
-    virtual SharedExp preModify(const std::shared_ptr<Terminal>& exp);
-
     /**
      * Modify the expression after modifying children.
      * The default behaviour is to not modify the expression.
+     * \note \ref postModify functions are allowed to return an expression of a different type,
+     * unlike \ref preModify.
      *
      * \param exp the expression to modify.
      * \returns the modified expression.
@@ -111,7 +111,7 @@ public:
     virtual SharedExp postModify(const std::shared_ptr<Terminal>& exp);
 
 protected:
-    bool m_mod = false; ///< Set if there is any change. Don't have to implement
+    bool m_modified = false; ///< Set if there is any change. Don't have to implement
 };
 
 

@@ -27,7 +27,7 @@ FlagDef::~FlagDef()
 }
 
 
-bool FlagDef::accept(ExpVisitor *v)
+bool FlagDef::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<FlagDef>(), visitChildren)) {
@@ -35,7 +35,7 @@ bool FlagDef::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -44,16 +44,13 @@ bool FlagDef::accept(ExpVisitor *v)
 }
 
 
-SharedExp FlagDef::accept(ExpModifier *v)
+SharedExp FlagDef::acceptPreModifier(ExpModifier* mod, bool& visitChildren)
 {
-    bool visitChildren = true;
-    SharedExp ret        = v->preModify(shared_from_base<FlagDef>(), visitChildren);
-    std::shared_ptr<FlagDef> flgdef_ret = std::dynamic_pointer_cast<FlagDef>(ret);
+    return mod->preModify(access<FlagDef>(), visitChildren);
+}
 
-    if (visitChildren) {
-        subExp1 = subExp1->accept(v);
-    }
 
-    assert(flgdef_ret);
-    return v->postModify(flgdef_ret);
+SharedExp FlagDef::acceptPostModifier(ExpModifier *mod)
+{
+    return mod->postModify(access<FlagDef>());
 }

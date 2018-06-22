@@ -71,25 +71,28 @@ public:
 
     bool references(const Statement *s) const { return m_def == s; }
 
-    virtual SharedExp polySimplify(bool& changed) override;
-
     /**
      * Before type analysis, implicit definitions are nullptr.
      * During and after TA, they point to an implicit assignment statement.
      */
     bool isImplicitDef() const;
 
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Unary::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
+
+private:
+    /// \copydoc Unary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Unary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     Statement *m_def; ///< The defining statement

@@ -36,11 +36,15 @@ public:
     SharedConstRTL getRTL() const { return m_rtl; }
 
 public:
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
+    /// \copydoc Unary::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
 
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedRTL m_rtl;

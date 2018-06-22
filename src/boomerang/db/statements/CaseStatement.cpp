@@ -168,11 +168,11 @@ bool CaseStatement::accept(StmtExpVisitor *v)
     }
 
     if (ret && m_dest) {
-        ret = m_dest->accept(v->ev);
+        ret = m_dest->acceptVisitor(v->ev);
     }
 
     if (ret && m_switchInfo && m_switchInfo->switchExp) {
-        ret = m_switchInfo->switchExp->accept(v->ev);
+        ret = m_switchInfo->switchExp->acceptVisitor(v->ev);
     }
 
     return ret;
@@ -186,11 +186,11 @@ bool CaseStatement::accept(StmtModifier *v)
 
     if (v->m_mod) {
         if (m_dest && visitChildren) {
-            m_dest = m_dest->accept(v->m_mod);
+            m_dest = m_dest->acceptModifier(v->m_mod);
         }
 
         if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {
-            m_switchInfo->switchExp = m_switchInfo->switchExp->accept(v->m_mod);
+            m_switchInfo->switchExp = m_switchInfo->switchExp->acceptModifier(v->m_mod);
         }
     }
 
@@ -204,11 +204,11 @@ bool CaseStatement::accept(StmtPartModifier *v)
     v->visit(this, visitChildren);
 
     if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->mod);
+        m_dest = m_dest->acceptModifier(v->mod);
     }
 
     if (m_switchInfo && m_switchInfo->switchExp && visitChildren) {
-        m_switchInfo->switchExp = m_switchInfo->switchExp->accept(v->mod);
+        m_switchInfo->switchExp = m_switchInfo->switchExp->acceptModifier(v->mod);
     }
 
     return true;

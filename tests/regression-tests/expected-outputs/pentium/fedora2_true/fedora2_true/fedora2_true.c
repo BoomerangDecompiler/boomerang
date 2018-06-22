@@ -101,41 +101,41 @@ void proc_0x08048a30(int param1)
 void proc_0x080498b0(union { FILE *; __size32; } param1, union { char[] *; __size32; } param2, union { char[] *; __size32; } param3, union { char[] *; __size32; } param4, union { __size32 *; __size32; } param5)
 {
     int eax; 		// r24
-    int ebx_1; 		// r27{0}
-    __size32 ebx_2; 		// r27{0}
-    int ebx_5; 		// r27{0}
-    int ebx_8; 		// r27{0}
-    int ebx_9; 		// r27{0}
+    __size32 ebx_1; 		// r27{0}
+    int ebx_10; 		// r27{0}
+    int ebx_13; 		// r27{0}
+    int ebx_2; 		// r27{0}
+    int ebx_3; 		// r27{0}
     int edx; 		// r26
     char *local1; 		// m[esp - 40]
-    int local11; 		// ebx_8{0}
-    int local12; 		// ebx_1{0}
+    int local11; 		// ebx_3{0}
+    int local12; 		// ebx_2{0}
     union { char *; int; } local13; 		// local1{0}
     int local5; 		// m[esp - 40]
 
-    ebx_5 = 0;
+    ebx_10 = 0;
     edx = param5 + 4;
     eax = *param5;
-    local11 = ebx_5;
-    local12 = ebx_5;
+    local11 = ebx_10;
+    local12 = ebx_10;
     if (eax != 0) {
         do {
-            ebx_8 = local11;
-            ebx_9 = ebx_8 + 1;
+            ebx_3 = local11;
+            ebx_13 = ebx_3 + 1;
             eax = *edx;
             edx += 4;
-            local11 = ebx_9;
-            local12 = ebx_9;
+            local11 = ebx_13;
+            local12 = ebx_13;
         } while (eax != 0);
     }
-    ebx_1 = local12;
+    ebx_2 = local12;
     if (param2 == 0) {
         fprintf(param1, "%s %s\n", param3, param4);
     }
     else {
         fprintf(param1, "%s (%s) %s\n", param2, param3, param4);
     }
-    if ((unsigned int)ebx_1 > (unsigned int)9) {
+    if ((unsigned int)ebx_2 > (unsigned int)9) {
         eax = 0x804a574;
 bb0x8049940:
         local5 = eax;
@@ -166,7 +166,7 @@ bb0x804998d:
         __overflow();
         goto bb0x804996e;
     }
-    switch(ebx_2) {
+    switch(ebx_1) {
     case 0:
     case 1:
         eax = 0x804a5bc;

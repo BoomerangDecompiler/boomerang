@@ -200,8 +200,10 @@ public:
     bool isConjunction() const { return m_oper == opAnd; }
     /// \returns true if this is a boolean constant
     bool isBoolConst() const { return m_oper == opTrue || m_oper == opFalse; }
-    /// \returns true if this is an equality (== or !=)
-    bool isEquality() const { return m_oper == opEquals /*|| op == opNotEqual*/; }
+    /// \returns true if this is an equality comparison using ==
+    bool isEquality() const { return m_oper == opEquals; }
+    /// \returns true if this is an equality comparison using !=
+    bool isNotEquality() const { return m_oper == opNotEqual; }
 
     /// \returns true if this is a comparison
     bool isComparison() const
@@ -307,10 +309,10 @@ public:
      * However, you can still choose to cast from Exp* to Binary* etc. and avoid the virtual call
      */
     template<class T>
-    std::shared_ptr<T> access() { return shared_from_base<T>(); }
+    inline std::shared_ptr<T> access() { return shared_from_base<T>(); }
 
     template<class T>
-    std::shared_ptr<const T> access() const { return shared_from_base<const T>(); }
+    inline std::shared_ptr<const T> access() const { return shared_from_base<const T>(); }
 
     /// Access sub-expressions recursively
     template<class T, int SUB_IDX, int ... Path>
@@ -406,17 +408,6 @@ public:
                         bool negate);
 
     /**
-     * This method simplifies an expression consisting of + and - at the top level.
-     * For example,
-     *     (%sp + 100) - (%sp + 92) will be simplified to 8.
-     *
-     * \note         Any expression can be so simplified
-     * \note         Overridden in subclasses
-     * \returns      Ptr to the simplified expression
-     */
-    virtual SharedExp simplifyArith() { return shared_from_this(); }
-
-    /**
      * This method creates an expression that is the sum of all expressions in a list.
      * E.g. given the list <4, r[8], m[14]> the resulting expression is 4+r[8]+m[14].
      *
@@ -431,10 +422,7 @@ public:
      * Apply various simplifications such as constant folding.
      * Also canonicalise by putting integer constants on the right hand side of sums,
      * adding of negative constants changed to subtracting positive constants, etc.
-     * Changes << k to a multiply
-     *
-     * \note         Address simplification (a[ m[ x ]] == x) is done separately
-     * \returns      Ptr to the simplified expression
+     * Changes << k to a multiply.
      *
      * \internal
      * This code is so big, so weird and so lame it's not funny.
@@ -442,19 +430,11 @@ public:
      * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
      * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then,
      * don't rely on this code to do anything critical. - trent 8/7/2002
+     *
+     * \returns the simplified expression.
+     * \sa ExpSimplifier
      */
     SharedExp simplify();
-
-    /**
-     * Do the work of simplification
-     * \note         Address simplification (a[ m[ x ]] == x) is done separately
-     * \returns      Ptr to the simplified expression
-     */
-    virtual SharedExp polySimplify(bool& changed)
-    {
-        changed = false;
-        return shared_from_this();
-    }
 
     /**
      * Just do addressof simplification:
@@ -463,10 +443,20 @@ public:
      * and also
      *     a[ size m[ any ]] == any
      *
-     * \todo         Replace with a visitor some day
-     * \returns      Ptr to the simplified expression
+     * \returns the simplified expression.
+     * \sa ExpAddrSimplifier
      */
-    virtual SharedExp simplifyAddr() { return shared_from_this(); }
+    SharedExp simplifyAddr();
+
+    /**
+     * This method simplifies an expression consisting of + and - at the top level.
+     * For example,
+     *     (%sp + 100) - (%sp + 92) will be simplified to 8.
+     *
+     * \returns the simplified expression.
+     * \sa ExpArithSimplifier
+     */
+    SharedExp simplifyArith();
 
     /**
      * Replace succ(r[k]) by r[k+1]
@@ -475,17 +465,7 @@ public:
      */
     SharedExp fixSuccessor(); // succ(r2) -> r3
 
-    /**
-     * Remove size operations such as zero fill, sign extend
-     * \note         Could change top level expression
-     * \note         Does not handle truncation at present
-     * \returns      Fixed expression
-     */
-    SharedExp killFill();
-
-    /// Do the work of finding used locations. If memOnly set, only look inside m[...]
-    /// Find the locations used by this expression. Use the UsedLocsFinder visitor class
-    /// If memOnly is true, only look inside m[...]
+    /// Do the work of finding used locations. If \p memOnly set, only look inside m[...]
     void addUsedLocs(LocationSet& used, bool memOnly = false);
 
     /// allZero is set if all subscripts in the whole expression are null or implicit; otherwise cleared
@@ -496,11 +476,6 @@ public:
     // FIXME: if the wrapped expression does not convert to a location, the result is subscripted, which is probably not
     // what is wanted!
     SharedExp fromSSAleft(UserProc *proc, Statement *d);
-
-    /// All the Unary derived accept functions look the same, but they have to be repeated because the particular visitor
-    /// function called each time is different for each class (because "this" is different each time)
-    virtual bool accept(ExpVisitor *v)       = 0;
-    virtual SharedExp accept(ExpModifier *v) = 0;
 
     /// Set or clear the constant subscripts
     void setConscripts(int n, bool clear);
@@ -538,7 +513,24 @@ public:
     /// Push type information down the expression tree
     virtual void descendType(SharedType /*parentType*/, bool& /*ch*/, Statement * /*s*/);
 
-    static SharedExp convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<CompoundType>& c, unsigned n);
+public:
+    /// Accept an expression visitor to visit this expression.
+    /// \returns true to continue visiting parent and sibling expressions.
+    virtual bool acceptVisitor(ExpVisitor *v)         = 0;
+
+    /// Accept an expression modifier to modify this expression and all subexpressions.
+    /// \returns the modified expression.
+    SharedExp acceptModifier(ExpModifier *mod);
+
+protected:
+    /// Accept an expression modifier to modify this expression before modifying all subexpressions.
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) = 0;
+
+    /// Accept an expression modifier to modify all subexpressions (children) of this expression.
+    virtual SharedExp acceptChildModifier(ExpModifier *) { return shared_from_this(); }
+
+    /// Accept an exppression modifier to modify this expression after modifying all subexpressions.
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) = 0;
 
 protected:
     template<typename CHILD>

@@ -284,7 +284,7 @@ SharedExp CallStatement::localiseExp(SharedExp e)
     }
 
     Localiser l(this);
-    e = e->clone()->accept(&l);
+    e = e->clone()->acceptModifier(&l);
 
     return e;
 }
@@ -1658,7 +1658,7 @@ bool CallStatement::accept(StmtModifier *v)
     }
 
     if (m_dest && v->m_mod) {
-        m_dest = m_dest->accept(v->m_mod);
+        m_dest = m_dest->acceptModifier(v->m_mod);
     }
 
     if (visitChildren) {
@@ -1700,7 +1700,7 @@ bool CallStatement::accept(StmtExpVisitor *v)
     }
 
     if (ret && m_dest) {
-        ret = m_dest->accept(v->ev);
+        ret = m_dest->acceptVisitor(v->ev);
     }
 
     for (Statement *s : m_arguments) {
@@ -1718,7 +1718,7 @@ bool CallStatement::accept(StmtPartModifier *v)
     v->visit(this, visitChildren);
 
     if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->mod);
+        m_dest = m_dest->acceptModifier(v->mod);
     }
 
     if (visitChildren) {
@@ -1738,7 +1738,7 @@ bool CallStatement::accept(StmtPartModifier *v)
 
         for (SharedExp exp : m_useCol) {
             // I believe that these should never change at the top level, e.g. m[esp{30} + 4] -> m[esp{-} - 20]
-            exp->accept(v->mod);
+            exp->acceptModifier(v->mod);
         }
     }
 

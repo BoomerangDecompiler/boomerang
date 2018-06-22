@@ -72,26 +72,25 @@ public:
     /// \copydoc Unary::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
-    /// \copydoc Unary::simplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
-    /// \copydoc Unary::simplifyArith
-    SharedExp simplifyArith() override;
-
-    /// \copydoc Unary::simplifyAddr
-    SharedExp simplifyAddr() override;
-
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::ascendType
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Unary::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
+
+protected:
+    /// \copydoc Unary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Unary::acceptChildModifier
+    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+
+    /// \copydoc Unary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
     SharedExp subExp2; ///< Second subexpression pointer

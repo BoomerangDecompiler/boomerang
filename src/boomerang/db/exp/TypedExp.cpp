@@ -126,31 +126,20 @@ bool TypedExp::operator*=(const Exp& o) const
 
 void TypedExp::print(QTextStream& os, bool html) const
 {
-    os << " ";
-    m_type->starPrint(os);
+    if (m_type) {
+        m_type->starPrint(os);
+        os << " ";
+    }
+    else {
+        os << "*v* ";
+    }
+
     SharedConstExp p1 = this->getSubExp1();
     p1->print(os, html);
 }
 
 
-
-SharedExp TypedExp::polySimplify(bool& changed)
-{
-    SharedExp res = shared_from_this();
-
-    if (subExp1->getOper() == opRegOf) {
-        // type cast on a reg of.. hmm.. let's remove this
-        res  = res->getSubExp1();
-        changed = true;
-        return res;
-    }
-
-    subExp1 = subExp1->simplify();
-    return res;
-}
-
-
-bool TypedExp::accept(ExpVisitor *v)
+bool TypedExp::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<TypedExp>(), visitChildren)) {
@@ -158,27 +147,12 @@ bool TypedExp::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!getSubExp1()->accept(v)) {
+        if (!getSubExp1()->acceptVisitor(v)) {
             return false;
         }
     }
 
     return v->postVisit(shared_from_base<TypedExp>());
-}
-
-
-SharedExp TypedExp::accept(ExpModifier *v)
-{
-    bool visitChildren;
-    auto ret          = v->preModify(shared_from_base<TypedExp>(), visitChildren);
-    auto typedexp_ret = std::dynamic_pointer_cast<TypedExp>(ret);
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(v);
-    }
-
-    assert(typedexp_ret);
-    return v->postModify(typedexp_ret);
 }
 
 
@@ -194,5 +168,20 @@ SharedType TypedExp::ascendType()
     return m_type;
 }
 
-void TypedExp::descendType(SharedType, bool&, Statement*) {}
+
+void TypedExp::descendType(SharedType, bool&, Statement*)
+{
+}
+
+
+SharedExp TypedExp::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+{
+    return mod->preModify(access<TypedExp>(), visitChildren);
+}
+
+
+SharedExp TypedExp::acceptPostModifier(ExpModifier *mod)
+{
+    return mod->postModify(access<TypedExp>());
+}
 

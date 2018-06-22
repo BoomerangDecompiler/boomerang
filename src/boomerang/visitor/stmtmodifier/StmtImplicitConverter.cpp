@@ -27,7 +27,7 @@ StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter* ic, Cfg* cfg)
 void StmtImplicitConverter::visit(PhiAssign *stmt, bool& visitChildren)
 {
     // The LHS could be a m[x] where x has a null subscript; must do first
-    stmt->setLeft(stmt->getLeft()->accept(m_mod));
+    stmt->setLeft(stmt->getLeft()->acceptModifier(m_mod));
 
     for (RefExp& exp : *stmt) {
         assert(exp.getSubExp1() != nullptr);

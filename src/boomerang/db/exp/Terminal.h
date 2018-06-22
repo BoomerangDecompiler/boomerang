@@ -54,15 +54,20 @@ public:
     /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }
 
-    /// \copydoc Exp::accept
-    bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Exp::accept
-    SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Exp::ascendType
     SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
     void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Exp::acceptVisitor
+    bool acceptVisitor(ExpVisitor *v) override;
+
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 };

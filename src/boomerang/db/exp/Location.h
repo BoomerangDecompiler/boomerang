@@ -54,16 +54,18 @@ public:
     const UserProc *getProc() const { return m_proc; }
     UserProc *getProc() { return m_proc; }
 
-    /// \copydoc Unary::polySimplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
     void getDefinitions(LocationSet& defs);
 
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
+public:
+    /// \copydoc Unary::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
 
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     UserProc *m_proc;

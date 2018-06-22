@@ -24,59 +24,55 @@ public:
     virtual ~SimpExpModifier() = default;
 
 public:
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<Ternary>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<FlagDef>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
+    /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preModify(const std::shared_ptr<Const>& exp)  override;
-
-    /// \copydoc ExpModifier::preVisit
-    SharedExp preModify(const std::shared_ptr<Terminal>& exp) override;
-
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<Unary>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<Binary>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<Ternary>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<TypedExp>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<FlagDef>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<Location>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
-    SharedExp postModify(const std::shared_ptr<Const>& exp) override;
 
-    /// \copydoc ExpModifier::postVisit
+    /// \copydoc ExpModifier::modify
+    SharedExp postModify(const std::shared_ptr<Const>& exp)  override;
+
+    /// \copydoc ExpModifier::modify
     SharedExp postModify(const std::shared_ptr<Terminal>& exp) override;
+
 
     unsigned getUnchanged() { return m_unchanged; }
     bool isTopChanged() { return !(m_unchanged & m_mask); }

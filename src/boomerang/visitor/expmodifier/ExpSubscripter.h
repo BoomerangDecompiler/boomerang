@@ -36,7 +36,7 @@ public:
     SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Terminal>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Terminal>& exp) override;
 
 private:
     SharedExp m_search;

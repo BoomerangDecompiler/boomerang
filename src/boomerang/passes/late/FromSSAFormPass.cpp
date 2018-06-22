@@ -414,10 +414,10 @@ void FromSSAFormPass::removeSubscriptsFromSymbols(UserProc *proc)
         if (from->isSubscript()) {
             // As noted above, don't touch the outer level of subscripts
             SharedExp& sub = from->refSubExp1();
-            sub = sub->accept(&esx);
+            sub = sub->acceptModifier(&esx);
         }
         else {
-            from = from->accept(&esx);
+            from = from->acceptModifier(&esx);
         }
 
         proc->mapSymbolTo(from, it->second);
@@ -431,7 +431,7 @@ void FromSSAFormPass::removeSubscriptsFromParameters(UserProc *proc)
 
     for (Statement *param : proc->getParameters()) {
         SharedExp left = static_cast<Assignment *>(param)->getLeft();
-        left = left->accept(&esx);
+        left = left->acceptModifier(&esx);
         static_cast<Assignment *>(param)->setLeft(left);
     }
 }

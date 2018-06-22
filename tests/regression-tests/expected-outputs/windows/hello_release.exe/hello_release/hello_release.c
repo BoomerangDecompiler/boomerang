@@ -1,5 +1,5 @@
-int global3_405558 = 0;
-int global3_405558 = 0;
+int global_0x00405558 = 0;
+int global_0x00405558 = 0;
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
 __size32 proc_0x004010c0(__size32 param1);
 __size32 proc_0x00401150(HINSTANCE param1);
@@ -230,7 +230,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int n
     int local98; 		// m[esp_27 - 52]{0}
     int local99; 		// m[esp_27 - 56]{0}
 
-    (*0x45de)(ebx, ebp, hInstance, 0x45de, hInstance, hPrevInstance, lpCmdLine, nCmdShow, esi, edi, 100, 0x4054f4, 103, hInstance, pc, SUBFLAGS32(esp_27, 28, (esp_27 - 28)), esp_27 - 28 == 0, esp_27 < (unsigned int)28);
+    (*0x45de)(ebx, ebp, hInstance, 0x45de, hInstance, hPrevInstance, lpCmdLine, nCmdShow, esi, edi, 100, 0x4054f4, 103, hInstance, pc, SUBFLAGS32(esp_27, 28, (esp_27 - 28)), esp_27 == 28, esp_27 < (unsigned int)28);
     *(int*)(esp_1 - 4) = 100;
     *(__size32*)(esp_1 - 8) = 0x405490;
     *(int*)(esp_1 - 12) = 109;
@@ -340,7 +340,7 @@ __size32 proc_0x004010c0(__size32 param1)
     int local8; 		// m[esp - 32]
     __size32 local9; 		// m[esp - 28]
 
-    (*0x460e)(pc, param1, 107, esi, 48, 3, 0x4011b0, 0, 0, param1, param1, param1, 0x460e, SUBFLAGS32(esp_4, 48, esp_4 - 48), esp_4 - 48 == 0, esp_4 < (unsigned int)48);
+    (*0x460e)(pc, param1, 107, esi, 48, 3, 0x4011b0, 0, 0, param1, param1, param1, 0x460e, SUBFLAGS32(esp_4, 48, esp_4 - 48), esp_4 == 48, esp_4 < (unsigned int)48);
     *(__size32*)(esp_1 - 4) = 0x7f00;
     *(int*)(esp_1 - 8) = 0;
     *(__size32*)(esp_1 + 28) = eax;
@@ -371,7 +371,7 @@ __size32 proc_0x00401150(HINSTANCE param1)
     int local12; 		// eax{0}
     union { __size32 *; __size32; } local13; 		// esp{0}
 
-    global3_405558 = param1;
+    global_0x00405558 = param1;
     eax_1 = CreateWindowExA(0, "", "", 0xcf0000, 0x80000000, 0, 0x80000000, 0, 0, 0, param1, 0); /* Warning: also results in esp_1 */
     local12 = eax_1;
     local13 = esp_1;

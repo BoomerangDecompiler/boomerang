@@ -69,26 +69,25 @@ public:
     /// \copydoc Exp::refSubExp1
     SharedExp& refSubExp1() override;
 
-    /// \copydoc Exp::polySimplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
-    /// \copydoc Exp::simplifyArith
-    virtual SharedExp simplifyArith() override;
-
-    /// \copydoc Exp::simplifyAddr
-    virtual SharedExp simplifyAddr() override;
-
-    /// \copydoc Exp::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Exp::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Exp::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
+
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Exp::acceptChildModifier
+    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 protected:
     SharedExp subExp1; ///< One subexpression pointer

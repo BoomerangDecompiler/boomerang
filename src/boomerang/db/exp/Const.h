@@ -101,12 +101,6 @@ public:
     /// Print "recursive" (extra parens not wanted at outer levels)
     void printNoQuotes(QTextStream& os) const;
 
-    /// \copydoc Exp::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Exp::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;
 
@@ -115,6 +109,17 @@ public:
 
     int getConscript() const { return m_conscript; }
     void setConscript(int cs) { m_conscript = cs; }
+
+public:
+    /// \copydoc Exp::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
+
+protected:
+    /// \copydoc Exp::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Exp::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     Data m_value;      ///< The value of this constant

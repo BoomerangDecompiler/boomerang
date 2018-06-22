@@ -71,30 +71,6 @@ SharedExp Location::clone() const
 }
 
 
-SharedExp Location::polySimplify(bool& changed)
-{
-    SharedExp res = Unary::polySimplify(changed);
-
-    if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf)) {
-        LOG_VERBOSE("polySimplify %1", res);
-
-        res  = res->getSubExp1()->getSubExp1();
-        changed = true;
-        return res;
-    }
-
-    // check for m[a[loc.x]] becomes loc.x
-    if ((res->getOper() == opMemOf) && (res->getSubExp1()->getOper() == opAddrOf) &&
-        (res->getSubExp1()->getSubExp1()->getOper() == opMemberAccess)) {
-        res  = subExp1->getSubExp1();
-        changed = true;
-        return res;
-    }
-
-    return res;
-}
-
-
 void Location::getDefinitions(LocationSet& defs)
 {
     // This is a hack to fix aliasing (replace with something general)
@@ -105,7 +81,7 @@ void Location::getDefinitions(LocationSet& defs)
 }
 
 
-bool Location::accept(ExpVisitor *v)
+bool Location::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Location>(), visitChildren)) {
@@ -113,7 +89,7 @@ bool Location::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
@@ -122,35 +98,19 @@ bool Location::accept(ExpVisitor *v)
 }
 
 
-SharedExp Location::accept(ExpModifier *v)
-{
-    // This looks to be the same source code as Unary::accept, but the type of "this" is different, which is all
-    // important here!  (it makes a call to a different visitor member function).
-    bool      visitChildren = true;
-    SharedExp ret = v->preModify(shared_from_base<Location>(), visitChildren);
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(v);
-    }
-
-    auto loc_ret = std::dynamic_pointer_cast<Location>(ret);
-
-    if (loc_ret) {
-        return v->postModify(loc_ret);
-    }
-
-    auto ref_ret = std::dynamic_pointer_cast<RefExp>(ret);
-
-    if (ref_ret) {
-        return v->postModify(ref_ret);
-    }
-
-    assert(false);
-    return nullptr;
-}
-
-
 std::shared_ptr<Location> Location::local(const QString& name, UserProc *p)
 {
     return std::make_shared<Location>(opLocal, Const::get(name), p);
+}
+
+
+SharedExp Location::acceptPreModifier(ExpModifier* mod, bool& visitChildren)
+{
+    return mod->preModify(access<Location>(), visitChildren);
+}
+
+
+SharedExp Location::acceptPostModifier(ExpModifier* mod)
+{
+    return mod->postModify(access<Location>());
 }

@@ -421,38 +421,6 @@ void ExpTest::testPartitionTerms()
 }
 
 
-void ExpTest::testSimplifyArith()
-{
-    // afp + 108 + n - (afp + 92)
-    SharedExp e = Binary::get(opMinus, Binary::get(opPlus, Binary::get(opPlus, Terminal::get(opAFP), Const::get(108)),
-                                                   Unary::get(opVar, Const::get("n"))),
-                              Binary::get(opPlus, Terminal::get(opAFP), Const::get(92)));
-
-    e = e->simplifyArith();
-
-    QString     actual;
-    QTextStream ost(&actual);
-    e->print(ost);
-    QCOMPARE(actual, QString("v[n] + 16"));
-
-    // m[(r28 + -4) + 8]
-    SharedExp mm = Location::memOf(Binary::get(opPlus, Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(-4)), Const::get(8)));
-    mm = mm->simplifyArith();
-    actual = "";
-    mm->print(ost);
-    QCOMPARE(actual, QString("m[r28 + 4]"));
-
-    // r24 + m[(r28 - 4) - 4]
-    mm = Binary::get(
-        opPlus, Location::regOf(PENT_REG_EAX),
-        Location::memOf(Binary::get(opMinus, Binary::get(opMinus, Location::regOf(PENT_REG_ESP), Const::get(4)), Const::get(4))));
-    mm = mm->simplifyArith();
-    actual = "";
-    mm->print(ost);
-    QCOMPARE(actual, QString("r24 + m[r28 - 8]"));
-}
-
-
 void ExpTest::testSimplifyUnary()
 {
     // Unaries with integer constant argument
@@ -530,7 +498,7 @@ void ExpTest::testSimplifyBinary()
 
     // r2 * 77
     Binary exp(opMults, m_rof2->clone(), Const::get(77));
-    QVERIFY(*b == exp);
+    QCOMPARE(b->toString(), exp.toString());
 
     // x*1
     std::shared_ptr<Const> subExp = std::dynamic_pointer_cast<Const>(b->getSubExp2());
@@ -604,20 +572,11 @@ void ExpTest::testSimplifyAddr()
                                                                   Location::memOf(Location::regOf(SPARC_REG_G2)))),
                                            Const::get(0),
                                            Const::get(15)));
+    QCOMPARE(QString(e->simplifyAddr()->prints()), QString("1000 - (r2@0:15)"));
 
-    e = e->simplifyAddr();
-
-    QString     actual;
-    QTextStream ost(&actual);
-    e->print(ost);
-    QCOMPARE(actual, QString("1000 - (r2@0:15)"));
-
-    actual = "";
     // Now test at top level
     e = Unary::get(opAddrOf, Location::memOf(Const::get(1000)));
-    e = e->simplifyAddr();
-    e->print(ost);
-    QCOMPARE(actual, QString("1000"));
+    QCOMPARE(QString(e->simplifyAddr()->prints()), QString("1000"));
 }
 
 
@@ -773,34 +732,6 @@ void ExpTest::testFixSuccessor()
 }
 
 
-void ExpTest::testKillFill()
-{
-    // r18 + sgnex(16,32,m[r16 + 16])
-    SharedExp e = Binary::get(opPlus,
-                              Location::regOf(SPARC_REG_L2),
-                              Ternary::get(opSgnEx, Const::get(16), Const::get(32),
-                                           Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_L0), Const::get(16)))));
-    SharedExp res = e->killFill();
-
-    QString     actual;
-    QTextStream ost(&actual);
-
-    res->print(ost);
-    QCOMPARE(actual, QString("r18 + m[r16 + 16]"));
-
-    // Note: e2 has to be a pointer, not a local Ternary, because it
-    // gets changed at the top level (and so would die in its destructor)
-    SharedExp e2 = Ternary::get(opZfill, Const::get(SPARC_REG_L0), Const::get(32),
-                                Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_L0), Const::get(16))));
-
-    // Try again but at top level
-    actual = "";
-    res    = e2->killFill();
-    res->print(ost);
-    QCOMPARE(actual, QString("m[r16 + 16]"));
-}
-
-
 void ExpTest::testAssociativity()
 {
     // (r8 + m[m[r8 + 12] + -12]) + 12
@@ -808,15 +739,21 @@ void ExpTest::testAssociativity()
                                Binary::get(opPlus,
                                            Location::regOf(SPARC_REG_O0),
                                            Location::memOf(Binary::get(opPlus,
-                                                                       Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_O0), Const::get(12))),
+                                                                       Location::memOf(Binary::get(opPlus,
+                                                                                                   Location::regOf(SPARC_REG_O0),
+                                                                                                   Const::get(12))),
                                                                        Const::get(-12)))),
                                Const::get(12));
 
     // (r8 + 12) + m[m[r8 + 12] + -12]
     SharedExp e2 = Binary::get(opPlus,
-                               Binary::get(opPlus, Location::regOf(SPARC_REG_O0), Const::get(12)),
+                               Binary::get(opPlus,
+                                           Location::regOf(SPARC_REG_O0),
+                                           Const::get(12)),
                                Location::memOf(Binary::get(opPlus,
-                                                           Location::memOf(Binary::get(opPlus, Location::regOf(SPARC_REG_O0), Const::get(12))),
+                                                           Location::memOf(Binary::get(opPlus,
+                                                                                       Location::regOf(SPARC_REG_O0),
+                                                                                       Const::get(12))),
                                                            Const::get(-12))));
 
     // Note: at one stage, simplifyArith was part of simplify().
@@ -901,34 +838,23 @@ void ExpTest::testTypeOf()
 
 void ExpTest::testSetConscripts()
 {
-    QString     actual;
-    QTextStream ost(&actual);
-
     // m[1000] + 1000
     SharedExp e = Binary::get(opPlus, Location::memOf(Const::get(1000), nullptr), Const::get(1000));
-
     e->setConscripts(0, false);
-    ost << e;
-    QCOMPARE(actual, QString("m[1000\\1\\] + 1000\\2\\"));
+    QCOMPARE(e->toString(), QString("m[1000\\1\\] + 1000\\2\\"));
 
     // Clear them
-    actual = "";
     e->setConscripts(0, true);
-    ost << e;
-    QCOMPARE(actual, QString("m[1000] + 1000"));
+    QCOMPARE(e->toString(), QString("m[1000] + 1000"));
 
     // m[r28 + 1000]
-    actual = "";
     e      = Location::memOf(Binary::get(opPlus, Location::regOf(PENT_REG_ESP), Const::get(1000)));
     e->setConscripts(0, false);
-    ost << e;
-    QCOMPARE(actual, QString("m[r28 + 1000\\1\\]"));
+    QCOMPARE(e->toString(), QString("m[r28 + 1000\\1\\]"));
 
     // Clear
-    actual = "";
     e->setConscripts(0, true);
-    ost << e;
-    QCOMPARE(actual, QString("m[r28 + 1000]"));
+    QCOMPARE(e->toString(), QString("m[r28 + 1000]"));
 }
 
 

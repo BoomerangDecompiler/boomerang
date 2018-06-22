@@ -39,7 +39,7 @@ bool ExpDotWriter::writeDotFile(const std::shared_ptr<Exp>& exp, const QString& 
     m_os = &os;
 
     *m_os << "digraph Exp {\n";
-    exp->accept(this);
+    exp->acceptVisitor(this);
     *m_os << "}";
 
     dotFile.flush();

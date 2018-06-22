@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     local5 = o0_1 + 4;
     local8 = local4;
     local4 = local8 - 1;
-    while (local8 - 1 != 0) {
+    while (local8 != 1) {
         o0 = *local5;
         o0_2 = strlen(o0); /* Warning: also results in o2, o3, o4 */
         local6 = o0_2;
@@ -55,9 +55,9 @@ bb0x10804:
                     o1 = local0 * 8 + o6 - 16;
                     o3 = o1 + local1;
                     o4 = 0x220b4;
-                    o2 = (((int)(local2 + (local2 >> 31) / 0x20000000) >> 3) * 7 + local7) * 4;
+                    o2 = ((local2 + ((unsigned int)(local2 >> 31) >> 29) >> 3) * 7 + local7) * 4;
                     o0 = *(o2 + 0x220b4);
-                    o0_5 = *(unsigned char*)((local2 - ((int)(local2 + (local2 >> 31) / 0x20000000) >> 3) * 8) * 7 + local1 + o0);
+                    o0_5 = *(unsigned char*)((local2 - (local2 + ((unsigned int)(local2 >> 31) >> 29) >> 3) * 8) * 7 + local1 + o0);
                     *(__size8*)(o1 + local1 - 112) = (char) o0_5;
                     local1++;
                     goto bb0x10804;

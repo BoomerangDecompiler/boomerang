@@ -9,10 +9,10 @@ int main(int argc, char *argv[])
 
     scanf(/* machine specific */ (int) LR + 988);
     scanf(/* machine specific */ (int) LR + 988);
-    if (5 == local0) {
+    if (local0 == 5) {
         puts(/* machine specific */ (int) LR + 992);
     }
-    if (5 != local0) {
+    if (local0 != 5) {
         puts(/* machine specific */ (int) LR + 1000);
     }
     if (5 > local0) {
@@ -39,11 +39,11 @@ int main(int argc, char *argv[])
     if ((unsigned int)5 < local1) {
         puts(/* machine specific */ (int) LR + 1120);
     }
-    if (5 - local0 >= 0) {
+    if (5 >= local0) {
         puts(/* machine specific */ (int) LR + 1132);
     }
     g3 = 5 - local0;
-    if (5 - local0 < 0) {
+    if (5 < local0) {
         g3 = puts(/* machine specific */ (int) LR + 1140);
     }
     return g3;

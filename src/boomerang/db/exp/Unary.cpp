@@ -45,10 +45,6 @@ Unary::Unary(const Unary& o)
 
 Unary::~Unary()
 {
-    // Remember to ;//delete all children
-    if (subExp1 != nullptr) {
-        // delete subExp1;
-    }
 }
 
 
@@ -414,205 +410,6 @@ void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, boo
 }
 
 
-SharedExp Unary::simplifyArith()
-{
-    if ((m_oper == opMemOf) || (m_oper == opRegOf) || (m_oper == opAddrOf) || (m_oper == opSubscript)) {
-        // assume we want to simplify the subexpression
-        subExp1 = subExp1->simplifyArith();
-    }
-
-    return shared_from_this(); // Else, do nothing
-}
-
-
-SharedExp Unary::polySimplify(bool& changed)
-{
-    SharedExp res(shared_from_this());
-
-    subExp1 = subExp1->polySimplify(changed);
-
-    if ((m_oper == opNot) || (m_oper == opLNot)) {
-        switch (subExp1->getOper())
-        {
-        case opEquals:
-            res = res->getSubExp1();
-            res->setOper(opNotEqual);
-            changed = true;
-            return res;
-
-        case opNotEqual:
-            res = res->getSubExp1();
-            res->setOper(opEquals);
-            changed = true;
-            return res;
-
-        case opLess:
-            res = res->getSubExp1();
-            res->setOper(opGtrEq);
-            changed = true;
-            return res;
-
-        case opLessEq:
-            res = res->getSubExp1();
-            res->setOper(opGtr);
-            changed = true;
-            return res;
-
-        case opGtr:
-            res = res->getSubExp1();
-            res->setOper(opLessEq);
-            changed = true;
-            return res;
-
-        case opGtrEq:
-            res = res->getSubExp1();
-            res->setOper(opLess);
-            changed = true;
-            return res;
-
-        case opLessUns:
-            res = res->getSubExp1();
-            res->setOper(opGtrEqUns);
-            changed = true;
-            return res;
-
-        case opLessEqUns:
-            res = res->getSubExp1();
-            res->setOper(opGtrUns);
-            changed = true;
-            return res;
-
-        case opGtrUns:
-            res = res->getSubExp1();
-            res->setOper(opLessEqUns);
-            changed = true;
-            return res;
-
-        case opGtrEqUns:
-            res = res->getSubExp1();
-            res->setOper(opLessUns);
-            changed = true;
-            return res;
-
-        default:
-            break;
-        }
-    }
-
-    switch (m_oper)
-    {
-    case opNeg:
-    case opNot:
-    case opLNot:
-    case opSize:
-        {
-            OPER subOP = subExp1->getOper();
-
-            if (subOP == opIntConst) {
-                // -k, ~k, or !k
-                OPER op2 = m_oper;
-                res = res->getSubExp1();
-                int k = std::static_pointer_cast<Const>(res)->getInt();
-
-                switch (op2)
-                {
-                case opNeg:
-                    k = -k;
-                    break;
-
-                case opNot:
-                    k = ~k;
-                    break;
-
-                case opLNot:
-                    k = !k;
-                    break;
-
-                case opSize: /* No change required */
-                    break;
-
-                default:
-                    break;
-                }
-
-                std::static_pointer_cast<Const>(res)->setInt(k);
-                changed = true;
-            }
-            else if (m_oper == subOP) {
-                res  = res->getSubExp1();
-                res  = res->getSubExp1();
-                changed = true;
-                break;
-            }
-        }
-        break;
-
-    case opAddrOf:
-
-        // check for a[m[x]], becomes x
-        if (subExp1->getOper() == opMemOf) {
-            res  = res->getSubExp1();
-            res  = res->getSubExp1();
-            changed = true;
-            return res;
-        }
-
-        break;
-
-    case opMemOf:
-    case opRegOf:
-        subExp1 = subExp1->polySimplify(changed);
-        // The below IS bad now. It undoes the simplification of
-        // m[r29 + -4] to m[r29 - 4]
-        // If really needed, do another polySimplify, or swap the order
-        // subExp1 = subExp1->simplifyArith();        // probably bad
-        break;
-
-    default:
-        break;
-    }
-
-    return res;
-}
-
-
-SharedExp Unary::simplifyAddr()
-{
-    SharedExp sub;
-
-    if ((m_oper == opMemOf) && subExp1->isAddrOf()) {
-        return getSubExp1()->getSubExp1();
-    }
-
-    if (m_oper != opAddrOf) {
-        // Not a[ anything ]. Recurse
-        subExp1 = subExp1->simplifyAddr();
-        return shared_from_this();
-    }
-
-    if (subExp1->getOper() == opMemOf) {
-        return getSubExp1()->getSubExp1();
-    }
-
-    if (subExp1->getOper() == opSize) {
-        sub = subExp1->getSubExp2();
-
-        if (sub->getOper() == opMemOf) {
-            // Remove the a[
-            auto b = getSubExp1();
-            // Remove the size[
-            auto u = b->getSubExp2();
-            // Remove the m[
-            return u->getSubExp1();
-        }
-    }
-
-    // a[ something else ]. Still recurse, just in case
-    subExp1 = subExp1->simplifyAddr();
-    return shared_from_this();
-}
-
-
 void Unary::printx(int ind) const
 {
     LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
@@ -620,7 +417,7 @@ void Unary::printx(int ind) const
 }
 
 
-bool Unary::accept(ExpVisitor *v)
+bool Unary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Unary>(), visitChildren)) {
@@ -628,28 +425,12 @@ bool Unary::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v)) {
+        if (!subExp1->acceptVisitor(v)) {
             return false;
         }
     }
 
     return v->postVisit(shared_from_base<Unary>());
-}
-
-
-SharedExp Unary::accept(ExpModifier *v)
-{
-    // This Unary will be changed in *either* the pre or the post visit. If it's changed in the preVisit step, then
-    // postVisit doesn't care about the type of ret. So let's call it a Unary, and the type system is happy
-    bool visitChildren = false;
-    auto ret   = std::dynamic_pointer_cast<Unary>(v->preModify(shared_from_base<Unary>(), visitChildren));
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(v);
-    }
-
-    assert(ret);
-    return v->postModify(ret);
 }
 
 
@@ -821,4 +602,23 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
     default:
         break;
     }
+}
+
+
+SharedExp Unary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+{
+    return mod->preModify(access<Unary>(), visitChildren);
+}
+
+
+SharedExp Unary::acceptChildModifier(ExpModifier *mod)
+{
+    subExp1 = subExp1->acceptModifier(mod);
+    return shared_from_this();
+}
+
+
+SharedExp Unary::acceptPostModifier(ExpModifier *mod)
+{
+    return mod->postModify(access<Unary>());
 }

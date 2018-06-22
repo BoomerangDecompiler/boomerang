@@ -13,8 +13,10 @@
 #include <QtTest/QTest>
 #include <memory>
 
+
 class Const;
 class Location;
+
 
 /**
  * Test the Exp class and subclasses
@@ -94,9 +96,6 @@ private slots:
     void testAccumulate();
 
     /// Test the simplifyArith function
-    void testSimplifyArith();
-
-    /// Test the simplifyArith function
     void testSimplifyUnary();
 
     /// Test the simplifyArith function
@@ -118,9 +117,6 @@ private slots:
 
     /// Test succ(r[k]) == r[k+1]
     void testFixSuccessor();
-
-    /// Test removal of zero fill, sign extend, truncates
-    void testKillFill();
 
     /// Test that a+K+b is the same as a+b+K when each is simplified
     void testAssociativity();

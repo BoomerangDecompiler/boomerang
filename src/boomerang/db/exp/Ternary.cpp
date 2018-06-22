@@ -361,151 +361,7 @@ void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, b
 }
 
 
-SharedExp Ternary::simplifyArith()
-{
-    subExp1 = subExp1->simplifyArith();
-    subExp2 = subExp2->simplifyArith();
-    subExp3 = subExp3->simplifyArith();
-    return shared_from_this();
-}
-
-
-SharedExp Ternary::polySimplify(bool& changed)
-{
-    SharedExp res = shared_from_this();
-
-    subExp1 = subExp1->polySimplify(changed);
-    subExp2 = subExp2->polySimplify(changed);
-    subExp3 = subExp3->polySimplify(changed);
-
-    // p ? 1 : 0 -> p
-    if ((m_oper == opTern) && (subExp2->getOper() == opIntConst) && (subExp3->getOper() == opIntConst)) {
-        auto s2 = std::static_pointer_cast<Const>(subExp2);
-        auto s3 = std::static_pointer_cast<Const>(subExp3);
-
-        if ((s2->getInt() == 1) && (s3->getInt() == 0)) {
-            res  = getSubExp1();
-            changed = true;
-            return res;
-        }
-    }
-
-    // 1 ? x : y -> x
-    if ((m_oper == opTern) && (subExp1->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == 1)) {
-        res  = this->getSubExp2();
-        changed = true;
-        return res;
-    }
-
-    // 0 ? x : y -> y
-    if ((m_oper == opTern) && (subExp1->getOper() == opIntConst) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == 0)) {
-        res  = this->getSubExp3();
-        changed = true;
-        return res;
-    }
-
-    if (((m_oper == opSgnEx) || (m_oper == opZfill)) && (subExp3->getOper() == opIntConst)) {
-        res  = this->getSubExp3();
-        changed = true;
-        return res;
-    }
-
-    if ((m_oper == opFsize) && (subExp3->getOper() == opItof) && (*subExp1 == *subExp3->getSubExp2()) &&
-        (*subExp2 == *subExp3->getSubExp1())) {
-        res  = this->getSubExp3();
-        changed = true;
-        return res;
-    }
-
-    if ((m_oper == opFsize) && (subExp3->getOper() == opFltConst)) {
-        res  = this->getSubExp3();
-        changed = true;
-        return res;
-    }
-
-    if ((m_oper == opItof) && (subExp3->getOper() == opIntConst) && (subExp2->getOper() == opIntConst) &&
-        (std::static_pointer_cast<const Const>(subExp2)->getInt() == 32)) {
-        unsigned n = std::static_pointer_cast<const Const>(subExp3)->getInt();
-        res  = Const::get(*reinterpret_cast<float *>(&n));
-        changed = true;
-        return res;
-    }
-
-    if ((m_oper == opFsize) && (subExp3->getOper() == opMemOf) && (subExp3->getSubExp1()->getOper() == opIntConst)) {
-        assert(subExp3->isLocation());
-        Address  u  = subExp3->access<Const, 1>()->getAddr();
-        auto     l  = std::static_pointer_cast<Location>(subExp3);
-        UserProc *p = l->getProc();
-
-        if (p) {
-            Prog   *prog = p->getProg();
-            double d;
-            const bool   ok =  prog->getFloatConstant(u, d, std::static_pointer_cast<const Const>(subExp1)->getInt());
-
-            if (ok) {
-                LOG_VERBOSE("Replacing %1 with %2 in %3", subExp3, d, shared_from_this());
-
-                subExp3 = Const::get(d);
-                changed    = true;
-                return res;
-            }
-        }
-    }
-
-    if ((m_oper == opTruncu) && subExp3->isIntConst()) {
-        int          from = std::static_pointer_cast<const Const>(subExp1)->getInt();
-        int          to   = std::static_pointer_cast<const Const>(subExp2)->getInt();
-        unsigned int val  = std::static_pointer_cast<const Const>(subExp3)->getInt();
-
-        if (from == 32) {
-            if (to == 16) {
-                res  = Const::get(Address(val & 0xffff));
-                changed = true;
-                return res;
-            }
-
-            if (to == 8) {
-                res  = Const::get(Address(val & 0xff));
-                changed = true;
-                return res;
-            }
-        }
-    }
-
-    if ((m_oper == opTruncs) && subExp3->isIntConst()) {
-        int from = std::static_pointer_cast<const Const>(subExp1)->getInt();
-        int to   = std::static_pointer_cast<const Const>(subExp2)->getInt();
-        int val  = std::static_pointer_cast<const Const>(subExp3)->getInt();
-
-        if (from == 32) {
-            if (to == 16) {
-                res  = Const::get(val & 0xffff);
-                changed = true;
-                return res;
-            }
-
-            if (to == 8) {
-                res  = Const::get(val & 0xff);
-                changed = true;
-                return res;
-            }
-        }
-    }
-
-    return res;
-}
-
-
-SharedExp Ternary::simplifyAddr()
-{
-    subExp1 = subExp1->simplifyAddr();
-    subExp2 = subExp2->simplifyAddr();
-    subExp3 = subExp3->simplifyAddr();
-    return shared_from_this();
-}
-
-
-bool Ternary::accept(ExpVisitor *v)
+bool Ternary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
     if (!v->preVisit(shared_from_base<Ternary>(), visitChildren)) {
@@ -513,28 +369,12 @@ bool Ternary::accept(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->accept(v) || !subExp2->accept(v) || !subExp3->accept(v)) {
+        if (!subExp1->acceptVisitor(v) || !subExp2->acceptVisitor(v) || !subExp3->acceptVisitor(v)) {
             return false;
         }
     }
 
     return v->postVisit(shared_from_base<Ternary>());
-}
-
-
-SharedExp Ternary::accept(ExpModifier *v)
-{
-    bool visitChildren = true;
-    auto ret = std::static_pointer_cast<Ternary>(v->preModify(shared_from_base<Ternary>(), visitChildren));
-
-    if (visitChildren) {
-        subExp1 = subExp1->accept(v);
-        subExp2 = subExp2->accept(v);
-        subExp3 = subExp3->accept(v);
-    }
-
-    assert(std::dynamic_pointer_cast<Ternary>(ret));
-    return v->postModify(ret);
 }
 
 
@@ -591,4 +431,25 @@ void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s
     default:
         break;
     }
+}
+
+
+SharedExp Ternary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+{
+    return mod->preModify(access<Ternary>(), visitChildren);
+}
+
+
+SharedExp Ternary::acceptChildModifier(ExpModifier* mod)
+{
+    subExp1 = subExp1->acceptModifier(mod);
+    subExp2 = subExp2->acceptModifier(mod);
+    subExp3 = subExp3->acceptModifier(mod);
+    return shared_from_this();
+}
+
+
+SharedExp Ternary::acceptPostModifier(ExpModifier *mod)
+{
+    return mod->postModify(access<Ternary>());
 }

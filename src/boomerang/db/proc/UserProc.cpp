@@ -2630,7 +2630,7 @@ bool UserProc::removeRedundantParameters()
         // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
         bparam = bparam->expSubscriptAllNull();                  // Now m[sp{-}+K]{-}
         ImplicitConverter ic(m_cfg);
-        bparam = bparam->accept(&ic);                            // Now m[sp{0}+K]{0}
+        bparam = bparam->acceptModifier(&ic);                            // Now m[sp{0}+K]{0}
         assert(bparam->isSubscript());
         bparam = bparam->access<Exp, 1>();                       // now m[sp{0}+K] (bare parameter)
 

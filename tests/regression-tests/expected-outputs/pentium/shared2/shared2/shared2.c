@@ -93,7 +93,7 @@ void gcc2_compiled.()
     *(__size32*)(eax + 28) = 7;
     *(__size32*)(eax + 44) = 0x8049c10;
     *(__size32*)(eax + 32) = 8;
-    ecx = gcc2_compiled.(pc, eax + 36, ebx, esi, edi, ebp, eax + 36, ecx, edx, eax + 16, esp_16 - 4, eax, edi, SUBFLAGS32(esp_16 - 16, 24, (esp_16 - 40)), esp_16 - 40 == 0, (unsigned int)(esp_16 - 16) < (unsigned int)24); /* Warning: also results in edx, ebx, esp_1, ebp, esi, edi */
+    ecx = gcc2_compiled.(pc, eax + 36, ebx, esi, edi, ebp, eax + 36, ecx, edx, eax + 16, esp_16 - 4, eax, edi, SUBFLAGS32(esp_16 - 16, 24, (esp_16 - 40)), esp_16 == 40, (unsigned int)(esp_16 - 16) < (unsigned int)24); /* Warning: also results in edx, ebx, esp_1, ebp, esi, edi */
     eax = *(esi + 12);
     *(__size32*)esp_1 = esi;
     (**(*(esi + 12) + 8))(local27, local23, local19, local15, local11, local7, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local31, local35, local39);
@@ -109,7 +109,7 @@ void gcc2_compiled.()
     }
     eax = *(ebx + 8);
     *(int*)esp_7 = ebx;
-    (**(*(ebx + 8) + 8))(local29, local25, local21, local17, local13, local9, al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, SUBFLAGS32(esp_7 + 16, 12, esp_7 + 4), esp_7 + 4 == 0, esp_7 + 16 < (unsigned int)12);
+    (**(*(ebx + 8) + 8))(local29, local25, local21, local17, local13, local9, al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, SUBFLAGS32(esp_7 + 16, 12, esp_7 + 4), esp_7 == -4, esp_7 + 16 < (unsigned int)12);
     ebx = *edi;
     eax = *(ebx + 8);
     *(__size32*)esp_10 = ebx;

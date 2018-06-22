@@ -8,10 +8,10 @@ int main(int argc, char *argv[])
 
     scanf(0x11728);
     scanf(0x11728);
-    if (5 == local0) {
+    if (local0 == 5) {
         printf(0x11730);
     }
-    if (5 != local0) {
+    if (local0 != 5) {
         printf(0x11738);
     }
     if (5 > local0) {
@@ -36,10 +36,10 @@ int main(int argc, char *argv[])
     if ((unsigned int)5 < (unsigned int)local1) {
         printf(0x117c8);
     }
-    if (5 - local0 >= 0) {
+    if (5 >= local0) {
         printf(0x117d8);
     }
-    if (5 - local0 < 0) {
+    if (5 < local0) {
         printf(0x117e0);
     }
     return 0;

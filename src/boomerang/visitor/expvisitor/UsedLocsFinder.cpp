@@ -34,7 +34,7 @@ bool UsedLocsFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitC
         // Care! Need to turn off the memOnly flag for work inside the m[...], otherwise everything will get ignored
         bool wasMemOnly = m_memOnly;
         m_memOnly = false;
-        child->accept(this);
+        child->acceptVisitor(this);
         m_memOnly = wasMemOnly;
         visitChildren = false; // Already looked inside child
     }
@@ -92,14 +92,14 @@ bool UsedLocsFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChi
     SharedExp refd = e->getSubExp1();
 
     if (refd->isMemOf()) {
-        refd->getSubExp1()->accept(this);
+        refd->getSubExp1()->acceptVisitor(this);
     }
     else if (refd->isArrayIndex()) {
-        refd->getSubExp1()->accept(this);
-        refd->getSubExp2()->accept(this);
+        refd->getSubExp1()->acceptVisitor(this);
+        refd->getSubExp2()->acceptVisitor(this);
     }
     else if (refd->isMemberOf()) {
-        refd->getSubExp1()->accept(this);
+        refd->getSubExp1()->acceptVisitor(this);
     }
 
     return true;

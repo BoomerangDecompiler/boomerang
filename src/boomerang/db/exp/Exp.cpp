@@ -27,6 +27,9 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
+#include "boomerang/visitor/expmodifier/ExpAddressSimplifier.h"
+#include "boomerang/visitor/expmodifier/ExpArithSimplifier.h"
+#include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
 #include "boomerang/visitor/expmodifier/ExpPropagator.h"
@@ -292,7 +295,7 @@ void Exp::partitionTerms(std::list<SharedExp>& positives, std::list<SharedExp>& 
 
     case opIntConst:
         {
-            int k = static_cast<Const *>(this)->getInt();
+            int k = access<Const>()->getInt();
 
             if (negate) {
                 integers.push_back(-k);
@@ -355,13 +358,11 @@ SharedExp Exp::simplify()
     bool   changed = false; // True if simplified at this or lower level
     SharedExp res  = shared_from_this();
 
-    // res = ExpTransformer::applyAllTo(res, changed);
-    // return res;
     do {
-        changed = false;
-        // SharedExp before = res->clone();
-        res = res->polySimplify(changed); // Call the polymorphic simplify
-    } while (changed);                    // If modified at this (or a lower) level, redo
+        ExpSimplifier es;
+        res = res->acceptModifier(&es);
+        changed = es.isModified();
+    } while (changed); // If modified at this (or a lower) level, redo
 
     // The below is still important. E.g. want to canonicalise sums, so we know that a + K + b is the same as a + b + K
     // No! This slows everything down, and it's slow enough as it is. Call only where needed:
@@ -376,54 +377,17 @@ SharedExp Exp::simplify()
 }
 
 
-SharedExp accessMember(SharedExp parent, const std::shared_ptr<CompoundType>& c, int n)
+SharedExp Exp::simplifyAddr()
 {
-    unsigned   r    = c->getOffsetRemainder(n * 8);
-    QString    name = c->getNameAtOffset(n * 8);
-    SharedType t    = c->getTypeAtOffset(n * 8);
-    SharedExp  res = Binary::get(opMemberAccess, parent, Const::get(name));
-
-    assert((r % 8) == 0);
-
-    if (t->resolvesToCompound()) {
-        res = accessMember(res, t->as<CompoundType>(), r / 8);
-    }
-    else if (t->resolvesToPointer() && t->as<PointerType>()->getPointsTo()->resolvesToCompound()) {
-        if (r != 0) {
-            assert(false);
-        }
-    }
-    else if (t->resolvesToArray()) {
-        std::shared_ptr<ArrayType> a = t->as<ArrayType>();
-        SharedType                 array_member_type = a->getBaseType();
-        int b = array_member_type->getSize() / 8;
-        assert(array_member_type->getSize() % 8);
-
-        res = Binary::get(opArrayIndex, res, Const::get(n / b));
-
-        if (array_member_type->resolvesToCompound()) {
-            res = accessMember(res, array_member_type->as<CompoundType>(), n % b);
-        }
-    }
-
-    return res;
+    ExpAddressSimplifier eas;
+    return this->acceptModifier(&eas);
 }
 
 
-SharedExp Exp::convertFromOffsetToCompound(SharedExp parent, std::shared_ptr<CompoundType>& c, unsigned n)
+SharedExp Exp::simplifyArith()
 {
-    if (n * 8 >= c->getSize()) {
-        return nullptr;
-    }
-
-    QString name = c->getNameAtOffset(n * 8);
-
-    if (!name.isNull() && (name != "pad")) {
-        SharedExp l = Location::memOf(parent);
-        return Unary::get(opAddrOf, accessMember(l, c, n));
-    }
-
-    return nullptr;
+    ExpArithSimplifier eas;
+    return this->acceptModifier(&eas);
 }
 
 
@@ -505,25 +469,6 @@ SharedExp Exp::fixSuccessor()
 }
 
 
-SharedExp Exp::killFill()
-{
-    static Ternary srch1(opZfill, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
-    static Ternary srch2(opSgnEx, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
-    SharedExp      res = shared_from_this();
-
-    std::list<SharedExp *> result;
-    doSearch(srch1, res, result, false);
-    doSearch(srch2, res, result, false);
-
-    for (SharedExp *it : result) {
-        // Kill the sign extend bits
-        *it = (*it)->getSubExp3();
-    }
-
-    return res;
-}
-
-
 bool Exp::isTemp() const
 {
     if (m_oper == opTemp) {
@@ -570,9 +515,9 @@ SharedExp Exp::removeSubscripts(bool& allZero)
 SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
 {
     auto r = RefExp::get(shared_from_this(), def); // "Wrap" in a ref
-    ExpSsaXformer *xformer = new ExpSsaXformer(proc);
-    SharedExp result = r->accept(xformer);
-    delete xformer;
+
+    ExpSsaXformer xformer(proc);
+    SharedExp result = r->acceptModifier(&xformer);
     return result;
 }
 
@@ -580,14 +525,14 @@ SharedExp Exp::fromSSAleft(UserProc *proc, Statement *def)
 void Exp::setConscripts(int n, bool clear)
 {
     ConscriptSetter sc(n, clear);
-    this->accept(&sc);
+    this->acceptModifier(&sc);
 }
 
 
 SharedExp Exp::stripSizes()
 {
     SizeStripper ss;
-    return this->accept(&ss);
+    return this->acceptModifier(&ss);
 }
 
 
@@ -611,7 +556,7 @@ QString Exp::getAnyStrConst()
         return QString::null;
     }
 
-    return std::static_pointer_cast<const Const>(e)->getStr();
+    return e->access<Const>()->getStr();
 }
 
 
@@ -619,7 +564,7 @@ void Exp::addUsedLocs(LocationSet& used, bool memOnly)
 {
     UsedLocsFinder ulf(used, memOnly);
 
-    accept(&ulf);
+    acceptVisitor(&ulf);
 }
 
 
@@ -627,7 +572,7 @@ SharedExp Exp::expSubscriptVar(const SharedExp& e, Statement *def)
 {
     ExpSubscripter es(e, def);
 
-    return accept(&es);
+    return acceptModifier(&es);
 }
 
 
@@ -647,7 +592,7 @@ SharedExp Exp::bypass()
 {
     CallBypasser cb(nullptr);
 
-    return accept(&cb);
+    return acceptModifier(&cb);
 }
 
 
@@ -655,7 +600,7 @@ int Exp::getComplexityDepth(UserProc *proc)
 {
     ComplexityFinder cf(proc);
 
-    accept(&cf);
+    acceptVisitor(&cf);
     return cf.getDepth();
 }
 
@@ -664,7 +609,7 @@ int Exp::getMemDepth()
 {
     MemDepthFinder mdf;
 
-    accept(&mdf);
+    acceptVisitor(&mdf);
     return mdf.getDepth();
 }
 
@@ -673,20 +618,18 @@ SharedExp Exp::propagateAll()
 {
     ExpPropagator ep;
 
-    return accept(&ep);
+    return acceptModifier(&ep);
 }
 
 
 SharedExp Exp::propagateAllRpt(bool& changed)
 {
-    ExpPropagator ep;
-
     changed = false;
     SharedExp ret = shared_from_this();
 
     while (true) {
-        ep.clearChanged(); // Want to know if changed this *last* accept()
-        ret = ret->accept(&ep);
+        ExpPropagator ep;
+        ret = ret->acceptModifier(&ep);
 
         if (ep.isChanged()) {
             changed = true;
@@ -704,7 +647,7 @@ bool Exp::containsFlags()
 {
     FlagsFinder ff;
 
-    accept(&ff);
+    acceptVisitor(&ff);
     return ff.isFound();
 }
 
@@ -713,6 +656,19 @@ bool Exp::containsBadMemof()
 {
     BadMemofFinder bmf;
 
-    accept(&bmf);
+    acceptVisitor(&bmf);
     return bmf.isFound();
+}
+
+
+SharedExp Exp::acceptModifier(ExpModifier* mod)
+{
+    bool      visitChildren = true;
+    SharedExp ret = acceptPreModifier(mod, visitChildren);
+
+    if (visitChildren) {
+        this->acceptChildModifier(mod);
+    }
+
+    return ret->acceptPostModifier(mod);
 }

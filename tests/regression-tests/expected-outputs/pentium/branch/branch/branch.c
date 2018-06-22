@@ -65,13 +65,13 @@ bb0x8048a0b:
             goto bb0x80489f9;
         }
     }
-    if (5 - local0 < 0) {
+    if (5 < local0) {
 bb0x8048a45:
         printf("Plus\n");
     }
     else {
         printf("Minus\n");
-        if (5 - local0 < 0) {
+        if (5 < local0) {
             goto bb0x8048a45;
         }
     }

@@ -216,7 +216,7 @@ bool GotoStatement::accept(StmtExpVisitor *v)
     }
 
     if (ret && m_dest) {
-        ret = m_dest->accept(v->ev);
+        ret = m_dest->acceptVisitor(v->ev);
     }
 
     return ret;
@@ -230,7 +230,7 @@ bool GotoStatement::accept(StmtModifier *v)
 
     if (v->m_mod) {
         if (m_dest && visitChildren) {
-            m_dest = m_dest->accept(v->m_mod);
+            m_dest = m_dest->acceptModifier(v->m_mod);
         }
     }
 
@@ -244,7 +244,7 @@ bool GotoStatement::accept(StmtPartModifier *v)
     v->visit(this, visitChildren);
 
     if (m_dest && visitChildren) {
-        m_dest = m_dest->accept(v->mod);
+        m_dest = m_dest->acceptModifier(v->mod);
     }
 
     return true;

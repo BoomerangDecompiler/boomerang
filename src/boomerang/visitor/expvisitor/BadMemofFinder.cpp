@@ -38,7 +38,7 @@ bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChi
     if (base->isMemOf()) {
         // Beware: it may be possible to have a bad memof inside a subscripted one
         SharedExp addr = base->getSubExp1();
-        addr->accept(this);
+        addr->acceptVisitor(this);
 
         if (m_found) {
             return false; // Don't continue searching

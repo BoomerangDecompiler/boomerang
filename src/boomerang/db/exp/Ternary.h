@@ -72,26 +72,25 @@ public:
     /// \copydoc Binary::doSearchChildren
     void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
 
-    /// \copydoc Binary::polySimplify
-    SharedExp polySimplify(bool& changed) override;
-
-    /// \copydoc Binary::simplifyArith
-    SharedExp simplifyArith() override;
-
-    /// \copydoc Binary::simplifyAddr
-    SharedExp simplifyAddr() override;
-
-    /// \copydoc Binary::accept
-    bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Binary::accept
-    SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Binary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Binary::descendType
     virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+
+public:
+    /// \copydoc Binary::acceptVisitor
+    bool acceptVisitor(ExpVisitor *v) override;
+
+protected:
+    /// \copydoc Binary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Binary::acceptChildModifier
+    virtual SharedExp acceptChildModifier(ExpModifier *mod) override;
+
+    /// \copydoc Binary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedExp subExp3; ///< Third subexpression pointer

@@ -61,20 +61,22 @@ public:
 
     void setType(SharedType ty) { m_type = ty; }
 
-    /// \copydoc Unary::polySimplify
-    virtual SharedExp polySimplify(bool& changed) override;
-
-    /// \copydoc Unary::accept
-    virtual bool accept(ExpVisitor *v) override;
-
-    /// \copydoc Unary::accept
-    virtual SharedExp accept(ExpModifier *v) override;
-
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
     virtual void descendType(SharedType, bool&, Statement *) override;
+
+public:
+    /// \copydoc Unary::acceptVisitor
+    virtual bool acceptVisitor(ExpVisitor *v) override;
+
+protected:
+    /// \copydoc Unary::acceptPreModifier
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+
+    /// \copydoc Unary::acceptPostModifier
+    virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
     SharedType m_type;
