@@ -25,6 +25,22 @@
 
 void ExpArithSimplifierTest::testSimplifyUnary()
 {
+    // a[eax - eax] is simplified by simplifyArith()
+    TEST_SIMPLIFY(Unary::get(opAddrOf,
+                             Binary::get(opMinus,
+                                         Location::regOf(PENT_REG_EAX),
+                                         Location::regOf(PENT_REG_EAX))),
+                  Unary::get(opAddrOf, Const::get(0)));
+
+    // -(eax - eax) is only simplified by simplify()
+    TEST_SIMPLIFY(Unary::get(opNeg,
+                             Binary::get(opMinus,
+                                         Location::regOf(PENT_REG_EAX),
+                                         Location::regOf(PENT_REG_EAX))),
+                  Unary::get(opNeg,
+                             Binary::get(opMinus,
+                                         Location::regOf(PENT_REG_EAX),
+                                         Location::regOf(PENT_REG_EAX))));
 }
 
 
