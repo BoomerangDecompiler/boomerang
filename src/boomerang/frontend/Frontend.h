@@ -129,11 +129,13 @@ public:
     void readLibraryCatalog();                        ///< read from default catalog
 
     /// Decode all undecoded procedures and return a new program containing them.
-    bool decode(bool decodeMain = true);
+    bool decodeEntryPointsRecursive(bool decodeMain = true);
 
     /// Decode all procs starting at a given address
-    /// \note Somehow, addr == Address::INVALID has come to mean decode anything not already decoded
-    bool decode(Address addr);
+    bool decodeRecursive(Address addr);
+
+    /// Decode all undecoded functions.
+    bool decodeUndecoded();
 
     /// Decode one proc starting at a given address
     /// \p addr should be the address of an UserProc

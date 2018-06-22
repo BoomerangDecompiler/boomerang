@@ -1263,8 +1263,8 @@ void StatementTest::testBypass()
     Type::clearNamedTypes();
     prog->setFrontEnd(fe);
 
-    fe->decode(true);                   // Decode main
-    fe->decode(Address::INVALID); // Decode anything undecoded
+    fe->decodeEntryPointsRecursive();
+    fe->decodeUndecoded();
 
     bool    gotMain;
     Address addr = fe->getMainEntryPoint(gotMain);

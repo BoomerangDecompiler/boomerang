@@ -257,7 +257,7 @@ void FrontSparcTest::testDelaySlot()
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
     Type::clearNamedTypes();
-    fe->decode(prog);
+    fe->decodeEntryPointsRecursive(prog);
 
     bool    gotMain;
     Address addr = fe->getMainEntryPoint(gotMain);

@@ -528,7 +528,7 @@ bool Prog::decodeEntryPoint(Address entryAddr)
             return false;
         }
 
-        m_fe->decode(entryAddr);
+        m_fe->decodeRecursive(entryAddr);
         finishDecode();
     }
 

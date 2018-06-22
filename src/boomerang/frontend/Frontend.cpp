@@ -283,7 +283,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 }
 
 
-bool IFrontEnd::decode(bool decodeMain)
+bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 {
     if (!decodeMain) {
         return true;
@@ -303,7 +303,7 @@ bool IFrontEnd::decode(bool decodeMain)
         std::vector<Address> entrypoints = getEntryPoints();
 
         for (auto& entrypoint : entrypoints) {
-            if (!decode(entrypoint)) {
+            if (!decodeRecursive(entrypoint)) {
                 return false;
             }
         }
@@ -311,7 +311,7 @@ bool IFrontEnd::decode(bool decodeMain)
         return true;
     }
 
-    decode(a);
+    decodeRecursive(a);
     m_program->addEntryPoint(a);
 
     if (!gotMain) {
@@ -356,71 +356,76 @@ bool IFrontEnd::decode(bool decodeMain)
 }
 
 
-bool IFrontEnd::decode(Address addr)
+bool IFrontEnd::decodeRecursive(Address addr)
 {
-    if (addr != Address::INVALID) {
-        Function *newProc = m_program->getOrCreateFunction(addr);
+    assert(addr != Address::INVALID);
 
-        // Sometimes, we have to adjust the entry address since
-        // the instruction at addr is just a jump to another address.
-        addr = newProc->getEntryAddress();
-        LOG_MSG("Starting decode at address %1", addr);
-        UserProc *proc = static_cast<UserProc *>(m_program->getFunctionByAddr(addr));
+    Function *newProc = m_program->getOrCreateFunction(addr);
 
-        if (proc == nullptr) {
-            LOG_MSG("No proc found at address %1", addr);
-            return false;
-        }
-        else if (proc->isLib()) {
-            LOG_MSG("NOT decoding library proc at address %1", addr);
-            return false;
-        }
+    // Sometimes, we have to adjust the entry address since
+    // the instruction at addr is just a jump to another address.
+    addr = newProc->getEntryAddress();
+    LOG_MSG("Starting decode at address %1", addr);
+    UserProc *proc = static_cast<UserProc *>(m_program->getFunctionByAddr(addr));
 
-        QTextStream os(stderr); // rtl output target
-
-        if (processProc(addr, proc, os)) {
-            proc->setDecoded();
-        }
+    if (proc == nullptr) {
+        LOG_MSG("No proc found at address %1", addr);
+        return false;
     }
-    else {   // a == Address::INVALID
-        bool change = true;
-        LOG_MSG("Looking for undecoded procedures to decode...");
+    else if (proc->isLib()) {
+        LOG_MSG("NOT decoding library proc at address %1", addr);
+        return false;
+    }
 
-        while (change) {
-            change = false;
+    QTextStream os(stderr); // rtl output target
 
-            for (const auto& m : m_program->getModuleList()) {
-                for (Function *function : *m) {
-                    if (function->isLib()) {
-                        continue;
-                    }
+    if (processProc(addr, proc, os)) {
+        proc->setDecoded();
+    }
 
-                    UserProc *userProc = static_cast<UserProc *>(function);
+    return m_program->isWellFormed();
+}
 
-                    if (userProc->isDecoded()) {
-                        continue;
-                    }
 
-                    // undecoded userproc.. decode it
-                    change = true;
-                    QTextStream os(stderr); // rtl output target
+bool IFrontEnd::decodeUndecoded()
+{
+    bool change = true;
+    LOG_MSG("Looking for undecoded procedures to decode...");
 
-                    if (!processProc(userProc->getEntryAddress(), userProc, os)) {
-                        return false;
-                    }
+    while (change) {
+        change = false;
 
-                    userProc->setDecoded();
+        for (const auto& m : m_program->getModuleList()) {
+            for (Function *function : *m) {
+                if (function->isLib()) {
+                    continue;
+                }
 
-                    // Break out of the loops if not decoding children
-                    if (!SETTING(decodeChildren)) {
-                        break;
-                    }
+                UserProc *userProc = static_cast<UserProc *>(function);
+
+                if (userProc->isDecoded()) {
+                    continue;
+                }
+
+                // undecoded userproc.. decode it
+                change = true;
+                QTextStream os(stderr); // rtl output target
+
+                if (!processProc(userProc->getEntryAddress(), userProc, os)) {
+                    return false;
+                }
+
+                userProc->setDecoded();
+
+                // Break out of the loops if not decoding children
+                if (!SETTING(decodeChildren)) {
+                    break;
                 }
             }
+        }
 
-            if (!SETTING(decodeChildren)) {
-                break;
-            }
+        if (!SETTING(decodeChildren)) {
+            break;
         }
     }
 
@@ -584,8 +589,8 @@ bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
 }
 
 
-bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/, bool /*frag*/ /* = false */,
-                            bool spec /* = false */)
+bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
+                            bool /*frag*/ /* = false */, bool spec /* = false */)
 {
     BasicBlock *currentBB;
 

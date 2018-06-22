@@ -203,7 +203,7 @@ void DataFlowTest::testRenameVars()
     Prog *prog = m_project.getProg();
     IFrontEnd *fe  = prog->getFrontEnd();
     Type::clearNamedTypes();
-    fe->decode();
+    fe->decodeEntryPointsRecursive();
 
     const auto& m = *prog->getModuleList().begin();
     QVERIFY(m != nullptr);
