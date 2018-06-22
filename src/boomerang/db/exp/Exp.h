@@ -422,10 +422,7 @@ public:
      * Apply various simplifications such as constant folding.
      * Also canonicalise by putting integer constants on the right hand side of sums,
      * adding of negative constants changed to subtracting positive constants, etc.
-     * Changes << k to a multiply
-     *
-     * \note         Address simplification (a[ m[ x ]] == x) is done separately
-     * \returns      Ptr to the simplified expression
+     * Changes << k to a multiply.
      *
      * \internal
      * This code is so big, so weird and so lame it's not funny.
@@ -433,6 +430,9 @@ public:
      * We're trying to do it with a simple iterative algorithm, but the algorithm keeps getting more and more complex.
      * Eventually I will replace this with a simple theorem prover and we'll have something powerful, but until then,
      * don't rely on this code to do anything critical. - trent 8/7/2002
+     *
+     * \returns the simplified expression.
+     * \sa ExpSimplifier
      */
     SharedExp simplify();
 
@@ -443,7 +443,8 @@ public:
      * and also
      *     a[ size m[ any ]] == any
      *
-     * \returns Ptr to the simplified expression
+     * \returns the simplified expression.
+     * \sa ExpAddrSimplifier
      */
     SharedExp simplifyAddr();
 
@@ -452,9 +453,8 @@ public:
      * For example,
      *     (%sp + 100) - (%sp + 92) will be simplified to 8.
      *
-     * \note         Any expression can be so simplified
-     * \note         Overridden in subclasses
-     * \returns      Ptr to the simplified expression
+     * \returns the simplified expression.
+     * \sa ExpArithSimplifier
      */
     SharedExp simplifyArith();
 
@@ -465,9 +465,7 @@ public:
      */
     SharedExp fixSuccessor(); // succ(r2) -> r3
 
-    /// Do the work of finding used locations. If memOnly set, only look inside m[...]
-    /// Find the locations used by this expression. Use the UsedLocsFinder visitor class
-    /// If memOnly is true, only look inside m[...]
+    /// Do the work of finding used locations. If \p memOnly set, only look inside m[...]
     void addUsedLocs(LocationSet& used, bool memOnly = false);
 
     /// allZero is set if all subscripts in the whole expression are null or implicit; otherwise cleared

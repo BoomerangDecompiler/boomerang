@@ -13,6 +13,18 @@
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 
 
+/**
+ * Simplifies expressions into a canonical form.
+ * Non-exhaustive list of transformations applied:
+ *  - Integer and boolean constant folding
+ *  - Swapping commutative expressions such that the constant is on the RHS
+ *  - Folding of always-true or always-false expressions
+ *  - Folding of constant ternary expressions
+ *  - Replacing left/right shift by multiplication/division
+ *
+ * Read the code and the tests for full details.
+ * \sa Exp::simplify
+ */
 class ExpSimplifier : public ExpModifier
 {
 public:

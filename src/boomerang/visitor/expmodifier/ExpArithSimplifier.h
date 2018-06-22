@@ -15,6 +15,13 @@
 #include <list>
 
 
+/**
+ * Simplifies expressions constisting of + and - at the top level.
+ * Descends into addressof expressions (i.e. a[5 + 3] will be simplified,
+ * m[5+3] will not be simplified).
+ *
+ * \sa Exp::simplifyArith
+ */
 class ExpArithSimplifier : public ExpModifier
 {
 public:

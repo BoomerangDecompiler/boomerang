@@ -13,6 +13,14 @@
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 
 
+/**
+ * Simplifies expressions consisting of addressof-memof constructs and
+ * memof-addressof expressions.
+ * Example:
+ *   a[m[%esp]] will be simplified to just %esp
+ *
+ * \sa Exp::simplifyAddr
+ */
 class ExpAddressSimplifier : public ExpModifier
 {
 public:
