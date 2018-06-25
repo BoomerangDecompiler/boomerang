@@ -8,6 +8,7 @@
 
 
 list(APPEND boomerang-frontend-sources
+    frontend/CapstoneDecoder
     frontend/DecodeResult
     frontend/DefaultFrontEnd
     frontend/mips/MIPSDecoder

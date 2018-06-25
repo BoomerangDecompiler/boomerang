@@ -13,6 +13,8 @@
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Types.h"
 
+#include <cstddef>
+#include <list>
 #include <memory>
 
 
