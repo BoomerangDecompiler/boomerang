@@ -6,9 +6,10 @@
 # WARRANTIES.
 #
 
-# Description for instruction semantics of the x86 and x86-64 instruction sets.
+# Description for instruction semantics of the x86 instruction set.
 
 ENDIANNESS LITTLE;
+
 # Constants defined in hexadecimal (modelling manual) 
 MAX8BITS  := 0xFF;
 MAX16BITS := 0xFFFF;
@@ -81,7 +82,7 @@ ADDFLAGS8(op1, op2, result)  {
     *1* %ZF := (result = 0)
 #   *1* %AF := ?? TODO
     *1* %CF := (op1@[7:7] & op2@[7:7]) | (~result@[7:7] & (op1@[7:7] | op2@[7:7]))
-#   *1* %PF := ?? TODO
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 };
 
 
@@ -92,7 +93,7 @@ ADDFLAGS16(op1, op2, result)  {
     *1* %ZF := (result = 0)
 #   *1* %AF := ?? TODO
     *1* %CF := (op1@[15:15] & op2@[15:15]) | (~result@[15:15] & (op1@[15:15] | op2@[15:15]))
-#   *1* %PF := ?? TODO
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 };
 
 
@@ -101,8 +102,8 @@ ADDFLAGS32(op1, op2, result)  {
                 | (~op1@[31:31] & ~op2@[31:31] & result@[31:31])
     *1* %SF := result@[31:31]
     *1* %ZF := (result = 0)
-#   *1* %PF := ??
     *1* %CF := (op1@[31:31] & op2@[31:31]) | (~result@[31:31] & (op1@[31:31] | op2@[31:31]))
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
@@ -112,9 +113,9 @@ SUBFLAGS8(op1, op2, result)  {
                 | (~op1@[7:7] & op2@[7:7] & result@[7:7])
     *1* %SF := result@[7:7]
     *1* %ZF := (result = 0)
-#   *1* %PF := ??
     *1* %CF := (~op1@[7:7] & op2@[7:7])
                 | (result@[7:7] & ~(op1@[7:7] | op2@[7:7]))
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
@@ -123,9 +124,9 @@ SUBFLAGS16(op1, op2, result)  {
                 | (~op1@[15:15] &(op2@[15:15] & result@[15:15]))
     *1* %SF := result@[15:15]
     *1* %ZF := (result = 0)
-#   *1* %PF := ??
     *1* %CF := (~op1@[15:15] & op2@[15:15])
                 | (result@[15:15] & (~op1@[15:15] | op2@[15:15]))
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
@@ -134,9 +135,9 @@ SUBFLAGS32(op1, op2, result)  {
                 | (~op1@[31:31] & op2@[31:31] & result@[31:31])
     *1* %SF := result@[31:31]
     *1* %ZF := (result = 0)
-#   *1* %PF := ??
     *1* %CF := (~op1@[31:31] & op2@[31:31])
                 | (result@[31:31] & (~op1@[31:31] | op2@[31:31]))
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
@@ -150,7 +151,7 @@ LOGICALFLAGS8(result)  {
     *1* %OF := 0
     *1* %ZF := (result = 0)
     *1* %SF := result@[7:7]
-#   *1* %PF := ??
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
@@ -159,7 +160,7 @@ LOGICALFLAGS16(result)  {
     *1* %OF := 0
     *1* %ZF := (result = 0)
     *1* %SF := result@[15:15]
-#   *1* %PF := ??
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
@@ -168,7 +169,7 @@ LOGICALFLAGS32(result)  {
     *1* %OF := 0
     *1* %ZF := (result = 0)
     *1* %SF := result@[31:31]
-#   *1* %PF := ??
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
 #   *1* %AF := ??
 };
 
