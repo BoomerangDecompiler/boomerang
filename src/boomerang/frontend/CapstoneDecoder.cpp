@@ -270,6 +270,9 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
 
                 call->setDestProc(destProc);
             }
+            else {
+                call->setIsComputed(true);
+            }
         }
     }
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
