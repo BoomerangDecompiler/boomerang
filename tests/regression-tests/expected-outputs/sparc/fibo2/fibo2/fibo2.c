@@ -5,7 +5,7 @@ void fib1();
 int main(int argc, union { __size32; char *[] *; } argv)
 {
     __size32 fp; 		// r30
-    int i0; 		// r24
+    __size32 i0; 		// r24
     __size32 i1; 		// r25
     __size32 i2; 		// r26
     __size32 i3; 		// r27
@@ -20,7 +20,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 l5; 		// r21
     __size32 l6; 		// r22
     __size32 l7; 		// r23
-    __size32 local0; 		// m[o6 - 20]
+    int local0; 		// m[o6 - 20]
     int o1; 		// r9
     int o2; 		// r10
     int o2_1; 		// r10{0}
@@ -34,8 +34,8 @@ int main(int argc, union { __size32; char *[] *; } argv)
     int o7; 		// r15
     int o7_1; 		// r15{0}
 
-    printf(0x10828);
-    o1 = scanf(0x10838); /* Warning: also results in o2_1, o3_1, o4_1, o5_1, o7_1 */
+    printf("Input number: ");
+    o1 = scanf("%d", &local0); /* Warning: also results in o2_1, o3_1, o4_1, o5_1, o7_1 */
     fib1(local0, o1, o2_1, o3_1, o4_1, o5_1, 0x10800, o7_1, l0, l1, l2, l3, l4, l5, l6, l7, 0, argv, o2, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0);
 }
 

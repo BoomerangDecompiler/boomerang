@@ -40,7 +40,7 @@ __size32 c(unsigned int param1)
     int edx; 		// r26
 
     eax = printf("c(%d)\n", param1); /* Warning: also results in ecx, edx */
-    if (param1 <= (unsigned int)6) {
+    if (param1 <= 6) {
         eax = global_0x080486c4[param1];
         switch(param1) {
         case 0:

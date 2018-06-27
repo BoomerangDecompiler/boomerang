@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00010bac */
 int main(int argc, char *argv[])
 {
-    int i0; 		// r24
+    __size32 i0; 		// r24
     int o0; 		// r8
     int o2; 		// r10
     int o3; 		// r11

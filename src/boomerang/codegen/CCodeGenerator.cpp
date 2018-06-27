@@ -1110,7 +1110,7 @@ void CCodeGenerator::addLineComment(const QString& cmt)
 
 void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec, bool uns /* = false */)
 {
-    OPER op = exp.getOper();
+    const OPER op = exp.getOper();
 
 #if SYMS_IN_BACK_END                    // Should no longer be any unmapped symbols by the back end
     // Check if it's mapped to a symbol
@@ -1373,7 +1373,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::BitAnd);
         str << " & ";
 
-        if (binaryExp.getSubExp2()->getOper() == opIntConst) {
+        if (binaryExp.getSubExp2()->isIntConst()) {
             // print it 0x2000 style
             uint32_t val     = uint32_t(std::static_pointer_cast<const Const>(binaryExp.getSubExp2())->getInt());
             QString  vanilla = QString("0x") + QString::number(val, 16);
@@ -1500,7 +1500,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
                 break;
             }
 
-            assert(unaryExp.getSubExp1()->getOper() == opIntConst);
+            assert(unaryExp.getSubExp1()->isIntConst());
             QString regName(m_proc->getProg()->getRegName(std::static_pointer_cast<const Const>(unaryExp.getSubExp1())->getInt()));
 
             if (regName.isEmpty()) {

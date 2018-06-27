@@ -1,16 +1,18 @@
 int main(int argc, char *argv[]);
 __size32 add15(__size32 param1);
-void add10();
-void add5();
-void printarg();
+__size32 add10(__size32 param1);
+__size32 add5(__size32 param1);
+void printarg(int param1);
 
 /** address: 0x00010b64 */
 int main(int argc, char *argv[])
 {
-    add15(25);
-    add10();
-    add5();
-    printarg();
+    __size32 o0; 		// r8
+
+    o0 = add15(25);
+    o0 = add10(o0);
+    o0 = add5(o0);
+    printarg(o0);
     return 0;
 }
 
@@ -21,21 +23,21 @@ __size32 add15(__size32 param1)
 }
 
 /** address: 0x00010b38 */
-void add10()
+__size32 add10(__size32 param1)
 {
-    return;
+    return param1 + 10;
 }
 
 /** address: 0x00010b30 */
-void add5()
+__size32 add5(__size32 param1)
 {
-    return;
+    return param1 + 5;
 }
 
 /** address: 0x00010b48 */
-void printarg()
+void printarg(int param1)
 {
-    printf(0x116e8);
+    printf("Fifty five is %d\n", param1);
     return;
 }
 

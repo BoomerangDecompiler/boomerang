@@ -18,11 +18,11 @@ int main(int argc, union { char *[] *; int; } argv)
     int g3; 		// r3
     __size32 g30; 		// r30
     __size32 g30_1; 		// r30{0}
-    union { int; char *[] *; } g4; 		// r4
+    char * *g4; 		// r4
     union { __size32; unsigned char *; } g5; 		// r5
     int g9; 		// r9
     int g9_1; 		// r9{0}
-    int g9_2; 		// r9{0}
+    __size32 g9_2; 		// r9{0}
     __size32 g9_3; 		// r9{0}
     int local8; 		// m[g1 - 69]
     __size32 local9; 		// g30{0}
@@ -35,7 +35,7 @@ int main(int argc, union { char *[] *; int; } argv)
                 if ((int) g0_1 == 47) {
 bb0x2aec:
                     g30_1 = g30;
-                    *(int*)(g30 + 64) = 1;
+                    *(__size32*)(g30 + 64) = 1;
                     local9 = g30_1;
                 }
                 else {
@@ -100,7 +100,7 @@ bb0x2aec:
         local9 = g30;
         if (g3 == 0) {
 bb0x2964:
-            *(int*)(g30 + 64) = 16;
+            *(__size32*)(g30 + 64) = 16;
         }
         else {
             g0 = *(g30 + 120);
@@ -110,7 +110,7 @@ bb0x2964:
             else {
                 g0 = *(g30 + 124);
                 if (g0 > 12) {
-                    *(int*)(g30 + 64) = 9;
+                    *(__size32*)(g30 + 64) = 9;
                 }
                 else {
                     g3 = main(2, g9 + 1); /* Warning: also results in g30 */

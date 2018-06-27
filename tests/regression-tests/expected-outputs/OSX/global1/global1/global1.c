@@ -24,7 +24,7 @@ __size32 foo1(__size32 param1, __size32 param2)
 /** address: 0x00001ccc */
 __size32 foo2(__size32 param1)
 {
-    *(int*)(/* machine specific */ (int) LR + 832) = 12;
+    *(__size32*)(/* machine specific */ (int) LR + 832) = 12;
     printf(/* machine specific */ (int) LR + 780);
     return param1; /* WARNING: Also returning: g31 := /* machine specific */ (int) LR */
 }

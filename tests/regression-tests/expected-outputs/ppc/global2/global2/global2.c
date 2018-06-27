@@ -1,27 +1,28 @@
-int main(int argc, char *argv[]);
-void foo1();
-void foo2();
+int b = 7;
+int main(int argc, union { char *[] *; double x1; __size32; } argv);
+void foo1(union { __size32; double; } param1);
+void foo2(double param1);
 
 /** address: 0x10000498 */
-int main(int argc, char *argv[])
+int main(int argc, union { char *[] *; double x1; __size32; } argv)
 {
-    foo1();
-    printf(0x10000890);
+    foo1(argv);
+    printf("b = %i\n", b);
     return 0;
 }
 
 /** address: 0x10000468 */
-void foo1()
+void foo1(union { __size32; double; } param1)
 {
-    foo2();
+    foo2(param1);
     return;
 }
 
 /** address: 0x10000418 */
-void foo2()
+void foo2(double param1)
 {
-    *(int*)0x100109b0 = 12;
-    printf(0x10000888);
+    b = 12;
+    printf("a = %f\n", param1);
     return;
 }
 

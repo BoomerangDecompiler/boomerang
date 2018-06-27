@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
             if (eax_5 != 0) {
                 eax_8 = strchr(eax_5, '\n');
                 if (eax_8 != 0) {
-                    *(union { char; int; }*)eax_8 = 0;
+                    *(union { char; __size8; }*)eax_8 = 0;
                 }
                 puts(&local0);
             }

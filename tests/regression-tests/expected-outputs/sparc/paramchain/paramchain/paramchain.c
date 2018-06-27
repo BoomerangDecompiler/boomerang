@@ -5,10 +5,11 @@ void addem(__size32 param1, __size32 param2, __size32 param3, union { __size32; 
 /** address: 0x00010960 */
 int main(int argc, char *argv[])
 {
+    int local0; 		// m[o6 - 4]
     int o6; 		// r14
 
-    passem(5, 10, 40, (o6 - 4));
-    printf(0x20b60);
+    passem(5, 10, 40, o6 - 4);
+    printf("Fifty five is %d\n", local0);
     return 0;
 }
 

@@ -23,7 +23,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 l4; 		// r20
     __size32 l5; 		// r21
     __size32 l6; 		// r22
-    int l7; 		// r23
+    __size32 l7; 		// r23
     __size32 l7_1; 		// r23{0}
     __size32 o2; 		// r10
     __size32 o3; 		// r11

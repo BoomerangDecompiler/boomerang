@@ -11,14 +11,14 @@ int main(int argc, char *argv[])
     unsigned int CR5; 		// r69
     unsigned int CR6; 		// r70
     __size32 CR7; 		// r71
-    int g0; 		// r0
+    __size32 g0; 		// r0
     int g9; 		// r9
-    int local0; 		// m[g1 - 40]
+    __size32 local0; 		// m[g1 - 40]
     __size32 local1; 		// m[g1 - 36]
     __size32 local2; 		// m[g1 - 32]
     __size32 local3; 		// m[g1 - 28]
     __size32 local4; 		// m[g1 - 24]
-    int local5; 		// m[g1 - 48]
+    __size32 local5; 		// m[g1 - 48]
 
     local0 = 1;
     if (argc <= 1) {

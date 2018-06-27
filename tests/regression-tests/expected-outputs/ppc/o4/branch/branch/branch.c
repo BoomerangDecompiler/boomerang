@@ -7,24 +7,24 @@ int main(int argc, char *argv[])
     int local0; 		// m[g1 - 24]
     unsigned int local1; 		// m[g1 - 20]
 
-    scanf(0x10000990);
-    scanf(0x10000990);
+    scanf("%d", &local0);
+    scanf("%d", &local1);
     if (local0 == 5) {
-        g3 = puts(0x100009a8);
+        g3 = puts("Equal");
         if (local0 != 5) {
-            g3 = puts(0x10000994);
+            g3 = puts("Not Equal");
         }
         if (5 > local0) {
 bb0x100005b4:
-            g3 = puts(0x10000a18);
+            g3 = puts("Greater");
         }
         if (5 <= local0) {
 bb0x10000498:
-            g3 = puts(0x100009a0);
+            g3 = puts("Less or Equal");
         }
     }
     else {
-        puts(0x10000994);
+        puts("Not Equal");
         if (5 > local0) {
             goto bb0x100005b4;
         }
@@ -33,28 +33,28 @@ bb0x10000498:
         }
     }
     if (5 >= local0) {
-        g3 = puts(0x100009b0);
+        g3 = puts("Greater or Equal");
     }
     if (5 < local0) {
-        g3 = puts(0x100009c4);
+        g3 = puts("Less");
     }
-    if ((unsigned int)5 > local1) {
-        g3 = puts(0x10000a04);
+    if (5 > local1) {
+        g3 = puts("Greater Unsigned");
     }
-    if ((unsigned int)5 <= local1) {
-        g3 = puts(0x100009ec);
+    if (5 <= local1) {
+        g3 = puts("Less or Equal Unsigned");
     }
-    if ((unsigned int)5 >= local1) {
-        g3 = puts(0x100009e0);
+    if (5 >= local1) {
+        g3 = puts("Carry Clear");
     }
-    if ((unsigned int)5 < local1) {
-        g3 = puts(0x100009d4);
+    if (5 < local1) {
+        g3 = puts("Carry Set");
     }
     if (5 >= local0) {
-        g3 = puts(0x100009cc);
+        g3 = puts("Minus");
     }
     if (5 < local0) {
-        g3 = puts(0x10000a20);
+        g3 = puts("Plus");
     }
     return g3;
 }

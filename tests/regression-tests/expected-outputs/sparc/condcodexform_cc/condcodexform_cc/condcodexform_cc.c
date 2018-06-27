@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00010b0c */
 int main(int argc, char *argv[])
 {
-    int i1; 		// r25
+    __size32 i1; 		// r25
     int o0; 		// r8
     int o1; 		// r9
     int o2; 		// r10
@@ -26,10 +26,10 @@ bb0x10be0:
         }
     }
     if (i1 == 0) {
-        printf(0x10d00);
+        printf("Failed!\n");
     }
     else {
-        printf(0x10cf8);
+        printf("Pass\n");
     }
     return 0;
 }

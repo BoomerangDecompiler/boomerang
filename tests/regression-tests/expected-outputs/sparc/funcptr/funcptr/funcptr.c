@@ -35,7 +35,7 @@ int main(int argc, __size32 argv)
     __size32 local7; 		// m[o6 + 32]
     __size32 local8; 		// m[o6 + 36]
     __size32 local9; 		// m[o6 + 40]
-    int o0; 		// r8
+    __size32 o0; 		// r8
     __size32 o1; 		// r9
     __size32 o2; 		// r10
     __size32 o3; 		// r11
@@ -45,7 +45,7 @@ int main(int argc, __size32 argv)
     __size32 o7; 		// r15
 
     (*0x106a0)(0x106a0, argv, o2, o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, argc, argv, o2, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, 0x106a0);
-    *(int*)(fp - 20) = 0x106c0;
+    *(__size32*)(fp - 20) = 0x106c0;
     o0 = *(fp - 20);
     (*o0)(o0, o1, o2, o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, local14, local15, <all>);
     return 0;

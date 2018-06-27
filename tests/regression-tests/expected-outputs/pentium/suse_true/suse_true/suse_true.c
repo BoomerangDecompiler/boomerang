@@ -113,15 +113,15 @@ __size32 __i686.get_pc_thunk.bx()
 void version_etc_va(union { FILE *; __size32; } param1, union { char[] *; __size32; } param2, union { char[] *; __size32; } param3, union { char[] *; __size32; } param4, union { __size32 *; __size32; } param5)
 {
     __size32 eax; 		// r24
-    int ebx_1; 		// r27{0}
+    unsigned int ebx_1; 		// r27{0}
     __size32 ebx_2; 		// r27{0}
-    int ebx_5; 		// r27{0}
-    int ebx_8; 		// r27{0}
-    int ebx_9; 		// r27{0}
+    unsigned int ebx_5; 		// r27{0}
+    unsigned int ebx_8; 		// r27{0}
+    unsigned int ebx_9; 		// r27{0}
     int edx; 		// r26
     char *local1; 		// m[esp - 40]
-    int local11; 		// ebx_8{0}
-    int local12; 		// ebx_1{0}
+    unsigned int local11; 		// ebx_8{0}
+    unsigned int local12; 		// ebx_1{0}
     union { char *; int; } local13; 		// local1{0}
     int local5; 		// m[esp - 40]
 
@@ -147,7 +147,7 @@ void version_etc_va(union { FILE *; __size32; } param1, union { char[] *; __size
     else {
         fprintf(param1, "%s (%s) %s\n", param2, param3, param4);
     }
-    if ((unsigned int)ebx_1 > (unsigned int)9) {
+    if (ebx_1 > 9) {
         eax = 0x804a3f8;
 bb0x8049951:
         local5 = eax;
@@ -199,7 +199,7 @@ bb0x8049955:
         __overflow();
     }
     else {
-        *(int*)eax = 10;
+        *(__size8*)eax = 10;
         *(__size32*)(param1 + 20)++;
     }
     eax = *0x804b7e8;
@@ -209,7 +209,7 @@ bb0x8049955:
         __overflow();
     }
     else {
-        *(int*)eax = 10;
+        *(__size8*)eax = 10;
         *(__size32*)(param1 + 20)++;
     }
     r[24] = dcgettext(0, "This is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n", 5);

@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x10000418 */
 int main(int argc, char *argv[])
 {
-    printf(0x100007f4);
+    printf("Pi is about %.5f\n", 2.5243549e-29);
     return 0;
 }
 

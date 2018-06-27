@@ -22,8 +22,9 @@ void test(int param1)
         local0 = -2;
     }
     if (local0 > 3) {
+        local0 = 3;
     }
-    printf(0x1000088c);
+    printf("MinMax result %d\n", local0);
     return;
 }
 

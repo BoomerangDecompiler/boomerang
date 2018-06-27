@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     int eax; 		// r24
     int local0; 		// m[esp - 12]
-    int local1; 		// m[esp - 16]
+    unsigned int local1; 		// m[esp - 16]
 
     scanf("%d", &local0);
     scanf("%d", &local1);
@@ -51,11 +51,11 @@ bb0x80484ce:
             goto bb0x80484a4;
         }
     }
-    if (5 <= (unsigned int)local1) {
+    if (5 <= local1) {
 bb0x804854c:
         eax = *0x8049854;
         fwrite("Less or Equal Unsigned\n", 1, 23, eax);
-        if (5 < (unsigned int)local1) {
+        if (5 < local1) {
 bb0x80485a0:
             eax = *0x8049854;
             fwrite("Carry Set\n", 1, 10, eax);
@@ -64,7 +64,7 @@ bb0x80485a0:
 bb0x8048576:
             eax = *0x8049854;
             fwrite("Carry Clear\n", 1, 12, eax);
-            if (5 < (unsigned int)local1) {
+            if (5 < local1) {
                 goto bb0x80485a0;
             }
         }
@@ -72,7 +72,7 @@ bb0x8048576:
     else {
         eax = *0x8049854;
         fwrite("Greater Unsigned\n", 1, 17, eax);
-        if (5 > (unsigned int)local1) {
+        if (5 > local1) {
             goto bb0x8048576;
         }
         else {

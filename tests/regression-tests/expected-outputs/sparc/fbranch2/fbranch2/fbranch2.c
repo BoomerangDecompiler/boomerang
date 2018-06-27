@@ -5,37 +5,38 @@ int main(int argc, char *argv[])
 {
     union { __size32; float; } f8; 		// r40
     union { __size32; float; } local0; 		// m[o6 - 24]
+    union { __size32; double; } local1; 		// m[o6 - 12]
 
     f8 = *0x10940;
-    scanf(0x108c8);
-    printf(0x108d0);
+    scanf("%f", &local0);
+    printf("a is %f, b is %f\n", f8, local1);
     if (f8 == local0) {
-        printf(0x108e8);
+        printf("Equal\n");
     }
     else {
     }
     if (f8 != local0) {
-        printf(0x108f0);
+        printf("Not Equal\n");
     }
     else {
     }
     if (f8 > local0) {
-        printf(0x10900);
+        printf("Greater\n");
     }
     else {
     }
     if (f8 <= local0) {
-        printf(0x10910);
+        printf("Less or Equal\n");
     }
     else {
     }
     if (f8 >= local0) {
-        printf(0x10920);
+        printf("Greater or Equal\n");
     }
     else {
     }
     if (f8 < local0) {
-        printf(0x10938);
+        printf("Less\n");
     }
     else {
     }

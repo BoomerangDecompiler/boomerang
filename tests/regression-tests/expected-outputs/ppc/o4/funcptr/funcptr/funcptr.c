@@ -13,14 +13,14 @@ int main(int argc, char *argv[])
 /** address: 0x10000490 */
 void hello()
 {
-    printf(0x10000860);
+    printf("Hello, ");
     return;
 }
 
 /** address: 0x10000468 */
 void world()
 {
-    puts(0x10000858);
+    puts("world!");
     return;
 }
 

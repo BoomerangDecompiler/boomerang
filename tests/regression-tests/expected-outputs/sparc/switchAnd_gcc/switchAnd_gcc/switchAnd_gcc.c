@@ -3,9 +3,9 @@ int main(int argc, char *argv[]);
 /** address: 0x0001066c */
 int main(int argc, char *argv[])
 {
-    int local0; 		// o0{0}
+    union { char *; __size32; } local0; 		// o0{0}
     int o0; 		// r8
-    int o0_1; 		// r8{0}
+    __size32 o0_1; 		// r8{0}
 
     o0_1 = 0x107c8;
     local0 = o0_1;
@@ -15,7 +15,7 @@ bb0x106b0:
         puts(o0);
     }
     else {
-        if ((unsigned int)(argc - 2 & 0x7) > (unsigned int)7) {
+        if ((unsigned int)(argc - 2 & 0x7) > 7) {
         }
         else {
             switch(argc - 2 & 0x7) {

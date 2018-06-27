@@ -1,5 +1,5 @@
 unsigned int global_0x00403000;
-int global_0x00403024;
+__size32 global_0x00403024;// 4 bytes
 void proc_0x00401470(__size32 param1);
 void _start(unsigned short param1);
 __size32 proc_0x00401530(__size32 param1, __size32 param2, __size32 param3);
@@ -10,20 +10,19 @@ void proc_0x00401670(unsigned int param1, unsigned int param2, __size32 param3);
 void proc_0x00401470(__size32 param1)
 {
     __size32 eax; 		// r24
-    __size32 esp; 		// r28
     __size32 esp_1; 		// r28{0}
+    __size32 esp_11; 		// r28{0}
+    __size32 esp_12; 		// r28{0}
     __size32 esp_2; 		// r28{0}
     __size32 esp_5; 		// r28{0}
     __size32 esp_6; 		// r28{0}
-    __size32 esp_9; 		// r28{0}
     __size32 local0; 		// m[esp - 28]
-    int local2; 		// m[esp - 4]
-    __size32 local3; 		// esp{0}
+    __size32 local3; 		// esp_11{0}
     __size32 local4; 		// esp_5{0}
 
     local0 = param1;
-    eax = proc_0x00401530(param1, 0, (esp_9 - 4));
-    esp_2 = esp_9 - 28;
+    eax = proc_0x00401530(param1, 0, (esp_12 - 4));
+    esp_2 = esp_12 - 28;
     local3 = esp_2;
     local4 = esp_2;
     if (eax == 0) {
@@ -32,17 +31,17 @@ bb0x4014a3:
         *(__size32*)(esp_5 - 168) = 0;
         *(__size32*)(esp_5 - 172) = esp_5 - 168;
         *(__size32*)(esp_5 - 176) = param1;
-        proc_0x00401530(*(esp_5 - 176), *(esp_5 - 172), esp_9 - 4);
+        proc_0x00401530(*(esp_5 - 176), *(esp_5 - 172), esp_12 - 4);
         esp_6 = esp_5 - 176;
         *(__size32*)(esp_5 - 176) = esp_5 - 168;
         local3 = esp_6;
 bb0x40149d:
-        esp = local3;
+        esp_11 = local3;
         esp_1 = dll_crt0__FP11per_process();
         local4 = esp_1;
         goto bb0x4014a3;
     }
-    *(__size32*)(esp_9 - 28) = 0;
+    *(__size32*)(esp_12 - 28) = 0;
     goto bb0x40149d;
 }
 
@@ -66,14 +65,14 @@ __size32 proc_0x00401530(__size32 param1, __size32 param2, __size32 param3)
 {
     __size32 eax; 		// r24
     __size32 eax_1; 		// r24{0}
-    int eax_4; 		// r24{0}
+    __size32 eax_4; 		// r24{0}
     __size32 ebx; 		// r27
     __size32 esp_1; 		// r28{0}
     union { __size32; __size32 *; } esp_4; 		// r28{0}
     union { __size32; __size32 *; } esp_5; 		// r28{0}
     __size32 esp_6; 		// r28{0}
     union { __size32 *; __size32; } local1; 		// esp_5{0}
-    int local2; 		// eax{0}
+    __size32 local2; 		// eax{0}
 
     eax = 0;
     esp_1 = (esp_6 - 12);
@@ -92,7 +91,7 @@ bb0x401544:
             *(__size32*)(ebx + 4) = 168;
             *(__size32*)(ebx + 8) = 1005;
             *(__size32*)(ebx + 12) = 9;
-            *(int*)(ebx + 128) = 0;
+            *(__size32*)(ebx + 128) = 0;
             *(__size32*)(ebx + 132) = 112;
             *(__size32*)(ebx + 44) = 0x4017a0;
             *(__size32*)(ebx + 48) = 0x4017ac;

@@ -40,7 +40,7 @@ __size32 chomp(union { char[] *; __size32; } param1, int param2, union { FILE *;
     if (eax_1 != 0) {
         eax_4 = strchr(eax_1, '\n');
         if (eax_4 != 0) {
-            *(union { char; int; }*)eax_4 = 0;
+            *(union { char; __size8; }*)eax_4 = 0;
         }
     }
     return eax_1;

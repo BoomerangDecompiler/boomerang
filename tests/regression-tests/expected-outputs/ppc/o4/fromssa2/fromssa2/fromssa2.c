@@ -4,15 +4,19 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int g9; 		// r9
-    int g9_1; 		// r9{0}
+    __size32 g9_1; 		// r9{0}
+    __size32 g9_2; 		// r9{0}
+    __size32 local0; 		// g9_1{0}
 
     g9 = 0;
+    local0 = g9;
     do {
-        g9_1 = g9;
-        printf(0x10000828);
-        g9 = g9_1 + 1;
+        g9_1 = local0;
+        printf("%d ", g9_1 + 1);
+        g9_2 = g9_1 + 1;
+        local0 = g9_2;
     } while (g9_1 + 1 <= 9);
-    printf(0x1000082c);
+    printf("a is %d, x is %d\n", g9_1 + 1, g9_1 + 1);
     return 0;
 }
 

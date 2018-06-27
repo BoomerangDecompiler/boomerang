@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
         local0 += g0;
         local1++;
     }
-    printf(0x10000854);
+    printf("Sum is %d\n", local0);
     return 0;
 }
 

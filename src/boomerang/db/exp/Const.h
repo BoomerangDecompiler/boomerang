@@ -61,6 +61,11 @@ public:
     template<class T>
     static std::shared_ptr<Const> get(T i) { return std::make_shared<Const>(i); }
 
+    template<class T>
+    static std::shared_ptr<Const> get(T i, SharedType ty)
+    { std::shared_ptr<Const> c = std::make_shared<Const>(i); c->setType(ty); return c; }
+
+
     /// \copydoc Exp::operator==
     virtual bool operator==(const Exp& o) const override;
 

@@ -1,11 +1,11 @@
-int main(int argc, char *argv[]);
+int main(unsigned int argc, char *argv[]);
 
 /** address: 0x000106a4 */
-int main(int argc, char *argv[])
+int main(unsigned int argc, char *argv[])
 {
     int o0; 		// r8
 
-    if ((unsigned int)argc > (unsigned int)7) {
+    if (argc > 7) {
 bb0x106d0:
         o0 = 0x107e8;
         goto bb0x10744;
@@ -24,7 +24,7 @@ bb0x106f4:
         o0 = 0x10800;
         goto bb0x10744;
     case 4:
-        if ((unsigned int)(7 - argc) <= (unsigned int)5) {
+        if (7 - argc <= 5) {
             switch(7 - argc) {
             case 0:
 bb0x106dc:

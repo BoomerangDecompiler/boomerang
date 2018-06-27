@@ -4,19 +4,19 @@ __size32 proc_0x004038e4(__size32 param1);
 void proc_0x00403ad0(__size32 param1);
 __size32 proc_0x00403a68(__size32 param1, unsigned int param2, unsigned int param3);
 __size32 proc_0x00403a20(__size32 param1, __size32 param2);
-void proc_0x00405090(long long param1, long long param2, union { int *; __size32; } param3, unsigned long long param4, unsigned int param5, int param6);
+void proc_0x00405090(unsigned long long param1, long long param2, union { __size8 *; __size32; } param3, unsigned long long param4, unsigned int param5, int param6);
 void proc_0x00402250(union { int; char *; } param1);
-void proc_0x0040487c(union { int; unsigned int *; } param1, unsigned int param2);
+void proc_0x0040487c(union { unsigned int *; int; } param1, unsigned int param2);
 void proc_0x00403a9c(int param1, __size32 param2);
 void proc_0x00404fc8();
 void proc_0x00404fce();
-void proc_0x00404d5a(unsigned long long param1, union { unsigned int; bool; } param2, unsigned int param3);
+void proc_0x00404d5a(unsigned long long param1, unsigned int param2, unsigned int param3);
 void proc_0x00404c97(unsigned long long param1, unsigned long long param2, unsigned int param3);
 
 /** address: 0x00401150 */
 int main(int argc, char *argv[])
 {
-    if ((unsigned int)argc > (unsigned int)7) {
+    if ((unsigned int)argc > 7) {
 bb0x4011d0:
         proc_0x004038e4(0x40a152);
         return 0;
@@ -60,15 +60,12 @@ void proc_0x00403ad0(__size32 param1)
 {
     int ebx; 		// r27
     __size32 esi; 		// r30
-    int local0; 		// m[r29 - 9]{0}
-    __size8 local1; 		// m[r29 - 9]{0}
-    __size8 local10; 		// m[r26]{0}
-    __size16 local2; 		// m[r29 - 184]{0}
-    __size8 local3; 		// m[r29 - 184]{0}
-    __size8 local4; 		// m[r25]{0}
-    __size16 local5; 		// m[r25]{0}
-    int local6; 		// m[r26]{0}
-    __size8 local8; 		// m[r26]{0}
+    __size8 local0; 		// m[r29 - 184]{0}
+    __size16 local1; 		// m[r29 - 184]{0}
+    __size8 local2; 		// m[r25]{0}
+    __size16 local3; 		// m[r25]{0}
+    __size8 local4; 		// m[r26]{0}
+    __size32 local5; 		// m[r26]{0}
 
     if (param1 == 0) {
     }
@@ -91,7 +88,7 @@ bb0x403b30:
             if (flags) {
                 *(__size32*)(r[29] - 20) = r[26];
                 *(__size32*)(r[29] - 16) = r[26];
-                local0 = 0;
+                *(__size8*)(r[29] - 9) = 0;
                 *(__size32*)(r[29] - 8) = r[26];
                 *(__size32*)(r[29] - 4) = r[26];
                 *(__size32*)(r[29] - 28) = r[25];
@@ -122,7 +119,7 @@ bb0x4043d8:
                         if (flags) {
                             goto bb0x403b8b;
                         }
-                        local1 = r[11];
+                        *(__size8*)(r[29] - 9) = r[11];
                         goto bb0x403b8b;
                     }
                 case 1:
@@ -270,7 +267,7 @@ bb0x403f0a:
                             goto bb0x403f0a;
                         }
                         else {
-                            local6 = 0;
+                            local4 = 0;
                         }
                     }
                     if (flags) {
@@ -289,7 +286,7 @@ bb0x404148:
                         if ( ~( ~flags && flags)) {
                             if ( ~flags) {
                                 *(__size32*)(r[29] - 24) = *(r[29] - 24) - 1;
-                                local8 = r[9];
+                                *(__size8*)r[26] = r[9];
                             }
                             if ( ~flags) {
                                 *(__size32*)(r[29] - 16) = *(r[29] - 16) - 1;
@@ -308,7 +305,7 @@ bb0x404148:
                             if ( ~flags) {
                                 *(__size32*)(r[29] - 64)++;
                                 *(__size32*)(r[29] - 24) = *(r[29] - 24) - 1;
-                                local4 = r[8];
+                                local2 = r[8];
                             }
                         }
                         else {
@@ -339,14 +336,14 @@ bb0x4041b6:
                     if ( ~flags) {
                         do {
                             *(__size32*)(r[28] - 4) = r[26];
-                            *(int*)(r[28] - 4) = 32;
+                            *(__size32*)(r[28] - 4) = 32;
                             proc_0x00403a68(*(r[28] + 8), r[25], r[26]);
                             *(__size32*)(r[29] - 4) = *(r[29] - 4) - 1;
                         } while (flags);
                     }
                     if ( ~flags) {
                         *(__size32*)(r[28] - 4) = r[24];
-                        *(int*)(r[28] - 4) = 48;
+                        *(__size32*)(r[28] - 4) = 48;
                         proc_0x00403a68(*(r[28] + 8), r[25], r[26]);
                         *(__size32*)(r[28] - 4) = r[26];
                         *(__size32*)(r[28] - 4) = r[27];
@@ -366,7 +363,7 @@ bb0x4041b6:
                         *(__size32*)(r[29] - 16) = *(r[29] - 16) - 1;
                         while (flags) {
                             *(__size32*)(r[28] - 4) = r[26];
-                            *(int*)(r[28] - 4) = 48;
+                            *(__size32*)(r[28] - 4) = 48;
                             proc_0x00403a68(*(r[28] + 8), r[25], r[26]);
                             *(__size32*)(r[29] - 16) = *(r[29] - 16) - 1;
                         }
@@ -394,7 +391,7 @@ bb0x4041b6:
                             *(__size32*)(r[29] - 64) = r[25];
                             goto bb0x404325;
 bb0x4042fc:
-                            local10 = r[11];
+                            *(__size8*)r[26] = r[11];
                             *(__size32*)(r[29] - 76)++;
                         } while (flags);
                         goto bb0x4042fc;
@@ -414,7 +411,7 @@ bb0x404325:
                     *(__size32*)(r[29] - 4) = *(r[29] - 4) - 1;
                     while (flags) {
                         *(__size32*)(r[28] - 4) = r[25];
-                        *(int*)(r[28] - 4) = 32;
+                        *(__size32*)(r[28] - 4) = 32;
                         proc_0x00403a68(*(r[28] + 8), r[25], r[26]);
                         *(__size32*)(r[29] - 4) = *(r[29] - 4) - 1;
                     }
@@ -422,7 +419,7 @@ bb0x404325:
                 case 11:
                     *(__size32*)(r[29] - 56) = 8;
 bb0x403e23:
-                    *(int*)(r[29] - 9) = 0;
+                    *(__size8*)(r[29] - 9) = 0;
                     goto bb0x403e34;
                 case 12:
                     *(__size32*)(r[29] - 56) = 10;
@@ -437,7 +434,7 @@ bb0x403e23:
                     *(__size32*)(r[28] - 4) = r[25];
                     *(__size32*)(r[28] - 4) = r[24];
                     proc_0x00403a9c(*(r[28] + 4), *(r[28] + 8));
-                    *(int*)(r[29] - 176) = 0;
+                    *(__size8*)(r[29] - 176) = 0;
                     *(__size32*)(r[29] - 24) = r[26];
                     goto bb0x404148;
                 case 15:
@@ -461,8 +458,8 @@ bb0x404123:
 bb0x403fbd:
                     if (flags) {
                         *(__size32*)(r[29] + 28) += 4;
-                        local3 = r[8];
-                        *(int*)(r[29] - 183) = 0;
+                        local0 = r[8];
+                        *(__size8*)(r[29] - 183) = 0;
                         *(__size32*)(r[29] - 24) = r[26];
                         *(__size32*)(r[29] - 28) = r[25];
                         *(__size32*)(r[29] - 64) = 1;
@@ -470,8 +467,8 @@ bb0x403fbd:
                     }
                     else {
                         *(__size32*)(r[29] + 28) += 4;
-                        local2 = r[0];
-                        *(int*)(r[29] - 182) = 0;
+                        local1 = r[0];
+                        *(__size16*)(r[29] - 182) = 0;
                         *(__size32*)(r[29] - 28) = 1;
                         *(__size32*)(r[29] - 24) = r[26];
                         *(__size32*)(r[29] - 64) = 1;
@@ -540,11 +537,11 @@ bb0x404038:
                     *(__size32*)(r[29] - 24) = r[25];
                     if (flags) {
                         if (flags) {
-                            *(__size32*)r[26] = r[25];
+                            local5 = r[25];
                             goto bb0x403b18;
                         }
                         else {
-                            local5 = r[0];
+                            local3 = r[0];
                             goto bb0x403b18;
                         }
                         goto bb0x403b18;
@@ -668,7 +665,7 @@ bb0x403a8a:
 /** address: 0x00403a20 */
 __size32 proc_0x00403a20(__size32 param1, __size32 param2)
 {
-    int eax; 		// r24
+    __size32 eax; 		// r24
     __size32 ebp; 		// r29
     __size32 ebx; 		// r27
     unsigned int ecx; 		// r25
@@ -705,7 +702,7 @@ __size32 proc_0x00403a20(__size32 param1, __size32 param2)
             *(__size32*)(ebx + 96) = 1;
         }
         eax = 0;
-        *(int*)(ebx + 80) = 0;
+        *(__size32*)(ebx + 80) = 0;
     }
     param2 = local8;
     esp = local9;
@@ -715,29 +712,29 @@ __size32 proc_0x00403a20(__size32 param1, __size32 param2)
 }
 
 /** address: 0x00405090 */
-void proc_0x00405090(long long param1, long long param2, union { int *; __size32; } param3, unsigned long long param4, unsigned int param5, int param6)
+void proc_0x00405090(unsigned long long param1, long long param2, union { __size8 *; __size32; } param3, unsigned long long param4, unsigned int param5, int param6)
 {
     unsigned int al; 		// r8
-    long long eax; 		// r24
-    long long eax_2; 		// r24{0}
-    long long eax_3; 		// r24{0}
+    unsigned long long eax; 		// r24
+    unsigned long long eax_2; 		// r24{0}
+    unsigned long long eax_3; 		// r24{0}
     int eax_6; 		// r24{0}
-    long long eax_9; 		// r24{0}
+    unsigned long long eax_9; 		// r24{0}
     int ebx; 		// r27
-    int ebx_1; 		// r27{0}
-    int ebx_2; 		// r27{0}
+    __size32 ebx_1; 		// r27{0}
+    __size32 ebx_2; 		// r27{0}
     long long edx; 		// r26
     __size32 esi; 		// r30
     long long esp; 		// r28
-    long long local0; 		// m[esp + 4]
+    unsigned long long local0; 		// m[esp + 4]
     long long local1; 		// m[esp + 8]
-    long long local11; 		// param1{0}
+    unsigned long long local11; 		// param1{0}
     long long local12; 		// param2{0}
-    long long local13; 		// local0{0}
+    unsigned long long local13; 		// local0{0}
     long long local14; 		// local1{0}
-    long long local15; 		// eax_9{0}
-    int local16; 		// ebx_1{0}
-    long long local4; 		// m[esp + 4]{0}
+    unsigned long long local15; 		// eax_9{0}
+    __size32 local16; 		// ebx_1{0}
+    unsigned long long local4; 		// m[esp + 4]{0}
     __size8 local8; 		// m[esi]{0}
     int local9; 		// m[esi]{0}
 
@@ -752,7 +749,7 @@ void proc_0x00405090(long long param1, long long param2, union { int *; __size32
         if (param2 != 0) {
             if (param2 < 0) {
                 if (param5 != 0) {
-                    *(int*)param3 = 45;
+                    *(__size8*)param3 = 45;
                     esi = param3 + 1;
                     local4 = 0 - param1;
                     local1 = 0 - param2 + (param1 != 0);
@@ -808,14 +805,14 @@ bb0x40512d:
             ebx_1 = local16;
         }
     }
-    *(int*)esi = 0;
+    *(__size8*)esi = 0;
     return;
 }
 
 /** address: 0x00402250 */
 void proc_0x00402250(union { int; char *; } param1)
 {
-    union { char *; int * x98; int; } eax; 		// r24
+    union { char *; int * x296; int; } eax; 		// r24
     int edx; 		// r26
 
     eax = param1;
@@ -876,7 +873,7 @@ bb0x402258:
 }
 
 /** address: 0x0040487c */
-void proc_0x0040487c(union { int; unsigned int *; } param1, unsigned int param2)
+void proc_0x0040487c(union { unsigned int *; int; } param1, unsigned int param2)
 {
     __size32 eax; 		// r24
 
@@ -889,7 +886,7 @@ void proc_0x0040487c(union { int; unsigned int *; } param1, unsigned int param2)
             }
         }
         else {
-            if (param2 <= (unsigned int)255) {
+            if (param2 <= 255) {
                 *(unsigned int*)param1 = param2;
             }
             else {
@@ -945,7 +942,7 @@ void proc_0x00404fce()
 }
 
 /** address: 0x00404d5a */
-void proc_0x00404d5a(unsigned long long param1, union { unsigned int; bool; } param2, unsigned int param3)
+void proc_0x00404d5a(unsigned long long param1, unsigned int param2, unsigned int param3)
 {
     if (param2 == 0 && param3 == 0) {
     }

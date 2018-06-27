@@ -1,4 +1,4 @@
-int a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+__size32 a[10] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 int main(int argc, char *argv[]);
 
 /** address: 0x0001069c */
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
         local0 += a[local1];
         local1++;
     }
-    printf(0x107c0);
+    printf("Sum is %d\n", local0);
     return 0;
 }
 

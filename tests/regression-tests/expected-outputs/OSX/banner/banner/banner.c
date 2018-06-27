@@ -8,22 +8,21 @@ int main(int argc, char *argv[])
     int g10; 		// r10
     int g11; 		// r11
     int g3; 		// r3
-    void *g3_1; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 104]
     int local1; 		// m[g1 - 112]
     int local2; 		// m[g1 - 116]
     char local3; 		// m[g1 - 96]
-    int local4; 		// m[g1 - 128]
-    union { __size32; __size32 *; } local5; 		// m[g1 - 124]
+    __size32 local4; 		// m[g1 - 128]
+    __size32 local5; 		// m[g1 - 124]
     int local6; 		// m[g1 - 108]
     int local7; 		// m[g1 - 120]
-    int local8; 		// m[g1 - 128]{0}
+    __size32 local8; 		// m[g1 - 128]{0}
 
-    g3_1 = malloc(12);
-    *(__size32*)(g3_1 + 4) = /* machine specific */ (int) LR + 0x1864;
+    g3 = malloc(12);
+    *(__size32*)(g3 + 4) = /* machine specific */ (int) LR + 0x1864;
     local4 = 2;
-    local5 = g3_1 + 4;
+    local5 = g3 + 4;
     local8 = local4;
     local4 = local8 - 1;
     while (local8 != 1) {
@@ -55,7 +54,7 @@ bb0x2874:
                     local1++;
                     goto bb0x2874;
                 }
-                *(int*)((ROTL(local2) & ~0x7) + g1 - 89) = 32;
+                *(__size8*)((ROTL(local2) & ~0x7) + g1 - 89) = 32;
                 local2++;
             }
             local2 = (ROTL(local6) & ~0x7) - 1;
@@ -64,7 +63,7 @@ bb0x2874:
                 if ((int) g0 != 32) {
                     goto bb0x2998;
                 }
-                *(int*)(g1 + local2 - 96) = 0;
+                *(__size8*)(g1 + local2 - 96) = 0;
                 local2 = local2 - 1;
             }
 bb0x2998:

@@ -101,31 +101,31 @@ void proc_0x08048a30(int param1)
 void proc_0x080498b0(union { FILE *; __size32; } param1, union { char[] *; __size32; } param2, union { char[] *; __size32; } param3, union { char[] *; __size32; } param4, union { __size32 *; __size32; } param5)
 {
     int eax; 		// r24
-    int ebx_1; 		// r27{0}
+    unsigned int ebx_1; 		// r27{0}
     __size32 ebx_2; 		// r27{0}
-    int ebx_5; 		// r27{0}
-    int ebx_8; 		// r27{0}
-    int ebx_9; 		// r27{0}
+    unsigned int ebx_5; 		// r27{0}
+    unsigned int ebx_6; 		// r27{0}
+    unsigned int ebx_9; 		// r27{0}
     int edx; 		// r26
     char *local1; 		// m[esp - 40]
-    int local11; 		// ebx_8{0}
-    int local12; 		// ebx_1{0}
+    unsigned int local11; 		// ebx_5{0}
+    unsigned int local12; 		// ebx_1{0}
     union { char *; int; } local13; 		// local1{0}
     int local5; 		// m[esp - 40]
 
-    ebx_5 = 0;
+    ebx_9 = 0;
     edx = param5 + 4;
     eax = *param5;
-    local11 = ebx_5;
-    local12 = ebx_5;
+    local11 = ebx_9;
+    local12 = ebx_9;
     if (eax != 0) {
         do {
-            ebx_8 = local11;
-            ebx_9 = ebx_8 + 1;
+            ebx_5 = local11;
+            ebx_6 = ebx_5 + 1;
             eax = *edx;
             edx += 4;
-            local11 = ebx_9;
-            local12 = ebx_9;
+            local11 = ebx_6;
+            local12 = ebx_6;
         } while (eax != 0);
     }
     ebx_1 = local12;
@@ -135,7 +135,7 @@ void proc_0x080498b0(union { FILE *; __size32; } param1, union { char[] *; __siz
     else {
         fprintf(param1, "%s (%s) %s\n", param2, param3, param4);
     }
-    if ((unsigned int)ebx_1 > (unsigned int)9) {
+    if (ebx_1 > 9) {
         eax = 0x804a574;
 bb0x8049940:
         local5 = eax;
@@ -146,14 +146,14 @@ bb0x8049944:
         vfprintf(param1, eax, param5);
         eax = *(param1 + 20);
         if (eax < *(param1 + 24)) {
-            *(int*)eax = 10;
+            *(__size8*)eax = 10;
             *(__size32*)(param1 + 20)++;
 bb0x804996e:
             eax = *0x804b7d0;
             fputs_unlocked(eax, param1);
             eax = *(param1 + 20);
             if (eax < *(param1 + 24)) {
-                *(int*)eax = 10;
+                *(__size8*)eax = 10;
                 *(__size32*)(param1 + 20)++;
 bb0x804998d:
                 eax = dcgettext(0, "This is free software; see the source for copying conditions.  There is NO\nwarranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n", 5);

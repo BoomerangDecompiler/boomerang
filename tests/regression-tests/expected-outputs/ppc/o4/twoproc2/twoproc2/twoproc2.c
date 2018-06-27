@@ -5,8 +5,8 @@ int main(int argc, char *argv[])
 {
     int g3; 		// r3
 
-    printf(0x10000808);
-    g3 = printf(0x10000808);
+    printf("%i\n", 7);
+    g3 = printf("%i\n", 11);
     return g3;
 }
 

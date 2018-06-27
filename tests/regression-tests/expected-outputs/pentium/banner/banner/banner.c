@@ -1,4 +1,4 @@
-union { int; unsigned char *; } glyphs[84];
+union { __size32; unsigned char *; } glyphs[84];
 int main(int argc, char *argv[]);
 
 /** address: 0x08048390 */
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
     int local6; 		// m[esp - 140]
     int local7; 		// m[esp - 144]
     char local8; 		// m[esp - 124]
-    int local9; 		// m[esp - 172]
+    size_t local9; 		// m[esp - 172]
 
     eax = malloc(12);
     *(__size32*)(eax + 4) = 0x8049af9;
@@ -70,7 +70,7 @@ bb0x8048448:
                     local1++;
                     goto bb0x8048448;
                 }
-                *(int*)(esp + local0 * 8 - 117) = 32;
+                *(__size8*)(esp + local0 * 8 - 117) = 32;
                 local0++;
             }
             local0 = local13 * 8 - 1;
@@ -80,7 +80,7 @@ bb0x8048448:
                 if (*eax != 32) {
                     goto bb0x8048531;
                 }
-                *(int*)(esp + local0 - 124) = 0;
+                *(__size8*)(esp + local0 - 124) = 0;
                 local0 = local0 - 1;
             }
 bb0x8048531:

@@ -131,11 +131,11 @@ __size32 d(__size32 param1, __size32 param2)
     local3 = param1;
     local4 = param2;
     if (d_e >= 0) {
-        ecx = e(param2, param1); /* Warning: also results in edx */
-        edx_1 = ecx;
-        ecx = edx;
+        ecx = e(param2, param1); /* Warning: also results in edx_1 */
+        edx = ecx;
+        ecx = edx_1;
         local3 = ecx;
-        local4 = edx_1;
+        local4 = edx;
     }
     param1 = local3;
     param2 = local4;

@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
     int g3; 		// r3
 
     g3 = proc1(11, 4);
-    printf(0x10000840);
+    printf("%i\n", g3);
     return g3;
 }
 

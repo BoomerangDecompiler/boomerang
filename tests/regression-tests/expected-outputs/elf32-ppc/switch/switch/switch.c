@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     if ((unsigned int)argc <= 7) {
     }
-    puts(0x100008b4);
+    puts("Other!");
     return 0;
 }
 
