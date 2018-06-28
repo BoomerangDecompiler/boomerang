@@ -149,9 +149,9 @@ bool CapstoneDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResul
         return false;
     }
 
-    //     // TEST TEST TEST
-    //     printf("0x%lx:\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
-    //            decodedInstruction->op_str);
+    // TEST TEST TEST
+    printf("0x%lx:\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
+           decodedInstruction->op_str);
 
     result.type         = getInstructionClass(decodedInstruction);
     result.numBytes     = decodedInstruction->size;

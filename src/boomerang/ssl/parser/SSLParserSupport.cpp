@@ -303,16 +303,17 @@ OPER SSLParser::strToOper(const QString &s)
 OPER strToTerm(const QString &s)
 {
     // clang-format off
-    static QMap<QString, OPER> mapping = {
-        { "%pc",        opPC        },
-        { "%afp",       opAFP       },
-        { "%agp",       opAGP       },
-        { "%CF",        opCF        },
-        { "%ZF",        opZF        },
-        { "%OF",        opOF        },
-        { "%NF",        opNF        },
-        { "%DF",        opDF        },
-        { "%flags",     opFlags     },
+    static const QMap<QString, OPER> mapping = {
+        { "%pc",     opPC  },
+        { "%afp",    opAFP },
+        { "%agp",    opAGP },
+        { "%CF",     opCF  },
+        { "%ZF",     opZF  },
+        { "%OF",     opOF  },
+        { "%NF",     opNF  },
+        { "%DF",     opDF  },
+        { "%SF",     opNF  },
+        { "%flags",  opFlags },
         { "%fflags",    opFflags    },
     };
     // clang-format on
