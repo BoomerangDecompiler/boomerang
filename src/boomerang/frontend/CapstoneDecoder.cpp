@@ -288,23 +288,23 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
         }
     }
     else if (isInstructionInGroup(instruction, cs::X86_GRP_JUMP)) {
-        if (instruction->id == cs::X86_INS_JMP) {
+        Assign *last = static_cast<Assign *>(rtl->back());
+        assert(last->getLeft()->isPC());
+        SharedExp guard = last->getGuard();
+
+        if (guard == nullptr) {
             // unconditional jump
             GotoStatement *gs = new GotoStatement;
-            Assign *last      = static_cast<Assign *>(rtl->back());
-            SharedExp dest    = last->getRight();
-
+            gs->setDest(last->getRight());
+            rtl->pop_back();
             rtl->append(gs);
         }
         else {
             // conditional jump
-            Assign *last         = static_cast<Assign *>(rtl->back());
-            SharedExp branchDest = last->getRight();
-
-            BranchStatement *branch = new BranchStatement;
-            rtl->append(branch);
-            branch->setDest(branchDest);
-            branch->setCondExpr(last->getGuard());
+            BranchStatement *branch = new BranchStatement();
+            branch->setDest(last->getRight());
+            branch->setCondExpr(guard);
+            branch->setIsComputed(true);
 
             BranchType bt = BranchType::INVALID;
             switch (instruction->id) {
@@ -327,6 +327,9 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
             default: assert(false); break;
             }
             branch->setCondType(bt, false);
+
+            rtl->pop_back();
+            rtl->append(branch);
         }
     }
 
