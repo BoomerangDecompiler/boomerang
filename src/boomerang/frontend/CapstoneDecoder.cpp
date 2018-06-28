@@ -105,7 +105,7 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
             addrExp           = Binary::get(opPlus, addrExp, dispExp);
         }
 
-        return Location::memOf(addrExp);
+        return Location::memOf(addrExp)->simplify();
     }
     case cs::X86_OP_REG: {
         return Location::regOf(fixRegID(operand.reg));
@@ -200,7 +200,7 @@ ICLASS CapstoneDecoder::getInstructionClass(const cs::cs_insn *)
 
 static QString operandNames[] = {
     "",    // X86_OP_INVALID
-    "r",   // X86_OP_REG
+    "reg", // X86_OP_REG
     "imm", // X86_OP_IMM
     "rm",  // X86_OP_MEM
 };
@@ -212,7 +212,13 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
     const cs::cs_x86_op *operands = instruction->detail->x86.operands;
 
     QString insnID = cs::cs_insn_name(m_handle, instruction->id);
-    insnID         = insnID.toUpper();
+
+    switch (instruction->detail->x86.prefix[0]) {
+    case cs::X86_PREFIX_REP: insnID = "REP" + insnID; break;
+    case cs::X86_PREFIX_REPNE: insnID = "REPNE" + insnID; break;
+    }
+
+    insnID = insnID.toUpper();
 
     for (int i = 0; i < numOperands; i++) {
         // example: ".imm8"
@@ -317,6 +323,7 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
             branch->setCondType(bt, false);
         }
     }
+
     return rtl;
 }
 
