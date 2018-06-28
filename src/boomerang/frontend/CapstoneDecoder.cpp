@@ -180,7 +180,13 @@ int CapstoneDecoder::getRegIdx(const QString &name) const
 
 QString CapstoneDecoder::getRegName(int idx) const
 {
-    return cs::cs_reg_name(m_handle, idx);
+    for (auto val : oldRegMap) {
+        if (val.second == idx) {
+            return cs::cs_reg_name(m_handle, val.first);
+        }
+    }
+
+    return "";
 }
 
 
