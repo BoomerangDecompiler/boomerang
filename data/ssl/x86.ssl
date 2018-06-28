@@ -657,6 +657,23 @@ ADD.reg64.rm64 dest, src
     ADDFLAGS64(tmpdest, src, dest)
 ;
 
+ADD.reg32.imm32 dest, src
+    *32* tmpdest := dest
+    *32* dest := dest + src
+    ADDFLAGS32(tmpdest, src, dest)
+;
+
+ADD.reg32.reg32 dest, src
+    *32* tmpdest := dest
+    *32* dest := dest + src
+    ADDFLAGS32(tmpdest, src, dest)
+;
+
+ADD.reg8.imm8 dest, src
+    *8* tmpdest := dest
+    *8* dest := dest + src
+    ADDFLAGS8(tmpdest, src, dest)
+;
 
 # AND
 AND.rm8.imm8 dest, src
@@ -732,6 +749,16 @@ AND.reg32.rm32 dest, src
 AND.reg64.rm64 dest, src
     *64* dest := dest & src
     LOGICALFLAGS64(dest)
+;
+
+AND.reg32.reg32 dest, src
+    *32* dest := dest & src
+    LOGICALFLAGS32(dest)
+;
+
+AND.reg8.imm8 dest, src
+    *8* dest := dest & src
+    LOGICALFLAGS8(dest)
 ;
 
 
@@ -883,6 +910,27 @@ CMP.reg32.rm32 lhs, rhs
 CMP.reg64.rm64 lhs, rhs
     *64* tmpresult := lhs - rhs
     SUBFLAGS64(lhs, rhs, tmpresult)
+;
+
+CMP.reg32.imm32 lhs, rhs
+    *32* tmpresult := lhs - rhs
+    SUBFLAGS32(lhs, rhs, tmpresult)
+;
+
+CMP.reg32.imm8 lhs, rhs
+    *32* tmprhs := sgnex(8, 32, rhs)
+    *32* tmpresult := lhs - tmprhs
+    SUBFLAGS32(lhs, tmprhs, tmpresult)
+;
+
+CMP.reg32.reg32 lhs, rhs
+    *32* tmpresult := lhs - rhs
+    SUBFLAGS32(lhs, rhs, tmpresult)
+;
+
+CMP.reg8.imm8 lhs, rhs
+    *8* tmpresult := lhs - rhs
+    SUBFLAGS8(lhs, rhs, tmpresult)
 ;
 
 
@@ -1295,13 +1343,13 @@ INC.rm64 val
     ADDFLAGS64(tmpval, 1, val)
 ;
 
-INC.r16 val
+INC.reg16 val
     *16* tmpval := val
     *16* val := val + 1
     ADDFLAGS16(tmpval, 1, val)
 ;
 
-INC.r32 val
+INC.reg32 val
     *32* tmpval := val
     *32* val := val + 1
     ADDFLAGS32(tmpval, 1, val)
@@ -1405,6 +1453,14 @@ JLE.imm32 dest
 
 # JMP
 JMP.imm32 dest
+    *32* %pc := dest
+;
+
+JMP.reg32 dest
+    *32* %pc := dest
+;
+
+JMP.rm32 dest
     *32* %pc := dest
 ;
 
@@ -1649,6 +1705,10 @@ MOVSX.reg64.rm16 dest, src
     *64* dest := sgnex(16, 64, src)
 ;
 
+MOVSX.reg32.reg8 dest, src
+    *32* dest := sgnex(8, 32, src)
+;
+
 
 # MOVSXD
 MOVSXD.reg16.rm16 dest, src
@@ -1683,6 +1743,10 @@ MOVZX.reg32.rm16 dest, src
 
 MOVZX.reg64.rm16 dest, src
     *64* dest := zfill(16, 64, src)
+;
+
+MOVZX.reg32.reg8 dest, src
+    *32* dest := zfill(8, 32, src)
 ;
 
 
@@ -1883,6 +1947,11 @@ RET.imm16 offset
     *32* %esp := %esp + 4 + offset
 ;
 
+RET.imm32 offset
+    *32* %pc := m[%esp + offset]{32}
+    *32* %esp := %esp + 4 + offset
+;
+
 
 # SAR
 SAR.rm8.imm8 dest, src
@@ -1909,6 +1978,11 @@ SAR.rm64.imm8 dest, src
     SARFLAGS(dest, tmpdest, src)
 ;
 
+SAR.reg32.imm32 dest, src
+    *32* tmpdest := dest
+    *32* dest := dest >>A src
+    SARFLAGS(dest, tmpdest, src)
+;
 
 # SBB
 SBB.rm8.imm8 dest, src
@@ -1999,6 +2073,18 @@ SBB.reg64.rm64 dest, src
     *64* tmpdest := dest
     *64* dest := dest - src - %CF
     SUBFLAGS64(tmpdest, src, dest)
+;
+
+SBB.reg32.imm32 dest, src
+    *32* tmpdest := dest
+    *32* dest := dest - src - %CF
+    SUBFLAGS32(tmpdest, src, dest)
+;
+
+SBB.reg32.reg32
+    *32* tmpdest := dest
+    *32* dest := dest - src - %CF
+    SUBFLAGS32(tmpdest, src, dest)
 ;
 
 
