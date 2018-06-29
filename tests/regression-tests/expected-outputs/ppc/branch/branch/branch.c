@@ -6,43 +6,43 @@ int main(int argc, char *argv[])
     int local0; 		// m[g1 - 36]
     unsigned int local1; 		// m[g1 - 28]
 
-    scanf(0x100009a8);
-    scanf(0x100009a8);
+    scanf("%d", &local0);
+    scanf("%d", &local1);
     if (local0 == 5) {
-        printf(0x100009ac);
+        printf("Equal\n");
     }
     if (local0 != 5) {
-        printf(0x100009b4);
+        printf("Not Equal\n");
     }
     if (5 > local0) {
-        printf(0x100009c0);
+        printf("Greater\n");
     }
     if (5 <= local0) {
-        printf(0x100009cc);
+        printf("Less or Equal\n");
     }
     if (5 >= local0) {
-        printf(0x100009dc);
+        printf("Greater or Equal\n");
     }
     if (5 < local0) {
-        printf(0x100009f0);
+        printf("Less\n");
     }
-    if ((unsigned int)5 > local1) {
-        printf(0x100009f8);
+    if (5 > local1) {
+        printf("Greater Unsigned\n");
     }
-    if ((unsigned int)5 <= local1) {
-        printf(0x10000a0c);
+    if (5 <= local1) {
+        printf("Less or Equal Unsigned\n");
     }
-    if ((unsigned int)5 >= local1) {
-        printf(0x10000a24);
+    if (5 >= local1) {
+        printf("Carry Clear\n");
     }
-    if ((unsigned int)5 < local1) {
-        printf(0x10000a34);
+    if (5 < local1) {
+        printf("Carry Set\n");
     }
     if (5 >= local0) {
-        printf(0x10000a40);
+        printf("Minus\n");
     }
     if (5 < local0) {
-        printf(0x10000a48);
+        printf("Plus\n");
     }
     return 5 - local0;
 }

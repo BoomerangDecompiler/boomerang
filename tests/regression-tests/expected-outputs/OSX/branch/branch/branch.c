@@ -26,16 +26,16 @@ int main(int argc, char *argv[])
     if (5 < local0) {
         printf(/* machine specific */ (int) LR + 1124);
     }
-    if ((unsigned int)5 > local1) {
+    if (5 > local1) {
         printf(/* machine specific */ (int) LR + 1132);
     }
-    if ((unsigned int)5 <= local1) {
+    if (5 <= local1) {
         printf(/* machine specific */ (int) LR + 1152);
     }
-    if ((unsigned int)5 >= local1) {
+    if (5 >= local1) {
         printf(/* machine specific */ (int) LR + 1176);
     }
-    if ((unsigned int)5 < local1) {
+    if (5 < local1) {
         printf(/* machine specific */ (int) LR + 1192);
     }
     if (5 >= local0) {

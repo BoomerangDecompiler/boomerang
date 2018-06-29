@@ -6,10 +6,10 @@ int main(int argc, char *argv[])
 {
     int g3; 		// r3
 
-    proc1(3, 4);
-    printf(0x10000864);
+    g3 = proc1(3, 4);
+    printf("%i\n", g3);
     g3 = proc1(5, 6);
-    printf(0x10000864);
+    printf("%i\n", g3);
     return g3;
 }
 

@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     while (local0 <= 9) {
         local0++;
     }
-    printf(0x10000828);
+    printf("%i\n", local0);
     return 0;
 }
 

@@ -123,7 +123,7 @@ void proc_0x08049ac0(union { FILE *; __size32; } param1, __size32 param2, union 
     __size32 eax; 		// r24
     int ebx; 		// r27
     int edx; 		// r26
-    int esi; 		// r30
+    unsigned int esi; 		// r30
 
     esi = 0;
     proc_0x08048d64();
@@ -142,7 +142,7 @@ void proc_0x08049ac0(union { FILE *; __size32; } param1, __size32 param2, union 
     else {
         fprintf(param1, ebx + 0xcc7);
     }
-    if ((unsigned int)esi <= (unsigned int)9) {
+    if (esi <= 9) {
 /* goto (m[(ebx + (esi * 4)) + 0xd1f] + ebx) + 0x1e7f */
     }
     r[24] = dcgettext(0, ebx + 0xaf7, 5);
@@ -152,7 +152,7 @@ void proc_0x08049ac0(union { FILE *; __size32; } param1, __size32 param2, union 
         __overflow();
     }
     else {
-        *(int*)eax = 10;
+        *(__size8*)eax = 10;
         *(__size32*)(param1 + 20)++;
     }
     eax = *(ebx + 0x1e63);
@@ -163,7 +163,7 @@ void proc_0x08049ac0(union { FILE *; __size32; } param1, __size32 param2, union 
         __overflow();
     }
     else {
-        *(int*)eax = 10;
+        *(__size8*)eax = 10;
         *(__size32*)(param1 + 20)++;
     }
     r[24] = dcgettext(0, ebx + 0xb33, 5);

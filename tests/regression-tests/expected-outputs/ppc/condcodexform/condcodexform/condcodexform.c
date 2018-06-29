@@ -11,12 +11,12 @@ int main(int argc, char *argv[])
     unsigned int CR5; 		// r69
     unsigned int CR6; 		// r70
     __size32 CR7; 		// r71
-    int local0; 		// m[g1 - 40]
-    int local1; 		// m[g1 - 36]
-    int local2; 		// m[g1 - 32]
-    int local3; 		// m[g1 - 28]
-    int local4; 		// m[g1 - 24]
-    int local5; 		// m[g1 - 48]
+    __size32 local0; 		// m[g1 - 40]
+    __size32 local1; 		// m[g1 - 36]
+    __size32 local2; 		// m[g1 - 32]
+    __size32 local3; 		// m[g1 - 28]
+    __size32 local4; 		// m[g1 - 24]
+    __size32 local5; 		// m[g1 - 48]
 
     local0 = 1;
     if (argc <= 1) {
@@ -59,10 +59,10 @@ int main(int argc, char *argv[])
         }
     }
     if (local5 == 0) {
-        printf(0x10000acc);
+        printf("Failed!\n");
     }
     else {
-        printf(0x10000ac4);
+        printf("Pass\n");
     }
     return ROTL((CR0 * 0x10000000 + CR1 * 0x1000000 + CR2 * 0x100000 + CR3 * 0x10000 + CR4 * 0x1000 + CR5 * 256 + CR6 * 16 + CR7)) & 0x1;
 }

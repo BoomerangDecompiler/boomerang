@@ -15,7 +15,7 @@ void proc_0x00012030();
 int main(int argc, union { __size32; char *[] *; } argv)
 {
     __size32 fp; 		// r30
-    int g1; 		// r1
+    __size32 g1; 		// r1
     __size32 g7; 		// r7
     int i0; 		// r24
     __size32 i1; 		// r25
@@ -31,7 +31,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 l4; 		// r20
     __size32 l5; 		// r21
     __size32 l6; 		// r22
-    int l7; 		// r23
+    __size32 l7; 		// r23
     __size32 l7_1; 		// r23{0}
     __size32 o2; 		// r10
     __size32 o3; 		// r11
@@ -78,7 +78,7 @@ void proc_0x00000980(__size32 param1, __size32 param2, __size32 param3, __size32
     __size32 l4; 		// r20
     __size32 l5; 		// r21
     __size32 l6; 		// r22
-    int l7; 		// r23
+    __size32 l7; 		// r23
     __size32 l7_1; 		// r23{0}
     __size32 o6; 		// r14
 

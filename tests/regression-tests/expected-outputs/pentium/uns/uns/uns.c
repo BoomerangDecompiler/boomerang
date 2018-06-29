@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     if ((unsigned int)argc <= (unsigned int)0xefffffff) {
         printf("The mask is %x\n", (unsigned int)0xf0000000);
     }
-    if ((unsigned int)argc > (unsigned int)1) {
+    if ((unsigned int)argc > 1) {
         printf("Arguments supplied\n");
     }
     if (0 - argc < -2) {

@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x0804837c */
 int main(int argc, char *argv[])
 {
-    if ((unsigned int)argc > (unsigned int)7) {
+    if ((unsigned int)argc > 7) {
 bb0x80483a8:
         puts("Other!");
         goto bb0x80483b5;
@@ -23,7 +23,7 @@ bb0x804840c:
         puts("Three!");
         return 0;
     case 4:
-        if ((unsigned int)(7 - argc) <= (unsigned int)5) {
+        if (7 - argc <= 5) {
             switch(7 - argc) {
             case 0:
 bb0x80483d0:

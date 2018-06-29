@@ -20,8 +20,8 @@ void test(int param1)
 
     ebx = -2 - param1;
     ecx = -1 - (param1 >> 31) + ((unsigned int)-2 < (unsigned int)param1);
-    ebx = (-2 - (ebx & ecx) >> 31) - ((unsigned int)(-2 - (ebx & ecx)) < (unsigned int)3);
-    printf("MinMax result %d\n", (-5 - (ebx & ecx) & (-2 - (ebx & ecx) >> 31) - ((unsigned int)(-2 - (ebx & ecx)) < (unsigned int)3)) + 3);
+    ebx = (-2 - (ebx & ecx) >> 31) - (-2 - (ebx & ecx) < 3);
+    printf("MinMax result %d\n", (-5 - (ebx & ecx) & (-2 - (ebx & ecx) >> 31) - (-2 - (ebx & ecx) < 3)) + 3);
     return;
 }
 

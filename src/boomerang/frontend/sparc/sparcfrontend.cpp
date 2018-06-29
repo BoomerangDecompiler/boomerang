@@ -62,7 +62,7 @@ BasicBlock *SparcFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 
         // If the delay slot is a single assignment to %o7, we want to see the semantics for it, so that preservation
         // or otherwise of %o7 is correct
-        if ((delay->size() == 1) && delay->front()->isAssign() && static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
+        if (delay && (delay->size() == 1) && delay->front()->isAssign() && static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
             ls->push_back(delay->front());
         }
 

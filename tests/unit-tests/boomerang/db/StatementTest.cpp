@@ -543,7 +543,7 @@ void StatementTest::testEndlessLoop()
 
 
     // r[24] := 5
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
+    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5, IntegerType::get(32, 1)));
     a1->setProc(proc);
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1 })));
@@ -552,7 +552,9 @@ void StatementTest::testEndlessLoop()
 
 
     // r24 := r24 + 1
-    Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus, Location::regOf(REG_PENT_EAX), Const::get(1)));
+    Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus,
+                                                                       Location::regOf(REG_PENT_EAX),
+                                                                       Const::get(1, IntegerType::get(32, 1))));
     a2->setProc(proc);
     bbRTLs.reset(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { a2 })));

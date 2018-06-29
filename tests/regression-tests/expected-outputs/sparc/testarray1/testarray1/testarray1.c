@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
         local0 += (int)(o0 * 0x1000000) >> 24;
         local1++;
     }
-    printf(0x107b0);
+    printf("Sum is %d\n", local0);
     return 0;
 }
 

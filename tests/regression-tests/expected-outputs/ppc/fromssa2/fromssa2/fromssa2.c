@@ -8,9 +8,9 @@ int main(int argc, char *argv[])
     local0 = 0;
     do {
         local0++;
-        printf(0x10000840);
+        printf("%d ", local0);
     } while (local0 <= 9);
-    printf(0x10000844);
+    printf("a is %d, x is %d\n", local0, local0);
     return 0;
 }
 

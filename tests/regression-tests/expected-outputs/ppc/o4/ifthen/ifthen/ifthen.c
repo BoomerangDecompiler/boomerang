@@ -3,11 +3,15 @@ int main(int argc, char *argv[]);
 /** address: 0x10000468 */
 int main(int argc, char *argv[])
 {
-    puts(0x10000868);
+    int g4; 		// r4
+
+    puts("Figure 19.2");
     putchar();
+    g4 = 0;
     if (argc <= 3) {
+        g4 = argc;
     }
-    printf(0x10000874);
+    printf("C is %d\n", g4 + argc);
     return /* machine specific */ (int) LR;
 }
 

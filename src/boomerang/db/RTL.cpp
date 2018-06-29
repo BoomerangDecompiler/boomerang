@@ -13,17 +13,17 @@
 #include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Operator.h"        // for OPER::opIntConst
+#include "boomerang/db/exp/Operator.h"
 
-#include "boomerang/util/Log.h"               // for LOG_VERBOSE
-#include "boomerang/util/Types.h"             // for Address
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 #include <QTextStream>
 
-#include <stdio.h>                      // for stderr
-#include <cassert>                      // for assert
-#include <cstring>                      // for strncpy
+#include <cassert>
+#include <cstdio>
+#include <cstring>
 
 
 RTL::RTL(Address instrAddr, const std::list<Statement *> *listStmt /*= nullptr*/)

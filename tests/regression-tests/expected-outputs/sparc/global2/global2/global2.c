@@ -1,3 +1,5 @@
+union { double; __size32; } a;
+int b = 7;
 int main(int argc, char *argv[]);
 void foo1();
 void foo2();
@@ -6,7 +8,7 @@ void foo2();
 int main(int argc, char *argv[])
 {
     foo1();
-    printf(0x10838);
+    printf("b = %i\n", b);
     return 0;
 }
 
@@ -20,8 +22,8 @@ void foo1()
 /** address: 0x000106fc */
 void foo2()
 {
-    *(int*)0x209b8 = 12;
-    printf(0x10830);
+    b = 12;
+    printf("a = %f\n", a);
     return;
 }
 

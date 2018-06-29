@@ -4,13 +4,14 @@ __size32 fib(int param1, __size32 param2);
 /** address: 0x100004c4 */
 int main(int argc, char *argv[])
 {
+    int g3; 		// r3
     int g9; 		// r9
     int local0; 		// m[g1 - 24]
 
-    printf(0x100008e0);
-    g9 = scanf(0x100008f0);
-    fib(local0, g9);
-    printf(0x100008f4);
+    printf("Input number: ");
+    g9 = scanf("%d", &local0);
+    g3 = fib(local0, g9);
+    printf("fibonacci(%d) = %d\n", local0, g3);
     return 0;
 }
 

@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00001b78 */
 int main(int argc, char *argv[])
 {
-    int g3; 		// r3
+    __size32 g3; 		// r3
     int local0; 		// m[g1 - 32]
     unsigned int local1; 		// m[g1 - 28]
 
@@ -27,16 +27,16 @@ int main(int argc, char *argv[])
     if (5 < local0) {
         puts(/* machine specific */ (int) LR + 1056);
     }
-    if ((unsigned int)5 > local1) {
+    if (5 > local1) {
         puts(/* machine specific */ (int) LR + 1064);
     }
-    if ((unsigned int)5 <= local1) {
+    if (5 <= local1) {
         puts(/* machine specific */ (int) LR + 1084);
     }
-    if ((unsigned int)5 >= local1) {
+    if (5 >= local1) {
         puts(/* machine specific */ (int) LR + 1108);
     }
-    if ((unsigned int)5 < local1) {
+    if (5 < local1) {
         puts(/* machine specific */ (int) LR + 1120);
     }
     if (5 >= local0) {

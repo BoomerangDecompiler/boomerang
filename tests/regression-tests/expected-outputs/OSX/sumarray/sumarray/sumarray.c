@@ -3,8 +3,8 @@ int main(int argc, char *argv[]);
 /** address: 0x00001d0c */
 int main(int argc, char *argv[])
 {
-    int g0; 		// r0
-    int local0; 		// m[g1 - 32]
+    __size32 g0; 		// r0
+    __size32 local0; 		// m[g1 - 32]
     int local1; 		// m[g1 - 28]
 
     local0 = 0;

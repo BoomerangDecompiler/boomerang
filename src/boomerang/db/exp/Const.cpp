@@ -37,7 +37,7 @@ Const::Const(uint32_t i)
 Const::Const(int i)
     : Exp(opIntConst)
     , m_conscript(0)
-    , m_type(IntegerType::get(32, 1))
+    , m_type(VoidType::get())
 {
     m_value.i = i;
 }
@@ -46,7 +46,7 @@ Const::Const(int i)
 Const::Const(QWord ll)
     : Exp(opLongConst)
     , m_conscript(0)
-    , m_type(IntegerType::get(64, -1))
+    , m_type(VoidType::get())
 {
     m_value.ll = ll;
 }
@@ -55,7 +55,7 @@ Const::Const(QWord ll)
 Const::Const(double d)
     : Exp(opFltConst)
     , m_conscript(0)
-    , m_type(FloatType::get(64))
+    , m_type(VoidType::get())
 {
     m_value.d = d;
 }
@@ -73,7 +73,7 @@ Const::Const(const QString& p)
 Const::Const(Function *p)
     : Exp(opFuncConst)
     , m_conscript(0)
-    , m_type(PointerType::get(FuncType::get()))
+    , m_type(VoidType::get())
 {
     m_value.pp = p;
 }
@@ -160,12 +160,12 @@ void Const::printx(int ind) const
         LOG_MSG("%1", m_value.i);
         break;
 
-    case opStrConst:
-        LOG_MSG("\"%1\"", m_string);
-        break;
-
     case opFltConst:
         LOG_MSG("%1", m_value.d);
+        break;
+
+    case opStrConst:
+        LOG_MSG("\"%1\"", m_string);
         break;
 
     case opFuncConst:
@@ -302,28 +302,15 @@ SharedType Const::ascendType()
     if (m_type->resolvesToVoid()) {
         switch (m_oper)
         {
-        case opIntConst:
             // could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
-            break;
-
-        case opLongConst:
-            m_type = IntegerType::get(STD_SIZE * 2, 0);
-            break;
-
-        case opFltConst:
-            m_type = FloatType::get(64);
-            break;
-
-        case opStrConst:
-            m_type = PointerType::get(CharType::get());
-            break;
-
-        case opFuncConst:
-            m_type = FuncType::get();          // More needed here?
-            break;
-
+        case opIntConst:  return VoidType::get();
+        case opLongConst: return m_type = IntegerType::get(STD_SIZE * 2, 0);
+        case opFltConst:  return m_type = FloatType::get(64);
+        case opStrConst:  return m_type = PointerType::get(CharType::get());
+        case opFuncConst: return m_type = PointerType::get(FuncType::get());
+            // More needed here?
         default:
-            assert(0); // Bad Const
+            assert(false); // Bad Const
         }
     }
 

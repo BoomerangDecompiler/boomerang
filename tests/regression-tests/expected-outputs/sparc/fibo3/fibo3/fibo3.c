@@ -5,12 +5,13 @@ __size32 fib(int param1, int param2);
 int main(int argc, char *argv[])
 {
     int local0; 		// m[o6 - 20]
+    int o0; 		// r8
     int o4; 		// r12
 
-    printf(0x10810);
-    o4 = scanf(0x10820);
-    fib(local0, o4);
-    printf(0x10828);
+    printf("Input number: ");
+    o4 = scanf("%d", &local0);
+    o0 = fib(local0, o4);
+    printf("fibonacci(%d) = %d\n", local0, o0);
     return 0;
 }
 

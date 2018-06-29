@@ -4,16 +4,16 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     if ((unsigned int)argc > (unsigned int)0xee6b27ff) {
-        printf(0x107e8);
+        printf("Population exceeds %u\n", (unsigned int)0xee6b2800);
     }
     if ((unsigned int)argc <= (unsigned int)0xefffffff) {
         printf("The mask is %x\n", (unsigned int)0xf0000000);
     }
-    if ((unsigned int)argc > (unsigned int)1) {
-        printf(0x10810);
+    if ((unsigned int)argc > 1) {
+        printf("Arguments supplied\n");
     }
     if (0 - argc < -2) {
-        printf(0x10828);
+        printf("Three or more arguments\n");
     }
     return 0;
 }

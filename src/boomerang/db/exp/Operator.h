@@ -151,6 +151,8 @@ enum OPER
     opPow,          ///< raise to a power
     opSqrt,         ///< square root
     opExecute,      ///< Execute instruction at(addr)
+
+    // constants
     opIntConst,     ///< integer constant TODO: differentiate IntConst by adding AddressConst ?
     opLongConst,    ///< long integer constant
     opFltConst,     ///< floating point constant

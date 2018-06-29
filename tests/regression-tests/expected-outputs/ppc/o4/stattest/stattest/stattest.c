@@ -4,9 +4,11 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int g3; 		// r3
+    int g3_1; 		// r3
+    int local0; 		// m[g1 - 68]
 
-    g3 = __xstat();
-    printf(0x10000850);
+    g3_1 = __xstat();
+    printf("Stat returns %d; size of file is %d\n", g3_1, local0);
     return g3;
 }
 

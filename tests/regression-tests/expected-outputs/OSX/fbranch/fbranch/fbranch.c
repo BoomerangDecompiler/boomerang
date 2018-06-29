@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     }
     else {
     }
-    if (0x40a00000 > local0) {
+    if (5. > local0) {
         printf(/* machine specific */ (int) LR + 1016);
     }
     else {
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     else {
     }
     f13 = local0;
-    if (0x40a00000 < local0) {
+    if (5. < local0) {
         printf(/* machine specific */ (int) LR + 1064);
     }
     else {

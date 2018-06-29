@@ -10,8 +10,9 @@ int main(int argc, char *argv[])
         g4 = -2;
     }
     if (g4 > 3) {
+        g4 = 3;
     }
-    printf(0x10000804);
+    printf("MinMax adjusted number of arguments is %d\n", g4);
     return 0;
 }
 

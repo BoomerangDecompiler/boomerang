@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     int o0; 		// r8
 
-    if ((unsigned int)(argc - 2) > (unsigned int)5) {
+    if ((unsigned int)(argc - 2) > 5) {
         o0 = 0x11678;
     }
     else {

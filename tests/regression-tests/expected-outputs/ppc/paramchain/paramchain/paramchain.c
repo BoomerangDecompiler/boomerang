@@ -6,9 +6,10 @@ void addem(__size32 param1, __size32 param2, __size32 param3, union { __size32; 
 int main(int argc, char *argv[])
 {
     __size32 g1; 		// r1
+    int local0; 		// m[g1 - 24]
 
-    passem(5, 10, 40, (g1 - 24));
-    printf(0x100008ac);
+    passem(5, 10, 40, g1 - 24);
+    printf("Fifty five is %d\n", local0);
     return 0;
 }
 

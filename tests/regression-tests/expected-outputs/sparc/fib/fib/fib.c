@@ -4,8 +4,10 @@ __size32 fib(int param1);
 /** address: 0x0001069c */
 int main(int argc, char *argv[])
 {
-    fib(10);
-    printf(0x10798);
+    int o0; 		// r8
+
+    o0 = fib(10);
+    printf("%i\n", o0);
     return 0;
 }
 
