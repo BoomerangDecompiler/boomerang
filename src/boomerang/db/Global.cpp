@@ -234,16 +234,23 @@ void Global::meetType(SharedType ty)
 }
 
 
-bool GlobalComparator::operator()(const std::shared_ptr<const Global>& g1, const std::shared_ptr<const Global>& g2)
+bool GlobalComparator::operator()(const std::shared_ptr<const Global>& g1,
+                                  const std::shared_ptr<const Global>& g2)
 {
-    if (g1->getAddress() != g2->getAddress()) {
-        return g1->getAddress() < g2->getAddress();
-    }
+    Address addr1 = g1->getAddress();
+    Address addr2 = g2->getAddress();
 
-    if (g1->getName() != g2->getName()) {
-        return g1->getName() < g2->getName();
+    if (addr1 == addr2) {
+        return false;
     }
-
-    return *g1->getType() < *g2->getType();
+    else if (addr1 == Address::INVALID) {
+        return true;
+    }
+    else if (addr2 == Address::INVALID) {
+        return false;
+    }
+    else {
+        return addr1 < addr2;
+    }
 }
 
