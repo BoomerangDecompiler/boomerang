@@ -72,8 +72,10 @@ public:
     std::unique_ptr<RTL> instantiateRTL(const QString &name, Address pc,
                                         const std::vector<SharedExp> &actuals);
 
-    int getRegID(const QString &regName);
-    QString getRegName(int regID);
+    int getRegID(const QString &regName) const;
+    QString getRegName(int regID) const;
+
+    int getRegSize(int regID) const;
 
     /// Get the name of the register by its index.
     /// Returns the empty string when \p regID == -1 or the register was not found.

@@ -424,17 +424,17 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             break;
         }
 
-        const CallStatement *cs = nullptr;
+        const CallStatement *call = nullptr;
 
         if (!inst.rtl->empty()) {
-            cs = (inst.rtl->back()->getKind() == StmtType::Call)
-                     ? static_cast<CallStatement *>(inst.rtl->back())
-                     : nullptr;
+            call = (inst.rtl->back()->getKind() == StmtType::Call)
+                       ? static_cast<CallStatement *>(inst.rtl->back())
+                       : nullptr;
         }
 
-        const BinarySymbol *sym = (cs && cs->isCallToMemOffset())
+        const BinarySymbol *sym = (call && call->isCallToMemOffset())
                                       ? symbols->findSymbolByAddress(
-                                            cs->getDest()->access<Const, 1>()->getAddr())
+                                            call->getDest()->access<Const, 1>()->getAddr())
                                       : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
@@ -460,11 +460,11 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             }
         }
 
-        if (cs && (dest = cs->getFixedDest()) != Address::INVALID) {
+        if (call && ((dest = (call->getFixedDest())) != Address::INVALID)) {
             const QString destSym = m_program->getSymbolNameByAddr(dest);
 
             if (destSym == "__libc_start_main") {
-                // This is a gcc 3 pattern. The first parameter will be a pointer to main.
+                // This is a gcc 3 pattern. The first parameter
                 // Assume it's the 5 byte push immediately preceeding this instruction.
                 // For newer GCCs, this is not the case. Make sure the code only fails
                 // instead of crashing.
@@ -485,10 +485,10 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        const GotoStatement *gs = static_cast<const GotoStatement *>(cs);
+        const GotoStatement *gs = static_cast<const GotoStatement *>(call);
         if (gs && (gs->getKind() == StmtType::Goto)) {
-            // Example: Borland often starts with a branch around some debug
-            // info
+            // Example: Borland often starts with a branch
+            // around some debug info
             addr = gs->getFixedDest();
         }
         else {

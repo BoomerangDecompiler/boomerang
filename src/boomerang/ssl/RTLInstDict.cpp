@@ -240,15 +240,22 @@ void RTLInstDict::reset()
 }
 
 
-int RTLInstDict::getRegID(const QString &regName)
+int RTLInstDict::getRegID(const QString &regName) const
 {
     auto it = m_regIDs.find(regName);
     return (it != m_regIDs.end()) ? it->second : -1;
 }
 
 
-QString RTLInstDict::getRegName(int regID)
+QString RTLInstDict::getRegName(int regID) const
 {
     auto it = m_regInfo.find(regID);
     return (it != m_regInfo.end()) ? it->second.getName() : QString();
+}
+
+
+int RTLInstDict::getRegSize(int regID) const
+{
+    auto it = DetRegMap.find(regID);
+    return (it != DetRegMap.end()) ? it->second.getSize() : 0;
 }

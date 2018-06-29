@@ -190,10 +190,9 @@ QString CapstoneDecoder::getRegName(int idx) const
 }
 
 
-int CapstoneDecoder::getRegSize(int) const
+int CapstoneDecoder::getRegSize(int idx) const
 {
-    // TODO
-    return 0;
+    return m_dict.getRegSize(idx);
 }
 
 
