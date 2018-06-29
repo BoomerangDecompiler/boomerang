@@ -151,7 +151,7 @@ void ProgDecompiler::removeUnusedGlobals()
     }
 
     // Rebuild the globals vector. Delete the unused globals only after re-inserting them
-    std::set<std::shared_ptr<Global>> oldGlobals = m_prog->getGlobals();
+    Prog::GlobalSet oldGlobals = m_prog->getGlobals();
     m_prog->getGlobals().clear();
 
     for (const SharedExp& e : usedGlobals) {

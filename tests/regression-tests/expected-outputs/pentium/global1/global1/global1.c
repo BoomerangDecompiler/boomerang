@@ -1,7 +1,5 @@
-int b = 7;
 int a = 5;
 int b = 7;
-int a = 5;
 int main(int argc, char *argv[]);
 void foo1();
 void foo2();

@@ -14,6 +14,7 @@
 #include "boomerang/util/Util.h"
 #include "boomerang/type/type/Type.h"
 
+
 class Prog;
 
 
@@ -57,4 +58,11 @@ private:
     Address m_addr;
     QString m_name;
     Prog *m_prog;
+};
+
+
+class GlobalComparator
+{
+public:
+    bool operator()(const std::shared_ptr<const Global>& g1, const std::shared_ptr<const Global>& g2);
 };

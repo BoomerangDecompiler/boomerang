@@ -1,5 +1,4 @@
 int global_0x0040b59c = 0x40b570;
-int global_0x0040b59c = 0x40b570;
 int main(int argc, char *argv[]);
 __size32 proc_0x004038e4(__size32 param1);
 void proc_0x00403ad0(__size32 param1);

@@ -1,5 +1,4 @@
 int global_0x080486c4[9999999];
-int global_0x080486c4[9999999];
 int main(int argc, char *argv[]);
 __size32 b(int param1);
 __size32 c(unsigned int param1);

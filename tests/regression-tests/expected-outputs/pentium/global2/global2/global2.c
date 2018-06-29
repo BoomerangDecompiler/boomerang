@@ -1,7 +1,5 @@
-int b = 7;
 union { double; __size32; } a;
 int b = 7;
-union { double; __size32; } a;
 int main(int argc, char *argv[]);
 void foo1();
 void foo2();
