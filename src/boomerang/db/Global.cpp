@@ -232,3 +232,18 @@ void Global::meetType(SharedType ty)
 
     m_type = m_type->meetWith(ty, ch);
 }
+
+
+bool GlobalComparator::operator()(const std::shared_ptr<const Global>& g1, const std::shared_ptr<const Global>& g2)
+{
+    if (g1->getAddress() != g2->getAddress()) {
+        return g1->getAddress() < g2->getAddress();
+    }
+
+    if (g1->getName() != g2->getName()) {
+        return g1->getName() < g2->getName();
+    }
+
+    return *g1->getType() < *g2->getType();
+}
+

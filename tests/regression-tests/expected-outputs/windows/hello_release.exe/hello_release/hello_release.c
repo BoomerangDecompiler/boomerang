@@ -1,5 +1,4 @@
 int global_0x00405558 = 0;
-int global_0x00405558 = 0;
 int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow);
 __size32 proc_0x004010c0(__size32 param1);
 __size32 proc_0x00401150(HINSTANCE param1);

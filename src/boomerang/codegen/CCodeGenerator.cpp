@@ -14,6 +14,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/CFGCompressor.h"
+#include "boomerang/db/Global.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
@@ -2758,6 +2759,8 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 void CCodeGenerator::print(QTextStream& os)
 {
     os << m_lines.join('\n') << '\n';
+    os.flush();
+    m_lines.clear();
 }
 
 

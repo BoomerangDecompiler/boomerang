@@ -16,6 +16,7 @@
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
+#include "boomerang/db/Global.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/frontend/Frontend.h"
@@ -30,7 +31,6 @@ class Statement;
 class Module;
 class BinarySection;
 class ICodeGenerator;
-class Global;
 class BinarySymbol;
 class BinaryFile;
 class Project;
@@ -42,6 +42,8 @@ public:
     /// The type for the list of functions.
     typedef std::list<std::unique_ptr<Module>>  ModuleList;
     typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
+
+    typedef std::set<std::shared_ptr<Global>, GlobalComparator> GlobalSet;
 
 public:
     Prog(const QString& name, Project *project);
@@ -205,8 +207,8 @@ public:
      */
     Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = QString());
 
-    std::set<std::shared_ptr<Global>>& getGlobals() { return m_globals; }
-    const std::set<std::shared_ptr<Global>>& getGlobals() const { return m_globals; }
+    GlobalSet& getGlobals() { return m_globals; }
+    const GlobalSet& getGlobals() const { return m_globals; }
 
     /// Get a global variable if possible, looking up the loader's symbol table if necessary
     QString getGlobalNameByAddr(Address addr) const;
@@ -255,6 +257,6 @@ private:
     std::list<UserProc *> m_entryProcs;
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
-    std::set<std::shared_ptr<Global>> m_globals; ///< globals to print at code generation time
+    GlobalSet m_globals; ///< globals to print at code generation time
     DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
 };
