@@ -5,10 +5,10 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 ## Building
 
-| **Build status** | Linux | Windows |
-|------------------|-------|---------|
-|    **develop**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=develop)](https://travis-ci.org/ceeac/boomerang) | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) |
-|     **master**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=master)](https://travis-ci.org/ceeac/boomerang)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   |
+| **Build status** | Linux | Windows | Test Coverage |
+|------------------|-------|---------|---------------|
+|    **develop**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=develop)](https://travis-ci.org/ceeac/boomerang) | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) | [![codecov](https://codecov.io/gh/ceeac/boomerang/branch/develop/graph/badge.svg)](https://codecov.io/gh/ceeac/boomerang/branch/develop) |
+|     **master**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=master)](https://travis-ci.org/ceeac/boomerang)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   | [![codecov](https://codecov.io/gh/ceeac/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/ceeac/boomerang/branch/master) |
 
 
 ### Building prerequisites
