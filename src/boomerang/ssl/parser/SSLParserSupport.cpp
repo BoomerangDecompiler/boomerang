@@ -315,6 +315,8 @@ OPER strToTerm(const QString &s)
         { "%SF",     opNF  },
         { "%flags",  opFlags },
         { "%fflags",    opFflags    },
+        { "%C3",     opFZF },
+        { "%C0",     opFLF }
     };
     // clang-format on
 
