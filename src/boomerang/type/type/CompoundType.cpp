@@ -51,7 +51,7 @@ size_t CompoundType::getSize() const
 }
 
 
-bool CompoundType::isSuperStructOf(const SharedType& other)
+bool CompoundType::isSuperStructOf(const SharedType& other) const
 {
     if (!other->isCompound()) {
         return false;
@@ -74,7 +74,7 @@ bool CompoundType::isSuperStructOf(const SharedType& other)
 }
 
 
-bool CompoundType::isSubStructOf(SharedType other) const
+bool CompoundType::isSubStructOf(const SharedType& other) const
 {
     if (!other->isCompound()) {
         return false;

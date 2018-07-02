@@ -76,18 +76,17 @@ public:
 
     virtual QString getCtype(bool final = false) const override;
 
-
     /**
      * Return true if this is a superstructure of other,
      * i.e. we have the same types at the same offsets as other
      */
-    bool isSuperStructOf(const SharedType& other);
+    bool isSuperStructOf(const SharedType& other) const;
 
     /**
      * Return true if this is a substructure of other,
      * i.e. other has the same types at the same offsets as this
      */
-    bool isSubStructOf(SharedType other) const;
+    bool isSubStructOf(const SharedType& other) const;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;

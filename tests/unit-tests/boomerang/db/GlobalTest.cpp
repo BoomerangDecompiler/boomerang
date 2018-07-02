@@ -19,6 +19,7 @@
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/PointerType.h"
 
 
 #define SAMPLE(path)    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
@@ -62,6 +63,18 @@ void GlobalTest::testGetInitialValue()
     result = five->getInitialValue();
     QVERIFY(result && result->isFltConst());
     QCOMPARE(result->access<Const>()->getFlt(), 5.0f);
+
+    Global *nullptrGlob = prog->createGlobal(Address(0x0804830A), PointerType::get(VoidType::get()));
+    QVERIFY(nullptrGlob != nullptr);
+    QVERIFY(nullptrGlob->getInitialValue() != nullptr);
+    QCOMPARE(nullptrGlob->getInitialValue()->toString(), Const::get(0)->toString());
+
+    Global glob1(VoidType::get(), Address::INVALID, "", prog);
+    QVERIFY(glob1.getInitialValue() == nullptr);
+
+    Global *bssGlob = prog->createGlobal(Address(0x080496DC));
+    QVERIFY(bssGlob != nullptr);
+    QVERIFY(bssGlob->getInitialValue() == nullptr);
 }
 
 

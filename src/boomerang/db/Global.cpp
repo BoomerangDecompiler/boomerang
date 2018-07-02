@@ -44,14 +44,10 @@ SharedExp Global::getInitialValue() const
 {
     const BinarySection *sect = m_prog->getSectionByAddr(m_addr);
 
-    // TODO: see what happens when we skip Bss check here
-    if (sect && sect->isAddressBss(m_addr)) {
+    if (!sect || sect->isAddressBss(m_addr)) {
         // This global is in the BSS, so it can't be initialised
         // NOTE: this is not actually correct. at least for typing, BSS data can have a type assigned
-        return nullptr;
-    }
-
-    if (sect == nullptr) {
+        // TODO: see what happens when we skip Bss check here
         return nullptr;
     }
 
