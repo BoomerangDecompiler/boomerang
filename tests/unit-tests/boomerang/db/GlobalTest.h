@@ -22,8 +22,8 @@ class GlobalTest : public QObject
 private slots:
     void initTestCase();
 
+    void testContainsAddress();
     void testGetInitialValue();
-
 private:
     Project m_project;
 };

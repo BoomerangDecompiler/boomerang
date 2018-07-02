@@ -31,12 +31,14 @@ Global::Global(SharedType type, Address addr, const QString& name, Prog *prog)
     , m_name(name)
     , m_prog(prog)
 {
+    assert(type != nullptr);
+    assert(addr != Address::INVALID);
 }
 
 
 bool Global::containsAddress(Address addr) const
 {
-    return Util::inRange(addr, m_addr, m_addr + getType()->getSizeInBytes());
+    return addr == m_addr || Util::inRange(addr, m_addr, m_addr + getType()->getSizeInBytes());
 }
 
 
@@ -90,7 +92,7 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
 
     if (type->resolvesToCompound()) {
         std::shared_ptr<CompoundType> c = type->as<CompoundType>();
-        auto n = e = Terminal::get(opNil);
+        SharedExp n = e = Terminal::get(opNil);
 
         for (unsigned int i = 0; i < c->getNumTypes(); i++) {
             Address    addr = uaddr + c->getOffsetTo(i) / 8;

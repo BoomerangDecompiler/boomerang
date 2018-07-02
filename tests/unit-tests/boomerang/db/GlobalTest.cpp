@@ -37,6 +37,20 @@ void GlobalTest::initTestCase()
 }
 
 
+void GlobalTest::testContainsAddress()
+{
+    Global glob1(VoidType::get(), Address(0x1000), "", nullptr);
+    QVERIFY(!glob1.containsAddress(Address(0xFFF)));
+    QVERIFY(glob1.containsAddress(Address(0x1000)));
+    QVERIFY(!glob1.containsAddress(Address(0x1001)));
+
+    Global glob2(IntegerType::get(32), Address(0x1000), "", nullptr);
+    QVERIFY(!glob2.containsAddress(Address(0xFFF)));
+    QVERIFY(glob2.containsAddress(Address(0x1001)));
+    QVERIFY(!glob2.containsAddress(Address(0x1004)));
+}
+
+
 void GlobalTest::testGetInitialValue()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
@@ -69,7 +83,7 @@ void GlobalTest::testGetInitialValue()
     QVERIFY(nullptrGlob->getInitialValue() != nullptr);
     QCOMPARE(nullptrGlob->getInitialValue()->toString(), Const::get(0)->toString());
 
-    Global glob1(VoidType::get(), Address::INVALID, "", prog);
+    Global glob1(VoidType::get(), Address::ZERO, "", prog);
     QVERIFY(glob1.getInitialValue() == nullptr);
 
     Global *bssGlob = prog->createGlobal(Address(0x080496DC));
