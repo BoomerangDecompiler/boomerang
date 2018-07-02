@@ -256,6 +256,6 @@ QString RTLInstDict::getRegName(int regID) const
 
 int RTLInstDict::getRegSize(int regID) const
 {
-    auto it = DetRegMap.find(regID);
-    return (it != DetRegMap.end()) ? it->second.getSize() : 0;
+    auto it = m_regInfo.find(regID);
+    return (it != m_regInfo.end()) ? it->second.getSize() : 0;
 }

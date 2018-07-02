@@ -584,15 +584,15 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                            // Find the address of the callee.
                         Address callAddr = call->getFixedDest();
 
-                        // Calls with 0 offset (i.e. call the next instruction) are simply pushing
-                        // the PC to the stack. Treat these as non-control flow instructions and
-                        // continue.
+                        // Calls with 0 offset (i.e. call the next instruction) are simply
+                        // pushing the PC to the stack. Treat these as non-control flow
+                        // instructions and continue.
                         if (callAddr == addr + inst.numBytes) {
                             break;
                         }
 
-                        // Call the virtual helper function. If implemented, will check for machine
-                        // specific funcion calls
+                        // Call the virtual helper function. If implemented, will check for
+                        // machine specific funcion calls
                         if (isHelperFunc(callAddr, addr, *BB_rtls)) {
                             // We have already added to BB_rtls
                             inst.rtl.reset(); // Discard the call semantics
@@ -602,12 +602,12 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         RTL *rtl = inst.rtl.get();
                         BB_rtls->push_back(std::move(inst.rtl));
 
-                        // Add this non computed call site to the set of call sites which need to be
-                        // analysed later.
+                        // Add this non computed call site to the set of call sites which need
+                        // to be analysed later.
                         callList.push_back(call);
 
-                        // Record the called address as the start of a new procedure if it didn't
-                        // already exist.
+                        // Record the called address as the start of a new procedure if it
+                        // didn't already exist.
                         if (!callAddr.isZero() && (callAddr != Address::INVALID) &&
                             (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
                             callList.push_back(call);
@@ -631,9 +631,9 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
 
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
-                            // Make sure it has a return appended (so there is only one exit from
-                            // the function) call->setReturnAfterCall(true);        // I think only
-                            // the SPARC frontend cares Create the new basic block
+                            // Make sure it has a return appended (so there is only one exit
+                            // from the function) call->setReturnAfterCall(true);        // I
+                            // think only the SPARC frontend cares Create the new basic block
                             currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                             appendSyntheticReturn(currentBB, proc, rtl);
 
@@ -706,7 +706,8 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             if (inst.reDecode) {
-                // Special case: redecode the last instruction, without advancing addr by numBytes
+                // Special case: redecode the last instruction, without advancing addr by
+                // numBytes
                 continue;
             }
 
@@ -717,11 +718,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             // If sequentially decoding, check if the next address happens to be the start of an
-            // existing BB. If so, finish off the current BB (if any RTLs) as a fallthrough, and no
-            // need to decode again (unless it's an incomplete BB, then we do decode it). In fact,
-            // mustn't decode twice, because it will muck up the coverage, but also will cause
-            // subtle problems like add a call to the list of calls to be processed, then delete the
-            // call RTL (e.g. Pentium 134.perl benchmark)
+            // existing BB. If so, finish off the current BB (if any RTLs) as a fallthrough, and
+            // no need to decode again (unless it's an incomplete BB, then we do decode it). In
+            // fact, mustn't decode twice, because it will muck up the coverage, but also will
+            // cause subtle problems like add a call to the list of calls to be processed, then
+            // delete the call RTL (e.g. Pentium 134.perl benchmark)
             if (sequentialDecode && cfg->isStartOfBB(addr)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
@@ -922,12 +923,12 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can
-        // sometimes be extra semantics associated with a return (e.g. Pentium return adds to the
-        // stack pointer before setting %pc and branching). Other semantics (e.g. SPARC returning a
-        // value as part of the restore instruction) are assumed to appear in a previous RTL. It is
-        // assumed that THE return statement will have the same semantics (NOTE: may not always be
-        // valid). To avoid this assumption, we need branches to statements, not just to native
-        // addresses (RTLs).
+        // sometimes be extra semantics associated with a return (e.g. Pentium return adds to
+        // the stack pointer before setting %pc and branching). Other semantics (e.g. SPARC
+        // returning a value as part of the restore instruction) are assumed to appear in a
+        // previous RTL. It is assumed that THE return statement will have the same semantics
+        // (NOTE: may not always be valid). To avoid this assumption, we need branches to
+        // statements, not just to native addresses (RTLs).
         BasicBlock *retBB = proc->getCFG()->findRetNode();
         assert(retBB);
 
@@ -947,8 +948,8 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
             cfg->ensureBBExists(retAddr, retBB);
             cfg->addEdge(newBB, retBB);
 
-            // Visit the return instruction. This will be needed in most cases to split the return
-            // BB (if it has other instructions before the return instruction).
+            // Visit the return instruction. This will be needed in most cases to split the
+            // return BB (if it has other instructions before the return instruction).
             m_targetQueue.visit(cfg, retAddr, newBB);
         }
     }

@@ -266,6 +266,19 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
             // And don't make it a call statement
         }
         else {
+            // correct the assignment to %pc to be relative
+            if (!rtl->getStatements().empty() && rtl->getStatements().back()->isAssign()) {
+                Assign *asgn = static_cast<Assign *>(rtl->getStatements().back());
+                if (asgn->getLeft()->getOper() == opPC && asgn->getRight()->isConst() &&
+                    !asgn->getRight()->isStrConst()) {
+                    const Address absoluteAddr = asgn->getRight()->access<Const>()->getAddr();
+                    const int delta            = (absoluteAddr -
+                                       Address(instruction->address - instruction->size))
+                                          .value();
+
+                    asgn->setRight(Binary::get(opPlus, Terminal::get(opPC), Const::get(delta)));
+                }
+            }
             CallStatement *call = new CallStatement;
             // Set the destination
             call->setDest(callDest);
