@@ -147,7 +147,7 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
                 type->as<ArrayType>()->getBaseType());
 
             if (elementVal == nullptr) {
-                break;
+                return nullptr;
             }
             top = Binary::get(opList, elementVal, top);
         }
