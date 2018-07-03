@@ -195,25 +195,21 @@ void Const::print(QTextStream& os, bool) const
     switch (m_oper)
     {
     case opIntConst:
-
         if ((m_value.i < -1000) || (m_value.i > 1000)) {
             os << "0x" << QString::number(m_value.i, 16);
         }
         else {
             os << m_value.i;
         }
-
         break;
 
     case opLongConst:
-
         if ((static_cast<long long>(m_value.ll) < -1000LL) || (static_cast<long long>(m_value.ll) > 1000LL)) {
             os << "0x" << QString::number(m_value.ll, 16) << "LL";
         }
         else {
             os << m_value.ll << "LL";
         }
-
         break;
 
     case opFltConst:

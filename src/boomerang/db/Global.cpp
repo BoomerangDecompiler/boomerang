@@ -100,8 +100,8 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
             SharedExp  v    = readInitialValue(addr, t);
 
             if (v == nullptr) {
-                LOG_MSG("Unable to read native address %1 as type %2", addr, t->getCtype());
-                v = Const::get(-1);
+                LOG_ERROR("Unable to read native address %1 as type %2", addr, t->getCtype());
+                return nullptr;
             }
 
             if (n->isNil()) {
@@ -180,30 +180,24 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
         // Note: must respect endianness
         switch (size)
         {
-        case 8:  return Const::get(image->readNative1(uaddr));
-        case 16: return Const::get(image->readNative2(uaddr));
-        case 32: return Const::get(image->readNative4(uaddr));
-        case 64: return Const::get(image->readNative8(uaddr));
+        case 8:  return Const::get(image->readNative1(uaddr), IntegerType::get(size));
+        case 16: return Const::get(image->readNative2(uaddr), IntegerType::get(size));
+        case 32: return Const::get(image->readNative4(uaddr), IntegerType::get(size));
+        case 64: return Const::get(image->readNative8(uaddr), IntegerType::get(size));
         }
     }
 
     if (type->resolvesToFloat()) {
         switch (type->as<FloatType>()->getSize())
         {
-            case 32: {
-                float val;
-                if (image->readNativeFloat4(uaddr, val)) {
-                    return Const::get(val);
-                }
-                break;
-            }
-            case 64: {
-                double val;
-                if (image->readNativeFloat8(uaddr, val)) {
-                    return Const::get(val);
-                }
-                break;
-            }
+        case 32: {
+            float val;
+            return image->readNativeFloat4(uaddr, val) ? Const::get(val) : nullptr;
+        }
+        case 64: {
+            double val;
+            return image->readNativeFloat8(uaddr, val) ? Const::get(val) : nullptr;
+        }
         }
     }
 

@@ -91,15 +91,28 @@ void GlobalTest::testReadInitialValue()
         QCOMPARE(sizeConst->getInitialValue()->toString(), QString("85")); // 0x55
 
         // int const
+        Global *shortConst = prog->createGlobal(Address(0x008048570), IntegerType::get(16, 1));
+        QVERIFY(shortConst && shortConst->getInitialValue());
+        QCOMPARE(shortConst->getInitialValue()->toString(), QString("0xffff"));
+
         Global *intConst = prog->createGlobal(Address(0x080483B2), IntegerType::get(32, -1));
         QVERIFY(intConst->getInitialValue() != nullptr);
         QCOMPARE(intConst->getInitialValue()->toString(), QString("0x40140000"));
 
+        Global *qwordConst = prog->createGlobal(Address(0x08048480), IntegerType::get(64));
+        QVERIFY(qwordConst && qwordConst->getInitialValue());
+        QCOMPARE(qwordConst->getInitialValue()->toString(), QString("0x85b9680cec83d8ddLL"));
+
         // float constant
-        Global *five = prog->createGlobal(Address(0x080485CC), FloatType::get(32));
-        SharedConstExp result = five->getInitialValue();
+        Global *fiveFloat = prog->createGlobal(Address(0x080485CC), FloatType::get(32));
+        SharedConstExp result = fiveFloat->getInitialValue();
         QVERIFY(result && result->isFltConst());
         QCOMPARE(result->access<Const>()->getFlt(), 5.0f);
+
+        // double constant
+        Global *fiveDouble = prog->createGlobal(Address(0x0804857C), FloatType::get(64));
+        QVERIFY(fiveDouble && fiveDouble->getInitialValue());
+        QCOMPARE(fiveDouble->getInitialValue()->toString(), QString("1.80121e+159"));
 
         Global glob1(VoidType::get(), Address::ZERO, "", prog);
         QVERIFY(glob1.getInitialValue() == nullptr);
@@ -133,6 +146,15 @@ void GlobalTest::testReadInitialValue()
         SharedExp init = intArrGlob->getInitialValue();
         QVERIFY(init != nullptr);
         QCOMPARE(init->toString(), QString("1, 2, 3, 4, 5, 6, 7, 8, 9, 10"));
+
+        // compound type
+        auto structTy = CompoundType::get();
+        structTy->addMember(IntegerType::get(32), "first");
+        structTy->addMember(IntegerType::get(32), "second");
+
+        Global *structGlob = prog->createGlobal(Address(0x08049478), structTy);
+        QVERIFY(structGlob && structGlob->getInitialValue());
+        QCOMPARE(structGlob->getInitialValue()->toString(), QString("7, 8"));
     }
 }
 
