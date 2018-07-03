@@ -29,14 +29,14 @@ ArrayType::ArrayType()
 
 bool ArrayType::isUnbounded() const
 {
-    return m_length == NO_BOUND;
+    return m_length == ARRAY_UNBOUNDED;
 }
 
 
 size_t ArrayType::convertLength(SharedType b) const
 {
     // MVE: not sure if this is always the right thing to do
-    if (m_length != NO_BOUND) {
+    if (m_length != ARRAY_UNBOUNDED) {
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
@@ -53,14 +53,14 @@ size_t ArrayType::convertLength(SharedType b) const
         return baseSize / newSize; // Preserve same byte size for array
     }
 
-    return NO_BOUND;
+    return ARRAY_UNBOUNDED;
 }
 
 
 void ArrayType::setBaseType(SharedType b)
 {
     // MVE: not sure if this is always the right thing to do
-    if (m_length != NO_BOUND) {
+    if (m_length != ARRAY_UNBOUNDED) {
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
@@ -195,7 +195,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& changed, bool useHighestP
 
         size_t new_length = m_length;
 
-        if (m_length != NO_BOUND) {
+        if (m_length != ARRAY_UNBOUNDED) {
             new_length = (m_length * bitsize) / new_size;
         }
 

@@ -188,11 +188,11 @@ QString CompoundType::getMemberNameByOffset(size_t n)
 }
 
 
-unsigned CompoundType::getMemberOffsetByIdx(unsigned n)
+unsigned CompoundType::getMemberOffsetByIdx(int n)
 {
     unsigned offset = 0;
 
-    for (unsigned i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         offset += m_types[i]->getSize();
     }
 
@@ -329,14 +329,14 @@ void CompoundType::addMember(SharedType memberType, const QString& memberName)
 }
 
 
-SharedType CompoundType::getMemberTypeByIdx(unsigned int idx)
+SharedType CompoundType::getMemberTypeByIdx(int idx)
 {
     assert(idx < getNumMembers());
     return m_types[idx];
 }
 
 
-QString CompoundType::getMemberNameByIdx(unsigned int idx)
+QString CompoundType::getMemberNameByIdx(int idx)
 {
     assert(idx < getNumMembers());
     return m_names[idx];

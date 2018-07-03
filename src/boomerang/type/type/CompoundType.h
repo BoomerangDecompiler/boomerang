@@ -79,16 +79,16 @@ public:
      */
     void addMember(SharedType memberType, const QString& memberName);
 
-    size_t getNumMembers() const { return m_types.size(); }
+    int getNumMembers() const { return m_types.size(); }
 
-    SharedType getMemberTypeByIdx(unsigned idx);
+    SharedType getMemberTypeByIdx(int idx);
     SharedType getMemberTypeByName(const QString& name);
     SharedType getMemberTypeByOffset(unsigned offsetInBits);
 
-    QString getMemberNameByIdx(unsigned idx);
+    QString getMemberNameByIdx(int idx);
     QString getMemberNameByOffset(size_t offsetInBits);
 
-    unsigned getMemberOffsetByIdx(unsigned n);
+    unsigned getMemberOffsetByIdx(int idx);
     unsigned getMemberOffsetByName(const QString& name);
 
     void setMemberTypeByOffset(unsigned offsetInBits, SharedType ty);

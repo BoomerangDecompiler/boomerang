@@ -915,7 +915,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
             else if (points_to->resolvesToCompound()) {
                 compound = points_to->as<CompoundType>();
 
-                for (unsigned int n = 0; n < compound->getNumMembers(); n++) {
+                for (int n = 0; n < compound->getNumMembers(); n++) {
                     if (compound->getMemberTypeByIdx(n)->resolvesToPointer() &&
                         compound->getMemberTypeByIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
                         paramIsCompoundWithFuncPointers = true;
@@ -994,7 +994,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         // if (!prog->isReadOnly(a))
         //    continue;
 
-        for (unsigned int n = 0; n < compound->getNumMembers(); n++) {
+        for (int n = 0; n < compound->getNumMembers(); n++) {
             if (compound->getMemberTypeByIdx(n)->resolvesToPointer() &&
                 compound->getMemberTypeByIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
                 Address d = Address(m_program->getBinaryFile()->getImage()->readNative4(a));

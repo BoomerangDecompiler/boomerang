@@ -60,7 +60,6 @@ SharedExp Global::getInitialValue() const
 SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
 {
     const BinaryImage *image = m_prog->getBinaryFile()->getImage();
-    SharedExp            e   = nullptr;
     const BinarySection *sect = image->getSectionByAddr(uaddr);
 
     if (sect == nullptr) {
@@ -91,31 +90,24 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToCompound()) {
-        std::shared_ptr<CompoundType> c = type->as<CompoundType>();
-        SharedExp n = e = Terminal::get(opNil);
+        std::shared_ptr<CompoundType> cty = type->as<CompoundType>();
+        SharedExp top = Terminal::get(opNil);
 
-        for (unsigned int i = 0; i < c->getNumMembers(); i++) {
-            Address    addr = uaddr + c->getMemberOffsetByIdx(i) / 8;
-            SharedType t    = c->getMemberTypeByIdx(i);
-            SharedExp  v    = readInitialValue(addr, t);
+        for (int i = cty->getNumMembers() - 1; i >= 0; i--) {
+            Address    addr   = uaddr + cty->getMemberOffsetByIdx(i) / 8;
+            SharedType memTy  = cty->getMemberTypeByIdx(i);
+            SharedExp  memVal = readInitialValue(addr, memTy);
 
-            if (v == nullptr) {
-                LOG_ERROR("Unable to read native address %1 as type %2", addr, t->getCtype());
+            if (memVal == nullptr) {
+                LOG_ERROR("Unable to read native address %1 as type %2",
+                          addr, memTy->getCtype());
                 return nullptr;
             }
 
-            if (n->isNil()) {
-                n = Binary::get(opList, v, n);
-                e = n;
-            }
-            else {
-                assert(n->getSubExp2()->getOper() == opNil);
-                n->setSubExp2(Binary::get(opList, v, n->getSubExp2()));
-                n = n->getSubExp2();
-            }
+            top = Binary::get(opList, memVal, top);
         }
 
-        return e;
+        return top;
     }
 
     if (type->resolvesToArray() && type->as<ArrayType>()->getBaseType()->resolvesToChar()) {
@@ -128,43 +120,39 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToArray()) {
-        int  nelems  = -1;
-        QString name     = m_prog->getGlobalNameByAddr(uaddr);
-        int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
+        const int baseSize = type->as<ArrayType>()->getBaseType()->getSize() / 8;
+        int numElements = type->as<ArrayType>()->getLength();
 
-        if (!name.isEmpty()) {
-            auto symbol = m_prog->getBinaryFile()->getSymbols()->findSymbolByName(name);
-            nelems = symbol ? symbol->getSize() : 0;
-            assert(base_sz);
-            nelems /= base_sz;
-        }
+        if (numElements <= 0 || numElements == ARRAY_UNBOUNDED) {
+            // try to read number of elements from information
+            // contained in the binary file
+            QString symbolName = m_prog->getGlobalNameByAddr(uaddr);
 
-        auto n = e = Terminal::get(opNil);
-
-        for (int i = 0; i < nelems; i++) {
-            auto v = readInitialValue(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
-
-            if (v == nullptr) {
-                break;
-            }
-
-            if (n->isNil()) {
-                n = Binary::get(opList, v, n);
-                e = n;
-            }
-            else {
-                assert(n->getSubExp2()->getOper() == opNil);
-                n->setSubExp2(Binary::get(opList, v, n->getSubExp2()));
-                n = n->getSubExp2();
-            }
-
-            // "null" terminated
-            if ((nelems == -1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
-                break;
+            if (!symbolName.isEmpty()) {
+                assert(baseSize);
+                BinarySymbol *symbol = m_prog->getBinaryFile()->getSymbols()->findSymbolByName(symbolName);
+                numElements = (symbol ? symbol->getSize() : 0) / baseSize;
             }
         }
 
-        return e;
+        // It makes no sense to read an array with unknown upper bound
+        if (numElements <= 0 || numElements == ARRAY_UNBOUNDED) {
+            return nullptr;
+        }
+
+        SharedExp top = Terminal::get(opNil);
+
+        for (int i = numElements - 1; i >= 0; i--) {
+            SharedExp elementVal = readInitialValue(uaddr + i * baseSize,
+                type->as<ArrayType>()->getBaseType());
+
+            if (elementVal == nullptr) {
+                break;
+            }
+            top = Binary::get(opList, elementVal, top);
+        }
+
+        return top;
     }
 
     if (type->resolvesToInteger() || type->resolvesToSize()) {
