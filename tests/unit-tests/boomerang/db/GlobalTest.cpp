@@ -27,6 +27,7 @@
 
 #define HELLO_PENTIUM   SAMPLE("pentium/hello")
 #define FBRANCH_PENTIUM SAMPLE("pentium/fbranch")
+#define SUMARRAY_PENTIUM SAMPLE("pentium/sumarray")
 
 
 void GlobalTest::initTestCase()
@@ -119,6 +120,19 @@ void GlobalTest::testReadInitialValue()
         result = zero->getInitialValue();
         QVERIFY(result && result->isIntConst());
         QCOMPARE(result->access<Const>()->getInt(), 0);
+    }
+
+    {
+        // arrays
+        QVERIFY(m_project.loadBinaryFile(SUMARRAY_PENTIUM));
+        Prog *prog = m_project.getProg();
+
+        Global *intArrGlob = prog->createGlobal(Address(0x08049460), ArrayType::get(IntegerType::get(32)));
+        QVERIFY(intArrGlob != nullptr);
+
+        SharedExp init = intArrGlob->getInitialValue();
+        QVERIFY(init != nullptr);
+        QCOMPARE(init->toString(), QString("1, 2, 3, 4, 5, 6, 7, 8, 9, 10"));
     }
 }
 
