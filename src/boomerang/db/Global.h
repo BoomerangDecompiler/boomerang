@@ -21,22 +21,19 @@ class Prog;
 /**
  * A global variable in the decompiled program.
  */
-class Global : public Printable
+class Global
 {
 public:
     Global(SharedType type, Address addr, const QString& name, Prog *prog);
     Global(const Global& other) = delete;
     Global(Global&& other) = default;
 
-    virtual ~Global() override = default;
+    ~Global() = default;
 
     Global& operator=(const Global& other) = delete;
-    Global& operator=(Global&& other) = delete;
+    Global& operator=(Global&& other) = default;
 
 public:
-    /// @copydoc Printable::toString
-    QString toString() const override;
-
     SharedType getType() const { return m_type; }
     void setType(SharedType ty) { m_type = ty; }
     void meetType(SharedType ty);

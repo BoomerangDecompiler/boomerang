@@ -193,19 +193,6 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
 }
 
 
-QString Global::toString() const
-{
-    SharedExp init = getInitialValue();
-    QString res  = QString("%1 %2 at %3 initial value %4")
-                      .arg(m_type->toString())
-                      .arg(m_name)
-                      .arg(m_addr.toString())
-                      .arg((init ? init->prints() : "<none>"));
-
-    return res;
-}
-
-
 void Global::meetType(SharedType ty)
 {
     bool ch = false;
