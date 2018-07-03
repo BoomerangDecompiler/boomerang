@@ -67,9 +67,9 @@ std::unique_ptr<ComplexTypeCompList> compForAddress(Address addr, DataIntervalMa
             startCurrent = addr - (rem / 8);
             ComplexTypeComp ctc;
             ctc.isArray      = false;
-            ctc.u.memberName = compCurType->getNameAtOffset(bitOffset);
+            ctc.u.memberName = compCurType->getMemberNameByOffset(bitOffset);
             res->push_back(ctc);
-            curType = compCurType->getTypeAtOffset(bitOffset);
+            curType = compCurType->getMemberTypeByOffset(bitOffset);
         }
         else if (curType->isArray()) {
             curType = curType->as<ArrayType>()->getBaseType();
@@ -141,7 +141,7 @@ void TypeTest::testCompound()
     QCOMPARE(paintStructType->getCtype(), QString("PAINTSTRUCT"));
 
     // Offset 8 should have a RECT
-    SharedType subTy    = paintStructType->as<CompoundType>()->getTypeAtOffset(8 * 8);
+    SharedType subTy    = paintStructType->as<CompoundType>()->getMemberTypeByOffset(8 * 8);
     QString    expected = "struct { "
                           "int left; "
                           "int top; "
@@ -151,19 +151,19 @@ void TypeTest::testCompound()
     QCOMPARE(subTy->getCtype(true), expected);
 
     // Name at offset 0x0C should be bottom
-    QCOMPARE(subTy->as<CompoundType>()->getNameAtOffset(0x0C * 8), QString("bottom"));
+    QCOMPARE(subTy->as<CompoundType>()->getMemberNameByOffset(0x0C * 8), QString("bottom"));
 
     // Now figure out the name at offset 8+C
-    QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 0x0C) * 8), QString("rcPaint"));
+    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 0x0C) * 8), QString("rcPaint"));
 
     // Also at offset 8
-    QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 0) * 8), QString("rcPaint"));
+    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 0) * 8), QString("rcPaint"));
 
     // Also at offset 8+4
-    QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 4) * 8), QString("rcPaint"));
+    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 4) * 8), QString("rcPaint"));
 
     // And at offset 8+8
-    QCOMPARE(paintStructType->as<CompoundType>()->getNameAtOffset((8 + 8) * 8), QString("rcPaint"));
+    QCOMPARE(paintStructType->as<CompoundType>()->getMemberNameByOffset((8 + 8) * 8), QString("rcPaint"));
 }
 
 
@@ -199,10 +199,10 @@ void TypeTest::testDataInterval()
     QCOMPARE(var->name, QString("second"));
 
     auto ct(CompoundType::get());
-    ct->addType(IntegerType::get(16, 1), "short1");
-    ct->addType(IntegerType::get(16, 1), "short2");
-    ct->addType(IntegerType::get(32, 1), "int1");
-    ct->addType(FloatType::get(32), "float1");
+    ct->addMember(IntegerType::get(16, 1), "short1");
+    ct->addMember(IntegerType::get(16, 1), "short2");
+    ct->addMember(IntegerType::get(32, 1), "int1");
+    ct->addMember(FloatType::get(32), "float1");
     dim.insertItem(Address(0x00001010), "struct1", ct);
 
     std::unique_ptr<ComplexTypeCompList> ctcl = compForAddress(Address(0x00001012), dim);
@@ -248,8 +248,8 @@ void TypeTest::testDataIntervalOverlaps()
     dim.insertItem(Address(0x0000100C), "secondFloat", FloatType::get(32));
 
     auto ct = CompoundType::get();
-    ct->addType(IntegerType::get(32, 1), "int3");
-    ct->addType(FloatType::get(32), "float3");
+    ct->addMember(IntegerType::get(32, 1), "int3");
+    ct->addMember(FloatType::get(32), "float3");
     dim.insertItem(Address(0x00001010), "newStruct", ct);
     QCOMPARE(dim.prints(),
              "0x00001000-0x00001004 firstInt int\n"
@@ -260,8 +260,8 @@ void TypeTest::testDataIntervalOverlaps()
 
     // First insert a new struct over the top of the existing middle pair
     auto ctu = CompoundType::get();
-    ctu->addType(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
-    ctu->addType(FloatType::get(32), "newFloat");
+    ctu->addMember(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
+    ctu->addMember(FloatType::get(32), "newFloat");
     dim.insertItem(Address(0x00001008), "replacementStruct", ctu);
 
     const TypedVariable *var = dim.find(Address(0x1008));
@@ -275,8 +275,8 @@ void TypeTest::testDataIntervalOverlaps()
 
     // Attempt a weave; should fail
     auto ct3 = CompoundType::get();
-    ct3->addType(FloatType::get(32), "newFloat3");
-    ct3->addType(IntegerType::get(32, 0), "newInt3");
+    ct3->addMember(FloatType::get(32), "newFloat3");
+    ct3->addMember(IntegerType::get(32, 0), "newInt3");
     QVERIFY(dim.insertItem(Address(0x00001004), "weaveStruct1", ct3) == dim.end());
     var = dim.find(Address(0x00001004));
     QVERIFY(var != nullptr);

@@ -349,7 +349,7 @@ SharedType Type::createUnion(SharedType other, bool& changed, bool useHighestPtr
     // Check for anytype meet compound with anytype as first element
     if (other->resolvesToCompound()) {
         auto       otherComp = other->as<CompoundType>();
-        SharedType firstType = otherComp->getTypeAtIdx(0);
+        SharedType firstType = otherComp->getMemberTypeByIdx(0);
 
         if (firstType->isCompatibleWith(*this)) {
             // struct meet first element = struct

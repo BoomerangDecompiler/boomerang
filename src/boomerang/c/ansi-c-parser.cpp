@@ -833,7 +833,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             auto t = CompoundType::get();
 
             for (auto& elem : *yyvsp[-2].type_ident_list) {
-                t->addType(elem->ty, elem->name);
+                t->addMember(elem->ty, elem->name);
             }
 
             Type::addNamedType(QString("struct %1").arg(yyvsp[-4].str), t);
@@ -1153,7 +1153,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
             auto t = CompoundType::get();
 
             for (auto& elem : *yyvsp[-1].type_ident_list) {
-                t->addType((elem)->ty, elem->name);
+                t->addMember((elem)->ty, elem->name);
             }
 
             yyval.type = t;

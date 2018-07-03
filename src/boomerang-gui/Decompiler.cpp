@@ -332,11 +332,11 @@ void Decompiler::getCompoundMembers(const QString& name, QTableWidget *tbl)
 
     std::shared_ptr<CompoundType> c = ty->as<CompoundType>();
 
-    for (size_t i = 0; i < c->getNumTypes(); i++) {
+    for (int i = 0; i < c->getNumMembers(); i++) {
         tbl->setRowCount(tbl->rowCount() + 1);
-        tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i))));
-        tbl->setItem(tbl->rowCount() - 1, 1, new QTableWidgetItem(tr("%1").arg(c->getOffsetTo(i) / 8)));
-        tbl->setItem(tbl->rowCount() - 1, 2, new QTableWidgetItem(c->getName(i)));
-        tbl->setItem(tbl->rowCount() - 1, 3, new QTableWidgetItem(tr("%1").arg(c->getTypeAtIdx(i)->getSize())));
+        tbl->setItem(tbl->rowCount() - 1, 0, new QTableWidgetItem(tr("%1").arg(c->getMemberOffsetByIdx(i))));
+        tbl->setItem(tbl->rowCount() - 1, 1, new QTableWidgetItem(tr("%1").arg(c->getMemberOffsetByIdx(i) / 8)));
+        tbl->setItem(tbl->rowCount() - 1, 2, new QTableWidgetItem(c->getMemberNameByIdx(i)));
+        tbl->setItem(tbl->rowCount() - 1, 3, new QTableWidgetItem(tr("%1").arg(c->getMemberTypeByIdx(i)->getSize())));
     }
 }

@@ -17,14 +17,14 @@
  * computing aliases.. as such, we give them a very large bound
  * and hope that no-one tries to alias beyond them
  */
-#define NO_BOUND    9999999
+#define ARRAY_UNBOUNDED    9999999
 
 
 class ArrayType : public Type
 {
 public:
     /// Create a new array type of fixed length
-    ArrayType(SharedType baseType, unsigned length = NO_BOUND);
+    ArrayType(SharedType baseType, unsigned length = ARRAY_UNBOUNDED);
 
     ArrayType(const ArrayType& other) = default;
     ArrayType(ArrayType&& other) = default;
@@ -76,5 +76,5 @@ protected:
 
 private:
     SharedType BaseType;
-    size_t m_length; ///< number of elements in this array
+    size_t m_length = 0; ///< number of elements in this array
 };

@@ -31,12 +31,14 @@ Global::Global(SharedType type, Address addr, const QString& name, Prog *prog)
     , m_name(name)
     , m_prog(prog)
 {
+    assert(type != nullptr);
+    assert(addr != Address::INVALID);
 }
 
 
 bool Global::containsAddress(Address addr) const
 {
-    return Util::inRange(addr, m_addr, m_addr + getType()->getSizeInBytes());
+    return addr == m_addr || Util::inRange(addr, m_addr, m_addr + getType()->getSizeInBytes());
 }
 
 
@@ -44,14 +46,10 @@ SharedExp Global::getInitialValue() const
 {
     const BinarySection *sect = m_prog->getSectionByAddr(m_addr);
 
-    // TODO: see what happens when we skip Bss check here
-    if (sect && sect->isAddressBss(m_addr)) {
+    if (!sect || sect->isAddressBss(m_addr)) {
         // This global is in the BSS, so it can't be initialised
         // NOTE: this is not actually correct. at least for typing, BSS data can have a type assigned
-        return nullptr;
-    }
-
-    if (sect == nullptr) {
+        // TODO: see what happens when we skip Bss check here
         return nullptr;
     }
 
@@ -62,7 +60,6 @@ SharedExp Global::getInitialValue() const
 SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
 {
     const BinaryImage *image = m_prog->getBinaryFile()->getImage();
-    SharedExp            e   = nullptr;
     const BinarySection *sect = image->getSectionByAddr(uaddr);
 
     if (sect == nullptr) {
@@ -93,31 +90,24 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToCompound()) {
-        std::shared_ptr<CompoundType> c = type->as<CompoundType>();
-        auto n = e = Terminal::get(opNil);
+        std::shared_ptr<CompoundType> cty = type->as<CompoundType>();
+        SharedExp top = Terminal::get(opNil);
 
-        for (unsigned int i = 0; i < c->getNumTypes(); i++) {
-            Address    addr = uaddr + c->getOffsetTo(i) / 8;
-            SharedType t    = c->getTypeAtIdx(i);
-            auto       v    = readInitialValue(addr, t);
+        for (int i = cty->getNumMembers() - 1; i >= 0; i--) {
+            Address    addr   = uaddr + cty->getMemberOffsetByIdx(i) / 8;
+            SharedType memTy  = cty->getMemberTypeByIdx(i);
+            SharedExp  memVal = readInitialValue(addr, memTy);
 
-            if (v == nullptr) {
-                LOG_MSG("Unable to read native address %1 as type %2", addr, t->getCtype());
-                v = Const::get(-1);
+            if (memVal == nullptr) {
+                LOG_ERROR("Unable to read native address %1 as type %2",
+                          addr, memTy->getCtype());
+                return nullptr;
             }
 
-            if (n->isNil()) {
-                n = Binary::get(opList, v, n);
-                e = n;
-            }
-            else {
-                assert(n->getSubExp2()->getOper() == opNil);
-                n->setSubExp2(Binary::get(opList, v, n->getSubExp2()));
-                n = n->getSubExp2();
-            }
+            top = Binary::get(opList, memVal, top);
         }
 
-        return e;
+        return top;
     }
 
     if (type->resolvesToArray() && type->as<ArrayType>()->getBaseType()->resolvesToChar()) {
@@ -130,41 +120,39 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
     }
 
     if (type->resolvesToArray()) {
-        int  nelems  = -1;
-        QString name     = m_prog->getGlobalNameByAddr(uaddr);
-        int     base_sz = type->as<ArrayType>()->getBaseType()->getSize() / 8;
+        const int baseSize = type->as<ArrayType>()->getBaseType()->getSize() / 8;
+        int numElements = type->as<ArrayType>()->getLength();
 
-        if (!name.isEmpty()) {
-            auto symbol = m_prog->getBinaryFile()->getSymbols()->findSymbolByName(name);
-            nelems = symbol ? symbol->getSize() : 0;
-            assert(base_sz);
-            nelems /= base_sz;
-        }
+        if (numElements <= 0 || numElements == ARRAY_UNBOUNDED) {
+            // try to read number of elements from information
+            // contained in the binary file
+            QString symbolName = m_prog->getGlobalNameByAddr(uaddr);
 
-        auto n = e = Terminal::get(opNil);
-
-        for (int i = 0; i < nelems; i++) {
-            auto v = readInitialValue(uaddr + i * base_sz, type->as<ArrayType>()->getBaseType());
-
-            if (v == nullptr) {
-                break;
-            }
-
-            if (n->isNil()) {
-                n = Binary::get(opList, v, n);
-                e = n;
-            }
-            else {
-                assert(n->getSubExp2()->getOper() == opNil);
-                n->setSubExp2(Binary::get(opList, v, n->getSubExp2()));
-                n = n->getSubExp2();
-            }
-
-            // "null" terminated
-            if ((nelems == -1) && v->isConst() && (v->access<Const>()->getInt() == 0)) {
-                break;
+            if (!symbolName.isEmpty()) {
+                assert(baseSize);
+                BinarySymbol *symbol = m_prog->getBinaryFile()->getSymbols()->findSymbolByName(symbolName);
+                numElements = (symbol ? symbol->getSize() : 0) / baseSize;
             }
         }
+
+        // It makes no sense to read an array with unknown upper bound
+        if (numElements <= 0 || numElements == ARRAY_UNBOUNDED) {
+            return nullptr;
+        }
+
+        SharedExp top = Terminal::get(opNil);
+
+        for (int i = numElements - 1; i >= 0; i--) {
+            SharedExp elementVal = readInitialValue(uaddr + i * baseSize,
+                type->as<ArrayType>()->getBaseType());
+
+            if (elementVal == nullptr) {
+                return nullptr;
+            }
+            top = Binary::get(opList, elementVal, top);
+        }
+
+        return top;
     }
 
     if (type->resolvesToInteger() || type->resolvesToSize()) {
@@ -180,49 +168,28 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
         // Note: must respect endianness
         switch (size)
         {
-        case 8:  return Const::get(image->readNative1(uaddr));
-        case 16: return Const::get(image->readNative2(uaddr));
-        case 32: return Const::get(image->readNative4(uaddr));
-        case 64: return Const::get(image->readNative8(uaddr));
+        case 8:  return Const::get(image->readNative1(uaddr), IntegerType::get(size));
+        case 16: return Const::get(image->readNative2(uaddr), IntegerType::get(size));
+        case 32: return Const::get(image->readNative4(uaddr), IntegerType::get(size));
+        case 64: return Const::get(image->readNative8(uaddr), IntegerType::get(size));
         }
     }
 
-    if (!type->resolvesToFloat()) {
-        return e;
-    }
-
-    switch (type->as<FloatType>()->getSize())
-    {
+    if (type->resolvesToFloat()) {
+        switch (type->as<FloatType>()->getSize())
+        {
         case 32: {
             float val;
-            if (image->readNativeFloat4(uaddr, val)) {
-                return Const::get(val);
-            }
-            return nullptr;
+            return image->readNativeFloat4(uaddr, val) ? Const::get(val) : nullptr;
         }
         case 64: {
             double val;
-            if (image->readNativeFloat8(uaddr, val)) {
-                return Const::get(val);
-            }
-            return nullptr;
+            return image->readNativeFloat8(uaddr, val) ? Const::get(val) : nullptr;
+        }
         }
     }
 
-    return e;
-}
-
-
-QString Global::toString() const
-{
-    SharedExp init = getInitialValue();
-    QString res  = QString("%1 %2 at %3 initial value %4")
-                      .arg(m_type->toString())
-                      .arg(m_name)
-                      .arg(m_addr.toString())
-                      .arg((init ? init->prints() : "<none>"));
-
-    return res;
+    return nullptr;
 }
 
 

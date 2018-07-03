@@ -22,7 +22,9 @@ class GlobalTest : public QObject
 private slots:
     void initTestCase();
 
+    void testContainsAddress();
     void testGetInitialValue();
+    void testReadInitialValue();
 
 private:
     Project m_project;
