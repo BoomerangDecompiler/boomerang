@@ -915,9 +915,9 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
             else if (points_to->resolvesToCompound()) {
                 compound = points_to->as<CompoundType>();
 
-                for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
-                    if (compound->getTypeAtIdx(n)->resolvesToPointer() &&
-                        compound->getTypeAtIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
+                for (unsigned int n = 0; n < compound->getNumMembers(); n++) {
+                    if (compound->getMemberTypeByIdx(n)->resolvesToPointer() &&
+                        compound->getMemberTypeByIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
                         paramIsCompoundWithFuncPointers = true;
                     }
                 }
@@ -994,21 +994,21 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         // if (!prog->isReadOnly(a))
         //    continue;
 
-        for (unsigned int n = 0; n < compound->getNumTypes(); n++) {
-            if (compound->getTypeAtIdx(n)->resolvesToPointer() &&
-                compound->getTypeAtIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
+        for (unsigned int n = 0; n < compound->getNumMembers(); n++) {
+            if (compound->getMemberTypeByIdx(n)->resolvesToPointer() &&
+                compound->getMemberTypeByIdx(n)->as<PointerType>()->getPointsTo()->resolvesToFunc()) {
                 Address d = Address(m_program->getBinaryFile()->getImage()->readNative4(a));
                 LOG_VERBOSE("Found a new procedure at address %1 from inspecting parameters of call to %2",
                             d, call->getDestProc()->getName());
 
                 Function *proc = m_program->getOrCreateFunction(d);
-                auto     sig   = compound->getTypeAtIdx(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
+                auto     sig   = compound->getMemberTypeByIdx(n)->as<PointerType>()->getPointsTo()->as<FuncType>()->getSignature()->clone();
                 sig->setName(proc->getName());
                 sig->setForced(true);
                 proc->setSignature(sig);
             }
 
-            a += compound->getTypeAtIdx(n)->getSize() / 8;
+            a += compound->getMemberTypeByIdx(n)->getSize() / 8;
         }
     }
 

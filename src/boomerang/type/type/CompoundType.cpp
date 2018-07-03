@@ -31,7 +31,7 @@ SharedType CompoundType::clone() const
     auto t = CompoundType::get();
 
     for (unsigned i = 0; i < m_types.size(); i++) {
-        t->addType(m_types[i]->clone(), m_names[i]);
+        t->addMember(m_types[i]->clone(), m_names[i]);
     }
 
     return t;
@@ -97,7 +97,7 @@ bool CompoundType::isSubStructOf(const SharedType& other) const
 }
 
 
-SharedType CompoundType::getType(const QString& name)
+SharedType CompoundType::getMemberTypeByName(const QString& name)
 {
     for (unsigned i = 0; i < m_types.size(); i++) {
         if (m_names[i] == name) {
@@ -109,7 +109,7 @@ SharedType CompoundType::getType(const QString& name)
 }
 
 
-SharedType CompoundType::getTypeAtOffset(unsigned bitOffset)
+SharedType CompoundType::getMemberTypeByOffset(unsigned bitOffset)
 {
     unsigned offset = 0;
 
@@ -125,7 +125,7 @@ SharedType CompoundType::getTypeAtOffset(unsigned bitOffset)
 }
 
 
-void CompoundType::setTypeAtOffset(unsigned bitOffset, SharedType ty)
+void CompoundType::setMemberTypeByOffset(unsigned bitOffset, SharedType ty)
 {
     unsigned offset = 0;
 
@@ -155,7 +155,7 @@ void CompoundType::setTypeAtOffset(unsigned bitOffset, SharedType ty)
 }
 
 
-void CompoundType::setNameAtOffset(unsigned n, const QString& name)
+void CompoundType::setMemberNameByOffset(unsigned n, const QString& name)
 {
     unsigned offset = 0;
 
@@ -170,7 +170,7 @@ void CompoundType::setNameAtOffset(unsigned n, const QString& name)
 }
 
 
-QString CompoundType::getNameAtOffset(size_t n)
+QString CompoundType::getMemberNameByOffset(size_t n)
 {
     unsigned offset = 0;
 
@@ -188,7 +188,7 @@ QString CompoundType::getNameAtOffset(size_t n)
 }
 
 
-unsigned CompoundType::getOffsetTo(unsigned n)
+unsigned CompoundType::getMemberOffsetByIdx(unsigned n)
 {
     unsigned offset = 0;
 
@@ -200,7 +200,7 @@ unsigned CompoundType::getOffsetTo(unsigned n)
 }
 
 
-unsigned CompoundType::getOffsetTo(const QString& member)
+unsigned CompoundType::getMemberOffsetByName(const QString& member)
 {
     unsigned offset = 0;
 
@@ -295,16 +295,16 @@ void CompoundType::updateGenericMember(int off, SharedType ty, bool& changed)
 {
     assert(m_isGeneric);
     int        bit_offset   = off * 8;
-    SharedType existingType = getTypeAtOffset(bit_offset);
+    SharedType existingType = getMemberTypeByOffset(bit_offset);
 
     if (existingType) {
         existingType = existingType->meetWith(ty, changed);
-        setTypeAtOffset(bit_offset, existingType);
+        setMemberTypeByOffset(bit_offset, existingType);
     }
     else {
         QString name = QString("member") + QString::number(m_nextGenericMemberNum++);
-        setTypeAtOffset(bit_offset, ty);
-        setNameAtOffset(bit_offset, name);
+        setMemberTypeByOffset(bit_offset, ty);
+        setMemberNameByOffset(bit_offset, name);
     }
 }
 
@@ -315,7 +315,7 @@ bool CompoundType::isGeneric() const
 }
 
 
-void CompoundType::addType(SharedType memberType, const QString& memberName)
+void CompoundType::addMember(SharedType memberType, const QString& memberName)
 {
     // check if it is a user defined type (typedef)
     SharedType existingType = getNamedType(memberType->getCtype());
@@ -329,16 +329,16 @@ void CompoundType::addType(SharedType memberType, const QString& memberName)
 }
 
 
-SharedType CompoundType::getTypeAtIdx(unsigned int idx)
+SharedType CompoundType::getMemberTypeByIdx(unsigned int idx)
 {
-    assert(idx < getNumTypes());
+    assert(idx < getNumMembers());
     return m_types[idx];
 }
 
 
-QString CompoundType::getName(unsigned int idx)
+QString CompoundType::getMemberNameByIdx(unsigned int idx)
 {
-    assert(idx < getNumTypes());
+    assert(idx < getNumMembers());
     return m_names[idx];
 }
 
@@ -398,7 +398,7 @@ bool CompoundType::isCompatible(const Type& other, bool all) const
     }
 
     auto   otherComp = other.as<CompoundType>();
-    size_t n         = otherComp->getNumTypes();
+    size_t n         = otherComp->getNumMembers();
 
     if (n != m_types.size()) {
         return false; // Is a subcompound compatible with a supercompound?

@@ -202,8 +202,10 @@ public:
      */
     virtual QString getTempName() const; // Get a temporary name for the type
 
-    // Clear the named type map. This is necessary when testing; the
-    // type for the first parameter to 'main' is different for sparc and pentium
+    /**
+     * Clear the named type map. This is necessary when testing; the
+     * type for the first parameter to 'main' is different for sparc and pentium
+     */
     static void clearNamedTypes();
 
     /**
@@ -215,14 +217,18 @@ public:
      */
     virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr = false) const = 0;
 
-    // When all=false (default), return true if can use this and other interchangeably; in particular,
-    // if at most one of the types is compound and the first element is compatible with the other, then
-    // the types are considered compatible. With all set to true, if one or both types is compound, all
-    // corresponding elements must be compatible
+    /**
+     * When all=false (default), return true if can use this and other interchangeably; in particular,
+     * if at most one of the types is compound and the first element is compatible with the other, then
+     * the types are considered compatible. With all set to true, if one or both types is compound, all
+     * corresponding elements must be compatible
+     */
     virtual bool isCompatibleWith(const Type& other, bool all = false) const;
 
-    // isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
-    // reverses the parameters (this and other) to prevent many tedious repetitions
+    /**
+     * isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
+     * reverses the parameters (this and other) to prevent many tedious repetitions
+     */
     virtual bool isCompatible(const Type& other, bool all) const = 0;
 
     /// Return true if this is a subset or equal to other
@@ -243,8 +249,8 @@ protected:
 
 
 // Not part of the Type class, but logically belongs with it:
-QTextStream& operator<<(QTextStream& os, const SharedConstType& t); ///< Print the Type pointed to by t
-QTextStream& operator<<(QTextStream& os, const Type& t);            ///< Print the Type pointed to by t
+QTextStream& operator<<(QTextStream& os, const SharedConstType& ty); ///< Print the Type pointed to by t
+QTextStream& operator<<(QTextStream& os, const Type& ty);            ///< Print the Type pointed to by t
 
 #include "boomerang/type/type/NamedType.h"
 

@@ -94,10 +94,10 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
         std::shared_ptr<CompoundType> c = type->as<CompoundType>();
         SharedExp n = e = Terminal::get(opNil);
 
-        for (unsigned int i = 0; i < c->getNumTypes(); i++) {
-            Address    addr = uaddr + c->getOffsetTo(i) / 8;
-            SharedType t    = c->getTypeAtIdx(i);
-            auto       v    = readInitialValue(addr, t);
+        for (unsigned int i = 0; i < c->getNumMembers(); i++) {
+            Address    addr = uaddr + c->getMemberOffsetByIdx(i) / 8;
+            SharedType t    = c->getMemberTypeByIdx(i);
+            SharedExp  v    = readInitialValue(addr, t);
 
             if (v == nullptr) {
                 LOG_MSG("Unable to read native address %1 as type %2", addr, t->getCtype());

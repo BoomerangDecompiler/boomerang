@@ -120,7 +120,7 @@ void DataIntervalMap::insertComponentType(TypedVariable *existingVar, Address ad
 
     if (existingVar->type->resolvesToCompound()) {
         const uint64 bitOffset  = (addr - existingVar->baseAddr).value() * 8;
-        SharedType   memberType = existingVar->type->as<CompoundType>()->getTypeAtOffset(bitOffset);
+        SharedType   memberType = existingVar->type->as<CompoundType>()->getMemberTypeByOffset(bitOffset);
 
         if (!memberType || !memberType->isCompatibleWith(*type)) {
             LOG_ERROR("TYPE ERROR: At address %1 type %2 is not compatible with existing structure type %3",
@@ -130,7 +130,7 @@ void DataIntervalMap::insertComponentType(TypedVariable *existingVar, Address ad
         // types are compatible
         bool ch;
         memberType = memberType->meetWith(type, ch);
-        existingVar->type->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
+        existingVar->type->as<CompoundType>()->setMemberTypeByOffset(bitOffset, memberType);
     }
     else if (existingVar->type->resolvesToArray()) {
         SharedType baseType = existingVar->type->as<ArrayType>()->getBaseType();
@@ -165,7 +165,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
         for (VariableMap::const_iterator it = it1; it != it2; ++it) {
             unsigned bitOffset = (it->second.baseAddr - addr).value() * 8;
 
-            SharedType memberType = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
+            SharedType memberType = ty->as<CompoundType>()->getMemberTypeByOffset(bitOffset);
 
             if (!memberType->isCompatibleWith(*it->second.type, true)) {
                 LOG_ERROR("TYPE ERROR: At address %1 struct type %2 is not compatible with existing type %3",
@@ -178,7 +178,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
 
             bool ch;
             memberType = it->second.type->meetWith(memberType, ch);
-            ty->as<CompoundType>()->setTypeAtOffset(bitOffset, memberType);
+            ty->as<CompoundType>()->setMemberTypeByOffset(bitOffset, memberType);
         }
     }
     else if (ty->resolvesToArray()) {
@@ -223,7 +223,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
             int        bitOffset = (it->second.baseAddr - addr).value() / 8;
 
             if (ty->resolvesToCompound()) {
-                elemTy = ty->as<CompoundType>()->getTypeAtOffset(bitOffset);
+                elemTy = ty->as<CompoundType>()->getMemberTypeByOffset(bitOffset);
             }
             else {
                 elemTy = ty->as<ArrayType>()->getBaseType();
@@ -234,7 +234,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
             if (!locName.isNull() && ty->resolvesToCompound()) {
                 auto c = ty->as<CompoundType>();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
-                QString   memName = c->getNameAtOffset(bitOffset);
+                QString   memName = c->getMemberNameByOffset(bitOffset);
                 SharedExp s       = Location::memOf(Binary::get(opPlus, rsp0->clone(), Const::get(addr)));
                 s->simplifyArith();
                 SharedExp memberExp = Binary::get(opMemberAccess, s, Const::get(memName));

@@ -30,51 +30,35 @@ public:
     CompoundType& operator=(CompoundType&& other) = default;
 
 public:
+    virtual bool operator==(const Type& other) const override;
+    virtual bool operator<(const Type& other) const override;
+
+    /// \copydoc Type::clone
+    virtual SharedType clone() const override;
+
+    static std::shared_ptr<CompoundType> get(bool generic = false)
+    { return std::make_shared<CompoundType>(generic); }
+
+public:
     /// \copydoc Type::isCompound
     virtual bool isCompound() const override { return true; }
 
-    bool isGeneric() const;
-
-    /**
-     * Append a new member variable to this struct/class.
-     * \param memberType the type of the new member variable.
-     * \param memberName the new name of the member variable.
-     */
-    void addType(SharedType memberType, const QString& memberName);
-
-    size_t getNumTypes() const { return m_types.size(); }
-
-    /// \returns the type of the \p idx -th member variable.
-    SharedType getTypeAtIdx(unsigned idx);
-
-    /// \returns the type of the member variable with name \p name
-    SharedType getType(const QString& name);
-
-    /// \retrns the name of the \p idx -th member variable.
-    QString getName(unsigned idx);
-
-    void setTypeAtOffset(unsigned offsetInBits, SharedType ty);
-    SharedType getTypeAtOffset(unsigned offsetInBits);
-    void setNameAtOffset(unsigned offsetInBits, const QString& name);
-    QString getNameAtOffset(size_t offsetInBits);
-
-    // Update this compound to use the fact that offset off has type ty
-    void updateGenericMember(int off, SharedType ty, bool& changed); // Add a new generic member if necessary
-    unsigned getOffsetTo(unsigned n);
-    unsigned getOffsetTo(const QString& member);
-    unsigned getOffsetRemainder(unsigned n);
-
-    virtual SharedType clone() const override;
-
-    static std::shared_ptr<CompoundType> get(bool = false) { return std::make_shared<CompoundType>(); }
-    virtual bool operator==(const Type& other) const override;
-
-    // virtual bool        operator-=(const Type& other) const;
-    virtual bool operator<(const Type& other) const override;
-
+    /// \copydoc Type::getSize
     virtual size_t getSize() const override;
 
+    /// \copydoc Type::meetWith
+    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+
+    /// \copydoc Type::getCtype
     virtual QString getCtype(bool final = false) const override;
+
+    /// \copydoc Type::isCompatibleWith
+    virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
+
+    /// \copydoc Type::isCompatible
+    virtual bool isCompatible(const Type& other, bool all) const override;
+
+    bool isGeneric() const;
 
     /**
      * Return true if this is a superstructure of other,
@@ -88,11 +72,34 @@ public:
      */
     bool isSubStructOf(const SharedType& other) const;
 
-    /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+    /**
+     * Append a new member variable to this struct/class.
+     * \param memberType the type of the new member variable.
+     * \param memberName the new name of the member variable.
+     */
+    void addMember(SharedType memberType, const QString& memberName);
 
-    virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    size_t getNumMembers() const { return m_types.size(); }
+
+    SharedType getMemberTypeByIdx(unsigned idx);
+    SharedType getMemberTypeByName(const QString& name);
+    SharedType getMemberTypeByOffset(unsigned offsetInBits);
+
+    QString getMemberNameByIdx(unsigned idx);
+    QString getMemberNameByOffset(size_t offsetInBits);
+
+    unsigned getMemberOffsetByIdx(unsigned n);
+    unsigned getMemberOffsetByName(const QString& name);
+
+    void setMemberTypeByOffset(unsigned offsetInBits, SharedType ty);
+    void setMemberNameByOffset(unsigned offsetInBits, const QString& name);
+
+    /// Update this compound to use the fact that offset off has type ty
+    /// \param off offset in bytes of the member type from the start of the type
+    /// \param ty new type of the member
+    void updateGenericMember(int off, SharedType ty, bool& changed);
+
+    unsigned getOffsetRemainder(unsigned n);
 
 private:
     std::vector<SharedType> m_types;
