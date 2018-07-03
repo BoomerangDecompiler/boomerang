@@ -163,6 +163,8 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
                 break;
             }
         }
+
+        return e;
     }
 
     if (type->resolvesToInteger() || type->resolvesToSize()) {
@@ -185,29 +187,27 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
         }
     }
 
-    if (!type->resolvesToFloat()) {
-        return e;
-    }
-
-    switch (type->as<FloatType>()->getSize())
-    {
-        case 32: {
-            float val;
-            if (image->readNativeFloat4(uaddr, val)) {
-                return Const::get(val);
+    if (type->resolvesToFloat()) {
+        switch (type->as<FloatType>()->getSize())
+        {
+            case 32: {
+                float val;
+                if (image->readNativeFloat4(uaddr, val)) {
+                    return Const::get(val);
+                }
+                break;
             }
-            return nullptr;
-        }
-        case 64: {
-            double val;
-            if (image->readNativeFloat8(uaddr, val)) {
-                return Const::get(val);
+            case 64: {
+                double val;
+                if (image->readNativeFloat8(uaddr, val)) {
+                    return Const::get(val);
+                }
+                break;
             }
-            return nullptr;
         }
     }
 
-    return e;
+    return nullptr;
 }
 
 
