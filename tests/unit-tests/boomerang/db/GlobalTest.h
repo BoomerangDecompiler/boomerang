@@ -24,6 +24,8 @@ private slots:
 
     void testContainsAddress();
     void testGetInitialValue();
+    void testReadInitialValue();
+
 private:
     Project m_project;
 };
