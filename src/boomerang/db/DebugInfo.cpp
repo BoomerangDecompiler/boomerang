@@ -73,7 +73,7 @@ SharedType makeUDT(int index, DWORD64 ModBase)
         WideCharToMultiByte(CP_ACP, 0, name, -1, fieldName, sizeof(fieldName), 0, nullptr);
         DWORD mytype;
         dbghelp::SymGetTypeInfo(hProcess, ModBase, pFC->ChildId[i], dbghelp::TI_GET_TYPE, &mytype);
-        cty->addType(typeFromDebugInfo(mytype, ModBase), fieldName);
+        cty->addMember(typeFromDebugInfo(mytype, ModBase), fieldName);
     }
 
     Type::addNamedType(nameA, cty);
