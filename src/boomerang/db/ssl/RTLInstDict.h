@@ -120,7 +120,7 @@ public:
      * \param sslFileName the name of the file containing the SSL specification.
      * \returns           true if the file was read successfully.
      */
-    bool readSSLFile(const QString& sslFileName);
+    bool readSSLFile(const QString& sslFileName, bool printDict);
 
     /// \returns the name and the number of operands of the instruction wwith name \p name
     std::pair<QString, DWord> getSignature(const char *name);

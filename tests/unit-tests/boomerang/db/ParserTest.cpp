@@ -38,7 +38,7 @@ void ParserTest::testRead()
 {
     RTLInstDict d;
 
-    QVERIFY(d.readSSLFile(SPARC_SSL));
+    QVERIFY(d.readSSLFile(SPARC_SSL, false));
 }
 
 

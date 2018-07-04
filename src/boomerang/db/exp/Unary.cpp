@@ -520,7 +520,7 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
                 // We would expect the stride to be the same size as the base type
                 size_t stride = leftOfPlus->access<Const, 2>()->getInt();
 
-                if (SETTING(debugTA) && (stride * 8 != parentType->getSize())) {
+                if (stride * 8 != parentType->getSize()) {
                     LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but parent type %3 has size %4",
                              shared_from_this(), stride * 8, parentType->getCtype(), parentType->getSize());
                 }

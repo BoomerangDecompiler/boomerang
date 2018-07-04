@@ -2951,9 +2951,7 @@ void UserProc::mapLocalsAndParams()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
 
-    if (SETTING(debugTA)) {
-        LOG_MSG("### Mapping expressions to local variables for %1 ###", getName());
-    }
+    LOG_VERBOSE2("### Mapping expressions to local variables for %1 ###", getName());
 
     StatementList stmts;
     getStatements(stmts);
@@ -2962,9 +2960,7 @@ void UserProc::mapLocalsAndParams()
         s->dfaMapLocals();
     }
 
-    if (SETTING(debugTA)) {
-        LOG_MSG("### End mapping expressions to local variables for %1 ###", getName());
-    }
+    LOG_MSG("### End mapping expressions to local variables for %1 ###", getName());
 }
 
 

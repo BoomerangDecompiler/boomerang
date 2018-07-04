@@ -49672,7 +49672,8 @@ bool PentiumDecoder::isFuncPrologue(Address)
 PentiumDecoder::PentiumDecoder(Prog *_prog)
     : NJMCDecoder(_prog)
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/pentium.ssl"));
+    m_rtlDict.readSSLFile(_prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath("ssl/pentium.ssl"),
+                          _prog->getProject()->getSettings()->debugDecoder);
 }
 
 

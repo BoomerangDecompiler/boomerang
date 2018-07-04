@@ -11,11 +11,11 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/RTL.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 
@@ -23,7 +23,8 @@
 MIPSDecoder::MIPSDecoder(Prog *prog)
     : NJMCDecoder(prog)
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/mips.ssl"));
+    m_rtlDict.readSSLFile(prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath("ssl/mips.ssl"),
+        prog->getProject()->getSettings()->debugDecoder);
 }
 
 

@@ -64,7 +64,7 @@ int RTLInstDict::insert(const QString& name, std::list<QString>& params, const R
 }
 
 
-bool RTLInstDict::readSSLFile(const QString& SSLFileName)
+bool RTLInstDict::readSSLFile(const QString& SSLFileName, bool printDict)
 {
     // emptying the rtl dictionary
     idict.clear();
@@ -92,7 +92,7 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 
     fixupParams();
 
-    if (SETTING(debugDecoder)) {
+    if (printDict) {
         QTextStream q_cout(stdout);
         q_cout << "\n=======Expanded RTL template dictionary=======\n";
         print(q_cout);
