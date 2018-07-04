@@ -109,6 +109,8 @@ void Log::log(LogLevel level, const char *file, int line, const QString& msg)
     for (const QString& msgLine : msgLines) {
         logDirect(level, file, line, msgLine);
     }
+
+    flush();
 }
 
 
@@ -141,11 +143,11 @@ void Log::addLogSink(std::unique_ptr<ILogSink> s)
 }
 
 
-void Log::addDefaultLogSinks()
+void Log::addDefaultLogSinks(const QString& outputDir)
 {
     addLogSink(Util::makeUnique<ConsoleLogSink>());
 
-    QFileInfo fi(SETTING(getOutputDirectory()), "boomerang.log");
+    QFileInfo fi(QDir(outputDir), "boomerang.log");
     addLogSink(Util::makeUnique<FileLogSink>(fi.absoluteFilePath()));
 
     writeLogHeader();
@@ -276,11 +278,10 @@ QString Log::levelToString(LogLevel level)
 }
 
 
-SeparateLogger::SeparateLogger(const QString& filename)
+SeparateLogger::SeparateLogger(const QString& fullFilePath)
 {
-    QString fullPath = SETTING(getOutputDirectory()).absoluteFilePath(filename);
-    QDir().remove(fullPath); // overwrite old logs
-    addLogSink(Util::makeUnique<FileLogSink>(fullPath, true));
+    QDir().remove(fullFilePath); // overwrite old logs
+    addLogSink(Util::makeUnique<FileLogSink>(fullFilePath, true));
 }
 
 

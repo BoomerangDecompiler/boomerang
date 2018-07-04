@@ -803,10 +803,12 @@ void UserProc::debugPrintAll(const char *step_name)
     if (m_prog->getProject()->getSettings()->verboseOutput) {
         numberStatements();
 
-        LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
-        LOG_SEPARATE(getName(), "%1", this->toString());
-        LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
-        SeparateLogger::getOrCreateLog(getName()).flush();
+        QDir outputDir = m_prog->getProject()->getSettings()->getOutputDirectory();
+        QString filePath = outputDir.absoluteFilePath(getName());
+
+        LOG_SEPARATE(filePath, "--- debug print %1 for %2 ---", step_name, getName());
+        LOG_SEPARATE(filePath, "%1", this->toString());
+        LOG_SEPARATE(filePath, "=== end debug print %1 for %2 ===", step_name, getName());
     }
 }
 
@@ -930,9 +932,12 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
         // Print if requested
         if (m_prog->getProject()->getSettings()->verboseOutput) { // was if debugPrintSSA
-            LOG_SEPARATE(getName(), "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", this->toString());
-            LOG_SEPARATE(getName(), "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
+            QDir outputDir = m_prog->getProject()->getSettings()->getOutputDirectory();
+            QString filePath = outputDir.absoluteFilePath(getName());
+
+            LOG_SEPARATE(filePath, "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
+            LOG_SEPARATE(filePath, "%1", this->toString());
+            LOG_SEPARATE(filePath, "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
         }
 
         if (!m_prog->getProject()->getSettings()->dotFile.isEmpty()) { // Require -gd now (though doesn't listen to file name)
@@ -2951,7 +2956,7 @@ void UserProc::mapLocalsAndParams()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
 
-    LOG_VERBOSE2("### Mapping expressions to local variables for %1 ###", getName());
+    LOG_VERBOSE("### Mapping expressions to local variables for %1 ###", getName());
 
     StatementList stmts;
     getStatements(stmts);
@@ -2960,7 +2965,7 @@ void UserProc::mapLocalsAndParams()
         s->dfaMapLocals();
     }
 
-    LOG_MSG("### End mapping expressions to local variables for %1 ###", getName());
+    LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", getName());
 }
 
 

@@ -17,8 +17,6 @@
 
 int main(int argc, char *argv[])
 {
-    Log::getOrCreateLog().addDefaultLogSinks();
-
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/boomerang_icon.png"));
     MainWindow mainWindow;

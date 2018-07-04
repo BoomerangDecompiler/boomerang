@@ -474,13 +474,14 @@ int CommandlineDriver::interactiveMain()
 
 int CommandlineDriver::decompile()
 {
-    Log::getOrCreateLog().addDefaultLogSinks();
+
+    m_project.reset(new Project());
+    Log::getOrCreateLog().addDefaultLogSinks(m_project->getSettings()->getOutputDirectory().absolutePath());
+    m_project->loadPlugins();
 
     QDir       wd = m_project->getSettings()->getWorkingDirectory();
     QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
 
-    m_project.reset(new Project());
-    m_project->loadPlugins();
     return decompile(inf.absoluteFilePath(), inf.baseName());
 }
 

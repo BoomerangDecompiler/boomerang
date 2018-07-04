@@ -88,9 +88,7 @@ bool Assign::accept(StmtVisitor *visitor) const
 void Assign::simplify()
 {
     // simplify arithmetic of assignment
-
-    assert(m_proc);
-    if (!m_proc->getProg()->getProject()->getSettings()->branchSimplify) {
+    if (!SETTING(branchSimplify)) {
         const OPER leftop = m_lhs->getOper();
         if (leftop == opZF || leftop == opCF || leftop == opOF || leftop == opNF) {
             return;

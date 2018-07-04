@@ -28,6 +28,8 @@
 Decompiler::Decompiler()
     : QObject()
 {
+    Log::getOrCreateLog().addDefaultLogSinks(m_project.getSettings()->getOutputDirectory().absolutePath());
+
     Boomerang::get()->addWatcher(this);
     m_project.loadPlugins();
 }
