@@ -1376,7 +1376,7 @@ void CallStatement::updateArguments()
     // define the actual argument. For example, you might have m[esp{-}-56] in the call, but the actual definition
     // of
     // the printf argument is still m[esp{phi1} -20] = "%d".
-    if (EXPERIMENTAL) {
+    if (SETTING(experimental)) {
         PassManager::get()->executePass(PassID::StatementPropagation, m_proc);
     }
 
@@ -1384,7 +1384,7 @@ void CallStatement::updateArguments()
     StatementList oldArguments(m_arguments);
     m_arguments.clear();
 
-    if (EXPERIMENTAL) {
+    if (SETTING(experimental)) {
         // I don't really know why this is needed, but I was seeing r28 := ((((((r28{-}-4)-4)-4)-8)-4)-4)-4:
         DefCollector::iterator dd;
 

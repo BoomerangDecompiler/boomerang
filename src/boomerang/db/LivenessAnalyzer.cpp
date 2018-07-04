@@ -25,7 +25,7 @@
 
 /**
  * Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
- * Also check for type conflicts if DFA_TYPE_ANALYSIS
+ * Also check for type conflicts when using DFA type analysis
  * This is a helper function that is not directly declared in the BasicBlock class
  */
 void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc *proc)

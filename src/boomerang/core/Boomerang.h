@@ -126,10 +126,3 @@ private:
  */
 
 #define SETTING(var)    (Boomerang::get()->getSettings()->var)
-
-#define DEBUG_UNUSED            (SETTING(debugUnused))
-#define DEBUG_SWITCH            (SETTING(debugSwitch))
-#define DEBUG_GEN               (SETTING(debugGen))
-#define DEBUG_DECODER           (SETTING(debugDecoder))
-#define DFA_TYPE_ANALYSIS       (SETTING(dfaTypeAnalysis))
-#define EXPERIMENTAL            (SETTING(experimental))

@@ -7,24 +7,21 @@
  * WARRANTIES.
  */
 #pragma endregion License
-
-
 #include "NJMCDecoder.h"
 
-#include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Util.h"
 
-#include "boomerang/db/RTL.h"
-#include "boomerang/db/Register.h"
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/statements/Assignment.h"
+#include "boomerang/db/Register.h"
+#include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <cassert>
 #include <cstdarg> // For varargs
@@ -54,7 +51,7 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name, cons
     // Put the operands into a vector
     std::vector<SharedExp> actuals(args);
 
-    if (DEBUG_DECODER) {
+    if (m_prog->getProject()->getSettings()->debugDecoder) {
         QTextStream q_cout(stdout);
         // Display a disassembly of this instruction if requested
         q_cout << pc << ": " << name << " ";

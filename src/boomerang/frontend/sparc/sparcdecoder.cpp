@@ -11,20 +11,21 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
-#include "boomerang/db/Prog.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/ReturnStatement.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/util/Log.h"
 
 
 #include <cassert>
 #include <cstring>
+
 
 #define DIS_ROI     (dis_RegImm(roi))
 #define DIS_ADDR    (dis_Eaddr(addr))
@@ -44,15 +45,18 @@
 #define DIS_FS2Q    (machine->dis_RegRhs((fs2q >> 2) + 80))
 
 
-void DEBUG_STMTS(DecodeResult& result)
+
+void _DEBUG_STMTS(DecodeResult& result, bool debugDecoder)
 {
-    if (DEBUG_DECODER) {
+    if (debugDecoder) {
         QTextStream q_cout(stdout);
         for (Statement *s : *result.rtl) {
             q_cout << "            " << s << "\n";
         }
     }
 }
+
+#define DEBUG_STMTS(result) _DEBUG_STMTS(result, m_prog->getProject()->getSettings()->debugDecoder)
 
 
 std::unique_ptr<RTL> SparcDecoder::createBranchRTL(const char *insnName, Address pc, std::unique_ptr<RTL> stmts)

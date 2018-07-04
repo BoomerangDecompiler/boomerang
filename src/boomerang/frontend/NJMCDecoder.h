@@ -156,7 +156,7 @@ protected:
  */
 
 #define SHOW_ASM(output)               \
-    if (DEBUG_DECODER) {               \
+    if (m_prog->getProject()->getSettings()->debugDecoder) {               \
         QString asmStr;                \
         QTextStream ost(&asmStr);      \
         ost << output;                 \

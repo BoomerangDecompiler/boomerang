@@ -11,8 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/Prog.h"
@@ -26,6 +25,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -49756,7 +49756,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
         result.reDecode = false;
     }
 
-    if (DEBUG_DECODER) {
+    if (SETTING(debugDecoder)) {
         LOG_MSG("%1: BS%2%3%4",
                 pc + BSFRstate,
                 (init == -1 ? "F" : "R"),

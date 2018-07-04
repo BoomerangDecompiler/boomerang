@@ -55,7 +55,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
                 QString name(u->access<Const, 1>()->getStr());
                 usedLocals.insert(name);
 
-                if (DEBUG_UNUSED) {
+                if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("Counted local %1 in %2", name, s);
                 }
             }
@@ -67,7 +67,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
             QString    name(c->getStr());
             usedLocals.insert(name);
 
-            if (DEBUG_UNUSED) {
+            if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                 LOG_MSG("Counted local %1 on left of %2", name, s);
             }
         }

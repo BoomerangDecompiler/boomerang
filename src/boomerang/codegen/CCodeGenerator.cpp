@@ -2737,7 +2737,7 @@ void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *de
 
 void CCodeGenerator::writeBB(const BasicBlock *bb)
 {
-    if (DEBUG_GEN) {
+    if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
         LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
     }
 
@@ -2747,7 +2747,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 
     if (bb->getRTLs()) {
         for (const auto& rtl : *(bb->getRTLs())) {
-            if (DEBUG_GEN) {
+            if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
                 LOG_MSG("%1", rtl->getAddress());
             }
 

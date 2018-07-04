@@ -2619,7 +2619,7 @@ bool UserProc::removeRedundantParameters()
 
     Boomerang::get()->alertDecompileDebugPoint(this, "Before removing redundant parameters");
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% removing unused parameters for %1", getName());
     }
 
@@ -2644,7 +2644,7 @@ bool UserProc::removeRedundantParameters()
             // Remove the parameter
             ret = true;
 
-            if (DEBUG_UNUSED) {
+            if (m_prog->getProject()->getSettings()->debugUnused) {
                 LOG_MSG(" %%% removing unused parameter %1 in %2", param, getName());
             }
 
@@ -2662,7 +2662,7 @@ bool UserProc::removeRedundantParameters()
 
     getParameters() = newParameters;
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% end removing unused parameters for %1", getName());
     }
 
@@ -2683,7 +2683,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         return removedParams;
     }
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% removing unused returns for %1 %%%", getName());
     }
 
@@ -2712,7 +2712,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
                 rr          = m_retStatement->erase(rr);
                 removedRets = true;
 
-                if (DEBUG_UNUSED) {
+                if (m_prog->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a, getName());
                 }
             }
@@ -2768,7 +2768,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
             continue;
         }
 
-        if (DEBUG_UNUSED) {
+        if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG("%%%  removing unused return %1 from proc %2", a, getName());
         }
 
@@ -2779,7 +2779,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         removedRets = true;
     }
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         QString     tgt;
         QTextStream ost(&tgt);
         unionOfCallerLiveLocs.print(ost);
@@ -2823,7 +2823,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 {
     // We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
     // by removing returns
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% updating %1 for changes to uses (returns or arguments)", getName());
         LOG_MSG("%%% updating dataflow:");
     }
@@ -2864,7 +2864,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     removeRedundantParameters();
 
     if (m_parameters.size() != oldNumParameters) {
-        if (DEBUG_UNUSED) {
+        if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG("%%%  parameters changed for %1", getName());
         }
 
@@ -2884,7 +2884,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
         const UseCollector& newLiveness = *call->getUseCollector();
 
         if (newLiveness != oldLiveness) {
-            if (DEBUG_UNUSED) {
+            if (m_prog->getProject()->getSettings()->debugUnused) {
                 LOG_MSG("%%%  Liveness for call to %1 in %2 changed",
                         call->getDestProc()->getName(), getName());
             }
@@ -2935,7 +2935,7 @@ void UserProc::processDecodedICTs()
 
         RTL *rtl = bb->getLastRTL();
 
-        if (DEBUG_SWITCH) {
+        if (m_prog->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("Saving high level switch statement:\n%1", rtl);
         }
 

@@ -139,7 +139,7 @@ void ProgDecompiler::removeUnusedGlobals()
 
                 bool found = s->searchAll(search, usedGlobals);
 
-                if (found && DEBUG_UNUSED) {
+                if (found && m_prog->getProject()->getSettings()->debugUnused) {
                     LOG_VERBOSE("A global is used by stmt %1", s->getNumber());
                 }
             }
@@ -158,7 +158,7 @@ void ProgDecompiler::removeUnusedGlobals()
     m_prog->getGlobals().clear();
 
     for (const SharedExp& e : usedGlobals) {
-        if (DEBUG_UNUSED) {
+        if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG(" %1 is used", e);
         }
 

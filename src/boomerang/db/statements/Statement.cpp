@@ -282,7 +282,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 
             SharedExp lhs = def->getLeft();
 
-            if (EXPERIMENTAL) {
+            if (SETTING(experimental)) {
                 // This is Mike's experimental propagation limiting heuristic. At present, it is:
                 // for each component of def->rhs
                 //   test if the base expression is in the set usedByDomPhi
