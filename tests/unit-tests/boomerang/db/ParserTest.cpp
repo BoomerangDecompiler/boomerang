@@ -36,9 +36,9 @@ void ParserTest::cleanupTestCase()
 
 void ParserTest::testRead()
 {
-    RTLInstDict d;
+    RTLInstDict d(false);
 
-    QVERIFY(d.readSSLFile(SPARC_SSL, false));
+    QVERIFY(d.readSSLFile(SPARC_SSL));
 }
 
 

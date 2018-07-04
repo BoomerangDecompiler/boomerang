@@ -148,7 +148,7 @@ public:
     SSLParser(std::istream& in, bool trace);
     virtual ~SSLParser();
     OPER strToOper(const QString& s);              /* Convert string to an operator */
-    static Statement *parseExp(const char *str); /* Parse an expression or assignment from a string */
+    static Statement *parseExp(const char *str, bool verboseOutput = false); /* Parse an expression or assignment from a string */
 
     /* The code for expanding tables and saving to the dictionary */
     void expandTables(const std::shared_ptr<InsNameElem>& iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict& Dict);

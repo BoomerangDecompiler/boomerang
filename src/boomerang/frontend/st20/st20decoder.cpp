@@ -902,8 +902,6 @@ DWord ST20Decoder::getDword(intptr_t lc)
 
 
 ST20Decoder::ST20Decoder(Prog *prog_)
-    : NJMCDecoder(prog_)
+    : NJMCDecoder(prog_, "ssl/st20.ssl")
 {
-    m_rtlDict.readSSLFile(prog_->getProject()->getSettings()->getDataDirectory().absoluteFilePath("ssl/st20.ssl"),
-        prog_->getProject()->getSettings()->debugDecoder);
 }

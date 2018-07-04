@@ -2443,9 +2443,7 @@ DWord SparcDecoder::getDword(HostAddress lc)
 
 
 SparcDecoder::SparcDecoder(Prog *_prog)
-    : NJMCDecoder(_prog)
+    : NJMCDecoder(_prog, "ssl/sparc.ssl")
     , machine(new SparcMachine)
 {
-    QString file = _prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath("ssl/sparc.ssl");
-    m_rtlDict.readSSLFile(file, _prog->getProject()->getSettings()->debugDecoder);
 }

@@ -21,10 +21,8 @@
 
 
 MIPSDecoder::MIPSDecoder(Prog *prog)
-    : NJMCDecoder(prog)
+    : NJMCDecoder(prog, "ssl/mips.ssl")
 {
-    m_rtlDict.readSSLFile(prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath("ssl/mips.ssl"),
-        prog->getProject()->getSettings()->debugDecoder);
 }
 
 

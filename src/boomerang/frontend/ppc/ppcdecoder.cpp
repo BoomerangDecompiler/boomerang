@@ -9305,10 +9305,8 @@ DWord PPCDecoder::getDword(HostAddress lc)
 
 
 PPCDecoder::PPCDecoder(Prog *_prog)
-    : NJMCDecoder(_prog)
+    : NJMCDecoder(_prog, "ssl/ppc.ssl")
 {
-    m_rtlDict.readSSLFile(_prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath("ssl/ppc.ssl"),
-        _prog->getProject()->getSettings()->debugDecoder);
 }
 
 

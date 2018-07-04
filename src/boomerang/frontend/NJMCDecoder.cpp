@@ -28,9 +28,12 @@
 #include <cstring>
 
 
-NJMCDecoder::NJMCDecoder(Prog *prog)
-    : m_prog(prog)
+NJMCDecoder::NJMCDecoder(Prog *prog, const QString& sslFilePath)
+    : m_rtlDict(prog->getProject()->getSettings()->debugDecoder)
+    , m_prog(prog)
 {
+    QDir dataDir = prog->getProject()->getSettings()->getDataDirectory();
+    m_rtlDict.readSSLFile(dataDir.absoluteFilePath(sslFilePath));
 }
 
 

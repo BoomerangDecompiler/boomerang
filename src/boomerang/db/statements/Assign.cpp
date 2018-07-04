@@ -12,9 +12,12 @@
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Unary.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
@@ -85,10 +88,11 @@ bool Assign::accept(StmtVisitor *visitor) const
 void Assign::simplify()
 {
     // simplify arithmetic of assignment
-    OPER leftop = m_lhs->getOper();
 
-    if (!SETTING(branchSimplify)) {
-        if ((leftop == opZF) || (leftop == opCF) || (leftop == opOF) || (leftop == opNF)) {
+    assert(m_proc);
+    if (!m_proc->getProg()->getProject()->getSettings()->branchSimplify) {
+        const OPER leftop = m_lhs->getOper();
+        if (leftop == opZF || leftop == opCF || leftop == opOF || leftop == opNF) {
             return;
         }
     }
