@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
@@ -19,9 +20,9 @@
 #include "boomerang/db/proc/UserProc.h"
 
 
-void CfgDotWriter::writeCFG(const Prog* prog, const QString& filename)
+void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
 {
-    QFile tgt(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
+    QFile tgt(prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
 
     if (!tgt.open(QFile::WriteOnly | QFile::Text)) {
         return;

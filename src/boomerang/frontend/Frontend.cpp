@@ -168,7 +168,7 @@ void IFrontEnd::readLibraryCatalog(const QString& filePath)
             cc = CallConv::ThisCall; // Another exception
         }
 
-        sig_path = Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("signatures/" + sigFilePath);
+        sig_path = m_program->getProject()->getSettings()->getDataDirectory().absoluteFilePath("signatures/" + sigFilePath);
         readLibrarySignatures(qPrintable(sig_path), cc);
     }
 }
@@ -178,7 +178,7 @@ void IFrontEnd::readLibraryCatalog()
 {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
     m_librarySignatures.clear();
-    QDir sig_dir(Boomerang::get()->getSettings()->getDataDirectory());
+    QDir sig_dir(m_program->getProject()->getSettings()->getDataDirectory());
 
     if (!sig_dir.cd("signatures")) {
         LOG_WARN("Signatures directory does not exist.");
@@ -233,7 +233,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
         entrypoints.push_back(a);
     }
     else { // try some other tricks
-        QString fname = QString::null; // Boomerang::get()->getSettings()->getFilename();
+        QString fname = QString::null; // m_program->getProject()->getSettings()->getFilename();
 
         // X11 Module
         if (fname.endsWith("_drv.o")) {

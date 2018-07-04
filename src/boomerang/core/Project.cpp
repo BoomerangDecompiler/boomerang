@@ -110,9 +110,9 @@ bool Project::decodeBinaryFile()
 
     loadSymbols();
 
-    if (!Boomerang::get()->getSettings()->m_entryPoints.empty()) { // decode only specified procs
+    if (!getSettings()->m_entryPoints.empty()) { // decode only specified procs
         // decode entry points from -e (and -E) switch(es)
-        for (auto& elem : Boomerang::get()->getSettings()->m_entryPoints) {
+        for (auto& elem : getSettings()->m_entryPoints) {
             LOG_MSG("Decoding specified entrypoint at address %1", elem);
             m_prog->decodeEntryPoint(elem);
         }
@@ -197,13 +197,13 @@ Prog *Project::createProg(BinaryFile *file, const QString& name)
 void Project::loadSymbols()
 {
     // Add symbols from -s switch(es)
-    for (const std::pair<Address, QString>& elem : Boomerang::get()->getSettings()->m_symbolMap) {
+    for (const std::pair<Address, QString>& elem : getSettings()->m_symbolMap) {
         m_loadedBinary->getSymbols()->createSymbol(elem.first, elem.second);
     }
 
     m_fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
-    for (auto& elem : Boomerang::get()->getSettings()->m_symbolFiles) {
+    for (auto& elem : getSettings()->m_symbolFiles) {
         LOG_MSG("Reading symbol file '%1'", elem);
         readSymbolFile(elem);
     }
@@ -294,7 +294,7 @@ void Project::loadPlugins()
 {
     LOG_MSG("Loading plugins...");
 
-    QDir pluginsDir = Boomerang::get()->getSettings()->getPluginDirectory();
+    QDir pluginsDir = getSettings()->getPluginDirectory();
     if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
         return;

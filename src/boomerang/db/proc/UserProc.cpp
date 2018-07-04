@@ -196,7 +196,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
 
 void UserProc::printUseGraph()
 {
-    QString filePath = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
+    QString filePath = m_prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
     QFile   file(filePath);
 
     if (!file.open(QFile::Text | QFile::WriteOnly)) {
@@ -382,7 +382,7 @@ void UserProc::dump() const
 void UserProc::printDFG() const
 {
     QString fname = QString("%1%2-%3-dfg.dot")
-                       .arg(Boomerang::get()->getSettings()->getOutputDirectory().absolutePath())
+                       .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
                        .arg(getName())
                        .arg(DFGcount);
 

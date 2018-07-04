@@ -155,7 +155,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     return 2;
                 }
 
-                Boomerang::get()->getSettings()->m_entryPoints.push_back(addr);
+                m_project->getSettings()->m_entryPoints.push_back(addr);
             }
             break;
 
@@ -215,7 +215,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     o_path += '/'; // Maintain the convention of a trailing slash
                 }
 
-                Boomerang::get()->getSettings()->setOutputDirectory(o_path);
+                m_project->getSettings()->setOutputDirectory(o_path);
                 break;
             }
 
@@ -476,7 +476,7 @@ int CommandlineDriver::decompile()
 {
     Log::getOrCreateLog().addDefaultLogSinks();
 
-    QDir       wd = Boomerang::get()->getSettings()->getWorkingDirectory();
+    QDir       wd = m_project->getSettings()->getWorkingDirectory();
     QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
 
     m_project.reset(new Project());
@@ -533,7 +533,7 @@ int CommandlineDriver::decompile(const QString& fname, const QString& pname)
 
     m_project->generateCode();
 
-    QDir outDir = Boomerang::get()->getSettings()->getOutputDirectory();
+    QDir outDir = m_project->getSettings()->getOutputDirectory();
     LOG_MSG("Output written to '%1'", outDir.absolutePath());
 
     time_t end;

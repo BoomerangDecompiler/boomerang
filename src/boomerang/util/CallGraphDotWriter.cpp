@@ -9,10 +9,12 @@
 #pragma endregion License
 #include "CallGraphDotWriter.h"
 
-#include "boomerang/db/Prog.h"
+
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/util/Log.h"
 
 #include <QSaveFile>
 
@@ -22,7 +24,7 @@
 bool CallGraphDotWriter::writeCallGraph(const Prog *prog, const QString& dstFileName)
 {
     LOG_VERBOSE("Writing call graph to '%1'", dstFileName);
-    QSaveFile saveFile(Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(dstFileName));
+    QSaveFile saveFile(prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(dstFileName));
 
     if (!saveFile.open(QFile::WriteOnly)) {
         LOG_ERROR("Cannot open output file '%1' for callgraph output", dstFileName);

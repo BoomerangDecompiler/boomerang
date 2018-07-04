@@ -58,7 +58,7 @@ void Decompiler::removeEntryPoint(Address entryAddr)
 
 void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPath)
 {
-    Boomerang::get()->getSettings()->setOutputDirectory(outputPath);
+    m_project.getSettings()->setOutputDirectory(outputPath);
     emit loadingStarted();
 
     bool ok = m_project.loadBinaryFile(inputFile);

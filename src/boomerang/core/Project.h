@@ -96,7 +96,7 @@ public:
     bool generateCode(Module *module = nullptr);
 
 public:
-    Settings *getSettings() { return Boomerang::get()->getSettings(); }
+    Settings *getSettings()             { return Boomerang::get()->getSettings(); }
     const Settings *getSettings() const { return Boomerang::get()->getSettings(); }
 
     BinaryFile *getLoadedBinaryFile() { return m_loadedBinary.get(); }

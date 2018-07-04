@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
@@ -52,10 +53,10 @@ void printProcsRecursive(Function *function, int indent, QTextStream& f, std::se
 }
 
 
-bool ProgSymbolWriter::writeSymbolsToFile(const Prog* prog, const QString& dstFileName)
+bool ProgSymbolWriter::writeSymbolsToFile(const Prog *prog, const QString& dstFileName)
 {
     LOG_VERBOSE("Writing symbols to '%1'", dstFileName);
-    const QString fname = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(dstFileName);
+    const QString fname = prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(dstFileName);
     QSaveFile tgt(fname);
 
     if (!tgt.open(QFile::WriteOnly)) {
