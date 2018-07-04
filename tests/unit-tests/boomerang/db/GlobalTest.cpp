@@ -91,11 +91,11 @@ void GlobalTest::testReadInitialValue()
         QCOMPARE(sizeConst->getInitialValue()->toString(), QString("85")); // 0x55
 
         // int const
-        Global *shortConst = prog->createGlobal(Address(0x008048570), IntegerType::get(16, 1));
+        Global *shortConst = prog->createGlobal(Address(0x008048570), IntegerType::get(16, Sign::Signed));
         QVERIFY(shortConst && shortConst->getInitialValue());
         QCOMPARE(shortConst->getInitialValue()->toString(), QString("0xffff"));
 
-        Global *intConst = prog->createGlobal(Address(0x080483B2), IntegerType::get(32, -1));
+        Global *intConst = prog->createGlobal(Address(0x080483B2), IntegerType::get(32, Sign::Unsigned));
         QVERIFY(intConst->getInitialValue() != nullptr);
         QCOMPARE(intConst->getInitialValue()->toString(), QString("0x40140000"));
 
@@ -129,7 +129,7 @@ void GlobalTest::testReadInitialValue()
         QCOMPARE(result->access<Const>()->getStr(), QString("Hello, world!\n"));
 
         // integer constant
-        Global *zero = prog->createGlobal(Address(0x080483DE), IntegerType::get(32, 1));
+        Global *zero = prog->createGlobal(Address(0x080483DE), IntegerType::get(32, Sign::Signed));
         result = zero->getInitialValue();
         QVERIFY(result && result->isIntConst());
         QCOMPARE(result->access<Const>()->getInt(), 0);

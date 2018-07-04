@@ -68,6 +68,16 @@ enum class TypeClass
     Size
 };
 
+
+enum class Sign : int8_t
+{
+    UnsignedStrong = -2,
+    Unsigned = -1,
+    Unknown = 0,
+    Signed = 1,
+    SignedStrong = 2
+};
+
 class Type;
 typedef std::shared_ptr<Type>         SharedType;
 typedef std::shared_ptr<const Type>   SharedConstType;
@@ -237,7 +247,7 @@ public:
     /// Create a union of this Type and other. Set ch true if any change
     SharedType createUnion(SharedType other, bool& changed, bool useHighestPtr = false) const;
 
-    static SharedType newIntegerLikeType(int size, int signedness); // Return a new Bool/Char/Int
+    static SharedType newIntegerLikeType(int size, Sign signedness); // Return a new Bool/Char/Int
 
     /// Dereference this type. For most cases, return null unless you are a pointer type. But for a
     /// union of pointers, return a new union with the dereference of all members. In dfa.cpp

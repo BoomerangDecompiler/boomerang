@@ -1641,13 +1641,13 @@ SSLParser::
                 size = STD_SIZE;
             switch (c) {
             case 'i':
-                yyval.typ = IntegerType::get(size, 1);
+                yyval.typ = IntegerType::get(size, Sign::Signed);
                 break;
             case 'j':
-                yyval.typ = IntegerType::get(size, 0);
+                yyval.typ = IntegerType::get(size, Sign::Unknown);
                 break;
             case 'u':
-                yyval.typ = IntegerType::get(size, -1);
+                yyval.typ = IntegerType::get(size, Sign::Unsigned);
                 break;
             case 'f':
                 yyval.typ = FloatType::get(size);

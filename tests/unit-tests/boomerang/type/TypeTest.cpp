@@ -108,17 +108,15 @@ void TypeTest::cleanupTestCase()
 
 void TypeTest::testTypeLong()
 {
-    auto t = IntegerType::get(64, -1);
-
-    QCOMPARE(t->getCtype(), QString("unsigned long long"));
+    QCOMPARE(IntegerType::get(64, Sign::Unsigned)->getCtype(), QString("unsigned long long"));
 }
 
 
 void TypeTest::testNotEqual()
 {
-    auto t1(IntegerType::get(32, -1));
-    auto t2(IntegerType::get(32, -1));
-    auto t3(IntegerType::get(16, -1));
+    auto t1(IntegerType::get(32, Sign::Unsigned));
+    auto t2(IntegerType::get(32, Sign::Unsigned));
+    auto t3(IntegerType::get(16, Sign::Unsigned));
 
     QVERIFY(!(*t1 != *t2));
     QVERIFY(*t2 != *t3);
@@ -176,7 +174,7 @@ void TypeTest::testDataInterval()
 
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "testProc"));
 
-    dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, 1));
+    dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "second", FloatType::get(64));
     QCOMPARE(dim.prints(),
              "0x00001000-0x00001004 first int\n"
@@ -199,9 +197,9 @@ void TypeTest::testDataInterval()
     QCOMPARE(var->name, QString("second"));
 
     auto ct(CompoundType::get());
-    ct->addMember(IntegerType::get(16, 1), "short1");
-    ct->addMember(IntegerType::get(16, 1), "short2");
-    ct->addMember(IntegerType::get(32, 1), "int1");
+    ct->addMember(IntegerType::get(16, Sign::Signed), "short1");
+    ct->addMember(IntegerType::get(16, Sign::Signed), "short2");
+    ct->addMember(IntegerType::get(32, Sign::Signed), "int1");
     ct->addMember(FloatType::get(32), "float1");
     dim.insertItem(Address(0x00001010), "struct1", ct);
 
@@ -242,13 +240,13 @@ void TypeTest::testDataIntervalOverlaps()
 
     proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
 
-    dim.insertItem(Address(0x00001000), "firstInt", IntegerType::get(32, 1));
+    dim.insertItem(Address(0x00001000), "firstInt", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "firstFloat", FloatType::get(32));
-    dim.insertItem(Address(0x00001008), "secondInt", IntegerType::get(32, 1));
+    dim.insertItem(Address(0x00001008), "secondInt", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x0000100C), "secondFloat", FloatType::get(32));
 
     auto ct = CompoundType::get();
-    ct->addMember(IntegerType::get(32, 1), "int3");
+    ct->addMember(IntegerType::get(32, Sign::Signed), "int3");
     ct->addMember(FloatType::get(32), "float3");
     dim.insertItem(Address(0x00001010), "newStruct", ct);
     QCOMPARE(dim.prints(),
@@ -260,7 +258,7 @@ void TypeTest::testDataIntervalOverlaps()
 
     // First insert a new struct over the top of the existing middle pair
     auto ctu = CompoundType::get();
-    ctu->addMember(IntegerType::get(32, 0), "newInt"); // This int has UNKNOWN sign
+    ctu->addMember(IntegerType::get(32, Sign::Unknown), "newInt"); // This int has UNKNOWN sign
     ctu->addMember(FloatType::get(32), "newFloat");
     dim.insertItem(Address(0x00001008), "replacementStruct", ctu);
 
@@ -276,7 +274,7 @@ void TypeTest::testDataIntervalOverlaps()
     // Attempt a weave; should fail
     auto ct3 = CompoundType::get();
     ct3->addMember(FloatType::get(32), "newFloat3");
-    ct3->addMember(IntegerType::get(32, 0), "newInt3");
+    ct3->addMember(IntegerType::get(32, Sign::Unknown), "newInt3");
     QVERIFY(dim.insertItem(Address(0x00001004), "weaveStruct1", ct3) == dim.end());
     var = dim.find(Address(0x00001004));
     QVERIFY(var != nullptr);
@@ -288,17 +286,17 @@ void TypeTest::testDataIntervalOverlaps()
     QVERIFY(var != nullptr);
     QCOMPARE(var->name, QString("firstInt"));
 
-    dim.insertItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Should fail
+    dim.insertItem(Address(0x00001004), "firstInt", IntegerType::get(32, Sign::Signed)); // Should fail
     var = dim.find(Address(0x00001004));
     QCOMPARE(var->name, QString("firstFloat"));
 
     // Set up three ints
     dim.deleteItem(Address(0x00001004));
     dim.deleteItem(Address(0x00001008));
-    dim.insertItem(Address(0x00001004), "firstInt", IntegerType::get(32, 1)); // Definitely signed
-    dim.insertItem(Address(0x00001008), "firstInt", IntegerType::get(32, 0)); // Unknown signedess
+    dim.insertItem(Address(0x00001004), "firstInt", IntegerType::get(32, Sign::Signed)); // Definitely signed
+    dim.insertItem(Address(0x00001008), "firstInt", IntegerType::get(32, Sign::Unknown)); // Unknown signedess
     // then, add an array over the three integers
-    auto at = ArrayType::get(IntegerType::get(32, 0), 3);
+    auto at = ArrayType::get(IntegerType::get(32, Sign::Unknown), 3);
     dim.insertItem(Address(0x00001000), "newArray", at);
 
     var = dim.find(Address(0x00001005)); // Check middle element

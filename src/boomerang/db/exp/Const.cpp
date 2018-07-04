@@ -300,7 +300,7 @@ SharedType Const::ascendType()
         {
             // could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
         case opIntConst:  return VoidType::get();
-        case opLongConst: return m_type = IntegerType::get(STD_SIZE * 2, 0);
+        case opLongConst: return m_type = IntegerType::get(STD_SIZE * 2, Sign::Unknown);
         case opFltConst:  return m_type = FloatType::get(64);
         case opStrConst:  return m_type = PointerType::get(CharType::get());
         case opFuncConst: return m_type = PointerType::get(FuncType::get());

@@ -137,11 +137,11 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
 
                 case 6:  // int
                 case 13: // long
-                    return IntegerType::get(sz, 1);
+                    return IntegerType::get(sz, Sign::Signed);
 
                 case 7:  // unsigned int
                 case 14: // ulong
-                    return IntegerType::get(sz, -1);
+                    return IntegerType::get(sz, Sign::Unsigned);
 
                 case 8:
                     return FloatType::get(sz);
@@ -167,14 +167,9 @@ int debugRegister(int r)
 {
     switch (r)
     {
-        case 2:
-            return 26; // edx
-
-        case 4:
-            return 25; // ecx
-
-        case 8:
-            return 29; // ebp
+    case 2: return REG_PENT_EDX;
+    case 4: return REG_PENT_ECX;
+    case 8: return REG_PENT_EBP;
     }
 
     assert(false);

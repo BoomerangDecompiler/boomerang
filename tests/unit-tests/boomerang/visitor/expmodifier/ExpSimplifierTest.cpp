@@ -700,11 +700,11 @@ void ExpSimplifierTest::testSimplify_data()
     // TypedExp
     {
         TEST_SIMPLIFY("TypedExp",
-                      std::make_shared<TypedExp>(IntegerType::get(32, 1), Location::memOf(Const::get(0x1000), nullptr)),
-                      std::make_shared<TypedExp>(IntegerType::get(32, 1), Location::memOf(Const::get(0x1000), nullptr)));
+                      std::make_shared<TypedExp>(IntegerType::get(32, Sign::Signed), Location::memOf(Const::get(0x1000), nullptr)),
+                      std::make_shared<TypedExp>(IntegerType::get(32, Sign::Signed), Location::memOf(Const::get(0x1000), nullptr)));
 
         TEST_SIMPLIFY("TypedExpRegOf",
-                      std::make_shared<TypedExp>(IntegerType::get(32, 1), Location::regOf(REG_PENT_EAX)),
+                      std::make_shared<TypedExp>(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX)),
                       Location::regOf(REG_PENT_EAX));
     }
 

@@ -1250,7 +1250,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         case 'x':
         case 'X':
         case 'o':     // Unsigned integer
-            addSigParam(IntegerType::get(32, -1), isScanf);
+            addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
             break;
 
         case 'f':

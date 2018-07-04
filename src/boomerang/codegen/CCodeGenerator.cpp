@@ -604,8 +604,8 @@ void CCodeGenerator::generateCode(UserProc *proc)
 
 void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString section_name, Address section_start, uint32_t size)
 {
-    addGlobal("start_" + section_name, IntegerType::get(32, -1), Const::get(section_start));
-    addGlobal(section_name + "_size", IntegerType::get(32, -1), Const::get(size ? size : static_cast<uint32_t>(-1)));
+    addGlobal("start_" + section_name, IntegerType::get(32, Sign::Unsigned), Const::get(section_start));
+    addGlobal(section_name + "_size", IntegerType::get(32, Sign::Unsigned), Const::get(size ? size : static_cast<uint32_t>(-1)));
     auto l = Terminal::get(opNil);
 
     for (unsigned int i = 0; i < size; i++) {
@@ -614,7 +614,7 @@ void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString s
         l = Binary::get(opList, Const::get(n & 0xFF), l);
     }
 
-    addGlobal(section_name, ArrayType::get(IntegerType::get(8, -1), size), l);
+    addGlobal(section_name, ArrayType::get(IntegerType::get(8, Sign::Unsigned), size), l);
 }
 
 
@@ -655,7 +655,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 
         if ((retType == nullptr) || retType->isVoid()) {
             // There is a real return; make it integer (Remove with AD HOC type analysis)
-            retType = IntegerType::get(STD_SIZE, 0);
+            retType = IntegerType::get(STD_SIZE, Sign::Unknown);
         }
     }
 
@@ -693,7 +693,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
                 LOG_ERROR("No type for parameter %1!", left);
             }
 
-            ty = IntegerType::get(STD_SIZE, 0);
+            ty = IntegerType::get(STD_SIZE, Sign::Unknown);
         }
 
         QString name;
@@ -1089,7 +1089,7 @@ void CCodeGenerator::addGlobal(const QString& name, SharedType type, const Share
     if (init && !init->isNil()) {
         s << " = ";
         SharedType base_type = type->isArray() ? type->as<ArrayType>()->getBaseType() : type;
-        appendExp(s, *init, OpPrec::Assign, base_type->isInteger() ? !base_type->as<IntegerType>()->isSigned() : false);
+        appendExp(s, *init, OpPrec::Assign, base_type->isInteger() ? base_type->as<IntegerType>()->isUnsigned() : false);
     }
 
     s << ";";

@@ -14,7 +14,7 @@
 #include "boomerang/util/Log.h"
 
 
-IntegerType::IntegerType(unsigned int NumBits, int sign)
+IntegerType::IntegerType(unsigned int NumBits, Sign sign)
     : Type(TypeClass::Integer)
 {
     size       = NumBits;
@@ -22,7 +22,7 @@ IntegerType::IntegerType(unsigned int NumBits, int sign)
 }
 
 
-std::shared_ptr<IntegerType> IntegerType::get(unsigned numBits, int sign)
+std::shared_ptr<IntegerType> IntegerType::get(unsigned numBits, Sign sign)
 {
     return std::make_shared<IntegerType>(numBits, sign);
 }
@@ -47,12 +47,14 @@ bool IntegerType::operator==(const Type& other) const
     }
 
     const IntegerType& otherInt = static_cast<const IntegerType &>(other);
+
     return
         // Note: zero size matches any other size (wild, or unknown, size)
         (size == 0 || otherInt.size == 0 || size == otherInt.size) &&
         // Note: actual value of signedness is disregarded, just whether less than, equal to, or greater than 0
-        ((signedness < 0 && otherInt.signedness < 0) || (signedness == 0 && otherInt.signedness == 0) ||
-         (signedness > 0 && otherInt.signedness > 0));
+        ((isUnsigned()    && otherInt.isUnsigned())    ||
+         (isSignUnknown() && otherInt.isSignUnknown()) ||
+         (isSigned()      && otherInt.isSigned()));
 }
 
 
@@ -76,18 +78,11 @@ QString IntegerType::getTempName() const
 {
     switch (size)
     {
-    case 1: /* Treat as a tmpb */
-    case 8:
-        return "tmpb";
-
-    case 16:
-        return "tmph";
-
-    case 32:
-        return "tmpi";
-
-    case 64:
-        return "tmpl";
+    case 1:  /* Treat as a tmpb */
+    case 8:  return "tmpb";
+    case 16: return "tmph";
+    case 32: return "tmpi";
+    case 64: return "tmpl";
     }
 
     return "tmp";
@@ -96,72 +91,32 @@ QString IntegerType::getTempName() const
 
 QString IntegerType::getCtype(bool final) const
 {
-    if (signedness >= 0) {
+    if (isMaybeSigned()) {
         QString s;
 
-        if (!final && (signedness == 0)) {
+        if (!final && isSignUnknown()) {
             s = "/*signed?*/";
         }
 
         switch (size)
         {
-        case 32:
-            s += "int";
-            break;
-
-        case 16:
-            s += "short";
-            break;
-
-        case 8:
-            s += "char";
-            break;
-
-        case 1:
-            s += "bool";
-            break;
-
-        case 64:
-            s += "long long";
-            break;
-
-        default:
-
-            if (!final) {
-                s += "?"; // To indicate invalid/unknown size
-            }
-
-            s += "int";
+        case 1:  return s + "bool";
+        case 8:  return s + "char";
+        case 16: return s + "short";
+        case 32: return s + "int";
+        case 64: return s + "long long";
+        default: return s + (final ? "int" : "?int"); // To indicate invalid/unknown size
         }
-
-        return s;
     }
     else {
         switch (size)
         {
-        case 32:
-            return "unsigned int";
-
-        case 16:
-            return "unsigned short";
-
-        case 8:
-            return "unsigned char";
-
-        case 1:
-            return "bool";
-
-        case 64:
-            return "unsigned long long";
-
-        default:
-
-            if (final) {
-                return "unsigned int";
-            }
-            else {
-                return "?unsigned int";
-            }
+        case 1:  return "bool";
+        case 8:  return "unsigned char";
+        case 16: return "unsigned short";
+        case 32: return "unsigned int";
+        case 64: return "unsigned long long";
+        default: return final ? "unsigned int" : "?unsigned int";
         }
     }
 }
@@ -178,19 +133,19 @@ SharedType IntegerType::meetWith(SharedType other, bool& changed, bool useHighes
         std::shared_ptr<IntegerType> result   = std::dynamic_pointer_cast<IntegerType>(this->clone());
 
         // Signedness
-        if (otherInt->signedness > 0) {
-            result->signedness++;
+        if (otherInt->isSigned()) {
+            result->hintAsSigned();
         }
-        else if (otherInt->signedness < 0) {
-            result->signedness--;
+        else if (otherInt->isUnsigned()) {
+            result->hintAsUnsigned();
         }
 
-        changed |= ((result->signedness > 0) != (signedness > 0)); // Changed from signed to not necessarily signed
-        changed |= ((result->signedness < 0) != (signedness < 0)); // Changed from unsigned to not necessarily unsigned
+        changed |= result->isSigned() != isSigned(); // Changed from signed to not necessarily signed
+        changed |= result->isUnsigned() != isUnsigned(); // Changed from unsigned to not necessarily unsigned
 
         // Size. Assume 0 indicates unknown size
         result->size = std::max(size, otherInt->size);
-        changed          |= (result->size != size);
+        changed |= (result->size != size);
 
         return result;
     }
@@ -217,7 +172,6 @@ SharedType IntegerType::meetWith(SharedType other, bool& changed, bool useHighes
 
     return createUnion(other, changed, useHighestPtr);
 }
-
 
 
 bool IntegerType::isCompatible(const Type& other, bool /*all*/) const

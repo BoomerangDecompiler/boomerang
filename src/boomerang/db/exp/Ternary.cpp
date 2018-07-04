@@ -399,7 +399,7 @@ SharedType Ternary::ascendType()
     case opSgnEx:
         {
             const int toSize = subExp2->access<Const>()->getInt();
-            return Type::newIntegerLikeType(toSize, m_oper == opZfill ? -1 : 1);
+            return Type::newIntegerLikeType(toSize, m_oper == opZfill ? Sign::Unsigned : Sign::Signed);
         }
 
     default:
@@ -423,7 +423,7 @@ void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s
         {
             int        fromSize = subExp1->access<Const>()->getInt();
             SharedType fromType;
-            fromType = Type::newIntegerLikeType(fromSize, m_oper == opZfill ? -1 : 1);
+            fromType = Type::newIntegerLikeType(fromSize, m_oper == opZfill ? Sign::Unsigned : Sign::Signed);
             subExp3->descendType(fromType, changed, s);
             break;
         }

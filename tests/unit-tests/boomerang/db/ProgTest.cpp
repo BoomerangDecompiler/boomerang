@@ -594,7 +594,7 @@ void ProgTest::testMarkGlobalUsed()
 
     m_project.loadBinaryFile(HELLO_PENTIUM);
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC)));
-    QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), IntegerType::get(32, 1)));
+    QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), IntegerType::get(32, Sign::Signed)));
     QVERIFY(m_project.getProg()->markGlobalUsed(Address(0x80483FC), ArrayType::get(CharType::get(), 15)));
 }
 
@@ -612,7 +612,7 @@ void ProgTest::testGlobalType()
     QVERIFY(ty != nullptr);
     QCOMPARE(ty->prints(), QString("char[15]"));
 
-    m_project.getProg()->setGlobalType("helloworld", IntegerType::get(32, 1));
+    m_project.getProg()->setGlobalType("helloworld", IntegerType::get(32, Sign::Signed));
     ty = m_project.getProg()->getGlobalType("helloworld");
     QVERIFY(ty != nullptr);
     QCOMPARE(ty->prints(), QString("int"));

@@ -1051,52 +1051,52 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 57 : {
-            yyval.type = IntegerType::get(16, 1);
+            yyval.type = IntegerType::get(16, Sign::Signed);
             break;
     }
 
     case 58 : {
-            yyval.type = IntegerType::get(32, 1);
+            yyval.type = IntegerType::get(32, Sign::Signed);
             break;
     }
 
     case 59 : {
-            yyval.type = IntegerType::get(8, 0);
+            yyval.type = IntegerType::get(8, Sign::Unknown);
             break;
     }
 
     case 60 : {
-            yyval.type = IntegerType::get(16, 0);
+            yyval.type = IntegerType::get(16, Sign::Unknown);
             break;
     }
 
     case 61 : {
-            yyval.type = IntegerType::get(32, 0);
+            yyval.type = IntegerType::get(32, Sign::Unknown);
             break;
     }
 
     case 62 : {
-            yyval.type = IntegerType::get(32, 0);
+            yyval.type = IntegerType::get(32, Sign::Unknown);
             break;
     }
 
     case 63 : {
-            yyval.type = IntegerType::get(32, 0);
+            yyval.type = IntegerType::get(32, Sign::Unknown);
             break;
     }
 
     case 64 : {
-            yyval.type = IntegerType::get(32, 1);
+            yyval.type = IntegerType::get(32, Sign::Signed);
             break;
     }
 
     case 65 : {
-            yyval.type = IntegerType::get(64, 1);
+            yyval.type = IntegerType::get(64, Sign::Signed);
             break;
     }
 
     case 66 : {
-            yyval.type = IntegerType::get(64, 0);
+            yyval.type = IntegerType::get(64, Sign::Unknown);
             break;
     }
 

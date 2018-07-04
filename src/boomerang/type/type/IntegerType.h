@@ -16,7 +16,7 @@
 class IntegerType : public Type
 {
 public:
-    explicit IntegerType(unsigned NumBits, int sign = 0);
+    explicit IntegerType(unsigned NumBits, Sign sign = Sign::Unknown);
     IntegerType(const IntegerType& other) = default;
     IntegerType(IntegerType&& other) = default;
 
@@ -26,10 +26,10 @@ public:
     IntegerType& operator=(IntegerType&& other) = default;
 
 public:
-    static std::shared_ptr<IntegerType> get(unsigned NumBits, int sign = 0);
+    static std::shared_ptr<IntegerType> get(unsigned NumBits, Sign sign = Sign::Unknown);
 
     virtual bool isInteger() const override { return true; }
-    virtual bool isComplete()  override { return signedness != 0 && size != 0; }
+    virtual bool isComplete()  override { return signedness != Sign::Unknown && size != 0; }
 
     virtual SharedType clone() const override;
 
@@ -39,15 +39,21 @@ public:
     virtual size_t getSize() const override; // Get size in bits
 
     virtual void setSize(size_t sz)  override { size = sz; }
-    // Is it signed? 0=unknown, pos=yes, neg = no
-    bool isSigned() { return signedness >= 0; }   // True if not unsigned
-    bool isUnsigned() { return signedness <= 0; } // True if not definately signed
-    // A hint for signedness
-    void bumpSigned(int sg) { signedness += sg; }
-    // Set absolute signedness
-    void setSigned(int sg) { signedness = sg; }
-    // Get the signedness
-    int getSignedness() const { return signedness; }
+
+    bool isSigned()   const { return signedness > Sign::Unknown; } ///< \returns true if definitely signed
+    bool isUnsigned() const { return signedness < Sign::Unknown; } ///< \returns true if definitely unsigned
+
+    bool isMaybeSigned()   const { return signedness >= Sign::Unknown; } ///< \returns true if signedness is signed or unknown
+    bool isMaybeUnsigned() const { return signedness <= Sign::Unknown; } ///< \returns true if signedness is unsigned or unknown
+
+    bool isSignUnknown() const { return signedness == Sign::Unknown; }
+
+    /// A hint for signedness
+    void hintAsSigned()   { signedness = std::min((Sign)((int)signedness + 1), Sign::SignedStrong); }
+    void hintAsUnsigned() { signedness = std::max((Sign)((int)signedness - 1), Sign::UnsignedStrong); }
+
+    void setSignedness(Sign sign) { signedness = sign; }
+    Sign getSign() const { return signedness; }
 
     // Get the C type as a string. If full, output comments re the lack of sign information (in IntegerTypes).
     virtual QString getCtype(bool final = false) const override;
@@ -60,5 +66,5 @@ public:
 
 private:
     size_t size;    ///< Size in bits, e.g. 16
-    int signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
+    Sign   signedness; ///< pos=signed, neg=unsigned, 0=unknown or evenly matched
 };

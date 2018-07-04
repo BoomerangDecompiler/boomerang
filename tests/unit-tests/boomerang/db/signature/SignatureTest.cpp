@@ -25,15 +25,15 @@
 void SignatureTest::testClone()
 {
     std::shared_ptr<Signature> sig(new Signature("test"));
-    sig->addParameter("firstParam", Location::regOf(REG_PENT_EDX), IntegerType::get(32, 1));
-    sig->addReturn(IntegerType::get(32, 1), Location::regOf(REG_PENT_EAX));
+    sig->addParameter("firstParam", Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Signed));
+    sig->addReturn(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX));
 
     std::shared_ptr<Signature> cloned = sig->clone();
     QCOMPARE(cloned->getName(), QString("test"));
     QCOMPARE(cloned->getNumParams(), 1);
     QCOMPARE(cloned->getParamName(0), QString("firstParam"));
     QCOMPARE(cloned->getNumReturns(), 1);
-    QVERIFY(*cloned->getReturnType(0) == *IntegerType::get(32, 1));
+    QVERIFY(*cloned->getReturnType(0) == *IntegerType::get(32, Sign::Signed));
 }
 
 
@@ -62,7 +62,7 @@ void SignatureTest::testCompare()
 
     sig1.addReturn(VoidType::get(), Location::regOf(REG_PENT_ESP));
     QVERIFY(sig1 != sig2);
-    sig2.addReturn(IntegerType::get(32, 1), Location::regOf(REG_PENT_ECX));
+    sig2.addReturn(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_ECX));
     QVERIFY(sig1 != sig2);
 }
 
@@ -70,7 +70,7 @@ void SignatureTest::testCompare()
 void SignatureTest::testAddReturn()
 {
     Signature sig("test");
-    sig.addReturn(IntegerType::get(32, 1), Location::regOf(REG_PENT_EAX));
+    sig.addReturn(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX));
     QVERIFY(*sig.getReturnExp(0) == *Location::regOf(REG_PENT_EAX));
 }
 
@@ -91,8 +91,8 @@ void SignatureTest::testGetReturnType()
     sig.addReturn(Location::regOf(REG_PENT_EAX));
     QVERIFY(*sig.getReturnType(0) == *PointerType::get(VoidType::get()));
 
-    sig.addReturn(IntegerType::get(32, 1), Location::regOf(REG_PENT_ECX));
-    QVERIFY(*sig.getReturnType(1) == *IntegerType::get(32, 1));
+    sig.addReturn(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_ECX));
+    QVERIFY(*sig.getReturnType(1) == *IntegerType::get(32, Sign::Signed));
 }
 
 
@@ -111,7 +111,7 @@ void SignatureTest::testFindReturn()
     Signature sig("test");
     QCOMPARE(sig.findReturn(nullptr), -1);
 
-    sig.addReturn(IntegerType::get(32, 1), Location::regOf(REG_PENT_EAX));
+    sig.addReturn(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX));
     QCOMPARE(sig.findReturn(Location::regOf(REG_PENT_EAX)), 0);
     QCOMPARE(sig.findReturn(Location::regOf(REG_PENT_ECX)), -1);
 }
@@ -125,9 +125,9 @@ void SignatureTest::testAddParameter()
     QCOMPARE(sig.getNumParams(), 1);
     QVERIFY(*sig.getParamType(0) == *VoidType::get());
 
-    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, 1));
+    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, Sign::Signed));
     QCOMPARE(sig.getNumParams(), 2);
-    QVERIFY(*sig.getParamType(1) == *IntegerType::get(32, 1));
+    QVERIFY(*sig.getParamType(1) == *IntegerType::get(32, Sign::Signed));
 
     // test parameter name collision detection
     sig.setParamName(1, "param2");
@@ -151,7 +151,7 @@ void SignatureTest::testRemoveParameter()
     sig.removeParameter(0);
     QCOMPARE(sig.getNumParams(), 0);
 
-    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, 1));
+    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, Sign::Signed));
     sig.addParameter(Location::regOf(REG_PENT_EDX));
     sig.removeParameter(Location::regOf(REG_PENT_ECX));
     QCOMPARE(sig.getNumParams(), 1);
@@ -198,8 +198,8 @@ void SignatureTest::testGetParamType()
 
     QVERIFY(sig.getParamType(0) == nullptr);
 
-    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, 1));
-    QVERIFY(*sig.getParamType(0) == *IntegerType::get(32, 1));
+    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, Sign::Signed));
+    QVERIFY(*sig.getParamType(0) == *IntegerType::get(32, Sign::Signed));
 }
 
 
@@ -208,10 +208,10 @@ void SignatureTest::testGetParamBoundMax()
     Signature sig("test");
     QCOMPARE(sig.getParamBoundMax(0), QString());
 
-    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, 1));
+    sig.addParameter(Location::regOf(REG_PENT_ECX), IntegerType::get(32, Sign::Signed));
     QCOMPARE(sig.getParamBoundMax(0), QString());
 
-    sig.addParameter("testParam", Location::regOf(REG_PENT_EDX), IntegerType::get(32, 1), "r25");
+    sig.addParameter("testParam", Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Signed), "r25");
     QCOMPARE(sig.getParamBoundMax(1), QString("r25"));
 }
 
@@ -220,12 +220,12 @@ void SignatureTest::testSetParamType()
 {
     Signature sig("test");
 
-    sig.addParameter("testParam", Location::regOf(REG_PENT_ECX), IntegerType::get(32, 1));
+    sig.addParameter("testParam", Location::regOf(REG_PENT_ECX), IntegerType::get(32, Sign::Signed));
     sig.setParamType(0, VoidType::get());
     QVERIFY(*sig.getParamType(0) == *VoidType::get());
 
-    sig.setParamType("testParam", IntegerType::get(32, 0));
-    QVERIFY(*sig.getParamType(0) == *IntegerType::get(32, 0));
+    sig.setParamType("testParam", IntegerType::get(32, Sign::Unknown));
+    QVERIFY(*sig.getParamType(0) == *IntegerType::get(32, Sign::Unknown));
 }
 
 
@@ -235,7 +235,7 @@ void SignatureTest::testFindParam()
     QCOMPARE(sig.findParam(Location::regOf(REG_PENT_EAX)), -1);
     QCOMPARE(sig.findParam("testParam"), -1);
 
-    sig.addParameter("testParam", Location::regOf(REG_PENT_ECX), IntegerType::get(32, 1));
+    sig.addParameter("testParam", Location::regOf(REG_PENT_ECX), IntegerType::get(32, Sign::Signed));
     QCOMPARE(sig.findParam(Location::regOf(REG_PENT_ECX)), 0);
     QCOMPARE(sig.findParam(Location::regOf(REG_PENT_EAX)), -1);
     QCOMPARE(sig.findParam("testParam"), 0);

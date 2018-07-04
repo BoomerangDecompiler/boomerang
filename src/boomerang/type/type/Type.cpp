@@ -249,7 +249,7 @@ QTextStream& operator<<(QTextStream& os, const Type& type)
     {
     case TypeClass::Integer:
         {
-            int sg = type.as<IntegerType>()->getSignedness();
+            int sg = (int)type.as<IntegerType>()->getSign();
             // 'j' for either i or u, don't know which
             os << (sg == 0 ? 'j' : sg > 0 ? 'i' : 'u');
             os << type.as<IntegerType>()->getSize();
@@ -322,13 +322,12 @@ QTextStream& operator<<(QTextStream& os, const SharedConstType& t)
 }
 
 
-SharedType Type::newIntegerLikeType(int size, int signedness)
+SharedType Type::newIntegerLikeType(int size, Sign signedness)
 {
     if (size == 1) {
         return BooleanType::get();
     }
-
-    if ((size == 8) && (signedness >= 0)) {
+    else if (size == 8 && signedness >= Sign::Unknown) {
         return CharType::get();
     }
 

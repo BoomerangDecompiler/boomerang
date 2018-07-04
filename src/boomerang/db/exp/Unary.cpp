@@ -527,7 +527,7 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
 
                 // The index is integer type
                 SharedExp x = leftOfPlus->getSubExp1();
-                x->descendType(IntegerType::get(parentType->getSize(), 0), changed, s);
+                x->descendType(IntegerType::get(parentType->getSize(), Sign::Unknown), changed, s);
                 // K2 is of type <array of parentType>
                 auto    constK2 = subExp1->access<Const, 2>();
                 Address intK2   = Address(constK2->getInt());         // TODO: use getAddr ?

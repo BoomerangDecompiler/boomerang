@@ -687,7 +687,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             if ((reladdr - delta - pc).value() == 4) { // Branch to next instr?
                                 // Effectively %LR = %pc+4, but give the actual value for %pc
 
-                                Assign *as = new Assign(IntegerType::get(STD_SIZE, 0),
+                                Assign *as = new Assign(IntegerType::get(STD_SIZE, Sign::Unknown),
                                                         Unary::get(opMachFtr, Const::get("%LR")), Const::get(pc + 4));
 
                                 result.rtl->append(as);

@@ -421,7 +421,7 @@ SharedType deltaDifference(SharedType ta, SharedType tb)
 {
     if (ta->resolvesToPointer()) {
         if (tb->resolvesToPointer()) {
-            return IntegerType::get(STD_SIZE, 0);
+            return IntegerType::get(STD_SIZE, Sign::Unknown);
         }
 
         if (tb->resolvesToInteger()) {
@@ -437,11 +437,11 @@ SharedType deltaDifference(SharedType ta, SharedType tb)
             return ta->createUnion(tb, ch);
         }
 
-        return IntegerType::get(STD_SIZE, 0);
+        return IntegerType::get(STD_SIZE, Sign::Unknown);
     }
 
     if (tb->resolvesToPointer()) {
-        return IntegerType::get(STD_SIZE, 0);
+        return IntegerType::get(STD_SIZE, Sign::Unknown);
     }
 
     return ta->clone();
@@ -468,19 +468,19 @@ SharedType Binary::ascendType()
 
     case opMult:
     case opDiv:
-        return IntegerType::get(ta->getSize(), -1);
+        return IntegerType::get(ta->getSize(), Sign::Unsigned);
 
     case opMults:
     case opDivs:
     case opShiftRA:
-        return IntegerType::get(ta->getSize(), +1);
+        return IntegerType::get(ta->getSize(), Sign::Signed);
 
     case opBitAnd:
     case opBitOr:
     case opBitXor:
     case opShiftR:
     case opShiftL:
-        return IntegerType::get(ta->getSize(), 0);
+        return IntegerType::get(ta->getSize(), Sign::Unknown);
 
     case opLess:
     case opGtr:
@@ -512,7 +512,7 @@ SharedType sigmaAddend(SharedType tc, SharedType to)
 {
     if (tc->resolvesToPointer()) {
         if (to->resolvesToPointer()) {
-            return IntegerType::get(STD_SIZE, 0);
+            return IntegerType::get(STD_SIZE, Sign::Unknown);
         }
 
         if (to->resolvesToInteger()) {
@@ -532,7 +532,7 @@ SharedType sigmaAddend(SharedType tc, SharedType to)
     }
 
     if (to->resolvesToPointer()) {
-        return IntegerType::get(STD_SIZE, 0);
+        return IntegerType::get(STD_SIZE, Sign::Unknown);
     }
 
     return tc->clone();
@@ -580,7 +580,7 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
 {
     if (tc->resolvesToPointer()) {
         if (ta->resolvesToPointer()) {
-            return IntegerType::get(STD_SIZE, 0);
+            return IntegerType::get(STD_SIZE, Sign::Unknown);
         }
 
         if (ta->resolvesToInteger()) {
@@ -588,7 +588,7 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
             return tc->createUnion(ta, ch);
         }
 
-        return IntegerType::get(STD_SIZE, 0);
+        return IntegerType::get(STD_SIZE, Sign::Unknown);
     }
 
     if (tc->resolvesToInteger()) {
@@ -633,7 +633,7 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
     case opLessUns:
     case opGtrEqUns:
     case opLessEqUns:
-        nt = IntegerType::get(ta->getSize(), -1); // Used as unsigned
+        nt = IntegerType::get(ta->getSize(), Sign::Unsigned); // Used as unsigned
         ta = ta->meetWith(nt, changed);
         tb = tb->meetWith(nt, changed);
         subExp1->descendType(ta, changed, s);
@@ -644,7 +644,7 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
     case opLess:
     case opGtrEq:
     case opLessEq:
-        nt = IntegerType::get(ta->getSize(), +1); // Used as signed
+        nt = IntegerType::get(ta->getSize(), Sign::Signed); // Used as signed
         ta = ta->meetWith(nt, changed);
         tb = tb->meetWith(nt, changed);
         subExp1->descendType(ta, changed, s);
@@ -662,7 +662,7 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
     case opMult:
     case opDiv:
         {
-            int signedness;
+            Sign signedness;
 
             switch (m_oper)
             {
@@ -671,22 +671,22 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
             case opBitXor:
             case opShiftR:
             case opShiftL:
-                signedness = 0;
+                signedness = Sign::Unknown;
                 break;
 
             case opMults:
             case opDivs:
             case opShiftRA:
-                signedness = 1;
+                signedness = Sign::Signed;
                 break;
 
             case opMult:
             case opDiv:
-                signedness = -1;
+                signedness = Sign::Unsigned;
                 break;
 
             default:
-                signedness = 0;
+                signedness = Sign::Unknown;
                 break; // Unknown signedness
             }
 
@@ -698,7 +698,7 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
                 // These operators are not symmetric; doesn't force a signedness on the second operand
                 // FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by negative
                 // amounts.
-                signedness = 0;
+                signedness = Sign::Unknown;
             }
 
             tb = tb->meetWith(IntegerType::get(parentSize, signedness), changed);

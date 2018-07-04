@@ -543,7 +543,7 @@ void StatementTest::testEndlessLoop()
 
 
     // r[24] := 5
-    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5, IntegerType::get(32, 1)));
+    Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5, IntegerType::get(32, Sign::Signed)));
     a1->setProc(proc);
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { a1 })));
@@ -554,7 +554,7 @@ void StatementTest::testEndlessLoop()
     // r24 := r24 + 1
     Assign *a2 = new Assign(Location::regOf(REG_PENT_EAX), Binary::get(opPlus,
                                                                        Location::regOf(REG_PENT_EAX),
-                                                                       Const::get(1, IntegerType::get(32, 1))));
+                                                                       Const::get(1, IntegerType::get(32, Sign::Signed))));
     a2->setProc(proc);
     bbRTLs.reset(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1010), { a2 })));
@@ -832,9 +832,9 @@ void StatementTest::testRecursion()
 void StatementTest::testClone()
 {
     Assign *a1 = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));
-    Assign *a2 = new Assign(IntegerType::get(16, 1), Location::get(opParam, Const::get("x"), nullptr),
+    Assign *a2 = new Assign(IntegerType::get(16, Sign::Signed), Location::get(opParam, Const::get("x"), nullptr),
                             Location::get(opParam, Const::get("y"), nullptr));
-    Assign *a3 = new Assign(IntegerType::get(16, -1), Location::get(opParam, Const::get("z"), nullptr),
+    Assign *a3 = new Assign(IntegerType::get(16, Sign::Unsigned), Location::get(opParam, Const::get("z"), nullptr),
                             Location::get(opParam, Const::get("q"), nullptr));
 
     Statement *c1 = a1->clone();
