@@ -14,6 +14,7 @@ set(boomerang-cli-sources
     Console
     CommandlineDriver
     main.cpp
+    MiniDebugger
 )
 
 add_executable(boomerang-cli

@@ -35,74 +35,6 @@ Boomerang::Boomerang()
 }
 
 
-void Boomerang::miniDebugger(UserProc *proc, const char *description)
-{
-    QTextStream q_cout(stdout);
-    QTextStream q_cin(stdin);
-
-    q_cout << "decompiling " << proc->getName() << ": " << description << "\n";
-    QString stopAt;
-    static std::set<Statement *> watches;
-
-    if (stopAt.isEmpty() || !proc->getName().compare(stopAt)) {
-        // This is a mini command line debugger.  Feel free to expand it.
-        for (auto const& watche : watches) {
-            (watche)->print(q_cout);
-            q_cout << "\n";
-        }
-
-        q_cout << " <press enter to continue> \n";
-        QString line;
-
-        while (1) {
-            line.clear();
-            q_cin >> line;
-
-            if (line.startsWith("print")) {
-                proc->print(q_cout);
-            }
-            else if (line.startsWith("fprint")) {
-                QFile tgt("out.proc");
-
-                if (tgt.open(QFile::WriteOnly)) {
-                    QTextStream of(&tgt);
-                    proc->print(of);
-                }
-            }
-            else if (line.startsWith("run ")) {
-                QStringList parts = line.trimmed().split(" ", QString::SkipEmptyParts);
-
-                if (parts.size() > 1) {
-                    stopAt = parts[1];
-                }
-
-                break;
-            }
-            else if (line.startsWith("watch ")) {
-                QStringList parts = line.trimmed().split(" ", QString::SkipEmptyParts);
-
-                if (parts.size() > 1) {
-                    int           n = parts[1].toInt();
-                    StatementList stmts;
-                    proc->getStatements(stmts);
-                    StatementList::iterator it;
-
-                    for (it = stmts.begin(); it != stmts.end(); ++it) {
-                        if ((*it)->getNumber() == n) {
-                            watches.insert(*it);
-                            q_cout << "watching " << *it << "\n";
-                        }
-                    }
-                }
-            }
-            else {
-                break;
-            }
-        }
-    }
-}
-
-
 Boomerang *Boomerang::get()
 {
     if (!g_boomerang) {
@@ -122,10 +54,6 @@ void Boomerang::destroy()
 
 void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 {
-    if (SETTING(stopAtDebugPoints)) {
-        miniDebugger(p, description);
-    }
-
     for (IWatcher *elem : m_watchers) {
         elem->onDecompileDebugPoint(p, description);
     }
@@ -184,7 +112,7 @@ void Boomerang::alertBadDecode(Address pc)
 }
 
 
-void Boomerang::alertFunctionDecoded(Function* p, Address pc, Address last, int numBytes)
+void Boomerang::alertFunctionDecoded(Function *p, Address pc, Address last, int numBytes)
 {
     for (IWatcher *it : m_watchers) {
         it->onFunctionDecoded(p, pc, last, numBytes);

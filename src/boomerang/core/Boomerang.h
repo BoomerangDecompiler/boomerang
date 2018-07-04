@@ -115,10 +115,6 @@ public:
     std::unique_ptr<Project> m_currentProject;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
-
-private:
-    /// This is a mini command line debugger.  Feel free to expand it.
-    void miniDebugger(UserProc *p, const char *description);
 };
 
 /**

@@ -10,6 +10,8 @@
 
 
 #include "CommandlineDriver.h"
+#include "MiniDebugger.h"
+
 #include "boomerang/core/Boomerang.h"
 
 #include <QCoreApplication>
@@ -18,7 +20,9 @@
 
 int main(int argc, char *argv[])
 {
-    Boomerang::get();
+    Boomerang::get(); // initiialize it
+    std::unique_ptr<MiniDebugger> debugger(new MiniDebugger());
+    Boomerang::get()->addWatcher(debugger.get());
 
     QCoreApplication app(argc, argv);
     CommandlineDriver driver;
