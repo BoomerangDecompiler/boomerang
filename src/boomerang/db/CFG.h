@@ -81,6 +81,9 @@ public:
     const_reverse_iterator rend()   const { return const_reverse_iterator(m_bbStartMap.rend()); }
 
 public:
+    UserProc *getProc() { return m_myProc; }
+    const UserProc *getProc() const { return m_myProc; }
+
     /// Remove all basic blocks from the CFG
     void clear();
 

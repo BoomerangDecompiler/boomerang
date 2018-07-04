@@ -10,13 +10,15 @@
 #include "UnusedStatementRemovalPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Settings.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/passes/PassManager.h"
-#include "boomerang/util/StatementSet.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/StatementSet.h"
 
 
 UnusedStatementRemovalPass::UnusedStatementRemovalPass()
@@ -34,7 +36,7 @@ bool UnusedStatementRemovalPass::execute(UserProc *proc)
     updateRefCounts(proc, refCounts);
 
     // Now remove any that have no used
-    if (SETTING(removeNull)) {
+    if (proc->getProg()->getProject()->getSettings()->removeNull) {
         remUnusedStmtEtc(proc, refCounts);
         removeNullStatements(proc);
         proc->debugPrintAll("after removing unused and null statements pass 1");

@@ -128,11 +128,11 @@ bool Project::decodeBinaryFile()
 
     LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
 
-    if (SETTING(generateSymbols)) {
+    if (getSettings()->generateSymbols) {
         ProgSymbolWriter().writeSymbolsToFile(getProg(), "symbols.h");
     }
 
-    if (SETTING(generateCallGraph)) {
+    if (getSettings()->generateCallGraph) {
         CallGraphDotWriter().writeCallGraph(getProg(), "callgraph.dot");
     }
 
@@ -262,11 +262,11 @@ bool Project::readSymbolFile(const QString& fname)
 
 bool Project::decodeAll()
 {
-    if (SETTING(decodeMain)) {
+    if (getSettings()->decodeMain) {
         LOG_MSG("Decoding entry point...");
     }
 
-    if (!m_fe || !m_fe->decodeEntryPointsRecursive(SETTING(decodeMain))) {
+    if (!m_fe || !m_fe->decodeEntryPointsRecursive(getSettings()->decodeMain)) {
         LOG_ERROR("Aborting load due to decode failure");
         return false;
     }
@@ -277,7 +277,7 @@ bool Project::decodeAll()
         m_prog->addEntryPoint(mainAddr);
     }
 
-    if (SETTING(decodeChildren)) {
+    if (getSettings()->decodeChildren) {
         // this causes any undecoded userprocs to be decoded
         LOG_MSG("Decoding anything undecoded...");
         if (!m_fe->decodeUndecoded()) {

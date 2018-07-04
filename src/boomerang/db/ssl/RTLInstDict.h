@@ -209,6 +209,7 @@ private:
 
     void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
 
+private:
     /// An RTL describing the machine's basic fetch-execute cycle
     SharedRTL fetchExecCycle;
 

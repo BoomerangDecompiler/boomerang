@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/core/Project.h"
+#include "boomerang/core/Boomerang.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/db/binary/BinaryFile.h"
@@ -96,6 +96,9 @@ public:
     bool generateCode(Module *module = nullptr);
 
 public:
+    Settings *getSettings() { return Boomerang::get()->getSettings(); }
+    const Settings *getSettings() const { return Boomerang::get()->getSettings(); }
+
     BinaryFile *getLoadedBinaryFile() { return m_loadedBinary.get(); }
     const BinaryFile *getLoadedBinaryFile() const { return m_loadedBinary.get(); }
 

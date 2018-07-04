@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/CFGCompressor.h"
@@ -125,7 +126,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
         if (proc == nullptr) {
             bool global = false;
 
-            if (!SETTING(decompile)) {
+            if (!prog->getProject()->getSettings()->decompile) {
                 const char *sections[] = { "rodata", "data", "data1", nullptr };
 
                 const BinaryImage *image = prog->getBinaryFile()->getImage();
@@ -244,7 +245,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         return; // never want to see a = a;
     }
 
-    if (!SETTING(decompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
+    if (!m_proc->getProg()->getProject()->getSettings()->decompile && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
         (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
         int regID = lhs->access<Const, 1>()->getInt();
 
@@ -257,7 +258,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         }
     }
 
-    if (!SETTING(decompile) && isBareMemof(*lhs, proc)) {
+    if (!m_proc->getProg()->getProject()->getSettings()->decompile && isBareMemof(*lhs, proc)) {
         if (asgnType && asgnType->isFloat()) {
             if (asgnType->as<FloatType>()->getSize() == 32) {
                 ost << "FLOAT_";
@@ -392,10 +393,11 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         if (ok) {
             bool needclose = false;
 
-            if (!SETTING(decompile) && proc->getSignature()->getParamType(n) &&
+            if (!proc->getProg()->getProject()->getSettings()->decompile &&
+                proc->getSignature()->getParamType(n) &&
                 proc->getSignature()->getParamType(n)->isPointer()) {
-                s << "ADDR(";
-                needclose = true;
+                    s << "ADDR(";
+                    needclose = true;
             }
 
             appendExp(s, *as_arg, OpPrec::Comma);
@@ -470,8 +472,9 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
     ost << "return";
     size_t n = rets->size();
 
-    if ((n == 0) && !SETTING(decompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
-        ost << " eax";
+    if ((n == 0) && !m_proc->getProg()->getProject()->getSettings()->decompile &&
+        (m_proc->getSignature()->getNumReturns() > 0)) {
+            ost << " eax";
     }
 
     if (n >= 1) {
@@ -553,7 +556,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     // Note: don't try to remove unused statements here; that requires the
     // RefExps, which are all gone now (transformed out of SSA form)!
 
-    if (SETTING(printRTLs)) {
+    if (m_proc->getProg()->getProject()->getSettings()->printRTLs) {
         LOG_VERBOSE("%1", proc->toString());
     }
 
@@ -577,7 +580,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
         addLocal(it->first, locType, it == last);
     }
 
-    if (!SETTING(decompile) && (proc->getName() == "main")) {
+    if (!m_proc->getProg()->getProject()->getSettings()->decompile && proc->getName() == "main") {
         StatementList args, results;
 
         if (proc->getProg()->getFrontEndId() == Platform::PENTIUM) {
@@ -594,7 +597,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
 
     addProcEnd();
 
-    if (SETTING(removeLabels)) {
+    if (m_proc->getProg()->getProject()->getSettings()->removeLabels) {
         removeUnusedLabels();
     }
 
@@ -689,7 +692,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
         SharedType ty   = as->getType();
 
         if (ty == nullptr) {
-            if (SETTING(verboseOutput)) {
+            if (proc->getProg()->getProject()->getSettings()->verboseOutput) {
                 LOG_ERROR("No type for parameter %1!", left);
             }
 
@@ -1475,7 +1478,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
 
     case opMemOf:
 
-        if (!SETTING(decompile)) {
+        if (!m_proc->getProg()->getProject()->getSettings()->decompile) {
             str << "MEMOF(";
             appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
             str << ")";
@@ -1542,7 +1545,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
             assert(ternaryExp.getSubExp1()->isIntConst());
             int float_bits = ternaryExp.access<Const, 1>()->getInt();
 
-            if (!SETTING(decompile)) {
+            if (!m_proc->getProg()->getProject()->getSettings()->decompile) {
                 assert(ternaryExp.getSubExp1()->isIntConst());
 
                 if (float_bits == 32) {
@@ -1894,7 +1897,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
                     str << "*"; // memof degrades to dereference if types match
                 }
                 else {
-                    if (!SETTING(decompile)) {
+                    if (!m_proc->getProg()->getProject()->getSettings()->decompile) {
                         if (tt && tt->isFloat()) {
                             if (tt->as<const FloatType>()->getSize() == 32) {
                                 str << "FLOAT_MEMOF";

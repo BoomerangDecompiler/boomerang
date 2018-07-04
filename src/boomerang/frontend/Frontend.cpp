@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
@@ -418,13 +419,13 @@ bool IFrontEnd::decodeUndecoded()
                 userProc->setDecoded();
 
                 // Break out of the loops if not decoding children
-                if (!SETTING(decodeChildren)) {
+                if (!m_program->getProject()->getSettings()->decodeChildren) {
                     break;
                 }
             }
         }
 
-        if (!SETTING(decodeChildren)) {
+        if (!m_program->getProject()->getSettings()->decodeChildren) {
             break;
         }
     }
@@ -450,7 +451,7 @@ bool IFrontEnd::decodeOnly(Address addr)
 
 bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
-    if (SETTING(traceDecoder)) {
+    if (m_program->getProject()->getSettings()->traceDecoder) {
         LOG_MSG("Decoding fragment at address %1", a);
     }
 
@@ -633,7 +634,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
         while (sequentialDecode) {
             // Decode and classify the current source instruction
-            if (SETTING(traceDecoder)) {
+            if (m_program->getProject()->getSettings()->traceDecoder) {
                 LOG_MSG("*%1", addr);
             }
 
@@ -702,7 +703,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
             }
 
             // Display RTL representation if asked
-            if (SETTING(printRTLs)) {
+            if (m_program->getProject()->getSettings()->printRTLs) {
                 QString     tgt;
                 QTextStream st(&tgt);
                 inst.rtl->print(st);
@@ -832,7 +833,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
                         LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
-                        if (!SETTING(decompile)) {
+                        if (!m_program->getProject()->getSettings()->decompile) {
                             // try some hacks
                             if (jumpDest->isMemOf() && (jumpDest->getSubExp1()->getOper() == opPlus) &&
                                 jumpDest->getSubExp1()->getSubExp2()->isIntConst()) {
@@ -1006,7 +1007,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                                 (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
                                 callList.push_back(call);
 
-                                if (SETTING(traceDecoder)) {
+                                if (m_program->getProject()->getSettings()->traceDecoder) {
                                     LOG_MSG("p%1", callAddr);
                                 }
                             }

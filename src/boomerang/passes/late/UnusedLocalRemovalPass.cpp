@@ -10,12 +10,14 @@
 #include "UnusedLocalRemovalPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/StatementList.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Const.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/StatementList.h"
 
 #include <QSet>
 
@@ -84,7 +86,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         }
 
         if ((usedLocals.find(name) == usedLocals.end()) && !all) {
-            if (SETTING(verboseOutput)) {
+            if (proc->getProg()->getProject()->getSettings()->verboseOutput) {
                 LOG_VERBOSE("Removed unused local %1", name);
             }
 

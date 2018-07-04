@@ -11,8 +11,11 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
 
 #include <cassert>
@@ -34,7 +37,7 @@ void ControlFlowAnalyzer::structureCFG(Cfg *cfg)
     setTimeStamps();
     updateImmedPDom();
 
-    if (SETTING(decompile)) {
+    if (m_cfg->getProc()->getProg()->getProject()->getSettings()->decompile) {
         structConds();
         structLoops();
         checkConds();

@@ -10,12 +10,14 @@
 #include "InterferenceFinder.h"
 
 
-#include "boomerang/util/ConnectionGraph.h"
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Settings.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/db/CFG.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/Log.h"
 
 #include <list>
@@ -53,7 +55,7 @@ void InterferenceFinder::findInterferences(ConnectionGraph& ig)
             continue;
         }
 
-        if (SETTING(debugLiveness)) {
+        if (currBB->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
             Statement *last = currBB->getLastStmt();
 
             LOG_MSG("Revisiting BB ending with stmt %1 due to change",
