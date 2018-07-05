@@ -66,6 +66,8 @@ Statement::Statement()
 {
 
 }
+
+
 void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;
@@ -81,24 +83,6 @@ void Statement::setProc(UserProc *proc)
             l->setProc(proc);
         }
     }
-}
-
-
-bool Statement::mayAlias(SharedExp e1, SharedExp e2, int size) const
-{
-    if (*e1 == *e2) {
-        return true;
-    }
-
-    // Pass the expressions both ways. Saves checking things like m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly
-    // (only need to check one of these cases)
-    const bool b = (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size));
-
-    if (b && SETTING(verboseOutput)) {
-        LOG_VERBOSE("Instruction may alias: %1 and %2 size %3", e1, e2, size);
-    }
-
-    return b;
 }
 
 
@@ -130,33 +114,33 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
     // same left op constant memory accesses
     if ((e1a->getArity() == 2) && (e1a->getOper() == e2a->getOper()) && e1a->getSubExp2()->isIntConst() &&
         e2a->getSubExp2()->isIntConst() && (*e1a->getSubExp1() == *e2a->getSubExp1())) {
-        int i1   = e1a->access<Const, 2>()->getInt();
-        int i2   = e2a->access<Const, 2>()->getInt();
-        int diff = i1 - i2;
+            int i1   = e1a->access<Const, 2>()->getInt();
+            int i2   = e2a->access<Const, 2>()->getInt();
+            int diff = i1 - i2;
 
-        if (diff < 0) {
-            diff = -diff;
-        }
+            if (diff < 0) {
+                diff = -diff;
+            }
 
-        if (diff * 8 >= size) {
-            return false;
-        }
+            if (diff * 8 >= size) {
+                return false;
+            }
     }
 
     // [left] vs [left +/- constant] memory accesses
     if (((e2a->getOper() == opPlus) || (e2a->getOper() == opMinus)) && (*e1a == *e2a->getSubExp1()) &&
         e2a->getSubExp2()->isIntConst()) {
-        int i1   = 0;
-        int i2   = e2a->access<Const, 2>()->getInt();
-        int diff = i1 - i2;
+            int i1   = 0;
+            int i2   = e2a->access<Const, 2>()->getInt();
+            int diff = i1 - i2;
 
-        if (diff < 0) {
-            diff = -diff;
-        }
+            if (diff < 0) {
+                diff = -diff;
+            }
 
-        if (diff * 8 >= size) {
-            return false;
-        }
+            if (diff * 8 >= size) {
+                return false;
+            }
     }
 
     // Don't need [left +/- constant ] vs [left] because called twice with
@@ -183,7 +167,7 @@ bool Statement::isFlagAssign() const
         return false;
     }
 
-    OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
+    const OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
     return op == opFlagCall;
 }
 

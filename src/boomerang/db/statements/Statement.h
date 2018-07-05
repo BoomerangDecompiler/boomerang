@@ -371,7 +371,6 @@ public:
 
     /// returns true if e1 may alias e2
     bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
-    bool mayAlias(SharedExp e1, SharedExp e2, int size) const;
 
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
