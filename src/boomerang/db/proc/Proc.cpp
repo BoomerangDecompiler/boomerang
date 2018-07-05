@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Register.h"
@@ -169,7 +170,7 @@ void Function::removeParameter(SharedExp e)
         m_signature->removeParameter(n);
 
         for (auto const& elem : m_callerSet) {
-            if (DEBUG_UNUSED) {
+            if (m_prog->getProject()->getSettings()->debugUnused) {
                 LOG_MSG("Removing argument %1 in pos %2 from %3", e, n, elem);
             }
 

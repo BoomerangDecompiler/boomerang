@@ -40,8 +40,8 @@
 #include <map>
 
 
-#define HELLO_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
-#define GLOBAL1_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/global1"))
+#define HELLO_PENTIUM      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define GLOBAL1_PENTIUM    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/global1"))
 
 
 void compareStrings(const QString& actual, const QString& expected)
@@ -59,9 +59,8 @@ void compareStrings(const QString& actual, const QString& expected)
 
 void StatementTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 
@@ -74,9 +73,7 @@ void StatementTest::cleanupTestCase()
 
 void StatementTest::testEmpty()
 {
-    // Force "verbose" flag (-v)
-    SETTING(verboseOutput) = true;
-    Boomerang::get()->getSettings()->setOutputDirectory("./unit_test/");
+    m_project.getSettings()->setOutputDirectory("./unit_test/");
 
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
 
@@ -163,6 +160,7 @@ void StatementTest::testFlow()
     QString     actual;
     QTextStream st(&actual);
 
+    proc->numberStatements();
     cfg->print(st);
 
     // The assignment to 5 gets propagated into the return, and the assignment
@@ -236,7 +234,9 @@ void StatementTest::testKill()
     QString     actual;
     QTextStream st(&actual);
 
+    proc->numberStatements();
     cfg->print(st);
+
     QString expected =
         "Control Flow Graph:\n"
         "Fall BB:\n"
@@ -299,6 +299,8 @@ void StatementTest::testUse()
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
+
+    proc->numberStatements();
     cfg->print(st);
 
     QString expected =
@@ -368,6 +370,8 @@ void StatementTest::testUseOverKill()
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
+
+    proc->numberStatements();
     cfg->print(st);
 
     // compare it to expected
@@ -441,6 +445,8 @@ void StatementTest::testUseOverBB()
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
+
+    proc->numberStatements();
     cfg->print(st);
 
     QString expected =
@@ -506,6 +512,8 @@ void StatementTest::testUseKill()
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
+
+    proc->numberStatements();
     cfg->print(st);
 
     QString expected =
@@ -574,7 +582,7 @@ void StatementTest::testEndlessLoop()
     QString     actual;
     QTextStream st(&actual);
 
-    // print cfg to a string
+    proc->numberStatements();
     cfg->print(st);
 
     // int i = 5; do { i++; } while (true);

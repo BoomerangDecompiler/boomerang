@@ -76,7 +76,7 @@ public:
     virtual bool usesExp(const Exp& e) const override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& defs) const override;
+    virtual void getDefinitions(LocationSet& defs, bool assumeABICompliance) const override;
 
     /// Remove from modifieds AND from returns
     void removeModified(SharedExp loc);
@@ -95,9 +95,6 @@ public:
 
     /// \copydoc Statement::simplify
     virtual void simplify() override;
-
-    /// \copydoc Statement::isDefinition
-    virtual bool isDefinition() const override { return true; }
 
     /// \copydoc Statement::accept
     virtual bool accept(StmtVisitor *visitor) const override;

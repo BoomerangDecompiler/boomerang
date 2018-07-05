@@ -11,8 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
@@ -32,6 +31,7 @@
 #include "boomerang/frontend/sparc/sparcdecoder.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -108,7 +108,7 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
     if ((dest != address) && (proc->getProg()->getFunctionByAddr(dest) == nullptr)) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that failed. Instead, we
         // use the set of CallStatements (not in this procedure) that is needed by CSR
-        if (SETTING(traceDecoder)) {
+        if (m_program->getProject()->getSettings()->traceDecoder) {
             LOG_VERBOSE("p%1", dest);
         }
     }
@@ -140,7 +140,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
         delay_rtl->setAddress(address);
         BB_rtls->push_back(std::move(delay_inst.rtl));
 
-        if (SETTING(printRTLs)) {
+        if (m_program->getProject()->getSettings()->printRTLs) {
             delay_rtl->print(os);
         }
     }
@@ -611,7 +611,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 {
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
-    TargetQueue _targetQueue;
+    TargetQueue _targetQueue(m_program->getProject()->getSettings()->traceDecoder);
 
     // Similarly, we have a set of CallStatement pointers. These may be
     // disregarded if this is a speculative decode that fails (i.e. an illegal
@@ -650,7 +650,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
         // without a fall through branch is decoded
         while (sequentialDecode) {
             // Decode and classify the current source instruction
-            if (SETTING(traceDecoder)) {
+            if (m_program->getProject()->getSettings()->traceDecoder) {
                 LOG_MSG("*%1", addr);
             }
 
@@ -797,7 +797,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     DecodeResult delay_inst;
                     decodeInstruction(addr + 4, delay_inst);
 
-                    if (SETTING(traceDecoder)) {
+                    if (m_program->getProject()->getSettings()->traceDecoder) {
                         LOG_MSG("*%1", addr + 4);
                     }
 
@@ -963,7 +963,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     RTL *delayRTL = delayInst.rtl.get();
 
                     // Display RTL representation if asked
-                    if (SETTING(printRTLs) && (delayRTL != nullptr)) {
+                    if (m_program->getProject()->getSettings()->printRTLs && delayRTL != nullptr) {
                         delayRTL->print(os);
                     }
 
@@ -998,7 +998,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     RTL *delay_rtl = delay_inst.rtl.get();
 
                     // Display low level RTL representation if asked
-                    if (SETTING(printRTLs) && (delay_rtl != nullptr)) {
+                    if (m_program->getProject()->getSettings()->printRTLs && delay_rtl != nullptr) {
                         delay_rtl->print(os);
                     }
 
@@ -1035,7 +1035,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     RTL *delay_rtl = delay_inst.rtl.get();
 
                     // Display RTL representation if asked
-                    if (SETTING(printRTLs) && (delay_rtl != nullptr)) {
+                    if (m_program->getProject()->getSettings()->printRTLs && delay_rtl != nullptr) {
                         delay_rtl->print(os);
                     }
 

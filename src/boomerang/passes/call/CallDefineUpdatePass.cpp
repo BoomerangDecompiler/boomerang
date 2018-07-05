@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
@@ -59,7 +60,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         callStmt->setDefines(defines);
         return true;
     }
-    else if (SETTING(assumeABI)) {
+    else if (proc->getProg()->getProject()->getSettings()->assumeABI) {
         // Risky: just assume the ABI caller save registers are defined
         Signature::getABIDefines(proc->getProg()->getMachine(), callStmt->getDefines());
         return true;

@@ -15,13 +15,16 @@
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/Log.h"
 
-#define HELLO_HPPA    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/hppa/hello"))
+
+#define HELLO_HPPA    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/hppa/hello"))
 
 
 void HpSomBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+    Boomerang::get();
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+    m_project.loadPlugins();
 }
 
 

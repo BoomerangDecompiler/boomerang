@@ -45,6 +45,7 @@ class RTL;
 class ReturnStatement;
 class LocationSet;
 class Assignment;
+class Settings;
 
 
 typedef std::shared_ptr<Exp>         SharedExp;
@@ -153,9 +154,6 @@ public:
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;
 
-    /// returns true if this statement defines anything
-    virtual bool isDefinition() const = 0;
-
     /// true if is a null statement
     bool isNullStatement() const;
 
@@ -210,7 +208,7 @@ public:
 
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
     /// returns a set of locations defined by this statement in a LocationSet argument.
-    virtual void getDefinitions(LocationSet& /*def*/) const {}
+    virtual void getDefinitions(LocationSet& /*def*/, bool /*assumeABICompliance*/) const {}
 
     virtual bool definesLoc(SharedExp /*loc*/) const { return false; }  // True if this Statement defines loc
 
@@ -273,12 +271,12 @@ public:
      * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
      */
-    bool propagateTo(bool& convert, ExpIntMap *destCounts = nullptr, LocationSet *usedByDomPhi = nullptr,
-                     bool force = false);
+    bool propagateTo(bool& convert, Settings *settings, ExpIntMap *destCounts = nullptr,
+                     LocationSet *usedByDomPhi = nullptr, bool force = false);
 
     /// Experimental: may want to propagate flags first,
     /// without tests about complexity or the propagation limiting heuristic
-    bool propagateFlagsTo();
+    bool propagateFlagsTo(Settings *settings);
 
     /// Generate code for this statement
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) = 0;
@@ -366,11 +364,10 @@ public:
     /// Note: this procedure does not control what part of this statement is propagated to
     /// Propagate to e from definition statement def.
     /// Set convert to true if convert a call from indirect to direct.
-    bool doPropagateTo(const SharedExp &e, Assignment *def, bool& convert);
+    bool doPropagateTo(const SharedExp &e, Assignment *def, bool& convert, Settings *settings);
 
     /// returns true if e1 may alias e2
     bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
-    bool mayAlias(SharedExp e1, SharedExp e2, int size) const;
 
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB

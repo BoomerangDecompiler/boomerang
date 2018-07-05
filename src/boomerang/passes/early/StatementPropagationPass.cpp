@@ -10,10 +10,12 @@
 #include "StatementPropagationPass.h"
 
 
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/visitor/expvisitor/ExpDestCounter.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
-#include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/passes/PassManager.h"
 
 
@@ -50,9 +52,10 @@ bool StatementPropagationPass::execute(UserProc *proc)
     // A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
     bool change = false;
 
+    Settings *settings = proc->getProg()->getProject()->getSettings();
     for (Statement *s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateFlagsTo();
+            change |= s->propagateFlagsTo(settings);
         }
     }
 
@@ -61,7 +64,7 @@ bool StatementPropagationPass::execute(UserProc *proc)
 
     for (Statement *s : stmts) {
         if (!s->isPhi()) {
-            change |= s->propagateTo(convert, &destCounts, &usedByDomPhi);
+            change |= s->propagateTo(convert, settings, &destCounts, &usedByDomPhi);
         }
     }
 

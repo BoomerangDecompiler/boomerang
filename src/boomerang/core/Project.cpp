@@ -24,7 +24,8 @@
 
 
 Project::Project()
-    : m_typeRecovery(new DFATypeRecovery())
+    : m_settings(new Settings())
+    , m_typeRecovery(new DFATypeRecovery())
     , m_codeGenerator(new CCodeGenerator())
 {
 }
@@ -110,9 +111,9 @@ bool Project::decodeBinaryFile()
 
     loadSymbols();
 
-    if (!Boomerang::get()->getSettings()->m_entryPoints.empty()) { // decode only specified procs
+    if (!getSettings()->m_entryPoints.empty()) { // decode only specified procs
         // decode entry points from -e (and -E) switch(es)
-        for (auto& elem : Boomerang::get()->getSettings()->m_entryPoints) {
+        for (auto& elem : getSettings()->m_entryPoints) {
             LOG_MSG("Decoding specified entrypoint at address %1", elem);
             m_prog->decodeEntryPoint(elem);
         }
@@ -128,11 +129,11 @@ bool Project::decodeBinaryFile()
 
     LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
 
-    if (SETTING(generateSymbols)) {
+    if (getSettings()->generateSymbols) {
         ProgSymbolWriter().writeSymbolsToFile(getProg(), "symbols.h");
     }
 
-    if (SETTING(generateCallGraph)) {
+    if (getSettings()->generateCallGraph) {
         CallGraphDotWriter().writeCallGraph(getProg(), "callgraph.dot");
     }
 
@@ -197,13 +198,13 @@ Prog *Project::createProg(BinaryFile *file, const QString& name)
 void Project::loadSymbols()
 {
     // Add symbols from -s switch(es)
-    for (const std::pair<Address, QString>& elem : Boomerang::get()->getSettings()->m_symbolMap) {
+    for (const std::pair<Address, QString>& elem : getSettings()->m_symbolMap) {
         m_loadedBinary->getSymbols()->createSymbol(elem.first, elem.second);
     }
 
     m_fe->readLibraryCatalog(); // Needed before readSymbolFile()
 
-    for (auto& elem : Boomerang::get()->getSettings()->m_symbolFiles) {
+    for (auto& elem : getSettings()->m_symbolFiles) {
         LOG_MSG("Reading symbol file '%1'", elem);
         readSymbolFile(elem);
     }
@@ -262,11 +263,11 @@ bool Project::readSymbolFile(const QString& fname)
 
 bool Project::decodeAll()
 {
-    if (SETTING(decodeMain)) {
+    if (getSettings()->decodeMain) {
         LOG_MSG("Decoding entry point...");
     }
 
-    if (!m_fe || !m_fe->decodeEntryPointsRecursive(SETTING(decodeMain))) {
+    if (!m_fe || !m_fe->decodeEntryPointsRecursive(getSettings()->decodeMain)) {
         LOG_ERROR("Aborting load due to decode failure");
         return false;
     }
@@ -277,7 +278,7 @@ bool Project::decodeAll()
         m_prog->addEntryPoint(mainAddr);
     }
 
-    if (SETTING(decodeChildren)) {
+    if (getSettings()->decodeChildren) {
         // this causes any undecoded userprocs to be decoded
         LOG_MSG("Decoding anything undecoded...");
         if (!m_fe->decodeUndecoded()) {
@@ -294,7 +295,7 @@ void Project::loadPlugins()
 {
     LOG_MSG("Loading plugins...");
 
-    QDir pluginsDir = Boomerang::get()->getSettings()->getPluginDirectory();
+    QDir pluginsDir = getSettings()->getPluginDirectory();
     if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
         return;

@@ -16,14 +16,13 @@
 #include "boomerang/util/Log.h"
 
 
-#define HELLO_SPARC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/hello"))
+#define HELLO_SPARC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/hello"))
 
 
 void SparcBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 

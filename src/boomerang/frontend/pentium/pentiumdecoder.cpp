@@ -11,8 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/Prog.h"
@@ -26,6 +25,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -56,7 +56,7 @@
 
 // Function to generate statements for the BSF/BSR series (Bit Scan Forward/
 // Reverse)
-void genBSFR(Address pc, SharedExp reg, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result);
+void genBSFR(Address pc, SharedExp reg, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result, bool debug);
 
 bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
@@ -4712,7 +4712,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             // #line 1372 "frontend/machine/pentium/decoder.m"
                                             // result.rtl = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
                                             genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus,
-                                                    (nextPC.value() - hostPC.value()), result);
+                                                    (nextPC.value() - hostPC.value()), result,
+                                                    m_prog->getProject()->getSettings()->debugDecoder);
                                             return result.valid;
                                         } /*opt-block*/ /*opt-block+*/
                                         else {
@@ -4814,7 +4815,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                             // result.rtl = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
                                             // Bit Scan Forward: need helper function
                                             genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus,
-                                                    (nextPC.value() - hostPC.value()), result);
+                                                    (nextPC.value() - hostPC.value()), result,
+                                                    m_prog->getProject()->getSettings()->debugDecoder);
                                             return result.valid;
                                         } /*opt-block*/ /*opt-block+*/
                                         else {
@@ -19301,7 +19303,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                         // #line 1377 "frontend/machine/pentium/decoder.m"
                                                         // result.rtl = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
                                                         genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus,
-                                                                (nextPC.value() - hostPC.value()), result);
+                                                                (nextPC.value() - hostPC.value()), result,
+                                                                m_prog->getProject()->getSettings()->debugDecoder);
                                                         return result.valid;
                                                         // Not "user" instructions:
                                                         //    | BOUNDod(reg, Mem) =>
@@ -19426,7 +19429,8 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                         nextPC = MATCH_p + 6;
                                                         // result.rtl = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
                                                         genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus,
-                                                                (nextPC.value() - hostPC.value()), result);
+                                                                (nextPC.value() - hostPC.value()), result,
+                                                                m_prog->getProject()->getSettings()->debugDecoder);
                                                         return result.valid;
                                                     } /*opt-block*/ /*opt-block+*/
                                                     else {
@@ -38051,7 +38055,8 @@ MATCH_label_c145:
             nextPC = MATCH_p + 4;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -38078,7 +38083,8 @@ MATCH_label_c146:
             nextPC = MATCH_p + 5;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -38105,7 +38111,8 @@ MATCH_label_c147:
             nextPC = MATCH_p + 9;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -38132,7 +38139,8 @@ MATCH_label_c148:
             nextPC = MATCH_p + 8;
             // #line 1377 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSFow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, -1, 16, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
             // Not "user" instructions:
             //    | BOUNDod(reg, Mem) =>
@@ -38159,7 +38167,8 @@ MATCH_label_c149:
             nextPC = MATCH_p + 4;
             // #line 1367 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c150:
@@ -38170,7 +38179,8 @@ MATCH_label_c150:
             nextPC = MATCH_p + 5;
             // #line 1367 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c151:
@@ -38181,7 +38191,8 @@ MATCH_label_c151:
             nextPC = MATCH_p + 9;
             // #line 1367 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c152:
@@ -38191,7 +38202,8 @@ MATCH_label_c152:
             unsigned    reg   = (MATCH_w_8_24 >> 3 & 0x7) /* reg_opcode at 24 */;
             nextPC = MATCH_p + 8;
             // result.rtl = instantiate(pc,  "BSRow", DIS_REG16, DIS_EADDR16);
-            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG16, DIS_EADDR16, 16, 16, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c153:
@@ -46339,7 +46351,8 @@ MATCH_label_c967:
             nextPC = MATCH_p + 3;
             // #line 1372 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c968:
@@ -46349,7 +46362,8 @@ MATCH_label_c968:
             unsigned    reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 4;
             // result.rtl = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c969:
@@ -46360,7 +46374,8 @@ MATCH_label_c969:
             nextPC = MATCH_p + 8;
             // #line 1372 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c970: {
@@ -46368,7 +46383,8 @@ MATCH_label_c970: {
             unsigned    reg   = (MATCH_w_8_16 >> 3 & 0x7) /* reg_opcode at 16 */;
             nextPC = MATCH_p + 7;
             // result.rtl = instantiate(pc,  "BSFod", DIS_REG32, DIS_EADDR32);
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, -1, 32, opPlus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c971: {
@@ -46377,7 +46393,8 @@ MATCH_label_c971: {
             nextPC = MATCH_p + 3;
             // result.rtl = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c972: {
@@ -46386,7 +46403,8 @@ MATCH_label_c972: {
             nextPC = MATCH_p + 4;
             // result.rtl = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result,
+                m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c973:
@@ -46397,7 +46415,8 @@ MATCH_label_c973:
             nextPC = MATCH_p + 8;
             // result.rtl = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c974:
@@ -46409,7 +46428,8 @@ MATCH_label_c974:
             // #line 1361 "frontend/machine/pentium/decoder.m"
             // result.rtl = instantiate(pc,  "BSRod", DIS_REG32, DIS_EADDR32);
             // Bit Scan Forward: need helper function
-            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result);
+            genBSFR(pc, DIS_REG32, DIS_EADDR32, 32, 32, opMinus, (nextPC.value() - hostPC.value()), result,
+                    m_prog->getProject()->getSettings()->debugDecoder);
             return result.valid;
         }
 MATCH_label_c975:
@@ -49670,9 +49690,8 @@ bool PentiumDecoder::isFuncPrologue(Address)
 
 
 PentiumDecoder::PentiumDecoder(Prog *_prog)
-    : NJMCDecoder(_prog)
+    : NJMCDecoder(_prog, "ssl/pentium.ssl")
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/pentium.ssl"));
 }
 
 
@@ -49688,7 +49707,7 @@ static int BSFRstate = 0;                                                     //
  * \param incdec either opPlus for Forward scans, or opMinus for Reverse scans
  * \param numBytes number of bytes this instruction
  */
-void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result)
+void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result, bool debug)
 {
     // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the %SKIP/%RPT won't
     // work. We need to emit 6 statements, but these need to be in 3 RTLs, since the destination of a branch has to be
@@ -49756,7 +49775,7 @@ void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OP
         result.reDecode = false;
     }
 
-    if (DEBUG_DECODER) {
+    if (debug) {
         LOG_MSG("%1: BS%2%3%4",
                 pc + BSFRstate,
                 (init == -1 ? "F" : "R"),

@@ -10,7 +10,11 @@
 #include "LivenessAnalyzer.h"
 
 
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
@@ -18,16 +22,13 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/ConnectionGraph.h"
 
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/core/Boomerang.h"
-
 
 /**
  * Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
- * Also check for type conflicts if DFA_TYPE_ANALYSIS
+ * Also check for type conflicts when using DFA type analysis
  * This is a helper function that is not directly declared in the BasicBlock class
  */
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc *)
+void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc *proc)
 {
     // For each location to be considered
     for (SharedExp exp : ls) {
@@ -47,7 +48,7 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig
             // We have an interference between r and dr. Record it
             ig.connect(refexp, dr);
 
-            if (SETTING(debugLiveness)) {
+            if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
                 LOG_VERBOSE("Interference of %1 with %2", dr, refexp);
             }
         }
@@ -71,6 +72,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
 
     // For each RTL in this BB
     RTLList::reverse_iterator rit;
+    const bool assumeABICompliance = myProc->getProg()->getProject()->getSettings()->assumeABI;
 
     if (bb->getRTLs()) { // this can be nullptr
         for (rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
@@ -80,7 +82,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
                 Statement   *s = *sit;
                 LocationSet defs;
-                s->getDefinitions(defs);
+                s->getDefinitions(defs, assumeABICompliance);
                 // The definitions don't have refs yet
                 defs.addSubscript(s /* , myProc->getCFG() */);
 
@@ -100,7 +102,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
                 s->addUsedLocs(uses);
                 checkForOverlap(liveLocs, uses, ig, myProc);
 
-                if (SETTING(debugLiveness)) {
+                if (myProc->getProg()->getProject()->getSettings()->debugLiveness) {
                     LOG_MSG(" ## liveness: at top of %1, liveLocs is %2", s, liveLocs.prints());
                 }
             }
@@ -198,7 +200,7 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
             liveout.insert(ref);
             phiLocs.insert(ref);
 
-            if (SETTING(debugLiveness)) {
+            if (bb->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
                 LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3",
                         ref, st, bb->getLowAddr());
             }

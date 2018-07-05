@@ -22,6 +22,8 @@ class BasicBlock;
 class TargetQueue
 {
 public:
+    TargetQueue(bool traceDecoder) { m_traceDecoder = traceDecoder; }
+
     /**
      * Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create later.
      *
@@ -56,5 +58,6 @@ public:
     void dump();
 
 private:
+    bool m_traceDecoder;
     std::queue<Address> m_targets;
 };

@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/CFGCompressor.h"
@@ -125,29 +126,6 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
         if (proc == nullptr) {
             bool global = false;
 
-            if (!SETTING(decompile)) {
-                const char *sections[] = { "rodata", "data", "data1", nullptr };
-
-                const BinaryImage *image = prog->getBinaryFile()->getImage();
-                for (int j = 0; sections[j]; j++) {
-                    QString str = ".";
-                    str += sections[j];
-                    const BinarySection *section = image->getSectionByName(str);
-
-                    if (section) {
-                        generateDataSectionCode(image, sections[j], section->getSourceAddr(), section->getSize());
-                    }
-                    else {
-                        generateDataSectionCode(image, sections[j], Address::INVALID, 0);
-                    }
-                }
-
-                addGlobal("source_endianness", IntegerType::get(STD_SIZE),
-                          Const::get(prog->getFrontEndId() != Platform::PENTIUM));
-                (*os) << "#include \"boomerang.h\"\n\n";
-                global = true;
-            }
-
             for (auto& elem : prog->getGlobals()) {
                 // Check for an initial value
                 SharedExp e = elem->getInitialValue();
@@ -242,57 +220,6 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
 
     if (*lhs == *rhs) {
         return; // never want to see a = a;
-    }
-
-    if (!SETTING(decompile) && isBareMemof(*rhs, proc) && (lhs->getOper() == opRegOf) &&
-        (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
-        int regID = lhs->access<Const, 1>()->getInt();
-
-        // add some fsize hints to rhs
-        if ((regID >= REG_SPARC_F0) && (regID <= REG_SPARC_F31)) {
-            rhs = std::make_shared<Ternary>(opFsize, Const::get(32), Const::get(32), rhs);
-        }
-        else if ((regID >= REG_SPARC_F0TO1) && (regID <= REG_SPARC_F28TO31)) {
-            rhs = std::make_shared<Ternary>(opFsize, Const::get(64), Const::get(64), rhs);
-        }
-    }
-
-    if (!SETTING(decompile) && isBareMemof(*lhs, proc)) {
-        if (asgnType && asgnType->isFloat()) {
-            if (asgnType->as<FloatType>()->getSize() == 32) {
-                ost << "FLOAT_";
-            }
-            else {
-                ost << "DOUBLE_";
-            }
-        }
-        else if (rhs->getOper() == opFsize) {
-            if (rhs->access<Const, 2>()->getInt() == 32) {
-                ost << "FLOAT_";
-            }
-            else {
-                ost << "DOUBLE_";
-            }
-        }
-        else if ((rhs->getOper() == opRegOf) && (m_proc->getProg()->getFrontEndId() == Platform::SPARC)) {
-            // yes, this is a hack
-            int wdth = rhs->access<Const, 2>()->getInt();
-
-            if ((wdth >= 32) && (wdth <= 63)) {
-                ost << "FLOAT_";
-            }
-            else if ((wdth >= 64) && (wdth <= 87)) {
-                ost << "DOUBLE_";
-            }
-        }
-
-        ost << "MEMASSIGN(";
-        appendExp(ost, *lhs->getSubExp1(), OpPrec::Unary);
-        ost << ", ";
-        appendExp(ost, *rhs, OpPrec::Unary);
-        ost << ");";
-        appendLine(tgt);
-        return;
     }
 
     if (isBareMemof(*lhs, proc) && asgnType && !asgnType->isVoid()) {
@@ -390,19 +317,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         }
 
         if (ok) {
-            bool needclose = false;
-
-            if (!SETTING(decompile) && proc->getSignature()->getParamType(n) &&
-                proc->getSignature()->getParamType(n)->isPointer()) {
-                s << "ADDR(";
-                needclose = true;
-            }
-
             appendExp(s, *as_arg, OpPrec::Comma);
-
-            if (needclose) {
-                s << ")";
-            }
         }
     }
 
@@ -469,10 +384,6 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
     indent(ost, m_indent);
     ost << "return";
     size_t n = rets->size();
-
-    if ((n == 0) && !SETTING(decompile) && (m_proc->getSignature()->getNumReturns() > 0)) {
-        ost << " eax";
-    }
 
     if (n >= 1) {
         ost << " ";
@@ -553,7 +464,7 @@ void CCodeGenerator::generateCode(UserProc *proc)
     // Note: don't try to remove unused statements here; that requires the
     // RefExps, which are all gone now (transformed out of SSA form)!
 
-    if (SETTING(printRTLs)) {
+    if (m_proc->getProg()->getProject()->getSettings()->printRTLs) {
         LOG_VERBOSE("%1", proc->toString());
     }
 
@@ -577,24 +488,13 @@ void CCodeGenerator::generateCode(UserProc *proc)
         addLocal(it->first, locType, it == last);
     }
 
-    if (!SETTING(decompile) && (proc->getName() == "main")) {
-        StatementList args, results;
-
-        if (proc->getProg()->getFrontEndId() == Platform::PENTIUM) {
-            addCallStatement(nullptr, "PENTIUMSETUP", args, results);
-        }
-        else if (proc->getProg()->getFrontEndId() == Platform::SPARC) {
-            addCallStatement(nullptr, "SPARCSETUP", args, results);
-        }
-    }
-
     // Start generating "real" code
     std::list<const BasicBlock *> followSet, gotoSet;
     generateCode(proc->getEntryBB(), nullptr, followSet, gotoSet, proc);
 
     addProcEnd();
 
-    if (SETTING(removeLabels)) {
+    if (m_proc->getProg()->getProject()->getSettings()->removeLabels) {
         removeUnusedLabels();
     }
 
@@ -689,7 +589,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
         SharedType ty   = as->getType();
 
         if (ty == nullptr) {
-            if (SETTING(verboseOutput)) {
+            if (proc->getProg()->getProject()->getSettings()->verboseOutput) {
                 LOG_ERROR("No type for parameter %1!", left);
             }
 
@@ -1474,14 +1374,6 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
         break;
 
     case opMemOf:
-
-        if (!SETTING(decompile)) {
-            str << "MEMOF(";
-            appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
-            str << ")";
-            break;
-        }
-
         openParen(str, curPrec, OpPrec::Unary);
         // annotateMemofs should have added a cast if it was needed
         str << "*";
@@ -1542,40 +1434,25 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
             assert(ternaryExp.getSubExp1()->isIntConst());
             int float_bits = ternaryExp.access<Const, 1>()->getInt();
 
-            if (!SETTING(decompile)) {
-                assert(ternaryExp.getSubExp1()->isIntConst());
+            switch (float_bits)
+            {
+            case 32:
+                str << "*((float *)&";
+                break;
 
-                if (float_bits == 32) {
-                    str << "FLOAT_MEMOF(";
-                }
-                else {
-                    str << "DOUBLE_MEMOF(";
-                }
+            case 64:
+                str << "*((double *)&";
+                break;
 
-                appendExp(str, *ternaryExp.getSubExp3()->getSubExp1(), OpPrec::None);
-                str << ")";
+            case 80:
+                str << "*((long double*)&";
+                break;
             }
-            else {
-                switch (float_bits)
-                {
-                case 32:
-                    str << "*((float *)&";
-                    break;
 
-                case 64:
-                    str << "*((double *)&";
-                    break;
-
-                case 80:
-                    str << "*((long double*)&";
-                    break;
-                }
-
-                openParen(str, curPrec, curPrec);
-                appendExp(str, *ternaryExp.getSubExp3(), curPrec);
-                closeParen(str, curPrec, curPrec);
-                str << ")";
-            }
+            openParen(str, curPrec, curPrec);
+            appendExp(str, *ternaryExp.getSubExp3(), curPrec);
+            closeParen(str, curPrec, curPrec);
+            str << ")";
         }
         else {
             appendExp(str, *ternaryExp.getSubExp3(), curPrec);
@@ -1893,25 +1770,10 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
                 if (xType && (*tt == *xType->getPointsTo() || (tt->isSize() && (xType->getPointsTo()->getSize() == tt->getSize())))) {
                     str << "*"; // memof degrades to dereference if types match
                 }
-                else {
-                    if (!SETTING(decompile)) {
-                        if (tt && tt->isFloat()) {
-                            if (tt->as<const FloatType>()->getSize() == 32) {
-                                str << "FLOAT_MEMOF";
-                            }
-                            else {
-                                str << "DOUBLE_MEMOF";
-                            }
-                        }
-                        else {
-                            str << "MEMOF";
-                        }
-                    }
-                    else { //  *(T *)
-                        str << "*(";
-                        appendType(str, tt);
-                        str << "*)";
-                    }
+                else {//  *(T *)
+                    str << "*(";
+                    appendType(str, tt);
+                    str << "*)";
                 }
 
                 openParen(str, curPrec, OpPrec::Unary);
@@ -2734,7 +2596,7 @@ void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *de
 
 void CCodeGenerator::writeBB(const BasicBlock *bb)
 {
-    if (DEBUG_GEN) {
+    if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
         LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
     }
 
@@ -2744,7 +2606,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 
     if (bb->getRTLs()) {
         for (const auto& rtl : *(bb->getRTLs())) {
-            if (DEBUG_GEN) {
+            if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
                 LOG_MSG("%1", rtl->getAddress());
             }
 

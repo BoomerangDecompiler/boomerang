@@ -171,7 +171,7 @@ public:
 
     /// Add a log sink / target. Takes ownership of the pointer.
     void addLogSink(std::unique_ptr<ILogSink> s);
-    void addDefaultLogSinks();
+    void addDefaultLogSinks(const QString& outputDir);
 
     void removeAllSinks();
 
@@ -253,14 +253,14 @@ private:
 };
 
 
-
 /**
  * Class for logging to a separate file different from the default log.
  */
 class SeparateLogger : public Log
 {
 public:
-    SeparateLogger(const QString& filePath);
+    /// \param fullFilePath Full absolute path to the log file
+    SeparateLogger(const QString& fullFilePath);
     SeparateLogger(const SeparateLogger& other) = delete;
     SeparateLogger(SeparateLogger&& other) = default;
 

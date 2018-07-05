@@ -10,15 +10,16 @@
 #include "st20decoder.h"
 
 
-#include "boomerang/util/Log.h"
 #include "boomerang/core/Boomerang.h"
-
-#include "boomerang/db/RTL.h"
-#include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/statements/ReturnStatement.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Binary.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/RTL.h"
+#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 
@@ -901,7 +902,6 @@ DWord ST20Decoder::getDword(intptr_t lc)
 
 
 ST20Decoder::ST20Decoder(Prog *prog_)
-    : NJMCDecoder(prog_)
+    : NJMCDecoder(prog_, "ssl/st20.ssl")
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/st20.ssl"));
 }

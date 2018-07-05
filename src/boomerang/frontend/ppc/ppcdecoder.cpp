@@ -11,8 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/RTL.h"
@@ -23,6 +22,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/type/type/IntegerType.h"
+#include "boomerang/util/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -62,6 +62,7 @@ SharedExp crBit(int bitNum); // Get an expression for a CR bit access
 #define DIS_FS         (dis_Reg(fs + 32))
 #define DIS_FA         (dis_Reg(fa + 32))
 #define DIS_FB         (dis_Reg(fb + 32))
+
 #define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
     BranchStatement *jump = new BranchStatement;      \
     result.rtl->append(jump);                         \
@@ -9304,9 +9305,8 @@ DWord PPCDecoder::getDword(HostAddress lc)
 
 
 PPCDecoder::PPCDecoder(Prog *_prog)
-    : NJMCDecoder(_prog)
+    : NJMCDecoder(_prog, "ssl/ppc.ssl")
 {
-    m_rtlDict.readSSLFile(Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/ppc.ssl"));
 }
 
 

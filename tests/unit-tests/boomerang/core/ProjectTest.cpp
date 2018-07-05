@@ -16,13 +16,12 @@
 #include "boomerang/db/Prog.h"
 
 
-#define HELLO_CLANG4    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
+#define HELLO_CLANG4    (project.getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
 
 
 void ProjectTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+    Boomerang::get();
 }
 
 
@@ -35,6 +34,8 @@ void ProjectTest::cleanupTestCase()
 void ProjectTest::testLoadBinaryFile()
 {
     Project project;
+    project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     project.loadPlugins();
 
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
@@ -66,6 +67,8 @@ void ProjectTest::testWriteSaveFile()
 void ProjectTest::testIsBinaryLoaded()
 {
     Project project;
+    project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     project.loadPlugins();
 
     QVERIFY(project.loadBinaryFile(HELLO_CLANG4));
@@ -86,6 +89,8 @@ void ProjectTest::testIsBinaryLoaded()
 void ProjectTest::testDecodeBinaryFile()
 {
     Project project;
+    project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     project.loadPlugins();
 
     QVERIFY(!project.decodeBinaryFile());
@@ -99,6 +104,8 @@ void ProjectTest::testDecodeBinaryFile()
 void ProjectTest::testDecompileBinaryFile()
 {
     Project project;
+    project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     project.loadPlugins();
 
     QVERIFY(!project.decodeBinaryFile());
@@ -112,6 +119,8 @@ void ProjectTest::testDecompileBinaryFile()
 void ProjectTest::testGenerateCode()
 {
     Project project;
+    project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     project.loadPlugins();
 
     QVERIFY(!project.generateCode());

@@ -33,8 +33,8 @@
 #include <sstream>
 
 
-#define SWITCH_SPARC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/switch_cc"))
-#define SWITCH_PENT     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/switch_cc"))
+// #define SWITCH_SPARC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/switch_cc"))
+// #define SWITCH_PENT     (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/switch_cc"))
 
 
 void compareStrings(const QString& actual, const QString& expected)
@@ -52,8 +52,8 @@ void compareStrings(const QString& actual, const QString& expected)
 
 void RtlTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+//     m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+//     m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
 }
 
 

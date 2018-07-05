@@ -11,36 +11,37 @@
 
 
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Ternary.h"
-#include "boomerang/db/statements/GotoStatement.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/statements/BoolAssign.h"
+#include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/statements/GotoStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/dfa/DFATypeAnalyzer.h"
-#include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/UnionType.h"
-#include "boomerang/type/type/FuncType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/SizeType.h"
 #include "boomerang/type/type/BooleanType.h"
 #include "boomerang/type/type/CharType.h"
+#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/type/type/FloatType.h"
+#include "boomerang/type/type/FuncType.h"
+#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/type/type/PointerType.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/UnionType.h"
+#include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 #include <sstream>
@@ -203,7 +204,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
         return;
     }
 
-    if (DEBUG_TA) {
+    if (function->getProg()->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("--- Start data flow based type analysis for %1 ---", getName());
     }
 
@@ -228,7 +229,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 
     PassManager::get()->executePass(PassID::BBSimplify, up); // In case there are new struct members
 
-    if (DEBUG_TA) {
+    if (function->getProg()->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("=== End type analysis for %1 ===", getName());
     }
 }
@@ -256,7 +257,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         for (Statement *stmt : stmts) {
             Statement *before = nullptr;
 
-            if (DEBUG_TA) {
+            if (proc->getProg()->getProject()->getSettings()->debugTA) {
                 before = stmt->clone();
             }
 
@@ -267,7 +268,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
             if (thisCh) {
                 ch = true;
 
-                if (DEBUG_TA) {
+                if (proc->getProg()->getProject()->getSettings()->debugTA) {
                     LOG_VERBOSE("  Caused change:\n"
                                 "    FROM: %1\n"
                                 "    TO:   %2",
@@ -275,7 +276,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
                 }
             }
 
-            if (DEBUG_TA) {
+            if (proc->getProg()->getProject()->getSettings()->debugTA) {
                 delete before;
             }
         }
@@ -290,7 +291,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         LOG_VERBOSE("Iteration limit exceeded for dfaTypeAnalysis of procedure '%1'", proc->getName());
     }
 
-    if (DEBUG_TA) {
+    if (proc->getProg()->getProject()->getSettings()->debugTA) {
         LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
         dumpResults(stmts, iter);
         LOG_MSG("### End results for Data flow based type analysis for %1 ###", proc->getName());
@@ -529,7 +530,7 @@ bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
             if (thisCh) {
                 ch = true;
 
-                if (DEBUG_TA) {
+                if (cfg->getProc()->getProg()->getProject()->getSettings()->debugTA) {
                     LOG_MSG("  sig caused change: %1 %2", it->getType()->getCtype(), it->getName());
                 }
             }

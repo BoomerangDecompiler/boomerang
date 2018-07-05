@@ -66,14 +66,7 @@ SharedType Assignment::getTypeFor(SharedExp /*e*/)
 
 void Assignment::setTypeFor(SharedExp /*e*/, SharedType ty)
 {
-    // assert(*lhs == *e);
-    SharedType oldType = m_type;
-
     m_type = ty;
-
-    if (DEBUG_TA && (oldType != ty)) {
-        LOG_VERBOSE("    Changed type of %1 (type was %2)", this, oldType->getCtype());
-    }
 }
 
 
@@ -98,7 +91,7 @@ bool Assignment::usesExp(const Exp& e) const
 }
 
 
-void Assignment::getDefinitions(LocationSet& defs) const
+void Assignment::getDefinitions(LocationSet& defs, bool) const
 {
     if (m_lhs->getOper() == opAt) {     // foo@[m:n] really only defines foo
         defs.insert(m_lhs->getSubExp1());

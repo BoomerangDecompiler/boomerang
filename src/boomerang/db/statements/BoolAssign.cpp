@@ -230,7 +230,7 @@ void BoolAssign::simplify()
 }
 
 
-void BoolAssign::getDefinitions(LocationSet& defs) const
+void BoolAssign::getDefinitions(LocationSet& defs, bool) const
 {
     defs.insert(getLeft());
 }

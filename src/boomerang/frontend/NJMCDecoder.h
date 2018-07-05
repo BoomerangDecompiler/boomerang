@@ -29,7 +29,7 @@ class NJMCDecoder : public IDecoder
 {
 public:
     /// \param       prog Pointer to the Prog object
-    NJMCDecoder(Prog *prog);
+    NJMCDecoder(Prog *prog, const QString& sslFilePath);
     NJMCDecoder(const NJMCDecoder& other) = delete;
     NJMCDecoder(NJMCDecoder&& other) = default;
 
@@ -156,7 +156,7 @@ protected:
  */
 
 #define SHOW_ASM(output)               \
-    if (DEBUG_DECODER) {               \
+    if (m_prog->getProject()->getSettings()->debugDecoder) {               \
         QString asmStr;                \
         QTextStream ost(&asmStr);      \
         ost << output;                 \

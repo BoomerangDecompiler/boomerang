@@ -10,15 +10,17 @@
 #include "FromSSAFormPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/util/ConnectionGraph.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/InterferenceFinder.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/exp/Location.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/type/type/VoidType.h"
+#include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/Log.h"
 
 
@@ -52,10 +54,11 @@ bool FromSSAFormPass::execute(UserProc *proc)
     FirstTypesMap::iterator ff;
     ConnectionGraph         ig; // The interference graph; these can't have the same local variable
     ConnectionGraph         pu; // The Phi Unites: these need the same local variable or copies
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
     for (Statement *s : stmts) {
         LocationSet defs;
-        s->getDefinitions(defs);
+        s->getDefinitions(defs, assumeABICompliance);
 
         for (SharedExp base : defs) {
             SharedType ty   = s->getTypeFor(base);
@@ -76,7 +79,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 firstTypes[base] = fte;
             }
             else if (ff->second.first && !ty->isCompatibleWith(*ff->second.first)) {
-                if (SETTING(debugLiveness)) {
+                if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
                     LOG_MSG("Def of %1 at %2 type %3 is not compatible with first type %4.",
                             base, s->getNumber(), ty, ff->second.first);
                 }
@@ -99,7 +102,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     // FIXME: are these going to be trivially predictable?
     proc->findPhiUnites(pu);
 
-    if (SETTING(debugLiveness)) {
+    if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
         LOG_MSG("## ig interference graph:");
 
         for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ++ii) {
@@ -151,7 +154,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         SharedType ty    = rename->getDef()->getTypeFor(rename->getSubExp1());
         SharedExp  local = proc->createLocal(ty, rename);
 
-        if (SETTING(debugLiveness)) {
+        if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
             LOG_MSG("Renaming %1 to %2", rename, local);
         }
 
@@ -280,8 +283,9 @@ bool FromSSAFormPass::execute(UserProc *proc)
         if (phiParamsSame && first) {
             // Is the left of the phi assignment the same base variable as all the operands?
             if (*phi->getLeft() == *first) {
-                if (SETTING(debugLiveness) || DEBUG_UNUSED) {
-                    LOG_MSG("Removing phi: left and all refs same or 0: %1", s);
+                if (proc->getProg()->getProject()->getSettings()->debugLiveness ||
+                    proc->getProg()->getProject()->getSettings()->debugUnused) {
+                        LOG_MSG("Removing phi: left and all refs same or 0: %1", s);
                 }
 
                 // Just removing the refs will work, or removing the whole phi
@@ -302,7 +306,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
             // Exp* tempLoc = newLocal(pa->getType());
             SharedExp tempLoc = proc->getSymbolExp(RefExp::get(phi->getLeft(), phi), phi->getType());
 
-            if (SETTING(debugLiveness)) {
+            if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
                 LOG_MSG("Phi statement %1 requires local, using %2", s, tempLoc);
             }
 

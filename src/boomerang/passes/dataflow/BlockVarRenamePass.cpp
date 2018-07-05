@@ -10,13 +10,15 @@
 #include "BlockVarRenamePass.h"
 
 
+#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Settings.h"
 
 
 BlockVarRenamePass::BlockVarRenamePass()
@@ -46,6 +48,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
     }
 
     bool changed = false;
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
     // For each statement S in block n
     BasicBlock::RTLIterator rit;
@@ -159,7 +162,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
         // For each definition of some variable a in S
         LocationSet defs;
-        S->getDefinitions(defs);
+        S->getDefinitions(defs, assumeABICompliance);
 
         for (SharedExp a : defs) {
             // Don't consider a if it cannot be renamed
@@ -195,14 +198,15 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
         // Special processing for define-alls (presently, only childless calls).
         // But note that only 'everythings' at the current memory level are defined!
-        if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless() && !SETTING(assumeABI)) {
-            // S is a childless call (and we're not assuming ABI compliance)
-            stacks[defineAll];          // Ensure that there is an entry for defineAll
+        if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless() &&
+            !proc->getProg()->getProject()->getSettings()->assumeABI) {
+                // S is a childless call (and we're not assuming ABI compliance)
+                stacks[defineAll];          // Ensure that there is an entry for defineAll
 
-            for (auto& elem : stacks) {
-                // if (dd->first->isMemDepth(memDepth))
-                elem.second.push_back(S); // Add a definition for all vars
-            }
+                for (auto& elem : stacks) {
+                    // if (dd->first->isMemDepth(memDepth))
+                    elem.second.push_back(S); // Add a definition for all vars
+                }
         }
     }
 
@@ -256,7 +260,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
     for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
         // For each definition of some variable a in S
         LocationSet defs;
-        S->getDefinitions(defs);
+        S->getDefinitions(defs, assumeABICompliance);
 
         for (auto dd = defs.begin(); dd != defs.end(); ++dd) {
             if (!proc->canRename(*dd)) {

@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
@@ -53,6 +54,7 @@
 IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : m_binaryFile(binaryFile)
     , m_program(prog)
+    , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
 {
 }
 
@@ -167,7 +169,7 @@ void IFrontEnd::readLibraryCatalog(const QString& filePath)
             cc = CallConv::ThisCall; // Another exception
         }
 
-        sig_path = Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("signatures/" + sigFilePath);
+        sig_path = m_program->getProject()->getSettings()->getDataDirectory().absoluteFilePath("signatures/" + sigFilePath);
         readLibrarySignatures(qPrintable(sig_path), cc);
     }
 }
@@ -177,7 +179,7 @@ void IFrontEnd::readLibraryCatalog()
 {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
     m_librarySignatures.clear();
-    QDir sig_dir(Boomerang::get()->getSettings()->getDataDirectory());
+    QDir sig_dir(m_program->getProject()->getSettings()->getDataDirectory());
 
     if (!sig_dir.cd("signatures")) {
         LOG_WARN("Signatures directory does not exist.");
@@ -232,7 +234,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
         entrypoints.push_back(a);
     }
     else { // try some other tricks
-        QString fname = QString::null; // Boomerang::get()->getSettings()->getFilename();
+        QString fname = QString::null; // m_program->getProject()->getSettings()->getFilename();
 
         // X11 Module
         if (fname.endsWith("_drv.o")) {
@@ -418,13 +420,13 @@ bool IFrontEnd::decodeUndecoded()
                 userProc->setDecoded();
 
                 // Break out of the loops if not decoding children
-                if (!SETTING(decodeChildren)) {
+                if (!m_program->getProject()->getSettings()->decodeChildren) {
                     break;
                 }
             }
         }
 
-        if (!SETTING(decodeChildren)) {
+        if (!m_program->getProject()->getSettings()->decodeChildren) {
             break;
         }
     }
@@ -450,7 +452,7 @@ bool IFrontEnd::decodeOnly(Address addr)
 
 bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
-    if (SETTING(traceDecoder)) {
+    if (m_program->getProject()->getSettings()->traceDecoder) {
         LOG_MSG("Decoding fragment at address %1", a);
     }
 
@@ -633,7 +635,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
         while (sequentialDecode) {
             // Decode and classify the current source instruction
-            if (SETTING(traceDecoder)) {
+            if (m_program->getProject()->getSettings()->traceDecoder) {
                 LOG_MSG("*%1", addr);
             }
 
@@ -702,7 +704,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
             }
 
             // Display RTL representation if asked
-            if (SETTING(printRTLs)) {
+            if (m_program->getProject()->getSettings()->printRTLs) {
                 QString     tgt;
                 QTextStream st(&tgt);
                 inst.rtl->print(st);
@@ -831,30 +833,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                         currentBB = cfg->createBB(BBType::CompJump, std::move(BB_rtls));
 
                         LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
-
-                        if (!SETTING(decompile)) {
-                            // try some hacks
-                            if (jumpDest->isMemOf() && (jumpDest->getSubExp1()->getOper() == opPlus) &&
-                                jumpDest->getSubExp1()->getSubExp2()->isIntConst()) {
-                                // assume subExp2 is a jump table
-                                Address jmptbl = jumpDest->access<Const, 1, 2>()->getAddr();
-
-                                for (unsigned int i = 0; ; i++) {
-                                    Address destAddr = Address(m_program->getBinaryFile()->getImage()->readNative4(jmptbl + 4 * i));
-
-                                    if ((destAddr < m_program->getBinaryFile()->getImage()->getLimitTextLow()) || (destAddr >= m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-                                        break;
-                                    }
-
-                                    LOG_MSG("  guessed jump destination '%1'", destAddr);
-
-                                    m_targetQueue.visit(cfg, destAddr, currentBB);
-                                    cfg->addEdge(currentBB, destAddr);
-                                }
-
-                                currentBB->setType(BBType::Nway);
-                            }
-                        }
 
                         sequentialDecode = false;
                         break;
@@ -1006,7 +984,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                                 (proc->getProg()->getFunctionByAddr(callAddr) == nullptr)) {
                                 callList.push_back(call);
 
-                                if (SETTING(traceDecoder)) {
+                                if (m_program->getProject()->getSettings()->traceDecoder) {
                                     LOG_MSG("p%1", callAddr);
                                 }
                             }

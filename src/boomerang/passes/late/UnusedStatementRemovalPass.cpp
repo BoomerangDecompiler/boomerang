@@ -10,13 +10,15 @@
 #include "UnusedStatementRemovalPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Settings.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/passes/PassManager.h"
-#include "boomerang/util/StatementSet.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/StatementSet.h"
 
 
 UnusedStatementRemovalPass::UnusedStatementRemovalPass()
@@ -34,7 +36,7 @@ bool UnusedStatementRemovalPass::execute(UserProc *proc)
     updateRefCounts(proc, refCounts);
 
     // Now remove any that have no used
-    if (SETTING(removeNull)) {
+    if (proc->getProg()->getProject()->getSettings()->removeNull) {
         remUnusedStmtEtc(proc, refCounts);
         removeNullStatements(proc);
         proc->debugPrintAll("after removing unused and null statements pass 1");
@@ -56,7 +58,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCo
             continue;
         }
 
-        if (DEBUG_UNUSED) {
+        if (proc->getProg()->getProject()->getSettings()->debugUnused) {
             LOG_MSG("Counting references in %1", s);
         }
 
@@ -73,7 +75,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCo
                 if (def /* && def->getNumber() */) {
                     refCounts[def]++;
 
-                    if (DEBUG_UNUSED) {
+                    if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                         LOG_MSG("counted ref to %1", rr);
                     }
                 }
@@ -81,7 +83,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCo
         }
     }
 
-    if (DEBUG_UNUSED) {
+    if (proc->getProg()->getProject()->getSettings()->debugUnused) {
         LOG_MSG("### Reference counts for %1:", getName());
 
         for (Function::RefCounter::iterator rr = refCounts.begin(); rr != refCounts.end(); ++rr) {
@@ -158,14 +160,14 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, Function::RefC
                         continue;
                     }
 
-                    if (DEBUG_UNUSED) {
+                    if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                         LOG_MSG("Decrementing ref count of %1 because %2 is unused", (*dd)->getNumber(), s->getNumber());
                     }
 
                     refCounts[*dd]--;
                 }
 
-                if (DEBUG_UNUSED) {
+                if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("Removing unused statement %1 %2", s->getNumber(), s);
                 }
 

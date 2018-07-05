@@ -9,10 +9,13 @@
 #pragma endregion License
 #include "SPPreservationPass.h"
 
+
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/signature/Signature.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/util/Log.h"
 
 
@@ -34,7 +37,7 @@ bool SPPreservationPass::execute(UserProc *proc)
         // Special case for 32-bit stack-based machines (e.g. Pentium).
         // RISC machines generally preserve the stack pointer (so no special case required)
         for (int p = 0; !stdsp && p < 8; p++) {
-            if (DEBUG_PROOF) {
+            if (proc->getProg()->getProject()->getSettings()->debugProof) {
                 LOG_MSG("Attempting to prove sp = sp + %1 for %2", p * 4, getName());
             }
 
@@ -45,7 +48,7 @@ bool SPPreservationPass::execute(UserProc *proc)
         }
     }
 
-    if (DEBUG_PROOF) {
+    if (proc->getProg()->getProject()->getSettings()->debugProof) {
         LOG_MSG("Proven for %1:", getName());
 
         for (auto& elem : proc->getProvenTrue()) {

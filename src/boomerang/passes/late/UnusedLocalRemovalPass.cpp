@@ -10,12 +10,14 @@
 #include "UnusedLocalRemovalPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Boomerang.h"
-#include "boomerang/util/StatementList.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Const.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/util/StatementList.h"
 
 #include <QSet>
 
@@ -53,7 +55,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
                 QString name(u->access<Const, 1>()->getStr());
                 usedLocals.insert(name);
 
-                if (DEBUG_UNUSED) {
+                if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("Counted local %1 in %2", name, s);
                 }
             }
@@ -65,7 +67,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
             QString    name(c->getStr());
             usedLocals.insert(name);
 
-            if (DEBUG_UNUSED) {
+            if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                 LOG_MSG("Counted local %1 on left of %2", name, s);
             }
         }
@@ -84,7 +86,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         }
 
         if ((usedLocals.find(name) == usedLocals.end()) && !all) {
-            if (SETTING(verboseOutput)) {
+            if (proc->getProg()->getProject()->getSettings()->verboseOutput) {
                 LOG_VERBOSE("Removed unused local %1", name);
             }
 
@@ -93,9 +95,11 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     }
 
     // Remove any definitions of the removed locals
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
+
     for (Statement *s : stmts) {
         LocationSet ls;
-        s->getDefinitions(ls);
+        s->getDefinitions(ls, assumeABICompliance);
 
         for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
             SharedType ty   = s->getTypeFor(*ll);

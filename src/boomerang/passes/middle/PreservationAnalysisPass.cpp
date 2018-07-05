@@ -10,10 +10,11 @@
 #include "PreservationAnalysisPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
-
 
 
 PreservationAnalysisPass::PreservationAnalysisPass()
@@ -27,7 +28,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
     std::set<SharedExp> removes;
 
     if (proc->getTheReturnStatement() == nullptr) {
-        if (DEBUG_PROOF) {
+        if (proc->getProg()->getProject()->getSettings()->debugProof) {
             LOG_MSG("Can't find preservations as there is no return statement!");
         }
 
@@ -39,7 +40,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
         SharedExp lhs      = static_cast<Assignment *>(mod)->getLeft();
         auto      equation = Binary::get(opEquals, lhs, lhs);
 
-        if (DEBUG_PROOF) {
+        if (proc->getProg()->getProject()->getSettings()->debugProof) {
             LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
         }
 
@@ -48,7 +49,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
         }
     }
 
-    if (DEBUG_PROOF) {
+    if (proc->getProg()->getProject()->getSettings()->debugProof) {
         LOG_MSG("### proven true for procedure %1:", getName());
 
         for (auto& elem : proc->getProvenTrue()) {

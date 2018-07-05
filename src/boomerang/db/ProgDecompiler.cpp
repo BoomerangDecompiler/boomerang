@@ -11,12 +11,13 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/Global.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/util/Log.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/db/Global.h"
+#include "boomerang/util/Log.h"
 
 
 ProgDecompiler::ProgDecompiler(Prog* prog)
@@ -38,33 +39,34 @@ void ProgDecompiler::decompile()
 
     // Just in case there are any Procs not in the call graph.
 
-    if (SETTING(decodeMain) && SETTING(decodeChildren)) {
-        bool foundone = true;
+    if (m_prog->getProject()->getSettings()->decodeMain &&
+        m_prog->getProject()->getSettings()->decodeChildren) {
+            bool foundone = true;
 
-        while (foundone) {
-            foundone = false;
+            while (foundone) {
+                foundone = false;
 
-            for (const auto& module : m_prog->getModuleList()) {
-                for (Function *pp : *module) {
-                    if (pp->isLib()) {
-                        continue;
+                for (const auto& module : m_prog->getModuleList()) {
+                    for (Function *pp : *module) {
+                        if (pp->isLib()) {
+                            continue;
+                        }
+
+                        UserProc *proc = static_cast<UserProc *>(pp);
+
+                        if (proc->isDecompiled()) {
+                            continue;
+                        }
+                        proc->decompile();
+                        foundone = true;
                     }
-
-                    UserProc *proc = static_cast<UserProc *>(pp);
-
-                    if (proc->isDecompiled()) {
-                        continue;
-                    }
-                    proc->decompile();
-                    foundone = true;
                 }
             }
-        }
     }
 
     globalTypeAnalysis();
 
-    if (SETTING(decompile) && SETTING(removeReturns)) {
+    if (m_prog->getProject()->getSettings()->removeReturns) {
         // Repeat until no change. Not 100% sure if needed.
         while (removeUnusedReturns()) {
         }
@@ -83,7 +85,7 @@ void ProgDecompiler::globalTypeAnalysis()
 {
     LOG_MSG("Performing global type analysis...");
 
-    if (DEBUG_TA) {
+    if (m_prog->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("### Start global data-flow-based type analysis ###");
     }
 
@@ -102,7 +104,7 @@ void ProgDecompiler::globalTypeAnalysis()
         }
     }
 
-    if (DEBUG_TA) {
+    if (m_prog->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("### End type analysis ###");
     }
 }
@@ -136,7 +138,7 @@ void ProgDecompiler::removeUnusedGlobals()
 
                 bool found = s->searchAll(search, usedGlobals);
 
-                if (found && DEBUG_UNUSED) {
+                if (found && m_prog->getProject()->getSettings()->debugUnused) {
                     LOG_VERBOSE("A global is used by stmt %1", s->getNumber());
                 }
             }
@@ -155,7 +157,7 @@ void ProgDecompiler::removeUnusedGlobals()
     m_prog->getGlobals().clear();
 
     for (const SharedExp& e : usedGlobals) {
-        if (DEBUG_UNUSED) {
+        if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG(" %1 is used", e);
         }
 
@@ -229,8 +231,9 @@ void ProgDecompiler::fromSSAForm()
 
             UserProc *proc = static_cast<UserProc *>(pp);
 
-            if (SETTING(verboseOutput) && !SETTING(dotFile).isEmpty()) {
-                proc->printDFG();
+            if (m_prog->getProject()->getSettings()->verboseOutput &&
+                !m_prog->getProject()->getSettings()->dotFile.isEmpty()) {
+                    proc->printDFG();
             }
 
             PassManager::get()->executePass(PassID::FromSSAForm, proc);

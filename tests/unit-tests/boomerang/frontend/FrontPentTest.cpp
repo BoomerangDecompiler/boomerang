@@ -23,18 +23,19 @@
 #include <QDebug>
 
 
-#define HELLO_PENT      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
-#define BRANCH_PENT     (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/branch"))
-#define FEDORA2_TRUE    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/fedora2_true"))
-#define FEDORA3_TRUE    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/fedora3_true"))
-#define SUSE_TRUE       (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/suse_true"))
+#define SAMPLE(path) (m_project.getSettings()->getDataDirectory().absoluteFilePath(path))
+
+#define HELLO_PENT      SAMPLE("samples/pentium/hello")
+#define BRANCH_PENT     SAMPLE("samples/pentium/branch")
+#define FEDORA2_TRUE    SAMPLE("samples/pentium/fedora2_true")
+#define FEDORA3_TRUE    SAMPLE("samples/pentium/fedora3_true")
+#define SUSE_TRUE       SAMPLE("samples/pentium/suse_true")
 
 
 void FrontPentTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 

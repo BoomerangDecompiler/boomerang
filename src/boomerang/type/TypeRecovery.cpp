@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
@@ -18,7 +19,7 @@
 
 void TypeRecoveryCommon::recoverProgramTypes(Prog *prog)
 {
-    if (DEBUG_TA) {
+    if (prog->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("=== start %1 type analysis ===", getName());
     }
 
@@ -39,7 +40,7 @@ void TypeRecoveryCommon::recoverProgramTypes(Prog *prog)
         }
     }
 
-    if (DEBUG_TA) {
+    if (prog->getProject()->getSettings()->debugTA) {
         LOG_VERBOSE("=== end type analysis ===");
     }
 }

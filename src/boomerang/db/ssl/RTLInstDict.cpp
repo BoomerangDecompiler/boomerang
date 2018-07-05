@@ -92,7 +92,7 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 
     fixupParams();
 
-    if (SETTING(debugDecoder)) {
+    if (m_verboseOutput) {
         QTextStream q_cout(stdout);
         q_cout << "\n=======Expanded RTL template dictionary=======\n";
         print(q_cout);
@@ -292,7 +292,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC
 
         ss->fixSuccessor();
 
-        if (SETTING(debugDecoder)) {
+        if (m_verboseOutput) {
             QTextStream q_cout(stdout);
             q_cout << "            " << ss << "\n";
         }

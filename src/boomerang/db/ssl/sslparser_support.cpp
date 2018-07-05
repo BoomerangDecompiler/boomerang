@@ -59,11 +59,11 @@ SSLParser::SSLParser(std::istream& in, bool trace)
  * \param  str - the string
  * \returns an Assignment or nullptr.
  */
-Statement *SSLParser::parseExp(const char *str)
+Statement *SSLParser::parseExp(const char *str, bool verboseOutput)
 {
     std::istringstream ss(str);
     SSLParser          p(ss, false); // Second arg true for debugging
-    RTLInstDict        d;
+    RTLInstDict        d(verboseOutput);
     p.yyparse(d);
     return p.the_asgn;
 }

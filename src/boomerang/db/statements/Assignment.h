@@ -56,11 +56,8 @@ public:
     /// \internal PhiAssign and ImplicitAssign don't override
     virtual bool usesExp(const Exp& e) const override;
 
-    /// \copydoc Statement::isDefinition
-    virtual bool isDefinition() const override { return true; }
-
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& defs) const override;
+    virtual void getDefinitions(LocationSet& defs, bool assumeABICompliance) const override;
 
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override;

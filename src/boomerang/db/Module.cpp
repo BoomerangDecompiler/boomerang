@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
@@ -174,7 +175,7 @@ QString Module::makeDirs() const
         path = m_parent->makeDirs();
     }
     else {
-        path = Boomerang::get()->getSettings()->getOutputDirectory().absolutePath();
+        path = m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath();
     }
 
     QDir dr(path);

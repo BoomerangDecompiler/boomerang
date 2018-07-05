@@ -12,6 +12,7 @@
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
@@ -21,7 +22,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
@@ -66,12 +67,16 @@ Statement::Statement()
 {
 
 }
+
+
 void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;
+
+    const bool assumeABICompliance = proc ? proc->getProg()->getProject()->getSettings()->assumeABI : false;
     LocationSet exps, defs;
     addUsedLocs(exps);
-    getDefinitions(defs);
+    getDefinitions(defs, assumeABICompliance);
     exps.makeUnion(defs);
 
     for (auto ll = exps.begin(); ll != exps.end(); ++ll) {
@@ -81,24 +86,6 @@ void Statement::setProc(UserProc *proc)
             l->setProc(proc);
         }
     }
-}
-
-
-bool Statement::mayAlias(SharedExp e1, SharedExp e2, int size) const
-{
-    if (*e1 == *e2) {
-        return true;
-    }
-
-    // Pass the expressions both ways. Saves checking things like m[exp] vs m[exp+K] and m[exp+K] vs m[exp] explicitly
-    // (only need to check one of these cases)
-    const bool b = (calcMayAlias(e1, e2, size) && calcMayAlias(e2, e1, size));
-
-    if (b && SETTING(verboseOutput)) {
-        LOG_VERBOSE("Instruction may alias: %1 and %2 size %3", e1, e2, size);
-    }
-
-    return b;
 }
 
 
@@ -130,33 +117,33 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
     // same left op constant memory accesses
     if ((e1a->getArity() == 2) && (e1a->getOper() == e2a->getOper()) && e1a->getSubExp2()->isIntConst() &&
         e2a->getSubExp2()->isIntConst() && (*e1a->getSubExp1() == *e2a->getSubExp1())) {
-        int i1   = e1a->access<Const, 2>()->getInt();
-        int i2   = e2a->access<Const, 2>()->getInt();
-        int diff = i1 - i2;
+            int i1   = e1a->access<Const, 2>()->getInt();
+            int i2   = e2a->access<Const, 2>()->getInt();
+            int diff = i1 - i2;
 
-        if (diff < 0) {
-            diff = -diff;
-        }
+            if (diff < 0) {
+                diff = -diff;
+            }
 
-        if (diff * 8 >= size) {
-            return false;
-        }
+            if (diff * 8 >= size) {
+                return false;
+            }
     }
 
     // [left] vs [left +/- constant] memory accesses
     if (((e2a->getOper() == opPlus) || (e2a->getOper() == opMinus)) && (*e1a == *e2a->getSubExp1()) &&
         e2a->getSubExp2()->isIntConst()) {
-        int i1   = 0;
-        int i2   = e2a->access<Const, 2>()->getInt();
-        int diff = i1 - i2;
+            int i1   = 0;
+            int i2   = e2a->access<Const, 2>()->getInt();
+            int diff = i1 - i2;
 
-        if (diff < 0) {
-            diff = -diff;
-        }
+            if (diff < 0) {
+                diff = -diff;
+            }
 
-        if (diff * 8 >= size) {
-            return false;
-        }
+            if (diff * 8 >= size) {
+                return false;
+            }
     }
 
     // Don't need [left +/- constant ] vs [left] because called twice with
@@ -183,7 +170,7 @@ bool Statement::isFlagAssign() const
         return false;
     }
 
-    OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
+    const OPER op = static_cast<const Assign *>(this)->getRight()->getOper();
     return op == opFlagCall;
 }
 
@@ -247,12 +234,12 @@ bool Statement::canPropagateToExp(const Exp& exp)
 }
 
 
-bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
-                            LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
+bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
+                            LocationSet *usedByDomPhi, bool force)
 {
     bool change = false;
     int  changes = 0;
-    const int propMaxDepth = SETTING(propMaxDepth);
+    const int propMaxDepth = settings->propMaxDepth;
 
     do {
         LocationSet exps;
@@ -282,7 +269,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 
             SharedExp lhs = def->getLeft();
 
-            if (EXPERIMENTAL) {
+            if (settings->experimental) {
                 // This is Mike's experimental propagation limiting heuristic. At present, it is:
                 // for each component of def->rhs
                 //   test if the base expression is in the set usedByDomPhi
@@ -362,19 +349,19 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
             if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
-                change |= doPropagateTo(e, def, convert);
+                change |= doPropagateTo(e, def, convert, settings);
             }
             else {
                 std::map<SharedExp, int, lessExpStar>::iterator ff = destCounts->find(e);
 
                 if (ff == destCounts->end()) {
-                    change |= doPropagateTo(e, def, convert);
+                    change |= doPropagateTo(e, def, convert, settings);
                 }
                 else if (ff->second <= 1) {
-                    change |= doPropagateTo(e, def, convert);
+                    change |= doPropagateTo(e, def, convert, settings);
                 }
                 else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
-                    change |= doPropagateTo(e, def, convert);
+                    change |= doPropagateTo(e, def, convert, settings);
                 }
             }
         }
@@ -390,7 +377,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 }
 
 
-bool Statement::propagateFlagsTo()
+bool Statement::propagateFlagsTo(Settings *settings)
 {
     bool change  = false;
     bool convert = false;
@@ -414,7 +401,7 @@ bool Statement::propagateFlagsTo()
             SharedExp base = e->access<Exp, 1>();     // Either RefExp or Location ?
 
             if (base->isFlags() || base->isMainFlag()) {
-                change |= doPropagateTo(e, def, convert);
+                change |= doPropagateTo(e, def, convert, settings);
             }
         }
     } while (change && ++changes < 10);
@@ -424,15 +411,15 @@ bool Statement::propagateFlagsTo()
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert)
+bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert, Settings *settings)
 {
     // Respect the -p N switch
-    if (SETTING(numToPropagate) >= 0) {
-        if (SETTING(numToPropagate) == 0) {
+    if (settings->numToPropagate >= 0) {
+        if (settings->numToPropagate == 0) {
             return false;
         }
 
-        SETTING(numToPropagate--);
+        settings->numToPropagate--;
     }
 
     LOG_VERBOSE2("Propagating %1 into %2", def, this);

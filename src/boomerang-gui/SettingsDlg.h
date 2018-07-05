@@ -12,12 +12,15 @@
 
 #include <QDialog>
 
+
 class Decompiler;
+class Settings;
 
 namespace Ui
 {
 class SettingsDlg;
 }
+
 
 /**
  * Dialog for editing Boomerang settings.
@@ -41,4 +44,5 @@ private slots:
 
 private:
     Ui::SettingsDlg *ui;
+    Settings *m_settings;
 };

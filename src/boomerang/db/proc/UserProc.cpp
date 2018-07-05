@@ -12,6 +12,7 @@
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/InterferenceFinder.h"
 #include "boomerang/db/Module.h"
@@ -195,7 +196,7 @@ void UserProc::renameLocal(const char *oldName, const char *newName)
 
 void UserProc::printUseGraph()
 {
-    QString filePath = Boomerang::get()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
+    QString filePath = m_prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
     QFile   file(filePath);
 
     if (!file.open(QFile::Text | QFile::WriteOnly)) {
@@ -381,7 +382,7 @@ void UserProc::dump() const
 void UserProc::printDFG() const
 {
     QString fname = QString("%1%2-%3-dfg.dot")
-                       .arg(Boomerang::get()->getSettings()->getOutputDirectory().absolutePath())
+                       .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
                        .arg(getName())
                        .arg(DFGcount);
 
@@ -651,7 +652,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
 
     callStack.push_back(this);
 
-    if (SETTING(decodeChildren)) {
+    if (m_prog->getProject()->getSettings()->decodeChildren) {
         // Recurse to callees first, to perform a depth first search
         for (BasicBlock *bb : *m_cfg) {
             if (bb->getType() != BBType::Call) {
@@ -799,13 +800,15 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
 
 void UserProc::debugPrintAll(const char *step_name)
 {
-    if (SETTING(verboseOutput)) {
+    if (m_prog->getProject()->getSettings()->verboseOutput) {
         numberStatements();
 
-        LOG_SEPARATE(getName(), "--- debug print %1 for %2 ---", step_name, getName());
-        LOG_SEPARATE(getName(), "%1", this->toString());
-        LOG_SEPARATE(getName(), "=== end debug print %1 for %2 ===", step_name, getName());
-        SeparateLogger::getOrCreateLog(getName()).flush();
+        QDir outputDir = m_prog->getProject()->getSettings()->getOutputDirectory();
+        QString filePath = outputDir.absoluteFilePath(getName());
+
+        LOG_SEPARATE(filePath, "--- debug print %1 for %2 ---", step_name, getName());
+        LOG_SEPARATE(filePath, "%1", this->toString());
+        LOG_SEPARATE(filePath, "=== end debug print %1 for %2 ===", step_name, getName());
     }
 }
 
@@ -818,12 +821,6 @@ void UserProc::earlyDecompile()
     PassManager::get()->executePass(PassID::StatementInit, this);
     PassManager::get()->executePass(PassID::BBSimplify, this); // Remove branches with false guards
     PassManager::get()->executePass(PassID::Dominators, this);
-
-    if (!SETTING(decompile)) {
-        LOG_MSG("Not decompiling.");
-        setStatus(PROC_FINAL); // ??!
-        return;
-    }
 
     debugPrintAll("After Decoding");
     Boomerang::get()->alertDecompileDebugPoint(this, "After Initialise");
@@ -885,7 +882,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // Oh, no, we keep doing preservations till almost the end...
     // setStatus(PROC_PRESERVEDS);        // Preservation done
 
-    if (SETTING(usePromotion)) {
+    if (m_prog->getProject()->getSettings()->usePromotion) {
         // We want functions other than main to be promoted. Needed before mapExpressionsToLocals
         promoteSignature();
     }
@@ -928,20 +925,23 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         }
 
         // Print if requested
-        if (SETTING(verboseOutput)) { // was if debugPrintSSA
-            LOG_SEPARATE(getName(), "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
-            LOG_SEPARATE(getName(), "%1", this->toString());
-            LOG_SEPARATE(getName(), "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
+        if (m_prog->getProject()->getSettings()->verboseOutput) { // was if debugPrintSSA
+            QDir outputDir = m_prog->getProject()->getSettings()->getOutputDirectory();
+            QString filePath = outputDir.absoluteFilePath(getName());
+
+            LOG_SEPARATE(filePath, "--- Debug print SSA for %1 pass %2 (no propagations) ---", getName(), pass);
+            LOG_SEPARATE(filePath, "%1", this->toString());
+            LOG_SEPARATE(filePath, "=== End debug print SSA for %1 pass %2 (no propagations) ===", getName(), pass);
         }
 
-        if (!SETTING(dotFile).isEmpty()) { // Require -gd now (though doesn't listen to file name)
+        if (!m_prog->getProject()->getSettings()->dotFile.isEmpty()) { // Require -gd now (though doesn't listen to file name)
             printDFG();
         }
 
 // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.
-        if (SETTING(changeSignatures)) {
+        if (m_prog->getProject()->getSettings()->changeSignatures) {
             // addNewReturns(depth);
             for (int i = 0; i < 3; i++) { // FIXME: should be iterate until no change
                 LOG_VERBOSE("### update returns loop iteration %1 ###", i);
@@ -956,13 +956,13 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
                 PassManager::get()->executePass(PassID::PreservationAnalysis, this); // Preserveds subtract from returns
             }
 
-            if (SETTING(verboseOutput)) {
+            if (m_prog->getProject()->getSettings()->verboseOutput) {
                 debugPrintAll("SSA (after updating returns");
             }
         }
 
         // Print if requested
-        if (SETTING(verboseOutput)) { // was if debugPrintSSA
+        if (m_prog->getProject()->getSettings()->verboseOutput) { // was if debugPrintSSA
             debugPrintAll("SSA (after trimming return set)");
         }
 
@@ -999,7 +999,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     // Now that memofs are renamed, the bypassing for memofs can work
     PassManager::get()->executePass(PassID::CallAndPhiFix, this); // Bypass children that are finalised (if any)
 
-    if (SETTING(nameParameters)) {
+    if (m_prog->getProject()->getSettings()->nameParameters) {
         // ? Crazy time to do this... haven't even done "final" parameters as yet
         // mapExpressionsToParameters();
     }
@@ -1045,7 +1045,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
     PassManager::get()->executePass(PassID::PreservationAnalysis, this);
 
     // Used to be later...
-    if (SETTING(nameParameters)) {
+    if (m_prog->getProject()->getSettings()->nameParameters) {
         // findPreserveds();        // FIXME: is this necessary here?
         // fixCallBypass();    // FIXME: surely this is not necessary now?
         // trimParameters();    // FIXME: surely there aren't any parameters to trim yet?
@@ -1081,7 +1081,7 @@ void UserProc::remUnusedStmtEtc()
         PassManager::get()->executePass(PassID::BlockVarRename, this);       // Rename the locals
         PassManager::get()->executePass(PassID::StatementPropagation, this); // Surely need propagation too
 
-        if (SETTING(verboseOutput)) {
+        if (m_prog->getProject()->getSettings()->verboseOutput) {
             debugPrintAll("after propagating locals");
         }
     }
@@ -1089,7 +1089,7 @@ void UserProc::remUnusedStmtEtc()
     PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
     PassManager::get()->executePass(PassID::FinalParameterSearch, this);
 
-    if (SETTING(nameParameters)) {
+    if (m_prog->getProject()->getSettings()->nameParameters) {
         // Replace the existing temporary parameters with the final ones:
         // mapExpressionsToParameters();
         PassManager::get()->executePass(PassID::ParameterSymbolMap, this);
@@ -1533,14 +1533,14 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
     SharedExp queryRight = query->getSubExp2();
 
     if ((m_provenTrue.find(queryLeft) != m_provenTrue.end()) && (*m_provenTrue[queryLeft] == *queryRight)) {
-        if (DEBUG_PROOF) {
+        if (m_prog->getProject()->getSettings()->debugProof) {
             LOG_MSG("found true in provenTrue cache %1 in %2", query, getName());
         }
 
         return true;
     }
 
-    if (!SETTING(useProof)) {
+    if (!m_prog->getProject()->getSettings()->useProof) {
         return false;
     }
 
@@ -1577,7 +1577,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
             if ((*origLeft == *right) &&                 // x == x
                 (origLeft->getOper() != opDefineAll) &&  // Beware infinite recursion
                 prove(allEqAll)) {                       // Recurse in case <all> not proven yet
-                if (DEBUG_PROOF) {
+                    if (m_prog->getProject()->getSettings()->debugProof) {
                     LOG_MSG("Using all=all for %1", query->getSubExp1());
                     LOG_MSG("Prove returns true");
                 }
@@ -1586,7 +1586,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
                 return true;
             }
 
-            if (DEBUG_PROOF) {
+            if (m_prog->getProject()->getSettings()->debugProof) {
                 LOG_MSG("Not in return collector: %1", query->getSubExp1());
                 LOG_MSG("Prove returns false");
             }
@@ -1608,7 +1608,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
         m_recurPremises.erase(origLeft); // Remove the premise, regardless of result
     }
 
-    if (DEBUG_PROOF) {
+    if (m_prog->getProject()->getSettings()->debugProof) {
         LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query, getName());
     }
 
@@ -1630,7 +1630,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
     auto phiInd = query->getSubExp2()->clone();
 
     if (lastPhi && (cache.find(lastPhi) != cache.end()) && (*cache[lastPhi] == *phiInd)) {
-        if (DEBUG_PROOF) {
+        if (m_prog->getProject()->getSettings()->debugProof) {
             LOG_MSG("true - in the phi cache");
         }
 
@@ -1644,7 +1644,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
     bool swapped = false;
 
     while (change) {
-        if (DEBUG_PROOF) {
+        if (m_prog->getProject()->getSettings()->debugProof) {
             LOG_MSG("%1", query);
         }
 
@@ -1707,7 +1707,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                             auto premisedTo = destProc->getPremised(base);
 
                             if (premisedTo) {
-                                if (DEBUG_PROOF) {
+                                if (m_prog->getProject()->getSettings()->debugProof) {
                                     LOG_MSG("Conditional preservation for call from %1 to %2, allows bypassing", getName(), destProc->getName());
                                 }
 
@@ -1723,7 +1723,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                                 auto newQuery = Binary::get(opEquals, base->clone(), base->clone());
                                 destProc->setPremise(base);
 
-                                if (DEBUG_PROOF) {
+                                if (m_prog->getProject()->getSettings()->debugProof) {
                                     LOG_MSG("New required premise %1 for %2", newQuery, destProc->getName());
                                 }
 
@@ -1732,7 +1732,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                                 destProc->killPremise(base);
 
                                 if (result) {
-                                    if (DEBUG_PROOF) {
+                                    if (m_prog->getProject()->getSettings()->debugProof) {
                                         LOG_MSG("Conditional preservation with new premise %1 succeeds for %2",
                                                 newQuery, destProc->getName());
                                     }
@@ -1743,7 +1743,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                                     return destProc->prover(query, lastPhis, cache, lastPhi);
                                 }
                                 else {
-                                    if (DEBUG_PROOF) {
+                                    if (m_prog->getProject()->getSettings()->debugProof) {
                                         LOG_MSG("Conditional preservation required premise %1 fails!", newQuery);
                                     }
 
@@ -1767,14 +1767,14 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                         else {
                             called[call] = query->clone();
 
-                            if (DEBUG_PROOF) {
+                            if (m_prog->getProject()->getSettings()->debugProof) {
                                 LOG_MSG("Using proven for %1 %2 = %3", call->getDestProc()->getName(),
                                         r->getSubExp1(), right);
                             }
 
                             right = call->localiseExp(right);
 
-                            if (DEBUG_PROOF) {
+                            if (m_prog->getProject()->getSettings()->debugProof) {
                                 LOG_MSG("Right with subs: %1", right);
                             }
 
@@ -1791,7 +1791,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                     if ((lastPhis.find(pa) != lastPhis.end()) || (pa == lastPhi)) {
                         ok = (*query->getSubExp2() == *phiInd);
 
-                        if (DEBUG_PROOF) {
+                        if (m_prog->getProject()->getSettings()->debugProof) {
                             if (ok) {
                                 LOG_MSG("Phi loop detected (set true due to induction)"); // FIXME: induction??!
                             }
@@ -1801,7 +1801,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                         }
                     }
                     else {
-                        if (DEBUG_PROOF) {
+                        if (m_prog->getProject()->getSettings()->debugProof) {
                             LOG_MSG("Found %1 prove for each, ", s);
                         }
 
@@ -1810,7 +1810,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                             auto r1 = e->access<RefExp, 1>();
                             r1->setDef(pi.getDef());
 
-                            if (DEBUG_PROOF) {
+                            if (m_prog->getProject()->getSettings()->debugProof) {
                                 LOG_MSG("proving for %1", e);
                             }
 
@@ -1913,7 +1913,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
         auto query_prev = query;
         query = query->clone()->simplify();
 
-        if (change && !(*old == *query) && DEBUG_PROOF) {
+        if (change && !(*old == *query) && m_prog->getProject()->getSettings()->debugProof) {
             LOG_MSG("%1", old);
         }
     }
@@ -2618,7 +2618,7 @@ bool UserProc::removeRedundantParameters()
 
     Boomerang::get()->alertDecompileDebugPoint(this, "Before removing redundant parameters");
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% removing unused parameters for %1", getName());
     }
 
@@ -2643,7 +2643,7 @@ bool UserProc::removeRedundantParameters()
             // Remove the parameter
             ret = true;
 
-            if (DEBUG_UNUSED) {
+            if (m_prog->getProject()->getSettings()->debugUnused) {
                 LOG_MSG(" %%% removing unused parameter %1 in %2", param, getName());
             }
 
@@ -2661,7 +2661,7 @@ bool UserProc::removeRedundantParameters()
 
     getParameters() = newParameters;
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% end removing unused parameters for %1", getName());
     }
 
@@ -2682,7 +2682,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         return removedParams;
     }
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% removing unused returns for %1 %%%", getName());
     }
 
@@ -2711,7 +2711,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
                 rr          = m_retStatement->erase(rr);
                 removedRets = true;
 
-                if (DEBUG_UNUSED) {
+                if (m_prog->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a, getName());
                 }
             }
@@ -2767,7 +2767,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
             continue;
         }
 
-        if (DEBUG_UNUSED) {
+        if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG("%%%  removing unused return %1 from proc %2", a, getName());
         }
 
@@ -2778,7 +2778,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         removedRets = true;
     }
 
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         QString     tgt;
         QTextStream ost(&tgt);
         unionOfCallerLiveLocs.print(ost);
@@ -2822,7 +2822,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
 {
     // We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
     // by removing returns
-    if (DEBUG_UNUSED) {
+    if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% updating %1 for changes to uses (returns or arguments)", getName());
         LOG_MSG("%%% updating dataflow:");
     }
@@ -2863,14 +2863,15 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
     removeRedundantParameters();
 
     if (m_parameters.size() != oldNumParameters) {
-        if (DEBUG_UNUSED) {
+        if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG("%%%  parameters changed for %1", getName());
         }
 
         std::set<CallStatement *>& callers = getCallers();
+        const bool experimental = m_prog->getProject()->getSettings()->experimental;
 
         for (CallStatement *cc : callers) {
-            cc->updateArguments();
+            cc->updateArguments(experimental);
             // Schedule the callers for analysis
             removeRetSet.insert(cc->getProc());
         }
@@ -2883,7 +2884,7 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
         const UseCollector& newLiveness = *call->getUseCollector();
 
         if (newLiveness != oldLiveness) {
-            if (DEBUG_UNUSED) {
+            if (m_prog->getProject()->getSettings()->debugUnused) {
                 LOG_MSG("%%%  Liveness for call to %1 in %2 changed",
                         call->getDestProc()->getName(), getName());
             }
@@ -2934,7 +2935,7 @@ void UserProc::processDecodedICTs()
 
         RTL *rtl = bb->getLastRTL();
 
-        if (DEBUG_SWITCH) {
+        if (m_prog->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("Saving high level switch statement:\n%1", rtl);
         }
 
@@ -2950,9 +2951,7 @@ void UserProc::mapLocalsAndParams()
 {
     Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
 
-    if (DEBUG_TA) {
-        LOG_MSG("### Mapping expressions to local variables for %1 ###", getName());
-    }
+    LOG_VERBOSE("### Mapping expressions to local variables for %1 ###", getName());
 
     StatementList stmts;
     getStatements(stmts);
@@ -2961,9 +2960,7 @@ void UserProc::mapLocalsAndParams()
         s->dfaMapLocals();
     }
 
-    if (DEBUG_TA) {
-        LOG_MSG("### End mapping expressions to local variables for %1 ###", getName());
-    }
+    LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", getName());
 }
 
 

@@ -17,12 +17,14 @@
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/ui_SettingsDlg.h"
 
+
 Q_DECLARE_METATYPE(ITypeRecovery *)
 
 
 SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     : QDialog(_parent)
     , ui(new Ui::SettingsDlg)
+    , m_settings(decompiler->getProject()->getSettings())
 {
     ui->setupUi(this);
 
@@ -44,52 +46,50 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
         }
     }
 
-    ui->chkDebugDecoder->setChecked(SETTING(debugDecoder));
-    ui->chkDebugGenerator->setChecked(SETTING(debugGen));
-    ui->chkDebugLiveness->setChecked(SETTING(debugLiveness));
-    ui->chkDebugProof->setChecked(SETTING(debugProof));
-    ui->chkDebugSwitch->setChecked(SETTING(debugSwitch));
-    ui->chkDebugTA->setChecked(SETTING(debugTA));
-    ui->chkDebugUnused->setChecked(SETTING(debugUnused));
-    ui->chkTraceDecoder->setChecked(SETTING(traceDecoder));
-    ui->chkVerbose->setChecked(SETTING(verboseOutput));
+    ui->chkDebugDecoder->setChecked(m_settings->debugDecoder);
+    ui->chkDebugGenerator->setChecked(m_settings->debugGen);
+    ui->chkDebugLiveness->setChecked(m_settings->debugLiveness);
+    ui->chkDebugProof->setChecked(m_settings->debugProof);
+    ui->chkDebugSwitch->setChecked(m_settings->debugSwitch);
+    ui->chkDebugTA->setChecked(m_settings->debugTA);
+    ui->chkDebugUnused->setChecked(m_settings->debugUnused);
+    ui->chkTraceDecoder->setChecked(m_settings->traceDecoder);
+    ui->chkVerbose->setChecked(m_settings->verboseOutput);
 
     // Decode settings
-    ui->chkDecodeChildren->setChecked(SETTING(decodeChildren));
-    ui->chkDecodeMain->setChecked(SETTING(decodeMain));
-    ui->chkDecodeThruIndirectCall->setChecked(SETTING(decodeThruIndCall));
-    ui->chkGenCallGraph->setChecked(SETTING(generateCallGraph));
+    ui->chkDecodeChildren->setChecked(m_settings->decodeChildren);
+    ui->chkDecodeMain->setChecked(m_settings->decodeMain);
+    ui->chkDecodeThruIndirectCall->setChecked(m_settings->decodeThruIndCall);
+    ui->chkGenCallGraph->setChecked(m_settings->generateCallGraph);
 
     // Decompile settings
-    ui->cbDotFile->addItem(SETTING(dotFile));
+    ui->cbDotFile->addItem(m_settings->dotFile);
     ui->cbDotFile->setEditable(false);
     ui->spbPropMaxDepth->setRange(0, std::numeric_limits<int>::max());
-    ui->spbPropMaxDepth->setValue(SETTING(propMaxDepth));
+    ui->spbPropMaxDepth->setValue(m_settings->propMaxDepth);
     ui->spbNumToPropagate->setRange(-1, std::numeric_limits<int>::max());
-    ui->spbNumToPropagate->setValue(SETTING(numToPropagate));
+    ui->spbNumToPropagate->setValue(m_settings->numToPropagate);
 
     ITypeRecovery *rec = decompiler->getProject()->getTypeRecoveryEngine();
     ui->cbTypeRecoveryEngine->addItem("<None>",       QVariant::fromValue<ITypeRecovery *>(nullptr));
     ui->cbTypeRecoveryEngine->addItem(rec->getName(), QVariant::fromValue<ITypeRecovery *>(rec));
-    ui->cbTypeRecoveryEngine->setCurrentIndex(SETTING(dfaTypeAnalysis) ? 1 : 0);
+    ui->cbTypeRecoveryEngine->setCurrentIndex(m_settings->dfaTypeAnalysis ? 1 : 0);
 
-    ui->chkAssumeABI->setChecked(SETTING(assumeABI));
-    ui->chkBranchSimplify->setChecked(SETTING(branchSimplify));
-    ui->chkChangeSignatures->setChecked(SETTING(changeSignatures));
-    ui->chkDecompile->setChecked(SETTING(decompile));
-    ui->chkExperimental->setChecked(SETTING(experimental));
-    ui->chkGenSymbols->setChecked(SETTING(generateSymbols));
-    ui->chkNameParameters->setChecked(SETTING(nameParameters));
-    ui->chkPropOnlyToAll->setChecked(SETTING(propOnlyToAll));
-    ui->chkRemoveLabels->setChecked(SETTING(removeLabels));
-    ui->chkRemoveNull->setChecked(SETTING(removeNull));
-    ui->chkRemoveReturns->setChecked(SETTING(removeReturns));
-    ui->chkStopAtDebugPoints->setChecked(SETTING(stopAtDebugPoints));
-    ui->chkUseDataflow->setChecked(SETTING(useDataflow));
-    ui->chkUseGlobals->setChecked(SETTING(useGlobals));
-    ui->chkUseLocals->setChecked(SETTING(useLocals));
-    ui->chkUsePromotion->setChecked(SETTING(usePromotion));
-    ui->chkUseProof->setChecked(SETTING(useProof));
+    ui->chkAssumeABI->setChecked(m_settings->assumeABI);
+    ui->chkChangeSignatures->setChecked(m_settings->changeSignatures);
+    ui->chkExperimental->setChecked(m_settings->experimental);
+    ui->chkGenSymbols->setChecked(m_settings->generateSymbols);
+    ui->chkNameParameters->setChecked(m_settings->nameParameters);
+    ui->chkPropOnlyToAll->setChecked(m_settings->propOnlyToAll);
+    ui->chkRemoveLabels->setChecked(m_settings->removeLabels);
+    ui->chkRemoveNull->setChecked(m_settings->removeNull);
+    ui->chkRemoveReturns->setChecked(m_settings->removeReturns);
+    ui->chkStopAtDebugPoints->setChecked(m_settings->stopAtDebugPoints);
+    ui->chkUseDataflow->setChecked(m_settings->useDataflow);
+    ui->chkUseGlobals->setChecked(m_settings->useGlobals);
+    ui->chkUseLocals->setChecked(m_settings->useLocals);
+    ui->chkUsePromotion->setChecked(m_settings->usePromotion);
+    ui->chkUseProof->setChecked(m_settings->useProof);
 }
 
 
@@ -119,45 +119,43 @@ void SettingsDlg::on_btnApply_clicked()
 {
     Log::getOrCreateLog().setLogLevel(static_cast<LogLevel>(ui->cbLogLevel->currentData().value<int>()));
 
-    SETTING(debugDecoder)  = ui->chkDebugDecoder->isChecked();
-    SETTING(debugGen)      = ui->chkDebugGenerator->isChecked();
-    SETTING(debugLiveness) = ui->chkDebugLiveness->isChecked();
-    SETTING(debugProof)    = ui->chkDebugProof->isChecked();
-    SETTING(debugSwitch)   = ui->chkDebugSwitch->isChecked();
-    SETTING(debugTA)       = ui->chkDebugTA->isChecked();
-    SETTING(debugUnused)   = ui->chkDebugUnused->isChecked();
-    SETTING(traceDecoder)  = ui->chkTraceDecoder->isChecked();
-    SETTING(verboseOutput) = ui->chkVerbose->isChecked();
+    m_settings->debugDecoder  = ui->chkDebugDecoder->isChecked();
+    m_settings->debugGen      = ui->chkDebugGenerator->isChecked();
+    m_settings->debugLiveness = ui->chkDebugLiveness->isChecked();
+    m_settings->debugProof    = ui->chkDebugProof->isChecked();
+    m_settings->debugSwitch   = ui->chkDebugSwitch->isChecked();
+    m_settings->debugTA       = ui->chkDebugTA->isChecked();
+    m_settings->debugUnused   = ui->chkDebugUnused->isChecked();
+    m_settings->traceDecoder  = ui->chkTraceDecoder->isChecked();
+    m_settings->verboseOutput = ui->chkVerbose->isChecked();
 
     // Decode
-    SETTING(decodeChildren)    = ui->chkDecodeChildren->isChecked();
-    SETTING(decodeMain)        = ui->chkDecodeMain->isChecked();
-    SETTING(decodeThruIndCall) = ui->chkDecodeThruIndirectCall->isChecked();
-    SETTING(generateCallGraph) = ui->chkGenCallGraph->isChecked();
+    m_settings->decodeChildren    = ui->chkDecodeChildren->isChecked();
+    m_settings->decodeMain        = ui->chkDecodeMain->isChecked();
+    m_settings->decodeThruIndCall = ui->chkDecodeThruIndirectCall->isChecked();
+    m_settings->generateCallGraph = ui->chkGenCallGraph->isChecked();
 
     // Decompile
-    SETTING(dotFile)         = ui->cbDotFile->currentData().value<QString>();
-    SETTING(propMaxDepth)    = ui->spbPropMaxDepth->value();
-    SETTING(numToPropagate)  = ui->spbNumToPropagate->value();
-    SETTING(dfaTypeAnalysis) = ui->cbTypeRecoveryEngine->currentData().value<ITypeRecovery *>() != nullptr;
+    m_settings->dotFile         = ui->cbDotFile->currentData().value<QString>();
+    m_settings->propMaxDepth    = ui->spbPropMaxDepth->value();
+    m_settings->numToPropagate  = ui->spbNumToPropagate->value();
+    m_settings->dfaTypeAnalysis = ui->cbTypeRecoveryEngine->currentData().value<ITypeRecovery *>() != nullptr;
 
-    SETTING(assumeABI)           = ui->chkAssumeABI->isChecked();
-    SETTING(branchSimplify)      = ui->chkBranchSimplify->isChecked();
-    SETTING(changeSignatures)    = ui->chkChangeSignatures->isChecked();
-    SETTING(decompile)           = ui->chkDecompile->isChecked();
-    SETTING(experimental)        = ui->chkExperimental->isChecked();
-    SETTING(generateSymbols)     = ui->chkGenSymbols->isChecked();
-    SETTING(nameParameters)      = ui->chkNameParameters->isChecked();
-    SETTING(propOnlyToAll)       = ui->chkPropOnlyToAll->isChecked();
-    SETTING(removeLabels)        = ui->chkRemoveLabels->isChecked();
-    SETTING(removeNull)          = ui->chkRemoveNull->isChecked();
-    SETTING(removeReturns)       = ui->chkRemoveReturns->isChecked();
-    SETTING(stopAtDebugPoints)   = ui->chkStopAtDebugPoints->isChecked();
-    SETTING(useDataflow)         = ui->chkUseDataflow->isChecked();
-    SETTING(useGlobals)          = ui->chkUseGlobals->isChecked();
-    SETTING(useLocals)           = ui->chkUseLocals->isChecked();
-    SETTING(usePromotion)        = ui->chkUsePromotion->isChecked();
-    SETTING(useProof)            = ui->chkUseProof->isChecked();
+    m_settings->assumeABI           = ui->chkAssumeABI->isChecked();
+    m_settings->changeSignatures    = ui->chkChangeSignatures->isChecked();
+    m_settings->experimental        = ui->chkExperimental->isChecked();
+    m_settings->generateSymbols     = ui->chkGenSymbols->isChecked();
+    m_settings->nameParameters      = ui->chkNameParameters->isChecked();
+    m_settings->propOnlyToAll       = ui->chkPropOnlyToAll->isChecked();
+    m_settings->removeLabels        = ui->chkRemoveLabels->isChecked();
+    m_settings->removeNull          = ui->chkRemoveNull->isChecked();
+    m_settings->removeReturns       = ui->chkRemoveReturns->isChecked();
+    m_settings->stopAtDebugPoints   = ui->chkStopAtDebugPoints->isChecked();
+    m_settings->useDataflow         = ui->chkUseDataflow->isChecked();
+    m_settings->useGlobals          = ui->chkUseGlobals->isChecked();
+    m_settings->useLocals           = ui->chkUseLocals->isChecked();
+    m_settings->usePromotion        = ui->chkUsePromotion->isChecked();
+    m_settings->useProof            = ui->chkUseProof->isChecked();
 }
 
 

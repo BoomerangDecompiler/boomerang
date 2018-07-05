@@ -24,6 +24,7 @@ Q_DECLARE_METATYPE(Address)
 
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
+    , m_project(new Project())
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
@@ -75,10 +76,8 @@ static void help()
         "  -dt              : Debug type analysis\n"
         "  -du              : Debug removal of unused statements etc\n"
         "Restrictions\n"
-        "  -nb              : No simplifications for branches\n"
         "  -nc              : No decode children in the call graph (callees)\n"
         "  -nd              : No (reduced) dataflow analysis\n"
-        "  -nD              : No decompilation (at all!)\n"
         "  -nl              : No creation of local variables\n"
         "  -ng              : No replacement of expressions with Globals\n"
         "  -nn              : No removal of nullptr and unused statements\n"
@@ -134,13 +133,13 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         switch (arg[1].toLatin1())
         {
         case 'E':
-            SETTING(decodeChildren) = false;
+            m_project->getSettings()->decodeChildren = false;
         // Fall through
 
         case 'e':
             {
                 Address addr;
-                SETTING(decodeMain) = false;
+                m_project->getSettings()->decodeMain = false;
 
                 if (++i == args.size()) {
                     usage();
@@ -155,7 +154,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     return 2;
                 }
 
-                Boomerang::get()->getSettings()->m_entryPoints.push_back(addr);
+                m_project->getSettings()->m_entryPoints.push_back(addr);
             }
             break;
 
@@ -164,30 +163,30 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'v':
-            SETTING(verboseOutput) = true;
+            m_project->getSettings()->verboseOutput = true;
             break;
 
         case 'X':
-            SETTING(experimental) = true;
+            m_project->getSettings()->experimental = true;
             LOG_WARN("Activating experimental code!");
             break;
 
         case 'r':
-            SETTING(printRTLs) = true;
+            m_project->getSettings()->printRTLs = true;
             break;
 
         case 't':
-            SETTING(traceDecoder) = true;
+            m_project->getSettings()->traceDecoder = true;
             break;
 
         case 'T':
             if (arg[2] == 'c') {
                 LOG_WARN("Constraint-based type analysis is no longer supported. "
                         "Falling back to Data-Flow based type analysis.");
-                SETTING(dfaTypeAnalysis) = true;
+                m_project->getSettings()->dfaTypeAnalysis = true;
             }
             else if (arg[2] == 'd') {
-                SETTING(dfaTypeAnalysis) = true;
+                m_project->getSettings()->dfaTypeAnalysis = true;
             }
 
             break;
@@ -195,14 +194,14 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'g':
 
             if (arg[2] == 'd') {
-                SETTING(dotFile) = args[++i];
+                m_project->getSettings()->dotFile = args[++i];
             }
             else if (arg[2] == 'c') {
-                SETTING(generateCallGraph) = true;
+                m_project->getSettings()->generateCallGraph = true;
             }
             else if (arg[2] == 's') {
-                SETTING(generateSymbols)     = true;
-                SETTING(stopBeforeDecompile) = true;
+                m_project->getSettings()->generateSymbols     = true;
+                m_project->getSettings()->stopBeforeDecompile = true;
             }
 
             break;
@@ -215,7 +214,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     o_path += '/'; // Maintain the convention of a trailing slash
                 }
 
-                Boomerang::get()->getSettings()->setOutputDirectory(o_path);
+                m_project->getSettings()->setOutputDirectory(o_path);
                 break;
             }
 
@@ -225,7 +224,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 'i':
 
             if (arg[2] == 'c') {
-                SETTING(decodeThruIndCall) = true; // -ic;
+                m_project->getSettings()->decodeThruIndCall = true; // -ic;
                 break;
             }
             else if (arg.size() > 2) {
@@ -240,7 +239,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 interactiveMode = true;
 
                 if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
-                    SETTING(replayFile) = args[++i];
+                    m_project->getSettings()->replayFile = args[++i];
                 }
             }
             break;
@@ -256,58 +255,50 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_MSG("Working directory now '%1'", wd.path());
                 }
 
-                Boomerang::get()->getSettings()->setWorkingDirectory(wd.path());
-                Boomerang::get()->getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
-                Boomerang::get()->getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
-                Boomerang::get()->getSettings()->setOutputDirectory(wd.path() + "/./output/");
+                m_project->getSettings()->setWorkingDirectory(wd.path());
+                m_project->getSettings()->setDataDirectory(wd.path() + "/../share/boomerang/");
+                m_project->getSettings()->setPluginDirectory(wd.path() + "/../lib/boomerang/plugins/");
+                m_project->getSettings()->setOutputDirectory(wd.path() + "/./output/");
             }
             break;
 
         case 'n':
             switch (arg[2].toLatin1())
             {
-            case 'b':
-                SETTING(branchSimplify) = false;
-                break;
-
             case 'c':
-                SETTING(decodeChildren) = false;
+                m_project->getSettings()->decodeChildren = false;
                 break;
 
             case 'd':
-                SETTING(useDataflow) = false;
-                break;
-
-            case 'D':
-                SETTING(decompile) = false;
+                m_project->getSettings()->useDataflow = false;
                 break;
 
             case 'l':
-                SETTING(useLocals) = false;
+                m_project->getSettings()->useLocals = false;
                 break;
 
             case 'n':
-                SETTING(removeNull) = false;
+                m_project->getSettings()->removeNull = false;
                 break;
 
             case 'P':
-                SETTING(usePromotion) = false;
+                m_project->getSettings()->usePromotion = false;
                 break;
 
             case 'p':
-                SETTING(nameParameters) = false;
+                m_project->getSettings()->nameParameters = false;
                 break;
 
             case 'r':
-                SETTING(removeLabels) = false;
+                m_project->getSettings()->removeLabels = false;
                 break;
 
             case 'R':
-                SETTING(removeReturns) = false;
+                m_project->getSettings()->removeReturns = false;
                 break;
 
             case 'g':
-                SETTING(useGlobals) = false;
+                m_project->getSettings()->useGlobals = false;
                 break;
 
             default:
@@ -318,7 +309,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
         case 'p':
             if (arg[2] == 'a') {
-                SETTING(propOnlyToAll) = true;
+                m_project->getSettings()->propOnlyToAll = true;
                 LOG_WARN(" * * Warning! -pa is not implemented yet!");
             }
             else {
@@ -327,7 +318,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     return 1;
                 }
 
-                SETTING(numToPropagate) = args[i].toInt();
+                m_project->getSettings()->numToPropagate = args[i].toInt();
             }
 
             break;
@@ -335,7 +326,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
         case 's':
             {
                 if (arg[2] == 'f') {
-                    Boomerang::get()->getSettings()->m_symbolFiles.push_back(args[i + 1]);
+                    m_project->getSettings()->m_symbolFiles.push_back(args[i + 1]);
                     i++;
                     break;
                 }
@@ -354,7 +345,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                     LOG_FATAL("Bad address: %1", args[i + 1]);
                 }
 
-                Boomerang::get()->getSettings()->m_symbolMap[addr] = args[++i];
+                m_project->getSettings()->m_symbolMap[addr] = args[++i];
             }
             break;
 
@@ -363,35 +354,35 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             switch (arg[2].toLatin1())
             {
             case 'c':
-                SETTING(debugSwitch) = true;
+                m_project->getSettings()->debugSwitch = true;
                 break;
 
             case 'd':
-                SETTING(debugDecoder) = true;
+                m_project->getSettings()->debugDecoder = true;
                 break;
 
             case 'g':
-                SETTING(debugGen) = true;
+                m_project->getSettings()->debugGen = true;
                 break;
 
             case 'l':
-                SETTING(debugLiveness) = true;
+                m_project->getSettings()->debugLiveness = true;
                 break;
 
             case 'p':
-                SETTING(debugProof) = true;
+                m_project->getSettings()->debugProof = true;
                 break;
 
             case 's':
-                SETTING(stopAtDebugPoints) = true;
+                m_project->getSettings()->stopAtDebugPoints = true;
                 break;
 
             case 't': // debug type analysis
-                SETTING(debugTA) = true;
+                m_project->getSettings()->debugTA = true;
                 break;
 
             case 'u': // debug unused locations (including returns and parameters now)
-                SETTING(debugUnused) = true;
+                m_project->getSettings()->debugUnused = true;
                 break;
 
             default:
@@ -401,7 +392,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
             break;
 
         case 'a':
-            SETTING(assumeABI) = true;
+            m_project->getSettings()->assumeABI = true;
             break;
 
         case 'l':
@@ -411,7 +402,7 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
                 return 1;
             }
 
-            SETTING(propMaxDepth) = args[i].toInt();
+            m_project->getSettings()->propMaxDepth = args[i].toInt();
             break;
 
         case 'S':
@@ -440,11 +431,10 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
 int CommandlineDriver::interactiveMain()
 {
-    m_project.reset(new Project);
     m_project->loadPlugins();
     m_console.reset(new Console(m_project.get()));
 
-    CommandStatus status = m_console->replayFile(SETTING(replayFile));
+    CommandStatus status = m_console->replayFile(m_project->getSettings()->replayFile);
 
     if (status == CommandStatus::ExitProgram) {
         return 2;
@@ -474,13 +464,12 @@ int CommandlineDriver::interactiveMain()
 
 int CommandlineDriver::decompile()
 {
-    Log::getOrCreateLog().addDefaultLogSinks();
+    Log::getOrCreateLog().addDefaultLogSinks(m_project->getSettings()->getOutputDirectory().absolutePath());
+    m_project->loadPlugins();
 
-    QDir       wd = Boomerang::get()->getSettings()->getWorkingDirectory();
+    QDir       wd = m_project->getSettings()->getWorkingDirectory();
     QFileInfo inf = QFileInfo(wd.absoluteFilePath(m_pathToBinary));
 
-    m_project.reset(new Project());
-    m_project->loadPlugins();
     return decompile(inf.absoluteFilePath(), inf.baseName());
 }
 
@@ -520,20 +509,20 @@ int CommandlineDriver::decompile(const QString& fname, const QString& pname)
     }
 
 
-    if (SETTING(stopBeforeDecompile)) {
+    if (m_project->getSettings()->stopBeforeDecompile) {
         return 0;
     }
 
     LOG_MSG("Decompiling...");
     m_project->decompileBinaryFile();
 
-    if (!SETTING(dotFile).isEmpty()) {
-        CfgDotWriter().writeCFG(m_project->getProg(), SETTING(dotFile));
+    if (!m_project->getSettings()->dotFile.isEmpty()) {
+        CfgDotWriter().writeCFG(m_project->getProg(), m_project->getSettings()->dotFile);
     }
 
     m_project->generateCode();
 
-    QDir outDir = Boomerang::get()->getSettings()->getOutputDirectory();
+    QDir outDir = m_project->getSettings()->getOutputDirectory();
     LOG_MSG("Output written to '%1'", outDir.absolutePath());
 
     time_t end;

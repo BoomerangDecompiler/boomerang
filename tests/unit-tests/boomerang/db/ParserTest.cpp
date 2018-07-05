@@ -18,13 +18,9 @@
 #include <QDebug>
 
 
-#define SPARC_SSL    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("ssl/sparc.ssl"))
-
-
 void ParserTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+    Boomerang::get();
 }
 
 
@@ -36,9 +32,9 @@ void ParserTest::cleanupTestCase()
 
 void ParserTest::testRead()
 {
-    RTLInstDict d;
+    RTLInstDict d(false);
 
-    QVERIFY(d.readSSLFile(SPARC_SSL));
+    QVERIFY(d.readSSLFile(BOOMERANG_TEST_BASE "share/boomerang/ssl/sparc.ssl"));
 }
 
 

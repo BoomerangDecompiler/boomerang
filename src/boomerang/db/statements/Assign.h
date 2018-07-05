@@ -67,9 +67,6 @@ public:
     /// \copydoc Assignment::usesExp
     virtual bool usesExp(const Exp& e) const override;
 
-    /// \copydoc Assignment::isDefinition
-    virtual bool isDefinition() const override { return true; }
-
     /// \copydoc Assignment::search
     virtual bool search(const Exp& search, SharedExp& result) const override;
 

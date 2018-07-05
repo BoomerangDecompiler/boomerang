@@ -103,7 +103,7 @@ class RTLInstDict
     friend class NJMCDecoder;
 
 public:
-    RTLInstDict() = default;
+    RTLInstDict(bool verboseOutput = false) { m_verboseOutput = verboseOutput; }
     RTLInstDict(const RTLInstDict&) = delete;
     RTLInstDict(RTLInstDict&&) = default;
 
@@ -208,6 +208,10 @@ private:
     void fixupParams();
 
     void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
+
+private:
+    /// Print messages when reading an SSL file or when instantiaing an instruction
+    bool m_verboseOutput;
 
     /// An RTL describing the machine's basic fetch-execute cycle
     SharedRTL fetchExecCycle;

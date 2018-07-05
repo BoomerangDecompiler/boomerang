@@ -57,9 +57,6 @@ public:
     /// \returns the library version string
     static const char *getVersionStr();
 
-    Settings *getSettings() { return m_settings.get(); }
-    const Settings *getSettings() const { return m_settings.get(); }
-
     /// Register a watcher to receive events about the decompilation.
     /// Does NOT take ownership of the pointer.
     void addWatcher(IWatcher *watcher);
@@ -111,23 +108,7 @@ public:
     void alertDecompilationEnd();
 
 public:
-    std::unique_ptr<Settings> m_settings;
     std::unique_ptr<Project> m_currentProject;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
 };
-
-/**
- * Global settings
- */
-
-#define SETTING(var)    (Boomerang::get()->getSettings()->var)
-
-#define DEBUG_TA                (SETTING(debugTA))
-#define DEBUG_PROOF             (SETTING(debugProof))
-#define DEBUG_UNUSED            (SETTING(debugUnused))
-#define DEBUG_SWITCH            (SETTING(debugSwitch))
-#define DEBUG_GEN               (SETTING(debugGen))
-#define DEBUG_DECODER           (SETTING(debugDecoder))
-#define DFA_TYPE_ANALYSIS       (SETTING(dfaTypeAnalysis))
-#define EXPERIMENTAL            (SETTING(experimental))

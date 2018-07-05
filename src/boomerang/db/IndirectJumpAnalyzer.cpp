@@ -10,20 +10,21 @@
 #include "IndirectJumpAnalyzer.h"
 
 
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Global.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
-#include "boomerang/db/Global.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/FuncType.h"
 #include "boomerang/util/Log.h"
@@ -335,7 +336,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         assert(!bb->getRTLs()->empty());
         RTL *lastRTL = bb->getLastRTL();
 
-        if (SETTING(debugSwitch)) {
+        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("decodeIndirectJmp: %1", lastRTL->prints());
         }
 
@@ -347,7 +348,8 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         // because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
         // now we'll assume no alias problems and force the propagation
         bool convert = false;
-        lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
+        lastStmt->propagateTo(convert, proc->getProg()->getProject()->getSettings(),
+                              nullptr, nullptr, true /* force */);
         SharedExp jumpDest = lastStmt->getDest();
 
         SwitchType switchType = SwitchType::Invalid;
@@ -356,7 +358,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             if (*jumpDest *= *val.pattern) { // *= compare ignores subscripts
                 switchType = val.type;
 
-                if (DEBUG_SWITCH) {
+                if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
                     LOG_MSG("Indirect jump matches form %1", static_cast<char>(switchType));
                 }
 
@@ -384,7 +386,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
                         Address switchEntryAddr = Address(prog->readNative4(swi->tableAddr + entryIdx * 4));
 
                         if (!Util::inRange(switchEntryAddr, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
-                            if (DEBUG_SWITCH) {
+                            if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
                                 LOG_MSG("Truncating type A indirect jump array to %1 entries "
                                         "due to finding an array entry pointing outside valid code; %2 isn't in %3..%4",
                                         entryIdx, switchEntryAddr, prog->getLimitTextLow(), prog->getLimitTextHigh());
@@ -456,7 +458,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         assert(!bb->getRTLs()->empty());
         RTL *lastRTL = bb->getLastRTL();
 
-        if (DEBUG_SWITCH) {
+        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("decodeIndirectJmp: COMPCALL:");
             LOG_MSG("%1", lastRTL->prints());
         }
@@ -478,7 +480,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         // converter will only simplify the direct parent of the changed expression (which is r24{16} + 20).
         e = e->simplify();
 
-        if (DEBUG_SWITCH) {
+        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("decodeIndirect: propagated and const global converted call expression is %1", e);
         }
 
@@ -490,7 +492,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             if (*e *= *hlVfc[i]) { // *= compare ignores subscripts
                 recognised = true;
 
-                if (DEBUG_SWITCH) {
+                if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
                     LOG_MSG("Indirect call matches form %1", i);
                 }
 
@@ -641,7 +643,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
             vtExp = nullptr;
         }
 
-        if (DEBUG_SWITCH) {
+        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("Form %1: from statement %2 get e = %3, K1 = %4, K2 = %5, vtExp = %6",
                     i, lastStmt->getNumber(), lastStmt->getDest(), K1, K2, vtExp);
         }
@@ -651,12 +653,12 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         // call
         vtExp = lastStmt->findDefFor(vtExp);
 
-        if (vtExp && DEBUG_SWITCH) {
+        if (vtExp && proc->getProg()->getProject()->getSettings()->debugSwitch) {
             LOG_MSG("VT expression boils down to this: %1", vtExp);
         }
 
         // Danger. For now, only do if -ic given
-        const bool decodeThru = SETTING(decodeThruIndCall);
+        const bool decodeThru = proc->getProg()->getProject()->getSettings()->decodeThruIndCall;
 
         if (decodeThru && vtExp && vtExp->isIntConst()) {
             Address addr  = std::static_pointer_cast<Const>(vtExp)->getAddr();
@@ -664,7 +666,7 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
 
             if (prog->getFunctionByAddr(pfunc) == nullptr) {
                 // A new, undecoded procedure
-                if (!SETTING(decodeChildren)) {
+                if (!prog->getProject()->getSettings()->decodeChildren) {
                     return false;
                 }
 
@@ -732,7 +734,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     RTL *lastRTL = bb->getLastRTL();
     SwitchInfo *si = static_cast<CaseStatement *>(lastRTL->getHlStmt())->getSwitchInfo();
 
-    if (SETTING(debugSwitch)) {
+    if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
         LOG_MSG("Processing switch statement type %1 with table at %2, %3 entries, lo=%4, hi=%5",
                 static_cast<char>(si->switchType), si->tableAddr, si->numTableEntries, si->lowerBound, si->upperBound);
     }
