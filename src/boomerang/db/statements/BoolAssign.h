@@ -90,11 +90,8 @@ public:
     /// \copydoc Statement::simplify
     virtual void simplify() override;
 
-    /// \copydoc Statement::isDefinition
-    virtual bool isDefinition() const override { return true; }
-
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& def) const override;
+    virtual void getDefinitions(LocationSet& def, bool assumeABICompliance) const override;
 
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return getCondExpr(); }

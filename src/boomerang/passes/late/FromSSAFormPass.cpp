@@ -54,10 +54,11 @@ bool FromSSAFormPass::execute(UserProc *proc)
     FirstTypesMap::iterator ff;
     ConnectionGraph         ig; // The interference graph; these can't have the same local variable
     ConnectionGraph         pu; // The Phi Unites: these need the same local variable or copies
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
     for (Statement *s : stmts) {
         LocationSet defs;
-        s->getDefinitions(defs);
+        s->getDefinitions(defs, assumeABICompliance);
 
         for (SharedExp base : defs) {
             SharedType ty   = s->getTypeFor(base);

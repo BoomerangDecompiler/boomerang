@@ -48,6 +48,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
     }
 
     bool changed = false;
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
     // For each statement S in block n
     BasicBlock::RTLIterator rit;
@@ -161,7 +162,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
         // For each definition of some variable a in S
         LocationSet defs;
-        S->getDefinitions(defs);
+        S->getDefinitions(defs, assumeABICompliance);
 
         for (SharedExp a : defs) {
             // Don't consider a if it cannot be renamed
@@ -259,7 +260,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
     for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {
         // For each definition of some variable a in S
         LocationSet defs;
-        S->getDefinitions(defs);
+        S->getDefinitions(defs, assumeABICompliance);
 
         for (auto dd = defs.begin(); dd != defs.end(); ++dd) {
             if (!proc->canRename(*dd)) {

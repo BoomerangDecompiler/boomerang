@@ -110,7 +110,6 @@ public:
     virtual void simplify() override;
 
     // Statement virtual functions
-    virtual bool isDefinition() const override { return false; }
     virtual bool usesExp(const Exp&) const override;
 
 protected:

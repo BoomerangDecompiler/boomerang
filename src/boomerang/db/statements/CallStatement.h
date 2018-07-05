@@ -161,11 +161,8 @@ public:
     /// \copydoc GotoStatement::usesExp
     virtual bool usesExp(const Exp& exp) const override;
 
-    /// \copydoc GotoStatement::isDefinition
-    virtual bool isDefinition() const override;
-
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& defs) const override;
+    virtual void getDefinitions(LocationSet& defs, bool assumeABICompliance) const override;
 
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc

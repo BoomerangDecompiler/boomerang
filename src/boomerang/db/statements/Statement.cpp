@@ -12,6 +12,7 @@
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
@@ -21,7 +22,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
@@ -71,9 +72,11 @@ Statement::Statement()
 void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;
+
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
     LocationSet exps, defs;
     addUsedLocs(exps);
-    getDefinitions(defs);
+    getDefinitions(defs, assumeABICompliance);
     exps.makeUnion(defs);
 
     for (auto ll = exps.begin(); ll != exps.end(); ++ll) {

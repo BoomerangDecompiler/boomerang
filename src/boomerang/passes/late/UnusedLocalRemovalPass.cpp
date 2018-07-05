@@ -95,9 +95,11 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     }
 
     // Remove any definitions of the removed locals
+    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
+
     for (Statement *s : stmts) {
         LocationSet ls;
-        s->getDefinitions(ls);
+        s->getDefinitions(ls, assumeABICompliance);
 
         for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
             SharedType ty   = s->getTypeFor(*ll);

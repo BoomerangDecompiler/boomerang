@@ -72,6 +72,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
 
     // For each RTL in this BB
     RTLList::reverse_iterator rit;
+    const bool assumeABICompliance = myProc->getProg()->getProject()->getSettings()->assumeABI;
 
     if (bb->getRTLs()) { // this can be nullptr
         for (rit = bb->getRTLs()->rbegin(); rit != bb->getRTLs()->rend(); ++rit) {
@@ -81,7 +82,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
                 Statement   *s = *sit;
                 LocationSet defs;
-                s->getDefinitions(defs);
+                s->getDefinitions(defs, assumeABICompliance);
                 // The definitions don't have refs yet
                 defs.addSubscript(s /* , myProc->getCFG() */);
 

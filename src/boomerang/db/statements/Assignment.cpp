@@ -91,7 +91,7 @@ bool Assignment::usesExp(const Exp& e) const
 }
 
 
-void Assignment::getDefinitions(LocationSet& defs) const
+void Assignment::getDefinitions(LocationSet& defs, bool) const
 {
     if (m_lhs->getOper() == opAt) {     // foo@[m:n] really only defines foo
         defs.insert(m_lhs->getSubExp1());

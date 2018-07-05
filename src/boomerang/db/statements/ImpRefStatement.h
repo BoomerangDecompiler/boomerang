@@ -50,9 +50,6 @@ public:
     /// \copydoc Statement::accept
     virtual bool accept(StmtPartModifier *modifier) override;
 
-    /// \copydoc Statement::isDefinition
-    virtual bool isDefinition() const override { return false; }
-
     /// \copydoc Statement::usesExp
     virtual bool usesExp(const Exp&) const override { return false; }
 

@@ -286,10 +286,10 @@ bool ReturnStatement::definesLoc(SharedExp loc) const
 }
 
 
-void ReturnStatement::getDefinitions(LocationSet& ls) const
+void ReturnStatement::getDefinitions(LocationSet& ls, bool assumeABICompliance) const
 {
     for (auto& elem : m_modifieds) {
-        (elem)->getDefinitions(ls);
+        (elem)->getDefinitions(ls, assumeABICompliance);
     }
 }
 

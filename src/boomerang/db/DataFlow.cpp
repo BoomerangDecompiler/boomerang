@@ -11,11 +11,13 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/Assign.h"
@@ -309,6 +311,8 @@ bool DataFlow::placePhiFunctions()
 
     m_definedAt.resize(numBB);
 
+    const bool assumeABICompliance = m_proc->getProg()->getProject()->getSettings()->assumeABI;
+
     // We need to create m_definedAt[n] for all n
     // Recreate each call because propagation and other changes make old data invalid
     for (int n = 0; n < numBB; n++) {
@@ -318,7 +322,7 @@ bool DataFlow::placePhiFunctions()
 
         for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
             LocationSet locationSet;
-            stmt->getDefinitions(locationSet);
+            stmt->getDefinitions(locationSet, assumeABICompliance);
 
             if (stmt->isCall() && static_cast<const CallStatement *>(stmt)->isChildless()) { // If this is a childless call
                 m_defallsites.insert(n);                              // then this block defines every variable
@@ -469,9 +473,10 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     }
 
     // For each statement this BB
-    BasicBlock::RTLIterator       rit;
+    BasicBlock::RTLIterator rit;
     StatementList::iterator sit;
     BasicBlock              *bb = m_BBs[n];
+    const bool assumeABICompliance = m_proc->getProg()->getProject()->getSettings()->assumeABI;
 
     for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {
@@ -502,7 +507,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 
         // Now process any definitions
         ls.clear();
-        S->getDefinitions(ls);
+        S->getDefinitions(ls, assumeABICompliance);
 
         for (const SharedExp& it : ls) {
             auto wrappedDef(RefExp::get(it, S));

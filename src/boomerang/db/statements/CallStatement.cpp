@@ -687,7 +687,7 @@ bool CallStatement::usesExp(const Exp& e) const
 }
 
 
-void CallStatement::getDefinitions(LocationSet& defs) const
+void CallStatement::getDefinitions(LocationSet& defs, bool assumeABICompliance) const
 {
     for (auto dd = m_defines.begin(); dd != m_defines.end(); ++dd) {
         defs.insert(static_cast<Assignment *>(*dd)->getLeft());
@@ -696,7 +696,7 @@ void CallStatement::getDefinitions(LocationSet& defs) const
     // Childless calls are supposed to define everything.
     // In practice they don't really define things like %pc,
     // so we need some extra logic in getTypeFor()
-    if (isChildless() && !SETTING(assumeABI)) {
+    if (isChildless() && !assumeABICompliance) {
         defs.insert(Terminal::get(opDefineAll));
     }
 }
@@ -1291,15 +1291,6 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
         Assign *as = makeArgAssign(ty, paramExp);
         m_arguments.append(as);
     }
-}
-
-
-bool CallStatement::isDefinition() const
-{
-    LocationSet defs;
-
-    getDefinitions(defs);
-    return defs.size() != 0;
 }
 
 

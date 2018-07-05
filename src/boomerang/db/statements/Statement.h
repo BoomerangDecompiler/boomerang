@@ -154,9 +154,6 @@ public:
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;
 
-    /// returns true if this statement defines anything
-    virtual bool isDefinition() const = 0;
-
     /// true if is a null statement
     bool isNullStatement() const;
 
@@ -211,7 +208,7 @@ public:
 
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
     /// returns a set of locations defined by this statement in a LocationSet argument.
-    virtual void getDefinitions(LocationSet& /*def*/) const {}
+    virtual void getDefinitions(LocationSet& /*def*/, bool /*assumeABICompliance*/) const {}
 
     virtual bool definesLoc(SharedExp /*loc*/) const { return false; }  // True if this Statement defines loc
 
