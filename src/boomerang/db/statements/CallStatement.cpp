@@ -631,7 +631,7 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB)
+void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
 {
     Function *dest = getDestProc();
 
@@ -642,38 +642,6 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *parentBB
 
     std::unique_ptr<StatementList> results = calcResults();
     assert(dest);
-
-    if (!SETTING(decompile)) {
-        if (m_procDest->getSignature()->getNumReturns() > 0) {
-            Assign *as = new Assign(IntegerType::get(STD_SIZE),
-                                    Unary::get(opRegOf, Const::get(REG_PENT_EAX)),
-                                    Unary::get(opRegOf, Const::get(REG_PENT_EAX)));
-            as->setProc(m_proc);
-            as->setBB(const_cast<BasicBlock *>(parentBB));
-            results->append(as);
-        }
-
-        // some hacks
-        if ((dest->getName() == "printf") || (dest->getName() == "scanf")) {
-            for (int i = 1; i < 3; i++) {
-                SharedExp e = m_signature->getArgumentExp(i);
-                assert(e);
-                auto l = std::dynamic_pointer_cast<Location>(e);
-
-                if (l) {
-                    l->setProc(m_proc);     // Needed?
-                }
-
-                Assign *as = new Assign(m_signature->getParamType(i),
-                                        e->clone(),
-                                        e->clone());
-                as->setProc(m_proc);
-                as->setBB(const_cast<BasicBlock *>(parentBB));
-                as->setNumber(m_number);     // So fromSSAForm will work later
-                m_arguments.append(as);
-            }
-        }
-    }
 
     if (dest->isLib() && !dest->getSignature()->getPreferredName().isEmpty()) {
         gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments, *results);
@@ -1349,7 +1317,7 @@ bool CallStatement::definesLoc(SharedExp loc) const
 }
 
 
-void CallStatement::updateArguments()
+void CallStatement::updateArguments(bool experimental)
 {
     /*
      * If this is a library call, source = signature
@@ -1376,7 +1344,7 @@ void CallStatement::updateArguments()
     // define the actual argument. For example, you might have m[esp{-}-56] in the call, but the actual definition
     // of
     // the printf argument is still m[esp{phi1} -20] = "%d".
-    if (SETTING(experimental)) {
+    if (experimental) {
         PassManager::get()->executePass(PassID::StatementPropagation, m_proc);
     }
 
@@ -1384,7 +1352,7 @@ void CallStatement::updateArguments()
     StatementList oldArguments(m_arguments);
     m_arguments.clear();
 
-    if (SETTING(experimental)) {
+    if (experimental) {
         // I don't really know why this is needed, but I was seeing r28 := ((((((r28{-}-4)-4)-4)-8)-4)-4)-4:
         DefCollector::iterator dd;
 

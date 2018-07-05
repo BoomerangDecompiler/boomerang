@@ -822,12 +822,6 @@ void UserProc::earlyDecompile()
     PassManager::get()->executePass(PassID::BBSimplify, this); // Remove branches with false guards
     PassManager::get()->executePass(PassID::Dominators, this);
 
-    if (!m_prog->getProject()->getSettings()->decompile) {
-        LOG_MSG("Not decompiling.");
-        setStatus(PROC_FINAL); // ??!
-        return;
-    }
-
     debugPrintAll("After Decoding");
     Boomerang::get()->alertDecompileDebugPoint(this, "After Initialise");
 
@@ -2874,9 +2868,10 @@ void UserProc::updateForUseChange(std::set<UserProc *>& removeRetSet)
         }
 
         std::set<CallStatement *>& callers = getCallers();
+        const bool experimental = m_prog->getProject()->getSettings()->experimental;
 
         for (CallStatement *cc : callers) {
-            cc->updateArguments();
+            cc->updateArguments(experimental);
             // Schedule the callers for analysis
             removeRetSet.insert(cc->getProc());
         }

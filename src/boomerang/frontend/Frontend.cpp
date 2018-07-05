@@ -834,30 +834,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
                         LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
-                        if (!m_program->getProject()->getSettings()->decompile) {
-                            // try some hacks
-                            if (jumpDest->isMemOf() && (jumpDest->getSubExp1()->getOper() == opPlus) &&
-                                jumpDest->getSubExp1()->getSubExp2()->isIntConst()) {
-                                // assume subExp2 is a jump table
-                                Address jmptbl = jumpDest->access<Const, 1, 2>()->getAddr();
-
-                                for (unsigned int i = 0; ; i++) {
-                                    Address destAddr = Address(m_program->getBinaryFile()->getImage()->readNative4(jmptbl + 4 * i));
-
-                                    if ((destAddr < m_program->getBinaryFile()->getImage()->getLimitTextLow()) || (destAddr >= m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-                                        break;
-                                    }
-
-                                    LOG_MSG("  guessed jump destination '%1'", destAddr);
-
-                                    m_targetQueue.visit(cfg, destAddr, currentBB);
-                                    cfg->addEdge(currentBB, destAddr);
-                                }
-
-                                currentBB->setType(BBType::Nway);
-                            }
-                        }
-
                         sequentialDecode = false;
                         break;
                     }

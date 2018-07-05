@@ -87,14 +87,6 @@ bool Assign::accept(StmtVisitor *visitor) const
 
 void Assign::simplify()
 {
-    // simplify arithmetic of assignment
-    if (!SETTING(branchSimplify)) {
-        const OPER leftop = m_lhs->getOper();
-        if (leftop == opZF || leftop == opCF || leftop == opOF || leftop == opNF) {
-            return;
-        }
-    }
-
     m_lhs = m_lhs->simplifyArith();
     m_rhs = m_rhs->simplifyArith();
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>477</width>
-    <height>733</height>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -188,13 +188,6 @@
          <item>
           <layout class="QVBoxLayout" name="vLayout_tabDecompile">
            <item>
-            <widget class="QCheckBox" name="chkDecompile">
-             <property name="text">
-              <string>Decompile</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QCheckBox" name="chkStopAtDebugPoints">
              <property name="enabled">
               <bool>false</bool>
@@ -230,13 +223,6 @@
               <widget class="QComboBox" name="cbTypeRecoveryEngine"/>
              </item>
             </layout>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="chkBranchSimplify">
-             <property name="text">
-              <string>Simplify branches</string>
-             </property>
-            </widget>
            </item>
            <item>
             <widget class="QCheckBox" name="chkRemoveNull">

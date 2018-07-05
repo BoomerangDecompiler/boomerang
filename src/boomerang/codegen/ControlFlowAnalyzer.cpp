@@ -37,11 +37,9 @@ void ControlFlowAnalyzer::structureCFG(Cfg *cfg)
     setTimeStamps();
     updateImmedPDom();
 
-    if (m_cfg->getProc()->getProg()->getProject()->getSettings()->decompile) {
-        structConds();
-        structLoops();
-        checkConds();
-    }
+    structConds();
+    structLoops();
+    checkConds();
 
     unTraverse();
 }

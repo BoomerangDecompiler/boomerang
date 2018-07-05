@@ -53,12 +53,10 @@ public:
     bool debugProof          = false;
     bool debugUnused         = false;
     bool printRTLs           = false;
-    bool branchSimplify      = true;
     bool removeNull          = true;
     bool useLocals           = true;
     bool removeLabels        = true;
     bool useDataflow         = true;
-    bool decompile           = true;
     bool stopBeforeDecompile = false;
     bool traceDecoder        = false;
 

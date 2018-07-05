@@ -11,7 +11,9 @@
 
 
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/util/Log.h"
 
@@ -25,6 +27,7 @@ CallArgumentUpdatePass::CallArgumentUpdatePass()
 bool CallArgumentUpdatePass::execute(UserProc *proc)
 {
     Boomerang::get()->alertDecompiling(proc);
+    const bool experimental = proc->getProg()->getProject()->getSettings()->experimental;
 
     for (BasicBlock *bb : *proc->getCFG()) {
         BasicBlock::RTLRIterator        rrit;
@@ -36,7 +39,7 @@ bool CallArgumentUpdatePass::execute(UserProc *proc)
             continue;
         }
 
-        c->updateArguments();
+        c->updateArguments(experimental);
         // c->bypass();
         LOG_VERBOSE2("Updated call statement to %1", c);
     }

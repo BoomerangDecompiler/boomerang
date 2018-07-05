@@ -66,11 +66,10 @@ void ProgDecompiler::decompile()
 
     globalTypeAnalysis();
 
-    if (m_prog->getProject()->getSettings()->decompile &&
-        m_prog->getProject()->getSettings()->removeReturns) {
-            // Repeat until no change. Not 100% sure if needed.
-            while (removeUnusedReturns()) {
-            }
+    if (m_prog->getProject()->getSettings()->removeReturns) {
+        // Repeat until no change. Not 100% sure if needed.
+        while (removeUnusedReturns()) {
+        }
     }
 
     globalTypeAnalysis();

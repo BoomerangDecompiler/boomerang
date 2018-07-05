@@ -17,6 +17,7 @@
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/ui_SettingsDlg.h"
 
+
 Q_DECLARE_METATYPE(ITypeRecovery *)
 
 
@@ -75,9 +76,7 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     ui->cbTypeRecoveryEngine->setCurrentIndex(m_settings->dfaTypeAnalysis ? 1 : 0);
 
     ui->chkAssumeABI->setChecked(m_settings->assumeABI);
-    ui->chkBranchSimplify->setChecked(m_settings->branchSimplify);
     ui->chkChangeSignatures->setChecked(m_settings->changeSignatures);
-    ui->chkDecompile->setChecked(m_settings->decompile);
     ui->chkExperimental->setChecked(m_settings->experimental);
     ui->chkGenSymbols->setChecked(m_settings->generateSymbols);
     ui->chkNameParameters->setChecked(m_settings->nameParameters);
@@ -143,9 +142,7 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->dfaTypeAnalysis = ui->cbTypeRecoveryEngine->currentData().value<ITypeRecovery *>() != nullptr;
 
     m_settings->assumeABI           = ui->chkAssumeABI->isChecked();
-    m_settings->branchSimplify      = ui->chkBranchSimplify->isChecked();
     m_settings->changeSignatures    = ui->chkChangeSignatures->isChecked();
-    m_settings->decompile           = ui->chkDecompile->isChecked();
     m_settings->experimental        = ui->chkExperimental->isChecked();
     m_settings->generateSymbols     = ui->chkGenSymbols->isChecked();
     m_settings->nameParameters      = ui->chkNameParameters->isChecked();
