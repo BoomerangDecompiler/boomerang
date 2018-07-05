@@ -26,7 +26,7 @@
 #include <QDebug>
 
 
-#define HELLO_WINDOWS    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
+#define HELLO_WINDOWS    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/windows/hello.exe"))
 
 
 // TODO: untangle the dynamic-size types from static size types ( Int vs Boolean etc. )
@@ -93,9 +93,8 @@ std::unique_ptr<ComplexTypeCompList> compForAddress(Address addr, DataIntervalMa
 
 void TypeTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 
@@ -128,6 +127,7 @@ void TypeTest::testNotEqual()
 void TypeTest::testCompound()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_WINDOWS));
+
     Prog *prog = m_project.getProg();
     IFrontEnd *fe = prog->getFrontEnd();
 

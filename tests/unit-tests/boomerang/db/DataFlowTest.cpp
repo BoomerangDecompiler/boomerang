@@ -26,9 +26,9 @@
 #include <QDebug>
 
 
-#define FRONTIER_PENTIUM    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/frontier"))
-#define SEMI_PENTIUM        (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/semi"))
-#define IFTHEN_PENTIUM      (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
+#define FRONTIER_PENTIUM    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/frontier"))
+#define SEMI_PENTIUM        (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/semi"))
+#define IFTHEN_PENTIUM      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/ifthen"))
 
 
 std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
@@ -46,9 +46,8 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 
 void DataFlowTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 

@@ -24,6 +24,7 @@ Q_DECLARE_METATYPE(Address)
 
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
+    , m_project(new Project())
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
@@ -430,7 +431,6 @@ int CommandlineDriver::applyCommandline(const QStringList& args)
 
 int CommandlineDriver::interactiveMain()
 {
-    m_project.reset(new Project);
     m_project->loadPlugins();
     m_console.reset(new Console(m_project.get()));
 
@@ -464,8 +464,6 @@ int CommandlineDriver::interactiveMain()
 
 int CommandlineDriver::decompile()
 {
-
-    m_project.reset(new Project());
     Log::getOrCreateLog().addDefaultLogSinks(m_project->getSettings()->getOutputDirectory().absolutePath());
     m_project->loadPlugins();
 

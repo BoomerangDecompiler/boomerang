@@ -57,9 +57,6 @@ public:
     /// \returns the library version string
     static const char *getVersionStr();
 
-    Settings *getSettings() { return m_settings.get(); }
-    const Settings *getSettings() const { return m_settings.get(); }
-
     /// Register a watcher to receive events about the decompilation.
     /// Does NOT take ownership of the pointer.
     void addWatcher(IWatcher *watcher);
@@ -111,7 +108,6 @@ public:
     void alertDecompilationEnd();
 
 public:
-    std::unique_ptr<Settings> m_settings;
     std::unique_ptr<Project> m_currentProject;
 
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
@@ -120,9 +116,3 @@ private:
     /// This is a mini command line debugger.  Feel free to expand it.
     void miniDebugger(UserProc *p, const char *description);
 };
-
-/**
- * Global settings
- */
-
-#define SETTING(var)    (Boomerang::get()->getSettings()->var)

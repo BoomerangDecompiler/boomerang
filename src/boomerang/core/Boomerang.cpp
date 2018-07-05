@@ -30,7 +30,6 @@ static Boomerang *g_boomerang;
 
 
 Boomerang::Boomerang()
-    : m_settings(new Settings)
 {
 }
 
@@ -122,7 +121,7 @@ void Boomerang::destroy()
 
 void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 {
-    if (m_currentProject->getSettings()->stopAtDebugPoints) {
+    if (m_currentProject && m_currentProject->getSettings()->stopAtDebugPoints) {
         miniDebugger(p, description);
     }
 

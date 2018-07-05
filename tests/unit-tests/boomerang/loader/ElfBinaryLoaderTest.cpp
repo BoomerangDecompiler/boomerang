@@ -18,9 +18,9 @@
 #include <QLibrary>
 
 
-#define HELLO_CLANG4           (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
-#define HELLO_CLANG4_STATIC    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/hello-clang4-static"))
-#define HELLO_PENTIUM          (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
+#define HELLO_CLANG4           (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/elf/hello-clang4-dynamic"))
+#define HELLO_CLANG4_STATIC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/hello-clang4-static"))
+#define HELLO_PENTIUM          (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
 
 
 /// path to the ELF loader plugin
@@ -36,9 +36,8 @@ Q_DECLARE_METATYPE(Address)
 
 void ElfBinaryLoaderTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 

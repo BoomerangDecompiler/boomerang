@@ -23,7 +23,7 @@
 #include "boomerang/type/type/PointerType.h"
 
 
-#define SAMPLE(path)    (Boomerang::get()->getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
+#define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
 
 #define HELLO_PENTIUM   SAMPLE("pentium/hello")
 #define FBRANCH_PENTIUM SAMPLE("pentium/fbranch")
@@ -32,8 +32,8 @@
 
 void ProgTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 

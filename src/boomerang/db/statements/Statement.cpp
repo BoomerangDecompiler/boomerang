@@ -73,7 +73,7 @@ void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;
 
-    const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
+    const bool assumeABICompliance = proc ? proc->getProg()->getProject()->getSettings()->assumeABI : false;
     LocationSet exps, defs;
     addUsedLocs(exps);
     getDefinitions(defs, assumeABICompliance);

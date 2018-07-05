@@ -23,9 +23,8 @@
 
 void ProcTest::initTestCase()
 {
-    Boomerang::get()->getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    Boomerang::get()->getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-
+    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
+    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
     m_project.loadPlugins();
 }
 

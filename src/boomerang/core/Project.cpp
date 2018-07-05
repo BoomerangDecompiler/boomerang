@@ -24,7 +24,8 @@
 
 
 Project::Project()
-    : m_typeRecovery(new DFATypeRecovery())
+    : m_settings(new Settings())
+    , m_typeRecovery(new DFATypeRecovery())
     , m_codeGenerator(new CCodeGenerator())
 {
 }
