@@ -10,14 +10,15 @@
 #include "MiniDebugger.h"
 
 
-#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 
 
 void MiniDebugger::onDecompileDebugPoint(UserProc *proc, const char *description)
 {
-    if (SETTING(stopAtDebugPoints)) {
+    if (proc->getProg()->getProject()->getSettings()->stopAtDebugPoints) {
         miniDebugger(proc, description);
     }
 }
