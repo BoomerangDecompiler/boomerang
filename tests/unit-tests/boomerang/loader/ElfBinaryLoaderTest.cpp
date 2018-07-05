@@ -34,14 +34,6 @@
 Q_DECLARE_METATYPE(Address)
 
 
-void ElfBinaryLoaderTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
 void ElfBinaryLoaderTest::testElfLoadClang()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_CLANG4));

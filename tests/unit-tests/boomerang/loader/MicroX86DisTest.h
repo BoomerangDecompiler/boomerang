@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include "TestUtils.h"
 
 
-class MicroX86DisTest : public QObject
+class MicroX86DisTest : public BoomerangTest
 {
     Q_OBJECT
 

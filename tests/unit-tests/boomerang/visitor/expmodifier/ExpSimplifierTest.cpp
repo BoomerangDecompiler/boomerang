@@ -19,31 +19,6 @@
 #include "boomerang/type/type/IntegerType.h"
 
 
-/// HACK to work around limitations of QMetaType which does not allow templates
-struct SharedExpWrapper
-{
-public:
-    explicit SharedExpWrapper()               : exp(nullptr) {}
-    explicit SharedExpWrapper(SharedExp _exp) : exp(_exp) {}
-
-public:
-    SharedExp operator->() { return exp; }
-    SharedExp operator*()  { return exp; }
-    operator SharedExp()  { return exp; }
-
-public:
-    SharedExp exp;
-};
-
-Q_DECLARE_METATYPE(SharedExpWrapper)
-
-
-void ExpSimplifierTest::initTestCase()
-{
-    qRegisterMetaType<SharedExpWrapper>();
-}
-
-
 void ExpSimplifierTest::testSimplify()
 {
     QFETCH(SharedExpWrapper, exp);

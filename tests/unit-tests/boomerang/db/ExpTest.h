@@ -10,8 +10,7 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-#include <memory>
+#include "TestUtils.h"
 
 
 class Const;
@@ -21,7 +20,7 @@ class Location;
 /**
  * Test the Exp class and subclasses
  */
-class ExpTest : public QObject
+class ExpTest : public BoomerangTest
 {
     Q_OBJECT
 
@@ -30,12 +29,7 @@ protected:
     std::shared_ptr<Location> m_rof2;
 
 private slots:
-    /**
-     * Set up some expressions for use with all the tests
-     * \note Called before any tests
-     */
     void initTestCase();
-    void cleanupTestCase();
 
     /// Test integer constant
     void test99();

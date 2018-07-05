@@ -10,16 +10,12 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include "TestUtils.h"
 
-class BasicBlockTest : public QObject
+
+class BasicBlockTest : public BoomerangTest
 {
-    Q_OBJECT
-
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     void testConstruct();
     void testAssign();
 

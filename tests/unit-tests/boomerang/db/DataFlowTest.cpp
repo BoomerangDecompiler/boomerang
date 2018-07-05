@@ -44,21 +44,6 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 }
 
 
-void DataFlowTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
-void DataFlowTest::cleanupTestCase()
-{
-    NamedType::clearNamedTypes();
-    Boomerang::destroy();
-}
-
-
 void DataFlowTest::testCalculateDominators()
 {
     // Appel, Figure 19.8

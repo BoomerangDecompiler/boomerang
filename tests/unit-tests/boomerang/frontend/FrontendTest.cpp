@@ -10,8 +10,6 @@
 #include "FrontendTest.h"
 
 
-#include "boomerang/db/Prog.h"
-
 #define HELLO_SPARC      "tests/inputs/sparc/hello"
 #define HELLO_PENTIUM    "tests/inputs/pentium/hello"
 #define HELLO_HPPA       "tests/inputs/hppa/hello"

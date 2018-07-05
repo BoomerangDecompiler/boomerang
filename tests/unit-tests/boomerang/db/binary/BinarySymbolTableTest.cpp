@@ -15,11 +15,6 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 
 
-void BinarySymbolTableTest::initTestCase()
-{
-}
-
-
 void BinarySymbolTableTest::testSize()
 {
     BinarySymbolTable tbl;

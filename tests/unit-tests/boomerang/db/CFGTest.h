@@ -10,16 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include "TestUtils.h"
 
 
 /**
  * Tests for the Control Flow Graph
  */
-class CFGTest : public QObject
+class CFGTest : public BoomerangTest
 {
-    Q_OBJECT
-
 private slots:
     void testHasBB();
     void testCreateBB();

@@ -23,25 +23,9 @@
 #include "boomerang/type/type/PointerType.h"
 
 
-#define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
-
-#define HELLO_PENTIUM   SAMPLE("pentium/hello")
-#define FBRANCH_PENTIUM SAMPLE("pentium/fbranch")
-#define HELLO_WIN       SAMPLE("windows/hello.exe")
-
-
-void ProgTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
-void ProgTest::cleanupTestCase()
-{
-    Boomerang::destroy();
-}
+#define HELLO_PENTIUM   getFullSamplePath("pentium/hello")
+#define FBRANCH_PENTIUM getFullSamplePath("pentium/fbranch")
+#define HELLO_WIN       getFullSamplePath("windows/hello.exe")
 
 
 void ProgTest::testFrontend()

@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class ExpArithSimplifierTest : public QObject
+class ExpArithSimplifierTest : public BoomerangTest
 {
 public:
     Q_OBJECT

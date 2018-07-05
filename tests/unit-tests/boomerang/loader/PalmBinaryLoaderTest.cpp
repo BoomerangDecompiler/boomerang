@@ -16,21 +16,7 @@
 #include "boomerang/util/Log.h"
 
 
-#define STARTER_PALM    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/mc68328/Starter.prc"))
-
-
-void PalmBinaryLoaderTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
-void PalmBinaryLoaderTest::cleanupTestCase()
-{
-    Boomerang::destroy();
-}
+#define STARTER_PALM    getFullSamplePath("mc68328/Starter.prc")
 
 
 void PalmBinaryLoaderTest::testPalmLoad()

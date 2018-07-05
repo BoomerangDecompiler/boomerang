@@ -10,18 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class ElfBinaryLoaderTest : public QObject
+class ElfBinaryLoaderTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     /// test the loader using a "Hello World" program
     /// compiled with clang-4.0.0 (without debug info)
     void testElfLoadClang();
@@ -29,7 +25,4 @@ private slots:
     /// Test loading the pentium (Solaris) hello world program
     void testPentiumLoad();
     void testPentiumLoad_data();
-
-private:
-    Project m_project;
 };

@@ -10,25 +10,17 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class FrontSparcTest : public QObject
+class FrontSparcTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     void test1();
     void test2();
     void test3();
     void testBranch();
     void testDelaySlot();
-
-private:
-    Project m_project;
 };

@@ -10,13 +10,11 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class BinaryImageTest : public QObject
+class BinaryImageTest : public BoomerangTest
 {
-    Q_OBJECT
-
 private slots:
     void testGetNumSections();
     void testHasSections();

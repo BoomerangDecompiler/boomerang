@@ -9,13 +9,9 @@
 #pragma endregion License
 #include "IntervalSetTest.h"
 
+
 #include "boomerang/util/IntervalSet.h"
 #include "boomerang/util/Address.h"
-
-
-void IntervalSetTest::initTestCase()
-{
-}
 
 
 void IntervalSetTest::testIsEmpty()

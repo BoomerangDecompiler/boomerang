@@ -25,22 +25,9 @@
 #include <QDebug>
 
 
-#define HELLO_SPARC     (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/hello"))
-#define BRANCH_SPARC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/branch"))
+#define HELLO_SPARC     getFullSamplePath("sparc/hello")
+#define BRANCH_SPARC    getFullSamplePath("sparc/branch")
 
-
-void FrontSparcTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
-void FrontSparcTest::cleanupTestCase()
-{
-    Boomerang::destroy();
-}
 
 
 void FrontSparcTest::test1()

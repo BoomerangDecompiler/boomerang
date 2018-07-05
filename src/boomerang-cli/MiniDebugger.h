@@ -9,7 +9,13 @@
 #pragma endregion License
 #pragma once
 
+
 #include "boomerang/core/Watcher.h"
+
+#include <set>
+
+
+class Statement;
 
 
 class MiniDebugger : public IWatcher
@@ -21,4 +27,7 @@ private:
 private:
     /// This is a mini command line debugger.  Feel free to expand it.
     void miniDebugger(UserProc *p, const char *description);
+
+private:
+    std::set<Statement *> watches;
 };

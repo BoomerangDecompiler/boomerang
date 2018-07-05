@@ -10,22 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class PalmBinaryLoaderTest : public QObject
+class PalmBinaryLoaderTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     /// Test loading the Palm 68328 Starter.prc program
     void testPalmLoad();
-
-private:
-    Project m_project;
 };

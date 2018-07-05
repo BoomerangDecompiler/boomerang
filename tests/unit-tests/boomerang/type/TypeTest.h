@@ -10,19 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class TypeTest : public QObject
+class TypeTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     void testTypeLong();
     void testNotEqual();
     void testCompound();
@@ -30,7 +25,4 @@ private slots:
     // Test the DataIntervalMap class
     void testDataInterval();
     void testDataIntervalOverlaps();
-
-private:
-    Project m_project;
 };

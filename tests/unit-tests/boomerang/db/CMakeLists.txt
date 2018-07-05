@@ -36,7 +36,7 @@ foreach(t ${TESTS})
     string(REGEX REPLACE ".*/" "" TEST_NAME ${t})
 	BOOMERANG_ADD_TEST(
 		NAME ${TEST_NAME}
-		SOURCES ${t}.h ${t}.cpp
+		SOURCES ${t}.h ${t}.cpp ../../TestUtils.h ../../TestUtils.cpp
 		LIBRARIES
 			${DEBUG_LIB}
 			boomerang

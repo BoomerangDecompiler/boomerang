@@ -10,17 +10,12 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-#include <memory>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class ProcTest : public QObject
+class ProcTest : public BoomerangTestWithPlugins
 {
 private slots:
-    void initTestCase();
-
     /// Test setting and reading name, constructor, native address
     void testName();
 

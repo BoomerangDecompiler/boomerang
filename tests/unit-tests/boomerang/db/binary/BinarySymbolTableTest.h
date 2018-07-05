@@ -10,16 +10,14 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class BinarySymbolTableTest : public QObject
+class BinarySymbolTableTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void testSize();
     void testEmpty();
     void testClear();

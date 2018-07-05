@@ -10,22 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class Win32BinaryLoaderTest : public QObject
+class Win32BinaryLoaderTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     /// Test loading Windows programs
     void testWinLoad();
-
-private:
-    Project m_project;
 };

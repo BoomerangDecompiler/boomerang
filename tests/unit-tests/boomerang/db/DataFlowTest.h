@@ -10,22 +10,15 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
 /**
  * Test for basic data-flow related code
  */
-class DataFlowTest : public QObject
+class DataFlowTest : public BoomerangTestWithPlugins
 {
-    Q_OBJECT
-
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     /// Test calculating (semi-)dominators and the Dominance Frontier
     void testCalculateDominators();
 
@@ -37,7 +30,4 @@ private slots:
 
     /// Test the renaming of variables
     void testRenameVars();
-
-private:
-    Project m_project;
 };

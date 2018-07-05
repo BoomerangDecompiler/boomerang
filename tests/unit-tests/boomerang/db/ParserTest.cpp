@@ -18,18 +18,6 @@
 #include <QDebug>
 
 
-void ParserTest::initTestCase()
-{
-    Boomerang::get();
-}
-
-
-void ParserTest::cleanupTestCase()
-{
-    Boomerang::destroy();
-}
-
-
 void ParserTest::testRead()
 {
     RTLInstDict d(false);

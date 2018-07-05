@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class StatementListTest : public QObject
+class StatementListTest : public BoomerangTest
 {
 public:
     Q_OBJECT

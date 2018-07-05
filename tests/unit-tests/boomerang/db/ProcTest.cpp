@@ -18,20 +18,9 @@
 #include <map>
 
 
-#define HELLO_PENTIUM    "test/pentium/hello"
-
-
-void ProcTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
 void ProcTest::testName()
 {
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.loadBinaryFile(getFullSamplePath("pentium/hello")));
     Prog *prog = m_project.getProg();
     QVERIFY(prog != nullptr);
 

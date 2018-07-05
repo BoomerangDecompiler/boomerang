@@ -10,22 +10,17 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
 /**
  * Test the Prog class.
  */
-class ProgTest : public QObject
+class ProgTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     void testFrontend(); // getFrontend() / setFrontend()
     void testName();     // getName() / setName()
 
@@ -79,7 +74,4 @@ private slots:
     void testMakeArrayType();
     void testMarkGlobalUsed();
     void testGlobalType(); // getGlobalType/setGlobalType
-
-private:
-    Project m_project;
 };

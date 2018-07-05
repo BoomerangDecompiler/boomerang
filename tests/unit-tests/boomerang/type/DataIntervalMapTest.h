@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include "TestUtils.h"
 
 
-class DataIntervalMapTest : public QObject
+class DataIntervalMapTest : public BoomerangTest
 {
     Q_OBJECT
 

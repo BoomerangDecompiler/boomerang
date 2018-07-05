@@ -9,14 +9,15 @@
 #pragma endregion License
 #pragma once
 
-#include <QtTest/QTest>
 
-class FrontendTest : public QObject
+#include "TestUtils.h"
+
+
+class FrontendTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-
     /// Test loading the sparc hello world program
     void test1();
 };

@@ -17,11 +17,6 @@
 #include "boomerang/util/LocationSet.h"
 
 
-void LocationSetTest::initTestCase()
-{
-}
-
-
 void LocationSetTest::testAssign()
 {
     LocationSet set1, set2;

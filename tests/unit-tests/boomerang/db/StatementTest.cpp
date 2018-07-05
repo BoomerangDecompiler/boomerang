@@ -40,8 +40,8 @@
 #include <map>
 
 
-#define HELLO_PENTIUM      (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
-#define GLOBAL1_PENTIUM    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/global1"))
+#define HELLO_PENTIUM      getFullSamplePath("pentium/hello")
+#define GLOBAL1_PENTIUM    getFullSamplePath("pentium/global1")
 
 
 void compareStrings(const QString& actual, const QString& expected)
@@ -54,20 +54,6 @@ void compareStrings(const QString& actual, const QString& expected)
     }
 
     QVERIFY(actualList.length() == expectedList.length());
-}
-
-
-void StatementTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
-void StatementTest::cleanupTestCase()
-{
-    Boomerang::destroy();
 }
 
 

@@ -10,22 +10,17 @@
 #pragma once
 
 
-#include "boomerang/util/Log.h"
-
-#include <QtTest/QTest>
-#include <iostream>
+#include "TestUtils.h"
 
 
 /**
  * Tests the Data Flow based type analysis code
  */
-class DfaTest : public QObject
+class DfaTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     /// Test meeting IntegerTypes with various other types
     void testMeet();
     void testMeet_data();

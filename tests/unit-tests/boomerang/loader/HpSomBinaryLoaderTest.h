@@ -10,19 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class HpSomBinaryLoaderTest : public QObject
+class HpSomBinaryLoaderTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     void testHppaLoad();
 
 public:

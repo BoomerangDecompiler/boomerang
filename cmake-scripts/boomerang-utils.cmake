@@ -34,7 +34,7 @@ function(BOOMERANG_COPY_IMPORTED_DLL TargetName ImportedName)
                 "${${SanitizedName}-Release}"
                 "${BOOMERANG_OUTPUT_DIR}/bin/"
         )
-        
+
         install(FILES "${${SanitizedName}-Debug}" DESTINATION bin/ CONFIGURATIONS Debug)
         install(FILES "${${SanitizedName}-Release}" DESTINATION bin/ CONFIGURATIONS Release)
     endif (MSVC)
@@ -55,7 +55,7 @@ function(BOOMERANG_ADD_LOADER)
 
 		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
 		set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			
+
         if (MSVC)
             # Visual Studio generates lib files for import in addition to dll files.
 			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
@@ -120,7 +120,11 @@ endfunction(BOOMERANG_ADD_CODEGEN)
 function(BOOMERANG_ADD_TEST)
 	cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-	add_executable(${TEST_NAME} ${TEST_SOURCES})
+	add_executable(${TEST_NAME}
+        ${TEST_SOURCES}
+        ${CMAKE_SOURCE_DIR}/tests/unit-tests/TestUtils.cpp
+        ${CMAKE_SOURCE_DIR}/tests/unit-tests/TestUtils.h)
+
 	target_link_libraries(${TEST_NAME}
 		Qt5::Core
 		Qt5::Test

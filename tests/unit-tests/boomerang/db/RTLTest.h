@@ -10,20 +10,17 @@
 #pragma once
 
 
-#include <QtTest/QtTest>
+#include "TestUtils.h"
 
 
 /**
  * Tests Register Transfer Lists
  */
-class RtlTest : public QObject
+class RtlTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     /// Test appendExp and printing of RTLs
     void testAppend();
 

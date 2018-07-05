@@ -10,33 +10,18 @@
 #pragma once
 
 
-/*
- * $Revision: 1.7 $
- *
- * 14 Jan 03 - Trent: Created
- */
-
-#include <QtTest/QtTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
 /**
- * Provides the interface for the StatementTest class, which
- *  tests the dataflow subsystems
+ * Provides the interface for the StatementTest class,
+ * which tests the dataflow subsystems
  */
-class StatementTest : public QObject
+class StatementTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    /**
-     * Set up some expressions for use with all the tests
-     * \note Called before any tests
-     */
-    void initTestCase();
-    void cleanupTestCase();
-
     void testEmpty();
     void testFlow();
     void testKill();
@@ -81,7 +66,4 @@ private slots:
 
     /// Test the visitor code that finds constants
     void testFindConstants();
-
-private:
-    Project m_project;
 };

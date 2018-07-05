@@ -17,21 +17,7 @@
 #include "boomerang/util/Log.h"
 
 
-#define SWITCH_BORLAND    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/windows/switch_borland.exe"))
-
-
-void Win32BinaryLoaderTest::initTestCase()
-{
-    m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-    m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-    m_project.loadPlugins();
-}
-
-
-void Win32BinaryLoaderTest::cleanupTestCase()
-{
-    Boomerang::destroy();
-}
+#define SWITCH_BORLAND    getFullSamplePath("windows/switch_borland.exe")
 
 
 void Win32BinaryLoaderTest::testWinLoad()

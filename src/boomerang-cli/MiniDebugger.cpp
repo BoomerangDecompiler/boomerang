@@ -31,7 +31,6 @@ void MiniDebugger::miniDebugger(UserProc *proc, const char *description)
 
     q_cout << "decompiling " << proc->getName() << ": " << description << "\n";
     QString stopAt;
-    static std::set<Statement *> watches;
 
     if (stopAt.isEmpty() || !proc->getName().compare(stopAt)) {
         // This is a mini command line debugger.  Feel free to expand it.

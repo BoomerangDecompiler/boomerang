@@ -30,14 +30,10 @@
 
 void ExpTest::initTestCase()
 {
+    BoomerangTest::initTestCase();
+
     m_99 = Const::get(99);
     m_rof2.reset(new Location(opRegOf, Const::get(REG_SPARC_G2), nullptr));
-}
-
-
-void ExpTest::cleanupTestCase()
-{
-    Boomerang::destroy();
 }
 
 

@@ -50,19 +50,6 @@ void compareStrings(const QString& actual, const QString& expected)
 }
 
 
-void RtlTest::initTestCase()
-{
-//     m_project.getSettings()->setDataDirectory(BOOMERANG_TEST_BASE "share/boomerang/");
-//     m_project.getSettings()->setPluginDirectory(BOOMERANG_TEST_BASE "lib/boomerang/plugins/");
-}
-
-
-void RtlTest::cleanupTestCase()
-{
-    Boomerang::destroy();
-}
-
-
 void RtlTest::testAppend()
 {
     Assign *a = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));

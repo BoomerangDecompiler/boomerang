@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class ConnectionGraphTest : public QObject
+class ConnectionGraphTest : public BoomerangTest
 {
 public:
     Q_OBJECT

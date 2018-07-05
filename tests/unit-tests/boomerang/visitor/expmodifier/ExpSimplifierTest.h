@@ -10,17 +10,15 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class ExpSimplifierTest : public QObject
+class ExpSimplifierTest : public BoomerangTest
 {
 public:
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-
     void testSimplify();
     void testSimplify_data();
 };

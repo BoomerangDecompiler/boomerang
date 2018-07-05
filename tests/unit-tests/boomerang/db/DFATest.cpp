@@ -10,7 +10,6 @@
 #include "DFATest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/SizeType.h"
@@ -19,35 +18,9 @@
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/UnionType.h"
 #include "boomerang/type/type/CharType.h"
-#include "boomerang/util/Log.h"
 
 #include <QtCore/QDebug>
 #include <sstream>
-
-
-/// HACK to work around limitations of QMetaType which does not allow templates
-struct SharedTypeWrapper
-{
-public:
-    explicit SharedTypeWrapper()               : ty(nullptr) {}
-    explicit SharedTypeWrapper(SharedType _ty) : ty(_ty) {}
-
-public:
-    SharedType operator->() { return ty; }
-    SharedType operator*() { return ty; }
-    operator SharedType() { return ty; }
-
-public:
-    SharedType ty;
-};
-
-Q_DECLARE_METATYPE(SharedTypeWrapper)
-
-
-void DfaTest::initTestCase()
-{
-    qRegisterMetaType<SharedTypeWrapper>();
-}
 
 
 void DfaTest::testMeet()

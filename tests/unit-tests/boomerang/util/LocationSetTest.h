@@ -10,18 +10,15 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class LocationSetTest : public QObject
+class LocationSetTest : public BoomerangTest
 {
 public:
     Q_OBJECT
 
 private slots:
-    /// Set up anything needed before all tests
-    void initTestCase();
-
     void testAssign();
     void testCompare();
 

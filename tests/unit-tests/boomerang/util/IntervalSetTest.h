@@ -10,18 +10,15 @@
 #pragma once
 
 
-#include <QTest>
+#include "TestUtils.h"
 
 
-class IntervalSetTest : public QObject
+class IntervalSetTest : public BoomerangTest
 {
 public:
     Q_OBJECT
 
 private slots:
-    /// Set up anything needed before all tests
-    void initTestCase();
-
     void testIsEmpty();
     void testClear();
     void testInsert();

@@ -10,24 +10,17 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include <memory>
-
-class IProject;
+#include "TestUtils.h"
 
 
 /**
  * Test the Project class.
  */
-class ProjectTest : public QObject
+class ProjectTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     /// Test the import binary function.
     void testLoadBinaryFile();
 

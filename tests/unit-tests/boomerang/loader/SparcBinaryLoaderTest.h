@@ -10,22 +10,14 @@
 #pragma once
 
 
-#include <QtTest/QTest>
-
-#include "boomerang/core/Project.h"
+#include "TestUtils.h"
 
 
-class SparcBinaryLoaderTest : public QObject
+class SparcBinaryLoaderTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
 private slots:
-    void initTestCase();
-    void cleanupTestCase();
-
     /// Test loading the sparc hello world program
     void testSparcLoad();
-
-private:
-    Project m_project;
 };
