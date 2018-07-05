@@ -247,12 +247,12 @@ bool Statement::canPropagateToExp(const Exp& exp)
 }
 
 
-bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar> *destCounts /* = nullptr */,
-                            LocationSet *usedByDomPhi /* = nullptr */, bool force /* = false */)
+bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
+                            LocationSet *usedByDomPhi, bool force)
 {
     bool change = false;
     int  changes = 0;
-    const int propMaxDepth = SETTING(propMaxDepth);
+    const int propMaxDepth = settings->propMaxDepth;
 
     do {
         LocationSet exps;
@@ -282,7 +282,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 
             SharedExp lhs = def->getLeft();
 
-            if (SETTING(experimental)) {
+            if (settings->experimental) {
                 // This is Mike's experimental propagation limiting heuristic. At present, it is:
                 // for each component of def->rhs
                 //   test if the base expression is in the set usedByDomPhi
@@ -362,19 +362,19 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
             // Check if the -l flag (propMaxDepth) prevents this propagation,
             // but always propagate to %flags
             if (!destCounts || lhs->isFlags() || def->getRight()->containsFlags()) {
-                change |= doPropagateTo(e, def, convert);
+                change |= doPropagateTo(e, def, convert, settings);
             }
             else {
                 std::map<SharedExp, int, lessExpStar>::iterator ff = destCounts->find(e);
 
                 if (ff == destCounts->end()) {
-                    change |= doPropagateTo(e, def, convert);
+                    change |= doPropagateTo(e, def, convert, settings);
                 }
                 else if (ff->second <= 1) {
-                    change |= doPropagateTo(e, def, convert);
+                    change |= doPropagateTo(e, def, convert, settings);
                 }
                 else if (rhs->getComplexityDepth(m_proc) < propMaxDepth) {
-                    change |= doPropagateTo(e, def, convert);
+                    change |= doPropagateTo(e, def, convert, settings);
                 }
             }
         }
@@ -390,7 +390,7 @@ bool Statement::propagateTo(bool& convert, std::map<SharedExp, int, lessExpStar>
 }
 
 
-bool Statement::propagateFlagsTo()
+bool Statement::propagateFlagsTo(Settings *settings)
 {
     bool change  = false;
     bool convert = false;
@@ -414,7 +414,7 @@ bool Statement::propagateFlagsTo()
             SharedExp base = e->access<Exp, 1>();     // Either RefExp or Location ?
 
             if (base->isFlags() || base->isMainFlag()) {
-                change |= doPropagateTo(e, def, convert);
+                change |= doPropagateTo(e, def, convert, settings);
             }
         }
     } while (change && ++changes < 10);
@@ -424,15 +424,15 @@ bool Statement::propagateFlagsTo()
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert)
+bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert, Settings *settings)
 {
     // Respect the -p N switch
-    if (SETTING(numToPropagate) >= 0) {
-        if (SETTING(numToPropagate) == 0) {
+    if (settings->numToPropagate >= 0) {
+        if (settings->numToPropagate == 0) {
             return false;
         }
 
-        SETTING(numToPropagate--);
+        settings->numToPropagate--;
     }
 
     LOG_VERBOSE2("Propagating %1 into %2", def, this);

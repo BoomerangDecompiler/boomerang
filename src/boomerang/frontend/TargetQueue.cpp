@@ -31,7 +31,7 @@ void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)
     if (!alreadyParsed) {
         m_targets.push(newAddr);
 
-        if (SETTING(traceDecoder)) {
+        if (m_traceDecoder) {
             LOG_MSG(">%1", newAddr);
         }
     }
@@ -50,7 +50,7 @@ Address TargetQueue::getNextAddress(const Cfg& cfg)
         Address address = m_targets.front();
         m_targets.pop();
 
-        if (SETTING(traceDecoder)) {
+        if (m_traceDecoder) {
             LOG_MSG("<%1", address);
         }
 

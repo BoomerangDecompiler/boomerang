@@ -611,7 +611,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 {
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
-    TargetQueue _targetQueue;
+    TargetQueue _targetQueue(m_program->getProject()->getSettings()->traceDecoder);
 
     // Similarly, we have a set of CallStatement pointers. These may be
     // disregarded if this is a speculative decode that fails (i.e. an illegal

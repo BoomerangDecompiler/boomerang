@@ -54,6 +54,7 @@
 IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : m_binaryFile(binaryFile)
     , m_program(prog)
+    , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
 {
 }
 

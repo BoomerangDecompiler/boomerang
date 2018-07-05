@@ -348,7 +348,8 @@ bool IndirectJumpAnalyzer::decodeIndirectJmp(BasicBlock *bb, UserProc *proc)
         // because of the alias safety issue. Eventually, we should use an alias-safe incremental propagation, but for
         // now we'll assume no alias problems and force the propagation
         bool convert = false;
-        lastStmt->propagateTo(convert, nullptr, nullptr, true /* force */);
+        lastStmt->propagateTo(convert, proc->getProg()->getProject()->getSettings(),
+                              nullptr, nullptr, true /* force */);
         SharedExp jumpDest = lastStmt->getDest();
 
         SwitchType switchType = SwitchType::Invalid;
