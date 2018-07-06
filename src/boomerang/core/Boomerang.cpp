@@ -59,12 +59,6 @@ void Boomerang::alertDecompileDebugPoint(UserProc *p, const char *description)
 }
 
 
-const char *Boomerang::getVersionStr()
-{
-    return BOOMERANG_VERSION;
-}
-
-
 void Boomerang::addWatcher(IWatcher* watcher)
 {
     m_watchers.insert(watcher);

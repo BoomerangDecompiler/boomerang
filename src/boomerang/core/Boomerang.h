@@ -54,9 +54,6 @@ public:
     static Boomerang *get();
     static void destroy();
 
-    /// \returns the library version string
-    static const char *getVersionStr();
-
     /// Register a watcher to receive events about the decompilation.
     /// Does NOT take ownership of the pointer.
     void addWatcher(IWatcher *watcher);

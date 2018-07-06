@@ -36,6 +36,12 @@ Project::~Project()
 }
 
 
+const char *Project::getVersionStr() const
+{
+    return BOOMERANG_VERSION;
+}
+
+
 bool Project::loadBinaryFile(const QString& filePath)
 {
     LOG_MSG("Loading binary file '%1'", filePath);

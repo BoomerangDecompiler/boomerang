@@ -39,6 +39,9 @@ public:
     Project& operator=(Project&& other) = default;
 
 public:
+    /// \returns the library version string
+    const char *getVersionStr() const;
+
     /// Load all plugins from the plugin directory.
     void loadPlugins();
 
