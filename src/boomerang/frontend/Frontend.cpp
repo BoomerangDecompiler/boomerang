@@ -10,7 +10,6 @@
 #include "Frontend.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/db/CFG.h"

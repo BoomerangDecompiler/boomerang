@@ -11,7 +11,6 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/InterferenceFinder.h"

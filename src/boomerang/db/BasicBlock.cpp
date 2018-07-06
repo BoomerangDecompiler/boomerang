@@ -11,7 +11,6 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/RTL.h"

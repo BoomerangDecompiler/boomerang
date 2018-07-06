@@ -10,7 +10,6 @@
 #include "BranchStatement.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Terminal.h"

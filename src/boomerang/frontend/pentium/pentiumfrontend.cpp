@@ -10,7 +10,6 @@
 #include "pentiumfrontend.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinaryFile.h"

@@ -12,7 +12,6 @@
 
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/CCodeGenerator.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"

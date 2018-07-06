@@ -10,7 +10,6 @@
 #include "IndirectJumpAnalyzer.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/RefExp.h"

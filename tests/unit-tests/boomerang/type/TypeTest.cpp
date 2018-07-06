@@ -10,7 +10,6 @@
 #include "TypeTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Log.h"

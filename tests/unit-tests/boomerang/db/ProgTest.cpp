@@ -10,7 +10,6 @@
 #include "ProgTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/Prog.h"

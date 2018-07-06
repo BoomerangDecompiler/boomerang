@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "CallAndPhiFixPass.h"
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/CallStatement.h"

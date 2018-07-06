@@ -10,7 +10,6 @@
 #include "Proc.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/Module.h"

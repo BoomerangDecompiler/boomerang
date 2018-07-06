@@ -10,7 +10,6 @@
 #include "NJMCDecoder.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/exp/Location.h"

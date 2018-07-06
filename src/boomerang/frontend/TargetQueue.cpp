@@ -11,7 +11,6 @@
 
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
 

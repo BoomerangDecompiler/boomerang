@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/loader/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/db/binary/BinaryFile.h"
@@ -18,12 +18,15 @@
 #include <QByteArray>
 #include <memory>
 #include <vector>
+#include <set>
 
 
 class BinaryImage;
 class IFrontEnd;
 class ICodeGenerator;
 class Module;
+class IWatcher;
+class UserProc;
 
 
 class Project

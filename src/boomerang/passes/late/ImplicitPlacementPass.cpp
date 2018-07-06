@@ -10,7 +10,6 @@
 #include "ImplicitPlacementPass.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/visitor/stmtmodifier/StmtImplicitConverter.h"

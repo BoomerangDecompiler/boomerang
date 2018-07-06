@@ -10,7 +10,6 @@
 #include "LivenessAnalyzer.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/statements/PhiAssign.h"

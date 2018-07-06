@@ -10,7 +10,6 @@
 #include "st20decoder.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Binary.h"

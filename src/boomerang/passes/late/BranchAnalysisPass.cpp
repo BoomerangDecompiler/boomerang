@@ -11,7 +11,6 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 

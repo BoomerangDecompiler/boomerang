@@ -10,7 +10,6 @@
 #include "Module.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"

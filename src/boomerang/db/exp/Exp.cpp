@@ -10,7 +10,6 @@
 #include "Exp.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"

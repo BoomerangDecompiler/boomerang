@@ -10,7 +10,6 @@
 #include "MainWindow.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/type/TypeRecovery.h"
 
 #include "boomerang-gui/Decompiler.h"

@@ -10,7 +10,6 @@
 #include "ExpTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"

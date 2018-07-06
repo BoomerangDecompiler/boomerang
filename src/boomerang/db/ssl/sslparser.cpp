@@ -57,7 +57,6 @@ void *alloca();
 #include <cstdio>
 #define YYBISON 1
 
-#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Table.h"

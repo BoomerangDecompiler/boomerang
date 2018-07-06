@@ -11,7 +11,6 @@
 
 #include "sslparser.h"
 
-#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/ssl/sslscanner.h"
 #include "boomerang/db/Table.h"

@@ -10,7 +10,6 @@
 #include "StatementHelper.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Binary.h"

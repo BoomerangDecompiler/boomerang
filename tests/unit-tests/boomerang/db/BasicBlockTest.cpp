@@ -10,7 +10,6 @@
 #include "BasicBlockTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/LibProc.h"

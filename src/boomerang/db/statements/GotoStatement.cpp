@@ -10,7 +10,6 @@
 #include "GotoStatement.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"

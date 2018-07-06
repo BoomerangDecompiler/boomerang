@@ -10,7 +10,6 @@
 #include "CFG.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"

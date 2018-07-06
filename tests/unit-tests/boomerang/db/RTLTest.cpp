@@ -10,7 +10,6 @@
 #include "RTLTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"

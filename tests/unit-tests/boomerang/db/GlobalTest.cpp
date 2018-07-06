@@ -10,7 +10,6 @@
 #include "GlobalTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/Prog.h"
