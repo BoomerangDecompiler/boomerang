@@ -145,10 +145,6 @@ QString UnionType::getCtype(bool final) const
 }
 
 
-#ifdef PRINT_UNION
-unsigned unionCount = 0;
-#endif
-
 static int nextUnionNumber = 0;
 
 SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const

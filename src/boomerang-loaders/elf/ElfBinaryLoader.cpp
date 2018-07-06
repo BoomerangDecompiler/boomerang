@@ -476,7 +476,6 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 
 void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
 {
-    static QString       currentFile;
     bool                 imported = sym.SectionIdx == SHT_NULL;
     bool                 local    = sym.Binding == STB_LOCAL || sym.Binding == STB_WEAK;
     const BinarySection *siPlt   = m_binaryImage->getSectionByName(".plt");
@@ -506,6 +505,7 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
         return;
     }
 
+    static QString currentFile;
     if (sym.Type == STT_FILE) {
         currentFile = sym.Name;
         return;

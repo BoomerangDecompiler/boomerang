@@ -14,7 +14,7 @@
 #define INVALID    0x40 /*< Invalid / not recognized instruction */
 
 /* *INDENT-OFF* */
-static unsigned char opmap[256] =
+static const unsigned char opmap[256] =
 {
     /* Note for X86-64, 0x40-0x47 are special escapes! */
 
@@ -56,7 +56,7 @@ static unsigned char opmap[256] =
 };
 
 /* Secondary map for when first opcode is 0F */
-static unsigned char op0Fmap[256] =
+static const unsigned char op0Fmap[256] =
 {
     /*          0               1                   2               3               4                   5                   6                   7 */
     /* 00-07 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      INVALID,            INVALID,            2,                  INVALID,

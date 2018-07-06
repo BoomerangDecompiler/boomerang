@@ -35,14 +35,14 @@
 // With array processing, we get a new form, call it form 'a' (don't confuse with form 'A'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // TODO: use initializer lists
-static SharedConstExp form_a =
+static const SharedConstExp form_a =
     RefExp::get(Binary::get(opArrayIndex,
                             RefExp::get(Terminal::get(opWild), STMT_WILD),
                             Terminal::get(opWild)),
                 STMT_WILD);
 
 // Pattern: m[<expr> * 4 + T ]
-static SharedConstExp form_A = Location::memOf(
+static const SharedConstExp form_A = Location::memOf(
     Binary::get(opPlus,
                 Binary::get(opMult,
                             Terminal::get(opWild),
@@ -52,14 +52,14 @@ static SharedConstExp form_A = Location::memOf(
 // With array processing, we get a new form, call it form 'o' (don't confuse with form 'O'):
 // Pattern: <base>{}[<index>]{} where <index> could be <var> - <Kmin>
 // NOT COMPLETED YET!
-static SharedConstExp form_o =
+static const SharedConstExp form_o =
     RefExp::get(Binary::get(opArrayIndex,
                             RefExp::get(Terminal::get(opWild), STMT_WILD),
                             Terminal::get(opWild)),
                 STMT_WILD);
 
 // Pattern: m[<expr> * 4 + T ] + T
-static SharedConstExp form_O =
+static const SharedConstExp form_O =
     Binary::get(opPlus,
                 Location::memOf(Binary::get(opPlus,
                                             Binary::get(opMult,
@@ -70,7 +70,7 @@ static SharedConstExp form_O =
 
 // Pattern: %pc + m[%pc     + (<expr> * 4) + k]
 // where k is a small constant, typically 28 or 20
-static SharedConstExp form_R =
+static const SharedConstExp form_R =
     Binary::get(opPlus,
                 Terminal::get(opPC),
                 Location::memOf(Binary::get(opPlus,
@@ -83,7 +83,7 @@ static SharedConstExp form_R =
 
 // Pattern: %pc + m[%pc + ((<expr> * 4) - k)] - k
 // where k is a smallish constant, e.g. 288 (/usr/bin/vi 2.6, 0c4233c).
-static SharedConstExp form_r =
+static const SharedConstExp form_r =
     Binary::get(opPlus,
                 Terminal::get(opPC),
                 Location::memOf(Binary::get(opPlus,
@@ -100,7 +100,7 @@ struct SwitchForm
     SwitchType     type;
 };
 
-static SwitchForm hlForms[] =
+static const SwitchForm hlForms[] =
 {
     { form_a, SwitchType::a },
     { form_A, SwitchType::A },
@@ -113,14 +113,14 @@ static SwitchForm hlForms[] =
 
 // Vcall high level patterns
 // Pattern 0: global<wild>[0]
-static SharedExp vfc_funcptr =
+static const SharedConstExp vfc_funcptr =
     Binary::get(opArrayIndex,
                 Location::get(opGlobal, Terminal::get(opWildStrConst), nullptr),
                 Const::get(0));
 
 // Pattern 1: m[ m[ <expr> + K1 ] + K2 ]
 // K1 is vtable offset, K2 is virtual function offset (could come from m[A2], if A2 is in read-only memory
-static SharedExp vfc_both = Location::memOf(
+static const SharedConstExp vfc_both = Location::memOf(
     Binary::get(opPlus,
                 Location::memOf(Binary::get(opPlus,
                                             Terminal::get(opWild),
@@ -128,21 +128,21 @@ static SharedExp vfc_both = Location::memOf(
                 Terminal::get(opWildIntConst)));
 
 // Pattern 2: m[ m[ <expr> ] + K2]
-static SharedExp vfc_vto =
+static const SharedConstExp vfc_vto =
     Location::memOf(Binary::get(opPlus,
                                 Location::memOf(Terminal::get(opWild)),
                                 Terminal::get(opWildIntConst)));
 
 // Pattern 3: m[ m[ <expr> + K1] ]
-static SharedExp vfc_vfo =
+static const SharedConstExp vfc_vfo =
     Location::memOf(Location::memOf(Binary::get(opPlus,
                                                 Terminal::get(opWild),
                                                 Terminal::get(opWildIntConst))));
 
 // Pattern 4: m[ m[ <expr> ] ]
-static SharedExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
+static SharedConstExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
 
-static SharedExp hlVfc[] = {
+static const SharedConstExp hlVfc[] = {
     vfc_funcptr,
     vfc_both,
     vfc_vto,
