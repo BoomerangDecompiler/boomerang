@@ -153,7 +153,7 @@ void TypeTest::testCompound()
 
 void TypeTest::testDataInterval()
 {
-    Prog            *prog = new Prog("test", nullptr);
+    Prog            *prog = new Prog("test", &m_project);
     Module          *m    = prog->getOrInsertModule("test");
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x123)));
     DataIntervalMap dim(proc);
@@ -219,7 +219,7 @@ void TypeTest::testDataInterval()
 
 void TypeTest::testDataIntervalOverlaps()
 {
-    Prog            *prog = new Prog("test", nullptr);
+    Prog            *prog = new Prog("test", &m_project);
     Module          *m    = prog->getOrInsertModule("test");
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000100)));
     DataIntervalMap dim(proc);

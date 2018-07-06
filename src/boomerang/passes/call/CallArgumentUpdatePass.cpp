@@ -26,7 +26,7 @@ CallArgumentUpdatePass::CallArgumentUpdatePass()
 
 bool CallArgumentUpdatePass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompiling(proc);
+    proc->getProg()->getProject()->alertDecompiling(proc);
     const bool experimental = proc->getProg()->getProject()->getSettings()->experimental;
 
     for (BasicBlock *bb : *proc->getCFG()) {

@@ -13,6 +13,7 @@
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Watcher.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
@@ -131,7 +132,7 @@ bool Project::decodeBinaryFile()
     LOG_MSG("Finishing decode...");
     m_prog->finishDecode();
 
-    Boomerang::get()->alertEndDecode();
+    this->alertEndDecode();
 
     LOG_MSG("Found %1 procs", m_prog->getNumFunctions());
 
@@ -336,6 +337,132 @@ void Project::loadPlugins()
                     plugin->getInfo()->author
                    );
         }
+    }
+}
+
+
+void Project::addWatcher(IWatcher *watcher)
+{
+    m_watchers.insert(watcher);
+}
+
+
+void Project::alertDecompileDebugPoint(UserProc *p, const char *description)
+{
+    for (IWatcher *elem : m_watchers) {
+        elem->onDecompileDebugPoint(p, description);
+    }
+}
+
+
+void Project::alertFunctionCreated(Function* function)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onFunctionCreated(function);
+    }
+}
+
+
+void Project::alertFunctionRemoved(Function* function)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onFunctionRemoved(function);
+    }
+}
+
+
+void Project::alertSignatureUpdated(Function* function)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onSignatureUpdated(function);
+    }
+}
+
+
+void Project::alertInstructionDecoded(Address pc, int numBytes)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onInstructionDecoded(pc, numBytes);
+    }
+}
+
+
+void Project::alertBadDecode(Address pc)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onBadDecode(pc);
+    }
+}
+
+
+void Project::alertFunctionDecoded(Function *p, Address pc, Address last, int numBytes)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onFunctionDecoded(p, pc, last, numBytes);
+    }
+}
+
+
+void Project::alertStartDecode(Address start, int numBytes)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onStartDecode(start, numBytes);
+    }
+}
+
+
+void Project::alertEndDecode()
+{
+    for (IWatcher *it : m_watchers) {
+        it->onEndDecode();
+    }
+}
+
+
+void Project::alertStartDecompile(UserProc* proc)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onStartDecompile(proc);
+    }
+}
+
+
+void Project::alertProcStatusChanged(UserProc* proc)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onProcStatusChange(proc);
+    }
+}
+
+
+void Project::alertEndDecompile(UserProc* proc)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onEndDecompile(proc);
+    }
+}
+
+
+void Project::alertDiscovered(Function* function)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onFunctionDiscovered(function);
+    }
+}
+
+
+void Project::alertDecompiling(UserProc* proc)
+{
+    for (IWatcher *it : m_watchers) {
+        it->onDecompileInProgress(proc);
+    }
+}
+
+
+void Project::alertDecompilationEnd()
+{
+    for (IWatcher *w : m_watchers) {
+        w->onDecompilationEnd();
     }
 }
 

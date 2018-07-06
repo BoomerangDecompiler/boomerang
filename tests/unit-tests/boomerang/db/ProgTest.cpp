@@ -123,7 +123,7 @@ void ProgTest::testFindModule()
 
 void ProgTest::testIsModuleUsed()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
 
     QVERIFY(!prog.isModuleUsed(prog.getRootModule())); // no functions present in module
 
@@ -134,7 +134,7 @@ void ProgTest::testIsModuleUsed()
 
 void ProgTest::testAddEntryPoint()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
 
     QVERIFY(prog.addEntryPoint(Address::INVALID) == nullptr);
 
@@ -153,7 +153,7 @@ void ProgTest::testAddEntryPoint()
 
 void ProgTest::testGetOrCreateFunction()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
 
     Function *func = prog.getOrCreateFunction(Address::INVALID);
     QVERIFY(func == nullptr);
@@ -167,7 +167,7 @@ void ProgTest::testGetOrCreateFunction()
 
 void ProgTest::testGetOrCreateLibraryProc()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
 
     LibProc *libProc = prog.getOrCreateLibraryProc("");
     QVERIFY(libProc == nullptr);
@@ -181,7 +181,7 @@ void ProgTest::testGetOrCreateLibraryProc()
 
 void ProgTest::testGetFunctionByAddr()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
     QVERIFY(prog.getFunctionByAddr(Address::INVALID) == nullptr);
 
     Function *func = prog.getOrCreateFunction(Address(0x1000));
@@ -191,7 +191,7 @@ void ProgTest::testGetFunctionByAddr()
 
 void ProgTest::testGetFunctionByName()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
     QVERIFY(prog.getFunctionByName("test") == nullptr);
 
     Function *func = prog.getOrCreateFunction(Address(0x1000));
@@ -202,7 +202,7 @@ void ProgTest::testGetFunctionByName()
 
 void ProgTest::testRemoveFunction()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
 
     QVERIFY(prog.removeFunction("") == false);
 
@@ -219,7 +219,7 @@ void ProgTest::testRemoveFunction()
 
 void ProgTest::testGetNumFunctions()
 {
-    Prog prog("test", nullptr);
+    Prog prog("test", &m_project);
 
     QCOMPARE(prog.getNumFunctions(true), 0);
     QCOMPARE(prog.getNumFunctions(false), 0);

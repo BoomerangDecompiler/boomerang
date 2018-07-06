@@ -56,7 +56,7 @@ void Module::updateLibrarySignatures()
                 call_stmt->setSigArguments();
             }
 
-            Boomerang::get()->alertSignatureUpdated(func);
+            m_prog->getProject()->alertSignatureUpdated(func);
         }
     }
 }
@@ -320,7 +320,7 @@ Function *Module::createFunction(const QString& name, Address entryAddr, bool li
     }
 
     m_functionList.push_back(function); // Append this to list of procs
-    Boomerang::get()->alertFunctionCreated(function);
+    m_prog->getProject()->alertFunctionCreated(function);
 
     // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
     // from Loader

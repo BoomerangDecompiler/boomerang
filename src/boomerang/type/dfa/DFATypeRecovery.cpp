@@ -240,7 +240,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     Cfg             *cfg  = proc->getCFG();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
     // First use the type information from the signature.
     // Sometimes needed to split variables (e.g. argc as a
@@ -299,7 +299,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
     // Now use the type information gathered
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before other uses of DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before other uses of DFA type analysis");
     proc->debugPrintAll("Before other uses of DFA type analysis");
 
     Prog *_prog = proc->getProg();
@@ -510,8 +510,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     }
 
     proc->debugPrintAll("After application of DFA type analysis");
-
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After DFA type analysis");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After DFA type analysis");
 }
 
 

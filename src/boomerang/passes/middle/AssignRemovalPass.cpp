@@ -10,7 +10,9 @@
 #include "AssignRemovalPass.h"
 
 
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Unary.h"
 #include "boomerang/db/exp/Location.h"
@@ -78,7 +80,7 @@ bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
         return false;
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "Before removing stack pointer assigns.");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before removing stack pointer assigns.");
 
     for (auto& stmt : stmts) {
         if (stmt->isAssign()) {
@@ -90,7 +92,7 @@ bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After removing stack pointer assigns.");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After removing stack pointer assigns.");
     return true;
 }
 
@@ -141,7 +143,7 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
     QTextStream str(&msg);
     str << "Before removing matching assigns (" << e << ").";
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(msg));
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, qPrintable(msg));
 
     for (auto& stmt : stmts) {
         if ((stmt)->isAssign()) {
@@ -162,7 +164,7 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
 
     msg.clear();
     str << "After removing matching assigns (" << e << ").";
-    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(msg));
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, qPrintable(msg));
     LOG_VERBOSE(msg);
 
     return true;

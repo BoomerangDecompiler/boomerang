@@ -146,6 +146,6 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         ++sm;
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(proc, "After removing unused locals");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After removing unused locals");
     return true;
 }
