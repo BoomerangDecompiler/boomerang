@@ -10,7 +10,6 @@
 #include "Win32BinaryLoaderTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 

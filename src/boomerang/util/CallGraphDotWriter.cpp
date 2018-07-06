@@ -10,7 +10,6 @@
 #include "CallGraphDotWriter.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"

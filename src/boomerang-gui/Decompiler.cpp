@@ -11,7 +11,6 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
@@ -30,7 +29,7 @@ Decompiler::Decompiler()
 {
     Log::getOrCreateLog().addDefaultLogSinks(m_project.getSettings()->getOutputDirectory().absolutePath());
 
-    Boomerang::get()->addWatcher(this);
+    m_project.addWatcher(this);
     m_project.loadPlugins();
 }
 

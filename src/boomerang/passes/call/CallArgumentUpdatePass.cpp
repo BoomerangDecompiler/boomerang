@@ -10,7 +10,6 @@
 #include "CallArgumentUpdatePass.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
@@ -26,7 +25,7 @@ CallArgumentUpdatePass::CallArgumentUpdatePass()
 
 bool CallArgumentUpdatePass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompiling(proc);
+    proc->getProg()->getProject()->alertDecompiling(proc);
     const bool experimental = proc->getProg()->getProject()->getSettings()->experimental;
 
     for (BasicBlock *bb : *proc->getCFG()) {

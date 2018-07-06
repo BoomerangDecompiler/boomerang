@@ -10,7 +10,6 @@
 #include "RefExp.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Binary.h"

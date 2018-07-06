@@ -10,7 +10,6 @@
 #include "Log.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Exp.h"
@@ -18,6 +17,8 @@
 
 #include <QSharedPointer>
 #include <QTextStream>
+#include <QFileInfo>
+#include <QDir>
 
 #include <iostream>
 #include <sstream>

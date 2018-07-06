@@ -10,7 +10,6 @@
 #include "IndirectJumpAnalyzer.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/RefExp.h"
@@ -829,7 +828,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
         char tmp[1024];
         count++;
         snprintf(tmp, 1024, "before decoding fragment %i of %zu (%s)", count, dests.size(), qPrintable(addr.toString()));
-        Boomerang::get()->alertDecompileDebugPoint(proc, tmp);
+        proc->getProg()->getProject()->alertDecompileDebugPoint(proc, tmp);
         prog->decodeFragment(proc, addr);
     }
 }

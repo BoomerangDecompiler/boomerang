@@ -10,7 +10,6 @@
 #include "Location.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"

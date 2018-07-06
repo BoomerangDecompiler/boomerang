@@ -10,8 +10,6 @@
 #include "RTLInstDict.h"
 
 
-#include "boomerang/core/Boomerang.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/ssl/sslparser.h"
 #include "boomerang/db/statements/Assign.h"

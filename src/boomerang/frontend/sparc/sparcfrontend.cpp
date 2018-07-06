@@ -10,7 +10,6 @@
 #include "sparcfrontend.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"

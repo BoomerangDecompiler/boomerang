@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "TestUtils.h"
 
-#include "boomerang/core/Boomerang.h"
+
 #include "boomerang/util/Log.h"
 
 
@@ -22,7 +22,6 @@ TestProject::TestProject()
 
 void BoomerangTest::initTestCase()
 {
-    Boomerang::get();
     Log::getOrCreateLog();
 
     qRegisterMetaType<SharedTypeWrapper>();
@@ -32,8 +31,8 @@ void BoomerangTest::initTestCase()
 
 void BoomerangTest::cleanupTestCase()
 {
-    Boomerang::destroy();
 }
+
 
 QString getFullSamplePath(const QString& relpath)
 {

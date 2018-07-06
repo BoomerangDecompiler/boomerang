@@ -11,7 +11,6 @@
 
 
 #include "boomerang/util/Log.h"
-#include "boomerang/core/Boomerang.h"
 
 #include <cassert>
 

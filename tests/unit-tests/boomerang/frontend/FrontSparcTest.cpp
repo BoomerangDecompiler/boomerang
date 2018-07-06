@@ -10,7 +10,6 @@
 #include "FrontSparcTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"

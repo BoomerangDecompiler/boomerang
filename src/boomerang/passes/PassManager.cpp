@@ -10,9 +10,9 @@
 #include "PassManager.h"
 
 
-#include "boomerang/core/Boomerang.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
-
+#include "boomerang/db/Prog.h"
 #include "boomerang/passes/dataflow/DominatorPass.h"
 #include "boomerang/passes/dataflow/PhiPlacementPass.h"
 #include "boomerang/passes/dataflow/BlockVarRenamePass.h"
@@ -118,7 +118,7 @@ bool PassManager::executePass(IPass *pass, UserProc *proc)
 
     QString msg = QString("after executing pass '%1'").arg(pass->getName());
     proc->debugPrintAll(qPrintable(msg));
-    Boomerang::get()->alertDecompileDebugPoint(proc, qPrintable(msg));
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, qPrintable(msg));
 
     return changed;
 }

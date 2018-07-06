@@ -10,7 +10,6 @@
 #include "Frontend.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/db/CFG.h"
@@ -295,7 +294,7 @@ bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 
     Interval<Address> extent(image->getLimitTextLow(), image->getLimitTextHigh());
 
-    Boomerang::get()->alertStartDecode(extent.lower(), (extent.upper() - extent.lower()).value());
+    m_program->getProject()->alertStartDecode(extent.lower(), (extent.upper() - extent.lower()).value());
 
     bool    gotMain;
     Address a = getMainEntryPoint(gotMain);
@@ -668,7 +667,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
             if (!inst.valid) {
                 // Alert the watchers to the problem
-                Boomerang::get()->alertBadDecode(addr);
+                m_program->getProject()->alertBadDecode(addr);
 
                 // An invalid instruction. Most likely because a call did not return (e.g. call _exit()), etc.
                 // Best thing is to emit an INVALID BB, and continue with valid instructions
@@ -681,7 +680,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
             }
 
             // alert the watchers that we have decoded an instruction
-            Boomerang::get()->alertInstructionDecoded(addr, inst.numBytes);
+            m_program->getProject()->alertInstructionDecoded(addr, inst.numBytes);
             numBytesDecoded += inst.numBytes;
 
             // Check if this is an already decoded jump instruction (from a previous pass with propagation etc)
@@ -818,7 +817,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                                 func = "__imp_" + func;
                                 proc->setName(func);
                                 // lp->setName(func.c_str());
-                                Boomerang::get()->alertSignatureUpdated(proc);
+                                m_program->getProject()->alertSignatureUpdated(proc);
                             }
 
                             callList.push_back(call);
@@ -1137,7 +1136,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
         }
     }
 
-    Boomerang::get()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
+    m_program->getProject()->alertFunctionDecoded(proc, startAddr, lastAddr, numBytesDecoded);
 
     LOG_VERBOSE("### Finished decoding proc '%1' ###", proc->getName());
 

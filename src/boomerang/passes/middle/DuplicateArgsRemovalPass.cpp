@@ -12,7 +12,6 @@
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/Log.h"
 
 

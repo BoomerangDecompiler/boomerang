@@ -10,7 +10,6 @@
 #include "SettingsDlg.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/type/TypeRecovery.h"

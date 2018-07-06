@@ -11,6 +11,8 @@
 
 
 #include "boomerang-cli/Console.h"
+#include "boomerang-cli/MiniDebugger.h"
+
 #include "boomerang/core/Project.h"
 
 #include <QObject>
@@ -61,6 +63,8 @@ public slots:
 private:
     std::unique_ptr<Project> m_project;
     std::unique_ptr<Console> m_console;
+    std::unique_ptr<MiniDebugger> m_debugger;
+
     QTimer m_kill_timer;
     int minsToStopAfter = 0;
     QString m_pathToBinary;

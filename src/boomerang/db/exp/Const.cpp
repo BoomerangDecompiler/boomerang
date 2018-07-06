@@ -10,7 +10,6 @@
 #include "Const.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"

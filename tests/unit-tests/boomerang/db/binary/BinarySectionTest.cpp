@@ -10,7 +10,6 @@
 #include "BinarySectionTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/binary/BinarySection.h"
 

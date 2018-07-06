@@ -10,7 +10,6 @@
 #include "FromSSAFormPass.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
@@ -32,7 +31,7 @@ FromSSAFormPass::FromSSAFormPass()
 
 bool FromSSAFormPass::execute(UserProc *proc)
 {
-    Boomerang::get()->alertDecompiling(proc);
+    proc->getProg()->getProject()->alertDecompiling(proc);
 
     StatementList stmts;
     proc->getStatements(stmts);

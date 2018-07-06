@@ -10,7 +10,6 @@
 #include "IntervalMapTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/util/IntervalMap.h"
 
 

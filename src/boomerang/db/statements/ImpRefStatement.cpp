@@ -10,7 +10,6 @@
 #include "ImpRefStatement.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"

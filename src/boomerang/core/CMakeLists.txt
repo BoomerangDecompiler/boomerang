@@ -8,7 +8,6 @@
 
 
 list(APPEND boomerang-core-sources
-    core/Boomerang
     core/Plugin
     core/Project
     core/Settings

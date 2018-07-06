@@ -10,7 +10,6 @@
 #include "RTLTest.h"
 
 
-#include "boomerang/core/Boomerang.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
@@ -236,7 +235,7 @@ void RtlTest::testVisitor()
 
 void RtlTest::testSetConscripts()
 {
-    Prog prog("fake_prog", nullptr);
+    Prog prog("fake_prog", &m_project);
     Module *module = prog.getOrInsertModule("test");
     Function *proc = module->createFunction("printf", Address(0x2000)); // Making it a true library function is problematic
 

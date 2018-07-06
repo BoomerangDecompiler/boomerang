@@ -10,7 +10,6 @@
 #include "MainWindow.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/type/TypeRecovery.h"
 
 #include "boomerang-gui/Decompiler.h"
@@ -1025,7 +1024,7 @@ void MainWindow::on_actAboutBoomerang_triggered()
     QDialog *dlg = new QDialog;
     Ui::AboutDialog aboutUi;
     aboutUi.setupUi(dlg);
-    aboutUi.lbVersion->setText(QString("<h3>%1</h3>").arg(Boomerang::getVersionStr()));
+    aboutUi.lbVersion->setText(QString("<h3>%1</h3>").arg(BOOMERANG_VERSION));
     dlg->show();
 }
 

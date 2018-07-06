@@ -10,7 +10,6 @@
 #include "pentiumdecoder.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/binary/BinaryImage.h"

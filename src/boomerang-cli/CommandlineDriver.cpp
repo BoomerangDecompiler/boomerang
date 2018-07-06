@@ -10,7 +10,6 @@
 #include "CommandlineDriver.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/CFGDotWriter.h"
@@ -25,9 +24,11 @@ Q_DECLARE_METATYPE(Address)
 CommandlineDriver::CommandlineDriver(QObject *_parent)
     : QObject(_parent)
     , m_project(new Project())
+    , m_debugger(new MiniDebugger())
     , m_kill_timer(this)
 {
     this->connect(&m_kill_timer, &QTimer::timeout, this, &CommandlineDriver::onCompilationTimeout);
+    m_project->addWatcher(m_debugger.get());
 }
 
 

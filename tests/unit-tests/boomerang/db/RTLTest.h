@@ -16,7 +16,7 @@
 /**
  * Tests Register Transfer Lists
  */
-class RtlTest : public BoomerangTest
+class RtlTest : public BoomerangTestWithProject
 {
     Q_OBJECT
 

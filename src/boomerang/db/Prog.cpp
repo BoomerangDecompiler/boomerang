@@ -12,7 +12,6 @@
 
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/DebugInfo.h"
@@ -262,7 +261,7 @@ bool Prog::removeFunction(const QString& name)
 
     if (function) {
         function->removeFromModule();
-        Boomerang::get()->alertFunctionRemoved(function);
+        m_project->alertFunctionRemoved(function);
         // FIXME: this function removes the function from module, but it leaks it
         return true;
     }

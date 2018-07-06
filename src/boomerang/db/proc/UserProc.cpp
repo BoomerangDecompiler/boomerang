@@ -11,7 +11,6 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/InterferenceFinder.h"
@@ -117,7 +116,7 @@ bool UserProc::isNoReturn() const
 void UserProc::setStatus(ProcStatus s)
 {
     m_status = s;
-    Boomerang::get()->alertProcStatusChanged(this);
+    m_prog->getProject()->alertProcStatusChanged(this);
 }
 
 
@@ -629,7 +628,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
      */
 
     LOG_MSG("%1 procedure '%2'", (m_status >= PROC_VISITED) ? "Re-discovering" : "Discovering", getName());
-    Boomerang::get()->alertDiscovered(this);
+    m_prog->getProject()->alertDiscovered(this);
 
     // Prevent infinite loops when there are cycles in the call graph (should never happen now)
     if (m_status >= PROC_FINAL) {
@@ -740,7 +739,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
 
     // if no child involved in recursion
     if (recursionGroup->empty()) {
-        Boomerang::get()->alertDecompiling(this);
+        m_prog->getProject()->alertDecompiling(this);
         LOG_MSG("Decompiling procedure '%1'", getName());
 
         earlyDecompile();
@@ -757,7 +756,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
     if (recursionGroup->empty()) {
         remUnusedStmtEtc(); // Do the whole works
         setStatus(PROC_FINAL);
-        Boomerang::get()->alertEndDecompile(this);
+        m_prog->getProject()->alertEndDecompile(this);
     }
     else if (m_recursionGroup) {
         // This proc's callees, and hence this proc, is/are involved in recursion.
@@ -772,7 +771,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
             // Yes, process these procs as a group
             recursionGroupAnalysis(callStack); // Includes remUnusedStmtEtc on all procs in cycleGrp
             setStatus(PROC_FINAL);
-            Boomerang::get()->alertEndDecompile(this);
+            m_prog->getProject()->alertEndDecompile(this);
             recursionGroup->clear();
             recursionGroup = std::make_shared<ProcSet>();
         }
@@ -815,21 +814,21 @@ void UserProc::debugPrintAll(const char *step_name)
 
 void UserProc::earlyDecompile()
 {
-    Boomerang::get()->alertStartDecompile(this);
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before Initialise");
+    m_prog->getProject()->alertStartDecompile(this);
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Initialise");
 
     PassManager::get()->executePass(PassID::StatementInit, this);
     PassManager::get()->executePass(PassID::BBSimplify, this); // Remove branches with false guards
     PassManager::get()->executePass(PassID::Dominators, this);
 
     debugPrintAll("After Decoding");
-    Boomerang::get()->alertDecompileDebugPoint(this, "After Initialise");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "After Initialise");
 
     if (m_status >= PROC_EARLYDONE) {
         return;
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before Early");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Early");
     LOG_VERBOSE("### Beginning early decompile for '%1' ###", getName());
 
     // Update the defines in the calls. Will redo if involved in recursion
@@ -847,14 +846,14 @@ void UserProc::earlyDecompile()
     PassManager::get()->executePass(PassID::BlockVarRename, this);
     PassManager::get()->executePass(PassID::StatementPropagation, this);
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "After Early");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "After Early");
 }
 
 
 std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 {
     assert(callStack.back() == this);
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before Middle");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Middle");
     LOG_VERBOSE("### Beginning middleDecompile for '%1' ###", getName());
 
     // The call bypass logic should be staged as well. For example, consider m[r1{11}]{11} where 11 is a call.
@@ -966,12 +965,12 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
             debugPrintAll("SSA (after trimming return set)");
         }
 
-        Boomerang::get()->alertDecompileDebugPoint(this, "Before propagating statements");
+        m_prog->getProject()->alertDecompileDebugPoint(this, "Before propagating statements");
 
         change |= PassManager::get()->executePass(PassID::StatementPropagation, this);
         change |= PassManager::get()->executePass(PassID::BlockVarRename, this);
 
-        Boomerang::get()->alertDecompileDebugPoint(this, "after propagating statements");
+        m_prog->getProject()->alertDecompileDebugPoint(this, "after propagating statements");
 
          // this is just to make it readable, do NOT rely on these statements being removed
         PassManager::get()->executePass(PassID::AssignRemoval, this);
@@ -1018,7 +1017,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
         // Code pointed to by the switch table entries has merely had FrontEnd::processFragment() called on it
         LOG_MSG("Restarting decompilation of '%1' because indirect jumps or calls have been analyzed", getName());
 
-        Boomerang::get()->alertDecompileDebugPoint(
+        m_prog->getProject()->alertDecompileDebugPoint(
             this, "Before restarting decompilation because indirect jumps or calls have been analyzed");
 
         // First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
@@ -1056,7 +1055,7 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
     setStatus(PROC_EARLYDONE);
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after middle");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "after middle");
 
     return std::make_shared<ProcSet>();
 }
@@ -1064,8 +1063,8 @@ std::shared_ptr<ProcSet> UserProc::middleDecompile(ProcList &callStack)
 
 void UserProc::remUnusedStmtEtc()
 {
-    Boomerang::get()->alertDecompiling(this);
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before Final");
+    m_prog->getProject()->alertDecompiling(this);
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Final");
 
     LOG_VERBOSE("### Removing unused statements for %1 ###", getName());
 
@@ -1135,7 +1134,7 @@ void UserProc::remUnusedStmtEtc()
     }
 
     debugPrintAll("after remove unused statements etc");
-    Boomerang::get()->alertDecompileDebugPoint(this, "after final");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "after final");
 }
 
 
@@ -1177,7 +1176,7 @@ void UserProc::recursionGroupAnalysis(ProcList &callStack)
     }
 
     LOG_VERBOSE("=== End recursion group analysis ===");
-    Boomerang::get()->alertEndDecompile(this);
+    m_prog->getProject()->alertEndDecompile(this);
 }
 
 
@@ -2616,7 +2615,7 @@ bool UserProc::removeRedundantParameters()
     bool          ret = false;
     StatementList newParameters;
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before removing redundant parameters");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before removing redundant parameters");
 
     if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% removing unused parameters for %1", getName());
@@ -2665,7 +2664,7 @@ bool UserProc::removeRedundantParameters()
         LOG_MSG("%%% end removing unused parameters for %1", getName());
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after removing redundant parameters");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "after removing redundant parameters");
 
     return ret;
 }
@@ -2673,8 +2672,8 @@ bool UserProc::removeRedundantParameters()
 
 bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
 {
-    Boomerang::get()->alertDecompiling(this);
-    Boomerang::get()->alertDecompileDebugPoint(this, "before removing unused returns");
+    m_prog->getProject()->alertDecompiling(this);
+    m_prog->getProject()->alertDecompileDebugPoint(this, "before removing unused returns");
     // First remove the unused parameters
     bool removedParams = removeRedundantParameters();
 
@@ -2813,7 +2812,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
         }
     }
 
-    Boomerang::get()->alertDecompileDebugPoint(this, "after removing unused and redundant returns");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "after removing unused and redundant returns");
     return removedRets || removedParams;
 }
 
@@ -2949,7 +2948,7 @@ void UserProc::processDecodedICTs()
 
 void UserProc::mapLocalsAndParams()
 {
-    Boomerang::get()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
 
     LOG_VERBOSE("### Mapping expressions to local variables for %1 ###", getName());
 
@@ -3127,7 +3126,7 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
     }
 
     current->setStatus(PROC_INCYCLE); // So the calls are treated as childless
-    Boomerang::get()->alertDecompiling(current);
+    m_prog->getProject()->alertDecompiling(current);
     current->earlyDecompile();
 
     // The standard preservation analysis should automatically perform conditional preservation.
@@ -3145,4 +3144,3 @@ void UserProc::decompileProcInRecursionGroup(ProcList &callStack, ProcSet &visit
     PassManager::get()->executePass(PassID::Dominators, this);
     PassManager::get()->executePass(PassID::StatementPropagation, this); // Need to propagate into arguments
 }
-

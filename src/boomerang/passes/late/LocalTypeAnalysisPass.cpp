@@ -10,7 +10,6 @@
 #include "LocalTypeAnalysisPass.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"

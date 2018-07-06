@@ -10,7 +10,6 @@
 #include "ProgDecompiler.h"
 
 
-#include "boomerang/core/Boomerang.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Global.h"
