@@ -53,10 +53,6 @@
 #define DIS_COUNT      (Const::get(count))
 #define DIS_OFF        (addReloc(Const::get(off)))
 
-// Function to generate statements for the BSF/BSR series (Bit Scan Forward/
-// Reverse)
-void genBSFR(Address pc, SharedExp reg, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result, bool debug);
-
 bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
 {
     result.reset();
@@ -49694,19 +49690,7 @@ PentiumDecoder::PentiumDecoder(Prog *_prog)
 }
 
 
-static int BSFRstate = 0;                                                     // State number for this state machine
-
-/**
- * Generate statements for the BSF and BSR series (Bit Scan Forward/Reverse)
- * \param pc native PC address (start of the BSF/BSR instruction)
- * \param dest an expression for the destination register
- * \param modrm an expression for the operand being scanned
- * \param init initial value for the dest register
- * \param size sizeof(modrm) (in bits)
- * \param incdec either opPlus for Forward scans, or opMinus for Reverse scans
- * \param numBytes number of bytes this instruction
- */
-void genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result, bool debug)
+void PentiumDecoder::genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size, OPER incdec, int numBytes, DecodeResult& result, bool debug)
 {
     // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the %SKIP/%RPT won't
     // work. We need to emit 6 statements, but these need to be in 3 RTLs, since the destination of a branch has to be
