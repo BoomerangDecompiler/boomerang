@@ -104,8 +104,5 @@ public:
     /// Called once on decompilation end.
     void alertDecompilationEnd();
 
-public:
-    std::unique_ptr<Project> m_currentProject;
-
     std::set<IWatcher *> m_watchers;        ///< The watchers which are interested in this decompilation.
 };
