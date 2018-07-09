@@ -80,6 +80,7 @@ add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a 
                                       # CTI instruction is flagged as an error
 
 # Boomerang configuration options
+option(BUILD_SHARED_LIBS                "Build shared or static libraries." OFF)
 option(BOOMERANG_BUILD_GUI              "Build the GUI. Requires Qt5Widgets." ON)
 option(BOOMERANG_BUILD_CLI              "Build the command line interface." ON)
 option(BOOMERANG_BUILD_UNIT_TESTS       "Build the unit tests. Requires Qt5Test." OFF)
