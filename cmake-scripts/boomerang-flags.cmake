@@ -27,6 +27,12 @@ endif ()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Hide all symbols unless explicitly exported
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 
 set(COMMON_COMPILE_FLAGS "")
 set(C_COMPILE_FLAGS "")
@@ -61,7 +67,6 @@ else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-Wnull-dereference)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-cond -Wduplicated-branches)
     BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero -Walloca)
-    BOOMERANG_ADD_COMPILE_FLAGS(-fPIC)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
