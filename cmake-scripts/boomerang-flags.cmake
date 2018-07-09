@@ -98,9 +98,9 @@ endif ()
 
 if (NOT MSVC)
     if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        BOOMERANG_ADD_COMPILE_FLAGS(-g -O0)
+        BOOMERANG_ADD_COMPILE_FLAGS(-O0)
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-        BOOMERANG_ADD_COMPILE_FLAGS(-g -O2)
+        # No special flags
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
         BOOMERANG_ADD_COMPILE_FLAGS(-Os)
     else () # Release
