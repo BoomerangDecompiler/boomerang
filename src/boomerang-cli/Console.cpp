@@ -11,11 +11,10 @@
 
 
 #include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/ProgDecompiler.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/CFGDotWriter.h"
-#include "boomerang/core/Project.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 
 #include <QFile>
@@ -240,8 +239,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
     assert(prog != nullptr);
 
     if (args.empty()) {
-        ProgDecompiler dcomp(prog);
-        dcomp.decompile();
+        m_project->decompileBinaryFile();
         return CommandStatus::Success;
     }
     else {
