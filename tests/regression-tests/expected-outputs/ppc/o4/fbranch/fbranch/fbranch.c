@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     union { double; __size64; } f0; 		// r32
     union { double; __size32; } f1; 		// r33
-    __size32 g3; 		// r3
+    int g3; 		// r3
     float local0; 		// m[g1 - 24]
 
     scanf("%f", &local0);

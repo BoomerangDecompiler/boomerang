@@ -351,11 +351,11 @@ void CallStatement::setSigArguments()
         return;     // Using dataflow analysis now
     }
 
-    int n = m_signature->getNumParams();
 
     qDeleteAll(m_arguments);
     m_arguments.clear();
 
+    const int n = m_signature->getNumParams();
     for (int i = 0; i < n; i++) {
         SharedExp e = m_signature->getArgumentExp(i);
         assert(e);

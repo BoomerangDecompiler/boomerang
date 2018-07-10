@@ -32,7 +32,6 @@ class Cfg;
 class BasicBlock;
 class Exp;
 class TypedExp;
-
 class Type;
 class RTL;
 class ICodeGenerator;
@@ -151,39 +150,22 @@ public:
     void insertParameter(SharedExp e, SharedType ty);
 
 public:
-    /// Initialise the statements, e.g. proc, bb pointers
-    void initStatements();
-
+    /// Update statement numbers
     void numberStatements() const;
 
     bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
 
-    /**
-     * Rename block variables, with log if verbose.
-     * \returns true if a change
-     */
-    bool doRenameBlockVars(int pass, bool clearStacks = false);
-
-    /// Global type analysis (for this procedure).
-    void doTypeAnalysis();
-
-    /// Perform call and phi statement bypassing at all depths
-    void fixCallAndPhiRefs();
-
     /// Is this m[sp{-} +/- K]?
-    /// True if e could represent a stack local or stack param
+    /// True if \p e could represent a stack local or stack param
     bool isLocalOrParamPattern(SharedConstExp e) const;
 
-    /// True if a local exists with name \a name
+    /// True if a local exists with name \p name
     bool existsLocal(const QString& name) const;
 
     bool isAddressEscapedVar(SharedConstExp e) const { return m_addressEscapedVars.contains(e); }
 
-    /**
-     * Find the procs the calls point to.
-     * To be called after decoding all procs.
-     */
-    /// find the procs the calls point to
+    /// Find the procs the calls point to.
+    /// To be called after decoding all procs.
     void assignProcsToCalls();
 
     /// perform final simplifications

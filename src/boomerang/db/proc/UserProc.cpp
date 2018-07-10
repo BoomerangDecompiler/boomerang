@@ -590,8 +590,6 @@ void UserProc::assignProcsToCalls()
 
                 call->setDestProc(p);
             }
-
-            // call->setSigArguments();        // But BBs not set yet; will get done in initStatements()
         }
     }
 }
@@ -1792,8 +1790,8 @@ bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
         return false; // Prevent an assert failure if using -E
     }
 
-    int               sp = m_signature->getStackRegister();
-    static const auto initSp(RefExp::get(Location::regOf(sp), nullptr)); // sp{-}
+    const int sp = m_signature->getStackRegister();
+    const auto initSp(RefExp::get(Location::regOf(sp), nullptr)); // sp{-}
 
     if (*addr == *initSp) {
         return true; // Accept m[sp{-}]
