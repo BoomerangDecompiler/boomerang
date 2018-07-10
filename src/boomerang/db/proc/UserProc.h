@@ -116,26 +116,6 @@ public:
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
 
-    /// print this proc, mainly for debugging
-    void print(QTextStream& out, bool html = false) const;
-    void printParams(QTextStream& out, bool html = false) const;
-    char *prints() const;
-    void printDFG() const;
-
-    /// Print just the symbol map
-    void printSymbolMap(QTextStream& out, bool html = false) const;
-
-    void dump() const;
-
-    /// For debugging
-    void dumpSymbolMap() const;
-
-    /// For debugging
-    void dumpSymbolMapx() const;
-
-    /// For debugging
-    void dumpLocals(QTextStream& os, bool html = false) const;
-
     /// Records that this procedure has been decoded.
     void setDecoded();
 
@@ -231,9 +211,6 @@ public:
     /// find the procs the calls point to
     void assignProcsToCalls();
 
-    /**
-     * Perform final simplifications
-     */
     /// perform final simplifications
     void finalSimplify();
 
@@ -484,8 +461,6 @@ public:
     /// \copydoc Function::isPreserved
     virtual bool isPreserved(SharedExp e) override;
 
-    void printUseGraph();
-
     bool searchAndReplace(const Exp& search, SharedExp replace);
 
     /// Add a location to the UseCollector; this means this location is used before defined,
@@ -531,10 +506,33 @@ public:
      */
     bool filterParams(SharedExp e);
 
-    void debugPrintAll(const char *c);
-
     UseCollector& getUseCollector() { return m_procUseCollector; }
     const UseCollector& getUseCollector() const { return m_procUseCollector; }
+
+public:
+    /// print this proc, mainly for debugging
+    void print(QTextStream& out, bool html = false) const;
+    void printParams(QTextStream& out, bool html = false) const;
+    char *prints() const;
+    void printDFG() const;
+
+    /// Print just the symbol map
+    void printSymbolMap(QTextStream& out, bool html = false) const;
+
+    void dump() const;
+
+    /// For debugging
+    void dumpSymbolMap() const;
+
+    /// For debugging
+    void dumpSymbolMapx() const;
+
+    /// For debugging
+    void dumpLocals(QTextStream& os, bool html = false) const;
+
+    void debugPrintAll(const char *c);
+
+    void printUseGraph();
 
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);

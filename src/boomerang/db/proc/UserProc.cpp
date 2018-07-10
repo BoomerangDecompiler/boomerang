@@ -49,6 +49,7 @@
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/util/ConnectionGraph.h"
+#include "boomerang/util/UseGraphWriter.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
@@ -195,39 +196,10 @@ void UserProc::renameLocal(const QString& oldName, const QString& newName)
 
 void UserProc::printUseGraph()
 {
-    QString filePath = m_prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(getName() + "-usegraph.dot");
-    QFile   file(filePath);
-
-    if (!file.open(QFile::Text | QFile::WriteOnly)) {
-        LOG_ERROR("Can't write to file %1", file.fileName());
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "digraph " << getName() << " {\n";
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        if (s->isPhi()) {
-            out << s->getNumber() << " [shape=diamond];\n";
-        }
-
-        LocationSet refs;
-        s->addUsedLocs(refs);
-
-        for (SharedExp rr : refs) {
-            if (rr->isSubscript()) {
-                auto r = rr->access<RefExp>();
-
-                if (r->getDef()) {
-                    out << r->getDef()->getNumber() << " -> " << s->getNumber() << ";\n";
-                }
-            }
-        }
-    }
-
-    out << "}\n";
+    const Settings *settings = getProg()->getProject()->getSettings();
+    const QString filePath = settings->getOutputDirectory()
+        .absoluteFilePath(getName() + "-usegraph.dot");
+    UseGraphWriter().writeUseGraph(this, filePath);
 }
 
 

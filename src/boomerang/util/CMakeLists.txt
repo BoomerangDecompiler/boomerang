@@ -23,6 +23,7 @@ list(APPEND boomerang-util-sources
     util/StatementList
     util/StatementSet
     util/Types.h
+    util/UseGraphWriter
     util/Util
 )
 
