@@ -110,7 +110,7 @@ void Function::setEntryAddress(Address entryAddr)
 }
 
 
-void Function::renameParam(const char *oldName, const char *newName)
+void Function::renameParam(const QString& oldName, const QString& newName)
 {
     m_signature->renameParam(oldName, newName);
 }

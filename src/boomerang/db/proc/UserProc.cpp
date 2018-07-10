@@ -142,7 +142,7 @@ QString UserProc::toString() const
 }
 
 
-void UserProc::renameParam(const char *oldName, const char *newName)
+void UserProc::renameParam(const QString& oldName, const QString& newName)
 {
     Function::renameParam(oldName, newName);
     // cfg->searchAndReplace(Location::param(oldName, this), Location::param(newName, this));
@@ -173,7 +173,7 @@ void UserProc::setParamType(int idx, SharedType ty)
 }
 
 
-void UserProc::renameLocal(const char *oldName, const char *newName)
+void UserProc::renameLocal(const QString& oldName, const QString& newName)
 {
     SharedType     ty     = m_locals[oldName];
     SharedConstExp oldExp = expFromSymbol(oldName);

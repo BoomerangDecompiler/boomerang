@@ -431,8 +431,8 @@ public:
     QString findLocalFromRef(const std::shared_ptr<RefExp>& r);
     QString findFirstSymbol(const SharedConstExp& e) const;
 
-    void renameLocal(const char *oldName, const char *newName);
-    virtual void renameParam(const char *oldName, const char *newName) override;
+    void renameLocal(const QString& oldName, const QString& newName);
+    virtual void renameParam(const QString& oldName, const QString& newName) override;
 
     /// WARN: write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
     /// Get a name like eax or o2 from r24 or r8

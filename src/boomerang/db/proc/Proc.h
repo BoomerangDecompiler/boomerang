@@ -78,7 +78,7 @@ public:
 
     void eraseFromParent();
 
-    virtual void renameParam(const char *oldName, const char *newName);
+    virtual void renameParam(const QString& oldName, const QString& newName);
 
     /**
      * Modify actuals so that it is now the list of locations that must
