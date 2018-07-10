@@ -93,7 +93,7 @@ public:
 
 public:
     /// \copydoc Printable::toString
-    virtual QString toString() const override;
+    QString toString() const;
 
     /// Returns a pointer to the CFG object.
     Cfg *getCFG() { return m_cfg; }

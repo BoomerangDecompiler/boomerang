@@ -24,7 +24,7 @@ class Prog;
  * Interface for the procedure classes, which are used to store information
  * about variables in the procedure such as parameters and locals.
  */
-class Function : public Printable
+class Function
 {
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 
@@ -60,7 +60,7 @@ public:
     void setEntryAddress(Address addr);
 
     /// Get the program this procedure belongs to.
-    Prog *getProg() const { return m_prog; }
+    Prog *getProg() const;
 
     std::shared_ptr<Signature> getSignature() const { return m_signature; }
     void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
@@ -176,9 +176,6 @@ protected:
      */
     std::shared_ptr<Signature> m_signature;
 
-    ///////////////////////////////////////////////////
-    // Persistent state
-    ///////////////////////////////////////////////////
     Address m_entryAddress;    ///< Entry address of this procedure.
 
     /**

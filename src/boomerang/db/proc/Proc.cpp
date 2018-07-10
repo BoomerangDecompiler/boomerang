@@ -109,6 +109,12 @@ void Function::setEntryAddress(Address entryAddr)
 }
 
 
+Prog *Function::getProg() const
+{
+    return m_prog;
+}
+
+
 void Function::renameParam(const QString& oldName, const QString& newName)
 {
     m_signature->renameParam(oldName, newName);

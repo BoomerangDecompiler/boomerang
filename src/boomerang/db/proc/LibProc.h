@@ -35,7 +35,7 @@ public:
     LibProc& operator=(LibProc&&) = default;
 
 public:
-    QString toString() const override;
+    QString toString() const;
 
     /// \copydoc Function::isLib
     bool isLib() const override { return true; }
