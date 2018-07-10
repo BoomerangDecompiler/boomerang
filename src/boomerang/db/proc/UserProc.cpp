@@ -49,6 +49,7 @@
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/util/ConnectionGraph.h"
+#include "boomerang/util/DFGWriter.h"
 #include "boomerang/util/UseGraphWriter.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
@@ -352,67 +353,12 @@ void UserProc::dump() const
 
 void UserProc::printDFG() const
 {
-    QString fname = QString("%1%2-%3-dfg.dot")
-                       .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
-                       .arg(getName())
-                       .arg(DFGcount);
+    const QString fname = QString("%1%2-%3-dfg.dot")
+        .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
+        .arg(getName())
+        .arg(DFGcount++);
 
-    DFGcount++;
-    LOG_MSG("Outputing DFG to '%1'", fname);
-    QFile file(fname);
-
-    if (!file.open(QFile::WriteOnly)) {
-        LOG_WARN("Can't open DFG '%1'", fname);
-        return;
-    }
-
-    QTextStream out(&file);
-    out << "digraph " << getName() << " {\n";
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        if (s->isPhi()) {
-            out << s->getNumber() << " [shape=\"triangle\"];\n";
-        }
-
-        if (s->isCall()) {
-            out << s->getNumber() << " [shape=\"box\"];\n";
-        }
-
-        if (s->isBranch()) {
-            out << s->getNumber() << " [shape=\"diamond\"];\n";
-        }
-
-        LocationSet refs;
-        s->addUsedLocs(refs);
-
-        for (SharedExp rr : refs) {
-            auto r = std::dynamic_pointer_cast<RefExp>(rr);
-
-            if (r) {
-                if (r->getDef()) {
-                    out << r->getDef()->getNumber();
-                }
-                else {
-                    out << "input";
-                }
-
-                out << " -> ";
-
-                if (s->isReturn()) {
-                    out << "output";
-                }
-                else {
-                    out << s->getNumber();
-                }
-
-                out << ";\n";
-            }
-        }
-    }
-
-    out << "}\n";
+    DFGWriter().printDFG(this, fname);
 }
 
 
