@@ -128,15 +128,6 @@ public:
     void decompile();
 
 public:
-    /**
-     * Begin the decompile process at this procedure
-     * \param  path A list of pointers to procedures, representing the path from
-     * the current entry point to the current procedure in the call graph. Pass an
-     * empty set at the top level.
-     * \param indent is the indentation level; pass 0 at the top level
-     */
-    std::shared_ptr<ProcSet> decompile(ProcList &callStack);
-
     /// Early decompile:
     /// sort CFG, number statements, dominator tree, place phi functions, number statements, first rename,
     /// propagation: ready for preserveds.
@@ -567,6 +558,7 @@ private:
     /// DataFlow object. Holds information relevant to transforming to and from SSA form.
     DataFlow m_df;
 
+public:
     /**
      * Pointer to a set of procedures involved in a recursion group.
      * The procedures in this group form a strongly connected component of the call graph.

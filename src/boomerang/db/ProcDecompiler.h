@@ -21,7 +21,13 @@ public:
 public:
     void decompile();
 
-private:
+public:
+    /**
+     * Begin the decompile process at this procedure
+     * \param  path A list of pointers to procedures, representing the path from
+     * the current entry point to the current procedure in the call graph. Pass an
+     * empty set at the top level.
+     */
     std::shared_ptr<ProcSet> decompile(ProcList *callStack);
 
 private:
