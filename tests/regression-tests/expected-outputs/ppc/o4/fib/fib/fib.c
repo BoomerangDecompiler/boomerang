@@ -7,9 +7,9 @@ int main(int argc, char *argv[])
     int g3; 		// r3
     __size32 g3_2; 		// r3{0}
 
-    g3 = fib(9);
-    g3_2 = fib(8);
-    printf("%i\n", g3 + g3_2);
+    g3_2 = fib(9);
+    g3 = fib(8);
+    printf("%i\n", g3_2 + g3);
     return 0;
 }
 

@@ -326,8 +326,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         first = true;
         s << " /* Warning: also results in ";
 
-        for (StatementList::const_iterator ss = std::next(results.begin());
-             ss != results.end(); ++ss) {
+        for (auto ss = std::next(results.begin()); ss != results.end(); ++ss) {
             if (first) {
                 first = false;
             }
@@ -1392,15 +1391,11 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
             }
 
             assert(unaryExp.getSubExp1()->isIntConst());
-            QString regName(m_proc->getProg()->getRegName(std::static_pointer_cast<const Const>(unaryExp.getSubExp1())->getInt()));
+            const int regID = unaryExp.access<const Const, 1>()->getInt();
+            QString regName = m_proc->getProg()->getRegName(regID);
 
-            if (regName.isEmpty()) {
-                if (regName[0] == '%') {
-                    str << regName + 1;
-                }
-                else {
-                    str << regName;
-                }
+            if (!regName.isEmpty()) {
+                str << regName;
             }
             else {
                 // What is this doing in the back end???

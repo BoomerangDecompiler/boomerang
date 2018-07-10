@@ -128,22 +128,6 @@ public:
     void decompile();
 
 public:
-    /// Early decompile:
-    /// sort CFG, number statements, dominator tree, place phi functions, number statements, first rename,
-    /// propagation: ready for preserveds.
-    void earlyDecompile();
-
-    /// Middle decompile: All the decompilation from preservation up to
-    /// but not including removing unused statements.
-    /// \returns the cycle set from the recursive call to decompile()
-    std::shared_ptr<ProcSet> middleDecompile(ProcList &callStack);
-
-    /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
-    /// Also finalise the whole group.
-    void recursionGroupAnalysis(ProcList &callStack);
-
-    void decompileProcInRecursionGroup(ProcList& callStack, ProcSet& visited);
-
     /**
      * Mark calls involved in the recursion cycle as non childless
      * (each child has had middleDecompile called on it now).
@@ -555,27 +539,21 @@ private:
 
     // The modifieds for the procedure are now stored in the return statement
 
+public:
     /// DataFlow object. Holds information relevant to transforming to and from SSA form.
     DataFlow m_df;
 
-public:
-    /**
-     * Pointer to a set of procedures involved in a recursion group.
-     * The procedures in this group form a strongly connected component of the call graph.
-     * Each procedure in the recursion group points to the same ProcSet.
-     * If this procedure is not involved in recursion, this is nullptr.
-     * \note Since strongly connected components are disjunct,
-     * each procedure is part of at most 1 recursion group.
-     */
+
     std::shared_ptr<ProcSet> m_recursionGroup;
 
-private:
     /**
      * We ensure that there is only one return statement now.
      * See code in frontend/frontend.cpp handling case StmtType::Ret.
      * If no return statement, this will be nullptr.
      */
     ReturnStatement *m_retStatement;
+
+private:
     mutable int DFGcount; ///< used in dotty output
 
 private:

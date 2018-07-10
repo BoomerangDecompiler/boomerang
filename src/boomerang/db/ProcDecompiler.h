@@ -12,24 +12,53 @@
 
 #include "boomerang/db/proc/UserProc.h"
 
+#include <unordered_map>
+
 
 class ProcDecompiler
 {
 public:
-    ProcDecompiler(UserProc *proc);
+    ProcDecompiler();
 
 public:
-    void decompile();
-
-public:
-    /**
-     * Begin the decompile process at this procedure
-     * \param  path A list of pointers to procedures, representing the path from
-     * the current entry point to the current procedure in the call graph. Pass an
-     * empty set at the top level.
-     */
-    std::shared_ptr<ProcSet> decompile(ProcList *callStack);
+    void decompileRecursive(UserProc *proc);
 
 private:
-    UserProc *m_proc;
+    ProcStatus tryDecompileRecursive(UserProc *proc);
+
+    void createRecursionGoup(const std::shared_ptr<ProcSet>& newGroup);
+    void addToRecursionGroup(UserProc *proc, const std::shared_ptr<ProcSet>& recursionGroup);
+
+private:
+    /// Early decompile:
+    /// sort CFG, number statements, dominator tree, place phi functions, number statements, first rename,
+    /// propagation: ready for preserveds.
+    void earlyDecompile(UserProc *proc);
+
+    /// Middle decompile: All the decompilation from preservation up to
+    /// but not including removing unused statements.
+    /// \returns the cycle set from the recursive call to decompile()
+    void middleDecompile(UserProc *proc);
+
+    /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
+    /// Also finalise the whole group.
+    void recursionGroupAnalysis(const std::shared_ptr<ProcSet>& callStack);
+
+    /// \returns true if any change
+    bool decompileProcInRecursionGroup(UserProc *proc, ProcSet& visited);
+
+    void printCallStack();
+
+private:
+    ProcList m_callStack;
+
+    /**
+     * Pointer to a set of procedures involved in a recursion group.
+     * The procedures in the ProcSet form a strongly connected component of the call graph.
+     * Each procedure in the recursion group points to the same ProcSet.
+     * Procedures not involved in recursion are not present in this map.
+     * \note Since strongly connected components are disjunct,
+     * each procedure is part of at most 1 recursion group.
+     */
+    std::unordered_map<UserProc *, std::shared_ptr<ProcSet>> m_recursionGroups;
 };
