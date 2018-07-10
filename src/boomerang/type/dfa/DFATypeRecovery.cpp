@@ -224,7 +224,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 
         // There used to be a pass here to insert casts. This is best left until global type analysis is complete,
         // so do it just before translating from SSA form (which is the where type information becomes inaccessible)
-    } while (up->ellipsisProcessing());
+    } while (doEllipsisProcessing(up));
 
     PassManager::get()->executePass(PassID::BBSimplify, up); // In case there are new struct members
 
@@ -547,16 +547,26 @@ bool DFATypeRecovery::dfaTypeAnalysis(Statement *i)
 }
 
 
-// This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
-// In classic lattice-based terms, the TOP type is void; there is no BOTTOM type since we handle overconstraints with
-// unions.
-// Consider various pieces of knowledge about the types. There could be:
-// a) void: no information. Void meet x = x.
-// b) size only: find a size large enough to contain the two types.
-// c) broad type only, e.g. floating point
-// d) signedness, no size
-// e) size, no signedness
-// f) broad type, size, and (for integer broad type), signedness
+bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
+{
+    bool ch = false;
 
-// ch set true if any change
+    for (BasicBlock *bb : *proc->getCFG()) {
+        BasicBlock::RTLRIterator        rrit;
+        StatementList::reverse_iterator srit;
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
+        // Note: we may have removed some statements, so there may no longer be a last statement!
+        if (c == nullptr) {
+            continue;
+        }
+
+        ch |= c->ellipsisProcessing(proc->getProg());
+    }
+
+    if (ch) {
+        PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
+    }
+
+    return ch;
+}

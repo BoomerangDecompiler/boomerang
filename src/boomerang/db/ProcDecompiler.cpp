@@ -506,7 +506,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
 
     LOG_VERBOSE("### allowing SSA renaming of all memof expressions ###");
 
-    proc->m_df.setRenameLocalsParams(true);
+    proc->getDataFlow()->setRenameLocalsParams(true);
 
     // Now we need another pass to inert phis for the memofs, rename them and propagate them
     PassManager::get()->executePass(PassID::PhiPlacement, proc);
@@ -551,7 +551,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
             return;
         }
 
-        proc->m_df.setRenameLocalsParams(false);              // Start again with memofs
+        proc->getDataFlow()->setRenameLocalsParams(false);      // Start again with memofs
         proc->setStatus(PROC_VISITED);                        // Back to only visited progress
 
         assert(m_callStack.back() == proc);

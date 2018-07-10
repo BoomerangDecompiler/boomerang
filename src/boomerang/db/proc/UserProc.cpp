@@ -70,9 +70,9 @@ UserProc::UserProc(Address address, const QString& name, Module *module)
     , m_df(this)
     , m_recursionGroup(nullptr)
     , m_retStatement(nullptr)
-    , DFGcount(0)
     , m_cfg(new Cfg(this))
     , m_status(PROC_UNDECODED)
+    , m_dfgCount(0)
 {
 }
 
@@ -337,7 +337,7 @@ void UserProc::printDFG() const
     const QString fname = QString("%1%2-%3-dfg.dot")
         .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
         .arg(getName())
-        .arg(DFGcount++);
+        .arg(m_dfgCount++);
 
     DFGWriter().printDFG(this, fname);
 }
@@ -1350,31 +1350,6 @@ bool UserProc::isPreserved(SharedExp e)
 }
 
 
-bool UserProc::ellipsisProcessing()
-{
-    bool ch = false;
-
-    for (BasicBlock *bb : *m_cfg) {
-        BasicBlock::RTLRIterator        rrit;
-        StatementList::reverse_iterator srit;
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
-
-        // Note: we may have removed some statements, so there may no longer be a last statement!
-        if (c == nullptr) {
-            continue;
-        }
-
-        ch |= c->ellipsisProcessing(m_prog);
-    }
-
-    if (ch) {
-        PassManager::get()->executePass(PassID::CallAndPhiFix, this);
-    }
-
-    return ch;
-}
-
-
 QString UserProc::lookupParam(SharedConstExp e) const
 {
     // Originally e.g. m[esp+K]
@@ -1726,9 +1701,7 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 
 void UserProc::propagateToCollector()
 {
-    UseCollector::iterator it;
-
-    for (it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
+    for (auto it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
         if (!(*it)->isMemOf()) {
             ++it;
             continue;
@@ -1815,66 +1788,6 @@ bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 
     SharedConstExp right = addr->getSubExp2();
     return right->isIntConst();
-}
-
-
-bool UserProc::doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited)
-{
-    BasicBlock::RTLRIterator        rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *pb : *m_cfg) {
-        CallStatement *c = static_cast<CallStatement *>(pb->getLastStmt(rrit, srit));
-
-        if ((c == nullptr) || !c->isCall()) {
-            continue; // Only interested in calls
-        }
-
-        UserProc *dest = static_cast<UserProc *>(c->getDestProc());
-
-        if (!dest || dest->isLib()) {
-            continue;    // Only interested in calls to UserProcs
-        }
-
-        if (dest == p) { // Pointer comparison is OK here
-            // This is a recursive call to p. Check for an argument of the form param{-}
-            // FIXME: should be looking for component
-            const StatementList& args = c->getArguments();
-            for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
-                const Assign *a = dynamic_cast<const Assign *>(*aa);
-                SharedExp rhs = a ? a->getRight() : nullptr;
-
-                if (rhs && rhs->isSubscript() && rhs->access<RefExp>()->isImplicitDef()) {
-                    SharedExp base = rhs->getSubExp1();
-
-                    // Check if this argument location matches loc
-                    if (*base == *param) {
-                        // We have a call to p that takes param{-} as an argument
-                        return true;
-                    }
-                }
-            }
-        }
-        else {
-            if (dest->doesRecurseTo(p)) {
-                // We have come to a call that is not to p, but is in the same recursion group as p and this proc.
-                visited->insert(this);
-
-                if (visited->find(dest) != visited->end()) {
-                    // Recurse to the next proc
-                    bool res = dest->doesParamChainToCall(param, p, visited);
-
-                    if (res) {
-                        return true;
-                    }
-
-                    // TODO: Else consider more calls this proc
-                }
-            }
-        }
-    }
-
-    return false;
 }
 
 
@@ -2323,29 +2236,6 @@ void UserProc::mapLocalsAndParams()
     LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", getName());
 }
 
-
-void UserProc::findPhiUnites(ConnectionGraph& pu)
-{
-    StatementList stmts;
-
-    getStatements(stmts);
-
-    for (Statement *stmt : stmts) {
-        if (!stmt->isPhi()) {
-            continue;
-        }
-
-        PhiAssign *pa   = static_cast<PhiAssign *>(stmt);
-        SharedExp lhs   = pa->getLeft();
-        auto      reLhs = RefExp::get(lhs, pa);
-
-        for (RefExp& v : *pa) {
-            assert(v.getSubExp1());
-            auto re = RefExp::get(v.getSubExp1(), v.getDef());
-            pu.connect(reLhs, re);
-        }
-    }
-}
 
 
 QString UserProc::getRegName(SharedExp r)

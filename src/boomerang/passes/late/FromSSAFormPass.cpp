@@ -99,7 +99,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
 
     // Find the set of locations that are "united" by phi-functions
     // FIXME: are these going to be trivially predictable?
-    proc->findPhiUnites(pu);
+    findPhiUnites(proc, pu);
 
     if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
         LOG_MSG("## ig interference graph:");
@@ -436,5 +436,28 @@ void FromSSAFormPass::removeSubscriptsFromParameters(UserProc *proc)
         SharedExp left = static_cast<Assignment *>(param)->getLeft();
         left = left->acceptModifier(&esx);
         static_cast<Assignment *>(param)->setLeft(left);
+    }
+}
+
+
+void FromSSAFormPass::findPhiUnites(UserProc *proc, ConnectionGraph& pu)
+{
+    StatementList stmts;
+    proc->getStatements(stmts);
+
+    for (Statement *stmt : stmts) {
+        if (!stmt->isPhi()) {
+            continue;
+        }
+
+        PhiAssign *pa   = static_cast<PhiAssign *>(stmt);
+        SharedExp lhs   = pa->getLeft();
+        auto      reLhs = RefExp::get(lhs, pa);
+
+        for (RefExp& v : *pa) {
+            assert(v.getSubExp1());
+            auto re = RefExp::get(v.getSubExp1(), v.getDef());
+            pu.connect(reLhs, re);
+        }
     }
 }

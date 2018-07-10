@@ -180,41 +180,13 @@ public:
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();
 
-    /// Find the locations united by Phi-functions
-    void findPhiUnites(ConnectionGraph& pu);
+
     void insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
 
     /// Insert statement \a a after statement \a s.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
     void insertStatementAfter(Statement *afterThis, Statement *stmt);
-
-    /**
-     * Trim parameters to procedure calls with ellipsis (...).
-     * Also add types for ellipsis parameters, if any
-     * \returns true if any signature types so added.
-     */
-    bool ellipsisProcessing();
-
-    /**
-     * Used for checking for unused parameters.
-     *
-     * Remove the unused parameters. Check for uses for each parameter as param{0}.
-     * Some parameters are apparently used when in fact they are only used as parameters to calls to procedures in the
-     * recursion set. So don't count components of arguments of calls in the current recursion group that chain through to
-     * ultimately use the argument as a parameter to the current procedure.
-     * Some parameters are apparently used when in fact they are only used by phi statements which transmit a return from
-     * a recursive call ultimately to the current procedure, to the exit of the current procedure, and the return exists
-     * only because of a liveness created by a parameter to a recursive call. So when examining phi statements, check if
-     * referenced from a return of the current procedure, and has an implicit operand, and all the others satisfy a call
-     * to doesReturnChainToCall(param, this proc).
-     * but not including removing unused statements.
-     *
-     * \param param   Exp to check
-     * \param p       our caller?
-     * \param visited a set of procs already visited, to prevent infinite recursion
-     */
-    bool doesParamChainToCall(SharedExp param, UserProc *p, ProcSet *visited);
 
     /// Remove redundant parameters. Return true if remove any
     bool removeRedundantParameters();
@@ -491,7 +463,8 @@ private:
 private:
     SymbolMap m_symbolMap;
 
-    /// Set of callees (Procedures that this procedure calls). Used for call graph, among other things
+    /// Set of callees (Procedures that this procedure calls).
+    /// Used for call graph, among other things
     std::list<Function *> m_calleeList;
 
     /**
@@ -515,13 +488,10 @@ private:
     /// The set of address-escaped locals and parameters. If in this list, they should not be propagated
     LocationSet m_addressEscapedVars;
 
-    // The modifieds for the procedure are now stored in the return statement
-
-public:
     /// DataFlow object. Holds information relevant to transforming to and from SSA form.
     DataFlow m_df;
 
-
+public:
     std::shared_ptr<ProcSet> m_recursionGroup;
 
     /**
@@ -530,9 +500,6 @@ public:
      * If no return statement, this will be nullptr.
      */
     ReturnStatement *m_retStatement;
-
-private:
-    mutable int DFGcount; ///< used in dotty output
 
 private:
     Cfg *m_cfg; ///< The control flow graph.
@@ -555,4 +522,5 @@ private:
     std::map<QString, SharedType> m_locals;
 
     int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
+    mutable int m_dfgCount; ///< used in dotty output
 };
