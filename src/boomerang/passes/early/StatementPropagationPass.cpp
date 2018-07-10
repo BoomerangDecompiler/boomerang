@@ -44,11 +44,6 @@ bool StatementPropagationPass::execute(UserProc *proc)
         s->accept(&sdc);
     }
 
-#if USE_DOMINANCE_NUMS
-    // A third pass for dominance numbers
-    proc->setDominanceNumbers();
-#endif
-
     // A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
     bool change = false;
 

@@ -538,35 +538,6 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 }
 
 
-void DataFlow::setDominanceNums(int n, int& currNum)
-{
-#if USE_DOMINANCE_NUMS
-    BasicBlock::rtlit       rit;
-    StatementList::iterator sit;
-    BasicBlock              *bb = m_BBs[n];
-    Instruction             *S;
-
-    for (S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
-        S->setDomNumber(currNum++);
-    }
-
-    int sz = m_idom.size();
-
-    for (int c = 0; c < sz; ++c) {
-        if (m_idom[c] != n) {
-            continue;
-        }
-
-        // Recurse to the child
-        setDominanceNums(c, currNum);
-    }
-#else
-    Q_UNUSED(n);
-    Q_UNUSED(currNum);
-#endif
-}
-
-
 void DataFlow::allocateData()
 {
     Cfg *cfg = m_proc->getCFG();

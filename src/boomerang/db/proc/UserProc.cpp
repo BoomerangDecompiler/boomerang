@@ -2324,16 +2324,6 @@ void UserProc::mapLocalsAndParams()
 }
 
 
-#if USE_DOMINANCE_NUMS
-void UserProc::setDominanceNumbers()
-{
-    int currNum = 1;
-
-    m_df.setDominanceNums(0, currNum);
-}
-#endif
-
-
 void UserProc::findPhiUnites(ConnectionGraph& pu)
 {
     StatementList stmts;

@@ -177,10 +177,6 @@ public:
     const std::map<QString, SharedType>& getLocals() const { return m_locals; }
     std::map<QString, SharedType>& getLocals() { return m_locals; }
 
-#if USE_DOMINANCE_NUMS
-    void setDominanceNumbers();
-#endif
-
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();
 
