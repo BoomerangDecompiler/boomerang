@@ -127,7 +127,7 @@ public:
      */
     void decompile();
 
-private:
+public:
     /**
      * Begin the decompile process at this procedure
      * \param  path A list of pointers to procedures, representing the path from

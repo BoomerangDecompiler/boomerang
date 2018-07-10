@@ -12,15 +12,16 @@
 
 #include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/InterferenceFinder.h"
 #include "boomerang/db/Module.h"
+#include "boomerang/db/ProcDecompiler.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/UseCollector.h"
-#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
@@ -467,8 +468,8 @@ void UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
 
 void UserProc::decompile()
 {
-    ProcList callStack;
-    decompile(callStack);
+    ProcDecompiler dcomp(this);
+    dcomp.decompile();
 }
 
 

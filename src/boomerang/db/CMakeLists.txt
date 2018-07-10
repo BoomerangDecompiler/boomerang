@@ -20,6 +20,7 @@ list(APPEND boomerang-db-sources
     db/InterferenceFinder
     db/LivenessAnalyzer
     db/Module
+    db/ProcDecompiler
     db/Prog
     db/ProgDecompiler
     db/Register
