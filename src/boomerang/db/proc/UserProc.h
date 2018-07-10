@@ -513,36 +513,28 @@ public:
     /// print this proc, mainly for debugging
     void print(QTextStream& out, bool html = false) const;
     void printParams(QTextStream& out, bool html = false) const;
-    char *prints() const;
-    void printDFG() const;
 
     /// Print just the symbol map
     void printSymbolMap(QTextStream& out, bool html = false) const;
 
-    void dump() const;
-
-    /// For debugging
-    void dumpSymbolMap() const;
-
-    /// For debugging
-    void dumpSymbolMapx() const;
-
     /// For debugging
     void dumpLocals(QTextStream& os, bool html = false) const;
 
-    void debugPrintAll(const char *c);
+    void printDFG() const;
+    void printUseGraph() const;
 
-    void printUseGraph();
+    void debugPrintAll(const QString& stepName);
 
 private:
     void searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts);
 
-    /// Return a string for a new local suitable for \a e
+    /// Return a string for a new local suitable for \p e
     QString newLocalName(const SharedExp& e);
 
     /// helper function for prove()
     bool prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
                 PhiAssign *lastPhi = nullptr);
+
 private:
     SymbolMap m_symbolMap;
 

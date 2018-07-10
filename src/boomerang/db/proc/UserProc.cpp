@@ -195,7 +195,7 @@ void UserProc::renameLocal(const QString& oldName, const QString& newName)
 }
 
 
-void UserProc::printUseGraph()
+void UserProc::printUseGraph() const
 {
     const Settings *settings = getProg()->getProject()->getSettings();
     const QString filePath = settings->getOutputDirectory()
@@ -328,26 +328,6 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
     if (html) {
         out << "<br>";
     }
-}
-
-
-char *UserProc::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
-
-void UserProc::dump() const
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
 }
 
 
@@ -715,7 +695,7 @@ std::shared_ptr<ProcSet> UserProc::decompile(ProcList &callStack)
 }
 
 
-void UserProc::debugPrintAll(const char *step_name)
+void UserProc::debugPrintAll(const QString& stepName)
 {
     if (m_prog->getProject()->getSettings()->verboseOutput) {
         numberStatements();
@@ -723,9 +703,9 @@ void UserProc::debugPrintAll(const char *step_name)
         QDir outputDir = m_prog->getProject()->getSettings()->getOutputDirectory();
         QString filePath = outputDir.absoluteFilePath(getName());
 
-        LOG_SEPARATE(filePath, "--- debug print %1 for %2 ---", step_name, getName());
+        LOG_SEPARATE(filePath, "--- debug print %1 for %2 ---", stepName, getName());
         LOG_SEPARATE(filePath, "%1", this->toString());
-        LOG_SEPARATE(filePath, "=== end debug print %1 for %2 ===", step_name, getName());
+        LOG_SEPARATE(filePath, "=== end debug print %1 for %2 ===", stepName, getName());
     }
 }
 
@@ -2055,26 +2035,6 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
         os << "<br>";
     }
 }
-
-
-void UserProc::dumpSymbolMap() const
-{
-    for (const auto& val : m_symbolMap) {
-        SharedConstType ty = getTypeForLocation(val.second);
-        LOG_MSG("  %1 maps to %2 type %3", val.first, val.second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
-    }
-}
-
-
-void UserProc::dumpSymbolMapx() const
-{
-    for (const auto& val : m_symbolMap) {
-        SharedConstType ty = getTypeForLocation(val.second);
-        LOG_MSG("  %1 maps to %2 type %3", val.first, val.second, (ty ? qPrintable(ty->getCtype()) : "NULL"));
-        val.first->printx(2);
-    }
-}
-
 
 
 void UserProc::insertParameter(SharedExp e, SharedType ty)
