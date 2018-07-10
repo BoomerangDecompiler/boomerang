@@ -188,9 +188,7 @@ public:
     /// So this is an inefficient linear search!
     void insertStatementAfter(Statement *afterThis, Statement *stmt);
 
-    /// Remove redundant parameters. Return true if remove any
-    bool removeRedundantParameters();
-
+public:
     /**
      * Remove any returns that are not used by any callers
      *
@@ -214,6 +212,10 @@ public:
      * \returns true if any change
      */
     bool removeRedundantReturns(std::set<UserProc *>& removeRetSet);
+
+private:
+    /// Remove redundant parameters. Return true if remove any
+    bool removeRedundantParameters();
 
     /**
      * Check for a gainful use of bparam{0} in this proc.
@@ -241,6 +243,7 @@ public:
      */
     void updateForUseChange(std::set<UserProc *>& removeRetSet);
 
+public:
     /// this function was non-reentrant, but now reentrancy is frequently used
     /// prove any arbitary property of this procedure. If conditional is true, do not save the result, as it may
     /// be conditional on premises stored in other procedures
