@@ -52,7 +52,6 @@ namespace dbghelp
 Function::Function(Address entryAddr, Signature *sig, Module *module)
     : m_signature(sig)
     , m_entryAddress(entryAddr)
-    , m_firstCaller(nullptr)
     , m_module(module)
 {
     if (module) {
@@ -147,17 +146,6 @@ void Function::setParent(Module *module)
     m_module = module;
     module->getFunctionList().push_back(this);
     module->setLocationMap(m_entryAddress, this);
-}
-
-
-Function *Function::getFirstCaller()
-{
-    if ((m_firstCaller == nullptr) && (m_firstCallerAddr != Address::INVALID)) {
-        m_firstCaller     = m_prog->getFunctionByAddr(m_firstCallerAddr);
-        m_firstCallerAddr = Address::INVALID;
-    }
-
-    return m_firstCaller;
 }
 
 

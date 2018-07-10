@@ -1130,7 +1130,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
             }
 
             if (np != nullptr) {
-                np->setFirstCaller(proc);
                 proc->addCallee(np);
             }
         }

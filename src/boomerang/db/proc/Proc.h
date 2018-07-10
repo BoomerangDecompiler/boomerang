@@ -62,17 +62,6 @@ public:
     /// Get the program this procedure belongs to.
     Prog *getProg() const { return m_prog; }
 
-    /// Get the first procedure that calls this procedure (or null for main/start).
-    Function *getFirstCaller();
-
-    /// Set the first procedure that calls this procedure (or null for main/start).
-    void setFirstCaller(Function *p)
-    {
-        if (m_firstCaller == nullptr) {
-            m_firstCaller = p;
-        }
-    }
-
     std::shared_ptr<Signature> getSignature() const { return m_signature; }
     void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
 
@@ -191,8 +180,6 @@ protected:
     // Persistent state
     ///////////////////////////////////////////////////
     Address m_entryAddress;    ///< Entry address of this procedure.
-    Function *m_firstCaller;   ///< first procedure to call this procedure.
-    Address m_firstCallerAddr; ///< can only be used once.
 
     /**
      * All the expressions that have been proven true.
