@@ -127,7 +127,7 @@ public:
     void setEntryBB();
 
     /// Decompile this procedure, and all callees.
-    void decompile();
+    void decompileRecursive();
 
 public:
     // statement related

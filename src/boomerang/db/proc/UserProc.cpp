@@ -424,7 +424,7 @@ void UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
 }
 
 
-void UserProc::decompile()
+void UserProc::decompileRecursive()
 {
     ProcDecompiler().decompileRecursive(this);
 }

@@ -33,7 +33,7 @@ void ProgDecompiler::decompile()
     // Start decompiling each entry point
     for (UserProc *up : m_prog->getEntryProcs()) {
         LOG_VERBOSE("Decompiling entry point '%1'", up->getName());
-        up->decompile();
+        up->decompileRecursive();
     }
 
     // Just in case there are any Procs not in the call graph.
@@ -56,7 +56,7 @@ void ProgDecompiler::decompile()
                         if (proc->isDecompiled()) {
                             continue;
                         }
-                        proc->decompile();
+                        proc->decompileRecursive();
                         foundone = true;
                     }
                 }

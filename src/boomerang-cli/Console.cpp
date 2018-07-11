@@ -265,7 +265,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         }
 
         for (UserProc *userProc : procSet) {
-            userProc->decompile();
+            userProc->decompileRecursive();
         }
 
         return CommandStatus::Success;
