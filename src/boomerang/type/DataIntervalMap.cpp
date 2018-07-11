@@ -10,13 +10,14 @@
 #include "DataIntervalMap.h"
 
 
-#include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/type/type/CompoundType.h"
 #include "boomerang/type/type/ArrayType.h"
+#include "boomerang/util/Log.h"
 
 
 DataIntervalMap::DataIntervalMap(UserProc *userProc)

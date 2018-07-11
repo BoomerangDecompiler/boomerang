@@ -14,6 +14,9 @@
 #include "boomerang/db/proc/Proc.h"
 
 
+class Statement;
+
+
 /// Remove unused statements
 class UnusedStatementRemovalPass : public IPass
 {

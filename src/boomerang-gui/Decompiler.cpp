@@ -18,6 +18,7 @@
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/util/Log.h"
 

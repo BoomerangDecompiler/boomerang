@@ -13,6 +13,7 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/type/type/VoidType.h"
 
 

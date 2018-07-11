@@ -10,7 +10,6 @@
 #include "ExpDotWriter.h"
 
 
-#include "boomerang/util/Log.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/Const.h"
@@ -20,6 +19,8 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/RTL.h"
+#include "boomerang/type/type/Type.h"
+#include "boomerang/util/Log.h"
 
 #include <QFile>
 #include <QString>

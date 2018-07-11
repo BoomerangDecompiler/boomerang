@@ -10,15 +10,18 @@
 #pragma once
 
 
+#include "boomerang/db/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/db/signature/Signature.h"
 
 #include <QString>
+
+#include <set>
 
 
 class Module;
 class CallStatement;
 class Prog;
+class Signature;
 
 
 /**
@@ -73,10 +76,7 @@ public:
     std::shared_ptr<Signature> getSignature() const { return m_signature; }
     void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
 
-    /**
-     * Get the callers
-     * Note: the callers will be in a random order (determined by memory allocation)
-     */
+    /// \returns the call statements that call this function.
     const std::set<CallStatement *>& getCallers() const { return m_callers; }
     std::set<CallStatement *>& getCallers() { return m_callers; }
 
