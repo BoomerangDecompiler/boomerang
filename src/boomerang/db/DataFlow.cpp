@@ -251,7 +251,7 @@ bool DataFlow::canRename(SharedConstExp exp) const
     }
 
     // e is a local or parameter; allow it to be propagated iff we've done escape analysis and the address has not
-    return renameLocalsAndParams && !m_proc->isAddressEscapedVar(exp); // escaped
+    return renameLocalsAndParams;
 }
 
 

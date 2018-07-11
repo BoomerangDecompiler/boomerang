@@ -73,7 +73,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callStmt->getCalleeReturn()) {
         assert(!callee->isLib());
-        const StatementList& modifieds = static_cast<UserProc *>(callee)->getModifieds();
+        const StatementList& modifieds = static_cast<UserProc *>(callee)->m_retStatement->getModifieds();
 
         for (Statement *mm : modifieds) {
             Assignment *as = static_cast<Assignment *>(mm);

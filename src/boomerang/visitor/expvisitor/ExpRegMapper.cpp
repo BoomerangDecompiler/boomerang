@@ -26,7 +26,7 @@ bool ExpRegMapper::preVisit(const std::shared_ptr<RefExp>& e, bool& visitChildre
     SharedExp base = e->getSubExp1();
 
     if (base->isRegOf() || m_proc->isLocalOrParamPattern(base)) { // Don't convert if e.g. a global
-        m_proc->checkLocalFor(e);
+        m_proc->ensureExpIsMappedToLocal(e);
     }
 
     visitChildren = false; // Don't examine the r[] inside

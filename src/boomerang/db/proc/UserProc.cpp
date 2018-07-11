@@ -118,20 +118,10 @@ bool UserProc::isNoReturn() const
 
 void UserProc::setStatus(ProcStatus s)
 {
-    m_status = s;
-    m_prog->getProject()->alertProcStatusChanged(this);
-}
-
-
-bool UserProc::containsAddr(Address addr) const
-{
-    for (BasicBlock *bb : *m_cfg) {
-        if (bb->getRTLs() && (addr >= bb->getLowAddr()) && (addr <= bb->getHiAddr())) {
-            return true;
-        }
+    if (m_status != s) {
+        m_status = s;
+        m_prog->getProject()->alertProcStatusChanged(this);
     }
-
-    return false;
 }
 
 
@@ -173,26 +163,6 @@ void UserProc::setParamType(int idx, SharedType ty)
     a->setType(ty);
     // Sometimes the signature isn't up to date with the latest parameters
     m_signature->setParamType(a->getLeft(), ty);
-}
-
-
-void UserProc::renameLocal(const QString& oldName, const QString& newName)
-{
-    SharedType     ty     = m_locals[oldName];
-    SharedConstExp oldExp = expFromSymbol(oldName);
-
-    m_locals.erase(oldName);
-    SharedConstExp oldLoc = getSymbolFor(oldExp, ty);
-    SharedExp      newLoc = Location::local(newName, this);
-
-    mapSymbolToRepl(oldExp, oldLoc, newLoc);
-    m_locals[newName] = ty;
-
-    StatementList stmts;
-    getStatements(stmts);
-    for (Statement *stmt : stmts) {
-        stmt->searchAndReplace(*oldLoc, newLoc);
-    }
 }
 
 
@@ -694,42 +664,6 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 }
 
 
-void UserProc::searchRegularLocals(OPER minusOrPlus, bool lastPass, int sp, StatementList& stmts)
-{
-    // replace expressions in regular statements with locals
-    SharedExp l;
-
-    if (minusOrPlus == opWild) {
-        // l = m[sp{0}]
-        l = Location::memOf(RefExp::get(Location::regOf(sp), nullptr));
-    }
-    else {
-        // l = m[sp{0} +/- K]
-        l = Location::memOf(
-            Binary::get(minusOrPlus, RefExp::get(Location::regOf(sp), nullptr), Terminal::get(opWildIntConst)));
-    }
-
-    for (Statement *s : stmts) {
-        std::list<SharedExp> results;
-        s->searchAll(*l, results);
-
-        for (auto result : results) {
-            SharedType ty = s->getTypeFor(result);
-            SharedExp  e  = getSymbolExp(result, ty, lastPass);
-
-            if (e) {
-                SharedExp search = result->clone();
-                LOG_VERBOSE("Mapping %1 to %2 in %3", search, e, s);
-
-                // s->searchAndReplace(search, e);
-            }
-        }
-
-        // s->simplify();
-    }
-}
-
-
 void UserProc::promoteSignature()
 {
     m_signature = m_signature->promote(this);
@@ -825,13 +759,6 @@ SharedType UserProc::getParamType(const QString& name)
 }
 
 
-void UserProc::mapSymbolToRepl(const SharedConstExp& from, SharedConstExp oldTo, SharedExp newTo)
-{
-    removeSymbolMapping(from, oldTo);
-    mapSymbolTo(from, newTo); // The compiler could optimise this call to a fall through
-}
-
-
 void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
 {
     SymbolMap::iterator it = m_symbolMap.find(from);
@@ -871,21 +798,6 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstTy
     }
 
     return nullptr;
-}
-
-
-void UserProc::removeSymbolMapping(const SharedConstExp& from, const SharedConstExp& to)
-{
-    SymbolMap::iterator it = m_symbolMap.find(from);
-
-    while (it != m_symbolMap.end() && *it->first == *from) {
-        if (*it->second == *to) {
-            m_symbolMap.erase(it);
-            return;
-        }
-
-        ++it;
-    }
 }
 
 
@@ -1646,27 +1558,6 @@ QString UserProc::findLocal(const SharedExp& e, SharedType ty)
 }
 
 
-QString UserProc::findLocalFromRef(const std::shared_ptr<RefExp>& r)
-{
-    Statement  *def = r->getDef();
-    SharedExp  base = r->getSubExp1();
-    SharedType ty   = def->getTypeFor(base);
-    // QString name = lookupSym(*base, ty); ?? this actually worked a bit
-    QString name = lookupSym(r, ty);
-
-    if (name.isNull()) {
-        return name;
-    }
-
-    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
-    if (m_locals.find(name) != m_locals.end()) {
-        return name;
-    }
-
-    return QString::null;
-}
-
-
 QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
 {
     SymbolMap::const_iterator ff = m_symbolMap.find(exp);
@@ -1932,7 +1823,7 @@ bool UserProc::removeRedundantParameters()
         }
     }
 
-    getParameters() = newParameters;
+    m_parameters = newParameters;
 
     if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% end removing unused parameters for %1", getName());
@@ -2306,7 +2197,7 @@ bool UserProc::existsLocal(const QString& name) const
 }
 
 
-void UserProc::checkLocalFor(const std::shared_ptr<RefExp>& r)
+void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& r)
 {
     if (!lookupSymFromRefAny(r).isNull()) {
         return; // Already have a symbol for r
