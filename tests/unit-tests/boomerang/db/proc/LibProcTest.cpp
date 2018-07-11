@@ -78,6 +78,7 @@ void LibProcTest::testRenameParameter()
     auto exp = Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(8)));
     sig->addParameter("foo", exp);
     sig->addParameter("foo", exp);
+    proc.setSignature(sig);
 
     proc.renameParameter("foo", "bar");
 
