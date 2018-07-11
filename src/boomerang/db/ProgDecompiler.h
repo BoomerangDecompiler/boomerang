@@ -30,20 +30,6 @@ private:
     /// As the name suggests, removes globals unused in the decompiled code.
     void removeUnusedGlobals();
 
-    /**
-     * Remove unused return locations.
-     * This is the global removing of unused and redundant returns. The initial idea
-     * is simple enough: remove some returns according to the formula:
-     * returns(p) = modifieds(p) isect union(live at c) for all c calling p.
-     *
-     * However, removing returns reduces the uses, leading to three effects:
-     * 1) The statement that defines the return, if only used by that return, becomes unused
-     * 2) if the return is implicitly defined, then the parameters may be reduced, which affects all callers
-     * 3) if the return is defined at a call, the location may no longer be live at the call. If not, you need to check
-     *    the child, and do the union again (hence needing a list of callers) to find out if this change also affects that
-     *    child.
-     * \returns true if any change
-     */
     bool removeUnusedReturns();
 
     /// Have to transform out of SSA form after the above final pass

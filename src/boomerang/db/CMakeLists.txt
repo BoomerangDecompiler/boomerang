@@ -26,6 +26,7 @@ list(APPEND boomerang-db-sources
     db/Register
     db/RTL
     db/Table
+    db/UnusedReturnRemover
     db/UseCollector
 
     db/binary/BinaryFile
