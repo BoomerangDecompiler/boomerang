@@ -24,6 +24,8 @@
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"

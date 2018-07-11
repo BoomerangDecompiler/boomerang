@@ -25,6 +25,7 @@
 #include "boomerang/db/statements/GotoStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/type/type/ArrayType.h"

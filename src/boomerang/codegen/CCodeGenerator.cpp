@@ -27,6 +27,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"

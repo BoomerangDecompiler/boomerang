@@ -11,8 +11,10 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/util/Log.h"
 
 

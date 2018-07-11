@@ -23,6 +23,7 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"

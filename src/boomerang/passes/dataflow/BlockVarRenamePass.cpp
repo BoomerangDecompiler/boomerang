@@ -17,6 +17,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/util/Log.h"
 
 

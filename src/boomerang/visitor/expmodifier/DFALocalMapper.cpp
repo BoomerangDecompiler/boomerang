@@ -10,6 +10,7 @@
 #include "DFALocalMapper.h"
 
 
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/proc/UserProc.h"

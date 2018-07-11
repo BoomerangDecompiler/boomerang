@@ -10,6 +10,7 @@
 #include "BranchAnalysisPass.h"
 
 
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"

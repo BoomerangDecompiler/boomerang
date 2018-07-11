@@ -23,6 +23,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"

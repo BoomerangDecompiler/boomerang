@@ -12,6 +12,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"

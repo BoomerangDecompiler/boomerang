@@ -27,11 +27,12 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/ImpRefStatement.h"
+#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/visitor/expvisitor/ExpDestCounter.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
@@ -67,20 +68,18 @@
 
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, std::make_shared<Signature>(name), module)
+    , m_status(PROC_UNDECODED)
+    , m_dfgCount(0)
+    , m_cfg(new Cfg(this))
     , m_df(this)
     , m_recursionGroup(nullptr)
     , m_retStatement(nullptr)
-    , m_cfg(new Cfg(this))
-    , m_status(PROC_UNDECODED)
-    , m_dfgCount(0)
 {
 }
 
 
 UserProc::~UserProc()
 {
-    deleteCFG();
-
     qDeleteAll(m_parameters);
 }
 
@@ -172,13 +171,6 @@ void UserProc::printUseGraph() const
     const QString filePath = settings->getOutputDirectory()
         .absoluteFilePath(getName() + "-usegraph.dot");
     UseGraphWriter().writeUseGraph(this, filePath);
-}
-
-
-void UserProc::deleteCFG()
-{
-    delete m_cfg;
-    m_cfg = nullptr;
 }
 
 
@@ -1793,7 +1785,7 @@ bool UserProc::removeRedundantParameters()
         SharedExp bparam = param->clone()->removeSubscripts(az); // FIXME: why does main have subscripts on parameters?
         // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
         bparam = bparam->expSubscriptAllNull();                  // Now m[sp{-}+K]{-}
-        ImplicitConverter ic(m_cfg);
+        ImplicitConverter ic(getCFG());
         bparam = bparam->acceptModifier(&ic);                            // Now m[sp{0}+K]{0}
         assert(bparam->isSubscript());
         bparam = bparam->access<Exp, 1>();                       // now m[sp{0}+K] (bare parameter)
@@ -2229,4 +2221,20 @@ void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& r)
     }
 
     addLocal(ty, locName, base);
+}
+
+
+Address UserProc::getTheReturnAddr()
+{
+    return m_retStatement != nullptr
+        ? m_retStatement->getRetAddr()
+        : Address::INVALID;
+}
+
+
+void UserProc::setTheReturnAddr(ReturnStatement* s, Address r)
+{
+    assert(m_retStatement == nullptr);
+    m_retStatement = s;
+    m_retStatement->setRetAddr(r);
 }

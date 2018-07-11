@@ -12,38 +12,17 @@
 
 #include "Proc.h"
 
+
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/UseCollector.h"
-#include "boomerang/db/statements/ReturnStatement.h"
-#include "boomerang/db/exp/Binary.h"
-
-#include <list>
-#include <vector>
-#include <map>
-#include <set>
-#include <string>
-#include <cassert>
 
 
-class Prog;
+class Binary;
 class UserProc;
-class Cfg;
-class BasicBlock;
-class Exp;
-class TypedExp;
-class Type;
-class RTL;
-class ICodeGenerator;
-class Parameter;
-class Argument;
-class Signature;
-class Module;
-class QTextStream;
-class Log;
 
 
-enum ProcStatus
+enum ProcStatus : uint8_t
 {
     PROC_UNDECODED,     ///< Has not even been decoded
     PROC_DECODED,       ///< Decoded, no attempt at decompiling
@@ -114,8 +93,8 @@ public:
 
 public:
     /// \returns a pointer to the CFG object.
-    Cfg *getCFG() { return m_cfg; }
-    const Cfg *getCFG() const { return m_cfg; }
+    Cfg *getCFG() { return m_cfg.get(); }
+    const Cfg *getCFG() const { return m_cfg.get(); }
 
     /// Returns a pointer to the DataFlow object.
     DataFlow *getDataFlow() { return &m_df; }
@@ -143,9 +122,6 @@ public:
 
     /// Set the entry BB for this procedure (constructor has the entry address)
     void setEntryBB();
-
-    /// Deletes the whole Cfg for this proc object.
-    void deleteCFG();
 
     /// Decompile this procedure, and all callees.
     void decompile();
@@ -208,13 +184,8 @@ public:
 public:
     // return related
 
-    Address getTheReturnAddr() { return m_retStatement == nullptr ? Address::INVALID : m_retStatement->getRetAddr(); }
-    void setTheReturnAddr(ReturnStatement *s, Address r)
-    {
-        assert(m_retStatement == nullptr);
-        m_retStatement = s;
-        m_retStatement->setRetAddr(r);
-    }
+    Address getTheReturnAddr();
+    void setTheReturnAddr(ReturnStatement *s, Address r);
 
     ReturnStatement *getTheReturnStatement() { return m_retStatement; }
 
@@ -458,51 +429,36 @@ private:
     void killPremise(const SharedExp& e) { m_recurPremises.erase(e); }
 
 private:
-    SymbolMap m_symbolMap;
-
-    /// Set of callees (Procedures that this procedure calls).
-    /// Used for call graph, among other things
-    std::list<Function *> m_calleeList;
-
     /**
-     * A collector for initial parameters (locations used before being defined).
-     * Note that final parameters don't use this;
-     * it's only of use during group decompilation analysis (sorting out recursion)
+     * The status of this user procedure.
+     * Status: undecoded .. final decompiled
      */
-    UseCollector m_procUseCollector;
+    ProcStatus m_status;
+    mutable short m_dfgCount; ///< used in dotty output
+    int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
+
+    std::unique_ptr<Cfg> m_cfg; ///< The control flow graph.
+
+    /// DataFlow object. Holds information relevant to transforming to and from SSA form.
+    DataFlow m_df;
 
     /**
      * The list of parameters, ordered and filtered.
      * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
      * The RHS is just ignored; the list is of ImplicitAssigns.
-     * DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
+     *
+     * \note DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
      * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
      * so they are not suitable at present (since the addresses regularly get changed as the parameters get
      * recreated).
      */
     StatementList m_parameters;
 
-    /// DataFlow object. Holds information relevant to transforming to and from SSA form.
-    DataFlow m_df;
+    SymbolMap m_symbolMap;
 
-public:
-    std::shared_ptr<ProcSet> m_recursionGroup;
-
-    /**
-     * We ensure that there is only one return statement now.
-     * See code in frontend/frontend.cpp handling case StmtType::Ret.
-     * If no return statement, this will be nullptr.
-     */
-    ReturnStatement *m_retStatement;
-
-private:
-    Cfg *m_cfg; ///< The control flow graph.
-
-    /**
-     * The status of this user procedure.
-     * Status: undecoded .. final decompiled
-     */
-    ProcStatus m_status;
+    /// Set of callees (Procedures that this procedure calls).
+    /// Used for call graph, among other things
+    std::list<Function *> m_calleeList;
 
     /*
      * Somewhat DEPRECATED now. Eventually use the localTable.
@@ -515,6 +471,20 @@ private:
      */
     std::map<QString, SharedType> m_locals;
 
-    int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
-    mutable int m_dfgCount; ///< used in dotty output
+    /**
+     * A collector for initial parameters (locations used before being defined).
+     * Note that final parameters don't use this;
+     * it's only of use during group decompilation analysis (sorting out recursion)
+     */
+    UseCollector m_procUseCollector;
+
+public:
+    std::shared_ptr<ProcSet> m_recursionGroup;
+
+    /**
+     * We ensure that there is only one return statement now.
+     * See code in frontend/frontend.cpp handling case StmtType::Ret.
+     * If no return statement, this will be nullptr.
+     */
+    ReturnStatement *m_retStatement;
 };

@@ -12,10 +12,11 @@
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/PhiAssign.h"
 
 
 StrengthReductionReversalPass::StrengthReductionReversalPass()
