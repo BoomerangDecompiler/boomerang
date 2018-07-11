@@ -11,48 +11,16 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/db/Module.h"
-#include "boomerang/db/Register.h"
-#include "boomerang/db/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
-#include "boomerang/util/Util.h"
-
-#include <QtCore/QDebug>
-#include <QtCore/QFile>
-#include <QtCore/QTextStream>
-
-#include <sstream>
-#include <algorithm> // For find()
-#include <cstring>
 
 
-#ifdef _WIN32
-#  include <windows.h>
-#  ifndef __MINGW32__
-namespace dbghelp
-{
-#    include <dbghelp.h>
-}
-#  endif
-#endif
-
-
-Function::Function(Address entryAddr, Signature *sig, Module *module)
-    : m_signature(sig)
+Function::Function(Address entryAddr, const std::shared_ptr<Signature>& sig, Module *module)
+    : m_module(module)
     , m_entryAddress(entryAddr)
-    , m_module(module)
+    , m_signature(sig)
 {
     if (module) {
         m_prog = module->getProg();
@@ -62,19 +30,6 @@ Function::Function(Address entryAddr, Signature *sig, Module *module)
 
 Function::~Function()
 {
-}
-
-
-void Function::eraseFromParent()
-{
-    // Replace the entry in the procedure map with -1 as a warning not to decode that address ever again
-    m_module->setLocationMap(getEntryAddress(), reinterpret_cast<Function *>(-1));
-
-    // Delete the cfg etc.
-    m_module->getFunctionList().remove(this);
-
-    deleteCFG();
-    delete this;
 }
 
 
@@ -109,40 +64,19 @@ void Function::setEntryAddress(Address entryAddr)
 }
 
 
-Prog *Function::getProg() const
+Prog *Function::getProg()
 {
     return m_prog;
 }
 
 
-void Function::renameParam(const QString& oldName, const QString& newName)
+const Prog *Function::getProg() const
 {
-    m_signature->renameParam(oldName, newName);
+    return m_prog;
 }
 
 
-void Function::matchParams(std::list<SharedExp>& /*actuals*/, UserProc& /*caller*/)
-{
-    // TODO: not implemented, not used, but large amount of docs :)
-}
-
-
-std::list<Type> *Function::getParamTypeList(const std::list<SharedExp>& /*actuals*/)
-{
-    // TODO: not implemented, not used
-    return nullptr;
-}
-
-
-void Function::removeFromModule()
-{
-    assert(m_module);
-    m_module->getFunctionList().remove(this);
-    m_module->setLocationMap(m_entryAddress, nullptr);
-}
-
-
-void Function::setParent(Module *module)
+void Function::setModule(Module *module)
 {
     if (module == m_module) {
         return;
@@ -155,14 +89,22 @@ void Function::setParent(Module *module)
 }
 
 
+void Function::removeFromModule()
+{
+    assert(m_module);
+    m_module->getFunctionList().remove(this);
+    m_module->setLocationMap(m_entryAddress, nullptr);
+}
+
+
 void Function::removeParameter(SharedExp e)
 {
-    int n = m_signature->findParam(e);
+    const int n = m_signature->findParam(e);
 
     if (n != -1) {
         m_signature->removeParameter(n);
 
-        for (auto const& elem : m_callerSet) {
+        for (auto const& elem : m_callers) {
             if (m_prog->getProject()->getSettings()->debugUnused) {
                 LOG_MSG("Removing argument %1 in pos %2 from %3", e, n, elem);
             }
@@ -173,21 +115,7 @@ void Function::removeParameter(SharedExp e)
 }
 
 
-void Function::addCallers(std::set<UserProc *>& callers)
+void Function::renameParameter(const QString& oldName, const QString& newName)
 {
-    std::set<CallStatement *>::iterator it;
-
-    for (it = m_callerSet.begin(); it != m_callerSet.end(); ++it) {
-        UserProc *callerProc = (*it)->getProc();
-        callers.insert(callerProc);
-    }
-}
-
-
-void Function::setProvenTrue(SharedExp fact)
-{
-    assert(fact->isEquality());
-    SharedExp lhs = fact->getSubExp1();
-    SharedExp rhs = fact->getSubExp2();
-    m_provenTrue[lhs] = rhs;
+    m_signature->renameParam(oldName, newName);
 }

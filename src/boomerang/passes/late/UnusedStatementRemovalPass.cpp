@@ -30,7 +30,7 @@ bool UnusedStatementRemovalPass::execute(UserProc *proc)
 {
     // Only remove unused statements after decompiling as much as possible of the proc
     // Remove unused statements
-    Function::RefCounter refCounts; // The map
+    RefCounter refCounts; // The map
     // Count the references first
     updateRefCounts(proc, refCounts);
 
@@ -45,7 +45,7 @@ bool UnusedStatementRemovalPass::execute(UserProc *proc)
 }
 
 
-void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCounter& refCounts)
+void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter& refCounts)
 {
     StatementList stmts;
     proc->getStatements(stmts);
@@ -85,7 +85,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCo
     if (proc->getProg()->getProject()->getSettings()->debugUnused) {
         LOG_MSG("### Reference counts for %1:", getName());
 
-        for (Function::RefCounter::iterator rr = refCounts.begin(); rr != refCounts.end(); ++rr) {
+        for (RefCounter::iterator rr = refCounts.begin(); rr != refCounts.end(); ++rr) {
             LOG_MSG("  %1: %2", rr->first->getNumber(), rr->second);
         }
 
@@ -94,7 +94,7 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, Function::RefCo
 }
 
 
-void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, Function::RefCounter& refCounts)
+void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter& refCounts)
 {
     StatementList stmts;
     proc->getStatements(stmts);

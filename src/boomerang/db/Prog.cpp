@@ -255,6 +255,7 @@ Function *Prog::getFunctionByName(const QString& name) const
     return nullptr;
 }
 
+
 bool Prog::removeFunction(const QString& name)
 {
     Function *function = getFunctionByName(name);

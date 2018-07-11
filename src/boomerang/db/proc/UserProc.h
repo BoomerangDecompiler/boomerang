@@ -119,7 +119,7 @@ public:
     void setDecoded();
 
     /// Deletes the whole Cfg for this proc object.
-    void deleteCFG() override;
+    void deleteCFG();
 
     /**
      * Decompile this procedure, and all callees.
@@ -337,7 +337,7 @@ public:
     QString findFirstSymbol(const SharedConstExp& e) const;
 
     void renameLocal(const QString& oldName, const QString& newName);
-    virtual void renameParam(const QString& oldName, const QString& newName) override;
+    virtual void renameParameter(const QString& oldName, const QString& newName) override;
 
     /// WARN: write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
     /// Get a name like eax or o2 from r24 or r8

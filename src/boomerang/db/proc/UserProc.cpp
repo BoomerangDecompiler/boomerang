@@ -66,7 +66,7 @@
 
 
 UserProc::UserProc(Address address, const QString& name, Module *module)
-    : Function(address, new Signature(name), module)
+    : Function(address, std::make_shared<Signature>(name), module)
     , m_df(this)
     , m_recursionGroup(nullptr)
     , m_retStatement(nullptr)
@@ -145,9 +145,9 @@ QString UserProc::toString() const
 }
 
 
-void UserProc::renameParam(const QString& oldName, const QString& newName)
+void UserProc::renameParameter(const QString& oldName, const QString& newName)
 {
-    Function::renameParam(oldName, newName);
+    Function::renameParameter(oldName, newName);
     // cfg->searchAndReplace(Location::param(oldName, this), Location::param(newName, this));
 }
 
@@ -2067,7 +2067,7 @@ bool UserProc::removeRedundantReturns(std::set<UserProc *>& removeRetSet)
     if (removedParams || removedRets) {
         // Update the statements that call us
 
-        for (CallStatement *call : m_callerSet) {
+        for (CallStatement *call : m_callers) {
             PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
             updateSet.insert(call->getProc());    // Make sure we redo the dataflow
             removeRetSet.insert(call->getProc()); // Also schedule caller proc for more analysis

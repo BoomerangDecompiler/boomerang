@@ -17,6 +17,8 @@
 /// Remove unused statements
 class UnusedStatementRemovalPass : public IPass
 {
+    typedef std::map<Statement *, int> RefCounter;
+
 public:
     UnusedStatementRemovalPass();
 
@@ -26,9 +28,9 @@ public:
 private:
     /// Count references to the things that are under SSA control.
     /// For each SSA subscripting, increment a counter for that definition
-    void updateRefCounts(UserProc *proc, Function::RefCounter& refCounts);
+    void updateRefCounts(UserProc *proc, RefCounter& refCounts);
 
-    void remUnusedStmtEtc(UserProc *proc, Function::RefCounter& refCounts);
+    void remUnusedStmtEtc(UserProc *proc, RefCounter& refCounts);
 
     /// Remove statements of the form x := x
     bool removeNullStatements(UserProc *proc);

@@ -352,7 +352,7 @@ CommandStatus Console::handleMove(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        proc->setParent(module);
+        proc->setModule(module);
     }
     else if (args[0] == "module") {
         if (args.size() < 3) {
@@ -592,13 +592,13 @@ CommandStatus Console::handleInfo(const QStringList& args)
         ost << "\n\tLibrary functions:\n";
 
         for (const Function *function : libFunctions) {
-            ost << "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
+            ost << "\t\t" << function->getModule()->getName() << "::" << function->getName() << "\n";
         }
 
         ost << "\n\tUser functions:\n";
 
         for (const Function *function : userFunctions) {
-            ost << "\t\t" << function->getParent()->getName() << "::" << function->getName() << "\n";
+            ost << "\t\t" << function->getModule()->getName() << "::" << function->getName() << "\n";
         }
 
         ost << "\n";
@@ -653,7 +653,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
 
         QTextStream outStream(stdout);
         outStream << "proc " << proc->getName() << ":\n";
-        outStream << "\tbelongs to module " << proc->getParent()->getName() << "\n";
+        outStream << "\tbelongs to module " << proc->getModule()->getName() << "\n";
         outStream << "\tnative address " << proc->getEntryAddress() << "\n";
 
         if (proc->isLib()) {
