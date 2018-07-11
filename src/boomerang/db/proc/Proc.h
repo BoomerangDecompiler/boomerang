@@ -70,7 +70,7 @@ public:
     Module *getModule() { return m_module; }
     const Module *getModule() const { return m_module; }
 
-    void setModule(Module *Module);
+    void setModule(Module *module);
     void removeFromModule();
 
     std::shared_ptr<Signature> getSignature() const { return m_signature; }

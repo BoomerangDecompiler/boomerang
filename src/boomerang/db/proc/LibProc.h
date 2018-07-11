@@ -36,7 +36,7 @@ public:
 
 public:
     /// \copydoc Function::isLib
-    bool isLib() const override { return true; }
+    bool isLib() const override;
 
     /// \copydoc Function::isNoReturn
     virtual bool isNoReturn() const override;
@@ -46,7 +46,7 @@ public:
 
     /// \copydoc Function::getPremised
     /// Get the RHS that is premised for left
-    virtual SharedExp getPremised(SharedExp) override { return nullptr; }
+    virtual SharedExp getPremised(SharedExp) override;
 
     /// \copydoc Function::isPreserved
     virtual bool isPreserved(SharedExp e) override;

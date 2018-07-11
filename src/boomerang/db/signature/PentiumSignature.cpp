@@ -162,7 +162,7 @@ std::shared_ptr<Signature> PentiumSignature::promote(UserProc * /*p*/)
 SharedExp PentiumSignature::getProven(SharedExp left) const
 {
     if (left->isRegOfConst()) {
-        int r = left->access<Const, 1>()->getInt();
+        const int r = left->access<Const, 1>()->getInt();
 
         switch (r)
         {

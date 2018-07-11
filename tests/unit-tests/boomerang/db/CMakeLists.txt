@@ -15,6 +15,7 @@ set(TESTS
     binary/BinarySectionTest
     binary/BinarySymbolTableTest
     binary/BinarySymbolTest
+    proc/LibProcTest
     signature/SignatureTest
     CFGTest
     DFATest

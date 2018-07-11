@@ -28,6 +28,12 @@ LibProc::LibProc(Address addr, const QString& name, Module *module)
 }
 
 
+bool LibProc::isLib() const
+{
+    return true;
+}
+
+
 bool LibProc::isNoReturn() const
 {
     return IFrontEnd::isNoReturnCallDest(getName()) || m_signature->isNoReturn();
@@ -38,6 +44,12 @@ SharedExp LibProc::getProven(SharedExp left)
 {
     // Just use the signature information (all we have, after all)
     return m_signature->getProven(left);
+}
+
+
+SharedExp LibProc::getPremised(SharedExp)
+{
+    return nullptr;
 }
 
 
