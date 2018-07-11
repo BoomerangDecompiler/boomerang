@@ -82,11 +82,16 @@ void Function::setModule(Module *module)
     if (module == m_module) {
         return;
     }
+    else if (m_module) {
+        removeFromModule();
+    }
 
-    removeFromModule();
     m_module = module;
-    module->getFunctionList().push_back(this);
-    module->setLocationMap(m_entryAddress, this);
+
+    if (module) {
+        module->getFunctionList().push_back(this);
+        module->setLocationMap(m_entryAddress, this);
+    }
 }
 
 

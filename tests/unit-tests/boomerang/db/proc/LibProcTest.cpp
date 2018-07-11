@@ -36,6 +36,32 @@ void LibProcTest::testEntryAddr()
 }
 
 
+void LibProcTest::testSetModule()
+{
+    Module mod1;
+    Module mod2;
+
+    LibProc proc(Address(0x1000), "test", nullptr);
+    proc.setModule(nullptr);
+    QVERIFY(proc.getModule() == nullptr);
+
+    proc.setModule(&mod1);
+    QVERIFY(proc.getModule() == &mod1);
+    QVERIFY(mod1.getFunctionList().size() == 1);
+    QVERIFY(mod1.getFunction(Address(0x1000)) == &proc);
+
+    proc.setModule(&mod2);
+    QVERIFY(proc.getModule() == &mod2);
+    QVERIFY(mod1.getFunctionList().empty());
+    QVERIFY(mod2.getFunctionList().size() == 1);
+    QVERIFY(mod1.getFunction(Address(0x1000)) == nullptr);
+    QVERIFY(mod2.getFunction(Address(0x1000)) == &proc);
+
+    proc.setModule(nullptr);
+    QVERIFY(proc.getModule() == nullptr);
+}
+
+
 void LibProcTest::testRemoveFromModule()
 {
     Module mod;

@@ -21,6 +21,7 @@ private slots:
     // tests for Function class
     void testName();
     void testEntryAddr();
+    void testSetModule();
     void testRemoveFromModule();
     void testRemoveParameter();
     void testRenameParameter();
