@@ -67,4 +67,4 @@ void LibProcTest::testIsPreserved()
     QVERIFY(proc.isPreserved(Location::regOf(REG_PENT_EBX)));
 }
 
-QTEST_GUILESS_MAIN(LibProcTest);
+QTEST_GUILESS_MAIN(LibProcTest)
