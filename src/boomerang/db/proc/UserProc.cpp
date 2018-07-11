@@ -848,7 +848,7 @@ bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* =
     bool result = prover(query, lastPhis, cache);
 
     if (m_recursionGroup) {
-        m_recurPremises.erase(origLeft); // Remove the premise, regardless of result
+        killPremise(origLeft); // Remove the premise, regardless of result
     }
 
     if (m_prog->getProject()->getSettings()->debugProof) {
@@ -1198,12 +1198,9 @@ SharedExp UserProc::getProven(SharedExp left)
 SharedExp UserProc::getPremised(SharedExp left)
 {
     auto it = m_recurPremises.find(left);
-
-    if (it != m_recurPremises.end()) {
-        return it->second;
-    }
-
-    return nullptr;
+    return it != m_recurPremises.end()
+        ? it->second
+        : nullptr;
 }
 
 

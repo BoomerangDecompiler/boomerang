@@ -135,10 +135,10 @@ public:
     /// Update statement numbers
     void numberStatements() const;
 
-    /// get all statements
-    /// Get to a statement list, so they come out in a reasonable and consistent order
-    /// get all the statements
+    /// \returns all statements in this UserProc
     void getStatements(StatementList& stmts) const;
+
+    /// Remove (but not delete) \p stmt from this UserProc
     void removeStatement(Statement *stmt);
 
     void insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
