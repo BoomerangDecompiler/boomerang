@@ -68,12 +68,8 @@
 
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, std::make_shared<Signature>(name), module)
-    , m_status(PROC_UNDECODED)
-    , m_dfgCount(0)
     , m_cfg(new Cfg(this))
     , m_df(this)
-    , m_recursionGroup(nullptr)
-    , m_retStatement(nullptr)
 {
 }
 
@@ -1575,7 +1571,7 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 
             if (cs->find(dest) != cs->end()) { // Part of the cycle?
                 // Yes, set the callee return statement (making it non childless)
-                c->setCalleeReturn(dest->getTheReturnStatement());
+                c->setCalleeReturn(dest->getRetStmt());
             }
         }
     }
@@ -2224,7 +2220,7 @@ void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& r)
 }
 
 
-Address UserProc::getTheReturnAddr()
+Address UserProc::getRetAddr()
 {
     return m_retStatement != nullptr
         ? m_retStatement->getRetAddr()
@@ -2232,7 +2228,7 @@ Address UserProc::getTheReturnAddr()
 }
 
 
-void UserProc::setTheReturnAddr(ReturnStatement* s, Address r)
+void UserProc::setRetStmt(ReturnStatement* s, Address r)
 {
     assert(m_retStatement == nullptr);
     m_retStatement = s;

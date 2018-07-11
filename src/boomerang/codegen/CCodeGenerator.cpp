@@ -521,7 +521,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 {
     QString         tgt;
     QTextStream     s(&tgt);
-    ReturnStatement *returns = proc->getTheReturnStatement();
+    ReturnStatement *returns = proc->getRetStmt();
     SharedType      retType;
 
     if (proc->getSignature()->isForced()) {

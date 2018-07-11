@@ -100,6 +100,9 @@ public:
     DataFlow *getDataFlow() { return &m_df; }
     const DataFlow *getDataFlow() const { return &m_df; }
 
+    const std::shared_ptr<ProcSet>& getRecursionGroup() { return m_recursionGroup; }
+    void setRecursionGroup(const std::shared_ptr<ProcSet>& recursionGroup) { m_recursionGroup = recursionGroup; }
+
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
 
@@ -184,10 +187,16 @@ public:
 public:
     // return related
 
-    Address getTheReturnAddr();
-    void setTheReturnAddr(ReturnStatement *s, Address r);
+    /// \returns the address of the RTL that contains the one and only return statement
+    Address getRetAddr();
 
-    ReturnStatement *getTheReturnStatement() { return m_retStatement; }
+    /// \param rtlAddr the address of the RTL containing \p retStmt
+    void setRetStmt(ReturnStatement *retStmt, Address rtlAddr);
+
+    ReturnStatement *getRetStmt() { return m_retStatement; }
+    const ReturnStatement *getRetStmt() const { return m_retStatement; }
+
+    void removeRetStmt() { m_retStatement = nullptr; }
 
     /**
      * Filter out locations not possible as return locations.
@@ -433,8 +442,8 @@ private:
      * The status of this user procedure.
      * Status: undecoded .. final decompiled
      */
-    ProcStatus m_status;
-    mutable short m_dfgCount; ///< used in dotty output
+    ProcStatus m_status = PROC_UNDECODED;
+    mutable short m_dfgCount = 0; ///< used in dotty output
     int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
 
     std::unique_ptr<Cfg> m_cfg; ///< The control flow graph.
@@ -460,7 +469,7 @@ private:
     /// Used for call graph, among other things
     std::list<Function *> m_calleeList;
 
-    /*
+    /**
      * Somewhat DEPRECATED now. Eventually use the localTable.
      * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
      * stores parameters.
@@ -478,7 +487,6 @@ private:
      */
     UseCollector m_procUseCollector;
 
-public:
     std::shared_ptr<ProcSet> m_recursionGroup;
 
     /**
@@ -486,5 +494,5 @@ public:
      * See code in frontend/frontend.cpp handling case StmtType::Ret.
      * If no return statement, this will be nullptr.
      */
-    ReturnStatement *m_retStatement;
+    ReturnStatement *m_retStatement = nullptr;
 };

@@ -1156,14 +1156,14 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
 
     RTL *retRTL = returnRTL.get();
     BB_rtls->push_back(std::move(returnRTL));
-    Address retAddr = proc->getTheReturnAddr();
+    Address retAddr = proc->getRetAddr();
     BasicBlock *newBB = nullptr;
 
     if (retAddr == Address::INVALID) {
         // Create the basic block
         newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
         Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-        proc->setTheReturnAddr(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra

@@ -134,7 +134,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
             if (callee->getStatus() == PROC_FINAL) {
                 // Already decompiled, but the return statement still needs to be set for this call
-                call->setCalleeReturn(callee->getTheReturnStatement());
+                call->setCalleeReturn(callee->getRetStmt());
                 continue;
             }
 
@@ -150,14 +150,14 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                     newRecursionGroup->insert(calleeIt, m_callStack.end());
                     createRecursionGoup(newRecursionGroup);
                 }
-                else if (callee->m_recursionGroup) {
-                    // This is new branch of an existing cycle that was visited previously
-                    std::shared_ptr<ProcSet> recursionGroup = callee->m_recursionGroup;
+                else if (callee->getRecursionGroup()) {
+                    // This is a new branch of an existing cycle that was visited previously
+                    std::shared_ptr<ProcSet> recursionGroup = callee->getRecursionGroup();
 
                     // Find first element func of callStack that is in callee->recursionGroup
                     ProcList::iterator _pi = std::find_if(m_callStack.begin(), m_callStack.end(),
                         [callee] (UserProc *func) {
-                            return callee->m_recursionGroup->find(func) != callee->m_recursionGroup->end();
+                            return callee->getRecursionGroup()->find(func) != callee->getRecursionGroup()->end();
                         });
 
                     // Insert every proc after func to the end of path into child
@@ -190,11 +190,11 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                 callee->promoteSignature();
                 tryDecompileRecursive(callee);
                 // Child has at least done middleDecompile(), possibly more
-                call->setCalleeReturn(callee->getTheReturnStatement());
+                call->setCalleeReturn(callee->getRetStmt());
 
                 if (proc->getStatus() != PROC_INCYCLE && m_recursionGroups.find(proc) != m_recursionGroups.end()) {
                     proc->setStatus(PROC_INCYCLE);
-                    proc->m_recursionGroup = m_recursionGroups.find(proc)->second;
+                    proc->setRecursionGroup(m_recursionGroups.find(proc)->second);
                 }
             }
         }
@@ -220,13 +220,13 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         // Find first element f in path that is also in our recursion group
         ProcList::iterator f = std::find_if(m_callStack.begin(), m_callStack.end(),
             [proc] (UserProc *func) {
-                return proc->m_recursionGroup->find(func) != proc->m_recursionGroup->end();
+                return proc->getRecursionGroup()->find(func) != proc->getRecursionGroup()->end();
             });
 
         // The big test: have we found the whole strongly connected component (in the call graph)?
         if (*f == proc) {
             // Yes, process these procs as a group
-            recursionGroupAnalysis(proc->m_recursionGroup); // Includes remUnusedStmtEtc on all procs in cycleGrp
+            recursionGroupAnalysis(proc->getRecursionGroup()); // Includes remUnusedStmtEtc on all procs in cycleGrp
             proc->setStatus(PROC_FINAL);
             project->alertEndDecompile(proc);
         }
@@ -275,9 +275,9 @@ void ProcDecompiler::createRecursionGoup(const std::shared_ptr<ProcSet>& newGrou
             for (UserProc *existingProc : *newGroup) {
                 unionGroup->insert(existingProc);
 
-                if (existingProc->m_recursionGroup) {
-                    unionGroup->insert(existingProc->m_recursionGroup->begin(),
-                                       existingProc->m_recursionGroup->end());
+                if (existingProc->getRecursionGroup()) {
+                    unionGroup->insert(existingProc->getRecursionGroup()->begin(),
+                                       existingProc->getRecursionGroup()->end());
                 }
             }
         }
@@ -285,7 +285,7 @@ void ProcDecompiler::createRecursionGoup(const std::shared_ptr<ProcSet>& newGrou
 
     for (UserProc *proc : *unionGroup) {
         m_recursionGroups[proc] = unionGroup;
-        proc->m_recursionGroup = unionGroup;
+        proc->setRecursionGroup(unionGroup);
         proc->setStatus(PROC_INCYCLE);
     }
 }
@@ -312,9 +312,9 @@ void ProcDecompiler::addToRecursionGroup(UserProc *proc, const std::shared_ptr<P
         for (UserProc *existingProc : *recursionGroup) {
             unionGroup->insert(existingProc);
 
-            if (existingProc->m_recursionGroup) {
-                unionGroup->insert(existingProc->m_recursionGroup->begin(),
-                                    existingProc->m_recursionGroup->end());
+            if (existingProc->getRecursionGroup()) {
+                unionGroup->insert(existingProc->getRecursionGroup()->begin(),
+                                    existingProc->getRecursionGroup()->end());
             }
         }
     }
@@ -323,7 +323,7 @@ void ProcDecompiler::addToRecursionGroup(UserProc *proc, const std::shared_ptr<P
 
     for (UserProc *_proc : *unionGroup) {
         m_recursionGroups[_proc] = unionGroup;
-        _proc->m_recursionGroup = unionGroup;
+        _proc->setRecursionGroup(unionGroup);
         _proc->setStatus(PROC_INCYCLE);
     }
 }
@@ -439,9 +439,9 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
 
         // Seed the return statement with reaching definitions
         // FIXME: does this have to be in this loop?
-        if (proc->m_retStatement) {
-            proc->m_retStatement->updateModifieds(); // Everything including new arguments reaching the exit
-            proc->m_retStatement->updateReturns();
+        if (proc->getRetStmt()) {
+            proc->getRetStmt()->updateModifieds(); // Everything including new arguments reaching the exit
+            proc->getRetStmt()->updateReturns();
         }
 
         // Print if requested
@@ -545,7 +545,7 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
         // will prevent duplicates
         proc->processDecodedICTs();
         // Now, decode from scratch
-        proc->m_retStatement = nullptr;
+        proc->removeRetStmt();
         proc->getCFG()->clear();
 
         if (!proc->getProg()->reDecode(proc)) {
@@ -598,7 +598,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet& visi
         if (visited.find(callee) != visited.end()) {
             continue;
         }
-        else if (proc->m_recursionGroup->find(callee) == proc->m_recursionGroup->end()) {
+        else if (proc->getRecursionGroup()->find(callee) == proc->getRecursionGroup()->end()) {
             // not in recursion group any more
             continue;
         }
@@ -617,7 +617,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet& visi
 
     // Mark all the relevant calls as non childless (will harmlessly get done again later)
     // FIXME: why exactly do we do this?
-    proc->markAsNonChildless(proc->m_recursionGroup);
+    proc->markAsNonChildless(proc->getRecursionGroup());
 
     // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
     // statements.
