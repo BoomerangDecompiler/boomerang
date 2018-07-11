@@ -85,6 +85,7 @@ public:
 
     void removeParameter(SharedExp e);
 
+    /// Rename the first parameter named \p oldName to \p newName.
     virtual void renameParameter(const QString& oldName, const QString& newName);
 
     /// Get the RHS that is proven for left

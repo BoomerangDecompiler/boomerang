@@ -105,12 +105,12 @@ void Function::removeParameter(SharedExp e)
     if (n != -1) {
         m_signature->removeParameter(n);
 
-        for (auto const& elem : m_callers) {
-            if (m_prog->getProject()->getSettings()->debugUnused) {
-                LOG_MSG("Removing argument %1 in pos %2 from %3", e, n, elem);
+        for (CallStatement *caller : m_callers) {
+            if (m_prog && m_prog->getProject()->getSettings()->debugUnused) {
+                LOG_MSG("Removing argument %1 in pos %2 from %3", e, n, caller);
             }
 
-            (elem)->removeArgument(n);
+            caller->removeArgument(n);
         }
     }
 }
@@ -118,5 +118,6 @@ void Function::removeParameter(SharedExp e)
 
 void Function::renameParameter(const QString& oldName, const QString& newName)
 {
+    assert(m_signature != nullptr);
     m_signature->renameParam(oldName, newName);
 }

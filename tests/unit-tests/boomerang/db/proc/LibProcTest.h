@@ -18,6 +18,14 @@ class LibProcTest : public BoomerangTest
     Q_OBJECT
 
 private slots:
+    // tests for Function class
+    void testName();
+    void testEntryAddr();
+    void testRemoveFromModule();
+    void testRemoveParameter();
+    void testRenameParameter();
+
+    // tests for LibProc class
     void testIsLib();
     void testIsNoReturn();
     void testGetProven();
