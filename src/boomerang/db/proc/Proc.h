@@ -90,7 +90,7 @@ public:
     /// Get the RHS that is proven for left
     virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left
     virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
-    virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether e is preserved by this proc
+    virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether \p e is preserved by this proc
 
     const ExpExpMap& getProvenTrue() const { return m_provenTrue; }
 

@@ -35,8 +35,6 @@ public:
     LibProc& operator=(LibProc&&) = default;
 
 public:
-    QString toString() const;
-
     /// \copydoc Function::isLib
     bool isLib() const override { return true; }
 
@@ -51,6 +49,5 @@ public:
     virtual SharedExp getPremised(SharedExp) override { return nullptr; }
 
     /// \copydoc Function::isPreserved
-    /// Return whether \p e is preserved by this proc
     virtual bool isPreserved(SharedExp e) override;
 };

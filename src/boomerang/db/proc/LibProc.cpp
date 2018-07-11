@@ -34,12 +34,6 @@ bool LibProc::isNoReturn() const
 }
 
 
-QString LibProc::toString() const
-{
-    return QString("[LibProc %1@%2]").arg(this->getName(), this->getEntryAddress().toString());
-}
-
-
 SharedExp LibProc::getProven(SharedExp left)
 {
     // Just use the signature information (all we have, after all)
