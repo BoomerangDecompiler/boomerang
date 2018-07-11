@@ -18,6 +18,8 @@
  */
 class CFGTest : public BoomerangTest
 {
+    Q_OBJECT
+
 private slots:
     void testHasBB();
     void testCreateBB();

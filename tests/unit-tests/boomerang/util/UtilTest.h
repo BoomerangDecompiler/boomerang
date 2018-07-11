@@ -15,7 +15,6 @@
 
 class UtilTest : public BoomerangTest
 {
-public:
     Q_OBJECT
 
 private slots:

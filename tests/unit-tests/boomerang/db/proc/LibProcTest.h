@@ -13,8 +13,10 @@
 #include "TestUtils.h"
 
 
-class LibProcTest : public BoomerangTestWithPlugins
+class LibProcTest : public BoomerangTest
 {
+    Q_OBJECT
+
 private slots:
     void testIsLib();
     void testIsNoReturn();

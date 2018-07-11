@@ -15,7 +15,6 @@
 
 class StatementSetTest : public BoomerangTest
 {
-public:
     Q_OBJECT
 
 private slots:

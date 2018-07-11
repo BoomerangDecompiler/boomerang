@@ -62,7 +62,6 @@ void LibProcTest::testIsPreserved()
     QVERIFY(!proc.isPreserved(Location::regOf(REG_PENT_EBX)));
 
     proc.setSignature(std::make_shared<CallingConvention::StdC::PentiumSignature>("test"));
-    QVERIFY(!proc.isPreserved(nullptr));
     QVERIFY(!proc.isPreserved(Location::regOf(REG_PENT_EAX)));
     QVERIFY(proc.isPreserved(Location::regOf(REG_PENT_EBX)));
 }

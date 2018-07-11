@@ -44,6 +44,7 @@ protected:
 class BoomerangTestWithPlugins : public BoomerangTestWithProject
 {
     Q_OBJECT
+
 protected slots:
     void initTestCase()
     {

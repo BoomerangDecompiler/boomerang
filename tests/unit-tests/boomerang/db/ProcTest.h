@@ -15,10 +15,9 @@
 
 class ProcTest : public BoomerangTestWithPlugins
 {
+    Q_OBJECT
+
 private slots:
     /// Test setting and reading name, constructor, native address
     void testName();
-
-private:
-    Project m_project;
 };

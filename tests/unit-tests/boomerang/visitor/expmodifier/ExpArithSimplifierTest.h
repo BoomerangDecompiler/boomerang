@@ -15,7 +15,6 @@
 
 class ExpArithSimplifierTest : public BoomerangTest
 {
-public:
     Q_OBJECT
 
 private slots:

@@ -15,6 +15,8 @@
 
 class BasicBlockTest : public BoomerangTest
 {
+    Q_OBJECT
+
 private slots:
     void testConstruct();
     void testAssign();

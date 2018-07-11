@@ -15,7 +15,6 @@
 
 class ConnectionGraphTest : public BoomerangTest
 {
-public:
     Q_OBJECT
 
 private slots:
