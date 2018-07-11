@@ -10,60 +10,23 @@
 #include "UserProc.h"
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/IndirectJumpAnalyzer.h"
-#include "boomerang/db/InterferenceFinder.h"
-#include "boomerang/db/Module.h"
 #include "boomerang/db/ProcDecompiler.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/UseCollector.h"
-#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
-#include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/ImpRefStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ReturnStatement.h"
-#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
-#include "boomerang/visitor/expvisitor/ExpDestCounter.h"
-#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
-#include "boomerang/visitor/expmodifier/CallBypasser.h"
-#include "boomerang/visitor/expvisitor/TempToLocalMapper.h"
-#include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
-#include "boomerang/visitor/stmtmodifier/StmtImplicitConverter.h"
-#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
-#include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/passes/dataflow/BlockVarRenamePass.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/util/StatementSet.h"
-#include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/DFGWriter.h"
 #include "boomerang/util/UseGraphWriter.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
-#include "boomerang/util/Util.h"
-
-#include <QFile>
-#include <QTextStream>
-#include <QSet>
-
-#include <sstream>
-#include <algorithm> // For find()
-#include <cstring>
 
 
 UserProc::UserProc(Address address, const QString& name, Module *module)
