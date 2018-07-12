@@ -307,10 +307,10 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
         *static_cast<ImplicitAssign *>(*it)->getLeft() != *as->getLeft()) {
         // not a duplicate
         m_parameters.insert(it, as);
-        }
+    }
 
-        // update the signature
-        m_signature->setNumParams(0);
+    // update the signature
+    m_signature->setNumParams(0);
     int i = 1;
 
     for (Statement *param : m_parameters) {

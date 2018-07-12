@@ -17,6 +17,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/Assign.h"
+#include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 
 
@@ -122,6 +123,31 @@ void UserProcTest::testInsertParameter()
 
     QCOMPARE(proc.getParameters().size(), (size_t)1);
     QCOMPARE(proc.getSignature()->getNumParams(), 1);
+}
+
+
+void UserProcTest::testParamType()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    QVERIFY(proc.getParamType("invalidParam") == nullptr);
+
+    proc.insertParameter(Location::memOf(Binary::get(opPlus,
+        Location::regOf(REG_PENT_ESP), Const::get(4)), &proc),
+        VoidType::get());
+
+    SharedConstType ty = proc.getParamType("param1");
+    QVERIFY(ty != nullptr);
+    QCOMPARE(ty->toString(), VoidType::get()->toString());
+
+    proc.setParamType("param1", IntegerType::get(32, Sign::Signed));
+    QCOMPARE(proc.getParamType("param1")->toString(), IntegerType::get(32, Sign::Signed)->toString());
+
+    proc.setParamType(5, VoidType::get()); // proc only has 1 parameter
+    QCOMPARE(proc.getParamType("param1")->toString(), IntegerType::get(32, Sign::Signed)->toString());
+
+    proc.setParamType(0, VoidType::get());
+    QCOMPARE(proc.getParamType("param1")->toString(), VoidType::get()->toString());
 }
 
 

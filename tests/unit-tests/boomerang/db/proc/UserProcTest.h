@@ -24,4 +24,5 @@ private slots:
 
     void testAddParameterToSignature();
     void testInsertParameter();
+    void testParamType();
 };
