@@ -139,14 +139,15 @@ public:
     void getStatements(StatementList& stmts) const;
 
     /// Remove (but not delete) \p stmt from this UserProc
-    void removeStatement(Statement *stmt);
+    /// \returns true iff successfully removed
+    bool removeStatement(Statement *stmt);
 
-    void insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
+    Assign *insertAssignAfter(Statement *s, SharedExp left, SharedExp right);
 
     /// Insert statement \p stmt after statement \p afterThis.
     /// \note this procedure is designed for the front end, where enclosing BBs are not set up yet.
     /// So this is an inefficient linear search!
-    void insertStatementAfter(Statement *afterThis, Statement *stmt);
+    bool insertStatementAfter(Statement *afterThis, Statement *stmt);
 
 public:
     // parameter related

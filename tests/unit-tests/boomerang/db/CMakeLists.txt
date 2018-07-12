@@ -16,6 +16,7 @@ set(TESTS
     binary/BinarySymbolTableTest
     binary/BinarySymbolTest
     proc/LibProcTest
+    proc/UserProcTest
     signature/SignatureTest
     CFGTest
     DFATest
@@ -23,7 +24,6 @@ set(TESTS
     GlobalTest
     ParserTest
     ProgTest
-    ProcTest
     RTLTest
 )
 

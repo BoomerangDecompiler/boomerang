@@ -292,48 +292,54 @@ void UserProc::getStatements(StatementList& stmts) const
 }
 
 
-void UserProc::removeStatement(Statement *stmt)
+bool UserProc::removeStatement(Statement *stmt)
 {
+    if (!stmt) {
+        return false;
+    }
+
     // remove anything proven about this statement
-    for (auto it = m_provenTrue.begin(); it != m_provenTrue.end();) {
+    for (auto provenIt = m_provenTrue.begin(); provenIt != m_provenTrue.end();) {
         LocationSet refs;
-        it->second->addUsedLocs(refs);
-        it->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
-        bool usesIt = false;
-        for (SharedExp r : refs) {
-            if (r->isSubscript() && (r->access<RefExp>()->getDef() == stmt)) {
-                usesIt = true;
-                break;
-            }
-        }
+        provenIt->second->addUsedLocs(refs);
+        provenIt->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
 
-        if (usesIt) {
+        auto it = std::find_if(refs.begin(), refs.end(),
+            [stmt](const SharedExp& ref) {
+                return ref->isSubscript() && ref->access<RefExp>()->getDef() == stmt;
+            });
+
+        if (it != refs.end()) {
             LOG_VERBOSE("Removing proven true exp %1 = %2 that uses statement being removed.",
-                        it->first, it->second);
+                        provenIt->first, provenIt->second);
 
-            it = m_provenTrue.erase(it);
+            provenIt = m_provenTrue.erase(provenIt);
             continue;
         }
 
-        ++it;
+        ++provenIt;
     }
 
     // remove from BB/RTL
-    BasicBlock       *bb   = stmt->getBB(); // Get our enclosing BB
-    RTLList *rtls = bb->getRTLs();
+    BasicBlock *bb = stmt->getBB(); // Get our enclosing BB
+    if (!bb) {
+        return false;
+    }
 
-    for (auto& rtl : *rtls) {
+    for (auto& rtl : *bb->getRTLs()) {
         for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
             if (*it == stmt) {
                 rtl->erase(it);
-                return;
+                return true;
             }
         }
     }
+
+    return false;
 }
 
 
-void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
+Assign *UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 {
     RTL::iterator it;
     RTL *stmts;
@@ -360,10 +366,11 @@ void UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
     stmts->insert(it, as);
     as->setProc(this);
     as->setBB(bb);
+    return as;
 }
 
 
-void UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
+bool UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
 {
     for (BasicBlock *bb : *m_cfg) {
         RTLList *rtls = bb->getRTLs();
@@ -377,13 +384,13 @@ void UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
                 if (*ss == afterThis) {
                     rtl->insert(std::next(ss), stmt);
                     stmt->setBB(bb);
-                    return;
+                    return true;
                 }
             }
         }
     }
 
-    assert(false); // Should have found this statement in this BB
+    return false;
 }
 
 

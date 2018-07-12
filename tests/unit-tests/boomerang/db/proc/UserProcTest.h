@@ -13,11 +13,12 @@
 #include "TestUtils.h"
 
 
-class ProcTest : public BoomerangTestWithPlugins
+class UserProcTest : public BoomerangTest
 {
     Q_OBJECT
 
 private slots:
-    /// Test setting and reading name, constructor, native address
-    void testName();
+    void testRemoveStatement();
+    void testInsertAssignAfter();
+    void testInsertStatementAfter();
 };
