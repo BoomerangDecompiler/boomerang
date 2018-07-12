@@ -74,8 +74,6 @@ public:
     UserProc& operator=(UserProc&&) = default;
 
 public:
-    QString toString() const;
-
     /// \copydoc Function::isNoReturn
     virtual bool isNoReturn() const override;
 
@@ -168,7 +166,7 @@ public:
     SharedConstType getParamType(const QString& name) const;
     SharedType getParamType(const QString& name);
 
-    void setParamType(const char *name, SharedType ty);
+    void setParamType(const QString& name, SharedType ty);
     void setParamType(int idx, SharedType ty);
 
     /// Map expressions to locals and initial parameters
@@ -342,6 +340,8 @@ public:
     void processDecodedICTs();
 
 public:
+    QString toString() const;
+
     /// print this proc, mainly for debugging
     void print(QTextStream& out, bool html = false) const;
     void printParams(QTextStream& out, bool html = false) const;

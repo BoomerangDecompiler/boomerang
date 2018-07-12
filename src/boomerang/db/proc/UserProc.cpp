@@ -74,6 +74,43 @@ bool UserProc::isNoReturn() const
 }
 
 
+void UserProc::renameParameter(const QString& oldName, const QString& newName)
+{
+    Function::renameParameter(oldName, newName);
+    // cfg->searchAndReplace(Location::param(oldName, this), Location::param(newName, this));
+}
+
+SharedExp UserProc::getProven(SharedExp left)
+{
+    // Note: proven information is in the form r28 mapsto (r28 + 4)
+    auto it = m_provenTrue.find(left);
+
+    if (it != m_provenTrue.end()) {
+        return it->second;
+    }
+
+    //     not found, try the signature
+    // No! The below should only be for library functions!
+    // return signature->getProven(left);
+    return nullptr;
+}
+
+
+SharedExp UserProc::getPremised(SharedExp left)
+{
+    auto it = m_recurPremises.find(left);
+    return it != m_recurPremises.end()
+    ? it->second
+    : nullptr;
+}
+
+
+bool UserProc::isPreserved(SharedExp e)
+{
+    return m_provenTrue.find(e) != m_provenTrue.end() && *m_provenTrue[e] == *e;
+}
+
+
 void UserProc::setStatus(ProcStatus s)
 {
     if (m_status != s) {
@@ -83,24 +120,233 @@ void UserProc::setStatus(ProcStatus s)
 }
 
 
-QString UserProc::toString() const
+void UserProc::setDecoded()
 {
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    this->print(ost);
-    return tgt;
+    setStatus(PROC_DECODED);
 }
 
 
-void UserProc::renameParameter(const QString& oldName, const QString& newName)
+BasicBlock *UserProc::getEntryBB()
 {
-    Function::renameParameter(oldName, newName);
-    // cfg->searchAndReplace(Location::param(oldName, this), Location::param(newName, this));
+    return m_cfg->getEntryBB();
 }
 
 
-void UserProc::setParamType(const char *name, SharedType ty)
+void UserProc::setEntryBB()
+{
+    BasicBlock *entryBB = m_cfg->getBBStartingAt(m_entryAddress);
+    m_cfg->setEntryAndExitBB(entryBB);
+}
+
+
+void UserProc::decompileRecursive()
+{
+    ProcDecompiler().decompileRecursive(this);
+}
+
+
+void UserProc::numberStatements() const
+{
+    int stmtNumber = 0;
+
+    for (BasicBlock *bb : *m_cfg) {
+        BasicBlock::RTLIterator rit;
+        StatementList::iterator sit;
+        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
+            s->setNumber(++stmtNumber);
+        }
+    }
+}
+
+
+void UserProc::getStatements(StatementList& stmts) const
+{
+    for (const BasicBlock *bb : *m_cfg) {
+        bb->appendStatementsTo(stmts);
+    }
+
+    for (Statement *s : stmts) {
+        if (s->getProc() == nullptr) {
+            s->setProc(const_cast<UserProc *>(this));
+        }
+    }
+}
+
+
+bool UserProc::removeStatement(Statement *stmt)
+{
+    if (!stmt) {
+        return false;
+    }
+
+    // remove anything proven about this statement
+    for (auto provenIt = m_provenTrue.begin(); provenIt != m_provenTrue.end();) {
+        LocationSet refs;
+        provenIt->second->addUsedLocs(refs);
+        provenIt->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
+
+        auto it = std::find_if(refs.begin(), refs.end(),
+                               [stmt](const SharedExp& ref) {
+                                   return ref->isSubscript() && ref->access<RefExp>()->getDef() == stmt;
+                               });
+
+        if (it != refs.end()) {
+            LOG_VERBOSE("Removing proven true exp %1 = %2 that uses statement being removed.",
+                        provenIt->first, provenIt->second);
+
+            provenIt = m_provenTrue.erase(provenIt);
+            continue;
+        }
+
+        ++provenIt;
+    }
+
+    // remove from BB/RTL
+    BasicBlock *bb = stmt->getBB(); // Get our enclosing BB
+    if (!bb) {
+        return false;
+    }
+
+    for (auto& rtl : *bb->getRTLs()) {
+        for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
+            if (*it == stmt) {
+                rtl->erase(it);
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+
+Assign *UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
+{
+    RTL::iterator it;
+    RTL *stmts;
+    BasicBlock *bb = nullptr;
+
+    if (s == nullptr) {
+        // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
+        bb = m_cfg->getEntryBB();
+        RTLList *rtls = bb->getRTLs();
+        assert(!rtls->empty()); // Entry BB should have at least 1 RTL
+        stmts = rtls->front().get();
+        it    = stmts->begin();
+    }
+    else {
+        // An ordinary definition; put the assignment at the end of s's BB
+        bb = s->getBB(); // Get the enclosing BB for s
+        RTLList *rtls = bb->getRTLs();
+        assert(!rtls->empty()); // If s is defined here, there should be at least 1 RTL
+        stmts = rtls->back().get();
+        it    = stmts->end(); // Insert before the end
+    }
+
+    Assign *as = new Assign(left, right);
+    stmts->insert(it, as);
+    as->setProc(this);
+    as->setBB(bb);
+    return as;
+}
+
+
+bool UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
+{
+    for (BasicBlock *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
+
+        if (rtls == nullptr) {
+            continue; // e.g. bb is (as yet) invalid
+        }
+
+        for (const auto& rtl : *rtls) {
+            for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
+                if (*ss == afterThis) {
+                    rtl->insert(std::next(ss), stmt);
+                    stmt->setBB(bb);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+void UserProc::addParameterToSignature(SharedExp e, SharedType ty)
+{
+    // In case it's already an implicit argument:
+    removeParameterFromSignature(e);
+
+    m_signature->addParameter(e, ty);
+}
+
+
+void UserProc::insertParameter(SharedExp e, SharedType ty)
+{
+    if (filterParams(e)) {
+        return; // Filtered out
+    }
+
+    // Used to filter out preserved locations here: no!
+    // Propagation and dead code elimination solve the problem.
+    // See test/pentium/restoredparam for an example
+    // where you must not remove restored locations
+
+    // Wrap it in an implicit assignment; DFA based TA should update the type later
+    ImplicitAssign *as = new ImplicitAssign(ty->clone(), e->clone());
+
+    auto it = std::lower_bound(m_parameters.begin(), m_parameters.end(), as,
+                               [this] (const Statement *stmt, const Assignment *a) {
+                                   return m_signature->argumentCompare(static_cast<const Assignment &>(*stmt), *a);
+                               });
+
+    if (it == m_parameters.end() ||
+        *static_cast<ImplicitAssign *>(*it)->getLeft() != *as->getLeft()) {
+        // not a duplicate
+        m_parameters.insert(it, as);
+        }
+
+        // update the signature
+        m_signature->setNumParams(0);
+    int i = 1;
+
+    for (Statement *param : m_parameters) {
+        Assignment *a = static_cast<Assignment *>(param);
+        QString paramName = QString("param%1").arg(i++);
+
+        m_signature->addParameter(paramName, a->getLeft(), a->getType());
+    }
+}
+
+
+SharedConstType UserProc::getParamType(const QString& name) const
+{
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
+        if (name == m_signature->getParamName(i)) {
+            return m_signature->getParamType(i);
+        }
+    }
+
+    return nullptr;
+}
+
+
+SharedType UserProc::getParamType(const QString& name)
+{
+    for (int i = 0; i < m_signature->getNumParams(); i++) {
+        if (name == m_signature->getParamName(i)) {
+            return m_signature->getParamType(i);
+        }
+    }
+
+    return nullptr;
+}
+
+
+void UserProc::setParamType(const QString& name, SharedType ty)
 {
     m_signature->setParamType(name, ty);
 }
@@ -124,31 +370,496 @@ void UserProc::setParamType(int idx, SharedType ty)
 }
 
 
-void UserProc::printUseGraph() const
+void UserProc::mapLocalsAndParams()
 {
-    const Settings *settings = getProg()->getProject()->getSettings();
-    const QString filePath = settings->getOutputDirectory()
-        .absoluteFilePath(getName() + "-usegraph.dot");
-    UseGraphWriter().writeUseGraph(this, filePath);
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
+
+    LOG_VERBOSE("### Mapping expressions to local variables for %1 ###", getName());
+
+    StatementList stmts;
+    getStatements(stmts);
+
+    for (Statement *s : stmts) {
+        s->dfaMapLocals();
+    }
+
+    LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", getName());
 }
 
 
-void UserProc::setDecoded()
+QString UserProc::lookupParam(SharedConstExp e) const
 {
-    setStatus(PROC_DECODED);
+    // Originally e.g. m[esp+K]
+    Statement *def = m_cfg->findTheImplicitAssign(e);
+
+    if (def == nullptr) {
+        LOG_ERROR("No implicit definition for parameter %1!", e);
+        return QString::null;
+    }
+
+    SharedConstType ty  = def->getTypeFor(e);
+    return lookupSym(RefExp::get(std::const_pointer_cast<Exp>(e), def), ty);
 }
 
 
-BasicBlock *UserProc::getEntryBB()
+bool UserProc::filterParams(SharedExp e)
 {
-    return m_cfg->getEntryBB();
+    switch (e->getOper())
+    {
+        case opPC:
+            return true;
+
+        case opTemp:
+            return true;
+
+        case opRegOf:
+        {
+            const int sp = Util::getStackRegisterIndex(m_prog);
+            return e->access<Const, 1>()->getInt() == sp;
+        }
+
+        case opMemOf:
+        {
+            auto addr = e->getSubExp1();
+
+            if (addr->isIntConst()) {
+                return true; // Global memory location
+            }
+
+            if (addr->isSubscript() && addr->access<RefExp>()->isImplicitDef()) {
+                auto reg = addr->getSubExp1();
+                int  sp  = 999;
+
+                if (m_signature) {
+                    sp = Util::getStackRegisterIndex(m_prog);
+                }
+
+                if (reg->isRegN(sp)) {
+                    return true; // Filter out m[sp{-}] assuming it is the return address
+                }
+            }
+
+            return false; // Might be some weird memory expression that is not a local
+        }
+
+        case opGlobal:
+            return true; // Never use globals as argument locations (could appear on RHS of args)
+
+        default:
+            return false;
+    }
 }
 
 
-void UserProc::setEntryBB()
+Address UserProc::getRetAddr()
 {
-    BasicBlock *entryBB = m_cfg->getBBStartingAt(m_entryAddress);
-    m_cfg->setEntryAndExitBB(entryBB);
+    return m_retStatement != nullptr
+    ? m_retStatement->getRetAddr()
+    : Address::INVALID;
+}
+
+
+void UserProc::setRetStmt(ReturnStatement* s, Address r)
+{
+    assert(m_retStatement == nullptr);
+    m_retStatement = s;
+    m_retStatement->setRetAddr(r);
+}
+
+
+bool UserProc::filterReturns(SharedExp e)
+{
+    if (isPreserved(e)) {
+        // If it is preserved, then it can't be a return (since we don't change it)
+        return true;
+    }
+
+    switch (e->getOper())
+    {
+        case opPC:
+            return true; // Ignore %pc
+
+        case opDefineAll:
+            return true; // Ignore <all>
+
+        case opTemp:
+            return true; // Ignore all temps (should be local to one instruction)
+
+            // Would like to handle at least %ZF, %CF one day. For now, filter them out
+        case opZF:
+        case opCF:
+        case opFlags:
+            return true;
+
+        case opMemOf:
+            // return signature->isStackLocal(prog, e);        // Filter out local variables
+            // Actually, surely all sensible architectures will only every return in registers. So for now, just
+            // filter out all mem-ofs
+            return true;
+
+        case opGlobal:
+            return true; // Never return in globals
+
+        default:
+            return false;
+    }
+}
+
+
+SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /* = nullptr */)
+{
+    QString localName = (name != nullptr) ? name : newLocalName(e);
+
+    m_locals[localName] = ty;
+
+    if (ty == nullptr) {
+        LOG_FATAL("Null type passed to newLocal");
+    }
+
+    LOG_VERBOSE2("Assigning type %1 to new %2", ty->getCtype(), localName);
+
+    return Location::local(localName, this);
+}
+
+
+void UserProc::addLocal(SharedType ty, const QString& name, SharedExp e)
+{
+    // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
+    // assert(symbolMap.find(e) == symbolMap.end());
+    mapSymbolTo(e, Location::local(name, this));
+    // assert(locals.find(name) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
+    m_locals[name] = ty;
+}
+
+
+void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& ref)
+{
+    if (!lookupSymFromRefAny(ref).isNull()) {
+        return; // Already have a symbol for ref
+    }
+
+    Statement *def = ref->getDef();
+
+    if (!def) {
+        return; // TODO: should this be logged ?
+    }
+
+    SharedExp  base = ref->getSubExp1();
+    SharedType ty   = def->getTypeFor(base);
+    // No, get its name from the front end
+    QString locName = nullptr;
+
+    if (base->isRegOf()) {
+        locName = getRegName(base);
+
+        // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
+        // same combination of location and type. However if it does already exist, addLocal will allocate a
+        // new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
+        if (existsLocal(locName)) {
+            locName = newLocalName(ref);
+        }
+    }
+    else {
+        locName = newLocalName(ref);
+    }
+
+    addLocal(ty, locName, base);
+}
+
+
+SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
+{
+    SharedExp e = nullptr;
+
+    // check for references to the middle of a local
+    if (le->isMemOf() && (le->getSubExp1()->getOper() == opMinus) && le->getSubExp1()->getSubExp1()->isSubscript() &&
+        le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
+        le->getSubExp1()->getSubExp2()->isIntConst()) {
+            for (auto& elem : m_symbolMap) {
+                if (!(elem).second->isLocal()) {
+                    continue;
+                }
+
+                QString name = (elem).second->access<Const, 1>()->getStr();
+
+                if (m_locals.find(name) == m_locals.end()) {
+                    continue;
+                }
+
+                SharedType     lty = m_locals[name];
+                SharedConstExp loc = elem.first;
+
+                if (loc->isMemOf() && (loc->getSubExp1()->getOper() == opMinus) &&
+                    loc->access<Exp, 1, 1>()->isSubscript() &&
+                    loc->access<Exp, 1, 1, 1>()->isRegN(m_signature->getStackRegister()) &&
+                    loc->access<Exp, 1, 2>()->isIntConst()) {
+                        int n = -loc->access<Const, 1, 2>()->getInt();
+                        int m = -le->access<Const, 1, 2>()->getInt();
+
+                        if ((m > n) && (m < n + static_cast<int>(lty->getSize() / 8))) {
+                            e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(m - n)));
+                            LOG_VERBOSE("Seems %1 is in the middle of %2 returning %3", le, loc, e);
+                            return e;
+                        }
+                }
+            }
+    }
+
+    if (m_symbolMap.find(le) != m_symbolMap.end()) {
+        return getSymbolFor(le, ty);
+    }
+
+    if (ty == nullptr) {
+        if (lastPass) {
+            ty = IntegerType::get(STD_SIZE);
+        }
+        else {
+            ty = VoidType::get(); // HACK MVE
+        }
+    }
+
+    // the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
+    // type early results in aliases to this local not being recognised
+    if (ty) {
+        //            Exp* base = le;
+        //            if (le->isSubscript())
+        //                base = ((RefExp*)le)->getSubExp1();
+        // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
+        e = createLocal(ty->clone(), le);
+        mapSymbolTo(le->clone(), e);
+        e = e->clone();
+    }
+
+    return e;
+}
+
+
+QString UserProc::findLocal(const SharedExp& e, SharedType ty)
+{
+    if (e->isLocal()) {
+        return e->access<Const, 1>()->getStr();
+    }
+
+    // Look it up in the symbol map
+    QString name = lookupSym(e, ty);
+
+    if (name.isNull()) {
+        return name;
+    }
+
+    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
+    if (m_locals.find(name) != m_locals.end()) {
+        return name;
+    }
+
+    return QString::null;
+}
+
+
+SharedConstType UserProc::getLocalType(const QString& name) const
+{
+    auto it = m_locals.find(name);
+    return (it != m_locals.end()) ? it->second : nullptr;
+}
+
+
+void UserProc::setLocalType(const QString& name, SharedType ty)
+{
+    m_locals[name] = ty;
+
+    LOG_VERBOSE("Updating type of '%1' to %2", name, ty->getCtype());
+}
+
+
+bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
+{
+    if (!e->isMemOf()) {
+        return false; // Don't want say a register
+    }
+
+    SharedConstExp addr = e->getSubExp1();
+
+    if (!m_signature->isPromoted()) {
+        return false; // Prevent an assert failure if using -E
+    }
+
+    const int sp = m_signature->getStackRegister();
+    const auto initSp(RefExp::get(Location::regOf(sp), nullptr)); // sp{-}
+
+    if (*addr == *initSp) {
+        return true; // Accept m[sp{-}]
+    }
+
+    if (addr->getArity() != 2) {
+        return false; // Require sp +/- K
+    }
+
+    OPER op = addr->getOper();
+
+    if ((op != opPlus) && (op != opMinus)) {
+        return false;
+    }
+
+    SharedConstExp left = addr->getSubExp1();
+
+    if (!(*left == *initSp)) {
+        return false;
+    }
+
+    SharedConstExp right = addr->getSubExp2();
+    return right->isIntConst();
+}
+
+
+SharedConstExp UserProc::expFromSymbol(const QString& name) const
+{
+    for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
+        auto e = it.second;
+
+        if (e->isLocal() && (e->access<Const, 1>()->getStr() == name)) {
+            return it.first;
+        }
+    }
+
+    return nullptr;
+}
+
+
+void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
+{
+    SymbolMap::iterator it = m_symbolMap.find(from);
+
+    while (it != m_symbolMap.end() && *it->first == *from) {
+        if (*it->second == *to) {
+            return; // Already in the multimap
+        }
+
+        ++it;
+    }
+
+    std::pair<SharedConstExp, SharedExp> pr = { from, to };
+    m_symbolMap.insert(pr);
+}
+
+
+QString UserProc::lookupSym(const SharedConstExp& arg, SharedConstType ty) const
+{
+    SharedConstExp e = arg;
+
+    if (arg->isTypedExp()) {
+        e = e->getSubExp1();
+    }
+
+    SymbolMap::const_iterator it = m_symbolMap.find(e);
+
+    while (it != m_symbolMap.end() && *it->first == *e) {
+        SharedExp sym = it->second;
+        assert(sym->isLocal() || sym->isParam());
+
+        const QString    name = sym->access<Const, 1>()->getStr();
+        SharedConstType type = getLocalType(name);
+
+        if (type == nullptr) {
+            type = getParamType(name); // Ick currently linear search
+        }
+
+        if (type && type->isCompatibleWith(*ty)) {
+            return name;
+        }
+
+        ++it;
+    }
+
+    // Else there is no symbol
+    return QString::null;
+}
+
+
+QString UserProc::lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) const
+{
+    const Statement *def = ref->getDef();
+
+    if (!def) {
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
+        return QString::null;
+    }
+
+    SharedConstExp  base = ref->getSubExp1();
+    SharedConstType ty   = def->getTypeFor(base);
+    return lookupSym(ref, ty);
+}
+
+
+QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) const
+{
+    const Statement *def = ref->getDef();
+
+    if (!def) {
+        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
+        return QString::null;
+    }
+
+    SharedConstExp  base = ref->getSubExp1();
+    SharedConstType ty   = def->getTypeFor(base);
+
+    // Check for specific symbol
+    const QString   ret  = lookupSym(ref, ty);
+    if (!ret.isNull()) {
+        return ret;
+    }
+
+    return lookupSym(base, ty); // Check for a general symbol
+}
+
+
+void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
+{
+    BasicBlock::RTLRIterator        rrit;
+    StatementList::reverse_iterator srit;
+
+    for (BasicBlock *bb : *m_cfg) {
+        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
+
+        if (c && c->isChildless()) {
+            UserProc *dest = static_cast<UserProc *>(c->getDestProc());
+
+            if (cs->find(dest) != cs->end()) { // Part of the cycle?
+                // Yes, set the callee return statement (making it non childless)
+                c->setCalleeReturn(dest->getRetStmt());
+            }
+        }
+    }
+}
+
+
+void UserProc::assignProcsToCalls()
+{
+    for (BasicBlock *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
+
+        if (rtls == nullptr) {
+            continue;
+        }
+
+        for (auto& rtl : *rtls) {
+            if (!rtl->isCall()) {
+                continue;
+            }
+
+            CallStatement *call = static_cast<CallStatement *>(rtl->back());
+
+            if ((call->getDestProc() == nullptr) && !call->isComputed()) {
+                Function *p = m_prog->getFunctionByAddr(call->getFixedDest());
+
+                if (p == nullptr) {
+                    LOG_FATAL("Cannot find proc for dest %1 in call at %2",
+                              call->getFixedDest(), rtl->getAddress());
+                }
+
+                call->setDestProc(p);
+            }
+        }
+    }
 }
 
 
@@ -161,6 +872,410 @@ void UserProc::addCallee(Function *callee)
     }
 
     m_calleeList.push_back(callee);
+}
+
+
+void UserProc::finalSimplify()
+{
+    for (BasicBlock *bb : *m_cfg) {
+        RTLList *rtls = bb->getRTLs();
+
+        if (rtls == nullptr) {
+            continue;
+        }
+
+        for (auto& rtl : *rtls) {
+            for (Statement *stmt : *rtl) {
+                stmt->simplifyAddr();
+                // Also simplify everything; in particular, stack offsets are
+                // often negative, so we at least canonicalise [esp + -8] to [esp-8]
+                stmt->simplify();
+            }
+        }
+    }
+}
+
+
+void UserProc::remUnusedStmtEtc()
+{
+    m_prog->getProject()->alertDecompiling(this);
+    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Final");
+
+    LOG_VERBOSE("### Removing unused statements for %1 ###", getName());
+
+    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
+    // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
+    // to printf/scanf), and removing unused statements is unsafe without full use information
+    if (getStatus() < PROC_FINAL) {
+        PassManager::get()->executePass(PassID::LocalTypeAnalysis, this);
+
+        // Now that locals are identified, redo the dataflow
+        PassManager::get()->executePass(PassID::PhiPlacement, this);
+
+        PassManager::get()->executePass(PassID::BlockVarRename, this);       // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation, this); // Surely need propagation too
+
+        if (m_prog->getProject()->getSettings()->verboseOutput) {
+            debugPrintAll("after propagating locals");
+        }
+    }
+
+    PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
+    PassManager::get()->executePass(PassID::FinalParameterSearch, this);
+
+    if (m_prog->getProject()->getSettings()->nameParameters) {
+        // Replace the existing temporary parameters with the final ones:
+        // mapExpressionsToParameters();
+        PassManager::get()->executePass(PassID::ParameterSymbolMap, this);
+        debugPrintAll("after adding new parameters");
+    }
+
+    // Or just CallArgumentUpdate?
+    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
+
+    const bool removedBBs = PassManager::get()->executePass(PassID::BranchAnalysis, this);
+
+    if (removedBBs) {
+        // redo the data flow
+        PassManager::get()->executePass(PassID::Dominators, this);
+
+        // recalculate phi assignments of referencing BBs.
+        for (BasicBlock *bb : *m_cfg) {
+            BasicBlock::RTLIterator rtlIt;
+            StatementList::iterator stmtIt;
+
+            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
+                if (!stmt->isPhi()) {
+                    continue;
+                }
+
+                PhiAssign *phiStmt = dynamic_cast<PhiAssign *>(stmt);
+                assert(phiStmt);
+
+                PhiAssign::PhiDefs& defs = phiStmt->getDefs();
+
+                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end();) {
+                    if (!m_cfg->hasBB(defIt->first)) {
+                        // remove phi reference to deleted bb
+                        defIt = defs.erase(defIt);
+                    }
+                    else {
+                        ++defIt;
+                    }
+                }
+            }
+        }
+    }
+
+    debugPrintAll("after remove unused statements etc");
+    m_prog->getProject()->alertDecompileDebugPoint(this, "after final");
+}
+
+
+void UserProc::propagateToCollector()
+{
+    for (auto it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
+        if (!(*it)->isMemOf()) {
+            ++it;
+            continue;
+        }
+
+        auto        addr = (*it)->getSubExp1();
+        LocationSet used;
+        addr->addUsedLocs(used);
+
+        for (const SharedExp& v : used) {
+            if (!v->isSubscript()) {
+                continue;
+            }
+
+            auto   r   = v->access<RefExp>();
+            if (!r->getDef() || !r->getDef()->isAssign()) {
+                continue;
+            }
+
+            Assign *as = static_cast<Assign *>(r->getDef());
+
+            bool ch;
+            auto res = addr->clone()->searchReplaceAll(*r, as->getRight(), ch);
+
+            if (!ch) {
+                continue; // No change
+            }
+
+            auto memOfRes = Location::memOf(res)->simplify();
+
+            // First check to see if memOfRes is already in the set
+            if (m_procUseCollector.exists(memOfRes)) {
+                // Take care not to use an iterator to the newly erased element.
+                /* it = */
+                m_procUseCollector.remove(it++);            // Already exists; just remove the old one
+                continue;
+            }
+            else {
+                LOG_VERBOSE("Propagating %1 to %2 in collector; result %3",
+                            r, as->getRight(), memOfRes);
+                (*it)->setSubExp1(res); // Change the child of the memof
+            }
+        }
+
+        ++it;
+    }
+}
+
+
+static const std::shared_ptr<Binary> allEqAll = Binary::get(opEquals, Terminal::get(opDefineAll), Terminal::get(opDefineAll));
+
+bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* = false */)
+{
+    assert(query->isEquality());
+    SharedExp queryLeft  = query->getSubExp1();
+    SharedExp queryRight = query->getSubExp2();
+
+    if ((m_provenTrue.find(queryLeft) != m_provenTrue.end()) && (*m_provenTrue[queryLeft] == *queryRight)) {
+        if (m_prog->getProject()->getSettings()->debugProof) {
+            LOG_MSG("found true in provenTrue cache %1 in %2", query, getName());
+        }
+
+        return true;
+    }
+
+    if (!m_prog->getProject()->getSettings()->useProof) {
+        return false;
+    }
+
+    SharedExp original(query->clone());
+    SharedExp origLeft  = original->getSubExp1();
+    SharedExp origRight = original->getSubExp2();
+
+    // subscript locs on the right with {-} (nullptr reference)
+    LocationSet locs;
+    query->getSubExp2()->addUsedLocs(locs);
+
+    for (const SharedExp& xx : locs) {
+        query->setSubExp2(query->getSubExp2()->expSubscriptValNull(xx));
+    }
+
+    if (query->getSubExp1()->getOper() != opSubscript) {
+        bool gotDef = false;
+
+        // replace expression from return set with expression in the collector of the return
+        if (m_retStatement) {
+            auto def = m_retStatement->findDefFor(query->getSubExp1());
+
+            if (def) {
+                query->setSubExp1(def);
+                gotDef = true;
+            }
+        }
+
+        if (!gotDef) {
+            // OK, the thing I'm looking for isn't in the return collector, but perhaps there is an entry for <all>
+            // If this is proved, then it is safe to say that x == x for any x with no definition reaching the exit
+            auto right = origRight->clone()->simplify(); // In case it's sp+0
+
+            if ((*origLeft == *right) &&                 // x == x
+                (origLeft->getOper() != opDefineAll) &&  // Beware infinite recursion
+                prove(allEqAll)) {                       // Recurse in case <all> not proven yet
+                    if (m_prog->getProject()->getSettings()->debugProof) {
+                        LOG_MSG("Using all=all for %1", query->getSubExp1());
+                        LOG_MSG("Prove returns true");
+                    }
+
+                    m_provenTrue[origLeft->clone()] = right;
+                    return true;
+                }
+
+                if (m_prog->getProject()->getSettings()->debugProof) {
+                    LOG_MSG("Not in return collector: %1", query->getSubExp1());
+                    LOG_MSG("Prove returns false");
+                }
+
+                return false;
+        }
+    }
+
+    if (m_recursionGroup) { // If in involved in a recursion cycle
+        //    then save the original query as a premise for bypassing calls
+        m_recurPremises[origLeft->clone()] = origRight;
+    }
+
+    std::set<PhiAssign *>            lastPhis;
+    std::map<PhiAssign *, SharedExp> cache;
+    bool result = prover(query, lastPhis, cache);
+
+    if (m_recursionGroup) {
+        killPremise(origLeft); // Remove the premise, regardless of result
+    }
+
+    if (m_prog->getProject()->getSettings()->debugProof) {
+        LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query, getName());
+    }
+
+    if (!conditional) {
+        if (result) {
+            m_provenTrue[origLeft] = origRight; // Save the now proven equation
+        }
+    }
+
+    return result;
+}
+
+
+void UserProc::promoteSignature()
+{
+    m_signature = m_signature->promote(this);
+}
+
+
+SharedType UserProc::getTypeForLocation(const SharedExp& e)
+{
+    const QString name = e->access<Const, 1>()->getStr();
+    if (e->isLocal()) {
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
+        }
+    }
+
+    // Sometimes parameters use opLocal, so fall through
+    return getParamType(name);
+}
+
+
+SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
+{
+    const QString name = e->access<Const, 1>()->getStr();
+    if (e->isLocal()) {
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
+        }
+    }
+
+    // Sometimes parameters use opLocal, so fall through
+    return getParamType(name);
+}
+
+
+QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
+{
+    SymbolMap::const_iterator ff = m_symbolMap.find(exp);
+
+    if (ff == m_symbolMap.end()) {
+        return QString::null;
+    }
+
+    return std::static_pointer_cast<Const>(ff->second->getSubExp1())->getStr();
+}
+
+
+QString UserProc::getRegName(SharedExp r)
+{
+    assert(r->isRegOf());
+
+    // assert(r->getSubExp1()->isConst());
+    if (r->getSubExp1()->isConst()) {
+        int            regNum = r->access<Const, 1>()->getInt();
+        const QString& regName(m_prog->getRegName(regNum));
+        assert(!regName.isEmpty());
+
+        if (regName[0] == '%') {
+            return regName.mid(1); // Skip % if %eax
+        }
+
+        return regName;
+    }
+
+    LOG_WARN("Will try to build register name from [tmp+X]!");
+
+    // TODO: how to handle register file lookups ?
+    // in some cases the form might be r[tmp+value]
+    // just return this expression :(
+    // WARN: this is a hack to prevent crashing when r->subExp1 is not const
+    QString     tgt;
+    QTextStream ostr(&tgt);
+
+    r->getSubExp1()->print(ostr);
+
+    return tgt;
+}
+
+
+bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
+{
+    bool          ch = false;
+    StatementList stmts;
+    getStatements(stmts);
+
+    for (Statement *s : stmts) {
+        ch |= s->searchAndReplace(search, replace);
+    }
+
+    return ch;
+}
+
+
+bool UserProc::allPhisHaveDefs() const
+{
+    StatementList stmts;
+    getStatements(stmts);
+
+    for (const Statement *stmt : stmts) {
+        if (!stmt->isPhi()) {
+            continue; // Might be able to optimise this a bit
+        }
+
+        const PhiAssign *pa = static_cast<const PhiAssign *>(stmt);
+
+        for (const auto& ref : *pa) {
+            if (!ref.getDef()) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+void UserProc::processDecodedICTs()
+{
+    for (BasicBlock *bb : *m_cfg) {
+        BasicBlock::RTLRIterator        rrit;
+        StatementList::reverse_iterator srit;
+        Statement *last = bb->getLastStmt(rrit, srit);
+
+        if (last == nullptr) {
+            continue; // e.g. a BB with just a NOP in it
+        }
+
+        if (!last->isHL_ICT()) {
+            continue;
+        }
+
+        RTL *rtl = bb->getLastRTL();
+
+        if (m_prog->getProject()->getSettings()->debugSwitch) {
+            LOG_MSG("Saving high level switch statement:\n%1", rtl);
+        }
+
+        m_prog->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
+        // Now decode those new targets, adding out edges as well
+        //        if (last->isCase())
+        //            bb->processSwitch(this);
+    }
+}
+
+
+QString UserProc::toString() const
+{
+    QString     tgt;
+    QTextStream ost(&tgt);
+
+    this->print(ost);
+    return tgt;
 }
 
 
@@ -253,150 +1368,83 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
 }
 
 
+void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
+{
+    if (html) {
+        out << "<br>";
+    }
+
+    out << "symbols:\n";
+
+    if (m_symbolMap.empty()) {
+        out << "  <None>\n";
+    }
+    else {
+        for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
+            SharedConstType ty = getTypeForLocation(it.second);
+            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
+
+            if (html) {
+                out << "<br>";
+            }
+        }
+    }
+
+    if (html) {
+        out << "<br>";
+    }
+}
+
+
+void UserProc::dumpLocals(QTextStream& os, bool html) const
+{
+    if (html) {
+        os << "<br>";
+    }
+
+    os << "locals:\n";
+
+    if (m_locals.empty()) {
+        os << "  <None>\n";
+    }
+    else {
+        for (const std::pair<QString, SharedType>& local_entry : m_locals) {
+            os << local_entry.second->getCtype() << " " << local_entry.first << " ";
+            SharedConstExp e = expFromSymbol(local_entry.first);
+
+            // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
+            if (e) {
+                os << "  " << e << "\n";
+            }
+            else {
+                os << "  -\n";
+            }
+        }
+    }
+
+    if (html) {
+        os << "<br>";
+    }
+}
+
+
 void UserProc::printDFG() const
 {
     const QString fname = QString("%1%2-%3-dfg.dot")
-        .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
-        .arg(getName())
-        .arg(m_dfgCount++);
+    .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
+    .arg(getName())
+    .arg(m_dfgCount++);
 
     DFGWriter().printDFG(this, fname);
 }
 
 
-void UserProc::numberStatements() const
+void UserProc::printUseGraph() const
 {
-    int stmtNumber = 0;
-
-    for (BasicBlock *bb : *m_cfg) {
-        BasicBlock::RTLIterator rit;
-        StatementList::iterator sit;
-        for (Statement *s = bb->getFirstStmt(rit, sit); s; s = bb->getNextStmt(rit, sit)) {
-            s->setNumber(++stmtNumber);
-        }
-    }
-}
-
-
-void UserProc::getStatements(StatementList& stmts) const
-{
-    for (const BasicBlock *bb : *m_cfg) {
-        bb->appendStatementsTo(stmts);
-    }
-
-    for (Statement *s : stmts) {
-        if (s->getProc() == nullptr) {
-            s->setProc(const_cast<UserProc *>(this));
-        }
-    }
-}
-
-
-bool UserProc::removeStatement(Statement *stmt)
-{
-    if (!stmt) {
-        return false;
-    }
-
-    // remove anything proven about this statement
-    for (auto provenIt = m_provenTrue.begin(); provenIt != m_provenTrue.end();) {
-        LocationSet refs;
-        provenIt->second->addUsedLocs(refs);
-        provenIt->first->addUsedLocs(refs); // Could be say m[esp{99} - 4] on LHS and we are deleting stmt 99
-
-        auto it = std::find_if(refs.begin(), refs.end(),
-            [stmt](const SharedExp& ref) {
-                return ref->isSubscript() && ref->access<RefExp>()->getDef() == stmt;
-            });
-
-        if (it != refs.end()) {
-            LOG_VERBOSE("Removing proven true exp %1 = %2 that uses statement being removed.",
-                        provenIt->first, provenIt->second);
-
-            provenIt = m_provenTrue.erase(provenIt);
-            continue;
-        }
-
-        ++provenIt;
-    }
-
-    // remove from BB/RTL
-    BasicBlock *bb = stmt->getBB(); // Get our enclosing BB
-    if (!bb) {
-        return false;
-    }
-
-    for (auto& rtl : *bb->getRTLs()) {
-        for (RTL::iterator it = rtl->begin(); it != rtl->end(); ++it) {
-            if (*it == stmt) {
-                rtl->erase(it);
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-
-Assign *UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
-{
-    RTL::iterator it;
-    RTL *stmts;
-    BasicBlock *bb = nullptr;
-
-    if (s == nullptr) {
-        // This means right is supposed to be a parameter. We can insert the assignment at the start of the entryBB
-        bb = m_cfg->getEntryBB();
-        RTLList *rtls = bb->getRTLs();
-        assert(!rtls->empty()); // Entry BB should have at least 1 RTL
-        stmts = rtls->front().get();
-        it    = stmts->begin();
-    }
-    else {
-        // An ordinary definition; put the assignment at the end of s's BB
-        bb = s->getBB(); // Get the enclosing BB for s
-        RTLList *rtls = bb->getRTLs();
-        assert(!rtls->empty()); // If s is defined here, there should be at least 1 RTL
-        stmts = rtls->back().get();
-        it    = stmts->end(); // Insert before the end
-    }
-
-    Assign *as = new Assign(left, right);
-    stmts->insert(it, as);
-    as->setProc(this);
-    as->setBB(bb);
-    return as;
-}
-
-
-bool UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
-{
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
-
-        if (rtls == nullptr) {
-            continue; // e.g. bb is (as yet) invalid
-        }
-
-        for (const auto& rtl : *rtls) {
-            for (RTL::iterator ss = rtl->begin(); ss != rtl->end(); ++ss) {
-                if (*ss == afterThis) {
-                    rtl->insert(std::next(ss), stmt);
-                    stmt->setBB(bb);
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
-
-void UserProc::decompileRecursive()
-{
-    ProcDecompiler().decompileRecursive(this);
+    const Settings *settings = getProg()->getProject()->getSettings();
+    const QString filePath = settings->getOutputDirectory()
+    .absoluteFilePath(getName() + "-usegraph.dot");
+    UseGraphWriter().writeUseGraph(this, filePath);
 }
 
 
@@ -415,216 +1463,9 @@ void UserProc::debugPrintAll(const QString& stepName)
 }
 
 
-void UserProc::remUnusedStmtEtc()
+bool UserProc::existsLocal(const QString& name) const
 {
-    m_prog->getProject()->alertDecompiling(this);
-    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Final");
-
-    LOG_VERBOSE("### Removing unused statements for %1 ###", getName());
-
-    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
-    // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
-    // to printf/scanf), and removing unused statements is unsafe without full use information
-    if (getStatus() < PROC_FINAL) {
-        PassManager::get()->executePass(PassID::LocalTypeAnalysis, this);
-
-        // Now that locals are identified, redo the dataflow
-        PassManager::get()->executePass(PassID::PhiPlacement, this);
-
-        PassManager::get()->executePass(PassID::BlockVarRename, this);       // Rename the locals
-        PassManager::get()->executePass(PassID::StatementPropagation, this); // Surely need propagation too
-
-        if (m_prog->getProject()->getSettings()->verboseOutput) {
-            debugPrintAll("after propagating locals");
-        }
-    }
-
-    PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
-    PassManager::get()->executePass(PassID::FinalParameterSearch, this);
-
-    if (m_prog->getProject()->getSettings()->nameParameters) {
-        // Replace the existing temporary parameters with the final ones:
-        // mapExpressionsToParameters();
-        PassManager::get()->executePass(PassID::ParameterSymbolMap, this);
-        debugPrintAll("after adding new parameters");
-    }
-
-    // Or just CallArgumentUpdate?
-    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
-    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
-
-    const bool removedBBs = PassManager::get()->executePass(PassID::BranchAnalysis, this);
-
-    if (removedBBs) {
-        // redo the data flow
-        PassManager::get()->executePass(PassID::Dominators, this);
-
-        // recalculate phi assignments of referencing BBs.
-        for (BasicBlock *bb : *m_cfg) {
-            BasicBlock::RTLIterator rtlIt;
-            StatementList::iterator stmtIt;
-
-            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
-                if (!stmt->isPhi()) {
-                    continue;
-                }
-
-                PhiAssign *phiStmt = dynamic_cast<PhiAssign *>(stmt);
-                assert(phiStmt);
-
-                PhiAssign::PhiDefs& defs = phiStmt->getDefs();
-
-                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end();) {
-                    if (!m_cfg->hasBB(defIt->first)) {
-                        // remove phi reference to deleted bb
-                        defIt = defs.erase(defIt);
-                    }
-                    else {
-                        ++defIt;
-                    }
-                }
-            }
-        }
-    }
-
-    debugPrintAll("after remove unused statements etc");
-    m_prog->getProject()->alertDecompileDebugPoint(this, "after final");
-}
-
-
-void UserProc::assignProcsToCalls()
-{
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
-
-        if (rtls == nullptr) {
-            continue;
-        }
-
-        for (auto& rtl : *rtls) {
-            if (!rtl->isCall()) {
-                continue;
-            }
-
-            CallStatement *call = static_cast<CallStatement *>(rtl->back());
-
-            if ((call->getDestProc() == nullptr) && !call->isComputed()) {
-                Function *p = m_prog->getFunctionByAddr(call->getFixedDest());
-
-                if (p == nullptr) {
-                    LOG_FATAL("Cannot find proc for dest %1 in call at %2",
-                              call->getFixedDest(), rtl->getAddress());
-                }
-
-                call->setDestProc(p);
-            }
-        }
-    }
-}
-
-
-void UserProc::finalSimplify()
-{
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
-
-        if (rtls == nullptr) {
-            continue;
-        }
-
-        for (auto& rtl : *rtls) {
-            for (Statement *stmt : *rtl) {
-                stmt->simplifyAddr();
-                // Also simplify everything; in particular, stack offsets are
-                // often negative, so we at least canonicalise [esp + -8] to [esp-8]
-                stmt->simplify();
-            }
-        }
-    }
-}
-
-
-void UserProc::addParameterToSignature(SharedExp e, SharedType ty)
-{
-    // In case it's already an implicit argument:
-    removeParameterFromSignature(e);
-
-    m_signature->addParameter(e, ty);
-}
-
-
-
-SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
-{
-    SharedExp e = nullptr;
-
-    // check for references to the middle of a local
-    if (le->isMemOf() && (le->getSubExp1()->getOper() == opMinus) && le->getSubExp1()->getSubExp1()->isSubscript() &&
-        le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
-        le->getSubExp1()->getSubExp2()->isIntConst()) {
-        for (auto& elem : m_symbolMap) {
-            if (!(elem).second->isLocal()) {
-                continue;
-            }
-
-            QString name = (elem).second->access<Const, 1>()->getStr();
-
-            if (m_locals.find(name) == m_locals.end()) {
-                continue;
-            }
-
-            SharedType     lty = m_locals[name];
-            SharedConstExp loc = elem.first;
-
-            if (loc->isMemOf() && (loc->getSubExp1()->getOper() == opMinus) &&
-                loc->access<Exp, 1, 1>()->isSubscript() &&
-                loc->access<Exp, 1, 1, 1>()->isRegN(m_signature->getStackRegister()) &&
-                loc->access<Exp, 1, 2>()->isIntConst()) {
-                int n = -loc->access<Const, 1, 2>()->getInt();
-                int m = -le->access<Const, 1, 2>()->getInt();
-
-                if ((m > n) && (m < n + static_cast<int>(lty->getSize() / 8))) {
-                    e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(m - n)));
-                    LOG_VERBOSE("Seems %1 is in the middle of %2 returning %3", le, loc, e);
-                    return e;
-                }
-            }
-        }
-    }
-
-    if (m_symbolMap.find(le) == m_symbolMap.end()) {
-        if (ty == nullptr) {
-            if (lastPass) {
-                ty = IntegerType::get(STD_SIZE);
-            }
-            else {
-                ty = VoidType::get(); // HACK MVE
-            }
-        }
-
-        // the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
-        // type early results in aliases to this local not being recognised
-        if (ty) {
-            //            Exp* base = le;
-            //            if (le->isSubscript())
-            //                base = ((RefExp*)le)->getSubExp1();
-            // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
-            e = createLocal(ty->clone(), le);
-            mapSymbolTo(le->clone(), e);
-            e = e->clone();
-        }
-    }
-    else {
-        e = getSymbolFor(le, ty);
-    }
-
-    return e;
-}
-
-
-void UserProc::promoteSignature()
-{
-    m_signature = m_signature->promote(this);
+    return m_locals.find(name) != m_locals.end();
 }
 
 
@@ -649,226 +1490,6 @@ QString UserProc::newLocalName(const SharedExp& e)
 
     ost << "local" << m_nextLocal++;
     return tgt;
-}
-
-
-SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /* = nullptr */)
-{
-    QString localName = (name != nullptr) ? name : newLocalName(e);
-
-    m_locals[localName] = ty;
-
-    if (ty == nullptr) {
-        LOG_FATAL("Null type passed to newLocal");
-    }
-
-    LOG_VERBOSE2("Assigning type %1 to new %2", ty->getCtype(), localName);
-
-    return Location::local(localName, this);
-}
-
-
-void UserProc::addLocal(SharedType ty, const QString& name, SharedExp e)
-{
-    // symbolMap is a multimap now; you might have r8->o0 for integers and r8->o0_1 for char*
-    // assert(symbolMap.find(e) == symbolMap.end());
-    mapSymbolTo(e, Location::local(name, this));
-    // assert(locals.find(name) == locals.end());        // Could be r10{20} -> o2, r10{30}->o2 now
-    m_locals[name] = ty;
-}
-
-
-SharedConstType UserProc::getLocalType(const QString& name) const
-{
-    auto it = m_locals.find(name);
-    return (it != m_locals.end()) ? it->second : nullptr;
-}
-
-
-void UserProc::setLocalType(const QString& name, SharedType ty)
-{
-    m_locals[name] = ty;
-
-    LOG_VERBOSE("Updating type of '%1' to %2", name, ty->getCtype());
-}
-
-
-SharedConstType UserProc::getParamType(const QString& name) const
-{
-    for (int i = 0; i < m_signature->getNumParams(); i++) {
-        if (name == m_signature->getParamName(i)) {
-            return m_signature->getParamType(i);
-        }
-    }
-
-    return nullptr;
-}
-
-
-SharedType UserProc::getParamType(const QString& name)
-{
-    for (int i = 0; i < m_signature->getNumParams(); i++) {
-        if (name == m_signature->getParamName(i)) {
-            return m_signature->getParamType(i);
-        }
-    }
-
-    return nullptr;
-}
-
-
-void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
-{
-    SymbolMap::iterator it = m_symbolMap.find(from);
-
-    while (it != m_symbolMap.end() && *it->first == *from) {
-        if (*it->second == *to) {
-            return; // Already in the multimap
-        }
-
-        ++it;
-    }
-
-    std::pair<SharedConstExp, SharedExp> pr = { from, to };
-    m_symbolMap.insert(pr);
-}
-
-
-SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstType& ty) const
-{
-    SymbolMap::const_iterator ff = m_symbolMap.find(from);
-
-    while (ff != m_symbolMap.end() && *ff->first == *from) {
-        SharedExp currTo = ff->second;
-        assert(currTo->isLocal() || currTo->isParam());
-        QString    name   = std::static_pointer_cast<Const>(currTo->getSubExp1())->getStr();
-        SharedConstType currTy = getLocalType(name);
-
-        if (currTy == nullptr) {
-            currTy = getParamType(name);
-        }
-
-        if (currTy && currTy->isCompatibleWith(*ty)) {
-            return currTo;
-        }
-
-        ++ff;
-    }
-
-    return nullptr;
-}
-
-
-SharedConstExp UserProc::expFromSymbol(const QString& name) const
-{
-    for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
-        auto e = it.second;
-
-        if (e->isLocal() && (e->access<Const, 1>()->getStr() == name)) {
-            return it.first;
-        }
-    }
-
-    return nullptr;
-}
-
-
-static std::shared_ptr<Binary> allEqAll = Binary::get(opEquals, Terminal::get(opDefineAll), Terminal::get(opDefineAll));
-
-
-bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* = false */)
-{
-    assert(query->isEquality());
-    SharedExp queryLeft  = query->getSubExp1();
-    SharedExp queryRight = query->getSubExp2();
-
-    if ((m_provenTrue.find(queryLeft) != m_provenTrue.end()) && (*m_provenTrue[queryLeft] == *queryRight)) {
-        if (m_prog->getProject()->getSettings()->debugProof) {
-            LOG_MSG("found true in provenTrue cache %1 in %2", query, getName());
-        }
-
-        return true;
-    }
-
-    if (!m_prog->getProject()->getSettings()->useProof) {
-        return false;
-    }
-
-    SharedExp original(query->clone());
-    SharedExp origLeft  = original->getSubExp1();
-    SharedExp origRight = original->getSubExp2();
-
-    // subscript locs on the right with {-} (nullptr reference)
-    LocationSet locs;
-    query->getSubExp2()->addUsedLocs(locs);
-
-    for (const SharedExp& xx : locs) {
-        query->setSubExp2(query->getSubExp2()->expSubscriptValNull(xx));
-    }
-
-    if (query->getSubExp1()->getOper() != opSubscript) {
-        bool gotDef = false;
-
-        // replace expression from return set with expression in the collector of the return
-        if (m_retStatement) {
-            auto def = m_retStatement->findDefFor(query->getSubExp1());
-
-            if (def) {
-                query->setSubExp1(def);
-                gotDef = true;
-            }
-        }
-
-        if (!gotDef) {
-            // OK, the thing I'm looking for isn't in the return collector, but perhaps there is an entry for <all>
-            // If this is proved, then it is safe to say that x == x for any x with no definition reaching the exit
-            auto right = origRight->clone()->simplify(); // In case it's sp+0
-
-            if ((*origLeft == *right) &&                 // x == x
-                (origLeft->getOper() != opDefineAll) &&  // Beware infinite recursion
-                prove(allEqAll)) {                       // Recurse in case <all> not proven yet
-                    if (m_prog->getProject()->getSettings()->debugProof) {
-                    LOG_MSG("Using all=all for %1", query->getSubExp1());
-                    LOG_MSG("Prove returns true");
-                }
-
-                m_provenTrue[origLeft->clone()] = right;
-                return true;
-            }
-
-            if (m_prog->getProject()->getSettings()->debugProof) {
-                LOG_MSG("Not in return collector: %1", query->getSubExp1());
-                LOG_MSG("Prove returns false");
-            }
-
-            return false;
-        }
-    }
-
-    if (m_recursionGroup) { // If in involved in a recursion cycle
-        //    then save the original query as a premise for bypassing calls
-        m_recurPremises[origLeft->clone()] = origRight;
-    }
-
-    std::set<PhiAssign *>            lastPhis;
-    std::map<PhiAssign *, SharedExp> cache;
-    bool result = prover(query, lastPhis, cache);
-
-    if (m_recursionGroup) {
-        killPremise(origLeft); // Remove the premise, regardless of result
-    }
-
-    if (m_prog->getProject()->getSettings()->debugProof) {
-        LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query, getName());
-    }
-
-    if (!conditional) {
-        if (result) {
-            m_provenTrue[origLeft] = origRight; // Save the now proven equation
-        }
-    }
-
-    return result;
 }
 
 
@@ -1172,652 +1793,26 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
 }
 
 
-bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
+SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstType& ty) const
 {
-    bool          ch = false;
-    StatementList stmts;
-    getStatements(stmts);
+    SymbolMap::const_iterator ff = m_symbolMap.find(from);
 
-    for (Statement *s : stmts) {
-        ch |= s->searchAndReplace(search, replace);
+    while (ff != m_symbolMap.end() && *ff->first == *from) {
+        SharedExp currTo = ff->second;
+        assert(currTo->isLocal() || currTo->isParam());
+        QString    name   = std::static_pointer_cast<Const>(currTo->getSubExp1())->getStr();
+        SharedConstType currTy = getLocalType(name);
+
+        if (currTy == nullptr) {
+            currTy = getParamType(name);
+        }
+
+        if (currTy && currTy->isCompatibleWith(*ty)) {
+            return currTo;
+        }
+
+        ++ff;
     }
 
-    return ch;
-}
-
-
-SharedExp UserProc::getProven(SharedExp left)
-{
-    // Note: proven information is in the form r28 mapsto (r28 + 4)
-    auto it = m_provenTrue.find(left);
-
-    if (it != m_provenTrue.end()) {
-        return it->second;
-    }
-
-    //     not found, try the signature
-    // No! The below should only be for library functions!
-    // return signature->getProven(left);
     return nullptr;
-}
-
-
-SharedExp UserProc::getPremised(SharedExp left)
-{
-    auto it = m_recurPremises.find(left);
-    return it != m_recurPremises.end()
-        ? it->second
-        : nullptr;
-}
-
-
-bool UserProc::isPreserved(SharedExp e)
-{
-    return m_provenTrue.find(e) != m_provenTrue.end() && *m_provenTrue[e] == *e;
-}
-
-
-QString UserProc::lookupParam(SharedConstExp e) const
-{
-    // Originally e.g. m[esp+K]
-    Statement *def = m_cfg->findTheImplicitAssign(e);
-
-    if (def == nullptr) {
-        LOG_ERROR("No implicit definition for parameter %1!", e);
-        return QString::null;
-    }
-
-    SharedConstType ty  = def->getTypeFor(e);
-    return lookupSym(RefExp::get(std::const_pointer_cast<Exp>(e), def), ty);
-}
-
-
-QString UserProc::lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) const
-{
-    const Statement *def = ref->getDef();
-
-    if (!def) {
-        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
-        return QString::null;
-    }
-
-    SharedConstExp  base = ref->getSubExp1();
-    SharedConstType ty   = def->getTypeFor(base);
-    return lookupSym(ref, ty);
-}
-
-
-QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) const
-{
-    const Statement *def = ref->getDef();
-
-    if (!def) {
-        LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref->toString(), getName());
-        return QString::null;
-    }
-
-    SharedConstExp  base = ref->getSubExp1();
-    SharedConstType ty   = def->getTypeFor(base);
-
-    // Check for specific symbol
-    const QString   ret  = lookupSym(ref, ty);
-    if (!ret.isNull()) {
-        return ret;
-    }
-
-    return lookupSym(base, ty); // Check for a general symbol
-}
-
-
-QString UserProc::lookupSym(const SharedConstExp& arg, SharedConstType ty) const
-{
-    SharedConstExp e = arg;
-
-    if (arg->isTypedExp()) {
-        e = e->getSubExp1();
-    }
-
-    SymbolMap::const_iterator it = m_symbolMap.find(e);
-
-    while (it != m_symbolMap.end() && *it->first == *e) {
-        SharedExp sym = it->second;
-        assert(sym->isLocal() || sym->isParam());
-
-        const QString    name = sym->access<Const, 1>()->getStr();
-        SharedConstType type = getLocalType(name);
-
-        if (type == nullptr) {
-            type = getParamType(name); // Ick currently linear search
-        }
-
-        if (type && type->isCompatibleWith(*ty)) {
-            return name;
-        }
-
-        ++it;
-    }
-
-    // Else there is no symbol
-    return QString::null;
-}
-
-
-void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
-{
-    if (html) {
-        out << "<br>";
-    }
-
-    out << "symbols:\n";
-
-    if (m_symbolMap.empty()) {
-        out << "  <None>\n";
-    }
-    else {
-        for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
-            SharedConstType ty = getTypeForLocation(it.second);
-            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
-
-            if (html) {
-                out << "<br>";
-            }
-        }
-    }
-
-    if (html) {
-        out << "<br>";
-    }
-}
-
-
-void UserProc::dumpLocals(QTextStream& os, bool html) const
-{
-    if (html) {
-        os << "<br>";
-    }
-
-    os << "locals:\n";
-
-    if (m_locals.empty()) {
-        os << "  <None>\n";
-    }
-    else {
-        for (const std::pair<QString, SharedType>& local_entry : m_locals) {
-            os << local_entry.second->getCtype() << " " << local_entry.first << " ";
-            SharedConstExp e = expFromSymbol(local_entry.first);
-
-            // Beware: for some locals, expFromSymbol() returns nullptr (? No longer?)
-            if (e) {
-                os << "  " << e << "\n";
-            }
-            else {
-                os << "  -\n";
-            }
-        }
-    }
-
-    if (html) {
-        os << "<br>";
-    }
-}
-
-
-void UserProc::insertParameter(SharedExp e, SharedType ty)
-{
-    if (filterParams(e)) {
-        return; // Filtered out
-    }
-
-    // Used to filter out preserved locations here: no!
-    // Propagation and dead code elimination solve the problem.
-    // See test/pentium/restoredparam for an example
-    // where you must not remove restored locations
-
-    // Wrap it in an implicit assignment; DFA based TA should update the type later
-    ImplicitAssign *as = new ImplicitAssign(ty->clone(), e->clone());
-
-    auto it = std::lower_bound(m_parameters.begin(), m_parameters.end(), as,
-        [this] (const Statement *stmt, const Assignment *a) {
-            return m_signature->argumentCompare(static_cast<const Assignment &>(*stmt), *a);
-        });
-
-    if (it == m_parameters.end() ||
-        *static_cast<ImplicitAssign *>(*it)->getLeft() != *as->getLeft()) {
-            // not a duplicate
-            m_parameters.insert(it, as);
-    }
-
-    // update the signature
-    m_signature->setNumParams(0);
-    int i = 1;
-
-    for (Statement *param : m_parameters) {
-        Assignment *a = static_cast<Assignment *>(param);
-        QString paramName = QString("param%1").arg(i++);
-
-        m_signature->addParameter(paramName, a->getLeft(), a->getType());
-    }
-}
-
-
-bool UserProc::filterReturns(SharedExp e)
-{
-    if (isPreserved(e)) {
-        // If it is preserved, then it can't be a return (since we don't change it)
-        return true;
-    }
-
-    switch (e->getOper())
-    {
-    case opPC:
-        return true; // Ignore %pc
-
-    case opDefineAll:
-        return true; // Ignore <all>
-
-    case opTemp:
-        return true; // Ignore all temps (should be local to one instruction)
-
-    // Would like to handle at least %ZF, %CF one day. For now, filter them out
-    case opZF:
-    case opCF:
-    case opFlags:
-        return true;
-
-    case opMemOf:
-        // return signature->isStackLocal(prog, e);        // Filter out local variables
-        // Actually, surely all sensible architectures will only every return in registers. So for now, just
-        // filter out all mem-ofs
-        return true;
-
-    case opGlobal:
-        return true; // Never return in globals
-
-    default:
-        return false;
-    }
-}
-
-
-bool UserProc::filterParams(SharedExp e)
-{
-    switch (e->getOper())
-    {
-    case opPC:
-        return true;
-
-    case opTemp:
-        return true;
-
-    case opRegOf:
-        {
-            const int sp = Util::getStackRegisterIndex(m_prog);
-            return e->access<Const, 1>()->getInt() == sp;
-        }
-
-    case opMemOf:
-        {
-            auto addr = e->getSubExp1();
-
-            if (addr->isIntConst()) {
-                return true; // Global memory location
-            }
-
-            if (addr->isSubscript() && addr->access<RefExp>()->isImplicitDef()) {
-                auto reg = addr->getSubExp1();
-                int  sp  = 999;
-
-                if (m_signature) {
-                    sp = Util::getStackRegisterIndex(m_prog);
-                }
-
-                if (reg->isRegN(sp)) {
-                    return true; // Filter out m[sp{-}] assuming it is the return address
-                }
-            }
-
-            return false; // Might be some weird memory expression that is not a local
-        }
-
-    case opGlobal:
-        return true; // Never use globals as argument locations (could appear on RHS of args)
-
-    default:
-        return false;
-    }
-}
-
-
-QString UserProc::findLocal(const SharedExp& e, SharedType ty)
-{
-    if (e->isLocal()) {
-        return e->access<Const, 1>()->getStr();
-    }
-
-    // Look it up in the symbol map
-    QString name = lookupSym(e, ty);
-
-    if (name.isNull()) {
-        return name;
-    }
-
-    // Now make sure it is a local; some symbols (e.g. parameters) are in the symbol map but not locals
-    if (m_locals.find(name) != m_locals.end()) {
-        return name;
-    }
-
-    return QString::null;
-}
-
-
-QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
-{
-    SymbolMap::const_iterator ff = m_symbolMap.find(exp);
-
-    if (ff == m_symbolMap.end()) {
-        return QString::null;
-    }
-
-    return std::static_pointer_cast<Const>(ff->second->getSubExp1())->getStr();
-}
-
-
-void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
-{
-    BasicBlock::RTLRIterator        rrit;
-    StatementList::reverse_iterator srit;
-
-    for (BasicBlock *bb : *m_cfg) {
-        CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
-
-        if (c && c->isChildless()) {
-            UserProc *dest = static_cast<UserProc *>(c->getDestProc());
-
-            if (cs->find(dest) != cs->end()) { // Part of the cycle?
-                // Yes, set the callee return statement (making it non childless)
-                c->setCalleeReturn(dest->getRetStmt());
-            }
-        }
-    }
-}
-
-
-void UserProc::propagateToCollector()
-{
-    for (auto it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
-        if (!(*it)->isMemOf()) {
-            ++it;
-            continue;
-        }
-
-        auto        addr = (*it)->getSubExp1();
-        LocationSet used;
-        addr->addUsedLocs(used);
-
-        for (const SharedExp& v : used) {
-            if (!v->isSubscript()) {
-                continue;
-            }
-
-            auto   r   = v->access<RefExp>();
-            if (!r->getDef() || !r->getDef()->isAssign()) {
-                continue;
-            }
-
-            Assign *as = static_cast<Assign *>(r->getDef());
-
-            bool ch;
-            auto res = addr->clone()->searchReplaceAll(*r, as->getRight(), ch);
-
-            if (!ch) {
-                continue; // No change
-            }
-
-            auto memOfRes = Location::memOf(res)->simplify();
-
-            // First check to see if memOfRes is already in the set
-            if (m_procUseCollector.exists(memOfRes)) {
-                // Take care not to use an iterator to the newly erased element.
-                /* it = */
-                m_procUseCollector.remove(it++);            // Already exists; just remove the old one
-                continue;
-            }
-            else {
-                LOG_VERBOSE("Propagating %1 to %2 in collector; result %3",
-                            r, as->getRight(), memOfRes);
-                (*it)->setSubExp1(res); // Change the child of the memof
-            }
-        }
-
-        ++it; // it is iterated either with the erase, or the continue, or here
-    }
-}
-
-
-bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
-{
-    if (!e->isMemOf()) {
-        return false; // Don't want say a register
-    }
-
-    SharedConstExp addr = e->getSubExp1();
-
-    if (!m_signature->isPromoted()) {
-        return false; // Prevent an assert failure if using -E
-    }
-
-    const int sp = m_signature->getStackRegister();
-    const auto initSp(RefExp::get(Location::regOf(sp), nullptr)); // sp{-}
-
-    if (*addr == *initSp) {
-        return true; // Accept m[sp{-}]
-    }
-
-    if (addr->getArity() != 2) {
-        return false; // Require sp +/- K
-    }
-
-    OPER op = addr->getOper();
-
-    if ((op != opPlus) && (op != opMinus)) {
-        return false;
-    }
-
-    SharedConstExp left = addr->getSubExp1();
-
-    if (!(*left == *initSp)) {
-        return false;
-    }
-
-    SharedConstExp right = addr->getSubExp2();
-    return right->isIntConst();
-}
-
-
-bool UserProc::allPhisHaveDefs() const
-{
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (const Statement *stmt : stmts) {
-        if (!stmt->isPhi()) {
-            continue; // Might be able to optimise this a bit
-        }
-
-        const PhiAssign *pa = static_cast<const PhiAssign *>(stmt);
-
-        for (const auto& ref : *pa) {
-            if (!ref.getDef()) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-
-void UserProc::processDecodedICTs()
-{
-    for (BasicBlock *bb : *m_cfg) {
-        BasicBlock::RTLRIterator        rrit;
-        StatementList::reverse_iterator srit;
-        Statement *last = bb->getLastStmt(rrit, srit);
-
-        if (last == nullptr) {
-            continue; // e.g. a BB with just a NOP in it
-        }
-
-        if (!last->isHL_ICT()) {
-            continue;
-        }
-
-        RTL *rtl = bb->getLastRTL();
-
-        if (m_prog->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("Saving high level switch statement:\n%1", rtl);
-        }
-
-        m_prog->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
-        // Now decode those new targets, adding out edges as well
-        //        if (last->isCase())
-        //            bb->processSwitch(this);
-    }
-}
-
-
-void UserProc::mapLocalsAndParams()
-{
-    m_prog->getProject()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
-
-    LOG_VERBOSE("### Mapping expressions to local variables for %1 ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        s->dfaMapLocals();
-    }
-
-    LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", getName());
-}
-
-
-
-QString UserProc::getRegName(SharedExp r)
-{
-    assert(r->isRegOf());
-
-    // assert(r->getSubExp1()->isConst());
-    if (r->getSubExp1()->isConst()) {
-        int            regNum = r->access<Const, 1>()->getInt();
-        const QString& regName(m_prog->getRegName(regNum));
-        assert(!regName.isEmpty());
-
-        if (regName[0] == '%') {
-            return regName.mid(1); // Skip % if %eax
-        }
-
-        return regName;
-    }
-
-    LOG_WARN("Will try to build register name from [tmp+X]!");
-
-    // TODO: how to handle register file lookups ?
-    // in some cases the form might be r[tmp+value]
-    // just return this expression :(
-    // WARN: this is a hack to prevent crashing when r->subExp1 is not const
-    QString     tgt;
-    QTextStream ostr(&tgt);
-
-    r->getSubExp1()->print(ostr);
-
-    return tgt;
-}
-
-
-SharedType UserProc::getTypeForLocation(const SharedExp& e)
-{
-    const QString name = e->access<Const, 1>()->getStr();
-    if (e->isLocal()) {
-        auto it = m_locals.find(name);
-        if (it != m_locals.end()) {
-            return it->second;
-        }
-    }
-
-    // Sometimes parameters use opLocal, so fall through
-    return getParamType(name);
-}
-
-
-SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
-{
-    const QString name = e->access<Const, 1>()->getStr();
-    if (e->isLocal()) {
-        auto it = m_locals.find(name);
-        if (it != m_locals.end()) {
-            return it->second;
-        }
-    }
-
-    // Sometimes parameters use opLocal, so fall through
-    return getParamType(name);
-}
-
-
-bool UserProc::existsLocal(const QString& name) const
-{
-    return m_locals.find(name) != m_locals.end();
-}
-
-
-void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& r)
-{
-    if (!lookupSymFromRefAny(r).isNull()) {
-        return; // Already have a symbol for r
-    }
-
-    Statement *def = r->getDef();
-
-    if (!def) {
-        return; // TODO: should this be logged ?
-    }
-
-    SharedExp  base = r->getSubExp1();
-    SharedType ty   = def->getTypeFor(base);
-    // No, get its name from the front end
-    QString locName = nullptr;
-
-    if (base->isRegOf()) {
-        locName = getRegName(base);
-
-        // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
-        // same combination of location and type. However if it does already exist, addLocal will allocate a
-        // new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
-        if (existsLocal(locName)) {
-            locName = newLocalName(r);
-        }
-    }
-    else {
-        locName = newLocalName(r);
-    }
-
-    addLocal(ty, locName, base);
-}
-
-
-Address UserProc::getRetAddr()
-{
-    return m_retStatement != nullptr
-        ? m_retStatement->getRetAddr()
-        : Address::INVALID;
-}
-
-
-void UserProc::setRetStmt(ReturnStatement* s, Address r)
-{
-    assert(m_retStatement == nullptr);
-    m_retStatement = s;
-    m_retStatement->setRetAddr(r);
 }
