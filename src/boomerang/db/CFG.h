@@ -203,9 +203,6 @@ public:
     /// Simplify all the expressions in the CFG
     void simplify();
 
-    /// Change the BB enclosing stmt to be CALL, not COMPCALL
-    void undoComputedBB(Statement *stmt);
-
     BasicBlock *findRetNode();
 
     // Implicit assignments

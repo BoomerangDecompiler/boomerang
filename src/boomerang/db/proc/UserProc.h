@@ -317,9 +317,6 @@ public:
     /// \todo write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
     QString getRegName(SharedExp r);
 
-    /// Change BB containing this statement from a COMPCALL to a CALL.
-    void undoComputedBB(Statement *stmt) const { m_cfg->undoComputedBB(stmt); }
-
     bool searchAndReplace(const Exp& search, SharedExp replace);
 
     /// Add a location to the UseCollector; this means this location is used before defined,

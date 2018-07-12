@@ -816,7 +816,8 @@ bool CallStatement::convertToDirect()
 
     // 4
     m_isComputed = false;
-    m_proc->undoComputedBB(this);
+    assert(m_bb->getType() == BBType::CompCall);
+    m_bb->setType(BBType::Call);
     m_proc->addCallee(m_procDest);
 
     LOG_VERBOSE("Result of convertToDirect: true");
