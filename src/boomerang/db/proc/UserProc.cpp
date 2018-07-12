@@ -544,10 +544,10 @@ void UserProc::finalSimplify()
 }
 
 
-void UserProc::addParameter(SharedExp e, SharedType ty)
+void UserProc::addParameterToSignature(SharedExp e, SharedType ty)
 {
     // In case it's already an implicit argument:
-    removeParameter(e);
+    removeParameterFromSignature(e);
 
     m_signature->addParameter(e, ty);
 }
@@ -1368,26 +1368,23 @@ void UserProc::insertParameter(SharedExp e, SharedType ty)
         return; // Filtered out
     }
 
-    // Used to filter out preserved locations here: no! Propagation and dead code elimination solve the problem.
-    // See test/pentium/restoredparam for an example where you must not remove restored locations
+    // Used to filter out preserved locations here: no!
+    // Propagation and dead code elimination solve the problem.
+    // See test/pentium/restoredparam for an example
+    // where you must not remove restored locations
 
     // Wrap it in an implicit assignment; DFA based TA should update the type later
     ImplicitAssign *as = new ImplicitAssign(ty->clone(), e->clone());
 
-    // Insert as, in order, into the existing set of parameters
-    bool inserted = false;
+    auto it = std::lower_bound(m_parameters.begin(), m_parameters.end(), as,
+        [this] (const Statement *stmt, const Assignment *a) {
+            return m_signature->argumentCompare(static_cast<const Assignment &>(*stmt), *a);
+        });
 
-    for (StatementList::iterator nn = m_parameters.begin(); nn != m_parameters.end(); ++nn) {
-        // If the new assignment is less than the current one ...
-        if (m_signature->argumentCompare(*as, static_cast<const Assignment &>(**nn))) {
-            nn       = m_parameters.insert(nn, as); // ... then insert before this position
-            inserted = true;
-            break;
-        }
-    }
-
-    if (!inserted) {
-        m_parameters.insert(m_parameters.end(), as); // In case larger than all existing elements
+    if (it == m_parameters.end() ||
+        *static_cast<ImplicitAssign *>(*it)->getLeft() != *as->getLeft()) {
+            // not a duplicate
+            m_parameters.insert(it, as);
     }
 
     // update the signature

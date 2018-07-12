@@ -72,7 +72,7 @@ void LibProcTest::testRemoveFromModule()
 }
 
 
-void LibProcTest::testRemoveParameter()
+void LibProcTest::testRemoveParameterFromSignature()
 {
     LibProc proc(Address(0x1000), "test", nullptr);
     auto sig = std::make_shared<CallingConvention::StdC::PentiumSignature>("test");
@@ -82,7 +82,7 @@ void LibProcTest::testRemoveParameter()
     proc.setSignature(sig);
     QCOMPARE(proc.getSignature()->getNumParams(), 1);
 
-    proc.removeParameter(exp->clone()); // make sure to not compare by address
+    proc.removeParameterFromSignature(exp->clone()); // make sure to not compare by address
     QCOMPARE(proc.getSignature()->getNumParams(), 0);
 
     sig->addParameter("bar", exp);
@@ -91,7 +91,7 @@ void LibProcTest::testRemoveParameter()
     proc.addCaller(&call);
     call.setNumArguments(1);
 
-    proc.removeParameter(exp->clone());
+    proc.removeParameterFromSignature(exp->clone());
     QCOMPARE(proc.getSignature()->getNumParams(), 0);
     QCOMPARE(call.getNumArguments(), 0);
 }

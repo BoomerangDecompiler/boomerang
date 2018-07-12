@@ -156,7 +156,7 @@ public:
     const StatementList& getParameters() const { return m_parameters; }
 
     /// Add the parameter to the signature
-    void addParameter(SharedExp e, SharedType ty);
+    void addParameterToSignature(SharedExp e, SharedType ty);
 
     /**
      * Insert into parameters list correctly sorted.
@@ -398,13 +398,16 @@ private:
 
     /**
      * The list of parameters, ordered and filtered.
-     * Note that a LocationList could be used, but then there would be nowhere to store the types (for DFA based TA)
+     * Note that a LocationList could be used, but then there would be nowhere
+     * to store the types (for DFA based TA)
+     *
      * The RHS is just ignored; the list is of ImplicitAssigns.
      *
-     * \note DESIGN ISSUE: it would be nice for the parameters' implicit assignments to be the sole definitions, i.e. not
-     * need other implicit assignments for these. But the targets of RefExp's are not expected to change address,
-     * so they are not suitable at present (since the addresses regularly get changed as the parameters get
-     * recreated).
+     * \note DESIGN ISSUE: it would be nice for the parameters' implicit assignments
+     * to be the sole definitions, i.e. not need other implicit assignments for these.
+     * But the targets of RefExp's are not expected to change address, so they are
+     * not suitable at present (since the addresses regularly get changed
+     * as the parameters get recreated).
      */
     StatementList m_parameters;
 

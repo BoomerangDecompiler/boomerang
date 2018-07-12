@@ -23,7 +23,7 @@ private slots:
     void testEntryAddr();
     void testSetModule();
     void testRemoveFromModule();
-    void testRemoveParameter();
+    void testRemoveParameterFromSignature();
     void testRenameParameter();
 
     // tests for LibProc class

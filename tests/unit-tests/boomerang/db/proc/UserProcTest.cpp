@@ -11,9 +11,11 @@
 
 
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/RTL.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/type/type/VoidType.h"
 
@@ -81,6 +83,47 @@ void UserProcTest::testInsertStatementAfter()
     QVERIFY(*proc.getEntryBB()->getRTLs()->front()->begin() == as);
     QVERIFY(*std::next(proc.getEntryBB()->getRTLs()->front()->begin()) == as2);
 }
+
+
+void UserProcTest::testAddParameterToSignature()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    proc.addParameterToSignature(Location::memOf(Binary::get(opPlus,
+        Location::regOf(REG_PENT_ESP), Const::get(4)), &proc),
+        VoidType::get());
+
+    QCOMPARE(proc.getSignature()->getNumParams(), 1);
+
+    // try to add the same parameter again
+    proc.addParameterToSignature(Location::memOf(Binary::get(opPlus,
+        Location::regOf(REG_PENT_ESP), Const::get(4)), &proc),
+        VoidType::get());
+
+    QCOMPARE(proc.getSignature()->getNumParams(), 1);
+}
+
+
+void UserProcTest::testInsertParameter()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    proc.insertParameter(Location::memOf(Binary::get(opPlus,
+        Location::regOf(REG_PENT_ESP), Const::get(4)), &proc),
+        VoidType::get());
+
+    QCOMPARE(proc.getParameters().size(), (size_t)1);
+    QCOMPARE(proc.getSignature()->getNumParams(), 1);
+
+    // try to add the same parameter again
+    proc.insertParameter(Location::memOf(Binary::get(opPlus,
+        Location::regOf(REG_PENT_ESP), Const::get(4)), &proc),
+        VoidType::get());
+
+    QCOMPARE(proc.getParameters().size(), (size_t)1);
+    QCOMPARE(proc.getSignature()->getNumParams(), 1);
+}
+
 
 
 QTEST_GUILESS_MAIN(UserProcTest)

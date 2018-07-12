@@ -103,7 +103,7 @@ void Function::removeFromModule()
 }
 
 
-void Function::removeParameter(SharedExp e)
+void Function::removeParameterFromSignature(SharedExp e)
 {
     const int n = m_signature->findParam(e);
 

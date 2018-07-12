@@ -83,7 +83,7 @@ public:
     /// Add to the set of callers
     void addCaller(CallStatement *caller) { m_callers.insert(caller); }
 
-    void removeParameter(SharedExp e);
+    void removeParameterFromSignature(SharedExp e);
 
     /// Rename the first parameter named \p oldName to \p newName.
     virtual void renameParameter(const QString& oldName, const QString& newName);

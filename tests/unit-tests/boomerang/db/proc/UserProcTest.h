@@ -21,4 +21,7 @@ private slots:
     void testRemoveStatement();
     void testInsertAssignAfter();
     void testInsertStatementAfter();
+
+    void testAddParameterToSignature();
+    void testInsertParameter();
 };

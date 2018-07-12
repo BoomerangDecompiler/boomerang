@@ -93,7 +93,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
 
             SharedType ty = static_cast<ImplicitAssign *>(s)->getType();
             // Add this parameter to the signature (for now; creates parameter names)
-            proc->addParameter(e, ty);
+            proc->addParameterToSignature(e, ty);
             // Insert it into the parameters StatementList, in sensible order
             proc->insertParameter(e, ty);
         }
