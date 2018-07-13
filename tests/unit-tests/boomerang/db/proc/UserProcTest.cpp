@@ -13,6 +13,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
@@ -148,6 +149,28 @@ void UserProcTest::testParamType()
 
     proc.setParamType(0, VoidType::get());
     QCOMPARE(proc.getParamType("param1")->toString(), VoidType::get()->toString());
+}
+
+
+void UserProcTest::testLookupParam()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    proc.setEntryBB();
+
+    SharedExp paramExp = Location::memOf(Binary::get(opPlus,
+        Location::regOf(REG_PENT_ESP), Const::get(4)), &proc);
+
+    Statement *ias = proc.getCFG()->findOrCreateImplicitAssign(paramExp->clone());
+    proc.insertParameter(RefExp::get(paramExp->clone(), ias), VoidType::get());
+    proc.mapSymbolTo(RefExp::get(paramExp->clone(), ias), Location::param("param1", &proc));
+    proc.addParameterToSignature(paramExp->clone(), VoidType::get());
+
+    QCOMPARE(proc.lookupParam(paramExp), QString("param1"));
+    QCOMPARE(proc.lookupParam(Location::regOf(REG_PENT_ECX)), QString(""));
 }
 
 
