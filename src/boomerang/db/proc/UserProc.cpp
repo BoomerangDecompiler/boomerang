@@ -74,12 +74,6 @@ bool UserProc::isNoReturn() const
 }
 
 
-void UserProc::renameParameter(const QString& oldName, const QString& newName)
-{
-    Function::renameParameter(oldName, newName);
-    // cfg->searchAndReplace(Location::param(oldName, this), Location::param(newName, this));
-}
-
 SharedExp UserProc::getProven(SharedExp left)
 {
     // Note: proven information is in the form r28 mapsto (r28 + 4)

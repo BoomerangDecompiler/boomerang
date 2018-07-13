@@ -86,7 +86,7 @@ public:
     void removeParameterFromSignature(SharedExp e);
 
     /// Rename the first parameter named \p oldName to \p newName.
-    virtual void renameParameter(const QString& oldName, const QString& newName);
+    void renameParameter(const QString& oldName, const QString& newName);
 
     /// Get the RHS that is proven for left
     virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left

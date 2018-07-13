@@ -77,9 +77,6 @@ public:
     /// \copydoc Function::isNoReturn
     virtual bool isNoReturn() const override;
 
-    /// \copydoc Function::renameParameter
-    virtual void renameParameter(const QString& oldName, const QString& newName) override;
-
     /// \copydoc Function::getProven
     virtual SharedExp getProven(SharedExp left) override;
 
