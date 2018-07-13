@@ -30,4 +30,7 @@ private slots:
 
     void testRetStmt();
     void testFilterReturns();
+
+    void testCreateLocal();
+    void testAddLocal();
 };

@@ -209,7 +209,7 @@ public:
      * \note was returning TypedExp*.
      * If \p name is non null, use that name
      */
-    SharedExp createLocal(SharedType ty, const SharedExp& e, char *name = nullptr);
+    SharedExp createLocal(SharedType ty, const SharedExp& e, const QString& name = "");
 
     /// Add a new local supplying all needed information.
     void addLocal(SharedType ty, const QString& name, SharedExp e);

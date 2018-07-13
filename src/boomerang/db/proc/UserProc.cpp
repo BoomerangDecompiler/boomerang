@@ -484,17 +484,16 @@ bool UserProc::filterReturns(SharedExp e)
 }
 
 
-SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, char *name /* = nullptr */)
+SharedExp UserProc::createLocal(SharedType ty, const SharedExp& e, const QString& name)
 {
-    QString localName = (name != nullptr) ? name : newLocalName(e);
-
-    m_locals[localName] = ty;
+    const QString localName = (name != "") ? name : newLocalName(e);
 
     if (ty == nullptr) {
         LOG_FATAL("Null type passed to newLocal");
     }
 
     LOG_VERBOSE2("Assigning type %1 to new %2", ty->getCtype(), localName);
+    m_locals[localName] = ty;
 
     return Location::local(localName, this);
 }

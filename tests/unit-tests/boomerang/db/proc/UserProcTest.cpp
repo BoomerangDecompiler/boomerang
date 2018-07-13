@@ -239,4 +239,40 @@ void UserProcTest::testFilterReturns()
 }
 
 
+void UserProcTest::testCreateLocal()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    SharedExp exp = proc.createLocal(VoidType::get(), Location::regOf(REG_PENT_EAX), "eax");
+    QVERIFY(exp != nullptr);
+    QCOMPARE(exp->toString(), QString("eax"));
+    QCOMPARE(proc.getLocalType("eax")->toString(), VoidType::get()->toString());
+    QVERIFY(proc.getLocals().size() == 1);
+
+    // set type of local
+    exp = proc.createLocal(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX), "eax");
+    QVERIFY(exp != nullptr);
+    QCOMPARE(exp->toString(), QString("eax"));
+    QCOMPARE(proc.getLocalType("eax")->toString(), IntegerType::get(32, Sign::Signed)->toString());
+    QVERIFY(proc.getLocals().size() == (size_t)1);
+}
+
+
+void UserProcTest::testAddLocal()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    proc.addLocal(VoidType::get(), "eax", Location::regOf(REG_PENT_EAX));
+    QVERIFY(proc.getLocals().size() == (size_t)1);
+    QVERIFY(proc.getSymbolMap().size() == 1);
+    QCOMPARE(proc.findFirstSymbol(Location::regOf(REG_PENT_EAX)), QString("eax"));
+
+    // test for no duplicates
+    proc.addLocal(IntegerType::get(32, Sign::Signed), "eax", Location::regOf(REG_PENT_EAX));
+    QVERIFY(proc.getLocals().size() == (size_t)1);
+    QVERIFY(proc.getSymbolMap().size() == 1);
+    QCOMPARE(proc.findFirstSymbol(Location::regOf(REG_PENT_EAX)), QString("eax"));
+}
+
+
 QTEST_GUILESS_MAIN(UserProcTest)
