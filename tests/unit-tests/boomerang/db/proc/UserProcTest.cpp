@@ -275,4 +275,40 @@ void UserProcTest::testAddLocal()
 }
 
 
+void UserProcTest::testEnsureExpIsMappedToLocal()
+{
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+
+    UserProc proc(Address(0x1000), "test", m_project.getProg()->getRootModule());
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    proc.setEntryBB();
+
+    // do not create local if nullptr def
+    proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_PENT_EAX), nullptr));
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString(""));
+
+    // local does not exist
+    Statement *ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    QVERIFY(ias1 != nullptr);
+    proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_PENT_EAX), ias1));
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString("eax"));
+
+    // local already exists
+    proc.ensureExpIsMappedToLocal(RefExp::get(Location::regOf(REG_PENT_EAX), ias1));
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString("eax"));
+
+
+    SharedExp memOf = Location::memOf(Binary::get(opPlus,
+                                      Location::regOf(REG_PENT_ESP),
+                                      Const::get(4)));
+    Statement *ias2 = proc.getCFG()->findOrCreateImplicitAssign(memOf);
+    QVERIFY(ias2 != nullptr);
+    proc.ensureExpIsMappedToLocal(RefExp::get(memOf->clone(), ias2));
+    QCOMPARE(proc.findLocal(memOf->clone(), VoidType::get()), QString("local0"));
+}
+
+
 QTEST_GUILESS_MAIN(UserProcTest)

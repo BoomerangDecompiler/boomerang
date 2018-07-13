@@ -33,4 +33,5 @@ private slots:
 
     void testCreateLocal();
     void testAddLocal();
+    void testEnsureExpIsMappedToLocal();
 };

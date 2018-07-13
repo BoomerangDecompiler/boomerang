@@ -529,9 +529,11 @@ void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& ref)
     if (base->isRegOf()) {
         locName = getRegName(base);
 
-        // Create a new local, for the base name if it doesn't exist yet, so we don't need several names for the
-        // same combination of location and type. However if it does already exist, addLocal will allocate a
-        // new name. Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
+        // Create a new local, for the base name if it doesn't exist yet,
+        // so we don't need several names for the same combination of location
+        // and type. However if it does already exist, addLocal will allocate
+        // a new name.
+        // Example: r8{0}->argc type int, r8->o0 type int, now r8->o0_1 type char*.
         if (existsLocal(locName)) {
             locName = newLocalName(ref);
         }
