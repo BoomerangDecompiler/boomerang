@@ -169,9 +169,6 @@ public:
     void setParamType(const QString& name, SharedType ty);
     void setParamType(int idx, SharedType ty);
 
-    /// Map expressions to locals and initial parameters
-    void mapLocalsAndParams();
-
     /// e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
     /// Find the implicit definition for \a e and lookup a symbol
     QString lookupParam(SharedConstExp e) const;

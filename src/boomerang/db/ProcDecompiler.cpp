@@ -621,7 +621,7 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet& visi
 
     // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
     // statements.
-    proc->mapLocalsAndParams();
+    changed |= PassManager::get()->executePass(PassID::LocalAndParamMap, proc);
     changed |= PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     changed |= PassManager::get()->executePass(PassID::Dominators, proc);
     changed |= PassManager::get()->executePass(PassID::StatementPropagation, proc); // Need to propagate into arguments

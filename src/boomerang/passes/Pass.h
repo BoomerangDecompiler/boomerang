@@ -44,6 +44,7 @@ enum class PassID
     ParameterSymbolMap,
     UnusedLocalRemoval,
     ImplicitPlacement,
+    LocalAndParamMap,
     NUM_PASSES
 };
 

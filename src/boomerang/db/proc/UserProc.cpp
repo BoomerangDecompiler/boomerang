@@ -370,22 +370,6 @@ void UserProc::setParamType(int idx, SharedType ty)
 }
 
 
-void UserProc::mapLocalsAndParams()
-{
-    m_prog->getProject()->alertDecompileDebugPoint(this, "Before mapping locals from dfa type analysis");
-
-    LOG_VERBOSE("### Mapping expressions to local variables for %1 ###", getName());
-
-    StatementList stmts;
-    getStatements(stmts);
-
-    for (Statement *s : stmts) {
-        s->dfaMapLocals();
-    }
-
-    LOG_VERBOSE("### End mapping expressions to local variables for %1 ###", getName());
-}
-
 
 QString UserProc::lookupParam(SharedConstExp e) const
 {

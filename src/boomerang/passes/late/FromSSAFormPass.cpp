@@ -17,10 +17,11 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 
 FromSSAFormPass::FromSSAFormPass()
@@ -230,7 +231,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     // renaming successfully.
     assert(proc->allPhisHaveDefs());
     nameParameterPhis(proc);
-    proc->mapLocalsAndParams();
+    PassManager::get()->executePass(PassID::LocalAndParamMap, proc);
     mapParameters(proc);
     removeSubscriptsFromSymbols(proc);
     removeSubscriptsFromParameters(proc);

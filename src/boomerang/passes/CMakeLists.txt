@@ -40,6 +40,7 @@ list(APPEND boomerang-passes-sources
     passes/late/UnusedStatementRemovalPass
     passes/late/UnusedLocalRemovalPass
     passes/late/ImplicitPlacementPass
+    passes/late/LocalAndParamMapPass
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)
