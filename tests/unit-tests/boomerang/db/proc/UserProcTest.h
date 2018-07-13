@@ -13,7 +13,7 @@
 #include "TestUtils.h"
 
 
-class UserProcTest : public BoomerangTest
+class UserProcTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
@@ -26,4 +26,7 @@ private slots:
     void testInsertParameter();
     void testParamType();
     void testLookupParam();
+    void testFilterParams();
+
+    void testFilterReturns();
 };

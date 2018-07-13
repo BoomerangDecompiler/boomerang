@@ -10,14 +10,20 @@
 #include "UserProcTest.h"
 
 
+#define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))
+#define HELLO_PENTIUM   SAMPLE("pentium/hello")
+
+
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/Assign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 
@@ -173,6 +179,51 @@ void UserProcTest::testLookupParam()
     QCOMPARE(proc.lookupParam(Location::regOf(REG_PENT_ECX)), QString(""));
 }
 
+
+void UserProcTest::testFilterParams()
+{
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    Prog *prog = m_project.getProg();
+
+    UserProc *mainProc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x08048328)));
+    QVERIFY(mainProc != nullptr && !mainProc->isLib());
+
+    QVERIFY(mainProc->filterParams(Terminal::get(opPC)));
+    QVERIFY(mainProc->filterParams(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
+    QVERIFY(mainProc->filterParams(Location::regOf(REG_PENT_ESP)));
+    QVERIFY(!mainProc->filterParams(Location::regOf(REG_PENT_EDX)));
+    QVERIFY(mainProc->filterParams(Location::memOf(Const::get(0x08048328))));
+    QVERIFY(mainProc->filterParams(Location::memOf(RefExp::get(Location::regOf(REG_PENT_ESP), nullptr))));
+    QVERIFY(!mainProc->filterParams(Location::memOf(Binary::get(opPlus,
+                                                                Location::regOf(REG_PENT_ESP),
+                                                                Const::get(4)))));
+    QVERIFY(mainProc->filterParams(Location::global("test", mainProc)));
+    QVERIFY(!mainProc->filterParams(Const::get(5)));
+}
+
+
+void UserProcTest::testFilterReturns()
+{
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+    QVERIFY(m_project.decodeBinaryFile());
+    QVERIFY(m_project.decompileBinaryFile());
+
+    Prog *prog = m_project.getProg();
+
+    UserProc *mainProc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x08048328)));
+    QVERIFY(mainProc != nullptr && !mainProc->isLib());
+
+    // test cached preservation TODO
+    QVERIFY(mainProc->getRetStmt());
+    QVERIFY(mainProc->prove(Binary::get(opEquals, Location::regOf(REG_PENT_EBP), Location::regOf(REG_PENT_EBP))));
+    QVERIFY(mainProc->filterReturns(Location::regOf(REG_PENT_EBP)));
+
+    QVERIFY(mainProc->filterReturns(Terminal::get(opPC)));
+    QVERIFY(mainProc->filterReturns(Location::get(opTemp, Terminal::get(opTrue), mainProc)));
+    QVERIFY(!mainProc->filterReturns(Location::regOf(REG_PENT_ESP)));
+    QVERIFY(!mainProc->filterReturns(Location::regOf(REG_PENT_EDX)));
+    QVERIFY(mainProc->filterReturns(Location::memOf(Const::get(0x08048328))));
+}
 
 
 QTEST_GUILESS_MAIN(UserProcTest)

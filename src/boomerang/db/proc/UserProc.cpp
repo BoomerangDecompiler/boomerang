@@ -432,8 +432,8 @@ bool UserProc::filterParams(SharedExp e)
 Address UserProc::getRetAddr()
 {
     return m_retStatement != nullptr
-    ? m_retStatement->getRetAddr()
-    : Address::INVALID;
+        ? m_retStatement->getRetAddr()
+        : Address::INVALID;
 }
 
 
@@ -470,9 +470,9 @@ bool UserProc::filterReturns(SharedExp e)
             return true;
 
         case opMemOf:
-            // return signature->isStackLocal(prog, e);        // Filter out local variables
-            // Actually, surely all sensible architectures will only every return in registers. So for now, just
-            // filter out all mem-ofs
+            // Actually, surely all sensible architectures will only every return
+            // in registers. So for now, just filter out all mem-ofs
+            // return signature->isStackLocal(prog, e); // Filter out local variables
             return true;
 
         case opGlobal:
