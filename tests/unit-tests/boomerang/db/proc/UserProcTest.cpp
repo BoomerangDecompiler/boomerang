@@ -202,6 +202,19 @@ void UserProcTest::testFilterParams()
 }
 
 
+void UserProcTest::testRetStmt()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    QCOMPARE(proc.getRetAddr(), Address::INVALID);
+
+    ReturnStatement retStmt;
+    proc.setRetStmt(&retStmt, Address(0x2000));
+    QVERIFY(proc.getRetStmt() == &retStmt);
+    QCOMPARE(proc.getRetAddr(), Address(0x2000));
+}
+
+
 void UserProcTest::testFilterReturns()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));

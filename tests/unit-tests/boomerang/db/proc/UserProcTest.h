@@ -28,5 +28,6 @@ private slots:
     void testLookupParam();
     void testFilterParams();
 
+    void testRetStmt();
     void testFilterReturns();
 };
