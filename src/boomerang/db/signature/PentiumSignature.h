@@ -40,7 +40,7 @@ public:
 
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
 
-    virtual int getStackRegister() const override { return 28; }
+    virtual int getStackRegister() const override;
     virtual SharedExp getProven(SharedExp left) const override;
     virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
 

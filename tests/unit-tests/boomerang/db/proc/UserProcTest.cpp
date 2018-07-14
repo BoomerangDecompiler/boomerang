@@ -21,7 +21,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/type/type/IntegerType.h"
@@ -308,6 +308,44 @@ void UserProcTest::testEnsureExpIsMappedToLocal()
     QVERIFY(ias2 != nullptr);
     proc.ensureExpIsMappedToLocal(RefExp::get(memOf->clone(), ias2));
     QCOMPARE(proc.findLocal(memOf->clone(), VoidType::get()), QString("local0"));
+}
+
+
+void UserProcTest::testGetSymbolExp()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    proc.setSignature(std::make_shared<CallingConvention::StdC::PentiumSignature>("test"));
+
+    SharedExp local0 = proc.getSymbolExp(Location::regOf(REG_PENT_EAX), VoidType::get());
+    QVERIFY(local0 != nullptr);
+    QCOMPARE(local0->toString(), Location::local("local0", &proc)->toString());
+    QCOMPARE(proc.getLocalType("local0")->toString(), VoidType::get()->toString());
+
+    SharedExp local0_2 = proc.getSymbolExp(Location::regOf(REG_PENT_EAX), VoidType::get());
+    QVERIFY(local0_2 != nullptr);
+    QCOMPARE(local0_2->toString(), local0->toString());
+
+    SharedExp spMinus4 = Location::memOf(
+        Binary::get(opMinus,
+                    RefExp::get(Location::regOf(REG_PENT_ESP), nullptr),
+                    Const::get(4)));
+
+    SharedExp spMinus7 = Location::memOf(
+        Binary::get(opMinus,
+                    RefExp::get(Location::regOf(REG_PENT_ESP), nullptr),
+                    Const::get(7)));
+
+    SharedExp local1 = proc.getSymbolExp(spMinus4, VoidType::get(), true);
+    QVERIFY(local1 != nullptr);
+    QCOMPARE(local1->toString(), QString("local1"));
+    QCOMPARE(proc.getLocalType("local1")->toString(), IntegerType::get(STD_SIZE)->toString());
+
+
+
+    SharedExp local2 = proc.getSymbolExp(spMinus7, IntegerType::get(8), true);
+    QVERIFY(local2 != nullptr);
+    QCOMPARE(local2->toString(), Location::memOf(Binary::get(opPlus,
+        Unary::get(opAddrOf, Location::local("local1", &proc)), Const::get(3)))->toString());
 }
 
 

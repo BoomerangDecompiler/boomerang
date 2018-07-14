@@ -110,6 +110,12 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
 }
 
 
+int PentiumSignature::getStackRegister() const
+{
+    return REG_PENT_ESP;
+}
+
+
 void PentiumSignature::addReturn(SharedType type, SharedExp e)
 {
     if (type->isVoid()) {

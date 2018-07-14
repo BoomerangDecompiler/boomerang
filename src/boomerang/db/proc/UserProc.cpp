@@ -548,10 +548,14 @@ void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& ref)
 
 SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
 {
+    assert(ty != nullptr);
+
     SharedExp e = nullptr;
 
     // check for references to the middle of a local
-    if (le->isMemOf() && (le->getSubExp1()->getOper() == opMinus) && le->getSubExp1()->getSubExp1()->isSubscript() &&
+    if (le->isMemOf() &&
+        le->getSubExp1()->getOper() == opMinus &&
+        le->getSubExp1()->getSubExp1()->isSubscript() &&
         le->getSubExp1()->getSubExp1()->getSubExp1()->isRegN(m_signature->getStackRegister()) &&
         le->getSubExp1()->getSubExp2()->isIntConst()) {
             for (auto& elem : m_symbolMap) {
@@ -559,7 +563,7 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
                     continue;
                 }
 
-                QString name = (elem).second->access<Const, 1>()->getStr();
+                QString name = elem.second->access<Const, 1>()->getStr();
 
                 if (m_locals.find(name) == m_locals.end()) {
                     continue;
@@ -568,15 +572,16 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
                 SharedType     lty = m_locals[name];
                 SharedConstExp loc = elem.first;
 
-                if (loc->isMemOf() && (loc->getSubExp1()->getOper() == opMinus) &&
+                if (loc->isMemOf() &&
+                    loc->getSubExp1()->getOper() == opMinus &&
                     loc->access<Exp, 1, 1>()->isSubscript() &&
                     loc->access<Exp, 1, 1, 1>()->isRegN(m_signature->getStackRegister()) &&
                     loc->access<Exp, 1, 2>()->isIntConst()) {
-                        int n = -loc->access<Const, 1, 2>()->getInt();
-                        int m = -le->access<Const, 1, 2>()->getInt();
+                        const int byteOffset = le->access<Const, 1, 2>()->getInt() -
+                                               loc->access<Const, 1, 2>()->getInt();
 
-                        if ((m > n) && (m < n + static_cast<int>(lty->getSize() / 8))) {
-                            e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(m - n)));
+                        if (Util::inRange(byteOffset, 1, static_cast<int>(lty->getSize() / 8))) {
+                            e = Location::memOf(Binary::get(opPlus, Unary::get(opAddrOf, elem.second->clone()), Const::get(byteOffset)));
                             LOG_VERBOSE("Seems %1 is in the middle of %2 returning %3", le, loc, e);
                             return e;
                         }
@@ -588,28 +593,21 @@ SharedExp UserProc::getSymbolExp(SharedExp le, SharedType ty, bool lastPass)
         return getSymbolFor(le, ty);
     }
 
-    if (ty == nullptr) {
-        if (lastPass) {
-            ty = IntegerType::get(STD_SIZE);
-        }
-        else {
-            ty = VoidType::get(); // HACK MVE
-        }
+    if (*ty == *VoidType::get() && lastPass) {
+        ty = IntegerType::get(STD_SIZE);
     }
 
-    // the default of just assigning an int type is bad..  if the locals is not an int then assigning it this
+    // the default of just assigning an int type is bad..
+    // if the locals is not an int then assigning it this
     // type early results in aliases to this local not being recognised
-    if (ty) {
-        //            Exp* base = le;
-        //            if (le->isSubscript())
-        //                base = ((RefExp*)le)->getSubExp1();
-        // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
-        e = createLocal(ty->clone(), le);
-        mapSymbolTo(le->clone(), e);
-        e = e->clone();
-    }
 
-    return e;
+    //            Exp* base = le;
+    //            if (le->isSubscript())
+    //                base = ((RefExp*)le)->getSubExp1();
+    // NOTE: using base below instead of le does not enhance anything, but causes us to lose def information
+    e = createLocal(ty->clone(), le);
+    mapSymbolTo(le->clone(), e);
+    return e->clone();
 }
 
 
@@ -1774,6 +1772,8 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
 
 SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstType& ty) const
 {
+    assert(ty != nullptr);
+
     SymbolMap::const_iterator ff = m_symbolMap.find(from);
 
     while (ff != m_symbolMap.end() && *ff->first == *from) {
