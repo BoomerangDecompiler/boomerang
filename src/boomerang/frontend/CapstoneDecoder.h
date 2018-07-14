@@ -56,4 +56,5 @@ private:
     cs::csh m_handle;
     Prog *m_prog;
     RTLInstDict m_dict;
+    bool m_debugMode;
 };

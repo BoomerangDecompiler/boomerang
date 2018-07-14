@@ -16,8 +16,10 @@
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
 
@@ -121,6 +123,7 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
 
 CapstoneDecoder::CapstoneDecoder(Prog *prog)
     : m_prog(prog)
+    , m_debugMode(prog->getProject()->getSettings()->debugDecoder)
 {
     cs::cs_open(cs::CS_ARCH_X86, cs::CS_MODE_32, &m_handle);
     cs::cs_option(m_handle, cs::CS_OPT_DETAIL, cs::CS_OPT_ON);
@@ -304,12 +307,24 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
         assert(last->getLeft()->isPC());
         SharedExp guard = last->getGuard();
 
+        const bool isComputedJump = !last->getRight()->isConst();
+
         if (guard == nullptr) {
-            // unconditional jump
-            GotoStatement *gs = new GotoStatement;
-            gs->setDest(last->getRight());
-            rtl->pop_back();
-            rtl->append(gs);
+            if (isComputedJump) {
+                // unconditional computed jump (switch statement)
+                CaseStatement *cs = new CaseStatement();
+                cs->setDest(last->getRight());
+                cs->setIsComputed(true);
+                rtl->pop_back();
+                rtl->append(cs);
+            }
+            else {
+                // unconditional jump
+                GotoStatement *gs = new GotoStatement;
+                gs->setDest(last->getRight());
+                rtl->pop_back();
+                rtl->append(gs);
+            }
         }
         else {
             // conditional jump
@@ -338,13 +353,50 @@ std::unique_ptr<RTL> CapstoneDecoder::getRTL(Address pc, const cs::cs_insn *inst
             case cs::X86_INS_JNP: bt = BranchType::JNPAR; break;
             default: assert(false); break;
             }
+
             branch->setCondType(bt, false);
+            branch->setIsComputed(isComputedJump);
 
             rtl->pop_back();
             rtl->append(branch);
         }
     }
+    else if (insnID.startsWith("SET")) {
+        BoolAssign *bas = new BoolAssign(8);
+        bas->setCondExpr(static_cast<Assign *>(rtl->front())->getRight()->clone());
+        bas->setLeft(static_cast<Assign *>(rtl->front())->getLeft()->clone());
 
+        BranchType bt = BranchType::INVALID;
+        switch (instruction->id) {
+        case cs::X86_INS_SETE: bt = BranchType::JE; break;
+        case cs::X86_INS_SETNE: bt = BranchType::JNE; break;
+        case cs::X86_INS_SETL: bt = BranchType::JSL; break; // signed less
+        case cs::X86_INS_SETLE: bt = BranchType::JSLE; break;
+        case cs::X86_INS_SETGE: bt = BranchType::JSGE; break;
+        case cs::X86_INS_SETG: bt = BranchType::JSG; break;
+        case cs::X86_INS_SETB: bt = BranchType::JUL; break; // unsigned less
+        case cs::X86_INS_SETBE: bt = BranchType::JULE; break;
+        case cs::X86_INS_SETAE: bt = BranchType::JUGE; break;
+        case cs::X86_INS_SETA: bt = BranchType::JUG; break;
+        case cs::X86_INS_SETS: bt = BranchType::JMI; break;
+        case cs::X86_INS_SETNS: bt = BranchType::JPOS; break;
+        case cs::X86_INS_SETO: bt = BranchType::JOF; break;
+        case cs::X86_INS_SETNO: bt = BranchType::JNOF; break;
+        case cs::X86_INS_SETP: bt = BranchType::JPAR; break;
+        case cs::X86_INS_SETNP: bt = BranchType::JNPAR; break;
+        default: assert(false); break;
+        }
+
+        bas->setCondType(bt);
+        if (rtl->size() > 1) {
+            LOG_WARN(
+                "%1 additional statements in RTL for instruction '%2', results may be inaccurate",
+                rtl->size() - 1, insnID);
+        }
+
+        rtl->clear();
+        rtl->push_back(bas);
+    }
     return rtl;
 }
 
@@ -357,7 +409,7 @@ std::unique_ptr<RTL> CapstoneDecoder::instantiateRTL(Address pc, const char *ins
         actuals[i] = operandToExp(operands[i]);
     }
 
-    if (m_prog->getProject()->getSettings()->debugDecoder) {
+    if (m_debugMode) {
         QString args;
         for (int i = 0; i < numOperands; i++) {
             if (i != 0) {
