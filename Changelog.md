@@ -1,3 +1,13 @@
+0.5.0 (in development)
+----------------------
+- Fixed: Crash when decoding instructions with multiple instruction prefixes in some cases.
+- Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
+- Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
+- Technical: Replaced old pentium (x86) decoder by decoder using libcapstone for decoding instructions.
+- Technical: Improved compilation times and memory usage while compiling.
+- Technical: Improved unit test coverage.
+- Technical: Improved regression test coverage.
+
 v0.4.0-alpha (2018-11-11)
 -------------------------
 - Fixed: Crashes when decompiling SPARC binaries.
