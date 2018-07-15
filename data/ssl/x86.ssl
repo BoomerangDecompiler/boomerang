@@ -1021,11 +1021,10 @@ FADD.reg80 val
 
 
 # FADDP
-FADDP.reg80 sti
-    *f80* sti := sti +f %st
+FADDP.reg80 val
+    *f80* val := val +f %st
     FPOP
 ;
-
 
 FADDP
     *f80* %st1 := %st1 +f %st
