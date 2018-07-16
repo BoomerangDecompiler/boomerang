@@ -349,4 +349,62 @@ void UserProcTest::testGetSymbolExp()
 }
 
 
+void UserProcTest::testFindLocal()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString(""));
+    QCOMPARE(proc.findLocal(Location::local("testLocal", &proc), VoidType::get()), QString("testLocal"));
+
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::local("foo", &proc));
+    proc.createLocal(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX), "foo");
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), VoidType::get()), QString("foo"));
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EAX), IntegerType::get(32, Sign::Signed)), QString("foo"));
+
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EDX), Location::param("bar", &proc));
+    QCOMPARE(proc.findLocal(Location::regOf(REG_PENT_EDX), VoidType::get()), QString(""));
+}
+
+
+void UserProcTest::testLocalType()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+
+    QVERIFY(proc.getLocalType("") == nullptr);
+    QVERIFY(proc.getLocalType("nonexistent") == nullptr);
+
+    proc.createLocal(IntegerType::get(32, Sign::Signed), Location::regOf(REG_PENT_EAX), "retVal");
+    SharedConstType localType = proc.getLocalType("retVal");
+    QVERIFY(localType != nullptr);
+    QCOMPARE(localType->toString(), IntegerType::get(32, Sign::Signed)->toString());
+
+    // set type
+    proc.setLocalType("invalid", IntegerType::get(32, Sign::Unsigned));
+    QVERIFY(proc.getLocals().size() == 1);
+
+    proc.setLocalType("retVal", IntegerType::get(16, Sign::Unsigned));
+    QCOMPARE(proc.getLocalType("retVal")->toString(), IntegerType::get(16, Sign::Unsigned)->toString());
+}
+
+
+void UserProcTest::testIsLocalOrParamPattern()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    SharedConstExp spPlus4 = Location::memOf(Binary::get(opPlus, RefExp::get(Location::regOf(REG_PENT_ESP), nullptr), Const::get(4)));
+
+    QVERIFY(!proc.isLocalOrParamPattern(Location::regOf(REG_PENT_EAX)));
+    QVERIFY(!proc.isLocalOrParamPattern(spPlus4)); // signature is not promoted
+
+    proc.setSignature(std::make_shared<CallingConvention::StdC::PentiumSignature>("test"));
+    QVERIFY(proc.isLocalOrParamPattern(spPlus4));
+
+    SharedConstExp spTimes4 = Location::memOf(Binary::get(opMults, RefExp::get(Location::regOf(REG_PENT_EAX), nullptr), Const::get(4)));
+    QVERIFY(!proc.isLocalOrParamPattern(spTimes4));
+
+    SharedConstExp mofSP = Location::memOf(RefExp::get(Location::regOf(REG_PENT_ESP), nullptr)); // m[sp{-}]
+    QVERIFY(proc.isLocalOrParamPattern(mofSP));
+}
+
+
 QTEST_GUILESS_MAIN(UserProcTest)

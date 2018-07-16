@@ -231,8 +231,10 @@ public:
     SharedConstType getLocalType(const QString& name) const;
     void setLocalType(const QString& name, SharedType ty);
 
-    /// Is this m[sp{-} +/- K]?
-    /// \returns true if \p e could represent a stack local or stack param
+    /// Checks wheether \p e could represent a stack local or stack param,
+    /// i.e. whether \p e is of the form m[sp{-} +/- K]
+    /// It does not check whether \p e acually is or is mapped to a local variable.
+    /// \returns true if the pattern matches.
     bool isLocalOrParamPattern(SharedConstExp e) const;
 
 public:

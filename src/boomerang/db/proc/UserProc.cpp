@@ -642,9 +642,11 @@ SharedConstType UserProc::getLocalType(const QString& name) const
 
 void UserProc::setLocalType(const QString& name, SharedType ty)
 {
-    m_locals[name] = ty;
-
-    LOG_VERBOSE("Updating type of '%1' to %2", name, ty->getCtype());
+    const auto it = m_locals.find(name);
+    if (it != m_locals.end()) {
+        it->second = ty;
+        LOG_VERBOSE("Updating type of '%1' to %2", name, ty->getCtype());
+    }
 }
 
 
@@ -653,38 +655,22 @@ bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
     if (!e->isMemOf()) {
         return false; // Don't want say a register
     }
-
-    SharedConstExp addr = e->getSubExp1();
-
-    if (!m_signature->isPromoted()) {
+    else if (!m_signature || !m_signature->isPromoted()) {
         return false; // Prevent an assert failure if using -E
     }
 
     const int sp = m_signature->getStackRegister();
     const auto initSp(RefExp::get(Location::regOf(sp), nullptr)); // sp{-}
 
-    if (*addr == *initSp) {
+    SharedConstExp addrExp = e->getSubExp1();
+    if (*addrExp == *initSp) {
         return true; // Accept m[sp{-}]
     }
-
-    if (addr->getArity() != 2) {
-        return false; // Require sp +/- K
-    }
-
-    OPER op = addr->getOper();
-
-    if ((op != opPlus) && (op != opMinus)) {
+    else if (addrExp->getOper() != opPlus && addrExp->getOper() != opMinus) {
         return false;
     }
 
-    SharedConstExp left = addr->getSubExp1();
-
-    if (!(*left == *initSp)) {
-        return false;
-    }
-
-    SharedConstExp right = addr->getSubExp2();
-    return right->isIntConst();
+    return (*addrExp->getSubExp1() == *initSp) && addrExp->getSubExp2()->isIntConst();
 }
 
 

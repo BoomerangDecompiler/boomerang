@@ -35,4 +35,7 @@ private slots:
     void testAddLocal();
     void testEnsureExpIsMappedToLocal();
     void testGetSymbolExp();
+    void testFindLocal();
+    void testLocalType();
+    void testIsLocalOrParamPattern();
 };
