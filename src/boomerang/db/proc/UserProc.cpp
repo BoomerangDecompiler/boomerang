@@ -778,6 +778,8 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) 
 
 void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 {
+    assert(cs);
+
     BasicBlock::RTLRIterator        rrit;
     StatementList::reverse_iterator srit;
 
@@ -860,7 +862,7 @@ void UserProc::finalSimplify()
 }
 
 
-void UserProc::remUnusedStmtEtc()
+void UserProc::lateDecompile()
 {
     m_prog->getProject()->alertDecompiling(this);
     m_prog->getProject()->alertDecompileDebugPoint(this, "Before Final");

@@ -66,7 +66,7 @@ private:
      *
      * \returns true if any change
      */
-    bool removeRedundantReturns(UserProc *proc);
+    bool removeUnusedParamsAndReturns(UserProc *proc);
 
     /**
      * Update parameters and call livenesses to take into account the changes
@@ -82,20 +82,6 @@ private:
      * \sa removeRedundantReturns().
      */
     void updateForUseChange(UserProc *proc);
-
-    /// Remove redundant parameters. Return true if remove any
-    bool removeRedundantParameters(UserProc *proc);
-
-    /**
-     * Check for a gainful use of bparam{0} in this proc.
-     * Return with true when the first such use is found.
-     * Ignore uses in return statements of recursive functions,
-     * and phi statements that define them.
-     * Procs in \p visited are already visited.
-     *
-     * \returns true if location \p e is used gainfully in this procedure.
-     */
-    bool checkForGainfulUse(UserProc *proc, SharedExp e, ProcSet& Visited);
 
 private:
     Prog *m_prog;

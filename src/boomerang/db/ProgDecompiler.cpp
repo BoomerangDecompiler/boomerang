@@ -67,7 +67,7 @@ void ProgDecompiler::decompile()
 
     if (m_prog->getProject()->getSettings()->removeReturns) {
         // Repeat until no change. Not 100% sure if needed.
-        while (removeUnusedReturns()) {
+        while (removeUnusedParamsAndReturns()) {
         }
     }
 
@@ -173,7 +173,7 @@ void ProgDecompiler::removeUnusedGlobals()
 }
 
 
-bool ProgDecompiler::removeUnusedReturns()
+bool ProgDecompiler::removeUnusedParamsAndReturns()
 {
     LOG_MSG("Removing unused returns...");
     return UnusedReturnRemover(m_prog).removeUnusedReturns();

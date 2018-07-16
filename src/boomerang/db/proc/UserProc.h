@@ -289,7 +289,7 @@ public:
     void finalSimplify();
 
     /// Remove unused statements.
-    void remUnusedStmtEtc();
+    void lateDecompile();
 
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();

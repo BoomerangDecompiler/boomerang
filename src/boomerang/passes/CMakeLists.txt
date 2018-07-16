@@ -39,6 +39,7 @@ list(APPEND boomerang-passes-sources
     passes/late/FinalParameterSearchPass
     passes/late/UnusedStatementRemovalPass
     passes/late/UnusedLocalRemovalPass
+    passes/late/UnusedParamRemovalPass
     passes/late/ImplicitPlacementPass
     passes/late/LocalAndParamMapPass
 )

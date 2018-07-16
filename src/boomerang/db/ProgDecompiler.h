@@ -30,7 +30,9 @@ private:
     /// As the name suggests, removes globals unused in the decompiled code.
     void removeUnusedGlobals();
 
-    bool removeUnusedReturns();
+    /// Remove unused or redundant parameters and return values from the program.
+    /// \returns true if any change
+    bool removeUnusedParamsAndReturns();
 
     /// Have to transform out of SSA form after the above final pass
     /// Convert from SSA form

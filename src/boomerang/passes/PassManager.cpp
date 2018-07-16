@@ -36,6 +36,7 @@
 #include "boomerang/passes/late/FinalParameterSearchPass.h"
 #include "boomerang/passes/late/UnusedStatementRemovalPass.h"
 #include "boomerang/passes/late/UnusedLocalRemovalPass.h"
+#include "boomerang/passes/late/UnusedParamRemovalPass.h"
 #include "boomerang/passes/late/ImplicitPlacementPass.h"
 #include "boomerang/passes/late/LocalAndParamMapPass.h"
 
@@ -75,6 +76,7 @@ PassManager::PassManager()
     registerPass(PassID::UnusedStatementRemoval,    Util::makeUnique<UnusedStatementRemovalPass>());
     registerPass(PassID::ParameterSymbolMap,        Util::makeUnique<ParameterSymbolMapPass>());
     registerPass(PassID::UnusedLocalRemoval,        Util::makeUnique<UnusedLocalRemovalPass>());
+    registerPass(PassID::UnusedParamRemoval,        Util::makeUnique<UnusedParamRemovalPass>());
     registerPass(PassID::ImplicitPlacement,         Util::makeUnique<ImplicitPlacementPass>());
     registerPass(PassID::LocalAndParamMap,          Util::makeUnique<LocalAndParamMapPass>());
 

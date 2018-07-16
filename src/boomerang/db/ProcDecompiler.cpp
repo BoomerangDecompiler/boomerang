@@ -211,7 +211,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     if (proc->getStatus() != PROC_INCYCLE) {
-        proc->remUnusedStmtEtc(); // Do the whole works
+        proc->lateDecompile(); // Do the whole works
         proc->setStatus(PROC_FINAL);
         project->alertEndDecompile(proc);
     }
@@ -672,7 +672,7 @@ void ProcDecompiler::recursionGroupAnalysis(const std::shared_ptr<ProcSet>& grou
     // while no change
     for (int i = 0; i < 2; i++) {
         for (UserProc *proc : *group) {
-            proc->remUnusedStmtEtc(); // Also does final parameters and arguments at present
+            proc->lateDecompile(); // Also does final parameters and arguments at present
         }
     }
 
