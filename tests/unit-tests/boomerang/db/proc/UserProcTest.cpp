@@ -26,6 +26,7 @@
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
+#include "boomerang/type/type/FloatType.h"
 
 
 void UserProcTest::testRemoveStatement()
@@ -404,6 +405,118 @@ void UserProcTest::testIsLocalOrParamPattern()
 
     SharedConstExp mofSP = Location::memOf(RefExp::get(Location::regOf(REG_PENT_ESP), nullptr)); // m[sp{-}]
     QVERIFY(proc.isLocalOrParamPattern(mofSP));
+}
+
+
+void UserProcTest::testExpFromSymbol()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::local("foo", &proc));
+    SharedConstExp origExp = proc.expFromSymbol("foo");
+    QVERIFY(origExp != nullptr);
+    QCOMPARE(origExp->toString(), Location::regOf(REG_PENT_EAX)->toString());
+
+    // bar is not a local variable
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EDX), Location::param("bar", nullptr));
+    QVERIFY(proc.expFromSymbol("bar") == nullptr);
+
+    QVERIFY(proc.expFromSymbol("") == nullptr);
+    QVERIFY(proc.expFromSymbol("nonexistent") == nullptr);
+}
+
+
+void UserProcTest::testMapSymbolTo()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::local("foo", &proc));
+    QVERIFY(proc.getSymbolMap().size() == 1);
+    QVERIFY(proc.getSymbolMap().count(Location::regOf(REG_PENT_EAX)) == 1);
+
+    /// Mapping the same value twice should not change anything
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::local("foo", &proc));
+    QVERIFY(proc.getSymbolMap().size() == 1);
+    QVERIFY(proc.getSymbolMap().count(Location::regOf(REG_PENT_EAX)) == 1);
+
+    // conflicting expressions
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::param("bar", &proc));
+    QVERIFY(proc.getSymbolMap().size() == 2);
+    QVERIFY(proc.getSymbolMap().count(Location::regOf(REG_PENT_EAX)) == 2);
+
+    // more than 1 conflicting expression
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::param("bar2", &proc));
+    QVERIFY(proc.getSymbolMap().size() == 3);
+    QVERIFY(proc.getSymbolMap().count(Location::regOf(REG_PENT_EAX)) == 3);
+}
+
+
+void UserProcTest::testLookupSym()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    QCOMPARE(proc.lookupSym(Location::regOf(REG_PENT_EAX), IntegerType::get(32, Sign::Signed)), QString(""));
+
+    proc.addLocal(IntegerType::get(32, Sign::Signed), "foo", Location::regOf(REG_PENT_EAX));
+    QCOMPARE(proc.lookupSym(Location::regOf(REG_PENT_EAX), VoidType::get()), QString("foo"));
+    QCOMPARE(proc.lookupSym(Location::regOf(REG_PENT_EAX), FloatType::get(32)), QString(""));
+
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EDX), Location::param("param0", &proc));
+    QCOMPARE(proc.lookupSym(Location::regOf(REG_PENT_EDX), VoidType::get()), QString(""));
+
+    proc.addParameterToSignature(Location::regOf(REG_PENT_EDX), IntegerType::get(32, Sign::Signed));
+    QCOMPARE(proc.lookupSym(Location::regOf(REG_PENT_EDX), VoidType::get()), QString("param0"));
+    QCOMPARE(proc.lookupSym(Location::regOf(REG_PENT_EDX), FloatType::get(32)), QString(""));
+}
+
+
+void UserProcTest::testLookupSymFromRef()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    proc.setEntryBB();
+
+    Statement *ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    QVERIFY(ias1 != nullptr);
+
+    std::shared_ptr<RefExp> refEaxNull = RefExp::get(Location::regOf(REG_PENT_EAX), nullptr);
+    std::shared_ptr<RefExp> refEaxImp  = RefExp::get(Location::regOf(REG_PENT_EAX), ias1);
+
+    QCOMPARE(proc.lookupSymFromRef(refEaxNull), QString(""));
+    QCOMPARE(proc.lookupSymFromRef(refEaxImp),  QString("")); // since it's not mapped to a symbol
+
+    proc.addLocal(IntegerType::get(32, Sign::Signed), "foo", Location::regOf(REG_PENT_EAX));
+    QCOMPARE(proc.lookupSymFromRef(refEaxImp), QString(""));
+    proc.addLocal(IntegerType::get(32, Sign::Signed), "bar", refEaxImp);
+    QCOMPARE(proc.lookupSymFromRef(refEaxImp), QString("bar")); // not an exact ref match
+}
+
+
+void UserProcTest::testLookupSymFromRefAny()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    proc.setEntryBB();
+
+    Statement *ias1 = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    QVERIFY(ias1 != nullptr);
+
+    std::shared_ptr<RefExp> refEaxNull = RefExp::get(Location::regOf(REG_PENT_EAX), nullptr);
+    std::shared_ptr<RefExp> refEaxImp  = RefExp::get(Location::regOf(REG_PENT_EAX), ias1);
+
+    QCOMPARE(proc.lookupSymFromRefAny(refEaxNull), QString(""));
+    QCOMPARE(proc.lookupSymFromRefAny(refEaxImp),  QString("")); // since it's not mapped to a symbol
+
+    proc.addLocal(IntegerType::get(32, Sign::Signed), "foo", Location::regOf(REG_PENT_EAX));
+    QCOMPARE(proc.lookupSymFromRefAny(refEaxImp), QString("foo"));
+    proc.addLocal(IntegerType::get(32, Sign::Signed), "bar", refEaxImp);
+    QCOMPARE(proc.lookupSymFromRefAny(refEaxImp), QString("bar"));
 }
 
 

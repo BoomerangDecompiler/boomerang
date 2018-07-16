@@ -677,9 +677,8 @@ bool UserProc::isLocalOrParamPattern(SharedConstExp e) const
 SharedConstExp UserProc::expFromSymbol(const QString& name) const
 {
     for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
-        auto e = it.second;
-
-        if (e->isLocal() && (e->access<Const, 1>()->getStr() == name)) {
+        const SharedConstExp exp = it.second;
+        if (exp->isLocal() && (exp->access<Const, 1>()->getStr() == name)) {
             return it.first;
         }
     }
@@ -690,6 +689,8 @@ SharedConstExp UserProc::expFromSymbol(const QString& name) const
 
 void UserProc::mapSymbolTo(const SharedConstExp& from, SharedExp to)
 {
+    assert(from && to);
+
     SymbolMap::iterator it = m_symbolMap.find(from);
 
     while (it != m_symbolMap.end() && *it->first == *from) {

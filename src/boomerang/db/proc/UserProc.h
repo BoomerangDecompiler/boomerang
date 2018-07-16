@@ -233,7 +233,7 @@ public:
 
     /// Checks wheether \p e could represent a stack local or stack param,
     /// i.e. whether \p e is of the form m[sp{-} +/- K]
-    /// It does not check whether \p e acually is or is mapped to a local variable.
+    /// It does not check whether \p e actually is or is mapped to a local variable.
     /// \returns true if the pattern matches.
     bool isLocalOrParamPattern(SharedConstExp e) const;
 
@@ -242,11 +242,15 @@ public:
     SymbolMap& getSymbolMap() { return m_symbolMap; }
     const SymbolMap& getSymbolMap() const { return m_symbolMap; }
 
-    /// \returns a symbol's exp (note: the original exp, like r24, not local1)
+    /// \returns the original expression that maps to the local variable with name \p name
+    /// Example: If eax maps to the local variable foo, return eax
+    /// (not Location::local("foo", proc))
     SharedConstExp expFromSymbol(const QString& name) const;
 
     void mapSymbolTo(const SharedConstExp& from, SharedExp to);
 
+    /// \returns the name of a symbol (local variable or parameter)
+    /// of a used expression \p e with type \p ty.
     QString lookupSym(const SharedConstExp& e, SharedConstType ty) const;
 
     /// Lookup a specific symbol for the given ref

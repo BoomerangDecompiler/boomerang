@@ -38,4 +38,10 @@ private slots:
     void testFindLocal();
     void testLocalType();
     void testIsLocalOrParamPattern();
+
+    void testExpFromSymbol();
+    void testMapSymbolTo();
+    void testLookupSym();
+    void testLookupSymFromRef();
+    void testLookupSymFromRefAny();
 };
