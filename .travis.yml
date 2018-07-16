@@ -1,96 +1,24 @@
-language: cpp
 
 dist: trusty
-sudo: false
-cache: ccache
+sudo: required
+language: cpp
 
+cache: ccache
 addons:
   apt:
     update: false
 
+install:
+  - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-base:latest tail -f /dev/null
 
-matrix:
-  include:
-    # Clang 4, debug
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-4.0
-          packages:
-            - qt5-default
-            - clang-4.0
-      env:
-        - JOBNAME="Clang4 Debug"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang-4.0 -DCMAKE_CXX_COMPILER=clang++-4.0 -DBOOMERANG_BUILD_UNIT_TESTS=ON"
+script:
+  - docker exec -t build-env bash -c "cd boomerang &&
+    mkdir build &&
+    cd build &&
+    cmake -DBOOMERANG_BUILD_UNIT_TESTS=ON .. &&
+    make -j$(nproc) &&
+    make test"
 
-
-    # Clang 5, release
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-5.0
-          packages:
-            - qt5-default
-            - clang-5.0
-      env:
-        - JOBNAME="Clang5 Release"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang-5.0 -DCMAKE_CXX_COMPILER=clang++-5.0 -DBOOMERANG_BUILD_UNIT_TESTS=ON"
-
-
-    # GCC 6, debug with code coverage
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - qt5-default
-            - g++-6
-            - lcov
-      env:
-        - JOBNAME="GCC6 Debug + CodeCov"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6 -DBOOMERANG_BUILD_UNIT_TESTS=ON -DBOOMERANG_ENABLE_COVERAGE=ON"
-      after_success:
-        # Create CodeCov report
-        - cd ${TRAVIS_BUILD_DIR}
-        - lcov --directory . --capture --output-file coverage.info
-        - lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info
-        - lcov --list coverage.info
-        - bash <(curl -s https://codecov.io/bash) -X gcov -F unittests || echo "Codecov did not collect coverage reports"
-
-
-    # GCC 7, release
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - qt5-default
-            - g++-7
-      env:
-        - JOBNAME="GCC7 Release"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc-7 -DCMAKE_CXX_COMPILER=g++-7 -DBOOMERANG_BUILD_UNIT_TESTS=ON"
-
-
-    # GCC 8, RelWithDebInfo, regression tests
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - qt5-default
-            - g++-8
-      env:
-        - JOBNAME="GCC8 RelWithDebInfo Regression"
-        - BOOMERANG_CMAKE_OPTS="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8 -DBOOMERANG_BUILD_REGRESSION_TESTS=ON"
-      script:
-        cmake $BOOMERANG_CMAKE_OPTS .. && make -j2 check
-
-
-before_script: mkdir build && cd build
-script: cmake $BOOMERANG_CMAKE_OPTS .. && make -j2 && make test
+notifications:
+  email: false
 
