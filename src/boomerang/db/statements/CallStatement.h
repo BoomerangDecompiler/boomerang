@@ -242,13 +242,15 @@ private:
     /// locations.  Note that not necessarily all of the defines end up being declared as results.
     StatementList m_defines;
 
-    /// Destination of call. In the case of an analysed indirect call, this will be ONE target's return statement.
-    /// For an unanalysed indirect call, or a call whose callee is not yet sufficiently decompiled due to recursion,
+    /// Destination of call. In the case of an analysed indirect call,
+    /// this will be ONE target's return statement. For an unanalysed indirect call,
+    /// or a call whose callee is not yet sufficiently decompiled due to recursion,
     /// this will be nullptr
     Function *m_procDest = nullptr;
 
-    /// The signature for this call. NOTE: this used to be stored in the Proc, but this does not make sense when
-    /// the proc happens to have varargs
+    /// The signature for this call.
+    /// \note this used to be stored in the Proc, but this does not make sense
+    /// when the proc happens to have varargs
     std::shared_ptr<Signature> m_signature;
 
     /// A UseCollector object to collect the live variables at this call.

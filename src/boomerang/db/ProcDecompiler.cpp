@@ -543,7 +543,8 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
 
         // First copy any new indirect jumps or calls that were decoded this time around. Just copy them all, the map
         // will prevent duplicates
-        proc->processDecodedICTs();
+        saveDecodedICTs(proc);
+
         // Now, decode from scratch
         proc->removeRetStmt();
         proc->getCFG()->clear();
@@ -691,3 +692,28 @@ void ProcDecompiler::printCallStack()
     }
 }
 
+
+void ProcDecompiler::saveDecodedICTs(UserProc* proc)
+{
+    for (BasicBlock *bb : *proc->getCFG()) {
+        BasicBlock::RTLRIterator        rrit;
+        StatementList::reverse_iterator srit;
+        Statement *last = bb->getLastStmt(rrit, srit);
+
+        if (last == nullptr) {
+            continue; // e.g. a BB with just a NOP in it
+        }
+
+        if (!last->isHL_ICT()) {
+            continue;
+        }
+
+        RTL *rtl = bb->getLastRTL();
+
+        if (proc->getProg()->getProject()->getSettings()->debugSwitch) {
+            LOG_MSG("Saving high level switch statement:\n%1", rtl);
+        }
+
+        proc->getProg()->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
+    }
+}

@@ -49,6 +49,8 @@ private:
 
     void printCallStack();
 
+    void saveDecodedICTs(UserProc *proc);
+
 private:
     ProcList m_callStack;
 

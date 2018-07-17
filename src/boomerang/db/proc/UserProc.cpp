@@ -1206,35 +1206,6 @@ bool UserProc::allPhisHaveDefs() const
 }
 
 
-void UserProc::processDecodedICTs()
-{
-    for (BasicBlock *bb : *m_cfg) {
-        BasicBlock::RTLRIterator        rrit;
-        StatementList::reverse_iterator srit;
-        Statement *last = bb->getLastStmt(rrit, srit);
-
-        if (last == nullptr) {
-            continue; // e.g. a BB with just a NOP in it
-        }
-
-        if (!last->isHL_ICT()) {
-            continue;
-        }
-
-        RTL *rtl = bb->getLastRTL();
-
-        if (m_prog->getProject()->getSettings()->debugSwitch) {
-            LOG_MSG("Saving high level switch statement:\n%1", rtl);
-        }
-
-        m_prog->getFrontEnd()->saveDecodedRTL(bb->getHiAddr(), rtl);
-        // Now decode those new targets, adding out edges as well
-        //        if (last->isCase())
-        //            bb->processSwitch(this);
-    }
-}
-
-
 QString UserProc::toString() const
 {
     QString     tgt;
