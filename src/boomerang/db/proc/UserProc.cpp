@@ -800,13 +800,12 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 
 void UserProc::addCallee(Function *callee)
 {
-    // is it already in? (this is much slower than using a set)
-    if (std::find(m_calleeList.begin(), m_calleeList.end(), callee) != m_calleeList.end()) {
-        // already present
-        return;
-    }
+    assert(callee != nullptr);
 
-    m_calleeList.push_back(callee);
+    // is it already in? (this is much slower than using a set)
+    if (std::find(m_calleeList.begin(), m_calleeList.end(), callee) == m_calleeList.end()) {
+        m_calleeList.push_back(callee);
+    }
 }
 
 
