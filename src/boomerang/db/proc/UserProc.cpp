@@ -109,7 +109,9 @@ void UserProc::setStatus(ProcStatus s)
 {
     if (m_status != s) {
         m_status = s;
-        m_prog->getProject()->alertProcStatusChanged(this);
+        if (m_prog) {
+            m_prog->getProject()->alertProcStatusChanged(this);
+        }
     }
 }
 

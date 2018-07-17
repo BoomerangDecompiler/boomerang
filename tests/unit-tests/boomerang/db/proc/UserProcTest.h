@@ -18,6 +18,7 @@ class UserProcTest : public BoomerangTestWithPlugins
     Q_OBJECT
 
 private slots:
+    void testIsNoReturn();
     void testRemoveStatement();
     void testInsertAssignAfter();
     void testInsertStatementAfter();

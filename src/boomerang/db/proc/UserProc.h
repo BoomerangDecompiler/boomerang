@@ -75,16 +75,16 @@ public:
 
 public:
     /// \copydoc Function::isNoReturn
-    virtual bool isNoReturn() const override;
+    bool isNoReturn() const override;
 
     /// \copydoc Function::getProven
-    virtual SharedExp getProven(SharedExp left) override;
+    SharedExp getProven(SharedExp left) override;
 
     /// \copydoc Function::getPremised
-    virtual SharedExp getPremised(SharedExp left) override;
+    SharedExp getPremised(SharedExp left) override;
 
     /// \copydoc Function::isPreserved
-    virtual bool isPreserved(SharedExp e) override;
+    bool isPreserved(SharedExp e) override;
 
 public:
     /// \returns a pointer to the CFG object.

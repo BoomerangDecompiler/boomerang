@@ -30,6 +30,39 @@
 #include "boomerang/type/type/FloatType.h"
 
 
+void UserProcTest::testIsNoReturn()
+{
+    UserProc testProc(Address(0x1000), "test", nullptr);
+    QCOMPARE(testProc.isNoReturn(), false);
+
+    testProc.setStatus(PROC_DECODED);
+    QCOMPARE(testProc.isNoReturn(), true);
+
+    ReturnStatement *retStmt = new ReturnStatement();
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { retStmt })));
+    BasicBlock *retBB = testProc.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
+    testProc.setEntryBB();
+    QCOMPARE(testProc.isNoReturn(), false);
+
+    UserProc noReturnProc(Address(0x2000), "noReturn", nullptr);
+    noReturnProc.setStatus(PROC_DECODED);
+
+    CallStatement *call = new CallStatement();
+    call->setDestProc(&noReturnProc);
+
+    bbRTLs.reset(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x0800), { call })));
+    BasicBlock *callBB = testProc.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
+
+    testProc.getCFG()->addEdge(callBB, retBB);
+    testProc.setEntryAddress(Address(0x0800));
+    testProc.setEntryBB();
+
+    QCOMPARE(testProc.isNoReturn(), true);
+}
+
+
 void UserProcTest::testRemoveStatement()
 {
     UserProc proc(Address::INVALID, "test", nullptr);
