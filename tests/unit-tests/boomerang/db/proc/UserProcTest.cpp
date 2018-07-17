@@ -24,6 +24,7 @@
 #include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/ReturnStatement.h"
+#include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/FloatType.h"
@@ -517,6 +518,73 @@ void UserProcTest::testLookupSymFromRefAny()
     QCOMPARE(proc.lookupSymFromRefAny(refEaxImp), QString("foo"));
     proc.addLocal(IntegerType::get(32, Sign::Signed), "bar", refEaxImp);
     QCOMPARE(proc.lookupSymFromRefAny(refEaxImp), QString("bar"));
+}
+
+
+void UserProcTest::testMarkAsNonChildless()
+{
+    // call graph:
+    // proc1 <--> proc2 --> proc3
+
+    UserProc proc1(Address(0x1000), "test1", nullptr);
+    UserProc proc2(Address(0x2000), "test2", nullptr);
+    UserProc proc3(Address(0x3000), "test3", nullptr);
+
+    CallStatement *call1 = new CallStatement();
+    call1->setDestProc(&proc2);
+
+    CallStatement *call2 = new CallStatement();
+    call2->setDestProc(&proc1);
+
+    CallStatement *call3 = new CallStatement();
+    call3->setDestProc(&proc3);
+
+    ReturnStatement *ret1 = new ReturnStatement();
+    ReturnStatement *ret2 = new ReturnStatement();
+    ReturnStatement *ret3 = new ReturnStatement();
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { call1 })));
+    proc1.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
+    bbRTLs.reset(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1800), { ret1 })));
+    proc1.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
+    proc1.setEntryBB();
+
+    bbRTLs.reset(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2000), { call3 })));
+    proc2.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
+    bbRTLs.reset(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2400), { call2 })));
+    proc2.getCFG()->createBB(BBType::Call, std::move(bbRTLs));
+    bbRTLs.reset(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x2800), { ret2 })));
+    proc2.getCFG()->createBB(BBType::Ret, std::move(bbRTLs));
+    proc2.setEntryBB();
+
+    bbRTLs.reset(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x3000), { ret3 })));
+    proc3.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    proc3.setEntryBB();
+
+    proc1.setRetStmt(ret1, Address(0x1800));
+    proc2.setRetStmt(ret2, Address(0x2800));
+    proc3.setRetStmt(ret3, Address(0x3000));
+
+    std::shared_ptr<ProcSet> recursionGroup(new ProcSet);
+    proc1.addCallee(&proc2);
+    proc2.addCallee(&proc1);
+    proc2.addCallee(&proc3);
+    recursionGroup->insert(&proc1);
+    recursionGroup->insert(&proc2);
+    proc1.setRecursionGroup(recursionGroup);
+    proc2.setRecursionGroup(recursionGroup);
+
+    proc1.markAsNonChildless(recursionGroup);
+    QVERIFY(call1->getCalleeReturn() == ret2);
+
+    proc2.markAsNonChildless(recursionGroup);
+    QVERIFY(call2->getCalleeReturn() == ret1); // and not ret3
 }
 
 

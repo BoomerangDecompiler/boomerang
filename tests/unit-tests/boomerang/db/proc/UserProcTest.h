@@ -44,4 +44,6 @@ private slots:
     void testLookupSym();
     void testLookupSymFromRef();
     void testLookupSymFromRefAny();
+
+    void testMarkAsNonChildless();
 };
