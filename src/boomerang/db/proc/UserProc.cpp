@@ -811,58 +811,6 @@ void UserProc::addCallee(Function *callee)
 }
 
 
-void UserProc::propagateToCollector()
-{
-    for (auto it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
-        if (!(*it)->isMemOf()) {
-            ++it;
-            continue;
-        }
-
-        auto        addr = (*it)->getSubExp1();
-        LocationSet used;
-        addr->addUsedLocs(used);
-
-        for (const SharedExp& v : used) {
-            if (!v->isSubscript()) {
-                continue;
-            }
-
-            auto   r   = v->access<RefExp>();
-            if (!r->getDef() || !r->getDef()->isAssign()) {
-                continue;
-            }
-
-            Assign *as = static_cast<Assign *>(r->getDef());
-
-            bool ch;
-            auto res = addr->clone()->searchReplaceAll(*r, as->getRight(), ch);
-
-            if (!ch) {
-                continue; // No change
-            }
-
-            auto memOfRes = Location::memOf(res)->simplify();
-
-            // First check to see if memOfRes is already in the set
-            if (m_procUseCollector.exists(memOfRes)) {
-                // Take care not to use an iterator to the newly erased element.
-                /* it = */
-                m_procUseCollector.remove(it++);            // Already exists; just remove the old one
-                continue;
-            }
-            else {
-                LOG_VERBOSE("Propagating %1 to %2 in collector; result %3",
-                            r, as->getRight(), memOfRes);
-                (*it)->setSubExp1(res); // Change the child of the memof
-            }
-        }
-
-        ++it;
-    }
-}
-
-
 static const std::shared_ptr<Binary> allEqAll = Binary::get(opEquals, Terminal::get(opDefineAll), Terminal::get(opDefineAll));
 
 bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* = false */)
