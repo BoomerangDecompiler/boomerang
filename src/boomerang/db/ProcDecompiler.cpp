@@ -211,7 +211,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     if (proc->getStatus() != PROC_INCYCLE) {
-        proc->lateDecompile(); // Do the whole works
+        lateDecompile(proc); // Do the whole works
         proc->setStatus(PROC_FINAL);
         project->alertEndDecompile(proc);
     }
@@ -620,8 +620,8 @@ bool ProcDecompiler::decompileProcInRecursionGroup(UserProc *proc, ProcSet& visi
     // FIXME: why exactly do we do this?
     proc->markAsNonChildless(proc->getRecursionGroup());
 
-    // Need to propagate into the initial arguments, since arguments are uses, and we are about to remove unused
-    // statements.
+    // Need to propagate into the initial arguments, since arguments are uses,
+    // and we are about to remove unused statements.
     changed |= PassManager::get()->executePass(PassID::LocalAndParamMap, proc);
     changed |= PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     changed |= PassManager::get()->executePass(PassID::Dominators, proc);
@@ -673,7 +673,7 @@ void ProcDecompiler::recursionGroupAnalysis(const std::shared_ptr<ProcSet>& grou
     // while no change
     for (int i = 0; i < 2; i++) {
         for (UserProc *proc : *group) {
-            proc->lateDecompile(); // Also does final parameters and arguments at present
+            lateDecompile(proc); // Also does final parameters and arguments at present
         }
     }
 
@@ -681,6 +681,51 @@ void ProcDecompiler::recursionGroupAnalysis(const std::shared_ptr<ProcSet>& grou
     for (UserProc *proc : *group) {
         proc->getProg()->getProject()->alertEndDecompile(proc);
     }
+}
+
+
+void ProcDecompiler::lateDecompile(UserProc *proc)
+{
+    Project *project = proc->getProg()->getProject();
+    project->alertDecompiling(proc);
+    project->alertDecompileDebugPoint(proc, "Before Final");
+
+    LOG_VERBOSE("### Removing unused statements for %1 ###", proc->getName());
+
+    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
+    // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
+    // to printf/scanf), and removing unused statements is unsafe without full use information
+    if (proc->getStatus() < PROC_FINAL) {
+        PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
+
+        // Now that locals are identified, redo the dataflow
+        PassManager::get()->executePass(PassID::PhiPlacement, proc);
+
+        PassManager::get()->executePass(PassID::BlockVarRename, proc);       // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation, proc); // Surely need propagation too
+
+        if (project->getSettings()->verboseOutput) {
+            proc->debugPrintAll("after propagating locals");
+        }
+    }
+
+    PassManager::get()->executePass(PassID::UnusedStatementRemoval, proc);
+    PassManager::get()->executePass(PassID::FinalParameterSearch, proc);
+
+    if (project->getSettings()->nameParameters) {
+        // Replace the existing temporary parameters with the final ones:
+        // mapExpressionsToParameters();
+        PassManager::get()->executePass(PassID::ParameterSymbolMap, proc);
+        proc->debugPrintAll("after adding new parameters");
+    }
+
+    // Or just CallArgumentUpdate?
+    PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
+    PassManager::get()->executePass(PassID::BranchAnalysis, proc);
+
+    proc->debugPrintAll("after remove unused statements etc");
+    project->alertDecompileDebugPoint(proc, "after final");
 }
 
 

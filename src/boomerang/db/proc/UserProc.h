@@ -281,9 +281,6 @@ public:
 public:
     bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
 
-    /// Remove unused statements.
-    void lateDecompile();
-
     /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of this proc)
     void propagateToCollector();
 

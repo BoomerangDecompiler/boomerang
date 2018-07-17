@@ -68,6 +68,15 @@ void ProgDecompiler::decompile()
     if (m_prog->getProject()->getSettings()->removeReturns) {
         // Repeat until no change. Not 100% sure if needed.
         while (removeUnusedParamsAndReturns()) {
+            for (auto& module : m_prog->getModuleList()) {
+                for (Function *proc : *module) {
+                    if (proc->isLib()) {
+                        continue;
+                    }
+
+                    PassManager::get()->executePass(PassID::BranchAnalysis, static_cast<UserProc *>(proc));
+                }
+            }
         }
     }
 

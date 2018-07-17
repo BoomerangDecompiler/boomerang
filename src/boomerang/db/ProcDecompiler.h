@@ -47,6 +47,9 @@ private:
     /// \returns true if any change
     bool decompileProcInRecursionGroup(UserProc *proc, ProcSet& visited);
 
+    /// Remove unused statements etc.
+    void lateDecompile(UserProc *proc);
+
     void printCallStack();
 
     /**

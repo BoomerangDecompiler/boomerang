@@ -249,11 +249,39 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     PassManager::get()->executePass(PassID::CallLivenessRemoval, proc); // Want to recompute the call livenesses
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
-    proc->lateDecompile(); // Also redoes parameters
+    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
+    // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
+    // to printf/scanf), and removing unused statements is unsafe without full use information
+    if (proc->getStatus() < PROC_FINAL) {
+        PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
+
+        // Now that locals are identified, redo the dataflow
+        PassManager::get()->executePass(PassID::PhiPlacement, proc);
+
+        PassManager::get()->executePass(PassID::BlockVarRename, proc);       // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation, proc); // Surely need propagation too
+
+        if (m_prog->getProject()->getSettings()->verboseOutput) {
+            proc->debugPrintAll("after propagating locals");
+        }
+    }
+
+    PassManager::get()->executePass(PassID::UnusedStatementRemoval, proc);
+    PassManager::get()->executePass(PassID::FinalParameterSearch, proc);
+
+    if (m_prog->getProject()->getSettings()->nameParameters) {
+        // Replace the existing temporary parameters with the final ones:
+        // mapExpressionsToParameters();
+        PassManager::get()->executePass(PassID::ParameterSymbolMap, proc);
+        proc->debugPrintAll("after adding new parameters");
+    }
+
+    // Or just CallArgumentUpdate?
+    PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
+    PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
 
     // Have the parameters changed? If so, then all callers will need to update their arguments, and do similar
     // analysis to the removal of returns
-    // findFinalParameters();
     PassManager::get()->executePass(PassID::UnusedParamRemoval, proc);
 
     if (proc->getParameters().size() != oldNumParameters) {

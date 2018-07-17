@@ -811,50 +811,6 @@ void UserProc::addCallee(Function *callee)
 }
 
 
-void UserProc::lateDecompile()
-{
-    m_prog->getProject()->alertDecompiling(this);
-    m_prog->getProject()->alertDecompileDebugPoint(this, "Before Final");
-
-    LOG_VERBOSE("### Removing unused statements for %1 ###", getName());
-
-    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
-    // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
-    // to printf/scanf), and removing unused statements is unsafe without full use information
-    if (getStatus() < PROC_FINAL) {
-        PassManager::get()->executePass(PassID::LocalTypeAnalysis, this);
-
-        // Now that locals are identified, redo the dataflow
-        PassManager::get()->executePass(PassID::PhiPlacement, this);
-
-        PassManager::get()->executePass(PassID::BlockVarRename, this);       // Rename the locals
-        PassManager::get()->executePass(PassID::StatementPropagation, this); // Surely need propagation too
-
-        if (m_prog->getProject()->getSettings()->verboseOutput) {
-            debugPrintAll("after propagating locals");
-        }
-    }
-
-    PassManager::get()->executePass(PassID::UnusedStatementRemoval, this);
-    PassManager::get()->executePass(PassID::FinalParameterSearch, this);
-
-    if (m_prog->getProject()->getSettings()->nameParameters) {
-        // Replace the existing temporary parameters with the final ones:
-        // mapExpressionsToParameters();
-        PassManager::get()->executePass(PassID::ParameterSymbolMap, this);
-        debugPrintAll("after adding new parameters");
-    }
-
-    // Or just CallArgumentUpdate?
-    PassManager::get()->executePass(PassID::CallDefineUpdate, this);
-    PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
-    PassManager::get()->executePass(PassID::BranchAnalysis, this);
-
-    debugPrintAll("after remove unused statements etc");
-    m_prog->getProject()->alertDecompileDebugPoint(this, "after final");
-}
-
-
 void UserProc::propagateToCollector()
 {
     for (auto it = m_procUseCollector.begin(); it != m_procUseCollector.end();) {
