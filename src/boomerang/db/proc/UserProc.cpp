@@ -848,40 +848,7 @@ void UserProc::lateDecompile()
     // Or just CallArgumentUpdate?
     PassManager::get()->executePass(PassID::CallDefineUpdate, this);
     PassManager::get()->executePass(PassID::CallArgumentUpdate, this);
-
-    const bool removedBBs = PassManager::get()->executePass(PassID::BranchAnalysis, this);
-
-    if (removedBBs) {
-        // redo the data flow
-        PassManager::get()->executePass(PassID::Dominators, this);
-
-        // recalculate phi assignments of referencing BBs.
-        for (BasicBlock *bb : *m_cfg) {
-            BasicBlock::RTLIterator rtlIt;
-            StatementList::iterator stmtIt;
-
-            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
-                if (!stmt->isPhi()) {
-                    continue;
-                }
-
-                PhiAssign *phiStmt = dynamic_cast<PhiAssign *>(stmt);
-                assert(phiStmt);
-
-                PhiAssign::PhiDefs& defs = phiStmt->getDefs();
-
-                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end();) {
-                    if (!m_cfg->hasBB(defIt->first)) {
-                        // remove phi reference to deleted bb
-                        defIt = defs.erase(defIt);
-                    }
-                    else {
-                        ++defIt;
-                    }
-                }
-            }
-        }
-    }
+    PassManager::get()->executePass(PassID::BranchAnalysis, this);
 
     debugPrintAll("after remove unused statements etc");
     m_prog->getProject()->alertDecompileDebugPoint(this, "after final");
