@@ -588,4 +588,17 @@ void UserProcTest::testMarkAsNonChildless()
 }
 
 
+void UserProcTest::testAddCallee()
+{
+    UserProc proc1(Address(0x1000), "test1", nullptr);
+    UserProc proc2(Address(0x2000), "test2", nullptr);
+
+    QVERIFY(proc1.getCallees().empty());
+    proc1.addCallee(&proc2);
+    QVERIFY(std::count(proc1.getCallees().begin(), proc1.getCallees().end(), &proc2) == 1);
+    proc1.addCallee(&proc2);
+    QVERIFY(std::count(proc1.getCallees().begin(), proc1.getCallees().end(), &proc2) == 1);
+}
+
+
 QTEST_GUILESS_MAIN(UserProcTest)
