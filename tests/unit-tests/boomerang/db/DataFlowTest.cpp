@@ -195,9 +195,6 @@ void DataFlowTest::testRenameVars()
     UserProc *proc = static_cast<UserProc *>(*m->begin());
     DataFlow *df    = proc->getDataFlow();
 
-    // Simplify expressions (e.g. m[ebp + -8] -> m[ebp - 8]
-    prog->finishDecode();
-
     df->calculateDominators();
     QVERIFY(df->placePhiFunctions());
     proc->numberStatements(); // After placing phi functions!

@@ -529,7 +529,6 @@ bool Prog::decodeEntryPoint(Address entryAddr)
         }
 
         m_fe->decodeRecursive(entryAddr);
-        finishDecode();
     }
 
 
@@ -578,25 +577,6 @@ bool Prog::reDecode(UserProc *proc)
 
     QTextStream os(stderr); // rtl output target
     return m_fe->processProc(proc->getEntryAddress(), proc, os);
-}
-
-
-void Prog::finishDecode()
-{
-    for (const auto& module : m_moduleList) {
-        for (Function *func : *module) {
-            if (func->isLib()) {
-                continue;
-            }
-
-            UserProc *p = static_cast<UserProc *>(func);
-
-            if (p->isDecoded()) {
-                p->assignProcsToCalls();
-                p->finalSimplify();
-            }
-        }
-    }
 }
 
 

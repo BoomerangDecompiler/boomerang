@@ -798,37 +798,6 @@ void UserProc::markAsNonChildless(const std::shared_ptr<ProcSet>& cs)
 }
 
 
-void UserProc::assignProcsToCalls()
-{
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
-
-        if (rtls == nullptr) {
-            continue;
-        }
-
-        for (auto& rtl : *rtls) {
-            if (!rtl->isCall()) {
-                continue;
-            }
-
-            CallStatement *call = static_cast<CallStatement *>(rtl->back());
-
-            if ((call->getDestProc() == nullptr) && !call->isComputed()) {
-                Function *p = m_prog->getFunctionByAddr(call->getFixedDest());
-
-                if (p == nullptr) {
-                    LOG_FATAL("Cannot find proc for dest %1 in call at %2",
-                              call->getFixedDest(), rtl->getAddress());
-                }
-
-                call->setDestProc(p);
-            }
-        }
-    }
-}
-
-
 void UserProc::addCallee(Function *callee)
 {
     // is it already in? (this is much slower than using a set)
@@ -838,27 +807,6 @@ void UserProc::addCallee(Function *callee)
     }
 
     m_calleeList.push_back(callee);
-}
-
-
-void UserProc::finalSimplify()
-{
-    for (BasicBlock *bb : *m_cfg) {
-        RTLList *rtls = bb->getRTLs();
-
-        if (rtls == nullptr) {
-            continue;
-        }
-
-        for (auto& rtl : *rtls) {
-            for (Statement *stmt : *rtl) {
-                stmt->simplifyAddr();
-                // Also simplify everything; in particular, stack offsets are
-                // often negative, so we at least canonicalise [esp + -8] to [esp-8]
-                stmt->simplify();
-            }
-        }
-    }
 }
 
 

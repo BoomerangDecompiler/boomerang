@@ -269,10 +269,6 @@ public:
      */
     void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
 
-    /// Find the procs the calls point to.
-    /// To be called after decoding all procs.
-    void assignProcsToCalls();
-
     /// Get the callees.
     std::list<Function *>& getCallees() { return m_calleeList; }
 
@@ -284,9 +280,6 @@ public:
 
 public:
     bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
-
-    /// perform final simplifications
-    void finalSimplify();
 
     /// Remove unused statements.
     void lateDecompile();
