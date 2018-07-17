@@ -94,8 +94,8 @@ SharedExp UserProc::getPremised(SharedExp left)
 {
     auto it = m_recurPremises.find(left);
     return it != m_recurPremises.end()
-    ? it->second
-    : nullptr;
+        ? it->second
+        : nullptr;
 }
 
 
@@ -1095,36 +1095,6 @@ void UserProc::promoteSignature()
 }
 
 
-SharedType UserProc::getTypeForLocation(const SharedExp& e)
-{
-    const QString name = e->access<Const, 1>()->getStr();
-    if (e->isLocal()) {
-        auto it = m_locals.find(name);
-        if (it != m_locals.end()) {
-            return it->second;
-        }
-    }
-
-    // Sometimes parameters use opLocal, so fall through
-    return getParamType(name);
-}
-
-
-SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
-{
-    const QString name = e->access<Const, 1>()->getStr();
-    if (e->isLocal()) {
-        auto it = m_locals.find(name);
-        if (it != m_locals.end()) {
-            return it->second;
-        }
-    }
-
-    // Sometimes parameters use opLocal, so fall through
-    return getParamType(name);
-}
-
-
 QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
 {
     SymbolMap::const_iterator ff = m_symbolMap.find(exp);
@@ -1180,6 +1150,12 @@ bool UserProc::searchAndReplace(const Exp& search, SharedExp replace)
     }
 
     return ch;
+}
+
+
+void UserProc::markAsInitialParam(const SharedExp& loc)
+{
+    m_procUseCollector.insert(loc);
 }
 
 
@@ -1427,6 +1403,36 @@ QString UserProc::newLocalName(const SharedExp& e)
 
     ost << "local" << m_nextLocal++;
     return tgt;
+}
+
+
+SharedType UserProc::getTypeForLocation(const SharedExp& e)
+{
+    const QString name = e->access<Const, 1>()->getStr();
+    if (e->isLocal()) {
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
+        }
+    }
+
+    // Sometimes parameters use opLocal, so fall through
+    return getParamType(name);
+}
+
+
+SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
+{
+    const QString name = e->access<Const, 1>()->getStr();
+    if (e->isLocal()) {
+        auto it = m_locals.find(name);
+        if (it != m_locals.end()) {
+            return it->second;
+        }
+    }
+
+    // Sometimes parameters use opLocal, so fall through
+    return getParamType(name);
 }
 
 
@@ -1754,4 +1760,17 @@ SharedExp UserProc::getSymbolFor(const SharedConstExp& from, const SharedConstTy
     }
 
     return nullptr;
+}
+
+
+void UserProc::setPremise(const SharedExp& e)
+{
+    SharedExp premise = e->clone();
+    m_recurPremises[e] = e;
+}
+
+
+void UserProc::killPremise(const SharedExp& e)
+{
+    m_recurPremises.erase(e);
 }

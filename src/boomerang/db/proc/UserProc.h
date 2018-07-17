@@ -307,10 +307,6 @@ public:
     /// promote the signature if possible
     void promoteSignature();
 
-    /// Find the type of the local or parameter \a e
-    SharedType getTypeForLocation(const SharedExp& e);
-    SharedConstType getTypeForLocation(const SharedConstExp& e) const;
-
     QString findFirstSymbol(const SharedConstExp& e) const;
 
     /// Get a name like eax or o2 from r24 or r8
@@ -319,22 +315,13 @@ public:
 
     bool searchAndReplace(const Exp& search, SharedExp replace);
 
-    /// Add a location to the UseCollector; this means this location is used before defined,
-    /// and hence is an *initial* parameter.
-    /// \note final parameters don't use this information; it's only for handling recursion.
-    void useBeforeDefine(const SharedExp& loc) { m_procUseCollector.insert(loc); }
+    /// Add a location to the UseCollector; this means this location is used
+    /// before defined, and hence is an *initial* parameter.
+    /// \note final parameters don't use this information;
+    /// it's only for handling recursion.
+    void markAsInitialParam(const SharedExp& loc);
 
     bool allPhisHaveDefs() const;
-
-    /**
-     * Copy the RTLs for the already decoded Indirect Control Transfer instructions,
-     * and decode any new targets in this CFG.
-     *
-     * Note that we have to delay the new target decoding till now,
-     * because otherwise we will attempt to decode nested switch statements
-     * without having any SSA renaming, propagation, etc
-     */
-    void processDecodedICTs();
 
 public:
     QString toString() const;
@@ -361,6 +348,10 @@ private:
     /// Return a string for a new local suitable for \p e
     QString newLocalName(const SharedExp& e);
 
+    /// Find the type of the local or parameter \a e
+    SharedType getTypeForLocation(const SharedExp& e);
+    SharedConstType getTypeForLocation(const SharedConstExp& e) const;
+
     /// helper function for prove()
     bool prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
                 PhiAssign *lastPhi = nullptr);
@@ -371,13 +362,9 @@ private:
     SharedExp getSymbolFor(const SharedConstExp& e, const SharedConstType& ty) const;
 
     /// Set a location as a new premise, i.e. assume e=e
-    void setPremise(SharedExp e)
-    {
-        e = e->clone();
-        m_recurPremises[e] = e;
-    }
+    void setPremise(const SharedExp& e);
 
-    void killPremise(const SharedExp& e) { m_recurPremises.erase(e); }
+    void killPremise(const SharedExp& e);
 
 private:
     /**
