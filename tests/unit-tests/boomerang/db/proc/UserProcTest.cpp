@@ -741,11 +741,9 @@ void UserProcTest::testAllPhisHaveDefs()
     QVERIFY(proc.allPhisHaveDefs());
 
     phi1->putAt(bb, nullptr, Location::regOf(REG_PENT_EAX));
-    QVERIFY(phi1->getDefs().size() == 1);
     QVERIFY(!proc.allPhisHaveDefs());
 
     phi1->putAt(bb, ias, Location::regOf(REG_PENT_EAX));
-    QVERIFY(phi1->getDefs().size() == 1);
     QVERIFY(proc.allPhisHaveDefs());
 }
 

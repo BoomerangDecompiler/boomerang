@@ -1060,7 +1060,7 @@ void UserProc::printUseGraph() const
 {
     const Settings *settings = getProg()->getProject()->getSettings();
     const QString filePath = settings->getOutputDirectory()
-    .absoluteFilePath(getName() + "-usegraph.dot");
+        .absoluteFilePath(getName() + "-usegraph.dot");
     UseGraphWriter().writeUseGraph(this, filePath);
 }
 
