@@ -40,14 +40,19 @@ public:
 
 public:
     PhiAssign(SharedExp _lhs)
-        : Assignment(_lhs) { m_kind = StmtType::PhiAssign; }
+        : Assignment(_lhs)
+        , m_defs()
+    { m_kind = StmtType::PhiAssign; }
+
     PhiAssign(SharedType ty, SharedExp _lhs)
-        : Assignment(ty, _lhs) { m_kind = StmtType::PhiAssign; }
+        : Assignment(ty, _lhs)
+        , m_defs()
+    { m_kind = StmtType::PhiAssign; }
 
     PhiAssign(const PhiAssign& other) = default;
     PhiAssign(PhiAssign&& other) = default;
 
-    virtual ~PhiAssign() override = default;
+    virtual ~PhiAssign() override { m_defs.~PhiDefs(); }
 
     PhiAssign& operator=(const PhiAssign& other) = default;
     PhiAssign& operator=(PhiAssign&& other) = default;
@@ -124,5 +129,11 @@ public:
     void enumerateParams(std::list<SharedExp>& le);
 
 private:
-    PhiDefs m_defs; ///< A vector of information about definitions
+    union {
+        PhiDefs m_defs; ///< A vector of information about definitions
+        Byte m_padding[sizeof(Assign) - sizeof(Assignment)];
+    };
 };
+
+static_assert(sizeof(PhiAssign) >= sizeof(Assign),
+    "Size of phi must not be smaller than size of Assign");
