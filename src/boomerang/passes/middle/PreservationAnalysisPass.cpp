@@ -45,7 +45,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
             LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
         }
 
-        if (proc->prove(equation)) {
+        if (proc->preservesExp(lhs)) {
             removes.insert(equation);
         }
     }

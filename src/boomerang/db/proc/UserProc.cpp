@@ -101,7 +101,7 @@ SharedExp UserProc::getPremised(SharedExp left)
 
 bool UserProc::isPreserved(SharedExp e)
 {
-    return m_provenTrue.find(e) != m_provenTrue.end() && *m_provenTrue[e] == *e;
+    return preservesExp(e);
 }
 
 
@@ -811,101 +811,19 @@ void UserProc::addCallee(Function *callee)
 }
 
 
-static const std::shared_ptr<Binary> allEqAll = Binary::get(opEquals, Terminal::get(opDefineAll), Terminal::get(opDefineAll));
-
-bool UserProc::prove(const std::shared_ptr<Binary>& query, bool conditional /* = false */)
+bool UserProc::preservesExp(const SharedExp& exp)
 {
-    assert(query->isEquality());
-    SharedExp queryLeft  = query->getSubExp1();
-    SharedExp queryRight = query->getSubExp2();
-
-    if ((m_provenTrue.find(queryLeft) != m_provenTrue.end()) && (*m_provenTrue[queryLeft] == *queryRight)) {
-        if (m_prog->getProject()->getSettings()->debugProof) {
-            LOG_MSG("found true in provenTrue cache %1 in %2", query, getName());
-        }
-
-        return true;
-    }
-
     if (!m_prog->getProject()->getSettings()->useProof) {
         return false;
     }
 
-    SharedExp original(query->clone());
-    SharedExp origLeft  = original->getSubExp1();
-    SharedExp origRight = original->getSubExp2();
+    return proveEqual(exp, exp, false);
+}
 
-    // subscript locs on the right with {-} (nullptr reference)
-    LocationSet locs;
-    query->getSubExp2()->addUsedLocs(locs);
 
-    for (const SharedExp& xx : locs) {
-        query->setSubExp2(query->getSubExp2()->expSubscriptValNull(xx));
-    }
-
-    if (query->getSubExp1()->getOper() != opSubscript) {
-        bool gotDef = false;
-
-        // replace expression from return set with expression in the collector of the return
-        if (m_retStatement) {
-            auto def = m_retStatement->findDefFor(query->getSubExp1());
-
-            if (def) {
-                query->setSubExp1(def);
-                gotDef = true;
-            }
-        }
-
-        if (!gotDef) {
-            // OK, the thing I'm looking for isn't in the return collector, but perhaps there is an entry for <all>
-            // If this is proved, then it is safe to say that x == x for any x with no definition reaching the exit
-            auto right = origRight->clone()->simplify(); // In case it's sp+0
-
-            if ((*origLeft == *right) &&                 // x == x
-                (origLeft->getOper() != opDefineAll) &&  // Beware infinite recursion
-                prove(allEqAll)) {                       // Recurse in case <all> not proven yet
-                    if (m_prog->getProject()->getSettings()->debugProof) {
-                        LOG_MSG("Using all=all for %1", query->getSubExp1());
-                        LOG_MSG("Prove returns true");
-                    }
-
-                    m_provenTrue[origLeft->clone()] = right;
-                    return true;
-                }
-
-                if (m_prog->getProject()->getSettings()->debugProof) {
-                    LOG_MSG("Not in return collector: %1", query->getSubExp1());
-                    LOG_MSG("Prove returns false");
-                }
-
-                return false;
-        }
-    }
-
-    if (m_recursionGroup) { // If in involved in a recursion cycle
-        //    then save the original query as a premise for bypassing calls
-        m_recurPremises[origLeft->clone()] = origRight;
-    }
-
-    std::set<PhiAssign *>            lastPhis;
-    std::map<PhiAssign *, SharedExp> cache;
-    bool result = prover(query, lastPhis, cache);
-
-    if (m_recursionGroup) {
-        killPremise(origLeft); // Remove the premise, regardless of result
-    }
-
-    if (m_prog->getProject()->getSettings()->debugProof) {
-        LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query, getName());
-    }
-
-    if (!conditional) {
-        if (result) {
-            m_provenTrue[origLeft] = origRight; // Save the now proven equation
-        }
-    }
-
-    return result;
+bool UserProc::preservesExpWithOffset(const SharedExp& exp, int offset)
+{
+    return proveEqual(exp, Binary::get(opPlus, exp, Const::get(offset)), false);
 }
 
 
@@ -1256,6 +1174,97 @@ SharedConstType UserProc::getTypeForLocation(const SharedConstExp& e) const
 }
 
 
+static const SharedExp defAll = Terminal::get(opDefineAll);
+
+
+bool UserProc::proveEqual(const SharedExp& queryLeft, const SharedExp& queryRight, bool conditional)
+{
+    if ((m_provenTrue.find(queryLeft) != m_provenTrue.end()) && (*m_provenTrue[queryLeft] == *queryRight)) {
+        if (m_prog->getProject()->getSettings()->debugProof) {
+            LOG_MSG("found true in provenTrue cache %1 in %2",
+                    Binary::get(opEquals, queryLeft, queryRight), getName());
+        }
+
+        return true;
+    }
+
+    const SharedExp origLeft = queryLeft;
+    const SharedExp origRight = queryRight;
+
+    SharedExp query = Binary::get(opEquals, queryLeft->clone(), queryRight->clone());
+
+    // subscript locs on the right with {-} (nullptr reference)
+    LocationSet locs;
+    query->getSubExp2()->addUsedLocs(locs);
+
+    for (const SharedExp& xx : locs) {
+        query->setSubExp2(query->getSubExp2()->expSubscriptValNull(xx));
+    }
+
+    if (query->getSubExp1()->getOper() != opSubscript) {
+        bool gotDef = false;
+
+        // replace expression from return set with expression in the collector of the return
+        if (m_retStatement) {
+            auto def = m_retStatement->findDefFor(query->getSubExp1());
+
+            if (def) {
+                query->setSubExp1(def);
+                gotDef = true;
+            }
+        }
+
+        if (!gotDef) {
+            // OK, the thing I'm looking for isn't in the return collector, but perhaps there is an entry for <all>
+            // If this is proved, then it is safe to say that x == x for any x with no definition reaching the exit
+            auto right = origRight->clone()->simplify(); // In case it's sp+0
+
+            if ((*origLeft == *right) &&                 // x == x
+                (origLeft->getOper() != opDefineAll) &&  // Beware infinite recursion
+                proveEqual(defAll, defAll)) {            // Recurse in case <all> not proven yet
+                    if (m_prog->getProject()->getSettings()->debugProof) {
+                        LOG_MSG("Using all=all for %1", query->getSubExp1());
+                        LOG_MSG("Prove returns true");
+                    }
+
+                    m_provenTrue[origLeft->clone()] = right;
+                    return true;
+                }
+
+                if (m_prog->getProject()->getSettings()->debugProof) {
+                    LOG_MSG("Not in return collector: %1", query->getSubExp1());
+                    LOG_MSG("Prove returns false");
+                }
+
+                return false;
+        }
+    }
+
+    if (m_recursionGroup) { // If in involved in a recursion cycle
+        //    then save the original query as a premise for bypassing calls
+        m_recurPremises[origLeft->clone()] = origRight;
+    }
+
+    std::set<PhiAssign *>            lastPhis;
+    std::map<PhiAssign *, SharedExp> cache;
+    bool result = prover(query, lastPhis, cache);
+
+    if (m_recursionGroup) {
+        killPremise(origLeft); // Remove the premise, regardless of result
+    }
+
+    if (m_prog->getProject()->getSettings()->debugProof) {
+        LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query, getName());
+    }
+
+    if (result && !conditional) {
+        m_provenTrue[origLeft] = origRight; // Save the now proven equation
+    }
+
+    return result;
+}
+
+
 bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
                       PhiAssign *lastPhi /* = nullptr */)
 {
@@ -1320,25 +1329,26 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                 if (call) {
                     // See if we can prove something about this register.
                     UserProc *destProc = dynamic_cast<UserProc *>(call->getDestProc());
-                    auto     base      = r->getSubExp1();
+                    SharedExp base     = r->getSubExp1();
 
                     if (destProc && !destProc->isLib() && (destProc->m_recursionGroup != nullptr) &&
                         (destProc->m_recursionGroup->find(this) != destProc->m_recursionGroup->end())) {
                         // The destination procedure may not have preservation proved as yet, because it is involved
                         // in our recursion group. Use the conditional preservation logic to determine whether query is
                         // true for this procedure
-                        auto provenTo = destProc->getProven(base);
+                        SharedExp provenTo = destProc->getProven(base);
 
                         if (provenTo) {
                             // There is a proven preservation. Use it to bypass the call
                             auto queryLeft = call->localiseExp(provenTo->clone());
                             query->setSubExp1(queryLeft);
+
                             // Now try everything on the result
                             return prover(query, lastPhis, cache, lastPhi);
                         }
                         else {
                             // Check if the required preservation is one of the premises already assumed
-                            auto premisedTo = destProc->getPremised(base);
+                            SharedExp premisedTo = destProc->getPremised(base);
 
                             if (premisedTo) {
                                 if (m_prog->getProject()->getSettings()->debugProof) {
@@ -1354,21 +1364,21 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                                 // another premise! Example: try to prove esp, depends on whether ebp is preserved, so
                                 // recurse to check ebp's preservation. Won't infinitely loop because of the premise map
                                 // FIXME: what if it needs a rx = rx + K preservation?
-                                auto newQuery = Binary::get(opEquals, base->clone(), base->clone());
                                 destProc->setPremise(base);
 
                                 if (m_prog->getProject()->getSettings()->debugProof) {
-                                    LOG_MSG("New required premise %1 for %2", newQuery, destProc->getName());
+                                    LOG_MSG("New required premise '%1' for %2",
+                                            Binary::get(opEquals, base, base), destProc->getName());
                                 }
 
                                 // Pass conditional as true, since even if proven, this is conditional on other things
-                                bool result = destProc->prove(newQuery, true);
+                                bool result = destProc->proveEqual(base->clone(), base->clone(), true);
                                 destProc->killPremise(base);
 
                                 if (result) {
                                     if (m_prog->getProject()->getSettings()->debugProof) {
-                                        LOG_MSG("Conditional preservation with new premise %1 succeeds for %2",
-                                                newQuery, destProc->getName());
+                                        LOG_MSG("Conditional preservation with new premise '%1' succeeds for %2",
+                                                Binary::get(opEquals, base, base), destProc->getName());
                                     }
 
                                     // Use the new conditionally proven result
@@ -1378,7 +1388,8 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map
                                 }
                                 else {
                                     if (m_prog->getProject()->getSettings()->debugProof) {
-                                        LOG_MSG("Conditional preservation required premise %1 fails!", newQuery);
+                                        LOG_MSG("Conditional preservation required premise '%1' fails!",
+                                                Binary::get(opEquals, base, base));
                                     }
 
                                     // Do nothing else; the outer proof will likely fail

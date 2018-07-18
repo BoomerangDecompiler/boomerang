@@ -30,8 +30,6 @@ class Signature;
  */
 class Function
 {
-    typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
-
 public:
     /**
      * \param address   Address of entry point of procedure
@@ -93,8 +91,6 @@ public:
     virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
     virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether \p e is preserved by this proc
 
-    const ExpExpMap& getProvenTrue() const { return m_provenTrue; }
-
 protected:
     Prog *m_prog = nullptr;                     ///< Program containing this function.
     Module *m_module = nullptr;                 ///< Module containing this function.
@@ -108,22 +104,6 @@ protected:
      * moved.
      */
     std::shared_ptr<Signature> m_signature;
-
-    /**
-     * All the expressions that have been proven true.
-     * (Could perhaps do with a list of some that are proven false)
-     * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
-     * FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
-     * for LibProcs?
-     */
-    ExpExpMap m_provenTrue;
-
-    /**
-     * Premises for recursion group analysis. This is a preservation
-     * that is assumed true only for definitions by calls reached in the proof.
-     * It also prevents infinite looping of this proof logic.
-     */
-    ExpExpMap m_recurPremises;
 
     /// Set of callers (CallStatements that call this procedure).
     std::set<CallStatement *> m_callers;

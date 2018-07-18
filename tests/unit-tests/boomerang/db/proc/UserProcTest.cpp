@@ -263,7 +263,7 @@ void UserProcTest::testFilterReturns()
 
     // test cached preservation TODO
     QVERIFY(mainProc->getRetStmt());
-    QVERIFY(mainProc->prove(Binary::get(opEquals, Location::regOf(REG_PENT_EBP), Location::regOf(REG_PENT_EBP))));
+    QVERIFY(mainProc->preservesExp(Location::regOf(REG_PENT_EBP)));
     QVERIFY(mainProc->filterReturns(Location::regOf(REG_PENT_EBP)));
 
     QVERIFY(mainProc->filterReturns(Terminal::get(opPC)));

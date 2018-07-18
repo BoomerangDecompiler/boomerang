@@ -44,6 +44,8 @@ typedef std::list<UserProc *>   ProcList;
  */
 class UserProc : public Function
 {
+    typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
+
 public:
     /**
      * A map between machine dependent locations and their corresponding symbolic,
@@ -278,18 +280,19 @@ public:
      */
     void addCallee(Function *callee);
 
+    /// \return true if this procedure does not define \p exp,
+    /// or saves and restores the value of \p exp.
+    bool preservesExp(const SharedExp& exp);
+
+    /// Same as \ref preserveExp, but \p exp is restored tp \p exp + \p offset
+    /// (e.g. x86 esp is restored to esp+4)
+    bool preservesExpWithOffset(const SharedExp& exp, int offset);
+
 public:
     bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
 
     UseCollector& getUseCollector() { return m_procUseCollector; }
     const UseCollector& getUseCollector() const { return m_procUseCollector; }
-
-
-    /// Prove any arbitary property of this procedure.
-    /// If \p conditional is true, do not save the result,
-    /// as it may be conditional on premises stored in other procedures
-    /// \note this function was non-reentrant, but now reentrancy is frequently used
-    bool prove(const std::shared_ptr<Binary>& query, bool conditional = false);
 
     /// promote the signature if possible
     void promoteSignature();
@@ -309,6 +312,8 @@ public:
     void markAsInitialParam(const SharedExp& loc);
 
     bool allPhisHaveDefs() const;
+
+    const ExpExpMap& getProvenTrue() const { return m_provenTrue; }
 
 public:
     QString toString() const;
@@ -339,7 +344,13 @@ private:
     SharedType getTypeForLocation(const SharedExp& e);
     SharedConstType getTypeForLocation(const SharedConstExp& e) const;
 
-    /// helper function for prove()
+    /// Prove any arbitary property of this procedure.
+    /// If \p conditional is true, do not save the result,
+    /// as it may be conditional on premises stored in other procedures
+    /// \note this function was non-reentrant, but now reentrancy is frequently used
+    bool proveEqual(const SharedExp& lhs, const SharedExp& rhs, bool conditional = false);
+
+    /// helper function for proveEqual()
     bool prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
                 PhiAssign *lastPhi = nullptr);
 
@@ -405,6 +416,22 @@ private:
      * it's only of use during group decompilation analysis (sorting out recursion)
      */
     UseCollector m_procUseCollector;
+
+    /**
+     * All the expressions that have been proven true.
+     * (Could perhaps do with a list of some that are proven false)
+     * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
+     * FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
+     * for LibProcs?
+     */
+    ExpExpMap m_provenTrue;
+
+    /**
+     * Premises for recursion group analysis. This is a preservation
+     * that is assumed true only for definitions by calls reached in the proof.
+     * It also prevents infinite looping of this proof logic.
+     */
+    ExpExpMap m_recurPremises;
 
     std::shared_ptr<ProcSet> m_recursionGroup;
 
