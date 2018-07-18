@@ -835,45 +835,11 @@ void UserProc::promoteSignature()
 
 QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
 {
-    SymbolMap::const_iterator ff = m_symbolMap.find(exp);
-
-    if (ff == m_symbolMap.end()) {
-        return QString::null;
+    auto it = m_symbolMap.find(exp);
+    if (it != m_symbolMap.end()) {
+        return std::static_pointer_cast<Const>(it->second->getSubExp1())->getStr();
     }
-
-    return std::static_pointer_cast<Const>(ff->second->getSubExp1())->getStr();
-}
-
-
-QString UserProc::getRegName(SharedExp r)
-{
-    assert(r->isRegOf());
-
-    // assert(r->getSubExp1()->isConst());
-    if (r->getSubExp1()->isConst()) {
-        int            regNum = r->access<Const, 1>()->getInt();
-        const QString& regName(m_prog->getRegName(regNum));
-        assert(!regName.isEmpty());
-
-        if (regName[0] == '%') {
-            return regName.mid(1); // Skip % if %eax
-        }
-
-        return regName;
-    }
-
-    LOG_WARN("Will try to build register name from [tmp+X]!");
-
-    // TODO: how to handle register file lookups ?
-    // in some cases the form might be r[tmp+value]
-    // just return this expression :(
-    // WARN: this is a hack to prevent crashing when r->subExp1 is not const
-    QString     tgt;
-    QTextStream ostr(&tgt);
-
-    r->getSubExp1()->print(ostr);
-
-    return tgt;
+    return QString::null;
 }
 
 
@@ -1082,9 +1048,9 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 void UserProc::printDFG() const
 {
     const QString fname = QString("%1%2-%3-dfg.dot")
-    .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
-    .arg(getName())
-    .arg(m_dfgCount++);
+        .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
+        .arg(getName())
+        .arg(m_dfgCount++);
 
     DFGWriter().printDFG(this, fname);
 }
@@ -1140,6 +1106,38 @@ QString UserProc::newLocalName(const SharedExp& e)
     }
 
     ost << "local" << m_nextLocal++;
+    return tgt;
+}
+
+
+QString UserProc::getRegName(SharedExp r)
+{
+    assert(r->isRegOf());
+
+    // assert(r->getSubExp1()->isConst());
+    if (r->getSubExp1()->isConst()) {
+        int            regNum = r->access<Const, 1>()->getInt();
+        const QString& regName(m_prog->getRegName(regNum));
+        assert(!regName.isEmpty());
+
+        if (regName[0] == '%') {
+            return regName.mid(1); // Skip % if %eax
+        }
+
+        return regName;
+    }
+
+    LOG_WARN("Will try to build register name from [tmp+X]!");
+
+    // TODO: how to handle register file lookups ?
+    // in some cases the form might be r[tmp+value]
+    // just return this expression :(
+    // WARN: this is a hack to prevent crashing when r->subExp1 is not const
+    QString     tgt;
+    QTextStream ostr(&tgt);
+
+    r->getSubExp1()->print(ostr);
+
     return tgt;
 }
 

@@ -284,7 +284,7 @@ public:
     /// or saves and restores the value of \p exp.
     bool preservesExp(const SharedExp& exp);
 
-    /// Same as \ref preserveExp, but \p exp is restored tp \p exp + \p offset
+    /// Same as \ref preservesExp, but \p exp is restored tp \p exp + \p offset
     /// (e.g. x86 esp is restored to esp+4)
     bool preservesExpWithOffset(const SharedExp& exp, int offset);
 
@@ -299,11 +299,10 @@ public:
 
     QString findFirstSymbol(const SharedConstExp& e) const;
 
-    /// Get a name like eax or o2 from r24 or r8
-    /// \todo write tests for getRegName in all combinations of r[1] r[tmp+1] etc.
-    QString getRegName(SharedExp r);
-
-    bool searchAndReplace(const Exp& search, SharedExp replace);
+    /// Replace all occurrences of \p pattern in all statements by \p replacement
+    /// \returns true if the pattern was found at least once
+    /// (Therefore, replacing an expression with itself will return true)
+    bool searchAndReplace(const Exp& pattern, SharedExp replacement);
 
     /// Add a location to the UseCollector; this means this location is used
     /// before defined, and hence is an *initial* parameter.
@@ -339,6 +338,9 @@ private:
 
     /// Return a string for a new local suitable for \p e
     QString newLocalName(const SharedExp& e);
+
+    /// Get a name like eax or o2 from r24 or r8
+    QString getRegName(SharedExp r);
 
     /// Find the type of the local or parameter \a e
     SharedType getTypeForLocation(const SharedExp& e);

@@ -51,4 +51,7 @@ private slots:
     void testPreservesExp();
     void testPreservesExpWithOffset();
     void testPromoteSignature();
+    void testFindFirstSymbol();
+    void testSearchAndReplace();
+    void testAllPhisHaveDefs();
 };

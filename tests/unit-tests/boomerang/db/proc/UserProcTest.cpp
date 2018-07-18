@@ -25,6 +25,7 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
@@ -677,6 +678,75 @@ void UserProcTest::testPromoteSignature()
     fib->promoteSignature();
     QVERIFY(fib->getSignature()->getPlatform() == Platform::PENTIUM);
     QVERIFY(fib->getSignature()->getConvention() == CallConv::C);
+}
+
+
+void UserProcTest::testFindFirstSymbol()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    QCOMPARE(proc.findFirstSymbol(Location::regOf(REG_PENT_EAX)), QString(""));
+
+    proc.addLocal(VoidType::get(), "testLocal", Location::regOf(REG_PENT_EAX));
+    QCOMPARE(proc.findFirstSymbol(Location::regOf(REG_PENT_EAX)), QString("testLocal"));
+
+    proc.mapSymbolTo(Location::regOf(REG_PENT_EAX), Location::param("testParam", &proc));
+    QCOMPARE(proc.findFirstSymbol(Location::regOf(REG_PENT_EAX)), QString("testLocal"));
+}
+
+
+void UserProcTest::testSearchAndReplace()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+
+    SharedExp eax = Location::regOf(REG_PENT_EAX);
+    SharedExp edx = Location::regOf(REG_PENT_EDX);
+    QVERIFY(proc.searchAndReplace(*eax, edx) == false);
+
+    Assign *as = new Assign(VoidType::get(), eax, edx);
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { as })));
+    proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+
+    QVERIFY(proc.searchAndReplace(*eax, eax) == true);
+    QCOMPARE(as->getLeft()->toString(), eax->toString());
+    QCOMPARE(as->getRight()->toString(), edx->toString());
+
+    QVERIFY(proc.searchAndReplace(*eax, edx) == true);
+    QCOMPARE(as->getLeft()->toString(),  edx->toString());
+    QCOMPARE(as->getRight()->toString(), edx->toString());
+
+    // replace more than one expression
+    QVERIFY(proc.searchAndReplace(*edx, eax) == true);
+    QCOMPARE(as->getLeft()->toString(),  eax->toString());
+    QCOMPARE(as->getRight()->toString(), eax->toString());
+}
+
+
+void UserProcTest::testAllPhisHaveDefs()
+{
+    UserProc proc(Address(0x1000), "test", nullptr);
+    QVERIFY(proc.allPhisHaveDefs());
+
+    std::unique_ptr<RTLList> bbRTLs(new RTLList);
+    bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x1000), { })));
+    BasicBlock *bb = proc.getCFG()->createBB(BBType::Fall, std::move(bbRTLs));
+    proc.setEntryBB();
+
+    Statement *ias = proc.getCFG()->findOrCreateImplicitAssign(Location::regOf(REG_PENT_EAX));
+    QVERIFY(ias != nullptr);
+    QVERIFY(proc.allPhisHaveDefs());
+
+    PhiAssign *phi1 = bb->addPhi(Location::regOf(REG_PENT_EDX));
+    QVERIFY(phi1 != nullptr);
+    QVERIFY(proc.allPhisHaveDefs());
+
+    phi1->putAt(bb, nullptr, Location::regOf(REG_PENT_EAX));
+    QVERIFY(phi1->getDefs().size() == 1);
+    QVERIFY(!proc.allPhisHaveDefs());
+
+    phi1->putAt(bb, ias, Location::regOf(REG_PENT_EAX));
+    QVERIFY(phi1->getDefs().size() == 1);
+    QVERIFY(proc.allPhisHaveDefs());
 }
 
 QTEST_GUILESS_MAIN(UserProcTest)
