@@ -50,4 +50,5 @@ private slots:
     void testAddCallee();
     void testPreservesExp();
     void testPreservesExpWithOffset();
+    void testPromoteSignature();
 };

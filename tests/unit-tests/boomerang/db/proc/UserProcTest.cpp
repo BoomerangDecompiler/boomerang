@@ -667,4 +667,16 @@ void UserProcTest::testPreservesExpWithOffset()
 }
 
 
+void UserProcTest::testPromoteSignature()
+{
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/fib")));
+    QVERIFY(m_project.decodeBinaryFile());
+    UserProc *fib = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("fib"));
+    QVERIFY(fib->getSignature()->getPlatform() == Platform::GENERIC);
+    QVERIFY(fib->getSignature()->getConvention() == CallConv::INVALID);
+    fib->promoteSignature();
+    QVERIFY(fib->getSignature()->getPlatform() == Platform::PENTIUM);
+    QVERIFY(fib->getSignature()->getConvention() == CallConv::C);
+}
+
 QTEST_GUILESS_MAIN(UserProcTest)
