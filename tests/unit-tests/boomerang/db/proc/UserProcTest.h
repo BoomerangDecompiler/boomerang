@@ -48,4 +48,6 @@ private slots:
 
     void testMarkAsNonChildless();
     void testAddCallee();
+    void testPreservesExp();
+    void testPreservesExpWithOffset();
 };

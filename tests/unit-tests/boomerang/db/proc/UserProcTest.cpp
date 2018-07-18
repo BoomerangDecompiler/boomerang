@@ -25,9 +25,11 @@
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/FloatType.h"
+#include "boomerang/db/ProcDecompiler.h"
 
 
 void UserProcTest::testIsNoReturn()
@@ -631,6 +633,37 @@ void UserProcTest::testAddCallee()
     QVERIFY(std::count(proc1.getCallees().begin(), proc1.getCallees().end(), &proc2) == 1);
     proc1.addCallee(&proc2);
     QVERIFY(std::count(proc1.getCallees().begin(), proc1.getCallees().end(), &proc2) == 1);
+}
+
+
+void UserProcTest::testPreservesExp()
+{
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/fib")));
+    QVERIFY(m_project.decodeBinaryFile());
+    QVERIFY(m_project.decompileBinaryFile());
+    UserProc *fib = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("fib"));
+    QVERIFY(fib && !fib->isLib());
+    QVERIFY(fib->preservesExp(Location::regOf(REG_PENT_EBX)));
+
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/recursion2")));
+    QVERIFY(m_project.decodeBinaryFile());
+    QVERIFY(m_project.decompileBinaryFile());
+    UserProc *c = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("c"));
+    QVERIFY(c && !c->isLib());
+    QVERIFY(!c->preservesExp(Location::regOf(REG_PENT_ECX)));
+    // TODO more test cases here
+}
+
+
+void UserProcTest::testPreservesExpWithOffset()
+{
+    QVERIFY(m_project.loadBinaryFile(SAMPLE("pentium/recursion2")));
+    QVERIFY(m_project.decodeBinaryFile());
+    QVERIFY(m_project.decompileBinaryFile());
+    UserProc *f = static_cast<UserProc *>(m_project.getProg()->getFunctionByName("f"));
+    QVERIFY(f && !f->isLib());
+    QVERIFY(f->preservesExpWithOffset(Location::regOf(REG_PENT_ESP), 4));
+    // TODO more test cases here
 }
 
 
