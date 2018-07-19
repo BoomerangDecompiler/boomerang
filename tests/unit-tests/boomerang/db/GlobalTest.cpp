@@ -20,6 +20,7 @@
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/SizeType.h"
+#include "boomerang/type/type/VoidType.h"
 
 
 #define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))

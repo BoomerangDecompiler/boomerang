@@ -128,9 +128,6 @@ bool Project::decodeBinaryFile()
         return false;
     }
 
-    LOG_MSG("Finishing decode...");
-    m_prog->finishDecode();
-
     this->alertEndDecode();
 
     LOG_MSG("Found %1 procs", m_prog->getNumFunctions());

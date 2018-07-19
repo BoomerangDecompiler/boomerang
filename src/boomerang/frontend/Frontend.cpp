@@ -23,6 +23,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -1130,7 +1131,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
             }
 
             if (np != nullptr) {
-                np->setFirstCaller(proc);
                 proc->addCallee(np);
             }
         }
@@ -1156,14 +1156,14 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
 
     RTL *retRTL = returnRTL.get();
     BB_rtls->push_back(std::move(returnRTL));
-    Address retAddr = proc->getTheReturnAddr();
+    Address retAddr = proc->getRetAddr();
     BasicBlock *newBB = nullptr;
 
     if (retAddr == Address::INVALID) {
         // Create the basic block
         newBB = cfg->createBB(BBType::Ret, std::move(BB_rtls));
         Statement *s = retRTL->back(); // The last statement should be the ReturnStatement
-        proc->setTheReturnAddr(static_cast<ReturnStatement *>(s), retRTL->getAddress());
+        proc->setRetStmt(static_cast<ReturnStatement *>(s), retRTL->getAddress());
     }
     else {
         // We want to replace the *whole* RTL with a branch to THE first return's RTL. There can sometimes be extra

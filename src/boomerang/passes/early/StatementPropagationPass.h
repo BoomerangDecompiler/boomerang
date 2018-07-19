@@ -14,6 +14,7 @@
 
 
 class LocationSet;
+class UseCollector;
 
 
 class StatementPropagationPass : public IPass
@@ -28,4 +29,6 @@ private:
     /// Find the locations that are used by a live, dominating phi-function
     void findLiveAtDomPhi(UserProc *proc, LocationSet& usedByDomPhi);
 
+    /// Propagate into xxx of m[xxx] in the UseCollector (locations live at the entry of \p proc)
+    void propagateToCollector(UseCollector *collector);
 };

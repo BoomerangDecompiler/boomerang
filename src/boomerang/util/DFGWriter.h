@@ -10,15 +10,13 @@
 #pragma once
 
 
-#include "TestUtils.h"
+
+class UserProc;
+class QString;
 
 
-class ProcTest : public BoomerangTestWithPlugins
+class DFGWriter
 {
-private slots:
-    /// Test setting and reading name, constructor, native address
-    void testName();
-
-private:
-    Project m_project;
+public:
+    void printDFG(const UserProc *proc, const QString& fname);
 };

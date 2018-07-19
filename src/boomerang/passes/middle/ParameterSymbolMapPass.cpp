@@ -10,9 +10,10 @@
 #include "ParameterSymbolMapPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 
 ParameterSymbolMapPass::ParameterSymbolMapPass()

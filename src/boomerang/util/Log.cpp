@@ -14,11 +14,12 @@
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/exp/Exp.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/type/type/Type.h"
 
+#include <QDir>
+#include <QFileInfo>
 #include <QSharedPointer>
 #include <QTextStream>
-#include <QFileInfo>
-#include <QDir>
 
 #include <iostream>
 #include <sstream>

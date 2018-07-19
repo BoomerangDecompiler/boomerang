@@ -18,6 +18,8 @@
  */
 class DataFlowTest : public BoomerangTestWithPlugins
 {
+    Q_OBJECT
+
 private slots:
     /// Test calculating (semi-)dominators and the Dominance Frontier
     void testCalculateDominators();

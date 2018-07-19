@@ -10,16 +10,17 @@
 #include "StmtSSAXFormer.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
+#include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 
 StmtSsaXformer::StmtSsaXformer(ExpSsaXformer* esx, UserProc* p)

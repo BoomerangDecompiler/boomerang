@@ -105,7 +105,7 @@ void Signature::setName(const QString& name)
 
 void Signature::addParameter(const SharedExp& e, SharedType ty)
 {
-    addParameter(nullptr, e, ty);
+    addParameter("", e, ty);
 }
 
 
@@ -121,7 +121,7 @@ void Signature::addParameter(const QString& name, const SharedExp& e,
     QString newName = name;
 
     if (newName.isEmpty()) {
-        size_t n = m_params.size();
+        size_t n = 0;
 
         // try param0, param1 etc. until no collision
         do {

@@ -14,8 +14,10 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/util/StatementList.h"
 #include "boomerang/util/Log.h"
 
@@ -72,7 +74,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callStmt->getCalleeReturn()) {
         assert(!callee->isLib());
-        const StatementList& modifieds = static_cast<UserProc *>(callee)->getModifieds();
+        const StatementList& modifieds = static_cast<UserProc *>(callee)->getRetStmt()->getModifieds();
 
         for (Statement *mm : modifieds) {
             Assignment *as = static_cast<Assignment *>(mm);

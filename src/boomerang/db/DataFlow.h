@@ -143,8 +143,6 @@ private:
 
     bool canRenameLocalsParams() const { return renameLocalsAndParams; }
 
-    void setDominanceNums(int n, int& currNum); // Set the dominance statement number
-
     void clearA_phi() { m_A_phi.clear(); }
 
     // For debugging:

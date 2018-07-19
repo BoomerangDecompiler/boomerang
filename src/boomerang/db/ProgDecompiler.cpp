@@ -11,10 +11,10 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/core/Settings.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/UnusedReturnRemover.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/Log.h"
 
@@ -33,7 +33,7 @@ void ProgDecompiler::decompile()
     // Start decompiling each entry point
     for (UserProc *up : m_prog->getEntryProcs()) {
         LOG_VERBOSE("Decompiling entry point '%1'", up->getName());
-        up->decompile();
+        up->decompileRecursive();
     }
 
     // Just in case there are any Procs not in the call graph.
@@ -56,7 +56,7 @@ void ProgDecompiler::decompile()
                         if (proc->isDecompiled()) {
                             continue;
                         }
-                        proc->decompile();
+                        proc->decompileRecursive();
                         foundone = true;
                     }
                 }
@@ -67,7 +67,16 @@ void ProgDecompiler::decompile()
 
     if (m_prog->getProject()->getSettings()->removeReturns) {
         // Repeat until no change. Not 100% sure if needed.
-        while (removeUnusedReturns()) {
+        while (removeUnusedParamsAndReturns()) {
+            for (auto& module : m_prog->getModuleList()) {
+                for (Function *proc : *module) {
+                    if (proc->isLib()) {
+                        continue;
+                    }
+
+                    PassManager::get()->executePass(PassID::BranchAnalysis, static_cast<UserProc *>(proc));
+                }
+            }
         }
     }
 
@@ -173,48 +182,10 @@ void ProgDecompiler::removeUnusedGlobals()
 }
 
 
-bool ProgDecompiler::removeUnusedReturns()
+bool ProgDecompiler::removeUnusedParamsAndReturns()
 {
     LOG_MSG("Removing unused returns...");
-
-    // For each UserProc. Each proc may process many others, so this may duplicate some work. Really need a worklist of
-    // procedures not yet processed.
-    // Define a workset for the procedures who have to have their returns checked
-    // This will be all user procs, except those undecoded (-sf says just trust the given signature)
-    std::set<UserProc *> removeRetSet;
-    bool                 change = false;
-
-    for (const auto& module : m_prog->getModuleList()) {
-        for (Function *pp : *module) {
-            UserProc *proc = dynamic_cast<UserProc *>(pp);
-
-            if ((nullptr == proc) || !proc->isDecoded()) {
-                continue; // e.g. use -sf file to just prototype the proc
-            }
-
-            removeRetSet.insert(proc);
-        }
-    }
-
-    // The workset is processed in arbitrary order. May be able to do better, but note that sometimes changes propagate
-    // down the call tree (no caller uses potential returns for child), and sometimes up the call tree (removal of
-    // returns and/or dead code removes parameters, which affects all callers).
-    while (!removeRetSet.empty()) {
-        auto it = removeRetSet.begin(); // Pick the first element of the set
-        const bool removedReturns = (*it)->removeRedundantReturns(removeRetSet);
-        if (removedReturns) {
-            // Removing returns changes the uses of the callee.
-            // So we have to do type analyis to update the use information.
-            PassManager::get()->executePass(PassID::LocalTypeAnalysis, *it);
-        }
-        change |= removedReturns;
-
-        // Note: removing the currently processed item here should prevent unnecessary reprocessing of self recursive
-        // procedures
-        removeRetSet.erase(it); // Remove the current element (may no longer be the first)
-    }
-
-    return change;
+    return UnusedReturnRemover(m_prog).removeUnusedReturns();
 }
 
 

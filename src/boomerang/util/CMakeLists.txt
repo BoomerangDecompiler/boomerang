@@ -13,6 +13,7 @@ list(APPEND boomerang-util-sources
     util/CallGraphDotWriter
     util/CFGDotWriter
     util/ConnectionGraph
+    util/DFGWriter
     util/ExpDotWriter
     util/Interval.h
     util/IntervalMap.h
@@ -23,6 +24,7 @@ list(APPEND boomerang-util-sources
     util/StatementList
     util/StatementSet
     util/Types.h
+    util/UseGraphWriter
     util/Util
 )
 

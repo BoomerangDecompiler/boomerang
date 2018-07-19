@@ -17,6 +17,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/util/Log.h"
 
 
@@ -104,7 +105,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
                     // Update use collector in the proc (for parameters)
                     if (def == nullptr) {
-                        proc->useBeforeDefine(base->clone());
+                        proc->markAsInitialParam(base->clone());
                     }
 
                     continue; // Don't re-rename the renamed variable
@@ -122,7 +123,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
                     // have stopped changing their expressions (complicates implicit assignments considerably).
                     def = nullptr;
                     // Update the collector at the start of the UserProc
-                    proc->useBeforeDefine(location->clone());
+                    proc->markAsInitialParam(location->clone());
                 }
 
 

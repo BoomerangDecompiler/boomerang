@@ -35,10 +35,8 @@ public:
     LibProc& operator=(LibProc&&) = default;
 
 public:
-    QString toString() const override;
-
     /// \copydoc Function::isLib
-    bool isLib() const override { return true; }
+    bool isLib() const override;
 
     /// \copydoc Function::isNoReturn
     virtual bool isNoReturn() const override;
@@ -48,9 +46,8 @@ public:
 
     /// \copydoc Function::getPremised
     /// Get the RHS that is premised for left
-    virtual SharedExp getPremised(SharedExp) override { return nullptr; }
+    virtual SharedExp getPremised(SharedExp) override;
 
     /// \copydoc Function::isPreserved
-    /// Return whether \p e is preserved by this proc
     virtual bool isPreserved(SharedExp e) override;
 };

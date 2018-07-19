@@ -77,6 +77,7 @@ public:
 
     /// Type sensitive equality
     virtual bool operator==(const Exp& o) const = 0;
+    bool operator !=(const Exp& o) { return !(*this == o); }
 
     /// Type sensitive less than
     virtual bool operator<(const Exp& o) const = 0;

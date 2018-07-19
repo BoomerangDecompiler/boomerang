@@ -191,9 +191,6 @@ public:
     /// Re-decode this proc from scratch
     bool reDecode(UserProc *proc);
 
-    /// last fixes after decoding everything
-    void finishDecode();
-
     const std::list<UserProc *>& getEntryProcs() const { return m_entryProcs; }
 
     // globals

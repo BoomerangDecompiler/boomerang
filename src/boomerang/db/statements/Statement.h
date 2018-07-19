@@ -374,16 +374,6 @@ protected:
     UserProc *m_proc = nullptr; ///< procedure containing this statement
     int m_number = -1;          ///< Statement number for printing
 
-#if USE_DOMINANCE_NUMS
-    int m_dominanceNum = -1;        ///< Like a statement number, but has dominance properties
-
-public:
-    int getDomNumber() const { return m_dominanceNum; }
-    void setDomNumber(int dn) { m_dominanceNum = dn; }
-
-protected:
-#endif
-
     StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. STMT_BRANCH)
 };
 

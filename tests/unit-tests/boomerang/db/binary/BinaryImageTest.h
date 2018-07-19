@@ -15,6 +15,8 @@
 
 class BinaryImageTest : public BoomerangTest
 {
+    Q_OBJECT
+
 private slots:
     void testGetNumSections();
     void testHasSections();

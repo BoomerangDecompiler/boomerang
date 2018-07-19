@@ -276,7 +276,6 @@ void PhiAssign::convertToAssign(SharedExp rhs)
     SharedExp  rhs_  = rhs;
     SharedType type_ = m_type;
 
-    assert(sizeof(Assign) <= sizeof(PhiAssign));
     this->~PhiAssign();                                   // Explicitly destroy this, but keep the memory allocated.
     Assign *a = new (this) Assign(type_, lhs_, rhs_);     // construct in-place. Note that 'a' == 'this'
     a->setNumber(n);
@@ -305,7 +304,7 @@ void PhiAssign::simplify()
 
     if (allSame) {
         LOG_VERBOSE("all the same in %1", this);
-        convertToAssign(RefExp::get(m_lhs, firstDef));
+        this->convertToAssign(RefExp::get(m_lhs, firstDef));
         return;
     }
 
@@ -329,7 +328,7 @@ void PhiAssign::simplify()
     if (onlyOneNotThis && (notthis != STMT_WILD)) {
         LOG_VERBOSE("All but one not this in %1", this);
 
-        convertToAssign(RefExp::get(m_lhs, notthis));
+        this->convertToAssign(RefExp::get(m_lhs, notthis));
         return;
     }
 }

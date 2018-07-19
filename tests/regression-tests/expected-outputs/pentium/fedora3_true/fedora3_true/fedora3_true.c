@@ -43,23 +43,23 @@ int main(int argc, char *argv[])
             if (flags) {
                 proc_0x08048b68(0);
             }
-            if (r[25] != 0) {
+            if (%ecx != 0) {
                 do {
                 } while (ZF);
             }
             if ( ~flags) {
-                *(__size32*)(r[28] + 20) = 0;
-                *(__size32*)(r[28] + 16) = r[24];
-                *(__size32*)(r[28] + 12) = r[24];
-                *(__size32*)(r[28] + 8) = r[24];
-                *(__size32*)(r[28] + 4) = r[24];
-                *(__size32*)r[28] = r[24];
-                proc_0x08049ccd(*(r[28] + 4), *(r[28] + 8));
+                *(__size32*)(%esp + 20) = 0;
+                *(__size32*)(%esp + 16) = %eax;
+                *(__size32*)(%esp + 12) = %eax;
+                *(__size32*)(%esp + 8) = %eax;
+                *(__size32*)(%esp + 4) = %eax;
+                *(__size32*)%esp = %eax;
+                proc_0x08049ccd(*(%esp + 4), *(%esp + 8));
             }
         }
     }
-    *(__size32*)r[28] = 0;
-    exit(*(r[28] + 4));
+    *(__size32*)%esp = 0;
+    exit(*(%esp + 4));
     return;
 }
 
@@ -145,8 +145,8 @@ void proc_0x08049ac0(union { FILE *; __size32; } param1, __size32 param2, union 
     if (esi <= 9) {
 /* goto (m[(ebx + (esi * 4)) + 0xd1f] + ebx) + 0x1e7f */
     }
-    r[24] = dcgettext(0, ebx + 0xaf7, 5);
-    vfprintf(param1, r[24], param3);
+    %eax = dcgettext(0, ebx + 0xaf7, 5);
+    vfprintf(param1, %eax, param3);
     eax = *(param1 + 20);
     if (eax >= *(param1 + 24)) {
         __overflow();
@@ -166,8 +166,8 @@ void proc_0x08049ac0(union { FILE *; __size32; } param1, __size32 param2, union 
         *(__size8*)eax = 10;
         *(__size32*)(param1 + 20)++;
     }
-    r[24] = dcgettext(0, ebx + 0xb33, 5);
-    fputs_unlocked(r[24], param1);
+    %eax = dcgettext(0, ebx + 0xb33, 5);
+    fputs_unlocked(%eax, param1);
     return;
 }
 

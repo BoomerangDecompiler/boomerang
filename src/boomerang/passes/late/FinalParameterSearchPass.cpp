@@ -10,12 +10,13 @@
 #include "FinalParameterSearchPass.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/util/Log.h"
+#include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 
 FinalParameterSearchPass::FinalParameterSearchPass()
@@ -92,7 +93,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
 
             SharedType ty = static_cast<ImplicitAssign *>(s)->getType();
             // Add this parameter to the signature (for now; creates parameter names)
-            proc->addParameter(e, ty);
+            proc->addParameterToSignature(e, ty);
             // Insert it into the parameters StatementList, in sensible order
             proc->insertParameter(e, ty);
         }

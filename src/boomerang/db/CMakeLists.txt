@@ -20,11 +20,13 @@ list(APPEND boomerang-db-sources
     db/InterferenceFinder
     db/LivenessAnalyzer
     db/Module
+    db/ProcDecompiler
     db/Prog
     db/ProgDecompiler
     db/Register
     db/RTL
     db/Table
+    db/UnusedReturnRemover
     db/UseCollector
 
     db/binary/BinaryFile

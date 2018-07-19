@@ -27,6 +27,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CaseStatement.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
@@ -326,8 +327,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
         first = true;
         s << " /* Warning: also results in ";
 
-        for (StatementList::const_iterator ss = std::next(results.begin());
-             ss != results.end(); ++ss) {
+        for (auto ss = std::next(results.begin()); ss != results.end(); ++ss) {
             if (first) {
                 first = false;
             }
@@ -521,7 +521,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 {
     QString         tgt;
     QTextStream     s(&tgt);
-    ReturnStatement *returns = proc->getTheReturnStatement();
+    ReturnStatement *returns = proc->getRetStmt();
     SharedType      retType;
 
     if (proc->getSignature()->isForced()) {
@@ -1392,15 +1392,11 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
             }
 
             assert(unaryExp.getSubExp1()->isIntConst());
-            QString regName(m_proc->getProg()->getRegName(std::static_pointer_cast<const Const>(unaryExp.getSubExp1())->getInt()));
+            const int regID = unaryExp.access<const Const, 1>()->getInt();
+            QString regName = m_proc->getProg()->getRegName(regID);
 
-            if (regName.isEmpty()) {
-                if (regName[0] == '%') {
-                    str << regName + 1;
-                }
-                else {
-                    str << regName;
-                }
+            if (!regName.isEmpty()) {
+                str << regName;
             }
             else {
                 // What is this doing in the back end???

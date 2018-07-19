@@ -61,7 +61,7 @@ else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-Wnull-dereference)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-cond -Wduplicated-branches)
     BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero -Walloca)
-    BOOMERANG_ADD_COMPILE_FLAGS(-rdynamic -fPIC)
+    BOOMERANG_ADD_COMPILE_FLAGS(-fPIC)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC

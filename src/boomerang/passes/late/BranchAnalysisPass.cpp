@@ -10,9 +10,11 @@
 #include "BranchAnalysisPass.h"
 
 
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/passes/PassManager.h"
 
 
 BranchAnalysisPass::BranchAnalysisPass()
@@ -25,6 +27,37 @@ bool BranchAnalysisPass::execute(UserProc *proc)
 {
     bool removedBBs = doBranchAnalysis(proc);
     fixUglyBranches(proc);
+
+    if (removedBBs) {
+        // redo the data flow
+        PassManager::get()->executePass(PassID::Dominators, proc);
+
+        // recalculate phi assignments of referencing BBs.
+        for (BasicBlock *bb : *proc->getCFG()) {
+            BasicBlock::RTLIterator rtlIt;
+            StatementList::iterator stmtIt;
+
+            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
+                if (!stmt->isPhi()) {
+                    continue;
+                }
+
+                PhiAssign *phiStmt = static_cast<PhiAssign *>(stmt);
+                PhiAssign::PhiDefs& defs = phiStmt->getDefs();
+
+                for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end();) {
+                    if (!proc->getCFG()->hasBB(defIt->first)) {
+                        // remove phi reference to deleted bb
+                        defIt = defs.erase(defIt);
+                    }
+                    else {
+                        ++defIt;
+                    }
+                }
+            }
+        }
+    }
+
     return removedBBs;
 }
 

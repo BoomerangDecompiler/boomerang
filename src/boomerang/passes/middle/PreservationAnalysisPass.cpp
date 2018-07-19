@@ -11,8 +11,10 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/util/Log.h"
 
 
@@ -26,7 +28,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
 {
     std::set<SharedExp> removes;
 
-    if (proc->getTheReturnStatement() == nullptr) {
+    if (proc->getRetStmt() == nullptr) {
         if (proc->getProg()->getProject()->getSettings()->debugProof) {
             LOG_MSG("Can't find preservations as there is no return statement!");
         }
@@ -35,7 +37,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
     }
 
     // prove preservation for all modifieds in the return statement
-    for (Statement *mod : proc->getTheReturnStatement()->getModifieds()) {
+    for (Statement *mod : proc->getRetStmt()->getModifieds()) {
         SharedExp lhs      = static_cast<Assignment *>(mod)->getLeft();
         auto      equation = Binary::get(opEquals, lhs, lhs);
 
@@ -43,7 +45,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
             LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
         }
 
-        if (proc->prove(equation)) {
+        if (proc->preservesExp(lhs)) {
             removes.insert(equation);
         }
     }
@@ -68,7 +70,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
             continue;
         }
 
-        proc->getTheReturnStatement()->removeModified(lhs);
+        proc->getRetStmt()->removeModified(lhs);
     }
 
     return true;

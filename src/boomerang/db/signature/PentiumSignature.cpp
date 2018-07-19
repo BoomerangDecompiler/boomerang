@@ -10,13 +10,14 @@
 #include "PentiumSignature.h"
 
 
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/type/type/SizeType.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/exp/Terminal.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
+#include "boomerang/type/type/SizeType.h"
+#include "boomerang/util/Log.h"
 
 
 namespace CallingConvention
@@ -109,6 +110,12 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
 }
 
 
+int PentiumSignature::getStackRegister() const
+{
+    return REG_PENT_ESP;
+}
+
+
 void PentiumSignature::addReturn(SharedType type, SharedExp e)
 {
     if (type->isVoid()) {
@@ -161,7 +168,7 @@ std::shared_ptr<Signature> PentiumSignature::promote(UserProc * /*p*/)
 SharedExp PentiumSignature::getProven(SharedExp left) const
 {
     if (left->isRegOfConst()) {
-        int r = left->access<Const, 1>()->getInt();
+        const int r = left->access<Const, 1>()->getInt();
 
         switch (r)
         {

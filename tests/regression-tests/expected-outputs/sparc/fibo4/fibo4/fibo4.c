@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-__size32 fib(__size32 param1, int param2);
+__size32 fib(int param1);
 
 /** address: 0x000106fc */
 int main(int argc, char *argv[])
@@ -9,34 +9,27 @@ int main(int argc, char *argv[])
 
     printf("Input number: ");
     scanf("%d", &local0);
-    fib(0x10800, local0);
+    fib(local0);
     printf("fibonacci(%d) = %d\n", local0, o2);
     return 0;
 }
 
 /** address: 0x000106ac */
-__size32 fib(__size32 param1, int param2)
+__size32 fib(int param1)
 {
     int g0; 		// r0
-    __size32 g1; 		// r1
-    __size32 local3; 		// param1{0}
-    __size32 o2; 		// r10
+    int o2; 		// r10
     __size32 o2_1; 		// r10{0}
-    __size32 o2_4; 		// r10{0}
 
-    g0 = param2 - 1;
-    local3 = param1;
-    if (param2 <= 1) {
-        o2 = param2;
+    g0 = param1 - 1;
+    if (param1 <= 1) {
+        o2 = param1;
     }
     else {
-        g1 = fib(param1, param2 - 1); /* Warning: also results in o2_1 */
-        g0 = fib(g1, param2 - 2); /* Warning: also results in o2_4 */
-        g1 = o2_1;
-        o2 = o2_4 + o2_1;
-        local3 = g1;
+        o2_1 = fib(param1 - 1);
+        g0 = fib(param1 - 2); /* Warning: also results in o2 */
+        o2 += o2_1;
     }
-    param1 = local3;
-    return g0; /* WARNING: Also returning: g1 := param1, o2 := o2 */
+    return g0; /* WARNING: Also returning: o2 := o2 */
 }
 

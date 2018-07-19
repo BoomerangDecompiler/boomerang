@@ -63,8 +63,6 @@ endif ()
 
 add_definitions(-DDEBUG=0)
 
-# Define this to 1 if you want to use Dominance Numbers for analysis
-add_definitions(-DUSE_DOMINANCE_NUMS=0)
 add_definitions(-DBCCTR_LONG=0)
 add_definitions(-DYYMAXDEPTH=10000)
 add_definitions(-DSYMS_IN_BACK_END=0)

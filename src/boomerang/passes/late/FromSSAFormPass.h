@@ -13,6 +13,9 @@
 #include "boomerang/passes/Pass.h"
 
 
+class ConnectionGraph;
+
+
 /// Transforms the statements a proc out of SSA form
 class FromSSAFormPass : public IPass
 {
@@ -42,4 +45,7 @@ private:
     void removeSubscriptsFromSymbols(UserProc *proc);
 
     void removeSubscriptsFromParameters(UserProc *proc);
+
+    /// Find the locations united by Phi-functions
+    void findPhiUnites(UserProc *proc, ConnectionGraph& pu);
 };

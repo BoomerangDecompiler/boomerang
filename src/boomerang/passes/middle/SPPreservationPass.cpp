@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
@@ -40,10 +41,7 @@ bool SPPreservationPass::execute(UserProc *proc)
                 LOG_MSG("Attempting to prove sp = sp + %1 for %2", p * 4, getName());
             }
 
-            stdsp = proc->prove(
-                Binary::get(opEquals,
-                            Location::regOf(sp),
-                            Binary::get(opPlus, Location::regOf(sp), Const::get(p * 4))));
+            stdsp = proc->preservesExpWithOffset(Location::regOf(sp), p * 4);
         }
     }
 

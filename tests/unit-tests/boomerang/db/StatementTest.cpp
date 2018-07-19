@@ -23,6 +23,7 @@
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
@@ -80,7 +81,7 @@ void StatementTest::testEmpty()
     proc->setDecoded(); // We manually "decoded"
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     // print cfg to a string
     QString     actual;
@@ -139,7 +140,7 @@ void StatementTest::testFlow()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     // print cfg to a string
     QString     actual;
@@ -213,7 +214,7 @@ void StatementTest::testKill()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     // print cfg to a string
     QString     actual;
@@ -280,7 +281,7 @@ void StatementTest::testUse()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
     // print cfg to a string
     QString     actual;
     QTextStream st(&actual);
@@ -350,7 +351,7 @@ void StatementTest::testUseOverKill()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     // print cfg to a string
     QString     actual;
@@ -425,7 +426,7 @@ void StatementTest::testUseOverBB()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     // print cfg to a string
     QString     actual;
@@ -492,7 +493,7 @@ void StatementTest::testUseKill()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     // print cfg to a string
     QString     actual;
@@ -562,7 +563,7 @@ void StatementTest::testEndlessLoop()
     proc->setDecoded();
 
     // compute dataflow
-    proc->decompile();
+    proc->decompileRecursive();
 
     QString     actual;
     QTextStream st(&actual);

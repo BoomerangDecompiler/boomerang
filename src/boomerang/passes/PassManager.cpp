@@ -36,7 +36,9 @@
 #include "boomerang/passes/late/FinalParameterSearchPass.h"
 #include "boomerang/passes/late/UnusedStatementRemovalPass.h"
 #include "boomerang/passes/late/UnusedLocalRemovalPass.h"
+#include "boomerang/passes/late/UnusedParamRemovalPass.h"
 #include "boomerang/passes/late/ImplicitPlacementPass.h"
+#include "boomerang/passes/late/LocalAndParamMapPass.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
@@ -51,30 +53,32 @@ PassManager::PassManager()
 {
     m_passes.resize(static_cast<size_t>(PassID::NUM_PASSES));
 
-    m_passes[static_cast<size_t>(PassID::Dominators               )].reset(new DominatorPass());
-    m_passes[static_cast<size_t>(PassID::PhiPlacement             )].reset(new PhiPlacementPass());
-    m_passes[static_cast<size_t>(PassID::BlockVarRename           )].reset(new BlockVarRenamePass());
-    m_passes[static_cast<size_t>(PassID::CallDefineUpdate         )].reset(new CallDefineUpdatePass());
-    m_passes[static_cast<size_t>(PassID::CallArgumentUpdate       )].reset(new CallArgumentUpdatePass());
-    m_passes[static_cast<size_t>(PassID::StatementInit            )].reset(new StatementInitPass());
-    m_passes[static_cast<size_t>(PassID::GlobalConstReplace       )].reset(new GlobalConstReplacePass());
-    m_passes[static_cast<size_t>(PassID::StatementPropagation     )].reset(new StatementPropagationPass());
-    m_passes[static_cast<size_t>(PassID::BBSimplify               )].reset(new BBSimplifyPass());
-    m_passes[static_cast<size_t>(PassID::CallAndPhiFix            )].reset(new CallAndPhiFixPass());
-    m_passes[static_cast<size_t>(PassID::SPPreservation           )].reset(new SPPreservationPass());
-    m_passes[static_cast<size_t>(PassID::PreservationAnalysis     )].reset(new PreservationAnalysisPass());
-    m_passes[static_cast<size_t>(PassID::StrengthReductionReversal)].reset(new StrengthReductionReversalPass());
-    m_passes[static_cast<size_t>(PassID::AssignRemoval            )].reset(new AssignRemovalPass());
-    m_passes[static_cast<size_t>(PassID::DuplicateArgsRemoval     )].reset(new DuplicateArgsRemovalPass());
-    m_passes[static_cast<size_t>(PassID::CallLivenessRemoval      )].reset(new CallLivenessRemovalPass());
-    m_passes[static_cast<size_t>(PassID::LocalTypeAnalysis        )].reset(new LocalTypeAnalysisPass());
-    m_passes[static_cast<size_t>(PassID::BranchAnalysis           )].reset(new BranchAnalysisPass());
-    m_passes[static_cast<size_t>(PassID::FromSSAForm              )].reset(new FromSSAFormPass());
-    m_passes[static_cast<size_t>(PassID::FinalParameterSearch     )].reset(new FinalParameterSearchPass());
-    m_passes[static_cast<size_t>(PassID::UnusedStatementRemoval   )].reset(new UnusedStatementRemovalPass());
-    m_passes[static_cast<size_t>(PassID::ParameterSymbolMap       )].reset(new ParameterSymbolMapPass());
-    m_passes[static_cast<size_t>(PassID::UnusedLocalRemoval       )].reset(new UnusedLocalRemovalPass());
-    m_passes[static_cast<size_t>(PassID::ImplicitPlacement        )].reset(new ImplicitPlacementPass());
+    registerPass(PassID::Dominators,                Util::makeUnique<DominatorPass>());
+    registerPass(PassID::PhiPlacement,              Util::makeUnique<PhiPlacementPass>());
+    registerPass(PassID::BlockVarRename,            Util::makeUnique<BlockVarRenamePass>());
+    registerPass(PassID::CallDefineUpdate,          Util::makeUnique<CallDefineUpdatePass>());
+    registerPass(PassID::CallArgumentUpdate,        Util::makeUnique<CallArgumentUpdatePass>());
+    registerPass(PassID::StatementInit,             Util::makeUnique<StatementInitPass>());
+    registerPass(PassID::GlobalConstReplace,        Util::makeUnique<GlobalConstReplacePass>());
+    registerPass(PassID::StatementPropagation,      Util::makeUnique<StatementPropagationPass>());
+    registerPass(PassID::BBSimplify,                Util::makeUnique<BBSimplifyPass>());
+    registerPass(PassID::CallAndPhiFix,             Util::makeUnique<CallAndPhiFixPass>());
+    registerPass(PassID::SPPreservation,            Util::makeUnique<SPPreservationPass>());
+    registerPass(PassID::PreservationAnalysis,      Util::makeUnique<PreservationAnalysisPass>());
+    registerPass(PassID::StrengthReductionReversal, Util::makeUnique<StrengthReductionReversalPass>());
+    registerPass(PassID::AssignRemoval,             Util::makeUnique<AssignRemovalPass>());
+    registerPass(PassID::DuplicateArgsRemoval,      Util::makeUnique<DuplicateArgsRemovalPass>());
+    registerPass(PassID::CallLivenessRemoval,       Util::makeUnique<CallLivenessRemovalPass>());
+    registerPass(PassID::LocalTypeAnalysis,         Util::makeUnique<LocalTypeAnalysisPass>());
+    registerPass(PassID::BranchAnalysis,            Util::makeUnique<BranchAnalysisPass>());
+    registerPass(PassID::FromSSAForm,               Util::makeUnique<FromSSAFormPass>());
+    registerPass(PassID::FinalParameterSearch,      Util::makeUnique<FinalParameterSearchPass>());
+    registerPass(PassID::UnusedStatementRemoval,    Util::makeUnique<UnusedStatementRemovalPass>());
+    registerPass(PassID::ParameterSymbolMap,        Util::makeUnique<ParameterSymbolMapPass>());
+    registerPass(PassID::UnusedLocalRemoval,        Util::makeUnique<UnusedLocalRemovalPass>());
+    registerPass(PassID::UnusedParamRemoval,        Util::makeUnique<UnusedParamRemovalPass>());
+    registerPass(PassID::ImplicitPlacement,         Util::makeUnique<ImplicitPlacementPass>());
+    registerPass(PassID::LocalAndParamMap,          Util::makeUnique<LocalAndParamMapPass>());
 
     for (auto& pass : m_passes) {
         Q_UNUSED(pass);

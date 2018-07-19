@@ -388,18 +388,6 @@ void Cfg::simplify()
 }
 
 
-void Cfg::undoComputedBB(Statement *stmt)
-{
-    for (BasicBlock *bb : *this) {
-        if (bb->hasStatement(stmt)) {
-            LOG_VERBOSE("undoComputedBB for statement %1", stmt);
-            bb->setType(BBType::Call);
-            break;
-        }
-    }
-}
-
-
 BasicBlock *Cfg::findRetNode()
 {
     BasicBlock *retNode = nullptr;

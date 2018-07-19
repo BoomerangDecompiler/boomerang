@@ -72,7 +72,7 @@ void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;
 
-    const bool assumeABICompliance = proc ? proc->getProg()->getProject()->getSettings()->assumeABI : false;
+    const bool assumeABICompliance = (proc && proc->getProg()) ? proc->getProg()->getProject()->getSettings()->assumeABI : false;
     LocationSet exps, defs;
     addUsedLocs(exps);
     getDefinitions(defs, assumeABICompliance);
@@ -280,9 +280,6 @@ bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedEx
                     LocationSet rhsComps;
                     rhs->addUsedLocs(rhsComps);
                     LocationSet::iterator rcit;
-#if USE_DOMINANCE_NUMS
-                    bool doPropagate = true;
-#endif
 
                     for (rcit = rhsComps.begin(); rcit != rhsComps.end(); ++rcit) {
                         if (!(*rcit)->isSubscript()) {
@@ -315,14 +312,6 @@ bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedEx
                             }
 
                             if (isOverwrite) {
-#if USE_DOMINANCE_NUMS
-                                // Now check for propagating a component past OWdef
-                                if ((def->getDomNumber() <= OWdef->getDomNumber()) &&
-                                    (OWdef->getDomNumber() < m_dominanceNum)) {
-                                    // The heuristic kicks in
-                                    doPropagate = false;
-                                }
-#endif
                                 break;
                             }
 
@@ -331,16 +320,6 @@ bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedEx
                             }
                         }
                     }
-
-#if USE_DOMINANCE_NUMS
-                    if (!doPropagate) {
-                        LOG_VERBOSE("% propagation of %1 into %2 prevented by "
-                                    "the propagate past overwriting statement in loop heuristic",
-                                    def->getNumber(), m_number);
-
-                        continue;
-                    }
-#endif
                 }
             }
 

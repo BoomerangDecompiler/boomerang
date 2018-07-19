@@ -351,11 +351,11 @@ void CallStatement::setSigArguments()
         return;     // Using dataflow analysis now
     }
 
-    int n = m_signature->getNumParams();
 
     qDeleteAll(m_arguments);
     m_arguments.clear();
 
+    const int n = m_signature->getNumParams();
     for (int i = 0; i < n; i++) {
         SharedExp e = m_signature->getArgumentExp(i);
         assert(e);
@@ -816,7 +816,8 @@ bool CallStatement::convertToDirect()
 
     // 4
     m_isComputed = false;
-    m_proc->undoComputedBB(this);
+    assert(m_bb->getType() == BBType::CompCall);
+    m_bb->setType(BBType::Call);
     m_proc->addCallee(m_procDest);
 
     LOG_VERBOSE("Result of convertToDirect: true");
