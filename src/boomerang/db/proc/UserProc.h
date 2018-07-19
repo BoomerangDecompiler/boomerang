@@ -327,9 +327,6 @@ public:
     /// For debugging
     void dumpLocals(QTextStream& os, bool html = false) const;
 
-    void printDFG() const;
-    void printUseGraph() const;
-
     void debugPrintAll(const QString& stepName);
 
 private:
@@ -372,7 +369,6 @@ private:
      * Status: undecoded .. final decompiled
      */
     ProcStatus m_status = PROC_UNDECODED;
-    mutable short m_dfgCount = 0; ///< used in dotty output
     int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
 
     std::unique_ptr<Cfg> m_cfg; ///< The control flow graph.

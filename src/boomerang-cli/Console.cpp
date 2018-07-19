@@ -16,6 +16,8 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/util/CallGraphDotWriter.h"
+#include "boomerang/util/DFGWriter.h"
+#include "boomerang/util/UseGraphWriter.h"
 
 #include <QFile>
 #include <QString>
@@ -736,8 +738,11 @@ CommandStatus Console::handlePrint(const QStringList& args)
         return CommandStatus::Success;
     }
     else if (args[0] == "cfg") {
+        // make sure output directory exists
+        QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
+
         if (args.size() == 1) {
-            CfgDotWriter().writeCFG(prog, "cfg.dot");
+            CfgDotWriter().writeCFG(prog, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
             return CommandStatus::Success;
         }
         else {
@@ -760,10 +765,79 @@ CommandStatus Console::handlePrint(const QStringList& args)
                 procs.insert(userProc);
             }
 
-            CfgDotWriter().writeCFG(procs, "cfg.dot");
-
+            CfgDotWriter().writeCFG(procs, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
             return CommandStatus::Success;
         }
+    }
+    else if (args[0] == "dfg") {
+        if (args.size() <= 1) {
+            std::cerr << "Too few arguments for command 'print dfg'" << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        ProcSet procs;
+        for (int i = 1; i < args.size(); i++) {
+            Function *proc = prog->getFunctionByName(args[i]);
+            if (!proc) {
+                std::cerr << "Procedure '" << args[i].toStdString() << "' not found.";
+                return CommandStatus::Failure;
+            }
+            else if (proc->isLib()) {
+                std::cerr << "Cannot print library procedure '" << args[i].toStdString() << "'.";
+                return CommandStatus::Failure;
+            }
+
+            UserProc *userProc = static_cast<UserProc *>(proc);
+            procs.insert(userProc);
+        }
+
+        // make sure output directory exists
+        QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
+
+        for (UserProc *proc : procs) {
+            const QString fname = QString("%2-%3-dfg.dot")
+                .arg(proc->getName())
+                .arg(m_dfgCounts[proc]++);
+
+            DFGWriter().printDFG(proc,
+                m_project->getSettings()->getOutputDirectory().absoluteFilePath(fname));
+        }
+
+        return CommandStatus::Success;
+    }
+    else if (args[0] == "use-graph") {
+        if (args.size() <= 1) {
+            std::cerr << "Too few arguments for command 'print use-graph'" << std::endl;
+            return CommandStatus::Failure;
+        }
+
+        ProcSet procs;
+        for (int i = 1; i < args.size(); i++) {
+            Function *proc = prog->getFunctionByName(args[i]);
+            if (!proc) {
+                std::cerr << "Procedure '" << args[i].toStdString() << "' not found." << std::endl;
+                return CommandStatus::Failure;
+            }
+            else if (proc->isLib()) {
+                std::cerr << "Cannot print library procedure '" << args[i].toStdString() << "'." << std::endl;
+                return CommandStatus::Failure;
+            }
+
+            UserProc *userProc = static_cast<UserProc *>(proc);
+            procs.insert(userProc);
+        }
+
+        // make sure output directory exists
+        QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
+
+        for (UserProc *proc : procs) {
+            const QString fname = m_project->getSettings()->getOutputDirectory()
+                .absoluteFilePath(proc->getName() + "-usegraph.dot");
+
+            UseGraphWriter().writeUseGraph(proc, fname);
+        }
+
+        return CommandStatus::Success;
     }
     else {
         std::cerr << "Unknown argument " << args[1].toStdString() << " for command 'print'" << std::endl;
@@ -797,9 +871,9 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "  decode <file>                      : Loads and decodes the specified binary.\n"
         "  decompile [<proc1> [<proc2>...]]   : Decompiles the program or specified function(s).\n"
         "  codegen [<module1> [<module2>...]] : Generates code for the program or a specified module.\n"
-        "  info prog                          : Print info about the program.\n"
-        "  info module <module>               : Print info about a module.\n"
-        "  info proc <proc>                   : Print info about a proc.\n"
+        "  info prog                          : Print information about the program.\n"
+        "  info module <module>               : Print information about a module.\n"
+        "  info proc <proc>                   : Print information about a proc.\n"
         "  move proc <proc> <module>          : Moves the specified proc to the specified module.\n"
         "  move module <module> <parent>      : Moves the specified module to the specified parent module.\n"
         "  add module <module> [<parent>]     : Adds a new module to the root/specified module.\n"
@@ -808,7 +882,9 @@ CommandStatus Console::handleHelp(const QStringList& args)
         "  rename module <module> <newname>   : Renames the specified module.\n"
         "  print callgraph [<filename>]       : prints the call graph of the program. (filename defaults to 'callgraph.dot')\n"
         "  print cfg [<proc1> [<proc2>...]]   : prints the Control Flow Graph of the program or a set of procedures.\n"
-        "  print rtl [<proc1> [<proc2>...]]   : Print the RTL for a proc.\n"
+        "  print dfg <proc1> [<proc2>...]     : prints the Data Flow Graph of a proc.\n"
+        "  print rtl [<proc1> [<proc2>...]]   : Print the RTL(s) for a proc.\n"
+        "  print use-graph <proc1> [<proc2>]  : Print the Use Graph of a proc.\n"
         "  replay <file>                      : Reads file and executes commands line by line.\n"
         "\n"
         "  help                               : This help.\n"

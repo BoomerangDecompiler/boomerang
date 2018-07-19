@@ -56,7 +56,7 @@ static void help()
         "  -h               : This help\n"
         "  -o <output path> : Where to generate output (defaults to ./output/)\n"
         "  -r               : Print RTL for each proc to log before code generation\n"
-        "  -gd <dot file>   : Generate a dotty graph of the program's CFG and DFG\n"
+        "  -gd <dot file>   : Generate a dotty graph of the program's CFG\n"
         "  -gc              : Generate a call graph to callgraph.dot\n"
         "  -gs              : Generate a symbol file (symbols.h)\n"
         "  -iw              : Write indirect call report to output/indirect.txt\n"

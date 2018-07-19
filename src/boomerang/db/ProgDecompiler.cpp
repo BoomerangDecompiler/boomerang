@@ -200,12 +200,6 @@ void ProgDecompiler::fromSSAForm()
             }
 
             UserProc *proc = static_cast<UserProc *>(pp);
-
-            if (m_prog->getProject()->getSettings()->verboseOutput &&
-                !m_prog->getProject()->getSettings()->dotFile.isEmpty()) {
-                    proc->printDFG();
-            }
-
             PassManager::get()->executePass(PassID::FromSSAForm, proc);
         }
     }

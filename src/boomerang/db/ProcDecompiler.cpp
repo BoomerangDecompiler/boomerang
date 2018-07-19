@@ -454,10 +454,6 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
             LOG_SEPARATE(filePath, "=== End debug print SSA for %1 pass %2 (no propagations) ===", proc->getName(), pass);
         }
 
-        if (!project->getSettings()->dotFile.isEmpty()) { // Require -gd now (though doesn't listen to file name)
-            proc->printDFG();
-        }
-
         // (* Was: mapping expressions to Parameters as we go *)
 
         // FIXME: Check if this is needed any more. At least fib seems to need it at present.

@@ -96,4 +96,6 @@ private:
 private:
     QMap<QString, CommandType> m_commandTypes;
     Project *m_project;
+
+    QMap<class UserProc *, int> m_dfgCounts;
 };

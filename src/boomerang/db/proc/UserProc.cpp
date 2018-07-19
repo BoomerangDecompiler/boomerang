@@ -1045,26 +1045,6 @@ void UserProc::dumpLocals(QTextStream& os, bool html) const
 }
 
 
-void UserProc::printDFG() const
-{
-    const QString fname = QString("%1%2-%3-dfg.dot")
-        .arg(m_prog->getProject()->getSettings()->getOutputDirectory().absolutePath())
-        .arg(getName())
-        .arg(m_dfgCount++);
-
-    DFGWriter().printDFG(this, fname);
-}
-
-
-void UserProc::printUseGraph() const
-{
-    const Settings *settings = getProg()->getProject()->getSettings();
-    const QString filePath = settings->getOutputDirectory()
-        .absoluteFilePath(getName() + "-usegraph.dot");
-    UseGraphWriter().writeUseGraph(this, filePath);
-}
-
-
 void UserProc::debugPrintAll(const QString& stepName)
 {
     if (m_prog->getProject()->getSettings()->verboseOutput) {

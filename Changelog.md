@@ -25,6 +25,8 @@
 - Improved: Regression test coverage.
 - Improved: The regression test script now produces a unified diff when detecting a regression.
 - Feature: Added 'replay' console command to read console commands from a file.
+- Feature: Added 'print dfg' console command to write the DFG of a function to a file.
+- Feature: Added 'print use-graph' console command to write the Use Graph of a function to a file.
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
 - Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
