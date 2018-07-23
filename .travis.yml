@@ -17,17 +17,17 @@ matrix:
   include:
     # Clang 4, Debug
     - env:
-      - TARGET="clang4-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+      - TARGET="clang4-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
     - env:
-      - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+      - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
     - env:
-      - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+      - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
     - env:
-        - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"
+        - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON" COVERAGE="OFF"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make check"
     - env:
-        - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+        - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"
       after_success:
         - docker exec -t build-env bash -c "lcov --directory . --capture --output-file coverage.info &&
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
@@ -39,7 +39,7 @@ before_script:
   - docker exec -t build-env bash -c "cd boomerang &&
     mkdir build &&
     cd build &&
-    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOMERANG_BUILD_UNIT_TESTS=$UNIT_TESTS -DBOOMERANG_BUILD_REGRESSION_TESTS=$REGRESSION_TESTS .."
+    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOMERANG_BUILD_UNIT_TESTS=$UNIT_TESTS -DBOOMERANG_BUILD_REGRESSION_TESTS=$REGRESSION_TESTS -DBOOMERANG_ENABLE_COVERAGE=$COVERAGE .."
 
 script:
   - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make test"
