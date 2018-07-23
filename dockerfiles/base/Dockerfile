@@ -9,7 +9,9 @@ RUN apt-get -y update && \
     make \
     cmake \
     ccache \
-    qt5-default
+    qt5-default \
+    git \
+    libcapstone-dev
 
 
 COPY . boomerang
