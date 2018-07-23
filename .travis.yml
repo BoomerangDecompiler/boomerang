@@ -31,8 +31,8 @@ matrix:
       after_success:
         - docker exec -t build-env bash -c "lcov --directory . --capture --output-file coverage.info &&
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
-            lcov --list coverage.info
-            bash <(curl -s https://codecov.io/bash) -X gcov -F unittests || echo \"Codecov did not collect coverage reports\""
+            lcov --list coverage.info &&
+            bash <(curl -s https://codecov.io/bash) -X gcov -F unittests"
 
 
 before_script:
