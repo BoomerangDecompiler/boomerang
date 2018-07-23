@@ -6,7 +6,7 @@ ENV HOME /home/boomerang
 
 RUN apt-get -y update && \
     apt-get install -y --no-install-recommends \
-    build-essential \
+    make \
     cmake \
     ccache \
     qt5-default

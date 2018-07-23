@@ -1,4 +1,4 @@
-
+os: linux
 dist: trusty
 sudo: required
 language: cpp
@@ -8,16 +8,42 @@ addons:
   apt:
     update: false
 
-install:
-  - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-base:latest tail -f /dev/null
 
-script:
+install:
+  - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-$TARGET:latest tail -f /dev/null
+
+
+matrix:
+  include:
+    # Clang 4, Debug
+    - env:
+      - TARGET="clang4-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+    - env:
+      - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+    - env:
+      - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+    - env:
+        - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"
+      script:
+        - docker exec -t build-env bash -c "make -j$(nproc) && make check
+    - env:
+        - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
+      after_success:
+        - docker exec -t build-env bash -c "lcov --directory . --capture --output-file coverage.info &&
+            lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
+            lcov --list coverage.info
+            bash <(curl -s https://codecov.io/bash) -X gcov -F unittests || echo \"Codecov did not collect coverage reports\""
+
+
+before_script:
   - docker exec -t build-env bash -c "cd boomerang &&
     mkdir build &&
     cd build &&
-    cmake -DBOOMERANG_BUILD_UNIT_TESTS=ON .. &&
-    make -j$(nproc) &&
-    make test"
+    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOMERANG_BUILD_UNIT_TESTS=$UNIT_TESTS -DBOOMERANG_BUILD_REGRESSION_TESTS=$REGRESSION_TESTS .."
+
+script:
+  - docker exec -t build-env bash -c "make -j$(nproc) && make test"
+
 
 notifications:
   email: false
