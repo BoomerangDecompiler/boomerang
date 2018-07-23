@@ -25,7 +25,7 @@ matrix:
     - env:
         - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"
       script:
-        - docker exec -t build-env bash -c "make -j$(nproc) && make check"
+        - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make check"
     - env:
         - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF"
       after_success:
