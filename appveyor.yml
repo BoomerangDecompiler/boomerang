@@ -13,7 +13,7 @@ build:
   verbosity: quiet # MSBuild verbosity level (quiet|minimal|normal|detailed)
 
 skip_commits:
-  - message: /\[[aA]ppveyor [sS]kip\]/
+  message: /\[[aA]ppveyor [sS]kip\]/
 
 configuration:
   - Debug
