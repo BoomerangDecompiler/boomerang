@@ -8,7 +8,7 @@ if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {
 
 
 # install libcapstone via vcpkg
-vcpkg install capstone
+vcpkg install capstone:x64-windows
 
 
 $QT_CORE_DIR    = "$QT_BASE_DIR\lib\cmake\Qt5Core"
