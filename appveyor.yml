@@ -1,24 +1,42 @@
 version: "Build {build}"
 
-os:
-  - Visual Studio 2017
 
-platform:
-  - x64
-
-configuration:
-  - Debug
-  - Release
+cache: c:\tools\vcpkg\installed\
 
 branches:
   except:
     - gh-pages
 
-skip_commits:
-  message: /\[[aA]ppveyor [sS]kip\]/
+
+matrix:
+  fast_finish: true
+
 
 pull_requests:
   do_not_increment_build_number: true
+
+
+clone_folder: C:\projects\boomerang
+
+
+os:
+  - Visual Studio 2017
+
+
+platform:
+  - x64
+
+
+configuration:
+  - Debug
+  - Release
+
+
+build:
+  parallel: true
+  verbosity: quiet # MSBuild verbosity level (quiet|minimal|normal|detailed)
+
+
 
 clone_folder: C:\projects\boomerang
 
