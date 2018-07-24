@@ -7,6 +7,11 @@
 #
 
 
+if(CMAKE_TOOLCHAIN_FILE)
+    include(${CMAKE_TOOLCHAIN_FILE})
+endif(CMAKE_TOOLCHAIN_FILE)
+
+
 find_package(Qt5Core REQUIRED HINTS $ENV{QTDIR})
 if (Qt5Core_FOUND)
     mark_as_advanced(Qt5Core_DIR)
