@@ -14,7 +14,6 @@ list(APPEND boomerang-frontend-sources
     frontend/mips/MIPSDecoder
     frontend/mips/MIPSFrontEnd
     frontend/NJMCDecoder
-    frontend/pentium/PentiumDecoder
     frontend/pentium/PentiumFrontEnd
     frontend/pentium/StringInstructionProcessor
     frontend/ppc/PPCDecoder
