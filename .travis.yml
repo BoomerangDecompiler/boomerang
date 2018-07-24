@@ -15,7 +15,6 @@ install:
 
 matrix:
   include:
-    # Clang 4, Debug
     - env:
         - TARGET="clang4-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
     - env:
@@ -29,9 +28,7 @@ matrix:
     - env:
         - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"
       after_success:
-        - ci_env=`bash <(curl -s https://codecov.io/env)`
-        - echo -E "$ci_env"
-        - docker exec $ci_env -t build-env bash -c "cd boomerang/build &&
+        - echo "Building CodeCov reports" && docker exec -t build-env bash -c "cd boomerang/build &&
             lcov --directory . --capture --output-file coverage.info &&
             lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
             lcov --list coverage.info"
@@ -43,6 +40,7 @@ before_script:
     mkdir build &&
     cd build &&
     cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOMERANG_BUILD_UNIT_TESTS=$UNIT_TESTS -DBOOMERANG_BUILD_REGRESSION_TESTS=$REGRESSION_TESTS -DBOOMERANG_ENABLE_COVERAGE=$COVERAGE .."
+
 
 script:
   - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make test"
