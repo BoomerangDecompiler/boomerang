@@ -18,3 +18,5 @@ if (Qt5Xml_FOUND)
 endif (Qt5Xml_FOUND)
 
 find_package(Threads)
+find_package(Capstone REQUIRED)
+

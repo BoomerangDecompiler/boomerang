@@ -31,7 +31,7 @@ foreach (src ${boomerang-sources})
 endforeach ()
 
 add_library(boomerang ${boomerang-sources} ${boomerang-headers})
-target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB} capstone)
+target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core Capstone::Capstone ${DEBUG_LIB} capstone)
 
 
 if (BUILD_SHARED_LIBS)
