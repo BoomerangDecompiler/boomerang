@@ -7,9 +7,9 @@
 #
 
 
-if(CMAKE_TOOLCHAIN_FILE)
+if (CMAKE_TOOLCHAIN_FILE)
     include(${CMAKE_TOOLCHAIN_FILE})
-endif(CMAKE_TOOLCHAIN_FILE)
+endif (CMAKE_TOOLCHAIN_FILE)
 
 
 find_package(Qt5Core REQUIRED HINTS $ENV{QTDIR})
@@ -23,5 +23,7 @@ if (Qt5Xml_FOUND)
 endif (Qt5Xml_FOUND)
 
 find_package(Threads)
+
+message("Prefix path = ${CMAKE_PREFIX_PATH}")
 find_package(Capstone REQUIRED)
 
