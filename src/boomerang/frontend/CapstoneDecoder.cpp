@@ -9,6 +9,8 @@
 #pragma endregion License
 #include "CapstoneDecoder.h"
 
+#include "inttypes.h"
+
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
@@ -153,7 +155,7 @@ bool CapstoneDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResul
     }
 
     // TEST TEST TEST
-    printf("0x%lx:\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
+    printf("0x%" PRIu64 ":\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
            decodedInstruction->op_str);
 
     result.type         = getInstructionClass(decodedInstruction);
