@@ -125,6 +125,7 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
 
 CapstoneDecoder::CapstoneDecoder(Prog *prog)
     : m_prog(prog)
+    , m_dict(prog->getProject()->getSettings()->debugDecoder)
     , m_debugMode(prog->getProject()->getSettings()->debugDecoder)
 {
     cs::cs_open(cs::CS_ARCH_X86, cs::CS_MODE_32, &m_handle);
@@ -155,7 +156,7 @@ bool CapstoneDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResul
     }
 
     // TEST TEST TEST
-    printf("0x%" PRIu64 ":\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
+    printf("0x%" PRIx64 ":\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
            decodedInstruction->op_str);
 
     result.type         = getInstructionClass(decodedInstruction);
