@@ -549,6 +549,12 @@ ADC.reg16.rm16 dest, src
     ADDFLAGS16(tmpdest, src, dest)
 ;
 
+ADC.reg32.reg32 dest, src
+    *32* tmpdest := dest
+    *32* dest := dest + src + %CF
+    ADDFLAGS32(tmpdest, src, dest)
+;
+
 ADC.reg32.rm32 dest, src
     *32* tmpdest := dest
     *32* dest := dest + src + %CF
@@ -917,6 +923,16 @@ CMP.reg64.rm64 lhs, rhs
     SUBFLAGS64(lhs, rhs, tmp1)
 ;
 
+CMP.reg16.imm16 lhs, rhs
+    *16* tmph := lhs - rhs
+    SUBFLAGS16(lhs, rhs, tmph)
+;
+
+CMP.reg16.reg16 lhs, rhs
+    *16* tmph := lhs - rhs
+    SUBFLAGS16(lhs, rhs, tmph)
+;
+
 CMP.reg32.imm32 lhs, rhs
     *32* tmp1 := lhs - rhs
     SUBFLAGS32(lhs, rhs, tmp1)
@@ -993,9 +1009,16 @@ DIV.rm16 divisor
 ;
 
 DIV.rm32 divisor
-    *64* tmpdividend := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
-    *32* %eax := tmpdividend / divisor
-    *32* %edx := tmpdividend % divisor
+    *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
+    *32* %eax := tmp1 / divisor
+    *32* %edx := tmp1 % divisor
+    undefineflags()
+;
+
+DIV.reg32 divisor
+    *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
+    *32* %eax := tmp1 / divisor
+    *32* %edx := tmp1 % divisor
     undefineflags()
 ;
 
@@ -1296,25 +1319,33 @@ FXCH.reg80 i
 
 # IDIV
 IDIV.rm8 divisor
-    *16* tmpdividend := %ax
+    *16* tmph := %ax
     *8* %al := tmph /! divisor{8}
     *8* %ah := tmph %! divisor{8}
     undefineflags()
 ;
 
 IDIV.rm16 divisor
-    *32* tmpdividend := (%dx << 16) | %ax
-    *16* %ax := tmpdividend /! divisor{16}
-    *16* %dx := tmpdividend %! divisor{16}
+    *32* tmpd := (%dx << 16) | %ax
+    *16* %ax := tmpd /! divisor{16}
+    *16* %dx := tmpd %! divisor{16}
     undefineflags()
 ;
 
 IDIV.rm32 divisor
-    *64* tmpdividend := (%edx << 32) | %eax
-    *32* %eax := tmpdividend /! tmp2
-    *32* %edx := tmpdividend %! tmp2
+    *64* tmp1 := (%edx << 32) | %eax
+    *32* %eax := tmp1 /! tmp2
+    *32* %edx := tmp1 %! tmp2
     undefineflags()
 ;
+
+IDIV.reg32 divisor
+    *64* tmp1 := (%edx << 32) | %eax
+    *32* %eax := tmp1 /! tmp2
+    *32* %edx := tmp1 %! tmp2
+    undefineflags()
+;
+
 
 
 # IMUL
@@ -1338,38 +1369,49 @@ IMUL.rm32 val
     IMULTFLAGS32(tmpresult)
 ;
 
-IMUL.r16.rm16 dest, src
+IMUL.reg16.rm16 dest, src
     *16* dest := dest *! src
     IMULTFLAGS16(dest)
 ;
 
-IMUL.r32.rm32 dest, src
+IMUL.reg32.rm32 dest, src
     *32* dest := dest *! src
     IMULTFLAGS32(dest)
 ;
 
-IMUL.r16.rm16.imm8 dest, src1, src2
+IMUL.reg16.rm16.imm8 dest, src1, src2
     *16* dest := src1 *! sgnex(8, 16, src2)
     IMULTFLAGS16(dest)
 ;
 
-IMUL.r32.rm32.imm8 dest, src1, src2
+IMUL.reg32.rm32.imm8 dest, src1, src2
     *32* dest := src1 *! sgnex(8, 32, src2)
     IMULTFLAGS32(dest)
 ;
 
-IMUL.r16.rm16.imm16 dest, src1, src2
+IMUL.reg16.rm16.imm16 dest, src1, src2
     *16* dest := src1 *! src2
     IMULTFLAGS16(dest)
 ;
 
-IMUL.r32.rm32.imm32 dest, src1, src2
+IMUL.reg32.rm32.imm32 dest, src1, src2
+    *32* dest := src1 *! src2
+    IMULTFLAGS32(dest)
+;
+
+IMUL.reg32.reg32.imm32 dest, src1, src2
     *32* dest := src1 *! src2
     IMULTFLAGS32(dest)
 ;
 
 
 # INC
+INC.reg8 val
+    *8* tmpb := val
+    *8* val := val + 1
+    LOGICALFLAGS8(val)
+;
+
 INC.rm8 val
     *8* tmpb := val
     *8* val := val + 1
@@ -1788,6 +1830,10 @@ MOVZX.reg64.rm8 dest, src
     *64* dest := zfill(8, 64, src)
 ;
 
+MOVZX.reg32.reg16 dest, src
+    *32* dest := zfill(16, 32, src)
+;
+
 MOVZX.reg32.rm16 dest, src
     *32* dest := zfill(16, 32, src)
 ;
@@ -1925,6 +1971,11 @@ OR.reg32.rm32 dest, src
 OR.reg64.rm64 dest, src
     *64* dest := dest | src
     LOGICALFLAGS64(dest)
+;
+
+OR.reg32.reg32 dest, src
+    *32* dest := dest | src
+    LOGICALFLAGS32(dest)
 ;
 
 OR.reg32.imm32 dest, src
