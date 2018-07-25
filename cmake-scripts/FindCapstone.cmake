@@ -11,7 +11,9 @@
 #   Capstone_FOUND           - true if Capstone was found
 #   Capstone_INCLUDE_DIRS    - Include directories needed for Capstone
 #   Capstone_LIBRARIES       - Libraries to link to when using Capstone
-#
+#   Capstone_DLL             - Path to Capstone DLL, if applicable
+#   Capstone_PDB             - Path to Capstone PDB, if applicable
+
 # Additionally, this module defines the IMPORTED target Capstone::Capstone,
 # if Capstone has been found.
 #
@@ -28,17 +30,36 @@ find_path(Capstone_INCLUDE_DIR capstone/capstone.h
     $ENV{MINGDIR}/include
 )
 
-set(Capstone_NAMES capstone)
+set(Capstone_NAMES capstone capstone_dll)
 find_library(Capstone_LIBRARY
     NAMES ${Capstone_NAMES}
     PATHS /usr/local/lib /usr/lib/ $ENV{MINGDIR}/lib
 )
 
+if (WIN32)
+    foreach (DLLNAME ${Capstone_NAMES})
+        find_file(Capstone_DLL
+            NAME ${DLLNAME}.dll
+            PATHS /usr/local/bin /usr/bin/ $ENV{MINGDIR}/bin
+        )
 
-find_package_handle_standard_args(Capstone
-    FOUND_VAR Capstone_FOUND
-    REQUIRED_VARS Capstone_LIBRARY Capstone_INCLUDE_DIR
-)
+        find_file(Capstone_PDB
+            NAME ${DLLNAME}.pdb
+            PATHS /usr/local/bin /usr/bin/ $ENV{MINGDIR}/bin
+        )
+    endforeach ()
+
+    # Allow dll to be built without debug symbol support
+    find_package_handle_standard_args(Capstone
+        FOUND_VAR Capstone_FOUND
+        REQUIRED_VARS Capstone_LIBRARY Capstone_INCLUDE_DIR Capstone_DLL
+    )
+else (WIN32)
+    find_package_handle_standard_args(Capstone
+        FOUND_VAR Capstone_FOUND
+        REQUIRED_VARS Capstone_LIBRARY Capstone_INCLUDE_DIR
+    )
+endif (WIN32)
 
 
 set(Capstone_INCLUDE_DIRS "${Capstone_INCLUDE_DIR}")
@@ -46,7 +67,17 @@ set(Capstone_LIBRARIES "${Capstone_LIBRARY}")
 
 if (Capstone_FOUND OR NOT Capstone_FIND_REQUIRED)
     # Only show variables when Capstone is required and not found
-    mark_as_advanced(Capstone_INCLUDE_DIRS Capstone_LIBRARIES Capstone_CONFIG Capstone_INCLUDE_DIR Capstone_LIBRARY)
+    mark_as_advanced(
+        Capstone_INCLUDE_DIRS
+        Capstone_LIBRARIES
+        Capstone_CONFIG
+        Capstone_INCLUDE_DIR
+        Capstone_LIBRARY
+    )
+
+    if (WIN32)
+        mark_as_advanced(Capstone_DLL Capstone_PDB)
+    endif (WIN32)
 endif (Capstone_FOUND OR NOT Capstone_FIND_REQUIRED)
 
 if (Capstone_FOUND)
@@ -57,4 +88,3 @@ if (Capstone_FOUND)
     set_target_properties(Capstone::Capstone PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${Capstone_INCLUDE_DIRS}")
     set_target_properties(Capstone::Capstone PROPERTIES IMPORTED_LOCATION "${Capstone_LIBRARIES}")
 endif (Capstone_FOUND)
-
