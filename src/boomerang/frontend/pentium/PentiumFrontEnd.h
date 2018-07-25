@@ -41,8 +41,6 @@ public:
     virtual Address findMainEntryPoint(bool &gotMain) override;
 
     /// \copydoc IFrontEnd::decodeSingleInstruction
-    virtual bool decodeSingleInstruction(Address pc, DecodeResult &result) override;
-
 protected:
     /// \copydoc IFrontEnd::extraProcessCall
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
@@ -112,10 +110,6 @@ private:
      * \param mask  see above
      */
     void bumpRegisterAll(SharedExp exp, int min, int max, int delta, int mask);
-
-    bool decodeSpecial(Address pc, DecodeResult &r);
-    bool decodeSpecial_out(Address pc, DecodeResult &r);
-    bool decodeSpecial_invalid(Address pc, DecodeResult &r);
 
     bool isOverlappedRegsProcessed(const BasicBlock *bb) const
     {
