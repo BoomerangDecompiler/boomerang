@@ -10,7 +10,7 @@
 #include "SizeStripper.h"
 
 
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Binary.h"
 
 
 SharedExp SizeStripper::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)

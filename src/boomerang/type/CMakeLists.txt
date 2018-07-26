@@ -8,20 +8,6 @@
 
 
 list(APPEND boomerang-type-sources
-    type/type/ArrayType
-    type/type/BooleanType
-    type/type/CharType
-    type/type/CompoundType
-    type/type/FloatType
-    type/type/FuncType
-    type/type/IntegerType
-    type/type/NamedType
-    type/type/PointerType
-    type/type/SizeType
-    type/type/Type
-    type/type/UnionType
-    type/type/VoidType
-
     type/DataIntervalMap
     type/TypeRecovery
 

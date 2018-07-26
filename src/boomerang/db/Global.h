@@ -12,7 +12,7 @@
 
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Util.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
 class Prog;

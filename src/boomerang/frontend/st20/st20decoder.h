@@ -12,7 +12,7 @@
 
 #include "boomerang/frontend/NJMCDecoder.h"
 
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 
 #include <cstddef>
 #include <list>

@@ -10,11 +10,11 @@
 #include "Log.h"
 
 
-#include "boomerang/db/RTL.h"
-#include "boomerang/db/statements/Statement.h"
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/Statement.h"
+#include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 #include <QDir>
 #include <QFileInfo>

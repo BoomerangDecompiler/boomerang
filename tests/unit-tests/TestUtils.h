@@ -11,8 +11,8 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/type/type/Type.h"
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/type/Type.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 #include <QTest>
 

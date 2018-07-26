@@ -15,8 +15,8 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/Log.h"
 
 #include <QDir>

@@ -11,7 +11,7 @@
 
 
 #include "boomerang/passes/Pass.h"
-#include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
 
 #include <map>
 #include <deque>

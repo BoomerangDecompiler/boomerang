@@ -10,14 +10,14 @@
 #include "SimpExpModifier.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/FlagDef.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/Ternary.h"
-#include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/exp/Unary.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/FlagDef.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/TypedExp.h"
+#include "boomerang/ssl/exp/Unary.h"
 
 
 SimpExpModifier::SimpExpModifier()

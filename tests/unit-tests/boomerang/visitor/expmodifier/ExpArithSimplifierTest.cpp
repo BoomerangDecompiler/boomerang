@@ -10,10 +10,10 @@
 #include "ExpArithSimplifierTest.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Location.h"
 
 
 #define TEST_SIMPLIFY(sourceExp, expectedResult) \

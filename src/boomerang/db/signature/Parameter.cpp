@@ -10,7 +10,7 @@
 #include "Parameter.h"
 
 
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
 Parameter::Parameter(SharedType type, const QString& name, SharedExp exp, const QString& boundMax)

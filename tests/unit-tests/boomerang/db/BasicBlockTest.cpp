@@ -11,13 +11,13 @@
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/exp/Terminal.h"
 
 
 void BasicBlockTest::testConstruct()

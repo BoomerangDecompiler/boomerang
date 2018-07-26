@@ -10,10 +10,10 @@
 #include "Localiser.h"
 
 
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 
 
 Localiser::Localiser(CallStatement* call)

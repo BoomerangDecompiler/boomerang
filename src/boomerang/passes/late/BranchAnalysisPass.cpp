@@ -10,10 +10,10 @@
 #include "BranchAnalysisPass.h"
 
 
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/passes/PassManager.h"
 
 

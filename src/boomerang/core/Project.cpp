@@ -16,7 +16,7 @@
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/ProgDecompiler.h"
+#include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/ProgSymbolWriter.h"

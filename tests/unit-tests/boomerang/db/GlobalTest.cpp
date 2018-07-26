@@ -10,17 +10,17 @@
 #include "GlobalTest.h"
 
 
-#include "boomerang/db/exp/Const.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/type/type/CompoundType.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/SizeType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 
 #define SAMPLE(path)    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/" path))

@@ -10,8 +10,8 @@
 #include "ExpArithSimplifier.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Const.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 
 #include <numeric>
 

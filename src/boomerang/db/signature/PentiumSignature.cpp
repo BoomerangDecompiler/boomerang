@@ -10,13 +10,13 @@
 #include "PentiumSignature.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/Log.h"
 
 

@@ -10,8 +10,8 @@
 #include "ExpDestCounter.h"
 
 
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/statements/Statement.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 
 ExpDestCounter::ExpDestCounter(ExpDestCounter::ExpCountMap& dc)

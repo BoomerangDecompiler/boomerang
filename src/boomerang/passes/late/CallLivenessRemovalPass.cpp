@@ -12,7 +12,7 @@
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 
 
 CallLivenessRemovalPass::CallLivenessRemovalPass()

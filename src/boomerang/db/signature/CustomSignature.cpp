@@ -10,7 +10,7 @@
 #include "CustomSignature.h"
 
 
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 
 
 CustomSignature::CustomSignature(const QString& name)

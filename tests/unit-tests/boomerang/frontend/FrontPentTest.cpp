@@ -11,7 +11,7 @@
 
 #include "FrontPentTest.h"
 
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/frontend/Decoder.h"
 #include "boomerang/util/Types.h"

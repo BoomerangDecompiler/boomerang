@@ -10,14 +10,14 @@
 #include "DFATest.h"
 
 
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/SizeType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/UnionType.h"
-#include "boomerang/type/type/CharType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/ssl/type/UnionType.h"
+#include "boomerang/ssl/type/CharType.h"
 
 #include <QtCore/QDebug>
 #include <sstream>

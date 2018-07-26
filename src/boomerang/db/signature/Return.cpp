@@ -10,7 +10,7 @@
 #include "Return.h"
 
 
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 Return::Return(SharedType _type, SharedExp _exp)
     : m_type(_type)

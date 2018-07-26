@@ -12,7 +12,7 @@
 
 #include <QTextStream>
 
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 class Prog;
 class Module;
@@ -26,7 +26,7 @@ class Assign;
  * Base class for generating high-level code from statements.
  *
  * This class is provides methods which are generic of procedural
- * languages like C, Pascal, Fortranmake, etc. Included in the base class
+ * languages like C, Pascal, Fortran etc. Included in the base class
  * is the follow and goto sets which are used during code generation.
  * Concrete implementations of this class provide specific language
  * bindings for a single procedure in the program.

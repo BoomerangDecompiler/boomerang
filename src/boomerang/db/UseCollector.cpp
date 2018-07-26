@@ -10,8 +10,8 @@
 #include "UseCollector.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 #include <QString>

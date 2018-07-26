@@ -11,17 +11,17 @@
 
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 
 #define HELLO_PENTIUM   getFullSamplePath("pentium/hello")

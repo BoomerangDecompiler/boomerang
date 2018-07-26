@@ -10,18 +10,18 @@
 #include "DebugInfo.h"
 
 
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/type/type/CompoundType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/FuncType.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/BooleanType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/FloatType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/ssl/type/BooleanType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/util/Log.h"
 
 #include <cassert>

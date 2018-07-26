@@ -10,12 +10,12 @@
 #include "LibProcTest.h"
 
 
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/Module.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/signature/PentiumSignature.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 
 
 void LibProcTest::testName()

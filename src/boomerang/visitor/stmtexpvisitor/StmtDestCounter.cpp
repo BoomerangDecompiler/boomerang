@@ -10,7 +10,7 @@
 #include "StmtDestCounter.h"
 
 
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/visitor/expvisitor/ExpDestCounter.h"
 
 

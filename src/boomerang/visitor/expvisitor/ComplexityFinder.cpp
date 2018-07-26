@@ -10,7 +10,7 @@
 #include "ComplexityFinder.h"
 
 
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 
 
