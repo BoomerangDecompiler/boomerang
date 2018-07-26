@@ -133,7 +133,6 @@ bool IFrontEnd::isNoReturnCallDest(const QString& name)
 }
 
 
-
 void IFrontEnd::readLibraryCatalog()
 {
     m_symbolProvider.reset(new CSymbolProvider(m_program));
@@ -161,8 +160,8 @@ void IFrontEnd::readLibraryCatalog()
 void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
 {
     SharedType ty = NamedType::getNamedType(type);
-
     assert(ty->isFunc());
+
     UserProc *proc = static_cast<UserProc *>(m_program->getOrCreateFunction(addr));
     assert(proc);
 

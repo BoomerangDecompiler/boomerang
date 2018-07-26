@@ -115,12 +115,12 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString& fname)
         if (sym->sig) {
             QString name = sym->sig->getName();
             targetModule = m_prog->getOrInsertModuleForSymbol(name);
-            auto bin_sym       = m_prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
-            bool do_not_decode = (bin_sym && bin_sym->isImportedFunction()) ||
-            // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
-            // to specifically specify that this function obeys library calling conventions
-            sym->mods->noDecode;
-            Function *p = targetModule->createFunction(name, sym->addr, do_not_decode);
+            auto bin_sym     = m_prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
+            const bool isLib = (bin_sym && bin_sym->isImportedFunction()) ||
+                // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
+                // to specifically specify that this function obeys library calling conventions
+                sym->mods->noDecode;
+            Function *p = targetModule->createFunction(name, sym->addr, isLib);
 
             if (!sym->mods->incomplete) {
                 p->setSignature(sym->sig->clone());
