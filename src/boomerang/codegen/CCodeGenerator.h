@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/codegen/ControlFlowAnalyzer.h"
 #include "boomerang/util/Address.h"
 

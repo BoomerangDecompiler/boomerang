@@ -8,8 +8,8 @@
 
 
 list(APPEND boomerang-c-sources
-    c/ansi-c-parser
-    c/ansi-c-scanner
+    c/parser/AnsiCParser
+    c/parser/AnsiCScanner
     c/CSymbolProvider
 )
 

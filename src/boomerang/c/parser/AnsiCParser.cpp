@@ -1,4 +1,4 @@
-#include "ansi-c-parser.h"
+#include "AnsiCParser.h"
 
 /*  A Bison++ parser, made from ansi-c.y  */
 
@@ -65,7 +65,7 @@
 class AnsiCScanner;
 class SymbolMods;
 
-#include "boomerang/c/ansi-c-scanner.h"
+#include "boomerang/c/parser/AnsiCScanner.h"
 /* section apres lecture def, avant lecture grammaire S2 */
 
 /* prefix */

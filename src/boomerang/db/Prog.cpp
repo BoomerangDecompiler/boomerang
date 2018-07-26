@@ -10,8 +10,8 @@
 #include "Prog.h"
 
 
-#include "boomerang/c/ansi-c-parser.h"
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/DebugInfo.h"

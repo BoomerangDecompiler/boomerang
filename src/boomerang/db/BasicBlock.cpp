@@ -10,7 +10,7 @@
 #include "BasicBlock.h"
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/ssl/RTL.h"

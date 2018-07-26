@@ -10,7 +10,7 @@
 #include "Assign.h"
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Unary.h"

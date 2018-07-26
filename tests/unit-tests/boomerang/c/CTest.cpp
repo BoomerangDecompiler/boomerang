@@ -10,7 +10,7 @@
 #include "CTest.h"
 
 
-#include "boomerang/c/ansi-c-parser.h"
+#include "boomerang/c/parser/AnsiCParser.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/CharType.h"
 

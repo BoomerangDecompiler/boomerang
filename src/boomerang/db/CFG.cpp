@@ -21,7 +21,7 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/util/Util.h"
 
 #include <algorithm>

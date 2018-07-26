@@ -10,7 +10,7 @@
 #include "Statement.h"
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/BasicBlock.h"
