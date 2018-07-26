@@ -19,7 +19,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"

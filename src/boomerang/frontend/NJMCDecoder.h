@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/RTLInstDict.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/BoolAssign.h"

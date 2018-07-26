@@ -6,7 +6,7 @@
 #include <cstdio>
 
 
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/parser/InsNameElem.h"
 #include "boomerang/ssl/parser/Table.h"

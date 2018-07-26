@@ -15,7 +15,7 @@
 #include "boomerang/ssl/parser/SSLScanner.h"
 #include "boomerang/ssl/parser/Table.h"
 #include "boomerang/ssl/parser/InsNameElem.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/exp/Terminal.h"

@@ -18,7 +18,7 @@
 #include "boomerang/db/Global.h"
 #include "boomerang/db/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinaryFile.h"

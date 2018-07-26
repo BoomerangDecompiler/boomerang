@@ -16,7 +16,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/util/Log.h"

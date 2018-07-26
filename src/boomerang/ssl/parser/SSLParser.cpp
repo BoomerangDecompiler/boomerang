@@ -58,7 +58,7 @@ void *alloca();
 #define YYBISON 1
 
 
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/exp/Ternary.h"

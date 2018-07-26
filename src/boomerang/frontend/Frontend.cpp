@@ -16,7 +16,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/ssl/Register.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"

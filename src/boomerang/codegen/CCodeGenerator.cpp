@@ -15,7 +15,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Ternary.h"

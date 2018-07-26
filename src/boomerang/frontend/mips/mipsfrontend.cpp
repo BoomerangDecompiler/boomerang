@@ -14,7 +14,7 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/frontend/mips/mipsdecoder.h"

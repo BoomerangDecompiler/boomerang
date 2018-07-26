@@ -18,7 +18,7 @@
 #include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/type/type/Type.h"
 #include "boomerang/util/Log.h"
 

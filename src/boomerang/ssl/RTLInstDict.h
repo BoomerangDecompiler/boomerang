@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"

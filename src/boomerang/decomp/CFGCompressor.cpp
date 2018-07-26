@@ -12,7 +12,7 @@
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Statement.h"
 
 #include <deque>

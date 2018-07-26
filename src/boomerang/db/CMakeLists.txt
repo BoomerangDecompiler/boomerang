@@ -16,7 +16,6 @@ list(APPEND boomerang-db-sources
     db/Global
     db/Module
     db/Prog
-    db/RTL
     db/UseCollector
 
     db/binary/BinaryFile

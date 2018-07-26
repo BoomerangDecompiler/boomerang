@@ -24,7 +24,7 @@
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/db/RTL.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
