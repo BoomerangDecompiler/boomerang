@@ -10,7 +10,6 @@
 list(APPEND boomerang-codegen-sources
     codegen/CCodeGenerator
     codegen/ControlFlowAnalyzer
-    codegen/ICodeGenerator.h
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-codegen-sources}" PARENT_SCOPE)

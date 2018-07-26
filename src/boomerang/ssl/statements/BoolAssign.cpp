@@ -10,7 +10,7 @@
 #include "BoolAssign.h"
 
 
-#include "boomerang/codegen/ICodeGenerator.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"
