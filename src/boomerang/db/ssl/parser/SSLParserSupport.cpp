@@ -9,10 +9,10 @@
 #pragma endregion License
 
 
-#include "sslparser.h"
+#include "SSLParser.h"
 
 
-#include "boomerang/db/ssl/sslscanner.h"
+#include "boomerang/db/ssl/parser/SSLScanner.h"
 #include "boomerang/db/ssl/Table.h"
 #include "boomerang/db/ssl/InsNameElem.h"
 

@@ -52,7 +52,7 @@
 
 /* % here is the declaration from section1 %header{  */
 // #line 29 "sslscanner.l"
-#include "sslparser.h"
+#include "SSLParser.h"
 #define MAX_LINE    1024 // the longest SSL spec line
 // #line 45 "sslscanner.l"
 #define YY_SSLScanner_CONSTRUCTOR_CODE

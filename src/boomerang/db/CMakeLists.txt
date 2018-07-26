@@ -62,11 +62,11 @@ list(APPEND boomerang-db-sources
     db/signature/Win32Signature
 
     db/ssl/InsNameElem
+    db/ssl/parser/SSLParser
+    db/ssl/parser/SSLParserSupport.cpp
+    db/ssl/parser/SSLScanner
     db/ssl/Register
     db/ssl/RTLInstDict
-    db/ssl/sslparser
-    db/ssl/sslparser_support.cpp
-    db/ssl/sslscanner
     db/ssl/Table
 
     # statement handling

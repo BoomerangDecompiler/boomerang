@@ -227,7 +227,7 @@ int read();
 #include <cassert>
 #include <cstring>
 
-#include "boomerang/db/ssl/sslscanner.h"
+#include "boomerang/db/ssl/parser/SSLScanner.h"
 // #line 62 "db/sslscanner.l"
 // #line 196 "//usr/local/lib/flexskel.cc"
 

@@ -1,4 +1,4 @@
-#include "boomerang/db/ssl/sslparser.h"
+#include "boomerang/db/ssl/parser/SSLParser.h"
 /*  A Bison++ parser, made from sslparser.y  */
 /* with Bison++ version bison++ Version 1.21-8, adapted from GNU bison by coetmeur@icdc.fr
   */
@@ -67,7 +67,7 @@ void *alloca();
 #include "boomerang/db/exp/FlagDef.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/ssl/InsNameElem.h"
-#include "boomerang/db/ssl/sslscanner.h"
+#include "boomerang/db/ssl/parser/SSLScanner.h"
 #include "boomerang/db/ssl/Table.h"
 #include "boomerang/type/type/CharType.h"
 #include "boomerang/type/type/FloatType.h"
