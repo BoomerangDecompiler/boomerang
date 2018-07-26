@@ -15,6 +15,7 @@
 #include "boomerang/util/Log.h"
 
 #include <QFileInfo>
+#include <QDir>
 
 
 CSymbolProvider::CSymbolProvider(Prog* prog)
@@ -34,7 +35,6 @@ bool CSymbolProvider::readLibraryCatalog(const QString& filePath)
     }
 
     QTextStream inf(&file);
-    QString     sig_path;
 
     while (!inf.atEnd()) {
         QString sigFilePath;
@@ -59,7 +59,8 @@ bool CSymbolProvider::readLibraryCatalog(const QString& filePath)
             cc = CallConv::ThisCall; // Another exception
         }
 
-        sig_path = QFileInfo(filePath).baseName() + sigFilePath;
+        const QString sig_path = QFileInfo(filePath).absoluteDir()
+            .absoluteFilePath(sigFilePath);
         if (!readLibrarySignatures(qPrintable(sig_path), cc)) {
             return false;
         }
