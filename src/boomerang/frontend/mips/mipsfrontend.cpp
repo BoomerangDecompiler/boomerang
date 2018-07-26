@@ -10,16 +10,15 @@
 #include "mipsfrontend.h"
 
 
-#include "boomerang/util/Log.h"
-
-#include "boomerang/db/Register.h"
-#include "boomerang/db/RTL.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/db/ssl/Register.h"
 #include "boomerang/frontend/mips/mipsdecoder.h"
+#include "boomerang/util/Log.h"
 
 
 #include <cassert>

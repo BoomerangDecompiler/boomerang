@@ -13,8 +13,8 @@
 
 
 #include "boomerang/db/ssl/sslscanner.h"
-#include "boomerang/db/Table.h"
-#include "boomerang/db/InsNameElem.h"
+#include "boomerang/db/ssl/Table.h"
+#include "boomerang/db/ssl/InsNameElem.h"
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Statement.h"

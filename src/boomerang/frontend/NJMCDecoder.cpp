@@ -15,10 +15,10 @@
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Register.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/db/ssl/Register.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 

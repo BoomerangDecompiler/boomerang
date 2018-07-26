@@ -16,16 +16,13 @@ list(APPEND boomerang-db-sources
     db/DefCollector
     db/Global
     db/IndirectJumpAnalyzer
-    db/InsNameElem
     db/InterferenceFinder
     db/LivenessAnalyzer
     db/Module
     db/ProcDecompiler
     db/Prog
     db/ProgDecompiler
-    db/Register
     db/RTL
-    db/Table
     db/UnusedReturnRemover
     db/UseCollector
 
@@ -64,10 +61,13 @@ list(APPEND boomerang-db-sources
     db/signature/ST20Signature
     db/signature/Win32Signature
 
+    db/ssl/InsNameElem
+    db/ssl/Register
     db/ssl/RTLInstDict
     db/ssl/sslparser
     db/ssl/sslparser_support.cpp
     db/ssl/sslscanner
+    db/ssl/Table
 
     # statement handling
     db/statements/Assign
