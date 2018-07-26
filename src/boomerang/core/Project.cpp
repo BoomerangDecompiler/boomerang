@@ -221,8 +221,8 @@ bool Project::readSymbolFile(const QString& fname)
     try {
         parser.reset(new AnsiCParser(qPrintable(fname), false));
     }
-    catch (const char *) {
-        LOG_ERROR("Cannot read symbol file '%1'", fname);
+    catch (const char *msg) {
+        LOG_ERROR("Cannot read symbol file '%1': %2", fname, msg);
         return false;
     }
 

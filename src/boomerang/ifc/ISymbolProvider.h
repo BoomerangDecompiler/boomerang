@@ -10,9 +10,16 @@
 #pragma once
 
 
+#include <memory>
+
+
 class QString;
+class Signature;
 
 
+/**
+ * Provides declarations for symbols and library function signatures.
+ */
 class ISymbolProvider
 {
 public:
@@ -22,5 +29,8 @@ public:
 public:
     /// Read a catalog for library signatures.
     /// \returns true on success.
-    bool readLibraryCatalog(const QString& fileName);
+    virtual bool readLibraryCatalog(const QString& fileName) = 0;
+
+    /// \returns a library signature by its name
+    virtual std::shared_ptr<Signature> getSignatureByName(const QString& functionName) const = 0;
 };

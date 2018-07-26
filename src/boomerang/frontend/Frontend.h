@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include "boomerang/util/Types.h"
-#include "boomerang/frontend/SigEnum.h" // For enums platform and cc
-
+#include "boomerang/frontend/SigEnum.h"
 #include "boomerang/frontend/TargetQueue.h"
+#include "boomerang/ifc/ISymbolProvider.h"
+#include "boomerang/util/Types.h"
 
 #include <list>
 #include <map>
@@ -118,14 +118,6 @@ public:
     /// Do extra processing of call instructions.
     virtual void extraProcessCall(CallStatement * /*call*/, const RTLList& /*BB_rtls*/) {}
 
-
-    /**
-     * Read the library signatures from a file
-     * \param signatureFile The path to the file containing the signatures
-     * \param cc            the calling convention assumed
-     */
-    void readLibrarySignatures(const char *signatureFile, CallConv cc);
-    void readLibraryCatalog(const QString& filePath); ///< read from a catalog
     void readLibraryCatalog();                        ///< read from default catalog
 
     /// Decode all undecoded procedures and return a new program containing them.
@@ -213,14 +205,12 @@ private:
     bool refersToImportedFunction(const SharedExp& exp);
 
 protected:
+    std::unique_ptr<ISymbolProvider> m_symbolProvider;
     std::unique_ptr<IDecoder> m_decoder;
     BinaryFile *m_binaryFile;
     Prog *m_program;
 
     TargetQueue m_targetQueue; ///< Holds the addresses that still need to be processed
-
-    /// Public map from function name (string) to signature.
-    QMap<QString, std::shared_ptr<Signature> > m_librarySignatures;
 
     /// Map from address to meaningful name
     std::map<Address, QString> m_refHints;
