@@ -14,7 +14,7 @@
 #include "boomerang/db/Global.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/UnusedReturnRemover.h"
+#include "boomerang/decomp/UnusedReturnRemover.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/Log.h"
 

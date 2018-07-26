@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/LivenessAnalyzer.h"
+#include "boomerang/decomp/LivenessAnalyzer.h"
 
 #include <list>
 #include <set>

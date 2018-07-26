@@ -26,11 +26,11 @@
 #include "boomerang/db/statements/ReturnStatement.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/decomp/ProcDecompiler.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/VoidType.h"
 #include "boomerang/type/type/FloatType.h"
-#include "boomerang/db/ProcDecompiler.h"
 
 
 void UserProcTest::testIsNoReturn()

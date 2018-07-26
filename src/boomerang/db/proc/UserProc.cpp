@@ -11,7 +11,6 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/db/ProcDecompiler.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
@@ -21,6 +20,7 @@
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/statements/PhiAssign.h"
 #include "boomerang/db/statements/ReturnStatement.h"
+#include "boomerang/decomp/ProcDecompiler.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/type/type/IntegerType.h"

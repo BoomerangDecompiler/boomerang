@@ -10,20 +10,14 @@
 list(APPEND boomerang-db-sources
     db/BasicBlock
     db/CFG
-    db/CFGCompressor
     db/DataFlow
     db/DebugInfo
     db/DefCollector
     db/Global
-    db/IndirectJumpAnalyzer
-    db/InterferenceFinder
-    db/LivenessAnalyzer
     db/Module
-    db/ProcDecompiler
     db/Prog
-    db/ProgDecompiler
+
     db/RTL
-    db/UnusedReturnRemover
     db/UseCollector
 
     db/binary/BinaryFile

@@ -13,7 +13,6 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/ssl/Register.h"
@@ -29,6 +28,7 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/exp/Location.h"
+#include "boomerang/decomp/IndirectJumpAnalyzer.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 
