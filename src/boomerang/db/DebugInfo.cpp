@@ -10,7 +10,7 @@
 #include "DebugInfo.h"
 
 
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/type/type/CompoundType.h"

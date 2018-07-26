@@ -10,9 +10,9 @@
 #include "PrimitiveTester.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/statements/Statement.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 
 bool PrimitiveTester::preVisit(const std::shared_ptr<Location>& /*exp*/, bool& visitChildren)

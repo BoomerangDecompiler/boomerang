@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/RefExp.h"
 
 
 ImplicitConverter::ImplicitConverter(Cfg* cfg)

@@ -10,7 +10,7 @@
 #include "FlagsFinder.h"
 
 
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Binary.h"
 
 
 FlagsFinder::FlagsFinder()

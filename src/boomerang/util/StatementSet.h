@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/exp/Terminal.h"
 
 #include <unordered_set>
 #include <memory>

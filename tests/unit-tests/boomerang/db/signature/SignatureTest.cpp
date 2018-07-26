@@ -10,12 +10,12 @@
 #include "SignatureTest.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/statements/Assign.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/type/type/VoidType.h"

@@ -10,11 +10,11 @@
 #include "StmtRegMapper.h"
 
 
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/visitor/expvisitor/ExpRegMapper.h"
 
 

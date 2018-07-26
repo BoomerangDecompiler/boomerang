@@ -11,11 +11,11 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/decomp/InterferenceFinder.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/VoidType.h"

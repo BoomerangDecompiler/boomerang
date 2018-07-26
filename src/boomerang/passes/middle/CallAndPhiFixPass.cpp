@@ -10,9 +10,9 @@
 #include "CallAndPhiFixPass.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/passes/PassManager.h"

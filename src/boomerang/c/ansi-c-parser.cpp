@@ -57,8 +57,8 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/signature/CustomSignature.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/util/Log.h"
 
 

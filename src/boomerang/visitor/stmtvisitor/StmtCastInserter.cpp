@@ -10,11 +10,11 @@
 #include "StmtCastInserter.h"
 
 
-#include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/exp/Exp.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/visitor/expmodifier/ExpCastInserter.h"
 
 

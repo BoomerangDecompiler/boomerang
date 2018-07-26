@@ -11,16 +11,16 @@
 
 
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/statements/PhiAssign.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
-#include "boomerang/db/statements/BoolAssign.h"
-#include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/statements/CaseStatement.h"
-#include "boomerang/db/statements/ReturnStatement.h"
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/ImpRefStatement.h"
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/ImpRefStatement.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
 StmtConscriptSetter::StmtConscriptSetter(int n, bool clear)

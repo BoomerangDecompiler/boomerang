@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
+#include "boomerang/ssl/exp/Location.h"
 
 #include <set>
 #include <unordered_set>

@@ -10,7 +10,7 @@
 #include "ConstFinder.h"
 
 
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 
 
 ConstFinder::ConstFinder(std::list<std::shared_ptr<Const> >& list)

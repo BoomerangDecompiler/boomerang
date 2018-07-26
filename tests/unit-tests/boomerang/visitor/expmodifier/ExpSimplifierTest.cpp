@@ -10,12 +10,12 @@
 #include "ExpSimplifierTest.h"
 
 
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/Ternary.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/type/type/IntegerType.h"
 
 

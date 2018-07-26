@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/exp/ExpHelp.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 #include <map>

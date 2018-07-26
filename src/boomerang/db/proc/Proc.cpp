@@ -14,7 +14,7 @@
 #include "boomerang/db/Module.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/statements/CallStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/Log.h"
 
 

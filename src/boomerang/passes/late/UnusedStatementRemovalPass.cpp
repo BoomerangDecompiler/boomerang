@@ -12,7 +12,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/passes/PassManager.h"

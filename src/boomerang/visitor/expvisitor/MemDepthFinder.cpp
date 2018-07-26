@@ -10,7 +10,7 @@
 #include "MemDepthFinder.h"
 
 
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 
 
 MemDepthFinder::MemDepthFinder()

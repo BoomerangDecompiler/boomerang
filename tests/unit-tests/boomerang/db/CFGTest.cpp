@@ -14,8 +14,8 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/type/type/VoidType.h"
 
 #include <QDebug>

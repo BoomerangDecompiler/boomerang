@@ -10,11 +10,11 @@
 #include "FinalParameterSearchPass.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/statements/ImplicitAssign.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 

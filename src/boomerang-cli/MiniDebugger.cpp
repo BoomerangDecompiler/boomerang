@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/db/statements/Statement.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 

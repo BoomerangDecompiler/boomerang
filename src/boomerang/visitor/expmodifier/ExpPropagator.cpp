@@ -10,8 +10,8 @@
 #include "ExpPropagator.h"
 
 
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/statements/Assign.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/statements/Assign.h"
 
 
 ExpPropagator::ExpPropagator()

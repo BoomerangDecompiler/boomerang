@@ -10,7 +10,7 @@
 #include "ConnectionGraph.h"
 
 
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/Log.h"
 
 

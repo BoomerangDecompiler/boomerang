@@ -10,7 +10,7 @@
 #include "PhiStripper.h"
 
 
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 
 
 PhiStripper::PhiStripper(ExpModifier* em)

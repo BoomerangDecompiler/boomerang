@@ -10,7 +10,7 @@
 #include "Util.h"
 
 
-#include "boomerang/db/exp/Const.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/util/Types.h"
 

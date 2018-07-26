@@ -10,9 +10,9 @@
 #include "DFALocalMapper.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/type/type/VoidType.h"

@@ -10,11 +10,11 @@
 #include "ExpCastInserter.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/TypedExp.h"
-#include "boomerang/db/statements/Statement.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/TypedExp.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/PointerType.h"
 #include "boomerang/util/Log.h"

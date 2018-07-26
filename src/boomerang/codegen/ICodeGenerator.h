@@ -12,7 +12,7 @@
 
 #include <QTextStream>
 
-#include "boomerang/db/exp/Exp.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 class Prog;
 class Module;

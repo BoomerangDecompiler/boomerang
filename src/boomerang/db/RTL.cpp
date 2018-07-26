@@ -10,9 +10,9 @@
 #include "RTL.h"
 
 
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/Assign.h"
-#include "boomerang/db/exp/Operator.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/exp/Operator.h"
 
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"

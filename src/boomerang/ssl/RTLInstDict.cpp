@@ -10,12 +10,12 @@
 #include "RTLInstDict.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/ssl/parser/SSLParser.h"
-#include "boomerang/db/statements/Assign.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"
 #include "boomerang/util/Log.h"

@@ -11,10 +11,10 @@
 
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/exp/Exp.h"
-#include "boomerang/db/statements/PhiAssign.h"
+#include "boomerang/ssl/exp/Exp.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
-#include "boomerang/db/exp/RefExp.h"
+#include "boomerang/ssl/exp/RefExp.h"
 
 
 StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter* ic, Cfg* cfg)

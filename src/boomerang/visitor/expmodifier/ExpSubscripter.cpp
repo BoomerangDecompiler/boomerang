@@ -10,10 +10,10 @@
 #include "ExpSubscripter.h"
 
 
-#include "boomerang/db/exp/Binary.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
 
 
 ExpSubscripter::ExpSubscripter(const SharedExp& s, Statement* def)

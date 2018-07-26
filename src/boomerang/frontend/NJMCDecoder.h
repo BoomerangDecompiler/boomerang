@@ -12,8 +12,8 @@
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/ssl/RTLInstDict.h"
-#include "boomerang/db/statements/BranchStatement.h"
-#include "boomerang/db/statements/BoolAssign.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/BoolAssign.h"
 
 #include "boomerang/util/Types.h"
 #include "boomerang/frontend/Decoder.h"

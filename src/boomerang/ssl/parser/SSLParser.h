@@ -7,7 +7,7 @@
 
 
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/exp/Operator.h"
+#include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/parser/InsNameElem.h"
 #include "boomerang/ssl/parser/Table.h"
 #include "boomerang/ssl/RTLInstDict.h"

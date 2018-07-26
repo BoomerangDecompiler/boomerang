@@ -11,7 +11,7 @@
 
 
 #include "boomerang/ssl/parser/SSLParser.h"
-#include "boomerang/db/statements/Statement.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Log.h"
 
 #include <QDebug>

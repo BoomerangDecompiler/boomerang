@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/exp/Location.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"

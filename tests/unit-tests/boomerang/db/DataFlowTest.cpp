@@ -12,8 +12,8 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Terminal.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"

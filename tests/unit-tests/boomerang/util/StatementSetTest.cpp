@@ -10,8 +10,8 @@
 #include "StatementSetTest.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/statements/Assign.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/util/StatementSet.h"
 
 

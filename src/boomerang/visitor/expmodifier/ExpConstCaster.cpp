@@ -10,8 +10,8 @@
 #include "ExpConstCaster.h"
 
 
-#include "boomerang/db/exp/Const.h"
-#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/type/type/Type.h"
 
 

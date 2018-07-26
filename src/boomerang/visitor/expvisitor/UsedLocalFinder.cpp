@@ -10,9 +10,9 @@
 #include "UsedLocalFinder.h"
 
 
-#include "boomerang/db/exp/Location.h"
-#include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/exp/TypedExp.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/type/type/Type.h"
 
