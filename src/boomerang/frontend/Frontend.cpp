@@ -447,6 +447,12 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 }
 
 
+bool IFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
+{
+    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
+}
+
+
 std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
 {
     // Get a default library signature

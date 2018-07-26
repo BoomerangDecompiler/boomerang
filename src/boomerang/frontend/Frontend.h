@@ -98,6 +98,7 @@ public:
     QString getRegName(int idx) const;
     int getRegSize(int idx);
 
+    bool addSymbolsFromSymbolFile(const QString& fname);
 
     /// lookup a library signature by name
     std::shared_ptr<Signature> getLibSignature(const QString& name);
