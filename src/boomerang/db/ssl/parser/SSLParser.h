@@ -8,9 +8,9 @@
 
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/exp/Operator.h"
-#include "boomerang/db/ssl/InsNameElem.h"
+#include "boomerang/db/ssl/parser/InsNameElem.h"
+#include "boomerang/db/ssl/parser/Table.h"
 #include "boomerang/db/ssl/RTLInstDict.h"
-#include "boomerang/db/ssl/Table.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 

@@ -13,18 +13,16 @@
 
 
 #include "boomerang/db/ssl/parser/SSLScanner.h"
-#include "boomerang/db/ssl/Table.h"
-#include "boomerang/db/ssl/InsNameElem.h"
-
+#include "boomerang/db/ssl/parser/Table.h"
+#include "boomerang/db/ssl/parser/InsNameElem.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/Location.h"
-
 #include "boomerang/util/Log.h"
-#include "boomerang/util/Util.h" // E.g. str()
+#include "boomerang/util/Util.h"
 
 #include <cassert>
 #include <sstream>

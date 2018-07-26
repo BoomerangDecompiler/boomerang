@@ -55,13 +55,13 @@ list(APPEND boomerang-db-sources
     db/signature/ST20Signature
     db/signature/Win32Signature
 
-    db/ssl/InsNameElem
+    db/ssl/parser/InsNameElem
     db/ssl/parser/SSLParser
     db/ssl/parser/SSLParserSupport.cpp
     db/ssl/parser/SSLScanner
+    db/ssl/parser/Table
     db/ssl/Register
     db/ssl/RTLInstDict
-    db/ssl/Table
 
     # statement handling
     db/statements/Assign
