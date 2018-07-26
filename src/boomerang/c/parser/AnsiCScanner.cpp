@@ -107,7 +107,7 @@
  */
 
 /* ALlow ? and @ in identifiers, so we can use mangled names */
-#include "ansi-c-scanner.h"
+#include "AnsiCScanner.h"
 
 #define yy___text          YY_AnsiCScanner_TEXT
 #define yy___leng          YY_AnsiCScanner_LENG

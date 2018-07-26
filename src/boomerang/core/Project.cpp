@@ -10,7 +10,7 @@
 #include "Project.h"
 
 
-#include "boomerang/c/ansi-c-parser.h"
+#include "boomerang/c/parser/AnsiCParser.h"
 #include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/db/binary/BinaryImage.h"

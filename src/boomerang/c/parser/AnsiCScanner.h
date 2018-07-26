@@ -53,7 +53,7 @@
 /* % here is the declaration from section1 %header{  */
 
 #include <cstdio>
-#include "ansi-c-parser.h"
+#include "AnsiCParser.h"
 
 #define MAX_LINE                             1024 // the longest line
 
