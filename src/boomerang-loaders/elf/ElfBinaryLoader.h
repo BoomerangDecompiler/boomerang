@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/loader/IFileLoader.h"
+#include "boomerang/ifc/IFileLoader.h"
 
 struct Elf32_Ehdr;
 struct Elf32_Phdr;

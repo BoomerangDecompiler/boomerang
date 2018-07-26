@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/loader/IFileLoader.h"
+#include "boomerang/ifc/IFileLoader.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/db/binary/BinaryFile.h"
 
