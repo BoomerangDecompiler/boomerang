@@ -23,7 +23,7 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/Log.h"
 

@@ -23,7 +23,7 @@
 #include "boomerang/decomp/ProcDecompiler.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/DFGWriter.h"
 #include "boomerang/util/UseGraphWriter.h"
 #include "boomerang/util/Log.h"

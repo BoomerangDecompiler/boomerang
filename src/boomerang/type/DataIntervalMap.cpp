@@ -15,8 +15,8 @@
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/type/type/CompoundType.h"
-#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/util/Log.h"
 
 

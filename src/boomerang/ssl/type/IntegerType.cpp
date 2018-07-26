@@ -10,7 +10,7 @@
 #include "IntegerType.h"
 
 
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/Log.h"
 
 

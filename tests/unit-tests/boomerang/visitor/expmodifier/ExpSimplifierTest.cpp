@@ -16,7 +16,7 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 
 
 void ExpSimplifierTest::testSimplify()

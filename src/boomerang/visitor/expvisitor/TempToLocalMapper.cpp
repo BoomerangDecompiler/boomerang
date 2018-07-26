@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
 TempToLocalMapper::TempToLocalMapper(UserProc* proc)

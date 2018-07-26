@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
 ExpConstCaster::ExpConstCaster(int num, SharedType ty)

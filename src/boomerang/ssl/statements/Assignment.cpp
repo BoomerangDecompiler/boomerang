@@ -17,9 +17,9 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/SizeType.h"
-#include "boomerang/type/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/Log.h"
 
 

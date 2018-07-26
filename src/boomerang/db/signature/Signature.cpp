@@ -24,12 +24,12 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/type/type/Type.h"
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/Type.h"
+#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/ssl/type/PointerType.h"
 
 #include <cassert>
 #include <string>

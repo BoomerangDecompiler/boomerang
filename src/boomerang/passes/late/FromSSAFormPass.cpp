@@ -18,7 +18,7 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/decomp/InterferenceFinder.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"

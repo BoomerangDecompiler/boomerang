@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/type/type/CompoundType.h"
+#include "boomerang/ssl/type/CompoundType.h"
 
 #include <list>
 #include <vector>

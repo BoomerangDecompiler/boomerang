@@ -10,8 +10,8 @@
 #include "UnionType.h"
 
 
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 

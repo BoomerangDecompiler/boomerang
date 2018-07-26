@@ -27,7 +27,7 @@
 #include "boomerang/visitor/stmtvisitor/StmtConscriptSetter.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/sparc/sparcfrontend.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/Log.h"
 
 #include <sstream>

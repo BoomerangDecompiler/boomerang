@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 /**
  * We actually want unbounded arrays to still work correctly when

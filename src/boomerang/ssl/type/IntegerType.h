@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
 class IntegerType : public Type

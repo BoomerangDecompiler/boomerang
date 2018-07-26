@@ -28,9 +28,9 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/decomp/ProcDecompiler.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/ssl/type/FloatType.h"
 
 
 void UserProcTest::testIsNoReturn()

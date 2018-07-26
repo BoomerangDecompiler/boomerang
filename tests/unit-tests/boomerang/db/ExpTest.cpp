@@ -18,10 +18,10 @@
 #include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/visitor/expvisitor/FlagsFinder.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/util/LocationSet.h"
 
 #include <map>

@@ -15,7 +15,7 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/Statement.h"
-#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/ssl/type/ArrayType.h"
 
 
 ConstGlobalConverter::ConstGlobalConverter(Prog* prog)

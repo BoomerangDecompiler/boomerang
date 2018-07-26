@@ -10,27 +10,26 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
-class VoidType : public Type
+class BooleanType : public Type
 {
 public:
-    VoidType();
-    VoidType(const VoidType& other) = default;
-    VoidType(VoidType&& other) = default;
+    BooleanType();
+    BooleanType(const BooleanType& other) = default;
+    BooleanType(BooleanType&& other) = default;
 
-    virtual ~VoidType() override;
+    virtual ~BooleanType() override;
 
-    VoidType& operator=(const VoidType& other) = default;
-    VoidType& operator=(VoidType&& other) = default;
+    BooleanType& operator=(const BooleanType& other) = default;
+    BooleanType& operator=(BooleanType&& other) = default;
 
 public:
-    virtual bool isVoid() const override { return true; }
+    virtual bool isBoolean() const override { return true; }
+    static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
 
     virtual SharedType clone() const override;
-
-    static std::shared_ptr<VoidType> get() { return std::make_shared<VoidType>(); }
 
     virtual bool operator==(const Type& other) const override;
 
@@ -38,11 +37,6 @@ public:
 
     virtual size_t getSize() const override;
 
-    /**
-     * Return a string representing this type
-     * \param        final if true, this is final output
-     * \returns      Pointer to a constant string of char
-     */
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith

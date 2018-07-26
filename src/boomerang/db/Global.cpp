@@ -17,11 +17,11 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/Log.h"
 
 

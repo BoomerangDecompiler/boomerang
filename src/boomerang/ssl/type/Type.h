@@ -262,7 +262,7 @@ protected:
 QTextStream& operator<<(QTextStream& os, const SharedConstType& ty); ///< Print the Type pointed to by t
 QTextStream& operator<<(QTextStream& os, const Type& ty);            ///< Print the Type pointed to by t
 
-#include "boomerang/type/type/NamedType.h"
+#include "boomerang/ssl/type/NamedType.h"
 
 template<class T>
 inline std::shared_ptr<T> Type::as()

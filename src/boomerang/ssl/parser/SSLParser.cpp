@@ -69,10 +69,10 @@ void *alloca();
 #include "boomerang/ssl/parser/InsNameElem.h"
 #include "boomerang/ssl/parser/SSLScanner.h"
 #include "boomerang/ssl/parser/Table.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h" // E.g. str()
 

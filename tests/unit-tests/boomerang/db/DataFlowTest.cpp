@@ -18,7 +18,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/passes/PassManager.h"
 

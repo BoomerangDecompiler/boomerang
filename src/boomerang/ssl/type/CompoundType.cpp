@@ -10,7 +10,7 @@
 #include "CompoundType.h"
 
 
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/SizeType.h"
 
 
 CompoundType::CompoundType(bool is_generic /* = false */)

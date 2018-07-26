@@ -11,7 +11,7 @@
 
 
 #include "boomerang/util/Log.h"
-#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/ssl/type/ArrayType.h"
 
 
 SizeType::SizeType()

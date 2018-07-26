@@ -11,7 +11,7 @@
 
 
 #include "boomerang/type/DataIntervalMap.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 
 
 void DataIntervalMapTest::testIsClear()

@@ -12,7 +12,7 @@
 
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/frontend/Decoder.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/exp/Operator.h"
 
 

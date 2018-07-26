@@ -19,10 +19,10 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 

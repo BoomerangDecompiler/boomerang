@@ -38,8 +38,8 @@
 #include "boomerang/frontend/st20/st20frontend.h"
 #include "boomerang/frontend/mips/mipsfrontend.h"
 
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/FuncType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/FuncType.h"
 
 #include <QDir>
 

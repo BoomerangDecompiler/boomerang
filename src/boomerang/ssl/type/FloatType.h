@@ -10,24 +10,25 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
-class BooleanType : public Type
+class FloatType : public Type
 {
 public:
-    BooleanType();
-    BooleanType(const BooleanType& other) = default;
-    BooleanType(BooleanType&& other) = default;
+    explicit FloatType(int sz = 64);
+    FloatType(const FloatType& other) = default;
+    FloatType(FloatType&& other) = default;
 
-    virtual ~BooleanType() override;
+    virtual ~FloatType() override;
 
-    BooleanType& operator=(const BooleanType& other) = default;
-    BooleanType& operator=(BooleanType&& other) = default;
+    FloatType& operator=(const FloatType& other) = default;
+    FloatType& operator=(FloatType&& other) = default;
 
 public:
-    virtual bool isBoolean() const override { return true; }
-    static std::shared_ptr<BooleanType> get() { return std::make_shared<BooleanType>(); }
+    static std::shared_ptr<FloatType> get(int sz = 64);
+
+    virtual bool isFloat() const override { return true; }
 
     virtual SharedType clone() const override;
 
@@ -37,9 +38,17 @@ public:
 
     virtual size_t getSize() const override;
 
+    virtual void setSize(size_t sz)  override { size = sz; }
+
     virtual QString getCtype(bool final = false) const override;
+
+    virtual QString getTempName() const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+
     virtual bool isCompatible(const Type& other, bool all) const override;
+
+private:
+    size_t size; // Size in bits, e.g. 64
 };

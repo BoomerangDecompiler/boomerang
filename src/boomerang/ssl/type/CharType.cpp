@@ -10,8 +10,8 @@
 #include "CharType.h"
 
 
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/SizeType.h"
 
 
 CharType::CharType()

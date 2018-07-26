@@ -47,6 +47,21 @@ list(APPEND boomerang-ssl-sources
     ssl/statements/Statement
     ssl/statements/StatementHelper
     ssl/statements/TypingStatement
+
+    # type handling
+    ssl/type/ArrayType
+    ssl/type/BooleanType
+    ssl/type/CharType
+    ssl/type/CompoundType
+    ssl/type/FloatType
+    ssl/type/FuncType
+    ssl/type/IntegerType
+    ssl/type/NamedType
+    ssl/type/PointerType
+    ssl/type/SizeType
+    ssl/type/Type
+    ssl/type/UnionType
+    ssl/type/VoidType
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-ssl-sources}" PARENT_SCOPE)

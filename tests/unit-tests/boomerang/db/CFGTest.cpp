@@ -16,7 +16,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 #include <QDebug>
 

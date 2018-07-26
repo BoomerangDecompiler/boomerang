@@ -16,9 +16,9 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/StatementList.h"
 
 

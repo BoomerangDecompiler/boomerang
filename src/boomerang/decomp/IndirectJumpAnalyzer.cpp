@@ -25,8 +25,8 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/FuncType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/util/Log.h"
 
 

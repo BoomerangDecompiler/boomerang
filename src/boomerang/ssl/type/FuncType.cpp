@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/type/type/SizeType.h"
+#include "boomerang/ssl/type/SizeType.h"
 
 
 FuncType::FuncType(const std::shared_ptr<Signature>& sig)

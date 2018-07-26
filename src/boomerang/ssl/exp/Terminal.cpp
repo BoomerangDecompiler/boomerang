@@ -13,9 +13,9 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/type/type/BooleanType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/BooleanType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 

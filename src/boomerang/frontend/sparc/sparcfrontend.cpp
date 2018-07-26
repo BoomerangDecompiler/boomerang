@@ -30,8 +30,8 @@
 #include "boomerang/ssl/Register.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
 #include "boomerang/frontend/sparc/sparcdecoder.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/Log.h"
 
 #include <cassert>

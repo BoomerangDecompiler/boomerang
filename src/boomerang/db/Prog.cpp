@@ -29,15 +29,15 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/SizeType.h"
-#include "boomerang/type/type/FloatType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h" // For lockFileWrite etc
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/frontend/Frontend.h"
 
 #include <QtCore/QFileInfo>

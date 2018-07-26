@@ -19,11 +19,11 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/type/type/BooleanType.h"
-#include "boomerang/type/type/VoidType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/FuncType.h"
-#include "boomerang/type/type/ArrayType.h"
+#include "boomerang/ssl/type/BooleanType.h"
+#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/util/Log.h"
 
 

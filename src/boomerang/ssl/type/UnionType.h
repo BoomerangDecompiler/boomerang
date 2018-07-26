@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 // The union type represents the union of any number of any other types
 struct UnionElement

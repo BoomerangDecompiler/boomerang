@@ -12,7 +12,7 @@
 
 #include <map>
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/type/DataIntervalMap.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"

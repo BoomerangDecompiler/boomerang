@@ -14,7 +14,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
 UsedLocalFinder::UsedLocalFinder(LocationSet& used, UserProc* proc)

@@ -16,8 +16,8 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/parser/SSLParser.h"
 #include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/util/Log.h"
 
 

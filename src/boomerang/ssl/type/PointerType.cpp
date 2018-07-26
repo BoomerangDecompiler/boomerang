@@ -10,8 +10,8 @@
 #include "PointerType.h"
 
 
-#include "boomerang/type/type/SizeType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/Log.h"
 
 

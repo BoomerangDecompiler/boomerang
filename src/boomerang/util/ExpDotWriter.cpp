@@ -19,7 +19,7 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Log.h"
 
 #include <QFile>

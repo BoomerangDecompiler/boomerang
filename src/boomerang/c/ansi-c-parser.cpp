@@ -46,14 +46,14 @@
 #include <list>
 #include <string>
 
-#include "boomerang/type/type/CompoundType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/PointerType.h"
-#include "boomerang/type/type/FuncType.h"
-#include "boomerang/type/type/ArrayType.h"
-#include "boomerang/type/type/CharType.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/VoidType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/signature/CustomSignature.h"

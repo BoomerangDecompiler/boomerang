@@ -10,8 +10,8 @@
 #include "Register.h"
 
 
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/IntegerType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 
 #include <cassert>
 #include <cstring>

@@ -19,9 +19,9 @@
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/type/type/FloatType.h"
-#include "boomerang/type/type/IntegerType.h"
-#include "boomerang/type/type/BooleanType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/util/Log.h"
 
 

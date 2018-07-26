@@ -10,27 +10,27 @@
 #pragma once
 
 
-#include "boomerang/type/type/Type.h"
+#include "boomerang/ssl/type/Type.h"
 
 
-class FloatType : public Type
+class VoidType : public Type
 {
 public:
-    explicit FloatType(int sz = 64);
-    FloatType(const FloatType& other) = default;
-    FloatType(FloatType&& other) = default;
+    VoidType();
+    VoidType(const VoidType& other) = default;
+    VoidType(VoidType&& other) = default;
 
-    virtual ~FloatType() override;
+    virtual ~VoidType() override;
 
-    FloatType& operator=(const FloatType& other) = default;
-    FloatType& operator=(FloatType&& other) = default;
+    VoidType& operator=(const VoidType& other) = default;
+    VoidType& operator=(VoidType&& other) = default;
 
 public:
-    static std::shared_ptr<FloatType> get(int sz = 64);
-
-    virtual bool isFloat() const override { return true; }
+    virtual bool isVoid() const override { return true; }
 
     virtual SharedType clone() const override;
+
+    static std::shared_ptr<VoidType> get() { return std::make_shared<VoidType>(); }
 
     virtual bool operator==(const Type& other) const override;
 
@@ -38,17 +38,14 @@ public:
 
     virtual size_t getSize() const override;
 
-    virtual void setSize(size_t sz)  override { size = sz; }
-
+    /**
+     * Return a string representing this type
+     * \param        final if true, this is final output
+     * \returns      Pointer to a constant string of char
+     */
     virtual QString getCtype(bool final = false) const override;
-
-    virtual QString getTempName() const override;
 
     /// \copydoc Type::meetWith
     virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
-
     virtual bool isCompatible(const Type& other, bool all) const override;
-
-private:
-    size_t size; // Size in bits, e.g. 64
 };
