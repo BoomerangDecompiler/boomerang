@@ -12,7 +12,7 @@
 
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/loader/IFileLoader.h"
+#include "boomerang/ifc/IFileLoader.h"
 
 
 BinaryFile::BinaryFile(const QByteArray& rawData, IFileLoader *loader)

@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/binary/BinarySymbol.h"
-#include "boomerang/loader/IFileLoader.h"
+#include "boomerang/ifc/IFileLoader.h"
 
 #include <set>
 

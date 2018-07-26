@@ -10,6 +10,7 @@
 list(APPEND boomerang-c-sources
     c/ansi-c-parser
     c/ansi-c-scanner
+    c/CSymbolProvider
 )
 
 set(boomerang-sources "${boomerang-sources};${boomerang-c-sources}" PARENT_SCOPE)

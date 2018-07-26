@@ -10,8 +10,8 @@
 #include "Frontend.h"
 
 
+#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/c/ansi-c-parser.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/IndirectJumpAnalyzer.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -29,14 +29,14 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/exp/Location.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
-
 #include "boomerang/frontend/sparc/sparcfrontend.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/ppc/ppcfrontend.h"
 #include "boomerang/frontend/st20/st20frontend.h"
 #include "boomerang/frontend/mips/mipsfrontend.h"
+#include "boomerang/util/Log.h"
+#include "boomerang/util/Types.h"
+
 
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FuncType.h"
@@ -133,52 +133,9 @@ bool IFrontEnd::isNoReturnCallDest(const QString& name)
 }
 
 
-void IFrontEnd::readLibraryCatalog(const QString& filePath)
-{
-    // TODO: this is a work for generic semantics provider plugin : HeaderReader
-    QFile file(filePath);
-
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        LOG_ERROR("Cannot open library signature catalog `%1'", filePath);
-        return;
-    }
-
-    QTextStream inf(&file);
-    QString     sig_path;
-
-    while (!inf.atEnd()) {
-        QString sigFilePath;
-        inf >> sigFilePath;
-        sigFilePath = sigFilePath.mid(0, sigFilePath.indexOf('#')); // cut the line to first '#'
-
-        if ((sigFilePath.size() > 0) && sigFilePath.endsWith('\n')) {
-            sigFilePath = sigFilePath.mid(0, sigFilePath.size() - 1);
-        }
-
-        if (sigFilePath.isEmpty()) {
-            continue;
-        }
-
-        CallConv cc = CallConv::C; // Most APIs are C calling convention
-
-        if (sigFilePath == "windows.h") {
-            cc = CallConv::Pascal; // One exception
-        }
-
-        if (sigFilePath == "mfc.h") {
-            cc = CallConv::ThisCall; // Another exception
-        }
-
-        sig_path = m_program->getProject()->getSettings()->getDataDirectory().absoluteFilePath("signatures/" + sigFilePath);
-        readLibrarySignatures(qPrintable(sig_path), cc);
-    }
-}
-
-
 void IFrontEnd::readLibraryCatalog()
 {
-    // TODO: this is a work for generic semantics provider plugin : HeaderReader
-    m_librarySignatures.clear();
+    m_symbolProvider.reset(new CSymbolProvider(m_program));
     QDir sig_dir(m_program->getProject()->getSettings()->getDataDirectory());
 
     if (!sig_dir.cd("signatures")) {
@@ -186,16 +143,16 @@ void IFrontEnd::readLibraryCatalog()
         return;
     }
 
-    readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
-    readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
+    m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
+    m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
 
     if (isWin32()) {
-        readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
+        m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
     }
 
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        readLibraryCatalog(sig_dir.absoluteFilePath("objc.hs"));
+        m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("objc.hs"));
     }
 }
 
@@ -203,8 +160,8 @@ void IFrontEnd::readLibraryCatalog()
 void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
 {
     SharedType ty = NamedType::getNamedType(type);
-
     assert(ty->isFunc());
+
     UserProc *proc = static_cast<UserProc *>(m_program->getOrCreateFunction(addr));
     assert(proc);
 
@@ -489,25 +446,9 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 }
 
 
-void IFrontEnd::readLibrarySignatures(const char *signatureFile, CallConv cc)
+bool IFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
 {
-    std::unique_ptr<AnsiCParser> p;
-
-    try {
-        p.reset(new AnsiCParser(signatureFile, false));
-    }
-    catch (const char *err) {
-        LOG_ERROR("Cannot read library signature file '%1': %2", signatureFile, err);
-        return;
-    }
-
-    Platform plat = getType();
-    p->yyparse(plat, cc);
-
-    for (auto& signature : p->signatures) {
-        m_librarySignatures[signature->getName()] = signature;
-        signature->setSigFilePath(signatureFile);
-    }
+    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
 }
 
 
@@ -524,21 +465,18 @@ std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
 
 std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
 {
-    std::shared_ptr<Signature> signature;
-    // Look up the name in the librarySignatures map
-    auto it = m_librarySignatures.find(name);
+    std::shared_ptr<Signature> signature = m_symbolProvider
+        ? m_symbolProvider->getSignatureByName(name)
+        : nullptr;
 
-    if (it == m_librarySignatures.end()) {
-        LOG_WARN("Unknown library function '%1', please update signatures!", name);
-        signature = getDefaultSignature(name);
+    if (signature) {
+        signature->setUnknown(false);
+        return signature;
     }
     else {
-        // Don't clone here; cloned in CallStatement::setSigArguments
-        signature = *it;
-        signature->setUnknown(false);
+        LOG_WARN("Unknown library function '%1', please update signatures!", name);
+        return getDefaultSignature(name);
     }
-
-    return signature;
 }
 
 

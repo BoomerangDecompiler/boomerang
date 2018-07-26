@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/loader/IFileLoader.h"
+#include "boomerang/ifc/IFileLoader.h"
 
 #include <QtCore/QObject>
 
