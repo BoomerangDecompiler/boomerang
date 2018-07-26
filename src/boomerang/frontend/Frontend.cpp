@@ -466,7 +466,9 @@ std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
 
 std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
 {
-    std::shared_ptr<Signature> signature = m_symbolProvider->getSignatureByName(name);
+    std::shared_ptr<Signature> signature = m_symbolProvider
+        ? m_symbolProvider->getSignatureByName(name)
+        : nullptr;
 
     if (signature) {
         signature->setUnknown(false);
