@@ -15,7 +15,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/ImplicitAssign.h"
 #include "boomerang/db/exp/Location.h"

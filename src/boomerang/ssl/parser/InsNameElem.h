@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/db/ssl/parser/Table.h"
+#include "boomerang/ssl/parser/Table.h"
 
 #include <QString>
 #include <map>

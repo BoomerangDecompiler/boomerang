@@ -18,7 +18,7 @@
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/db/statements/CallStatement.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 

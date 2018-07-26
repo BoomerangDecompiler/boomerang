@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"
 

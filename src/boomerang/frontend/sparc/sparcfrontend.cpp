@@ -27,7 +27,7 @@
 #include "boomerang/db/exp/Const.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/exp/Terminal.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
 #include "boomerang/frontend/sparc/sparcdecoder.h"
 #include "boomerang/type/type/FloatType.h"

@@ -16,7 +16,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/RTL.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/frontend/ppc/ppcdecoder.h"
 #include "boomerang/util/Log.h"
 

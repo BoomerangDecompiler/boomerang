@@ -27,7 +27,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/type/ArrayType.h"
 #include "boomerang/type/type/CharType.h"

@@ -14,7 +14,7 @@
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/exp/Binary.h"
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/ssl/parser/SSLParser.h"
+#include "boomerang/ssl/parser/SSLParser.h"
 #include "boomerang/db/statements/Assign.h"
 #include "boomerang/type/type/IntegerType.h"
 #include "boomerang/type/type/FloatType.h"

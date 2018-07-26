@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/RTL.h"
-#include "boomerang/db/ssl/RTLInstDict.h"
+#include "boomerang/ssl/RTLInstDict.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/BoolAssign.h"
 

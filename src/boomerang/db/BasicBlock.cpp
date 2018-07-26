@@ -19,7 +19,7 @@
 #include "boomerang/db/exp/RefExp.h"
 #include "boomerang/db/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/db/statements/CallStatement.h"
 #include "boomerang/db/statements/BranchStatement.h"
 #include "boomerang/db/statements/CaseStatement.h"

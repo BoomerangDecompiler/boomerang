@@ -23,7 +23,7 @@
 #include "boomerang/db/exp/TypedExp.h"
 #include "boomerang/db/exp/Ternary.h"
 #include "boomerang/db/exp/RefExp.h"
-#include "boomerang/db/ssl/Register.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
 #include "boomerang/visitor/expmodifier/ExpAddressSimplifier.h"

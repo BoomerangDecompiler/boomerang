@@ -10,7 +10,7 @@
 #include "ParserTest.h"
 
 
-#include "boomerang/db/ssl/parser/SSLParser.h"
+#include "boomerang/ssl/parser/SSLParser.h"
 #include "boomerang/db/statements/Statement.h"
 #include "boomerang/util/Log.h"
 
