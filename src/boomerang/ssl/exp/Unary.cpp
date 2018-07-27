@@ -465,7 +465,7 @@ SharedType Unary::ascendType()
 
 
 // match m[l1{} + K] pattern
-static bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
+bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
 {
     if (!in->isMemOf()) {
         return false;
