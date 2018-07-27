@@ -13,6 +13,9 @@
 #include "boomerang/db/CFG.h"
 
 
+class BranchStatement;
+
+
 /**
  * Finds BasicBlocks that contain string instructions (e.g. rep movsd)
  * and processes them.

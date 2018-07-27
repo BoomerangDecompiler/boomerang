@@ -14,25 +14,20 @@
 #include "boomerang/util/Address.h"
 #include "boomerang/util/MapIterators.h"
 
+#include <map>
+#include <memory>
+
 
 class Function;
-class Prog;
 class UserProc;
-class UseSet;
-class LocationSet;
 class BasicBlock;
-class ICodeGenerator;
-class CallStatement;
-class BranchStatement;
-class RTL;
-class Global;
-class Parameter;
-class ConnectionGraph;
 class Statement;
-
-enum class BBType;
+class RTL;
+class Parameter;
 
 using RTLList   = std::list<std::unique_ptr<RTL>>;
+
+enum class BBType;
 
 
 /**

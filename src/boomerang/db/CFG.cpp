@@ -10,23 +10,15 @@
 #include "CFG.h"
 
 
-#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/ssl/Register.h"
-#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/db/signature/Parameter.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/ifc/ICodeGenerator.h"
-#include "boomerang/util/Util.h"
 
-#include <algorithm>
 #include <cassert>
-#include <cstring>
+
 
 
 Cfg::Cfg(UserProc *proc)
