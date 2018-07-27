@@ -10,12 +10,8 @@
 #include "UseCollector.h"
 
 
-#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
-
-#include <QString>
-#include <QTextStream>
 
 
 UseCollector::UseCollector()
