@@ -474,7 +474,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 }
 
 
-void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
+void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i, const QString& currentFile)
 {
     bool                 imported = sym.SectionIdx == SHT_NULL;
     bool                 local    = sym.Binding == STB_LOCAL || sym.Binding == STB_WEAK;
@@ -500,23 +500,13 @@ void ElfBinaryLoader::processSymbol(Translated_ElfSym& sym, int e_type, int i)
     if (symbol != nullptr) { // TODO: if symbol already exists
         return;
     }
-
-    if ((sym.Binding == STB_WEAK) && (sym.Type == STT_NOTYPE)) {
+    else if (sym.Binding == STB_WEAK && sym.Type == STT_NOTYPE) {
         return;
     }
-
-    static QString currentFile;
-    if (sym.Type == STT_FILE) {
-        currentFile = sym.Name;
+    else if (sym.Type == STT_FILE) {
         return;
     }
-
-    if ((sym.Binding != STB_LOCAL) && !currentFile.isEmpty()) {
-        // first non-local symbol, clear the current_file
-        currentFile.clear();
-    }
-
-    if (sym.Name.isEmpty()) {
+    else if (sym.Name.isEmpty()) {
         return;
     }
 
@@ -574,6 +564,8 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
     }
 
     const int numSymbols = section.Size / section.entry_size;
+    QString fileName;
+
     // Index 0 is a dummy entry
     for (int i = 1; i < numSymbols; i++) {
         Translated_ElfSym translatedSym;
@@ -593,7 +585,17 @@ void ElfBinaryLoader::addSymbolsForSection(int secIndex)
         translatedSym.SymbolSize = ELF32_ST_VISIBILITY(m_symbolSection[i].st_size);
         translatedSym.SectionIdx = elfRead2(&m_symbolSection[i].st_shndx);
         translatedSym.Value      = val;
-        processSymbol(translatedSym, symbolType, i);
+
+        if (translatedSym.Type == STT_FILE) {
+            fileName = translatedSym.Name;
+        }
+
+        if (translatedSym.Binding != STB_LOCAL && !fileName.isEmpty()) {
+            // first non-local symbol, clear the current_file
+            fileName.clear();
+        }
+
+        processSymbol(translatedSym, symbolType, i, fileName);
     }
 
     const Address addressOfMain = getMainEntryPoint();

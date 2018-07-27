@@ -51,7 +51,7 @@
 
 
 
-static bool isBareMemof(const Exp& exp, UserProc *)
+bool isBareMemof(const Exp& exp, UserProc *)
 {
 #if SYMS_IN_BACK_END
     if (!e.isMemOf()) {

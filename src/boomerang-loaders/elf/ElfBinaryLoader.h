@@ -118,7 +118,7 @@ private:
      */
     void markImports();
 
-    void processSymbol(Translated_ElfSym& sym, int e_type, int i);
+    void processSymbol(Translated_ElfSym& sym, int e_type, int i, const QString& currentFile = "");
 
 private:
     size_t m_loadedImageSize = 0;               ///< Size of image in bytes

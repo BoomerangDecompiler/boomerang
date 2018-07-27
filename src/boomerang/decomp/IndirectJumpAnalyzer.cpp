@@ -140,7 +140,7 @@ static const SharedConstExp vfc_vfo =
                                                 Terminal::get(opWildIntConst))));
 
 // Pattern 4: m[ m[ <expr> ] ]
-static SharedConstExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
+static const SharedConstExp vfc_none = Location::memOf(Location::memOf(Terminal::get(opWild)));
 
 static const SharedConstExp hlVfc[] = {
     vfc_funcptr,
