@@ -15,6 +15,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/statements/CallStatement.h"

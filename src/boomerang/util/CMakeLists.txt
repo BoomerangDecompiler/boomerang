@@ -15,6 +15,7 @@ list(APPEND boomerang-util-sources
     util/ConnectionGraph
     util/DFGWriter
     util/ExpDotWriter
+    util/ExpSet
     util/LocationSet
     util/Log
     util/ProgSymbolWriter

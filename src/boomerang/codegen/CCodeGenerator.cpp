@@ -20,6 +20,7 @@
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -31,7 +32,6 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/Log.h"
-
 
 static bool isBareMemof(const Exp& exp, UserProc *)
 {

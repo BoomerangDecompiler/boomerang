@@ -13,6 +13,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Parameter.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/util/Log.h"

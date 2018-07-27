@@ -17,6 +17,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
@@ -43,7 +44,6 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
-
 
 #include <sstream>
 #include <cstring>

@@ -10,6 +10,7 @@
 #include "CallLivenessRemovalPass.h"
 
 
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/ssl/statements/CallStatement.h"

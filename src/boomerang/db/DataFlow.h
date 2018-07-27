@@ -10,28 +10,14 @@
 #pragma once
 
 
-#include "boomerang/ssl/exp/ExpHelp.h"
-#include "boomerang/util/StatementSet.h"
-#include "boomerang/util/LocationSet.h"
-#include "boomerang/db/BasicBlock.h"
 #include "boomerang/util/LocationSet.h"
 
-#include <vector>
 #include <unordered_map>
-#include <set>
-#include <stack>
+#include <map>
 
 
-class Cfg;
 class BasicBlock;
-class Exp;
-class RefExp;
-class Statement;
-class UserProc;
 class PhiAssign;
-class Type;
-class QTextStream;
-class LocationSet;
 
 
 /**
@@ -97,7 +83,7 @@ public:
     const BasicBlock *getSemiDominator(const BasicBlock *bb) const
     { return nodeToBB(getSemi(pbbToNode(bb))); }
 
-    /// \note can only ce called after \ref calculateDominators()
+    /// \note can only be called after \ref calculateDominators()
     const BasicBlock *getDominator(const BasicBlock *bb) const
     { return nodeToBB(getIdom(pbbToNode(bb))); }
 
