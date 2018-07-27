@@ -8,7 +8,6 @@
 
 
 list(APPEND boomerang-frontend-sources
-    frontend/Decoder.h
     frontend/Frontend
     frontend/MachineInstruction
     frontend/mips/mipsdecoder
@@ -26,5 +25,7 @@ list(APPEND boomerang-frontend-sources
     frontend/st20/st20frontend
     frontend/TargetQueue
 )
+
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-frontend-sources ".cpp")
 
 set(boomerang-sources "${boomerang-sources};${boomerang-frontend-sources}" PARENT_SCOPE)

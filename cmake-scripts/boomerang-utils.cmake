@@ -202,3 +202,12 @@ function(BOOMERANG_LINK_DIRECTORY LINK_SOURCE LINK_DEST)
     endif ()
 endfunction()
 
+
+# Append _SUFFIX to each elements of _LIST
+function(BOOMERANG_LIST_APPEND_FOREACH _LIST _SUFFIX)
+    set(list_temp "")
+    foreach (elem ${${_LIST}})
+        LIST(APPEND list_temp "${elem}${_SUFFIX}")
+    endforeach ()
+    set(${_LIST} ${list_temp} PARENT_SCOPE)
+endfunction ()

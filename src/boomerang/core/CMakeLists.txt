@@ -14,4 +14,6 @@ list(APPEND boomerang-core-sources
     core/Watcher
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-core-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-core-sources}" PARENT_SCOPE)

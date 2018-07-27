@@ -44,4 +44,6 @@ list(APPEND boomerang-passes-sources
     passes/late/LocalAndParamMapPass
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-passes-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-passes-sources}" PARENT_SCOPE)

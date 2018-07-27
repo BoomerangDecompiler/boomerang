@@ -17,4 +17,6 @@ list(APPEND boomerang-decomp-sources
     decomp/UnusedReturnRemover
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-decomp-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-decomp-sources}" PARENT_SCOPE)

@@ -12,4 +12,6 @@ list(APPEND boomerang-codegen-sources
     codegen/ControlFlowAnalyzer
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-codegen-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-codegen-sources}" PARENT_SCOPE)
