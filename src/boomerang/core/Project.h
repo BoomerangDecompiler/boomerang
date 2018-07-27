@@ -11,14 +11,16 @@
 
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/ifc/IFileLoader.h"
-#include "boomerang/type/TypeRecovery.h"
 #include "boomerang/db/binary/BinaryFile.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/frontend/Frontend.h"
+#include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ifc/IFileLoader.h"
+#include "boomerang/ifc/ITypeRecovery.h"
+#include "boomerang/util/Address.h"
 
-#include <QByteArray>
-#include <memory>
-#include <vector>
 #include <set>
+#include <memory>
 
 
 class BinaryImage;
@@ -27,6 +29,7 @@ class ICodeGenerator;
 class Module;
 class IWatcher;
 class UserProc;
+class QString;
 
 
 class Project
@@ -172,7 +175,7 @@ private:
     /**
      * Create a Prog from a loaded binary file. Returns nullptr on failure.
      */
-    Prog *createProg(BinaryFile *file, const QString& name = "");
+    Prog *createProg(BinaryFile *file, const QString& name);
 
     /**
      * Define symbols from symbol files and command line switches ("-s")

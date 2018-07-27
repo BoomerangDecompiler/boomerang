@@ -14,7 +14,9 @@
 
 #include <QString>
 #include <QDir>
-#include <QSettings>
+
+#include <vector>
+#include <map>
 
 
 /**
