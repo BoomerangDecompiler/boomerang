@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang-gui/Decompiler.h"

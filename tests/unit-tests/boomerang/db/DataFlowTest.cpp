@@ -10,6 +10,7 @@
 #include "DataFlowTest.h"
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/ssl/exp/Location.h"

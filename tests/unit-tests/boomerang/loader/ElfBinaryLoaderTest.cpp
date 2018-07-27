@@ -10,6 +10,7 @@
 #include "ElfBinaryLoaderTest.h"
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/Log.h"

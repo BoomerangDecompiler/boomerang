@@ -10,6 +10,7 @@
 #include "StatementTest.h"
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"

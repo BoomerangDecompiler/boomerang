@@ -10,6 +10,7 @@
 #include "TestUtils.h"
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/util/Log.h"
 
 

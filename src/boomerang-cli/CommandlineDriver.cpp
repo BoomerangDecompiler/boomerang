@@ -10,6 +10,7 @@
 #include "CommandlineDriver.h"
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
 #include "boomerang/util/CFGDotWriter.h"

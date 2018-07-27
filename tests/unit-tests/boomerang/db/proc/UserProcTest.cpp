@@ -14,6 +14,7 @@
 #define HELLO_PENTIUM   SAMPLE("pentium/hello")
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Location.h"

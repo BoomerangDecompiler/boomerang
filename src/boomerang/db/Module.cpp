@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"

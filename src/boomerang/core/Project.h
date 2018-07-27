@@ -10,25 +10,25 @@
 #pragma once
 
 
-#include "boomerang/core/Settings.h"
-#include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/frontend/Frontend.h"
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ifc/IFileLoader.h"
-#include "boomerang/ifc/ITypeRecovery.h"
 #include "boomerang/util/Address.h"
 
-#include <set>
 #include <memory>
+#include <set>
+#include <vector>
 
 
-class BinaryImage;
-class IFrontEnd;
+class BinaryFile;
 class ICodeGenerator;
-class Module;
+class IFrontEnd;
+class ITypeRecovery;
 class IWatcher;
+class Function;
+class Module;
+class Prog;
+class Settings;
 class UserProc;
+
 class QString;
 
 
@@ -43,6 +43,20 @@ public:
 
     Project& operator=(const Project& other) = delete;
     Project& operator=(Project&& other) = default;
+
+public:
+    Settings *getSettings();
+    const Settings *getSettings() const;
+
+    BinaryFile *getLoadedBinaryFile();
+    const BinaryFile *getLoadedBinaryFile() const;
+
+    Prog *getProg();
+    const Prog *getProg() const;
+
+    /// \returns the type recovery engine
+    ITypeRecovery *getTypeRecoveryEngine();
+    const ITypeRecovery *getTypeRecoveryEngine() const;
 
 public:
     /// \returns the library version string
@@ -154,20 +168,6 @@ public:
     /// Called once on decompilation end.
     void alertDecompilationEnd();
 
-public:
-    Settings *getSettings()             { return m_settings.get(); }
-    const Settings *getSettings() const { return m_settings.get(); }
-
-    BinaryFile *getLoadedBinaryFile() { return m_loadedBinary.get(); }
-    const BinaryFile *getLoadedBinaryFile() const { return m_loadedBinary.get(); }
-
-    Prog *getProg() { return m_prog.get(); }
-    const Prog *getProg() const { return m_prog.get(); }
-
-    /// \returns the type recovery engine
-    ITypeRecovery *getTypeRecoveryEngine() { return m_typeRecovery.get(); }
-    const ITypeRecovery *getTypeRecoveryEngine() const { return m_typeRecovery.get(); }
-
 private:
     /// Get the best loader that is able to load the file at \p filePath
     IFileLoader *getBestLoader(const QString& filePath) const;
@@ -181,8 +181,6 @@ private:
      * Define symbols from symbol files and command line switches ("-s")
      */
     void loadSymbols();
-
-    bool readSymbolFile(const QString& fname);
 
     /**
      * Disassemble the whole binary file.

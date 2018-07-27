@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"

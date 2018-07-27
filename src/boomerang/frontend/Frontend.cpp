@@ -12,6 +12,7 @@
 
 #include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
