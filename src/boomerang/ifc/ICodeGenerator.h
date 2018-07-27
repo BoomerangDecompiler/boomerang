@@ -10,16 +10,18 @@
 #pragma once
 
 
-#include <QTextStream>
+#include "boomerang/ssl/exp/ExpHelp.h"
 
-#include "boomerang/ssl/exp/Exp.h"
 
-class Prog;
-class Module;
-class UserProc;
-class Function;
-class StatementList;
 class Assign;
+class Function;
+class Module;
+class Prog;
+class StatementList;
+class UserProc;
+
+class QString;
+class QTextStream;
 
 
 /**
