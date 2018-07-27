@@ -13,7 +13,7 @@
 
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/frontend/Decoder.h"
+#include "boomerang/ifc/IDecoder.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 
