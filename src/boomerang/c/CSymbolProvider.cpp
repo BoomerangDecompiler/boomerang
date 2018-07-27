@@ -11,6 +11,7 @@
 
 
 #include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/util/Log.h"
 

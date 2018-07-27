@@ -10,6 +10,7 @@
 #include "BinaryImage.h"
 
 
+#include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Log.h"
 

@@ -18,6 +18,12 @@ BinarySymbol::BinarySymbol(Address location, const QString& name)
 }
 
 
+void BinarySymbol::setAttribute(const QString& key, const QVariant& value) const
+{
+    m_attributes[key] = value;
+}
+
+
 bool BinarySymbol::isImported() const
 {
     return m_attributes.contains("Imported") && m_attributes["Imported"].toBool();

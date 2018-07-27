@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 
 

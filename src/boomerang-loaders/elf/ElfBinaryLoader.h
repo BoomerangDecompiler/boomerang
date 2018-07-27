@@ -11,6 +11,7 @@
 
 
 #include "boomerang/ifc/IFileLoader.h"
+#include "boomerang/util/ByteUtil.h"
 
 struct Elf32_Ehdr;
 struct Elf32_Phdr;

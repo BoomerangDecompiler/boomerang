@@ -10,8 +10,9 @@
 #include "BinaryImageTest.h"
 
 
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/proc/UserProc.h"
 
 #include <QByteArray>
 

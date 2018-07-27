@@ -12,6 +12,8 @@
 
 #include "boomerang/util/Address.h"
 
+#include <QMetaType>
+
 #include <memory>
 
 
@@ -31,7 +33,7 @@ public:
     void setSize(int v) { m_size = v; }
     Address getLocation() const { return m_address; }
 
-    void setAttribute(const QString& key, const QVariant& value) const { m_attributes[key] = value; }
+    void setAttribute(const QString& key, const QVariant& value) const;
 
     bool isImportedFunction() const;
     bool isStaticFunction() const;

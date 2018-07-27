@@ -60,7 +60,6 @@ public:
     /// the behaviour of (at least) the question "Is this address in BSS".
     bool isAddressBss(Address addr) const;
 
-
     bool anyDefinedValues() const;
     void clearDefinedArea();
     void addDefinedArea(Address from, Address to);
