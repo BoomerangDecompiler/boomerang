@@ -14,7 +14,6 @@ list(APPEND boomerang-db-sources
     db/DebugInfo
     db/DefCollector
     db/Global
-    db/Module
     db/Prog
     db/UseCollector
 
@@ -23,6 +22,10 @@ list(APPEND boomerang-db-sources
     db/binary/BinarySection
     db/binary/BinarySymbol
     db/binary/BinarySymbolTable
+
+    db/module/Class
+    db/module/Module
+    db/module/ModuleFactory
 
     db/proc/LibProc
     db/proc/Proc

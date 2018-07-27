@@ -27,6 +27,7 @@
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/frontend/pentium/pentiumdecoder.h"
+#include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"

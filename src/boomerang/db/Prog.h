@@ -17,10 +17,10 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
-#include "boomerang/db/Module.h"
+#include "boomerang/db/module/Module.h"
+#include "boomerang/db/module/ModuleFactory.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/frontend/Frontend.h"
-
 
 class RTLInstDict;
 class Function;
@@ -76,7 +76,7 @@ public:
      * \param modFactory Determines the type of Module to be created.
      * \returns the new module, or nullptr if there already exists a module with the same name and parent.
      */
-    Module *createModule(const QString& name, Module *parent = nullptr, const ModuleFactory& modFactory = DefaultModFactory());
+    Module *createModule(const QString& name, Module *parent = nullptr, const IModuleFactory& modFactory = DefaultModFactory());
 
     /**
      * Create or retrieve existing module
@@ -84,7 +84,7 @@ public:
      * \param fact abstract factory object that creates Module instance
      * \param name retrieve/create module with this name.
      */
-    Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
+    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
 
     Module *getRootModule() { return m_rootModule; }
     Module *getRootModule() const { return m_rootModule; }

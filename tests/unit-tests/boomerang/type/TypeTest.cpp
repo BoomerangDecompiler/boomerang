@@ -15,6 +15,7 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/ArrayType.h"

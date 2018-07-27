@@ -10,21 +10,20 @@
 #pragma once
 
 
-#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/util/Address.h"
 
-#include <list>
-#include <vector>
+#include <QFile>
+#include <QTextStream>
+
+#include <memory>
 #include <map>
-#include <set>
-#include <string>
-#include <fstream>
+#include <list>
 
-#include <QtCore/QTextStream>
-#include <QtCore/QFile>
 
+class Signature;
 class Function;
-class Prog;
 class IFrontEnd;
+class Prog;
 
 
 /**
@@ -139,52 +138,4 @@ protected:
     QFile m_out;
     QTextStream m_strm;
     QString m_stream_ext;
-};
-
-
-class Class : public Module
-{
-protected:
-    std::shared_ptr<CompoundType> m_type;
-
-public:
-    Class(const QString& name, Prog *_prog, IFrontEnd *fe)
-        : Module(name, _prog, fe)
-        , m_type(CompoundType::get())
-    {
-    }
-
-    /// A Class tends to be aggregated into the parent Module,
-    /// this isn't the case with Java, but hey, we're not doing that yet.
-    virtual bool isAggregate() const override { return true; }
-};
-
-
-class ModuleFactory
-{
-public:
-    virtual ~ModuleFactory() = default;
-    virtual Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const = 0;
-};
-
-
-class DefaultModFactory : public ModuleFactory
-{
-public:
-    virtual ~DefaultModFactory() override = default;
-    Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override
-    {
-        return new Module(name, parent, fe);
-    }
-};
-
-
-struct ClassModFactory : public ModuleFactory
-{
-    virtual ~ClassModFactory() override = default;
-
-    Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override
-    {
-        return new Class(name, parent, fe);
-    }
 };

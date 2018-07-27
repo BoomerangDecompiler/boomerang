@@ -16,7 +16,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/DebugInfo.h"
 #include "boomerang/db/Global.h"
-#include "boomerang/db/Module.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -83,7 +83,7 @@ void Prog::setName(const QString& name)
 }
 
 
-Module *Prog::createModule(const QString& name, Module *parentModule, const ModuleFactory& factory)
+Module *Prog::createModule(const QString& name, Module *parentModule, const IModuleFactory& factory)
 {
     if (parentModule == nullptr) {
         parentModule = m_rootModule;
@@ -103,7 +103,7 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const Modu
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, IFrontEnd *frontEnd)
+Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact, IFrontEnd *frontEnd)
 {
     for (const auto& m : m_moduleList) {
         if (m->getName() == name) {

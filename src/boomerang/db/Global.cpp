@@ -19,6 +19,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
