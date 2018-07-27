@@ -10,12 +10,13 @@
 #include "LocalTypeAnalysisPass.h"
 
 
+#include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/core/Project.h"
 
 
 LocalTypeAnalysisPass::LocalTypeAnalysisPass()

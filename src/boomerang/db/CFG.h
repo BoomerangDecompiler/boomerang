@@ -14,18 +14,12 @@
 #include "boomerang/util/Address.h"
 #include "boomerang/util/MapIterators.h"
 
-#include <list>
-#include <vector>
-#include <set>
-#include <map>
-
 
 class Function;
 class Prog;
 class UserProc;
 class UseSet;
 class LocationSet;
-class SSACounts;
 class BasicBlock;
 class ICodeGenerator;
 class CallStatement;

@@ -12,23 +12,22 @@
 
 #include "boomerang/util/Address.h"
 #include "boomerang/util/StatementList.h"
-#include "boomerang/util/LocationSet.h"
 
-#include <QString>
-
+#include <list>
 #include <memory>
+#include <vector>
 
 
-class Location;
-class ICodeGenerator;
-class BasicBlock;
 class RTL;
-class Function;
-class UserProc;
-class ConnectionGraph;
+class Exp;
 class ImplicitAssign;
 class PhiAssign;
-struct SwitchInfo;
+
+class QTextStream;
+
+
+using RTLList   = std::list<std::unique_ptr<RTL>>;
+using SharedExp = std::shared_ptr<Exp>;
 
 
 /// Kinds of basic block nodes
@@ -47,9 +46,6 @@ enum class BBType
 };
 
 
-using RTLList   = std::list<std::unique_ptr<class RTL>>;
-using SharedExp = std::shared_ptr<class Exp>;
-
 // index of the "then" branch of conditional jumps
 #define BTHEN    0
 
@@ -59,9 +55,9 @@ using SharedExp = std::shared_ptr<class Exp>;
 
 /**
  * Basic Blocks hold the sematics (RTLs) of a sequential list of instructions
- * without a CTI instruction.
- * During decompilation, a special RTL with a zero address is prepended.
- * This RTL contains implicit assigns and phi assigns.
+ * ended by a Control Transfer Instruction (CTI).
+ * During decompilation, a special RTL with a zero address is prepended;
+ * this RTL contains implicit assigns and phi assigns.
  */
 class BasicBlock
 {
@@ -221,10 +217,10 @@ public:
     void appendStatementsTo(StatementList& stmts) const;
 
     ///
-    ImplicitAssign *addImplicitAssign(SharedExp lhs);
+    ImplicitAssign *addImplicitAssign(const SharedExp& lhs);
 
     /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
-    PhiAssign *addPhi(SharedExp usedExp);
+    PhiAssign *addPhi(const SharedExp& usedExp);
 
     bool hasStatement(const Statement *stmt) const;
 
@@ -253,7 +249,7 @@ public:
      * Set the condition of a conditional branch BB.
      * If the BB is not a branch, nothing happens.
      */
-    void setCond(SharedExp e);
+    void setCond(const SharedExp& cond);
 
     /// Get the destination of the high level jump in this BB, if any
     SharedExp getDest() const;
