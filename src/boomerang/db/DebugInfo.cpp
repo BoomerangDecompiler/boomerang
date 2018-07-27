@@ -13,6 +13,8 @@
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/FuncType.h"
