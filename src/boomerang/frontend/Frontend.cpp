@@ -14,6 +14,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/CFG.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/ssl/Register.h"

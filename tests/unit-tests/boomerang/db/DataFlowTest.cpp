@@ -13,6 +13,7 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"

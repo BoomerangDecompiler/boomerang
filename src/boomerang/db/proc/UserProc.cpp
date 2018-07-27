@@ -12,6 +12,7 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/signature/Signature.h"

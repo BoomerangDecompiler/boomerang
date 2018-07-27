@@ -22,6 +22,8 @@
 #include "boomerang/util/Log.h"
 #include "boomerang/util/ConnectionGraph.h"
 
+#include <deque>
+
 
 /**
  * Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls

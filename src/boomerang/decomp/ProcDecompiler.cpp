@@ -14,6 +14,7 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/frontend/Frontend.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"

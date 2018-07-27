@@ -319,6 +319,18 @@ bool Prog::isWin32() const
 }
 
 
+QString Prog::getRegName(int idx) const
+{
+    return m_fe->getRegName(idx);
+}
+
+
+int Prog::getRegSize(int idx) const
+{
+    return m_fe->getRegSize(idx);
+}
+
+
 Platform Prog::getFrontEndId() const
 {
     return m_fe

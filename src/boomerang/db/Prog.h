@@ -10,30 +10,31 @@
 #pragma once
 
 
-#include <map>
-
-#include "boomerang/ssl/type/Type.h"
-#include "boomerang/type/DataIntervalMap.h"
-#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
-#include "boomerang/db/module/Module.h"
 #include "boomerang/db/module/ModuleFactory.h"
-#include "boomerang/util/Util.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/SigEnum.h"
+#include "boomerang/type/DataIntervalMap.h"
+#include "boomerang/util/Address.h"
 
-class RTLInstDict;
-class Function;
-class UserProc;
-class LibProc;
-class Signature;
-class Statement;
-class Module;
-class BinarySection;
-class ICodeGenerator;
-class BinarySymbol;
+#include <QString>
+
+#include <memory>
+#include <list>
+#include <map>
+#include <set>
+
+
+class ArrayType;
 class BinaryFile;
+class BinarySection;
+class BinarySymbol;
+class Function;
+class IFrontEnd;
+class LibProc;
+class Module;
 class Project;
+class Signature;
 
 
 class Prog
@@ -141,9 +142,8 @@ public:
     /// Returns true if this is a win32 program
     bool isWin32() const;
 
-
-    QString getRegName(int idx) const { return m_fe->getRegName(idx); }
-    int getRegSize(int idx) const { return m_fe->getRegSize(idx); }
+    QString getRegName(int idx) const;
+    int getRegSize(int idx) const;
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;
