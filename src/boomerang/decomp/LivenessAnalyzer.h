@@ -14,6 +14,7 @@
 
 #include <unordered_map>
 
+
 class BasicBlock;
 class ConnectionGraph;
 class UserProc;
@@ -33,8 +34,6 @@ public:
     /// liveout gets all the livenesses, and phiLocs gets a subset of these, which are due to phi statements at the top of
     /// successors
     void getLiveOut(BasicBlock *bb, LocationSet& live, LocationSet& phiLocs);
-
-    void addLiveIn(BasicBlock *bb, SharedExp e) { m_liveIn[bb].insert(e); }
 
 private:
     ///< Set of locations live at BB start
