@@ -13,8 +13,10 @@
 
 #include "boomerang/frontend/NJMCDecoder.h"
 
+
 class Prog;
 struct DecodeResult;
+
 
 /**
  * Decoder for x86 instructions.
