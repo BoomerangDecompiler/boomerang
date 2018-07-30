@@ -18,6 +18,18 @@
 #include "boomerang/util/Log.h"
 
 
+TypeRecoveryCommon::TypeRecoveryCommon(const QString& name)
+    : m_name(name)
+{
+}
+
+
+const QString& TypeRecoveryCommon::getName()
+{
+    return m_name;
+}
+
+
 void TypeRecoveryCommon::recoverProgramTypes(Prog *prog)
 {
     if (prog->getProject()->getSettings()->debugTA) {
