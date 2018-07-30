@@ -104,7 +104,7 @@ void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
 
 
 // m[idx*K1 + K2]; leave idx wild
-static Location
+static const Location
     scaledArrayPat(opMemOf,
                    Binary::get(opPlus,
                                Binary::get(opMult,

@@ -29,43 +29,6 @@
 #include <numeric>
 
 
-int tlstrchr(const QString& str, char ch)
-{
-    static QMap<QChar, QChar> braces { {
-                                           '[', ']'
-                                       }, {
-                                           '{', '}'
-                                       }, {
-                                           '(', ')'
-                                       }
-    };
-    int i = 0, e = str.length();
-
-    for ( ; i < e; ++i) {
-        if (str[i].toLatin1() == ch) {
-            return i;
-        }
-
-        if (braces.contains(str[i])) {
-            QChar end_brace = braces[str[i]];
-            ++i; // from next char
-
-            for ( ; i < e; ++i) {
-                if (str[i] == end_brace) {
-                    break;
-                }
-            }
-        }
-    }
-
-    if (i == e) {
-        return -1;
-    }
-
-    return i;
-}
-
-
 Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
     : Unary(op, e1)
     , subExp2(e2)

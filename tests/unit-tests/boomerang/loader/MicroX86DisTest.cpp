@@ -69,7 +69,7 @@ static char lengths[] =
 };
 
 // text segment of hello pentium
-static unsigned char pent_hello_text[] =
+static const unsigned char pent_hello_text[] =
 {
     0x6a,  0x00, 0x6a,  0x00, 0x8b,  0xec, 0x52,  0xb8, 0x80,  0x87, 0x04,  0x08, 0x85,  0xc0, 0x74,  0x0d, 0x68,  0x80,
     0x87,  0x04, 0x08,  0xe8, 0x66,  0xff, 0xff,  0xff, 0x83,  0xc4, 0x04,  0xb8, 0x44,  0xa4, 0x04,  0x08, 0x85,  0xc0,
@@ -245,7 +245,7 @@ void MicroX86DisTest::testMicroDis1()
     QTextStream  deb_str(&deb);
     int n                  = sizeof(pent_hello_text);
     int          totalSize = 0;
-    uint8_t      *p        = pent_hello_text;
+    const uint8_t *p       = pent_hello_text;
     int          i         = 0;
 
     while (totalSize < n) {

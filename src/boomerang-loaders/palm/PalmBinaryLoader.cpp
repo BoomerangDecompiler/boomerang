@@ -423,7 +423,7 @@ int PalmBinaryLoader::getAppID() const
 #define WILD    0x4AFC
 
 // Patterns for Code Warrior
-static SWord CWFirstJump[] =
+static const SWord CWFirstJump[] =
 {
     0x0000, 0x0001,         // ? All Pilot programs seem to start with this
     0x487a, 0x0004,         // pea 4(pc)
@@ -431,7 +431,7 @@ static SWord CWFirstJump[] =
     0x4e75                  // rts
 };
 
-static SWord CWCallMain[] =
+static const SWord CWCallMain[] =
 {
     0x487a, 0x000e,          // pea 14(pc)
     0x487a, 0x0004,          // pea 4(pc)
@@ -441,7 +441,7 @@ static SWord CWCallMain[] =
 
 
 // patterns for GCC
-static SWord GccCallMain[] =
+static const SWord GccCallMain[] =
 {
     0x3F04,                                       // movew d4, -(a7)
     0x6100, WILD,                                 // bsr xxxx

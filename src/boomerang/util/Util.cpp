@@ -29,25 +29,15 @@ namespace Util
 {
 QString escapeStr(const QString& inp)
 {
-    static QMap<char, QString> replacements {
-        {
-            '\n', "\\n"
-        }, {
-            '\t', "\\t"
-        }, {
-            '\v', "\\v"
-        }, {
-            '\b', "\\b"
-        }, {
-            '\r', "\\r"
-        }, {
-            '\f', "\\f"
-        }, {
-            '\a', "\\a"
-        },
-        {
-            '"', "\\\""
-        }
+    static const QMap<char, QString> replacements {
+        { '\n', "\\n" },
+        { '\t', "\\t" },
+        { '\v', "\\v" },
+        { '\b', "\\b" },
+        { '\r', "\\r" },
+        { '\f', "\\f" },
+        { '\a', "\\a" },
+        { '"', "\\\"" }
     };
 
     QString res;
