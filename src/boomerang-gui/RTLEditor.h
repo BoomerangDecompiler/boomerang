@@ -12,8 +12,8 @@
 
 #include "boomerang/util/Types.h"
 
-#include <QtCore/QString>
-#include <QtWidgets/QTextEdit>
+#include <QString>
+#include <QTextEdit>
 
 #include <map>
 #include <set>

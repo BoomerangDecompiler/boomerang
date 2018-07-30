@@ -12,7 +12,9 @@
 
 #include "Decompiler.h"
 
-#include <QtWidgets>
+#include <QApplication>
+#include <QMouseEvent>
+#include <QScrollBar>
 
 
 RTLEditor::RTLEditor(Decompiler *_decompiler, const QString& _name)

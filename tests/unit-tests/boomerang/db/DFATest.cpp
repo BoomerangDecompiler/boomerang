@@ -19,7 +19,7 @@
 #include "boomerang/ssl/type/UnionType.h"
 #include "boomerang/ssl/type/CharType.h"
 
-#include <QtCore/QDebug>
+#include <QDebug>
 #include <sstream>
 
 

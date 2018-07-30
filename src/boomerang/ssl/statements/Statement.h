@@ -14,7 +14,7 @@
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
 
-#include <QtCore/QTextStream>
+#include <QTextStream>
 
 #include <cassert>
 #include <list>

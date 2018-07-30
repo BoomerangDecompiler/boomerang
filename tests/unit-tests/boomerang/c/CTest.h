@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include <QtTest/QTest>
+#include <QTest>
 
 /// Class for testing the C parser
 class CTest : public QObject

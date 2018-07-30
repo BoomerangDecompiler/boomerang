@@ -18,8 +18,10 @@
 
 #include "boomerang/type/TypeRecovery.h"
 
+#include <QDesktopServices>
 #include <QFileDialog>
-#include <QtWidgets>
+#include <QSettings>
+#include <QToolButton>
 
 
 MainWindow::MainWindow(QWidget *_parent)
