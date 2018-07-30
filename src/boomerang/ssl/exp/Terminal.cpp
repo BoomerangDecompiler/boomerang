@@ -10,7 +10,6 @@
 #include "Terminal.h"
 
 
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"

@@ -18,6 +18,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/decomp/UnusedReturnRemover.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/log/Log.h"
 

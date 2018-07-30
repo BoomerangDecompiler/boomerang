@@ -11,6 +11,7 @@
 
 
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/parser/SSLParser.h"

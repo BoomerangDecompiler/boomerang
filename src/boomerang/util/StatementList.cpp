@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/Assignment.h"
 #include "boomerang/util/LocationSet.h"

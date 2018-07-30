@@ -51,6 +51,7 @@
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/signature/CustomSignature.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"

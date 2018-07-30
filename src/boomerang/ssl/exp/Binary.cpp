@@ -31,14 +31,12 @@
 
 int tlstrchr(const QString& str, char ch)
 {
-    static QMap<QChar, QChar> braces { {
-                                           '[', ']'
-                                       }, {
-                                           '{', '}'
-                                       }, {
-                                           '(', ')'
-                                       }
+    static QMap<QChar, QChar> braces {
+        { '[', ']' },
+        { '{', '}' },
+        { '(', ')' }
     };
+
     int i = 0, e = str.length();
 
     for ( ; i < e; ++i) {

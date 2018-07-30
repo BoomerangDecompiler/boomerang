@@ -10,9 +10,11 @@
 #pragma once
 
 
-#include "boomerang/db/proc/Proc.h"
 #include "boomerang/ssl/exp/Exp.h"
-#include "boomerang/util/Types.h"
+#include "boomerang/util/Address.h"
+
+
+class Function;
 
 
 /**

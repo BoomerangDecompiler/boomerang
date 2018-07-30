@@ -10,8 +10,7 @@
 #include "Const.h"
 
 
-#include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
@@ -19,7 +18,6 @@
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/util/Util.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
