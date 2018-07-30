@@ -12,10 +12,11 @@
 
 #include <memory>
 
+
 class Exp;
+
 using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
-
 
 
 /**
