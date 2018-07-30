@@ -10,14 +10,14 @@
 #include "ExpModifier.h"
 
 
-#include "boomerang/ssl/exp/Unary.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/FlagDef.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/exp/FlagDef.h"
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Unary.h"
 
 
 SharedExp ExpModifier::preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren)

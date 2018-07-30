@@ -12,19 +12,19 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/ssl/statements/BranchStatement.h"
-#include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
-#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
 
 
 // Switch High Level patterns

@@ -10,16 +10,16 @@
 #include "MainWindow.h"
 
 
-#include "boomerang/type/TypeRecovery.h"
-
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/RTLEditor.h"
 #include "boomerang-gui/SettingsDlg.h"
-#include "boomerang-gui/ui_MainWindow.h"
 #include "boomerang-gui/ui_About.h"
+#include "boomerang-gui/ui_MainWindow.h"
 
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QtWidgets>
+#include "boomerang/type/TypeRecovery.h"
+
+#include <QFileDialog>
+#include <QtWidgets>
 
 
 MainWindow::MainWindow(QWidget *_parent)

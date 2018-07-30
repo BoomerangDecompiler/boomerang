@@ -13,8 +13,8 @@
 #include "boomerang/passes/Pass.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 
-#include <map>
 #include <deque>
+#include <map>
 
 
 class Statement;

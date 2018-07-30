@@ -13,9 +13,9 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
 

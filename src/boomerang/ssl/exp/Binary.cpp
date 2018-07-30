@@ -11,18 +11,18 @@
 
 
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/CompoundType.h"
-#include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 #include <QRegularExpression>
 

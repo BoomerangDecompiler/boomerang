@@ -15,12 +15,13 @@
 #include <QtCore/QString>
 #include <QtWidgets/QTextEdit>
 
-
-#include <vector>
 #include <map>
 #include <set>
+#include <vector>
+
 
 class Decompiler;
+
 
 class RTLEditor : public QTextEdit
 {

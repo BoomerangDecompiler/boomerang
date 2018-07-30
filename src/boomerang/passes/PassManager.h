@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/passes/Pass.h"
 #include "boomerang/passes/PassGroup.h"
+#include "boomerang/passes/Pass.h"
 
 #include <QMap>
 

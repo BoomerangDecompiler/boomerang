@@ -10,9 +10,9 @@
 #include "CallBypasser.h"
 
 
-#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 
 
 CallBypasser::CallBypasser(Statement* enclosing)

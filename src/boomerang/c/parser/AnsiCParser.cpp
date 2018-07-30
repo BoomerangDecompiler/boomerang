@@ -46,26 +46,28 @@
 #include <list>
 #include <string>
 
-#include "boomerang/ssl/type/CompoundType.h"
-#include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/ssl/type/FuncType.h"
-#include "boomerang/ssl/type/ArrayType.h"
-#include "boomerang/ssl/type/CharType.h"
-#include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/c/parser/AnsiCScanner.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/signature/CustomSignature.h"
-#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
+
 
 
 class AnsiCScanner;
 class SymbolMods;
 
-#include "boomerang/c/parser/AnsiCScanner.h"
+
 /* section apres lecture def, avant lecture grammaire S2 */
 
 /* prefix */

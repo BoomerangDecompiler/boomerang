@@ -12,8 +12,8 @@
 
 #include "boomerang/db/DefCollector.h"
 #include "boomerang/db/UseCollector.h"
-#include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/ssl/statements/Assignment.h"
+#include "boomerang/ssl/statements/GotoStatement.h"
 #include "boomerang/util/StatementList.h"
 
 

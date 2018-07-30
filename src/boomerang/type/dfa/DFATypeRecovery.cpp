@@ -12,15 +12,16 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -28,8 +29,6 @@
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ImpRefStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/passes/PassManager.h"
-#include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/CharType.h"
@@ -41,12 +40,13 @@
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/UnionType.h"
 #include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
-#include <sstream>
 #include <cstring>
+#include <sstream>
 #include <utility>
 
 

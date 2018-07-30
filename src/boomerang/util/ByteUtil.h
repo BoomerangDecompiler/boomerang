@@ -12,8 +12,8 @@
 
 #include "boomerang/util/Types.h"
 
-#include <type_traits>
 #include <initializer_list>
+#include <type_traits>
 
 
 enum class Endian

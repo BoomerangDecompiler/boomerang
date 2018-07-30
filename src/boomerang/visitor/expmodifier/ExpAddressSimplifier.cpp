@@ -10,8 +10,8 @@
 #include "ExpAddressSimplifier.h"
 
 
-#include "boomerang/ssl/exp/Unary.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Unary.h"
 
 
 SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Unary>& exp, bool&)

@@ -11,8 +11,8 @@
 
 
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/util/Types.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
 #include <algorithm>

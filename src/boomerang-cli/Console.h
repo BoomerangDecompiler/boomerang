@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include <QStringList>
 #include <QMap>
+#include <QStringList>
 
 
 class Project;

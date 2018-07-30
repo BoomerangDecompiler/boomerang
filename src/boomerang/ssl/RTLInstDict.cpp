@@ -10,15 +10,16 @@
 #include "RTLInstDict.h"
 
 
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/parser/SSLParser.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
+
 
 
 TableEntry::TableEntry()

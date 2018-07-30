@@ -14,15 +14,15 @@
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/statements/StatementHelper.h"
+#include "boomerang/ssl/type/BooleanType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/ssl/type/BooleanType.h"
-#include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
 BranchStatement::BranchStatement()

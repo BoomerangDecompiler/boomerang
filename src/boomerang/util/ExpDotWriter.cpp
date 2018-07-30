@@ -11,13 +11,13 @@
 
 
 #include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/FlagDef.h"
-#include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/log/Log.h"

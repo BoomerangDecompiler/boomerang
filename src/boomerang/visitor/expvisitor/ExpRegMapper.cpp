@@ -10,8 +10,8 @@
 #include "ExpRegMapper.h"
 
 
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/exp/RefExp.h"
 
 
 ExpRegMapper::ExpRegMapper(UserProc *p)

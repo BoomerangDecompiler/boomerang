@@ -10,12 +10,12 @@
 #include "GotoStatement.h"
 
 
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
 GotoStatement::GotoStatement()

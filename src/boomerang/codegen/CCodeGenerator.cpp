@@ -14,17 +14,17 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/module/Module.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/ArrayType.h"
@@ -33,6 +33,7 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/log/Log.h"
+
 
 static bool isBareMemof(const Exp& exp, UserProc *)
 {

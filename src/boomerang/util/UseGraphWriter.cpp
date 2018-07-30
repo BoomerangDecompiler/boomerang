@@ -11,11 +11,11 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/util/log/Log.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/LocationSet.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
 
 #include <QFile>

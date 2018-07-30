@@ -11,10 +11,10 @@
 
 
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 Location::Location(const Location& other)

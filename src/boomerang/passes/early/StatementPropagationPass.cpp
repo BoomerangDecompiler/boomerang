@@ -13,12 +13,12 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expvisitor/ExpDestCounter.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
-#include "boomerang/passes/PassManager.h"
-#include "boomerang/util/log/Log.h"
 
 
 StatementPropagationPass::StatementPropagationPass()

@@ -10,16 +10,17 @@
 #include "Console.h"
 
 
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/module/Module.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/CFGDotWriter.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/util/CallGraphDotWriter.h"
+#include "boomerang/util/CFGDotWriter.h"
 #include "boomerang/util/DFGWriter.h"
 #include "boomerang/util/UseGraphWriter.h"
+
 
 #include <QFile>
 #include <QString>

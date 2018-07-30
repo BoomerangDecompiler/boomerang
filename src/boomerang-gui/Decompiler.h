@@ -9,12 +9,12 @@
 #pragma endregion License
 
 
-#include "boomerang/core/Watcher.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Watcher.h"
 
 #include <QObject>
-#include <QTableWidget>
 #include <QString>
+#include <QTableWidget>
 
 
 class Module;

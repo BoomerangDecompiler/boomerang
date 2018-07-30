@@ -10,16 +10,16 @@
 #include "Assignment.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 
 

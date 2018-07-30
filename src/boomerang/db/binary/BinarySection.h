@@ -10,9 +10,9 @@
 #pragma once
 
 
-#include "boomerang/util/Types.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 

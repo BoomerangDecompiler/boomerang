@@ -11,49 +11,49 @@
 
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Unary.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/TypedExp.h"
+#include "boomerang/ssl/exp/Unary.h"
 #include "boomerang/ssl/Register.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/util/LocationSet.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Types.h"
+#include "boomerang/util/Util.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/ConscriptSetter.h"
 #include "boomerang/visitor/expmodifier/ExpAddressSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpArithSimplifier.h"
+#include "boomerang/visitor/expmodifier/ExpPropagator.h"
 #include "boomerang/visitor/expmodifier/ExpSimplifier.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ExpSubscripter.h"
-#include "boomerang/visitor/expmodifier/ExpPropagator.h"
 #include "boomerang/visitor/expmodifier/SizeStripper.h"
 #include "boomerang/visitor/expvisitor/BadMemofFinder.h"
 #include "boomerang/visitor/expvisitor/ComplexityFinder.h"
 #include "boomerang/visitor/expvisitor/FlagsFinder.h"
 #include "boomerang/visitor/expvisitor/MemDepthFinder.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
-#include "boomerang/util/LocationSet.h"
-#include "boomerang/util/log/Log.h"
-#include "boomerang/util/Types.h"
-#include "boomerang/util/Util.h"
-#include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/ssl/type/ArrayType.h"
 
 #include <QRegularExpression>
 
+#include <algorithm>
 #include <cassert>
-#include <numeric>   // For accumulate
-#include <algorithm> // For std::max()
-#include <map>       // In decideType()
-#include <sstream>   // Need gcc 3.0 or better
 #include <cstring>
-#include <iomanip>   // For std::setw etc
+#include <iomanip>
+#include <map>
+#include <numeric>
+#include <sstream>
 
 
 // This to satisfy the compiler (never gets called!)

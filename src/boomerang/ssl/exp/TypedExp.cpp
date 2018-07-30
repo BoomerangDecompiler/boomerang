@@ -10,10 +10,10 @@
 #include "TypedExp.h"
 
 
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 TypedExp::TypedExp(SharedExp e1)

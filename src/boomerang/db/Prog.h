@@ -19,9 +19,9 @@
 
 #include <QString>
 
-#include <memory>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 
 

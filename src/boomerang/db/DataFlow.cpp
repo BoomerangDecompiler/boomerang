@@ -14,19 +14,19 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
-#include "boomerang/util/log/Log.h"
 
-#include <sstream>
 #include <cstring>
+#include <sstream>
 
 
 DataFlow::DataFlow(UserProc *proc)

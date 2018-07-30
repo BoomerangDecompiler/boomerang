@@ -10,31 +10,32 @@
 #include "Signature.h"
 
 
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/MIPSSignature.h"
 #include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/PPCSignature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/signature/SparcSignature.h"
 #include "boomerang/db/signature/ST20Signature.h"
 #include "boomerang/db/signature/Win32Signature.h"
-#include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/type/Type.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
+#include "boomerang/ssl/type/Type.h"
+#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
-#include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/ssl/type/PointerType.h"
+
 
 #include <cassert>
-#include <string>
 #include <cstring>
 #include <sstream>
+#include <string>
 
 
 Signature::Signature(const QString& name)

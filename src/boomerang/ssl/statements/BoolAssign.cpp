@@ -16,12 +16,12 @@
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/StatementHelper.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/util/LocationSet.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
 BoolAssign::BoolAssign(int size)

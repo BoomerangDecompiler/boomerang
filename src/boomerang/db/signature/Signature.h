@@ -10,13 +10,13 @@
 #pragma once
 
 
-#include "boomerang/frontend/SigEnum.h"
-#include "boomerang/ssl/exp/Operator.h"
-#include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/ssl/statements/Assignment.h"
 #include "boomerang/db/signature/Parameter.h"
 #include "boomerang/db/signature/Return.h"
+#include "boomerang/frontend/SigEnum.h"
+#include "boomerang/ssl/exp/Operator.h"
+#include "boomerang/ssl/statements/Assignment.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 
 class Statement;

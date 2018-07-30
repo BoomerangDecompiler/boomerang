@@ -10,12 +10,12 @@
 #include "SparcSignature.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/util/log/Log.h"
 

@@ -20,10 +20,6 @@
 #include <QBuffer>
 #include <QFile>
 
-#include <cassert>
-#include <cstring>
-#include <cstdlib>
-
 
 namespace
 {

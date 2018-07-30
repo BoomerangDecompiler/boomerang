@@ -41,12 +41,9 @@ namespace dbghelp
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/log/Log.h"
 
-#include <algorithm>
-#include <cstring>
-#include <cstdlib>
-#include <cassert>
-#include <QString>
 #include <QFile>
+#include <QString>
+
 
 
 extern "C" {

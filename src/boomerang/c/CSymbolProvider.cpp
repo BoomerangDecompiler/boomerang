@@ -18,8 +18,8 @@
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/util/log/Log.h"
 
-#include <QFileInfo>
 #include <QDir>
+#include <QFileInfo>
 
 
 CSymbolProvider::CSymbolProvider(Prog* prog)

@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/ssl/exp/Unary.h"
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Unary.h"
 
 
 class Location : public Unary

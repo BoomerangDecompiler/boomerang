@@ -10,11 +10,11 @@
 #include "GlobalConstReplacePass.h"
 
 
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/db/binary/BinaryImage.h"
 
 
 GlobalConstReplacePass::GlobalConstReplacePass()

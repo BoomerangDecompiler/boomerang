@@ -12,8 +12,8 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/util/log/Log.h"
 
 
 CallLivenessRemovalPass::CallLivenessRemovalPass()

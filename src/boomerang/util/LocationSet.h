@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/util/ExpSet.h"
 #include "boomerang/ssl/exp/Exp.h"
+#include "boomerang/util/ExpSet.h"
 
 
 class RefExp;

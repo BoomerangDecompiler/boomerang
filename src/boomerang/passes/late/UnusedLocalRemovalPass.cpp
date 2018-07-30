@@ -12,9 +12,9 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"

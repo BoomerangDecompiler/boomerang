@@ -15,9 +15,9 @@
 #include <QFile>
 #include <QTextStream>
 
-#include <memory>
-#include <map>
 #include <list>
+#include <map>
+#include <memory>
 
 
 class Signature;

@@ -12,9 +12,9 @@
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/statements/Statement.h"
 
 
 void MiniDebugger::onDecompileDebugPoint(UserProc *proc, const char *description)

@@ -10,10 +10,10 @@
 #include "ConscriptSetter.h"
 
 
-#include "boomerang/ssl/exp/Operator.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Operator.h"
 
 
 ConscriptSetter::ConscriptSetter(int n, bool clear)

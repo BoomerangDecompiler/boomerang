@@ -10,22 +10,22 @@
 #include "Assign.h"
 
 
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
-#include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Unary.h"
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
-#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
-#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
-#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
+#include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Unary.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
+#include "boomerang/visitor/stmtmodifier/StmtModifier.h"
+#include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
 Assign::Assign(SharedExp lhs, SharedExp rhs, SharedExp guard)

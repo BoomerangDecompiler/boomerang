@@ -11,8 +11,8 @@
 
 
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 
 UseCollector::UseCollector()

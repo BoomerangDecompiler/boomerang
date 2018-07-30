@@ -10,21 +10,21 @@
 #include "Unary.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 Unary::Unary(OPER _op, SharedExp e)

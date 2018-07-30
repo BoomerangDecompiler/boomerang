@@ -12,8 +12,8 @@
 
 #include "boomerang/db/Global.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/ArrayType.h"
 

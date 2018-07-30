@@ -11,12 +11,12 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
+#include "boomerang/util/log/Log.h"
 
 
 StrengthReductionReversalPass::StrengthReductionReversalPass()

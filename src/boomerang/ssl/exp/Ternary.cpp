@@ -10,16 +10,16 @@
 #include "Ternary.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)

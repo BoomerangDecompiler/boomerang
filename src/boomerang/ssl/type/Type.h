@@ -13,21 +13,21 @@
 #include "boomerang/ifc/IPrintable.h"
 #include "boomerang/util/Address.h"
 
-#include <QString>
-#include <QMap>
 #include <QHash>
+#include <QMap>
+#include <QString>
 #include <QTextStream>
 
-#include <string>
+#include <cassert>
+#include <fstream>
+#include <functional> // For binary_function
+#include <list>
 #include <map>
 #include <memory>
-#include <functional> // For binary_function
-#include <vector>
-#include <cassert>
-#include <list>
 #include <set>
+#include <string>
 #include <unordered_set>
-#include <fstream>
+#include <vector>
 
 
 class Signature;

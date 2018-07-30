@@ -10,11 +10,11 @@
 #include "BranchAnalysisPass.h"
 
 
-#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/passes/PassManager.h"
 
 
 BranchAnalysisPass::BranchAnalysisPass()

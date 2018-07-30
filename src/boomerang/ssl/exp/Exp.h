@@ -10,17 +10,17 @@
 #pragma once
 
 
+#include "boomerang/ifc/IPrintable.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
+#include "boomerang/ssl/exp/Operator.h"
+
 #include <QString>
 
-#include <list>
-#include <vector>
-#include <set>
 #include <cassert>
+#include <list>
 #include <memory>
-
-#include "boomerang/ifc/IPrintable.h"
-#include "boomerang/ssl/exp/Operator.h"
-#include "boomerang/ssl/exp/ExpHelp.h"
+#include <set>
+#include <vector>
 
 
 class Exp;

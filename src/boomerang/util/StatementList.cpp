@@ -10,11 +10,11 @@
 #include "StatementList.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/Assignment.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/StatementSet.h"
 #include "boomerang/util/LocationSet.h"
+#include "boomerang/util/StatementSet.h"
 #include "boomerang/util/Util.h"
 
 #include <QString>

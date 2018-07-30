@@ -10,10 +10,10 @@
 #include "UsedLocalFinder.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/type/Type.h"
 
 

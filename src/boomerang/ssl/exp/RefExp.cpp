@@ -10,18 +10,18 @@
 #include "RefExp.h"
 
 
-#include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 RefExp::RefExp(SharedExp e, Statement *d)

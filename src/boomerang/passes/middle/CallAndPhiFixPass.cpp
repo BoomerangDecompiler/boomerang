@@ -10,12 +10,12 @@
 #include "CallAndPhiFixPass.h"
 
 
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"

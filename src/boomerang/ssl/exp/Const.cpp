@@ -11,8 +11,6 @@
 
 
 #include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -22,6 +20,8 @@
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 Const::Const(uint32_t i)

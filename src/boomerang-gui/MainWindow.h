@@ -14,9 +14,9 @@
 #include <QMainWindow>
 #include <QThread>
 
-#include <vector>
 #include <map>
 #include <set>
+#include <vector>
 
 
 class QToolButton;
