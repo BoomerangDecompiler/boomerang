@@ -19,6 +19,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -388,6 +389,12 @@ bool Statement::propagateFlagsTo(Settings *settings)
 
     simplify();
     return change;
+}
+
+
+void Statement::setTypeFor(SharedExp, SharedType)
+{
+    assert(false);
 }
 
 

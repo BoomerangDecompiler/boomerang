@@ -12,6 +12,7 @@
 
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"

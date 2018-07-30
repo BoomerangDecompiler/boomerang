@@ -10,6 +10,7 @@
 #include "GotoStatement.h"
 
 
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
@@ -41,11 +42,11 @@ GotoStatement::~GotoStatement()
 
 Address GotoStatement::getFixedDest() const
 {
-    if (!m_dest || m_dest->getOper() != opIntConst) {
+    if (!m_dest || !m_dest->isIntConst()) {
         return Address::INVALID;
     }
 
-    return constDest()->getAddr();
+    return std::static_pointer_cast<Const>(m_dest)->getAddr();
 }
 
 
@@ -79,13 +80,13 @@ const SharedExp GotoStatement::getDest() const
 void GotoStatement::adjustFixedDest(int delta)
 {
     // Ensure that the destination is fixed.
-    if ((m_dest == nullptr) || (m_dest->getOper() != opIntConst)) {
+    if (!m_dest || !m_dest->isIntConst()) {
         LOG_ERROR("Can't adjust destination of non-static CTI");
         return;
     }
 
-    Address dest = constDest()->getAddr();
-    constDest()->setAddr(dest + delta);
+    auto theConst = std::static_pointer_cast<Const>(m_dest);
+    theConst->setAddr(theConst->getAddr() + delta);
 }
 
 

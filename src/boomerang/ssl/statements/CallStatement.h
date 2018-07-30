@@ -18,6 +18,9 @@
 
 
 class ImplicitAssign;
+class ReturnStatement;
+class Signature;
+class Prog;
 
 
 /**

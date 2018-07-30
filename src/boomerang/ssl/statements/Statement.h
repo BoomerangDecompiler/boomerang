@@ -11,38 +11,22 @@
 
 
 #include "boomerang/ssl/exp/ExpHelp.h"
-#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/Address.h"
 
-#include <QTextStream>
-
-#include <cassert>
-#include <list>
 #include <map>
-#include <memory>
-#include <set>
-#include <vector>
 
 
 class BasicBlock;
-class Prog;
 class Function;
 class UserProc;
 class Exp;
 class Const;
-class RefExp;
-class Cfg;
 class Type;
-class Statement;
-class Signature;
 class StmtVisitor;
 class StmtExpVisitor;
 class StmtModifier;
 class StmtPartModifier;
 class ICodeGenerator;
-class Assign;
-class RTL;
-class ReturnStatement;
 class LocationSet;
 class Assignment;
 class Settings;
@@ -224,9 +208,6 @@ public:
      */
     virtual void print(QTextStream& os, bool html = false) const = 0;
 
-    void printAsUse(QTextStream& os) const { os << m_number; }
-    void printAsUseBy(QTextStream& os) const { os << m_number; }
-    void printNum(QTextStream& os) const { os << m_number; }
     char *prints() const; // For logging, was also for debugging
 
     // This version prints much better in gdb
@@ -357,7 +338,7 @@ public:
     virtual SharedType getTypeFor(SharedExp) { return nullptr; }
 
     /// Set the type for the definition of e in this Statement
-    virtual void setTypeFor(SharedExp, SharedType) { assert(false); }
+    virtual void setTypeFor(SharedExp, SharedType);
 
     /// Parameter convert is set true if an indirect call is converted to direct
     /// Return true if a change made

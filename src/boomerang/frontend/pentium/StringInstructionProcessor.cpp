@@ -13,6 +13,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/util/Address.h"

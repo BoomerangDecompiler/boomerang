@@ -10,6 +10,7 @@
 #include "RTL.h"
 
 
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"

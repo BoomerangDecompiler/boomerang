@@ -186,7 +186,7 @@ void RefExp::print(QTextStream& os, bool html) const
             os << "<a href=\"#stmt" << m_def->getNumber() << "\">";
         }
 
-        m_def->printNum(os);
+        os << m_def->getNumber();
 
         if (html) {
             os << "</a>";

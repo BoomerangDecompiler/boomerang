@@ -20,6 +20,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/pentium/pentiumdecoder.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"

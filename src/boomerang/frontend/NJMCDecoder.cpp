@@ -15,6 +15,7 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RTL.h"

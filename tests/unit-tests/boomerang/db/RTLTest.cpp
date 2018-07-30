@@ -14,6 +14,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/db/proc/UserProc.h"

@@ -12,6 +12,7 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/statements/StatementHelper.h"
 #include "boomerang/ssl/type/BooleanType.h"

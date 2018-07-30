@@ -15,6 +15,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
