@@ -55,12 +55,14 @@ Log& Log::getOrCreateLog()
     return *g_log;
 }
 
+
 void Log::flush()
 {
     for (std::unique_ptr<ILogSink>& s : m_sinks) {
         s->flush();
     }
 }
+
 
 void Log::log(LogLevel level, const char *file, int line, const QString& msg)
 {
@@ -187,7 +189,7 @@ QString Log::collectArg(const QString& msg, const SharedType& ty)
 }
 
 
-QString Log::collectArg(const QString& msg, const Printable& ty)
+QString Log::collectArg(const QString& msg, const IPrintable& ty)
 {
     return msg.arg(ty.toString());
 }

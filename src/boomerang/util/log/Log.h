@@ -142,7 +142,7 @@ private:
     QString collectArg(const QString& msg, const Statement *s);
     QString collectArg(const QString& msg, const SharedConstExp& e);
     QString collectArg(const QString& msg, const SharedType& ty);
-    QString collectArg(const QString& msg, const Printable& ty);
+    QString collectArg(const QString& msg, const IPrintable& ty);
     QString collectArg(const QString& msg, const RTL *r);
     QString collectArg(const QString& msg, const LocationSet *l);
 

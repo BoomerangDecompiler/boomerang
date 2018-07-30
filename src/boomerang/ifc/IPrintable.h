@@ -13,10 +13,10 @@
 #include <QString>
 
 
-class Printable
+class IPrintable
 {
 public:
-    virtual ~Printable() = default;
+    virtual ~IPrintable() = default;
 
 public:
     virtual QString toString() const = 0;

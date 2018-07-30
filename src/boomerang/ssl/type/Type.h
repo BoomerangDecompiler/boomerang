@@ -89,7 +89,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  * Note that we may have a completely different system for
  * recording high level types
  */
-class Type : public std::enable_shared_from_this<Type>, public Printable
+class Type : public std::enable_shared_from_this<Type>, public IPrintable
 {
 public:
     // Constructors
