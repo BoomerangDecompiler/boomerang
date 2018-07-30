@@ -19,7 +19,7 @@
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)

@@ -18,7 +18,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/frontend/st20/st20decoder.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)

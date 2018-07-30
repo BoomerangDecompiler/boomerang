@@ -18,7 +18,7 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 BlockVarRenamePass::BlockVarRenamePass()

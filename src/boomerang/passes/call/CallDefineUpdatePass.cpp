@@ -19,7 +19,7 @@
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/StatementList.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 CallDefineUpdatePass::CallDefineUpdatePass()

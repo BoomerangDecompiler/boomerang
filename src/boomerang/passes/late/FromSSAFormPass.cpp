@@ -21,7 +21,7 @@
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/ConnectionGraph.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 

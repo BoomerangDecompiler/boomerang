@@ -15,7 +15,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 

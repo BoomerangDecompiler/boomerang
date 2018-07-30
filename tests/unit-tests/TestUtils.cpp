@@ -11,7 +11,7 @@
 
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 TestProject::TestProject()

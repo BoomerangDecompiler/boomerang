@@ -18,7 +18,7 @@
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 TableEntry::TableEntry()

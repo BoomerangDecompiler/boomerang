@@ -50,7 +50,7 @@
 #include "boomerang/visitor/expvisitor/ExpRegMapper.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtRegMapper.h"
 #include "boomerang/visitor/stmtvisitor/StmtCastInserter.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
 
 #include <algorithm>

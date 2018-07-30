@@ -10,8 +10,8 @@
 #pragma once
 
 
+#include "boomerang/ifc/IPrintable.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/util/Util.h"
 
 #include <QString>
 #include <QMap>

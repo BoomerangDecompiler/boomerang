@@ -19,15 +19,6 @@
 class Prog;
 
 
-class Printable
-{
-public:
-    virtual ~Printable() = default;
-
-public:
-    virtual QString toString() const = 0;
-};
-
 using SharedConstExp = std::shared_ptr<const class Exp>;
 
 

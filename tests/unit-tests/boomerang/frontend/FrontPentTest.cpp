@@ -15,7 +15,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/util/Types.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 

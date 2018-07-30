@@ -15,7 +15,7 @@
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 GotoStatement::GotoStatement()

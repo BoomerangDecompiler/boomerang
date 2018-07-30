@@ -25,7 +25,7 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 Global::Global(SharedType type, Address addr, const QString& name, Prog *prog)

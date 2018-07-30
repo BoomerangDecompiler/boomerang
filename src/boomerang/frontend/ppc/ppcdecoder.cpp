@@ -23,7 +23,7 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 #include <cstring>

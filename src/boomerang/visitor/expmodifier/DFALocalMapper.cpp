@@ -16,6 +16,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/util/Util.h"
 
 
 DfaLocalMapper::DfaLocalMapper(UserProc *proc)

@@ -19,7 +19,7 @@
 #include "boomerang/util/StatementList.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 AssignRemovalPass::AssignRemovalPass()

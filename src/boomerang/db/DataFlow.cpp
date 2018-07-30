@@ -23,7 +23,7 @@
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <sstream>
 #include <cstring>

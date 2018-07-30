@@ -11,6 +11,7 @@
 
 
 #include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/util/Util.h"
 
 
 DefCollector::~DefCollector()

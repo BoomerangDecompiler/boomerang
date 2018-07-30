@@ -40,7 +40,7 @@
 #include "boomerang/passes/late/ImplicitPlacementPass.h"
 #include "boomerang/passes/late/LocalAndParamMapPass.h"
 
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
 
 #include <cassert>

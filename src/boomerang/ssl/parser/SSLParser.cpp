@@ -73,7 +73,7 @@ void *alloca();
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h" // E.g. str()
 
 

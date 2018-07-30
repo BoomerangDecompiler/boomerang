@@ -14,7 +14,7 @@
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 Location::Location(const Location& other)

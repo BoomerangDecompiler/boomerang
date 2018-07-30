@@ -59,7 +59,7 @@
 #include "boomerang/db/signature/CustomSignature.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 class AnsiCScanner;

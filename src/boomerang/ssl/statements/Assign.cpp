@@ -25,7 +25,7 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 Assign::Assign(SharedExp lhs, SharedExp rhs, SharedExp guard)

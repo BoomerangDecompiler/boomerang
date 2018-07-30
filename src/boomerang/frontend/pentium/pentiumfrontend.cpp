@@ -30,7 +30,7 @@
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask)

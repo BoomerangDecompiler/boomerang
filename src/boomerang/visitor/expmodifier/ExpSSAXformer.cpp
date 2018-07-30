@@ -13,7 +13,7 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 ExpSsaXformer::ExpSsaXformer(UserProc* p)

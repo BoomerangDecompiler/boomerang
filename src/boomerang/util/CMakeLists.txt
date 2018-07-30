@@ -8,6 +8,11 @@
 
 
 list(APPEND boomerang-util-sources
+    util/log/Log
+    util/log/ConsoleLogSink
+    util/log/FileLogSink
+    util/log/SeparateLogger
+
     util/Address
     util/ByteUtil
     util/CallGraphDotWriter
@@ -17,7 +22,6 @@ list(APPEND boomerang-util-sources
     util/ExpDotWriter
     util/ExpSet
     util/LocationSet
-    util/Log
     util/MapIterators
     util/ProgSymbolWriter
     util/StatementList

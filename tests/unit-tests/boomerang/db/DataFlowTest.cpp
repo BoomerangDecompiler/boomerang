@@ -21,7 +21,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/passes/PassManager.h"
 
 #include <QDebug>

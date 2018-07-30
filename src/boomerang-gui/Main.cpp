@@ -12,7 +12,7 @@
 #include <QApplication>
 
 #include "MainWindow.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 int main(int argc, char *argv[])

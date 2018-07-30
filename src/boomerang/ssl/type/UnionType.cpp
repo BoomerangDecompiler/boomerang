@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 UnionType::UnionType()

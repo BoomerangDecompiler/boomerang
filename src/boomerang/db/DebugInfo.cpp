@@ -24,7 +24,7 @@
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 

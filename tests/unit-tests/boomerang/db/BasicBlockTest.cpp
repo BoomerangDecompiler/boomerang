@@ -18,6 +18,7 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/util/Util.h"
 
 
 void BasicBlockTest::testConstruct()

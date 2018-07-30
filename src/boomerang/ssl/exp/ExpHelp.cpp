@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 // A helper class for comparing Exp*'s sensibly

@@ -13,7 +13,7 @@
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 TypedExp::TypedExp(SharedExp e1)

@@ -26,7 +26,7 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/ssl/type/PointerType.h"

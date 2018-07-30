@@ -23,7 +23,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/ssl/type/CompoundType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QThread>
 

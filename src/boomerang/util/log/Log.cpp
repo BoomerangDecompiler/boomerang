@@ -15,63 +15,15 @@
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/type/Type.h"
+#include "boomerang/util/log/ConsoleLogSink.h"
+#include "boomerang/util/log/FileLogSink.h"
+#include "boomerang/util/Util.h"
 
 #include <QDir>
 #include <QFileInfo>
-#include <QSharedPointer>
-#include <QTextStream>
-
-#include <iostream>
-#include <sstream>
 
 
-static Log            *g_log         = nullptr;
-
-
-void ConsoleLogSink::write(const QString& s)
-{
-    std::cout << qPrintable(s);
-}
-
-
-void ConsoleLogSink::flush()
-{
-    std::cout.flush();
-}
-
-
-FileLogSink::FileLogSink(const QString& filename, bool append)
-    : m_logFile(filename)
-{
-    QIODevice::OpenMode openFlags = QFile::WriteOnly;
-    if (append) { openFlags |= QFile::Append; }
-
-    bool ok = m_logFile.open(openFlags);
-    if (!ok) {
-        // Parent directory might not exist. Create directories and try again.
-        QFileInfo(m_logFile).dir().mkpath(".");
-        ok = m_logFile.open(openFlags);
-        assert(ok);
-    }
-}
-
-
-FileLogSink::~FileLogSink()
-{
-    m_logFile.close();
-}
-
-
-void FileLogSink::write(const QString& s)
-{
-    m_logFile.write(qPrintable(s));
-}
-
-
-void FileLogSink::flush()
-{
-    m_logFile.flush();
-}
+static Log *g_log = nullptr;
 
 
 Log::Log(LogLevel level)
@@ -103,6 +55,12 @@ Log& Log::getOrCreateLog()
     return *g_log;
 }
 
+void Log::flush()
+{
+    for (std::unique_ptr<ILogSink>& s : m_sinks) {
+        s->flush();
+    }
+}
 
 void Log::log(LogLevel level, const char *file, int line, const QString& msg)
 {
@@ -277,23 +235,4 @@ QString Log::levelToString(LogLevel level)
     default:
         return QString("Msg  ");
     }
-}
-
-
-SeparateLogger::SeparateLogger(const QString& fullFilePath)
-{
-    QDir().remove(fullFilePath); // overwrite old logs
-    addLogSink(Util::makeUnique<FileLogSink>(fullFilePath, true));
-}
-
-
-SeparateLogger& SeparateLogger::getOrCreateLog(const QString& name)
-{
-    static QMap<QString, QSharedPointer<SeparateLogger>> loggers;
-
-    if (!loggers.contains(name)) {
-        loggers[name].reset(new SeparateLogger(name + ".log"));
-    }
-
-    return *loggers[name];
 }

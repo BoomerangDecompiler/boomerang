@@ -22,7 +22,7 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 bool BasicBlock::BBComparator::operator()(const BasicBlock* bb1, const BasicBlock* bb2) const

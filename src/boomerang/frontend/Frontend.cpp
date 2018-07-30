@@ -33,7 +33,7 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/FuncType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)

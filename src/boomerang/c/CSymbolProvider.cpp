@@ -16,7 +16,7 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/frontend/Frontend.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QFileInfo>
 #include <QDir>

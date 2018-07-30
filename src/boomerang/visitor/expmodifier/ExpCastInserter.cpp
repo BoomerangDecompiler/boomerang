@@ -17,7 +17,7 @@
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)

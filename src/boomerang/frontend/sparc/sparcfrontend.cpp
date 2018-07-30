@@ -35,7 +35,7 @@
 #include "boomerang/frontend/sparc/sparcdecoder.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 #include <cstring>

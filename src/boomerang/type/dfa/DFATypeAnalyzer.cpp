@@ -24,7 +24,8 @@
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/ArrayType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 
 DFATypeAnalyzer::DFATypeAnalyzer()

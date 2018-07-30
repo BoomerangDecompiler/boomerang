@@ -67,7 +67,7 @@ int read();
 #endif
 #include <cstdio>
 #include "boomerang/ssl/exp/Operator.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 /*********************************************/
 /* COMPILER DEPENDENT   MACROS               */

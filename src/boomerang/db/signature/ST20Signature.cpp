@@ -15,7 +15,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 namespace CallingConvention

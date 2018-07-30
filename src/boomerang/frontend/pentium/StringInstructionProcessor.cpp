@@ -16,7 +16,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 StringInstructionProcessor::StringInstructionProcessor(UserProc* proc)

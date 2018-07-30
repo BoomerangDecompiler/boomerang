@@ -10,7 +10,7 @@
 #include "IntegerType.h"
 
 
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 NamedType::NamedType(const QString& _name)

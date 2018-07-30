@@ -20,7 +20,7 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 

@@ -19,8 +19,8 @@
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/util/Log.h"
-
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 BasicBlock::BasicBlock(Address lowAddr, Function *function)
     : m_function(function)

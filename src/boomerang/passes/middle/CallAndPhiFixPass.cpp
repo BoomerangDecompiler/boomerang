@@ -17,7 +17,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 

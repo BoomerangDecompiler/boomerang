@@ -18,7 +18,7 @@
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/frontend/ppc/ppcdecoder.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 #include <iomanip> // For setfill etc

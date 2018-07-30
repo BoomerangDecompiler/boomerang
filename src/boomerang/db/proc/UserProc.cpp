@@ -29,7 +29,8 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/DFGWriter.h"
 #include "boomerang/util/UseGraphWriter.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/log/SeparateLogger.h"
 
 
 UserProc::UserProc(Address address, const QString& name, Module *module)

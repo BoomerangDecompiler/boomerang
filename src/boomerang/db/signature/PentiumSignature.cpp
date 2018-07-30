@@ -17,7 +17,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 namespace CallingConvention

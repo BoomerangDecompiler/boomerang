@@ -18,7 +18,7 @@
 #include "boomerang/visitor/expvisitor/ExpDestCounter.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtDestCounter.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 StatementPropagationPass::StatementPropagationPass()

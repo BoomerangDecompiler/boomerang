@@ -16,7 +16,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/type/TypeRecovery.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 LocalTypeAnalysisPass::LocalTypeAnalysisPass()

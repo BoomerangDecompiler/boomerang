@@ -21,7 +21,7 @@
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 RefExp::RefExp(SharedExp e, Statement *d)

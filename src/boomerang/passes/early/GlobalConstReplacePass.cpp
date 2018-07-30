@@ -13,7 +13,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/db/binary/BinaryImage.h"
 
 

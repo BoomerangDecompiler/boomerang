@@ -29,7 +29,7 @@
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 

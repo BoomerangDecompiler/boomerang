@@ -15,7 +15,7 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 TypeRecoveryCommon::TypeRecoveryCommon(const QString& name)

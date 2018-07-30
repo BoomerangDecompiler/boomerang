@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/parser/SSLParser.h"
 #include "boomerang/ssl/statements/Statement.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QDebug>
 

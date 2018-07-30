@@ -24,7 +24,7 @@
 #include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/FuncType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 // Switch High Level patterns

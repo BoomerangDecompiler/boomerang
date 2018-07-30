@@ -18,7 +18,7 @@
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 ImplicitAssign::ImplicitAssign(SharedExp _lhs)

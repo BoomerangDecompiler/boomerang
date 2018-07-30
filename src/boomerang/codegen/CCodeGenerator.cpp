@@ -32,7 +32,7 @@
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 static bool isBareMemof(const Exp& exp, UserProc *)
 {

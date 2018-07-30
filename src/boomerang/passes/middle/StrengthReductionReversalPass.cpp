@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"

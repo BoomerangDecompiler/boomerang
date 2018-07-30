@@ -18,9 +18,9 @@
 #include <cassert>
 #include <memory>
 
+#include "boomerang/ifc/IPrintable.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
-#include "boomerang/util/Util.h"
 
 
 class Exp;
@@ -32,6 +32,7 @@ class LocationSet;
 class Statement;
 class CompoundType;
 
+class QTextStream;
 
 typedef std::unique_ptr<Exp>         UniqExp;
 typedef std::shared_ptr<Exp>         SharedExp;

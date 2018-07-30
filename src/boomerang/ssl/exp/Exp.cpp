@@ -39,7 +39,7 @@
 #include "boomerang/visitor/expvisitor/MemDepthFinder.h"
 #include "boomerang/visitor/expvisitor/UsedLocsFinder.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/ssl/type/PointerType.h"

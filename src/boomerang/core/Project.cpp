@@ -18,7 +18,7 @@
 #include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/ProgSymbolWriter.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 

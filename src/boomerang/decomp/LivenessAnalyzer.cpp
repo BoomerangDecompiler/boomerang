@@ -19,7 +19,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/util/ConnectionGraph.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <deque>
 

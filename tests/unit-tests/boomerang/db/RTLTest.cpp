@@ -28,7 +28,7 @@
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/sparc/sparcfrontend.h"
 #include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <sstream>
 

@@ -19,7 +19,7 @@
 #include "boomerang/decomp/UnusedReturnRemover.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 ProgDecompiler::ProgDecompiler(Prog* prog)

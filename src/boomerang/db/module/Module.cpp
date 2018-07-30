@@ -19,7 +19,7 @@
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QDir>
 #include <QString>
@@ -33,7 +33,7 @@ namespace dbghelp
 }
 
 #  include <iostream>
-#  include "boomerang/util/Log.h"
+#  include "boomerang/util/log/Log.h"
 #endif
 
 
