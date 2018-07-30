@@ -18,6 +18,7 @@ list(APPEND boomerang-util-sources
     util/ExpSet
     util/LocationSet
     util/Log
+    util/MapIterators
     util/ProgSymbolWriter
     util/StatementList
     util/StatementSet

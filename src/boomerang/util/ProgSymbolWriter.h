@@ -10,10 +10,8 @@
 #pragma once
 
 
-#include <QString>
-
-
 class Prog;
+class QString;
 
 
 /**
@@ -22,5 +20,5 @@ class Prog;
 class ProgSymbolWriter
 {
 public:
-    bool writeSymbolsToFile(const Prog *prog, const QString& dstFileName = "symbols.h");
+    bool writeSymbolsToFile(const Prog *prog, const QString& dstFileName);
 };

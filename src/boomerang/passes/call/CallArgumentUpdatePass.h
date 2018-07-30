@@ -12,8 +12,8 @@
 
 #include "boomerang/passes/Pass.h"
 
+
 class UserProc;
-class CallStatement;
 
 
 /**
