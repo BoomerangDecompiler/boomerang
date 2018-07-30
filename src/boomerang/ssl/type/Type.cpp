@@ -24,6 +24,7 @@
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/NamedType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/UnionType.h"
@@ -225,9 +226,25 @@ RESOLVES_TO_TYPE(Union)
 RESOLVES_TO_TYPE(Size)
 
 
-void Type::starPrint(QTextStream& os)
+SharedType Type::resolveNamedType()
 {
-    os << "*" << *this << "*";
+    if (isNamed()) {
+        return std::static_pointer_cast<NamedType>(shared_from_this())->resolvesTo();
+    }
+    else {
+        return shared_from_this();
+    }
+}
+
+
+SharedConstType Type::resolveNamedType() const
+{
+    if (isNamed()) {
+        return std::static_pointer_cast<const NamedType>(shared_from_this())->resolvesTo();
+    }
+    else {
+        return shared_from_this();
+    }
 }
 
 

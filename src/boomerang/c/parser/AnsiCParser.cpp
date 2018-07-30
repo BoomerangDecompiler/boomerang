@@ -59,11 +59,12 @@
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/NamedType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 
-
+#include <fstream>
 
 class AnsiCScanner;
 class SymbolMods;

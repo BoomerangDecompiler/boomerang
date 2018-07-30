@@ -53,6 +53,13 @@ size_t PointerType::getSize() const
 }
 
 
+void PointerType::setSize(size_t sz)
+{
+    Q_UNUSED(sz);
+    assert(sz == STD_SIZE);
+}
+
+
 static int pointerCompareNest = 0;
 
 bool PointerType::operator==(const Type& other) const

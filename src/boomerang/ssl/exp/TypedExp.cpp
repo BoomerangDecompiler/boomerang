@@ -126,8 +126,7 @@ bool TypedExp::operator*=(const Exp& o) const
 void TypedExp::print(QTextStream& os, bool html) const
 {
     if (m_type) {
-        m_type->starPrint(os);
-        os << " ";
+        os << "*" << "*m_type" << "* ";
     }
     else {
         os << "*v* ";

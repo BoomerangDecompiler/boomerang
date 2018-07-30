@@ -81,6 +81,7 @@ void *alloca();
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
+#include <fstream>
 
 
 OPER strToTerm(const QString &s);                       // Convert string to a Terminal (if possible)

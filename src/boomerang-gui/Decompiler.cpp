@@ -23,6 +23,7 @@
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/NamedType.h"
 #include "boomerang/util/log/Log.h"
 
 #include <QThread>
