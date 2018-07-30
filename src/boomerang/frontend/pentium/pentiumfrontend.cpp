@@ -11,34 +11,26 @@
 
 
 #include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/Register.h"
-#include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/frontend/pentium/pentiumdecoder.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
-
-#include <cassert>
-#include <cstring>
-#include <sstream>
 
 
 void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask)

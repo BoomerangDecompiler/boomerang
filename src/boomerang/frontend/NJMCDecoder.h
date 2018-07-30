@@ -10,14 +10,11 @@
 #pragma once
 
 
-#include "boomerang/core/Settings.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/ssl/RTLInstDict.h"
-#include "boomerang/ssl/statements/BranchStatement.h"
-#include "boomerang/ssl/statements/BoolAssign.h"
-
-#include "boomerang/util/Types.h"
 #include "boomerang/ifc/IDecoder.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
+#include "boomerang/ssl/RTLInstDict.h"
+
+#include "boomerang/util/Util.h"
 
 
 class BinaryImage;
@@ -29,7 +26,6 @@ class BinaryImage;
 class NJMCDecoder : public IDecoder
 {
 public:
-    /// \param       prog Pointer to the Prog object
     NJMCDecoder(Prog *prog, const QString& sslFilePath);
     NJMCDecoder(const NJMCDecoder& other) = delete;
     NJMCDecoder(NJMCDecoder&& other) = default;

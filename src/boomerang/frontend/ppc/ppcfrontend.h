@@ -10,15 +10,7 @@
 #pragma once
 
 
-// Class PPCFrontEnd: derived from FrontEnd, with source machine specific
-// behaviour
-
 #include "boomerang/frontend/Frontend.h"
-
-class IFrontEnd;
-class PPCDecoder;
-class CallStatement;
-struct DecodeResult;
 
 
 /**

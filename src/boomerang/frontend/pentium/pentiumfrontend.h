@@ -15,9 +15,6 @@
 #include <unordered_set>
 
 
-class Statement;
-
-
 /**
  * Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
  * behaviour

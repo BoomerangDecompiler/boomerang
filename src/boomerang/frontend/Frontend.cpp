@@ -13,45 +13,27 @@
 #include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/ssl/Register.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/ssl/statements/CaseStatement.h"
-#include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/BinarySymbol.h"
-#include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/sparc/sparcfrontend.h"
+#include "boomerang/frontend/mips/mipsfrontend.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/ppc/ppcfrontend.h"
+#include "boomerang/frontend/sparc/sparcfrontend.h"
 #include "boomerang/frontend/st20/st20frontend.h"
-#include "boomerang/frontend/mips/mipsfrontend.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
-
-
-#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/FuncType.h"
-
-#include <QDir>
-
-#include <cassert>
-#include <cstring>
-#include <cstdlib>
-#include <queue>
-#include <cstdarg> // For varargs
-#include <sstream>
+#include "boomerang/util/Log.h"
 
 
 IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
@@ -71,35 +53,15 @@ IFrontEnd *IFrontEnd::instantiate(BinaryFile *binaryFile, Prog *prog)
 {
     switch (binaryFile->getMachine())
     {
-    case Machine::PENTIUM:
-        return new PentiumFrontEnd(binaryFile, prog);
-
-    case Machine::SPARC:
-        return new SparcFrontEnd(binaryFile, prog);
-
-    case Machine::PPC:
-        return new PPCFrontEnd(binaryFile, prog);
-
-    case Machine::MIPS:
-        return new MIPSFrontEnd(binaryFile, prog);
-
-    case Machine::ST20:
-        return new ST20FrontEnd(binaryFile, prog);
-
-    case Machine::HPRISC:
-        LOG_WARN("No frontend for HP RISC");
-        break;
-
-    case Machine::PALM:
-        LOG_WARN("No frontend for PALM");
-        break;
-
-    case Machine::M68K:
-        LOG_WARN("No frontend for M68K");
-        break;
-
-    default:
-        LOG_ERROR("Machine architecture not supported!");
+    case Machine::PENTIUM:  return new PentiumFrontEnd(binaryFile, prog);
+    case Machine::SPARC:    return new SparcFrontEnd(binaryFile, prog);
+    case Machine::PPC:      return new PPCFrontEnd(binaryFile, prog);
+    case Machine::MIPS:     return new MIPSFrontEnd(binaryFile, prog);
+    case Machine::ST20:     return new ST20FrontEnd(binaryFile, prog);
+    case Machine::HPRISC:   LOG_WARN("No frontend for HP RISC"); break;
+    case Machine::PALM:     LOG_WARN("No frontend for PALM");    break;
+    case Machine::M68K:     LOG_WARN("No frontend for M68K");    break;
+    default: LOG_ERROR("Machine architecture not supported!");   break;
     }
 
     return nullptr;

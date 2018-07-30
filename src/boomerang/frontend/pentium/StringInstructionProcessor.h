@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include "boomerang/db/CFG.h"
-
-
+class BasicBlock;
 class BranchStatement;
+class UserProc;
+class RTL;
 
 
 /**
@@ -30,7 +30,6 @@ public:
     bool processStringInstructions();
 
 private:
-
     /**
      * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all the in and out
      * edges.
