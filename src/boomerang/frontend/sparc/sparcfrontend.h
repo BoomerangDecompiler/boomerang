@@ -11,7 +11,7 @@
 
 
 #include "boomerang/frontend/Frontend.h"
-#include "boomerang/frontend/Decoder.h"
+#include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/exp/Operator.h"
 

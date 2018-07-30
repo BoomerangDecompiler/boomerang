@@ -16,4 +16,6 @@ list(APPEND boomerang-type-sources
     type/dfa/DFATypeAnalyzer
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-type-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-type-sources}" PARENT_SCOPE)

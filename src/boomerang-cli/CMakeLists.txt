@@ -13,12 +13,23 @@ set(CMAKE_AUTOMOC ON)
 set(boomerang-cli-sources
     Console
     CommandlineDriver
-    main.cpp
+    main
     MiniDebugger
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-cli-sources ".cpp")
+set(boomerang-cli-headers "")
+
+foreach (src ${boomerang-cli-sources})
+    string(REPLACE ".cpp" ".h" header_file ${src})
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}")
+        list(APPEND boomerang-cli-headers ${header_file})
+    endif ()
+endforeach ()
+
 add_executable(boomerang-cli
     ${boomerang-cli-sources}
+    ${boomerang-cli-headers}
 )
 
 target_link_libraries(boomerang-cli

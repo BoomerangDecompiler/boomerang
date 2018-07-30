@@ -28,7 +28,7 @@ list(APPEND boomerang-ssl-sources
 
     ssl/parser/InsNameElem
     ssl/parser/SSLParser
-    ssl/parser/SSLParserSupport.cpp
+    ssl/parser/SSLParserSupport
     ssl/parser/SSLScanner
     ssl/parser/Table
 
@@ -63,5 +63,7 @@ list(APPEND boomerang-ssl-sources
     ssl/type/UnionType
     ssl/type/VoidType
 )
+
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-ssl-sources ".cpp")
 
 set(boomerang-sources "${boomerang-sources};${boomerang-ssl-sources}" PARENT_SCOPE)

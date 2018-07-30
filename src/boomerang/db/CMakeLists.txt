@@ -40,4 +40,6 @@ list(APPEND boomerang-db-sources
     db/signature/Win32Signature
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-db-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-db-sources}" PARENT_SCOPE)

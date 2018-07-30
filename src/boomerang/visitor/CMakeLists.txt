@@ -57,4 +57,6 @@ list(APPEND boomerang-visitor-sources
     visitor/stmtexpvisitor/UsedLocsVisitor
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-visitor-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-visitor-sources}" PARENT_SCOPE)

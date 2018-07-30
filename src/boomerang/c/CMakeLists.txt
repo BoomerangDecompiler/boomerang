@@ -13,4 +13,6 @@ list(APPEND boomerang-c-sources
     c/CSymbolProvider
 )
 
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-c-sources ".cpp")
+
 set(boomerang-sources "${boomerang-sources};${boomerang-c-sources}" PARENT_SCOPE)

@@ -21,8 +21,16 @@ add_subdirectory(type)
 add_subdirectory(util)
 add_subdirectory(visitor)
 
+set(boomerang-headers "")
 
-add_library(boomerang ${boomerang-sources})
+foreach (src ${boomerang-sources})
+    string(REPLACE ".cpp" ".h" header_file ${src})
+    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${header_file}")
+        list(APPEND boomerang-headers ${header_file})
+    endif ()
+endforeach ()
+
+add_library(boomerang ${boomerang-sources} ${boomerang-headers})
 target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
 option(BOOMERANG_INSTALL_DEV "Install boomerang libraries and headers." OFF)

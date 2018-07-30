@@ -15,17 +15,15 @@ list(APPEND boomerang-util-sources
     util/ConnectionGraph
     util/DFGWriter
     util/ExpDotWriter
-    util/Interval.h
-    util/IntervalMap.h
-    util/IntervalSet.h
     util/LocationSet
     util/Log
     util/ProgSymbolWriter
     util/StatementList
     util/StatementSet
-    util/Types.h
     util/UseGraphWriter
     util/Util
 )
+
+BOOMERANG_LIST_APPEND_FOREACH(boomerang-util-sources ".cpp")
 
 set(boomerang-sources "${boomerang-sources};${boomerang-util-sources}" PARENT_SCOPE)
