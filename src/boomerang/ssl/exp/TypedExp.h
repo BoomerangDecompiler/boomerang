@@ -16,7 +16,7 @@
 /**
  * Holds one subexpression and the type of this subexpression.
  */
-class TypedExp : public Unary
+class BOOMERANG_API TypedExp : public Unary
 {
 public:
     TypedExp(SharedExp e1);

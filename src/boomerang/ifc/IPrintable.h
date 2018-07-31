@@ -10,10 +10,12 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <QString>
 
 
-class IPrintable
+class BOOMERANG_API IPrintable
 {
 public:
     virtual ~IPrintable() = default;

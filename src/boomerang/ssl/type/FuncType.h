@@ -16,7 +16,7 @@
 class Signature;
 
 
-class FuncType : public Type
+class BOOMERANG_API FuncType : public Type
 {
 public:
     FuncType(const std::shared_ptr<Signature>& sig = nullptr);

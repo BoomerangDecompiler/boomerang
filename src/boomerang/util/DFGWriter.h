@@ -10,12 +10,14 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 
 class UserProc;
 class QString;
 
 
-class DFGWriter
+class BOOMERANG_API DFGWriter
 {
 public:
     void printDFG(const UserProc *proc, const QString& fname);

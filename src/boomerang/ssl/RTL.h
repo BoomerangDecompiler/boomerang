@@ -26,7 +26,7 @@ class QTextStream;
  * \note when time permits, this class could be removed,
  * replaced with new Statements that mark the current native address
  */
-class RTL
+class BOOMERANG_API RTL
 {
     typedef std::list<Statement *> StmtList;
 

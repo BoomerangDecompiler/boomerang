@@ -18,7 +18,7 @@
 /**
  * The compound type represents aggregate types like structures or classes.
  */
-class CompoundType : public Type
+class BOOMERANG_API CompoundType : public Type
 {
 public:
     /// Constructs an empty compound type.

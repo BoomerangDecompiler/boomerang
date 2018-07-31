@@ -18,7 +18,7 @@
  * For example, for assignments to make sense, the types of the left hand side
  * and the right hand side must match.
  */
-class TypingStatement : public Statement
+class BOOMERANG_API TypingStatement : public Statement
 {
 public:
     TypingStatement(SharedType ty);

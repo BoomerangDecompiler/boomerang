@@ -10,17 +10,19 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
+
 #include <QString>
 #include <QTextStream>
 
-#include "boomerang/util/Types.h"
 
 /// Standard pointer size of source machine, in bits
 #define STD_SIZE    32
 
 
 /// Pointer / address value type for the source machine.
-class Address
+class BOOMERANG_API Address
 {
 public:
     typedef uintptr_t value_type;
@@ -79,7 +81,7 @@ private:
 };
 
 /// Like \ref Address, but only for addresses of the host machine
-class HostAddress
+class BOOMERANG_API HostAddress
 {
 public:
     typedef uintptr_t value_type;
@@ -133,5 +135,5 @@ private:
     value_type m_value;
 };
 
-QTextStream& operator<<(QTextStream& os, const Address& addr);
-QTextStream& operator<<(QTextStream& os, const HostAddress& addr);
+BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Address& addr);
+BOOMERANG_API QTextStream& operator<<(QTextStream& os, const HostAddress& addr);

@@ -29,7 +29,7 @@
  * \note Although the left hand side is nearly always redundant, it is essential in at least one circumstance: when
  * finding locations used by some statement, and the reference is to a CallStatement returning multiple locations.
  */
-class PhiAssign : public Assignment
+class BOOMERANG_API PhiAssign : public Assignment
 {
 public:
     typedef std::map<BasicBlock *, RefExp, BasicBlock::BBComparator> PhiDefs;

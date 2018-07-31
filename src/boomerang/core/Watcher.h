@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Address.h"
 
 
@@ -18,7 +19,7 @@ class UserProc;
 
 
 /// Virtual class to monitor the decompilation.
-class IWatcher
+class BOOMERANG_API IWatcher
 {
 public:
     IWatcher() = default;

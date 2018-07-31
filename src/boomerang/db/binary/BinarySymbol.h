@@ -20,7 +20,7 @@
 typedef std::shared_ptr<class Type> SharedType;
 
 
-class BinarySymbol
+class BOOMERANG_API BinarySymbol
 {
     friend class BinarySymbolTable;
 

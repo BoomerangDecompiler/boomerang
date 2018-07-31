@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <set>
 
 
@@ -26,7 +28,7 @@ typedef std::set<UserProc *> ProcSet;
 /**
  * Writes the CFG of functions to a file in the Graphviz dot format.
  */
-class CfgDotWriter
+class BOOMERANG_API CfgDotWriter
 {
 public:
     /// Write the CFG of all procedures in the program.

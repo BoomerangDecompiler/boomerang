@@ -37,7 +37,7 @@ using SharedRTL = std::shared_ptr<RTL>;
 /**
  * The TableEntry class represents a single instruction - a string/RTL pair.
  */
-class TableEntry
+class BOOMERANG_API TableEntry
 {
 public:
     TableEntry();
@@ -74,7 +74,7 @@ typedef enum
 /**
  * The ParamEntry struct represents the details of a single parameter.
  */
-struct ParamEntry
+struct BOOMERANG_API ParamEntry
 {
 public:
     std::list<QString> m_params;          ///< PARAM_VARIANT & PARAM_ASGN only */
@@ -98,7 +98,7 @@ protected:
  * the dictionary entries as well as instantiation of an Exp list for a given
  * instruction name and list of actual parameters.
  */
-class RTLInstDict
+class BOOMERANG_API RTLInstDict
 {
     friend class SSLParser;
     friend class NJMCDecoder;

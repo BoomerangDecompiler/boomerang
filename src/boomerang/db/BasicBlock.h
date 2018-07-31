@@ -59,7 +59,7 @@ enum class BBType
  * During decompilation, a special RTL with a zero address is prepended;
  * this RTL contains implicit assigns and phi assigns.
  */
-class BasicBlock
+class BOOMERANG_API BasicBlock
 {
 public:
     typedef RTLList::iterator                     RTLIterator;

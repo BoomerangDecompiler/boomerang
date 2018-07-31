@@ -27,7 +27,7 @@ class Prog;
  * Represents a high level call.
  * Information about parameters and the like are stored here.
  */
-class CallStatement : public GotoStatement
+class BOOMERANG_API CallStatement : public GotoStatement
 {
 public:
     CallStatement();

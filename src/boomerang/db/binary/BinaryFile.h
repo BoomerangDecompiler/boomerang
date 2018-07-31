@@ -56,7 +56,7 @@ enum class Machine : uint8_t
 /**
  * This class provides file-format independent access to loaded binary files.
  */
-class BinaryFile
+class BOOMERANG_API BinaryFile
 {
 public:
     BinaryFile(const QByteArray& rawData, IFileLoader *loader);

@@ -14,7 +14,7 @@
 
 
 
-class CustomSignature : public Signature
+class BOOMERANG_API CustomSignature : public Signature
 {
 public:
     CustomSignature(const QString& name);

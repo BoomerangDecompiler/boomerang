@@ -13,7 +13,7 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-class VoidType : public Type
+class BOOMERANG_API VoidType : public Type
 {
 public:
     VoidType();

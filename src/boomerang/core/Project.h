@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 #include "boomerang/util/Address.h"
 
@@ -32,7 +33,7 @@ class UserProc;
 class QString;
 
 
-class Project
+class BOOMERANG_API Project
 {
 public:
     Project();

@@ -18,7 +18,7 @@
 /**
  * Represents an ordinary high level return.
  */
-class ReturnStatement : public Statement
+class BOOMERANG_API ReturnStatement : public Statement
 {
 public:
     typedef StatementList::iterator         iterator;

@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/module/ModuleFactory.h"
@@ -38,7 +39,7 @@ class Signature;
 class ISymbolProvider;
 
 
-class Prog
+class BOOMERANG_API Prog
 {
 public:
     /// The type for the list of functions.

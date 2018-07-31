@@ -19,7 +19,7 @@
  * That way, you can always find the type of a subscripted variable
  * by looking in its defining Assignment.
  */
-class ImplicitAssign : public Assignment
+class BOOMERANG_API ImplicitAssign : public Assignment
 {
 public:
     ImplicitAssign(SharedExp lhs);

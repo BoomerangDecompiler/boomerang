@@ -10,11 +10,14 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class UserProc;
 class QString;
 
 
-class UseGraphWriter
+class BOOMERANG_API UseGraphWriter
 {
 public:
     void writeUseGraph(const UserProc *proc, const QString& fileName);

@@ -22,7 +22,7 @@
 /**
  * Settings that affect decompilation and output behaviour.
  */
-class Settings
+class BOOMERANG_API Settings
 {
 public:
     Settings();

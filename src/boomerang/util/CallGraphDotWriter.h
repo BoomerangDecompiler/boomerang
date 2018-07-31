@@ -10,11 +10,14 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class Prog;
 class QString;
 
 
-class CallGraphDotWriter
+class BOOMERANG_API CallGraphDotWriter
 {
 public:
     bool writeCallGraph(const Prog *prog, const QString& dstFileName);

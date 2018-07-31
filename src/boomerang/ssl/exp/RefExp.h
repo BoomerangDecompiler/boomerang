@@ -28,7 +28,7 @@
  * If the expression is not explicitly defined anywhere,
  * the defining statement is nullptr.
  */
-class RefExp : public Unary
+class BOOMERANG_API RefExp : public Unary
 {
 public:
     /// \param usedExp Expression that is used

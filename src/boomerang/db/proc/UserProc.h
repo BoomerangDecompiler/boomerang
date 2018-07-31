@@ -45,7 +45,7 @@ typedef std::list<UserProc *>   ProcList;
 /**
  * UserProc class.
  */
-class UserProc : public Function
+class BOOMERANG_API UserProc : public Function
 {
     typedef std::map<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 

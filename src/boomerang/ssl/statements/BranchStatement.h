@@ -16,7 +16,7 @@
 /**
  * BranchStatement has a condition Exp in addition to the destination of the jump.
  */
-class BranchStatement : public GotoStatement
+class BOOMERANG_API BranchStatement : public GotoStatement
 {
 public:
     BranchStatement();

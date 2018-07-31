@@ -16,7 +16,7 @@
 /**
  * Binary is a subclass of Unary, holding two subexpressions
  */
-class Binary : public Unary
+class BOOMERANG_API Binary : public Unary
 {
 public:
     Binary(OPER op, SharedExp e1, SharedExp e2);

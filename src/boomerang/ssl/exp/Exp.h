@@ -59,7 +59,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  *     RefExp__/    |
  *               Ternary
  */
-class Exp : public IPrintable, public std::enable_shared_from_this<Exp>
+class BOOMERANG_API Exp : public IPrintable, public std::enable_shared_from_this<Exp>
 {
 public:
     Exp(OPER oper) : m_oper(oper) {}

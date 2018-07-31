@@ -13,7 +13,7 @@
 #include "boomerang/ssl/exp/Unary.h"
 
 
-class Location : public Unary
+class BOOMERANG_API Location : public Unary
 {
 public:
     /**

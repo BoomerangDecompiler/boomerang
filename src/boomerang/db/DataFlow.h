@@ -24,7 +24,7 @@ class PhiAssign;
  * Dominator frontier code largely as per Appel 2002
  * ("Modern Compiler Implementation in Java")
  */
-class DataFlow
+class BOOMERANG_API DataFlow
 {
     using ExSet = ExpSet<Exp>;
 

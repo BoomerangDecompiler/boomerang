@@ -29,7 +29,7 @@ class BinarySection;
  * \sa BinaryFile
  * \sa BinarySection
  */
-class BinaryImage
+class BOOMERANG_API BinaryImage
 {
     typedef std::vector<BinarySection *> SectionList;
     typedef SectionList::iterator               iterator;

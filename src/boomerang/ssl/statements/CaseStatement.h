@@ -13,7 +13,7 @@
 #include "boomerang/ssl/statements/GotoStatement.h"
 
 
-class CaseStatement : public GotoStatement
+class BOOMERANG_API CaseStatement : public GotoStatement
 {
 public:
     CaseStatement();

@@ -62,7 +62,7 @@ enum class Sign : int8_t
  * Note that we may have a completely different system for
  * recording high level types
  */
-class Type : public std::enable_shared_from_this<Type>, public IPrintable
+class BOOMERANG_API Type : public std::enable_shared_from_this<Type>, public IPrintable
 {
 public:
     // Constructors

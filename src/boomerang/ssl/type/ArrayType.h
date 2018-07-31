@@ -20,7 +20,7 @@
 #define ARRAY_UNBOUNDED    9999999
 
 
-class ArrayType : public Type
+class BOOMERANG_API ArrayType : public Type
 {
 public:
     /// Create a new array type of fixed length

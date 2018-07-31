@@ -50,7 +50,7 @@ enum class LogLevel
  * The default behavior is to omit verbose log messages from being logged;
  * this behavior can be overridden by calling \ref setLogLevel.
  */
-class Log
+class BOOMERANG_API Log
 {
 public:
     /// Create a log.

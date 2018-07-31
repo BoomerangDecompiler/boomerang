@@ -13,7 +13,7 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-class NamedType : public Type
+class BOOMERANG_API NamedType : public Type
 {
 public:
     NamedType(const QString& _name);

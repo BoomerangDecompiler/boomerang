@@ -16,7 +16,7 @@
 /**
  * Ternary is a subclass of Binary, holding three subexpressions
  */
-class Ternary : public Binary
+class BOOMERANG_API Ternary : public Binary
 {
 public:
     Ternary(OPER op, SharedExp e1, SharedExp e2, SharedExp e3);

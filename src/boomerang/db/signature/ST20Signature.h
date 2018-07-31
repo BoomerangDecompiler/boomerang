@@ -18,7 +18,7 @@ namespace CallingConvention
 namespace StdC
 {
 
-class ST20Signature : public Signature
+class BOOMERANG_API ST20Signature : public Signature
 {
 public:
     explicit ST20Signature(const QString& name);

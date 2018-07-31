@@ -25,7 +25,7 @@ class UserProc;
  * This class collects all definitions that reach the statement
  * that contains this collector.
  */
-class DefCollector
+class BOOMERANG_API DefCollector
 {
 public:
     typedef AssignSet::const_iterator   const_iterator;
