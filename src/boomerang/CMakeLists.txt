@@ -30,7 +30,7 @@ foreach (src ${boomerang-sources})
     endif ()
 endforeach ()
 
-add_library(boomerang ${boomerang-sources} ${boomerang-headers})
+add_library(boomerang frontend/pentium/pentiumdecoder.cpp ${boomerang-sources} ${boomerang-headers})
 target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
 option(BOOMERANG_INSTALL_DEV "Install boomerang libraries and headers." OFF)
