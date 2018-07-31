@@ -12,8 +12,8 @@
 
 #include "boomerang/util/Interval.h"
 
-#include <map>
 #include <cassert>
+#include <map>
 
 
 /**

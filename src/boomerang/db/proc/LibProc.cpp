@@ -10,7 +10,7 @@
 #include "LibProc.h"
 
 
-#include "boomerang/db/Module.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/Frontend.h"
 

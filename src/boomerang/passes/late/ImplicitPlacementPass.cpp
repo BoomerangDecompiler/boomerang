@@ -11,9 +11,9 @@
 
 
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/util/StatementList.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 #include "boomerang/visitor/stmtmodifier/StmtImplicitConverter.h"
-#include "boomerang/util/StatementList.h"
 
 
 ImplicitPlacementPass::ImplicitPlacementPass()

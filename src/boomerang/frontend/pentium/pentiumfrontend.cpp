@@ -10,116 +10,28 @@
 #include "pentiumfrontend.h"
 
 
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbol.h"
-#include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
-#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/Register.h"
-#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/frontend/pentium/pentiumdecoder.h"
+#include "boomerang/frontend/pentium/StringInstructionProcessor.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"
-#include "boomerang/frontend/pentium/StringInstructionProcessor.h"
-#include "boomerang/frontend/pentium/pentiumdecoder.h"
-#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
-
-#include <cassert>
-#include <cstring>
-#include <sstream>
-
-
-#define FSW    40 // Numeric registers
-#define AH     12
-
-
-bool PentiumFrontEnd::isStoreFsw(const Statement *s) const
-{
-    if (!s->isAssign()) {
-        return false;
-    }
-
-    SharedExp rhs = static_cast<const Assign *>(s)->getRight();
-    SharedExp result;
-    bool      res = rhs->search(*Location::regOf(FSW), result);
-    return res;
-}
-
-
-bool PentiumFrontEnd::isDecAh(const RTL *r) const
-{
-    // Check for decrement; RHS of middle Exp will be r[12]{8} - 1
-    if (r->size() != 3) {
-        return false;
-    }
-
-    auto      iter = r->begin();
-    Statement *mid = *(++iter);
-
-    if (!mid->isAssign()) {
-        return false;
-    }
-
-    const Assign    *asgn = static_cast<const Assign *>(mid);
-    SharedExp rhs   = asgn->getRight();
-    Binary    ahm1(opMinus, Binary::get(opSize, Const::get(8), Location::regOf(REG_PENT_AH)), Const::get(1));
-    return *rhs == ahm1;
-}
-
-
-bool PentiumFrontEnd::isSetX(const Statement *s) const
-{
-    // Check for SETX, i.e. <exp> ? 1 : 0
-    // i.e. ?: <exp> Const 1 Const 0
-    if (!s->isAssign()) {
-        return false;
-    }
-
-    const Assign *asgn = static_cast<const Assign *>(s);
-    SharedExp lhs   = asgn->getLeft();
-
-    // LHS must be a register
-    if (!lhs->isRegOf()) {
-        return false;
-    }
-
-    SharedExp rhs = asgn->getRight();
-
-    if (rhs->getOper() != opTern) {
-        return false;
-    }
-
-    SharedExp s2 = rhs->getSubExp2();
-    SharedExp s3 = rhs->getSubExp3();
-
-    if (!s2->isIntConst() || s3->isIntConst()) {
-        return false;
-    }
-
-    return s2->access<Const>()->getInt() == 1 && s3->access<Const>()->getInt() == 0;
-}
-
-
-bool PentiumFrontEnd::isAssignFromTern(const Statement *s) const
-{
-    if (!s->isAssign()) {
-        return false;
-    }
-
-    const Assign    *asgn = static_cast<const Assign *>(s);
-    SharedExp rhs   = asgn->getRight();
-    return rhs->getOper() == opTern;
-}
+#include "boomerang/util/log/Log.h"
 
 
 void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, int mask)

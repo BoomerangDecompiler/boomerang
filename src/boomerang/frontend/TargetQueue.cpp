@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/CFG.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 void TargetQueue::visit(Cfg *cfg, Address newAddr, BasicBlock *& newBB)

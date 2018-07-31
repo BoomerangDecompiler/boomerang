@@ -12,9 +12,11 @@
 
 #include "boomerang/util/Address.h"
 
-#include <QString>
 #include <QDir>
-#include <QSettings>
+#include <QString>
+
+#include <map>
+#include <vector>
 
 
 /**

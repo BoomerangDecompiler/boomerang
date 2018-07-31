@@ -10,9 +10,9 @@
 #pragma once
 
 
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Util.h"
-#include "boomerang/ssl/type/Type.h"
 
 
 class Prog;

@@ -10,15 +10,14 @@
 #include "RTL.h"
 
 
-#include "boomerang/ssl/statements/BranchStatement.h"
-#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Operator.h"
-
-#include "boomerang/util/Log.h"
+#include "boomerang/ssl/statements/Assign.h"
+#include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
+#include "boomerang/util/Util.h"
 
-#include <QString>
-#include <QTextStream>
 
 #include <cassert>
 #include <cstdio>

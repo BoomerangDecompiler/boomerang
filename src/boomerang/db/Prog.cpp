@@ -10,39 +10,41 @@
 #include "Prog.h"
 
 
-#include "boomerang/c/parser/AnsiCParser.h"
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Project.h"
+#include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/db/binary/BinaryFile.h"
+#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/DebugInfo.h"
 #include "boomerang/db/Global.h"
-#include "boomerang/db/Module.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/LibProc.h"
-#include "boomerang/ssl/Register.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/frontend/Frontend.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/Register.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
-#include "boomerang/util/Util.h" // For lockFileWrite etc
-#include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/util/Util.h"
 
-#include <QtCore/QFileInfo>
-#include <QtCore/QSaveFile>
-#include <QtCore/QDir>
+#include <QDir>
+#include <QFileInfo>
+#include <QSaveFile>
 
 #include <cctype>
 
@@ -81,7 +83,7 @@ void Prog::setName(const QString& name)
 }
 
 
-Module *Prog::createModule(const QString& name, Module *parentModule, const ModuleFactory& factory)
+Module *Prog::createModule(const QString& name, Module *parentModule, const IModuleFactory& factory)
 {
     if (parentModule == nullptr) {
         parentModule = m_rootModule;
@@ -101,7 +103,7 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const Modu
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const ModuleFactory& fact, IFrontEnd *frontEnd)
+Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact, IFrontEnd *frontEnd)
 {
     for (const auto& m : m_moduleList) {
         if (m->getName() == name) {
@@ -314,6 +316,18 @@ bool Prog::isWellFormed() const
 bool Prog::isWin32() const
 {
     return m_fe && m_fe->isWin32();
+}
+
+
+QString Prog::getRegName(int idx) const
+{
+    return m_fe->getRegName(idx);
+}
+
+
+int Prog::getRegSize(int idx) const
+{
+    return m_fe->getRegSize(idx);
 }
 
 

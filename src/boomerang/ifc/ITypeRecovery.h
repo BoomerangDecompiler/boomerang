@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include <QString>
-
 class Function;
 class Prog;
+
+class QString;
 
 
 /**
@@ -34,7 +34,7 @@ public:
 
 public:
     /// \returns A descriptive name of this type recovery engine.
-    virtual QString getName() = 0;
+    virtual const QString& getName() = 0;
 
     /// Recover program types for a single function \p function
     virtual void recoverFunctionTypes(Function *function) = 0;

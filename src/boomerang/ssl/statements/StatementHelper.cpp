@@ -10,9 +10,9 @@
 #include "StatementHelper.h"
 
 
-#include "boomerang/util/Log.h"
-#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/util/log/Log.h"
 
 
 // Common to BranchStatement and BoolAssign

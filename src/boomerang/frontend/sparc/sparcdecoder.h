@@ -12,8 +12,6 @@
 
 #include "boomerang/frontend/NJMCDecoder.h"
 
-class Prog;
-struct DecodeResult;
 
 class SparcMachine
 {

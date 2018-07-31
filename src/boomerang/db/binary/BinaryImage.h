@@ -10,11 +10,16 @@
 #pragma once
 
 
-#include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/db/binary/BinaryImage.h"
+#include "boomerang/util/Address.h"
 #include "boomerang/util/IntervalMap.h"
 
+#include <QByteArray>
+
 #include <memory>
+#include <vector>
+
+
+class BinarySection;
 
 
 /**

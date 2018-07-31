@@ -11,14 +11,16 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/passes/PassManager.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 

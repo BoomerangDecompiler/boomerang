@@ -9,7 +9,7 @@
 #pragma endregion License
 #include "BBSimplifyPass.h"
 
-
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 
 

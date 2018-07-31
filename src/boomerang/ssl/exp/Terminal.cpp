@@ -10,13 +10,12 @@
 #include "Terminal.h"
 
 
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 Terminal::Terminal(OPER _op)

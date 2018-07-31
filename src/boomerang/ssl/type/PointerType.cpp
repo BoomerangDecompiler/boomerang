@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 PointerType::PointerType(SharedType p)
@@ -50,6 +50,13 @@ size_t PointerType::getSize() const
 {
     // points_to->getSize(); // yes, it was a good idea at the time
     return STD_SIZE;
+}
+
+
+void PointerType::setSize(size_t sz)
+{
+    Q_UNUSED(sz);
+    assert(sz == STD_SIZE);
 }
 
 

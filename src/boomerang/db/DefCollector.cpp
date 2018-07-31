@@ -11,10 +11,7 @@
 
 
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/statements/Assign.h"
-
-#include <QString>
-#include <QTextStream>
+#include "boomerang/util/Util.h"
 
 
 DefCollector::~DefCollector()

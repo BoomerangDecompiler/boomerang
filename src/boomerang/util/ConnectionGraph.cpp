@@ -11,7 +11,7 @@
 
 
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 bool ConnectionGraph::add(SharedExp a, SharedExp b)

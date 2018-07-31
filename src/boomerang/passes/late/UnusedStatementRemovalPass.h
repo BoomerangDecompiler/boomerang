@@ -11,7 +11,8 @@
 
 
 #include "boomerang/passes/Pass.h"
-#include "boomerang/db/proc/Proc.h"
+
+#include <map>
 
 
 class Statement;

@@ -11,10 +11,12 @@
 
 
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/ArrayType.h"

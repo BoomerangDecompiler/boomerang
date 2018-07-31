@@ -10,23 +10,18 @@
 #include "ReturnStatement.h"
 
 
-#include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/BasicBlock.h"
+#include "boomerang/frontend/Frontend.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
-#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/frontend/Frontend.h"
-
+#include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
 ReturnStatement::ReturnStatement()

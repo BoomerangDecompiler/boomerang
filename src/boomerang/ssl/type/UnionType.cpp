@@ -12,7 +12,15 @@
 
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+
+#include <QHash>
+
+
+size_t hashUnionElem::operator()(const UnionElement& e) const
+{
+        return qHash(e.type->getCtype());
+}
 
 
 UnionType::UnionType()

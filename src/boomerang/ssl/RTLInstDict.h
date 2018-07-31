@@ -10,23 +10,24 @@
 #pragma once
 
 
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"
 
 #include <QString>
-#include <QTextStream>
 
 #include <list>
 #include <memory>
 #include <set>
 
 
-class Statement;
-
 class Exp;
+class Statement;
 class Type;
+
+class QTextStream;
+
 
 using SharedExp = std::shared_ptr<Exp>;
 using SharedRTL = std::shared_ptr<RTL>;

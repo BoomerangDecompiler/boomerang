@@ -10,9 +10,9 @@
 #pragma once
 
 
-#include "boomerang/util/Types.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 
@@ -59,7 +59,6 @@ public:
     /// As such, it can't be correctly described by BinarySection, why we need to override
     /// the behaviour of (at least) the question "Is this address in BSS".
     bool isAddressBss(Address addr) const;
-
 
     bool anyDefinedValues() const;
     void clearDefinedArea();

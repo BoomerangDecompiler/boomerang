@@ -13,15 +13,11 @@
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QBuffer>
 #include <QFile>
 #include <QString>
-
-#include <cstddef>
-#include <cassert>
-#include <cstring>
 
 
 // Macro to convert a pointer to a Big Endian integer into a host integer

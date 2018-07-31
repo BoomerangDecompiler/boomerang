@@ -12,11 +12,15 @@
 
 #include "boomerang/ssl/type/Type.h"
 
+#include <unordered_set>
+
+
 // The union type represents the union of any number of any other types
 struct UnionElement
 {
     SharedType type;
     QString    name;
+
     bool operator==(const UnionElement& other) const
     {
         return *type == *other.type;
@@ -26,10 +30,7 @@ struct UnionElement
 
 struct hashUnionElem
 {
-    size_t operator()(const UnionElement& e) const
-    {
-        return qHash(e.type->getCtype());
-    }
+    size_t operator()(const UnionElement& e) const;
 };
 
 

@@ -10,14 +10,16 @@
 #include "DataIntervalMap.h"
 
 
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/type/ArrayType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 
 DataIntervalMap::DataIntervalMap(UserProc *userProc)

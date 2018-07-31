@@ -22,6 +22,7 @@ public:
         : m_lower(_lower)
         , m_upper(_upper)
     {}
+
     ~Interval() = default;
 
     Interval(const Interval<T>& other)
@@ -48,6 +49,7 @@ public:
         return *this;
     }
 
+public:
     /// \returns the lower bound of the interval.
     inline const T& lower() const { return m_lower; }
     /// \returns the upper bound of the interval.

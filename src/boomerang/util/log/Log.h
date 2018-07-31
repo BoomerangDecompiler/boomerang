@@ -10,28 +10,24 @@
 #pragma once
 
 
+#include "boomerang/ifc/IPrintable.h"
 #include "boomerang/util/Address.h"
-#include "boomerang/util/Util.h"
-
-#include <QString>
-#include <QFile>
+#include "boomerang/util/Types.h"
 
 #include <memory>
-#include <fstream>
-#include <vector>
-#include <cassert>
 
 
+class ILogSink;
 class Statement;
 class Exp;
 class LocationSet;
 class RTL;
 class Type;
-class UserProc;
 
 
 using SharedType     = std::shared_ptr<Type>;
 using SharedConstExp = std::shared_ptr<const Exp>;
+
 
 /// Log level / verbosity.
 enum class LogLevel
@@ -43,60 +39,6 @@ enum class LogLevel
     Default  = 3,
     Verbose1 = 4,
     Verbose2 = 5
-};
-
-
-/**
- * Abstract base class for log sinks.
- */
-class ILogSink
-{
-public:
-    virtual ~ILogSink() = default;
-
-public:
-    /// Write a string to the log.
-    virtual void write(const QString& s) = 0;
-
-    /// If the log sink is buffered, flush the underlying buffer
-    /// to the target device. If the device is unbuffered, do nothing.
-    virtual void flush() = 0;
-};
-
-
-/**
- * Log sink for logging to stdout.
- */
-class ConsoleLogSink : public ILogSink
-{
-public:
-    virtual ~ConsoleLogSink() override = default;
-
-    /// \copydoc ILogSink::write
-    virtual void write(const QString& s) override;
-
-    /// \copydoc ILogSink::flush
-    virtual void flush() override;
-};
-
-
-/**
- * Log sink for logging to a file.
- */
-class FileLogSink : public ILogSink
-{
-public:
-    FileLogSink(const QString& filename, bool append = false);
-    virtual ~FileLogSink() override;
-
-    /// \copydoc ILogSink::write
-    virtual void write(const QString& s) override;
-
-    /// \copydoc ILogSink::flush
-    virtual void flush() override;
-
-private:
-    QFile m_logFile;
 };
 
 
@@ -162,12 +104,7 @@ public:
         log(level, file, line, collectArgs(msg, args ...));
     }
 
-    void flush()
-    {
-        for (std::unique_ptr<ILogSink>& s : m_sinks) {
-            s->flush();
-        }
-    }
+    void flush();
 
     /// Add a log sink / target. Takes ownership of the pointer.
     void addLogSink(std::unique_ptr<ILogSink> s);
@@ -205,7 +142,7 @@ private:
     QString collectArg(const QString& msg, const Statement *s);
     QString collectArg(const QString& msg, const SharedConstExp& e);
     QString collectArg(const QString& msg, const SharedType& ty);
-    QString collectArg(const QString& msg, const Printable& ty);
+    QString collectArg(const QString& msg, const IPrintable& ty);
     QString collectArg(const QString& msg, const RTL *r);
     QString collectArg(const QString& msg, const LocationSet *l);
 
@@ -253,27 +190,6 @@ private:
 };
 
 
-/**
- * Class for logging to a separate file different from the default log.
- */
-class SeparateLogger : public Log
-{
-public:
-    /// \param fullFilePath Full absolute path to the log file
-    SeparateLogger(const QString& fullFilePath);
-    SeparateLogger(const SeparateLogger& other) = delete;
-    SeparateLogger(SeparateLogger&& other) = default;
-
-    virtual ~SeparateLogger() override = default;
-
-    SeparateLogger& operator=(const SeparateLogger& other) = delete;
-    SeparateLogger& operator=(SeparateLogger&& other) = default;
-
-public:
-    static SeparateLogger& getOrCreateLog(const QString& name);
-};
-
-
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");
 #define LOG_FATAL(...)             Log::getOrCreateLog().log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_ERROR(...)             Log::getOrCreateLog().log(LogLevel::Error,    __FILE__, __LINE__, __VA_ARGS__)
@@ -281,5 +197,3 @@ public:
 #define LOG_MSG(...)               Log::getOrCreateLog().log(LogLevel::Default,  __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_VERBOSE(...)           Log::getOrCreateLog().log(LogLevel::Verbose1, __FILE__, __LINE__, __VA_ARGS__)
 #define LOG_VERBOSE2(...)          Log::getOrCreateLog().log(LogLevel::Verbose2, __FILE__, __LINE__, __VA_ARGS__)
-
-#define LOG_SEPARATE(name, ...)    SeparateLogger::getOrCreateLog(name).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)

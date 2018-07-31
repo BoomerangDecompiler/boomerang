@@ -24,8 +24,9 @@ class ImpRefStatement;
 
 
 /**
- * StmtExpVisitor is a visitor of statements, and of expressions within those expressions. The visiting of expressions
- * (after the current node) is done by an ExpVisitor (i.e. this is a preorder traversal).
+ * StmtExpVisitor is a visitor of statements, and of expressions within those expressions.
+ * The visiting of expressions (after the current node) is done by an ExpVisitor
+ * (i.e. this is a preorder traversal).
  */
 class StmtExpVisitor
 {

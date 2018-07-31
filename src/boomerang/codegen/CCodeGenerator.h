@@ -10,19 +10,20 @@
 #pragma once
 
 
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/codegen/ControlFlowAnalyzer.h"
+#include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Address.h"
 
-#include <string>
-#include <sstream>
+#include <QStringList>
+
+#include <list>
+#include <map>
 #include <unordered_set>
 
 
 class BasicBlock;
 class Exp;
-class Function;
-class Assign;
 class LocationSet;
 class BinaryImage;
 

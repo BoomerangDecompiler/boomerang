@@ -10,6 +10,7 @@
 #include "StatementTest.h"
 
 
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -25,13 +26,14 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/passes/PassManager.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/ssl/type/IntegerType.h"
 

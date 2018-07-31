@@ -12,7 +12,7 @@
 
 #include "boomerang/ifc/IFileLoader.h"
 
-#include <QtCore/QObject>
+#include <QObject>
 
 
 /**

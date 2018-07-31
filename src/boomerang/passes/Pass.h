@@ -12,7 +12,6 @@
 
 #include <QString>
 
-#include <vector>
 
 class UserProc;
 

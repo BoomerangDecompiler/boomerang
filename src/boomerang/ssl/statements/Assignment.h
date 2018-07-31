@@ -15,7 +15,7 @@
 
 /**
  * Assignment is the base class of all statements that assign to a
- * left hand side like ordinary assignments, phi statements or implicit assignments.
+ * left hand side like ordinary assign statements, phi statements or implicit assignments.
  */
 class Assignment : public TypingStatement
 {

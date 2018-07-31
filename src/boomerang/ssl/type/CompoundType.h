@@ -12,6 +12,8 @@
 
 #include "boomerang/ssl/type/Type.h"
 
+#include <vector>
+
 
 /**
  * The compound type represents aggregate types like structures or classes.

@@ -10,8 +10,8 @@
 #include "SizeType.h"
 
 
-#include "boomerang/util/Log.h"
 #include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/util/log/Log.h"
 
 
 SizeType::SizeType()

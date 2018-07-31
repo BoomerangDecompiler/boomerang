@@ -12,14 +12,14 @@
 
 #include "boomerang/util/Address.h"
 
-
 #include <memory>
 
 
-class QByteArray;
 class BinaryImage;
 class BinarySymbolTable;
 class IFileLoader;
+
+class QByteArray;
 
 
 /// This enum allows a sort of run time type identification, without using

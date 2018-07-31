@@ -10,12 +10,12 @@
 #include "Util.h"
 
 
-#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/util/Types.h"
 
-#include <QString>
 #include <QMap>
+#include <QString>
 #include <QTextStream>
 
 #include <cassert>

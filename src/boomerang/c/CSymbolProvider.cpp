@@ -11,11 +11,15 @@
 
 
 #include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/frontend/Frontend.h"
+#include "boomerang/util/log/Log.h"
 
-#include <QFileInfo>
 #include <QDir>
+#include <QFileInfo>
 
 
 CSymbolProvider::CSymbolProvider(Prog* prog)

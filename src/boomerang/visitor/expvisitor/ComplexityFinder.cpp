@@ -10,8 +10,8 @@
 #include "ComplexityFinder.h"
 
 
-#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/exp/Location.h"
 
 
 ComplexityFinder::ComplexityFinder(UserProc* proc)

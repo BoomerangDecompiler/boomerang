@@ -12,11 +12,6 @@
 
 #include "boomerang/frontend/Frontend.h"
 
-class IFrontEnd;
-class MIPSDecoder;
-class CallStatement;
-struct DecodeResult;
-
 
 class MIPSFrontEnd : public IFrontEnd
 {

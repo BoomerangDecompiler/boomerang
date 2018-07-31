@@ -10,15 +10,12 @@
 #include "BinarySection.h"
 
 
-#include "boomerang/util/Log.h"
-#include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/util/IntervalMap.h"
 #include "boomerang/util/IntervalSet.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <QVariantMap>
-
-#include <algorithm>
-#include <utility>
 
 
 struct VariantHolder

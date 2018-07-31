@@ -11,7 +11,6 @@
 
 
 #include "boomerang/ssl/statements/Statement.h"
-#include "boomerang/ssl/exp/Const.h"
 
 
 /**
@@ -111,12 +110,6 @@ public:
 
     // Statement virtual functions
     virtual bool usesExp(const Exp&) const override;
-
-protected:
-    /// NOTE: This should be removed, once CaseStatement and HLNwayCall are implemented
-    /// properly.
-    std::shared_ptr<Const> constDest() { return std::static_pointer_cast<Const>(m_dest); }
-    const std::shared_ptr<const Const> constDest() const { return std::static_pointer_cast<const Const>(m_dest); }
 
 protected:
     /// Destination of a jump or call. This is the absolute destination

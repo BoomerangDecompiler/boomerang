@@ -14,9 +14,6 @@
 
 #include <unordered_set>
 
-class Statement;
-class PentiumDecoder;
-
 
 /**
  * Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
@@ -119,21 +116,6 @@ private:
      * \returns true if a helper function is converted; false otherwise
      */
     bool isHelperFunc(Address dest, Address addr, RTLList& lrtl) override;
-
-    /**
-     * \returns true if \p stmt is an assignment
-     * that stores the FSW (Floating point Status Word) reg
-     */
-    bool isStoreFsw(const Statement *stmt) const;
-
-    /// \returns true if \p rtl is a decrement of register AH
-    bool isDecAh(const RTL *rtl) const;
-
-    /// \returns true if \p stmt is a setX instruction
-    bool isSetX(const Statement *stmt) const;
-
-    /// \returns true if \p stmt is an expression whose RHS is a ?: ternary
-    bool isAssignFromTern(const Statement *stmt) const;
 
     /**
      * Finds a subexpression within this expression of the form

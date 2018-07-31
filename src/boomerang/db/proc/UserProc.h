@@ -16,10 +16,13 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/UseCollector.h"
+#include "boomerang/util/StatementList.h"
 
 
 class Binary;
 class UserProc;
+class Assign;
+class ReturnStatement;
 
 
 enum ProcStatus : uint8_t

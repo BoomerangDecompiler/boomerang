@@ -10,17 +10,17 @@
 #pragma once
 
 
+#include "boomerang/ifc/IPrintable.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
+#include "boomerang/ssl/exp/Operator.h"
+
 #include <QString>
 
-#include <list>
-#include <vector>
-#include <set>
 #include <cassert>
+#include <list>
 #include <memory>
-
-#include "boomerang/ssl/exp/Operator.h"
-#include "boomerang/ssl/exp/ExpHelp.h"
-#include "boomerang/util/Util.h"
+#include <set>
+#include <vector>
 
 
 class Exp;
@@ -32,6 +32,7 @@ class LocationSet;
 class Statement;
 class CompoundType;
 
+class QTextStream;
 
 typedef std::unique_ptr<Exp>         UniqExp;
 typedef std::shared_ptr<Exp>         SharedExp;
@@ -58,7 +59,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  *     RefExp__/    |
  *               Ternary
  */
-class Exp : public Printable, public std::enable_shared_from_this<Exp>
+class Exp : public IPrintable, public std::enable_shared_from_this<Exp>
 {
 public:
     Exp(OPER oper) : m_oper(oper) {}

@@ -10,10 +10,10 @@
 #include "TypedExp.h"
 
 
+#include "boomerang/ssl/type/Type.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/Log.h"
 
 
 TypedExp::TypedExp(SharedExp e1)
@@ -126,8 +126,7 @@ bool TypedExp::operator*=(const Exp& o) const
 void TypedExp::print(QTextStream& os, bool html) const
 {
     if (m_type) {
-        m_type->starPrint(os);
-        os << " ";
+        os << "*" << "*m_type" << "* ";
     }
     else {
         os << "*v* ";

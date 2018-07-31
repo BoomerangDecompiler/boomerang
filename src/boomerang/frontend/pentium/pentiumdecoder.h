@@ -12,13 +12,16 @@
 
 
 #include "boomerang/frontend/NJMCDecoder.h"
+#include "boomerang/ssl/exp/Operator.h"
+
 
 class Prog;
 struct DecodeResult;
 
+
 /**
  * Decoder for x86 instructions.
- * \note x86-64 instructions are nor supported.
+ * \note x86-64 instructions are not supported.
  */
 class PentiumDecoder : public NJMCDecoder
 {

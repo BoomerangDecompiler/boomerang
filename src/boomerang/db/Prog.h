@@ -10,30 +10,31 @@
 #pragma once
 
 
-#include <map>
-
-#include "boomerang/ssl/type/Type.h"
-#include "boomerang/type/DataIntervalMap.h"
-#include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
-#include "boomerang/db/Module.h"
-#include "boomerang/util/Util.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/db/module/ModuleFactory.h"
+#include "boomerang/frontend/SigEnum.h"
+#include "boomerang/type/DataIntervalMap.h"
+#include "boomerang/util/Address.h"
+
+#include <QString>
+
+#include <list>
+#include <map>
+#include <memory>
+#include <set>
 
 
-class RTLInstDict;
-class Function;
-class UserProc;
-class LibProc;
-class Signature;
-class Statement;
-class Module;
-class BinarySection;
-class ICodeGenerator;
-class BinarySymbol;
+class ArrayType;
 class BinaryFile;
+class BinarySection;
+class BinarySymbol;
+class Function;
+class IFrontEnd;
+class LibProc;
+class Module;
 class Project;
+class Signature;
 
 
 class Prog
@@ -76,7 +77,7 @@ public:
      * \param modFactory Determines the type of Module to be created.
      * \returns the new module, or nullptr if there already exists a module with the same name and parent.
      */
-    Module *createModule(const QString& name, Module *parent = nullptr, const ModuleFactory& modFactory = DefaultModFactory());
+    Module *createModule(const QString& name, Module *parent = nullptr, const IModuleFactory& modFactory = DefaultModFactory());
 
     /**
      * Create or retrieve existing module
@@ -84,7 +85,7 @@ public:
      * \param fact abstract factory object that creates Module instance
      * \param name retrieve/create module with this name.
      */
-    Module *getOrInsertModule(const QString& name, const ModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
+    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
 
     Module *getRootModule() { return m_rootModule; }
     Module *getRootModule() const { return m_rootModule; }
@@ -141,9 +142,8 @@ public:
     /// Returns true if this is a win32 program
     bool isWin32() const;
 
-
-    QString getRegName(int idx) const { return m_fe->getRegName(idx); }
-    int getRegSize(int idx) const { return m_fe->getRegSize(idx); }
+    QString getRegName(int idx) const;
+    int getRegSize(int idx) const;
 
     /// Get the front end id used to make this prog
     Platform getFrontEndId() const;

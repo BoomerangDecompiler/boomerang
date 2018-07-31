@@ -10,24 +10,23 @@
 #pragma once
 
 
-#include "boomerang/util/Types.h"
+#include "boomerang/util/Address.h"
 
-#include <QVariantMap>
 #include <memory>
-#include <map>
-#include <string>
+#include <vector>
 
 
-#include "BinarySymbol.h"
+class BinarySymbol;
 
 
 /**
  * A simple class to implement a symbol table than can be looked up by address or by name.
  *
- * \note Can't readily use operator[] overloaded for address and string parameters. The main problem is
- * that when you do symtab[0x100] = "main", the string map doesn't see the string.
- * If you have one of the maps be a pointer to the other string and use a special comparison operator, then
- * if the strings are ever changed, then the map's internal rb-tree becomes invalid.
+ * \note Can't readily use operator[] overloaded for address and string parameters.
+ * The main problem is that when you do symtab[0x100] = "main", the string map
+ * doesn't see the string. If you have one of the maps be a pointer to the other string
+ * and use a special comparison operator, then if the strings are ever changed,
+ * then the map's internal rb-tree becomes invalid.
  */
 class BinarySymbolTable
 {

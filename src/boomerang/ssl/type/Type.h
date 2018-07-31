@@ -10,45 +10,20 @@
 #pragma once
 
 
-#include "boomerang/util/Address.h"
-#include "boomerang/util/Util.h"
+#include "boomerang/ifc/IPrintable.h"
 
-#include <QString>
-#include <QMap>
-#include <QHash>
-#include <QTextStream>
-
-#include <string>
-#include <map>
-#include <memory>
-#include <functional> // For binary_function
-#include <vector>
 #include <cassert>
-#include <list>
-#include <set>
-#include <unordered_set>
-#include <fstream>
+#include <memory>
 
 
-class Signature;
-class UserProc;
-class VoidType;
-class FuncType;
-class BooleanType;
-class CharType;
-class IntegerType;
-class FloatType;
-class NamedType;
-class PointerType;
-class ArrayType;
-class CompoundType;
-class UnionType;
-class SizeType;
-class UpperType;
-class LowerType;
 class Exp;
-class DataIntervalMap;
-using SharedExp = std::shared_ptr<Exp>;
+class Type;
+
+class QTextStream;
+
+using SharedExp       = std::shared_ptr<Exp>;
+using SharedType      = std::shared_ptr<Type>;
+using SharedConstType = std::shared_ptr<const Type>;
 
 
 /// For operator< mostly
@@ -69,6 +44,7 @@ enum class TypeClass
 };
 
 
+/// Signedgess of integer-like variables
 enum class Sign : int8_t
 {
     UnsignedStrong = -2,
@@ -78,9 +54,6 @@ enum class Sign : int8_t
     SignedStrong = 2
 };
 
-class Type;
-typedef std::shared_ptr<Type>         SharedType;
-typedef std::shared_ptr<const Type>   SharedConstType;
 
 
 /**
@@ -89,7 +62,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  * Note that we may have a completely different system for
  * recording high level types
  */
-class Type : public std::enable_shared_from_this<Type>, public Printable
+class Type : public std::enable_shared_from_this<Type>, public IPrintable
 {
 public:
     // Constructors
@@ -142,8 +115,6 @@ public:
     virtual bool isCompound() const { return false; }
     virtual bool isUnion() const { return false; }
     virtual bool isSize() const { return false; }
-    virtual bool isUpper() const { return false; }
-    virtual bool isLower() const { return false; }
 
     /// \returns false if some info is missing, e.g. unknown sign, size or basic type
     virtual bool isComplete() { return true; }
@@ -168,6 +139,11 @@ public:
     bool resolvesToCompound() const;
     bool resolvesToUnion() const;
     bool resolvesToSize() const;
+
+    /// Resolve the original type across named types.
+    /// If the type is not named, return this.
+    SharedType resolveNamedType();
+    SharedConstType resolveNamedType() const;
 
     // cloning
     virtual SharedType clone() const = 0;
@@ -197,8 +173,6 @@ public:
     /// When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;
 
-    /// Print in *i32* format
-    void starPrint(QTextStream& os);
     QString prints();                    // For debugging
     void dump();                         // For debugging
     static void dumpNames();             // For debugging
@@ -208,7 +182,6 @@ public:
      * nicer to return a unique name, but we don't know scope at
      * this point, and even so we could still clash with a user-defined
      * name later on. :(
-     * \returns        a string
      */
     virtual QString getTempName() const; // Get a temporary name for the type
 
@@ -262,33 +235,20 @@ protected:
 QTextStream& operator<<(QTextStream& os, const SharedConstType& ty); ///< Print the Type pointed to by t
 QTextStream& operator<<(QTextStream& os, const Type& ty);            ///< Print the Type pointed to by t
 
-#include "boomerang/ssl/type/NamedType.h"
 
 template<class T>
 inline std::shared_ptr<T> Type::as()
 {
-    SharedType ty = shared_from_this();
-
-    if (isNamed()) {
-        ty = std::static_pointer_cast<NamedType>(ty)->resolvesTo();
-    }
-
-    auto res = std::dynamic_pointer_cast<T>(ty);
-    assert(res);
-    return res;
+    SharedType ty = resolveNamedType();
+    assert(std::dynamic_pointer_cast<T>(ty) != nullptr);
+    return std::static_pointer_cast<T>(ty);
 }
 
 
 template<class T>
 inline std::shared_ptr<const T> Type::as() const
 {
-    SharedConstType ty = shared_from_this();
-
-    if (isNamed()) {
-        ty = std::static_pointer_cast<const NamedType>(ty)->resolvesTo();
-    }
-
-    auto res = std::dynamic_pointer_cast<const T>(ty);
-    assert(res);
-    return res;
+    SharedConstType ty = resolveNamedType();
+    assert(std::dynamic_pointer_cast<const T>(ty) != nullptr);
+    return std::static_pointer_cast<const T>(ty);
 }

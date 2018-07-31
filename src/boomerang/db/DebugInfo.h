@@ -16,6 +16,7 @@
 
 
 class QString;
+
 using SharedType = std::shared_ptr<class Type>;
 
 

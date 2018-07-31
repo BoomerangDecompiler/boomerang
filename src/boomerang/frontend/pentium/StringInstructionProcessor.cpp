@@ -13,10 +13,11 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/util/Address.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/Address.h"
+#include "boomerang/util/log/Log.h"
 
 
 StringInstructionProcessor::StringInstructionProcessor(UserProc* proc)

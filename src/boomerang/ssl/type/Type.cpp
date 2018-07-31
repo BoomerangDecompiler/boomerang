@@ -13,23 +13,24 @@
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/type/DataIntervalMap.h"
-#include "boomerang/ssl/type/CompoundType.h"
-#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/BooleanType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/FloatType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/NamedType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/UnionType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/ssl/type/CharType.h"
-#include "boomerang/ssl/type/BooleanType.h"
-#include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/type/DataIntervalMap.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
@@ -225,9 +226,25 @@ RESOLVES_TO_TYPE(Union)
 RESOLVES_TO_TYPE(Size)
 
 
-void Type::starPrint(QTextStream& os)
+SharedType Type::resolveNamedType()
 {
-    os << "*" << *this << "*";
+    if (isNamed()) {
+        return std::static_pointer_cast<NamedType>(shared_from_this())->resolvesTo();
+    }
+    else {
+        return shared_from_this();
+    }
+}
+
+
+SharedConstType Type::resolveNamedType() const
+{
+    if (isNamed()) {
+        return std::static_pointer_cast<const NamedType>(shared_from_this())->resolvesTo();
+    }
+    else {
+        return shared_from_this();
+    }
 }
 
 

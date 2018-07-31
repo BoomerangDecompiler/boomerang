@@ -14,16 +14,10 @@
 
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/util/Log.h"
-
-#include <sys/types.h> // Next three for open()
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <cstddef>
-#include <cassert>
-#include <cstring>
-#include <inttypes.h>
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <QBuffer>
 #include <QFile>

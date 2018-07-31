@@ -10,16 +10,17 @@
 #include "StmtSSAXFormer.h"
 
 
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 

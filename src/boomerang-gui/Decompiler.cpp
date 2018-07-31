@@ -10,17 +10,21 @@
 #include "Decompiler.h"
 
 
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/Prog.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/db/binary/BinaryFile.h"
-#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/Frontend.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/NamedType.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QThread>
 

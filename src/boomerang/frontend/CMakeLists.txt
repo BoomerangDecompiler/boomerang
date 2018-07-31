@@ -8,8 +8,8 @@
 
 
 list(APPEND boomerang-frontend-sources
+    frontend/DecodeResult
     frontend/Frontend
-    frontend/MachineInstruction
     frontend/mips/mipsdecoder
     frontend/mips/mipsfrontend
     frontend/NJMCDecoder

@@ -12,10 +12,9 @@
 
 #include <QString>
 
-#include <string>
 #include <cstdint>
 #include <memory>
-
+#include <string>
 
 
 class Type;

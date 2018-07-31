@@ -6,13 +6,12 @@
 #include <cstdio>
 
 
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/parser/InsNameElem.h"
 #include "boomerang/ssl/parser/Table.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/RTLInstDict.h"
-#include "boomerang/util/Util.h" // E.g. str()
-
+#include "boomerang/util/Util.h"
 
 #include <cassert>
 #include <sstream>

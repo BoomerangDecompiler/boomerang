@@ -10,8 +10,7 @@
 #include "Settings.h"
 
 
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 
 Settings::Settings()

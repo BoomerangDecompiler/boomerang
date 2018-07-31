@@ -12,34 +12,23 @@
 
 #include "boomerang/frontend/SigEnum.h"
 #include "boomerang/frontend/TargetQueue.h"
-#include "boomerang/ifc/ISymbolProvider.h"
-#include "boomerang/util/Types.h"
 
-#include <list>
-#include <map>
-#include <queue>
-#include <fstream>
-#include <QMap>
 #include <memory>
 
 
 class UserProc;
-class Function;
 class RTL;
 class IDecoder;
-class BasicBlock;
 class Exp;
-class TypedExp;
-class Cfg;
 class Prog;
 struct DecodeResult;
-
 class Signature;
 class Statement;
 class CallStatement;
-class BinarySymbolTable;
-class BinaryImage;
 class BinaryFile;
+class ISymbolProvider;
+
+class QString;
 
 
 using SharedExp      = std::shared_ptr<Exp>;

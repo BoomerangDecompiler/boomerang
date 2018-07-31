@@ -9,9 +9,10 @@
 #pragma endregion License
 #pragma once
 
+
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/IntervalMap.h"
-#include "boomerang/ssl/type/Type.h"
 
 
 class QString;

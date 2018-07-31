@@ -10,16 +10,15 @@
 #pragma once
 
 
-#include <QTextStream>
-#include <QString>
-
 #include <set>
 
 
 class Prog;
-class Module;
 class UserProc;
 class Cfg;
+
+class QString;
+class QTextStream;
 
 typedef std::set<UserProc *> ProcSet;
 

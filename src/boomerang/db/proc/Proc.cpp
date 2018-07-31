@@ -11,11 +11,12 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/db/Module.h"
+#include "boomerang/core/Settings.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 Function::Function(Address entryAddr, const std::shared_ptr<Signature>& sig, Module *module)

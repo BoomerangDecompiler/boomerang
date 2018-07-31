@@ -10,18 +10,17 @@
 #include "ExpSimplifier.h"
 
 
-#include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/Ternary.h"
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/exp/TypedExp.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/util/ByteUtil.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 
 SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary>& exp)

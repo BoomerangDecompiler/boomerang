@@ -11,10 +11,10 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 

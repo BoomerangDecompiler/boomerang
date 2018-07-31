@@ -11,22 +11,28 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/decomp/ProcDecompiler.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/decomp/ProcDecompiler.h"
-#include "boomerang/passes/PassManager.h"
-#include "boomerang/type/TypeRecovery.h"
 #include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/type/TypeRecovery.h"
 #include "boomerang/util/DFGWriter.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/log/SeparateLogger.h"
 #include "boomerang/util/UseGraphWriter.h"
-#include "boomerang/util/Log.h"
+
 
 
 UserProc::UserProc(Address address, const QString& name, Module *module)

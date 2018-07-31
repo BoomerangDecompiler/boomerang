@@ -10,14 +10,12 @@
 #pragma once
 
 
-#include <QString>
-
-
 class Prog;
+class QString;
 
 
 class CallGraphDotWriter
 {
 public:
-    bool writeCallGraph(const Prog *prog, const QString& dstFileName = "callgraph.dot");
+    bool writeCallGraph(const Prog *prog, const QString& dstFileName);
 };

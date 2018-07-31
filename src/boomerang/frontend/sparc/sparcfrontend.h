@@ -12,22 +12,15 @@
 
 #include "boomerang/frontend/Frontend.h"
 #include "boomerang/ifc/IDecoder.h"
-#include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/exp/Operator.h"
-
-
-class IFrontEnd;
-class SparcDecoder;
-class CallStatement;
-class BinarySymbolTable;
-
-struct DecodeResult;
+#include "boomerang/ssl/type/Type.h"
 
 
 /**
- * This file contains routines to manage the decoding of sparc instructions and the instantiation to RTLs,
- * removing sparc dependent features such as delay slots in the process. These functions replace
- * frontend.cpp for decoding sparc instructions.
+ * This file contains routines to manage the decoding of sparc instructions
+ * and the instantiation to RTLs, removing sparc dependent features
+ * such as delay slots in the process. These functions replace frontend.cpp
+ * for decoding sparc instructions.
  */
 class SparcFrontEnd : public IFrontEnd
 {

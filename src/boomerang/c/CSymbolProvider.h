@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/ifc/ISymbolProvider.h"
 #include "boomerang/frontend/SigEnum.h"
+#include "boomerang/ifc/ISymbolProvider.h"
 
 #include <QMap>
 

@@ -12,8 +12,8 @@
 
 #include "boomerang/util/Types.h"
 
-#include <type_traits>
 #include <initializer_list>
+#include <type_traits>
 
 
 enum class Endian
@@ -94,10 +94,10 @@ void writeQWord(void *dst, QWord value, Endian dstEndian);
  *
  * \param src number to sign-extend
  * \param numSrcBits Number of Bits in the source type
- *        (Mainly to counter int-promption in (blabla & 0xFF))
+ *        (Mainly to counter int-promotion in (blabla & 0xFF))
  */
 template<typename TgtType = int, typename SrcType>
-TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 *sizeof(SrcType))
+TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 * sizeof(SrcType))
 {
     static_assert(std::is_integral<SrcType>::value, "Source type must be an integer!");
     static_assert(std::is_integral<TgtType>::value && std::is_signed<TgtType>::value, "Target type must be a signed integer!");
@@ -106,6 +106,7 @@ TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 *sizeof(SrcTyp
     const int sizeDifference = 8 * sizeof(TgtType) - numSrcBits;
     return (static_cast<TgtType>(static_cast<TgtType>(src) << sizeDifference)) >> sizeDifference;
 }
+
 
 /**
  * Tests if \p data starts with a specific byte sequence.
@@ -118,20 +119,20 @@ bool testMagic(const Byte *data, const std::initializer_list<Byte>& magic);
 
 /// Read 4 bytes in little endian order from the address x points to
 /// \deprecated Use Util::readDWord instead
-#define READ4_LE_P(x) Util::readDWord((x),  Endian::Little)
+#define READ4_LE_P(x)   Util::readDWord((x),  Endian::Little)
 
 /// Read x as a 4-byte value in little endian order
 /// \deprecated Use Util::readDWord instead
-#define READ4_LE(x)   Util::readDWord(&(x), Endian::Little)
+#define READ4_LE(x)     Util::readDWord(&(x), Endian::Little)
 
 /// Read x as a 2-byte value in little endian order
 /// \deprecated Use Util::readWord instead
-#define READ2_LE(x)   Util::readWord(&(x), Endian::Little)
+#define READ2_LE(x)     Util::readWord(&(x),  Endian::Little)
 
 /// Read x as a 4-byte value in big endian order
 /// \deprecated Use Util::readDWord instead
-#define READ4_BE(x) Util::readDWord(&(x), Endian::Big)
+#define READ4_BE(x)     Util::readDWord(&(x), Endian::Big)
 
 /// Read x as a 2-byte value in big endian order
 /// \deprecated Use Util::readWord instead
-#define READ2_BE(x) Util::readWord(&(x), Endian::Big)
+#define READ2_BE(x)     Util::readWord(&(x),  Endian::Big)

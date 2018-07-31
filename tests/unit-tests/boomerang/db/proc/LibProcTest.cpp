@@ -11,7 +11,8 @@
 
 
 #include "boomerang/ssl/exp/Binary.h"
-#include "boomerang/db/Module.h"
+#include "boomerang/db/module/Module.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/signature/PentiumSignature.h"

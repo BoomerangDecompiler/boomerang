@@ -10,17 +10,15 @@
 #include "Project.h"
 
 
-#include "boomerang/c/parser/AnsiCParser.h"
 #include "boomerang/codegen/CCodeGenerator.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/core/Watcher.h"
-#include "boomerang/db/binary/BinaryImage.h"
-#include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/Prog.h"
+#include "boomerang/db/Prog.cpp"
 #include "boomerang/decomp/ProgDecompiler.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/ProgSymbolWriter.h"
 #include "boomerang/util/CallGraphDotWriter.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/ProgSymbolWriter.h"
 
 
 Project::Project()
@@ -33,6 +31,54 @@ Project::Project()
 
 Project::~Project()
 {
+}
+
+
+Settings *Project::getSettings()
+{
+    return m_settings.get();
+}
+
+
+const Settings *Project::getSettings() const
+{
+    return m_settings.get();
+}
+
+
+BinaryFile *Project::getLoadedBinaryFile()
+{
+    return m_loadedBinary.get();
+}
+
+
+const BinaryFile * Project::getLoadedBinaryFile() const
+{
+    return m_loadedBinary.get();
+}
+
+
+Prog *Project::getProg()
+{
+    return m_prog.get();
+}
+
+
+const Prog *Project::getProg() const
+{
+    return m_prog.get();
+}
+
+
+ITypeRecovery *Project::getTypeRecoveryEngine()
+{
+    return m_typeRecovery.get();
+}
+
+
+const ITypeRecovery *Project::getTypeRecoveryEngine() const
+{
+    return m_typeRecovery.get();
 }
 
 

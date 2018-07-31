@@ -10,11 +10,12 @@
 #include "Location.h"
 
 
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/visitor/expvisitor/ExpVisitor.h"
-#include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/visitor/expmodifier/ExpModifier.h"
+#include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
 Location::Location(const Location& other)
@@ -67,6 +68,60 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
 SharedExp Location::clone() const
 {
     return std::make_shared<Location>(m_oper, subExp1->clone(), m_proc);
+}
+
+
+SharedExp Location::get(OPER op, SharedExp childExp, UserProc *proc)
+{
+    return std::make_shared<Location>(op, childExp, proc);
+}
+
+
+SharedExp Location::regOf(int regID)
+{
+    return get(opRegOf, Const::get(regID), nullptr);
+}
+
+
+SharedExp Location::regOf(SharedExp exp)
+{
+    return get(opRegOf, exp, nullptr);
+}
+
+
+SharedExp Location::memOf(SharedExp exp, UserProc* proc)
+{
+    return get(opMemOf, exp, proc);
+}
+
+
+std::shared_ptr<Location> Location::tempOf(SharedExp e)
+{
+    return std::make_shared<Location>(opTemp, e, nullptr);
+}
+
+
+SharedExp Location::global(const char* name, UserProc* proc)
+{
+    return get(opGlobal, Const::get(name), proc);
+}
+
+
+SharedExp Location::global(const QString& name, UserProc* proc)
+{
+    return get(opGlobal, Const::get(name), proc);
+}
+
+
+SharedExp Location::param(const char* name, UserProc* proc)
+{
+    return get(opParam, Const::get(name), proc);
+}
+
+
+SharedExp Location::param(const QString& name, UserProc* proc)
+{
+    return get(opParam, Const::get(name), proc);
 }
 
 

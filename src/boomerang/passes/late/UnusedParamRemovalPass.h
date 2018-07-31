@@ -10,10 +10,11 @@
 #pragma once
 
 
-#include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/passes/Pass.h"
+#include "boomerang/ssl/exp/ExpHelp.h"
 
 #include <set>
+
 
 typedef std::set<UserProc *> ProcSet;
 

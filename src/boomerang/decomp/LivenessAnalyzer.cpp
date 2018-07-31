@@ -11,15 +11,17 @@
 
 
 #include "boomerang/core/Project.h"
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/util/LocationSet.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/util/ConnectionGraph.h"
+#include "boomerang/util/log/Log.h"
+
+#include <deque>
 
 
 /**

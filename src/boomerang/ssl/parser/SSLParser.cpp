@@ -58,29 +58,30 @@ void *alloca();
 #define YYBISON 1
 
 
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/ssl/exp/Operator.h"
-#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/FlagDef.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Operator.h"
+#include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/parser/InsNameElem.h"
 #include "boomerang/ssl/parser/SSLScanner.h"
 #include "boomerang/ssl/parser/Table.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Util.h" // E.g. str()
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 
 #include <cassert>
 #include <sstream>
 #include <cstring>
 #include <cstdlib>
+#include <fstream>
 
 
 OPER strToTerm(const QString &s);                       // Convert string to a Terminal (if possible)

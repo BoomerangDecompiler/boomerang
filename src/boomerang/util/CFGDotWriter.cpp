@@ -14,9 +14,10 @@
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/ssl/exp/Exp.h"
-#include "boomerang/db/Prog.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
 void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)

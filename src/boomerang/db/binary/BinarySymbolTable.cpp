@@ -10,7 +10,8 @@
 #include "BinarySymbolTable.h"
 
 
-#include "boomerang/util/Log.h"
+#include "boomerang/db/binary/BinarySymbol.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 

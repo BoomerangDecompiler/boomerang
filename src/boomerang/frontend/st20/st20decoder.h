@@ -12,16 +12,6 @@
 
 #include "boomerang/frontend/NJMCDecoder.h"
 
-#include "boomerang/ssl/RTL.h"
-
-#include <cstddef>
-#include <list>
-
-class Prog;
-class NJMCDecoder;
-class Statement;
-struct DecodeResult;
-
 
 /**
  * The definition of the instruction decoder for ST20.

@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include <QString>
+class QString;
 
 
 /// Needed by both signature.h and frontend.h
@@ -24,6 +24,7 @@ enum class Platform
     PPC,
     MIPS,
     ST20,
+    PlatformCount
 };
 
 
@@ -34,12 +35,13 @@ enum class CallConv
     Pascal,   ///< callee pop
     ThisCall, ///< MSVC "thiscall": one parameter in register ecx
     FastCall, ///< MSVC fastcall convention ECX,EDX,stack, callee pop
+    CallConvCount
 };
 
 
 namespace Util
 {
     // ascii versions of platform, calling convention name
-    QString getPlatformName(Platform plat);
-    QString getCallConvName(CallConv cc);
+    const QString& getPlatformName(Platform plat);
+    const QString& getCallConvName(CallConv cc);
 }

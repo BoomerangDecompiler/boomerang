@@ -13,6 +13,9 @@
 #include "boomerang/ssl/type/Type.h"
 
 
+class Signature;
+
+
 class FuncType : public Type
 {
 public:

@@ -11,13 +11,15 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/frontend/Frontend.h"
 #include "boomerang/ssl/exp/Location.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QDir>
 #include <QString>
@@ -31,7 +33,7 @@ namespace dbghelp
 }
 
 #  include <iostream>
-#  include "boomerang/util/Log.h"
+#  include "boomerang/util/log/Log.h"
 #endif
 
 

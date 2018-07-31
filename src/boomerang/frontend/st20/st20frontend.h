@@ -13,13 +13,6 @@
 #include "boomerang/frontend/Frontend.h"
 
 
-class IFrontEnd;
-class ST20Decoder;
-class CallStatement;
-
-struct DecodeResult;
-
-
 /**
  * Contains routines to manage the decoding of st20
  * instructions and the instantiation to RTLs, removing st20

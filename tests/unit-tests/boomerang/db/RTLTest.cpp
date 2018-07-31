@@ -13,7 +13,8 @@
 
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/db/Module.h"
+#include "boomerang/db/module/Module.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -28,7 +29,7 @@
 #include "boomerang/frontend/pentium/pentiumfrontend.h"
 #include "boomerang/frontend/sparc/sparcfrontend.h"
 #include "boomerang/ssl/type/IntegerType.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
 
 #include <sstream>
 

@@ -10,35 +10,17 @@
 #include "BasicBlock.h"
 
 
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/db/CFG.h"
-#include "boomerang/db/Global.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/Register.h"
-#include "boomerang/ssl/statements/CallStatement.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
+#include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/ssl/statements/Assign.h"
-#include "boomerang/visitor/expmodifier/ConstGlobalConverter.h"
-#include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/ssl/type/FuncType.h"
-#include "boomerang/util/ConnectionGraph.h"
-#include "boomerang/util/Log.h"
-#include "boomerang/util/Types.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
-
-#include <cassert>
-#include <algorithm>
-#include <cstring>
-#include <inttypes.h>
-
 
 BasicBlock::BasicBlock(Address lowAddr, Function *function)
     : m_function(function)
@@ -545,7 +527,7 @@ SharedExp BasicBlock::getDest() const
 }
 
 
-void BasicBlock::setCond(SharedExp e)
+void BasicBlock::setCond(const SharedExp& e)
 {
     // the condition will be in the last rtl
     assert(m_listOfRTLs);
@@ -662,7 +644,7 @@ bool BasicBlock::isSuccessorOf(const BasicBlock* bb) const
 }
 
 
-ImplicitAssign *BasicBlock::addImplicitAssign(SharedExp lhs)
+ImplicitAssign *BasicBlock::addImplicitAssign(const SharedExp& lhs)
 {
     assert(m_listOfRTLs);
 
@@ -695,7 +677,7 @@ ImplicitAssign *BasicBlock::addImplicitAssign(SharedExp lhs)
 }
 
 
-PhiAssign *BasicBlock::addPhi(SharedExp usedExp)
+PhiAssign *BasicBlock::addPhi(const SharedExp& usedExp)
 {
     assert(m_listOfRTLs);
 

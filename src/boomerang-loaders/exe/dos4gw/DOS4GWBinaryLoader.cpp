@@ -12,15 +12,13 @@
 
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
+#include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/util/Log.h"
+#include "boomerang/util/log/Log.h"
+#include "boomerang/util/Util.h"
 
 #include <QBuffer>
 #include <QFile>
-
-#include <cassert>
-#include <cstring>
-#include <cstdlib>
 
 
 namespace

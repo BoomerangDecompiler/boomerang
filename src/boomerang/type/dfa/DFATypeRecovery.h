@@ -36,15 +36,12 @@ class UserProc;
 class DFATypeRecovery : public TypeRecoveryCommon
 {
 public:
-    DFATypeRecovery() = default;
+    DFATypeRecovery();
     virtual ~DFATypeRecovery() = default;
 
 public:
     /// \copydoc ITypeRecovery::recoverFunctionTypes
     void recoverFunctionTypes(Function *function) override;
-
-    /// \copydoc ITypeRecovery::getName
-    QString getName() override { return "data-flow based"; }
 
 private:
     void dfaTypeAnalysis(UserProc *proc);

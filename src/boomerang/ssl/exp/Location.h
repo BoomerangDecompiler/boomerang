@@ -11,7 +11,6 @@
 
 
 #include "boomerang/ssl/exp/Unary.h"
-#include "boomerang/ssl/exp/Const.h"
 
 
 class Location : public Unary
@@ -32,23 +31,24 @@ public:
     Location& operator=(Location&& other) = default;
 
 public:
+    /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 
-    static SharedExp get(OPER op, SharedExp childExp, UserProc *proc) { return std::make_shared<Location>(op, childExp, proc); }
+    static SharedExp get(OPER op, SharedExp childExp, UserProc *proc);
 
-    static SharedExp regOf(int regID) { return get(opRegOf, Const::get(regID), nullptr); }
-    static SharedExp regOf(SharedExp exp) { return get(opRegOf, exp, nullptr); }
-    static SharedExp memOf(SharedExp exp, UserProc *proc = nullptr) { return get(opMemOf, exp, proc); }
+    static SharedExp regOf(int regID);
+    static SharedExp regOf(SharedExp exp);
+    static SharedExp memOf(SharedExp exp, UserProc *proc = nullptr);
 
-    static std::shared_ptr<Location> tempOf(SharedExp e) { return std::make_shared<Location>(opTemp, e, nullptr); }
+    static std::shared_ptr<Location> tempOf(SharedExp e);
 
-    static SharedExp global(const char *name, UserProc *proc) { return get(opGlobal, Const::get(name), proc); }
-    static SharedExp global(const QString& name, UserProc *proc) { return get(opGlobal, Const::get(name), proc); }
+    static SharedExp global(const char *name, UserProc *proc);
+    static SharedExp global(const QString& name, UserProc *proc);
 
     static std::shared_ptr<Location> local(const QString& name, UserProc *proc);
 
-    static SharedExp param(const char *name, UserProc *proc = nullptr) { return get(opParam, Const::get(name), proc); }
-    static SharedExp param(const QString& name, UserProc *proc = nullptr) { return get(opParam, Const::get(name), proc); }
+    static SharedExp param(const char *name, UserProc *proc = nullptr);
+    static SharedExp param(const QString& name, UserProc *proc = nullptr);
 
     void setProc(UserProc *p) { m_proc = p; }
     const UserProc *getProc() const { return m_proc; }
