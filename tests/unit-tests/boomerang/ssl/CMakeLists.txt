@@ -10,22 +10,19 @@
 include(boomerang-utils)
 
 set(TESTS
-    binary/BinaryImageTest
-    binary/BinarySectionTest
-    binary/BinarySymbolTableTest
-    binary/BinarySymbolTest
-    proc/LibProcTest
-    proc/UserProcTest
-    signature/SignatureTest
-    BasicBlockTest
-    CFGTest
-    GlobalTest
-    ProgTest
+    exp/ExpTest
+    parser/ParserTest
+    type/MeetTest
+    RTLTest
 )
 
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
-    DataFlowTest
+    statements/StatementTest
+)
+
+set(TESTS_WITH_WIN32
+    type/TypeTest
 )
 
 foreach(t ${TESTS})
@@ -53,3 +50,17 @@ if (BOOMERANG_BUILD_LOADER_Elf)
         )
     endforeach()
 endif (BOOMERANG_BUILD_LOADER_Elf)
+
+
+if (BOOMERANG_BUILD_LOADER_Win32)
+    foreach(t ${TESTS_WITH_WIN32})
+        BOOMERANG_ADD_TEST(
+            NAME ${t}
+            SOURCES ${t}.h ${t}.cpp
+            LIBRARIES
+                ${DEBUG_LIB}
+                boomerang
+                ${CMAKE_THREAD_LIBS_INIT}
+        )
+    endforeach()
+endif (BOOMERANG_BUILD_LOADER_Win32)

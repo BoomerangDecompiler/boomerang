@@ -1,5 +1,0 @@
-Invalid instruction at 10a90: 129 
-168 
-10 
-33 
-boomerang: /terra/development/Hobby/Decompilation/Systems/boomerang_git/frontend/sparcfrontend.cpp:798: virtual bool SparcFrontEnd::processProc(ADDRESS, UserProc*, std::ofstream&, bool, bool): Assertion `false' failed.

@@ -1,6 +1,0 @@
-Error: no entry for `lhz' in RTL dictionary
-ERROR: unknown instruction LHZ at 0x1c00, ignoring.
-Error: no entry for `lhz' in RTL dictionary
-ERROR: unknown instruction LHZ at 0x1c18, ignoring.
-decompiling entry point main
-rt
