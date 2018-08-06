@@ -20,3 +20,4 @@ add_library(test-utils STATIC TestUtils.h TestUtils.cpp)
 target_link_libraries(test-utils Qt5::Core Qt5::Test)
 
 add_subdirectory(boomerang)
+add_subdirectory(boomerang-loaders)

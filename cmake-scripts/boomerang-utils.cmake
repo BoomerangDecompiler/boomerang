@@ -120,14 +120,16 @@ endfunction(BOOMERANG_ADD_CODEGEN)
 function(BOOMERANG_ADD_TEST)
 	cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-	add_executable(${TEST_NAME} ${TEST_SOURCES})
+	get_filename_component(exename "${TEST_NAME}" NAME)
 
-	target_link_libraries(${TEST_NAME}
+	add_executable(${exename} ${TEST_SOURCES})
+
+	target_link_libraries(${exename}
 		test-utils
 		${TEST_LIBRARIES})
 
-	add_test(NAME ${TEST_NAME} COMMAND $<TARGET_FILE:${TEST_NAME}>)
-	set_property(TEST ${TEST_NAME} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
+	add_test(NAME ${exename} COMMAND $<TARGET_FILE:${exename}>)
+	set_property(TEST ${exename} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
     BOOMERANG_COPY_IMPORTED_DLL(${TEST_NAME} Qt5::Test)
 endfunction(BOOMERANG_ADD_TEST)
 
