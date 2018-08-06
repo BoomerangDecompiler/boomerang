@@ -1,8 +1,0 @@
-warning: textDelta different for section .got (ignoring).
-decompiling entry point main
-rrWARNING: no out edge for this BB in main:
-L1: Invalid BB:
-in edges: 10000464 
-out edges: 
-10010434
-
