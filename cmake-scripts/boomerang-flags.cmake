@@ -55,7 +55,7 @@ if (MSVC)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
-    BOOMERANG_ADD_COMPILE_FLAGS(/warnaserror-:4251) # Class needs to have DLL inreface to be used by clients
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4251) # Class needs to have DLL inreface to be used by clients
     
     set(DEBUG_LIB dbghelp.lib)
 
