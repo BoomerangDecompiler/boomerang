@@ -45,12 +45,6 @@ public:
      */
     virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
-    /// \copydoc IFrontEnd::getDefaultParams
-    virtual std::vector<SharedExp>& getDefaultParams() override;
-
-    /// \copydoc IFrontEnd::getDefaultReturns
-    virtual std::vector<SharedExp>& getDefaultReturns() override;
-
     /// \copydoc IFrontEnd::getMainEntryPoint
     /**
      * Locate the starting address of "main" in the code section

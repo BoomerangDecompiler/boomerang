@@ -85,54 +85,6 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 }
 
 
-std::vector<SharedExp>& PentiumFrontEnd::getDefaultParams()
-{
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        params.push_back(Location::regOf(REG_PENT_EAX));
-        params.push_back(Location::regOf(REG_PENT_ECX));
-        params.push_back(Location::regOf(REG_PENT_EDX));
-        params.push_back(Location::regOf(REG_PENT_EBX));
-        params.push_back(Location::regOf(REG_PENT_ESP));
-        params.push_back(Location::regOf(REG_PENT_EBP));
-        params.push_back(Location::regOf(REG_PENT_ESI));
-        params.push_back(Location::regOf(REG_PENT_EDI));
-        params.push_back(Location::memOf(Location::regOf(REG_PENT_ESP)));
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.size() == 0) {
-        returns.push_back(Location::regOf(REG_PENT_EAX));
-        returns.push_back(Location::regOf(REG_PENT_ECX));
-        returns.push_back(Location::regOf(REG_PENT_EDX));
-        returns.push_back(Location::regOf(REG_PENT_EBX));
-        returns.push_back(Location::regOf(REG_PENT_ESP));
-        returns.push_back(Location::regOf(REG_PENT_EBP));
-        returns.push_back(Location::regOf(REG_PENT_ESI));
-        returns.push_back(Location::regOf(REG_PENT_EDI));
-        returns.push_back(Location::regOf(REG_PENT_ST0));
-        returns.push_back(Location::regOf(REG_PENT_ST1));
-        returns.push_back(Location::regOf(REG_PENT_ST2));
-        returns.push_back(Location::regOf(REG_PENT_ST3));
-        returns.push_back(Location::regOf(REG_PENT_ST4));
-        returns.push_back(Location::regOf(REG_PENT_ST5));
-        returns.push_back(Location::regOf(REG_PENT_ST6));
-        returns.push_back(Location::regOf(REG_PENT_ST7));
-        returns.push_back(Terminal::get(opPC));
-    }
-
-    return returns;
-}
-
-
 void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 {
     for (BasicBlock *bb : *cfg) {

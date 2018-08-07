@@ -28,32 +28,6 @@ ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
-{
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        params.push_back(Location::memOf(Location::regOf(REG_ST20_SP)));
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.empty()) {
-        returns.push_back(Location::regOf(REG_ST20_A));
-        returns.push_back(Location::regOf(REG_ST20_SP));
-        //        returns.push_back(Terminal::get(opPC));
-    }
-
-    return returns;
-}
-
-
 Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 {
     gotMain = true;

@@ -52,9 +52,6 @@ public:
     /// \returns the size (in bits) of the register with index \p regIdx
     virtual int getRegSize(int regIdx) const = 0;
 
-    virtual std::vector<SharedExp>& getDefaultParams() = 0;
-    virtual std::vector<SharedExp>& getDefaultReturns() = 0;
-
     /// Add a "hint" that an instruction at the given address references a named global
     virtual void addRefHint(Address addr, const QString& name) = 0;
 

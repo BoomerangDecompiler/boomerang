@@ -565,45 +565,6 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
 }
 
 
-std::vector<SharedExp>& SparcFrontEnd::getDefaultParams()
-{
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        // init arguments and return set to be all 31 machine registers
-        // Important: because o registers are save in i registers, and
-        // i registers have higher register numbers (e.g. i1=r25, o1=r9)
-        // it helps the prover to process higher register numbers first!
-        // But do r30 first (%i6, saves %o6, the stack pointer)
-        params.push_back(Location::regOf(REG_SPARC_I6));
-        params.push_back(Location::regOf(REG_SPARC_I7));
-
-        for (int r = REG_SPARC_I5; r > REG_SPARC_G0; r--) {
-            params.push_back(Location::regOf(r));
-        }
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& SparcFrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.size() == 0) {
-        returns.push_back(Location::regOf(REG_SPARC_I6));
-        returns.push_back(Location::regOf(REG_SPARC_I7));
-
-        for (int r = REG_SPARC_I5; r > REG_SPARC_G0; r--) {
-            returns.push_back(Location::regOf(r));
-        }
-    }
-
-    return returns;
-}
-
-
 bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
 {
     // Declare an object to manage the queue of targets not yet processed yet.
