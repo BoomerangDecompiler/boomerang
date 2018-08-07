@@ -9,9 +9,9 @@
 #pragma endregion License
 #pragma once
 
-
 #include "boomerang/frontend/SigEnum.h"
 #include "boomerang/frontend/TargetQueue.h"
+#include "boomerang/ifc/IFrontEnd.h"
 
 #include <memory>
 
@@ -32,18 +32,13 @@ class ISymbolProvider;
 class QString;
 
 
-using SharedExp      = std::shared_ptr<Exp>;
-using SharedConstExp = std::shared_ptr<const Exp>;
-using RTLList        = std::list<std::unique_ptr<RTL>>;
-
-
 /**
  * Contains the default implementation of the source
  * indendent parts of the front end:
  * Decoding machine instructions into a control flow graph
  * populated with low and high level RTLs.
  */
-class DefaultFrontEnd
+class DefaultFrontEnd : public IFrontEnd
 {
 public:
     /**
@@ -59,128 +54,79 @@ public:
     DefaultFrontEnd& operator=(DefaultFrontEnd&&) = default;
 
 public:
-    /// Is this a win32 frontend?
-    /// \note Returns false if no binary is loaded.
-    bool isWin32() const;
+    /// \copydoc IFrontEnd::isNoReturnCallDest
+    virtual bool isNoReturnCallDest(const QString& procName) const override;
 
-    /**
-     * Determines whether the proc with name \p procName returns or not (like abort)
-     */
-    bool isNoReturnCallDest(const QString& procName) const;
+    /// \copydoc IFrontEnd::getDecoder
+    IDecoder *getDecoder() override { return m_decoder.get(); }
+    const IDecoder *getDecoder() const override { return m_decoder.get(); }
 
-    /// \returns an enum identifer for this frontend's platform
-    virtual Platform getType() const = 0;
+    /// \copydoc IFrontEnd::getRegName
+    QString getRegName(int idx) const override;
 
-    /// Accessor function to get the decoder.
-    IDecoder *getDecoder() { return m_decoder.get(); }
+    /// \copydoc IFrontEnd::getRegSize
+    int getRegSize(int idx) const override;
 
-    /// returns a symbolic name for a register index
-    QString getRegName(int idx) const;
-    int getRegSize(int idx);
+    /// \copydoc IFrontEnd::addSymbolsFromSymbolFile
+    bool addSymbolsFromSymbolFile(const QString& fname) override;
 
-    bool addSymbolsFromSymbolFile(const QString& fname);
+    /// \copydoc IFrontEnd::getLibSignature
+    std::shared_ptr<Signature> getLibSignature(const QString& name) override;
 
-    /// lookup a library signature by name
-    std::shared_ptr<Signature> getLibSignature(const QString& name);
+    /// \copydoc IFrontEnd::getDefaultSignature
+    std::shared_ptr<Signature> getDefaultSignature(const QString& name) override;
 
-    /// return a signature that matches the architecture best
-    std::shared_ptr<Signature> getDefaultSignature(const QString& name);
+    /// \copydoc IFrontEnd::addRefHint
+    void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
 
-    virtual std::vector<SharedExp>& getDefaultParams() = 0;
+    /// \copydoc IFrontEnd::decodeInstruction
+    virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
 
-    virtual std::vector<SharedExp>& getDefaultReturns() = 0;
+    /// \copydoc IFrontEnd::extraProcessCall
+    virtual void extraProcessCall(CallStatement * /*call*/, const RTLList& /*BB_rtls*/) override {}
 
+    /// \copydoc IFrontEnd::readLibraryCatalog
+    void readLibraryCatalog() override;
 
-    /// Add a "hint" that an instruction at the given address references a named global
-    void addRefHint(Address addr, const QString& name) { m_refHints[addr] = name; }
+    /// \copydoc IFrontEnd::decodeEntryPointsRecursive
+    bool decodeEntryPointsRecursive(bool decodeMain = true) override;
 
-    virtual bool decodeInstruction(Address pc, DecodeResult& result);
+    /// \copydoc IFrontEnd::decodeRecursive
+    bool decodeRecursive(Address addr) override;
 
-    /// Do extra processing of call instructions.
-    virtual void extraProcessCall(CallStatement * /*call*/, const RTLList& /*BB_rtls*/) {}
+    /// \copydoc IFrontEnd::decodeUndecoded
+    bool decodeUndecoded() override;
 
-    void readLibraryCatalog();                        ///< read from default catalog
+    /// \copydoc IFrontEnd::decodeOnly
+    bool decodeOnly(Address addr) override;
 
-    /// Decode all undecoded procedures and return a new program containing them.
-    bool decodeEntryPointsRecursive(bool decodeMain = true);
+    /// \copydoc IFrontEnd::decodeFragment
+    bool decodeFragment(UserProc *proc, Address addr) override;
 
-    /// Decode all procs starting at a given address
-    bool decodeRecursive(Address addr);
+    /// \copydoc IFrontEnd::processProc
+    virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
 
-    /// Decode all undecoded functions.
-    bool decodeUndecoded();
+    /// \copydoc IFrontEnd::isHelperFunc
+    virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, RTLList& /*lrtl*/) override { return false; }
 
-    /// Decode one proc starting at a given address
-    /// \p addr should be the address of an UserProc
-    bool decodeOnly(Address addr);
+    /// \copydoc IFrontEnd::getEntryPoints
+    std::vector<Address> getEntryPoints() override;
 
-    /// Decode a fragment of a procedure, e.g. for each destination of a switch statement
-    bool decodeFragment(UserProc *proc, Address addr);
+    /// \copydoc IFrontEnd::createReturnBlock
+    BasicBlock *createReturnBlock(UserProc *proc,
+        std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL) override;
 
+    /// \copydoc IFrontEnd::createReturnBlock
+    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL) override;
 
-    /**
-     * Process a procedure, given a native (source machine) address.
-     * This is the main function for decoding a procedure. It is usually overridden in the derived
-     * class to do source machine specific things. If \p frag is set, we are decoding just a fragment of the proc
-     * (e.g. each arm of a switch statement is decoded). If \p spec is set, this is a speculative decode.
-     *
-     * \param addr the address at which the procedure starts
-     * \param proc the procedure object
-     * \param os   the output stream for .rtl output
-     * \param frag if true, this is just a fragment of a procedure
-     * \param spec if true, this is a speculative decode
-     *
-     * \note This is a sort of generic front end. For many processors, this will be overridden
-     *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
-     *
-     * \returns true for a good decode (no illegal instructions)
-     */
-    virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false);
+    /// \copydoc IFrontEnd::saveDecodedRTL
+    void saveDecodedRTL(Address a, RTL *rtl) override { m_previouslyDecoded[a] = rtl; }
 
-    /**
-     * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
-     * If so, return true and set the semantics in lrtl.
-     *
-     * param addr the native address of the call instruction
-     */
-    virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, RTLList& /*lrtl*/) { return false; }
+    /// \copydoc IFrontEnd::preprocessProcGoto
+    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL) override;
 
-    /// Locate the entry address of "main", returning a native address
-    virtual Address getMainEntryPoint(bool& gotMain) = 0;
-
-    /**
-     * Returns a list of all available entrypoints.
-     */
-    std::vector<Address> getEntryPoints();
-
-    /**
-     * Create a Return or a Oneway BB if a return statement already exists.
-     * \param proc      pointer to enclosing UserProc
-     * \param BB_rtls   list of RTLs for the current BB (not including \p returnRTL)
-     * \param returnRTL pointer to the current RTL with the semantics for the return statement
-     *                  (including a ReturnStatement as the last statement)
-     * \returns  Pointer to the newly created BB
-     */
-    BasicBlock *createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL);
-
-    /**
-     * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
-     *
-     * \note the call BB should be created with one out edge (the return or branch BB)
-     * \param callBB  the call BB that will be followed by the return or jump
-     * \param proc    the enclosing UserProc
-     * \param callRTL the current RTL with the call instruction
-     */
-    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
-
-    /**
-     * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and
-     * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
-     * incomplete in these cases, and needs to be restarted from scratch
-     */
-    void saveDecodedRTL(Address a, RTL *rtl) { m_previouslyDecoded[a] = rtl; }
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL);
-    void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
+    /// \copydoc IFrontEnd::checkEntryPoint
+    void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type) override;
 
 private:
     bool refersToImportedFunction(const SharedExp& exp);

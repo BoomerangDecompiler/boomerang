@@ -24,7 +24,7 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/DefaultFrontEnd.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -65,7 +65,7 @@ Prog::~Prog()
 }
 
 
-void Prog::setFrontEnd(DefaultFrontEnd *frontEnd)
+void Prog::setFrontEnd(IFrontEnd *frontEnd)
 {
     m_fe = frontEnd;
 
@@ -103,7 +103,7 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const IMod
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact, DefaultFrontEnd *frontEnd)
+Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact, IFrontEnd *frontEnd)
 {
     for (const auto& m : m_moduleList) {
         if (m->getName() == name) {
@@ -315,7 +315,7 @@ bool Prog::isWellFormed() const
 
 bool Prog::isWin32() const
 {
-    return m_fe && m_fe->isWin32();
+    return m_binaryFile && m_binaryFile->getFormat() == LoadFmt::PE;
 }
 
 

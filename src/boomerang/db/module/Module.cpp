@@ -16,7 +16,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/DefaultFrontEnd.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
@@ -69,7 +69,7 @@ Module::Module()
 }
 
 
-Module::Module(const QString& name, Prog *prog, DefaultFrontEnd *fe)
+Module::Module(const QString& name, Prog *prog, IFrontEnd *fe)
     : m_currentFrontend(fe)
     , m_name(name)
     , m_prog(prog)

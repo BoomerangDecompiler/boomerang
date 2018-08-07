@@ -114,7 +114,7 @@ void TypeTest::testCompound()
     QVERIFY(m_project.loadBinaryFile(HELLO_WINDOWS));
 
     Prog *prog = m_project.getProg();
-    DefaultFrontEnd *fe = prog->getFrontEnd();
+    IFrontEnd *fe = prog->getFrontEnd();
 
     fe->readLibraryCatalog(); // Read definitions
 

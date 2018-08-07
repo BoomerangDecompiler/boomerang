@@ -56,15 +56,9 @@ QString DefaultFrontEnd::getRegName(int idx) const
 }
 
 
-int DefaultFrontEnd::getRegSize(int idx)
+int DefaultFrontEnd::getRegSize(int idx) const
 {
     return m_decoder->getRegSize(idx);
-}
-
-
-bool DefaultFrontEnd::isWin32() const
-{
-    return m_binaryFile && m_binaryFile->getFormat() == LoadFmt::PE;
 }
 
 
@@ -93,7 +87,7 @@ void DefaultFrontEnd::readLibraryCatalog()
     m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
     m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
 
-    if (isWin32()) {
+    if (m_program->isWin32()) {
         m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
     }
 
@@ -402,7 +396,7 @@ bool DefaultFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
 std::shared_ptr<Signature> DefaultFrontEnd::getDefaultSignature(const QString& name)
 {
     // Get a default library signature
-    if (isWin32()) {
+    if (m_program && m_program->isWin32()) {
         return Signature::instantiate(Platform::PENTIUM, CallConv::Pascal, name);
     }
 

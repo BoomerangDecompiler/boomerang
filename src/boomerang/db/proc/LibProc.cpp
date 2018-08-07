@@ -13,7 +13,7 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/DefaultFrontEnd.h"
+#include "boomerang/ifc/IFrontEnd.h"
 
 
 LibProc::LibProc(Address addr, const QString& name, Module *module)
