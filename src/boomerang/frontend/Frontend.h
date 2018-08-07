@@ -58,15 +58,6 @@ public:
     IFrontEnd& operator=(IFrontEnd&&) = default;
 
 public:
-    /**
-     * Create frontend from a binary file.
-     * Static function to instantiate an appropriate concrete front end
-     *
-     * \param loader pointer to the loader object
-     * \param prog program being decoded
-     */
-    static IFrontEnd *instantiate(BinaryFile *binaryFile, Prog *prog);
-
     /// Is this a win32 frontend?
     /// \note Returns false if no binary is loaded.
     bool isWin32() const;

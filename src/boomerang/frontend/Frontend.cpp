@@ -51,25 +51,6 @@ IFrontEnd::~IFrontEnd()
 }
 
 
-IFrontEnd *IFrontEnd::instantiate(BinaryFile *binaryFile, Prog *prog)
-{
-    switch (binaryFile->getMachine())
-    {
-    case Machine::PENTIUM:  return new PentiumFrontEnd(binaryFile, prog);
-    case Machine::SPARC:    return new SparcFrontEnd(binaryFile, prog);
-    case Machine::PPC:      return new PPCFrontEnd(binaryFile, prog);
-    case Machine::MIPS:     return new MIPSFrontEnd(binaryFile, prog);
-    case Machine::ST20:     return new ST20FrontEnd(binaryFile, prog);
-    case Machine::HPRISC:   LOG_WARN("No frontend for HP RISC"); break;
-    case Machine::PALM:     LOG_WARN("No frontend for PALM");    break;
-    case Machine::M68K:     LOG_WARN("No frontend for M68K");    break;
-    default: LOG_ERROR("Machine architecture not supported!");   break;
-    }
-
-    return nullptr;
-}
-
-
 QString IFrontEnd::getRegName(int idx) const
 {
     return m_decoder->getRegName(idx);

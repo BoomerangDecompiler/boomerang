@@ -16,7 +16,11 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/decomp/ProgDecompiler.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/mips/mipsfrontend.h"
+#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/ppc/ppcfrontend.h"
+#include "boomerang/frontend/sparc/sparcfrontend.h"
+#include "boomerang/frontend/st20/st20frontend.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/log/Log.h"
@@ -239,10 +243,32 @@ Prog *Project::createProg(BinaryFile *file, const QString& name)
     m_prog.reset();
 
     m_prog.reset(new Prog(name, this));
-    m_fe.reset(IFrontEnd::instantiate(getLoadedBinaryFile(), getProg()));
+    m_fe.reset(createFrontEnd());
 
     m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();
+}
+
+
+IFrontEnd *Project::createFrontEnd()
+{
+    BinaryFile *binaryFile = getLoadedBinaryFile();
+    Prog *prog = m_prog.get();
+
+    switch (getLoadedBinaryFile()->getMachine())
+    {
+        case Machine::PENTIUM:  return new PentiumFrontEnd(binaryFile, prog);
+        case Machine::SPARC:    return new SparcFrontEnd(binaryFile, prog);
+        case Machine::PPC:      return new PPCFrontEnd(binaryFile, prog);
+        case Machine::MIPS:     return new MIPSFrontEnd(binaryFile, prog);
+        case Machine::ST20:     return new ST20FrontEnd(binaryFile, prog);
+        case Machine::HPRISC:   LOG_WARN("No frontend for HP RISC"); break;
+        case Machine::PALM:     LOG_WARN("No frontend for PALM");    break;
+        case Machine::M68K:     LOG_WARN("No frontend for M68K");    break;
+        default: LOG_ERROR("Machine architecture not supported!");   break;
+    }
+
+    return nullptr;
 }
 
 

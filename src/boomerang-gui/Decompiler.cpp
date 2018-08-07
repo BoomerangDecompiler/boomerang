@@ -113,7 +113,8 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         break;
     }
 
-    IFrontEnd *fe = IFrontEnd::instantiate(m_project.getLoadedBinaryFile(), m_project.getProg());
+    IFrontEnd *fe = m_project.getProg()->getFrontEnd();
+    assert(fe != nullptr);
     std::vector<Address> entrypoints = fe->getEntryPoints();
 
     for (Address entryPoint : entrypoints) {
