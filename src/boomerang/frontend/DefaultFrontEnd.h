@@ -98,26 +98,30 @@ public:
     virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, RTLList& /*lrtl*/) override { return false; }
 
     /// \copydoc IFrontEnd::getEntryPoints
-    std::vector<Address> getEntryPoints() override;
+    std::vector<Address> findEntryPoints() override;
 
     /// \copydoc IFrontEnd::createReturnBlock
     BasicBlock *createReturnBlock(UserProc *proc,
         std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL) override;
 
-    /// \copydoc IFrontEnd::createReturnBlock
-    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL) override;
-
     /// \copydoc IFrontEnd::saveDecodedRTL
     void saveDecodedRTL(Address a, RTL *rtl) override { m_previouslyDecoded[a] = rtl; }
 
-    /// \copydoc IFrontEnd::preprocessProcGoto
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL) override;
-
-    /// \copydoc IFrontEnd::checkEntryPoint
-    void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type) override;
-
 private:
     bool refersToImportedFunction(const SharedExp& exp);
+
+    /**
+     * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
+     *
+     * \note the call BB should be created with one out edge (the return or branch BB)
+     * \param callBB  the call BB that will be followed by the return or jump
+     * \param proc    the enclosing UserProc
+     * \param callRTL the current RTL with the call instruction
+     */
+    void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
+
+    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL);
+    void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
 
 protected:
     std::unique_ptr<IDecoder> m_decoder;

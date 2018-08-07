@@ -62,22 +62,21 @@ std::vector<SharedExp>& MIPSFrontEnd::getDefaultReturns()
 
 Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
 {
-    gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {
+        gotMain = true;
         return start;
     }
 
-    start   = m_binaryFile->getEntryPoint();
-    gotMain = false;
-
-    if (start == Address::INVALID) {
-        return Address::INVALID;
+    start = m_binaryFile->getEntryPoint();
+    if (start != Address::INVALID) {
+        gotMain = true;
+        return start;
     }
 
-    gotMain = true;
-    return start;
+    gotMain = false;
+    return Address::INVALID;
 }
 
 

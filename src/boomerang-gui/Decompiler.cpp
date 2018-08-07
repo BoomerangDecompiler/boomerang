@@ -115,7 +115,7 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
 
     IFrontEnd *fe = m_project.getProg()->getFrontEnd();
     assert(fe != nullptr);
-    std::vector<Address> entrypoints = fe->getEntryPoints();
+    std::vector<Address> entrypoints = fe->findEntryPoints();
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);

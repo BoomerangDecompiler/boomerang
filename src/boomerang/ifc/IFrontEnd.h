@@ -34,7 +34,6 @@ using SharedConstExp = std::shared_ptr<const Exp>;
 using RTLList        = std::list<std::unique_ptr<RTL>>;
 
 
-
 class IFrontEnd
 {
 public:
@@ -106,7 +105,7 @@ public:
      * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
      * If so, return true and set the semantics in lrtl.
      *
-     * param addr the native address of the call instruction
+     * \param addr the native address of the call instruction
      */
     virtual bool isHelperFunc(Address dest, Address addr, RTLList& rtls) = 0;
 
@@ -114,7 +113,7 @@ public:
     virtual Address getMainEntryPoint(bool& gotMain) = 0;
 
     /// Returns a list of all available entrypoints.
-    virtual std::vector<Address> getEntryPoints() = 0;
+    virtual std::vector<Address> findEntryPoints() = 0;
 
     /**
      * Create a Return or a Oneway BB if a return statement already exists.
@@ -128,21 +127,9 @@ public:
         std::unique_ptr<RTLList> bb_rtls, std::unique_ptr<RTL> returnRTL) = 0;
 
     /**
-     * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
-     *
-     * \note the call BB should be created with one out edge (the return or branch BB)
-     * \param callBB  the call BB that will be followed by the return or jump
-     * \param proc    the enclosing UserProc
-     * \param callRTL the current RTL with the call instruction
-     */
-    virtual void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL) = 0;
-
-    /**
      * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and
      * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
      * incomplete in these cases, and needs to be restarted from scratch
      */
     virtual void saveDecodedRTL(Address a, RTL *rtl) = 0;
-    virtual void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL) = 0;
-    virtual void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type) = 0;
 };

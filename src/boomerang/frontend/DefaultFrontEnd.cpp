@@ -96,7 +96,7 @@ void DefaultFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address
 }
 
 
-std::vector<Address> DefaultFrontEnd::getEntryPoints()
+std::vector<Address> DefaultFrontEnd::findEntryPoints()
 {
     std::vector<Address> entrypoints;
     bool                 gotMain = false;
@@ -176,7 +176,7 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
     LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
 
     if (a == Address::INVALID) {
-        std::vector<Address> entrypoints = getEntryPoints();
+        std::vector<Address> entrypoints = findEntryPoints();
 
         for (auto& entrypoint : entrypoints) {
             if (!decodeRecursive(entrypoint)) {
