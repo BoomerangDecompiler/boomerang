@@ -108,17 +108,6 @@ public:
     virtual std::vector<Address> findEntryPoints() = 0;
 
     /**
-     * Create a Return or a Oneway BB if a return statement already exists.
-     * \param proc      pointer to enclosing UserProc
-     * \param BB_rtls   list of RTLs for the current BB (not including \p returnRTL)
-     * \param returnRTL pointer to the current RTL with the semantics for the return statement
-     *                  (including a ReturnStatement as the last statement)
-     * \returns  Pointer to the newly created BB
-     */
-    virtual BasicBlock *createReturnBlock(UserProc *proc,
-        std::unique_ptr<RTLList> bb_rtls, std::unique_ptr<RTL> returnRTL) = 0;
-
-    /**
      * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and
      * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
      * incomplete in these cases, and needs to be restarted from scratch

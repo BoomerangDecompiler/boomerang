@@ -100,12 +100,20 @@ public:
     /// \copydoc IFrontEnd::getEntryPoints
     std::vector<Address> findEntryPoints() override;
 
-    /// \copydoc IFrontEnd::createReturnBlock
-    BasicBlock *createReturnBlock(UserProc *proc,
-        std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL) override;
-
     /// \copydoc IFrontEnd::saveDecodedRTL
     void saveDecodedRTL(Address a, RTL *rtl) override { m_previouslyDecoded[a] = rtl; }
+
+protected:
+    /**
+     * Create a Return or a Oneway BB if a return statement already exists.
+     * \param proc      pointer to enclosing UserProc
+     * \param BB_rtls   list of RTLs for the current BB (not including \p returnRTL)
+     * \param returnRTL pointer to the current RTL with the semantics for the return statement
+     *                  (including a ReturnStatement as the last statement)
+     * \returns  Pointer to the newly created BB
+     */
+    BasicBlock *createReturnBlock(UserProc *proc,
+        std::unique_ptr<RTLList> bb_rtls, std::unique_ptr<RTL> returnRTL);
 
 private:
     bool refersToImportedFunction(const SharedExp& exp);
