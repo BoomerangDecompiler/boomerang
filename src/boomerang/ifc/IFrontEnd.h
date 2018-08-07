@@ -48,8 +48,6 @@ public:
     virtual IDecoder *getDecoder() = 0;
     virtual const IDecoder *getDecoder() const = 0;
 
-    virtual bool decodeSingleInstruction(Address addr, DecodeResult& result) = 0;
-
     /// Decode all undecoded procedures.
     /// \returns true for a good decode (no invalid instructions)
     virtual bool decodeEntryPointsRecursive(bool decodeMain = true) = 0;

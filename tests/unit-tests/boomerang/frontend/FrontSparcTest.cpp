@@ -34,7 +34,8 @@ void FrontSparcTest::test1()
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     Prog      *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);
@@ -106,7 +107,8 @@ void FrontSparcTest::test2()
 
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     fe->decodeSingleInstruction(Address(0x00010690), inst);
     inst.rtl->print(strm);
@@ -143,7 +145,8 @@ void FrontSparcTest::test3()
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     DecodeResult inst;
     QString      expected;
@@ -205,7 +208,8 @@ void FrontSparcTest::testBranch()
 
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     // bne
     fe->decodeSingleInstruction(Address(0x00010ab0), inst);
@@ -238,7 +242,8 @@ void FrontSparcTest::testDelaySlot()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
     Type::clearNamedTypes();

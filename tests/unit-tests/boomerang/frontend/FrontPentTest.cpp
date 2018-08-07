@@ -33,7 +33,8 @@ void FrontPentTest::test1()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     QString     expected;
     QString     actual;
@@ -74,7 +75,8 @@ void FrontPentTest::test2()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     DecodeResult inst;
     QString      expected;
@@ -107,7 +109,8 @@ void FrontPentTest::test3()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     DecodeResult inst;
     QString      expected;
@@ -139,7 +142,8 @@ void FrontPentTest::testBranch()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    PentiumFrontEnd *fe = dynamic_cast<PentiumFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     DecodeResult inst;
     QString      expected;

@@ -44,9 +44,9 @@ public:
      */
     virtual Address findMainEntryPoint(bool& gotMain) override;
 
-protected:
     virtual bool decodeSingleInstruction(Address pc, DecodeResult& result) override;
 
+protected:
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
     virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
 

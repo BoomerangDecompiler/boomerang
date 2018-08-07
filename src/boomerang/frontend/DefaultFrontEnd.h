@@ -64,8 +64,8 @@ public:
     /// \copydoc IFrontEnd::addRefHint
     void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
 
-    /// \copydoc IFrontEnd::decodeInstruction
-    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result) override;
+    /// Decode a single instruction at address \p addr
+    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result);
 
     /// Do extra processing of call instructions.
     /// Does nothing by default.
