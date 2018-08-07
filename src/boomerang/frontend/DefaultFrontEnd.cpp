@@ -74,39 +74,6 @@ bool DefaultFrontEnd::isNoReturnCallDest(const QString& name) const
 }
 
 
-void DefaultFrontEnd::readLibraryCatalog()
-{
-    m_symbolProvider.reset(new CSymbolProvider(m_program));
-    QDir dataDir = m_program->getProject()->getSettings()->getDataDirectory();
-
-    QString libCatalogName;
-    switch (m_program->getMachine()) {
-        case Machine::PENTIUM:  libCatalogName = "signatures/pentium.hs";  break;
-        case Machine::SPARC:    libCatalogName = "signatures/sparc.hs";    break;
-        case Machine::HPRISC:   libCatalogName = "signatures/parisc.hs";   break;
-        case Machine::PPC:      libCatalogName = "signatures/ppc.hs";      break;
-        case Machine::ST20:     libCatalogName = "signatures/st20.hs";     break;
-        case Machine::MIPS:     libCatalogName = "signatures/mips.hs";     break;
-        default:                libCatalogName = "";                       break;
-    }
-
-    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
-
-    if (!libCatalogName.isEmpty()) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
-    }
-
-    if (m_program->isWin32()) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/win32.hs"));
-    }
-
-    // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
-    if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/objc.hs"));
-    }
-}
-
-
 void DefaultFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
 {
     SharedType ty = NamedType::getNamedType(type);
@@ -394,30 +361,6 @@ bool DefaultFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
         return false;
     }
 }
-
-
-bool DefaultFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
-{
-    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
-}
-
-
-std::shared_ptr<Signature> DefaultFrontEnd::getLibSignature(const QString& name)
-{
-    std::shared_ptr<Signature> signature = m_symbolProvider
-        ? m_symbolProvider->getSignatureByName(name)
-        : nullptr;
-
-    if (signature) {
-        signature->setUnknown(false);
-        return signature;
-    }
-    else {
-        LOG_WARN("Unknown library function '%1', please update signatures!", name);
-        return m_program->getDefaultSignature(name);
-    }
-}
-
 
 void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
                                    Address dest, const std::list<Statement *>& sl,

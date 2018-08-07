@@ -11,7 +11,9 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
@@ -51,6 +53,7 @@
 
 Prog::Prog(const QString& name, Project *project)
     : m_name(name)
+    , m_symbolProvider(new CSymbolProvider(this))
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
@@ -336,6 +339,61 @@ Machine Prog::getMachine() const
     return m_binaryFile
         ? m_binaryFile->getMachine()
         : Machine::INVALID;
+}
+
+
+void Prog::readDefaultLibraryCatalogues()
+{
+    QDir dataDir = m_project->getSettings()->getDataDirectory();
+
+    QString libCatalogName;
+    switch (getMachine()) {
+        case Machine::PENTIUM:  libCatalogName = "signatures/pentium.hs";  break;
+        case Machine::SPARC:    libCatalogName = "signatures/sparc.hs";    break;
+        case Machine::HPRISC:   libCatalogName = "signatures/parisc.hs";   break;
+        case Machine::PPC:      libCatalogName = "signatures/ppc.hs";      break;
+        case Machine::ST20:     libCatalogName = "signatures/st20.hs";     break;
+        case Machine::MIPS:     libCatalogName = "signatures/mips.hs";     break;
+        default:                libCatalogName = "";                       break;
+    }
+
+    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
+
+    if (!libCatalogName.isEmpty()) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
+    }
+
+    if (isWin32()) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/win32.hs"));
+    }
+
+    // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
+    if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/objc.hs"));
+    }
+}
+
+
+bool Prog::addSymbolsFromSymbolFile(const QString& fname)
+{
+    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
+}
+
+
+std::shared_ptr<Signature> Prog::getLibSignature(const QString& name)
+{
+    std::shared_ptr<Signature> signature = m_symbolProvider
+        ? m_symbolProvider->getSignatureByName(name)
+        : nullptr;
+
+    if (signature) {
+        signature->setUnknown(false);
+        return signature;
+    }
+    else {
+        LOG_WARN("Unknown library function '%1', please update signatures!", name);
+        return getDefaultSignature(name);
+    }
 }
 
 

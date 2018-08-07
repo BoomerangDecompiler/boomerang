@@ -114,11 +114,9 @@ void TypeTest::testCompound()
     QVERIFY(m_project.loadBinaryFile(HELLO_WINDOWS));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    prog->readDefaultLibraryCatalogues();
 
-    fe->readLibraryCatalog(); // Read definitions
-
-    std::shared_ptr<Signature> paintSig = fe->getLibSignature("BeginPaint");
+    std::shared_ptr<Signature> paintSig = prog->getLibSignature("BeginPaint");
 
     SharedType paramType = paintSig->getParamType(1);
     QCOMPARE(paintSig->getParamType(1)->getCtype(), QString("LPPAINTSTRUCT"));

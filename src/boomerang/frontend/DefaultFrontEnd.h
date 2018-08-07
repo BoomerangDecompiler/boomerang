@@ -9,6 +9,7 @@
 #pragma endregion License
 #pragma once
 
+
 #include "boomerang/frontend/SigEnum.h"
 #include "boomerang/frontend/TargetQueue.h"
 #include "boomerang/ifc/IFrontEnd.h"
@@ -27,7 +28,6 @@ class Signature;
 class Statement;
 class CallStatement;
 class BinaryFile;
-class ISymbolProvider;
 
 class QString;
 
@@ -67,12 +67,6 @@ public:
     /// \copydoc IFrontEnd::getRegSize
     int getRegSize(int idx) const override;
 
-    /// \copydoc IFrontEnd::addSymbolsFromSymbolFile
-    bool addSymbolsFromSymbolFile(const QString& fname) override;
-
-    /// \copydoc IFrontEnd::getLibSignature
-    std::shared_ptr<Signature> getLibSignature(const QString& name) override;
-
     /// \copydoc IFrontEnd::addRefHint
     void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
 
@@ -81,9 +75,6 @@ public:
 
     /// \copydoc IFrontEnd::extraProcessCall
     virtual void extraProcessCall(CallStatement * /*call*/, const RTLList& /*BB_rtls*/) override {}
-
-    /// \copydoc IFrontEnd::readLibraryCatalog
-    void readLibraryCatalog() override;
 
     /// \copydoc IFrontEnd::decodeEntryPointsRecursive
     bool decodeEntryPointsRecursive(bool decodeMain = true) override;
@@ -129,7 +120,6 @@ private:
     bool refersToImportedFunction(const SharedExp& exp);
 
 protected:
-    std::unique_ptr<ISymbolProvider> m_symbolProvider;
     std::unique_ptr<IDecoder> m_decoder;
     BinaryFile *m_binaryFile;
     Prog *m_program;

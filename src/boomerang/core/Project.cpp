@@ -279,11 +279,11 @@ void Project::loadSymbols()
         m_loadedBinary->getSymbols()->createSymbol(elem.first, elem.second);
     }
 
-    m_fe->readLibraryCatalog(); // Needed before readSymbolFile()
+    m_prog->readDefaultLibraryCatalogues();
 
     for (auto& sf : getSettings()->m_symbolFiles) {
         LOG_MSG("Reading symbol file '%1'", sf);
-        m_fe->addSymbolsFromSymbolFile(sf);
+        m_prog->addSymbolsFromSymbolFile(sf);
     }
 }
 

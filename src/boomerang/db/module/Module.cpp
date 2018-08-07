@@ -47,17 +47,18 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 
 void Module::updateLibrarySignatures()
 {
-    m_currentFrontend->readLibraryCatalog();
+    m_prog->readDefaultLibraryCatalogues();
 
     for (Function *func : m_functionList) {
         if (func->isLib()) {
-            func->setSignature(getLibSignature(func->getName()));
-
-            for (CallStatement *call_stmt : func->getCallers()) {
-                call_stmt->setSigArguments();
+            std::shared_ptr<Signature> sig = m_prog->getLibSignature(func->getName());
+            if (*sig != *func->getSignature()) {
+                func->setSignature(sig);
+                for (CallStatement *call_stmt : func->getCallers()) {
+                    call_stmt->setSigArguments();
+                }
+                m_prog->getProject()->alertSignatureUpdated(func);
             }
-
-            m_prog->getProject()->alertSignatureUpdated(func);
         }
     }
 }
@@ -347,12 +348,4 @@ Function *Module::getFunction(Address entryAddr) const
     auto iter = m_labelsToProcs.find(entryAddr);
 
     return (iter != m_labelsToProcs.end()) ? iter->second : nullptr;
-}
-
-
-std::shared_ptr<Signature> Module::getLibSignature(const QString& name)
-{
-    return m_currentFrontend
-        ? m_currentFrontend->getLibSignature(name)
-        : nullptr;
 }

@@ -53,19 +53,11 @@ public:
     /// \returns the size (in bits) of the register with index \p regIdx
     virtual int getRegSize(int regIdx) const = 0;
 
-    virtual bool addSymbolsFromSymbolFile(const QString& filename) = 0;
-
-    /// lookup a library signature by name
-    virtual std::shared_ptr<Signature> getLibSignature(const QString& name) = 0;
-
     virtual std::vector<SharedExp>& getDefaultParams() = 0;
     virtual std::vector<SharedExp>& getDefaultReturns() = 0;
 
     /// Add a "hint" that an instruction at the given address references a named global
     virtual void addRefHint(Address addr, const QString& name) = 0;
-
-    /// read from default catalog
-    virtual void readLibraryCatalog() = 0;
 
      // decoding related
 public:

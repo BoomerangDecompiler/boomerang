@@ -35,6 +35,7 @@ class LibProc;
 class Module;
 class Project;
 class Signature;
+class ISymbolProvider;
 
 
 class Prog
@@ -148,6 +149,10 @@ public:
     /// Get a code for the machine e.g. MACHINE_SPARC
     Machine getMachine() const;
 
+    void readDefaultLibraryCatalogues();
+    bool addSymbolsFromSymbolFile(const QString& fname);
+    std::shared_ptr<Signature> getLibSignature(const QString& name);
+
     std::shared_ptr<Signature> getDefaultSignature(const QString& name) const;
 
 
@@ -241,6 +246,7 @@ public:
 
 private:
     QString m_name;                         ///< name of the program
+    std::unique_ptr<ISymbolProvider> m_symbolProvider;
     Project *m_project = nullptr;
     BinaryFile *m_binaryFile = nullptr;
     IFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project

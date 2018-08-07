@@ -294,8 +294,6 @@ void ProgTest::testGetMachine()
 void ProgTest::testGetDefaultSignature()
 {
     Prog testProg("test", nullptr);
-    QVERIFY(testProg.getDefaultSignature("foo") == nullptr);
-
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     auto sig = m_project.getProg()->getDefaultSignature("foo");
     QVERIFY(sig != nullptr);

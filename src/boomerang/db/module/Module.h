@@ -116,9 +116,6 @@ public:
     /// \returns the function with entry address \p entryAddr
     Function *getFunction(Address entryAddr) const;
 
-    /// \returns the signature of the function with name \p name
-    std::shared_ptr<Signature> getLibSignature(const QString& name);
-
     void updateLibrarySignatures();
 
 private:
