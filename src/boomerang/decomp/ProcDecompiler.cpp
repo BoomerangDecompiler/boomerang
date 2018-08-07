@@ -15,7 +15,7 @@
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/CallStatement.h"

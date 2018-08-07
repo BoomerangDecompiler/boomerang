@@ -59,7 +59,7 @@ bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream&
                                   bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(addr, function, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(addr, function, os, frag, spec)) {
         return false;
     }
 
@@ -384,7 +384,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 
 
 PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new PentiumDecoder(prog));
 }
@@ -797,7 +797,7 @@ bool PentiumFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
         return true;
     }
 
-    return IFrontEnd::decodeInstruction(pc, result);
+    return DefaultFrontEnd::decodeInstruction(pc, result);
 }
 
 

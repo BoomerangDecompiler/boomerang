@@ -30,7 +30,7 @@ class BinaryFile;
 class BinarySection;
 class BinarySymbol;
 class Function;
-class IFrontEnd;
+class DefaultFrontEnd;
 class LibProc;
 class Module;
 class Project;
@@ -57,8 +57,8 @@ public:
     Prog& operator=(Prog&& other) = default;
 
 public:
-    void setFrontEnd(IFrontEnd *fe);
-    IFrontEnd *getFrontEnd() const { return m_fe; }
+    void setFrontEnd(DefaultFrontEnd *fe);
+    DefaultFrontEnd *getFrontEnd() const { return m_fe; }
 
     Project *getProject() { return m_project; }
     const Project *getProject() const { return m_project; }
@@ -85,7 +85,7 @@ public:
      * \param fact abstract factory object that creates Module instance
      * \param name retrieve/create module with this name.
      */
-    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
+    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory(), DefaultFrontEnd *frontend = nullptr);
 
     Module *getRootModule() { return m_rootModule; }
     Module *getRootModule() const { return m_rootModule; }
@@ -246,7 +246,7 @@ private:
     QString m_name;                         ///< name of the program
     Project *m_project = nullptr;
     BinaryFile *m_binaryFile = nullptr;
-    IFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project
+    DefaultFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project
     Module *m_rootModule = nullptr;         ///< Root of the module tree
     ModuleList m_moduleList;                ///< The Modules that make up this program
 

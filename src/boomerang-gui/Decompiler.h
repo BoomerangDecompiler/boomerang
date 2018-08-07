@@ -18,7 +18,7 @@
 
 
 class Module;
-class IFrontEnd;
+class DefaultFrontEnd;
 class Prog;
 class BinaryFile;
 

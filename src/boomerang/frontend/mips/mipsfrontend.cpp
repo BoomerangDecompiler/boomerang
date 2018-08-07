@@ -26,7 +26,7 @@
 
 
 MIPSFrontEnd::MIPSFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new MIPSDecoder(prog));
 }
@@ -85,7 +85,7 @@ bool MIPSFrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& o
                                bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
         return false;
     }
 

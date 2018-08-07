@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 
 
 /**
@@ -19,7 +19,7 @@
  * dependent features such as delay slots in the process. These
  * functions replace Frontend.cc for decoding sparc instructions.
  */
-class ST20FrontEnd : public IFrontEnd
+class ST20FrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

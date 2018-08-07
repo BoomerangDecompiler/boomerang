@@ -9,7 +9,7 @@
 
 list(APPEND boomerang-frontend-sources
     frontend/DecodeResult
-    frontend/Frontend
+    frontend/DefaultFrontEnd
     frontend/mips/mipsdecoder
     frontend/mips/mipsfrontend
     frontend/NJMCDecoder

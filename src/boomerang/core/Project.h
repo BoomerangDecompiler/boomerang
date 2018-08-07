@@ -20,7 +20,7 @@
 
 class BinaryFile;
 class ICodeGenerator;
-class IFrontEnd;
+class DefaultFrontEnd;
 class ITypeRecovery;
 class IWatcher;
 class Function;
@@ -186,7 +186,7 @@ private:
      *
      * \returns the newly created frontend on success, or nullptr on failure.
      */
-    IFrontEnd *createFrontEnd();
+    DefaultFrontEnd *createFrontEnd();
 
     /**
      * Define symbols from symbol files and command line switches ("-s")
@@ -211,7 +211,7 @@ private:
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;
 
-    std::unique_ptr<IFrontEnd> m_fe;                 ///< front end
+    std::unique_ptr<DefaultFrontEnd> m_fe;                 ///< front end
     std::unique_ptr<ITypeRecovery> m_typeRecovery;   ///< middle end
     std::unique_ptr<ICodeGenerator> m_codeGenerator; ///< back end
 };

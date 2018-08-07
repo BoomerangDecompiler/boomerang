@@ -22,7 +22,7 @@
 
 
 ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new ST20Decoder(prog));
 }
@@ -79,7 +79,7 @@ bool ST20FrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& o
                                bool spec /* = false */)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
         return false;
     }
 

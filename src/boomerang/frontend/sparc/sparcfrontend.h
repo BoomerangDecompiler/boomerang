@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/type/Type.h"
@@ -22,7 +22,7 @@
  * such as delay slots in the process. These functions replace frontend.cpp
  * for decoding sparc instructions.
  */
-class SparcFrontEnd : public IFrontEnd
+class SparcFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

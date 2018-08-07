@@ -250,7 +250,7 @@ Prog *Project::createProg(BinaryFile *file, const QString& name)
 }
 
 
-IFrontEnd *Project::createFrontEnd()
+DefaultFrontEnd *Project::createFrontEnd()
 {
     BinaryFile *binaryFile = getLoadedBinaryFile();
     Prog *prog = m_prog.get();

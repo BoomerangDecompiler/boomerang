@@ -7,8 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "Frontend.h"
-
+#include "DefaultFrontEnd.h"
 
 #include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
@@ -38,7 +37,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
+DefaultFrontEnd::DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : m_binaryFile(binaryFile)
     , m_program(prog)
     , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
@@ -46,30 +45,30 @@ IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-IFrontEnd::~IFrontEnd()
+DefaultFrontEnd::~DefaultFrontEnd()
 {
 }
 
 
-QString IFrontEnd::getRegName(int idx) const
+QString DefaultFrontEnd::getRegName(int idx) const
 {
     return m_decoder->getRegName(idx);
 }
 
 
-int IFrontEnd::getRegSize(int idx)
+int DefaultFrontEnd::getRegSize(int idx)
 {
     return m_decoder->getRegSize(idx);
 }
 
 
-bool IFrontEnd::isWin32() const
+bool DefaultFrontEnd::isWin32() const
 {
     return m_binaryFile && m_binaryFile->getFormat() == LoadFmt::PE;
 }
 
 
-bool IFrontEnd::isNoReturnCallDest(const QString& name) const
+bool DefaultFrontEnd::isNoReturnCallDest(const QString& name) const
 {
     return
         (name == "_exit") ||
@@ -81,7 +80,7 @@ bool IFrontEnd::isNoReturnCallDest(const QString& name) const
 }
 
 
-void IFrontEnd::readLibraryCatalog()
+void DefaultFrontEnd::readLibraryCatalog()
 {
     m_symbolProvider.reset(new CSymbolProvider(m_program));
     QDir sig_dir(m_program->getProject()->getSettings()->getDataDirectory());
@@ -105,7 +104,7 @@ void IFrontEnd::readLibraryCatalog()
 }
 
 
-void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
+void DefaultFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
 {
     SharedType ty = NamedType::getNamedType(type);
     assert(ty->isFunc());
@@ -127,7 +126,7 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
 }
 
 
-std::vector<Address> IFrontEnd::getEntryPoints()
+std::vector<Address> DefaultFrontEnd::getEntryPoints()
 {
     std::vector<Address> entrypoints;
     bool                 gotMain = false;
@@ -190,7 +189,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 }
 
 
-bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
+bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 {
     if (!decodeMain) {
         return true;
@@ -263,7 +262,7 @@ bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 }
 
 
-bool IFrontEnd::decodeRecursive(Address addr)
+bool DefaultFrontEnd::decodeRecursive(Address addr)
 {
     assert(addr != Address::INVALID);
 
@@ -294,7 +293,7 @@ bool IFrontEnd::decodeRecursive(Address addr)
 }
 
 
-bool IFrontEnd::decodeUndecoded()
+bool DefaultFrontEnd::decodeUndecoded()
 {
     bool change = true;
     LOG_MSG("Looking for undecoded procedures to decode...");
@@ -340,7 +339,7 @@ bool IFrontEnd::decodeUndecoded()
 }
 
 
-bool IFrontEnd::decodeOnly(Address addr)
+bool DefaultFrontEnd::decodeOnly(Address addr)
 {
     UserProc *p = static_cast<UserProc *>(m_program->getOrCreateFunction(addr));
     assert(!p->isLib());
@@ -355,7 +354,7 @@ bool IFrontEnd::decodeOnly(Address addr)
 }
 
 
-bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
+bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
     if (m_program->getProject()->getSettings()->traceDecoder) {
         LOG_MSG("Decoding fragment at address %1", a);
@@ -366,7 +365,7 @@ bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
 }
 
 
-bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
+bool DefaultFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 {
     BinaryImage *image = m_program->getBinaryFile()->getImage();
     if (!image || (image->getSectionByAddr(pc) == nullptr)) {
@@ -394,13 +393,13 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 }
 
 
-bool IFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
+bool DefaultFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
 {
     return m_symbolProvider->addSymbolsFromSymbolFile(fname);
 }
 
 
-std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
+std::shared_ptr<Signature> DefaultFrontEnd::getDefaultSignature(const QString& name)
 {
     // Get a default library signature
     if (isWin32()) {
@@ -411,7 +410,7 @@ std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
 }
 
 
-std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
+std::shared_ptr<Signature> DefaultFrontEnd::getLibSignature(const QString& name)
 {
     std::shared_ptr<Signature> signature = m_symbolProvider
         ? m_symbolProvider->getSignatureByName(name)
@@ -428,7 +427,7 @@ std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
 }
 
 
-void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
+void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
                                    Address dest, const std::list<Statement *>& sl,
                                    RTL *originalRTL)
 {
@@ -463,7 +462,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
 }
 
 
-bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
+bool DefaultFrontEnd::refersToImportedFunction(const SharedExp& exp)
 {
     if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
         const BinarySymbol *symbol = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(exp->access<Const, 1>()->getAddr());
@@ -477,7 +476,7 @@ bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
 }
 
 
-bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
+bool DefaultFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                             bool /*frag*/ /* = false */, bool spec /* = false */)
 {
     BasicBlock *currentBB;
@@ -1030,7 +1029,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 }
 
 
-BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL)
+BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL)
 {
     Cfg *cfg = proc->getCFG();
 
@@ -1088,7 +1087,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
 }
 
 
-void IFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
+void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
     std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress() + 1, { new ReturnStatement }));

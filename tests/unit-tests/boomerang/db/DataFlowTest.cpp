@@ -186,7 +186,7 @@ void DataFlowTest::testRenameVars()
     QVERIFY(m_project.loadBinaryFile(FRONTIER_PENTIUM));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe  = prog->getFrontEnd();
+    DefaultFrontEnd *fe  = prog->getFrontEnd();
     Type::clearNamedTypes();
     fe->decodeEntryPointsRecursive();
 

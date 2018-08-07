@@ -38,25 +38,25 @@ using RTLList        = std::list<std::unique_ptr<RTL>>;
 
 
 /**
- * Contains the definition for the FrontEnd class,
- * which implements the source indendent parts of the front end:
- * decoding machine instructions into a control flow graph
+ * Contains the default implementation of the source
+ * indendent parts of the front end:
+ * Decoding machine instructions into a control flow graph
  * populated with low and high level RTLs.
  */
-class IFrontEnd
+class DefaultFrontEnd
 {
 public:
     /**
      * \param prog   program being decoded
      */
-    IFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    IFrontEnd(const IFrontEnd&) = delete;
-    IFrontEnd(IFrontEnd&&) = default;
+    DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    DefaultFrontEnd(const DefaultFrontEnd&) = delete;
+    DefaultFrontEnd(DefaultFrontEnd&&) = default;
 
-    virtual ~IFrontEnd();
+    virtual ~DefaultFrontEnd();
 
-    IFrontEnd& operator=(const IFrontEnd&) = delete;
-    IFrontEnd& operator=(IFrontEnd&&) = default;
+    DefaultFrontEnd& operator=(const DefaultFrontEnd&) = delete;
+    DefaultFrontEnd& operator=(DefaultFrontEnd&&) = default;
 
 public:
     /// Is this a win32 frontend?

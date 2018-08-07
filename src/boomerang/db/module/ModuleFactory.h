@@ -10,7 +10,7 @@
 #pragma once
 
 
-class IFrontEnd;
+class DefaultFrontEnd;
 class Module;
 class Prog;
 class QString;
@@ -18,17 +18,17 @@ class QString;
 
 struct IModuleFactory
 {
-    virtual Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const = 0;
+    virtual Module *create(const QString& name, Prog *parent, DefaultFrontEnd *fe) const = 0;
 };
 
 
 struct DefaultModFactory : public IModuleFactory
 {
-    Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override;
+    Module *create(const QString& name, Prog *parent, DefaultFrontEnd *fe) const override;
 };
 
 
 struct ClassModFactory : public IModuleFactory
 {
-    Module *create(const QString& name, Prog *parent, IFrontEnd *fe) const override;
+    Module *create(const QString& name, Prog *parent, DefaultFrontEnd *fe) const override;
 };

@@ -33,7 +33,7 @@ void FrontPentTest::test1()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    DefaultFrontEnd *fe = prog->getFrontEnd();
 
     QString     expected;
     QString     actual;
@@ -74,7 +74,7 @@ void FrontPentTest::test2()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    DefaultFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
     QString      expected;
@@ -107,7 +107,7 @@ void FrontPentTest::test3()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    DefaultFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
     QString      expected;
@@ -139,7 +139,7 @@ void FrontPentTest::testBranch()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_PENT));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    DefaultFrontEnd *fe = prog->getFrontEnd();
 
     DecodeResult inst;
     QString      expected;
@@ -181,7 +181,7 @@ void FrontPentTest::testFindMain()
         QVERIFY(m_project.loadBinaryFile(FEDORA2_TRUE));
 
         Prog *prog = m_project.getProg();
-        IFrontEnd *fe = prog->getFrontEnd();
+        DefaultFrontEnd *fe = prog->getFrontEnd();
 
         bool    found;
         Address addr     = fe->getMainEntryPoint(found);
@@ -192,7 +192,7 @@ void FrontPentTest::testFindMain()
     {
         QVERIFY(m_project.loadBinaryFile(FEDORA3_TRUE));
         Prog *prog = m_project.getProg();
-        IFrontEnd *fe = prog->getFrontEnd();
+        DefaultFrontEnd *fe = prog->getFrontEnd();
 
         bool found;
         Address addr     = fe->getMainEntryPoint(found);
@@ -204,7 +204,7 @@ void FrontPentTest::testFindMain()
         QVERIFY(m_project.loadBinaryFile(SUSE_TRUE));
 
         Prog *prog = m_project.getProg();
-        IFrontEnd *fe = prog->getFrontEnd();
+        DefaultFrontEnd *fe = prog->getFrontEnd();
 
         bool found;
         Address addr     = fe->getMainEntryPoint(found);

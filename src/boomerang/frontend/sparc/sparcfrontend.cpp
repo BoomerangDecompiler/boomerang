@@ -1341,7 +1341,7 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
 
 
 SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new SparcDecoder(prog));
     nop_inst.numBytes = 0; // So won't disturb coverage
