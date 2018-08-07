@@ -69,7 +69,7 @@ bool IFrontEnd::isWin32() const
 }
 
 
-bool IFrontEnd::isNoReturnCallDest(const QString& name)
+bool IFrontEnd::isNoReturnCallDest(const QString& name) const
 {
     return
         (name == "_exit") ||
@@ -767,7 +767,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                             call->setDestProc(function);
                             call->setIsComputed(false);
 
-                            if (function->isNoReturn() || IFrontEnd::isNoReturnCallDest(function->getName())) {
+                            if (function->isNoReturn() || isNoReturnCallDest(function->getName())) {
                                 sequentialDecode = false;
                             }
                         }
@@ -877,14 +877,14 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
-                            QString name = m_program->getSymbolNameByAddr(callAddr);
+                            QString procName = m_program->getSymbolNameByAddr(callAddr);
 
-                            if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
+                            if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
                                 Address a = call->getDest()->access<Const, 1>()->getAddr();
-                                name = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(a)->getName();
+                                procName = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(a)->getName();
                             }
 
-                            if (!name.isEmpty() && IFrontEnd::isNoReturnCallDest(name)) {
+                            if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                                 // Make sure it has a return appended (so there is only one exit from the function)
                                 // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                                 // Create the new basic block

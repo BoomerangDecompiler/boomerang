@@ -10,13 +10,18 @@
 #include "LibProcTest.h"
 
 
-#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/db/module/Module.h"
-#include "boomerang/ssl/exp/Const.h"
-#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/signature/PentiumSignature.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/CallStatement.h"
+
+
+#define HELLO_PENTIUM  (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/hello"))
 
 
 void LibProcTest::testName()
@@ -123,13 +128,16 @@ void LibProcTest::testIsLib()
 
 void LibProcTest::testIsNoReturn()
 {
-    LibProc proc(Address::INVALID, "abort", nullptr);
-    QVERIFY(proc.isNoReturn());
-    proc.setName("test");
-    QVERIFY(!proc.isNoReturn());
+    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
+
+    LibProc *proc = m_project.getProg()->getOrCreateLibraryProc("abort");
+    QVERIFY(proc->isNoReturn());
+    proc->setName("test");
+    QVERIFY(!proc->isNoReturn());
+
     std::shared_ptr<Signature> sig(new Signature("test"));
-    proc.setSignature(sig);
-    QVERIFY(!proc.isNoReturn());
+    proc->setSignature(sig);
+    QVERIFY(!proc->isNoReturn());
 }
 
 

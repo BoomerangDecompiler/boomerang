@@ -13,7 +13,7 @@
 #include "TestUtils.h"
 
 
-class LibProcTest : public BoomerangTest
+class LibProcTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 

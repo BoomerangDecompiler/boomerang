@@ -16,6 +16,7 @@
 #include <memory>
 
 
+class Function;
 class UserProc;
 class RTL;
 class IDecoder;
@@ -63,10 +64,9 @@ public:
     bool isWin32() const;
 
     /**
-     * Given the name \p name of a function, determines whether
-     * the function returns or not (like abort)
+     * Determines whether the proc with name \p procName returns or not (like abort)
      */
-    static bool isNoReturnCallDest(const QString& name);
+    bool isNoReturnCallDest(const QString& procName) const;
 
     /// \returns an enum identifer for this frontend's platform
     virtual Platform getType() const = 0;

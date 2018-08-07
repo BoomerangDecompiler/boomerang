@@ -11,6 +11,7 @@
 
 
 #include "boomerang/db/module/Module.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/Frontend.h"
 
@@ -36,7 +37,8 @@ bool LibProc::isLib() const
 
 bool LibProc::isNoReturn() const
 {
-    return IFrontEnd::isNoReturnCallDest(getName()) || m_signature->isNoReturn();
+    return m_prog->getFrontEnd()->isNoReturnCallDest(this->getName())
+        || m_signature->isNoReturn();
 }
 
 
