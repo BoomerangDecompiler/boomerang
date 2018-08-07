@@ -72,7 +72,29 @@ BasicBlock::~BasicBlock()
 
 BasicBlock& BasicBlock::operator=(const BasicBlock& bb)
 {
-    *this = BasicBlock(bb);
+    m_function = bb.m_function;
+    m_lowAddr = bb.m_lowAddr;
+    m_highAddr = bb.m_highAddr;
+    m_bbType = bb.m_bbType;
+    // m_labelNeeded is initialized to false, not copied
+    m_predecessors = bb.m_predecessors;
+    m_successors = bb.m_successors;
+
+    if (bb.m_listOfRTLs) {
+        // make a deep copy of the RTL list
+        std::unique_ptr<RTLList> newList(new RTLList());
+        newList->resize(bb.m_listOfRTLs->size());
+
+        RTLList::const_iterator srcIt = bb.m_listOfRTLs->begin();
+        RTLList::const_iterator endIt = bb.m_listOfRTLs->end();
+        RTLList::iterator destIt = newList->begin();
+
+        while (srcIt != endIt) {
+            *destIt++ = Util::makeUnique<RTL>(**srcIt++);
+        }
+        setRTLs(std::move(newList));
+    }
+
     return *this;
 }
 
@@ -206,6 +228,17 @@ RTLList *BasicBlock::getRTLs()
 const RTLList *BasicBlock::getRTLs() const
 {
     return m_listOfRTLs.get();
+}
+
+RTL *BasicBlock::getLastRTL()
+{
+    return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr;
+}
+
+
+const RTL *BasicBlock::getLastRTL() const
+{
+    return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr;
 }
 
 

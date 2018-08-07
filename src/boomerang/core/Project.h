@@ -38,12 +38,12 @@ class BOOMERANG_API Project
 public:
     Project();
     Project(const Project& other) = delete;
-    Project(Project&& other) = default;
+    Project(Project&& other) = delete;
 
     virtual ~Project();
 
     Project& operator=(const Project& other) = delete;
-    Project& operator=(Project&& other) = default;
+    Project& operator=(Project&& other) = delete;
 
 public:
     Settings *getSettings();

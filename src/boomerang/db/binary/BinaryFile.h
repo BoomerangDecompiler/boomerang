@@ -60,6 +60,13 @@ class BOOMERANG_API BinaryFile
 {
 public:
     BinaryFile(const QByteArray& rawData, IFileLoader *loader);
+    BinaryFile(const BinaryFile&) = delete;
+    BinaryFile(BinaryFile&&) = delete;
+
+    ~BinaryFile();
+
+    BinaryFile& operator=(const BinaryFile&) = delete;
+    BinaryFile& operator=(BinaryFile&&) = delete;
 
 public:
     BinaryImage *getImage();

@@ -14,6 +14,54 @@
 #include "boomerang/util/log/Log.h"
 
 
+ConnectionGraph::iterator ConnectionGraph::begin()
+{
+    return emap.begin();
+}
+
+
+ConnectionGraph::iterator ConnectionGraph::end()
+{
+    return emap.end();
+}
+
+
+ConnectionGraph::const_iterator ConnectionGraph::begin() const
+{
+    return emap.begin();
+}
+
+
+ConnectionGraph::const_iterator ConnectionGraph::end() const
+{
+    return emap.end();
+}
+
+
+ConnectionGraph::reverse_iterator ConnectionGraph::rbegin()
+{
+    return emap.rbegin();
+}
+
+
+ConnectionGraph::reverse_iterator ConnectionGraph::rend()
+{
+    return emap.rend();
+}
+
+
+ConnectionGraph::const_reverse_iterator ConnectionGraph::rbegin() const
+{
+    return emap.rbegin();
+}
+
+
+ConnectionGraph::const_reverse_iterator ConnectionGraph::rend()   const
+{
+    return emap.rend();
+}
+
+
 bool ConnectionGraph::add(SharedExp a, SharedExp b)
 {
     iterator ff = emap.find(a);

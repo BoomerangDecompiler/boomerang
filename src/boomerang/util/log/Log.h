@@ -57,12 +57,12 @@ public:
     /// \param level Default logging level.
     Log(LogLevel level = LogLevel::Default);
     Log(const Log& other) = delete;
-    Log(Log&&) = default;
+    Log(Log&&) = delete;
 
     virtual ~Log();
 
     Log& operator=(const Log& other) = delete;
-    Log& operator=(Log&& other) = default;
+    Log& operator=(Log&& other) = delete;
 
 public:
     /**

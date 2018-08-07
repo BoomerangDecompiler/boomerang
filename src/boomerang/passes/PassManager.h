@@ -26,6 +26,13 @@ class BOOMERANG_API PassManager
 {
 public:
     PassManager();
+    PassManager(const PassManager&) = delete;
+    PassManager(PassManager&&) = delete;
+
+    ~PassManager();
+
+    PassManager& operator=(const PassManager&) = delete;
+    PassManager& operator=(PassManager&&) = delete;
 
     static PassManager *get();
 

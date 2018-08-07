@@ -23,6 +23,11 @@ BinaryFile::BinaryFile(const QByteArray& rawData, IFileLoader *loader)
 }
 
 
+BinaryFile::~BinaryFile()
+{
+}
+
+
 BinaryImage *BinaryFile::getImage()
 {
     return m_image.get();
