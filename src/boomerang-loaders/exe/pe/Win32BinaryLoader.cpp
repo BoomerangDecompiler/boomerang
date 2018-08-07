@@ -1171,4 +1171,4 @@ bool Win32BinaryLoader::isLibrary() const
 
 
 BOOMERANG_LOADER_PLUGIN(Win32BinaryLoader,
-                        "Win32 binary file loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+    "Win32 PE loader plugin", BOOMERANG_VERSION, "Boomerang developers")

@@ -578,4 +578,4 @@ void PalmBinaryLoader::generateBinFiles(const QString& path) const
 
 
 BOOMERANG_LOADER_PLUGIN(PalmBinaryLoader,
-                        "Palm OS binary file loader", BOOMERANG_VERSION, "Boomerang developers")
+    "Palm OS executable loader plugin", BOOMERANG_VERSION, "Boomerang developers")

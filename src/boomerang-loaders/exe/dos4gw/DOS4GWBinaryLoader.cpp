@@ -418,4 +418,4 @@ DWord DOS4GWBinaryLoader::getDelta()
 
 
 BOOMERANG_LOADER_PLUGIN(DOS4GWBinaryLoader,
-                        "DOS4GW binary loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+    "DOS4GW loader plugin", BOOMERANG_VERSION, "Boomerang developers")

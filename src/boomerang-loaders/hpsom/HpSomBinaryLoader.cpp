@@ -603,4 +603,4 @@ Address HpSomBinaryLoader::getMainEntryPoint()
 
 
 BOOMERANG_LOADER_PLUGIN(HpSomBinaryLoader,
-                        "HpSom binary file loader", BOOMERANG_VERSION, "Boomerang developers")
+    "HP SOM loader plugin", BOOMERANG_VERSION, "Boomerang developers")

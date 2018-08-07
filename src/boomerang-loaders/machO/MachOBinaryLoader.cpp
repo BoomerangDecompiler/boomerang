@@ -569,4 +569,5 @@ DWord MachOBinaryLoader::getDelta()
     return (HostAddress(base) - loaded_addr).value();
 }
 
-BOOMERANG_LOADER_PLUGIN(MachOBinaryLoader, "DOS4GW loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(MachOBinaryLoader,
+    "Mach-O executable loader plugin", BOOMERANG_VERSION, "Boomerang developers")
