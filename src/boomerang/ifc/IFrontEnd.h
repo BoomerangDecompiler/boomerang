@@ -46,13 +46,7 @@ public:
     virtual IDecoder *getDecoder() = 0;
     virtual const IDecoder *getDecoder() const = 0;
 
-    /// \returns the name of the register with index \p regIdx
-    virtual QString getRegName(int regIdx) const = 0;
-
-    /// \returns the size (in bits) of the register with index \p regIdx
-    virtual int getRegSize(int regIdx) const = 0;
-
-    /// Add a "hint" that an instruction at the given address references a named global
+    /// Add a "hint" that an instruction at \p addr references a named global
     virtual void addRefHint(Address addr, const QString& name) = 0;
 
      // decoding related

@@ -61,12 +61,6 @@ public:
     IDecoder *getDecoder() override { return m_decoder.get(); }
     const IDecoder *getDecoder() const override { return m_decoder.get(); }
 
-    /// \copydoc IFrontEnd::getRegName
-    QString getRegName(int idx) const override;
-
-    /// \copydoc IFrontEnd::getRegSize
-    int getRegSize(int idx) const override;
-
     /// \copydoc IFrontEnd::addRefHint
     void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
 

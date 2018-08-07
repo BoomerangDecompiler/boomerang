@@ -50,18 +50,6 @@ DefaultFrontEnd::~DefaultFrontEnd()
 }
 
 
-QString DefaultFrontEnd::getRegName(int idx) const
-{
-    return m_decoder->getRegName(idx);
-}
-
-
-int DefaultFrontEnd::getRegSize(int idx) const
-{
-    return m_decoder->getRegSize(idx);
-}
-
-
 bool DefaultFrontEnd::isNoReturnCallDest(const QString& name) const
 {
     return

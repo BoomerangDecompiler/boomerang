@@ -26,6 +26,7 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
@@ -324,13 +325,13 @@ bool Prog::isWin32() const
 
 QString Prog::getRegName(int idx) const
 {
-    return m_fe->getRegName(idx);
+    return m_fe->getDecoder()->getRegName(idx);
 }
 
 
 int Prog::getRegSize(int idx) const
 {
-    return m_fe->getRegSize(idx);
+    return m_fe->getDecoder()->getRegSize(idx);
 }
 
 
