@@ -148,7 +148,7 @@ public:
     /// Get a code for the machine e.g. MACHINE_SPARC
     Machine getMachine() const;
 
-    std::shared_ptr<Signature> getDefaultSignature(const char *name) const;
+    std::shared_ptr<Signature> getDefaultSignature(const QString& name) const;
 
 
     /// get a string constant at a given address if appropriate

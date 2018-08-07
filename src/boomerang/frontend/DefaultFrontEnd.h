@@ -73,9 +73,6 @@ public:
     /// \copydoc IFrontEnd::getLibSignature
     std::shared_ptr<Signature> getLibSignature(const QString& name) override;
 
-    /// \copydoc IFrontEnd::getDefaultSignature
-    std::shared_ptr<Signature> getDefaultSignature(const QString& name) override;
-
     /// \copydoc IFrontEnd::addRefHint
     void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
 

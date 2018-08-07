@@ -58,9 +58,6 @@ public:
     /// lookup a library signature by name
     virtual std::shared_ptr<Signature> getLibSignature(const QString& name) = 0;
 
-    /// return a signature that matches the architecture best
-    virtual std::shared_ptr<Signature> getDefaultSignature(const QString& name) = 0;
-
     virtual std::vector<SharedExp>& getDefaultParams() = 0;
     virtual std::vector<SharedExp>& getDefaultReturns() = 0;
 

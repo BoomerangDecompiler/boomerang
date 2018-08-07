@@ -339,11 +339,13 @@ Machine Prog::getMachine() const
 }
 
 
-std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
+std::shared_ptr<Signature> Prog::getDefaultSignature(const QString& name) const
 {
-    return m_fe
-        ? m_fe->getDefaultSignature(name)
-        : nullptr;
+    if (isWin32()) {
+        return Signature::instantiate(getMachine(), CallConv::Pascal, name);
+    }
+
+    return Signature::instantiate(getMachine(), CallConv::C, name);
 }
 
 

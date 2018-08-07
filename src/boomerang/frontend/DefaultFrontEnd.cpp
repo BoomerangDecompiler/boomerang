@@ -402,16 +402,6 @@ bool DefaultFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
 }
 
 
-std::shared_ptr<Signature> DefaultFrontEnd::getDefaultSignature(const QString& name)
-{
-    if (m_program && m_program->isWin32()) {
-        return Signature::instantiate(m_program->getMachine(), CallConv::Pascal, name);
-    }
-
-    return Signature::instantiate(m_program->getMachine(), CallConv::C, name);
-}
-
-
 std::shared_ptr<Signature> DefaultFrontEnd::getLibSignature(const QString& name)
 {
     std::shared_ptr<Signature> signature = m_symbolProvider
@@ -424,7 +414,7 @@ std::shared_ptr<Signature> DefaultFrontEnd::getLibSignature(const QString& name)
     }
     else {
         LOG_WARN("Unknown library function '%1', please update signatures!", name);
-        return getDefaultSignature(name);
+        return m_program->getDefaultSignature(name);
     }
 }
 
