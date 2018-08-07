@@ -386,6 +386,12 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp& exp)
 }
 
 
+bool DefaultFrontEnd::isHelperFunc(Address, Address, RTLList&)
+{
+    return false;
+}
+
+
 bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
     BasicBlock *currentBB;

@@ -77,14 +77,6 @@ public:
     virtual bool processProc(UserProc *proc, Address addr) = 0;
 
 public:
-    /**
-     * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
-     * If so, return true and set the semantics in lrtl.
-     *
-     * \param addr the native address of the call instruction
-     */
-    virtual bool isHelperFunc(Address dest, Address addr, RTLList& rtls) = 0;
-
     /// Locate the entry address of "main", returning a native address
     virtual Address findMainEntryPoint(bool& gotMain) = 0;
 

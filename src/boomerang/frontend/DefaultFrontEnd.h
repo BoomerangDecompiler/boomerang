@@ -86,9 +86,6 @@ public:
     /// \copydoc IFrontEnd::processProc
     virtual bool processProc(UserProc *proc, Address addr) override;
 
-    /// \copydoc IFrontEnd::isHelperFunc
-    virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, RTLList& /*lrtl*/) override { return false; }
-
     /// \copydoc IFrontEnd::getEntryPoints
     std::vector<Address> findEntryPoints() override;
 
@@ -107,8 +104,17 @@ protected:
     BasicBlock *createReturnBlock(UserProc *proc,
         std::unique_ptr<RTLList> bb_rtls, std::unique_ptr<RTL> returnRTL);
 
+
 private:
     bool refersToImportedFunction(const SharedExp& exp);
+
+    /**
+     * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
+     * If so, return true and set the semantics in lrtl.
+     *
+     * \param addr the native address of the call instruction
+     */
+    virtual bool isHelperFunc(Address dest, Address addr, RTLList& lrtl);
 
     /**
      * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
