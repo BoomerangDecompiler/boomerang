@@ -16,17 +16,17 @@ install:
 matrix:
   include:
     - env:
-        - TARGET="clang4-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
+        - TARGET="clang4-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
-        - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
+        - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="ON"
     - env:
-        - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF"
+        - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
-        - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON" COVERAGE="OFF"
+        - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"  COVERAGE="OFF" SHARED_LIBS="ON"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make check"
     - env:
-        - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"
+        - TARGET="gcc6-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"  SHARED_LIBS="ON"
       after_success:
         - echo "Building CodeCov reports" && docker exec -t build-env bash -c "cd boomerang/build &&
             lcov --directory . --capture --output-file coverage.info &&
@@ -39,7 +39,7 @@ before_script:
   - docker exec -t build-env bash -c "cd boomerang &&
     mkdir build &&
     cd build &&
-    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOMERANG_BUILD_UNIT_TESTS=$UNIT_TESTS -DBOOMERANG_BUILD_REGRESSION_TESTS=$REGRESSION_TESTS -DBOOMERANG_ENABLE_COVERAGE=$COVERAGE .."
+    cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DBOOMERANG_BUILD_UNIT_TESTS=$UNIT_TESTS -DBOOMERANG_BUILD_REGRESSION_TESTS=$REGRESSION_TESTS -DBOOMERANG_ENABLE_COVERAGE=$COVERAGE -DBUILD_SHARED_LIBS=$SHARED_LIBS .."
 
 
 script:
