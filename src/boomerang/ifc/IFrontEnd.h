@@ -34,6 +34,9 @@ using SharedConstExp = std::shared_ptr<const Exp>;
 using RTLList        = std::list<std::unique_ptr<RTL>>;
 
 
+/**
+ * Decodes a binary file into Functions and BasicBlocks.
+ */
 class IFrontEnd
 {
 public:
