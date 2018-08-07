@@ -19,7 +19,7 @@
  * Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
  * behaviour
  */
-class PentiumFrontEnd : public DefaultFrontEnd
+class BOOMERANG_API PentiumFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

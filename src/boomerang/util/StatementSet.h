@@ -160,7 +160,7 @@ private:
 };
 
 
-struct lessAssign
+struct BOOMERANG_API lessAssign
 {
     bool operator() (const Assign *as1, const Assign *as2) const;
 };

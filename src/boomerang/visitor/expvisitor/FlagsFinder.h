@@ -16,7 +16,7 @@
 /**
  * Search an expression for flags calls, e.g. SETFFLAGS(...) & 0x45
  */
-class FlagsFinder : public ExpVisitor
+class BOOMERANG_API FlagsFinder : public ExpVisitor
 {
 public:
     FlagsFinder();

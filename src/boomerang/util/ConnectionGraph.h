@@ -25,7 +25,7 @@
  * but then you still need maps from expression to bit number.
  * So here a standard map is used, and when a -> b is inserted, b->a is redundantly inserted.
  */
-class ConnectionGraph
+class BOOMERANG_API ConnectionGraph
 {
     typedef std::multimap<SharedExp, SharedExp, lessExpStar> ExpExpMap;
 

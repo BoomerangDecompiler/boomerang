@@ -45,7 +45,7 @@ struct TypedVariable
  * Each procedure and the Prog object have a map from Address (stack offset from sp{0} for locals, or native address for
  * globals), to an object of this class. A multimap is not needed, as the type of the entry specifies the overlapping.
  */
-class DataIntervalMap
+class BOOMERANG_API DataIntervalMap
 {
 public:
     typedef IntervalMap<Address, TypedVariable>   VariableMap;

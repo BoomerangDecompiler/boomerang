@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/passes/PassGroup.h"
 #include "boomerang/passes/Pass.h"
 
@@ -21,7 +22,7 @@
 class Prog;
 
 
-class PassManager
+class BOOMERANG_API PassManager
 {
 public:
     PassManager();

@@ -23,7 +23,7 @@ class Statement;
  * \note we cannot subclass directly from ExpSet<Location>, because
  * the expressions might be subscripted (->RefExp).
  */
-class LocationSet : public ExpSet<Exp, lessExpStar>
+class BOOMERANG_API LocationSet : public ExpSet<Exp, lessExpStar>
 {
 public:
     LocationSet() = default;

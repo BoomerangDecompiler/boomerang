@@ -48,7 +48,7 @@ enum ICLASS : uint8
  * calling the decoder. This prevents excessive use of confusing
  * reference parameters.
  */
-class DecodeResult
+class BOOMERANG_API DecodeResult
 {
 public:
     DecodeResult();

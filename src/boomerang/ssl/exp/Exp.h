@@ -553,7 +553,7 @@ protected:
 
 
 /// Prints the Exp pointed to by \p p to \p os
-QTextStream& operator<<(QTextStream& os, const Exp *p);
+BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Exp *p);
 
 
 inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
