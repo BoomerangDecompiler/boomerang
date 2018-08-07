@@ -145,9 +145,6 @@ public:
     QString getRegName(int idx) const;
     int getRegSize(int idx) const;
 
-    /// Get the front end id used to make this prog
-    Platform getFrontEndId() const;
-
     /// Get a code for the machine e.g. MACHINE_SPARC
     Machine getMachine() const;
 

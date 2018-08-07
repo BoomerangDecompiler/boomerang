@@ -44,7 +44,6 @@ public:
 
     // virtual bool isLocalOffsetPositive() {return true;}
 
-    virtual Platform getPlatform() const override { return Platform::ST20; }
     virtual CallConv getConvention() const override { return CallConv::C; }
 };
 } // namespace StdC

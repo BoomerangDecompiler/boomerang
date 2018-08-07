@@ -128,9 +128,7 @@ SharedExp ST20Signature::getProven(SharedExp left) const
 
 bool ST20Signature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    Platform plat = p->getProg()->getFrontEndId();
-
-    if (plat != Platform::ST20) {
+    if (p->getProg()->getMachine() != Machine::ST20) {
         return false;
     }
 

@@ -21,7 +21,7 @@ void CTest::testSignature()
 {
     std::istream *os = new std::istringstream("int printf(char *fmt, ...);");
     AnsiCParser        *p = new AnsiCParser(os, false);
-    p->yyparse(Platform::PENTIUM, CallConv::C);
+    p->yyparse(Machine::PENTIUM, CallConv::C);
 
     QCOMPARE(p->signatures.size(), size_t(1));
 

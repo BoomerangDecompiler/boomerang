@@ -51,9 +51,7 @@ bool MIPSSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
     LOG_VERBOSE("Consider promotion to stdc MIPS signature for %1", p->getName());
 
-    Platform plat = p->getProg()->getFrontEndId();
-
-    if (plat != Platform::MIPS) {
+    if (p->getProg()->getMachine() != Machine::MIPS) {
         return false;
     }
 

@@ -77,23 +77,32 @@ bool DefaultFrontEnd::isNoReturnCallDest(const QString& name) const
 void DefaultFrontEnd::readLibraryCatalog()
 {
     m_symbolProvider.reset(new CSymbolProvider(m_program));
-    QDir sig_dir(m_program->getProject()->getSettings()->getDataDirectory());
+    QDir dataDir = m_program->getProject()->getSettings()->getDataDirectory();
 
-    if (!sig_dir.cd("signatures")) {
-        LOG_WARN("Signatures directory does not exist.");
-        return;
+    QString libCatalogName;
+    switch (m_program->getMachine()) {
+        case Machine::PENTIUM:  libCatalogName = "signatures/pentium.hs";  break;
+        case Machine::SPARC:    libCatalogName = "signatures/sparc.hs";    break;
+        case Machine::HPRISC:   libCatalogName = "signatures/parisc.hs";   break;
+        case Machine::PPC:      libCatalogName = "signatures/ppc.hs";      break;
+        case Machine::ST20:     libCatalogName = "signatures/st20.hs";     break;
+        case Machine::MIPS:     libCatalogName = "signatures/mips.hs";     break;
+        default:                libCatalogName = "";                       break;
     }
 
-    m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
-    m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
+    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
+
+    if (!libCatalogName.isEmpty()) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
+    }
 
     if (m_program->isWin32()) {
-        m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/win32.hs"));
     }
 
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("objc.hs"));
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/objc.hs"));
     }
 }
 
@@ -395,12 +404,11 @@ bool DefaultFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
 
 std::shared_ptr<Signature> DefaultFrontEnd::getDefaultSignature(const QString& name)
 {
-    // Get a default library signature
     if (m_program && m_program->isWin32()) {
-        return Signature::instantiate(Platform::PENTIUM, CallConv::Pascal, name);
+        return Signature::instantiate(m_program->getMachine(), CallConv::Pascal, name);
     }
 
-    return Signature::instantiate(getType(), CallConv::C, name);
+    return Signature::instantiate(m_program->getMachine(), CallConv::C, name);
 }
 
 

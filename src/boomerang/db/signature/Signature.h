@@ -48,7 +48,7 @@ public:
 
 public:
     /// Create a new signature for a function named \p name
-    static std::shared_ptr<Signature> instantiate(Platform plat, CallConv cc, const QString& name);
+    static std::shared_ptr<Signature> instantiate(Machine machine, CallConv cc, const QString& name);
 
     /// Check if parameters, returns and name match
     virtual bool operator==(const Signature& other) const;
@@ -187,7 +187,6 @@ public:
     /// procedures that follow the calling convention)
     static bool getABIDefines(Machine machine, StatementList& defs);
 
-    virtual Platform getPlatform()   const { return Platform::GENERIC; }
     virtual CallConv getConvention() const { return CallConv::INVALID; }
 
     // preferred format

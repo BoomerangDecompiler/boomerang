@@ -331,14 +331,6 @@ int Prog::getRegSize(int idx) const
 }
 
 
-Platform Prog::getFrontEndId() const
-{
-    return m_fe
-        ? m_fe->getType()
-        : Platform::GENERIC;
-}
-
-
 Machine Prog::getMachine() const
 {
     return m_binaryFile

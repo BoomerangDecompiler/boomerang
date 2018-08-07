@@ -34,9 +34,6 @@ public:
     ST20FrontEnd& operator=(ST20FrontEnd&& other) = default;
 
 public:
-    /// \copydoc IFrontEnd::getType
-    virtual Platform getType() const override { return Platform::ST20; }
-
     /// \copydoc IFrontEnd::processProc
     virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
 

@@ -86,7 +86,7 @@ bool CSymbolProvider::readLibrarySignatures(const QString& signatureFile, CallCo
         return false;
     }
 
-    p->yyparse(m_prog->getFrontEndId(), cc);
+    p->yyparse(m_prog->getMachine(), cc);
 
     for (auto& signature : p->signatures) {
         m_librarySignatures[signature->getName()] = signature;
@@ -109,10 +109,9 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString& fname)
         return false;
     }
 
-    Platform plat = m_prog->getFrontEndId();
-    CallConv cc   = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
+    CallConv cc = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
+    parser->yyparse(m_prog->getMachine(), cc);
 
-    parser->yyparse(plat, cc);
     Module *targetModule = m_prog->getRootModule();
 
     for (Symbol *sym : parser->symbols) {

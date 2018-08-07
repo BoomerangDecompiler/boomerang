@@ -44,9 +44,6 @@ public:
     /// Determines whether the proc with name \p procName returns or not (like abort)
     virtual bool isNoReturnCallDest(const QString& procName) const = 0;
 
-    /// \returns an enum identifer for this frontend's platform
-    virtual Platform getType() const = 0;
-
     virtual IDecoder *getDecoder() = 0;
     virtual const IDecoder *getDecoder() const = 0;
 

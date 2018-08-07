@@ -28,9 +28,6 @@ public:
     MIPSFrontEnd& operator=(MIPSFrontEnd&& other) = default;
 
 public:
-    /// \copydoc IFrontEnd::getFrontEndId
-    virtual Platform getType() const override { return Platform::MIPS; }
-
     /// \copydoc IFrontEnd::processProc
     virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
 

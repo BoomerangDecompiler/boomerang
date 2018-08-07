@@ -34,9 +34,6 @@ public:
     PentiumFrontEnd& operator=(PentiumFrontEnd&& other) = default;
 
 public:
-    /// \copydoc IFrontEnd::getFrontEndId
-    virtual Platform getType() const override { return Platform::PENTIUM; }
-
     /// \copydoc IFrontEnd::processProc
     /**
      * Process a procedure, given a native (source machine) address.

@@ -223,17 +223,13 @@ bool SparcSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
     LOG_VERBOSE2("Consider promotion to stdc sparc signature for %1", p->getName());
 
-    Platform plat = p->getProg()->getFrontEndId();
-
-    if (plat != Platform::SPARC) {
+    if (p->getProg()->getMachine() != Machine::SPARC) {
         return false;
     }
 
     LOG_VERBOSE2("Promoted to StdC::SparcSignature");
-
     return true;
 }
-
 
 
 bool SparcSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const

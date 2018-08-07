@@ -24,7 +24,7 @@ LibProc::LibProc(Address addr, const QString& name, Module *module)
     }
 
     if (!m_signature) {
-        m_signature = Signature::instantiate(Platform::GENERIC, CallConv::INVALID, name);
+        m_signature = Signature::instantiate(Machine::UNKNOWN, CallConv::INVALID, name);
     }
 }
 

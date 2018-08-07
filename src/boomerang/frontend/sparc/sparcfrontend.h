@@ -36,9 +36,6 @@ public:
     SparcFrontEnd& operator=(SparcFrontEnd&&) = default;
 
 public:
-    /// \copydoc IFrontEnd::getType
-    virtual Platform getType() const override { return Platform::SPARC; }
-
     /**
      * \copydoc IFrontEnd::processProc
      *

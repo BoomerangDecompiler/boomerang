@@ -200,7 +200,7 @@ public:
     }; /* end of enum declaration */
 
 public:
-    int yyparse(Platform plat, CallConv cc);
+    int yyparse(Machine machine, CallConv cc);
     virtual void yyerror(const char *msg);
     virtual int yylex();
 

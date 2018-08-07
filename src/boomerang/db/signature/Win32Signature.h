@@ -43,7 +43,6 @@ public:
     virtual void getLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
 
     virtual bool isPromoted()        const override { return true; }
-    virtual Platform getPlatform()   const override { return Platform::PENTIUM; }
     virtual CallConv getConvention() const override { return CallConv::Pascal; }
 };
 
@@ -62,7 +61,6 @@ public:
 
     virtual std::shared_ptr<Signature> clone() const override;
 
-    virtual Platform getPlatform() const override { return Platform::PENTIUM; }
     virtual CallConv getConvention() const override { return CallConv::ThisCall; }
 };
 
