@@ -35,7 +35,7 @@ public:
 
 public:
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
+    virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;

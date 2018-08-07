@@ -75,11 +75,10 @@ Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool ST20FrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag /* = false */,
-                               bool spec /* = false */)
+bool ST20FrontEnd::processProc(UserProc *proc, Address entryAddr)
 {
     // Call the base class to do most of the work
-    if (!DefaultFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(proc, entryAddr)) {
         return false;
     }
 

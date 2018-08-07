@@ -83,22 +83,14 @@ public:
 
     /**
      * Process a procedure, given a native (source machine) address.
-     * This is the main function for decoding a procedure. It is usually overridden in the derived
-     * class to do source machine specific things. If \p frag is set, we are decoding just a fragment of the proc
-     * (e.g. each arm of a switch statement is decoded). If \p spec is set, this is a speculative decode.
+     * This is the main function for decoding a procedure.
      *
-     * \param addr the address at which the procedure starts
      * \param proc the procedure object
-     * \param os   the output stream for .rtl output
-     * \param frag if true, this is just a fragment of a procedure
-     * \param spec if true, this is a speculative decode
-     *
-     * \note This is a sort of generic front end. For many processors, this will be overridden
-     *  in the FrontEnd derived class, sometimes calling this function to do most of the work.
+     * \param addr the entry address of \p proc
      *
      * \returns true for a good decode (no illegal instructions)
      */
-    virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) = 0;
+    virtual bool processProc(UserProc *proc, Address addr) = 0;
 
 public:
     /**

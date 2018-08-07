@@ -43,7 +43,7 @@ public:
      * during decoding. The semantics of delayed CTIs are
      * transformed into CTIs that aren't delayed.
      */
-    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
+    virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;
@@ -158,7 +158,7 @@ private:
      * \returns              true if next instruction is to be fetched sequentially from this one
      */
     bool case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls,
-                   UserProc *proc, std::list<CallStatement *>& callList, QTextStream& os, bool isPattern = false);
+                   UserProc *proc, std::list<CallStatement *>& callList, bool isPattern = false);
 
     /**
      * Handles a non-call, static delayed (SD) instruction
@@ -175,7 +175,7 @@ private:
      *
      */
     void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq, QTextStream& os);
+                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)

@@ -253,9 +253,7 @@ bool DefaultFrontEnd::decodeRecursive(Address addr)
         return false;
     }
 
-    QTextStream os(stderr); // rtl output target
-
-    if (processProc(addr, proc, os)) {
+    if (processProc(proc, addr)) {
         proc->setDecoded();
     }
 
@@ -285,9 +283,8 @@ bool DefaultFrontEnd::decodeUndecoded()
 
                 // undecoded userproc.. decode it
                 change = true;
-                QTextStream os(stderr); // rtl output target
 
-                if (!processProc(userProc->getEntryAddress(), userProc, os)) {
+                if (!processProc(userProc, userProc->getEntryAddress())) {
                     return false;
                 }
 
@@ -313,9 +310,8 @@ bool DefaultFrontEnd::decodeOnly(Address addr)
 {
     UserProc *p = static_cast<UserProc *>(m_program->getOrCreateFunction(addr));
     assert(!p->isLib());
-    QTextStream os(stderr); // rtl output target
 
-    bool ok = processProc(p->getEntryAddress(), p, os);
+    const bool ok = processProc(p, p->getEntryAddress());
     if (ok) {
         p->setDecoded();
     }
@@ -330,8 +326,7 @@ bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
         LOG_MSG("Decoding fragment at address %1", a);
     }
 
-    QTextStream os(stderr); // rtl output target
-    return processProc(a, proc, os, true);
+    return processProc(proc, a);
 }
 
 
@@ -411,8 +406,7 @@ bool DefaultFrontEnd::refersToImportedFunction(const SharedExp& exp)
 }
 
 
-bool DefaultFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
-                            bool /*frag*/ /* = false */, bool spec /* = false */)
+bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
     BasicBlock *currentBB;
 
@@ -428,12 +422,6 @@ bool DefaultFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*o
     bool sequentialDecode = true;
 
     Cfg *cfg = proc->getCFG();
-
-    // If this is a speculative decode, the second time we decode the same address, we get no cfg. Else an error.
-    if (spec && (cfg == nullptr)) {
-        return false;
-    }
-
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
@@ -472,12 +460,6 @@ bool DefaultFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*o
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
-            }
-
-            // If invalid and we are speculating, just exit
-            if (spec && !inst.valid) {
-                inst.rtl.reset();
-                return false;
             }
 
             // Need to construct a new list of RTLs if a basic block has just been finished but decoding is
@@ -937,22 +919,17 @@ bool DefaultFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*o
 
     for (CallStatement *callStmt : callList) {
         Address dest = callStmt->getFixedDest();
-        auto    symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
-        // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
-        // linked ones (in the .plt)
-        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-            // Don't visit the destination of a register call
-            Function *np = callStmt->getDestProc();
+        // Don't visit the destination of a register call
+        Function *np = callStmt->getDestProc();
 
-            if ((np == nullptr) && (dest != Address::INVALID)) {
-                // np = newProc(proc->getProg(), dest);
-                np = proc->getProg()->getOrCreateFunction(dest);
-            }
+        if ((np == nullptr) && (dest != Address::INVALID)) {
+            // np = newProc(proc->getProg(), dest);
+            np = proc->getProg()->getOrCreateFunction(dest);
+        }
 
-            if (np != nullptr) {
-                proc->addCallee(np);
-            }
+        if (np != nullptr) {
+            proc->addCallee(np);
         }
     }
 

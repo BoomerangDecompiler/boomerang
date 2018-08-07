@@ -55,11 +55,10 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
 }
 
 
-bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream& os, bool frag /* = false */,
-                                  bool spec /* = false */)
+bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work
-    if (!DefaultFrontEnd::processProc(addr, function, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(function, addr)) {
         return false;
     }
 

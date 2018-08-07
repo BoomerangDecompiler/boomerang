@@ -641,8 +641,7 @@ bool Prog::reDecode(UserProc *proc)
         return false;
     }
 
-    QTextStream os(stderr); // rtl output target
-    return m_fe->processProc(proc->getEntryAddress(), proc, os);
+    return m_fe->processProc(proc, proc->getEntryAddress());
 }
 
 

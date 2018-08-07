@@ -92,7 +92,7 @@ public:
     bool decodeFragment(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
+    virtual bool processProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::isHelperFunc
     virtual bool isHelperFunc(Address /*dest*/, Address /*addr*/, RTLList& /*lrtl*/) override { return false; }

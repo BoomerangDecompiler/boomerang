@@ -35,19 +35,7 @@ public:
 
 public:
     /// \copydoc IFrontEnd::processProc
-    /**
-     * Process a procedure, given a native (source machine) address.
-     * This is the main function for decoding a procedure.
-     * This overrides the base class processProc to do source machine specific things (but often calls the base
-     * class to do most of the work. Sparc is an exception)
-     * \param  addr - the address at which the procedure starts
-     * \param  proc - the procedure object
-     * \param  os   - output stream for rtl output
-     * \param  frag - true if decoding only a fragment of the proc
-     * \param  spec - true if this is a speculative decode (so give up on any invalid instruction)
-     * \returns           True if successful decode
-     */
-    virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
+    virtual bool processProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::getDefaultParams
     virtual std::vector<SharedExp>& getDefaultParams() override;
