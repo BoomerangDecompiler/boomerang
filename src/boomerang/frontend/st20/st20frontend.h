@@ -38,5 +38,5 @@ public:
     virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
 };

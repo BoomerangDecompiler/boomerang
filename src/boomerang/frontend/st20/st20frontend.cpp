@@ -28,7 +28,7 @@ ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
+Address ST20FrontEnd::findMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();

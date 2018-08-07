@@ -1263,7 +1263,7 @@ void StatementTest::testBypass()
     fe->decodeUndecoded();
 
     bool    gotMain;
-    Address addr = fe->getMainEntryPoint(gotMain);
+    Address addr = fe->findMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
     UserProc *proc = static_cast<UserProc *>(prog->getFunctionByName("foo2"));

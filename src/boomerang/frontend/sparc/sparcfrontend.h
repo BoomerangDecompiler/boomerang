@@ -51,7 +51,7 @@ public:
      * \param gotMain set if main found
      * \returns Native pointer if found; Address::INVALID if not
      */
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
 
 private:
     /**

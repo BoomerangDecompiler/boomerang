@@ -89,7 +89,7 @@ std::vector<Address> DefaultFrontEnd::findEntryPoints()
     std::vector<Address> entrypoints;
     bool                 gotMain = false;
     // AssemblyLayer
-    Address a = getMainEntryPoint(gotMain);
+    Address a = findMainEntryPoint(gotMain);
 
     // TODO: find exported functions and add them too ?
     if (a != Address::INVALID) {
@@ -160,7 +160,7 @@ bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
     m_program->getProject()->alertStartDecode(extent.lower(), (extent.upper() - extent.lower()).value());
 
     bool    gotMain;
-    Address a = getMainEntryPoint(gotMain);
+    Address a = findMainEntryPoint(gotMain);
     LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
 
     if (a == Address::INVALID) {
@@ -294,20 +294,6 @@ bool DefaultFrontEnd::decodeUndecoded()
 }
 
 
-bool DefaultFrontEnd::decodeOnly(Address addr)
-{
-    UserProc *p = static_cast<UserProc *>(m_program->getOrCreateFunction(addr));
-    assert(!p->isLib());
-
-    const bool ok = processProc(p, p->getEntryAddress());
-    if (ok) {
-        p->setDecoded();
-    }
-
-    return ok && m_program->isWellFormed();
-}
-
-
 bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
     if (m_program->getProject()->getSettings()->traceDecoder) {
@@ -318,7 +304,7 @@ bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 }
 
 
-bool DefaultFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
+bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult& result)
 {
     BinaryImage *image = m_program->getBinaryFile()->getImage();
     if (!image || (image->getSectionByAddr(pc) == nullptr)) {
@@ -344,6 +330,12 @@ bool DefaultFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
         return false;
     }
 }
+
+
+void DefaultFrontEnd::extraProcessCall(CallStatement *, const RTLList&)
+{
+}
+
 
 void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
                                    Address dest, const std::list<Statement *>& sl,
@@ -435,10 +427,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 LOG_MSG("*%1", addr);
             }
 
-            if (!decodeInstruction(addr, inst)) {
+            if (!decodeSingleInstruction(addr, inst)) {
                 QString message;
                 BinaryImage *image = m_program->getBinaryFile()->getImage();
-                message.sprintf("Encountered invalid or unrecognized instruction at address %s: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
+                message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
+                                "0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
                                 image->readNative1(addr + 0),
                                 image->readNative1(addr + 1),
                                 image->readNative1(addr + 2),
@@ -687,7 +680,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                                 DecodeResult decoded;
 
                                 // Decode it.
-                                if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) {
+                                if (decodeSingleInstruction(callAddr, decoded) && !decoded.rtl->empty()) {
                                     // Decoded successfully. Create a Statement from it.
                                     Statement *firstStmt = decoded.rtl->front();
 

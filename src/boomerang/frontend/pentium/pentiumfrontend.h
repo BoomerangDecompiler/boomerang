@@ -42,10 +42,10 @@ public:
      * Locate the starting address of "main" in the code section.
      * \returns  Native pointer if found; Address::INVALID if not
      */
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
 
 protected:
-    virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
+    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result) override;
 
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
     virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;

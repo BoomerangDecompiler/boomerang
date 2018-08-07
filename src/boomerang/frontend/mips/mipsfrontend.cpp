@@ -32,7 +32,7 @@ MIPSFrontEnd::MIPSFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
+Address MIPSFrontEnd::findMainEntryPoint(bool& gotMain)
 {
     Address start = m_binaryFile->getMainEntryPoint();
 

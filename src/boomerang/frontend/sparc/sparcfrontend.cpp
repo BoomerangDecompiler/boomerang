@@ -615,7 +615,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
                 inst.type  = DD; // E.g. decode the delay slot instruction
             }
             else {
-                decodeInstruction(addr, inst);
+                decodeSingleInstruction(addr, inst);
             }
 
             // Check for invalid instructions
@@ -741,7 +741,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
                 {
                     // This includes "call" and "ba". If a "call", it might be a move_call_move idiom, or a call to .stret4
                     DecodeResult delay_inst;
-                    decodeInstruction(addr + 4, delay_inst);
+                    decodeSingleInstruction(addr + 4, delay_inst);
 
                     if (m_program->getProject()->getSettings()->traceDecoder) {
                         LOG_MSG("*%1", addr + 4);
@@ -894,7 +894,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
 
                     if (inst.numBytes == 4) {
                         // Ordinary instruction. Look at the delay slot
-                        decodeInstruction(addr + 4, delayInst);
+                        decodeSingleInstruction(addr + 4, delayInst);
                     }
                     else {
                         // Must be a prologue or epilogue or something.
@@ -929,7 +929,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
                     // just a binary comparison; that may fail to make this optimisation if the instr has relative fields.
 
                     DecodeResult delay_inst;
-                    decodeInstruction(addr + 4, delay_inst);
+                    decodeSingleInstruction(addr + 4, delay_inst);
 
                     switch (delay_inst.type)
                     {
@@ -960,7 +960,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
                     // Execute the delay instruction if the branch is taken; skip (anull) the delay instruction if branch
                     // not taken.
                     DecodeResult delay_inst;
-                    decodeInstruction(addr + 4, delay_inst);
+                    decodeSingleInstruction(addr + 4, delay_inst);
 
                     switch (delay_inst.type)
                     {
@@ -1266,7 +1266,7 @@ SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address SparcFrontEnd::getMainEntryPoint(bool& gotMain)
+Address SparcFrontEnd::findMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();

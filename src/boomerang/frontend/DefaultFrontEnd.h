@@ -65,10 +65,11 @@ public:
     void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
 
     /// \copydoc IFrontEnd::decodeInstruction
-    virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
+    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result) override;
 
-    /// \copydoc IFrontEnd::extraProcessCall
-    virtual void extraProcessCall(CallStatement * /*call*/, const RTLList& /*BB_rtls*/) override {}
+    /// Do extra processing of call instructions.
+    /// Does nothing by default.
+    virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls);
 
     /// \copydoc IFrontEnd::decodeEntryPointsRecursive
     bool decodeEntryPointsRecursive(bool decodeMain = true) override;
@@ -78,9 +79,6 @@ public:
 
     /// \copydoc IFrontEnd::decodeUndecoded
     bool decodeUndecoded() override;
-
-    /// \copydoc IFrontEnd::decodeOnly
-    bool decodeOnly(Address addr) override;
 
     /// \copydoc IFrontEnd::decodeFragment
     bool decodeFragment(UserProc *proc, Address addr) override;

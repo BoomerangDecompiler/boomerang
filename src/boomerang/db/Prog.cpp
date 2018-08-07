@@ -598,7 +598,6 @@ bool Prog::decodeEntryPoint(Address entryAddr)
         m_fe->decodeRecursive(entryAddr);
     }
 
-
     if (!func) {
         func = getFunctionByAddr(entryAddr);
 

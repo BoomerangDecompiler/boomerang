@@ -32,7 +32,7 @@ PPCFrontEnd::PPCFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address PPCFrontEnd::getMainEntryPoint(bool& gotMain)
+Address PPCFrontEnd::findMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();

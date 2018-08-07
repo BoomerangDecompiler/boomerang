@@ -300,7 +300,7 @@ bool Project::decodeAll()
     }
 
     bool gotMain = false;
-    Address mainAddr = m_fe->getMainEntryPoint(gotMain);
+    Address mainAddr = m_fe->findMainEntryPoint(gotMain);
     if (gotMain) {
         m_prog->addEntryPoint(mainAddr);
     }
