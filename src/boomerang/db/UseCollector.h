@@ -58,9 +58,6 @@ public:
     /// Print the collected locations to stream \p os
     void print(QTextStream& os, bool html = false) const;
 
-    /// Print to string (for debugging)
-    QString prints() const;
-
     /// \returns true if \p e is in the collection
     inline bool exists(SharedExp e) { return m_locs.contains(e); }
     LocationSet& getLocSet() { return m_locs; }

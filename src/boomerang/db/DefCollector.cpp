@@ -96,15 +96,6 @@ SharedExp DefCollector::findDefFor(SharedExp e) const
 }
 
 
-QString DefCollector::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-    print(ost);
-    return tgt;
-}
-
-
 void DefCollector::makeCloneOf(const DefCollector& other)
 {
     m_initialised = other.m_initialised;

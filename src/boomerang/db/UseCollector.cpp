@@ -84,15 +84,6 @@ void UseCollector::print(QTextStream& os, bool html) const
 }
 
 
-QString UseCollector::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-    print(ost);
-    return tgt;
-}
-
-
 void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 {
     LocationSet   removes, inserts;

@@ -270,7 +270,6 @@ public:
 
     QString prints();
 
-
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
