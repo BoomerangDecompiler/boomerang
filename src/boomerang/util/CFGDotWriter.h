@@ -17,7 +17,7 @@
 
 class Prog;
 class UserProc;
-class Cfg;
+class ProcCFG;
 
 class QString;
 class QTextStream;
@@ -38,5 +38,5 @@ public:
     void writeCFG(const ProcSet& procs, const QString& filename);
 
 private:
-    void writeCFG(const Cfg *cfg, QTextStream& os);
+    void writeCFG(const ProcCFG *cfg, QTextStream& os);
 };

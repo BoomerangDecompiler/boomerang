@@ -10,7 +10,7 @@
 #include "BasicBlock.h"
 
 
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Assign.h"
@@ -21,6 +21,7 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
+
 
 BasicBlock::BasicBlock(Address lowAddr, Function *function)
     : m_function(function)

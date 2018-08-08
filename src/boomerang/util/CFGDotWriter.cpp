@@ -13,7 +13,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
@@ -29,7 +29,7 @@ void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
     }
 
     QTextStream of(&tgt);
-    of << "digraph Cfg {\n";
+    of << "digraph ProcCFG {\n";
 
     for (const auto& module : prog->getModuleList()) {
         for (Function *func : *module) {
@@ -73,7 +73,7 @@ void CfgDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 }
 
 
-void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
+void CfgDotWriter::writeCFG(const ProcCFG *cfg, QTextStream& of)
 {
     Address returnAddress = Address::INVALID;
 
@@ -153,8 +153,8 @@ void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
         of << "\"];\n";
     }
 
-    // Force the one return node to be at the bottom (max rank). Otherwise, with all its in-edges, it will end up in the
-    // middle
+    // Force the one return node to be at the bottom (max rank).
+    // Otherwise, with all its in-edges, it will end up in the middle
     if (!returnAddress.isZero()) {
         of << "{rank=max; bb" << returnAddress << "}\n";
     }

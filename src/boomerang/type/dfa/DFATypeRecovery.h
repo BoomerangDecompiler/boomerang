@@ -13,7 +13,7 @@
 #include "boomerang/type/TypeRecovery.h"
 
 
-class Cfg;
+class ProcCFG;
 class Signature;
 class Statement;
 class StatementList;
@@ -45,7 +45,7 @@ public:
 
 private:
     void dfaTypeAnalysis(UserProc *proc);
-    bool dfaTypeAnalysis(Signature *signature, Cfg *cfg);
+    bool dfaTypeAnalysis(Signature *signature, ProcCFG *cfg);
     bool dfaTypeAnalysis(Statement *stmt);
 
     void dumpResults(StatementList& stmts, int iter);

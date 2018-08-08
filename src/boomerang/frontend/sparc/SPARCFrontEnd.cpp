@@ -17,7 +17,7 @@
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
@@ -83,7 +83,7 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 }
 
 
-void SPARCFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq)
+void SPARCFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, ProcCFG *cfg, TargetQueue& tq)
 {
     if (newBB == nullptr) {
         return;
@@ -99,7 +99,7 @@ void SPARCFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& 
 }
 
 
-void SPARCFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address,
+void SPARCFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address,
                                int offset /* = 0*/)
 {
     if (callBB == nullptr) {
@@ -183,7 +183,7 @@ bool SPARCFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
         BB_rtls->push_back(std::move(inst.rtl));
 
         // End the current basic block
-        Cfg        *cfg    = proc->getCFG();
+        ProcCFG        *cfg    = proc->getCFG();
         BasicBlock *callBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
 
         if (callBB == nullptr) {
@@ -250,7 +250,7 @@ bool SPARCFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
 
 void SPARCFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
-                            DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
+                            DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq)
 {
     // Aliases for the SD and delay RTLs
     GotoStatement *SD_stmt   = static_cast<GotoStatement *>(inst.rtl->back());
@@ -290,7 +290,7 @@ bool SPARCFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
                             std::unique_ptr<RTLList> BB_rtls, TargetQueue&, UserProc *proc,
                             std::list<CallStatement *>& callList)
 {
-    Cfg *cfg       = proc->getCFG();
+    ProcCFG *cfg       = proc->getCFG();
     RTL *rtl       = inst.rtl.get();
     RTL *delayRTL = delay_inst.rtl.get();
 
@@ -389,7 +389,7 @@ bool SPARCFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
 
 
 bool SPARCFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
-                             DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
+                             DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq)
 {
     GotoStatement *jumpStmt = static_cast<GotoStatement *>(inst.rtl->back());
     Address       jumpDest  = jumpStmt->getFixedDest();
@@ -504,7 +504,7 @@ bool SPARCFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
 
 
 bool SPARCFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
-                               DecodeResult& delayInst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
+                               DecodeResult& delayInst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq)
 {
     // We may have to move the delay instruction to an orphan BB, which then branches to the target of the jump.
     // Instead of moving the delay instruction to an orphan BB, we may have a duplicate of the delay instruction just
@@ -583,7 +583,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
     bool sequentialDecode = true;
 
     // The control flow graph of the current procedure
-    Cfg *cfg = proc->getCFG();
+    ProcCFG *cfg = proc->getCFG();
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.

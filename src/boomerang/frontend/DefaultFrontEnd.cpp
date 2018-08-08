@@ -405,7 +405,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
     // Will be true for all NCTs and for CTIs with a fall through branch.
     bool sequentialDecode = true;
 
-    Cfg *cfg = proc->getCFG();
+    ProcCFG *cfg = proc->getCFG();
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
@@ -928,7 +928,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
 BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL)
 {
-    Cfg *cfg = proc->getCFG();
+    ProcCFG *cfg = proc->getCFG();
 
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement

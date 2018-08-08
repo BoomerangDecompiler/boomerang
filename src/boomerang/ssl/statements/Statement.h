@@ -321,7 +321,7 @@ public:
     void stripSizes();
 
     /// For all expressions in this Statement, replace any e with e{def}
-    void subscriptVar(SharedExp e, Statement *def /*, Cfg* cfg */);
+    void subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */);
 
     // Cast the constant num to type ty. If a change was made, return true
     // Cast the constant num to be of type ty. Return true if a change made

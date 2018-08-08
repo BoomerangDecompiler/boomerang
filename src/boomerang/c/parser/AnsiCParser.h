@@ -9,8 +9,8 @@
 #include <memory>
 #include <string>
 
-#include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Util.h"

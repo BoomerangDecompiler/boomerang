@@ -13,7 +13,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -62,7 +62,7 @@ void DataFlow::dfs(int myIdx, int parentIdx)
 
 bool DataFlow::calculateDominators()
 {
-    Cfg *cfg = m_proc->getCFG();
+    ProcCFG *cfg = m_proc->getCFG();
     BasicBlock *entryBB = cfg->getEntryBB();
     const int numBB     = cfg->getNumBBs();
 
@@ -420,7 +420,7 @@ void DataFlow::dumpA_orig()
 
 void DataFlow::convertImplicits()
 {
-    Cfg *cfg = m_proc->getCFG();
+    ProcCFG *cfg = m_proc->getCFG();
 
     // Convert statements in A_phi from m[...]{-} to m[...]{0}
     std::map<SharedExp, std::set<int>, lessExpStar> A_phi_copy = m_A_phi; // Object copy
@@ -541,7 +541,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 
 void DataFlow::allocateData()
 {
-    Cfg *cfg = m_proc->getCFG();
+    ProcCFG *cfg = m_proc->getCFG();
     const int numBBs = cfg->getNumBBs();
 
     m_BBs.assign(numBBs, nullptr);

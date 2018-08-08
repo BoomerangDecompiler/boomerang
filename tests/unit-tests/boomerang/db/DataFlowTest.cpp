@@ -49,7 +49,7 @@ void DataFlowTest::testCalculateDominators()
 {
     // Appel, Figure 19.8
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
     DataFlow *df = proc.getDataFlow();
 
     BasicBlock *a = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1000), 1));

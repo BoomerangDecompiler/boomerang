@@ -15,10 +15,10 @@ set(TESTS
     binary/BinarySymbolTableTest
     binary/BinarySymbolTest
     proc/LibProcTest
+    proc/ProcCFGTest
     proc/UserProcTest
     signature/SignatureTest
     BasicBlockTest
-    CFGTest
     GlobalTest
     ProgTest
 )

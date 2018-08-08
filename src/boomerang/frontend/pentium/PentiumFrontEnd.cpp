@@ -65,7 +65,7 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
     // Need a post-cfg pass to remove the FPUSH and FPOP instructions, and to transform various code after floating
     // point compares to generate floating point branches.
     // processFloatCode() will recurse to process its out-edge BBs (if not already processed)
-    Cfg *cfg = function->getCFG();
+    ProcCFG *cfg = function->getCFG();
 
     // This will get done twice; no harm
     function->setEntryBB();
@@ -85,7 +85,7 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 }
 
 
-void PentiumFrontEnd::processFloatCode(Cfg *cfg)
+void PentiumFrontEnd::processFloatCode(ProcCFG *cfg)
 {
     for (BasicBlock *bb : *cfg) {
         Statement *st;
@@ -165,7 +165,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 }
 
 
-void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
+void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, ProcCFG *cfg)
 {
     // Loop through each RTL this BB
     RTLList *BB_rtls = bb ? bb->getRTLs() : nullptr;

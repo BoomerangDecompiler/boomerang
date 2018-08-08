@@ -13,7 +13,7 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
@@ -607,7 +607,7 @@ bool Statement::addUsedLocals(LocationSet& used)
 }
 
 
-void Statement::subscriptVar(SharedExp e, Statement *def /*, Cfg* cfg */)
+void Statement::subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */)
 {
     ExpSubscripter  es(e, def /*, cfg*/);
     StmtSubscripter ss(&es);

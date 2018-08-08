@@ -9,7 +9,6 @@
 
 list(APPEND boomerang-db-sources
     db/BasicBlock
-    db/CFG
     db/DataFlow
     db/DebugInfo
     db/DefCollector
@@ -29,6 +28,7 @@ list(APPEND boomerang-db-sources
 
     db/proc/LibProc
     db/proc/Proc
+    db/proc/ProcCFG
     db/proc/UserProc
 
     db/signature/CustomSignature

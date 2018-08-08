@@ -11,14 +11,14 @@
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Statement.h"
 
 #include <deque>
 
 
-bool CFGCompressor::compressCFG(Cfg* cfg)
+bool CFGCompressor::compressCFG(ProcCFG* cfg)
 {
     bool changed = false;
 
@@ -70,7 +70,7 @@ bool CFGCompressor::compressCFG(Cfg* cfg)
     return changed;
 }
 
-bool CFGCompressor::removeOrphanBBs(Cfg *cfg)
+bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
 {
     std::deque<BasicBlock *> orphans;
 

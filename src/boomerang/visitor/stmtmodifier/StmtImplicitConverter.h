@@ -13,7 +13,7 @@
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 
 
-class Cfg;
+class ProcCFG;
 class ImplicitConverter;
 
 
@@ -23,7 +23,7 @@ class ImplicitConverter;
 class StmtImplicitConverter : public StmtModifier
 {
 public:
-    StmtImplicitConverter(ImplicitConverter *ic, Cfg *cfg);
+    StmtImplicitConverter(ImplicitConverter *ic, ProcCFG *cfg);
     virtual ~StmtImplicitConverter() = default;
 
 public:
@@ -31,5 +31,5 @@ public:
     virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
 
 private:
-    Cfg *m_cfg;
+    ProcCFG *m_cfg;
 };

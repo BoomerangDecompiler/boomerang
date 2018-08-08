@@ -112,7 +112,7 @@ private:
      * \param cfg - the CFG of the current procedure
      * \param tq Object managing the target queue
      */
-    void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq);
+    void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Records the fact that there is a procedure at a given address. Also adds the out edge to the
@@ -127,7 +127,7 @@ private:
      * \param  offset - the offset from the call instruction to which an outedge must be added. A value of 0
      *         means no edge is to be added.
      */
-    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address, int offset = 0);
+    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address, int offset = 0);
 
     /**
      * This is the stub for cases of DCTI couples that we haven't written
@@ -168,7 +168,7 @@ private:
      *
      */
     void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
+                 std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)
@@ -203,7 +203,7 @@ private:
      * \returns true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                  std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
+                  std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Handles all static conditional delayed anulled branches followed by
@@ -221,7 +221,7 @@ private:
      * \returns          true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                    std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
+                    std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Emit a null RTL with the given address.

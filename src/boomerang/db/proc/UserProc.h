@@ -10,10 +10,8 @@
 #pragma once
 
 
-#include "Proc.h"
-
-
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/UseCollector.h"
 #include "boomerang/util/StatementList.h"
@@ -93,8 +91,8 @@ public:
 
 public:
     /// \returns a pointer to the CFG object.
-    Cfg *getCFG() { return m_cfg.get(); }
-    const Cfg *getCFG() const { return m_cfg.get(); }
+    ProcCFG *getCFG() { return m_cfg.get(); }
+    const ProcCFG *getCFG() const { return m_cfg.get(); }
 
     /// Returns a pointer to the DataFlow object.
     DataFlow *getDataFlow() { return &m_df; }
@@ -374,7 +372,7 @@ private:
     ProcStatus m_status = PROC_UNDECODED;
     int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
 
-    std::unique_ptr<Cfg> m_cfg; ///< The control flow graph.
+    std::unique_ptr<ProcCFG> m_cfg; ///< The control flow graph.
 
     /// DataFlow object. Holds information relevant to transforming to and from SSA form.
     DataFlow m_df;

@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/frontend/sparc/SPARCFrontEnd.h"
@@ -258,8 +258,8 @@ void SPARCFrontendTest::testDelaySlot()
     bool        res = fe->processProc(&proc, addr);
 
     QVERIFY(res == 1);
-    Cfg        *cfg = proc.getCFG();
-    Cfg::iterator it = cfg->begin();
+    ProcCFG        *cfg = proc.getCFG();
+    ProcCFG::iterator it = cfg->begin();
 
     QVERIFY(it != cfg->end());
     BasicBlock *bb = *it;

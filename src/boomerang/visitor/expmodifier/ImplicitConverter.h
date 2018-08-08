@@ -13,7 +13,7 @@
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 
 
-class Cfg;
+class ProcCFG;
 
 
 /**
@@ -24,7 +24,7 @@ class Cfg;
 class ImplicitConverter : public ExpModifier
 {
 public:
-    ImplicitConverter(Cfg *cfg);
+    ImplicitConverter(ProcCFG *cfg);
     virtual ~ImplicitConverter() = default;
 
 public:
@@ -35,5 +35,5 @@ public:
     SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
 
 private:
-    Cfg *m_cfg;
+    ProcCFG *m_cfg;
 };
