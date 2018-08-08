@@ -38,7 +38,7 @@ list(APPEND boomerang-db-sources
     db/signature/Return
     db/signature/PentiumSignature
     db/signature/PPCSignature
-    db/signature/SparcSignature
+    db/signature/SPARCSignature
     db/signature/ST20Signature
     db/signature/Win32Signature
 )

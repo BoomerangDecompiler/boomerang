@@ -17,7 +17,7 @@
 #include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/PPCSignature.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/signature/SparcSignature.h"
+#include "boomerang/db/signature/SPARCSignature.h"
 #include "boomerang/db/signature/ST20Signature.h"
 #include "boomerang/db/signature/Win32Signature.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -380,8 +380,8 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
         return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(*this));
     }
 
-    if (CallingConvention::StdC::SparcSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::SparcSignature(*this));
+    if (CallingConvention::StdC::SPARCSignature::qualified(p, *this)) {
+        return std::shared_ptr<Signature>(new CallingConvention::StdC::SPARCSignature(*this));
     }
 
     if (CallingConvention::StdC::PPCSignature::qualified(p, *this)) {
@@ -413,7 +413,7 @@ std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
         }
 
     case Machine::SPARC:
-        return std::make_shared<CallingConvention::StdC::SparcSignature>(name);
+        return std::make_shared<CallingConvention::StdC::SPARCSignature>(name);
 
     case Machine::PPC:
         return std::make_shared<CallingConvention::StdC::PPCSignature>(name);

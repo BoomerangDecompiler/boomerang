@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "SparcSignature.h"
+#include "SPARCSignature.h"
 
 
 #include "boomerang/db/proc/UserProc.h"
@@ -27,7 +27,7 @@ namespace StdC
 {
 
 
-SparcSignature::SparcSignature(const QString& name)
+SPARCSignature::SPARCSignature(const QString& name)
     : Signature(name)
 {
     Signature::addReturn(Location::regOf(REG_SPARC_SP));
@@ -36,21 +36,21 @@ SparcSignature::SparcSignature(const QString& name)
 }
 
 
-SparcSignature::SparcSignature(Signature& old)
+SPARCSignature::SPARCSignature(Signature& old)
     : Signature(old)
 {
 }
 
 
-bool SparcSignature::operator==(const Signature& other) const
+bool SPARCSignature::operator==(const Signature& other) const
 {
     return Signature::operator==(other);
 }
 
 
-std::shared_ptr<Signature> SparcSignature::clone() const
+std::shared_ptr<Signature> SPARCSignature::clone() const
 {
-    SparcSignature *n = new SparcSignature(m_name);
+    SPARCSignature *n = new SPARCSignature(m_name);
 
     Util::clone(m_params, n->m_params);
     Util::clone(m_returns, n->m_returns);
@@ -63,7 +63,7 @@ std::shared_ptr<Signature> SparcSignature::clone() const
 }
 
 
-void SparcSignature::addReturn(SharedType type, SharedExp e)
+void SPARCSignature::addReturn(SharedType type, SharedExp e)
 {
     if (type->isVoid()) {
         return;
@@ -77,14 +77,14 @@ void SparcSignature::addReturn(SharedType type, SharedExp e)
 }
 
 
-void SparcSignature::addParameter(const QString& name, const SharedExp& e,
+void SPARCSignature::addParameter(const QString& name, const SharedExp& e,
                                   SharedType type, const QString& boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
 
 
-SharedExp SparcSignature::getArgumentExp(int n) const
+SharedExp SPARCSignature::getArgumentExp(int n) const
 {
     if (n < static_cast<int>(m_params.size())) {
         return Signature::getArgumentExp(n);
@@ -107,14 +107,14 @@ SharedExp SparcSignature::getArgumentExp(int n) const
 }
 
 
-std::shared_ptr<Signature> SparcSignature::promote(UserProc * /*p*/)
+std::shared_ptr<Signature> SPARCSignature::promote(UserProc * /*p*/)
 {
     // no promotions from here up, obvious example would be name mangling
     return shared_from_this();
 }
 
 
-SharedExp SparcSignature::getProven(SharedExp left) const
+SharedExp SPARCSignature::getProven(SharedExp left) const
 {
     if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
@@ -140,7 +140,7 @@ SharedExp SparcSignature::getProven(SharedExp left) const
 }
 
 
-bool SparcSignature::isPreserved(SharedExp e) const
+bool SPARCSignature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfConst()) {
         int r = e->access<Const, 1>()->getInt();
@@ -169,7 +169,7 @@ bool SparcSignature::isPreserved(SharedExp e) const
 }
 
 
-void SparcSignature::getLibraryDefines(StatementList& defs)
+void SPARCSignature::getLibraryDefines(StatementList& defs)
 {
     if (defs.size() > 0) {
         return; // Do only once
@@ -187,7 +187,7 @@ void SparcSignature::getLibraryDefines(StatementList& defs)
 }
 
 
-SharedExp SparcLibSignature::getProven(SharedExp left) const
+SharedExp SPARCLibSignature::getProven(SharedExp left) const
 {
     if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
@@ -219,7 +219,7 @@ SharedExp SparcLibSignature::getProven(SharedExp left) const
     return nullptr;
 }
 
-bool SparcSignature::qualified(UserProc *p, Signature& /*candidate*/)
+bool SPARCSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
     LOG_VERBOSE2("Consider promotion to stdc sparc signature for %1", p->getName());
 
@@ -227,12 +227,12 @@ bool SparcSignature::qualified(UserProc *p, Signature& /*candidate*/)
         return false;
     }
 
-    LOG_VERBOSE2("Promoted to StdC::SparcSignature");
+    LOG_VERBOSE2("Promoted to StdC::SPARCSignature");
     return true;
 }
 
 
-bool SparcSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const
+bool SPARCSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const
 {
     if (!Signature::isAddrOfStackLocal(spIndex, e)) {
         return false;
@@ -254,7 +254,7 @@ bool SparcSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) co
 
 static Unary spPlus64(opMemOf, Binary::get(opPlus, Location::regOf(REG_SPARC_SP), Const::get(64)));
 
-bool SparcSignature::returnCompare(const Assignment& a, const Assignment& b) const
+bool SPARCSignature::returnCompare(const Assignment& a, const Assignment& b) const
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();
@@ -300,7 +300,7 @@ bool SparcSignature::returnCompare(const Assignment& a, const Assignment& b) con
 }
 
 
-bool SparcSignature::argumentCompare(const Assignment& a, const Assignment& b) const
+bool SPARCSignature::argumentCompare(const Assignment& a, const Assignment& b) const
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();

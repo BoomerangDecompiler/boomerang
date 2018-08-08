@@ -144,7 +144,7 @@ public:
 
     bool isNoReturn() const { return false; }
 
-    /// \returns true if this is a known machine (e.g. SparcSignature as opposed to Signature)
+    /// \returns true if this is a known machine (e.g. SPARCSignature as opposed to Signature)
     virtual bool isPromoted() const { return false; }
 
     /// any signature can be promoted to a higher level signature, if available
