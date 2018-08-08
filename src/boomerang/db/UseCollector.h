@@ -59,7 +59,7 @@ public:
     void print(QTextStream& os, bool html = false) const;
 
     /// Print to string (for debugging)
-    char *prints() const;
+    QString prints() const;
 
     /// \returns true if \p e is in the collection
     inline bool exists(SharedExp e) { return m_locs.contains(e); }

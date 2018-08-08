@@ -88,6 +88,3 @@ int getStackOffset(SharedConstExp e, int sp);
 int getStackRegisterIndex(const Prog *prog);
 
 }
-
-#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kiB)
-extern char debug_buffer[DEBUG_BUFSIZE];

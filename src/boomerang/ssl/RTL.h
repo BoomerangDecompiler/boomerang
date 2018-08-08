@@ -86,7 +86,7 @@ public:
     void print(QTextStream& os, bool html = false) const;
 
     // Print to a static buffer (mainly for debugging)
-    char *prints() const;
+    QString prints() const;
 
     /// Dump the content of this RTL to stderr.
     void dump() const;

@@ -68,7 +68,7 @@ public:
     void print(QTextStream& os, bool html = false) const;
 
     /// Print to string (for debugging)
-    char *prints() const;
+    QString prints() const;
 
     bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 

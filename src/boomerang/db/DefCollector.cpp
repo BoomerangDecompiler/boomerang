@@ -96,15 +96,12 @@ SharedExp DefCollector::findDefFor(SharedExp e) const
 }
 
 
-char *DefCollector::prints() const
+QString DefCollector::prints() const
 {
     QString     tgt;
     QTextStream ost(&tgt);
-
     print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
 
 

@@ -160,9 +160,9 @@ void TypeTest::testDataInterval()
 
     dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "second", FloatType::get(64));
-    QCOMPARE(dim.prints(),
+    QCOMPARE(dim.prints(), QString(
              "0x00001000-0x00001004 first int\n"
-             "0x00001004-0x0000100c second double\n");
+             "0x00001004-0x0000100c second double\n"));
 
     const TypedVariable *var = dim.find(Address(0x00001000));
     QVERIFY(var != nullptr);
@@ -233,12 +233,12 @@ void TypeTest::testDataIntervalOverlaps()
     ct->addMember(IntegerType::get(32, Sign::Signed), "int3");
     ct->addMember(FloatType::get(32), "float3");
     dim.insertItem(Address(0x00001010), "newStruct", ct);
-    QCOMPARE(dim.prints(),
+    QCOMPARE(dim.prints(), QString(
              "0x00001000-0x00001004 firstInt int\n"
              "0x00001004-0x00001008 firstFloat float\n"
              "0x00001008-0x0000100c secondInt int\n"
              "0x0000100c-0x00001010 secondFloat float\n"
-             "0x00001010-0x00001018 newStruct struct { int int3; float float3; }\n");
+             "0x00001010-0x00001018 newStruct struct { int int3; float float3; }\n"));
 
     // First insert a new struct over the top of the existing middle pair
     auto ctu = CompoundType::get();
@@ -248,11 +248,11 @@ void TypeTest::testDataIntervalOverlaps()
 
     const TypedVariable *var = dim.find(Address(0x1008));
     QCOMPARE(var->type->getCtype(), QString("struct { int newInt; float newFloat; }"));
-    QCOMPARE(dim.prints(),
+    QCOMPARE(dim.prints(), QString(
              "0x00001000-0x00001004 firstInt int\n"
              "0x00001004-0x00001008 firstFloat float\n"
              "0x00001008-0x00001010 replacementStruct struct { int newInt; float newFloat; }\n"
-             "0x00001010-0x00001018 newStruct struct { int int3; float float3; }\n");
+             "0x00001010-0x00001018 newStruct struct { int int3; float float3; }\n"));
 
 
     // Attempt a weave; should fail

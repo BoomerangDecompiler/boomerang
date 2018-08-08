@@ -102,7 +102,7 @@ public:
     const Assignment *findOnLeft(SharedConstExp loc) const;
     Assignment *findOnLeft(SharedExp loc);   ///< Return the first stmt with loc on the LHS
 
-    char *prints() const;
+    QString prints() const;
 
 private:
     List m_list;

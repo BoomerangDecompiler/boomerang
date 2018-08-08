@@ -64,7 +64,7 @@ void StatementList::append(const StatementSet& ss)
 }
 
 
-char *StatementList::prints() const
+QString StatementList::prints() const
 {
     QString     tgt;
     QTextStream ost(&tgt);
@@ -73,11 +73,8 @@ char *StatementList::prints() const
         ost << elem << ",\t";
     }
 
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
-
 
 
 void StatementList::makeIsect(StatementList& a, LocationSet& b)

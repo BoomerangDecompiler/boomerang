@@ -39,7 +39,7 @@ LocationSet::LocationSet(const LocationSet& o)
 }
 
 
-char *LocationSet::prints() const
+QString LocationSet::prints() const
 {
     QString     tgt;
     QTextStream ost(&tgt);
@@ -52,9 +52,7 @@ char *LocationSet::prints() const
         ost << *it;
     }
 
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
 
 

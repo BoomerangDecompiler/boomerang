@@ -208,7 +208,7 @@ public:
      */
     virtual void print(QTextStream& os, bool html = false) const = 0;
 
-    char *prints() const; // For logging, was also for debugging
+    QString prints() const; // For logging, was also for debugging
 
     // This version prints much better in gdb
     void dump() const;    // For debugging

@@ -79,15 +79,12 @@ SharedExp& Exp::refSubExp3()
 }
 
 
-char *Exp::prints()
+QString Exp::prints()
 {
     QString     tgt;
     QTextStream ost(&tgt);
-
     print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
 
 

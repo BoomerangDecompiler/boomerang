@@ -268,8 +268,7 @@ public:
      */
     void print(QTextStream& os, bool html = false);
 
-    /// Print to a static buffer (for debugging)
-    const char *prints();
+    QString prints();
 
 
 protected:

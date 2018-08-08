@@ -93,7 +93,7 @@ public:
     void deleteItem(Address addr);
 
     /// For test and debug
-    char *prints();
+    QString prints();
 
     /// For debug
     void dump();

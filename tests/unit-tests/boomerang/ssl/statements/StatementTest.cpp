@@ -640,7 +640,7 @@ void StatementTest::testLocationSet()
     theReg.setInt(REG_SPARC_O0);
     QVERIFY(rof == **ls2.begin()); // First elements should compare equal
 
-    theReg.setInt(REG_SPARC_I7);
+    theReg.setInt(REG_SPARC_O4);
     e = *(++ls2.begin());          // Second element
     QCOMPARE(e->prints(), rof.prints());            // ... should be r12
 

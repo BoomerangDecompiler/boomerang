@@ -22,9 +22,6 @@
 #include <string>
 
 
-char debug_buffer[DEBUG_BUFSIZE];
-
-
 namespace Util
 {
 QString escapeStr(const QString& inp)

@@ -161,15 +161,12 @@ void RTL::dump() const
 }
 
 
-char *RTL::prints() const
+QString RTL::prints() const
 {
     QString     tgt;
     QTextStream ost(&tgt);
-
     print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
 
 

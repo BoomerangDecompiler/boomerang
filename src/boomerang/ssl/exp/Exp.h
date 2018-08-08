@@ -112,7 +112,7 @@ public:
     void printt(QTextStream& os) const;
 
     /// Print to a static buffer (for debugging)
-    char *prints();
+    QString prints();
 
     /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
     virtual void printx(int ind) const = 0;
