@@ -14,7 +14,7 @@ include(CheckLibraryExists)
 include(TestBigEndian)
 
 # Boomerang configuration options
-option(BUILD_SHARED_LIBS                "Build shared or static libraries." OFF)
+option(BUILD_SHARED_LIBS                "Build shared or static libraries." ON)
 option(BOOMERANG_BUILD_GUI              "Build the GUI. Requires Qt5Widgets." ON)
 option(BOOMERANG_BUILD_CLI              "Build the command line interface." ON)
 option(BOOMERANG_BUILD_UNIT_TESTS       "Build the unit tests. Requires Qt5Test." OFF)
