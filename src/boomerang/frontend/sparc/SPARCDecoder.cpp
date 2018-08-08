@@ -35,7 +35,7 @@
 #define DIS_RS1     (machine->dis_RegRhs(rs1))
 #define DIS_FS1S    (machine->dis_RegRhs(fs1s + 32))
 #define DIS_FS2S    (machine->dis_RegRhs(fs2s + 32))
-// Note: Sparc V9 has a second set of double precision registers that have an
+// Note: SPARC V9 has a second set of double precision registers that have an
 // odd index. So far we only support V8
 #define DIS_FDS     (dis_RegLhs(fds + 32))
 #define DIS_FS1D    (machine->dis_RegRhs((fs1d >> 1) + 64))
@@ -2329,7 +2329,7 @@ SharedExp SPARCDecoder::dis_RegLhs(unsigned r)
 }
 
 
-SharedExp SparcMachine::dis_RegRhs(uint8_t reg_no)
+SharedExp SPARCMachine::dis_RegRhs(uint8_t reg_no)
 {
     if (reg_no == 0) {
         return Const::get(0);
@@ -2445,6 +2445,6 @@ DWord SPARCDecoder::getDword(HostAddress lc)
 
 SPARCDecoder::SPARCDecoder(Prog *_prog)
     : NJMCDecoder(_prog, "ssl/sparc.ssl")
-    , machine(new SparcMachine)
+    , machine(new SPARCMachine)
 {
 }

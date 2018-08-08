@@ -17,7 +17,7 @@ set(TESTS
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
     FrontPentTest
-    FrontSparcTest
+    SPARCFrontendTest
 )
 
 

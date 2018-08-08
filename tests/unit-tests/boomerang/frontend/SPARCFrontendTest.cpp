@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "FrontSparcTest.h"
+#include "SPARCFrontendTest.h"
 
 
 #include "boomerang/db/BasicBlock.h"
@@ -19,7 +19,6 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/util/log/Log.h"
 
-
 #include <QDebug>
 
 
@@ -28,7 +27,7 @@
 
 
 
-void FrontSparcTest::test1()
+void SPARCFrontendTest::test1()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
@@ -95,7 +94,7 @@ void FrontSparcTest::test1()
 }
 
 
-void FrontSparcTest::test2()
+void SPARCFrontendTest::test2()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
@@ -139,7 +138,7 @@ void FrontSparcTest::test2()
 }
 
 
-void FrontSparcTest::test3()
+void SPARCFrontendTest::test3()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
@@ -198,7 +197,7 @@ void FrontSparcTest::test3()
 }
 
 
-void FrontSparcTest::testBranch()
+void SPARCFrontendTest::testBranch()
 {
     DecodeResult inst;
     QString      expected;
@@ -237,7 +236,7 @@ void FrontSparcTest::testBranch()
 }
 
 
-void FrontSparcTest::testDelaySlot()
+void SPARCFrontendTest::testDelaySlot()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
@@ -387,4 +386,4 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
 }
 
-QTEST_GUILESS_MAIN(FrontSparcTest)
+QTEST_GUILESS_MAIN(SPARCFrontendTest)

@@ -13,7 +13,7 @@
 #include "boomerang/frontend/NJMCDecoder.h"
 
 
-class SparcMachine
+class SPARCMachine
 {
 public:
     /**
@@ -114,5 +114,5 @@ private:
     DWord getDword(HostAddress lc);
 
 private:
-    std::unique_ptr<SparcMachine> machine;
+    std::unique_ptr<SPARCMachine> machine;
 };

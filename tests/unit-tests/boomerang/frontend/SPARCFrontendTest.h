@@ -13,7 +13,7 @@
 #include "TestUtils.h"
 
 
-class FrontSparcTest : public BoomerangTestWithPlugins
+class SPARCFrontendTest : public BoomerangTestWithPlugins
 {
     Q_OBJECT
 
