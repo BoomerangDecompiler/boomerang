@@ -13,6 +13,23 @@ include(CheckTypeSize)
 include(CheckLibraryExists)
 include(TestBigEndian)
 
+# Boomerang configuration options
+option(BUILD_SHARED_LIBS                "Build shared or static libraries." OFF)
+option(BOOMERANG_BUILD_GUI              "Build the GUI. Requires Qt5Widgets." ON)
+option(BOOMERANG_BUILD_CLI              "Build the command line interface." ON)
+option(BOOMERANG_BUILD_UNIT_TESTS       "Build the unit tests. Requires Qt5Test." OFF)
+
+if (BOOMERANG_BUILD_CLI)
+    option(BOOMERANG_BUILD_REGRESSION_TESTS "Build the regression tests. Requires Python 3." OFF)
+endif (BOOMERANG_BUILD_CLI)
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    option(BOOMERANG_ENABLE_COVERAGE "Build with coverage compiler flags enabled." OFF)
+endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+
+option(BOOMERANG_INSTALL_SAMPLES "Install sample binaries." OFF)
+
+
 CHECK_INCLUDE_FILE(byteswap.h HAVE_BYTESWAP_H)
 CHECK_INCLUDE_FILE(dlfcn.h HAVE_DLFCN_H)
 CHECK_INCLUDE_FILE(fcntl.h HAVE_FCNTL_H)
@@ -79,18 +96,6 @@ add_definitions(-DV9_ONLY=0)
 add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a delayed
                                       # CTI instruction is flagged as an error
 
-# Boomerang configuration options
-option(BUILD_SHARED_LIBS                "Build shared or static libraries." OFF)
-option(BOOMERANG_BUILD_GUI              "Build the GUI. Requires Qt5Widgets." ON)
-option(BOOMERANG_BUILD_CLI              "Build the command line interface." ON)
-option(BOOMERANG_BUILD_UNIT_TESTS       "Build the unit tests. Requires Qt5Test." OFF)
-
-if (BOOMERANG_BUILD_CLI)
-    option(BOOMERANG_BUILD_REGRESSION_TESTS "Build the regression tests. Requires Python 3." OFF)
-endif (BOOMERANG_BUILD_CLI)
-
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    option(BOOMERANG_ENABLE_COVERAGE "Build with coverage compiler flags enabled." OFF)
-endif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-
-option(BOOMERANG_INSTALL_SAMPLES "Install sample binaries." OFF)
+if (NOT BUILD_SHARED_LIBS)
+    add_definitions(-DBOOMERANG_BUILD_STATIC=1)
+endif ()
