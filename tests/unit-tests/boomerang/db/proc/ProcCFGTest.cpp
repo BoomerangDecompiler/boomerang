@@ -295,13 +295,13 @@ void ProcCFGTest::testIsWellFormed()
 
     // add interprocedural edge
     UserProc proc2(Address(0x3000), "test2", nullptr);
-    ProcCFG *proc2Cfg = proc2.getCFG();
+    ProcCFG *proc2CFG = proc2.getCFG();
 
-    BasicBlock *proc2BB = proc2Cfg->createBB(BBType::Oneway, createRTLs(Address(0x3000), 1));
+    BasicBlock *proc2BB = proc2CFG->createBB(BBType::Oneway, createRTLs(Address(0x3000), 1));
 
     cfg->addEdge(callBB, proc2BB);
     QVERIFY(!cfg->isWellFormed());
-    QVERIFY(!proc2Cfg->isWellFormed());
+    QVERIFY(!proc2CFG->isWellFormed());
 }
 
 

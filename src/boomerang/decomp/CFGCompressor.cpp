@@ -18,7 +18,7 @@
 #include <deque>
 
 
-bool CFGCompressor::compressCFG(ProcCFG* cfg)
+bool CFGCompressor::compressCFG(ProcCFG *cfg)
 {
     bool changed = false;
 

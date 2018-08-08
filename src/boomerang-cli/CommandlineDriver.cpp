@@ -520,7 +520,7 @@ int CommandlineDriver::decompile(const QString& fname, const QString& pname)
     m_project->decompileBinaryFile();
 
     if (!m_project->getSettings()->dotFile.isEmpty()) {
-        CfgDotWriter().writeCFG(m_project->getProg(), m_project->getSettings()->dotFile);
+        CFGDotWriter().writeCFG(m_project->getProg(), m_project->getSettings()->dotFile);
     }
 
     m_project->generateCode();

@@ -745,7 +745,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
         QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
 
         if (args.size() == 1) {
-            CfgDotWriter().writeCFG(prog, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
+            CFGDotWriter().writeCFG(prog, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
             return CommandStatus::Success;
         }
         else {
@@ -768,7 +768,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
                 procs.insert(userProc);
             }
 
-            CfgDotWriter().writeCFG(procs, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
+            CFGDotWriter().writeCFG(procs, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
             return CommandStatus::Success;
         }
     }

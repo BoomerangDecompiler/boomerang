@@ -398,7 +398,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
     // that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
-    // to be analysed in the cfg, and also to call newProc()
+    // to be analysed in the ProcCFG, and also to call newProc()
     std::list<CallStatement *> callList;
 
     // Indicates whether or not the next instruction to be decoded is the lexical successor of the current one.

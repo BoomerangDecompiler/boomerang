@@ -136,11 +136,10 @@ public:
     /// \returns the number of functions in this program.
     int getNumFunctions(bool userOnly = true) const;
 
-    /// Check the wellformedness of all the procedures/cfgs in this program
+    /// Check the wellformedness of all the procedures/ProcCFGs in this program
     bool isWellFormed() const;
 
-
-    /// Returns true if this is a win32 program
+    /// \returns true if this program was loaded from a PE executable file.
     bool isWin32() const;
 
     QString getRegName(int idx) const;

@@ -17,7 +17,7 @@ class CFGCompressor
 {
 public:
     /**
-     * Given a well-formed cfg, optimizations are performed on the graph
+     * Given a well-formed ProcCFG, optimizations are performed on the graph
      * to reduce the number of basic blocks and edges. Assumes that \p cfg
      * is well-formed.
      *

@@ -233,7 +233,7 @@ public:
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
 
 public:
-    /// print this cfg, mainly for debugging
+    /// print this CFG, mainly for debugging
     void print(QTextStream& out, bool html = false);
     void dump();            ///< Dump to stderr
     void dumpImplicitMap(); ///< Dump the implicit map to stderr

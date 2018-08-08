@@ -28,7 +28,7 @@ typedef std::set<UserProc *> ProcSet;
 /**
  * Writes the CFG of functions to a file in the Graphviz dot format.
  */
-class BOOMERANG_API CfgDotWriter
+class BOOMERANG_API CFGDotWriter
 {
 public:
     /// Write the CFG of all procedures in the program.

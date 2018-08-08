@@ -20,7 +20,7 @@
 #include "boomerang/ssl/exp/Exp.h"
 
 
-void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
+void CFGDotWriter::writeCFG(const Prog *prog, const QString& filename)
 {
     QFile tgt(prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
 
@@ -56,13 +56,13 @@ void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
 }
 
 
-void CfgDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
+void CFGDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 {
     QFile outFile(filename);
     outFile.open(QFile::WriteOnly | QFile::Text);
 
     QTextStream textStream(&outFile);
-    textStream << "digraph cfg {\n";
+    textStream << "digraph ProcCFG {\n";
 
     for (UserProc *userProc : procs) {
         textStream << "subgraph " << userProc->getName() << " {\n";
@@ -73,7 +73,7 @@ void CfgDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 }
 
 
-void CfgDotWriter::writeCFG(const ProcCFG *cfg, QTextStream& of)
+void CFGDotWriter::writeCFG(const ProcCFG *cfg, QTextStream& of)
 {
     Address returnAddress = Address::INVALID;
 
