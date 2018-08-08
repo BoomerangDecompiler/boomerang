@@ -14,7 +14,7 @@ include(boomerang-utils)
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
     PentiumFrontEndTest
-    SPARCFrontendTest
+    SPARCFrontEndTest
 )
 
 

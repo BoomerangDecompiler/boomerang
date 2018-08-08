@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "SPARCFrontendTest.h"
+#include "SPARCFrontEndTest.h"
 
 
 #include "boomerang/db/BasicBlock.h"
