@@ -10,10 +10,13 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class Prog;
 
 
-class ProgDecompiler
+class BOOMERANG_API ProgDecompiler
 {
 public:
     ProgDecompiler(Prog *prog);

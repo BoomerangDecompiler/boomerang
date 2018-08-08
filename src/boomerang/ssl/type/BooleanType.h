@@ -13,7 +13,7 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-class BooleanType : public Type
+class BOOMERANG_API BooleanType : public Type
 {
 public:
     BooleanType();

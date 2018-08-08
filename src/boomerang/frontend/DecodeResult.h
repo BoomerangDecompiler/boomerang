@@ -48,10 +48,17 @@ enum ICLASS : uint8
  * calling the decoder. This prevents excessive use of confusing
  * reference parameters.
  */
-class DecodeResult
+class BOOMERANG_API DecodeResult
 {
 public:
     DecodeResult();
+    DecodeResult(const DecodeResult&) = delete;
+    DecodeResult(DecodeResult&&);
+
+    ~DecodeResult();
+
+    DecodeResult& operator=(const DecodeResult&) = delete;
+    DecodeResult& operator=(DecodeResult&&);
 
     /// Resets all the fields to their default values.
     void reset();

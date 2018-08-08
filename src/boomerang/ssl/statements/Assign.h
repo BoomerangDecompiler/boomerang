@@ -17,7 +17,7 @@
  * An ordinary assignment with left and right hand sides.
  * Example: r25 := 5
  */
-class Assign : public Assignment
+class BOOMERANG_API Assign : public Assignment
 {
 public:
     Assign();

@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Address.h"
 
 #include <QFile>
@@ -30,7 +31,7 @@ class Prog;
  * For example, the Object Oriented Programming concept of a Class is a Module.
  * Modules can contain other Modules to form a tree.
  */
-class Module
+class BOOMERANG_API Module
 {
 public:
     /// The type for the list of functions.

@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <memory>
 
 
@@ -23,7 +25,7 @@ using SharedConstExp = std::shared_ptr<const Exp>;
  * A class for comparing Exp*s (comparing the actual expressions).
  * Type sensitive.
  */
-struct lessExpStar
+struct BOOMERANG_API lessExpStar
 {
     bool operator()(const SharedConstExp& x, const SharedConstExp& y) const;
 };

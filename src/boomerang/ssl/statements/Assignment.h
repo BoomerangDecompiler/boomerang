@@ -17,7 +17,7 @@
  * Assignment is the base class of all statements that assign to a
  * left hand side like ordinary assign statements, phi statements or implicit assignments.
  */
-class Assignment : public TypingStatement
+class BOOMERANG_API Assignment : public TypingStatement
 {
 public:
     Assignment(SharedExp lhs);

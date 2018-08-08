@@ -22,7 +22,7 @@
  * such as delay slots in the process. These functions replace frontend.cpp
  * for decoding sparc instructions.
  */
-class SparcFrontEnd : public DefaultFrontEnd
+class BOOMERANG_API SparcFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

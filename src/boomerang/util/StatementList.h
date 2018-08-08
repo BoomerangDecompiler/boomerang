@@ -27,7 +27,7 @@ using SharedConstExp = std::shared_ptr<const class Exp>;
 /**
  * A non-owning list of Statements.
  */
-class StatementList
+class BOOMERANG_API StatementList
 {
     typedef std::list<Statement *> List;
 

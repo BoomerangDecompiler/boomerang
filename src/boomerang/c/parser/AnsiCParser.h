@@ -108,7 +108,7 @@ typedef struct
 } yy_AnsiCParser_stype;
 
 /* prefix */
-class AnsiCParser
+class BOOMERANG_API AnsiCParser
 {
 public:
     enum YY_AnsiCParser_ENUM_TOKEN

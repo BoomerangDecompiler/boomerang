@@ -10,19 +10,22 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class IFrontEnd;
 class Module;
 class Prog;
 class QString;
 
 
-struct IModuleFactory
+struct BOOMERANG_API IModuleFactory
 {
     virtual Module *create(const QString& name, Prog *prog) const = 0;
 };
 
 
-struct DefaultModFactory : public IModuleFactory
+struct BOOMERANG_API DefaultModFactory : public IModuleFactory
 {
     Module *create(const QString& name, Prog *prog) const override;
 };

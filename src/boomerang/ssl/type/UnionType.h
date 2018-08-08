@@ -16,7 +16,7 @@
 
 
 // The union type represents the union of any number of any other types
-struct UnionElement
+struct BOOMERANG_API UnionElement
 {
     SharedType type;
     QString    name;
@@ -28,13 +28,13 @@ struct UnionElement
 };
 
 
-struct hashUnionElem
+struct BOOMERANG_API hashUnionElem
 {
     size_t operator()(const UnionElement& e) const;
 };
 
 
-class UnionType : public Type
+class BOOMERANG_API UnionType : public Type
 {
 public:
     typedef std::unordered_set<UnionElement, hashUnionElem>   UnionEntrySet;

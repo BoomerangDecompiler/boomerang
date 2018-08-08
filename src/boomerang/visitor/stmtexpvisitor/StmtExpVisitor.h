@@ -10,6 +10,9 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class ExpVisitor;
 class Assign;
 class PhiAssign;
@@ -28,7 +31,7 @@ class ImpRefStatement;
  * The visiting of expressions (after the current node) is done by an ExpVisitor
  * (i.e. this is a preorder traversal).
  */
-class StmtExpVisitor
+class BOOMERANG_API StmtExpVisitor
 {
 public:
     StmtExpVisitor(ExpVisitor *v, bool ignoreCol = true);

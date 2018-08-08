@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <memory>
 
 
@@ -27,7 +29,7 @@ class Terminal;
 /**
  * The ExpVisitor class is used to iterate over all subexpressions in an expression.
  */
-class ExpVisitor
+class BOOMERANG_API ExpVisitor
 {
 public:
     ExpVisitor() = default;

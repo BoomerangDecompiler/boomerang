@@ -18,7 +18,7 @@
  * (to 1 or 0) depending on the condition codes.
  * It has a condition Exp, similar to the BranchStatement class.
  */
-class BoolAssign : public Assignment
+class BOOMERANG_API BoolAssign : public Assignment
 {
 public:
     /// \param size the size of the assignment

@@ -25,9 +25,9 @@
  * but then you still need maps from expression to bit number.
  * So here a standard map is used, and when a -> b is inserted, b->a is redundantly inserted.
  */
-class ConnectionGraph
+class BOOMERANG_API ConnectionGraph
 {
-    typedef std::multimap<SharedExp, SharedExp, lessExpStar> ExpExpMap;
+    using ExpExpMap = std::multimap<SharedExp, SharedExp, lessExpStar>;
 
 public:
     typedef ExpExpMap::iterator       iterator;
@@ -36,16 +36,16 @@ public:
     typedef ExpExpMap::const_reverse_iterator const_reverse_iterator;
 
 public:
-    iterator begin() { return emap.begin(); }
-    iterator end()   { return emap.end(); }
-    const_iterator begin() const { return emap.begin(); }
-    const_iterator end()   const { return emap.end(); }
+    iterator begin();
+    iterator end();
+    const_iterator begin() const;
+    const_iterator end()   const;
 
-    reverse_iterator rbegin() { return emap.rbegin(); }
-    reverse_iterator rend()   { return emap.rend();   }
+    reverse_iterator rbegin();
+    reverse_iterator rend();
 
-    const_reverse_iterator rbegin() const { return emap.rbegin(); }
-    const_reverse_iterator rend()   const { return emap.rend();   }
+    const_reverse_iterator rbegin() const;
+    const_reverse_iterator rend()   const;
 
 public:
     /// Add pair with check for existing
@@ -79,5 +79,5 @@ private:
     std::vector<SharedExp> allConnected(SharedExp a);
 
 private:
-   ExpExpMap emap;   ///< The map
+    ExpExpMap emap;   ///< The map
 };

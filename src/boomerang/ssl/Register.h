@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <QString>
 
 #include <cstdint>
@@ -18,6 +20,7 @@
 
 
 class Type;
+
 typedef std::shared_ptr<Type> SharedType;
 
 
@@ -28,7 +31,7 @@ typedef std::shared_ptr<Type> SharedType;
  * a register index (register indices may not always be sequential, hence it's
  * not just an array of Register objects).
  */
-class Register
+class BOOMERANG_API Register
 {
 public:
     Register(const QString& name = QString::null, uint16_t sizeInBits = 0, bool isFloatReg = false);

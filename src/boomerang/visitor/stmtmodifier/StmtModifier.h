@@ -10,6 +10,9 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class ExpModifier;
 class Assign;
 class PhiAssign;
@@ -34,7 +37,7 @@ class ImpRefStatement;
  *
  * \note This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
  */
-class StmtModifier
+class BOOMERANG_API StmtModifier
 {
 public:
     StmtModifier(ExpModifier *em, bool ignoreCollector = false);

@@ -18,7 +18,7 @@ namespace CallingConvention
 namespace StdC
 {
 
-class PPCSignature : public Signature
+class BOOMERANG_API PPCSignature : public Signature
 {
 public:
     explicit PPCSignature(const QString& name);

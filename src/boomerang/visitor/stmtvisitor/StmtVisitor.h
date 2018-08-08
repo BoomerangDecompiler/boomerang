@@ -10,6 +10,9 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class RTL;
 class Assign;
 class PhiAssign;
@@ -29,7 +32,7 @@ class ImpRefStatement;
  * derived from Statement: the accept methods already do that for you.
  * It does not automatically visit the expressions in the statement.
  */
-class StmtVisitor
+class BOOMERANG_API StmtVisitor
 {
 public:
     StmtVisitor() = default;

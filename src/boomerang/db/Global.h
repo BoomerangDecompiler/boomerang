@@ -21,7 +21,7 @@ class Prog;
 /**
  * A global variable in the decompiled program.
  */
-class Global
+class BOOMERANG_API Global
 {
 public:
     Global(SharedType type, Address addr, const QString& name, Prog *prog);

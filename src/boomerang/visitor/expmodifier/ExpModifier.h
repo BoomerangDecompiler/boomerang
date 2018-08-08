@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <memory>
 
 
@@ -32,7 +34,7 @@ using SharedExp = std::shared_ptr<class Exp>;
  * of subexpression found in an and can be used to eliminate switch statements.
  * It is a little more expensive to use than ExpVisitor, but can make changes to the expression
  */
-class ExpModifier
+class BOOMERANG_API ExpModifier
 {
 public:
     ExpModifier() = default;

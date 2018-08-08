@@ -28,7 +28,7 @@ class BinarySymbol;
  * and use a special comparison operator, then if the strings are ever changed,
  * then the map's internal rb-tree becomes invalid.
  */
-class BinarySymbolTable
+class BOOMERANG_API BinarySymbolTable
 {
     typedef std::vector<BinarySymbol *>        SymbolList;
 

@@ -38,7 +38,7 @@ class QString;
  * Decoding machine instructions into a control flow graph
  * populated with low and high level RTLs.
  */
-class DefaultFrontEnd : public IFrontEnd
+class BOOMERANG_API DefaultFrontEnd : public IFrontEnd
 {
 public:
     /**

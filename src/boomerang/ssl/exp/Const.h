@@ -21,7 +21,7 @@ class Function;
  * Const is a subclass of Exp, and holds either an integer,
  * floating point, string, or address constant
  */
-class Const : public Exp
+class BOOMERANG_API Const : public Exp
 {
 private:
     union Data

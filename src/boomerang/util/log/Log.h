@@ -50,19 +50,19 @@ enum class LogLevel
  * The default behavior is to omit verbose log messages from being logged;
  * this behavior can be overridden by calling \ref setLogLevel.
  */
-class Log
+class BOOMERANG_API Log
 {
 public:
     /// Create a log.
     /// \param level Default logging level.
     Log(LogLevel level = LogLevel::Default);
     Log(const Log& other) = delete;
-    Log(Log&&) = default;
+    Log(Log&&) = delete;
 
     virtual ~Log();
 
     Log& operator=(const Log& other) = delete;
-    Log& operator=(Log&& other) = default;
+    Log& operator=(Log&& other) = delete;
 
 public:
     /**

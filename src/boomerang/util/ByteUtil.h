@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Types.h"
 
 #include <initializer_list>
@@ -68,23 +69,23 @@ inline QWord swapEndian(QWord value)
  * indicated by \p srcEndian, is different from the endianness
  * of the host.
  */
-SWord normEndian(SWord value, Endian srcEndian);
-DWord normEndian(DWord value, Endian srcEndian);
-QWord normEndian(QWord value, Endian srcEndian);
+BOOMERANG_API SWord normEndian(SWord value, Endian srcEndian);
+BOOMERANG_API DWord normEndian(DWord value, Endian srcEndian);
+BOOMERANG_API QWord normEndian(QWord value, Endian srcEndian);
 
 /// Read values, respecting endianness
 /// \sa normEndian
-Byte readByte(const void *src);
-SWord readWord(const void *src, Endian srcEndian);
-DWord readDWord(const void *src, Endian srcEndian);
-QWord readQWord(const void *src, Endian srcEndian);
+BOOMERANG_API Byte readByte(const void *src);
+BOOMERANG_API SWord readWord(const void *src, Endian srcEndian);
+BOOMERANG_API DWord readDWord(const void *src, Endian srcEndian);
+BOOMERANG_API QWord readQWord(const void *src, Endian srcEndian);
 
 
 /// Write values to \p dst, respecting endianness
-void writeByte(void *dst, Byte value);
-void writeWord(void *dst, SWord value, Endian dstEndian);
-void writeDWord(void *dst, DWord value, Endian dstEndian);
-void writeQWord(void *dst, QWord value, Endian dstEndian);
+BOOMERANG_API void writeByte(void *dst, Byte value);
+BOOMERANG_API void writeWord(void *dst, SWord value, Endian dstEndian);
+BOOMERANG_API void writeDWord(void *dst, DWord value, Endian dstEndian);
+BOOMERANG_API void writeQWord(void *dst, QWord value, Endian dstEndian);
 
 
 /**
@@ -112,7 +113,7 @@ TgtType signExtend(const SrcType& src, std::size_t numSrcBits = 8 * sizeof(SrcTy
  * Tests if \p data starts with a specific byte sequence.
  * \note The size of \p data must not be smaller than \p magic.
  */
-bool testMagic(const Byte *data, const std::initializer_list<Byte>& magic);
+BOOMERANG_API bool testMagic(const Byte *data, const std::initializer_list<Byte>& magic);
 
 }
 

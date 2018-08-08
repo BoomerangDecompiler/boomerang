@@ -10,6 +10,8 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
 #include <QString>
 #include <QTextStream>
 
@@ -29,7 +31,7 @@ namespace Util
  * Turns things like newline, return, tab into \n, \r, \t etc
  * \note Assumes a C or C++ back end
  */
-QString escapeStr(const QString& str);
+QString BOOMERANG_API escapeStr(const QString& str);
 
 QTextStream& alignStream(QTextStream& str, int align);
 

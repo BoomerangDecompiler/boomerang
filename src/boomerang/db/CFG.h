@@ -35,7 +35,7 @@ enum class BBType;
  * These BBs contain all the RTLs for the procedure, so by traversing the Cfg,
  * one traverses the whole procedure.
  */
-class Cfg
+class BOOMERANG_API Cfg
 {
     typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
     typedef std::map<SharedConstExp, Statement *, lessExpStar>     ExpStatementMap;

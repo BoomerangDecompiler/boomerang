@@ -13,7 +13,7 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
-class StmtConscriptSetter : public StmtVisitor
+class BOOMERANG_API StmtConscriptSetter : public StmtVisitor
 {
 public:
     StmtConscriptSetter(int n, bool clear);

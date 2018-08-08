@@ -16,7 +16,7 @@
 /**
  * Class for library procedures called by the program (like printf).
  */
-class LibProc : public Function
+class BOOMERANG_API LibProc : public Function
 {
 public:
     /**

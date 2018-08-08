@@ -13,7 +13,7 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-class IntegerType : public Type
+class BOOMERANG_API IntegerType : public Type
 {
 public:
     explicit IntegerType(unsigned NumBits, Sign sign = Sign::Unknown);

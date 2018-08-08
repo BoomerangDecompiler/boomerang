@@ -17,7 +17,7 @@
  * This class is for before type analysis. Typically, you have no info at all, or only know the size (e.g.
  * width of a register or memory transfer)
  */
-class SizeType : public Type
+class BOOMERANG_API SizeType : public Type
 {
 public:
     SizeType();

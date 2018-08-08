@@ -17,7 +17,7 @@
  * Unary is a subclass of Exp,
  * holding one subexpression
  */
-class Unary : public Exp
+class BOOMERANG_API Unary : public Exp
 {
 public:
     Unary(OPER op, SharedExp subExp1);

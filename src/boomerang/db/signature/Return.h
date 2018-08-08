@@ -16,7 +16,7 @@
 /**
  * A return value of a function.
  */
-class Return
+class BOOMERANG_API Return
 {
 public:
     Return(SharedType _type, SharedExp _exp);

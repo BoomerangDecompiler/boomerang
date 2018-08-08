@@ -29,7 +29,7 @@ class BinarySection;
  * \sa BinaryFile
  * \sa BinarySection
  */
-class BinaryImage
+class BOOMERANG_API BinaryImage
 {
     typedef std::vector<BinarySection *> SectionList;
     typedef SectionList::iterator               iterator;
@@ -40,12 +40,12 @@ class BinaryImage
 public:
     BinaryImage(const QByteArray& rawData);
     BinaryImage(const BinaryImage& other) = delete;
-    BinaryImage(BinaryImage&& other) = default;
+    BinaryImage(BinaryImage&& other) = delete;
 
     virtual ~BinaryImage();
 
     BinaryImage& operator=(const BinaryImage& other) = delete;
-    BinaryImage& operator=(BinaryImage&& other) = default;
+    BinaryImage& operator=(BinaryImage&& other) = delete;
 
 public:
     // Section iteration

@@ -21,7 +21,7 @@ typedef std::shared_ptr<const RTL> SharedConstRTL;
  * FlagDef holds a list of parameters (in the subexpression),
  * and a pointer to a RTL
  */
-class FlagDef : public Unary
+class BOOMERANG_API FlagDef : public Unary
 {
 public:
     FlagDef(const SharedExp& params, const SharedRTL& rtl);

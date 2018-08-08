@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
 
@@ -28,7 +29,7 @@ class Signature;
  * Interface for the procedure classes, which are used to store information
  * about variables in the procedure such as parameters and locals.
  */
-class Function
+class BOOMERANG_API Function
 {
 public:
     /**

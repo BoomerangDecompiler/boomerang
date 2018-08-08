@@ -16,7 +16,7 @@
 /**
  * A parameter of a function.
  */
-class Parameter
+class BOOMERANG_API Parameter
 {
 public:
     Parameter(SharedType type, const QString& name, SharedExp exp = nullptr, const QString& boundMax = "");

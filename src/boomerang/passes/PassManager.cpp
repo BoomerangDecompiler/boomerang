@@ -86,6 +86,11 @@ PassManager::PassManager()
 }
 
 
+PassManager::~PassManager()
+{
+}
+
+
 PassManager *PassManager::get()
 {
     return &g_passManager;

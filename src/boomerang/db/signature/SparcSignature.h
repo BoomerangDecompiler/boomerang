@@ -18,7 +18,7 @@ namespace CallingConvention
 namespace StdC
 {
 
-class SparcSignature : public Signature
+class BOOMERANG_API SparcSignature : public Signature
 {
 public:
     explicit SparcSignature(const QString& name);

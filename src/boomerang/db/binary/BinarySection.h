@@ -21,7 +21,7 @@ class QVariant;
 
 
 /// File-format independent access to sections of binary files.
-class BinarySection
+class BOOMERANG_API BinarySection
 {
 public:
     BinarySection(Address sourceAddr, uint64 size, const QString& name = "");

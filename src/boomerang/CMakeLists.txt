@@ -33,6 +33,14 @@ endforeach ()
 add_library(boomerang frontend/pentium/pentiumdecoder.cpp ${boomerang-sources} ${boomerang-headers})
 target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
 
+
+if (BUILD_SHARED_LIBS)
+    target_compile_definitions(boomerang PRIVATE BOOMERANG_BUILD_SHARED=1)
+else (BUILD_SHARED_LIBS) # static lib
+    target_compile_definitions(boomerang PRIVATE BOOMERANG_BUILD_STATIC=1)
+endif (BUILD_SHARED_LIBS)
+
+
 option(BOOMERANG_INSTALL_DEV "Install boomerang libraries and headers." OFF)
 
 if (BOOMERANG_INSTALL_DEV)

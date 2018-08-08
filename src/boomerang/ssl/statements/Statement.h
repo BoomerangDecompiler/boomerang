@@ -92,7 +92,7 @@ enum class BranchType : uint8_t
  * CallStatement_/  /   /    \ \________
  *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
-class Statement
+class BOOMERANG_API Statement
 {
     typedef std::map<SharedExp, int, lessExpStar> ExpIntMap;
 
@@ -366,7 +366,7 @@ protected:
  * \param stmt  ptr to Statement to print to the stream
  * \returns copy of os (for concatenation)
  */
-QTextStream& operator<<(QTextStream& os, const Statement *stmt);
+BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Statement *stmt);
 
 
 enum class SwitchType : char

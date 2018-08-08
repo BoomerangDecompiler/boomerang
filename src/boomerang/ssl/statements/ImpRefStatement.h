@@ -22,7 +22,7 @@
  * if there is more than one local variable
  * sharing the same memory address (separated then by type).
  */
-class ImpRefStatement : public TypingStatement
+class BOOMERANG_API ImpRefStatement : public TypingStatement
 {
 public:
     ImpRefStatement(SharedType ty, SharedExp a);

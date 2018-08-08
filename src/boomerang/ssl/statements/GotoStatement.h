@@ -22,7 +22,7 @@
  * This class also represents unconditional jumps with a fixed offset
  * (e.g BN, Ba on SPARC).
  */
-class GotoStatement : public Statement
+class BOOMERANG_API GotoStatement : public Statement
 {
 public:
     GotoStatement();

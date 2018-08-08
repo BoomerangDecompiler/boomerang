@@ -13,7 +13,7 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-class FloatType : public Type
+class BOOMERANG_API FloatType : public Type
 {
 public:
     explicit FloatType(int sz = 64);

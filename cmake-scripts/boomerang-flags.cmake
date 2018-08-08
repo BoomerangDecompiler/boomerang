@@ -27,6 +27,12 @@ endif ()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Hide all symbols unless explicitly exported
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 
 set(COMMON_COMPILE_FLAGS "")
 set(C_COMPILE_FLAGS "")
@@ -49,7 +55,8 @@ if (MSVC)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
-
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4251) # Class needs to have DLL inreface to be used by clients
+    
     set(DEBUG_LIB dbghelp.lib)
 
 else () # GCC / Clang
@@ -61,7 +68,6 @@ else () # GCC / Clang
     BOOMERANG_ADD_COMPILE_FLAGS(-Wnull-dereference)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wduplicated-cond -Wduplicated-branches)
     BOOMERANG_ADD_COMPILE_FLAGS(-Walloc-zero -Walloca)
-    BOOMERANG_ADD_COMPILE_FLAGS(-fPIC)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wsuggest-override)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wundef)
     BOOMERANG_ADD_COMPILE_FLAGS(-Wno-unknown-pragmas) # pragma region is not supported by GCC
@@ -98,9 +104,9 @@ endif ()
 
 if (NOT MSVC)
     if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-        BOOMERANG_ADD_COMPILE_FLAGS(-g -O0)
+        BOOMERANG_ADD_COMPILE_FLAGS(-O0)
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
-        BOOMERANG_ADD_COMPILE_FLAGS(-g -O2)
+        # No special flags
     elseif ("${CMAKE_BUILD_TYPE}" STREQUAL "MinSizeRel")
         BOOMERANG_ADD_COMPILE_FLAGS(-Os)
     else () # Release

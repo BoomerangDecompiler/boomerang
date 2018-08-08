@@ -17,7 +17,7 @@
  * Terminal holds special zero arity items
  * such as opFlags (abstract flags register)
  */
-class Terminal : public Exp
+class BOOMERANG_API Terminal : public Exp
 {
 public:
     Terminal(OPER op);

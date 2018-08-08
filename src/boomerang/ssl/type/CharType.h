@@ -13,7 +13,7 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-class CharType : public Type
+class BOOMERANG_API CharType : public Type
 {
 public:
     CharType();

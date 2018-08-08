@@ -59,7 +59,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  *     RefExp__/    |
  *               Ternary
  */
-class Exp : public IPrintable, public std::enable_shared_from_this<Exp>
+class BOOMERANG_API Exp : public IPrintable, public std::enable_shared_from_this<Exp>
 {
 public:
     Exp(OPER oper) : m_oper(oper) {}
@@ -553,7 +553,7 @@ protected:
 
 
 /// Prints the Exp pointed to by \p p to \p os
-QTextStream& operator<<(QTextStream& os, const Exp *p);
+BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Exp *p);
 
 
 inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)

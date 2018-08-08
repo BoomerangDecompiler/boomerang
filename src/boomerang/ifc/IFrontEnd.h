@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/SigEnum.h"
 #include "boomerang/util/Address.h"
 
@@ -37,7 +38,7 @@ using RTLList        = std::list<std::unique_ptr<RTL>>;
 /**
  * Decodes a binary file into Functions and BasicBlocks.
  */
-class IFrontEnd
+class BOOMERANG_API IFrontEnd
 {
 public:
     virtual ~IFrontEnd() = default;

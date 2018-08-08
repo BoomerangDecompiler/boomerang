@@ -59,7 +59,7 @@ enum class BBType
  * During decompilation, a special RTL with a zero address is prepended;
  * this RTL contains implicit assigns and phi assigns.
  */
-class BasicBlock
+class BOOMERANG_API BasicBlock
 {
 public:
     typedef RTLList::iterator                     RTLIterator;
@@ -87,11 +87,11 @@ public:
     BasicBlock(BBType bbType, std::unique_ptr<RTLList> rtls, Function *function);
 
     BasicBlock(const BasicBlock& other);
-    BasicBlock(BasicBlock&& other) = default;
+    BasicBlock(BasicBlock&& other) = delete;
     ~BasicBlock();
 
     BasicBlock& operator=(const BasicBlock& other);
-    BasicBlock& operator=(BasicBlock&& other) = default;
+    BasicBlock& operator=(BasicBlock&& other) = delete;
 
 public:
     /// \returns the type of the BasicBlock
@@ -187,8 +187,8 @@ public:
     RTLList *getRTLs();
     const RTLList *getRTLs() const;
 
-    inline RTL *getLastRTL() { return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr; }
-    inline const RTL *getLastRTL() const { return m_listOfRTLs ? m_listOfRTLs->back().get() : nullptr; }
+    RTL *getLastRTL();
+    const RTL *getLastRTL() const;
 
     void removeRTL(RTL *rtl);
 
@@ -275,7 +275,7 @@ public:
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.
     Function *m_function = nullptr;
-    std::unique_ptr<RTLList>  m_listOfRTLs; ///< Ptr to list of RTLs
+    std::unique_ptr<RTLList> m_listOfRTLs; ///< Ptr to list of RTLs
 
     Address m_lowAddr = Address::ZERO;
     Address m_highAddr = Address::INVALID;

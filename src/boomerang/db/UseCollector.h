@@ -24,7 +24,7 @@ class UserProc;
  * Typically the entries are not subscripted,
  * like parameters or locations on the LHS of assignments
  */
-class UseCollector
+class BOOMERANG_API UseCollector
 {
 public:
     typedef LocationSet::iterator         iterator;

@@ -17,7 +17,7 @@ namespace CallingConvention
 {
 
 /// Win32Signature is for non-thiscall signatures: all parameters pushed
-class Win32Signature : public Signature
+class BOOMERANG_API Win32Signature : public Signature
 {
 public:
     explicit Win32Signature(const QString& name);

@@ -18,7 +18,7 @@ namespace CallingConvention
 namespace StdC
 {
 
-class PentiumSignature : public Signature
+class BOOMERANG_API PentiumSignature : public Signature
 {
 public:
     explicit PentiumSignature(const QString& name);

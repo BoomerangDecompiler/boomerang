@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 #include "boomerang/util/Address.h"
 
@@ -32,17 +33,17 @@ class UserProc;
 class QString;
 
 
-class Project
+class BOOMERANG_API Project
 {
 public:
     Project();
     Project(const Project& other) = delete;
-    Project(Project&& other) = default;
+    Project(Project&& other) = delete;
 
     virtual ~Project();
 
     Project& operator=(const Project& other) = delete;
-    Project& operator=(Project&& other) = default;
+    Project& operator=(Project&& other) = delete;
 
 public:
     Settings *getSettings();

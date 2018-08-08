@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/module/ModuleFactory.h"
@@ -38,7 +39,7 @@ class Signature;
 class ISymbolProvider;
 
 
-class Prog
+class BOOMERANG_API Prog
 {
 public:
     /// The type for the list of functions.
@@ -50,12 +51,12 @@ public:
 public:
     Prog(const QString& name, Project *project);
     Prog(const Prog& other) = delete;
-    Prog(Prog&& other) = default;
+    Prog(Prog&& other) = delete;
 
     ~Prog();
 
     Prog& operator=(const Prog& other) = delete;
-    Prog& operator=(Prog&& other) = default;
+    Prog& operator=(Prog&& other) = delete;
 
 public:
     void setFrontEnd(IFrontEnd *fe);

@@ -34,7 +34,7 @@ class Exp;
  * considered.
  *    - MVE Jun 2005.
  */
-class Signature : public std::enable_shared_from_this<Signature>
+class BOOMERANG_API Signature : public std::enable_shared_from_this<Signature>
 {
 public:
     Signature(const QString& name);

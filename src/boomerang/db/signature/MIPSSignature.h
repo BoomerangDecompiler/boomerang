@@ -19,7 +19,7 @@ namespace StdC
 {
 
 
-class MIPSSignature : public Signature
+class BOOMERANG_API MIPSSignature : public Signature
 {
 public:
     explicit MIPSSignature(const QString& name);
