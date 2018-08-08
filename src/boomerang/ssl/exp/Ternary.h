@@ -49,10 +49,10 @@ public:
     int getArity() const override { return 3; }
 
     /// \copydoc Binary::print
-    virtual void print(QTextStream& os, bool html = false) const override;
+    virtual void print(OStream& os, bool html = false) const override;
 
     /// \copydoc Binary::printr
-    virtual void printr(QTextStream& os, bool = false) const override;
+    virtual void printr(OStream& os, bool = false) const override;
 
     /// \copydoc Binary::printx
     virtual void printx(int ind) const override;

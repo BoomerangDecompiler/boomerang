@@ -242,7 +242,7 @@ static const unsigned char pent_hello_text[] =
 void MicroX86DisTest::testMicroDis1()
 {
     QString      deb;
-    QTextStream  deb_str(&deb);
+    OStream  deb_str(&deb);
     int n                  = sizeof(pent_hello_text);
     int          totalSize = 0;
     const uint8_t *p       = pent_hello_text;

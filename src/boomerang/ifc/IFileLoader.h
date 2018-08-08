@@ -15,6 +15,9 @@
 #include "boomerang/db/binary/BinaryImage.h"
 
 
+class QIODevice;
+
+
 /**
  * Abstract class for loading binary and text files for analysis and decompilation.
  * The derived classes define the actual functionality of loading files and are

@@ -57,7 +57,7 @@ void RTLTest::testAppend()
     RTL    r(Address::ZERO, { a });
 
     QString     res;
-    QTextStream ost(&res);
+    OStream ost(&res);
     r.print(ost);
 
     QCOMPARE(res, QString("0x00000000    0 *v* r8 := r9 + 99\n"));
@@ -268,7 +268,7 @@ void RTLTest::testSetConscripts()
     }
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     rtl.print(ost);
 
     QString expected("0x00001000    0 *v* m[1000\\1\\] := m[1000\\2\\] + 1000\\3\\\n"

@@ -23,6 +23,9 @@
 #include "boomerang/util/log/Log.h"
 
 
+#include <QTextStreamManipulator>
+
+
 Assignment::Assignment(SharedExp lhs)
     : TypingStatement(VoidType::get())
     , m_lhs(lhs)
@@ -107,7 +110,7 @@ void Assignment::getDefinitions(LocationSet& defs, bool) const
 }
 
 
-void Assignment::print(QTextStream& os, bool html) const
+void Assignment::print(OStream& os, bool html) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 

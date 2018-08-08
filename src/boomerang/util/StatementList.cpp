@@ -19,7 +19,6 @@
 #include "boomerang/util/Util.h"
 
 #include <QString>
-#include <QTextStream>
 
 
 bool StatementList::remove(Statement *s)
@@ -67,7 +66,7 @@ void StatementList::append(const StatementSet& ss)
 QString StatementList::prints() const
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     for (auto& elem : *this) {
         ost << elem << ",\t";

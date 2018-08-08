@@ -24,6 +24,9 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
+#include <QtAlgorithms>
+#include <QTextStreamManipulator>
+
 
 ReturnStatement::ReturnStatement()
     : m_retAddr(Address::INVALID)
@@ -333,7 +336,7 @@ void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
 
 
 #define RETSTMT_COLS    120
-void ReturnStatement::print(QTextStream& os, bool html) const
+void ReturnStatement::print(OStream& os, bool html) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 
@@ -348,7 +351,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
 
     for (const Statement *stmt : m_returns) {
         QString     tgt;
-        QTextStream ost(&tgt);
+        OStream ost(&tgt);
         static_cast<const Assignment *>(stmt)->printCompact(ost, html);
         unsigned len = tgt.length();
 
@@ -386,7 +389,7 @@ void ReturnStatement::print(QTextStream& os, bool html) const
 
     for (auto const& elem : m_modifieds) {
         QString          tgt2;
-        QTextStream      ost(&tgt2);
+        OStream      ost(&tgt2);
         const Assignment *as = static_cast<const Assignment *>(elem);
         const SharedType ty  = as->getType();
 

@@ -20,6 +20,7 @@
 
 #include <cassert>
 
+#include <QtAlgorithms>
 
 
 ProcCFG::ProcCFG(UserProc *proc)
@@ -538,7 +539,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(QTextStream& out, bool html)
+void ProcCFG::print(OStream& out, bool html)
 {
     out << "Control Flow Graph:\n";
 

@@ -572,7 +572,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
     }
 
     if (args[0] == "prog") {
-        QTextStream ost(stdout);
+        OStream ost(stdout);
         ost << "Program " << prog->getName() << ":\n";
         ost << "\tModules:\n";
         prog->getRootModule()->printTree(ost);
@@ -623,7 +623,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        QTextStream outStream(stdout);
+        OStream outStream(stdout);
         outStream << "module " << module->getName() << ":\n";
 
         if (module->getUpstream()) {
@@ -656,7 +656,7 @@ CommandStatus Console::handleInfo(const QStringList& args)
             return CommandStatus::Failure;
         }
 
-        QTextStream outStream(stdout);
+        OStream outStream(stdout);
         outStream << "proc " << proc->getName() << ":\n";
         outStream << "\tbelongs to module " << proc->getModule()->getName() << "\n";
         outStream << "\tnative address " << proc->getEntryAddress() << "\n";
@@ -721,7 +721,7 @@ CommandStatus Console::handlePrint(const QStringList& args)
             UserProc *userProc = dynamic_cast<UserProc *>(proc);
             assert(userProc != nullptr);
 
-            QTextStream outStream(stdout);
+            OStream outStream(stdout);
             userProc->print(outStream);
             outStream << "\n";
             outStream.flush();

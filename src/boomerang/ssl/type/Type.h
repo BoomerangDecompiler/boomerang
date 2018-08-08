@@ -17,6 +17,7 @@
 
 
 class Exp;
+class OStream;
 class Type;
 
 class QTextStream;
@@ -230,8 +231,8 @@ protected:
 
 
 // Not part of the Type class, but logically belongs with it:
-QTextStream& operator<<(QTextStream& os, const SharedConstType& ty); ///< Print the Type pointed to by t
-QTextStream& operator<<(QTextStream& os, const Type& ty);            ///< Print the Type pointed to by t
+OStream& operator<<(OStream& os, const SharedConstType& ty); ///< Print the Type pointed to by t
+OStream& operator<<(OStream& os, const Type& ty);            ///< Print the Type pointed to by t
 
 
 template<class T>

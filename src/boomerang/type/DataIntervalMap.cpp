@@ -279,7 +279,7 @@ void DataIntervalMap::deleteItem(Address addr)
 QString DataIntervalMap::prints()
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     for (const auto& varPair : m_varMap) {
         const Interval<Address>& varRange = varPair.first;

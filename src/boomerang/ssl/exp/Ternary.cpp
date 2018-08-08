@@ -161,7 +161,7 @@ bool Ternary::operator*=(const Exp& o) const
 }
 
 
-void Ternary::printr(QTextStream& os, bool) const
+void Ternary::printr(OStream& os, bool) const
 {
     // The function-like operators don't need parentheses
     switch (m_oper)
@@ -190,7 +190,7 @@ void Ternary::printr(QTextStream& os, bool) const
 }
 
 
-void Ternary::print(QTextStream& os, bool html) const
+void Ternary::print(OStream& os, bool html) const
 {
     SharedConstExp p1 = this->getSubExp1();
     SharedConstExp p2 = this->getSubExp2();

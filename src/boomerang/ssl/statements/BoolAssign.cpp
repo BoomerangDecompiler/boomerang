@@ -88,7 +88,7 @@ void BoolAssign::setCondExpr(SharedExp pss)
 }
 
 
-void BoolAssign::printCompact(QTextStream& os, bool html) const
+void BoolAssign::printCompact(OStream& os, bool html) const
 {
     os << "BOOL ";
     m_lhs->print(os);

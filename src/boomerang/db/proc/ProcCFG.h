@@ -14,6 +14,7 @@
 #include "boomerang/util/Address.h"
 #include "boomerang/util/MapIterators.h"
 
+#include <list>
 #include <map>
 #include <memory>
 
@@ -234,7 +235,7 @@ public:
 
 public:
     /// print this CFG, mainly for debugging
-    void print(QTextStream& out, bool html = false);
+    void print(OStream& out, bool html = false);
 
 private:
     UserProc *m_myProc = nullptr;            ///< Procedure to which this CFG belongs.

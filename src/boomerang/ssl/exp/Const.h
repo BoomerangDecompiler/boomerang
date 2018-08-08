@@ -100,13 +100,13 @@ public:
     void setType(SharedType ty) { m_type = ty; }
 
     /// \copydoc Exp::print
-    virtual void print(QTextStream& os, bool = false) const override;
+    virtual void print(OStream& os, bool = false) const override;
 
     /// \copydoc Exp::printx
     virtual void printx(int ind) const override;
 
     /// Print "recursive" (extra parens not wanted at outer levels)
-    void printNoQuotes(QTextStream& os) const;
+    void printNoQuotes(OStream& os) const;
 
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;

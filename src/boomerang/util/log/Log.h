@@ -15,6 +15,7 @@
 #include "boomerang/util/Types.h"
 
 #include <memory>
+#include <vector>
 
 
 class ILogSink;

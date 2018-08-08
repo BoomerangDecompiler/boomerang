@@ -68,7 +68,7 @@ bool PhiAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void PhiAssign::printCompact(QTextStream& os, bool html) const
+void PhiAssign::printCompact(OStream& os, bool html) const
 {
     os << "*" << m_type << "* ";
 

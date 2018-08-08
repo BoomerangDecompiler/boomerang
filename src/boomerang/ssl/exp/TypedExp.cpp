@@ -123,7 +123,7 @@ bool TypedExp::operator*=(const Exp& o) const
 }
 
 
-void TypedExp::print(QTextStream& os, bool html) const
+void TypedExp::print(OStream& os, bool html) const
 {
     if (m_type) {
         os << "*" << "*m_type" << "* ";

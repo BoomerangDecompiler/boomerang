@@ -122,13 +122,13 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 QString BasicBlock::prints()
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
     print(ost);
     return tgt;
 }
 
 
-void BasicBlock::print(QTextStream& os, bool html)
+void BasicBlock::print(OStream& os, bool html)
 {
     if (html) {
         os << "<br>";

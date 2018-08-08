@@ -67,7 +67,7 @@ void UseCollector::insert(SharedExp e)
 }
 
 
-void UseCollector::print(QTextStream& os, bool html) const
+void UseCollector::print(OStream& os, bool html) const
 {
     bool first = true;
 

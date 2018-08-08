@@ -81,7 +81,7 @@ bool Terminal::operator*=(const Exp& o) const
 }
 
 
-void Terminal::print(QTextStream& os, bool) const
+void Terminal::print(OStream& os, bool) const
 {
     switch (m_oper)
     {

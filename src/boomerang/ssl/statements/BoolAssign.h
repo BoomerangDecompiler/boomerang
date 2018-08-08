@@ -82,7 +82,7 @@ public:
     void makeSigned();
 
     /// \copydoc Assignment::printCompact
-    virtual void printCompact(QTextStream& os, bool html = false) const override;
+    virtual void printCompact(OStream& os, bool html = false) const override;
 
     /// \copydoc Statement::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;

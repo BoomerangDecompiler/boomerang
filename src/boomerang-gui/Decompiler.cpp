@@ -265,7 +265,7 @@ bool Decompiler::getRTLForProc(const QString& name, QString& rtl)
     }
 
     UserProc    *up = static_cast<UserProc *>(p);
-    QTextStream os(&rtl);
+    OStream os(&rtl);
     up->print(os, true);
     return true;
 }

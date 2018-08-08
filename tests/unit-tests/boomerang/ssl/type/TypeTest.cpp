@@ -23,7 +23,6 @@
 #include "boomerang/util/log/Log.h"
 
 #include <QDebug>
-#include <QTextStream>
 
 
 #define HELLO_WINDOWS    getFullSamplePath("windows/hello.exe")

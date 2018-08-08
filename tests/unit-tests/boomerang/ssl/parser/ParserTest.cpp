@@ -32,7 +32,7 @@ void ParserTest::testExp()
 
     QVERIFY(a);
     QString     res;
-    QTextStream ost(&res);
+    OStream ost(&res);
     a->print(ost);
     QCOMPARE(res, "   0 " + s);
     QString s2 = "*i32* r[0] := 5 + 6";

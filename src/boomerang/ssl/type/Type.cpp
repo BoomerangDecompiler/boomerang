@@ -37,6 +37,8 @@
 #include <cassert>
 #include <cstring>
 
+#include <QMap>
+
 
 /// For NamedType
 static QMap<QString, SharedType> g_namedTypes;
@@ -237,7 +239,7 @@ SharedConstType Type::resolveNamedType() const
 QString Type::toString() const
 {
     QString     res;
-    QTextStream tgt(&res);
+    OStream tgt(&res);
 
     tgt << *this;
     return res;
@@ -245,7 +247,7 @@ QString Type::toString() const
 
 
 // A crude shortcut representation of a type
-QTextStream& operator<<(QTextStream& os, const Type& type)
+OStream& operator<<(OStream& os, const Type& type)
 {
     switch (type.getId())
     {
@@ -314,7 +316,7 @@ QTextStream& operator<<(QTextStream& os, const Type& type)
 }
 
 
-QTextStream& operator<<(QTextStream& os, const SharedConstType& t)
+OStream& operator<<(OStream& os, const SharedConstType& t)
 {
     if (t == nullptr) {
         return os << '0';

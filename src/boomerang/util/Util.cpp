@@ -16,7 +16,7 @@
 
 #include <QMap>
 #include <QString>
-#include <QTextStream>
+#include <QTextStreamManipulator>
 
 #include <cassert>
 #include <string>
@@ -57,7 +57,7 @@ QString escapeStr(const QString& inp)
 }
 
 
-QTextStream& alignStream(QTextStream& str, int align)
+OStream& alignStream(OStream& str, int align)
 {
     str << qSetFieldWidth(align) << " " << qSetFieldWidth(0);
     return str;

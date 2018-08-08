@@ -28,7 +28,7 @@ void DFGWriter::printDFG(const UserProc *proc, const QString& fname)
         return;
     }
 
-    QTextStream out(&file);
+    OStream out(&file);
     out << "digraph " << proc->getName() << " {\n";
     proc->numberStatements();
     StatementList stmts;

@@ -22,6 +22,7 @@
 #include <QFileDialog>
 #include <QSettings>
 #include <QToolButton>
+#include <QTextStream>
 
 
 MainWindow::MainWindow(QWidget *_parent)

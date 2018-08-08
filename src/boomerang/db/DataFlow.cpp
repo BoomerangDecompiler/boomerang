@@ -85,7 +85,7 @@ bool DataFlow::calculateDominators()
         // for each predecessor v of n
         for (BasicBlock *pred : m_BBs[n]->getPredecessors()) {
             if (m_indices.find(pred) == m_indices.end()) {
-                QTextStream q_cerr(stderr);
+                OStream q_cerr(stderr);
 
                 q_cerr << "BB not in indices: ";
                 pred->print(q_cerr);

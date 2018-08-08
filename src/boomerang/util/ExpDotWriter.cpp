@@ -24,7 +24,6 @@
 
 #include <QFile>
 #include <QString>
-#include <QTextStream>
 
 
 bool ExpDotWriter::writeDotFile(const std::shared_ptr<Exp>& exp, const QString& filename)
@@ -36,7 +35,7 @@ bool ExpDotWriter::writeDotFile(const std::shared_ptr<Exp>& exp, const QString& 
         return false;
     }
 
-    QTextStream os(&dotFile);
+    OStream os(&dotFile);
     m_os = &os;
 
     *m_os << "digraph Exp {\n";

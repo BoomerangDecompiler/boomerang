@@ -895,22 +895,22 @@ bool UserProc::allPhisHaveDefs() const
 QString UserProc::toString() const
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     this->print(ost);
     return tgt;
 }
 
 
-void UserProc::print(QTextStream& out, bool html) const
+void UserProc::print(OStream& out, bool html) const
 {
     numberStatements();
 
     QString tgt1;
     QString tgt2;
 
-    QTextStream ost1(&tgt1);
-    QTextStream ost2(&tgt2);
+    OStream ost1(&tgt1);
+    OStream ost2(&tgt2);
 
 
     printParams(ost1, html);
@@ -951,13 +951,13 @@ void UserProc::print(QTextStream& out, bool html) const
     }
 
     QString     tgt3;
-    QTextStream ost3(&tgt3);
+    OStream ost3(&tgt3);
     m_cfg->print(ost3, html);
     out << tgt3 << "\n";
 }
 
 
-void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
+void UserProc::printParams(OStream& out, bool html /*= false*/) const
 {
     if (html) {
         out << "<br>";
@@ -991,7 +991,7 @@ void UserProc::printParams(QTextStream& out, bool html /*= false*/) const
 }
 
 
-void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
+void UserProc::printSymbolMap(OStream& out, bool html /*= false*/) const
 {
     if (html) {
         out << "<br>";
@@ -1019,7 +1019,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
 }
 
 
-void UserProc::printLocals(QTextStream& os, bool html) const
+void UserProc::printLocals(OStream& os, bool html) const
 {
     if (html) {
         os << "<br>";
@@ -1075,7 +1075,7 @@ bool UserProc::existsLocal(const QString& name) const
 QString UserProc::newLocalName(const SharedExp& e)
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     if (e->isSubscript() && e->getSubExp1()->isRegOf()) {
         // Assume that it's better to know what register this location was created from
@@ -1120,7 +1120,7 @@ QString UserProc::getRegName(SharedExp r)
     // just return this expression :(
     // WARN: this is a hack to prevent crashing when r->subExp1 is not const
     QString     tgt;
-    QTextStream ostr(&tgt);
+    OStream ostr(&tgt);
 
     r->getSubExp1()->print(ostr);
 

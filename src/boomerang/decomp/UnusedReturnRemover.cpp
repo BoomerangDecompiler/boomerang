@@ -176,7 +176,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
 
     if (m_prog->getProject()->getSettings()->debugUnused) {
         QString     tgt;
-        QTextStream ost(&tgt);
+        OStream ost(&tgt);
         unionOfCallerLiveLocs.print(ost);
         LOG_MSG("%%%  union of caller live locations for %1: %2", proc->getName(), tgt);
         LOG_MSG("%%%  final returns for %1: %2", proc->getName(), proc->getRetStmt()->getReturns().prints());

@@ -13,6 +13,7 @@
 #include "boomerang/util/Address.h"
 
 #include <QMetaType>
+#include <QVariantMap>
 
 #include <memory>
 

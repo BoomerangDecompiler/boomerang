@@ -159,7 +159,7 @@ bool Binary::operator*=(const Exp& o) const
 }
 
 
-void Binary::printr(QTextStream& os, bool html) const
+void Binary::printr(OStream& os, bool html) const
 {
     assert(subExp1 && subExp2);
 
@@ -185,7 +185,7 @@ void Binary::printr(QTextStream& os, bool html) const
 }
 
 
-void Binary::print(QTextStream& os, bool html) const
+void Binary::print(OStream& os, bool html) const
 {
     assert(subExp1 && subExp2);
     SharedConstExp p1 = getSubExp1();

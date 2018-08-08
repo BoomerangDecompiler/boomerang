@@ -39,7 +39,7 @@ void ExpTest::initTestCase()
 void ExpTest::test99()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     m_99->print(ost);
     QCOMPARE(actual, QString("99"));
@@ -49,7 +49,7 @@ void ExpTest::test99()
 void ExpTest::testFlt()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     std::shared_ptr<Const> c = Const::get(3.14);
     c->print(ost);
@@ -60,7 +60,7 @@ void ExpTest::testFlt()
 void ExpTest::testRegOf2()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     ost << m_rof2;
     QCOMPARE(actual, QString("r2"));
@@ -70,7 +70,7 @@ void ExpTest::testRegOf2()
 void ExpTest::testBinaries()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     std::shared_ptr<Binary> b(new Binary(opPlus, m_99->clone(), m_rof2->clone()));
     b->print(ost);
@@ -116,7 +116,7 @@ void ExpTest::testBinaries()
 void ExpTest::testUnaries()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     SharedExp u = Unary::get(opNot, Terminal::get(opZF));
 
@@ -217,7 +217,7 @@ void ExpTest::testSearchReplace1()
     p = p->searchReplace(*m_99, m_rof2, change);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     p->print(ost);
     QCOMPARE(actual, QString("r2@15:8"));
@@ -256,7 +256,7 @@ void ExpTest::testSearchReplace3()
     p = p->searchReplaceAll(*two, three, change);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     p->print(ost);
     QCOMPARE(actual, QString("r3"));
 }
@@ -274,7 +274,7 @@ void ExpTest::testSearchReplace4()
     p = p->searchReplaceAll(two, m_rof2, change);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     p->print(ost);
     QCOMPARE(actual, QString("r[r2]"));
 }
@@ -530,7 +530,7 @@ void ExpTest::testSimplifyBinary()
     QVERIFY(*b == *expb2);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     SharedExp   e = Binary::get(opBitOr,
                                 Binary::get(opMinus,
                                             Binary::get(opPlus, Const::get(0), Unary::get(opVar, Const::get("a"))),
@@ -638,7 +638,7 @@ void ExpTest::testMapOfExp()
 void ExpTest::testList()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     // Empty list
     SharedExp e = Binary::get(opList, Terminal::get(opNil), Terminal::get(opNil));
@@ -697,7 +697,7 @@ void ExpTest::testParen()
                                      Const::get(1))));
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     a.print(ost);
     QCOMPARE(actual, QString("   0 *v* r[rd] := r[rs1] & ((0 - reg_or_imm) - 1)"));
@@ -712,7 +712,7 @@ void ExpTest::testFixSuccessor()
                               m_rof2->clone());
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     SharedExp e = b->fixSuccessor();
 
@@ -757,11 +757,10 @@ void ExpTest::testAssociativity()
     SharedExp p2 = e2->simplify()->simplifyArith();
 
     QString     expected, actual;
-    QTextStream ost(&expected);
+    OStream osExpected(&expected), osActual(&actual);
 
-    p1->print(ost);
-    ost.setString(&actual);
-    p2->print(ost);
+    p1->print(osExpected);
+    p2->print(osActual);
     QCOMPARE(actual, expected);
 }
 
@@ -780,7 +779,7 @@ void ExpTest::testSubscriptVar()
     def1->subscriptVar(left, def1); // Should do nothing
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     ost << ae;
     QCOMPARE(actual, QString("   0 *v* m[r28 - 4] := r28 + r29"));
 
@@ -822,7 +821,7 @@ void ExpTest::testTypeOf()
         Unary::get(opTypeOf, RefExp::get(Location::regOf(REG_PENT_ECX), s9)));
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     ost << e;
     QCOMPARE(actual, QString("T[r24{5}] = T[r25{9}]"));
 
@@ -872,7 +871,7 @@ void ExpTest::testAddUsedLocs()
     e->addUsedLocs(l);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
     QCOMPARE(actual, QString("%pc"));
 
@@ -940,7 +939,7 @@ void ExpTest::testAddUsedLocs()
 void ExpTest::testSubscriptVars()
 {
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     // Null case: %pc
     Assign s9(Terminal::get(opNil), Terminal::get(opNil));

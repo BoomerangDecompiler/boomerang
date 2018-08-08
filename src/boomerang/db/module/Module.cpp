@@ -65,16 +65,16 @@ void Module::updateLibrarySignatures()
 
 
 Module::Module()
+    : m_strm(&m_out)
 {
-    m_strm.setDevice(&m_out);
 }
 
 
 Module::Module(const QString& name, Prog *prog)
     : m_name(name)
     , m_prog(prog)
+    , m_strm(&m_out)
 {
-    m_strm.setDevice(&m_out);
 }
 
 
@@ -217,7 +217,7 @@ Module *Module::find(const QString& name)
 }
 
 
-void Module::printTree(QTextStream& ostr) const
+void Module::printTree(OStream& ostr) const
 {
     ostr << "\t\t" << m_name << "\n";
 
@@ -294,7 +294,7 @@ void Module::addWin32DbgInfo(Function *function)
         dbghelp::SymEnumSymbols(hProcess, 0, nullptr, addSymbol, function);
 
         QString str;
-        QTextStream os(&str);
+        OStream os(&str);
         function->getSignature()->print(os);
 
         LOG_VERBOSE("Retrieved Win32 debugging information:");

@@ -16,6 +16,8 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/statements/Statement.h"
 
+#include <QTextStream>
+
 
 void MiniDebugger::onDecompileDebugPoint(UserProc *proc, const char *description)
 {
@@ -27,7 +29,7 @@ void MiniDebugger::onDecompileDebugPoint(UserProc *proc, const char *description
 
 void MiniDebugger::miniDebugger(UserProc *proc, const char *description)
 {
-    QTextStream q_cout(stdout);
+    OStream q_cout(stdout);
     QTextStream q_cin(stdin);
 
     q_cout << "decompiling " << proc->getName() << ": " << description << "\n";
@@ -54,7 +56,7 @@ void MiniDebugger::miniDebugger(UserProc *proc, const char *description)
                 QFile tgt("out.proc");
 
                 if (tgt.open(QFile::WriteOnly)) {
-                    QTextStream of(&tgt);
+                    OStream of(&tgt);
                     proc->print(of);
                 }
             }

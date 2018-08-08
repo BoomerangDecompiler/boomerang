@@ -14,7 +14,7 @@
 
 
 class QString;
-class QTextStream;
+class OStream;
 
 
 class ExpDotWriter : private ExpVisitor
@@ -51,5 +51,5 @@ private:
     bool visit(const std::shared_ptr<Terminal>& exp) override;
 
 private:
-    QTextStream *m_os;
+    OStream *m_os;
 };

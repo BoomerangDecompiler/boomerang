@@ -16,8 +16,6 @@
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/util/Util.h"
 
-#include <QTextStream>
-
 
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
@@ -42,7 +40,7 @@ LocationSet::LocationSet(const LocationSet& o)
 QString LocationSet::prints() const
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     for (const_iterator it = begin(); it != end(); ++it) {
         if (it != begin()) {

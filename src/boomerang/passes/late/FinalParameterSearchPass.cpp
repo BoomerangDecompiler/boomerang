@@ -18,6 +18,8 @@
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
+#include <QtAlgorithms>
+
 
 FinalParameterSearchPass::FinalParameterSearchPass()
     : IPass("FinalParameterUpdate", PassID::FinalParameterSearch)

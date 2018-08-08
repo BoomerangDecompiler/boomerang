@@ -11,12 +11,12 @@
 
 
 #include "boomerang/ssl/exp/ExpHelp.h"
-
-#include <QTextStream>
+#include "boomerang/util/OStream.h"
 
 #include <memory>
 #include <set>
 #include <unordered_set>
+
 
 
 /**
@@ -104,7 +104,7 @@ public:
         }
     }
 
-    void print(QTextStream& os) const
+    void print(OStream& os) const
     {
         for (auto it = begin(); it != end(); ++it) {
             if (it != begin()) {

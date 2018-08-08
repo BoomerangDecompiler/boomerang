@@ -126,7 +126,7 @@ public:
     void eliminateDuplicateArgs();
 
     /// \copydoc GotoStatement::print
-    virtual void print(QTextStream& os, bool html = false) const override;
+    virtual void print(OStream& os, bool html = false) const override;
 
     /// \copydoc GotoStatement::search
     virtual bool search(const Exp& search, SharedExp& result) const override;

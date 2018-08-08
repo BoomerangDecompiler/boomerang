@@ -43,7 +43,7 @@ void SPARCFrontendTest::test1()
     DecodeResult inst;
     QString     expected;
     QString     actual;
-    QTextStream strm(&actual);
+    OStream strm(&actual);
 
     QVERIFY(fe->decodeSingleInstruction(addr, inst));
     QVERIFY(inst.rtl != nullptr);
@@ -101,7 +101,7 @@ void SPARCFrontendTest::test2()
     DecodeResult inst;
     QString      expected;
     QString      actual;
-    QTextStream  strm(&actual);
+    OStream  strm(&actual);
 
 
     Prog *prog = m_project.getProg();
@@ -149,7 +149,7 @@ void SPARCFrontendTest::test3()
     DecodeResult inst;
     QString      expected;
     QString      actual;
-    QTextStream  strm(&actual);
+    OStream  strm(&actual);
 
     fe->decodeSingleInstruction(Address(0x000106a0), inst);
     inst.rtl->print(strm);
@@ -202,7 +202,7 @@ void SPARCFrontendTest::testBranch()
     DecodeResult inst;
     QString      expected;
     QString      actual;
-    QTextStream  strm(&actual);
+    OStream  strm(&actual);
 
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
@@ -251,7 +251,7 @@ void SPARCFrontendTest::testDelaySlot()
     Address addr = fe->findMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
     QString     actual;
-    QTextStream strm(&actual);
+    OStream strm(&actual);
     Module      *m = prog->getOrInsertModule("test");
 
     UserProc    proc(addr, "testDelaySlot", m);

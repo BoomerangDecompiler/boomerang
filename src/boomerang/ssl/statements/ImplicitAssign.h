@@ -46,7 +46,7 @@ public:
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc Statement::printCompact
-    virtual void printCompact(QTextStream& os, bool html = false) const override;
+    virtual void printCompact(OStream& os, bool html = false) const override;
 
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return nullptr; }

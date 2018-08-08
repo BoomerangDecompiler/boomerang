@@ -126,7 +126,7 @@ void Assign::simplifyAddr()
 }
 
 
-void Assign::printCompact(QTextStream& os, bool html) const
+void Assign::printCompact(OStream& os, bool html) const
 {
     os << "*" << m_type << "* ";
 

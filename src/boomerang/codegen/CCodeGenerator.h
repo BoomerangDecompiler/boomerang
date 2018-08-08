@@ -91,7 +91,7 @@ public:
 
 public:
     /// \copydoc ICodeGenerator::generateCode
-    virtual void generateCode(const Prog *prog, QTextStream& os) override;
+    virtual void generateCode(const Prog *prog, OStream& os) override;
 
     /// \copydoc ICodeGenerator::generateCode
     virtual void generateCode(const Prog *prog, Module *module = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
@@ -241,21 +241,21 @@ private:
      *
      * \todo This function is 800+ lines, and should possibly be split up.
      */
-    void appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec, bool allowUnsigned = false);
+    void appendExp(OStream& str, const Exp& exp, OpPrec curPrec, bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
-    void appendType(QTextStream& str, SharedConstType typ);
+    void appendType(OStream& str, SharedConstType typ);
 
     /**
      * Print the identified type to \a str.
      */
-    void appendTypeIdent(QTextStream& str, SharedConstType typ, QString ident);
+    void appendTypeIdent(OStream& str, SharedConstType typ, QString ident);
 
     /// Adds: (
-    void openParen(QTextStream& str, OpPrec outer, OpPrec inner);
+    void openParen(OStream& str, OpPrec outer, OpPrec inner);
 
     /// Adds: )
-    void closeParen(QTextStream& str, OpPrec outer, OpPrec inner);
+    void closeParen(OStream& str, OpPrec outer, OpPrec inner);
 
 
     void generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet, std::list<const BasicBlock *>& gotoSet, UserProc *proc);
@@ -280,10 +280,10 @@ private:
 
 private:
     /// Dump all generated code to \p os.
-    void print(QTextStream& os);
+    void print(OStream& os);
 
     /// Output 4 * \p indLevel spaces to \p str
-    void indent(QTextStream& str, int indLevel);
+    void indent(OStream& str, int indLevel);
 
     /// Private helper functions, to reduce redundant code, and
     /// have a single place to put a breakpoint on.

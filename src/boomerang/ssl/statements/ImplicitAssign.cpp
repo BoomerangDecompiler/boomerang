@@ -54,7 +54,7 @@ bool ImplicitAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void ImplicitAssign::printCompact(QTextStream& os, bool html) const
+void ImplicitAssign::printCompact(OStream& os, bool html) const
 {
     os << "*" << m_type << "* ";
 
