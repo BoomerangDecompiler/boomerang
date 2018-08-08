@@ -9,29 +9,13 @@
 
 include(boomerang-utils)
 
-set(TESTS
-    FrontendTest
-)
 
 
 # These tests require the ELF loader
 set(TESTS_WITH_ELF
-    FrontPentTest
+    PentiumFrontEndTest
     SPARCFrontendTest
 )
-
-
-foreach(t ${TESTS})
-	BOOMERANG_ADD_TEST(
-		NAME ${t}
-		SOURCES ${t}.h ${t}.cpp
-		LIBRARIES
-			${DEBUG_LIB}
-			boomerang
-			${CMAKE_DL_LIBS}
-			${CMAKE_THREAD_LIBS_INIT}
-	)
-endforeach()
 
 
 if (BOOMERANG_BUILD_LOADER_Elf)
