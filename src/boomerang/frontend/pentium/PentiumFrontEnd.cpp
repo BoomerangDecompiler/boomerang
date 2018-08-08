@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "pentiumfrontend.h"
+#include "PentiumFrontEnd.h"
 
 
 #include "boomerang/db/BasicBlock.h"
@@ -18,7 +18,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/pentiumdecoder.h"
+#include "boomerang/frontend/pentium/PentiumDecoder.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -65,7 +65,7 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
     // Need a post-cfg pass to remove the FPUSH and FPOP instructions, and to transform various code after floating
     // point compares to generate floating point branches.
     // processFloatCode() will recurse to process its out-edge BBs (if not already processed)
-    Cfg *cfg = function->getCFG();
+    ProcCFG *cfg = function->getCFG();
 
     // This will get done twice; no harm
     function->setEntryBB();
@@ -85,7 +85,7 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 }
 
 
-void PentiumFrontEnd::processFloatCode(Cfg *cfg)
+void PentiumFrontEnd::processFloatCode(ProcCFG *cfg)
 {
     for (BasicBlock *bb : *cfg) {
         Statement *st;
@@ -165,7 +165,7 @@ void PentiumFrontEnd::processFloatCode(Cfg *cfg)
 }
 
 
-void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg)
+void PentiumFrontEnd::processFloatCode(BasicBlock *bb, int& tos, ProcCFG *cfg)
 {
     // Loop through each RTL this BB
     RTLList *BB_rtls = bb ? bb->getRTLs() : nullptr;
@@ -874,7 +874,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         }
     }
 
-    // some pentium specific ellipsis processing
+    // some Pentium specific ellipsis processing
     if (calledSig->hasEllipsis()) {
         // count pushes backwards to find a push of 0
         bool found = false;

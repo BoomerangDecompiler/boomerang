@@ -24,11 +24,11 @@ class UserProc;
  * otherwise there wil be a second implicit definition
  * for m[esp{0}-8] (original should be b[esp+8] by now)
  */
-class ExpSsaXformer : public ExpModifier
+class ExpSSAXformer : public ExpModifier
 {
 public:
-    ExpSsaXformer(UserProc *p);
-    virtual ~ExpSsaXformer() = default;
+    ExpSSAXformer(UserProc *p);
+    virtual ~ExpSSAXformer() = default;
 
 public:
     UserProc *getProc() { return m_proc; }

@@ -47,8 +47,8 @@
 #include <string>
 
 #include "boomerang/c/parser/AnsiCScanner.h"
-#include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/signature/CustomSignature.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"

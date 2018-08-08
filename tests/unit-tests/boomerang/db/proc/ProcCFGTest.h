@@ -16,7 +16,7 @@
 /**
  * Tests for the Control Flow Graph
  */
-class CFGTest : public BoomerangTest
+class ProcCFGTest : public BoomerangTest
 {
     Q_OBJECT
 

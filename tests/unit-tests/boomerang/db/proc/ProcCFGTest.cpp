@@ -7,11 +7,11 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "CFGTest.h"
+#include "ProcCFGTest.h"
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/Assign.h"
@@ -34,10 +34,10 @@ std::unique_ptr<RTLList> createRTLs(Address baseAddr, int numRTLs)
 }
 
 
-void CFGTest::testHasBB()
+void ProcCFGTest::testHasBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     QVERIFY(!cfg->hasBB(nullptr));
     BasicBlock *bb = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
@@ -45,16 +45,16 @@ void CFGTest::testHasBB()
 
 
     UserProc proc2(Address(0x1000), "test", nullptr);
-    Cfg *cfg2 = proc2.getCFG();
+    ProcCFG *cfg2 = proc2.getCFG();
     cfg2->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
     QVERIFY(!cfg2->hasBB(bb));
 }
 
 
-void CFGTest::testCreateBB()
+void ProcCFGTest::testCreateBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     BasicBlock *bb = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 1));
     QVERIFY(bb != nullptr);
@@ -67,10 +67,10 @@ void CFGTest::testCreateBB()
 }
 
 
-void CFGTest::testCreateBBBlocking()
+void ProcCFGTest::testCreateBBBlocking()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     BasicBlock *existingBB = cfg->createBB(BBType::Oneway, createRTLs(Address(0x1000), 4));
 
@@ -99,15 +99,15 @@ void CFGTest::testCreateBBBlocking()
     QCOMPARE(cfg->getNumBBs(), 2);
     QVERIFY(cfg->isWellFormed());
 
-    // Note: Adding a BB that is smaller than an existing one is handled by Cfg::label.
-    // However, Cfg::createBB should handle it. (TODO)
+    // Note: Adding a BB that is smaller than an existing one is handled by ProcCFG::label.
+    // However, ProcCFG::createBB should handle it. (TODO)
 }
 
 
-void CFGTest::testCreateBBBlockingIncomplete()
+void ProcCFGTest::testCreateBBBlockingIncomplete()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     // complete the incomplete Basic Block
     cfg->createIncompleteBB(Address(0x1000));
@@ -133,10 +133,10 @@ void CFGTest::testCreateBBBlockingIncomplete()
 }
 
 
-void CFGTest::testCreateIncompleteBB()
+void ProcCFGTest::testCreateIncompleteBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     BasicBlock *bb = cfg->createIncompleteBB(Address(0x1000));
     QVERIFY(bb->isIncomplete());
@@ -145,10 +145,10 @@ void CFGTest::testCreateIncompleteBB()
 }
 
 
-void CFGTest::testEnsureBBExists()
+void ProcCFGTest::testEnsureBBExists()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     // create incomplete BB
     BasicBlock *dummy = nullptr;
@@ -180,10 +180,10 @@ void CFGTest::testEnsureBBExists()
 }
 
 
-void CFGTest::testSetEntryAndExitBB()
+void ProcCFGTest::testSetEntryAndExitBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
     cfg->setEntryAndExitBB(nullptr);
 
     QVERIFY(cfg->getEntryBB() == nullptr);
@@ -202,10 +202,10 @@ void CFGTest::testSetEntryAndExitBB()
 }
 
 
-void CFGTest::testRemoveBB()
+void ProcCFGTest::testRemoveBB()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     cfg->removeBB(nullptr);
     QCOMPARE(cfg->getNumBBs(), 0);
@@ -222,10 +222,10 @@ void CFGTest::testRemoveBB()
 }
 
 
-void CFGTest::testAddEdge()
+void ProcCFGTest::testAddEdge()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     cfg->addEdge(nullptr, nullptr);
     QCOMPARE(cfg->getNumBBs(), 0);
@@ -275,10 +275,10 @@ void CFGTest::testAddEdge()
 }
 
 
-void CFGTest::testIsWellFormed()
+void ProcCFGTest::testIsWellFormed()
 {
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
 
     QVERIFY(cfg->isWellFormed());
 
@@ -295,14 +295,14 @@ void CFGTest::testIsWellFormed()
 
     // add interprocedural edge
     UserProc proc2(Address(0x3000), "test2", nullptr);
-    Cfg *proc2Cfg = proc2.getCFG();
+    ProcCFG *proc2CFG = proc2.getCFG();
 
-    BasicBlock *proc2BB = proc2Cfg->createBB(BBType::Oneway, createRTLs(Address(0x3000), 1));
+    BasicBlock *proc2BB = proc2CFG->createBB(BBType::Oneway, createRTLs(Address(0x3000), 1));
 
     cfg->addEdge(callBB, proc2BB);
     QVERIFY(!cfg->isWellFormed());
-    QVERIFY(!proc2Cfg->isWellFormed());
+    QVERIFY(!proc2CFG->isWellFormed());
 }
 
 
-QTEST_GUILESS_MAIN(CFGTest)
+QTEST_GUILESS_MAIN(ProcCFGTest)

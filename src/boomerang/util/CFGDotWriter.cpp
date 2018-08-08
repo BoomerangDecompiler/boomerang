@@ -13,14 +13,14 @@
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Exp.h"
 
 
-void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
+void CFGDotWriter::writeCFG(const Prog *prog, const QString& filename)
 {
     QFile tgt(prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
 
@@ -29,7 +29,7 @@ void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
     }
 
     QTextStream of(&tgt);
-    of << "digraph Cfg {\n";
+    of << "digraph ProcCFG {\n";
 
     for (const auto& module : prog->getModuleList()) {
         for (Function *func : *module) {
@@ -56,13 +56,13 @@ void CfgDotWriter::writeCFG(const Prog *prog, const QString& filename)
 }
 
 
-void CfgDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
+void CFGDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 {
     QFile outFile(filename);
     outFile.open(QFile::WriteOnly | QFile::Text);
 
     QTextStream textStream(&outFile);
-    textStream << "digraph cfg {\n";
+    textStream << "digraph ProcCFG {\n";
 
     for (UserProc *userProc : procs) {
         textStream << "subgraph " << userProc->getName() << " {\n";
@@ -73,7 +73,7 @@ void CfgDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 }
 
 
-void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
+void CFGDotWriter::writeCFG(const ProcCFG *cfg, QTextStream& of)
 {
     Address returnAddress = Address::INVALID;
 
@@ -153,8 +153,8 @@ void CfgDotWriter::writeCFG(const Cfg* cfg, QTextStream& of)
         of << "\"];\n";
     }
 
-    // Force the one return node to be at the bottom (max rank). Otherwise, with all its in-edges, it will end up in the
-    // middle
+    // Force the one return node to be at the bottom (max rank).
+    // Otherwise, with all its in-edges, it will end up in the middle
     if (!returnAddress.isZero()) {
         of << "{rank=max; bb" << returnAddress << "}\n";
     }

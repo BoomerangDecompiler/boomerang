@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "st20decoder.h"
+#include "ST20Decoder.h"
 
 
 #include "boomerang/core/Project.h"

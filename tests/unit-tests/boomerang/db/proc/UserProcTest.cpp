@@ -15,7 +15,7 @@
 
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"

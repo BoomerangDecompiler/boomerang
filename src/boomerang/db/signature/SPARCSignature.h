@@ -18,12 +18,12 @@ namespace CallingConvention
 namespace StdC
 {
 
-class BOOMERANG_API SparcSignature : public Signature
+class BOOMERANG_API SPARCSignature : public Signature
 {
 public:
-    explicit SparcSignature(const QString& name);
-    explicit SparcSignature(Signature& old);
-    virtual ~SparcSignature() override = default;
+    explicit SPARCSignature(const QString& name);
+    explicit SPARCSignature(Signature& old);
+    virtual ~SPARCSignature() override = default;
 
 public:
     virtual std::shared_ptr<Signature> clone() const override;
@@ -58,11 +58,11 @@ public:
 };
 
 
-class SparcLibSignature : public SparcSignature
+class SPARCLibSignature : public SPARCSignature
 {
 public:
-    explicit SparcLibSignature(const QString& name)
-        : SparcSignature(name) {}
+    explicit SPARCLibSignature(const QString& name)
+        : SPARCSignature(name) {}
 
     virtual std::shared_ptr<Signature> clone() const override;
     virtual SharedExp getProven(SharedExp left) const override;

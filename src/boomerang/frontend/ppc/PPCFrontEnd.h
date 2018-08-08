@@ -14,10 +14,7 @@
 
 
 /**
- * Contains routines to manage the decoding of ppc
- * instructions and the instantiation to RTLs, removing sparc
- * dependent features such as delay slots in the process. These
- * functions replace Frontend.cpp for decoding sparc instructions.
+ * Contains routines to manage the decoding of PPC binaries.
  */
 class PPCFrontEnd : public DefaultFrontEnd
 {

@@ -7,17 +7,15 @@
  * WARRANTIES.
  */
 #pragma endregion License
+#include "PentiumFrontEndTest.h"
 
 
-#include "FrontPentTest.h"
-
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ifc/IDecoder.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/log/Log.h"
-
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
 
 #include <QDebug>
 

@@ -203,7 +203,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
         case BranchType::JPAR:
         case BranchType::JNPAR:
             {
-                // This is pentium specific too; see below for more notes.
+                // This is Pentium specific too; see below for more notes.
 
                 /*
                  *                                      condExp

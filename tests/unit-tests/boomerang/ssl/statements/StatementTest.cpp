@@ -11,7 +11,14 @@
 
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
+#include "boomerang/db/module/Module.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/decomp/ProgDecompiler.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -26,16 +33,9 @@
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/db/module/Module.h"
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/decomp/ProgDecompiler.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/ssl/type/IntegerType.h"
 
 
 #include <sstream>
@@ -74,7 +74,7 @@ void StatementTest::testEmpty()
     UserProc *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000123)));
 
     // create CFG
-    Cfg                    *cfg   = proc->getCFG();
+    ProcCFG                    *cfg   = proc->getCFG();
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
     bbRTLs->push_back(std::unique_ptr<RTL>(new RTL(Address(0x00000123), { })));
 
@@ -112,7 +112,7 @@ void StatementTest::testFlow()
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
 
-    Cfg *cfg   = proc->getCFG();
+    ProcCFG *cfg   = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), std::make_shared<Const>(5));
     a1->setProc(proc);
@@ -185,7 +185,7 @@ void StatementTest::testKill()
     proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, name));
 
     // create CFG
-    Cfg              *cfg   = proc->getCFG();
+    ProcCFG              *cfg   = proc->getCFG();
 
     Assign *e1     = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
     e1->setNumber(1);
@@ -254,7 +254,7 @@ void StatementTest::testUse()
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
 
-    Cfg *cfg   = proc->getCFG();
+    ProcCFG *cfg   = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
     a1->setNumber(1);
@@ -319,7 +319,7 @@ void StatementTest::testUseOverKill()
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
     proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
-    Cfg *cfg = proc->getCFG();
+    ProcCFG *cfg = proc->getCFG();
 
     Assign *e1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
     e1->setNumber(1);
@@ -392,7 +392,7 @@ void StatementTest::testUseOverBB()
 
     // create UserProc
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
-    Cfg *cfg       = proc->getCFG();
+    ProcCFG *cfg       = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
     a1->setNumber(1);
@@ -466,7 +466,7 @@ void StatementTest::testUseKill()
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    Cfg *cfg   = proc->getCFG();
+    ProcCFG *cfg   = proc->getCFG();
 
     Assign *a1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
     a1->setNumber(1);
@@ -535,7 +535,7 @@ void StatementTest::testEndlessLoop()
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00001000)));
-    Cfg *cfg   = proc->getCFG();
+    ProcCFG *cfg   = proc->getCFG();
 
 
     // r[24] := 5
@@ -735,7 +735,7 @@ void StatementTest::testRecursion()
     prog->setFrontEnd(fe);
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
-    Cfg *cfg   = proc->getCFG();
+    ProcCFG *cfg   = proc->getCFG();
 
     // push bp
     // r28 := r28 + -4

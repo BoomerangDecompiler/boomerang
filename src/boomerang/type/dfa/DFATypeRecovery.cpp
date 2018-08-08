@@ -245,7 +245,7 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 
 void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 {
-    Cfg             *cfg  = proc->getCFG();
+    ProcCFG             *cfg  = proc->getCFG();
     DataIntervalMap localsMap(proc); // map of all local variables of proc
 
     proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
@@ -522,7 +522,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 }
 
 
-bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, Cfg *cfg)
+bool DFATypeRecovery::dfaTypeAnalysis(Signature *sig, ProcCFG *cfg)
 {
     bool ch = false;
 

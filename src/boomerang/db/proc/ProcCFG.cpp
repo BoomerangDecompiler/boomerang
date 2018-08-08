@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "CFG.h"
+#include "ProcCFG.h"
 
 
 #include "boomerang/db/BasicBlock.h"
@@ -22,19 +22,19 @@
 
 
 
-Cfg::Cfg(UserProc *proc)
+ProcCFG::ProcCFG(UserProc *proc)
     : m_myProc(proc)
 {
 }
 
 
-Cfg::~Cfg()
+ProcCFG::~ProcCFG()
 {
     qDeleteAll(begin(), end()); // deletes all BBs
 }
 
 
-void Cfg::clear()
+void ProcCFG::clear()
 {
     // Don't delete the BBs; this will delete any CaseStatements we want to save for the re-decode.
     // Just let them leak since we do not use a garbage collection any more.
@@ -49,7 +49,7 @@ void Cfg::clear()
 }
 
 
-bool Cfg::hasBB(const BasicBlock* bb) const
+bool ProcCFG::hasBB(const BasicBlock* bb) const
 {
     if (bb == nullptr) {
         return false;
@@ -67,7 +67,7 @@ bool Cfg::hasBB(const BasicBlock* bb) const
 }
 
 
-BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
+BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 {
     assert(!bbRTLs->empty());
 
@@ -77,7 +77,7 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
     // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
     // with its delay instruction moved in front of it (with 0 address).
-    // Note: it is possible to see two RTLs with zero address with Sparc: jmpl %o0, %o1. There will be one for the delay
+    // Note: it is possible to see two RTLs with zero address with SPARC: jmpl %o0, %o1. There will be one for the delay
     // instr (if not a NOP), and one for the side effect of copying %o7 to %o1.
     // Note that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the map, but they
     // have no RTLs with a non zero address.
@@ -192,13 +192,13 @@ BasicBlock *Cfg::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 }
 
 
-BasicBlock *Cfg::createIncompleteBB(Address lowAddr)
+BasicBlock *ProcCFG::createIncompleteBB(Address lowAddr)
 {
     return (m_bbStartMap[lowAddr] = new BasicBlock(lowAddr, m_myProc));
 }
 
 
-bool Cfg::ensureBBExists(Address addr, BasicBlock *&currBB)
+bool ProcCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
 {
     // check for overlapping incomplete or complete BBs.
     BBStartMap::iterator itExistingBB = m_bbStartMap.lower_bound(addr);
@@ -242,13 +242,13 @@ bool Cfg::ensureBBExists(Address addr, BasicBlock *&currBB)
 }
 
 
-bool Cfg::isStartOfBB(Address addr) const
+bool ProcCFG::isStartOfBB(Address addr) const
 {
     return getBBStartingAt(addr) != nullptr;
 }
 
 
-bool Cfg::isStartOfIncompleteBB(Address addr) const
+bool ProcCFG::isStartOfIncompleteBB(Address addr) const
 {
     const BasicBlock *bb = getBBStartingAt(addr);
 
@@ -256,7 +256,7 @@ bool Cfg::isStartOfIncompleteBB(Address addr) const
 }
 
 
-void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
+void ProcCFG::setEntryAndExitBB(BasicBlock *entryBB)
 {
     m_entryBB = entryBB;
 
@@ -271,7 +271,7 @@ void Cfg::setEntryAndExitBB(BasicBlock *entryBB)
 }
 
 
-void Cfg::removeBB(BasicBlock *bb)
+void ProcCFG::removeBB(BasicBlock *bb)
 {
     if (bb == nullptr) {
         return;
@@ -286,7 +286,7 @@ void Cfg::removeBB(BasicBlock *bb)
 }
 
 
-void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB)
+void ProcCFG::addEdge(BasicBlock *sourceBB, BasicBlock *destBB)
 {
     if (!sourceBB || !destBB) {
         return;
@@ -303,7 +303,7 @@ void Cfg::addEdge(BasicBlock *sourceBB, BasicBlock *destBB)
 }
 
 
-void Cfg::addEdge(BasicBlock *sourceBB, Address addr)
+void ProcCFG::addEdge(BasicBlock *sourceBB, Address addr)
 {
     // If we already have a BB for this address, add the edge to it.
     // If not, create a new incomplete BB at the destination address.
@@ -317,7 +317,7 @@ void Cfg::addEdge(BasicBlock *sourceBB, Address addr)
 }
 
 
-bool Cfg::isWellFormed() const
+bool ProcCFG::isWellFormed() const
 {
     for (const BasicBlock *bb : *this) {
         if (bb->isIncomplete()) {
@@ -370,7 +370,7 @@ bool Cfg::isWellFormed() const
 }
 
 
-void Cfg::simplify()
+void ProcCFG::simplify()
 {
     LOG_VERBOSE("Simplifying CFG ...");
 
@@ -380,7 +380,7 @@ void Cfg::simplify()
 }
 
 
-BasicBlock *Cfg::findRetNode()
+BasicBlock *ProcCFG::findRetNode()
 {
     BasicBlock *retNode = nullptr;
 
@@ -400,7 +400,7 @@ BasicBlock *Cfg::findRetNode()
 }
 
 
-Statement *Cfg::findOrCreateImplicitAssign(SharedExp exp)
+Statement *ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
 {
     ExpStatementMap::iterator it = m_implicitMap.find(exp);
     if (it != m_implicitMap.end()) {
@@ -426,7 +426,7 @@ Statement *Cfg::findOrCreateImplicitAssign(SharedExp exp)
 }
 
 
-Statement *Cfg::findTheImplicitAssign(const SharedConstExp& x) const
+Statement *ProcCFG::findTheImplicitAssign(const SharedConstExp& x) const
 {
     // As per the above, but don't create an implicit if it doesn't already exist
     ExpStatementMap::const_iterator it = m_implicitMap.find(std::const_pointer_cast<Exp>(x));
@@ -434,7 +434,7 @@ Statement *Cfg::findTheImplicitAssign(const SharedConstExp& x) const
 }
 
 
-Statement *Cfg::findImplicitParamAssign(Parameter *param)
+Statement *ProcCFG::findImplicitParamAssign(Parameter *param)
 {
     // As per the above, but for parameters (signatures don't get updated with opParams)
     SharedExp paramExp = param->getExp();
@@ -452,7 +452,7 @@ Statement *Cfg::findImplicitParamAssign(Parameter *param)
 }
 
 
-void Cfg::removeImplicitAssign(SharedExp x)
+void ProcCFG::removeImplicitAssign(SharedExp x)
 {
     auto it = m_implicitMap.find(x);
 
@@ -463,7 +463,7 @@ void Cfg::removeImplicitAssign(SharedExp x)
 }
 
 
-BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */)
+BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /* = 0 */)
 {
     RTLList::iterator splitIt;
 
@@ -538,7 +538,7 @@ BasicBlock *Cfg::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_newBB /
 }
 
 
-void Cfg::print(QTextStream& out, bool html)
+void ProcCFG::print(QTextStream& out, bool html)
 {
     out << "Control Flow Graph:\n";
 
@@ -550,7 +550,7 @@ void Cfg::print(QTextStream& out, bool html)
 }
 
 
-void Cfg::dump()
+void ProcCFG::dump()
 {
     QTextStream q_cerr(stderr);
 
@@ -559,7 +559,7 @@ void Cfg::dump()
 }
 
 
-void Cfg::dumpImplicitMap()
+void ProcCFG::dumpImplicitMap()
 {
     QTextStream q_cerr(stderr);
     q_cerr << "Implicits:\n";

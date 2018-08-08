@@ -10,7 +10,7 @@
 #include "Type.h"
 
 
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Binary.h"

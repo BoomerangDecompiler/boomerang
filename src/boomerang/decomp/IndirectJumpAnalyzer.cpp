@@ -744,7 +744,7 @@ void IndirectJumpAnalyzer::processSwitch(BasicBlock *bb, UserProc *proc)
     bb->setType(BBType::Nway);
 
     Prog *prog = proc->getProg();
-    Cfg  *cfg = proc->getCFG();
+    ProcCFG  *cfg = proc->getCFG();
 
     // Where there are repeated switch cases, we have repeated out-edges from the BB. Example:
     // switch (x) {

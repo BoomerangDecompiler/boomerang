@@ -17,7 +17,7 @@
 
 class Prog;
 class UserProc;
-class Cfg;
+class ProcCFG;
 
 class QString;
 class QTextStream;
@@ -28,7 +28,7 @@ typedef std::set<UserProc *> ProcSet;
 /**
  * Writes the CFG of functions to a file in the Graphviz dot format.
  */
-class BOOMERANG_API CfgDotWriter
+class BOOMERANG_API CFGDotWriter
 {
 public:
     /// Write the CFG of all procedures in the program.
@@ -38,5 +38,5 @@ public:
     void writeCFG(const ProcSet& procs, const QString& filename);
 
 private:
-    void writeCFG(const Cfg *cfg, QTextStream& os);
+    void writeCFG(const ProcCFG *cfg, QTextStream& os);
 };

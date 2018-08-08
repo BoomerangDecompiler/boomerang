@@ -55,7 +55,7 @@ private:
      * Little simpler, just replaces FPUSH and FPOP with more complex
      * semantics.
      */
-    void processFloatCode(Cfg *cfg);
+    void processFloatCode(ProcCFG *cfg);
 
     /**
      * Process a basic block, and all its successors, for floating point code.
@@ -71,7 +71,7 @@ private:
      *        reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
      * \param cfg passed to processFloatCode
      */
-    void processFloatCode(BasicBlock *bb, int& tos, Cfg *cfg);
+    void processFloatCode(BasicBlock *bb, int& tos, ProcCFG *cfg);
 
     /**
      * Process away %rpt and %skip in string instructions
@@ -84,7 +84,7 @@ private:
     void processOverlapped(UserProc *proc);
 
     /**
-     * Checks for pentium specific helper functions like __xtol which have specific sematics.
+     * Checks for Pentium specific helper functions like __xtol which have specific sematics.
      *
      * \note This needs to be handled in a resourcable way.
      *

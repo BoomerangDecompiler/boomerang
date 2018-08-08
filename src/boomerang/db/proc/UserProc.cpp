@@ -37,7 +37,7 @@
 
 UserProc::UserProc(Address address, const QString& name, Module *module)
     : Function(address, std::make_shared<Signature>(name), module)
-    , m_cfg(new Cfg(this))
+    , m_cfg(new ProcCFG(this))
     , m_df(this)
 {
 }

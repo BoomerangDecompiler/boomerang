@@ -139,14 +139,14 @@ public:
 
     /**
      * Sets a bit that says that this call is effectively followed by a return.
-     * This happens e.g. on Sparc when there is a restore in the delay slot of the call
+     * This happens e.g. on SPARC when there is a restore in the delay slot of the call
      * \param b true if this is to be set; false to clear the bit
      */
     void setReturnAfterCall(bool b);
 
     /**
      * Tests a bit that says that this call is effectively followed by a return.
-     * This happens e.g. on Sparc when there is a restore in the delay slot of the call
+     * This happens e.g. on SPARC when there is a restore in the delay slot of the call
      * \returns True if this call is effectively followed by a return
      */
     bool isReturnAfterCall() const;

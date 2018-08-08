@@ -565,7 +565,7 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 
 // Hard-coded numbers of register indices.
 
-// pentium
+// Pentium
 #define REG_PENT_AX      (0)
 #define REG_PENT_CX      (1)
 #define REG_PENT_DX      (2)
@@ -609,7 +609,7 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 #define REG_PENT_FCW    (42)
 
 
-// sparc
+// SPARC
 #define REG_SPARC_G0  (0)
 #define REG_SPARC_G1  (1)
 #define REG_SPARC_G2  (2)
@@ -666,7 +666,7 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 #define REG_MIPS_F0     (32)
 
 
-// ppc
+// PPC
 #define REG_PPC_SP      (1)
 
 #define REG_PPC_G0      (0)

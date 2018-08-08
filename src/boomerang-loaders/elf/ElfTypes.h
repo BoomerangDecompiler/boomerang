@@ -384,7 +384,7 @@ struct Elf64_Rela
 #define R_AMD64_SIZE64       33 ///< word64     Z + A
 
 
-/// Sparc relocation types
+/// SPARC relocation types
 #define R_SPARC_NONE                0  ///< None       None
 #define R_SPARC_8                   1  ///< V-byte8    S + A
 #define R_SPARC_16                  2  ///< V-half16   S + A

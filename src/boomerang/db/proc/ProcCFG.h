@@ -31,11 +31,11 @@ enum class BBType;
 
 
 /**
- * Control Flow Graph class. Contains all the BasicBlock objects for a procedure.
- * These BBs contain all the RTLs for the procedure, so by traversing the Cfg,
+ * Contains all the BasicBlock objects for a single UserProc.
+ * These BBs contain all the RTLs for the procedure, so by traversing the ProcCFG,
  * one traverses the whole procedure.
  */
-class BOOMERANG_API Cfg
+class BOOMERANG_API ProcCFG
 {
     typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
     typedef std::map<SharedConstExp, Statement *, lessExpStar>     ExpStatementMap;
@@ -48,14 +48,14 @@ public:
 
 public:
     /// Creates an empty CFG for the function \p proc
-    Cfg(UserProc *proc);
-    Cfg(const Cfg& other) = delete;
-    Cfg(Cfg&& other) = default;
+    ProcCFG(UserProc *proc);
+    ProcCFG(const ProcCFG& other) = delete;
+    ProcCFG(ProcCFG&& other) = default;
 
-    ~Cfg();
+    ~ProcCFG();
 
-    Cfg& operator=(const Cfg& other) = delete;
-    Cfg& operator=(Cfg&& other) = default;
+    ProcCFG& operator=(const ProcCFG& other) = delete;
+    ProcCFG& operator=(ProcCFG&& other) = default;
 
 public:
     /// Note: When removing a BB, the iterator(s) pointing to the removed BB are invalidated.
@@ -87,7 +87,7 @@ public:
      * If the BB is blocked by a larger complete BB, the existing BB will be split at the first address of
      * \p bbRTLs; in this case this function returns nullptr (since no BB was created).
      * The case of the new BB being blocked by a smaller complete BB is not handled by this method;
-     * use \ref Cfg::label instead.
+     * use \ref ProcCFG::label instead.
      *
      * The new BB might also be blocked by exising incomplete BBs.
      * If this is the case, the new BB will be split at all blocking incomplete BBs,
@@ -105,7 +105,7 @@ public:
 
     /**
      * Creates a new incomplete BB at address \p startAddr.
-     * Creating an incomplete BB will cause the Cfg to not be well-fomed until all
+     * Creating an incomplete BB will cause the ProcCFG to not be well-fomed until all
      * incomplete BBs are completed by calling \ref createBB.
      */
     BasicBlock *createIncompleteBB(Address startAddr);
@@ -184,7 +184,7 @@ public:
 
     /**
      * Checks that all BBs are complete, and all out edges are valid.
-     * Also checks that the Cfg does not contain interprocedural edges.
+     * Also checks that the ProcCFG does not contain interprocedural edges.
      * By definition, the empty CFG is well-formed.
      */
     bool isWellFormed() const;
@@ -233,7 +233,7 @@ public:
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
 
 public:
-    /// print this cfg, mainly for debugging
+    /// print this CFG, mainly for debugging
     void print(QTextStream& out, bool html = false);
     void dump();            ///< Dump to stderr
     void dumpImplicitMap(); ///< Dump the implicit map to stderr

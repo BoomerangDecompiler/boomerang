@@ -1265,7 +1265,7 @@ Assign *CallStatement::makeArgAssign(SharedType ty, SharedExp e)
     as->setProc(m_proc);
     as->setBB(m_bb);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
-    Cfg *cfg = m_proc->getCFG();
+    ProcCFG *cfg = m_proc->getCFG();
 
     if (cfg->isImplicitsDone()) {
         ImplicitConverter     ic(cfg);

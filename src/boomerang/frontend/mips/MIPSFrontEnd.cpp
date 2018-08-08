@@ -7,14 +7,14 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "mipsfrontend.h"
+#include "MIPSFrontEnd.h"
 
 
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/mips/mipsdecoder.h"
+#include "boomerang/frontend/mips/MIPSDecoder.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RTL.h"

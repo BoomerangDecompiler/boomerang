@@ -411,7 +411,7 @@ void FromSSAFormPass::removeSubscriptsFromSymbols(UserProc *proc)
     UserProc::SymbolMap sm2 = proc->getSymbolMap(); // Object copy
 
     proc->getSymbolMap().clear();
-    ExpSsaXformer esx(proc);
+    ExpSSAXformer esx(proc);
 
     for (auto it = sm2.begin(); it != sm2.end(); ++it) {
         SharedExp from = std::const_pointer_cast<Exp>(it->first);
@@ -432,7 +432,7 @@ void FromSSAFormPass::removeSubscriptsFromSymbols(UserProc *proc)
 
 void FromSSAFormPass::removeSubscriptsFromParameters(UserProc *proc)
 {
-    ExpSsaXformer esx(proc);
+    ExpSSAXformer esx(proc);
 
     for (Statement *param : proc->getParameters()) {
         SharedExp left = static_cast<Assignment *>(param)->getLeft();

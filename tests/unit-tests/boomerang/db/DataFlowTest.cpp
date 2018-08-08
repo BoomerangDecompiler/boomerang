@@ -19,7 +19,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/passes/PassManager.h"
@@ -49,7 +49,7 @@ void DataFlowTest::testCalculateDominators()
 {
     // Appel, Figure 19.8
     UserProc proc(Address(0x1000), "test", nullptr);
-    Cfg *cfg = proc.getCFG();
+    ProcCFG *cfg = proc.getCFG();
     DataFlow *df = proc.getDataFlow();
 
     BasicBlock *a = cfg->createBB(BBType::Twoway, createRTLs(Address(0x1000), 1));

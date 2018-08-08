@@ -17,23 +17,22 @@
 
 
 /**
- * This file contains routines to manage the decoding of sparc instructions
- * and the instantiation to RTLs, removing sparc dependent features
- * such as delay slots in the process. These functions replace frontend.cpp
- * for decoding sparc instructions.
+ * This file contains routines to manage the decoding of SPARC instructions
+ * and the instantiation to RTLs, removing SPARC dependent features
+ * such as delay slots in the process.
  */
-class BOOMERANG_API SparcFrontEnd : public DefaultFrontEnd
+class BOOMERANG_API SPARCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    SparcFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    SparcFrontEnd(const SparcFrontEnd& other) = delete;
-    SparcFrontEnd(SparcFrontEnd&& other) = default;
+    SPARCFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    SPARCFrontEnd(const SPARCFrontEnd& other) = delete;
+    SPARCFrontEnd(SPARCFrontEnd&& other) = default;
 
-    virtual ~SparcFrontEnd() = default;
+    virtual ~SPARCFrontEnd() = default;
 
-    SparcFrontEnd& operator=(const SparcFrontEnd&) = delete;
-    SparcFrontEnd& operator=(SparcFrontEnd&&) = default;
+    SPARCFrontEnd& operator=(const SPARCFrontEnd&) = delete;
+    SPARCFrontEnd& operator=(SPARCFrontEnd&&) = default;
 
 public:
     /**
@@ -113,7 +112,7 @@ private:
      * \param cfg - the CFG of the current procedure
      * \param tq Object managing the target queue
      */
-    void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq);
+    void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Records the fact that there is a procedure at a given address. Also adds the out edge to the
@@ -128,7 +127,7 @@ private:
      * \param  offset - the offset from the call instruction to which an outedge must be added. A value of 0
      *         means no edge is to be added.
      */
-    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address, int offset = 0);
+    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address, int offset = 0);
 
     /**
      * This is the stub for cases of DCTI couples that we haven't written
@@ -169,7 +168,7 @@ private:
      *
      */
     void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
+                 std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)
@@ -204,7 +203,7 @@ private:
      * \returns true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                  std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
+                  std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Handles all static conditional delayed anulled branches followed by
@@ -222,7 +221,7 @@ private:
      * \returns          true if next instruction is to be fetched sequentially from this one
      */
     bool case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                    std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
+                    std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
 
     /**
      * Emit a null RTL with the given address.
@@ -252,7 +251,7 @@ private:
     void quadOperation(Address addr, RTLList& lrtl, OPER op);
 
     /**
-     * Checks for sparc specific helper functions like .urem, which have specific sematics.
+     * Checks for SPARC specific helper functions like .urem, which have specific sematics.
      * Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
      * \note   This needs to be handled in a resourcable way.
      * \param  dest destination of the call (native address)

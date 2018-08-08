@@ -144,7 +144,7 @@ public:
 
     bool isNoReturn() const { return false; }
 
-    /// \returns true if this is a known machine (e.g. SparcSignature as opposed to Signature)
+    /// \returns true if this is a known machine (e.g. SPARCSignature as opposed to Signature)
     virtual bool isPromoted() const { return false; }
 
     /// any signature can be promoted to a higher level signature, if available
@@ -155,7 +155,7 @@ public:
 
     /**
      * Does expression e represent a local stack-based variable?
-     * Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
+     * Result can be ABI specific, e.g. SPARC has locals in the parent's stack frame, at POSITIVE offsets from the
      * stack pointer register
      * Also, I believe that the PA/RISC stack grows away from 0
      */

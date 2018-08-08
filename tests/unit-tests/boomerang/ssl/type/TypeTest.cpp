@@ -10,21 +10,20 @@
 #include "TypeTest.h"
 
 
-#include "boomerang/db/signature/Signature.h"
-#include "boomerang/util/log/Log.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/signature/Signature.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
+#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/FloatType.h"
-#include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/PointerType.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/util/log/Log.h"
 
-#include <QTextStream>
 #include <QDebug>
+#include <QTextStream>
 
 
 #define HELLO_WINDOWS    getFullSamplePath("windows/hello.exe")

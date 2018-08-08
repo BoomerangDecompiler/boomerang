@@ -17,7 +17,7 @@
 
 
 class BasicBlock;
-class Cfg;
+class ProcCFG;
 class ConnectionGraph;
 
 
@@ -26,7 +26,7 @@ class ConnectionGraph;
 class InterferenceFinder
 {
 public:
-    InterferenceFinder(Cfg *cfg);
+    InterferenceFinder(ProcCFG *cfg);
 
 public:
     void findInterferences(ConnectionGraph& interferences);
@@ -37,6 +37,6 @@ private:
     void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *>& workList, std::set<BasicBlock *>& workSet);
 
 private:
-    Cfg *m_cfg;
+    ProcCFG *m_cfg;
     LivenessAnalyzer m_livenessAna;
 };

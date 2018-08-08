@@ -123,7 +123,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
 
 void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, LocationSet& phiLocs)
 {
-    Cfg *cfg = static_cast<UserProc *>(bb->getFunction())->getCFG();
+    ProcCFG *cfg = static_cast<UserProc *>(bb->getFunction())->getCFG();
 
     liveout.clear();
 

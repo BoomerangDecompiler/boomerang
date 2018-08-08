@@ -10,14 +10,14 @@
 #pragma once
 
 
-class Cfg;
+class ProcCFG;
 
 
 class CFGCompressor
 {
 public:
     /**
-     * Given a well-formed cfg, optimizations are performed on the graph
+     * Given a well-formed ProcCFG, optimizations are performed on the graph
      * to reduce the number of basic blocks and edges. Assumes that \p cfg
      * is well-formed.
      *
@@ -25,13 +25,13 @@ public:
      *  - Removal of redundant jumps (e.g. remove J in A->J->B if J only contains a jump)
      *  - Removal of BBs not reachable from the entry BB.
      *
-     * \sa Cfg::isWellFormed
-     * \returns true if the Cfg was changed.
+     * \sa ProcCFG::isWellFormed
+     * \returns true if the ProcCFG was changed.
      */
-    bool compressCFG(Cfg *cfg);
+    bool compressCFG(ProcCFG *cfg);
 
 private:
     /// Removes BBs that are not reachable from the entry BB.
-    bool removeOrphanBBs(Cfg *cfg);
+    bool removeOrphanBBs(ProcCFG *cfg);
 
 };

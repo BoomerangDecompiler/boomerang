@@ -14,7 +14,7 @@
 #include <vector>
 
 
-class Cfg;
+class ProcCFG;
 class BasicBlock;
 
 
@@ -133,7 +133,7 @@ public:
 
 public:
     /// Structures the control flow graph
-    void structureCFG(Cfg *cfg);
+    void structureCFG(ProcCFG *cfg);
 
     /// establish if \p source has a back edge to \p dest
     bool isBackEdge(const BasicBlock *source, const BasicBlock *dest) const;
@@ -240,7 +240,7 @@ public:
     bool isCaseOption(const BasicBlock *bb) const;
 
 private:
-    Cfg *m_cfg = nullptr;
+    ProcCFG *m_cfg = nullptr;
 
     std::vector<const BasicBlock *> m_postOrdering;    ///< Ordering of BBs for control flow structuring
     std::vector<const BasicBlock *> m_revPostOrdering; ///< Ordering of BBs for control flow structuring

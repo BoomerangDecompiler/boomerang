@@ -7,17 +7,4 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#pragma once
-
-
-#include "TestUtils.h"
-
-
-class FrontendTest : public BoomerangTest
-{
-    Q_OBJECT
-
-private slots:
-    /// Test loading the sparc hello world program
-    void test1();
-};
+#include "BoomerangAPI.h"

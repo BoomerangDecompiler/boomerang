@@ -10,14 +10,14 @@
 #include "StmtImplicitConverter.h"
 
 
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
 
 
-StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter* ic, Cfg* cfg)
+StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter* ic, ProcCFG* cfg)
     : StmtModifier(ic, false)  // False to not ignore collectors (want to make sure that
     , m_cfg(cfg)               //  collectors have valid expressions so you can ascendType)
 {

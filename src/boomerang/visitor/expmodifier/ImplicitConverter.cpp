@@ -10,11 +10,11 @@
 #include "ImplicitConverter.h"
 
 
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/exp/RefExp.h"
 
 
-ImplicitConverter::ImplicitConverter(Cfg* cfg)
+ImplicitConverter::ImplicitConverter(ProcCFG* cfg)
     : m_cfg(cfg)
 {
 }

@@ -11,7 +11,7 @@
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -21,7 +21,7 @@ ControlFlowAnalyzer::ControlFlowAnalyzer()
 }
 
 
-void ControlFlowAnalyzer::structureCFG(Cfg *cfg)
+void ControlFlowAnalyzer::structureCFG(ProcCFG *cfg)
 {
     m_cfg = cfg;
 

@@ -155,7 +155,7 @@ private:
     /// Calculating the dominance frontier
 
     /// Order number of BB n during a depth first search.
-    /// If there is a path from a to b in the cfg, then a is an ancestor of b
+    /// If there is a path from a to b in the ProcCFG, then a is an ancestor of b
     /// if dfnum[a] < dfnum[b]
     std::vector<int> m_dfnum;
 

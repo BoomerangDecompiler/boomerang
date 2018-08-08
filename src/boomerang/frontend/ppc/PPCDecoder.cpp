@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "ppcdecoder.h"
+#include "PPCDecoder.h"
 
 
 #include "boomerang/core/Project.h"

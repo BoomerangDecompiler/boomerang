@@ -19,7 +19,7 @@
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/DebugInfo.h"
 #include "boomerang/db/Global.h"
 #include "boomerang/db/module/Module.h"

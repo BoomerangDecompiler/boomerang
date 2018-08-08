@@ -13,7 +13,7 @@
 #include "boomerang/frontend/NJMCDecoder.h"
 
 
-class SparcMachine
+class SPARCMachine
 {
 public:
     /**
@@ -26,21 +26,22 @@ public:
     SharedExp dis_RegRhs(uint8_t reg_no);
 };
 
+
 /**
- * The implementation of the instruction decoder for Sparc.
+ * The implementation of the instruction decoder for SPARC.
  */
-class SparcDecoder : public NJMCDecoder
+class SPARCDecoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
-    SparcDecoder(Prog *prog);
-    SparcDecoder(const SparcDecoder& other) = delete;
-    SparcDecoder(SparcDecoder&& other) = default;
+    SPARCDecoder(Prog *prog);
+    SPARCDecoder(const SPARCDecoder& other) = delete;
+    SPARCDecoder(SPARCDecoder&& other) = default;
 
-    virtual ~SparcDecoder() override = default;
+    virtual ~SPARCDecoder() override = default;
 
-    SparcDecoder& operator=(const SparcDecoder& other) = delete;
-    SparcDecoder& operator=(SparcDecoder&& other) = default;
+    SPARCDecoder& operator=(const SPARCDecoder& other) = delete;
+    SPARCDecoder& operator=(SPARCDecoder&& other) = default;
 
 public:
     /// \copydoc NJMCDecoder::decodeInstruction
@@ -114,5 +115,5 @@ private:
     DWord getDword(HostAddress lc);
 
 private:
-    std::unique_ptr<SparcMachine> machine;
+    std::unique_ptr<SPARCMachine> machine;
 };

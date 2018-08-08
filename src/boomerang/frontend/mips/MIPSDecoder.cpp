@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "mipsdecoder.h"
+#include "MIPSDecoder.h"
 
 
 #include "boomerang/core/Project.h"

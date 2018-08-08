@@ -16,11 +16,11 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/decomp/ProgDecompiler.h"
-#include "boomerang/frontend/mips/mipsfrontend.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/frontend/ppc/ppcfrontend.h"
-#include "boomerang/frontend/sparc/sparcfrontend.h"
-#include "boomerang/frontend/st20/st20frontend.h"
+#include "boomerang/frontend/mips/MIPSFrontEnd.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
+#include "boomerang/frontend/ppc/PPCFrontEnd.h"
+#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
+#include "boomerang/frontend/st20/ST20FrontEnd.h"
 #include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/log/Log.h"
@@ -258,7 +258,7 @@ IFrontEnd *Project::createFrontEnd()
     switch (getLoadedBinaryFile()->getMachine())
     {
         case Machine::PENTIUM:  return new PentiumFrontEnd(binaryFile, prog);
-        case Machine::SPARC:    return new SparcFrontEnd(binaryFile, prog);
+        case Machine::SPARC:    return new SPARCFrontEnd(binaryFile, prog);
         case Machine::PPC:      return new PPCFrontEnd(binaryFile, prog);
         case Machine::MIPS:     return new MIPSFrontEnd(binaryFile, prog);
         case Machine::ST20:     return new ST20FrontEnd(binaryFile, prog);

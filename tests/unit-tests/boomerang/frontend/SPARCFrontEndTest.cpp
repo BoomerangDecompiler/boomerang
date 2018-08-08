@@ -7,19 +7,17 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "FrontSparcTest.h"
-
+#include "SPARCFrontEndTest.h"
 
 
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/CFG.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/log/Log.h"
-
-#include "boomerang/frontend/sparc/sparcfrontend.h"
 
 #include <QDebug>
 
@@ -29,12 +27,12 @@
 
 
 
-void FrontSparcTest::test1()
+void SPARCFrontendTest::test1()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     Prog      *prog = m_project.getProg();
-    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     bool    gotMain;
@@ -96,7 +94,7 @@ void FrontSparcTest::test1()
 }
 
 
-void FrontSparcTest::test2()
+void SPARCFrontendTest::test2()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
@@ -107,7 +105,7 @@ void FrontSparcTest::test2()
 
 
     Prog *prog = m_project.getProg();
-    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     fe->decodeSingleInstruction(Address(0x00010690), inst);
@@ -140,12 +138,12 @@ void FrontSparcTest::test2()
 }
 
 
-void FrontSparcTest::test3()
+void SPARCFrontendTest::test3()
 {
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     Prog *prog = m_project.getProg();
-    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     DecodeResult inst;
@@ -199,7 +197,7 @@ void FrontSparcTest::test3()
 }
 
 
-void FrontSparcTest::testBranch()
+void SPARCFrontendTest::testBranch()
 {
     DecodeResult inst;
     QString      expected;
@@ -208,7 +206,7 @@ void FrontSparcTest::testBranch()
 
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
-    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
     // bne
@@ -238,14 +236,14 @@ void FrontSparcTest::testBranch()
 }
 
 
-void FrontSparcTest::testDelaySlot()
+void SPARCFrontendTest::testDelaySlot()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
-    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
+    // decode calls readLibraryCatalog(), which needs to have definitions for non-SPARC architectures cleared
     Type::clearNamedTypes();
     fe->decodeEntryPointsRecursive(prog);
 
@@ -260,8 +258,8 @@ void FrontSparcTest::testDelaySlot()
     bool        res = fe->processProc(&proc, addr);
 
     QVERIFY(res == 1);
-    Cfg        *cfg = proc.getCFG();
-    Cfg::iterator it = cfg->begin();
+    ProcCFG        *cfg = proc.getCFG();
+    ProcCFG::iterator it = cfg->begin();
 
     QVERIFY(it != cfg->end());
     BasicBlock *bb = *it;
@@ -388,4 +386,4 @@ void FrontSparcTest::testDelaySlot()
     QCOMPARE(actual, expected);
 }
 
-QTEST_GUILESS_MAIN(FrontSparcTest)
+QTEST_GUILESS_MAIN(SPARCFrontendTest)

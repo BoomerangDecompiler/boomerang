@@ -26,8 +26,8 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/visitor/stmtvisitor/StmtConscriptSetter.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/frontend/sparc/sparcfrontend.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
+#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
 
@@ -186,7 +186,7 @@ void RTLTest::testVisitor()
 //    QVERIFY(pBF != 0);
 //    QVERIFY(pBF->GetMachine() == MACHINE_SPARC);
 //    Prog* prog = new Prog;
-//    FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+//    FrontEnd *pFE = new SPARCFrontEnd(pBF, prog, &bff);
 //    prog->setFrontEnd(pFE);
 
 //    // Decode second instruction: "sub        %i0, 2, %o1"

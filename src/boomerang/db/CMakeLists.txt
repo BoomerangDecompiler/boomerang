@@ -9,7 +9,6 @@
 
 list(APPEND boomerang-db-sources
     db/BasicBlock
-    db/CFG
     db/DataFlow
     db/DebugInfo
     db/DefCollector
@@ -29,6 +28,7 @@ list(APPEND boomerang-db-sources
 
     db/proc/LibProc
     db/proc/Proc
+    db/proc/ProcCFG
     db/proc/UserProc
 
     db/signature/CustomSignature
@@ -38,7 +38,7 @@ list(APPEND boomerang-db-sources
     db/signature/Return
     db/signature/PentiumSignature
     db/signature/PPCSignature
-    db/signature/SparcSignature
+    db/signature/SPARCSignature
     db/signature/ST20Signature
     db/signature/Win32Signature
 )

@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "DefaultFrontEnd.h"
 
+
 #include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
@@ -22,11 +23,8 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/mips/mipsfrontend.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/frontend/ppc/ppcfrontend.h"
-#include "boomerang/frontend/sparc/sparcfrontend.h"
-#include "boomerang/frontend/st20/st20frontend.h"
+#include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/RTL.h"
@@ -400,14 +398,14 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
     // We have a set of CallStatement pointers. These may be disregarded if this is a speculative decode
     // that fails (i.e. an illegal instruction is found). If not, this set will be used to add to the set of calls
-    // to be analysed in the cfg, and also to call newProc()
+    // to be analysed in the ProcCFG, and also to call newProc()
     std::list<CallStatement *> callList;
 
     // Indicates whether or not the next instruction to be decoded is the lexical successor of the current one.
     // Will be true for all NCTs and for CTIs with a fall through branch.
     bool sequentialDecode = true;
 
-    Cfg *cfg = proc->getCFG();
+    ProcCFG *cfg = proc->getCFG();
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
@@ -789,7 +787,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                             if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                                 // Make sure it has a return appended (so there is only one exit from the function)
-                                // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
+                                // call->setReturnAfterCall(true);        // I think only the SPARC frontend cares
                                 // Create the new basic block
                                 currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                                 appendSyntheticReturn(currentBB, proc, rtl);
@@ -930,7 +928,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
 BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL)
 {
-    Cfg *cfg = proc->getCFG();
+    ProcCFG *cfg = proc->getCFG();
 
     // Add the RTL to the list; this has the semantics for the return instruction as well as the ReturnStatement
     // The last Statement may get replaced with a GotoStatement

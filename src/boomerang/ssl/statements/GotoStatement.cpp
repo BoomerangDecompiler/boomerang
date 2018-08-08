@@ -58,9 +58,6 @@ void GotoStatement::setDest(SharedExp pd)
 
 void GotoStatement::setDest(Address addr)
 {
-    // This fails in FrontSparcTest, do you really want it to Mike? -trent
-    //    assert(addr >= prog.limitTextLow && addr < prog.limitTextHigh);
-
     m_dest = Const::get(addr);
 }
 

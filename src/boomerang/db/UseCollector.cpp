@@ -100,7 +100,7 @@ void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 {
     LocationSet   removes, inserts;
     iterator      it;
-    ExpSsaXformer esx(proc);
+    ExpSSAXformer esx(proc);
 
     for (it = m_locs.begin(); it != m_locs.end(); ++it) {
         auto      ref = RefExp::get(*it, def); // Wrap it in a def
