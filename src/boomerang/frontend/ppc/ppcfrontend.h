@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 
 
 /**
@@ -19,7 +19,7 @@
  * dependent features such as delay slots in the process. These
  * functions replace Frontend.cpp for decoding sparc instructions.
  */
-class PPCFrontEnd : public IFrontEnd
+class PPCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
@@ -34,18 +34,9 @@ public:
     PPCFrontEnd& operator=(PPCFrontEnd&& other) = default;
 
 public:
-    /// \copydoc IFrontEnd::getFrontEndId
-    virtual Platform getType() const override { return Platform::PPC; }
-
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
-
-    /// \copydoc IFrontEnd::getDefaultParams
-    virtual std::vector<SharedExp>& getDefaultParams() override;
-
-    /// \copydoc IFrontEnd::getDefaultReturns
-    virtual std::vector<SharedExp>& getDefaultReturns() override;
+    virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
 };

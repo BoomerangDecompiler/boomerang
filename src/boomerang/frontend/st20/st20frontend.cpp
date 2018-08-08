@@ -22,39 +22,13 @@
 
 
 ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new ST20Decoder(prog));
 }
 
 
-std::vector<SharedExp>& ST20FrontEnd::getDefaultParams()
-{
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        params.push_back(Location::memOf(Location::regOf(REG_ST20_SP)));
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& ST20FrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.empty()) {
-        returns.push_back(Location::regOf(REG_ST20_A));
-        returns.push_back(Location::regOf(REG_ST20_SP));
-        //        returns.push_back(Terminal::get(opPC));
-    }
-
-    return returns;
-}
-
-
-Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
+Address ST20FrontEnd::findMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();
@@ -75,11 +49,10 @@ Address ST20FrontEnd::getMainEntryPoint(bool& gotMain)
 }
 
 
-bool ST20FrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag /* = false */,
-                               bool spec /* = false */)
+bool ST20FrontEnd::processProc(UserProc *proc, Address entryAddr)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(proc, entryAddr)) {
         return false;
     }
 

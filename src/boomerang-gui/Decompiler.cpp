@@ -20,8 +20,8 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/Frontend.h"
 #include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/NamedType.h"
 #include "boomerang/util/log/Log.h"
@@ -113,8 +113,9 @@ void Decompiler::loadInputFile(const QString& inputFile, const QString& outputPa
         break;
     }
 
-    IFrontEnd *fe = IFrontEnd::instantiate(m_project.getLoadedBinaryFile(), m_project.getProg());
-    std::vector<Address> entrypoints = fe->getEntryPoints();
+    IFrontEnd *fe = m_project.getProg()->getFrontEnd();
+    assert(fe != nullptr);
+    std::vector<Address> entrypoints = fe->findEntryPoints();
 
     for (Address entryPoint : entrypoints) {
         m_userEntrypoints.push_back(entryPoint);

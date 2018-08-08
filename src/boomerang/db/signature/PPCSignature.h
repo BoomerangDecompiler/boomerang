@@ -41,7 +41,6 @@ public:
 
     virtual bool isLocalOffsetPositive() const override { return true; }
     virtual bool isPromoted() const override { return true; }
-    virtual Platform getPlatform() const override { return Platform::PPC; }
     virtual CallConv getConvention() const override { return CallConv::C; }
 
     std::shared_ptr<Signature> promote(UserProc * /*p*/) override

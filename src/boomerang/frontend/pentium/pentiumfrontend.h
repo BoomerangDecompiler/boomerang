@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 
 #include <unordered_set>
 
@@ -19,7 +19,7 @@
  * Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
  * behaviour
  */
-class PentiumFrontEnd : public IFrontEnd
+class PentiumFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
@@ -34,40 +34,19 @@ public:
     PentiumFrontEnd& operator=(PentiumFrontEnd&& other) = default;
 
 public:
-    /// \copydoc IFrontEnd::getFrontEndId
-    virtual Platform getType() const override { return Platform::PENTIUM; }
-
     /// \copydoc IFrontEnd::processProc
-    /**
-     * Process a procedure, given a native (source machine) address.
-     * This is the main function for decoding a procedure.
-     * This overrides the base class processProc to do source machine specific things (but often calls the base
-     * class to do most of the work. Sparc is an exception)
-     * \param  addr - the address at which the procedure starts
-     * \param  proc - the procedure object
-     * \param  os   - output stream for rtl output
-     * \param  frag - true if decoding only a fragment of the proc
-     * \param  spec - true if this is a speculative decode (so give up on any invalid instruction)
-     * \returns           True if successful decode
-     */
-    virtual bool processProc(Address addr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
-
-    /// \copydoc IFrontEnd::getDefaultParams
-    virtual std::vector<SharedExp>& getDefaultParams() override;
-
-    /// \copydoc IFrontEnd::getDefaultReturns
-    virtual std::vector<SharedExp>& getDefaultReturns() override;
+    virtual bool processProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     /**
      * Locate the starting address of "main" in the code section.
      * \returns  Native pointer if found; Address::INVALID if not
      */
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
+
+    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result) override;
 
 protected:
-    virtual bool decodeInstruction(Address pc, DecodeResult& result) override;
-
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
     virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
 

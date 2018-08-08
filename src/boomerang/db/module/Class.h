@@ -20,8 +20,8 @@ protected:
     std::shared_ptr<CompoundType> m_type;
 
 public:
-    Class(const QString& name, Prog *_prog, IFrontEnd *fe)
-        : Module(name, _prog, fe)
+    Class(const QString& name, Prog *_prog)
+        : Module(name, _prog)
         , m_type(CompoundType::get())
     {
     }

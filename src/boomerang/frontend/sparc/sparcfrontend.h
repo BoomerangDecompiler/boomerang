@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/type/Type.h"
@@ -22,7 +22,7 @@
  * such as delay slots in the process. These functions replace frontend.cpp
  * for decoding sparc instructions.
  */
-class SparcFrontEnd : public IFrontEnd
+class SparcFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
@@ -36,9 +36,6 @@ public:
     SparcFrontEnd& operator=(SparcFrontEnd&&) = default;
 
 public:
-    /// \copydoc IFrontEnd::getType
-    virtual Platform getType() const override { return Platform::SPARC; }
-
     /**
      * \copydoc IFrontEnd::processProc
      *
@@ -46,13 +43,7 @@ public:
      * during decoding. The semantics of delayed CTIs are
      * transformed into CTIs that aren't delayed.
      */
-    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool fragment = false, bool spec = false) override;
-
-    /// \copydoc IFrontEnd::getDefaultParams
-    virtual std::vector<SharedExp>& getDefaultParams() override;
-
-    /// \copydoc IFrontEnd::getDefaultReturns
-    virtual std::vector<SharedExp>& getDefaultReturns() override;
+    virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
     /**
@@ -60,7 +51,7 @@ public:
      * \param gotMain set if main found
      * \returns Native pointer if found; Address::INVALID if not
      */
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
 
 private:
     /**
@@ -161,7 +152,7 @@ private:
      * \returns              true if next instruction is to be fetched sequentially from this one
      */
     bool case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls,
-                   UserProc *proc, std::list<CallStatement *>& callList, QTextStream& os, bool isPattern = false);
+                   UserProc *proc, std::list<CallStatement *>& callList, bool isPattern = false);
 
     /**
      * Handles a non-call, static delayed (SD) instruction
@@ -178,7 +169,7 @@ private:
      *
      */
     void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq, QTextStream& os);
+                 std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)

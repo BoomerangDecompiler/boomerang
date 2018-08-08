@@ -12,8 +12,9 @@
 
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -439,7 +440,8 @@ void ReturnStatement::updateModifieds()
     if ((m_bb->getNumPredecessors() == 1) && m_bb->getPredecessors()[0]->getLastStmt()->isCall()) {
         CallStatement *call = static_cast<CallStatement *>(m_bb->getPredecessors()[0]->getLastStmt());
 
-        if (call->getDestProc() && IFrontEnd::isNoReturnCallDest(call->getDestProc()->getName())) {
+        IFrontEnd *fe = m_proc->getProg()->getFrontEnd();
+        if (call->getDestProc() && fe->isNoReturnCallDest(call->getDestProc()->getName())) {
             return;
         }
     }

@@ -396,12 +396,11 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 }
 
 
-std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, const QString& name)
+std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString& name)
 {
-    switch (plat)
+    switch (machine)
     {
-    case Platform::PENTIUM:
-
+    case Machine::PENTIUM:
         if (cc == CallConv::Pascal) {
             // For now, assume the only pascal calling convention pentium signatures will be Windows
             return std::make_shared<CallingConvention::Win32Signature>(name);
@@ -413,43 +412,21 @@ std::shared_ptr<Signature> Signature::instantiate(Platform plat, CallConv cc, co
             return std::make_shared<CallingConvention::StdC::PentiumSignature>(name);
         }
 
-    case Platform::SPARC:
-
-        if (cc == CallConv::Pascal) {
-            cc = CallConv::C;
-        }
-
-        assert(cc == CallConv::C);
+    case Machine::SPARC:
         return std::make_shared<CallingConvention::StdC::SparcSignature>(name);
 
-    case Platform::PPC:
-
-        if (cc == CallConv::Pascal) {
-            cc = CallConv::C;
-        }
-
+    case Machine::PPC:
         return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
 
-    case Platform::ST20:
-
-        if (cc == CallConv::Pascal) {
-            cc = CallConv::C;
-        }
-
+    case Machine::ST20:
         return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
 
-    case Platform::MIPS:
-
-        if (cc == CallConv::Pascal) {
-            cc = CallConv::C;
-        }
-
+    case Machine::MIPS:
         return std::make_shared<CallingConvention::StdC::MIPSSignature>(name);
 
     // insert other conventions here
     default:
-        LOG_WARN("Unknown signature: %1 %2", Util::getCallConvName(cc),
-                  Util::getPlatformName(plat));
+        LOG_WARN("Unknown signature: %1 (CallConv: %2)", name, Util::getCallConvName(cc));
         return std::make_shared<Signature>(name);
     }
 }

@@ -16,7 +16,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
@@ -47,17 +47,18 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 
 void Module::updateLibrarySignatures()
 {
-    m_currentFrontend->readLibraryCatalog();
+    m_prog->readDefaultLibraryCatalogues();
 
     for (Function *func : m_functionList) {
         if (func->isLib()) {
-            func->setSignature(getLibSignature(func->getName()));
-
-            for (CallStatement *call_stmt : func->getCallers()) {
-                call_stmt->setSigArguments();
+            std::shared_ptr<Signature> sig = m_prog->getLibSignature(func->getName());
+            if (*sig != *func->getSignature()) {
+                func->setSignature(sig);
+                for (CallStatement *call_stmt : func->getCallers()) {
+                    call_stmt->setSigArguments();
+                }
+                m_prog->getProject()->alertSignatureUpdated(func);
             }
-
-            m_prog->getProject()->alertSignatureUpdated(func);
         }
     }
 }
@@ -69,9 +70,8 @@ Module::Module()
 }
 
 
-Module::Module(const QString& name, Prog *prog, IFrontEnd *fe)
-    : m_currentFrontend(fe)
-    , m_name(name)
+Module::Module(const QString& name, Prog *prog)
+    : m_name(name)
     , m_prog(prog)
 {
     m_strm.setDevice(&m_out);
@@ -250,7 +250,7 @@ void Module::addWin32DbgInfo(Function *function)
     if (!function) {
         return;
     }
-    else if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
+    else if (!m_prog || !m_prog->isWin32()) {
         LOG_WARN("Cannot add debugging information for function '%1'", function->getName());
         return;
     }
@@ -277,7 +277,7 @@ void Module::addWin32DbgInfo(Function *function)
         }
         else {
             // assume we're stdc calling convention, remove r28, r24 returns
-            function->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, function->getName()));
+            function->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, function->getName()));
         }
 
         // get a return type
@@ -347,12 +347,4 @@ Function *Module::getFunction(Address entryAddr) const
     auto iter = m_labelsToProcs.find(entryAddr);
 
     return (iter != m_labelsToProcs.end()) ? iter->second : nullptr;
-}
-
-
-std::shared_ptr<Signature> Module::getLibSignature(const QString& name)
-{
-    return m_currentFrontend
-        ? m_currentFrontend->getLibSignature(name)
-        : nullptr;
 }

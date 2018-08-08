@@ -178,6 +178,17 @@ private:
     Prog *createProg(BinaryFile *file, const QString& name);
 
     /**
+     * Create a FrontEnd object. Will fail if one is already created
+     * or no program is created.
+     *
+     * \param binaryFile Loaded binary file
+     * \param prog       program being decoded
+     *
+     * \returns the newly created frontend on success, or nullptr on failure.
+     */
+    IFrontEnd *createFrontEnd();
+
+    /**
      * Define symbols from symbol files and command line switches ("-s")
      */
     void loadSymbols();

@@ -353,7 +353,7 @@ int __alloca_free_ptr(char *ptr, char *ref)
 #define __yy_bcopy(FROM, TO, COUNT)    memcpy(TO, FROM, COUNT)
 #endif
 
-int AnsiCParser::yyparse(Platform plat, CallConv cc)
+int AnsiCParser::yyparse(Machine machine, CallConv cc)
 {
     int yystate;
 
@@ -764,7 +764,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 28 : {
-            std::shared_ptr<Signature> sig = Signature::instantiate(plat, cc, nullptr);
+            std::shared_ptr<Signature> sig = Signature::instantiate(machine, cc, nullptr);
             sig->addReturn(yyvsp[-7].type);
 
             for (auto& elem : *yyvsp[-1].param_list) {
@@ -794,7 +794,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 31 : {
-            auto sig = Signature::instantiate(plat, cc, nullptr);
+            auto sig = Signature::instantiate(machine, cc, nullptr);
             sig->addReturn(yyvsp[-8].type);
 
             for (auto& elem : *yyvsp[-2].param_list) {
@@ -814,7 +814,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 32 : {
-            auto sig = Signature::instantiate(plat, cc, yyvsp[-4].type_ident->name);
+            auto sig = Signature::instantiate(machine, cc, yyvsp[-4].type_ident->name);
             sig->addReturn(yyvsp[-4].type_ident->ty);
 
             for (auto& elem : *yyvsp[-2].param_list) {
@@ -866,7 +866,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
 
     case 36 : {
             /* Use the passed calling convention (cc) */
-            auto sig = Signature::instantiate(plat, cc, yyvsp[-3].type_ident->name);
+            auto sig = Signature::instantiate(machine, cc, yyvsp[-3].type_ident->name);
             sig->addReturn(yyvsp[-3].type_ident->ty);
 
             for (auto& elem : *yyvsp[-1].param_list) {
@@ -886,7 +886,7 @@ int AnsiCParser::yyparse(Platform plat, CallConv cc)
     }
 
     case 37 : {
-            auto sig = Signature::instantiate(plat, yyvsp[-4].cc, yyvsp[-3].type_ident->name);
+            auto sig = Signature::instantiate(machine, yyvsp[-4].cc, yyvsp[-3].type_ident->name);
             sig->addReturn(yyvsp[-3].type_ident->ty);
 
             for (auto& elem : *yyvsp[-1].param_list) {

@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/frontend/DefaultFrontEnd.h"
 
 
-class MIPSFrontEnd : public IFrontEnd
+class MIPSFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
@@ -28,18 +28,9 @@ public:
     MIPSFrontEnd& operator=(MIPSFrontEnd&& other) = default;
 
 public:
-    /// \copydoc IFrontEnd::getFrontEndId
-    virtual Platform getType() const override { return Platform::MIPS; }
-
     /// \copydoc IFrontEnd::processProc
-    virtual bool processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag = false, bool spec = false) override;
-
-    /// \copydoc IFrontEnd::getDefaultParams
-    virtual std::vector<SharedExp>& getDefaultParams() override;
-
-    /// \copydoc IFrontEnd::getDefaultReturns
-    virtual std::vector<SharedExp>& getDefaultReturns() override;
+    virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address getMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool& gotMain) override;
 };

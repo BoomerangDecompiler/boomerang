@@ -52,7 +52,6 @@ public:
     virtual bool isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const override;
 
     virtual bool isPromoted() const override { return true; }
-    virtual Platform getPlatform() const override { return Platform::SPARC; }
     virtual CallConv getConvention() const override { return CallConv::C; }
     virtual bool returnCompare(const Assignment& a, const Assignment& b) const override;
     virtual bool argumentCompare(const Assignment& a, const Assignment& b) const override;

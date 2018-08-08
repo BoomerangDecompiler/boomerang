@@ -43,7 +43,6 @@ private slots:
     void testGetRegName();
     void testGetRegSize();
 
-    void testGetFrontEndId();
     void testGetMachine();
     void testGetDefaultSignature();
 

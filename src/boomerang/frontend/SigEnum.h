@@ -13,21 +13,6 @@
 class QString;
 
 
-/// Needed by both signature.h and frontend.h
-enum class Platform
-{
-    GENERIC = 0,
-    PENTIUM,
-    SPARC,
-    M68K,
-    PARISC,
-    PPC,
-    MIPS,
-    ST20,
-    PlatformCount
-};
-
-
 enum class CallConv
 {
     INVALID = 0,
@@ -41,7 +26,6 @@ enum class CallConv
 
 namespace Util
 {
-    // ascii versions of platform, calling convention name
-    const QString& getPlatformName(Platform plat);
+    // ascii version of calling convention name
     const QString& getCallConvName(CallConv cc);
 }

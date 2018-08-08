@@ -281,16 +281,6 @@ void ProgTest::testGetRegSize()
 }
 
 
-void ProgTest::testGetFrontEndId()
-{
-    Prog testProg("test", nullptr);
-    QCOMPARE(testProg.getFrontEndId(), Platform::GENERIC);
-
-    QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
-    QCOMPARE(m_project.getProg()->getFrontEndId(), Platform::PENTIUM);
-}
-
-
 void ProgTest::testGetMachine()
 {
     Prog testProg("test", nullptr);
@@ -304,8 +294,6 @@ void ProgTest::testGetMachine()
 void ProgTest::testGetDefaultSignature()
 {
     Prog testProg("test", nullptr);
-    QVERIFY(testProg.getDefaultSignature("foo") == nullptr);
-
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     auto sig = m_project.getProg()->getDefaultSignature("foo");
     QVERIFY(sig != nullptr);

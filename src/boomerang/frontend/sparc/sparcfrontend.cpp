@@ -131,7 +131,7 @@ void SparcFrontEnd::case_unhandled_stub(Address addr)
 
 bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst,
                               std::unique_ptr<RTLList> BB_rtls, UserProc *proc, std::list<CallStatement *>& callList,
-                              QTextStream& os, bool isPattern /* = false*/)
+                              bool isPattern /* = false*/)
 {
     // Aliases for the call and delay RTLs
     CallStatement *call_stmt = static_cast<CallStatement *>(inst.rtl->back());
@@ -142,10 +142,6 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
     if ((delay_inst.type != NOP) && !call_stmt->isReturnAfterCall()) {
         delay_rtl->setAddress(address);
         BB_rtls->push_back(std::move(delay_inst.rtl));
-
-        if (m_program->getProject()->getSettings()->printRTLs) {
-            delay_rtl->print(os);
-        }
     }
 
     // Get the new return basic block for the special case where the delay instruction is a restore
@@ -254,8 +250,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 
 
 void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
-                            DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq,
-                            QTextStream&)
+                            DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
     // Aliases for the SD and delay RTLs
     GotoStatement *SD_stmt   = static_cast<GotoStatement *>(inst.rtl->back());
@@ -570,47 +565,7 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
 }
 
 
-std::vector<SharedExp>& SparcFrontEnd::getDefaultParams()
-{
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        // init arguments and return set to be all 31 machine registers
-        // Important: because o registers are save in i registers, and
-        // i registers have higher register numbers (e.g. i1=r25, o1=r9)
-        // it helps the prover to process higher register numbers first!
-        // But do r30 first (%i6, saves %o6, the stack pointer)
-        params.push_back(Location::regOf(REG_SPARC_I6));
-        params.push_back(Location::regOf(REG_SPARC_I7));
-
-        for (int r = REG_SPARC_I5; r > REG_SPARC_G0; r--) {
-            params.push_back(Location::regOf(r));
-        }
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& SparcFrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.size() == 0) {
-        returns.push_back(Location::regOf(REG_SPARC_I6));
-        returns.push_back(Location::regOf(REG_SPARC_I7));
-
-        for (int r = REG_SPARC_I5; r > REG_SPARC_G0; r--) {
-            returns.push_back(Location::regOf(r));
-        }
-    }
-
-    return returns;
-}
-
-
-bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, bool /*fragment = false */,
-                                bool spec /* = false */)
+bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
 {
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
@@ -629,13 +584,6 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 
     // The control flow graph of the current procedure
     Cfg *cfg = proc->getCFG();
-
-    // If this is a speculative decode, the second time we decode the same
-    // address, we get no cfg. Else an error.
-    if (spec && (cfg == nullptr)) {
-        return false;
-    }
-
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
@@ -667,12 +615,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                 inst.type  = DD; // E.g. decode the delay slot instruction
             }
             else {
-                decodeInstruction(addr, inst);
-            }
-
-            // If invalid and we are speculating, just exit
-            if (spec && !inst.valid) {
-                return false;
+                decodeSingleInstruction(addr, inst);
             }
 
             // Check for invalid instructions
@@ -798,7 +741,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                 {
                     // This includes "call" and "ba". If a "call", it might be a move_call_move idiom, or a call to .stret4
                     DecodeResult delay_inst;
-                    decodeInstruction(addr + 4, delay_inst);
+                    decodeSingleInstruction(addr + 4, delay_inst);
 
                     if (m_program->getProject()->getSettings()->traceDecoder) {
                         LOG_MSG("*%1", addr + 4);
@@ -818,7 +761,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                             // off one level of return address)
                             static_cast<CallStatement *>(last)->setReturnAfterCall(true);
                             sequentialDecode = false;
-                            case_CALL(addr, inst, nop_inst, std::move(BB_rtls), proc, callList, os, true);
+                            case_CALL(addr, inst, nop_inst, std::move(BB_rtls), proc, callList, true);
                             break;
                         }
 
@@ -848,7 +791,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                                     (*rhs->getSubExp1() == *o7)) {
                                     // Get the constant
                                     int K = rhs->access<Const, 2>()->getInt();
-                                    case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc, callList, os, true);
+                                    case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc, callList, true);
                                     // We don't generate a goto; instead, we just decode from the new address
                                     // Note: the call to case_CALL has already incremented address by 8, so don't do again
                                     addr += K;
@@ -859,7 +802,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                                     // pop one return address, we we emit a return after this call
                                     static_cast<CallStatement *>(last)->setReturnAfterCall(true);
                                     sequentialDecode = false;
-                                    case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc, callList, os, true);
+                                    case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc, callList, true);
                                     break;
                                 }
                             }
@@ -877,19 +820,15 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                         // instruction before the jump or call
                         if (last->getKind() == StmtType::Call) {
                             // This is a call followed by an NCT/NOP
-                            sequentialDecode = case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc, callList, os);
+                            sequentialDecode = case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc, callList);
                         }
                         else {
                             // This is a non-call followed by an NCT/NOP
                             case_SD(addr, m_program->getBinaryFile()->getImage()->getTextDelta(), m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst, delay_inst,
-                                    std::move(BB_rtls), cfg, _targetQueue, os);
+                                    std::move(BB_rtls), cfg, _targetQueue);
 
                             // There is no fall through branch.
                             sequentialDecode = false;
-                        }
-
-                        if (spec && (inst.valid == false)) {
-                            return false;
                         }
 
                         break;
@@ -955,19 +894,12 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
 
                     if (inst.numBytes == 4) {
                         // Ordinary instruction. Look at the delay slot
-                        decodeInstruction(addr + 4, delayInst);
+                        decodeSingleInstruction(addr + 4, delayInst);
                     }
                     else {
                         // Must be a prologue or epilogue or something.
                         delayInst = std::move(nop_inst);
                         // Should be no need to adjust the coverage; the number of bytes should take care of it
-                    }
-
-                    RTL *delayRTL = delayInst.rtl.get();
-
-                    // Display RTL representation if asked
-                    if (m_program->getProject()->getSettings()->printRTLs && delayRTL != nullptr) {
-                        delayRTL->print(os);
                     }
 
                     switch (delayInst.type)
@@ -997,13 +929,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     // just a binary comparison; that may fail to make this optimisation if the instr has relative fields.
 
                     DecodeResult delay_inst;
-                    decodeInstruction(addr + 4, delay_inst);
-                    RTL *delay_rtl = delay_inst.rtl.get();
-
-                    // Display low level RTL representation if asked
-                    if (m_program->getProject()->getSettings()->printRTLs && delay_rtl != nullptr) {
-                        delay_rtl->print(os);
-                    }
+                    decodeSingleInstruction(addr + 4, delay_inst);
 
                     switch (delay_inst.type)
                     {
@@ -1034,13 +960,7 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
                     // Execute the delay instruction if the branch is taken; skip (anull) the delay instruction if branch
                     // not taken.
                     DecodeResult delay_inst;
-                    decodeInstruction(addr + 4, delay_inst);
-                    RTL *delay_rtl = delay_inst.rtl.get();
-
-                    // Display RTL representation if asked
-                    if (m_program->getProject()->getSettings()->printRTLs && delay_rtl != nullptr) {
-                        delay_rtl->print(os);
-                    }
+                    decodeSingleInstruction(addr + 4, delay_inst);
 
                     switch (delay_inst.type)
                     {
@@ -1106,16 +1026,11 @@ bool SparcFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& os, b
     // Add the callees to the set of CallStatements to proces for parameter recovery, and also to the Prog object
     for (CallStatement *call : callList) {
         Address             dest  = call->getFixedDest();
-        const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
-        // Don't speculatively decode procs that are outside of the main text section, apart from dynamically linked
-        // ones (in the .plt)
-        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-            // Don't visit the destination of a register call
-            // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
-            if (dest != Address::INVALID) {
-                proc->getProg()->getOrCreateFunction(dest);
-            }
+        // Don't visit the destination of a register call
+        // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
+        if (dest != Address::INVALID) {
+            proc->getProg()->getOrCreateFunction(dest);
         }
     }
 
@@ -1341,7 +1256,7 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
 
 
 SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new SparcDecoder(prog));
     nop_inst.numBytes = 0; // So won't disturb coverage
@@ -1351,7 +1266,7 @@ SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address SparcFrontEnd::getMainEntryPoint(bool& gotMain)
+Address SparcFrontEnd::findMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();

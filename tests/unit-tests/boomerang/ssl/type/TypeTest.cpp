@@ -114,11 +114,9 @@ void TypeTest::testCompound()
     QVERIFY(m_project.loadBinaryFile(HELLO_WINDOWS));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    prog->readDefaultLibraryCatalogues();
 
-    fe->readLibraryCatalog(); // Read definitions
-
-    std::shared_ptr<Signature> paintSig = fe->getLibSignature("BeginPaint");
+    std::shared_ptr<Signature> paintSig = prog->getLibSignature("BeginPaint");
 
     SharedType paramType = paintSig->getParamType(1);
     QCOMPARE(paintSig->getParamType(1)->getCtype(), QString("LPPAINTSTRUCT"));
@@ -159,7 +157,7 @@ void TypeTest::testDataInterval()
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x123)));
     DataIntervalMap dim(proc);
 
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "testProc"));
+    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "testProc"));
 
     dim.insertItem(Address(0x00001000), "first", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "second", FloatType::get(64));
@@ -225,7 +223,7 @@ void TypeTest::testDataIntervalOverlaps()
     UserProc        *proc = static_cast<UserProc *>(m->createFunction("test", Address(0x00000100)));
     DataIntervalMap dim(proc);
 
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
 
     dim.insertItem(Address(0x00001000), "firstInt", IntegerType::get(32, Sign::Signed));
     dim.insertItem(Address(0x00001004), "firstFloat", FloatType::get(32));

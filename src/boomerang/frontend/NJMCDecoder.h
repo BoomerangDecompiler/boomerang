@@ -70,7 +70,6 @@ public:
     int getRegIdx(const QString& name) const override;
 
 protected:
-
     /**
      * Given an instruction name and a variable list of expressions
      * representing the actual operands of the instruction,

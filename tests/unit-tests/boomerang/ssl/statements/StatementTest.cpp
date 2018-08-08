@@ -110,7 +110,7 @@ void StatementTest::testFlow()
 
     // create UserProc
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
 
     Cfg *cfg   = proc->getCFG();
 
@@ -182,7 +182,7 @@ void StatementTest::testKill()
     // create UserProc
     QString  name  = "test";
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, name));
+    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, name));
 
     // create CFG
     Cfg              *cfg   = proc->getCFG();
@@ -252,7 +252,7 @@ void StatementTest::testUse()
     Prog *prog = m_project.getProg();
 
     UserProc    *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
 
     Cfg *cfg   = proc->getCFG();
 
@@ -318,7 +318,7 @@ void StatementTest::testUseOverKill()
     Prog *prog = m_project.getProg();
 
     UserProc *proc = static_cast<UserProc *>(prog->getOrCreateFunction(Address(0x00000123)));
-    proc->setSignature(Signature::instantiate(Platform::PENTIUM, CallConv::C, "test"));
+    proc->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, "test"));
     Cfg *cfg = proc->getCFG();
 
     Assign *e1 = new Assign(Location::regOf(REG_PENT_EAX), Const::get(5));
@@ -1263,7 +1263,7 @@ void StatementTest::testBypass()
     fe->decodeUndecoded();
 
     bool    gotMain;
-    Address addr = fe->getMainEntryPoint(gotMain);
+    Address addr = fe->findMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
     UserProc *proc = static_cast<UserProc *>(prog->getFunctionByName("foo2"));

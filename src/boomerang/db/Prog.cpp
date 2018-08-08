@@ -11,7 +11,9 @@
 
 
 #include "boomerang/core/Project.h"
+#include "boomerang/core/Settings.h"
 #include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
@@ -24,7 +26,8 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/Frontend.h"
+#include "boomerang/ifc/IDecoder.h"
+#include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -51,6 +54,7 @@
 
 Prog::Prog(const QString& name, Project *project)
     : m_name(name)
+    , m_symbolProvider(new CSymbolProvider(this))
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
@@ -96,14 +100,14 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const IMod
         return nullptr;
     }
 
-    module = factory.create(name, this, this->getFrontEnd());
+    module = factory.create(name, this);
     parentModule->addChild(module);
     m_moduleList.push_back(std::unique_ptr<Module>(module));
     return module;
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact, IFrontEnd *frontEnd)
+Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact)
 {
     for (const auto& m : m_moduleList) {
         if (m->getName() == name) {
@@ -111,7 +115,7 @@ Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact,
         }
     }
 
-    Module *m = fact.create(name, this, frontEnd ? frontEnd : m_fe);
+    Module *m = fact.create(name, this);
     m_moduleList.push_back(std::unique_ptr<Module>(m));
     return m;
 }
@@ -315,27 +319,19 @@ bool Prog::isWellFormed() const
 
 bool Prog::isWin32() const
 {
-    return m_fe && m_fe->isWin32();
+    return m_binaryFile && m_binaryFile->getFormat() == LoadFmt::PE;
 }
 
 
 QString Prog::getRegName(int idx) const
 {
-    return m_fe->getRegName(idx);
+    return m_fe->getDecoder()->getRegName(idx);
 }
 
 
 int Prog::getRegSize(int idx) const
 {
-    return m_fe->getRegSize(idx);
-}
-
-
-Platform Prog::getFrontEndId() const
-{
-    return m_fe
-        ? m_fe->getType()
-        : Platform::GENERIC;
+    return m_fe->getDecoder()->getRegSize(idx);
 }
 
 
@@ -347,11 +343,68 @@ Machine Prog::getMachine() const
 }
 
 
-std::shared_ptr<Signature> Prog::getDefaultSignature(const char *name) const
+void Prog::readDefaultLibraryCatalogues()
 {
-    return m_fe
-        ? m_fe->getDefaultSignature(name)
+    QDir dataDir = m_project->getSettings()->getDataDirectory();
+
+    QString libCatalogName;
+    switch (getMachine()) {
+        case Machine::PENTIUM:  libCatalogName = "signatures/pentium.hs";  break;
+        case Machine::SPARC:    libCatalogName = "signatures/sparc.hs";    break;
+        case Machine::HPRISC:   libCatalogName = "signatures/parisc.hs";   break;
+        case Machine::PPC:      libCatalogName = "signatures/ppc.hs";      break;
+        case Machine::ST20:     libCatalogName = "signatures/st20.hs";     break;
+        case Machine::MIPS:     libCatalogName = "signatures/mips.hs";     break;
+        default:                libCatalogName = "";                       break;
+    }
+
+    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
+
+    if (!libCatalogName.isEmpty()) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
+    }
+
+    if (isWin32()) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/win32.hs"));
+    }
+
+    // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
+    if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
+        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/objc.hs"));
+    }
+}
+
+
+bool Prog::addSymbolsFromSymbolFile(const QString& fname)
+{
+    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
+}
+
+
+std::shared_ptr<Signature> Prog::getLibSignature(const QString& name)
+{
+    std::shared_ptr<Signature> signature = m_symbolProvider
+        ? m_symbolProvider->getSignatureByName(name)
         : nullptr;
+
+    if (signature) {
+        signature->setUnknown(false);
+        return signature;
+    }
+    else {
+        LOG_WARN("Unknown library function '%1', please update signatures!", name);
+        return getDefaultSignature(name);
+    }
+}
+
+
+std::shared_ptr<Signature> Prog::getDefaultSignature(const QString& name) const
+{
+    if (isWin32()) {
+        return Signature::instantiate(getMachine(), CallConv::Pascal, name);
+    }
+
+    return Signature::instantiate(getMachine(), CallConv::C, name);
 }
 
 
@@ -545,7 +598,6 @@ bool Prog::decodeEntryPoint(Address entryAddr)
         m_fe->decodeRecursive(entryAddr);
     }
 
-
     if (!func) {
         func = getFunctionByAddr(entryAddr);
 
@@ -589,8 +641,7 @@ bool Prog::reDecode(UserProc *proc)
         return false;
     }
 
-    QTextStream os(stderr); // rtl output target
-    return m_fe->processProc(proc->getEntryAddress(), proc, os);
+    return m_fe->processProc(proc, proc->getEntryAddress());
 }
 
 

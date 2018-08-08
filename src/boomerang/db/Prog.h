@@ -35,6 +35,7 @@ class LibProc;
 class Module;
 class Project;
 class Signature;
+class ISymbolProvider;
 
 
 class Prog
@@ -81,11 +82,10 @@ public:
 
     /**
      * Create or retrieve existing module
-     * \param frontend for the module, if nullptr set it to program's default frontend.
-     * \param fact abstract factory object that creates Module instance
      * \param name retrieve/create module with this name.
+     * \param fact abstract factory object that creates Module instance
      */
-    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
+    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory());
 
     Module *getRootModule() { return m_rootModule; }
     Module *getRootModule() const { return m_rootModule; }
@@ -145,13 +145,14 @@ public:
     QString getRegName(int idx) const;
     int getRegSize(int idx) const;
 
-    /// Get the front end id used to make this prog
-    Platform getFrontEndId() const;
-
     /// Get a code for the machine e.g. MACHINE_SPARC
     Machine getMachine() const;
 
-    std::shared_ptr<Signature> getDefaultSignature(const char *name) const;
+    void readDefaultLibraryCatalogues();
+    bool addSymbolsFromSymbolFile(const QString& fname);
+    std::shared_ptr<Signature> getLibSignature(const QString& name);
+
+    std::shared_ptr<Signature> getDefaultSignature(const QString& name) const;
 
 
     /// get a string constant at a given address if appropriate
@@ -244,6 +245,7 @@ public:
 
 private:
     QString m_name;                         ///< name of the program
+    std::unique_ptr<ISymbolProvider> m_symbolProvider;
     Project *m_project = nullptr;
     BinaryFile *m_binaryFile = nullptr;
     IFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project

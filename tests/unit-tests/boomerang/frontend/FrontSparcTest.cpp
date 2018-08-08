@@ -34,10 +34,11 @@ void FrontSparcTest::test1()
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     Prog      *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     bool    gotMain;
-    Address addr = fe->getMainEntryPoint(gotMain);
+    Address addr = fe->findMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
 
     // Decode first instruction
@@ -46,7 +47,7 @@ void FrontSparcTest::test1()
     QString     actual;
     QTextStream strm(&actual);
 
-    QVERIFY(fe->decodeInstruction(addr, inst));
+    QVERIFY(fe->decodeSingleInstruction(addr, inst));
     QVERIFY(inst.rtl != nullptr);
     inst.rtl->print(strm);
 
@@ -80,14 +81,14 @@ void FrontSparcTest::test1()
     actual.clear();
 
     addr += inst.numBytes;
-    fe->decodeInstruction(addr, inst);
+    fe->decodeSingleInstruction(addr, inst);
     inst.rtl->print(strm);
     expected = QString("0x00010688    0 *32* r8 := 0x10400\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
     addr += inst.numBytes;
-    fe->decodeInstruction(addr, inst);
+    fe->decodeSingleInstruction(addr, inst);
     inst.rtl->print(strm);
     expected = QString("0x0001068c    0 *32* r8 := r8 | 848\n");
     QCOMPARE(actual, expected);
@@ -106,9 +107,10 @@ void FrontSparcTest::test2()
 
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
-    fe->decodeInstruction(Address(0x00010690), inst);
+    fe->decodeSingleInstruction(Address(0x00010690), inst);
     inst.rtl->print(strm);
     // This call is to out of range of the program's text limits (to the Program Linkage Table (PLT), calling printf)
     // This is quite normal.
@@ -119,19 +121,19 @@ void FrontSparcTest::test2()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeInstruction(Address(0x00010694), inst);
+    fe->decodeSingleInstruction(Address(0x00010694), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010694\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeInstruction(Address(0x00010698), inst);
+    fe->decodeSingleInstruction(Address(0x00010698), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010698    0 *32* r8 := 0\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeInstruction(Address(0x0001069C), inst);
+    fe->decodeSingleInstruction(Address(0x0001069C), inst);
     inst.rtl->print(strm);
     expected = QString("0x0001069c    0 *32* r24 := r8\n");
     QCOMPARE(actual, expected);
@@ -143,19 +145,20 @@ void FrontSparcTest::test3()
     QVERIFY(m_project.loadBinaryFile(HELLO_SPARC));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     DecodeResult inst;
     QString      expected;
     QString      actual;
     QTextStream  strm(&actual);
 
-    fe->decodeInstruction(Address(0x000106a0), inst);
+    fe->decodeSingleInstruction(Address(0x000106a0), inst);
     inst.rtl->print(strm);
     expected = QString("0x000106a0\n");
     QCOMPARE(actual, expected);
     actual.clear();
-    fe->decodeInstruction(Address(0x000106a4), inst);
+    fe->decodeSingleInstruction(Address(0x000106a4), inst);
     inst.rtl->print(strm);
     expected = QString("0x000106a4    0 RET\n"
                        "              Modifieds: \n"
@@ -163,7 +166,7 @@ void FrontSparcTest::test3()
     QCOMPARE(actual, expected);
     actual.clear();
 
-    fe->decodeInstruction(Address(0x000106a8), inst);
+    fe->decodeSingleInstruction(Address(0x000106a8), inst);
     inst.rtl->print(strm);
     expected = QString("0x000106a8    0 *32* tmp := 0\n"
                        "              0 *32* r8 := r24\n"
@@ -205,10 +208,11 @@ void FrontSparcTest::testBranch()
 
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     // bne
-    fe->decodeInstruction(Address(0x00010ab0), inst);
+    fe->decodeSingleInstruction(Address(0x00010ab0), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010ab0    0 BRANCH 0x00010ac8, condition not equals\n"
                        "High level: %flags\n");
@@ -216,7 +220,7 @@ void FrontSparcTest::testBranch()
     actual.clear();
 
     // bg
-    fe->decodeInstruction(Address(0x00010af8), inst);
+    fe->decodeSingleInstruction(Address(0x00010af8), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010af8    0 BRANCH 0x00010b10, condition "
                        "signed greater\n"
@@ -225,7 +229,7 @@ void FrontSparcTest::testBranch()
     actual.clear();
 
     // bleu
-    fe->decodeInstruction(Address(0x00010b44), inst);
+    fe->decodeSingleInstruction(Address(0x00010b44), inst);
     inst.rtl->print(strm);
     expected = QString("0x00010b44    0 BRANCH 0x00010b54, condition unsigned less or equals\n"
                        "High level: %flags\n");
@@ -238,23 +242,22 @@ void FrontSparcTest::testDelaySlot()
 {
     QVERIFY(m_project.loadBinaryFile(BRANCH_SPARC));
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = prog->getFrontEnd();
+    SparcFrontEnd *fe = dynamic_cast<SparcFrontEnd *>(prog->getFrontEnd());
+    QVERIFY(fe != nullptr);
 
     // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
     Type::clearNamedTypes();
     fe->decodeEntryPointsRecursive(prog);
 
     bool    gotMain;
-    Address addr = fe->getMainEntryPoint(gotMain);
+    Address addr = fe->findMainEntryPoint(gotMain);
     QVERIFY(addr != Address::INVALID);
     QString     actual;
     QTextStream strm(&actual);
     Module      *m = prog->getOrInsertModule("test");
 
     UserProc    proc(addr, "testDelaySlot", m);
-    QString     dum;
-    QTextStream dummy(&dum);
-    bool        res = fe->processProc(addr, &proc, dummy, false);
+    bool        res = fe->processProc(&proc, addr);
 
     QVERIFY(res == 1);
     Cfg        *cfg = proc.getCFG();

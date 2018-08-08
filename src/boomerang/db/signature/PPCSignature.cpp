@@ -141,9 +141,7 @@ bool PPCSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
     LOG_VERBOSE2("Consider promotion to stdc PPC signature for %1", p->getName());
 
-    Platform plat = p->getProg()->getFrontEndId();
-
-    if (plat != Platform::PPC) {
+    if (p->getProg()->getMachine() != Machine::PPC) {
         return false;
     }
 

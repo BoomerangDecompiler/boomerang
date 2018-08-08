@@ -47,7 +47,6 @@ public:
     virtual bool isLocalOffsetNegative() const override { return false; }
 
     virtual bool isPromoted() const override { return true; }
-    virtual Platform getPlatform() const override { return Platform::MIPS; }
     virtual CallConv getConvention() const override { return CallConv::C; }
 };
 

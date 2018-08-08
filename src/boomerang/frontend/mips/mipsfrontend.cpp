@@ -26,66 +26,36 @@
 
 
 MIPSFrontEnd::MIPSFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new MIPSDecoder(prog));
 }
 
 
-std::vector<SharedExp>& MIPSFrontEnd::getDefaultParams()
+Address MIPSFrontEnd::findMainEntryPoint(bool& gotMain)
 {
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        for (int r = 31; r >= 0; r--) {
-            params.push_back(Location::regOf(r));
-        }
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& MIPSFrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.size() == 0) {
-        for (int r = 31; r >= 0; r--) {
-            returns.push_back(Location::regOf(r));
-        }
-    }
-
-    return returns;
-}
-
-
-Address MIPSFrontEnd::getMainEntryPoint(bool& gotMain)
-{
-    gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {
+        gotMain = true;
         return start;
     }
 
-    start   = m_binaryFile->getEntryPoint();
-    gotMain = false;
-
-    if (start == Address::INVALID) {
-        return Address::INVALID;
+    start = m_binaryFile->getEntryPoint();
+    if (start != Address::INVALID) {
+        gotMain = true;
+        return start;
     }
 
-    gotMain = true;
-    return start;
+    gotMain = false;
+    return Address::INVALID;
 }
 
 
-bool MIPSFrontEnd::processProc(Address entryAddr, UserProc *proc, QTextStream& os, bool frag /* = false */,
-                               bool spec /* = false */)
+bool MIPSFrontEnd::processProc(UserProc *proc, Address entryAddr)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(entryAddr, proc, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(proc, entryAddr)) {
         return false;
     }
 

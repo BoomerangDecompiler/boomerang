@@ -55,11 +55,10 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
 }
 
 
-bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream& os, bool frag /* = false */,
-                                  bool spec /* = false */)
+bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
 {
     // Call the base class to do most of the work
-    if (!IFrontEnd::processProc(addr, function, os, frag, spec)) {
+    if (!DefaultFrontEnd::processProc(function, addr)) {
         return false;
     }
 
@@ -83,54 +82,6 @@ bool PentiumFrontEnd::processProc(Address addr, UserProc *function, QTextStream&
     processOverlapped(function);
 
     return true;
-}
-
-
-std::vector<SharedExp>& PentiumFrontEnd::getDefaultParams()
-{
-    static std::vector<SharedExp> params;
-
-    if (params.size() == 0) {
-        params.push_back(Location::regOf(REG_PENT_EAX));
-        params.push_back(Location::regOf(REG_PENT_ECX));
-        params.push_back(Location::regOf(REG_PENT_EDX));
-        params.push_back(Location::regOf(REG_PENT_EBX));
-        params.push_back(Location::regOf(REG_PENT_ESP));
-        params.push_back(Location::regOf(REG_PENT_EBP));
-        params.push_back(Location::regOf(REG_PENT_ESI));
-        params.push_back(Location::regOf(REG_PENT_EDI));
-        params.push_back(Location::memOf(Location::regOf(REG_PENT_ESP)));
-    }
-
-    return params;
-}
-
-
-std::vector<SharedExp>& PentiumFrontEnd::getDefaultReturns()
-{
-    static std::vector<SharedExp> returns;
-
-    if (returns.size() == 0) {
-        returns.push_back(Location::regOf(REG_PENT_EAX));
-        returns.push_back(Location::regOf(REG_PENT_ECX));
-        returns.push_back(Location::regOf(REG_PENT_EDX));
-        returns.push_back(Location::regOf(REG_PENT_EBX));
-        returns.push_back(Location::regOf(REG_PENT_ESP));
-        returns.push_back(Location::regOf(REG_PENT_EBP));
-        returns.push_back(Location::regOf(REG_PENT_ESI));
-        returns.push_back(Location::regOf(REG_PENT_EDI));
-        returns.push_back(Location::regOf(REG_PENT_ST0));
-        returns.push_back(Location::regOf(REG_PENT_ST1));
-        returns.push_back(Location::regOf(REG_PENT_ST2));
-        returns.push_back(Location::regOf(REG_PENT_ST3));
-        returns.push_back(Location::regOf(REG_PENT_ST4));
-        returns.push_back(Location::regOf(REG_PENT_ST5));
-        returns.push_back(Location::regOf(REG_PENT_ST6));
-        returns.push_back(Location::regOf(REG_PENT_ST7));
-        returns.push_back(Terminal::get(opPC));
-    }
-
-    return returns;
 }
 
 
@@ -384,7 +335,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 
 
 PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : IFrontEnd(binaryFile, prog)
+    : DefaultFrontEnd(binaryFile, prog)
 {
     m_decoder.reset(new PentiumDecoder(prog));
 }
@@ -395,7 +346,7 @@ PentiumFrontEnd::~PentiumFrontEnd()
 }
 
 
-Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
+Address PentiumFrontEnd::findMainEntryPoint(bool& gotMain)
 {
     Address start = m_binaryFile->getMainEntryPoint();
 
@@ -422,7 +373,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
 
     do {
         DecodeResult inst;
-        decodeInstruction(addr, inst);
+        decodeSingleInstruction(addr, inst);
 
         if (inst.rtl == nullptr) {
             // Must have gotten out of step
@@ -441,11 +392,11 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
             const int oldInstLength = inst.numBytes;
 
-            if (decodeInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
+            if (decodeSingleInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
                 const Assign *asgn = dynamic_cast<Assign *>(inst.rtl->back()); // using back instead of rtl[1], since size()==2
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_PENT_EAX))) {
-                    decodeInstruction(addr + oldInstLength + inst.numBytes, inst);
+                    decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
 
                     if (!inst.rtl->empty()) {
                         CallStatement *toMain = dynamic_cast<CallStatement *>(inst.rtl->back());
@@ -467,7 +418,7 @@ Address PentiumFrontEnd::getMainEntryPoint(bool& gotMain)
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction
                 // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp = esp-4
-                decodeInstruction(addr - 5, inst);
+                decodeSingleInstruction(addr - 5, inst);
                 assert(inst.valid);
                 assert(inst.rtl->size() == 2);
                 Assign    *a  = static_cast<Assign *>(inst.rtl->front()); // Get m[esp-4] = K
@@ -791,13 +742,13 @@ bool PentiumFrontEnd::decodeSpecial(Address pc, DecodeResult& r)
 }
 
 
-bool PentiumFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
+bool PentiumFrontEnd::decodeSingleInstruction(Address pc, DecodeResult& result)
 {
     if (decodeSpecial(pc, result)) {
         return true;
     }
 
-    return IFrontEnd::decodeInstruction(pc, result);
+    return DefaultFrontEnd::decodeSingleInstruction(pc, result);
 }
 
 

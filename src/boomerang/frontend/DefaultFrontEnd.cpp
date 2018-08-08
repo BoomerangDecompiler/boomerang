@@ -7,8 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "Frontend.h"
-
+#include "DefaultFrontEnd.h"
 
 #include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
@@ -38,7 +37,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
+DefaultFrontEnd::DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : m_binaryFile(binaryFile)
     , m_program(prog)
     , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
@@ -46,49 +45,12 @@ IFrontEnd::IFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-IFrontEnd::~IFrontEnd()
+DefaultFrontEnd::~DefaultFrontEnd()
 {
 }
 
 
-IFrontEnd *IFrontEnd::instantiate(BinaryFile *binaryFile, Prog *prog)
-{
-    switch (binaryFile->getMachine())
-    {
-    case Machine::PENTIUM:  return new PentiumFrontEnd(binaryFile, prog);
-    case Machine::SPARC:    return new SparcFrontEnd(binaryFile, prog);
-    case Machine::PPC:      return new PPCFrontEnd(binaryFile, prog);
-    case Machine::MIPS:     return new MIPSFrontEnd(binaryFile, prog);
-    case Machine::ST20:     return new ST20FrontEnd(binaryFile, prog);
-    case Machine::HPRISC:   LOG_WARN("No frontend for HP RISC"); break;
-    case Machine::PALM:     LOG_WARN("No frontend for PALM");    break;
-    case Machine::M68K:     LOG_WARN("No frontend for M68K");    break;
-    default: LOG_ERROR("Machine architecture not supported!");   break;
-    }
-
-    return nullptr;
-}
-
-
-QString IFrontEnd::getRegName(int idx) const
-{
-    return m_decoder->getRegName(idx);
-}
-
-
-int IFrontEnd::getRegSize(int idx)
-{
-    return m_decoder->getRegSize(idx);
-}
-
-
-bool IFrontEnd::isWin32() const
-{
-    return m_binaryFile && m_binaryFile->getFormat() == LoadFmt::PE;
-}
-
-
-bool IFrontEnd::isNoReturnCallDest(const QString& name)
+bool DefaultFrontEnd::isNoReturnCallDest(const QString& name) const
 {
     return
         (name == "_exit") ||
@@ -100,31 +62,7 @@ bool IFrontEnd::isNoReturnCallDest(const QString& name)
 }
 
 
-void IFrontEnd::readLibraryCatalog()
-{
-    m_symbolProvider.reset(new CSymbolProvider(m_program));
-    QDir sig_dir(m_program->getProject()->getSettings()->getDataDirectory());
-
-    if (!sig_dir.cd("signatures")) {
-        LOG_WARN("Signatures directory does not exist.");
-        return;
-    }
-
-    m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("common.hs"));
-    m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath(Util::getPlatformName(getType()) + ".hs"));
-
-    if (isWin32()) {
-        m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("win32.hs"));
-    }
-
-    // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
-    if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        m_symbolProvider->readLibraryCatalog(sig_dir.absoluteFilePath("objc.hs"));
-    }
-}
-
-
-void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
+void DefaultFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type)
 {
     SharedType ty = NamedType::getNamedType(type);
     assert(ty->isFunc());
@@ -146,12 +84,12 @@ void IFrontEnd::checkEntryPoint(std::vector<Address>& entrypoints, Address addr,
 }
 
 
-std::vector<Address> IFrontEnd::getEntryPoints()
+std::vector<Address> DefaultFrontEnd::findEntryPoints()
 {
     std::vector<Address> entrypoints;
     bool                 gotMain = false;
     // AssemblyLayer
-    Address a = getMainEntryPoint(gotMain);
+    Address a = findMainEntryPoint(gotMain);
 
     // TODO: find exported functions and add them too ?
     if (a != Address::INVALID) {
@@ -209,7 +147,7 @@ std::vector<Address> IFrontEnd::getEntryPoints()
 }
 
 
-bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
+bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 {
     if (!decodeMain) {
         return true;
@@ -222,11 +160,11 @@ bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
     m_program->getProject()->alertStartDecode(extent.lower(), (extent.upper() - extent.lower()).value());
 
     bool    gotMain;
-    Address a = getMainEntryPoint(gotMain);
+    Address a = findMainEntryPoint(gotMain);
     LOG_VERBOSE("start: %1, gotMain: %2", a, (gotMain ? "true" : "false"));
 
     if (a == Address::INVALID) {
-        std::vector<Address> entrypoints = getEntryPoints();
+        std::vector<Address> entrypoints = findEntryPoints();
 
         for (auto& entrypoint : entrypoints) {
             if (!decodeRecursive(entrypoint)) {
@@ -282,7 +220,7 @@ bool IFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 }
 
 
-bool IFrontEnd::decodeRecursive(Address addr)
+bool DefaultFrontEnd::decodeRecursive(Address addr)
 {
     assert(addr != Address::INVALID);
 
@@ -303,9 +241,7 @@ bool IFrontEnd::decodeRecursive(Address addr)
         return false;
     }
 
-    QTextStream os(stderr); // rtl output target
-
-    if (processProc(addr, proc, os)) {
+    if (processProc(proc, addr)) {
         proc->setDecoded();
     }
 
@@ -313,7 +249,7 @@ bool IFrontEnd::decodeRecursive(Address addr)
 }
 
 
-bool IFrontEnd::decodeUndecoded()
+bool DefaultFrontEnd::decodeUndecoded()
 {
     bool change = true;
     LOG_MSG("Looking for undecoded procedures to decode...");
@@ -335,9 +271,8 @@ bool IFrontEnd::decodeUndecoded()
 
                 // undecoded userproc.. decode it
                 change = true;
-                QTextStream os(stderr); // rtl output target
 
-                if (!processProc(userProc->getEntryAddress(), userProc, os)) {
+                if (!processProc(userProc, userProc->getEntryAddress())) {
                     return false;
                 }
 
@@ -359,33 +294,17 @@ bool IFrontEnd::decodeUndecoded()
 }
 
 
-bool IFrontEnd::decodeOnly(Address addr)
-{
-    UserProc *p = static_cast<UserProc *>(m_program->getOrCreateFunction(addr));
-    assert(!p->isLib());
-    QTextStream os(stderr); // rtl output target
-
-    bool ok = processProc(p->getEntryAddress(), p, os);
-    if (ok) {
-        p->setDecoded();
-    }
-
-    return ok && m_program->isWellFormed();
-}
-
-
-bool IFrontEnd::decodeFragment(UserProc *proc, Address a)
+bool DefaultFrontEnd::decodeFragment(UserProc *proc, Address a)
 {
     if (m_program->getProject()->getSettings()->traceDecoder) {
         LOG_MSG("Decoding fragment at address %1", a);
     }
 
-    QTextStream os(stderr); // rtl output target
-    return processProc(a, proc, os, true);
+    return processProc(proc, a);
 }
 
 
-bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
+bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult& result)
 {
     BinaryImage *image = m_program->getBinaryFile()->getImage();
     if (!image || (image->getSectionByAddr(pc) == nullptr)) {
@@ -413,41 +332,12 @@ bool IFrontEnd::decodeInstruction(Address pc, DecodeResult& result)
 }
 
 
-bool IFrontEnd::addSymbolsFromSymbolFile(const QString& fname)
+void DefaultFrontEnd::extraProcessCall(CallStatement *, const RTLList&)
 {
-    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
 }
 
 
-std::shared_ptr<Signature> IFrontEnd::getDefaultSignature(const QString& name)
-{
-    // Get a default library signature
-    if (isWin32()) {
-        return Signature::instantiate(Platform::PENTIUM, CallConv::Pascal, name);
-    }
-
-    return Signature::instantiate(getType(), CallConv::C, name);
-}
-
-
-std::shared_ptr<Signature> IFrontEnd::getLibSignature(const QString& name)
-{
-    std::shared_ptr<Signature> signature = m_symbolProvider
-        ? m_symbolProvider->getSignatureByName(name)
-        : nullptr;
-
-    if (signature) {
-        signature->setUnknown(false);
-        return signature;
-    }
-    else {
-        LOG_WARN("Unknown library function '%1', please update signatures!", name);
-        return getDefaultSignature(name);
-    }
-}
-
-
-void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
+void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
                                    Address dest, const std::list<Statement *>& sl,
                                    RTL *originalRTL)
 {
@@ -482,7 +372,7 @@ void IFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss,
 }
 
 
-bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
+bool DefaultFrontEnd::refersToImportedFunction(const SharedExp& exp)
 {
     if (exp && (exp->getOper() == opMemOf) && (exp->access<Exp, 1>()->getOper() == opIntConst)) {
         const BinarySymbol *symbol = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(exp->access<Const, 1>()->getAddr());
@@ -496,8 +386,13 @@ bool IFrontEnd::refersToImportedFunction(const SharedExp& exp)
 }
 
 
-bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
-                            bool /*frag*/ /* = false */, bool spec /* = false */)
+bool DefaultFrontEnd::isHelperFunc(Address, Address, RTLList&)
+{
+    return false;
+}
+
+
+bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 {
     BasicBlock *currentBB;
 
@@ -513,12 +408,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
     bool sequentialDecode = true;
 
     Cfg *cfg = proc->getCFG();
-
-    // If this is a speculative decode, the second time we decode the same address, we get no cfg. Else an error.
-    if (spec && (cfg == nullptr)) {
-        return false;
-    }
-
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
@@ -544,10 +433,11 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                 LOG_MSG("*%1", addr);
             }
 
-            if (!decodeInstruction(addr, inst)) {
+            if (!decodeSingleInstruction(addr, inst)) {
                 QString message;
                 BinaryImage *image = m_program->getBinaryFile()->getImage();
-                message.sprintf("Encountered invalid or unrecognized instruction at address %s: 0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
+                message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
+                                "0x%02X 0x%02X 0x%02X 0x%02X", qPrintable(addr.toString()),
                                 image->readNative1(addr + 0),
                                 image->readNative1(addr + 1),
                                 image->readNative1(addr + 2),
@@ -557,12 +447,6 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
             }
             else if (inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
-            }
-
-            // If invalid and we are speculating, just exit
-            if (spec && !inst.valid) {
-                inst.rtl.reset();
-                return false;
             }
 
             // Need to construct a new list of RTLs if a basic block has just been finished but decoding is
@@ -786,7 +670,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                             call->setDestProc(function);
                             call->setIsComputed(false);
 
-                            if (function->isNoReturn() || IFrontEnd::isNoReturnCallDest(function->getName())) {
+                            if (function->isNoReturn() || isNoReturnCallDest(function->getName())) {
                                 sequentialDecode = false;
                             }
                         }
@@ -802,7 +686,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
                                 DecodeResult decoded;
 
                                 // Decode it.
-                                if (decodeInstruction(callAddr, decoded) && !decoded.rtl->empty()) {
+                                if (decodeSingleInstruction(callAddr, decoded) && !decoded.rtl->empty()) {
                                     // Decoded successfully. Create a Statement from it.
                                     Statement *firstStmt = decoded.rtl->front();
 
@@ -896,14 +780,14 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
                             // Check if this is the _exit or exit function. May prevent us from attempting to decode
                             // invalid instructions, and getting invalid stack height errors
-                            QString name = m_program->getSymbolNameByAddr(callAddr);
+                            QString procName = m_program->getSymbolNameByAddr(callAddr);
 
-                            if (name.isEmpty() && refersToImportedFunction(call->getDest())) {
+                            if (procName.isEmpty() && refersToImportedFunction(call->getDest())) {
                                 Address a = call->getDest()->access<Const, 1>()->getAddr();
-                                name = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(a)->getName();
+                                procName = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(a)->getName();
                             }
 
-                            if (!name.isEmpty() && IFrontEnd::isNoReturnCallDest(name)) {
+                            if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                                 // Make sure it has a return appended (so there is only one exit from the function)
                                 // call->setReturnAfterCall(true);        // I think only the Sparc frontend cares
                                 // Create the new basic block
@@ -1022,22 +906,17 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 
     for (CallStatement *callStmt : callList) {
         Address dest = callStmt->getFixedDest();
-        auto    symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
-        // Don't speculatively decode procs that are outside of the main text section, apart from dynamically
-        // linked ones (in the .plt)
-        if ((symb && symb->isImportedFunction()) || !spec || (dest < m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-            // Don't visit the destination of a register call
-            Function *np = callStmt->getDestProc();
+        // Don't visit the destination of a register call
+        Function *np = callStmt->getDestProc();
 
-            if ((np == nullptr) && (dest != Address::INVALID)) {
-                // np = newProc(proc->getProg(), dest);
-                np = proc->getProg()->getOrCreateFunction(dest);
-            }
+        if ((np == nullptr) && (dest != Address::INVALID)) {
+            // np = newProc(proc->getProg(), dest);
+            np = proc->getProg()->getOrCreateFunction(dest);
+        }
 
-            if (np != nullptr) {
-                proc->addCallee(np);
-            }
+        if (np != nullptr) {
+            proc->addCallee(np);
         }
     }
 
@@ -1049,7 +928,7 @@ bool IFrontEnd::processProc(Address addr, UserProc *proc, QTextStream& /*os*/,
 }
 
 
-BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL)
+BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> BB_rtls, std::unique_ptr<RTL> returnRTL)
 {
     Cfg *cfg = proc->getCFG();
 
@@ -1107,7 +986,7 @@ BasicBlock *IFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<RTLList
 }
 
 
-void IFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
+void DefaultFrontEnd::appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL)
 {
     std::unique_ptr<RTLList> ret_rtls(new RTLList);
     std::unique_ptr<RTL> retRTL(new RTL(callRTL->getAddress() + 1, { new ReturnStatement }));

@@ -64,9 +64,7 @@ bool PentiumSignature::operator==(const Signature& other) const
 
 bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    Platform plat = p->getProg()->getFrontEndId();
-
-    if (plat != Platform::PENTIUM) {
+    if (p->getProg()->getMachine() != Machine::PENTIUM) {
         return false;
     }
 
