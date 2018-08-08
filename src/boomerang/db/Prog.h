@@ -82,11 +82,10 @@ public:
 
     /**
      * Create or retrieve existing module
-     * \param frontend for the module, if nullptr set it to program's default frontend.
-     * \param fact abstract factory object that creates Module instance
      * \param name retrieve/create module with this name.
+     * \param fact abstract factory object that creates Module instance
      */
-    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory(), IFrontEnd *frontend = nullptr);
+    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory());
 
     Module *getRootModule() { return m_rootModule; }
     Module *getRootModule() const { return m_rootModule; }

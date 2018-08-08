@@ -100,14 +100,14 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const IMod
         return nullptr;
     }
 
-    module = factory.create(name, this, this->getFrontEnd());
+    module = factory.create(name, this);
     parentModule->addChild(module);
     m_moduleList.push_back(std::unique_ptr<Module>(module));
     return module;
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact, IFrontEnd *frontEnd)
+Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact)
 {
     for (const auto& m : m_moduleList) {
         if (m->getName() == name) {
@@ -115,7 +115,7 @@ Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact,
         }
     }
 
-    Module *m = fact.create(name, this, frontEnd ? frontEnd : m_fe);
+    Module *m = fact.create(name, this);
     m_moduleList.push_back(std::unique_ptr<Module>(m));
     return m;
 }

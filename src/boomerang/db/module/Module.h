@@ -22,7 +22,6 @@
 
 class Signature;
 class Function;
-class IFrontEnd;
 class Prog;
 
 
@@ -43,7 +42,7 @@ public:
 
 public:
     Module();
-    Module(const QString& name, Prog *prog, IFrontEnd *fe);
+    Module(const QString& name, Prog *prog);
     Module(const Module& other) = delete;
     Module(Module&& other) = default;
 
@@ -125,7 +124,6 @@ private:
 private:
     FunctionList m_functionList; ///< The Functions in the module
     FunctionMap m_labelsToProcs;
-    IFrontEnd *m_currentFrontend = nullptr;
 
 protected:
     QString m_name;
