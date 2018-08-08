@@ -17,7 +17,7 @@
 
 
 /**
- * This file contains routines to manage the decoding of sparc instructions
+ * This file contains routines to manage the decoding of SPARC instructions
  * and the instantiation to RTLs, removing SPARC dependent features
  * such as delay slots in the process.
  */
@@ -251,7 +251,7 @@ private:
     void quadOperation(Address addr, RTLList& lrtl, OPER op);
 
     /**
-     * Checks for sparc specific helper functions like .urem, which have specific sematics.
+     * Checks for SPARC specific helper functions like .urem, which have specific sematics.
      * Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
      * \note   This needs to be handled in a resourcable way.
      * \param  dest destination of the call (native address)

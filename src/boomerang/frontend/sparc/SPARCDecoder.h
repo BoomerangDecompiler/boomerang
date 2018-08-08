@@ -26,8 +26,9 @@ public:
     SharedExp dis_RegRhs(uint8_t reg_no);
 };
 
+
 /**
- * The implementation of the instruction decoder for Sparc.
+ * The implementation of the instruction decoder for SPARC.
  */
 class SPARCDecoder : public NJMCDecoder
 {

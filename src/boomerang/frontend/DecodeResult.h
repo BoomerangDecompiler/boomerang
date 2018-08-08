@@ -36,7 +36,7 @@ enum ICLASS : uint8
     SU,    ///< Static Unconditional (not delayed)
     SKIP,  ///< Skip successor
     // TRAP, ///< Trap
-    NOP,   ///< No operation (e.g. sparc BN,A)
+    NOP,   ///< No operation (e.g. SPARC BN,A)
     // HPPA only
     DU,    ///< Dynamic Unconditional (not delayed)
     NCTA   ///< Non Control Transfer, with following instr Anulled

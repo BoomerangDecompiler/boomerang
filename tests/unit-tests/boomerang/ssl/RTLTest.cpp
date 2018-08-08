@@ -186,7 +186,7 @@ void RTLTest::testVisitor()
 //    QVERIFY(pBF != 0);
 //    QVERIFY(pBF->GetMachine() == MACHINE_SPARC);
 //    Prog* prog = new Prog;
-//    FrontEnd *pFE = new SparcFrontEnd(pBF, prog, &bff);
+//    FrontEnd *pFE = new SPARCFrontEnd(pBF, prog, &bff);
 //    prog->setFrontEnd(pFE);
 
 //    // Decode second instruction: "sub        %i0, 2, %o1"

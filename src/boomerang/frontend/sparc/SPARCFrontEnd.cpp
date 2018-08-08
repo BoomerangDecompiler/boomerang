@@ -995,7 +995,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     break;
                 }
 
-            default: // Others are non sparc cases
+            default: // Others are non SPARC cases
                 break;
             }
 

@@ -155,7 +155,7 @@ public:
 
     /**
      * Does expression e represent a local stack-based variable?
-     * Result can be ABI specific, e.g. sparc has locals in the parent's stack frame, at POSITIVE offsets from the
+     * Result can be ABI specific, e.g. SPARC has locals in the parent's stack frame, at POSITIVE offsets from the
      * stack pointer register
      * Also, I believe that the PA/RISC stack grows away from 0
      */

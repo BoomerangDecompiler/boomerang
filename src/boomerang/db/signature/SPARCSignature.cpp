@@ -121,7 +121,7 @@ SharedExp SPARCSignature::getProven(SharedExp left) const
 
         switch (r)
         {
-        // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
+        // These registers are preserved in SPARC: i0-i7 (24-31), sp (14)
         case REG_SPARC_SP: // sp
         case REG_SPARC_I0:
         case REG_SPARC_I1:
@@ -147,7 +147,7 @@ bool SPARCSignature::isPreserved(SharedExp e) const
 
         switch (r)
         {
-        // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
+        // These registers are preserved in SPARC: i0-i7 (24-31), sp (14)
         case REG_SPARC_SP: // sp
         case REG_SPARC_I0:
         case REG_SPARC_I1:
@@ -194,7 +194,7 @@ SharedExp SPARCLibSignature::getProven(SharedExp left) const
 
         switch (r)
         {
-        // These registers are preserved in Sparc: i0-i7 (24-31), sp (14)
+        // These registers are preserved in SPARC: i0-i7 (24-31), sp (14)
         case REG_SPARC_SP:
         case REG_SPARC_I0:
         case REG_SPARC_I1:
@@ -221,7 +221,7 @@ SharedExp SPARCLibSignature::getProven(SharedExp left) const
 
 bool SPARCSignature::qualified(UserProc *p, Signature& /*candidate*/)
 {
-    LOG_VERBOSE2("Consider promotion to stdc sparc signature for %1", p->getName());
+    LOG_VERBOSE2("Consider promotion to stdc SPARC signature for %1", p->getName());
 
     if (p->getProg()->getMachine() != Machine::SPARC) {
         return false;

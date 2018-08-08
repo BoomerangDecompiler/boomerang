@@ -243,7 +243,7 @@ void SPARCFrontendTest::testDelaySlot()
     SPARCFrontEnd *fe = dynamic_cast<SPARCFrontEnd *>(prog->getFrontEnd());
     QVERIFY(fe != nullptr);
 
-    // decode calls readLibraryCatalog(), which needs to have definitions for non-sparc architectures cleared
+    // decode calls readLibraryCatalog(), which needs to have definitions for non-SPARC architectures cleared
     Type::clearNamedTypes();
     fe->decodeEntryPointsRecursive(prog);
 

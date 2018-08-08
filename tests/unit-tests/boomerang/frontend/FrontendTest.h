@@ -18,6 +18,6 @@ class FrontendTest : public BoomerangTest
     Q_OBJECT
 
 private slots:
-    /// Test loading the sparc hello world program
+    /// Test loading the SPARC hello world program
     void test1();
 };
