@@ -317,8 +317,6 @@ bool SPARCFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
         break;
 
     case StmtType::Ret:
-        //            newBB = cfg->create(BBType::Ret, BB_rtls);
-        //            proc->setTheReturnAddr((ReturnStatement*)inst.rtl->back(), inst.rtl->getAddress());
         newBB = createReturnBlock(proc, std::move(BB_rtls), std::move(inst.rtl));
         isRetOrCase  = true;
         break;
