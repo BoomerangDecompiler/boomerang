@@ -666,7 +666,7 @@ inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
 #define REG_MIPS_F0     (32)
 
 
-// ppc
+// PPC
 #define REG_PPC_SP      (1)
 
 #define REG_PPC_G0      (0)

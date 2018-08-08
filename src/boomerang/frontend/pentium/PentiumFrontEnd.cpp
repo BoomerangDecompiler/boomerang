@@ -874,7 +874,7 @@ void PentiumFrontEnd::extraProcessCall(CallStatement *call, const RTLList& BB_rt
         }
     }
 
-    // some pentium specific ellipsis processing
+    // some Pentium specific ellipsis processing
     if (calledSig->hasEllipsis()) {
         // count pushes backwards to find a push of 0
         bool found = false;

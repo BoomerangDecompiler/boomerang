@@ -84,7 +84,7 @@ private:
     void processOverlapped(UserProc *proc);
 
     /**
-     * Checks for pentium specific helper functions like __xtol which have specific sematics.
+     * Checks for Pentium specific helper functions like __xtol which have specific sematics.
      *
      * \note This needs to be handled in a resourcable way.
      *

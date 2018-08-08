@@ -22,7 +22,7 @@ private slots:
     /// compiled with clang-4.0.0 (without debug info)
     void testElfLoadClang();
 
-    /// Test loading the pentium (Solaris) hello world program
+    /// Test loading the Pentium (Solaris) hello world program
     void testPentiumLoad();
     void testPentiumLoad_data();
 };

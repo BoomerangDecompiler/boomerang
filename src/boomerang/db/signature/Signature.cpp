@@ -402,7 +402,7 @@ std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
     {
     case Machine::PENTIUM:
         if (cc == CallConv::Pascal) {
-            // For now, assume the only pascal calling convention pentium signatures will be Windows
+            // For now, assume the only pascal calling convention Pentium signatures will be Windows
             return std::make_shared<CallingConvention::Win32Signature>(name);
         }
         else if (cc == CallConv::ThisCall) {

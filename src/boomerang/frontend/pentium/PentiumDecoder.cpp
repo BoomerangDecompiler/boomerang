@@ -49699,7 +49699,7 @@ void PentiumDecoder::genBSFR(Address pc, SharedExp dest, SharedExp modrm, int in
     // work. We need to emit 6 statements, but these need to be in 3 RTLs, since the destination of a branch has to be
     // to the start of an RTL.  So we use a state machine, and set numBytes to 0 for the first two times. That way, this
     // instruction ends up emitting three RTLs, each with the semantics we need.
-    // Note: we don't use pentium.SSL for these.
+    // Note: we don't use pentium.ssl for these.
     // BSFR1:
     //    pc+0:    zf := 1
     //    pc+0:    branch exit condition modrm = 0
