@@ -250,7 +250,7 @@ void Module::addWin32DbgInfo(Function *function)
     if (!function) {
         return;
     }
-    else if (!m_currentFrontend || !m_currentFrontend->isWin32()) {
+    else if (!m_prog || !m_prog->isWin32()) {
         LOG_WARN("Cannot add debugging information for function '%1'", function->getName());
         return;
     }
