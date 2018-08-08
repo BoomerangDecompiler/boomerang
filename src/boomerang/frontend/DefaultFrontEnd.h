@@ -23,7 +23,7 @@ class RTL;
 class IDecoder;
 class Exp;
 class Prog;
-struct DecodeResult;
+class DecodeResult;
 class Signature;
 class Statement;
 class CallStatement;

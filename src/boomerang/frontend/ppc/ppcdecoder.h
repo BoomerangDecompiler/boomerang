@@ -14,9 +14,9 @@
 
 #include <cstdlib>
 
-class Prog;
 
-struct DecodeResult;
+class DecodeResult;
+class Prog;
 
 
 /**

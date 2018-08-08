@@ -14,7 +14,7 @@
 #include <cstddef>
 
 class Prog;
-struct DecodeResult;
+class DecodeResult;
 
 
 /**

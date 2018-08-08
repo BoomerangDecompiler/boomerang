@@ -16,7 +16,7 @@
 
 
 class Prog;
-struct DecodeResult;
+class DecodeResult;
 
 
 /**
