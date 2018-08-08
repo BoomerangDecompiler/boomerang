@@ -42,7 +42,7 @@
 #include <sstream>
 
 
-bool SparcFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const
+bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const
 {
     // Check that the destination is within the main test section; may not be when we speculatively decode junk
     if ((dest - 4) > upperLimit) {
@@ -56,7 +56,7 @@ bool SparcFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t de
 }
 
 
-BasicBlock *SparcFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc)
+BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc)
 {
     if (call->isReturnAfterCall()) {
 
@@ -83,7 +83,7 @@ BasicBlock *SparcFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 }
 
 
-void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq)
+void SPARCFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, Cfg *cfg, TargetQueue& tq)
 {
     if (newBB == nullptr) {
         return;
@@ -99,7 +99,7 @@ void SparcFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *& 
 }
 
 
-void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address,
+void SPARCFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, Cfg *cfg, Address address,
                                int offset /* = 0*/)
 {
     if (callBB == nullptr) {
@@ -123,13 +123,13 @@ void SparcFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB,
 }
 
 
-void SparcFrontEnd::case_unhandled_stub(Address addr)
+void SPARCFrontEnd::case_unhandled_stub(Address addr)
 {
     LOG_ERROR("Unhandled DCTI couple at address %1", addr);
 }
 
 
-bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst,
+bool SPARCFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst,
                               std::unique_ptr<RTLList> BB_rtls, UserProc *proc, std::list<CallStatement *>& callList,
                               bool isPattern /* = false*/)
 {
@@ -249,7 +249,7 @@ bool SparcFrontEnd::case_CALL(Address& address, DecodeResult& inst, DecodeResult
 }
 
 
-void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
+void SPARCFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
                             DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
     // Aliases for the SD and delay RTLs
@@ -286,7 +286,7 @@ void SparcFrontEnd::case_SD(Address& address, ptrdiff_t delta, Address hiAddress
 }
 
 
-bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, DecodeResult& delay_inst,
+bool SPARCFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, DecodeResult& delay_inst,
                             std::unique_ptr<RTLList> BB_rtls, TargetQueue&, UserProc *proc,
                             std::list<CallStatement *>& callList)
 {
@@ -388,7 +388,7 @@ bool SparcFrontEnd::case_DD(Address& address, ptrdiff_t , DecodeResult& inst, De
 }
 
 
-bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
+bool SPARCFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
                              DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
     GotoStatement *jumpStmt = static_cast<GotoStatement *>(inst.rtl->back());
@@ -503,7 +503,7 @@ bool SparcFrontEnd::case_SCD(Address& address, ptrdiff_t delta, Address hiAddres
 }
 
 
-bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
+bool SPARCFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst,
                                DecodeResult& delayInst, std::unique_ptr<RTLList> BB_rtls, Cfg *cfg, TargetQueue& tq)
 {
     // We may have to move the delay instruction to an orphan BB, which then branches to the target of the jump.
@@ -565,7 +565,7 @@ bool SparcFrontEnd::case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddr
 }
 
 
-bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
+bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 {
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
@@ -752,7 +752,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
                         // e.g.
                         // 142c8:  40 00 5b 91          call           exit
                         // 142cc:  91 e8 3f ff          restore       %g0, -1, %o0
-                        if (static_cast<SparcDecoder *>(m_decoder.get())->isRestore(HostAddress(addr.value() + 4 + m_program->getBinaryFile()->getImage()->getTextDelta()))) {
+                        if (static_cast<SPARCDecoder *>(m_decoder.get())->isRestore(HostAddress(addr.value() + 4 + m_program->getBinaryFile()->getImage()->getTextDelta()))) {
                             // Give the address of the call; I think that this is actually important, if faintly annoying
                             delay_inst.rtl->setAddress(addr);
                             BB_rtls->push_back(std::move(delay_inst.rtl));
@@ -1041,7 +1041,7 @@ bool SparcFrontEnd::processProc(UserProc *proc, Address addr)
 }
 
 
-void SparcFrontEnd::emitNop(RTLList& rtls, Address addr)
+void SPARCFrontEnd::emitNop(RTLList& rtls, Address addr)
 {
     // Emit a null RTL with the given address. Required to cope with
     // SKIP instructions. Yes, they really happen, e.g. /usr/bin/vi 2.5
@@ -1049,7 +1049,7 @@ void SparcFrontEnd::emitNop(RTLList& rtls, Address addr)
 }
 
 
-void SparcFrontEnd::emitCopyPC(RTLList& rtls, Address addr)
+void SPARCFrontEnd::emitCopyPC(RTLList& rtls, Address addr)
 {
     // Emit %o7 = %pc
     Assign *asgn = new Assign(Location::regOf(REG_SPARC_O7), Terminal::get(opPC));
@@ -1059,13 +1059,13 @@ void SparcFrontEnd::emitCopyPC(RTLList& rtls, Address addr)
 }
 
 
-void SparcFrontEnd::appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, RTLList& lrtl)
+void SPARCFrontEnd::appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, RTLList& lrtl)
 {
     lrtl.push_back(std::unique_ptr<RTL>(new RTL(addr, { new Assign(type, lhs, rhs) })));
 }
 
 
-void SparcFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
+void SPARCFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
 {
     SharedExp lhs = Location::memOf(Location::memOf(Binary::get(opPlus, Location::regOf(REG_SPARC_SP), Const::get(64))));
     SharedExp rhs = Binary::get(op, Location::memOf(Location::regOf(REG_SPARC_O0)), Location::memOf(Location::regOf(REG_SPARC_O1)));
@@ -1074,7 +1074,7 @@ void SparcFrontEnd::quadOperation(Address addr, RTLList& lrtl, OPER op)
 }
 
 
-bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
+bool SPARCFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 {
     const BinarySymbol *sym = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(dest);
 
@@ -1149,7 +1149,7 @@ bool SparcFrontEnd::isHelperFunc(Address dest, Address addr, RTLList& lrtl)
 }
 
 
-void SparcFrontEnd::gen32op32gives64(OPER op, RTLList& lrtl, Address addr)
+void SPARCFrontEnd::gen32op32gives64(OPER op, RTLList& lrtl, Address addr)
 {
     std::list<Statement *> *ls = new std::list<Statement *>;
 #if V9_ONLY
@@ -1192,7 +1192,7 @@ void SparcFrontEnd::gen32op32gives64(OPER op, RTLList& lrtl, Address addr)
 }
 
 
-bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QString& name)
+bool SPARCFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QString& name)
 {
     Q_UNUSED(dest);
     SharedExp rhs;
@@ -1255,10 +1255,10 @@ bool SparcFrontEnd::helperFuncLong(Address dest, Address addr, RTLList& lrtl, QS
 }
 
 
-SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
+SPARCFrontEnd::SPARCFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : DefaultFrontEnd(binaryFile, prog)
 {
-    m_decoder.reset(new SparcDecoder(prog));
+    m_decoder.reset(new SPARCDecoder(prog));
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;
     nop_inst.valid    = true;
@@ -1266,7 +1266,7 @@ SparcFrontEnd::SparcFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address SparcFrontEnd::findMainEntryPoint(bool& gotMain)
+Address SPARCFrontEnd::findMainEntryPoint(bool& gotMain)
 {
     gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();

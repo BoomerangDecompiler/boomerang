@@ -258,7 +258,7 @@ IFrontEnd *Project::createFrontEnd()
     switch (getLoadedBinaryFile()->getMachine())
     {
         case Machine::PENTIUM:  return new PentiumFrontEnd(binaryFile, prog);
-        case Machine::SPARC:    return new SparcFrontEnd(binaryFile, prog);
+        case Machine::SPARC:    return new SPARCFrontEnd(binaryFile, prog);
         case Machine::PPC:      return new PPCFrontEnd(binaryFile, prog);
         case Machine::MIPS:     return new MIPSFrontEnd(binaryFile, prog);
         case Machine::ST20:     return new ST20FrontEnd(binaryFile, prog);

@@ -18,22 +18,21 @@
 
 /**
  * This file contains routines to manage the decoding of sparc instructions
- * and the instantiation to RTLs, removing sparc dependent features
- * such as delay slots in the process. These functions replace frontend.cpp
- * for decoding sparc instructions.
+ * and the instantiation to RTLs, removing SPARC dependent features
+ * such as delay slots in the process.
  */
-class BOOMERANG_API SparcFrontEnd : public DefaultFrontEnd
+class BOOMERANG_API SPARCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    SparcFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    SparcFrontEnd(const SparcFrontEnd& other) = delete;
-    SparcFrontEnd(SparcFrontEnd&& other) = default;
+    SPARCFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    SPARCFrontEnd(const SPARCFrontEnd& other) = delete;
+    SPARCFrontEnd(SPARCFrontEnd&& other) = default;
 
-    virtual ~SparcFrontEnd() = default;
+    virtual ~SPARCFrontEnd() = default;
 
-    SparcFrontEnd& operator=(const SparcFrontEnd&) = delete;
-    SparcFrontEnd& operator=(SparcFrontEnd&&) = default;
+    SPARCFrontEnd& operator=(const SPARCFrontEnd&) = delete;
+    SPARCFrontEnd& operator=(SPARCFrontEnd&&) = default;
 
 public:
     /**

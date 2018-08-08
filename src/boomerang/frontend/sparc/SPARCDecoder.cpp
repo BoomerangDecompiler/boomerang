@@ -60,7 +60,7 @@ void _DEBUG_STMTS(DecodeResult& result, bool debugDecoder)
 #define DEBUG_STMTS(result) _DEBUG_STMTS(result, m_prog->getProject()->getSettings()->debugDecoder)
 
 
-std::unique_ptr<RTL> SparcDecoder::createBranchRTL(const char *insnName, Address pc, std::unique_ptr<RTL> stmts)
+std::unique_ptr<RTL> SPARCDecoder::createBranchRTL(const char *insnName, Address pc, std::unique_ptr<RTL> stmts)
 {
     BranchStatement *br  = new BranchStatement();
 
@@ -209,7 +209,7 @@ std::unique_ptr<RTL> SparcDecoder::createBranchRTL(const char *insnName, Address
 }
 
 
-bool SparcDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& inst)
+bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& inst)
 {
     inst.reset();
     inst.rtl.reset(new RTL(pc));
@@ -2323,7 +2323,7 @@ MATCH_finished_d:
 }
 
 
-SharedExp SparcDecoder::dis_RegLhs(unsigned r)
+SharedExp SPARCDecoder::dis_RegLhs(unsigned r)
 {
     return Location::regOf(r);
 }
@@ -2339,7 +2339,7 @@ SharedExp SparcMachine::dis_RegRhs(uint8_t reg_no)
 }
 
 
-SharedExp SparcDecoder::dis_RegImm(HostAddress pc)
+SharedExp SPARCDecoder::dis_RegImm(HostAddress pc)
 {
     HostAddress MATCH_p      = pc;
     unsigned    MATCH_w_32_0 = getDword(MATCH_p);
@@ -2355,7 +2355,7 @@ SharedExp SparcDecoder::dis_RegImm(HostAddress pc)
 }
 
 
-SharedExp SparcDecoder::dis_Eaddr(HostAddress pc, int size)
+SharedExp SPARCDecoder::dis_Eaddr(HostAddress pc, int size)
 {
     Q_UNUSED(size);
     SharedExp expr;
@@ -2410,14 +2410,14 @@ MATCH_finished_b:
 }
 
 
-bool SparcDecoder::isFuncPrologue(HostAddress hostPC)
+bool SPARCDecoder::isFuncPrologue(HostAddress hostPC)
 {
     Q_UNUSED(hostPC);
     return false;
 }
 
 
-bool SparcDecoder::isRestore(HostAddress hostPC)
+bool SPARCDecoder::isRestore(HostAddress hostPC)
 {
     HostAddress MATCH_p      = hostPC;
     unsigned    MATCH_w_32_0 = getDword(MATCH_p);
@@ -2437,13 +2437,13 @@ bool SparcDecoder::isRestore(HostAddress hostPC)
 }
 
 
-DWord SparcDecoder::getDword(HostAddress lc)
+DWord SPARCDecoder::getDword(HostAddress lc)
 {
     return Util::readDWord(lc, Endian::Big);
 }
 
 
-SparcDecoder::SparcDecoder(Prog *_prog)
+SPARCDecoder::SPARCDecoder(Prog *_prog)
     : NJMCDecoder(_prog, "ssl/sparc.ssl")
     , machine(new SparcMachine)
 {

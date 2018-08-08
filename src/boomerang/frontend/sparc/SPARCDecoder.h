@@ -29,18 +29,18 @@ public:
 /**
  * The implementation of the instruction decoder for Sparc.
  */
-class SparcDecoder : public NJMCDecoder
+class SPARCDecoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
-    SparcDecoder(Prog *prog);
-    SparcDecoder(const SparcDecoder& other) = delete;
-    SparcDecoder(SparcDecoder&& other) = default;
+    SPARCDecoder(Prog *prog);
+    SPARCDecoder(const SPARCDecoder& other) = delete;
+    SPARCDecoder(SPARCDecoder&& other) = default;
 
-    virtual ~SparcDecoder() override = default;
+    virtual ~SPARCDecoder() override = default;
 
-    SparcDecoder& operator=(const SparcDecoder& other) = delete;
-    SparcDecoder& operator=(SparcDecoder&& other) = default;
+    SPARCDecoder& operator=(const SPARCDecoder& other) = delete;
+    SPARCDecoder& operator=(SPARCDecoder&& other) = default;
 
 public:
     /// \copydoc NJMCDecoder::decodeInstruction
