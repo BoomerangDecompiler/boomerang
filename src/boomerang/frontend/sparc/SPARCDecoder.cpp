@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "sparcdecoder.h"
+#include "SPARCDecoder.h"
 
 
 #include "boomerang/core/Project.h"

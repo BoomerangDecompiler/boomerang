@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "pentiumfrontend.h"
+#include "PentiumFrontEnd.h"
 
 
 #include "boomerang/db/BasicBlock.h"
@@ -18,7 +18,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/pentiumdecoder.h"
+#include "boomerang/frontend/pentium/PentiumDecoder.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"

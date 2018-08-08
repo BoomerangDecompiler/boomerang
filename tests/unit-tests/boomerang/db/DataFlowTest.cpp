@@ -19,7 +19,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/RTL.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/passes/PassManager.h"

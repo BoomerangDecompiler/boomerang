@@ -19,7 +19,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"

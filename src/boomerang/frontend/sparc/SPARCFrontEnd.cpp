@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "sparcfrontend.h"
+#include "SPARCFrontEnd.h"
 
 
 #include "boomerang/core/Project.h"
@@ -22,7 +22,7 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/sparc/sparcdecoder.h"
+#include "boomerang/frontend/sparc/SPARCDecoder.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"

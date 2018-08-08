@@ -10,16 +10,15 @@
 #include "FrontSparcTest.h"
 
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/log/Log.h"
 
-#include "boomerang/frontend/sparc/sparcfrontend.h"
 
 #include <QDebug>
 

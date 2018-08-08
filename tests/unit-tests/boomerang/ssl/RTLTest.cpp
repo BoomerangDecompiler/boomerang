@@ -26,8 +26,8 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/visitor/stmtvisitor/StmtConscriptSetter.h"
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
-#include "boomerang/frontend/sparc/sparcfrontend.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
+#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
 

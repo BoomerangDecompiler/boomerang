@@ -7,52 +7,49 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "mipsfrontend.h"
+#include "ST20FrontEnd.h"
 
 
 #include "boomerang/db/CFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/mips/mipsdecoder.h"
+#include "boomerang/frontend/st20/ST20Decoder.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/log/Log.h"
 
 
-#include <cassert>
-#include <sstream>
-
-
-MIPSFrontEnd::MIPSFrontEnd(BinaryFile *binaryFile, Prog *prog)
+ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)
     : DefaultFrontEnd(binaryFile, prog)
 {
-    m_decoder.reset(new MIPSDecoder(prog));
+    m_decoder.reset(new ST20Decoder(prog));
 }
 
 
-Address MIPSFrontEnd::findMainEntryPoint(bool& gotMain)
+Address ST20FrontEnd::findMainEntryPoint(bool& gotMain)
 {
+    gotMain = true;
     Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {
-        gotMain = true;
         return start;
     }
 
-    start = m_binaryFile->getEntryPoint();
-    if (start != Address::INVALID) {
-        gotMain = true;
-        return start;
-    }
-
+    start   = m_binaryFile->getEntryPoint();
     gotMain = false;
-    return Address::INVALID;
+
+    if (start == Address::INVALID) {
+        return Address::INVALID;
+    }
+
+    gotMain = true;
+    return start;
 }
 
 
-bool MIPSFrontEnd::processProc(UserProc *proc, Address entryAddr)
+bool ST20FrontEnd::processProc(UserProc *proc, Address entryAddr)
 {
     // Call the base class to do most of the work
     if (!DefaultFrontEnd::processProc(proc, entryAddr)) {

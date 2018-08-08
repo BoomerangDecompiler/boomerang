@@ -17,7 +17,7 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/util/log/Log.h"
 
-#include "boomerang/frontend/pentium/pentiumfrontend.h"
+#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 
 #include <QDebug>
 

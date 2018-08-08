@@ -7,7 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "pentiumdecoder.h"
+#include "PentiumDecoder.h"
 
 
 #include "boomerang/core/Project.h"
@@ -28,7 +28,6 @@
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
-
 
 #include <cassert>
 #include <cstring>
