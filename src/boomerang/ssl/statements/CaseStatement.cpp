@@ -18,6 +18,9 @@
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
 
+#include <QTextStreamManipulator>
+
+
 CaseStatement::CaseStatement()
     : m_switchInfo(nullptr)
 {
@@ -68,7 +71,7 @@ bool CaseStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void CaseStatement::print(QTextStream& os, bool html) const
+void CaseStatement::print(OStream& os, bool html) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 

@@ -12,9 +12,9 @@
 
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Types.h"
+#include "boomerang/util/OStream.h"
 
 #include <QString>
-#include <QTextStream>
 
 
 /// Standard pointer size of source machine, in bits
@@ -135,5 +135,5 @@ private:
     value_type m_value;
 };
 
-BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Address& addr);
-BOOMERANG_API QTextStream& operator<<(QTextStream& os, const HostAddress& addr);
+BOOMERANG_API OStream& operator<<(OStream& os, const Address& addr);
+BOOMERANG_API OStream& operator<<(OStream& os, const HostAddress& addr);

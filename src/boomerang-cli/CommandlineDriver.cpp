@@ -16,6 +16,7 @@
 #include "boomerang/util/log/Log.h"
 
 #include <QCoreApplication>
+#include <QTextStream>
 
 #include <iostream>
 

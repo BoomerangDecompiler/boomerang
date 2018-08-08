@@ -14,6 +14,7 @@
 #include "boomerang/frontend/TargetQueue.h"
 #include "boomerang/ifc/IFrontEnd.h"
 
+#include <map>
 #include <memory>
 
 

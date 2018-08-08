@@ -65,10 +65,7 @@ public:
     void insert(Assign *a);
 
     /// Print the collected locations to stream os
-    void print(QTextStream& os, bool html = false) const;
-
-    /// Print to string (for debugging)
-    char *prints() const;
+    void print(OStream& os, bool html = false) const;
 
     bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 

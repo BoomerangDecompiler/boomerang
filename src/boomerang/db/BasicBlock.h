@@ -23,7 +23,7 @@ class Exp;
 class ImplicitAssign;
 class PhiAssign;
 
-class QTextStream;
+class OStream;
 
 
 using RTLList   = std::list<std::unique_ptr<RTL>>;
@@ -266,11 +266,9 @@ public:
      * \param os   stream to output to
      * \param html print in html mode
      */
-    void print(QTextStream& os, bool html = false);
+    void print(OStream& os, bool html = false);
 
-    /// Print to a static buffer (for debugging)
-    const char *prints();
-
+    QString prints();
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.

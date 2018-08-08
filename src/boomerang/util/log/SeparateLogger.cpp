@@ -14,6 +14,7 @@
 #include "boomerang/util/Util.h"
 
 #include <QDir>
+#include <QMap>
 #include <QSharedPointer>
 
 

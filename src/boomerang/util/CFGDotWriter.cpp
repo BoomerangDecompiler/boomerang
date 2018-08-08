@@ -28,7 +28,7 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString& filename)
         return;
     }
 
-    QTextStream of(&tgt);
+    OStream of(&tgt);
     of << "digraph ProcCFG {\n";
 
     for (const auto& module : prog->getModuleList()) {
@@ -61,7 +61,7 @@ void CFGDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
     QFile outFile(filename);
     outFile.open(QFile::WriteOnly | QFile::Text);
 
-    QTextStream textStream(&outFile);
+    OStream textStream(&outFile);
     textStream << "digraph ProcCFG {\n";
 
     for (UserProc *userProc : procs) {
@@ -73,7 +73,7 @@ void CFGDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 }
 
 
-void CFGDotWriter::writeCFG(const ProcCFG *cfg, QTextStream& of)
+void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream& of)
 {
     Address returnAddress = Address::INVALID;
 

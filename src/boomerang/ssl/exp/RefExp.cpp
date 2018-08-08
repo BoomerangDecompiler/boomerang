@@ -162,7 +162,7 @@ bool RefExp::isImplicitDef() const
 }
 
 
-void RefExp::print(QTextStream& os, bool html) const
+void RefExp::print(OStream& os, bool html) const
 {
     if (subExp1) {
         subExp1->print(os, html);

@@ -50,7 +50,7 @@
 void _DEBUG_STMTS(DecodeResult& result, bool debugDecoder)
 {
     if (debugDecoder) {
-        QTextStream q_cout(stdout);
+        OStream q_cout(stdout);
         for (Statement *s : *result.rtl) {
             q_cout << "            " << s << "\n";
         }

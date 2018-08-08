@@ -31,7 +31,7 @@ bool CallGraphDotWriter::writeCallGraph(const Prog *prog, const QString& dstFile
         return false;
     }
 
-    QTextStream ost(&saveFile);
+    OStream ost(&saveFile);
 
     ost << "digraph callgraph\n";
     ost << "{\n";

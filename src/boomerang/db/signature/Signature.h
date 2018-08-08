@@ -18,6 +18,8 @@
 #include "boomerang/ssl/statements/Assignment.h"
 #include "boomerang/ssl/type/VoidType.h"
 
+#include <vector>
+
 
 class Statement;
 class StatementList;
@@ -202,7 +204,7 @@ public:
     virtual bool returnCompare(const Assignment& a, const Assignment& b) const;
 
 public:
-    void print(QTextStream& out, bool = false) const;
+    void print(OStream& out, bool = false) const;
 
 protected:
     QString m_name;                                    ///< name of procedure

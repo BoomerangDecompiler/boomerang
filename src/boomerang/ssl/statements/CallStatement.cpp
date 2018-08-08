@@ -39,6 +39,7 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
+#include <QTextStreamManipulator>
 
 
 /// A helper class for updateArguments. It just dishes out a new argument
@@ -448,7 +449,7 @@ bool CallStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void CallStatement::print(QTextStream& os, bool html) const
+void CallStatement::print(OStream& os, bool html) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 

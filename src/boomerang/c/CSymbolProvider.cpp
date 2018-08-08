@@ -20,6 +20,7 @@
 
 #include <QDir>
 #include <QFileInfo>
+#include <QTextStream>
 
 
 CSymbolProvider::CSymbolProvider(Prog* prog)
@@ -38,11 +39,11 @@ bool CSymbolProvider::readLibraryCatalog(const QString& filePath)
         return false;
     }
 
-    QTextStream inf(&file);
+    QTextStream is(&file);
 
-    while (!inf.atEnd()) {
+    while (!is.atEnd()) {
         QString sigFilePath;
-        inf >> sigFilePath;
+        is >> sigFilePath;
         sigFilePath = sigFilePath.mid(0, sigFilePath.indexOf('#')); // cut the line to first '#'
 
         if ((sigFilePath.size() > 0) && sigFilePath.endsWith('\n')) {

@@ -29,7 +29,7 @@ ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
 }
 
 
-void ImpRefStatement::print(QTextStream& os, bool html) const
+void ImpRefStatement::print(OStream& os, bool html) const
 {
     os << "     *";     // No statement number
 

@@ -15,6 +15,7 @@
 #include "boomerang/util/Types.h"
 
 #include <QString>
+#include <QVariant>
 
 
 class QVariant;

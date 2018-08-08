@@ -22,7 +22,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
     condExp = condExp->simplifyArith()->simplify();
 
     QString     tgt;
-    QTextStream os(&tgt);
+    OStream os(&tgt);
     condExp->print(os);
 
     OPER condOp = condExp->getOper();

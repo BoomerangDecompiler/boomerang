@@ -88,7 +88,7 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc Assignment::printCompact
-    virtual void printCompact(QTextStream& os, bool html = false) const override;
+    virtual void printCompact(OStream& os, bool html = false) const override;
 
     /// \copydoc Statement::search
     virtual bool search(const Exp& search, SharedExp& result) const override;

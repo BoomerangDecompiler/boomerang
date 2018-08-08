@@ -12,6 +12,7 @@
 
 #include "boomerang/util/Address.h"
 
+#include <map>
 #include <memory>
 #include <vector>
 

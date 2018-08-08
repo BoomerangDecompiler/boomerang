@@ -898,7 +898,7 @@ BOOL CALLBACK printem(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVOID
     printType(symInfo->TypeIndex, symInfo->ModBase);
 
     QString     flagsStr;
-    QTextStream ost(&flagsStr);
+    OStream ost(&flagsStr);
 
     ost << " " << symInfo->Name << " flags: ";
 

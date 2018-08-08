@@ -13,12 +13,12 @@
 #include "boomerang/core/BoomerangAPI.h"
 
 #include <QString>
-#include <QTextStream>
 
 #include <memory>
 
 
 class Prog;
+class OStream;
 
 
 using SharedConstExp = std::shared_ptr<const class Exp>;
@@ -33,7 +33,7 @@ namespace Util
  */
 QString BOOMERANG_API escapeStr(const QString& str);
 
-QTextStream& alignStream(QTextStream& str, int align);
+OStream& alignStream(OStream& str, int align);
 
 
 /// Check if \p value is in [\p rangeStart, \p rangeEnd)
@@ -88,6 +88,3 @@ int getStackOffset(SharedConstExp e, int sp);
 int getStackRegisterIndex(const Prog *prog);
 
 }
-
-#define DEBUG_BUFSIZE    0x10000 // Size of the debug print buffer (65 kiB)
-extern char debug_buffer[DEBUG_BUFSIZE];

@@ -18,6 +18,8 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
+#include <QTextStreamManipulator>
+
 
 GotoStatement::GotoStatement()
     : m_dest(nullptr)
@@ -121,7 +123,7 @@ bool GotoStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void GotoStatement::print(QTextStream& os, bool html) const
+void GotoStatement::print(OStream& os, bool html) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 

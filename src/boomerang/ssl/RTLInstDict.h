@@ -15,18 +15,21 @@
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"
 
+#include <QMap>
 #include <QString>
 
 #include <list>
+#include <map>
 #include <memory>
 #include <set>
+#include <vector>
 
 
 class Exp;
 class Statement;
 class Type;
 
-class QTextStream;
+class OStream;
 
 
 using SharedExp = std::shared_ptr<Exp>;
@@ -181,7 +184,7 @@ private:
     void transformPostVars(RTL& rts, bool optimize);
 
     /// Print a textual representation of the dictionary.
-    void print(QTextStream& os);
+    void print(OStream& os);
 
     /**
      * Add a new register definition to the dictionary

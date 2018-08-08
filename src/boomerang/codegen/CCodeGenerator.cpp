@@ -56,7 +56,7 @@ bool isBareMemof(const Exp& exp, UserProc *)
 }
 
 
-void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
+void CCodeGenerator::generateCode(const Prog *prog, OStream& os)
 {
     for (auto& glob : prog->getGlobals()) {
         // Check for an initial value
@@ -93,7 +93,7 @@ void CCodeGenerator::generateCode(const Prog *prog, QTextStream& os)
 void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 {
     // QString basedir = m_rootCluster->makeDirs();
-    QTextStream *os = nullptr;
+    OStream *os = nullptr;
 
     if (cluster) {
         cluster->openStream("c");
@@ -194,7 +194,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
     //    return;
 
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
     indent(ost, m_indent);
 
     SharedType asgnType = asgn->getType();
@@ -261,7 +261,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
                                       const StatementList& args, const StatementList& results)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
 
@@ -337,7 +337,7 @@ void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementLi
     Q_UNUSED(results);
     //    FIXME: Need to use 'results', since we can infer some defines...
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
     indent(s, m_indent);
     s << "(*";
     appendExp(s, *exp, OpPrec::None);
@@ -346,7 +346,7 @@ void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementLi
     QString     arg_tgt;
 
     for (Statement *ss : args) {
-        QTextStream arg_str(&arg_tgt);
+        OStream arg_str(&arg_tgt);
         SharedExp   arg = static_cast<Assign *>(ss)->getRight();
         appendExp(arg_str, *arg, OpPrec::Comma);
         arg_strings << arg_tgt;
@@ -363,7 +363,7 @@ void CCodeGenerator::addReturnStatement(const StatementList *rets)
     // FIXME: should be returning a struct of more than one real return */
     // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
     QString                 tgt;
-    QTextStream             ost(&tgt);
+    OStream             ost(&tgt);
     indent(ost, m_indent);
     ost << "return";
     size_t n = rets->size();
@@ -504,7 +504,7 @@ void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString s
 void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 {
     QString         tgt;
-    QTextStream     s(&tgt);
+    OStream     s(&tgt);
     ReturnStatement *returns = proc->getRetStmt();
     SharedType      retType;
 
@@ -620,7 +620,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 void CCodeGenerator::addPretestedLoopHeader(const SharedExp& cond)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "while (";
@@ -637,7 +637,7 @@ void CCodeGenerator::addPretestedLoopEnd()
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "}";
@@ -648,7 +648,7 @@ void CCodeGenerator::addPretestedLoopEnd()
 void CCodeGenerator::addEndlessLoopHeader()
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "for(;;) {";
@@ -662,7 +662,7 @@ void CCodeGenerator::addEndlessLoopEnd()
 {
     m_indent--;
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "}";
@@ -673,7 +673,7 @@ void CCodeGenerator::addEndlessLoopEnd()
 void CCodeGenerator::addPostTestedLoopHeader()
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "do {";
@@ -687,7 +687,7 @@ void CCodeGenerator::addPostTestedLoopEnd(const SharedExp& cond)
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "} while (";
@@ -700,7 +700,7 @@ void CCodeGenerator::addPostTestedLoopEnd(const SharedExp& cond)
 void CCodeGenerator::addCaseCondHeader(const SharedExp& cond)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "switch(";
@@ -717,7 +717,7 @@ void CCodeGenerator::addCaseCondOption(Exp& opt)
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "case ";
@@ -732,7 +732,7 @@ void CCodeGenerator::addCaseCondOption(Exp& opt)
 void CCodeGenerator::addCaseCondOptionEnd()
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "break;";
@@ -744,7 +744,7 @@ void CCodeGenerator::addCaseCondElse()
 {
     m_indent--;
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "default:";
@@ -759,7 +759,7 @@ void CCodeGenerator::addCaseCondEnd()
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "}";
@@ -770,7 +770,7 @@ void CCodeGenerator::addCaseCondEnd()
 void CCodeGenerator::addIfCondHeader(const SharedExp& cond)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "if (";
@@ -787,7 +787,7 @@ void CCodeGenerator::addIfCondEnd()
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "}";
@@ -798,7 +798,7 @@ void CCodeGenerator::addIfCondEnd()
 void CCodeGenerator::addIfElseCondHeader(const SharedExp& cond)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "if (";
@@ -815,7 +815,7 @@ void CCodeGenerator::addIfElseCondOption()
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "}";
@@ -835,7 +835,7 @@ void CCodeGenerator::addIfElseCondEnd()
     m_indent--;
 
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "}";
@@ -846,7 +846,7 @@ void CCodeGenerator::addIfElseCondEnd()
 void CCodeGenerator::addGoto(const BasicBlock *bb)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "goto bb0x" << QString::number(bb->getLowAddr().value(), 16) << ";";
@@ -858,7 +858,7 @@ void CCodeGenerator::addGoto(const BasicBlock *bb)
 void CCodeGenerator::addContinue()
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "continue;";
@@ -869,7 +869,7 @@ void CCodeGenerator::addContinue()
 void CCodeGenerator::addBreak()
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     indent(s, m_indent);
     s << "break;";
@@ -880,7 +880,7 @@ void CCodeGenerator::addBreak()
 void CCodeGenerator::addLabel(const BasicBlock *bb)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     s << "bb0x" << QString::number(bb->getLowAddr().value(), 16) << ":";
     appendLine(tgt);
@@ -890,7 +890,7 @@ void CCodeGenerator::addLabel(const BasicBlock *bb)
 void CCodeGenerator::addProcStart(UserProc *proc)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     s << "/** address: " << proc->getEntryAddress() << " */";
     appendLine(tgt);
@@ -909,7 +909,7 @@ void CCodeGenerator::addProcEnd()
 void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     indent(ost, 1);
     appendTypeIdent(ost, type, name);
@@ -944,7 +944,7 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 void CCodeGenerator::addGlobal(const QString& name, SharedType type, const SharedExp& init)
 {
     QString     tgt;
-    QTextStream s(&tgt);
+    OStream s(&tgt);
 
     // Check for array types. These are declared differently in C than
     // they are printed
@@ -991,7 +991,7 @@ void CCodeGenerator::addLineComment(const QString& cmt)
 }
 
 
-void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec, bool uns /* = false */)
+void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, bool uns /* = false */)
 {
     const OPER op = exp.getOper();
 
@@ -1920,7 +1920,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
 
     case opSubscript:
         appendExp(str, *unaryExp.getSubExp1(), curPrec);
-        LOG_ERROR("Subscript in code generation of proc %1, exp (without subscript): %2", m_proc->getName(), str.readAll());
+        LOG_ERROR("Subscript in code generation of proc %1", m_proc->getName());
         break;
 
     case opMemberAccess:
@@ -1998,7 +1998,7 @@ void CCodeGenerator::appendExp(QTextStream& str, const Exp& exp, OpPrec curPrec,
 }
 
 
-void CCodeGenerator::appendType(QTextStream& str, SharedConstType typ)
+void CCodeGenerator::appendType(OStream& str, SharedConstType typ)
 {
     if (!typ) {
         str << "int"; // Default type for C
@@ -2016,7 +2016,7 @@ void CCodeGenerator::appendType(QTextStream& str, SharedConstType typ)
 }
 
 
-void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedConstType typ, QString ident)
+void CCodeGenerator::appendTypeIdent(OStream& str, SharedConstType typ, QString ident)
 {
     if (typ == nullptr) {
         return;
@@ -2057,7 +2057,7 @@ void CCodeGenerator::appendTypeIdent(QTextStream& str, SharedConstType typ, QStr
 }
 
 
-void CCodeGenerator::openParen(QTextStream& str, OpPrec outer, OpPrec inner)
+void CCodeGenerator::openParen(OStream& str, OpPrec outer, OpPrec inner)
 {
     if (inner > outer) {
         str << "(";
@@ -2065,7 +2065,7 @@ void CCodeGenerator::openParen(QTextStream& str, OpPrec outer, OpPrec inner)
 }
 
 
-void CCodeGenerator::closeParen(QTextStream& str, OpPrec outer, OpPrec inner)
+void CCodeGenerator::closeParen(OStream& str, OpPrec outer, OpPrec inner)
 {
     if (inner > outer) {
         str << ")";
@@ -2481,7 +2481,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock* bb, std::list<const Basi
             GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
 
             QString     dat;
-            QTextStream ost(&dat);
+            OStream ost(&dat);
 
             ost << "goto " << gs->getDest();
             addLineComment(dat);
@@ -2597,7 +2597,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 }
 
 
-void CCodeGenerator::print(QTextStream& os)
+void CCodeGenerator::print(OStream& os)
 {
     os << m_lines.join('\n') << '\n';
     os.flush();
@@ -2605,7 +2605,7 @@ void CCodeGenerator::print(QTextStream& os)
 }
 
 
-void CCodeGenerator::indent(QTextStream& str, int indLevel)
+void CCodeGenerator::indent(OStream& str, int indLevel)
 {
     // Can probably do more efficiently
     for (int i = 0; i < indLevel; i++) {

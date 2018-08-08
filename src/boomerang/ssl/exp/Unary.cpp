@@ -151,7 +151,7 @@ bool Unary::operator*=(const Exp& o) const
 }
 
 
-void Unary::print(QTextStream& os, bool html) const
+void Unary::print(OStream& os, bool html) const
 {
     SharedConstExp p1 = this->getSubExp1();
 

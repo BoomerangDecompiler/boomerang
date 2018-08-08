@@ -20,6 +20,7 @@
 
 #include <cassert>
 
+#include <QtAlgorithms>
 
 
 ProcCFG::ProcCFG(UserProc *proc)
@@ -538,7 +539,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(QTextStream& out, bool html)
+void ProcCFG::print(OStream& out, bool html)
 {
     out << "Control Flow Graph:\n";
 
@@ -547,25 +548,4 @@ void ProcCFG::print(QTextStream& out, bool html)
     }
 
     out << '\n';
-}
-
-
-void ProcCFG::dump()
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-    q_cerr.flush();
-}
-
-
-void ProcCFG::dumpImplicitMap()
-{
-    QTextStream q_cerr(stderr);
-    q_cerr << "Implicits:\n";
-
-    for (auto it : m_implicitMap) {
-        q_cerr << it.first << " -> " << it.second << "\n";
-    }
-    q_cerr.flush();
 }

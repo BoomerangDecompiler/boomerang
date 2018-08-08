@@ -95,7 +95,7 @@ QString SizeType::getCtype(bool /*final*/) const
 {
     // Emit a comment and the size
     QString     res;
-    QTextStream ost(&res);
+    OStream ost(&res);
 
     ost << "__size" << size;
     return res;

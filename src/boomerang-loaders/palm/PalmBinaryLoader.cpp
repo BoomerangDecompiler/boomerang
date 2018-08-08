@@ -18,6 +18,8 @@
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/util/log/Log.h"
 
+#include <QIODevice>
+
 
 // Macro to convert a pointer to a Big Endian integer into a host integer
 #define UINT4(p)        Util::readDWord(p, Endian::Big)

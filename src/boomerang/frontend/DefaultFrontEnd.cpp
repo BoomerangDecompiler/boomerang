@@ -493,7 +493,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
             // Display RTL representation if asked
             if (m_program->getProject()->getSettings()->printRTLs) {
                 QString     tgt;
-                QTextStream st(&tgt);
+                OStream st(&tgt);
                 inst.rtl->print(st);
                 LOG_MSG(tgt);
             }

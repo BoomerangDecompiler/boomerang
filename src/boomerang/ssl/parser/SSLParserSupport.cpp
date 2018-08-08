@@ -489,7 +489,7 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
 
         if (Dict.insert(name, *params, rtl) != 0) {
             QString     errmsg;
-            QTextStream o(&errmsg);
+            OStream o(&errmsg);
             o << "Pattern " << iname->getInsPattern() << " conflicts with an earlier declaration of " << name << ".\n";
             yyerror(qPrintable(errmsg));
         }

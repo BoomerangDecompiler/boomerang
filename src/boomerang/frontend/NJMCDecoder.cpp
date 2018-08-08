@@ -56,7 +56,7 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name, cons
     std::vector<SharedExp> actuals(args);
 
     if (m_prog->getProject()->getSettings()->debugDecoder) {
-        QTextStream q_cout(stdout);
+        OStream q_cout(stdout);
         // Display a disassembly of this instruction if requested
         q_cout << pc << ": " << name << " ";
 

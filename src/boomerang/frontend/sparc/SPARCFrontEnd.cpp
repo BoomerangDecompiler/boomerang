@@ -622,7 +622,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                 const Byte  *instructionData = reinterpret_cast<const Byte *>(addr.value() + delta);
                 QString     instructionString;
-                QTextStream ost(&instructionString);
+                OStream ost(&instructionString);
 
                 for (int j = 0; j < inst.numBytes; j++) {
                     if (!m_binaryFile->getImage()->getSectionByAddr(addr + delta + j)) {

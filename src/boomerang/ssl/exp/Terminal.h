@@ -46,7 +46,7 @@ public:
     bool operator*=(const Exp& o) const override;
 
     /// \copydoc Exp::print
-    void print(QTextStream& os, bool = false) const override;
+    void print(OStream& os, bool = false) const override;
 
     /// \copydoc Exp::printx
     void printx(int ind) const override;

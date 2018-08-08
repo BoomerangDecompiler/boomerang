@@ -12,8 +12,6 @@
 
 #include "boomerang/util/IntervalMap.h"
 
-
-#include <QTextStream>
 #include <QDebug>
 
 

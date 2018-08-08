@@ -87,7 +87,7 @@ void StatementTest::testEmpty()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
     cfg->print(st);
 
     QString expected = QString(
@@ -146,7 +146,7 @@ void StatementTest::testFlow()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -220,7 +220,7 @@ void StatementTest::testKill()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -286,7 +286,7 @@ void StatementTest::testUse()
     proc->decompileRecursive();
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -357,7 +357,7 @@ void StatementTest::testUseOverKill()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -432,7 +432,7 @@ void StatementTest::testUseOverBB()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -499,7 +499,7 @@ void StatementTest::testUseKill()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -568,7 +568,7 @@ void StatementTest::testEndlessLoop()
     proc->decompileRecursive();
 
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
 
     proc->numberStatements();
     cfg->print(st);
@@ -640,7 +640,7 @@ void StatementTest::testLocationSet()
     theReg.setInt(REG_SPARC_O0);
     QVERIFY(rof == **ls2.begin()); // First elements should compare equal
 
-    theReg.setInt(REG_SPARC_I7);
+    theReg.setInt(REG_SPARC_O4);
     e = *(++ls2.begin());          // Second element
     QCOMPARE(e->prints(), rof.prints());            // ... should be r12
 
@@ -810,7 +810,7 @@ void StatementTest::testRecursion()
 
     // print cfg to a string
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
     cfg->print(st);
 
     QString expected = "Control Flow Graph:\n"
@@ -838,8 +838,8 @@ void StatementTest::testClone()
     Statement *c3 = a3->clone();
 
     QString     original, clone;
-    QTextStream original_st(&original);
-    QTextStream clone_st(&clone);
+    OStream original_st(&original);
+    OStream clone_st(&clone);
 
     a1->print(original_st);
     delete a1; // And c1 should still stand!
@@ -867,7 +867,7 @@ void StatementTest::testClone()
 void StatementTest::testIsAssign()
 {
     QString     actual;
-    QTextStream st(&actual);
+    OStream st(&actual);
     // r2 := 99
     Assign a(Location::regOf(REG_SPARC_G2), Const::get(99));
 
@@ -894,7 +894,7 @@ void StatementTest::testIsFlagAssgn()
 
     QString     actual;
     QString     expected("   0 *v* %flags := addFlags( r2, 99 )");
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     fc.print(ost);
     QCOMPARE(expected, actual);
@@ -918,7 +918,7 @@ void StatementTest::testAddUsedLocsAssign()
     a.addUsedLocs(l);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
     QString expected = "r26,\tr28,\tm[r28 - 8]";
     QCOMPARE(expected, actual);
@@ -952,7 +952,7 @@ void StatementTest::testAddUsedLocsBranch()
 
     QString     actual;
     QString     expected("r26{99},\tm[r26{99}]{55},\t%flags");
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
 
     QCOMPARE(actual, expected);
@@ -973,7 +973,7 @@ void StatementTest::testAddUsedLocsCase()
 
     QString expected("r26,\tr28,\tm[r28 - 12],\tm[r26]");
     QString actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
 
     QCOMPARE(actual, expected);
@@ -998,7 +998,7 @@ void StatementTest::testAddUsedLocsCall()
     ca.addUsedLocs(l);
 
     QString actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
     QCOMPARE(actual, QString("r26,\tr27,\tm[r26],\tm[r27],\tr28{55}"));
 }
@@ -1023,7 +1023,7 @@ void StatementTest::testAddUsedLocsReturn()
     r.addUsedLocs(l);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
     QCOMPARE(actual, QString("r24,\tr25{55},\tr26{99}"));
 }
@@ -1043,7 +1043,7 @@ void StatementTest::testAddUsedLocsBool()
     bs.addUsedLocs(l);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     l.print(ost);
     QCOMPARE(actual, QString("r24,\tr25,\tr26,\tm[r24]"));
 
@@ -1092,7 +1092,7 @@ void StatementTest::testSubscriptVars()
                                        Location::regOf(REG_PENT_EDX)));
     a.setNumber(1);
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     a.subscriptVar(srch, &s9);
     ost << &a;
@@ -1295,7 +1295,7 @@ void StatementTest::testBypass()
     QVERIFY(s20->getKind() == StmtType::Assign);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     ost << s20;
 
     // TODO ???
@@ -1339,7 +1339,7 @@ void StatementTest::testStripSizes()
     s->stripSizes();
     QString     expected("   0 *v* r24 := m[zfill(8,32,local5) + param6] / 16");
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
     ost << s;
     QCOMPARE(actual, expected);
 
@@ -1355,7 +1355,7 @@ void StatementTest::testFindConstants()
     a.findConstants(lc);
 
     QString     actual;
-    QTextStream ost(&actual);
+    OStream ost(&actual);
 
     for (auto it = lc.begin(); it != lc.end();) {
         ost << *it;

@@ -136,7 +136,7 @@ void DataFlowTest::testPlacePhi()
 
     SharedExp e = Location::regOf(REG_PENT_EAX);
     QString     actualStr;
-    QTextStream actual(&actualStr);
+    OStream actual(&actualStr);
 
     // r24 == eax
     std::set<int>& A_phi = df->getA_phi(Location::regOf(REG_PENT_EAX));
@@ -169,7 +169,7 @@ void DataFlowTest::testPlacePhi2()
     QVERIFY(df->placePhiFunctions());
 
     QString     actual_st;
-    QTextStream actual(&actual_st);
+    OStream actual(&actual_st);
     SharedExp               e = Location::regOf(REG_PENT_EAX);
     std::set<int>&          s = df->getA_phi(e);
 

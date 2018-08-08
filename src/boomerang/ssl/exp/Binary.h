@@ -48,10 +48,10 @@ public:
     int getArity() const override { return 2; }
 
     /// \copydoc Unary::print
-    virtual void print(QTextStream& os, bool html = false) const override;
+    virtual void print(OStream& os, bool html = false) const override;
 
     /// \copydoc Unary::printr
-    virtual void printr(QTextStream& os, bool html = false) const override;
+    virtual void printr(OStream& os, bool html = false) const override;
 
     /// \copydoc Unary::printx
     virtual void printx(int ind) const override;

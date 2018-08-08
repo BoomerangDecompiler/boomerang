@@ -276,16 +276,10 @@ void DataIntervalMap::deleteItem(Address addr)
 }
 
 
-void DataIntervalMap::dump()
-{
-    LOG_MSG(prints());
-}
-
-
-char *DataIntervalMap::prints()
+QString DataIntervalMap::prints()
 {
     QString     tgt;
-    QTextStream ost(&tgt);
+    OStream ost(&tgt);
 
     for (const auto& varPair : m_varMap) {
         const Interval<Address>& varRange = varPair.first;
@@ -293,9 +287,7 @@ char *DataIntervalMap::prints()
         ost << varRange.lower() << "-" << varRange.upper() << " " << var.name << " " << var.type->getCtype() << "\n";
     }
 
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
 
 

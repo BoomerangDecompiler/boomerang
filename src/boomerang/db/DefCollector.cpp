@@ -13,6 +13,8 @@
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/Util.h"
 
+#include <QtAlgorithms>
+
 
 DefCollector::~DefCollector()
 {
@@ -48,14 +50,14 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessE
 
 #define DEFCOL_COLS    120
 
-void DefCollector::print(QTextStream& os, bool html) const
+void DefCollector::print(OStream& os, bool html) const
 {
     size_t   col   = 36;
     bool     first = true;
 
     for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
         QString     tgt;
-        QTextStream ost(&tgt);
+        OStream ost(&tgt);
         (*it)->getLeft()->print(ost, html);
         ost << "=";
         (*it)->getRight()->print(ost, html);
@@ -82,6 +84,7 @@ void DefCollector::print(QTextStream& os, bool html) const
     }
 }
 
+
 SharedExp DefCollector::findDefFor(SharedExp e) const
 {
     for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
@@ -93,18 +96,6 @@ SharedExp DefCollector::findDefFor(SharedExp e) const
     }
 
     return nullptr; // Not explicitly defined here
-}
-
-
-char *DefCollector::prints() const
-{
-    QString     tgt;
-    QTextStream ost(&tgt);
-
-    print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
 }
 
 

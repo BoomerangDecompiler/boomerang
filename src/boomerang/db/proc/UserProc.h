@@ -319,14 +319,14 @@ public:
     QString toString() const;
 
     /// print this proc, mainly for debugging
-    void print(QTextStream& out, bool html = false) const;
-    void printParams(QTextStream& out, bool html = false) const;
+    void print(OStream& out, bool html = false) const;
+    void printParams(OStream& out, bool html = false) const;
 
     /// Print just the symbol map
-    void printSymbolMap(QTextStream& out, bool html = false) const;
+    void printSymbolMap(OStream& out, bool html = false) const;
 
     /// For debugging
-    void dumpLocals(QTextStream& os, bool html = false) const;
+    void printLocals(OStream& os, bool html = false) const;
 
     void debugPrintAll(const QString& stepName);
 

@@ -81,13 +81,13 @@ QString HostAddress::toString() const
 }
 
 
-QTextStream& operator<<(QTextStream& os, const Address& addr)
+OStream& operator<<(OStream& os, const Address& addr)
 {
     return os << addr.toString();
 }
 
 
-QTextStream& operator<<(QTextStream& os, const HostAddress& addr)
+OStream& operator<<(OStream& os, const HostAddress& addr)
 {
     return os << addr.toString();
 }

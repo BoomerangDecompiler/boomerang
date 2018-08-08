@@ -36,7 +36,7 @@ void FrontPentTest::test1()
 
     QString     expected;
     QString     actual;
-    QTextStream strm(&actual);
+    OStream strm(&actual);
 
     bool    gotMain;
     Address addr = fe->findMainEntryPoint(gotMain);
@@ -79,7 +79,7 @@ void FrontPentTest::test2()
     DecodeResult inst;
     QString      expected;
     QString      actual;
-    QTextStream  strm(&actual);
+    OStream  strm(&actual);
 
     fe->decodeSingleInstruction(Address(0x08048345), inst);
     inst.rtl->print(strm);
@@ -113,7 +113,7 @@ void FrontPentTest::test3()
     DecodeResult inst;
     QString      expected;
     QString      actual;
-    QTextStream  strm(&actual);
+    OStream  strm(&actual);
 
     QVERIFY(fe->decodeSingleInstruction(Address(0x804834d), inst));
     inst.rtl->print(strm);
@@ -146,7 +146,7 @@ void FrontPentTest::testBranch()
     DecodeResult inst;
     QString      expected;
     QString      actual;
-    QTextStream  strm(&actual);
+    OStream  strm(&actual);
 
     // jne
     fe->decodeSingleInstruction(Address(0x8048979), inst);

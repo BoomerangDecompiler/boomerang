@@ -18,6 +18,8 @@
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
 
+#include <QtAlgorithms>
+#include <QTextStreamManipulator>
 
 #include <cassert>
 #include <cstdio>
@@ -99,7 +101,7 @@ void RTL::append(const std::list<Statement *>& stmts)
 }
 
 
-void RTL::print(QTextStream& os, bool html) const
+void RTL::print(OStream& os, bool html) const
 {
     if (html) {
         os << "<tr><td>";
@@ -153,23 +155,12 @@ void RTL::print(QTextStream& os, bool html) const
 }
 
 
-void RTL::dump() const
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-}
-
-
-char *RTL::prints() const
+QString RTL::prints() const
 {
     QString     tgt;
-    QTextStream ost(&tgt);
-
+    OStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
+    return tgt;
 }
 
 
@@ -179,7 +170,7 @@ char *RTL::prints() const
  * \param   r ptr to RTL to print to the stream
  * \returns os (for concatenation)
  */
-QTextStream& operator<<(QTextStream& os, const RTL *r)
+OStream& operator<<(OStream& os, const RTL *r)
 {
     if (r == nullptr) {
         os << "nullptr ";

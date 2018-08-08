@@ -154,7 +154,7 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 }
 
 
-QTextStream& operator<<(QTextStream& os, const Statement *s)
+OStream& operator<<(OStream& os, const Statement *s)
 {
     if (s == nullptr) {
         os << "nullptr ";
@@ -177,24 +177,12 @@ bool Statement::isFlagAssign() const
 }
 
 
-char *Statement::prints() const
+QString Statement::prints() const
 {
     QString     tgt;
-    QTextStream ost(&tgt);
-
+    OStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
-
-void Statement::dump() const
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-    q_cerr << "\n";
+    return tgt;
 }
 
 

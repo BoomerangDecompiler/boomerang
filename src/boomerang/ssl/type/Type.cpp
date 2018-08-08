@@ -37,6 +37,8 @@
 #include <cassert>
 #include <cstring>
 
+#include <QMap>
+
 
 /// For NamedType
 static QMap<QString, SharedType> g_namedTypes;
@@ -93,12 +95,6 @@ QString Type::prints()
 }
 
 
-void Type::dump()
-{
-    LOG_MSG("%1", getCtype(false)); // For debugging
-}
-
-
 void Type::addNamedType(const QString& name, SharedType type)
 {
     if (g_namedTypes.find(name) != g_namedTypes.end()) {
@@ -130,14 +126,6 @@ SharedType Type::getNamedType(const QString& name)
     auto iter = g_namedTypes.find(name);
 
     return (iter != g_namedTypes.end()) ? *iter : nullptr;
-}
-
-
-void Type::dumpNames()
-{
-    for (auto it = g_namedTypes.begin(); it != g_namedTypes.end(); ++it) {
-        LOG_VERBOSE("%1 -> %2", it.key(), it.value()->getCtype());
-    }
 }
 
 
@@ -251,7 +239,7 @@ SharedConstType Type::resolveNamedType() const
 QString Type::toString() const
 {
     QString     res;
-    QTextStream tgt(&res);
+    OStream tgt(&res);
 
     tgt << *this;
     return res;
@@ -259,7 +247,7 @@ QString Type::toString() const
 
 
 // A crude shortcut representation of a type
-QTextStream& operator<<(QTextStream& os, const Type& type)
+OStream& operator<<(OStream& os, const Type& type)
 {
     switch (type.getId())
     {
@@ -328,7 +316,7 @@ QTextStream& operator<<(QTextStream& os, const Type& type)
 }
 
 
-QTextStream& operator<<(QTextStream& os, const SharedConstType& t)
+OStream& operator<<(OStream& os, const SharedConstType& t)
 {
     if (t == nullptr) {
         return os << '0';

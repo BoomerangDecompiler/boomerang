@@ -187,7 +187,7 @@ SharedExp Const::clone() const
 }
 
 
-void Const::print(QTextStream& os, bool) const
+void Const::print(OStream& os, bool) const
 {
     switch (m_oper)
     {
@@ -233,7 +233,7 @@ void Const::print(QTextStream& os, bool) const
 }
 
 
-void Const::printNoQuotes(QTextStream& os) const
+void Const::printNoQuotes(OStream& os) const
 {
     if (m_oper == opStrConst) {
         os << m_string;

@@ -14,7 +14,6 @@
 #include "boomerang/util/Address.h"
 
 #include <QFile>
-#include <QTextStream>
 
 #include <list>
 #include <map>
@@ -73,14 +72,14 @@ public:
     void openStreams(const char *ext);
     void closeStreams();
 
-    QTextStream& getStream() { return m_strm; }
+    OStream& getStream() { return m_strm; }
     QString makeDirs() const;
     QString getOutPath(const char *ext) const;
 
     /**
      * Prints a tree graph.
      */
-    void printTree(QTextStream& out) const;
+    void printTree(OStream& out) const;
 
     /// Record the \a fnc location in the Address -> Function map
     /// If \a fnc is nullptr - remove given function from the map.
@@ -132,6 +131,6 @@ protected:
     Module *m_parent = nullptr;
     Prog *m_prog     = nullptr;
     QFile m_out;
-    QTextStream m_strm;
+    OStream m_strm;
     QString m_stream_ext;
 };

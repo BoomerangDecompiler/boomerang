@@ -61,15 +61,3 @@ Address TargetQueue::getNextAddress(const ProcCFG& cfg)
 
     return Address::INVALID;
 }
-
-
-void TargetQueue::dump()
-{
-    std::queue<Address> copy(m_targets);
-
-    while (!copy.empty()) {
-        Address addr = copy.front();
-        copy.pop();
-        LOG_MSG("  %1,", addr);
-    }
-}

@@ -85,7 +85,7 @@ bool DataFlow::calculateDominators()
         // for each predecessor v of n
         for (BasicBlock *pred : m_BBs[n]->getPredecessors()) {
             if (m_indices.find(pred) == m_indices.end()) {
-                QTextStream q_cerr(stderr);
+                OStream q_cerr(stderr);
 
                 q_cerr << "BB not in indices: ";
                 pred->print(q_cerr);
@@ -256,24 +256,6 @@ bool DataFlow::canRename(SharedConstExp exp) const
 }
 
 
-void DataFlow::dumpA_phi()
-{
-    LOG_MSG("A_phi:");
-
-    for (auto zz = m_A_phi.begin(); zz != m_A_phi.end(); ++zz) {
-        std::set<int>& si = zz->second;
-
-        LOG_MSG("  %1 ->", zz->first);
-
-        for (std::set<int>::iterator qq = si.begin(); qq != si.end(); ++qq) {
-            LOG_MSG("    %2", *qq);
-        }
-    }
-
-    LOG_MSG("end A_phi");
-}
-
-
 bool DataFlow::placePhiFunctions()
 {
     // First free some memory no longer needed
@@ -384,37 +366,6 @@ bool DataFlow::placePhiFunctions()
     }
 
     return change;
-}
-
-
-
-void DataFlow::dumpDefsites()
-{
-    std::map<SharedExp, std::set<int>, lessExpStar>::iterator dd;
-
-    for (dd = m_defsites.begin(); dd != m_defsites.end(); ++dd) {
-        std::set<int>& si = dd->second;
-
-        LOG_MSG("%1", dd->first);
-
-        for (std::set<int>::iterator ii = si.begin(); ii != si.end(); ++ii) {
-            LOG_MSG("  ", *ii);
-        }
-    }
-}
-
-
-void DataFlow::dumpA_orig()
-{
-    int n = m_definedAt.size();
-
-    for (int i = 0; i < n; ++i) {
-        LOG_MSG("%1", i);
-
-        for (const SharedExp& ee : m_definedAt[i]) {
-            LOG_MSG("  %1 ", ee);
-        }
-    }
 }
 
 

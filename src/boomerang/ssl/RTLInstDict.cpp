@@ -93,7 +93,7 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
     fixupParams();
 
     if (m_verboseOutput) {
-        QTextStream q_cout(stdout);
+        OStream q_cout(stdout);
         q_cout << "\n=======Expanded RTL template dictionary=======\n";
         print(q_cout);
         q_cout << "\n==============================================\n\n";
@@ -116,7 +116,7 @@ void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
 }
 
 
-void RTLInstDict::print(QTextStream& os /*= std::cout*/)
+void RTLInstDict::print(OStream& os /*= std::cout*/)
 {
     for (auto& elem : idict) {
         // print the instruction name
@@ -293,7 +293,7 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC
         ss->fixSuccessor();
 
         if (m_verboseOutput) {
-            QTextStream q_cout(stdout);
+            OStream q_cout(stdout);
             q_cout << "            " << ss << "\n";
         }
     }

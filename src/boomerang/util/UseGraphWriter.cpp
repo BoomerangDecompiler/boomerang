@@ -31,7 +31,7 @@ void UseGraphWriter::writeUseGraph(const UserProc *proc, const QString& filePath
         return;
     }
 
-    QTextStream out(&file);
+    OStream out(&file);
     out << "digraph " << proc->getName() << " {\n";
     StatementList stmts;
     proc->getStatements(stmts);

@@ -25,6 +25,8 @@
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
 
+#include <QTextStreamManipulator>
+
 
 BranchStatement::BranchStatement()
     : m_jumpType(BranchType::JE)
@@ -224,7 +226,7 @@ bool BranchStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result
 }
 
 
-void BranchStatement::print(QTextStream& os, bool html) const
+void BranchStatement::print(OStream& os, bool html) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 

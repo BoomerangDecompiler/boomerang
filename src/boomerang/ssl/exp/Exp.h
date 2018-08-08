@@ -13,6 +13,7 @@
 #include "boomerang/ifc/IPrintable.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/exp/Operator.h"
+#include "boomerang/util/OStream.h"
 
 #include <QString>
 
@@ -32,7 +33,7 @@ class LocationSet;
 class Statement;
 class CompoundType;
 
-class QTextStream;
+class OStream;
 
 typedef std::unique_ptr<Exp>         UniqExp;
 typedef std::shared_ptr<Exp>         SharedExp;
@@ -102,23 +103,20 @@ public:
     QString toString() const override;
 
     /// Print the expression to the given stream
-    virtual void print(QTextStream& os, bool html = false) const = 0;
+    virtual void print(OStream& os, bool html = false) const = 0;
 
     /// Recursive print: don't want parens at the top level
-    virtual void printr(QTextStream& os, bool html = false) const { print(os, html); }
+    virtual void printr(OStream& os, bool html = false) const { print(os, html); }
 
     /// Print an infix representation of the object to \p os,
     /// with its type in \<angle brackets\>.
-    void printt(QTextStream& os) const;
+    void printt(OStream& os) const;
 
     /// Print to a static buffer (for debugging)
-    char *prints();
+    QString prints();
 
     /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
     virtual void printx(int ind) const = 0;
-
-    /// Print to standard error (for debugging)
-    void dump();
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
@@ -553,10 +551,10 @@ protected:
 
 
 /// Prints the Exp pointed to by \p p to \p os
-BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Exp *p);
+BOOMERANG_API OStream& operator<<(OStream& os, const Exp *p);
 
 
-inline QTextStream& operator<<(QTextStream& os, const SharedConstExp& p)
+inline OStream& operator<<(OStream& os, const SharedConstExp& p)
 {
     os << p.get();
     return os;

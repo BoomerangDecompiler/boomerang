@@ -432,7 +432,7 @@ std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
 }
 
 
-void Signature::print(QTextStream& out, bool /*html*/) const
+void Signature::print(OStream& out, bool /*html*/) const
 {
     if (isForced()) {
         out << "*forced* ";

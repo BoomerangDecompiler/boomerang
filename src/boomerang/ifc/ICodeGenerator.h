@@ -21,7 +21,7 @@ class StatementList;
 class UserProc;
 
 class QString;
-class QTextStream;
+class OStream;
 
 
 /**
@@ -41,7 +41,7 @@ public:
 
 public:
     /// Generate code for \p program to \p os.
-    virtual void generateCode(const Prog *program, QTextStream& os) = 0;
+    virtual void generateCode(const Prog *program, OStream& os) = 0;
 
     /**
      * Generate code for a module or function, or all modules.

@@ -56,5 +56,5 @@ public:
     /// Existing exps are not re-subscripted.
     void addSubscript(Statement *def);
 
-    char *prints() const;                        ///< Print to string for debugging
+    QString prints() const;                        ///< Print to string for debugging
 };

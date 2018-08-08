@@ -13,6 +13,7 @@
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/util/Address.h"
 
+#include <list>
 #include <map>
 
 
@@ -206,12 +207,9 @@ public:
      * \param os - stream to write to
      * \param html - produce html encoded representation
      */
-    virtual void print(QTextStream& os, bool html = false) const = 0;
+    virtual void print(OStream& os, bool html = false) const = 0;
 
-    char *prints() const; // For logging, was also for debugging
-
-    // This version prints much better in gdb
-    void dump() const;    // For debugging
+    QString prints() const; // For logging, was also for debugging
 
     /// general search
     virtual bool search(const Exp& pattern, SharedExp& result) const = 0;
@@ -366,7 +364,7 @@ protected:
  * \param stmt  ptr to Statement to print to the stream
  * \returns copy of os (for concatenation)
  */
-BOOMERANG_API QTextStream& operator<<(QTextStream& os, const Statement *stmt);
+BOOMERANG_API OStream& operator<<(OStream& os, const Statement *stmt);
 
 
 enum class SwitchType : char

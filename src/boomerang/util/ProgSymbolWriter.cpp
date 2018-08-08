@@ -20,7 +20,7 @@
 #include <QSaveFile>
 
 
-void printProcsRecursive(Function *function, int indent, QTextStream& f, std::set<Function *>& seen)
+void printProcsRecursive(Function *function, int indent, OStream& f, std::set<Function *>& seen)
 {
     const bool firsttime = (seen.find(function) == seen.end());
 
@@ -65,7 +65,7 @@ bool ProgSymbolWriter::writeSymbolsToFile(const Prog *prog, const QString& dstFi
         return false;
     }
 
-    QTextStream f(&tgt);
+    OStream f(&tgt);
 
     /* Print procs */
     f << "/* Functions: */\n";

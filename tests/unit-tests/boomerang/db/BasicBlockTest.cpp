@@ -362,12 +362,12 @@ void BasicBlockTest::testAddImplicit()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), qPrintable(expected));
+    QCOMPARE(bb1.prints(), expected);
 
     // add same implicit assign twice
     bb1.addImplicitAssign(Terminal::get(OPER::opCF));
 
-    QCOMPARE(bb1.prints(), qPrintable(expected));
+    QCOMPARE(bb1.prints(), expected);
 }
 
 
@@ -391,12 +391,12 @@ void BasicBlockTest::testAddPhi()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), qPrintable(expected));
+    QCOMPARE(bb1.prints(), expected);
 
     // add same implicit assign twice
     bb1.addPhi(Terminal::get(OPER::opCF));
 
-    QCOMPARE(bb1.prints(), qPrintable(expected));
+    QCOMPARE(bb1.prints(), expected);
 }
 
 
@@ -418,7 +418,7 @@ void BasicBlockTest::testAddImplicitOverPhi()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), qPrintable(expected));
+    QCOMPARE(bb1.prints(), expected);
 }
 
 
@@ -440,7 +440,7 @@ void BasicBlockTest::testAddPhiOverImplict()
         "\n"
     );
 
-    QCOMPARE(bb1.prints(), qPrintable(expected));
+    QCOMPARE(bb1.prints(), expected);
 }
 
 
@@ -508,7 +508,7 @@ void BasicBlockTest::testGetDest()
     BasicBlock bb2(BBType::Oneway, std::move(rtls), nullptr);
 
     QVERIFY(bb2.getDest() != nullptr);
-    QCOMPARE(bb2.getDest()->prints(), "0x2000");
+    QCOMPARE(bb2.getDest()->prints(), QString("0x2000"));
 }
 
 

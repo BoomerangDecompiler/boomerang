@@ -154,7 +154,7 @@ protected:
 #define SHOW_ASM(output)               \
     if (m_prog->getProject()->getSettings()->debugDecoder) {               \
         QString asmStr;                \
-        QTextStream ost(&asmStr);      \
+        OStream ost(&asmStr);      \
         ost << output;                 \
         LOG_MSG("%1: %2", pc, asmStr); \
     }

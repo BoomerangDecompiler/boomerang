@@ -79,23 +79,12 @@ SharedExp& Exp::refSubExp3()
 }
 
 
-char *Exp::prints()
+QString Exp::prints()
 {
     QString     tgt;
-    QTextStream ost(&tgt);
-
+    OStream ost(&tgt);
     print(ost);
-    strncpy(debug_buffer, qPrintable(tgt), DEBUG_BUFSIZE - 1);
-    debug_buffer[DEBUG_BUFSIZE - 1] = '\0';
-    return debug_buffer;
-}
-
-
-void Exp::dump()
-{
-    QTextStream ost(stderr);
-
-    print(ost);
+    return tgt;
 }
 
 
@@ -399,14 +388,14 @@ const char *Exp::getOperName() const
 QString Exp::toString() const
 {
     QString     res;
-    QTextStream os(&res);
+    OStream os(&res);
 
     this->print(os);
     return res;
 }
 
 
-void Exp::printt(QTextStream& os) const
+void Exp::printt(OStream& os) const
 {
     print(os);
 
@@ -419,7 +408,7 @@ void Exp::printt(QTextStream& os) const
 }
 
 
-QTextStream& operator<<(QTextStream& os, const Exp *p)
+OStream& operator<<(OStream& os, const Exp *p)
 {
     // Useful for debugging, but can clutter the output
     p->printt(os);

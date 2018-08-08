@@ -17,7 +17,7 @@
 
 
 class Statement;
-class QTextStream;
+class OStream;
 
 
 /**
@@ -83,13 +83,10 @@ public:
      * \param   os   stream to output to (often cout or cerr)
      * \param   html if true output is in html
      */
-    void print(QTextStream& os, bool html = false) const;
+    void print(OStream& os, bool html = false) const;
 
     // Print to a static buffer (mainly for debugging)
-    char *prints() const;
-
-    /// Dump the content of this RTL to stderr.
-    void dump() const;
+    QString prints() const;
 
     /// Is this RTL a call instruction?
     bool isCall() const;

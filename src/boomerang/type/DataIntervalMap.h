@@ -93,10 +93,7 @@ public:
     void deleteItem(Address addr);
 
     /// For test and debug
-    char *prints();
-
-    /// For debug
-    void dump();
+    QString prints();
 
 private:
     /// We are inserting an item that already exists in a larger type.
