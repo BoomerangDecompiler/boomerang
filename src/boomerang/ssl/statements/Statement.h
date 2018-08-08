@@ -210,9 +210,6 @@ public:
 
     QString prints() const; // For logging, was also for debugging
 
-    // This version prints much better in gdb
-    void dump() const;    // For debugging
-
     /// general search
     virtual bool search(const Exp& pattern, SharedExp& result) const = 0;
 

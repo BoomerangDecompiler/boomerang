@@ -63,7 +63,7 @@ DFATypeRecovery::DFATypeRecovery()
 }
 
 
-void DFATypeRecovery::dumpResults(StatementList& stmts, int iter)
+void DFATypeRecovery::printResults(StatementList& stmts, int iter)
 {
     LOG_VERBOSE("%1 iterations", iter);
 
@@ -301,7 +301,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 
     if (proc->getProg()->getProject()->getSettings()->debugTA) {
         LOG_MSG("### Results for data flow based type analysis for %1 ###", proc->getName());
-        dumpResults(stmts, iter);
+        printResults(stmts, iter);
         LOG_MSG("### End results for Data flow based type analysis for %1 ###", proc->getName());
     }
 

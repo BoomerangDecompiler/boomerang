@@ -88,9 +88,6 @@ public:
     // Print to a static buffer (mainly for debugging)
     QString prints() const;
 
-    /// Dump the content of this RTL to stderr.
-    void dump() const;
-
     /// Is this RTL a call instruction?
     bool isCall() const;
 

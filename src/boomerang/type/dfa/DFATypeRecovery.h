@@ -48,7 +48,7 @@ private:
     bool dfaTypeAnalysis(Signature *signature, ProcCFG *cfg);
     bool dfaTypeAnalysis(Statement *stmt);
 
-    void dumpResults(StatementList& stmts, int iter);
+    void printResults(StatementList& stmts, int iter);
 
     void dfa_analyze_scaled_array_ref(Statement *s);
 

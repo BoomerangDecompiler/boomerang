@@ -174,8 +174,6 @@ public:
     virtual QString getCtype(bool final = false) const = 0;
 
     QString prints();                    // For debugging
-    void dump();                         // For debugging
-    static void dumpNames();             // For debugging
 
     /**
      * Return a minimal temporary name for this type. It'd be even

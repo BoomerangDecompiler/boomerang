@@ -153,14 +153,6 @@ void RTL::print(QTextStream& os, bool html) const
 }
 
 
-void RTL::dump() const
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-}
-
-
 QString RTL::prints() const
 {
     QString     tgt;

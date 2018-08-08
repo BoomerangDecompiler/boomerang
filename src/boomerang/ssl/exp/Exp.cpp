@@ -88,14 +88,6 @@ QString Exp::prints()
 }
 
 
-void Exp::dump()
-{
-    QTextStream ost(stderr);
-
-    print(ost);
-}
-
-
 bool Exp::isRegOfConst() const
 {
     if (m_oper != opRegOf) {

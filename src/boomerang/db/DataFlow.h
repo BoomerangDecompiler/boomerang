@@ -131,18 +131,12 @@ private:
 
     void clearA_phi() { m_A_phi.clear(); }
 
-    // For debugging:
-    void dumpDefsites();
-    void dumpA_orig();
-
-    // For debugging
-    void dumpA_phi();
-
 private:
     void allocateData();
 
     void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
                         std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
+
 private:
     UserProc* m_proc = nullptr;
 

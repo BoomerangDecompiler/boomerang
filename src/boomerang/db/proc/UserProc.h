@@ -326,7 +326,7 @@ public:
     void printSymbolMap(QTextStream& out, bool html = false) const;
 
     /// For debugging
-    void dumpLocals(QTextStream& os, bool html = false) const;
+    void printLocals(QTextStream& os, bool html = false) const;
 
     void debugPrintAll(const QString& stepName);
 

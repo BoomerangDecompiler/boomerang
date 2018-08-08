@@ -548,24 +548,3 @@ void ProcCFG::print(QTextStream& out, bool html)
 
     out << '\n';
 }
-
-
-void ProcCFG::dump()
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-    q_cerr.flush();
-}
-
-
-void ProcCFG::dumpImplicitMap()
-{
-    QTextStream q_cerr(stderr);
-    q_cerr << "Implicits:\n";
-
-    for (auto it : m_implicitMap) {
-        q_cerr << it.first << " -> " << it.second << "\n";
-    }
-    q_cerr.flush();
-}

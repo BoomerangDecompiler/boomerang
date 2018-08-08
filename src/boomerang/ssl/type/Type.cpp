@@ -93,12 +93,6 @@ QString Type::prints()
 }
 
 
-void Type::dump()
-{
-    LOG_MSG("%1", getCtype(false)); // For debugging
-}
-
-
 void Type::addNamedType(const QString& name, SharedType type)
 {
     if (g_namedTypes.find(name) != g_namedTypes.end()) {
@@ -130,14 +124,6 @@ SharedType Type::getNamedType(const QString& name)
     auto iter = g_namedTypes.find(name);
 
     return (iter != g_namedTypes.end()) ? *iter : nullptr;
-}
-
-
-void Type::dumpNames()
-{
-    for (auto it = g_namedTypes.begin(); it != g_namedTypes.end(); ++it) {
-        LOG_VERBOSE("%1 -> %2", it.key(), it.value()->getCtype());
-    }
 }
 
 

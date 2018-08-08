@@ -55,9 +55,6 @@ public:
      */
     Address getNextAddress(const ProcCFG& cfg);
 
-    /// Print (for debugging)
-    void dump();
-
 private:
     bool m_traceDecoder;
     std::queue<Address> m_targets;

@@ -117,9 +117,6 @@ public:
     /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
     virtual void printx(int ind) const = 0;
 
-    /// Print to standard error (for debugging)
-    void dump();
-
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
     virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc

@@ -95,9 +95,6 @@ public:
     /// For test and debug
     QString prints();
 
-    /// For debug
-    void dump();
-
 private:
     /// We are inserting an item that already exists in a larger type.
     /// Check for compatibility, meet if necessary.

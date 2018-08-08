@@ -914,7 +914,7 @@ void UserProc::print(QTextStream& out, bool html) const
 
 
     printParams(ost1, html);
-    dumpLocals(ost1, html);
+    printLocals(ost1, html);
     m_procUseCollector.print(ost2, html);
 
     m_signature->print(out, html);
@@ -1019,7 +1019,7 @@ void UserProc::printSymbolMap(QTextStream& out, bool html /*= false*/) const
 }
 
 
-void UserProc::dumpLocals(QTextStream& os, bool html) const
+void UserProc::printLocals(QTextStream& os, bool html) const
 {
     if (html) {
         os << "<br>";

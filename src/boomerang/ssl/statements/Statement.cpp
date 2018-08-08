@@ -186,15 +186,6 @@ QString Statement::prints() const
 }
 
 
-void Statement::dump() const
-{
-    QTextStream q_cerr(stderr);
-
-    print(q_cerr);
-    q_cerr << "\n";
-}
-
-
 bool Statement::canPropagateToExp(const Exp& exp)
 {
     if (!exp.isSubscript()) {

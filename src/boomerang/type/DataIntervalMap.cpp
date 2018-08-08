@@ -276,12 +276,6 @@ void DataIntervalMap::deleteItem(Address addr)
 }
 
 
-void DataIntervalMap::dump()
-{
-    LOG_MSG(prints());
-}
-
-
 QString DataIntervalMap::prints()
 {
     QString     tgt;
