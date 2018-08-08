@@ -14,22 +14,22 @@
 
 
 class Assignment;
-class ExpSsaXformer;
+class ExpSSAXformer;
 class UserProc;
 
 
 /**
  *
  */
-class StmtSsaXformer : public StmtModifier
+class StmtSSAXformer : public StmtModifier
 {
 public:
-    StmtSsaXformer(ExpSsaXformer *esx, UserProc *proc);
-    virtual ~StmtSsaXformer() = default;
+    StmtSSAXformer(ExpSSAXformer *esx, UserProc *proc);
+    virtual ~StmtSSAXformer() = default;
 
 public:
     /// Common code for the left hand side of assignments
-    void commonLhs(Assignment *stmt);
+    void handleCommonLHS(Assignment *stmt);
 
     /// \copydoc StmtModifier::visit
     virtual void visit(Assign *stmt, bool& visitChildren) override;

@@ -24,18 +24,18 @@
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
 
 
-StmtSsaXformer::StmtSsaXformer(ExpSsaXformer* esx, UserProc* p)
+StmtSSAXformer::StmtSSAXformer(ExpSSAXformer *esx, UserProc *proc)
     : StmtModifier(esx)
-    , m_proc(p)
+    , m_proc(proc)
 {
 }
 
 
-void StmtSsaXformer::commonLhs(Assignment *as)
+void StmtSSAXformer::handleCommonLHS(Assignment *as)
 {
     SharedExp lhs = as->getLeft();
 
-    lhs = lhs->acceptModifier(static_cast<ExpSsaXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
+    lhs = lhs->acceptModifier(static_cast<ExpSSAXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
 
     const QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
     if (!sym.isNull()) {
@@ -44,19 +44,19 @@ void StmtSsaXformer::commonLhs(Assignment *as)
 }
 
 
-void StmtSsaXformer::visit(BoolAssign *stmt, bool& visitChildren)
+void StmtSSAXformer::visit(BoolAssign *stmt, bool& visitChildren)
 {
-    commonLhs(stmt);
+    handleCommonLHS(stmt);
     SharedExp condExp = stmt->getCondExpr();
-    condExp = condExp->acceptModifier(static_cast<ExpSsaXformer *>(m_mod));
+    condExp = condExp->acceptModifier(static_cast<ExpSSAXformer *>(m_mod));
     stmt->setCondExpr(condExp);
     visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSsaXformer::visit(Assign *stmt, bool& visitChildren)
+void StmtSSAXformer::visit(Assign *stmt, bool& visitChildren)
 {
-    commonLhs(stmt);
+    handleCommonLHS(stmt);
     SharedExp rhs = stmt->getRight();
     rhs = rhs->acceptModifier(m_mod);
     stmt->setRight(rhs);
@@ -64,18 +64,18 @@ void StmtSsaXformer::visit(Assign *stmt, bool& visitChildren)
 }
 
 
-void StmtSsaXformer::visit(ImplicitAssign *stmt, bool& visitChildren)
+void StmtSSAXformer::visit(ImplicitAssign *stmt, bool& visitChildren)
 {
-    commonLhs(stmt);
+    handleCommonLHS(stmt);
     visitChildren = false; // TODO: verify recur setting
 }
 
 
-void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
+void StmtSSAXformer::visit(PhiAssign *stmt, bool& visitChildren)
 {
-    commonLhs(stmt);
+    handleCommonLHS(stmt);
 
-    UserProc *_proc = static_cast<ExpSsaXformer *>(m_mod)->getProc();
+    UserProc *_proc = static_cast<ExpSSAXformer *>(m_mod)->getProc();
 
     for (RefExp& v : *stmt) {
         assert(v.getSubExp1() != nullptr);
@@ -90,12 +90,12 @@ void StmtSsaXformer::visit(PhiAssign *stmt, bool& visitChildren)
 }
 
 
-void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
+void StmtSSAXformer::visit(CallStatement *stmt, bool& visitChildren)
 {
     SharedExp callDest = stmt->getDest();
 
     if (callDest) {
-        stmt->setDest(callDest->acceptModifier(static_cast<ExpSsaXformer*>(m_mod)));
+        stmt->setDest(callDest->acceptModifier(static_cast<ExpSSAXformer*>(m_mod)));
     }
 
     const StatementList& arguments = stmt->getArguments();
@@ -114,7 +114,7 @@ void StmtSsaXformer::visit(CallStatement *stmt, bool& visitChildren)
         assert((*ss)->isAssignment());
         Assignment *as = static_cast<Assignment *>(*ss);
         // FIXME: use of fromSSAleft is deprecated
-        SharedExp e = as->getLeft()->fromSSAleft(static_cast<ExpSsaXformer *>(m_mod)->getProc(), stmt);
+        SharedExp e = as->getLeft()->fromSSAleft(static_cast<ExpSSAXformer *>(m_mod)->getProc(), stmt);
 
         // FIXME: this looks like a HACK that can go:
         Function *procDest = stmt->getDestProc();

@@ -649,8 +649,8 @@ void Statement::insertCasts()
 
 void Statement::replaceSubscriptsWithLocals()
 {
-    ExpSsaXformer  esx(m_proc);
-    StmtSsaXformer ssx(&esx, m_proc);
+    ExpSSAXformer  esx(m_proc);
+    StmtSSAXformer ssx(&esx, m_proc);
 
     accept(&ssx);
 }

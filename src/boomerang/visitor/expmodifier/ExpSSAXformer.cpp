@@ -16,13 +16,13 @@
 #include "boomerang/util/log/Log.h"
 
 
-ExpSsaXformer::ExpSsaXformer(UserProc* p)
+ExpSSAXformer::ExpSSAXformer(UserProc* p)
     : m_proc(p)
 {
 }
 
 
-SharedExp ExpSsaXformer::postModify(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpSSAXformer::postModify(const std::shared_ptr<RefExp>& exp)
 {
     QString sym = m_proc->lookupSymFromRefAny(exp);
 
