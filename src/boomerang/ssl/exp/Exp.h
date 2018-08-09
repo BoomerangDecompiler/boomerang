@@ -60,7 +60,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  *     RefExp__/    |
  *               Ternary
  */
-class BOOMERANG_API Exp : public IPrintable, public std::enable_shared_from_this<Exp>
+class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
 {
 public:
     Exp(OPER oper) : m_oper(oper) {}
@@ -68,7 +68,7 @@ public:
     Exp(const Exp& other) = default;
     Exp(Exp&& other) = default;
 
-    virtual ~Exp() override = default;
+    virtual ~Exp() = default;
 
     Exp& operator=(const Exp&) = default;
     Exp& operator=(Exp&&) = default;
@@ -100,7 +100,7 @@ public:
     void setOper(OPER x) { m_oper = x; }
 
     /// \returns this expression as a string
-    QString toString() const override;
+    QString toString() const;
 
     /// Print the expression to the given stream
     void print(OStream& os, bool html = false) const;

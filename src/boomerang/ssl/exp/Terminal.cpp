@@ -112,7 +112,7 @@ SharedType Terminal::ascendType()
         return IntegerType::get(STD_SIZE, Sign::Unsigned);
 
     default:
-        LOG_WARN("Unknown type %1", this->toString());
+        LOG_WARN("Unknown type %1", shared_from_this());
         return VoidType::get();
     }
 }

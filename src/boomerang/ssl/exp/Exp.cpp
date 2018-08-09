@@ -388,10 +388,9 @@ const char *Exp::getOperName() const
 
 QString Exp::toString() const
 {
-    QString     res;
+    QString res;
     OStream os(&res);
-
-    this->print(os);
+    os << *this;
     return res;
 }
 
