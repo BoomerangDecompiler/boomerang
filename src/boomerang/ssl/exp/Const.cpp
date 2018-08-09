@@ -17,7 +17,6 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -185,12 +184,6 @@ SharedExp Const::clone() const
 {
     // Note: not actually cloning the Type* type pointer. Probably doesn't matter with GC
     return Const::get(*this);
-}
-
-
-void Const::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<Const&>(*this), html);
 }
 
 

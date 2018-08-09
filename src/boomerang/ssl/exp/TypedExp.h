@@ -49,9 +49,6 @@ public:
     /// \copydoc Unary::operator*=
     bool operator*=(const Exp& o) const override;
 
-    /// \copydoc Unary::print
-    virtual void print(OStream& os, bool html = false) const override;
-
     /// \copydoc Unary::printx
     virtual void printx(int ind) const override;
 

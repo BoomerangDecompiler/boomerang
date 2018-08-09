@@ -11,7 +11,6 @@
 
 
 #include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -121,12 +120,6 @@ bool TypedExp::operator*=(const Exp& o) const
     }
 
     return *getSubExp1() *= *other->getSubExp1();
-}
-
-
-void TypedExp::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<TypedExp&>(*this), html);
 }
 
 

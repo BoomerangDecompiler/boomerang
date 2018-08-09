@@ -99,9 +99,6 @@ public:
     /// Changes the type of this constant
     void setType(SharedType ty) { m_type = ty; }
 
-    /// \copydoc Exp::print
-    virtual void print(OStream& os, bool = false) const override;
-
     /// \copydoc Exp::printx
     virtual void printx(int ind) const override;
 

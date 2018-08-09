@@ -48,9 +48,6 @@ public:
     /// \copydoc Binary::getArity
     int getArity() const override { return 3; }
 
-    /// \copydoc Binary::print
-    virtual void print(OStream& os, bool html = false) const override;
-
     /// \copydoc Binary::printr
     virtual void printr(OStream& os, bool = false) const override;
 

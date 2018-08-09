@@ -21,7 +21,6 @@
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
@@ -183,12 +182,6 @@ void Binary::printr(OStream& os, bool html) const
     os << "(";
     this->print(os, html);
     os << ")";
-}
-
-
-void Binary::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<Binary&>(*this), html);
 }
 
 

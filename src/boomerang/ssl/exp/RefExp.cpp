@@ -12,7 +12,6 @@
 
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -160,12 +159,6 @@ void RefExp::printx(int ind) const
 bool RefExp::isImplicitDef() const
 {
     return m_def == nullptr || m_def->getKind() == StmtType::ImpAssign;
-}
-
-
-void RefExp::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<RefExp&>(*this), html);
 }
 
 

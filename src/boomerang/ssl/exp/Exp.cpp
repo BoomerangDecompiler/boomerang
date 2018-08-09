@@ -26,6 +26,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
@@ -395,6 +396,18 @@ QString Exp::toString() const
 }
 
 
+void Exp::print(OStream& os, bool html) const
+{
+    os << ExpPrinter(const_cast<Exp&>(*this), html);
+}
+
+
+void Exp::printr(OStream& os, bool html) const
+{
+    print(os, html);
+}
+
+
 void Exp::printt(OStream& os) const
 {
     print(os);
@@ -408,11 +421,9 @@ void Exp::printt(OStream& os) const
 }
 
 
-OStream& operator<<(OStream& os, const Exp *p)
+OStream& operator<<(OStream& os, const Exp& exp)
 {
-    // Useful for debugging, but can clutter the output
-    p->printt(os);
-    return os;
+    return os << ExpPrinter(const_cast<Exp&>(exp), false);
 }
 
 

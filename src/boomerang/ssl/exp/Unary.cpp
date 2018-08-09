@@ -22,7 +22,6 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -149,12 +148,6 @@ bool Unary::operator*=(const Exp& o) const
     }
 
     return *subExp1 *= *other->getSubExp1();
-}
-
-
-void Unary::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<Unary&>(*this), html);
 }
 
 

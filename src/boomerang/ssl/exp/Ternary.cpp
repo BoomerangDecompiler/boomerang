@@ -17,7 +17,6 @@
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -187,13 +186,7 @@ void Ternary::printr(OStream& os, bool) const
     }
 
     // All other cases, we use the parens
-    os << "(" << this << ")";
-}
-
-
-void Ternary::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<Ternary&>(*this), html);
+    os << "(" << *this << ")";
 }
 
 

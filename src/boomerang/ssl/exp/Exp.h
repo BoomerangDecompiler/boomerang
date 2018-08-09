@@ -103,10 +103,10 @@ public:
     QString toString() const override;
 
     /// Print the expression to the given stream
-    virtual void print(OStream& os, bool html = false) const = 0;
+    void print(OStream& os, bool html = false) const;
 
     /// Recursive print: don't want parens at the top level
-    virtual void printr(OStream& os, bool html = false) const { print(os, html); }
+    virtual void printr(OStream& os, bool html = false) const;
 
     /// Print an infix representation of the object to \p os,
     /// with its type in \<angle brackets\>.
@@ -551,15 +551,13 @@ protected:
 
 
 /// Prints the Exp pointed to by \p p to \p os
-BOOMERANG_API OStream& operator<<(OStream& os, const Exp *p);
+BOOMERANG_API OStream& operator<<(OStream& os, const Exp& exp);
 
 
-inline OStream& operator<<(OStream& os, const SharedConstExp& p)
+inline OStream& operator<<(OStream& os, const SharedConstExp& exp)
 {
-    os << p.get();
-    return os;
+    return os << *exp;
 }
-
 
 // Hard-coded numbers of register indices.
 

@@ -13,7 +13,6 @@
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -79,12 +78,6 @@ bool Terminal::operator*=(const Exp& o) const
     }
 
     return *this == *other;
-}
-
-
-void Terminal::print(OStream& os, bool html) const
-{
-    os << ExpPrinter(const_cast<Terminal &>(*this), html);
 }
 
 
