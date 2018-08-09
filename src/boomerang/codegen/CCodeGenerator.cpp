@@ -872,8 +872,7 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
             ost << ";";
         }
         else {
-            ost << "; \t\t// ";
-            e->print(ost);
+            ost << "; \t\t// " << e;
         }
     }
     else {

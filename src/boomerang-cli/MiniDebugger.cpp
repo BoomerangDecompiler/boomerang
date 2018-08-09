@@ -37,8 +37,8 @@ void MiniDebugger::miniDebugger(UserProc *proc, const char *description)
 
     if (stopAt.isEmpty() || !proc->getName().compare(stopAt)) {
         // This is a mini command line debugger.  Feel free to expand it.
-        for (auto const& watche : watches) {
-            (watche)->print(q_cout);
+        for (const Statement *stmt : watches) {
+            stmt->print(q_cout);
             q_cout << "\n";
         }
 
