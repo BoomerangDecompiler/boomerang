@@ -25,7 +25,10 @@ public:
 
 private:
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Ternary> & exp, bool & visitChildren) override;
+    bool preVisit(const std::shared_ptr<Binary>& exp, bool & visitChildren) override;
+
+    /// \copydoc ExpVisitor::preVisit
+    bool preVisit(const std::shared_ptr<Ternary>& exp, bool & visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
     bool preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;

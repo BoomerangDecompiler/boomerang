@@ -36,6 +36,138 @@ OStream& operator<<(OStream& lhs, ExpPrinter&& rhs)
 }
 
 
+bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+{
+    visitChildren = false;
+
+    assert(exp->getSubExp1() && exp->getSubExp2());
+    SharedConstExp p1 = exp->getSubExp1();
+    SharedConstExp p2 = exp->getSubExp2();
+
+    // Special cases
+    switch (exp->getOper())
+    {
+    case opSize:
+        // This can still be seen after decoding and before type analysis after m[...]
+        // *size* is printed after the expression, even though it comes from the first subexpression
+        p2->printr(*m_os, m_html);
+        *m_os << "*";
+        p1->printr(*m_os, m_html);
+        *m_os << "*";
+        return true;
+
+    case opFlagCall:
+        // The name of the flag function (e.g. ADDFLAGS) should be enough
+        std::static_pointer_cast<const Const>(p1)->printNoQuotes(*m_os);
+        *m_os << "( ";
+        p2->printr(*m_os, m_html);
+        *m_os << " )";
+        return true;
+
+    case opExpTable:
+    case opNameTable:
+
+        if (exp->getOper() == opExpTable) {
+            *m_os << "exptable(";
+        }
+        else {
+            *m_os << "nametable(";
+        }
+
+        *m_os << p1 << ", " << p2 << ")";
+        return true;
+
+    case opList:
+        // Because "," is the lowest precedence operator, we don't need printr here.
+        // Also, same as UQBT, so easier to test
+        p1->print(*m_os, m_html);
+
+        if (!p2->isNil()) {
+            *m_os << ", ";
+        }
+
+        p2->print(*m_os, m_html);
+        return false;
+
+    case opMemberAccess:
+        p1->print(*m_os, m_html);
+        *m_os << ".";
+        std::static_pointer_cast<const Const>(p2)->printNoQuotes(*m_os);
+        return false;
+
+    case opArrayIndex:
+        p1->print(*m_os, m_html);
+        *m_os << "[";
+        p2->print(*m_os, m_html);
+        *m_os << "]";
+        return false;
+
+    default:
+        break;
+    }
+
+    // Ordinary infix operators. Emit parens around the binary
+    if (p1 == nullptr) {
+        *m_os << "<nullptr>";
+    }
+    else {
+        p1->printr(*m_os, m_html);
+    }
+
+    switch (exp->getOper())
+    {
+    case opPlus:        *m_os << " + ";    break;
+    case opMinus:       *m_os << " - ";    break;
+    case opMult:        *m_os << " * ";    break;
+    case opMults:       *m_os << " *! ";   break;
+    case opDiv:         *m_os << " / ";    break;
+    case opDivs:        *m_os << " /! ";   break;
+    case opMod:         *m_os << " % ";    break;
+    case opMods:        *m_os << " %! ";   break;
+    case opFPlus:       *m_os << " +f ";   break;
+    case opFMinus:      *m_os << " -f ";   break;
+    case opFMult:       *m_os << " *f ";   break;
+    case opFDiv:        *m_os << " /f ";   break;
+    case opPow:         *m_os << " pow ";  break;     // Raising to power
+    case opAnd:         *m_os << " and ";  break;
+    case opOr:          *m_os << " or ";   break;
+    case opBitAnd:      *m_os << " & ";    break;
+    case opBitOr:       *m_os << " | ";    break;
+    case opBitXor:      *m_os << " ^ ";    break;
+    case opEquals:      *m_os << " = ";    break;
+    case opNotEqual:    *m_os << " ~= ";   break;
+    case opLess:        *m_os << (m_html ? " &lt; "  : " < ");  break;
+    case opGtr:         *m_os << (m_html ? " &gt; "  : " > ");  break;
+    case opLessEq:      *m_os << (m_html ? " &lt;= " : " <= "); break;
+    case opGtrEq:       *m_os << (m_html ? " &gt;= " : " >= "); break;
+    case opLessUns:     *m_os << (m_html ? " &lt;u " : " <u "); break;
+    case opGtrUns:      *m_os << (m_html ? " &gt;u " : " >u "); break;
+    case opLessEqUns:   *m_os << (m_html ? " &lt;u " : " <=u "); break;
+    case opGtrEqUns:    *m_os << (m_html ? " &gt;=u " : " >=u "); break;
+    case opUpper:       *m_os << " GT "; break;
+    case opLower:       *m_os << " LT "; break;
+    case opShiftL:      *m_os << (m_html ? " &lt;&lt; " : " << "); break;
+    case opShiftR:      *m_os << (m_html ? " &gt;&gt; " : " >> "); break;
+    case opShiftRA:     *m_os << (m_html ? " &gt;&gt;A " : " >>A "); break;
+    case opRotateL:     *m_os << " rl "; break;
+    case opRotateR:     *m_os << " rr "; break;
+    case opRotateLC:    *m_os << " rlc "; break;
+    case opRotateRC:    *m_os << " rrc "; break;
+    default:
+        LOG_FATAL("Invalid operator %1", operToString(exp->getOper()));
+    }
+
+    if (p2 == nullptr) {
+        *m_os << "<nullptr>";
+    }
+    else {
+        p2->printr(*m_os, m_html);
+    }
+
+    return true;
+}
+
+
 bool ExpPrinter::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildren)
 {
     visitChildren = false;

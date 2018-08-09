@@ -21,6 +21,7 @@
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
+#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
@@ -187,129 +188,7 @@ void Binary::printr(OStream& os, bool html) const
 
 void Binary::print(OStream& os, bool html) const
 {
-    assert(subExp1 && subExp2);
-    SharedConstExp p1 = getSubExp1();
-    SharedConstExp p2 = getSubExp2();
-
-    // Special cases
-    switch (m_oper)
-    {
-    case opSize:
-        // This can still be seen after decoding and before type analysis after m[...]
-        // *size* is printed after the expression, even though it comes from the first subexpression
-        p2->printr(os, html);
-        os << "*";
-        p1->printr(os, html);
-        os << "*";
-        return;
-
-    case opFlagCall:
-        // The name of the flag function (e.g. ADDFLAGS) should be enough
-        std::static_pointer_cast<const Const>(p1)->printNoQuotes(os);
-        os << "( ";
-        p2->printr(os, html);
-        os << " )";
-        return;
-
-    case opExpTable:
-    case opNameTable:
-
-        if (m_oper == opExpTable) {
-            os << "exptable(";
-        }
-        else {
-            os << "nametable(";
-        }
-
-        os << p1 << ", " << p2 << ")";
-        return;
-
-    case opList:
-        // Because "," is the lowest precedence operator, we don't need printr here.
-        // Also, same as UQBT, so easier to test
-        p1->print(os, html);
-
-        if (!p2->isNil()) {
-            os << ", ";
-        }
-
-        p2->print(os, html);
-        return;
-
-    case opMemberAccess:
-        p1->print(os, html);
-        os << ".";
-        std::static_pointer_cast<const Const>(p2)->printNoQuotes(os);
-        return;
-
-    case opArrayIndex:
-        p1->print(os, html);
-        os << "[";
-        p2->print(os, html);
-        os << "]";
-        return;
-
-    default:
-        break;
-    }
-
-    // Ordinary infix operators. Emit parens around the binary
-    if (p1 == nullptr) {
-        os << "<nullptr>";
-    }
-    else {
-        p1->printr(os, html);
-    }
-
-    switch (m_oper)
-    {
-    case opPlus:    os << " + ";    break;
-    case opMinus:   os << " - ";    break;
-    case opMult:    os << " * ";    break;
-    case opMults:   os << " *! ";   break;
-    case opDiv:     os << " / ";    break;
-    case opDivs:    os << " /! ";   break;
-    case opMod:     os << " % ";    break;
-    case opMods:    os << " %! ";   break;
-    case opFPlus:   os << " +f ";   break;
-    case opFMinus:  os << " -f ";   break;
-    case opFMult:   os << " *f ";   break;
-    case opFDiv:    os << " /f ";   break;
-    case opPow:     os << " pow ";  break;     // Raising to power
-    case opAnd:     os << " and ";  break;
-    case opOr:      os << " or ";   break;
-    case opBitAnd:  os << " & ";    break;
-    case opBitOr:   os << " | ";    break;
-    case opBitXor:  os << " ^ ";    break;
-    case opEquals:  os << " = ";    break;
-    case opNotEqual:os << " ~= ";   break;
-    case opLess:    os << (html ? " &lt; "  : " < ");  break;
-    case opGtr:     os << (html ? " &gt; "  : " > ");  break;
-    case opLessEq:  os << (html ? " &lt;= " : " <= "); break;
-    case opGtrEq:   os << (html ? " &gt;= " : " >= "); break;
-    case opLessUns: os << (html ? " &lt;u " : " <u "); break;
-    case opGtrUns:  os << (html ? " &gt;u " : " >u "); break;
-    case opLessEqUns:os<< (html ? " &lt;u " : " <=u "); break;
-    case opGtrEqUns:os << (html ? " &gt;=u " : " >=u "); break;
-    case opUpper:   os << " GT "; break;
-    case opLower:   os << " LT "; break;
-    case opShiftL:  os << (html ? " &lt;&lt; " : " << "); break;
-    case opShiftR:  os << (html ? " &gt;&gt; " : " >> "); break;
-    case opShiftRA: os << (html ? " &gt;&gt;A " : " >>A "); break;
-    case opRotateL: os << " rl "; break;
-    case opRotateR: os << " rr "; break;
-    case opRotateLC:os << " rlc "; break;
-    case opRotateRC:os << " rrc "; break;
-    default:
-        LOG_FATAL("Invalid operator %1", operToString(m_oper));
-    }
-
-    if (p2 == nullptr) {
-        os << "<nullptr>";
-    }
-    else {
-        p2->printr(os, html);
-    }
+    os << ExpPrinter(const_cast<Binary&>(*this), html);
 }
 
 
