@@ -17,6 +17,7 @@
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -187,49 +188,9 @@ SharedExp Const::clone() const
 }
 
 
-void Const::print(OStream& os, bool) const
+void Const::print(OStream& os, bool html) const
 {
-    switch (m_oper)
-    {
-    case opIntConst:
-        if ((m_value.i < -1000) || (m_value.i > 1000)) {
-            os << "0x" << QString::number(m_value.i, 16);
-        }
-        else {
-            os << m_value.i;
-        }
-        break;
-
-    case opLongConst:
-        if ((static_cast<long long>(m_value.ll) < -1000LL) || (static_cast<long long>(m_value.ll) > 1000LL)) {
-            os << "0x" << QString::number(m_value.ll, 16) << "LL";
-        }
-        else {
-            os << m_value.ll << "LL";
-        }
-        break;
-
-    case opFltConst:
-        os << QString("%1").arg(m_value.d); // respects English locale
-        break;
-
-    case opStrConst:
-        os << "\"" << m_string << "\"";
-        break;
-
-    default:
-        LOG_FATAL("Invalid operator %1", operToString(m_oper));
-    }
-
-    if (m_conscript) {
-        os << "\\" << m_conscript << "\\";
-    }
-
-#ifdef DUMP_TYPES
-    if (type) {
-        os << "T(" << type->prints() << ")";
-    }
-#endif
+    os << ExpPrinter(const_cast<Const&>(*this), html);
 }
 
 

@@ -18,7 +18,6 @@
 #include <unordered_set>
 
 
-
 /**
  * A class ordered or unordered sets of expressions.
  * \tparam T the type of expression to store in the set
