@@ -44,8 +44,8 @@ void LibProcTest::testEntryAddr()
 
 void LibProcTest::testSetModule()
 {
-    Module mod1;
-    Module mod2;
+    Module mod1("test1");
+    Module mod2("test2");
 
     LibProc proc(Address(0x1000), "test", nullptr);
     proc.setModule(nullptr);
@@ -70,7 +70,7 @@ void LibProcTest::testSetModule()
 
 void LibProcTest::testRemoveFromModule()
 {
-    Module mod;
+    Module mod("testMod");
     LibProc proc(Address(0x1000), "test", &mod);
     proc.removeFromModule();
     QVERIFY(mod.getFunctionList().empty());

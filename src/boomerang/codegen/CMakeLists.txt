@@ -9,6 +9,7 @@
 
 list(APPEND boomerang-codegen-sources
     codegen/CCodeGenerator
+    codegen/CodeWriter
     codegen/ControlFlowAnalyzer
 )
 

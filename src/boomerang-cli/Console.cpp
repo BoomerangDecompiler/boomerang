@@ -479,8 +479,8 @@ CommandStatus Console::handleDelete(const QStringList& args)
             }
 
             QFile::remove(module->getOutPath("c"));
-            assert(module->getUpstream());
-            module->getUpstream()->removeChild(module);
+            assert(module->getParentModule());
+            module->getParentModule()->removeChild(module);
         }
 
         return CommandStatus::Success;
@@ -626,8 +626,8 @@ CommandStatus Console::handleInfo(const QStringList& args)
         OStream outStream(stdout);
         outStream << "module " << module->getName() << ":\n";
 
-        if (module->getUpstream()) {
-            outStream << "\tparent = " << module->getUpstream()->getName() << "\n";
+        if (module->getParentModule()) {
+            outStream << "\tparent = " << module->getParentModule()->getName() << "\n";
         }
         else {
             outStream << "\troot module.\n";

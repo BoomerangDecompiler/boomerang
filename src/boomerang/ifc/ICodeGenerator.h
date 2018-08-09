@@ -40,9 +40,6 @@ public:
     virtual ~ICodeGenerator() = default;
 
 public:
-    /// Generate code for \p program to \p os.
-    virtual void generateCode(const Prog *program, OStream& os) = 0;
-
     /**
      * Generate code for a module or function, or all modules.
      * \param program The program to generate code for.

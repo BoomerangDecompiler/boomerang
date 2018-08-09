@@ -95,7 +95,7 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const IMod
 
     Module *module = m_rootModule->find(name);
 
-    if (module && (module->getUpstream() == parentModule)) {
+    if (module && (module->getParentModule() == parentModule)) {
         // a module already exists
         return nullptr;
     }

@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/codegen/CodeWriter.h"
 #include "boomerang/codegen/ControlFlowAnalyzer.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/type/Type.h"
@@ -90,9 +91,6 @@ public:
     virtual ~CCodeGenerator() override = default;
 
 public:
-    /// \copydoc ICodeGenerator::generateCode
-    virtual void generateCode(const Prog *prog, OStream& os) override;
-
     /// \copydoc ICodeGenerator::generateCode
     virtual void generateCode(const Prog *prog, Module *module = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
 
@@ -279,8 +277,7 @@ private:
     bool isGenerated(const BasicBlock *bb) const;
 
 private:
-    /// Dump all generated code to \p os.
-    void print(OStream& os);
+    void print(const Module *module);
 
     /// Output 4 * \p indLevel spaces to \p str
     void indent(OStream& str, int indLevel);
@@ -294,7 +291,10 @@ private:
     std::map<QString, SharedType> m_locals;               ///< All locals in a Proc
     std::unordered_set<Address::value_type> m_usedLabels; ///< All used goto labels. (lowAddr of BB)
     std::unordered_set<const BasicBlock *> m_generatedBBs;
-    QStringList m_lines;                                  ///< The generated code.
+
     UserProc *m_proc = nullptr;
     ControlFlowAnalyzer m_analyzer;
+
+    CodeWriter m_writer;
+    QStringList m_lines;                                  ///< The generated code.
 };

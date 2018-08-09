@@ -55,58 +55,12 @@ bool isBareMemof(const Exp& exp, UserProc *)
 #endif
 }
 
-
-void CCodeGenerator::generateCode(const Prog *prog, OStream& os)
-{
-    for (auto& glob : prog->getGlobals()) {
-        // Check for an initial value
-        SharedExp initialValue = glob->getInitialValue();
-
-        if (initialValue) {
-            addGlobal(glob->getName(), glob->getType(), initialValue);
-        }
-    }
-
-    print(os);
-
-    for (const auto& module : prog->getModuleList()) {
-        for (Function *function : *module) {
-            if (function->isLib()) {
-                continue;
-            }
-
-            UserProc *userProc = static_cast<UserProc *>(function);
-
-            if (!userProc->isDecoded()) {
-                continue;
-            }
-
-            CFGCompressor().compressCFG(userProc->getCFG());
-
-            generateCode(userProc);
-            print(os);
-        }
-    }
-}
-
-
 void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *proc, bool /*intermixRTL*/)
 {
-    // QString basedir = m_rootCluster->makeDirs();
-    OStream *os = nullptr;
-
-    if (cluster) {
-        cluster->openStream("c");
-        cluster->closeStreams();
-    }
-
     const bool generate_all   = cluster == nullptr || cluster == prog->getRootModule();
     bool       all_procedures = (proc == nullptr);
 
     if (generate_all) {
-        prog->getRootModule()->openStream("c");
-        os = &prog->getRootModule()->getStream();
-
         if (proc == nullptr) {
             bool global = false;
 
@@ -119,7 +73,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
             }
 
             if (global) {
-                print(*os); // Avoid blank line if no globals
+                print(prog->getRootModule());
             }
         }
     }
@@ -138,15 +92,13 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 
     if (generate_all) {
         appendLine(""); // Separate prototype(s) from first proc
-        print(*os);
+        print(prog->getRootModule());
     }
 
     for (const auto& module : prog->getModuleList()) {
         if (!generate_all && (module.get() != cluster)) {
             continue;
         }
-
-        module->openStream("c");
 
         for (Function *func : *module) {
             if (func->isLib()) {
@@ -166,12 +118,8 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 //            CFGCompressor().compressCFG(_proc->getCFG());
 
             generateCode(_proc);
-            print(module->getStream());
+            print(module.get());
         }
-    }
-
-    for (const auto& module : prog->getModuleList()) {
-        module->closeStreams();
     }
 }
 
@@ -2597,10 +2545,9 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
 }
 
 
-void CCodeGenerator::print(OStream& os)
+void CCodeGenerator::print(const Module *module)
 {
-    os << m_lines.join('\n') << '\n';
-    os.flush();
+    m_writer.writeCode(module, m_lines);
     m_lines.clear();
 }
 

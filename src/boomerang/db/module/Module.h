@@ -13,11 +13,11 @@
 #include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/util/Address.h"
 
-#include <QFile>
+#include <QString>
 
 #include <list>
 #include <map>
-#include <memory>
+#include <vector>
 
 
 class Signature;
@@ -41,8 +41,7 @@ public:
     typedef FunctionList::const_iterator    const_iterator;
 
 public:
-    Module();
-    Module(const QString& name, Prog *prog);
+    Module(const QString& name, Prog *prog = nullptr);
     Module(const Module& other) = delete;
     Module(Module&& other) = default;
 
@@ -60,7 +59,7 @@ public:
     void addChild(Module *n);
     void removeChild(Module *n);
 
-    Module *getUpstream() const;
+    Module *getParentModule() const;
     bool hasChildren() const;
 
     /// \todo unused
@@ -68,11 +67,6 @@ public:
 
     virtual bool isAggregate() const { return false; }
 
-    void openStream(const char *ext);
-    void openStreams(const char *ext);
-    void closeStreams();
-
-    OStream& getStream() { return m_strm; }
     QString makeDirs() const;
     QString getOutPath(const char *ext) const;
 
@@ -130,7 +124,4 @@ protected:
     std::vector<Module *> m_children;
     Module *m_parent = nullptr;
     Prog *m_prog     = nullptr;
-    QFile m_out;
-    OStream m_strm;
-    QString m_stream_ext;
 };

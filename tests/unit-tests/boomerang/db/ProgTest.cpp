@@ -73,7 +73,7 @@ void ProgTest::testCreateModule()
 
     Module *mod = prog.createModule("");
     QVERIFY(mod != nullptr);
-    QCOMPARE(mod->getUpstream(), prog.getRootModule());
+    QCOMPARE(mod->getParentModule(), prog.getRootModule());
     QCOMPARE(mod->getName(), QString(""));
     QCOMPARE(prog.getRootModule()->getNumChildren(), size_t(1));
     QCOMPARE(prog.getRootModule()->getChild(0), mod);
@@ -85,7 +85,7 @@ void ProgTest::testCreateModule()
 
     Module *sub = prog.createModule("", mod);
     QVERIFY(sub != nullptr);
-    QCOMPARE(sub->getUpstream(), mod);
+    QCOMPARE(sub->getParentModule(), mod);
     QCOMPARE(mod->getNumChildren(), size_t(1));
     QCOMPARE(prog.getRootModule()->getNumChildren(), size_t(1));
     QCOMPARE(mod->getChild(0), sub);

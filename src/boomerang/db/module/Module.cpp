@@ -64,16 +64,9 @@ void Module::updateLibrarySignatures()
 }
 
 
-Module::Module()
-    : m_strm(&m_out)
-{
-}
-
-
 Module::Module(const QString& name, Prog *prog)
     : m_name(name)
     , m_prog(prog)
-    , m_strm(&m_out)
 {
 }
 
@@ -121,7 +114,7 @@ void Module::removeChild(Module *module)
 }
 
 
-Module *Module::getUpstream() const
+Module *Module::getParentModule() const
 {
     return m_parent;
 }
@@ -130,41 +123,6 @@ Module *Module::getUpstream() const
 bool Module::hasChildren() const
 {
     return !m_children.empty();
-}
-
-
-void Module::openStream(const char *ext)
-{
-    if (m_out.isOpen()) {
-        return;
-    }
-
-    m_out.setFileName(getOutPath(ext));
-    m_out.open(QFile::WriteOnly | QFile::Text);
-    m_stream_ext = ext;
-}
-
-
-void Module::openStreams(const char *ext)
-{
-    openStream(ext);
-
-    for (Module *child : m_children) {
-        child->openStreams(ext);
-    }
-}
-
-
-void Module::closeStreams()
-{
-    if (m_out.isOpen()) {
-        m_strm.flush();
-        m_out.close();
-    }
-
-    for (Module *child : m_children) {
-        child->closeStreams();
-    }
 }
 
 
