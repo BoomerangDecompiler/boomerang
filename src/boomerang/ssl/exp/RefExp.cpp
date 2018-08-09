@@ -12,6 +12,7 @@
 
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/VoidType.h"
+#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -164,44 +165,7 @@ bool RefExp::isImplicitDef() const
 
 void RefExp::print(OStream& os, bool html) const
 {
-    if (subExp1) {
-        subExp1->print(os, html);
-    }
-    else {
-        os << "<nullptr>";
-    }
-
-    if (html) {
-        os << "<sub>";
-    }
-    else {
-        os << "{";
-    }
-
-    if (m_def == STMT_WILD) {
-        os << "WILD";
-    }
-    else if (m_def) {
-        if (html) {
-            os << "<a href=\"#stmt" << m_def->getNumber() << "\">";
-        }
-
-        os << m_def->getNumber();
-
-        if (html) {
-            os << "</a>";
-        }
-    }
-    else {
-        os << "-"; // So you can tell the difference with {0}
-    }
-
-    if (html) {
-        os << "</sub>";
-    }
-    else {
-        os << "}";
-    }
+    os << ExpPrinter(const_cast<RefExp&>(*this), html);
 }
 
 

@@ -24,6 +24,12 @@ public:
     explicit ExpPrinter(Exp& exp, bool html = false);
 
 private:
+    /// \copydoc ExpVisitor::preVisit
+    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+
+    /// \copydoc ExpVisitor::postVisit
+    bool postVisit(const std::shared_ptr<RefExp>& exp) override;
+
     /// \copydoc ExpVisitor::visit
     bool visit(const std::shared_ptr<Const>& exp) override;
 
@@ -33,7 +39,7 @@ private:
 private:
     OStream *m_os;
     Exp& m_exp;
-//     bool m_html;
+    bool m_html;
 };
 
 OStream& operator<<(OStream& lhs, ExpPrinter&& rhs);

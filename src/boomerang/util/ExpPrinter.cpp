@@ -11,14 +11,16 @@
 
 
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/OStream.h"
 #include "boomerang/util/log/Log.h"
 
 
-ExpPrinter::ExpPrinter(Exp& exp, bool /*html*/)
+ExpPrinter::ExpPrinter(Exp& exp, bool html)
     : m_exp(exp)
-//     , m_html(html)
+    , m_html(html)
 {
 }
 
@@ -30,6 +32,60 @@ OStream& operator<<(OStream& lhs, ExpPrinter&& rhs)
 
     return lhs;
 }
+
+
+bool ExpPrinter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+{
+    visitChildren = false;
+
+    if (exp->getSubExp1()) {
+        exp->getSubExp1()->print(*m_os, m_html);
+    }
+    else {
+        *m_os << "<nullptr>";
+    }
+
+    return true;
+}
+
+
+bool ExpPrinter::postVisit(const std::shared_ptr<RefExp>& exp)
+{
+    if (m_html) {
+        *m_os << "<sub>";
+    }
+    else {
+        *m_os << "{";
+    }
+
+    if (exp->getDef() == STMT_WILD) {
+        *m_os << "WILD";
+    }
+    else if (exp->getDef()) {
+        if (m_html) {
+            *m_os << "<a href=\"#stmt" << exp->getDef()->getNumber() << "\">";
+        }
+
+        *m_os << exp->getDef()->getNumber();
+
+        if (m_html) {
+            *m_os << "</a>";
+        }
+    }
+    else {
+        *m_os << "-"; // So you can tell the difference with {0}
+    }
+
+    if (m_html) {
+        *m_os << "</sub>";
+    }
+    else {
+        *m_os << "}";
+    }
+
+    return true;
+}
+
 
 
 bool ExpPrinter::visit(const std::shared_ptr<Const>& exp)
