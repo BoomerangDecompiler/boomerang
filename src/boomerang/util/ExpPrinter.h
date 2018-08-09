@@ -9,6 +9,8 @@
 #pragma endregion License
 #pragma once
 
+
+#include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
@@ -40,7 +42,7 @@ private:
     bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Location> & exp, bool& visitChildren) override;
+    bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
 
     /// \copydoc ExpVisitor::postVisit
     bool postVisit(const std::shared_ptr<RefExp>& exp) override;
@@ -50,6 +52,15 @@ private:
 
     /// \copydoc ExpVisitor::visit
     bool visit(const std::shared_ptr<Terminal>& exp) override;
+
+private:
+    /**
+     * Given an expression, determine if child expressions
+     * need to be parenthesized or not.
+     */
+    bool childrenNeedParentheses(const std::shared_ptr<Exp>& exp) const;
+
+    bool printr(const std::shared_ptr<Exp>& exp);
 
 private:
     OStream *m_os;

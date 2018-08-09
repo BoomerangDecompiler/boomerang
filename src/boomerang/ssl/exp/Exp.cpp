@@ -392,12 +392,6 @@ void Exp::print(OStream& os, bool html) const
 }
 
 
-void Exp::printr(OStream& os, bool html) const
-{
-    print(os, html);
-}
-
-
 OStream& operator<<(OStream& os, const Exp& exp)
 {
     return os << ExpPrinter(const_cast<Exp&>(exp), false);

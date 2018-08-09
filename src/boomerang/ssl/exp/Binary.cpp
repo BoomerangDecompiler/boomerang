@@ -159,24 +159,6 @@ bool Binary::operator*=(const Exp& o) const
 }
 
 
-void Binary::printr(OStream& os, bool html) const
-{
-    assert(subExp1 && subExp2);
-
-    // The "r" is for recursive: the idea is that we don't want parentheses at the outer level, but a subexpression
-    // (recursed from a higher level), we want the parens (at least for standard infix operators)
-    if (m_oper == opSize || m_oper == opList) {
-        // Otherwise, you get (a, (b, (c, d)))
-        print(os, html);
-    }
-    else {
-        os << "(";
-        print(os, html);
-        os << ")";
-    }
-}
-
-
 void Binary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     assert(subExp1 && subExp2);

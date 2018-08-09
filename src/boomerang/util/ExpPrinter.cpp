@@ -41,38 +41,13 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren
 {
     visitChildren = false;
 
-    SharedConstExp p1 = exp->getSubExp1();
+    SharedExp p1 = exp->getSubExp1();
 
     switch (exp->getOper())
     {
     //    //    //    //    //    //    //
     //    x[ subexpression ]    //
     //    //    //    //    //    //    //
-    case opRegOf:
-
-        // Make a special case for the very common case of r[intConst]
-        if (p1->isIntConst()) {
-            *m_os << "r" << std::static_pointer_cast<const Const>(p1)->getInt();
-#ifdef DUMP_TYPES
-            *m_os << "T(" << std::static_pointer_cast<const Const>(p1)->getType() << ")";
-#endif
-            break;
-        }
-        else if (p1->isTemp()) {
-            // Just print the temp {   // balance }s
-            p1->print(*m_os, m_html);
-            break;
-        }
-        else {
-            *m_os << "r["; // e.g. r[r2]
-            // Use print, not printr, because this is effectively the top level again (because the [] act as
-            // parentheses)
-            p1->print(*m_os, m_html);
-        }
-
-        *m_os << "]";
-        break;
-
     case opMemOf:
     case opAddrOf:
     case opVar:
@@ -126,11 +101,11 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren
             *m_os << "-";
         }
 
-        p1->printr(*m_os, m_html);
+        printr(p1);
         return true;
 
     case opSignExt:
-        p1->printr(*m_os, m_html);
+        printr(p1);
         *m_os << "!"; // Operator after expression
         return true;
 
@@ -174,13 +149,13 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren
             break; // For warning
         }
 
-        p1->printr(*m_os, m_html);
+        printr(p1);
         *m_os << ")";
         return true;
 
     //    Misc    //
     case opSgnEx: // Different because the operator appears last
-        p1->printr(*m_os, m_html);
+        printr(p1);
         *m_os << "! ";
         return true;
 
@@ -204,25 +179,25 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren
         return true;
 
     case opInitValueOf:
-        p1->printr(*m_os, m_html);
+        printr(p1);
         *m_os << "'";
         return true;
 
     case opPhi:
         *m_os << "phi(";
-        p1->print(*m_os, m_html);
+        printr(p1);
         *m_os << ")";
         return true;
 
     case opFtrunc:
         *m_os << "ftrunc(";
-        p1->print(*m_os, m_html);
+        printr(p1);
         *m_os << ")";
         return true;
 
     case opFabs:
         *m_os << "fabs(";
-        p1->print(*m_os, m_html);
+        printr(p1);
         *m_os << ")";
         return true;
 
@@ -239,8 +214,8 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildre
     visitChildren = false;
 
     assert(exp->getSubExp1() && exp->getSubExp2());
-    SharedConstExp p1 = exp->getSubExp1();
-    SharedConstExp p2 = exp->getSubExp2();
+    SharedExp p1 = exp->getSubExp1();
+    SharedExp p2 = exp->getSubExp2();
 
     // Special cases
     switch (exp->getOper())
@@ -248,9 +223,9 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildre
     case opSize:
         // This can still be seen after decoding and before type analysis after m[...]
         // *size* is printed after the expression, even though it comes from the first subexpression
-        p2->printr(*m_os, m_html);
+        printr(p2);
         *m_os << "*";
-        p1->printr(*m_os, m_html);
+        printr(p1);
         *m_os << "*";
         return true;
 
@@ -258,7 +233,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildre
         // The name of the flag function (e.g. ADDFLAGS) should be enough
         std::static_pointer_cast<const Const>(p1)->printNoQuotes(*m_os);
         *m_os << "( ";
-        p2->printr(*m_os, m_html);
+        printr(p2);
         *m_os << " )";
         return true;
 
@@ -309,7 +284,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildre
         *m_os << "<nullptr>";
     }
     else {
-        p1->printr(*m_os, m_html);
+        printr(p1);;
     }
 
     switch (exp->getOper())
@@ -359,7 +334,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildre
         *m_os << "<nullptr>";
     }
     else {
-        p2->printr(*m_os, m_html);
+        printr(p2);
     }
 
     return true;
@@ -439,7 +414,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildr
 
     // Else must be ?: or @ (traditional ternary operators)
     if (p1) {
-        p1->printr(*m_os, m_html);
+        printr(p1);
     }
     else {
         *m_os << "<nullptr>";
@@ -449,7 +424,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildr
         *m_os << " ? ";
 
         if (p2) {
-            p2->printr(*m_os, m_html);
+            printr(p2);
         }
         else {
             *m_os << "<nullptr>";
@@ -468,7 +443,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildr
         *m_os << "@";
 
         if (p2) {
-            p2->printr(*m_os, m_html);
+            printr(p2);
         }
         else {
             *m_os << "nullptr>";
@@ -477,7 +452,7 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildr
         *m_os << ":";
 
         if (p3) {
-            p3->printr(*m_os, m_html);
+            printr(p3);
         }
         else {
             *m_os << "nullptr>";
@@ -523,7 +498,41 @@ bool ExpPrinter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildre
 
 bool ExpPrinter::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
 {
-    return preVisit(std::static_pointer_cast<Unary>(exp), visitChildren);
+    visitChildren = false;
+
+    SharedConstExp p1 = exp->getSubExp1();
+
+    switch(exp->getOper())
+    {
+    case opRegOf:
+        // Make a special case for the very common case of r[intConst]
+        if (p1->isIntConst()) {
+            *m_os << "r" << std::static_pointer_cast<const Const>(p1)->getInt();
+#ifdef DUMP_TYPES
+            *m_os << "T(" << std::static_pointer_cast<const Const>(p1)->getType() << ")";
+#endif
+            break;
+        }
+        else if (p1->isTemp()) {
+            // Just print the temp {   // balance }s
+            p1->print(*m_os, m_html);
+            break;
+        }
+        else {
+            *m_os << "r["; // e.g. r[r2]
+            // Use print, not printr, because this is effectively the top level
+            // again (because the [] act as parentheses)
+            p1->print(*m_os, m_html);
+        }
+
+        *m_os << "]";
+        return true;
+
+    default:
+        return preVisit(std::static_pointer_cast<Unary>(exp), visitChildren);
+    }
+
+    return true;
 }
 
 
@@ -644,6 +653,49 @@ bool ExpPrinter::visit(const std::shared_ptr<Terminal>& exp)
     case opDefineAll:   *m_os << "<all>";       break;
     default:
         LOG_FATAL("Invalid operator %1", operToString(exp->getOper()));
+    }
+
+    return true;
+}
+
+
+bool ExpPrinter::childrenNeedParentheses(const std::shared_ptr<Exp>& exp) const
+{
+    if (exp->getArity() == 3) {
+        switch (exp->getOper()) {
+        case opTruncu:
+        case opTruncs:
+        case opZfill:
+        case opSgnEx:
+        case opFsize:
+        case opItof:
+        case opFtoi:
+        case opFround:
+        case opFtrunc:
+        case opOpTable:
+            return false;
+        default:
+            return true;
+        }
+    }
+    else if (exp->getArity() == 2) {
+        // Otherwise, you get (a, (b, (c, d)))
+        return exp->getOper() != opSize && exp->getOper() != opList;
+    }
+
+    return false;
+}
+
+
+bool ExpPrinter::printr(const std::shared_ptr<Exp>& exp)
+{
+    if (childrenNeedParentheses(exp)) {
+        *m_os << "(";
+        exp->print(*m_os, m_html);
+        *m_os << ")";
+    }
+    else {
+        exp->print(*m_os, m_html);
     }
 
     return true;

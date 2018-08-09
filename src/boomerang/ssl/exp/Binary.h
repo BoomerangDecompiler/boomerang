@@ -47,9 +47,6 @@ public:
     /// \copydoc Unary::getArity
     int getArity() const override { return 2; }
 
-    /// \copydoc Unary::printr
-    virtual void printr(OStream& os, bool html = false) const override;
-
     /// \copydoc Exp::getSubExp2
     SharedExp getSubExp2() override;
     SharedConstExp getSubExp2() const override;

@@ -161,35 +161,6 @@ bool Ternary::operator*=(const Exp& o) const
 }
 
 
-void Ternary::printr(OStream& os, bool) const
-{
-    // The function-like operators don't need parentheses
-    switch (m_oper)
-    {
-    // The "function-like" ternaries
-    case opTruncu:
-    case opTruncs:
-    case opZfill:
-    case opSgnEx:
-    case opFsize:
-    case opItof:
-    case opFtoi:
-    case opFround:
-    case opFtrunc:
-    case opOpTable:
-        // No paren case
-        print(os);
-        return;
-
-    default:
-        break;
-    }
-
-    // All other cases, we use the parens
-    os << "(" << *this << ")";
-}
-
-
 void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
 {
     doSearch(pattern, subExp1, li, once);

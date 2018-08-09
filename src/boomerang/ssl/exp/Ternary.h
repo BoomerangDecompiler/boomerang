@@ -48,9 +48,6 @@ public:
     /// \copydoc Binary::getArity
     int getArity() const override { return 3; }
 
-    /// \copydoc Binary::printr
-    virtual void printr(OStream& os, bool = false) const override;
-
     /// \copydoc Exp::setSubExp3
     void setSubExp3(SharedExp e) override;
 

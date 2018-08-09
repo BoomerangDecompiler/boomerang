@@ -104,9 +104,6 @@ public:
     /// Print the expression to the given stream
     void print(OStream& os, bool html = false) const;
 
-    /// Recursive print: don't want parens at the top level
-    virtual void printr(OStream& os, bool html = false) const;
-
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
     virtual int getArity() const { return 0; } // Overridden for Unary, Binary, etc
