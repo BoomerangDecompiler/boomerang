@@ -162,7 +162,7 @@ void LocationSetTest::testFindNS()
     e = set.findNS(Location::regOf(REG_PENT_EDI));
     QVERIFY(e != nullptr);
 
-    QCOMPARE(e->prints(), QString("r31{-}"));
+    QCOMPARE(e->toString(), QString("r31{-}"));
 }
 
 
@@ -192,12 +192,12 @@ void LocationSetTest::testFindDifferentRef()
     set.insert(RefExp::get(Location::regOf(REG_PENT_ECX), &as2));
     // return a different ref
     QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), &as1), result));
-    QCOMPARE(result->prints(), QString("r25{20}"));
+    QCOMPARE(result->toString(), QString("r25{20}"));
 
     // should work even when the ref is not in the set
     set.remove(RefExp::get(Location::regOf(REG_PENT_ECX), &as1));
     QVERIFY(set.findDifferentRef(RefExp::get(Location::regOf(REG_PENT_ECX), &as1), result));
-    QCOMPARE(result->prints(), QString("r25{20}"));
+    QCOMPARE(result->toString(), QString("r25{20}"));
 }
 
 

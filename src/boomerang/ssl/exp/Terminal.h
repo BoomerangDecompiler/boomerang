@@ -45,9 +45,6 @@ public:
     /// \copydoc Exp::operator*=
     bool operator*=(const Exp& o) const override;
 
-    /// \copydoc Exp::printx
-    void printx(int ind) const override;
-
     /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }
 

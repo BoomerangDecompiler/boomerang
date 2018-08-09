@@ -45,9 +45,6 @@ public:
     /// \copydoc Exp::operator*=
     bool operator*=(const Exp& o) const override;
 
-    /// \copydoc Exp::printx
-    virtual void printx(int ind) const override;
-
     /// \copydoc Exp::getArity
     virtual int getArity() const override { return 1; }
 

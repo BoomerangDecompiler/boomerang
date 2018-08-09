@@ -19,7 +19,7 @@
 #define TEST_SIMPLIFY(sourceExp, expectedResult) \
     {\
         SharedExp exp = (sourceExp); \
-        QCOMPARE(QString(exp->simplifyArith()->prints()), QString((expectedResult)->prints())); \
+        QCOMPARE(QString(exp->simplifyArith()->toString()), QString((expectedResult)->toString())); \
     }
 
 

@@ -508,7 +508,7 @@ void BasicBlockTest::testGetDest()
     BasicBlock bb2(BBType::Oneway, std::move(rtls), nullptr);
 
     QVERIFY(bb2.getDest() != nullptr);
-    QCOMPARE(bb2.getDest()->prints(), QString("0x2000"));
+    QCOMPARE(bb2.getDest()->toString(), QString("0x2000"));
 }
 
 

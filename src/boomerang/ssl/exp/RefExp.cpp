@@ -139,23 +139,6 @@ bool RefExp::acceptVisitor(ExpVisitor *v)
 }
 
 
-void RefExp::printx(int ind) const
-{
-    LOG_VERBOSE("%1%2", QString(ind, ' '), operToString(m_oper));
-    LOG_VERBOSE("{");
-
-    if (m_def == nullptr) {
-        LOG_VERBOSE("nullptr");
-    }
-    else {
-        LOG_VERBOSE("%1=%2", HostAddress(m_def).toString(), m_def->getNumber());
-    }
-
-    LOG_VERBOSE("}");
-    printChild(subExp1, ind);
-}
-
-
 bool RefExp::isImplicitDef() const
 {
     return m_def == nullptr || m_def->getKind() == StmtType::ImpAssign;
@@ -181,7 +164,7 @@ SharedType RefExp::ascendType()
     // Constants and subscripted locations are at the leaves
     // of the expression tree. Just return their stored types.
     if (m_def == nullptr) {
-        LOG_WARN("Null reference in '%1'", this->prints());
+        LOG_WARN("Null reference in '%1'", shared_from_this());
         return VoidType::get();
     }
 

@@ -147,39 +147,6 @@ QString Const::getFuncName() const
 }
 
 
-void Const::printx(int ind) const
-{
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-
-    switch (m_oper)
-    {
-    case opIntConst:
-        LOG_MSG("%1", m_value.i);
-        break;
-
-    case opFltConst:
-        LOG_MSG("%1", m_value.d);
-        break;
-
-    case opStrConst:
-        LOG_MSG("\"%1\"", m_string);
-        break;
-
-    case opFuncConst:
-        LOG_MSG(m_value.pp->getName());
-        break;
-
-    default:
-        LOG_MSG("?%1?", static_cast<int>(m_oper));
-        break;
-    }
-
-    if (m_conscript) {
-        LOG_MSG("\"%1\"", m_conscript);
-    }
-}
-
-
 SharedExp Const::clone() const
 {
     // Note: not actually cloning the Type* type pointer. Probably doesn't matter with GC

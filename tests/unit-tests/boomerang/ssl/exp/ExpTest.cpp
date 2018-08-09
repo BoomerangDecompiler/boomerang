@@ -567,11 +567,11 @@ void ExpTest::testSimplifyAddr()
                                                                   Location::memOf(Location::regOf(REG_SPARC_G2)))),
                                            Const::get(0),
                                            Const::get(15)));
-    QCOMPARE(QString(e->simplifyAddr()->prints()), QString("1000 - (r2@0:15)"));
+    QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000 - (r2@0:15)"));
 
     // Now test at top level
     e = Unary::get(opAddrOf, Location::memOf(Const::get(1000)));
-    QCOMPARE(QString(e->simplifyAddr()->prints()), QString("1000"));
+    QCOMPARE(QString(e->simplifyAddr()->toString()), QString("1000"));
 }
 
 

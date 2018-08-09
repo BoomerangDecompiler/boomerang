@@ -58,9 +58,6 @@ public:
     /// \copydoc Unary::operator*=
     bool operator*=(const Exp& o) const override;
 
-    /// \copydoc Unary::printx
-    virtual void printx(int ind) const override;
-
     Statement *getDef() const { return m_def; } // Ugh was called getRef()
     void setDef(Statement *_def);
 

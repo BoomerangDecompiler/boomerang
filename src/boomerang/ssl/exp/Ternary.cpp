@@ -225,16 +225,6 @@ bool Ternary::acceptVisitor(ExpVisitor *v)
 }
 
 
-void Ternary::printx(int ind) const
-{
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-
-    printChild(subExp1, ind);
-    printChild(subExp2, ind);
-    printChild(subExp3, ind);
-}
-
-
 SharedType Ternary::ascendType()
 {
     switch (m_oper)

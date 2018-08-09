@@ -140,13 +140,6 @@ bool TypedExp::acceptVisitor(ExpVisitor *v)
 }
 
 
-void TypedExp::printx(int ind) const
-{
-    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), m_type->getCtype());
-    printChild(subExp1, ind);
-}
-
-
 SharedType TypedExp::ascendType()
 {
     return m_type;

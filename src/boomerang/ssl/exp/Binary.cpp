@@ -165,23 +165,15 @@ void Binary::printr(OStream& os, bool html) const
 
     // The "r" is for recursive: the idea is that we don't want parentheses at the outer level, but a subexpression
     // (recursed from a higher level), we want the parens (at least for standard infix operators)
-    switch (m_oper)
-    {
-    case opSize:
-    case opList:     // Otherwise, you get (a, (b, (c, d)))
-        // There may be others
-        // These are the noparen cases
+    if (m_oper == opSize || m_oper == opList) {
+        // Otherwise, you get (a, (b, (c, d)))
         print(os, html);
-        return;
-
-    default:
-        break;
     }
-
-    // Normal case: we want the parens
-    os << "(";
-    this->print(os, html);
-    os << ")";
+    else {
+        os << "(";
+        print(os, html);
+        os << ")";
+    }
 }
 
 
@@ -202,15 +194,6 @@ SharedConstExp Binary::getSubExp2() const
 {
     assert(subExp1 && subExp2);
     return subExp2;
-}
-
-
-void Binary::printx(int ind) const
-{
-    assert(subExp1 && subExp2);
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-    printChild(subExp1, ind);
-    printChild(subExp2, ind);
 }
 
 

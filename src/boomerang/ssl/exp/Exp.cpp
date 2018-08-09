@@ -80,15 +80,6 @@ SharedExp& Exp::refSubExp3()
 }
 
 
-QString Exp::prints()
-{
-    QString     tgt;
-    OStream ost(&tgt);
-    print(ost);
-    return tgt;
-}
-
-
 bool Exp::isRegOfConst() const
 {
     if (m_oper != opRegOf) {
@@ -404,19 +395,6 @@ void Exp::print(OStream& os, bool html) const
 void Exp::printr(OStream& os, bool html) const
 {
     print(os, html);
-}
-
-
-void Exp::printt(OStream& os) const
-{
-    print(os);
-
-    if (m_oper != opTypedExp) {
-        return;
-    }
-
-    SharedConstType t = static_cast<const TypedExp *>(this)->getType();
-    os << "<" << t->getSize() << ">";
 }
 
 

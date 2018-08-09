@@ -87,12 +87,6 @@ bool Terminal::acceptVisitor(ExpVisitor *v)
 }
 
 
-void Terminal::printx(int ind) const
-{
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-}
-
-
 SharedType Terminal::ascendType()
 {
     // Can also find various terminals at the leaves of an expression tree

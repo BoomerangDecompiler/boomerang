@@ -99,9 +99,6 @@ public:
     /// Changes the type of this constant
     void setType(SharedType ty) { m_type = ty; }
 
-    /// \copydoc Exp::printx
-    virtual void printx(int ind) const override;
-
     /// Print "recursive" (extra parens not wanted at outer levels)
     void printNoQuotes(OStream& os) const;
 

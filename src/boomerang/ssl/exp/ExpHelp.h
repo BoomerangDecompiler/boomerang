@@ -29,6 +29,3 @@ struct BOOMERANG_API lessExpStar
 {
     bool operator()(const SharedConstExp& x, const SharedConstExp& y) const;
 };
-
-
-void printChild(const SharedExp& e, int ind);

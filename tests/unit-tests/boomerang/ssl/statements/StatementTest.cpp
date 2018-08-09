@@ -642,7 +642,7 @@ void StatementTest::testLocationSet()
 
     theReg.setInt(REG_SPARC_O4);
     e = *(++ls2.begin());          // Second element
-    QCOMPARE(e->prints(), rof.prints());            // ... should be r12
+    QCOMPARE(e->toString(), rof.toString());            // ... should be r12
 
     Assign s10(Const::get(0), Const::get(0));
     Assign s20(Const::get(0), Const::get(0));

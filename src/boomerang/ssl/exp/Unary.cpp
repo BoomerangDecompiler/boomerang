@@ -159,13 +159,6 @@ void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, boo
 }
 
 
-void Unary::printx(int ind) const
-{
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-    printChild(subExp1, ind);
-}
-
-
 bool Unary::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;

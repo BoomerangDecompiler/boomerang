@@ -20,15 +20,3 @@ bool lessExpStar::operator()(const SharedConstExp& x, const SharedConstExp& y) c
 {
     return (*x < *y);   // Compare the actual Exps
 }
-
-
-
-void printChild(const SharedExp& e, int ind)
-{
-    if (e == nullptr) {
-        LOG_MSG("%1<nullptr>", QString(ind + 4, ' '));
-        return;
-    }
-
-    e->printx(ind + 4);
-}

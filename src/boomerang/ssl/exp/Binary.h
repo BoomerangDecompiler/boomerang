@@ -50,9 +50,6 @@ public:
     /// \copydoc Unary::printr
     virtual void printr(OStream& os, bool html = false) const override;
 
-    /// \copydoc Unary::printx
-    virtual void printx(int ind) const override;
-
     /// \copydoc Exp::getSubExp2
     SharedExp getSubExp2() override;
     SharedConstExp getSubExp2() const override;

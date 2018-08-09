@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include "boomerang/ifc/IPrintable.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/util/OStream.h"
@@ -107,16 +106,6 @@ public:
 
     /// Recursive print: don't want parens at the top level
     virtual void printr(OStream& os, bool html = false) const;
-
-    /// Print an infix representation of the object to \p os,
-    /// with its type in \<angle brackets\>.
-    void printt(OStream& os) const;
-
-    /// Print to a static buffer (for debugging)
-    QString prints();
-
-    /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
-    virtual void printx(int ind) const = 0;
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
