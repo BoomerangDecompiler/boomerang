@@ -11,6 +11,7 @@
 
 
 #include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"
@@ -33,6 +34,203 @@ OStream& operator<<(OStream& lhs, ExpPrinter&& rhs)
     rhs.m_exp.acceptVisitor(&rhs);
 
     return lhs;
+}
+
+
+bool ExpPrinter::preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren)
+{
+    visitChildren = false;
+
+    SharedConstExp p1 = exp->getSubExp1();
+
+    switch (exp->getOper())
+    {
+    //    //    //    //    //    //    //
+    //    x[ subexpression ]    //
+    //    //    //    //    //    //    //
+    case opRegOf:
+
+        // Make a special case for the very common case of r[intConst]
+        if (p1->isIntConst()) {
+            *m_os << "r" << std::static_pointer_cast<const Const>(p1)->getInt();
+#ifdef DUMP_TYPES
+            *m_os << "T(" << std::static_pointer_cast<const Const>(p1)->getType() << ")";
+#endif
+            break;
+        }
+        else if (p1->isTemp()) {
+            // Just print the temp {   // balance }s
+            p1->print(*m_os, m_html);
+            break;
+        }
+        else {
+            *m_os << "r["; // e.g. r[r2]
+            // Use print, not printr, because this is effectively the top level again (because the [] act as
+            // parentheses)
+            p1->print(*m_os, m_html);
+        }
+
+        *m_os << "]";
+        break;
+
+    case opMemOf:
+    case opAddrOf:
+    case opVar:
+    case opTypeOf:
+    case opKindOf:
+
+        switch (exp->getOper())
+        {
+        case opMemOf:       *m_os << "m[";      break;
+        case opAddrOf:      *m_os << "a[";      break;
+        case opVar:         *m_os << "v[";      break;
+        case opTypeOf:      *m_os << "T[";      break;
+        case opKindOf:      *m_os << "K[";      break;
+        default:            break; // Suppress compiler warning
+        }
+
+        if (exp->getOper() == opVar && p1->isStrConst()) {
+            *m_os << std::static_pointer_cast<const Const>(p1)->getStr();
+        }
+        // Use print, not printr, because this is effectively the top level again (because the [] act as
+        // parentheses)
+        else {
+            p1->print(*m_os, m_html);
+        }
+
+        *m_os << "]";
+#ifdef DUMP_TYPES
+        *m_os << "T(" << std::static_pointer_cast<const Const>(p1)->getType() << ")";
+#endif
+        break;
+
+    //    //    //    //    //    //    //
+    //      Unary operators    //
+    //    //    //    //    //    //    //
+
+    case opNot:
+    case opLNot:
+    case opNeg:
+    case opFNeg:
+
+        if (exp->getOper() == opNot) {
+            *m_os << "~";
+        }
+        else if (exp->getOper() == opLNot) {
+            *m_os << "L~";
+        }
+        else if (exp->getOper() == opFNeg) {
+            *m_os << "~f ";
+        }
+        else {
+            *m_os << "-";
+        }
+
+        p1->printr(*m_os, m_html);
+        return true;
+
+    case opSignExt:
+        p1->printr(*m_os, m_html);
+        *m_os << "!"; // Operator after expression
+        return true;
+
+    //    //    //    //    //    //    //    //
+    //    Function-like operators //
+    //    //    //    //    //    //    //    //
+
+    case opSQRTs:
+    case opSQRTd:
+    case opSQRTq:
+    case opSqrt:
+    case opSin:
+    case opCos:
+    case opTan:
+    case opArcTan:
+    case opLog2:
+    case opLog10:
+    case opLoge:
+    case opPow:
+    case opMachFtr:
+    case opSuccessor:
+
+        switch (exp->getOper())
+        {
+        case opSQRTs:       *m_os << "SQRTs(";  break;
+        case opSQRTd:       *m_os << "SQRTd(";  break;
+        case opSQRTq:       *m_os << "SQRTq(";  break;
+        case opSqrt:        *m_os << "sqrt(";   break;
+        case opSin:         *m_os << "sin(";    break;
+        case opCos:         *m_os << "cos(";    break;
+        case opTan:         *m_os << "tan(";    break;
+        case opArcTan:      *m_os << "arctan("; break;
+        case opLog2:        *m_os << "log2(";   break;
+        case opLog10:       *m_os << "log10(";  break;
+        case opLoge:        *m_os << "loge(";   break;
+        case opExecute:     *m_os << "execute(";break;
+        case opMachFtr:     *m_os << "machine(";break;
+        case opSuccessor:   *m_os << "succ(";   break;
+
+        default:
+            break; // For warning
+        }
+
+        p1->printr(*m_os, m_html);
+        *m_os << ")";
+        return true;
+
+    //    Misc    //
+    case opSgnEx: // Different because the operator appears last
+        p1->printr(*m_os, m_html);
+        *m_os << "! ";
+        return true;
+
+    case opTemp:
+        if (p1->getOper() == opWildStrConst) {
+            assert(p1->isTerminal());
+            *m_os << "t[";
+            std::static_pointer_cast<const Terminal>(p1)->print(*m_os);
+            *m_os << "]";
+            return true;
+        }
+
+    // fallthrough
+
+    // Temp: just print the string, no quotes
+    case opGlobal:
+    case opLocal:
+    case opParam:
+        // Print a more concise form than param["foo"] (just foo)
+        std::static_pointer_cast<const Const>(p1)->printNoQuotes(*m_os);
+        return true;
+
+    case opInitValueOf:
+        p1->printr(*m_os, m_html);
+        *m_os << "'";
+        return true;
+
+    case opPhi:
+        *m_os << "phi(";
+        p1->print(*m_os, m_html);
+        *m_os << ")";
+        return true;
+
+    case opFtrunc:
+        *m_os << "ftrunc(";
+        p1->print(*m_os, m_html);
+        *m_os << ")";
+        return true;
+
+    case opFabs:
+        *m_os << "fabs(";
+        p1->print(*m_os, m_html);
+        *m_os << ")";
+        return true;
+
+    default:
+        LOG_FATAL("Invalid operator %1", operToString(exp->getOper()));
+    }
+
+    return true;
 }
 
 
@@ -87,20 +285,20 @@ bool ExpPrinter::preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildre
         }
 
         p2->print(*m_os, m_html);
-        return false;
+        return true;
 
     case opMemberAccess:
         p1->print(*m_os, m_html);
         *m_os << ".";
         std::static_pointer_cast<const Const>(p2)->printNoQuotes(*m_os);
-        return false;
+        return true;
 
     case opArrayIndex:
         p1->print(*m_os, m_html);
         *m_os << "[";
         p2->print(*m_os, m_html);
         *m_os << "]";
-        return false;
+        return true;
 
     default:
         break;
@@ -320,6 +518,12 @@ bool ExpPrinter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildre
     }
 
     return true;
+}
+
+
+bool ExpPrinter::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+{
+    return preVisit(std::static_pointer_cast<Unary>(exp), visitChildren);
 }
 
 
