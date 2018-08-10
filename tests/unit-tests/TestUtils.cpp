@@ -39,3 +39,15 @@ QString getFullSamplePath(const QString& relpath)
 {
     return QString(BOOMERANG_TEST_BASE) + "share/boomerang/samples/" + relpath;
 }
+
+void compareLongStrings(const QString& actual, const QString& expected)
+{
+    QStringList actualList = actual.split('\n');
+    QStringList expectedList = expected.split('\n');
+
+    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
+        QCOMPARE(actualList[i], expectedList[i]);
+    }
+
+    QCOMPARE(actualList.length(), expectedList.length());
+}

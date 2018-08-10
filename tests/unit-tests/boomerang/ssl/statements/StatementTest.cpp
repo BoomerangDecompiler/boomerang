@@ -46,19 +46,6 @@
 #define GLOBAL1_PENTIUM    getFullSamplePath("pentium/global1")
 
 
-void compareStrings(const QString& actual, const QString& expected)
-{
-    QStringList actualList = actual.split('\n');
-    QStringList expectedList = expected.split('\n');
-
-    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
-        QCOMPARE(actualList[i], expectedList[i]);
-    }
-
-    QVERIFY(actualList.length() == expectedList.length());
-}
-
-
 void StatementTest::testEmpty()
 {
     m_project.getSettings()->setOutputDirectory("./unit_test/");
@@ -167,7 +154,7 @@ void StatementTest::testFlow()
         "              Reaching definitions: r24=5\n"
         "\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -238,7 +225,7 @@ void StatementTest::testKill()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete e1;
@@ -304,7 +291,7 @@ void StatementTest::testUse()
         "              Modifieds: \n"
         "              Reaching definitions: r24=5,   r28=5\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -376,7 +363,7 @@ void StatementTest::testUseOverKill()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete e1;
@@ -451,7 +438,7 @@ void StatementTest::testUseOverBB()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -517,7 +504,7 @@ void StatementTest::testUseKill()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -587,7 +574,7 @@ void StatementTest::testEndlessLoop()
                        "0x00001010    3 *i32* r24 := r24{2} + 1\n"
                        "\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 }
 
 

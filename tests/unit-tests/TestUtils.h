@@ -92,3 +92,5 @@ Q_DECLARE_METATYPE(SharedExpWrapper)
 /// \returns the full absolute path given a path
 // relative to the data/samples/ directory
 QString getFullSamplePath(const QString& relpath);
+
+void compareLongStrings(const QString& actual, const QString& expected);
