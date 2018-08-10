@@ -388,13 +388,14 @@ QString Exp::toString() const
 
 void Exp::print(OStream& os, bool html) const
 {
-    os << ExpPrinter(const_cast<Exp&>(*this), html);
+    ExpPrinter().print(os, *this, html);
 }
 
 
 OStream& operator<<(OStream& os, const Exp& exp)
 {
-    return os << ExpPrinter(const_cast<Exp&>(exp), false);
+    ExpPrinter().print(os, exp);
+    return os;
 }
 
 

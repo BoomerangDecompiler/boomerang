@@ -115,13 +115,15 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
              *        P3     opNil */
             condExp =
                 Binary::get(opLess,     // P3 < 0
-                            condExp->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
+                            condExp->access<const Exp, 2, 2, 2, 1>()->clone(),
+                            Const::get(0));
             break;
 
         case BranchType::JPOS:
             condExp =
                 Binary::get(opGtrEq,     // P3 >= 0
-                            condExp->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1()->clone(), Const::get(0));
+                            condExp->access<const Exp, 2, 2, 1>()->getSubExp1()->clone(),
+                            Const::get(0));
             break;
 
         case BranchType::JOF:

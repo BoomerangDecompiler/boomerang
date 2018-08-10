@@ -10,62 +10,30 @@
 #pragma once
 
 
+#include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
-class Exp;
 class OStream;
 
 
-class ExpPrinter : private ExpVisitor
+class ExpPrinter
 {
-    friend OStream& operator<<(OStream& lhs, ExpPrinter&& rhs);
-
 public:
-    explicit ExpPrinter(Exp& exp, bool html = false);
+    /// print \p exp to \p os
+    void print(OStream& os, const Exp& exp, bool html = false) const;
 
 private:
-    /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Unary>& exp, bool& visitChildren) override;
+    /// print \p exp to \p os
+    void print(OStream& os, const std::shared_ptr<const Exp>& exp) const;
 
-    /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+    /// print \p exp to \p os
+    void printHTML(OStream& os, const std::shared_ptr<const Exp>& exp) const;
 
-    /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Ternary>& exp, bool& visitChildren) override;
-
-    /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
-
-    /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
-
-    /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
-
-    /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<RefExp>& exp) override;
-
-    /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Const>& exp) override;
-
-    /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Terminal>& exp) override;
-
-private:
     /**
-     * Given an expression, determine if child expressions
-     * need to be parenthesized or not.
+     * Given an expression, and an immediate child expression, determine if
+     * the child expression needs to be parenthesized or not.
      */
-    bool childrenNeedParentheses(const std::shared_ptr<Exp>& exp) const;
-
-    bool printr(const std::shared_ptr<Exp>& exp);
-
-private:
-    OStream *m_os;
-    Exp& m_exp;
-    bool m_html;
+    bool childNeedsParentheses(const SharedConstExp& exp, const SharedConstExp& child) const;
 };
-
-OStream& operator<<(OStream& lhs, ExpPrinter&& rhs);
