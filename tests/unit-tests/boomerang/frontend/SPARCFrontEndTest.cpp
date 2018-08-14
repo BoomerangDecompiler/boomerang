@@ -114,8 +114,8 @@ void SPARCFrontendTest::test2()
     // This is quite normal.
     expected = QString("0x00010690    0 CALL printf(\n"
                        "              )\n"
-                       "              Reaching definitions: \n"
-                       "              Live variables: \n");
+                       "              Reaching definitions: <None>\n"
+                       "              Live variables: <None>\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
@@ -159,8 +159,8 @@ void SPARCFrontendTest::test3()
     fe->decodeSingleInstruction(Address(0x000106a4), inst);
     inst.rtl->print(strm);
     expected = QString("0x000106a4    0 RET\n"
-                       "              Modifieds: \n"
-                       "              Reaching definitions: \n");
+                       "              Modifieds: <None>\n"
+                       "              Reaching definitions: <None>\n");
     QCOMPARE(actual, expected);
     actual.clear();
 
@@ -300,8 +300,8 @@ void SPARCFrontendTest::testDelaySlot()
                      "              0 *32* r9 := r30 - 20\n"
                      "0x00010a90    0 CALL scanf(\n"
                      "              )\n"
-                     "              Reaching definitions: \n"
-                     "              Live variables: \n");
+                     "              Reaching definitions: <None>\n"
+                     "              Live variables: <None>\n");
 
     QCOMPARE(actual, expected);
     actual.clear();
@@ -318,8 +318,8 @@ void SPARCFrontendTest::testDelaySlot()
                "              0 *32* r9 := r30 - 24\n"
                "0x00010a9c    0 CALL scanf(\n"
                "              )\n"
-               "              Reaching definitions: \n"
-               "              Live variables: \n";
+               "              Reaching definitions: <None>\n"
+               "              Live variables: <None>\n";
 
     QCOMPARE(actual, expected);
     actual.clear();
@@ -352,8 +352,8 @@ void SPARCFrontendTest::testDelaySlot()
                "0x00010ab8    0 *32* r8 := r8 | 816\n"
                "0x00010ab8    0 CALL printf(\n"
                "              )\n"
-               "              Reaching definitions: \n"
-               "              Live variables: \n";
+               "              Reaching definitions: <None>\n"
+               "              Live variables: <None>\n";
 
     QCOMPARE(actual, expected);
     actual.clear();

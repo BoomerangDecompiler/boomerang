@@ -128,8 +128,8 @@ void FrontPentTest::test3()
     expected = QString("0x0804834e    0 *32* %pc := m[r28]\n"
                        "              0 *32* r28 := r28 + 4\n"
                        "              0 RET\n"
-                       "              Modifieds: \n"
-                       "              Reaching definitions: \n");
+                       "              Modifieds: <None>\n"
+                       "              Reaching definitions: <None>\n");
 
     QCOMPARE(actual, expected);
     actual.clear();

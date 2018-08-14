@@ -69,6 +69,11 @@ void UseCollector::insert(SharedExp e)
 
 void UseCollector::print(OStream& os) const
 {
+    if (m_locs.empty()) {
+        os << "<None>";
+        return;
+    }
+
     bool first = true;
 
     for (auto const& elem : m_locs) {
