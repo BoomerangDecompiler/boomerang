@@ -26,6 +26,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/util/ExpPrinter.h"
 #include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
@@ -79,15 +80,6 @@ SharedExp& Exp::refSubExp3()
 }
 
 
-QString Exp::prints()
-{
-    QString     tgt;
-    OStream ost(&tgt);
-    print(ost);
-    return tgt;
-}
-
-
 bool Exp::isRegOfConst() const
 {
     if (m_oper != opRegOf) {
@@ -134,14 +126,6 @@ bool Exp::isAfpTerm()
     OPER subOp1 = cur->getSubExp1()->getOper();
     OPER subOp2 = cur->getSubExp2()->getOper();
     return((subOp1 == opAFP) && (subOp2 == opIntConst));
-}
-
-
-int Exp::getVarIndex()
-{
-    assert(m_oper == opVar);
-    SharedExp sub = this->getSubExp1();
-    return std::static_pointer_cast<const Const>(sub)->getInt();
 }
 
 
@@ -387,31 +371,22 @@ const char *Exp::getOperName() const
 
 QString Exp::toString() const
 {
-    QString     res;
+    QString res;
     OStream os(&res);
-
-    this->print(os);
+    os << shared_from_this();
     return res;
 }
 
 
-void Exp::printt(OStream& os) const
+void Exp::print(OStream& os, bool html) const
 {
-    print(os);
-
-    if (m_oper != opTypedExp) {
-        return;
-    }
-
-    SharedConstType t = static_cast<const TypedExp *>(this)->getType();
-    os << "<" << t->getSize() << ">";
+    ExpPrinter().print(os, shared_from_this(), html);
 }
 
 
-OStream& operator<<(OStream& os, const Exp *p)
+OStream& operator<<(OStream& os, const SharedConstExp& exp)
 {
-    // Useful for debugging, but can clutter the output
-    p->printt(os);
+    ExpPrinter().print(os, exp);
     return os;
 }
 

@@ -46,19 +46,6 @@
 #define GLOBAL1_PENTIUM    getFullSamplePath("pentium/global1")
 
 
-void compareStrings(const QString& actual, const QString& expected)
-{
-    QStringList actualList = actual.split('\n');
-    QStringList expectedList = expected.split('\n');
-
-    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
-        QCOMPARE(actualList[i], expectedList[i]);
-    }
-
-    QVERIFY(actualList.length() == expectedList.length());
-}
-
-
 void StatementTest::testEmpty()
 {
     m_project.getSettings()->setOutputDirectory("./unit_test/");
@@ -167,7 +154,7 @@ void StatementTest::testFlow()
         "              Reaching definitions: r24=5\n"
         "\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -238,7 +225,7 @@ void StatementTest::testKill()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete e1;
@@ -304,7 +291,7 @@ void StatementTest::testUse()
         "              Modifieds: \n"
         "              Reaching definitions: r24=5,   r28=5\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -376,7 +363,7 @@ void StatementTest::testUseOverKill()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete e1;
@@ -451,7 +438,7 @@ void StatementTest::testUseOverBB()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -517,7 +504,7 @@ void StatementTest::testUseKill()
         "              Modifieds: \n"
         "              Reaching definitions: r24=6\n\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 
     // clean up
     delete a1;
@@ -587,42 +574,42 @@ void StatementTest::testEndlessLoop()
                        "0x00001010    3 *i32* r24 := r24{2} + 1\n"
                        "\n";
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 }
 
 
 void StatementTest::testLocationSet()
 {
-    Location    rof(opRegOf, Const::get(REG_SPARC_O4), nullptr); // r12
-    Const&      theReg = *std::dynamic_pointer_cast<Const>(rof.getSubExp1());
+    auto rof = Location::regOf(REG_SPARC_O4); // r12
+    Const&      theReg = *std::dynamic_pointer_cast<Const>(rof->getSubExp1());
     LocationSet ls;
 
 
-    ls.insert(rof.clone()); // ls has r12
+    ls.insert(rof->clone()); // ls has r12
     theReg.setInt(REG_SPARC_O0);
-    ls.insert(rof.clone()); // ls has r8 r12
+    ls.insert(rof->clone()); // ls has r8 r12
     theReg.setInt(REG_SPARC_I7);
-    ls.insert(rof.clone()); // ls has r8 r12 r31
+    ls.insert(rof->clone()); // ls has r8 r12 r31
     theReg.setInt(REG_SPARC_I0);
-    ls.insert(rof.clone()); // ls has r8 r12 r24 r31
+    ls.insert(rof->clone()); // ls has r8 r12 r24 r31
     theReg.setInt(REG_SPARC_O4);
-    ls.insert(rof.clone()); // Note: r12 already inserted
+    ls.insert(rof->clone()); // Note: r12 already inserted
 
     QCOMPARE(ls.size(), 4);
     theReg.setInt(REG_SPARC_O0);
     auto ii = ls.begin();
-    QVERIFY(rof == **ii); // First element should be r8
+    QVERIFY(*rof == **ii); // First element should be r8
 
     theReg.setInt(REG_SPARC_O4);
     SharedExp e = *(++ii);
-    QVERIFY(rof == *e); // Second should be r12
+    QVERIFY(*rof == *e); // Second should be r12
 
     theReg.setInt(REG_SPARC_I0);
     e = *(++ii);
-    QVERIFY(rof == *e); // Next should be r24
+    QVERIFY(*rof == *e); // Next should be r24
     theReg.setInt(REG_SPARC_I7);
     e = *(++ii);
-    QVERIFY(rof == *e);                                                                      // Last should be r31
+    QVERIFY(*rof == *e);                                                                      // Last should be r31
 
     Location mof(opMemOf, Binary::get(opPlus, Location::regOf(REG_SPARC_O6), Const::get(4)), nullptr); // m[r14 + 4]
     ls.insert(mof.clone());                                                                  // ls should be r8 r12 r24 r31 m[r14 + 4]
@@ -638,11 +625,13 @@ void StatementTest::testLocationSet()
     QCOMPARE(ls2.size(), 5);
 
     theReg.setInt(REG_SPARC_O0);
-    QVERIFY(rof == **ls2.begin()); // First elements should compare equal
+    QVERIFY(*rof == **ls2.begin()); // First elements should compare equal
 
     theReg.setInt(REG_SPARC_O4);
     e = *(++ls2.begin());          // Second element
-    QCOMPARE(e->prints(), rof.prints());            // ... should be r12
+    QVERIFY(e != nullptr);
+    QVERIFY(rof != nullptr);
+    QCOMPARE(e->toString(), rof->toString());            // ... should be r12
 
     Assign s10(Const::get(0), Const::get(0));
     Assign s20(Const::get(0), Const::get(0));
@@ -1337,7 +1326,7 @@ void StatementTest::testStripSizes()
     Statement *s = new Assign(lhs, rhs);
 
     s->stripSizes();
-    QString     expected("   0 *v* r24 := m[zfill(8,32,local5) + param6] / 16");
+    QString     expected("   0 *v* r24 := m[zfill(8, 32, local5) + param6] / 16");
     QString     actual;
     OStream ost(&actual);
     ost << s;

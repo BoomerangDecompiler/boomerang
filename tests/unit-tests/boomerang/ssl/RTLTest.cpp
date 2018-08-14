@@ -34,23 +34,6 @@
 #include <sstream>
 
 
-// #define SWITCH_SPARC    (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/sparc/switch_cc"))
-// #define SWITCH_PENT     (m_project.getSettings()->getDataDirectory().absoluteFilePath("samples/pentium/switch_cc"))
-
-
-void compareStrings(const QString& actual, const QString& expected)
-{
-    QStringList actualList = actual.split('\n');
-    QStringList expectedList = expected.split('\n');
-
-    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
-        QCOMPARE(actualList[i], expectedList[i]);
-    }
-
-    QVERIFY(actualList.length() == expectedList.length());
-}
-
-
 void RTLTest::testAppend()
 {
     Assign *a = new Assign(Location::regOf(REG_SPARC_O0), Binary::get(opPlus, Location::regOf(REG_SPARC_O1), Const::get(99)));
@@ -279,7 +262,7 @@ void RTLTest::testSetConscripts()
                     "              Reaching definitions: \n"
                     "              Live variables: \n");
 
-    compareStrings(actual, expected);
+    compareLongStrings(actual, expected);
 }
 
 

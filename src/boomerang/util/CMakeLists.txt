@@ -19,6 +19,7 @@ list(APPEND boomerang-util-sources
     util/CFGDotWriter
     util/ConnectionGraph
     util/DFGWriter
+    util/ExpPrinter
     util/ExpDotWriter
     util/ExpSet
     util/LocationSet

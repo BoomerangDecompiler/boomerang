@@ -49,12 +49,6 @@ public:
     /// \copydoc Unary::operator*=
     bool operator*=(const Exp& o) const override;
 
-    /// \copydoc Unary::print
-    virtual void print(OStream& os, bool html = false) const override;
-
-    /// \copydoc Unary::printx
-    virtual void printx(int ind) const override;
-
     /// Get and set the type
     SharedType getType()       { return m_type; }
     SharedConstType getType() const { return m_type; }

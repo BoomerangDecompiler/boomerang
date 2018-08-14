@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include "boomerang/ifc/IPrintable.h"
 #include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/util/OStream.h"
@@ -60,7 +59,7 @@ typedef std::shared_ptr<const Type>   SharedConstType;
  *     RefExp__/    |
  *               Ternary
  */
-class BOOMERANG_API Exp : public IPrintable, public std::enable_shared_from_this<Exp>
+class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
 {
 public:
     Exp(OPER oper) : m_oper(oper) {}
@@ -68,7 +67,7 @@ public:
     Exp(const Exp& other) = default;
     Exp(Exp&& other) = default;
 
-    virtual ~Exp() override = default;
+    virtual ~Exp() = default;
 
     Exp& operator=(const Exp&) = default;
     Exp& operator=(Exp&&) = default;
@@ -100,23 +99,10 @@ public:
     void setOper(OPER x) { m_oper = x; }
 
     /// \returns this expression as a string
-    QString toString() const override;
+    QString toString() const;
 
     /// Print the expression to the given stream
-    virtual void print(OStream& os, bool html = false) const = 0;
-
-    /// Recursive print: don't want parens at the top level
-    virtual void printr(OStream& os, bool html = false) const { print(os, html); }
-
-    /// Print an infix representation of the object to \p os,
-    /// with its type in \<angle brackets\>.
-    void printt(OStream& os) const;
-
-    /// Print to a static buffer (for debugging)
-    QString prints();
-
-    /// For debugging: print in indented hex. In gdb: "p x->printx(0)"
-    virtual void printx(int ind) const = 0;
+    void print(OStream& os, bool html = false) const;
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier
@@ -184,10 +170,6 @@ public:
     /// True if this is a typeof
     bool isTypeOf() const { return m_oper == opTypeOf; }
 
-    /// \returns the index for this var, e.g. if this is v[2], return 2
-    /// \note this must be opVar!
-    int getVarIndex();
-
     /// \returns true if this is a terminal
     virtual bool isTerminal() const { return false; }
     /// \returns true if this is the constant "true"
@@ -226,11 +208,13 @@ public:
     bool isTypedExp() const { return m_oper == opTypedExp; }
 
     /**
-     * Search this expression for the given subexpression, and if found, return true and return a pointer
-     * to the matched expression in result
-     * useful when there are wildcards, e.g. search pattern is *r[?] result is r[2].
-     * \param   pattern ptr to Exp we are searching for
-     * \param   result  ref to ptr to Exp that matched
+     * Search this expression for the given subexpression, and if found,
+     * return true and return a pointer to the matched expression in result.
+     * Useful when there are wildcards, e.g. search pattern is *r[?] result is r[2].
+     *
+     * \param   pattern Expression we are searching for
+     * \param   result  ref to ptr to Exp that matched. If the expression was not found,
+     *                  the value is nullptr.
      * \returns         True if a match was found
      */
     virtual bool search(const Exp& pattern, SharedExp& result);
@@ -551,14 +535,7 @@ protected:
 
 
 /// Prints the Exp pointed to by \p p to \p os
-BOOMERANG_API OStream& operator<<(OStream& os, const Exp *p);
-
-
-inline OStream& operator<<(OStream& os, const SharedConstExp& p)
-{
-    os << p.get();
-    return os;
-}
+BOOMERANG_API OStream& operator<<(OStream& os, const SharedConstExp& exp);
 
 
 // Hard-coded numbers of register indices.

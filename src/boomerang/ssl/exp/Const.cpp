@@ -147,89 +147,10 @@ QString Const::getFuncName() const
 }
 
 
-void Const::printx(int ind) const
-{
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
-
-    switch (m_oper)
-    {
-    case opIntConst:
-        LOG_MSG("%1", m_value.i);
-        break;
-
-    case opFltConst:
-        LOG_MSG("%1", m_value.d);
-        break;
-
-    case opStrConst:
-        LOG_MSG("\"%1\"", m_string);
-        break;
-
-    case opFuncConst:
-        LOG_MSG(m_value.pp->getName());
-        break;
-
-    default:
-        LOG_MSG("?%1?", static_cast<int>(m_oper));
-        break;
-    }
-
-    if (m_conscript) {
-        LOG_MSG("\"%1\"", m_conscript);
-    }
-}
-
-
 SharedExp Const::clone() const
 {
     // Note: not actually cloning the Type* type pointer. Probably doesn't matter with GC
     return Const::get(*this);
-}
-
-
-void Const::print(OStream& os, bool) const
-{
-    switch (m_oper)
-    {
-    case opIntConst:
-        if ((m_value.i < -1000) || (m_value.i > 1000)) {
-            os << "0x" << QString::number(m_value.i, 16);
-        }
-        else {
-            os << m_value.i;
-        }
-        break;
-
-    case opLongConst:
-        if ((static_cast<long long>(m_value.ll) < -1000LL) || (static_cast<long long>(m_value.ll) > 1000LL)) {
-            os << "0x" << QString::number(m_value.ll, 16) << "LL";
-        }
-        else {
-            os << m_value.ll << "LL";
-        }
-        break;
-
-    case opFltConst:
-        os << QString("%1").arg(m_value.d); // respects English locale
-        break;
-
-    case opStrConst:
-        os << "\"" << m_string << "\"";
-        break;
-
-    default:
-        LOG_FATAL("Invalid operator %1", operToString(m_oper));
-    }
-
-    if (m_conscript) {
-        os << "\\" << m_conscript << "\\";
-    }
-
-#ifdef DUMP_TYPES
-    if (type) {
-        os << "T(" << type->prints() << ")";
-    }
-#endif
 }
 
 

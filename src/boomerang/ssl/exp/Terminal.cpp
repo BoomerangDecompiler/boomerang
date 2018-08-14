@@ -81,116 +81,9 @@ bool Terminal::operator*=(const Exp& o) const
 }
 
 
-void Terminal::print(OStream& os, bool) const
-{
-    switch (m_oper)
-    {
-    case opPC:
-        os << "%pc";
-        break;
-
-    case opFlags:
-        os << "%flags";
-        break;
-
-    case opFflags:
-        os << "%fflags";
-        break;
-
-    case opCF:
-        os << "%CF";
-        break;
-
-    case opZF:
-        os << "%ZF";
-        break;
-
-    case opOF:
-        os << "%OF";
-        break;
-
-    case opNF:
-        os << "%NF";
-        break;
-
-    case opDF:
-        os << "%DF";
-        break;
-
-    case opAFP:
-        os << "%afp";
-        break;
-
-    case opAGP:
-        os << "%agp";
-        break;
-
-    case opWild:
-        os << "WILD";
-        break;
-
-    case opAnull:
-        os << "%anul";
-        break;
-
-    case opFpush:
-        os << "FPUSH";
-        break;
-
-    case opFpop:
-        os << "FPOP";
-        break;
-
-    case opWildMemOf:
-        os << "m[WILD]";
-        break;
-
-    case opWildRegOf:
-        os << "r[WILD]";
-        break;
-
-    case opWildAddrOf:
-        os << "a[WILD]";
-        break;
-
-    case opWildIntConst:
-        os << "WILDINT";
-        break;
-
-    case opWildStrConst:
-        os << "WILDSTR";
-        break;
-
-    case opNil:
-        break;
-
-    case opTrue:
-        os << "true";
-        break;
-
-    case opFalse:
-        os << "false";
-        break;
-
-    case opDefineAll:
-        os << "<all>";
-        break;
-
-    default:
-        LOG_FATAL("Invalid operator %1", operToString(m_oper));
-    }
-}
-
-
 bool Terminal::acceptVisitor(ExpVisitor *v)
 {
     return v->visit(shared_from_base<Terminal>());
-}
-
-
-void Terminal::printx(int ind) const
-{
-    LOG_MSG("%1%2", QString(ind, ' '), operToString(m_oper));
 }
 
 
@@ -213,7 +106,7 @@ SharedType Terminal::ascendType()
         return IntegerType::get(STD_SIZE, Sign::Unsigned);
 
     default:
-        LOG_WARN("Unknown type %1", this->toString());
+        LOG_WARN("Unknown type %1", shared_from_this());
         return VoidType::get();
     }
 }

@@ -137,7 +137,14 @@ private:
      * \sa QString::arg
      */
     template<typename T>
-    QString collectArg(const QString& msg, const std::shared_ptr<T>& arg) { return msg.arg(arg->toString()); }
+    QString collectArg(const QString& msg, const std::shared_ptr<T>& arg)
+    {
+        QString tgt;
+        OStream os(&tgt);
+        os << arg;
+        return msg.arg(tgt);
+    }
+
     QString collectArg(const QString& msg, const char *arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, const QString& arg) { return msg.arg(arg); }
     QString collectArg(const QString& msg, const Statement *s);

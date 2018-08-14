@@ -77,7 +77,7 @@ enum OPER
     opRotateLC,   ///< Rotate left through carry
     opRotateRC,   ///< Rotate right through carry
     opTargetInst, ///< Target specific instruction (Unary)
-    ///< See frontend.cc for details
+                  ///< See frontend.cc for details
     opTypedExp,   ///< Typed expression
     opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,      ///< Guarded expression (should be assignment)
@@ -87,7 +87,7 @@ enum OPER
     opFlagCall,   ///< A flag call (Binary with string and params)
     opFlagDef,    ///< A flag function definition (class FlagDef)
     opList,       ///< A binary, with expression (1) and next element
-    ///<    in chain (2). Last element in chain is opNil
+                  ///< in chain (2). Last element in chain is opNil
 
     // Next three are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the
@@ -110,7 +110,6 @@ enum OPER
     opWildRegOf,    ///< r[wild],
     opWildAddrOf,   ///< a[wild],
     opDefineAll,    ///< A wild definition
-    opVar,          ///< Represents l[] (recovered locations)
     opPhi,          ///< Represents phi(a1, a2, a3) .. ie SSA form merging
     opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
     opParam,        ///< SSL parameter param`'
@@ -124,9 +123,9 @@ enum OPER
     opSize,         ///< Size specifier
     opCastIntStar,  ///< Cast to int*
     opPostVar,      ///< Post-instruction variable marker (unary with any subexpression). Can arise in some SSL
-    ///< files when ticked variables are used
+                    ///< files when ticked variables are used
     opMachFtr,      ///< A Unary with Const(string) representing a machine specific feature (register, instruction
-    ///< or whatever; the analysis better understand it and transform it away)
+                    ///< or whatever; the analysis better understand it and transform it away)
     opTruncu,       ///< Integer truncate (unsigned)
     opTruncs,       ///< Integer truncate (signed)
     opZfill,        ///< Integer zero fill

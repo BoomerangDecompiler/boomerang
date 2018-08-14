@@ -17,6 +17,12 @@
 #include "boomerang/util/Util.h"
 
 
+LocationSet::LocationSet(const std::initializer_list<SharedExp>& exps)
+    : ExpSet<Exp, lessExpStar>(exps)
+{
+}
+
+
 LocationSet& LocationSet::operator=(const LocationSet& o)
 {
     m_set.clear();
@@ -30,10 +36,8 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 
 
 LocationSet::LocationSet(const LocationSet& o)
+    : ExpSet<Exp, lessExpStar>(o)
 {
-    for (auto it = o.begin(); it != o.end(); ++it) {
-        insert((*it)->clone());
-    }
 }
 
 

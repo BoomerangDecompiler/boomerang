@@ -99,12 +99,6 @@ public:
     /// Changes the type of this constant
     void setType(SharedType ty) { m_type = ty; }
 
-    /// \copydoc Exp::print
-    virtual void print(OStream& os, bool = false) const override;
-
-    /// \copydoc Exp::printx
-    virtual void printx(int ind) const override;
-
     /// Print "recursive" (extra parens not wanted at outer levels)
     void printNoQuotes(OStream& os) const;
 
@@ -129,8 +123,8 @@ protected:
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;
 
 private:
-    Data m_value;      ///< The value of this constant
-    QString m_string;  ///< The string value of this constant
-    int m_conscript;   ///< like a subscript for constants
-    SharedType m_type; ///< Constants need types during type analysis
+    Data m_value;           ///< The value of this constant
+    QString m_string;       ///< The string value of this constant
+    int m_conscript = 0;    ///< like a subscript for constants
+    SharedType m_type;      ///< Constants need types during type analysis
 };

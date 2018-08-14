@@ -272,7 +272,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
             auto ss = stacks.find(*dd);
 
             if (ss == stacks.end()) {
-                LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", (*dd)->toString());
+                LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", (*dd));
             }
 
             ss->second.pop_back();

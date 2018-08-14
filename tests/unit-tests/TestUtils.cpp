@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Settings.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -38,4 +39,39 @@ void BoomerangTest::cleanupTestCase()
 QString getFullSamplePath(const QString& relpath)
 {
     return QString(BOOMERANG_TEST_BASE) + "share/boomerang/samples/" + relpath;
+}
+
+
+void compareLongStrings(const QString& actual, const QString& expected)
+{
+    QStringList actualList = actual.split('\n');
+    QStringList expectedList = expected.split('\n');
+
+    for (int i = 0; i < std::min(actualList.length(), expectedList.length()); i++) {
+        QCOMPARE(actualList[i], expectedList[i]);
+    }
+
+    QCOMPARE(actualList.length(), expectedList.length());
+}
+
+
+char *toString(const SharedConstExp& exp)
+{
+    return QTest::toString(exp->toString());
+}
+
+
+char *toString(const Exp& exp)
+{
+    return QTest::toString(exp.toString());
+}
+
+
+char *toString(const LocationSet& locSet)
+{
+    QString tgt;
+    OStream os(&tgt);
+    locSet.print(os);
+
+    return QTest::toString(tgt);
 }

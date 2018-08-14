@@ -27,6 +27,7 @@ class BOOMERANG_API LocationSet : public ExpSet<Exp, lessExpStar>
 {
 public:
     LocationSet() = default;
+    LocationSet(const std::initializer_list<SharedExp>& exps);
     LocationSet(const LocationSet& other);
     LocationSet(LocationSet&& other) = default;
 

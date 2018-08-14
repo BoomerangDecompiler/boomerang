@@ -123,20 +123,6 @@ bool TypedExp::operator*=(const Exp& o) const
 }
 
 
-void TypedExp::print(OStream& os, bool html) const
-{
-    if (m_type) {
-        os << "*" << "*m_type" << "* ";
-    }
-    else {
-        os << "*v* ";
-    }
-
-    SharedConstExp p1 = this->getSubExp1();
-    p1->print(os, html);
-}
-
-
 bool TypedExp::acceptVisitor(ExpVisitor *v)
 {
     bool visitChildren = true;
@@ -151,13 +137,6 @@ bool TypedExp::acceptVisitor(ExpVisitor *v)
     }
 
     return v->postVisit(shared_from_base<TypedExp>());
-}
-
-
-void TypedExp::printx(int ind) const
-{
-    LOG_MSG("%1%2 %3", QString(ind, ' '), operToString(m_oper), m_type->getCtype());
-    printChild(subExp1, ind);
 }
 
 

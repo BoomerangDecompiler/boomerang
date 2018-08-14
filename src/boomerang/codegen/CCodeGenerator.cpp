@@ -872,8 +872,7 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
             ost << ";";
         }
         else {
-            ost << "; \t\t// ";
-            e->print(ost);
+            ost << "; \t\t// " << e;
         }
     }
     else {
@@ -1549,7 +1548,6 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
     case opTargetInst:
     case opNamedExp:
     case opGuard:
-    case opVar:
     case opArg:
     case opExpand:
     case opCastIntStar:

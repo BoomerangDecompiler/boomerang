@@ -25,9 +25,8 @@ void ExpSimplifierTest::testSimplify()
     QFETCH(SharedExpWrapper, expectedResult);
 
     SharedExp actualResult = exp->simplify();
-    QString actual(actualResult->prints());
-    QString expected(expectedResult->prints());
-
+    QString actual   = actualResult->toString();
+    QString expected = expectedResult->toString();
     QCOMPARE(actual, expected);
 }
 

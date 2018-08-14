@@ -18,7 +18,6 @@
 #include <unordered_set>
 
 
-
 /**
  * A class ordered or unordered sets of expressions.
  * \tparam T the type of expression to store in the set
@@ -39,6 +38,31 @@ protected:
 public:
     typedef typename Set::iterator       iterator;
     typedef typename Set::const_iterator const_iterator;
+
+public:
+    ExpSet() = default;
+    ExpSet(const std::initializer_list<std::shared_ptr<T>>& exps)
+        : m_set(exps)
+    {}
+
+    ExpSet(const ExpSet& o)
+    {
+        for (auto it = o.begin(); it != o.end(); ++it) {
+            m_set.insert((*it)->clone());
+        }
+    }
+
+
+    ExpSet& operator=(const ExpSet& o) {
+        for (auto it = o.begin(); it != o.end(); ++it) {
+            m_set.insert((*it)->clone());
+        }
+
+        return *this;
+    }
+
+    ExpSet(ExpSet&&) = default;
+    ExpSet& operator=(ExpSet&&) = default;
 
 public:
     bool operator!=(const ExpSet& other) const { return !(*this == other); }
@@ -114,6 +138,7 @@ public:
             os << *it;
         }
     }
+
 protected:
     Set m_set;
 };

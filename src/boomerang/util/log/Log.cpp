@@ -179,7 +179,10 @@ QString Log::collectArg(const QString& msg, const Statement *s)
 
 QString Log::collectArg(const QString& msg, const SharedConstExp& e)
 {
-    return msg.arg(e->toString());
+    QString tgt;
+    OStream os(&tgt);
+    os << e;
+    return msg.arg(tgt);
 }
 
 
