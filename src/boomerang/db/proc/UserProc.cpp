@@ -1005,7 +1005,7 @@ void UserProc::printSymbolMap(OStream& out, bool html /*= false*/) const
     else {
         for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
             SharedConstType ty = getTypeForLocation(it.second);
-            out << "  " << *it.first << " maps to " << *it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
+            out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
 
             if (html) {
                 out << "<br>";

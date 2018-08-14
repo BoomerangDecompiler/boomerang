@@ -453,14 +453,12 @@ void ExpTest::testSimplifyBinary()
     SharedExp b = Binary::get(opPlus, Const::get(2), Const::get(3));
 
     b = b->simplify();
-    Const five(5);
-    QVERIFY(*b == five);
+    QVERIFY(*b == *Const::get(5));
 
     // Multiply integer consts
     b = Binary::get(opMult, Const::get(2), Const::get(3));
     b = b->simplify();
-    Const six(6);
-    QVERIFY(*b == six);
+    QVERIFY(*b == *Const::get(6));
 
     // Shift left two integer constants
     b = Binary::get(opShiftL, Const::get(2), Const::get(3));
@@ -471,29 +469,24 @@ void ExpTest::testSimplifyBinary()
     // Shift right arithmetic two integer contants
     b = Binary::get(opShiftRA, Const::get(-144), Const::get(3));
     b = b->simplify();
-    Const minus18(-18);
-    QVERIFY(*b == minus18);
+    QVERIFY(*b == *Const::get(-18));
 
     // Bitwise XOR
     b = Binary::get(opBitXor, Const::get(0x55), Const::get(0xF));
     b = b->simplify();
-    Const fiveA(0x5A);
-    QVERIFY(*b == fiveA);
+    QVERIFY(*b == *Const::get(0x5A));
 
     // Xor with self
     b = Binary::get(opBitXor, m_rof2->clone(), m_rof2->clone());
     b = b->simplify();
-    Const zero(0);
-    QVERIFY(*b == zero);
+    QVERIFY(*b == *Const::get(0));
 
     // Test commute
     // 77 * r2
     b = Binary::get(opMults, Const::get(77), m_rof2->clone());
-    b = b->simplify();
-
-    // r2 * 77
-    Binary exp(opMults, m_rof2->clone(), Const::get(77));
-    QCOMPARE(b->toString(), exp.toString());
+    b = b->simplify(); // r2 * 77
+    SharedExp commuted = Binary::get(opMults, m_rof2->clone(), Const::get(77));
+    QCOMPARE(*b, *commuted);
 
     // x*1
     std::shared_ptr<Const> subExp = std::dynamic_pointer_cast<Const>(b->getSubExp2());

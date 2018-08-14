@@ -16,6 +16,7 @@
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/util/OStream.h"
 #include "boomerang/util/log/Log.h"
@@ -47,7 +48,7 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opDivs,           { "",           " /! ",         "",             ""          } },
     { opMod,            { "",           " % ",          "",             ""          } },
     { opMods,           { "",           " %! ",         "",             ""          } },
-    { opNeg,            { " -",         "",             "",             ""          } },
+    { opNeg,            { "-",          "",             "",             ""          } },
     { opAnd,            { "",           " and ",        "",             ""          } },
     { opOr,             { "",           " or ",         "",             ""          } },
     { opEquals,         { "",           " = ",          "",             ""          } },
@@ -60,8 +61,8 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opGtrUns,         { "",           " >u ",         "",             ""          } },
     { opLessEqUns,      { "",           " <=u ",        "",             ""          } },
     { opGtrEqUns,       { "",           " >=u ",        "",             ""          } },
-    { opNot,            { " ~",         "",             "",             ""          } },
-    { opLNot,           { " L~",        "",             "",             ""          } },
+    { opNot,            { "~",          "",             "",             ""          } },
+    { opLNot,           { "L~",         "",             "",             ""          } },
     { opSignExt,        { "",           "",             "",             "! "        } },
     { opBitAnd,         { "",           " & ",          "",             ""          } },
     { opBitOr,          { "",           " | ",          "",             ""          } },
@@ -135,18 +136,18 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
 };
 
 
-void ExpPrinter::print(OStream& os, const Exp& exp, bool html) const
+void ExpPrinter::print(OStream& os, const SharedConstExp& exp, bool html) const
 {
     if (html) {
-        printHTML(os, exp.shared_from_this());
+        printHTML(os, exp);
     }
     else {
-        print(os, exp.shared_from_this());
+        printPlain(os, exp);
     }
 }
 
 
-void ExpPrinter::print(OStream& os, const std::shared_ptr<const Exp>& exp) const
+void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
 {
     const OPER oper = exp->getOper();
 
@@ -218,7 +219,7 @@ void ExpPrinter::print(OStream& os, const std::shared_ptr<const Exp>& exp) const
         else {
             os << exp->access<const Const>()->getLong() << "LL";
         }
-        break;
+        return;
 
     case opFltConst:
         os << QString("%1").arg(exp->access<const Const>()->getFlt()); // respects English locale
@@ -238,7 +239,12 @@ void ExpPrinter::print(OStream& os, const std::shared_ptr<const Exp>& exp) const
             print(os, exp->getSubExp1());
             return;
         }
-
+        else {
+            os << "r[";
+            print(os, exp->getSubExp1());
+            os << "]";
+            return;
+        }
 
     case opSubscript:
         print(os, exp->getSubExp1());
@@ -252,6 +258,12 @@ void ExpPrinter::print(OStream& os, const std::shared_ptr<const Exp>& exp) const
             os << "{-}"; // So you can tell the difference with {0}
         }
         return;
+
+    case opTypedExp: {
+        SharedConstType ty = std::static_pointer_cast<const TypedExp>(exp)->getType();
+        os << "<" << ty->getSize() << ">";
+        return;
+    }
 
     default: break;
     }
@@ -285,7 +297,7 @@ void ExpPrinter::print(OStream& os, const std::shared_ptr<const Exp>& exp) const
 }
 
 
-void ExpPrinter::printHTML(OStream& os, const std::shared_ptr<const Exp>& exp) const
+void ExpPrinter::printHTML(OStream& os, const SharedConstExp& exp) const
 {
     Q_UNUSED(os);
     Q_UNUSED(exp);
@@ -299,6 +311,23 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp& exp, const SharedCo
     // never parenthesize things like m[...] or foo{-} or constants
     if (child->getArity() < 2) {
         return false;
+    }
+    else if (child->getArity() == 3) {
+        switch (child->getOper()) {
+        case opTruncu:
+        case opTruncs:
+        case opZfill:
+        case opSgnEx:
+        case opFsize:
+        case opItof:
+        case opFtoi:
+        case opFround:
+        case opFtrunc:
+        case opOpTable:
+            return false;
+        default:
+            return true;
+        }
     }
 
     if (exp->getArity() == 3) {

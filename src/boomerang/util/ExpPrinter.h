@@ -22,14 +22,14 @@ class ExpPrinter
 {
 public:
     /// print \p exp to \p os
-    void print(OStream& os, const Exp& exp, bool html = false) const;
+    void print(OStream& os, const SharedConstExp& exp, bool html = false) const;
 
 private:
     /// print \p exp to \p os
-    void print(OStream& os, const std::shared_ptr<const Exp>& exp) const;
+    void printPlain(OStream& os, const SharedConstExp& exp) const;
 
     /// print \p exp to \p os
-    void printHTML(OStream& os, const std::shared_ptr<const Exp>& exp) const;
+    void printHTML(OStream& os, const SharedConstExp& exp) const;
 
     /**
      * Given an expression, and an immediate child expression, determine if

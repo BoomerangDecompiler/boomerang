@@ -381,18 +381,18 @@ QString Exp::toString() const
 {
     QString res;
     OStream os(&res);
-    os << *this;
+    os << shared_from_this();
     return res;
 }
 
 
 void Exp::print(OStream& os, bool html) const
 {
-    ExpPrinter().print(os, *this, html);
+    ExpPrinter().print(os, shared_from_this(), html);
 }
 
 
-OStream& operator<<(OStream& os, const Exp& exp)
+OStream& operator<<(OStream& os, const SharedConstExp& exp)
 {
     ExpPrinter().print(os, exp);
     return os;

@@ -580,36 +580,36 @@ void StatementTest::testEndlessLoop()
 
 void StatementTest::testLocationSet()
 {
-    Location    rof(opRegOf, Const::get(REG_SPARC_O4), nullptr); // r12
-    Const&      theReg = *std::dynamic_pointer_cast<Const>(rof.getSubExp1());
+    auto rof = Location::regOf(REG_SPARC_O4); // r12
+    Const&      theReg = *std::dynamic_pointer_cast<Const>(rof->getSubExp1());
     LocationSet ls;
 
 
-    ls.insert(rof.clone()); // ls has r12
+    ls.insert(rof->clone()); // ls has r12
     theReg.setInt(REG_SPARC_O0);
-    ls.insert(rof.clone()); // ls has r8 r12
+    ls.insert(rof->clone()); // ls has r8 r12
     theReg.setInt(REG_SPARC_I7);
-    ls.insert(rof.clone()); // ls has r8 r12 r31
+    ls.insert(rof->clone()); // ls has r8 r12 r31
     theReg.setInt(REG_SPARC_I0);
-    ls.insert(rof.clone()); // ls has r8 r12 r24 r31
+    ls.insert(rof->clone()); // ls has r8 r12 r24 r31
     theReg.setInt(REG_SPARC_O4);
-    ls.insert(rof.clone()); // Note: r12 already inserted
+    ls.insert(rof->clone()); // Note: r12 already inserted
 
     QCOMPARE(ls.size(), 4);
     theReg.setInt(REG_SPARC_O0);
     auto ii = ls.begin();
-    QVERIFY(rof == **ii); // First element should be r8
+    QVERIFY(*rof == **ii); // First element should be r8
 
     theReg.setInt(REG_SPARC_O4);
     SharedExp e = *(++ii);
-    QVERIFY(rof == *e); // Second should be r12
+    QVERIFY(*rof == *e); // Second should be r12
 
     theReg.setInt(REG_SPARC_I0);
     e = *(++ii);
-    QVERIFY(rof == *e); // Next should be r24
+    QVERIFY(*rof == *e); // Next should be r24
     theReg.setInt(REG_SPARC_I7);
     e = *(++ii);
-    QVERIFY(rof == *e);                                                                      // Last should be r31
+    QVERIFY(*rof == *e);                                                                      // Last should be r31
 
     Location mof(opMemOf, Binary::get(opPlus, Location::regOf(REG_SPARC_O6), Const::get(4)), nullptr); // m[r14 + 4]
     ls.insert(mof.clone());                                                                  // ls should be r8 r12 r24 r31 m[r14 + 4]
@@ -625,11 +625,13 @@ void StatementTest::testLocationSet()
     QCOMPARE(ls2.size(), 5);
 
     theReg.setInt(REG_SPARC_O0);
-    QVERIFY(rof == **ls2.begin()); // First elements should compare equal
+    QVERIFY(*rof == **ls2.begin()); // First elements should compare equal
 
     theReg.setInt(REG_SPARC_O4);
     e = *(++ls2.begin());          // Second element
-    QCOMPARE(e->toString(), rof.toString());            // ... should be r12
+    QVERIFY(e != nullptr);
+    QVERIFY(rof != nullptr);
+    QCOMPARE(e->toString(), rof->toString());            // ... should be r12
 
     Assign s10(Const::get(0), Const::get(0));
     Assign s20(Const::get(0), Const::get(0));
@@ -1324,7 +1326,7 @@ void StatementTest::testStripSizes()
     Statement *s = new Assign(lhs, rhs);
 
     s->stripSizes();
-    QString     expected("   0 *v* r24 := m[zfill(8,32,local5) + param6] / 16");
+    QString     expected("   0 *v* r24 := m[zfill(8, 32, local5) + param6] / 16");
     QString     actual;
     OStream ost(&actual);
     ost << s;

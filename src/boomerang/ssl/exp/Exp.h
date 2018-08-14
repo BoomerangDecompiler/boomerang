@@ -537,13 +537,8 @@ protected:
 
 
 /// Prints the Exp pointed to by \p p to \p os
-BOOMERANG_API OStream& operator<<(OStream& os, const Exp& exp);
+BOOMERANG_API OStream& operator<<(OStream& os, const SharedConstExp& exp);
 
-
-inline OStream& operator<<(OStream& os, const SharedConstExp& exp)
-{
-    return os << *exp;
-}
 
 // Hard-coded numbers of register indices.
 
