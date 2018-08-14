@@ -27,7 +27,7 @@
 #include <map>
 
 
-Q_DECLARE_METATYPE(LocationSet);
+Q_DECLARE_METATYPE(LocationSet)
 
 
 void ExpTest::initTestCase()

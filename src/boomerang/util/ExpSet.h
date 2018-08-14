@@ -45,6 +45,25 @@ public:
         : m_set(exps)
     {}
 
+    ExpSet(const ExpSet& o)
+    {
+        for (auto it = o.begin(); it != o.end(); ++it) {
+            m_set.insert((*it)->clone());
+        }
+    }
+
+
+    ExpSet& operator=(const ExpSet& o) {
+        for (auto it = o.begin(); it != o.end(); ++it) {
+            m_set.insert((*it)->clone());
+        }
+
+        return *this;
+    }
+
+    ExpSet(ExpSet&&) = default;
+    ExpSet& operator=(ExpSet&&) = default;
+
 public:
     bool operator!=(const ExpSet& other) const { return !(*this == other); }
     bool operator==(const ExpSet& other) const

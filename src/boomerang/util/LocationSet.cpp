@@ -36,10 +36,8 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 
 
 LocationSet::LocationSet(const LocationSet& o)
+    : ExpSet<Exp, lessExpStar>(o)
 {
-    for (auto it = o.begin(); it != o.end(); ++it) {
-        insert((*it)->clone());
-    }
 }
 
 
