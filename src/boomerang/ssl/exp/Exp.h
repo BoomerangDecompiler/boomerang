@@ -208,11 +208,13 @@ public:
     bool isTypedExp() const { return m_oper == opTypedExp; }
 
     /**
-     * Search this expression for the given subexpression, and if found, return true and return a pointer
-     * to the matched expression in result
-     * useful when there are wildcards, e.g. search pattern is *r[?] result is r[2].
-     * \param   pattern ptr to Exp we are searching for
-     * \param   result  ref to ptr to Exp that matched
+     * Search this expression for the given subexpression, and if found,
+     * return true and return a pointer to the matched expression in result.
+     * Useful when there are wildcards, e.g. search pattern is *r[?] result is r[2].
+     *
+     * \param   pattern Expression we are searching for
+     * \param   result  ref to ptr to Exp that matched. If the expression was not found,
+     *                  the value is nullptr.
      * \returns         True if a match was found
      */
     virtual bool search(const Exp& pattern, SharedExp& result);

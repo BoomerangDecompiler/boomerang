@@ -54,7 +54,7 @@ private slots:
     void testIsAfpTerm();
 
     /**
-     * ExpTest::testCompare1-6
+     * ExpTest::testCompare1-5
      * Test the operator== function
      */
     void testCompare1();
@@ -62,7 +62,6 @@ private slots:
     void testCompare3();
     void testCompare4();
     void testCompare5();
-    void testCompare6();
 
 
     /**
@@ -89,8 +88,8 @@ private slots:
     /// Test the Accumulate function
     void testAccumulate();
 
-    /// Test the simplifyArith function
-    void testSimplifyUnary();
+    void testSimplify();
+    void testSimplify_data();
 
     /// Test the simplifyArith function
     void testSimplifyBinary();

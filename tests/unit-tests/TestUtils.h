@@ -94,3 +94,6 @@ Q_DECLARE_METATYPE(SharedExpWrapper)
 QString getFullSamplePath(const QString& relpath);
 
 void compareLongStrings(const QString& actual, const QString& expected);
+
+char *toString(const Exp& exp);
+char *toString(const SharedConstExp& exp);
