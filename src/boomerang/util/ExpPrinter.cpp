@@ -208,6 +208,10 @@ void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
         else {
             os << exp->access<const Const>()->getInt();
         }
+
+        if (exp->access<const Const>()->getConscript() != 0) {
+            os << "\\" << exp->access<const Const>()->getConscript() << "\\";
+        }
         return;
 
     case opLongConst:
@@ -226,6 +230,10 @@ void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
 
     case opStrConst:
         os << "\"" << exp->access<const Const>()->getStr() << "\"";
+
+        if (exp->access<const Const>()->getConscript() != 0) {
+            os << "\\" << exp->access<const Const>()->getConscript() << "\\";
+        }
         return;
 
     case opRegOf:
