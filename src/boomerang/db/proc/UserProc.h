@@ -319,16 +319,18 @@ public:
     QString toString() const;
 
     /// print this proc, mainly for debugging
-    void print(OStream& out, bool html = false) const;
-    void printParams(OStream& out, bool html = false) const;
-
-    /// Print just the symbol map
-    void printSymbolMap(OStream& out, bool html = false) const;
-
-    /// For debugging
-    void printLocals(OStream& os, bool html = false) const;
+    void print(OStream& out) const;
 
     void debugPrintAll(const QString& stepName);
+
+private:
+    void printParams(OStream& out) const;
+
+    /// Print just the symbol map
+    void printSymbolMap(OStream& out) const;
+
+    /// For debugging
+    void printLocals(OStream& os) const;
 
 private:
     /// True if a local exists with name \p name

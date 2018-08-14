@@ -102,7 +102,7 @@ public:
     QString toString() const;
 
     /// Print the expression to the given stream
-    void print(OStream& os, bool html = false) const;
+    void print(OStream& os) const;
 
     /// Return the number of subexpressions. This is only needed in rare cases.
     /// Could use polymorphism for all those cases, but this is easier

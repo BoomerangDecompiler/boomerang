@@ -38,10 +38,10 @@ public:
     bool operator<(const Assignment& o) { return m_lhs < o.m_lhs; }
 
     /// \copydoc Assignment::print
-    virtual void print(OStream& os, bool html = false) const override;
+    virtual void print(OStream& os) const override;
 
     /// Like print, but print without statement number
-    virtual void printCompact(OStream& os, bool html = false) const = 0;
+    virtual void printCompact(OStream& os) const = 0;
 
     /// \copydoc Statement::getTypeFor
     virtual SharedConstType getTypeFor(SharedConstExp e) const override;

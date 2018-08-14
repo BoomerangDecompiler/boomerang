@@ -67,7 +67,7 @@ void UseCollector::insert(SharedExp e)
 }
 
 
-void UseCollector::print(OStream& os, bool html) const
+void UseCollector::print(OStream& os) const
 {
     bool first = true;
 
@@ -79,7 +79,7 @@ void UseCollector::print(OStream& os, bool html) const
             os << ",  ";
         }
 
-        (elem)->print(os, html);
+        (elem)->print(os);
     }
 }
 

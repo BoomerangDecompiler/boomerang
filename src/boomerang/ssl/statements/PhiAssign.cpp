@@ -68,12 +68,12 @@ bool PhiAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void PhiAssign::printCompact(OStream& os, bool html) const
+void PhiAssign::printCompact(OStream& os) const
 {
     os << "*" << m_type << "* ";
 
     if (m_lhs) {
-        m_lhs->print(os, html);
+        m_lhs->print(os);
     }
 
     os << " := phi";
@@ -97,15 +97,7 @@ void PhiAssign::printCompact(OStream& os, bool html) const
 
         for (auto it = m_defs.begin(); it != m_defs.end(); /* no increment */) {
             if (it->second.getDef()) {
-                if (html) {
-                    os << "<a href=\"#stmt" << it->second.getDef()->getNumber() << "\">";
-                }
-
                 os << it->second.getDef()->getNumber();
-
-                if (html) {
-                    os << "</a>";
-                }
             }
             else {
                 os << "-";

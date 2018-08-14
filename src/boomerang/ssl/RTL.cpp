@@ -101,48 +101,25 @@ void RTL::append(const std::list<Statement *>& stmts)
 }
 
 
-void RTL::print(OStream& os, bool html) const
+void RTL::print(OStream& os) const
 {
-    if (html) {
-        os << "<tr><td>";
-    }
-
     // print out the instruction address of this RTL
     os << m_nativeAddr;
-
-    if (html) {
-        os << "</td>";
-    }
 
     // Print the statements
     // First line has 8 extra chars as above
     bool firstStmt = true;
 
     for (Statement *stmt : *this) {
-        if (html) {
-            if (!firstStmt) {
-                os << "<tr><td></td>";
-            }
-
-            os << "<td width=\"50\" align=\"center\">";
+        if (firstStmt) {
+            os << " ";
         }
         else {
-            if (firstStmt) {
-                os << " ";
-            }
-            else {
-                os << qSetFieldWidth(11) << " " << qSetFieldWidth(0);
-            }
+            os << qSetFieldWidth(11) << " " << qSetFieldWidth(0);
         }
 
         if (stmt) {
-            stmt->print(os, html);
-        }
-
-        // Note: we only put newlines where needed. So none at the end of
-        // Statement::print; one here to separate from other statements
-        if (html) {
-            os << "</td></tr>";
+            stmt->print(os);
         }
 
         os << "\n";

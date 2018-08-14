@@ -128,49 +128,19 @@ QString BasicBlock::prints()
 }
 
 
-void BasicBlock::print(OStream& os, bool html)
+void BasicBlock::print(OStream& os)
 {
-    if (html) {
-        os << "<br>";
-    }
-
     switch (getType())
     {
-    case BBType::Oneway:
-        os << "Oneway BB";
-        break;
-
-    case BBType::Twoway:
-        os << "Twoway BB";
-        break;
-
-    case BBType::Nway:
-        os << "Nway BB";
-        break;
-
-    case BBType::Call:
-        os << "Call BB";
-        break;
-
-    case BBType::Ret:
-        os << "Ret BB";
-        break;
-
-    case BBType::Fall:
-        os << "Fall BB";
-        break;
-
-    case BBType::CompJump:
-        os << "Computed jump BB";
-        break;
-
-    case BBType::CompCall:
-        os << "Computed call BB";
-        break;
-
-    case BBType::Invalid:
-        os << "Invalid BB";
-        break;
+    case BBType::Oneway:    os << "Oneway BB";          break;
+    case BBType::Twoway:    os << "Twoway BB";          break;
+    case BBType::Nway:      os << "Nway BB";            break;
+    case BBType::Call:      os << "Call BB";            break;
+    case BBType::Ret:       os << "Ret BB";             break;
+    case BBType::Fall:      os << "Fall BB";            break;
+    case BBType::CompJump:  os << "Computed jump BB";   break;
+    case BBType::CompCall:  os << "Computed call BB";   break;
+    case BBType::Invalid:   os << "Invalid BB";         break;
     }
 
     os << ":\n";
@@ -189,17 +159,9 @@ void BasicBlock::print(OStream& os, bool html)
 
     os << "\n";
 
-    if (m_listOfRTLs) { // Can be zero if e.g. INVALID
-        if (html) {
-            os << "<table>\n";
-        }
-
+    if (m_listOfRTLs) { // Can be null if e.g. INVALID
         for (auto& rtl : *m_listOfRTLs) {
-            rtl->print(os, html);
-        }
-
-        if (html) {
-            os << "</table>\n";
+            rtl->print(os);
         }
     }
 }

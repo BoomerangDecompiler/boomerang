@@ -54,12 +54,12 @@ bool ImplicitAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void ImplicitAssign::printCompact(OStream& os, bool html) const
+void ImplicitAssign::printCompact(OStream& os) const
 {
     os << "*" << m_type << "* ";
 
     if (m_lhs) {
-        m_lhs->print(os, html);
+        m_lhs->print(os);
     }
 
     os << " := -";

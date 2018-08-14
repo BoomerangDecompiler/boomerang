@@ -70,7 +70,7 @@ public:
 
     /// \copydoc Statement::print
     /// \note ImpRefStatement not yet used
-    virtual void print(OStream& os, bool html = false) const override;
+    virtual void print(OStream& os) const override;
 
     /// \returns the address expression of the (implicitly) referenced location.
     SharedExp getAddressExp() const { return m_addressExp; }

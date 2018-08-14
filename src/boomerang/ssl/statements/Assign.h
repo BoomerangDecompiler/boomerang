@@ -57,7 +57,7 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc Assignment::printCompact
-    virtual void printCompact(OStream& os, bool html = false) const override;
+    virtual void printCompact(OStream& os) const override;
 
     /// Guard
     void setGuard(SharedExp g) { m_guard = g; }

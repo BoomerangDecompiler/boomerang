@@ -378,9 +378,9 @@ QString Exp::toString() const
 }
 
 
-void Exp::print(OStream& os, bool html) const
+void Exp::print(OStream& os) const
 {
-    ExpPrinter().print(os, shared_from_this(), html);
+    ExpPrinter().print(os, shared_from_this());
 }
 
 

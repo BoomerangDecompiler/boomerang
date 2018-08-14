@@ -123,15 +123,9 @@ bool GotoStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void GotoStatement::print(OStream& os, bool html) const
+void GotoStatement::print(OStream& os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
-
     os << "GOTO ";
 
     if (m_dest == nullptr) {
@@ -142,10 +136,6 @@ void GotoStatement::print(OStream& os, bool html) const
     }
     else {
         os << getFixedDest();
-    }
-
-    if (html) {
-        os << "</a></td>";
     }
 }
 

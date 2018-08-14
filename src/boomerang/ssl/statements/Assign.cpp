@@ -126,7 +126,7 @@ void Assign::simplifyAddr()
 }
 
 
-void Assign::printCompact(OStream& os, bool html) const
+void Assign::printCompact(OStream& os) const
 {
     os << "*" << m_type << "* ";
 
@@ -135,13 +135,13 @@ void Assign::printCompact(OStream& os, bool html) const
     }
 
     if (m_lhs) {
-        m_lhs->print(os, html);
+        m_lhs->print(os);
     }
 
     os << " := ";
 
     if (m_rhs) {
-        m_rhs->print(os, html);
+        m_rhs->print(os);
     }
 }
 

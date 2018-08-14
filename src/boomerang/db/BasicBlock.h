@@ -266,7 +266,7 @@ public:
      * \param os   stream to output to
      * \param html print in html mode
      */
-    void print(OStream& os, bool html = false);
+    void print(OStream& os);
 
     QString prints();
 

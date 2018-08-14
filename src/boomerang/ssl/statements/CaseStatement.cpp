@@ -71,15 +71,9 @@ bool CaseStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void CaseStatement::print(OStream& os, bool html) const
+void CaseStatement::print(OStream& os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
-
     if (m_switchInfo == nullptr) {
         os << "CASE [";
 
@@ -94,10 +88,6 @@ void CaseStatement::print(OStream& os, bool html) const
     }
     else {
         os << "SWITCH(" << m_switchInfo->switchExp << ")\n";
-    }
-
-    if (html) {
-        os << "</a></td>";
     }
 }
 

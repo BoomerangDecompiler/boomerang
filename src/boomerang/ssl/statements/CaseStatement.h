@@ -42,7 +42,7 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream& os, bool html = false) const override;
+    virtual void print(OStream& os) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
     virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;

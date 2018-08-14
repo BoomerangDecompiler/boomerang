@@ -45,7 +45,7 @@ void MiniDebugger::miniDebugger(UserProc *proc, const char *description)
         q_cout << " <press enter to continue> \n";
         QString line;
 
-        while (1) {
+        while (true) {
             line.clear();
             q_cin >> line;
 

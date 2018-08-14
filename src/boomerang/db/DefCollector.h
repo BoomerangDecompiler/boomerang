@@ -65,7 +65,7 @@ public:
     void insert(Assign *a);
 
     /// Print the collected locations to stream os
-    void print(OStream& os, bool html = false) const;
+    void print(OStream& os) const;
 
     bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 
