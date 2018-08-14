@@ -68,8 +68,11 @@ QString StatementList::prints() const
     QString     tgt;
     OStream ost(&tgt);
 
-    for (auto& elem : *this) {
-        ost << elem << ",\t";
+    for (auto it = m_list.begin(); it != m_list.end(); it++) {
+        ost << *it;
+        if (std::next(it) != m_list.end()) {
+            ost << ",\t";
+        }
     }
 
     return tgt;
