@@ -122,7 +122,7 @@ bool condToRelational(SharedExp& condExp, BranchType jtCond)
         case BranchType::JPOS:
             condExp =
                 Binary::get(opGtrEq,     // P3 >= 0
-                            condExp->access<const Exp, 2, 2, 1>()->getSubExp1()->clone(),
+                            condExp->access<const Exp, 2, 2, 2, 1>()->getSubExp1()->clone(),
                             Const::get(0));
             break;
 
