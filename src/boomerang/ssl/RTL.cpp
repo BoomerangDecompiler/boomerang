@@ -164,24 +164,6 @@ QString RTL::prints() const
 }
 
 
-/**
- * Output operator for RTL *, just makes it easier to use e.g. LOG_STREAM() << myRTLptr
- * \param   os output stream to send to
- * \param   r ptr to RTL to print to the stream
- * \returns os (for concatenation)
- */
-OStream& operator<<(OStream& os, const RTL *r)
-{
-    if (r == nullptr) {
-        os << "nullptr ";
-        return os;
-    }
-
-    r->print(os);
-    return os;
-}
-
-
 void RTL::simplify()
 {
     for (iterator it = begin(); it != end();) {
