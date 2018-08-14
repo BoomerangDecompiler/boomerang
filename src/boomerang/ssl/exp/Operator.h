@@ -110,7 +110,6 @@ enum OPER
     opWildRegOf,    ///< r[wild],
     opWildAddrOf,   ///< a[wild],
     opDefineAll,    ///< A wild definition
-    opVar,          ///< Represents l[] (recovered locations)
     opPhi,          ///< Represents phi(a1, a2, a3) .. ie SSA form merging
     opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
     opParam,        ///< SSL parameter param`'

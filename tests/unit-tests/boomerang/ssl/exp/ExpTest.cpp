@@ -395,7 +395,7 @@ void ExpTest::testPartitionTerms()
 {
     // afp + 108 + n - (afp + 92)
     Binary e(opMinus, Binary::get(opPlus, Binary::get(opPlus, Terminal::get(opAFP), Const::get(108)),
-                                  Unary::get(opVar, Const::get("n"))),
+                                  Unary::get(opParam, Const::get("n"))),
              Binary::get(opPlus, Terminal::get(opAFP), Const::get(92)));
 
     std::list<SharedExp> positives, negatives;
@@ -403,7 +403,7 @@ void ExpTest::testPartitionTerms()
 
     e.partitionTerms(positives, negatives, integers, false);
     SharedExp res = Exp::accumulate(positives);
-    Binary    expected1(opPlus, Terminal::get(opAFP), Unary::get(opVar, Const::get("n")));
+    Binary    expected1(opPlus, Terminal::get(opAFP), Unary::get(opParam, Const::get("n")));
     QVERIFY(*res == expected1);
 
     res = Exp::accumulate(negatives);
@@ -441,8 +441,8 @@ void ExpTest::testSimplifyUnary()
     QVERIFY(*u == one);
 
     // Null test
-    u = Unary::get(opNeg, Unary::get(opVar, Const::get("abc")));
-    Unary abc(opNeg, Unary::get(opVar, Const::get("abc")));
+    u = Unary::get(opNeg, Unary::get(opParam, Const::get("abc")));
+    Unary abc(opNeg, Unary::get(opParam, Const::get("abc")));
     QVERIFY(*u == abc);
 }
 
@@ -526,18 +526,21 @@ void ExpTest::testSimplifyBinary()
     OStream ost(&actual);
     SharedExp   e = Binary::get(opBitOr,
                                 Binary::get(opMinus,
-                                            Binary::get(opPlus, Const::get(0), Unary::get(opVar, Const::get("a"))),
+                                            Binary::get(opPlus,
+                                                        Const::get(0),
+                                                        Unary::get(opParam,
+                                                                   Const::get("a"))),
                                             Const::get(0)),
                                 Const::get(0));
     e->print(ost);
-    QCOMPARE(actual, QString("((0 + v[a]) - 0) | 0"));
+    QCOMPARE(actual, QString("((0 + a) - 0) | 0"));
 
-    // The above should simplify to just "v[a]"
+    // The above should simplify to just "a"
     e = e->simplify();
-    Unary a(opVar, Const::get("a"));
+    Unary a(opParam, Const::get("a"));
     actual = "";
     e->print(ost);
-    QCOMPARE(actual, QString("v[a]"));
+    QCOMPARE(actual, QString("a"));
 
     // r27 := m[r29 + -4]
     std::shared_ptr<Assign> as(new Assign(Location::regOf(REG_PENT_EBX), Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_EBP), Const::get(-4)))));

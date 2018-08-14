@@ -129,14 +129,6 @@ bool Exp::isAfpTerm()
 }
 
 
-int Exp::getVarIndex()
-{
-    assert(m_oper == opVar);
-    SharedExp sub = this->getSubExp1();
-    return std::static_pointer_cast<const Const>(sub)->getInt();
-}
-
-
 SharedExp Exp::getGuard()
 {
     if (m_oper == opGuard) {

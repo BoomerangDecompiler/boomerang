@@ -97,12 +97,12 @@ void ExpArithSimplifierTest::testSimplifyBinary()
                                           Binary::get(opPlus,
                                                       Terminal::get(opAFP),
                                                       Const::get(108)),
-                                          Unary::get(opVar, Const::get("n"))),
+                                          Unary::get(opParam, Const::get("n"))),
                               Binary::get(opPlus,
                                           Terminal::get(opAFP),
                                           Const::get(92))),
                   Binary::get(opPlus,
-                              Unary::get(opVar, Const::get("n")),
+                              Unary::get(opParam, Const::get("n")),
                               Const::get(16)));
 
     // m[(r28 + -4) + 8]

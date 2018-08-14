@@ -1548,7 +1548,6 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
     case opTargetInst:
     case opNamedExp:
     case opGuard:
-    case opVar:
     case opArg:
     case opExpand:
     case opCastIntStar:

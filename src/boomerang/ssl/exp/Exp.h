@@ -170,10 +170,6 @@ public:
     /// True if this is a typeof
     bool isTypeOf() const { return m_oper == opTypeOf; }
 
-    /// \returns the index for this var, e.g. if this is v[2], return 2
-    /// \note this must be opVar!
-    int getVarIndex();
-
     /// \returns true if this is a terminal
     virtual bool isTerminal() const { return false; }
     /// \returns true if this is the constant "true"
