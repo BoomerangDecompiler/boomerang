@@ -125,6 +125,7 @@ private slots:
 
     /// Test finding the locations used by an expression
     void testAddUsedLocs();
+    void testAddUsedLocs_data();
 
     /// Test the subscripting of variables (locations)
     void testSubscriptVars();

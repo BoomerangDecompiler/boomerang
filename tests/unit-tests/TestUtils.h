@@ -17,6 +17,9 @@
 #include <QTest>
 
 
+class LocationSet;
+
+
 class TestProject : public Project
 {
 public:
@@ -72,6 +75,7 @@ public:
 };
 Q_DECLARE_METATYPE(SharedTypeWrapper)
 
+
 struct SharedExpWrapper
 {
 public:
@@ -97,3 +101,4 @@ void compareLongStrings(const QString& actual, const QString& expected);
 
 char *toString(const Exp& exp);
 char *toString(const SharedConstExp& exp);
+char *toString(const LocationSet& locSet);

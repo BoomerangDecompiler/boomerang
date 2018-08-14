@@ -27,6 +27,9 @@
 #include <map>
 
 
+Q_DECLARE_METATYPE(LocationSet);
+
+
 void ExpTest::initTestCase()
 {
     BoomerangTest::initTestCase();
@@ -711,85 +714,71 @@ void ExpTest::testSetConscripts()
 
 void ExpTest::testAddUsedLocs()
 {
-    // Null case
-    SharedExp   e = Terminal::get(opNil);
-    LocationSet l;
+    QFETCH(SharedExpWrapper, usedExp);
+    QFETCH(LocationSet,      usedLocs);
 
-    e->addUsedLocs(l);
-    QVERIFY(l.size() == 0);
+    LocationSet locSet;
+    (*usedExp)->addUsedLocs(locSet);
+    QCOMPARE(locSet, usedLocs);
+}
 
-    // Const: "foo"
-    e = Const::get("foo");
-    e->addUsedLocs(l);
-    QVERIFY(l.size() == 0);
 
-    // Simple terminal: %pc
-    e = Terminal::get(opPC);
-    e->addUsedLocs(l);
+#define TEST_ADDUSEDLOCS(name, usedExp, locs) \
+    QTest::newRow(name) << SharedExpWrapper(usedExp) << locs;
 
-    QString     actual;
-    OStream ost(&actual);
-    l.print(ost);
-    QCOMPARE(actual, QString("%pc"));
 
-    // Simple location: r28
-    l.clear();
-    actual = "";
-    e      = Location::regOf(REG_PENT_ESP);
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r28"));
+void ExpTest::testAddUsedLocs_data()
+{
+    QTest::addColumn<SharedExpWrapper>("usedExp");
+    QTest::addColumn<LocationSet>("usedLocs");
 
-    // Memory location: m[r28-4]
-    l.clear();
-    actual = "";
-    e      = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(4)));
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r28,\tm[r28 - 4]"));
+    TEST_ADDUSEDLOCS("nil",         Terminal::get(opNil),           LocationSet());
+    TEST_ADDUSEDLOCS("strConst",    Const::get("foo"),              LocationSet());
+    TEST_ADDUSEDLOCS("pc",          Terminal::get(opPC),            LocationSet({ Terminal::get(opPC) }));
+    TEST_ADDUSEDLOCS("reg",         Location::regOf(REG_PENT_ESP),  LocationSet({ Location::regOf(REG_PENT_ESP) }));
 
-    // Unary: a[m[r28-4]]
-    l.clear();
-    actual = "";
-    e      = Unary::get(opAddrOf, e);
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r28,\tm[r28 - 4]"));
+    TEST_ADDUSEDLOCS("memof",       Location::memOf(Binary::get(opMinus,
+                                                                Location::regOf(REG_PENT_ESP),
+                                                                Const::get(4))),
+                                    LocationSet({ Location::regOf(REG_PENT_ESP),
+                                                  Location::memOf(Binary::get(opMinus,
+                                                                              Location::regOf(REG_PENT_ESP),
+                                                                              Const::get(4))) }));
+    TEST_ADDUSEDLOCS("addrofMemof", Unary::get(opAddrOf,
+                                               Location::memOf(Binary::get(opMinus,
+                                                               Location::regOf(REG_PENT_ESP),
+                                                               Const::get(4)))),
+                                    LocationSet({ Location::regOf(REG_PENT_ESP),
+                                                  Location::memOf(Binary::get(opMinus,
+                                                                              Location::regOf(REG_PENT_ESP),
+                                                                              Const::get(4))) }));
 
-    // Binary: r24 + r25
-    l.clear();
-    actual = "";
-    e      = Binary::get(opPlus, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX));
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r24,\tr25"));
+    TEST_ADDUSEDLOCS("binary",      Binary::get(opPlus,
+                                                Location::regOf(REG_PENT_EAX),
+                                                Location::regOf(REG_PENT_ECX)),
+                                    LocationSet({ Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX) }));
 
-    // Ternary: r24@r25:r26
-    l.clear();
-    actual = "";
-    e      = Ternary::get(opAt, Location::regOf(REG_PENT_EAX), Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r24,\tr25,\tr26"));
+    TEST_ADDUSEDLOCS("ternary",     Ternary::get(opAt,
+                                                 Location::regOf(REG_PENT_EAX),
+                                                 Location::regOf(REG_PENT_ECX),
+                                                 Location::regOf(REG_PENT_EDX)),
+                                    LocationSet({ Location::regOf(REG_PENT_EAX),
+                                                  Location::regOf(REG_PENT_ECX),
+                                                  Location::regOf(REG_PENT_EDX) }));
 
-    // Simple RefExp: r28{2}
-    l.clear();
-    actual = "";
+    SharedExp e = Location::regOf(REG_PENT_ESP);
     Assign a(e, e);
-    a.setNumber(2);
-    e = RefExp::get(Location::regOf(REG_PENT_ESP), &a);
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r28{2}"));
+    a.setNumber(1);
 
-    // RefExp: m[r28{2} - 4]{3}
-    Assign t(e, e);
-    actual = "";
-    t.setNumber(3);
-    e = RefExp::get(Location::memOf(Binary::get(opMinus, RefExp::get(Location::regOf(REG_PENT_ESP), &a), Const::get(4))), &t);
-    e->addUsedLocs(l);
-    l.print(ost);
-    QCOMPARE(actual, QString("r28{2},\tm[r28{2} - 4]{3}"));
+    SharedExp ref = RefExp::get(e->clone(), &a);
+    TEST_ADDUSEDLOCS("refexp",      ref, LocationSet({ ref }));
+
+    SharedExp memof = Location::memOf(Binary::get(opMinus, ref, Const::get(4)));
+    Assign a2(e, e);
+    a2.setNumber(2);
+
+    TEST_ADDUSEDLOCS("memofRef", RefExp::get(memof, &a2),
+                                 LocationSet({ ref, RefExp::get(memof, &a2)}));
 }
 
 

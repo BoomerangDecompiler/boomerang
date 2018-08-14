@@ -40,6 +40,12 @@ public:
     typedef typename Set::const_iterator const_iterator;
 
 public:
+    ExpSet() = default;
+    ExpSet(const std::initializer_list<std::shared_ptr<T>>& exps)
+        : m_set(exps)
+    {}
+
+public:
     bool operator!=(const ExpSet& other) const { return !(*this == other); }
     bool operator==(const ExpSet& other) const
     {
@@ -113,6 +119,7 @@ public:
             os << *it;
         }
     }
+
 protected:
     Set m_set;
 };

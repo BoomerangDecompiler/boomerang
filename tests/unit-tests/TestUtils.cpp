@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/Settings.h"
+#include "boomerang/util/LocationSet.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -63,4 +64,14 @@ char *toString(const SharedConstExp& exp)
 char *toString(const Exp& exp)
 {
     return QTest::toString(exp.toString());
+}
+
+
+char *toString(const LocationSet& locSet)
+{
+    QString tgt;
+    OStream os(&tgt);
+    locSet.print(os);
+
+    return QTest::toString(tgt);
 }

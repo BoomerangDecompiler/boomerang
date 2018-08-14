@@ -20,13 +20,12 @@
 void LocationSetTest::testAssign()
 {
     LocationSet set1, set2;
-
     set1 = set2;
-    QCOMPARE(set1.prints(), QString(""));
+    QCOMPARE(set1, LocationSet());
 
     set2.insert(Location::regOf(REG_PENT_EAX));
     set1 = set2;
-    QCOMPARE(set1.prints(), QString("r24"));
+    QCOMPARE(set1, LocationSet({ Location::regOf(REG_PENT_EAX) }));
 }
 
 
@@ -91,13 +90,13 @@ void LocationSetTest::testInsert()
     LocationSet set;
 
     set.insert(Location::regOf(REG_PENT_ESI));
-    QCOMPARE(set.prints(), QString("r30"));
+    QCOMPARE(set, LocationSet({ Location::regOf(REG_PENT_ESI) }));
 
     set.insert(Location::regOf(REG_PENT_ESI));
-    QCOMPARE(set.prints(), QString("r30"));
+    QCOMPARE(set, LocationSet({ Location::regOf(REG_PENT_ESI) }));
 
     set.insert(Location::regOf(REG_PENT_EDI));
-    QCOMPARE(set.prints(), QString("r30, r31"));
+    QCOMPARE(set, LocationSet({ Location::regOf(REG_PENT_ESI), Location::regOf(REG_PENT_EDI) }));
 }
 
 
@@ -114,11 +113,11 @@ void LocationSetTest::testRemove()
     set.insert(Location::regOf(REG_PENT_ESI));
     set.insert(Location::regOf(REG_PENT_EDI));
     set.remove(Location::regOf(REG_PENT_EDI));
-    QCOMPARE(set.prints(), QString("r30"));
+    QCOMPARE(set, LocationSet({ Location::regOf(REG_PENT_ESI) }));
 
     // removing element that does not exist
     set.remove(Location::regOf(REG_PENT_EDI));
-    QCOMPARE(set.prints(), QString("r30"));
+    QCOMPARE(set, LocationSet({ Location::regOf(REG_PENT_ESI) }));
 }
 
 
@@ -205,17 +204,19 @@ void LocationSetTest::testAddSubscript()
 {
     LocationSet set;
     set.addSubscript(nullptr);
-    QCOMPARE(set.prints(), QString(""));
+    QCOMPARE(set, LocationSet());
 
     set.insert(Location::regOf(REG_PENT_ECX));
     set.addSubscript(nullptr);
-    QCOMPARE(set.prints(), QString("r25{-}"));
+    QCOMPARE(set, LocationSet({ RefExp::get(Location::regOf(REG_PENT_ECX), nullptr) }));
 
     set.insert(Location::regOf(REG_PENT_ECX));
     Assign as(Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX));
     as.setNumber(42);
     set.addSubscript(&as);
-    QCOMPARE(set.prints(), QString("r25{-}, r25{42}"));
+    QCOMPARE(set, LocationSet({
+        RefExp::get(Location::regOf(REG_PENT_ECX), nullptr),
+        RefExp::get(Location::regOf(REG_PENT_ECX), &as) }));
 }
 
 
@@ -232,13 +233,13 @@ void LocationSetTest::testMakeUnion()
     set2.insert(Location::regOf(REG_PENT_EDX));
     set2.insert(Location::regOf(REG_PENT_EBX));
 
-    QCOMPARE(set1.prints(), QString("r25, r26"));
-    QCOMPARE(set2.prints(), QString("r26, r27"));
+    QCOMPARE(set1, LocationSet({ Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX) }));
+    QCOMPARE(set2, LocationSet({ Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX) }));
 
     set1.makeUnion(set2);
 
-    QCOMPARE(set1.prints(), QString("r25, r26, r27"));
-    QCOMPARE(set2.prints(), QString("r26, r27"));
+    QCOMPARE(set1, LocationSet({ Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX), }));
+    QCOMPARE(set2, LocationSet({ Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX) }));
 }
 
 
@@ -254,12 +255,12 @@ void LocationSetTest::testMakeDiff()
     set2.insert(Location::regOf(REG_PENT_EDX));
     set2.insert(Location::regOf(REG_PENT_EBX));
 
-    QCOMPARE(set1.prints(), QString("r25, r26"));
-    QCOMPARE(set2.prints(), QString("r26, r27"));
+    QCOMPARE(set1, LocationSet({ Location::regOf(REG_PENT_ECX), Location::regOf(REG_PENT_EDX) }));
+    QCOMPARE(set2, LocationSet({ Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX) }));
 
     set1.makeDiff(set2);
-    QCOMPARE(set1.prints(), QString("r25"));
-    QCOMPARE(set2.prints(), QString("r26, r27"));
+    QCOMPARE(set1, LocationSet({ Location::regOf(REG_PENT_ECX) }));
+    QCOMPARE(set2, LocationSet({ Location::regOf(REG_PENT_EDX), Location::regOf(REG_PENT_EBX) }));
 }
 
 
