@@ -205,9 +205,8 @@ public:
      * \note  Usually called from RTL::print, in which case the first 9
      *        chars of the print have already been output to os
      * \param os - stream to write to
-     * \param html - produce html encoded representation
      */
-    virtual void print(OStream& os, bool html = false) const = 0;
+    virtual void print(OStream& os) const = 0;
 
     QString prints() const; // For logging, was also for debugging
 

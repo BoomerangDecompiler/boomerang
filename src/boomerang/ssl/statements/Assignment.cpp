@@ -110,20 +110,10 @@ void Assignment::getDefinitions(LocationSet& defs, bool) const
 }
 
 
-void Assignment::print(OStream& os, bool html) const
+void Assignment::print(OStream& os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
-
-    printCompact(os, html);
-
-    if (html) {
-        os << "</a>";
-    }
+    printCompact(os);
 }
 
 

@@ -135,14 +135,9 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
 };
 
 
-void ExpPrinter::print(OStream& os, const SharedConstExp& exp, bool html) const
+void ExpPrinter::print(OStream& os, const SharedConstExp& exp) const
 {
-    if (html) {
-        printHTML(os, exp);
-    }
-    else {
-        printPlain(os, exp);
-    }
+    printPlain(os, exp);
 }
 
 

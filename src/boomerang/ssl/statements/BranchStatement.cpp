@@ -226,15 +226,9 @@ bool BranchStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result
 }
 
 
-void BranchStatement::print(OStream& os, bool html) const
+void BranchStatement::print(OStream& os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
-
     os << "BRANCH ";
 
     if (m_dest == nullptr) {
@@ -252,73 +246,23 @@ void BranchStatement::print(OStream& os, bool html) const
 
     switch (m_jumpType)
     {
-    case BranchType::JE:
-        os << "equals";
-        break;
-
-    case BranchType::JNE:
-        os << "not equals";
-        break;
-
-    case BranchType::JSL:
-        os << "signed less";
-        break;
-
-    case BranchType::JSLE:
-        os << "signed less or equals";
-        break;
-
-    case BranchType::JSGE:
-        os << "signed greater or equals";
-        break;
-
-    case BranchType::JSG:
-        os << "signed greater";
-        break;
-
-    case BranchType::JUL:
-        os << "unsigned less";
-        break;
-
-    case BranchType::JULE:
-        os << "unsigned less or equals";
-        break;
-
-    case BranchType::JUGE:
-        os << "unsigned greater or equals";
-        break;
-
-    case BranchType::JUG:
-        os << "unsigned greater";
-        break;
-
-    case BranchType::JMI:
-        os << "minus";
-        break;
-
-    case BranchType::JPOS:
-        os << "plus";
-        break;
-
-    case BranchType::JOF:
-        os << "overflow";
-        break;
-
-    case BranchType::JNOF:
-        os << "no overflow";
-        break;
-
-    case BranchType::JPAR:
-        os << "parity";
-        break;
-
-    case BranchType::JNPAR:
-        os << "no parity";
-        break;
-
-    case BranchType::INVALID:
-        assert(false);
-        break;
+    case BranchType::JE:        os << "equals";                     break;
+    case BranchType::JNE:       os << "not equals";                 break;
+    case BranchType::JSL:       os << "signed less";                break;
+    case BranchType::JSLE:      os << "signed less or equals";      break;
+    case BranchType::JSGE:      os << "signed greater or equals";   break;
+    case BranchType::JSG:       os << "signed greater";             break;
+    case BranchType::JUL:       os << "unsigned less";              break;
+    case BranchType::JULE:      os << "unsigned less or equals";    break;
+    case BranchType::JUGE:      os << "unsigned greater or equals"; break;
+    case BranchType::JUG:       os << "unsigned greater";           break;
+    case BranchType::JMI:       os << "minus";                      break;
+    case BranchType::JPOS:      os << "plus";                       break;
+    case BranchType::JOF:       os << "overflow";                   break;
+    case BranchType::JNOF:      os << "no overflow";                break;
+    case BranchType::JPAR:      os << "parity";                     break;
+    case BranchType::JNPAR:     os << "no parity";                  break;
+    case BranchType::INVALID:   assert(false);                      break;
     }
 
     if (m_isFloat) {
@@ -328,16 +272,8 @@ void BranchStatement::print(OStream& os, bool html) const
     os << '\n';
 
     if (m_cond) {
-        if (html) {
-            os << "<br>";
-        }
-
         os << "High level: ";
-        m_cond->print(os, html);
-    }
-
-    if (html) {
-        os << "</a></td>";
+        m_cond->print(os);
     }
 }
 

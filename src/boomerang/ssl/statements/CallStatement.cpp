@@ -449,14 +449,9 @@ bool CallStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void CallStatement::print(OStream& os, bool html) const
+void CallStatement::print(OStream& os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
 
     // Define(s), if any
     if (m_defines.size() > 0) {
@@ -494,12 +489,7 @@ void CallStatement::print(OStream& os, bool html) const
         os << " := ";
     }
     else if (isChildless()) {
-        if (html) {
-            os << "&lt;all&gt; := ";
-        }
-        else {
-            os << "<all> := ";
-        }
+        os << "<all> := ";
     }
 
     os << "CALL ";
@@ -515,18 +505,13 @@ void CallStatement::print(OStream& os, bool html) const
             os << "0x" << QString::number(m_dest->access<Const>()->getInt(), 16);
         }
         else {
-            m_dest->print(os, html);     // Could still be an expression
+            m_dest->print(os);     // Could still be an expression
         }
     }
 
     // Print the actual arguments of the call
     if (isChildless()) {
-        if (html) {
-            os << "(&lt;all&gt;)";
-        }
-        else {
-            os << "(<all>)";
-        }
+        os << "(<all>)";
     }
     else {
         os << "(\n";
@@ -535,7 +520,7 @@ void CallStatement::print(OStream& os, bool html) const
             os << "                ";
             const Assignment *a = dynamic_cast<const Assignment *>(aa);
             if (a) {
-                a->printCompact(os, html);
+                a->printCompact(os);
             }
             os << "\n";
         }
@@ -544,29 +529,12 @@ void CallStatement::print(OStream& os, bool html) const
     }
 
     // Collected reaching definitions
-    if (html) {
-        os << "<br>";
-    }
-    else {
-        os << "\n              ";
-    }
-
+    os << "\n              ";
     os << "Reaching definitions: ";
-    m_defCol.print(os, html);
-
-    if (html) {
-        os << "<br>";
-    }
-    else {
-        os << "\n              ";
-    }
-
+    m_defCol.print(os);
+    os << "\n              ";
     os << "Live variables: ";
-    m_useCol.print(os, html);
-
-    if (html) {
-        os << "</a></td>";
-    }
+    m_useCol.print(os);
 }
 
 

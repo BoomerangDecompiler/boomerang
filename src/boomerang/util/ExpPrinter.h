@@ -22,7 +22,7 @@ class ExpPrinter
 {
 public:
     /// print \p exp to \p os
-    void print(OStream& os, const SharedConstExp& exp, bool html = false) const;
+    void print(OStream& os, const SharedConstExp& exp) const;
 
 private:
     /// print \p exp to \p os

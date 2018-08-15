@@ -539,12 +539,12 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(OStream& out, bool html)
+void ProcCFG::print(OStream& out)
 {
     out << "Control Flow Graph:\n";
 
     for (BasicBlock *bb : *this) {
-        bb->print(out, html);
+        bb->print(out);
     }
 
     out << '\n';

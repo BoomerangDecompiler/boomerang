@@ -90,7 +90,7 @@ public:
     bool isComputed() const;
 
     /// \copydoc Statement::print
-    virtual void print(OStream& os, bool html = false) const override;
+    virtual void print(OStream& os) const override;
 
     /// \copydoc Statement::search
     virtual bool search(const Exp& pattern, SharedExp& result) const override;

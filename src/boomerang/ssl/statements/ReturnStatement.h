@@ -61,7 +61,7 @@ public:
     void updateReturns();
 
     /// \copydoc Statement::print
-    virtual void print(OStream& os, bool html = false) const override;
+    virtual void print(OStream& os) const override;
 
     /// \copydoc Statement::search
     virtual bool search(const Exp&, SharedExp&) const override;

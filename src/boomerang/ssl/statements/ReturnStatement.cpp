@@ -336,14 +336,10 @@ void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
 
 
 #define RETSTMT_COLS    120
-void ReturnStatement::print(OStream& os, bool html) const
+
+void ReturnStatement::print(OStream& os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
 
     os << "RET";
     bool     first  = true;
@@ -352,7 +348,7 @@ void ReturnStatement::print(OStream& os, bool html) const
     for (const Statement *stmt : m_returns) {
         QString     tgt;
         OStream ost(&tgt);
-        static_cast<const Assignment *>(stmt)->printCompact(ost, html);
+        static_cast<const Assignment *>(stmt)->printCompact(ost);
         unsigned len = tgt.length();
 
         if (first) {
@@ -376,60 +372,54 @@ void ReturnStatement::print(OStream& os, bool html) const
         column += len;
     }
 
-    if (html) {
-        os << "</a><br>";
+    os << "\n              ";
+    os << "Modifieds: ";
+
+    if (m_modifieds.empty()) {
+        os << "<None>";
     }
     else {
-        os << "\n              ";
-    }
+        first  = true;
+        column = 25;
 
-    os << "Modifieds: ";
-    first  = true;
-    column = 25;
+        for (auto const& elem : m_modifieds) {
+            QString          tgt2;
+            OStream      ost(&tgt2);
+            const Assignment *as = static_cast<const Assignment *>(elem);
+            const SharedType ty  = as->getType();
 
-    for (auto const& elem : m_modifieds) {
-        QString          tgt2;
-        OStream      ost(&tgt2);
-        const Assignment *as = static_cast<const Assignment *>(elem);
-        const SharedType ty  = as->getType();
-
-        if (ty) {
-            ost << "*" << ty << "* ";
-        }
-
-        ost << as->getLeft();
-        unsigned len = tgt2.length();
-
-        if (first) {
-            first = false;
-        }
-        else if (column + 3 + len > RETSTMT_COLS) {     // 3 for comma and 2 spaces
-            if (column != RETSTMT_COLS - 1) {
-                os << ",";                              // Comma at end of line
+            if (ty) {
+                ost << "*" << ty << "* ";
             }
 
-            os << "\n                ";
-            column = 16;
-        }
-        else {
-            os << ",  ";
-            column += 3;
-        }
+            ost << as->getLeft();
+            unsigned len = tgt2.length();
 
-        os << tgt2;
-        column += len;
+            if (first) {
+                first = false;
+            }
+            else if (column + 3 + len > RETSTMT_COLS) {     // 3 for comma and 2 spaces
+                if (column != RETSTMT_COLS - 1) {
+                    os << ",";                              // Comma at end of line
+                }
+
+                os << "\n                ";
+                column = 16;
+            }
+            else {
+                os << ",  ";
+                column += 3;
+            }
+
+            os << tgt2;
+            column += len;
+        }
     }
 
     // Collected reaching definitions
-    if (html) {
-        os << "<br>";
-    }
-    else {
-        os << "\n              ";
-    }
-
+    os << "\n              ";
     os << "Reaching definitions: ";
-    m_col.print(os, html);
+    m_col.print(os);
 }
 
 
@@ -479,8 +469,8 @@ void ReturnStatement::updateModifieds()
         }
     }
 
-    // Mostly the old modifications will be in the correct order, and inserting will be fastest near the start of
-    // the
+    // Mostly the old modifications will be in the correct order,
+    // and inserting will be fastest near the start of the
     // new list. So read the old modifications in reverse order
     for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); ++it) {
         // Make sure the LHS is still in the collector

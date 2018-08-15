@@ -13,7 +13,7 @@
 #include "boomerang/util/Types.h"
 
 #include <QString>
-#include <QTextEdit>
+#include <QPlainTextEdit>
 
 #include <map>
 #include <set>
@@ -23,7 +23,7 @@
 class Decompiler;
 
 
-class RTLEditor : public QTextEdit
+class RTLEditor : public QPlainTextEdit
 {
     Q_OBJECT
 
@@ -32,10 +32,6 @@ public:
 
 public slots:
     void updateContents();
-
-protected:
-    virtual void mouseMoveEvent(QMouseEvent *event) override;
-    virtual void mousePressEvent(QMouseEvent *event) override;
 
 private:
     Decompiler *decompiler;

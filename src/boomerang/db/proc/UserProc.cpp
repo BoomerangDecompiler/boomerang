@@ -902,7 +902,7 @@ QString UserProc::toString() const
 }
 
 
-void UserProc::print(OStream& out, bool html) const
+void UserProc::print(OStream& out) const
 {
     numberStatements();
 
@@ -913,29 +913,16 @@ void UserProc::print(OStream& out, bool html) const
     OStream ost2(&tgt2);
 
 
-    printParams(ost1, html);
-    printLocals(ost1, html);
-    m_procUseCollector.print(ost2, html);
+    printParams(ost1);
+    printLocals(ost1);
+    m_procUseCollector.print(ost2);
 
-    m_signature->print(out, html);
+    m_signature->print(out);
     out << "\n";
-
-    if (html) {
-        out << "<br>";
-    }
-
     out << "in module " << m_module->getName() << "\n";
-
-    if (html) {
-        out << "<br>";
-    }
-
     out << tgt1;
-    printSymbolMap(out, html);
 
-    if (html) {
-        out << "<br>";
-    }
+    printSymbolMap(out);
 
     out << "live variables:\n";
 
@@ -946,23 +933,15 @@ void UserProc::print(OStream& out, bool html) const
         out << "  " << tgt2 << "\n";
     }
 
-    if (html) {
-        out << "<br>";
-    }
-
     QString     tgt3;
     OStream ost3(&tgt3);
-    m_cfg->print(ost3, html);
+    m_cfg->print(ost3);
     out << tgt3 << "\n";
 }
 
 
-void UserProc::printParams(OStream& out, bool html /*= false*/) const
+void UserProc::printParams(OStream& out) const
 {
-    if (html) {
-        out << "<br>";
-    }
-
     out << "parameters: ";
 
     if (!m_parameters.empty()) {
@@ -984,19 +963,11 @@ void UserProc::printParams(OStream& out, bool html /*= false*/) const
     }
 
     out << "\n";
-
-    if (html) {
-        out << "<br>";
-    }
 }
 
 
-void UserProc::printSymbolMap(OStream& out, bool html /*= false*/) const
+void UserProc::printSymbolMap(OStream& out) const
 {
-    if (html) {
-        out << "<br>";
-    }
-
     out << "symbols:\n";
 
     if (m_symbolMap.empty()) {
@@ -1006,25 +977,13 @@ void UserProc::printSymbolMap(OStream& out, bool html /*= false*/) const
         for (const std::pair<SharedConstExp, SharedExp>& it : m_symbolMap) {
             SharedConstType ty = getTypeForLocation(it.second);
             out << "  " << it.first << " maps to " << it.second << " type " << (ty ? qPrintable(ty->getCtype()) : "<unknown>") << "\n";
-
-            if (html) {
-                out << "<br>";
-            }
         }
-    }
-
-    if (html) {
-        out << "<br>";
     }
 }
 
 
-void UserProc::printLocals(OStream& os, bool html) const
+void UserProc::printLocals(OStream& os) const
 {
-    if (html) {
-        os << "<br>";
-    }
-
     os << "locals:\n";
 
     if (m_locals.empty()) {
@@ -1043,10 +1002,6 @@ void UserProc::printLocals(OStream& os, bool html) const
                 os << "  -\n";
             }
         }
-    }
-
-    if (html) {
-        os << "<br>";
     }
 }
 

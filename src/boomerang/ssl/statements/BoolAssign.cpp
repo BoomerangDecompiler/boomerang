@@ -88,7 +88,7 @@ void BoolAssign::setCondExpr(SharedExp pss)
 }
 
 
-void BoolAssign::printCompact(OStream& os, bool html) const
+void BoolAssign::printCompact(OStream& os) const
 {
     os << "BOOL ";
     m_lhs->print(os);
@@ -96,73 +96,23 @@ void BoolAssign::printCompact(OStream& os, bool html) const
 
     switch (m_jumpType)
     {
-    case BranchType::JE:
-        os << "equals";
-        break;
-
-    case BranchType::JNE:
-        os << "not equals";
-        break;
-
-    case BranchType::JSL:
-        os << "signed less";
-        break;
-
-    case BranchType::JSLE:
-        os << "signed less or equals";
-        break;
-
-    case BranchType::JSGE:
-        os << "signed greater or equals";
-        break;
-
-    case BranchType::JSG:
-        os << "signed greater";
-        break;
-
-    case BranchType::JUL:
-        os << "unsigned less";
-        break;
-
-    case BranchType::JULE:
-        os << "unsigned less or equals";
-        break;
-
-    case BranchType::JUGE:
-        os << "unsigned greater or equals";
-        break;
-
-    case BranchType::JUG:
-        os << "unsigned greater";
-        break;
-
-    case BranchType::JMI:
-        os << "minus";
-        break;
-
-    case BranchType::JPOS:
-        os << "plus";
-        break;
-
-    case BranchType::JOF:
-        os << "overflow";
-        break;
-
-    case BranchType::JNOF:
-        os << "no overflow";
-        break;
-
-    case BranchType::JPAR:
-        os << "ev parity";
-        break;
-
-    case BranchType::JNPAR:
-        os << "odd parity";
-        break;
-
-    case BranchType::INVALID:
-        assert(false);
-        break;
+    case BranchType::JE:    os << "equals";                     break;
+    case BranchType::JNE:   os << "not equals";                 break;
+    case BranchType::JSL:   os << "signed less";                break;
+    case BranchType::JSLE:  os << "signed less or equals";      break;
+    case BranchType::JSGE:  os << "signed greater or equals";   break;
+    case BranchType::JSG:   os << "signed greater";             break;
+    case BranchType::JUL:   os << "unsigned less";              break;
+    case BranchType::JULE:  os << "unsigned less or equals";    break;
+    case BranchType::JUGE:  os << "unsigned greater or equals"; break;
+    case BranchType::JUG:   os << "unsigned greater";           break;
+    case BranchType::JMI:   os << "minus";                      break;
+    case BranchType::JPOS:  os << "plus";                       break;
+    case BranchType::JOF:   os << "overflow";                   break;
+    case BranchType::JNOF:  os << "no overflow";                break;
+    case BranchType::JPAR:  os << "ev parity";                  break;
+    case BranchType::JNPAR: os << "odd parity";                 break;
+    case BranchType::INVALID: assert(false);                    break;
     }
 
     os << ")";
@@ -171,19 +121,11 @@ void BoolAssign::printCompact(OStream& os, bool html) const
         os << ", float";
     }
 
-    if (html) {
-        os << "<br>";
-    }
-
     os << '\n';
 
     if (m_cond) {
         os << "High level: ";
-        m_cond->print(os, html);
-
-        if (html) {
-            os << "<br>";
-        }
+        m_cond->print(os);
 
         os << "\n";
     }

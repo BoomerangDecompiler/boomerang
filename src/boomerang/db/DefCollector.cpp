@@ -47,20 +47,24 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessE
 }
 
 
-
 #define DEFCOL_COLS    120
 
-void DefCollector::print(OStream& os, bool html) const
+void DefCollector::print(OStream& os) const
 {
+    if (m_defs.empty()) {
+        os << "<None>";
+        return;
+    }
+
     size_t   col   = 36;
     bool     first = true;
 
     for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
         QString     tgt;
         OStream ost(&tgt);
-        (*it)->getLeft()->print(ost, html);
+        (*it)->getLeft()->print(ost);
         ost << "=";
-        (*it)->getRight()->print(ost, html);
+        (*it)->getRight()->print(ost);
         size_t len = tgt.length();
 
         if (first) {

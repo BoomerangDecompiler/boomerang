@@ -150,7 +150,7 @@ void StatementTest::testFlow()
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 5\n"
-        "              Modifieds: \n"
+        "              Modifieds: <None>\n"
         "              Reaching definitions: r24=5\n"
         "\n";
 
@@ -222,7 +222,7 @@ void StatementTest::testKill()
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
-        "              Modifieds: \n"
+        "              Modifieds: <None>\n"
         "              Reaching definitions: r24=6\n\n";
 
     compareLongStrings(actual, expected);
@@ -288,7 +288,7 @@ void StatementTest::testUse()
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r28 := 1000\n"
-        "              Modifieds: \n"
+        "              Modifieds: <None>\n"
         "              Reaching definitions: r24=5,   r28=5\n\n";
 
     compareLongStrings(actual, expected);
@@ -360,7 +360,7 @@ void StatementTest::testUseOverKill()
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
-        "              Modifieds: \n"
+        "              Modifieds: <None>\n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
     compareLongStrings(actual, expected);
@@ -435,7 +435,7 @@ void StatementTest::testUseOverBB()
         "  out edges: \n"
         "0x00001010\n"
         "0x00001012    1 RET *v* r24 := 0\n"
-        "              Modifieds: \n"
+        "              Modifieds: <None>\n"
         "              Reaching definitions: r24=6,   r28=6\n\n";
 
     compareLongStrings(actual, expected);
@@ -501,7 +501,7 @@ void StatementTest::testUseKill()
         "  in edges: 0x00001000(0x00001000) \n"
         "  out edges: \n"
         "0x00001010    1 RET *v* r24 := 0\n"
-        "              Modifieds: \n"
+        "              Modifieds: <None>\n"
         "              Reaching definitions: r24=6\n\n";
 
     compareLongStrings(actual, expected);
@@ -898,9 +898,14 @@ void StatementTest::testIsFlagAssgn()
 void StatementTest::testAddUsedLocsAssign()
 {
     // m[r28-4] := m[r28-8] * r26
-    Assign a(Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(4))),
-                           Binary::get(opMult, Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(8))),
-                                       Location::regOf(REG_PENT_EDX)));
+    Assign a(Location::memOf(Binary::get(opMinus,
+                                         Location::regOf(REG_PENT_ESP),
+                                         Const::get(4))),
+             Binary::get(opMult,
+                         Location::memOf(Binary::get(opMinus,
+                                                     Location::regOf(REG_PENT_ESP),
+                                                     Const::get(8))),
+                         Location::regOf(REG_PENT_EDX)));
     a.setNumber(1);
 
     LocationSet l;
@@ -1167,8 +1172,8 @@ void StatementTest::testSubscriptVars()
                "                *v* m[r27] := 1\n"
                "                *v* r28 := 2\n"
                "              )\n"
-               "              Reaching definitions: \n"
-               "              Live variables: "; // ? No newline?
+               "              Reaching definitions: <None>\n"
+               "              Live variables: <None>";
     ost << &ca;
     QCOMPARE(expected, actual);
 
@@ -1193,8 +1198,8 @@ void StatementTest::testSubscriptVars()
                "                *v* m[r27] := 1\n"
                "                *v* r29 := 2\n"
                "              )\n"
-               "              Reaching definitions: \n"
-               "              Live variables: ";
+               "              Reaching definitions: <None>\n"
+               "              Live variables: <None>";
     ost << &ca2;
 
     QCOMPARE(actual, expected);
@@ -1214,8 +1219,8 @@ void StatementTest::testSubscriptVars()
 
     actual   = "";
     expected = "   0 RET *v* r28 := 1000,   *v* m[r28{9}] := 0x7d0,   *v* m[r28{55} + r26{99}] := 100\n"
-               "              Modifieds: \n"
-               "              Reaching definitions: ";
+               "              Modifieds: <None>\n"
+               "              Reaching definitions: <None>";
     ost << &r;
     QCOMPARE(actual, expected);
 

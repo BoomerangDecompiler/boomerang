@@ -235,7 +235,7 @@ public:
 
 public:
     /// print this CFG, mainly for debugging
-    void print(OStream& out, bool html = false);
+    void print(OStream& out);
 
 private:
     UserProc *m_myProc = nullptr;            ///< Procedure to which this CFG belongs.

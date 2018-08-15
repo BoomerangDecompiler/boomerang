@@ -29,20 +29,10 @@ ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
 }
 
 
-void ImpRefStatement::print(OStream& os, bool html) const
+void ImpRefStatement::print(OStream& os) const
 {
     os << "     *";     // No statement number
-
-    if (html) {
-        os << "</td><td>";
-        os << "<a name=\"stmt" << m_number << "\">";
-    }
-
     os << m_type << "* IMP REF " << m_addressExp;
-
-    if (html) {
-        os << "</a></td>";
-    }
 }
 
 

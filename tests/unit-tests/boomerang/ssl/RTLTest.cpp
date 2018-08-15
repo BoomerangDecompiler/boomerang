@@ -259,8 +259,8 @@ void RTLTest::testSetConscripts()
                     "                *v* r8 := \"max is %d\"\\4\\\n"
                     "                *v* r9 := (local0 > 0\\5\\) ? local0 : global1\n"
                     "              )\n"
-                    "              Reaching definitions: \n"
-                    "              Live variables: \n");
+                    "              Reaching definitions: <None>\n"
+                    "              Live variables: <None>\n");
 
     compareLongStrings(actual, expected);
 }
