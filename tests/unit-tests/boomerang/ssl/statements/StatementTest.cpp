@@ -1081,9 +1081,14 @@ void StatementTest::testSubscriptVars()
     s9.setNumber(9);
 
     // m[r28-4] := m[r28-8] * r26
-    Assign a(Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(4))),
-                           Binary::get(opMult, Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(8))),
-                                       Location::regOf(REG_PENT_EDX)));
+    Assign a(Location::memOf(Binary::get(opMinus,
+                                         Location::regOf(REG_PENT_ESP),
+                                         Const::get(4))),
+             Binary::get(opMult,
+                         Location::memOf(Binary::get(opMinus,
+                                                     Location::regOf(REG_PENT_ESP),
+                                                     Const::get(8))),
+                         Location::regOf(REG_PENT_EDX)));
     a.setNumber(1);
     QString     actual;
     OStream ost(&actual);
