@@ -46,7 +46,7 @@ bool UsedLocalFinder::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visit
         SharedExp sub = exp->getSubExp1();
         SharedExp mof = Location::memOf(sub);
 
-        if (!m_proc->findLocal(mof, ty).isNull()) {
+        if (!m_proc->findLocal(mof, ty).isEmpty()) {
             m_used->insert(mof);
             visitChildren = false;
         }
@@ -64,7 +64,7 @@ bool UsedLocalFinder::visit(const std::shared_ptr<Terminal>& exp)
 
     QString sym = m_proc->findFirstSymbol(exp);
 
-    if (!sym.isNull()) {
+    if (!sym.isEmpty()) {
         m_used->insert(exp);
     }
 

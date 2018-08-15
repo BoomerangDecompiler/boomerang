@@ -67,7 +67,7 @@ public:
      * \param type the type of the new member
      * \param name the name of the new member
      */
-    void addType(SharedType type, const QString& name = QString::null);
+    void addType(SharedType type, const QString& name = "");
 
     size_t getNumTypes() const { return li.size(); }
 

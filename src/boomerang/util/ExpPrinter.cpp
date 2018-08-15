@@ -93,7 +93,7 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opTruncu,         { "truncu(",    ", ",           ", ",           ")"         } },
     { opTruncs,         { "truncs(",    ", ",           ", ",           ")"         } },
     { opZfill,          { "zfill(",     ", ",           ", ",           ")"         } },
-    { opSignExt,        { "sgnex(",     ", ",           ", ",           ")"         } },
+    { opSgnEx,          { "sgnex(",     ", ",           ", ",           ")"         } },
     { opFsize,          { "fsize(",     ", ",           ", ",           ")"         } },
     { opItof,           { "itof(",      ", ",           ", ",           ")"         } },
     { opFtoi,           { "ftoi(",      ", ",           ", ",           ")"         } },

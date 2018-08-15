@@ -69,7 +69,7 @@ DataIntervalMap::const_iterator DataIntervalMap::find_it(Address addr) const
 
 DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString name, SharedType type, bool forced)
 {
-    if (name.isNull()) {
+    if (name.isEmpty()) {
         name = "<noname>";
     }
 
@@ -234,7 +234,7 @@ DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const
 
             QString locName = m_proc->findLocal(locl, elemTy);
 
-            if (!locName.isNull() && ty->resolvesToCompound()) {
+            if (!locName.isEmpty() && ty->resolvesToCompound()) {
                 auto c = ty->as<CompoundType>();
                 // want s.m where s is the new compound object and m is the member at offset bitOffset
                 QString   memName = c->getMemberNameByOffset(bitOffset);

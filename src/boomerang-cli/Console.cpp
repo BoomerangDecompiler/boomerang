@@ -64,7 +64,7 @@ CommandStatus Console::handleCommand(const QString& commandWithArgs)
 
 CommandStatus Console::replayFile(const QString& filePath)
 {
-    if (filePath == QString::null) {
+    if (filePath.isEmpty()) {
         // nothing to execute
         return CommandStatus::Success;
     }

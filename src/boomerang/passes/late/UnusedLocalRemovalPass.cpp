@@ -105,7 +105,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
             SharedType ty   = s->getTypeFor(*ll);
             QString    name = proc->findLocal(*ll, ty);
 
-            if (name.isNull()) {
+            if (name.isEmpty()) {
                 continue;
             }
 

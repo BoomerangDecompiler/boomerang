@@ -38,7 +38,7 @@ void StmtSSAXformer::handleCommonLHS(Assignment *as)
     lhs = lhs->acceptModifier(static_cast<ExpSSAXformer *>(m_mod)); // In case the LHS has say m[r28{0}+8] -> m[esp+8]
 
     const QString sym = m_proc->lookupSymFromRefAny(RefExp::get(lhs, as));
-    if (!sym.isNull()) {
+    if (!sym.isEmpty()) {
         as->setLeft(Location::local(sym, m_proc));
     }
 }
@@ -81,7 +81,7 @@ void StmtSSAXformer::visit(PhiAssign *stmt, bool& visitChildren)
         assert(v.getSubExp1() != nullptr);
         QString sym = _proc->lookupSymFromRefAny(RefExp::get(v.getSubExp1(), v.getDef()));
 
-        if (!sym.isNull()) {
+        if (!sym.isEmpty()) {
             v.refSubExp1() = Location::local(sym, _proc); // Some may be parameters, but hopefully it won't matter
         }
     }

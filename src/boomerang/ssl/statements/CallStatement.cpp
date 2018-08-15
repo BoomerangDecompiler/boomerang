@@ -944,7 +944,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
     QString name(_proc->getName());
 
     if (name == "objc_msgSend") {
-        if (!formatStr.isNull()) {
+        if (!formatStr.isEmpty()) {
             int format = getNumArguments() - 1;
             int n      = 1;
             int p      = 0;
@@ -1030,7 +1030,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     LOG_VERBOSE("Ellipsis processing for %1", name);
 
-    QString   formatStr = QString::null;
+    QString   formatStr;
     SharedExp formatExp = getArgumentExp(format);
 
     // We sometimes see a[m[blah{...}]]
@@ -1085,7 +1085,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
                 break;
             }
 
-            if (formatStr.isNull()) {
+            if (formatStr.isEmpty()) {
                 return false;
             }
         }

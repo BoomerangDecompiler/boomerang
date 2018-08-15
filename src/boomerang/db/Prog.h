@@ -203,7 +203,7 @@ public:
      * This function will fail if the global already exists.
      * \returns the newly created global on success, or nullptr on failure.
      */
-    Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = QString());
+    Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = "");
 
     GlobalSet& getGlobals() { return m_globals; }
     const GlobalSet& getGlobals() const { return m_globals; }

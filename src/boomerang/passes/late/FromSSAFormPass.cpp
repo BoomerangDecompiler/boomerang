@@ -126,7 +126,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         QString name1 = proc->lookupSymFromRefAny(r1);
         QString name2 = proc->lookupSymFromRefAny(r2);
 
-        if (!name1.isNull() && !name2.isNull() && (name1 != name2)) {
+        if (!name1.isEmpty() && !name2.isEmpty() && (name1 != name2)) {
             continue; // Already different names, probably because of the redundant mapping
         }
 
@@ -173,7 +173,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         QString name1 = proc->lookupSymFromRef(r1);
         QString name2 = proc->lookupSymFromRef(r2);
 
-        if (!name1.isNull() && !name2.isNull() && !ig.isConnected(r1, *r2)) {
+        if (!name1.isEmpty() && !name2.isEmpty() && !ig.isConnected(r1, *r2)) {
             // There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We have renamed the
             // destination of the phi to ebx_1, and that leaves the two phi operands as ebx. However, we attempt to
             // unite them here, which will cause one of the operands to become ebx_1, so the neat oprimisation of
@@ -185,7 +185,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
             if (def1->isPhi()) {
                 bool                allSame     = true;
                 bool                r2IsOperand = false;
-                QString             firstName   = QString::null;
+                QString             firstName;
                 PhiAssign           *pa = static_cast<PhiAssign *>(def1);
 
                 for (RefExp &refExp : *pa) {
@@ -195,13 +195,13 @@ bool FromSSAFormPass::execute(UserProc *proc)
                         r2IsOperand = true;
                     }
 
-                    if (firstName.isNull()) {
+                    if (firstName.isEmpty()) {
                         firstName = proc->lookupSymFromRefAny(re);
                     }
                     else {
                         QString tmp = proc->lookupSymFromRefAny(re);
 
-                        if (tmp.isNull() || (firstName != tmp)) {
+                        if (tmp.isEmpty() || (firstName != tmp)) {
                             allSame = false;
                             break;
                         }
@@ -348,16 +348,16 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
             continue;                         // Already mapped to something
         }
 
-        bool       multiple  = false;         // True if find more than one unique parameter
-        QString    firstName = QString::null; // The name for the first parameter found
+        bool       multiple  = false;   // True if find more than one unique parameter
+        QString    firstName;           // The name for the first parameter found
         SharedType ty        = pi->getType();
 
         for (RefExp& v : *pi) {
             if (v.getDef()->isImplicit()) {
                 QString name = proc->lookupSym(RefExp::get(v.getSubExp1(), v.getDef()), ty);
 
-                if (!name.isNull()) {
-                    if (!firstName.isNull() && (firstName != name)) {
+                if (!name.isEmpty()) {
+                    if (!firstName.isEmpty() && (firstName != name)) {
                         multiple = true;
                         break;
                     }
@@ -367,7 +367,7 @@ void FromSSAFormPass::nameParameterPhis(UserProc *proc)
             }
         }
 
-        if (multiple || firstName.isNull()) {
+        if (multiple || firstName.isEmpty()) {
             continue;
         }
 
@@ -384,7 +384,7 @@ void FromSSAFormPass::mapParameters(UserProc *proc)
         SharedExp lhs        = static_cast<Assignment *>(*pp)->getLeft();
         QString   mappedName = proc->lookupParam(lhs);
 
-        if (mappedName.isNull()) {
+        if (mappedName.isEmpty()) {
             LOG_WARN("No symbol mapping for parameter %1", lhs);
             bool      allZero;
             SharedExp clean = lhs->clone()->removeSubscripts(allZero);

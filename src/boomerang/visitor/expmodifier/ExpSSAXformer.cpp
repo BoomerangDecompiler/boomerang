@@ -26,7 +26,7 @@ SharedExp ExpSSAXformer::postModify(const std::shared_ptr<RefExp>& exp)
 {
     QString sym = m_proc->lookupSymFromRefAny(exp);
 
-    if (!sym.isNull()) {
+    if (!sym.isEmpty()) {
         return Location::local(sym, m_proc);
     }
 
