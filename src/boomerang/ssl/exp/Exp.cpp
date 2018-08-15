@@ -499,30 +499,6 @@ SharedExp Exp::stripSizes()
 }
 
 
-QString Exp::getAnyStrConst()
-{
-    SharedExp e = shared_from_this();
-
-    if (m_oper == opAddrOf) {
-        e = getSubExp1();
-
-        if (e->m_oper == opSubscript) {
-            e = e->getSubExp1();
-        }
-
-        if (e->m_oper == opMemOf) {
-            e = e->getSubExp1();
-        }
-    }
-
-    if (e->m_oper != opStrConst) {
-        return QString::null;
-    }
-
-    return e->access<Const>()->getStr();
-}
-
-
 void Exp::addUsedLocs(LocationSet& used, bool memOnly)
 {
     UsedLocsFinder ulf(used, memOnly);

@@ -148,8 +148,6 @@ public:
     bool isIntConst() const { return m_oper == opIntConst; }
     /// True if is string const
     bool isStrConst() const { return m_oper == opStrConst; }
-    /// Get string constant even if mangled
-    QString getAnyStrConst();
 
     /// True if is flt point const
     bool isFltConst() const { return m_oper == opFltConst; }
