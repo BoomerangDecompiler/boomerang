@@ -380,7 +380,7 @@ QString UserProc::lookupParam(SharedConstExp e) const
 
     if (def == nullptr) {
         LOG_ERROR("No implicit definition for parameter %1!", e);
-        return QString::null;
+        return "";
     }
 
     SharedConstType ty  = def->getTypeFor(e);
@@ -392,12 +392,8 @@ bool UserProc::filterParams(SharedExp e)
 {
     switch (e->getOper())
     {
-        case opPC:
-            return true;
-
-        case opTemp:
-            return true;
-
+        case opPC:      return true;
+        case opTemp:    return true;
         case opRegOf:
         {
             const int sp = Util::getStackRegisterIndex(m_prog);
@@ -406,7 +402,7 @@ bool UserProc::filterParams(SharedExp e)
 
         case opMemOf:
         {
-            auto addr = e->getSubExp1();
+            SharedExp addr = e->getSubExp1();
 
             if (addr->isIntConst()) {
                 return true; // Global memory location
@@ -519,7 +515,7 @@ void UserProc::addLocal(SharedType ty, const QString& name, SharedExp e)
 
 void UserProc::ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& ref)
 {
-    if (!lookupSymFromRefAny(ref).isNull()) {
+    if (!lookupSymFromRefAny(ref).isEmpty()) {
         return; // Already have a symbol for ref
     }
 
@@ -628,7 +624,7 @@ QString UserProc::findLocal(const SharedExp& e, SharedType ty)
     // Look it up in the symbol map
     QString name = lookupSym(e, ty);
 
-    if (name.isNull()) {
+    if (name.isEmpty()) {
         return name;
     }
 
@@ -637,7 +633,7 @@ QString UserProc::findLocal(const SharedExp& e, SharedType ty)
         return name;
     }
 
-    return QString::null;
+    return "";
 }
 
 
@@ -743,7 +739,7 @@ QString UserProc::lookupSym(const SharedConstExp& arg, SharedConstType ty) const
     }
 
     // Else there is no symbol
-    return QString::null;
+    return "";
 }
 
 
@@ -753,7 +749,7 @@ QString UserProc::lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) con
 
     if (!def) {
         LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref, getName());
-        return QString::null;
+        return "";
     }
 
     SharedConstExp  base = ref->getSubExp1();
@@ -768,7 +764,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) 
 
     if (!def) {
         LOG_WARN("Unknown def for RefExp '%1' in '%2'", ref, getName());
-        return QString::null;
+        return "";
     }
 
     SharedConstExp  base = ref->getSubExp1();
@@ -776,7 +772,7 @@ QString UserProc::lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) 
 
     // Check for specific symbol
     const QString   ret  = lookupSym(ref, ty);
-    if (!ret.isNull()) {
+    if (!ret.isEmpty()) {
         return ret;
     }
 
@@ -845,7 +841,7 @@ QString UserProc::findFirstSymbol(const SharedConstExp& exp) const
     if (it != m_symbolMap.end()) {
         return std::static_pointer_cast<Const>(it->second->getSubExp1())->getStr();
     }
-    return QString::null;
+    return "";
 }
 
 
@@ -926,7 +922,7 @@ void UserProc::print(OStream& out) const
 
     out << "live variables:\n";
 
-    if (tgt2 == QString::null) {
+    if (tgt2.isEmpty()) {
         out << "  <None>\n";
     }
     else {

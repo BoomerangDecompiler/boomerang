@@ -94,7 +94,7 @@ std::vector<Address> DefaultFrontEnd::findEntryPoints()
         entrypoints.push_back(a);
     }
     else { // try some other tricks
-        QString fname = QString::null; // m_program->getProject()->getSettings()->getFilename();
+        QString fname; // = m_program->getProject()->getSettings()->getFilename();
 
         // X11 Module
         if (fname.endsWith("_drv.o")) {

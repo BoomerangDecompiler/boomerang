@@ -34,7 +34,7 @@ typedef std::shared_ptr<Type> SharedType;
 class BOOMERANG_API Register
 {
 public:
-    Register(const QString& name = QString::null, uint16_t sizeInBits = 0, bool isFloatReg = false);
+    Register(const QString& name = "", uint16_t sizeInBits = 0, bool isFloatReg = false);
     Register(const Register&);
     Register(Register&&) = default;
 
