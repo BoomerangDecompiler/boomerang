@@ -44,6 +44,6 @@
 - Technical: Allow compilation using GCC, Clang and Visual Studio (MSVC) compilers.
 - Technical: Removed unused files from the repository.
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
-- Technical: Upgraded code base to C++11.
+- Technical: Upgraded code base to C++17.
 - Numerous other small changes and fixes.
 
