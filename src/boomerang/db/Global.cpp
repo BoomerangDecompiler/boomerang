@@ -205,7 +205,7 @@ void Global::meetType(SharedType ty)
 
 
 bool GlobalComparator::operator()(const std::shared_ptr<const Global>& g1,
-                                  const std::shared_ptr<const Global>& g2)
+                                  const std::shared_ptr<const Global>& g2) const
 {
     Address addr1 = g1->getAddress();
     Address addr2 = g2->getAddress();

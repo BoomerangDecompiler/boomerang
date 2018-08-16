@@ -61,5 +61,6 @@ private:
 class GlobalComparator
 {
 public:
-    bool operator()(const std::shared_ptr<const Global>& g1, const std::shared_ptr<const Global>& g2);
+    bool operator()(const std::shared_ptr<const Global>& g1,
+                    const std::shared_ptr<const Global>& g2) const;
 };
