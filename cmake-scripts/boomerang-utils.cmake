@@ -125,7 +125,7 @@ function(BOOMERANG_ADD_TEST)
 	add_executable(${exename} ${TEST_SOURCES})
 
 	target_link_libraries(${exename}
-		test-utils
+		boomerang-test-utils
 		${TEST_LIBRARIES})
 
 	add_test(NAME ${exename} COMMAND $<TARGET_FILE:${exename}>)

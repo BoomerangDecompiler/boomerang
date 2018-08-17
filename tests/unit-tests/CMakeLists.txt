@@ -16,8 +16,8 @@ include_directories(
 )
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(test-utils STATIC TestUtils.h TestUtils.cpp)
-target_link_libraries(test-utils Qt5::Core Qt5::Test)
+add_library(boomerang-test-utils STATIC TestUtils.h TestUtils.cpp)
+target_link_libraries(boomerang-test-utils Qt5::Core Qt5::Test)
 
 add_subdirectory(boomerang)
 add_subdirectory(boomerang-loaders)
