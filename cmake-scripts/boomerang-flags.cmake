@@ -9,22 +9,20 @@
 
 # Check for required compiler version
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
-    # Reject Clang < 3.9
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 3.9)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5)
         message(FATAL_ERROR "Your Clang version is too old.\n\
             Please upgrade Clang or select another compiler.")
     endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    # Reject GCC < 4.9
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 7)
         message(FATAL_ERROR "Your GCC version is too old.\n\
             Please upgrade GCC or select another compiler.")
     endif ()
 endif ()
 
 
-# Force C++11
-set(CMAKE_CXX_STANDARD 11)
+# Force C++17
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Hide all symbols unless explicitly exported
@@ -55,8 +53,8 @@ if (MSVC)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
-    BOOMERANG_ADD_COMPILE_FLAGS(/wd4251) # Class needs to have DLL inreface to be used by clients
-    
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4251) # Class needs to have DLL interface to be used by clients
+
     set(DEBUG_LIB dbghelp.lib)
 
 else () # GCC / Clang

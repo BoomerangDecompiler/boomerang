@@ -13,9 +13,9 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 ### Building prerequisites
 
- - A C++11 compatible compiler (GCC \>= 6, Clang \>= 4, MSVC \>= 2017 are known to work)
+ - A C++ compiler compatible with C++17 (GCC \>= 7, Clang \>= 5, MSVC \>= 2017 are known to work)
  - [CMake 3.8.0 or newer](https://cmake.org/download/)
- - [Qt](https://www.qt.io/download-open-source/)
+ - [Qt5](https://www.qt.io/download-open-source/)
  - [Doxygen 1.8.13 or newer](http://www.doxygen.nl/) (optional)
 
 ### Building on Linux
