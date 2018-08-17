@@ -34,7 +34,7 @@ __size32 fib(int param1)
     __size32 g31; 		// r31
 
     g0 = /* machine specific */ (int) LR;
-    g1 = g1 - 32;
+    g1 -= 32;
     g29 = param1;
     if (param1 > 1) {
         g31 = fib(param1 - 1);

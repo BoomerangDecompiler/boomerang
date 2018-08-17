@@ -65,7 +65,7 @@ bb0x10000564:
                     goto bb0x10000688;
                 }
                 *(__size8*)(g1 + local2 - 96) = 0;
-                local2 = local2 - 1;
+                local2--;
             }
 bb0x10000688:
             g10 = puts(&local3); /* Warning: also results in g11 */

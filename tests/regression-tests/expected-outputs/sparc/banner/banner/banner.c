@@ -67,7 +67,7 @@ bb0x10804:
                     goto bb0x10960;
                 }
                 *(__size8*)(o6 + local0 - 128) = 0;
-                local0 = local0 - 1;
+                local0--;
             }
 bb0x10960:
             o2 = puts(&local3); /* Warning: also results in o3, o4 */

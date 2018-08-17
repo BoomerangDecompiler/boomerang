@@ -181,26 +181,55 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
         appendExp(ost, *lhs, OpPrec::Assign); // Ordinary LHS
     }
 
-    if ((rhs->getOper() == opPlus) && (*rhs->getSubExp1() == *lhs)) {
-        // C has special syntax for this, eg += and ++
-        // however it's not always acceptable for assigns to m[] (?)
-        if (rhs->getSubExp2()->isIntConst() &&
-            ((rhs->access<Const, 2>()->getInt() == 1) || (asgn->getType()->isPointer() &&
-                                                          (asgn->getType()->as<PointerType>()->getPointsTo()->getSize() ==
-                                                           static_cast<unsigned>(rhs->access<Const, 2>()->getInt()) * 8)))) {
-            ost << "++";
+    // C has special syntax for this, eg += and ++
+    // however it's not always acceptable for assigns to m[] (?)
+    bool useIncrement = false; // use ++ / --
+    bool useShortForm = false; // use += / -=
+
+    if ((rhs->getOper() == opPlus || rhs->getOper() == opMinus) && (*rhs->getSubExp1() == *lhs)) {
+        // we now have something like a = a + b -> shorten it
+        useShortForm = true;
+
+        SharedConstExp b = rhs->getSubExp2();
+        if (b->isIntConst()) {
+            if (b->access<const Const>()->getInt() == 1) {
+                useIncrement = true;
+            }
+            else if (asgn->getType()->isPointer()) {
+                // add ptr, 4 for 32 bit pointers in assembly is ptr++ in C code
+                const int ptrSize = asgn->getType()->as<PointerType>()->getSize();
+                if (ptrSize == rhs->access<const Const, 2>()->getInt() * 8) {
+                    useIncrement = true;
+                }
+            }
+        }
+    }
+
+    if (useIncrement) {
+        if (rhs->getOper() == opPlus) {
+            ost << "++;";
         }
         else {
-            ost << " += ";
-            appendExp(ost, *rhs->getSubExp2(), OpPrec::Assign);
+            ost << "--;";
         }
+    }
+    else if (useShortForm) {
+        if (rhs->getOper() == opPlus) {
+            ost << " += ";
+        }
+        else {
+            ost << " -= ";
+        }
+
+        appendExp(ost, *rhs->getSubExp2(), OpPrec::Assign);
+        ost << ";";
     }
     else {
         ost << " = ";
         appendExp(ost, *rhs, OpPrec::Assign);
+        ost << ";";
     }
 
-    ost << ";";
     appendLine(tgt);
 }
 

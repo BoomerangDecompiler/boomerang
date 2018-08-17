@@ -49,7 +49,7 @@ __size32 fib(int param1)
     int local3; 		// g3{0}
     __size32 local4; 		// CR1{0}
 
-    g1 = g1 - 32;
+    g1 -= 32;
     local4 = CR1;
     local4 = CR1;
     if (param1 > 1) {

@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
                     flags = SUBFLAGS8(*esi, *edi, tmpb);
                     esi +=  (DF == 0) ? 1 : -1;
                     edi +=  (DF == 0) ? 1 : -1;
-                    ecx = ecx - 1;
+                    ecx--;
                 } while (tmpb == 0);
             }
             if (flags) {
