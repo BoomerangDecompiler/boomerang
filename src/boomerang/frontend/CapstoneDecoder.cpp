@@ -26,10 +26,11 @@
 #include "boomerang/util/log/Log.h"
 
 
-#define X86_MAX_INSTRUCTION_LENGTH (16)
+#define X86_MAX_INSTRUCTION_LENGTH (15)
 
 
-// only map those registers that are present in the SSL file,
+// only map those registers that are mapped to a number
+// different from -1 in the SSL file.
 // not all registers supported by capstone
 static std::map<cs::x86_reg, int> oldRegMap = {
     { cs::X86_REG_INVALID, -1 },
@@ -74,6 +75,10 @@ static std::map<cs::x86_reg, int> oldRegMap = {
 };
 
 
+/**
+ * Translates Capstone register IDs to Boomerang internal register IDs.
+ * \returns -1 if register not found.
+ */
 int fixRegID(int csRegID)
 {
     auto it = oldRegMap.find((cs::x86_reg)csRegID);
@@ -82,8 +87,8 @@ int fixRegID(int csRegID)
 
 
 /**
- * Converts an operand of an instruction (like eax + 4*esi + 0x10)
- * into an expression that can be recognized by the decompiler.
+ * Converts an operand of an instruction (like %eax + 4*%esi + 0x10)
+ * into a SSL expression that can be recognized by the decompiler.
  */
 SharedExp operandToExp(const cs::cs_x86_op &operand)
 {
@@ -155,10 +160,6 @@ bool CapstoneDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResul
         return false;
     }
 
-    // TEST TEST TEST
-    printf("0x%" PRIx64 ":\t%s\t\t%s\n", decodedInstruction->address, decodedInstruction->mnemonic,
-           decodedInstruction->op_str);
-
     result.type         = getInstructionClass(decodedInstruction);
     result.numBytes     = decodedInstruction->size;
     result.reDecode     = false;
@@ -203,7 +204,7 @@ ICLASS CapstoneDecoder::getInstructionClass(const cs::cs_insn *)
 }
 
 
-static QString operandNames[] = {
+static const QString operandNames[] = {
     "",    // X86_OP_INVALID
     "reg", // X86_OP_REG
     "imm", // X86_OP_IMM
@@ -419,7 +420,8 @@ std::unique_ptr<RTL> CapstoneDecoder::instantiateRTL(Address pc, const char *ins
     }
 
     bool found;
-    const auto &signature = m_dict.getSignature(instructionID, &found);
+    const std::pair<QString, DWord> &signature = m_dict.getSignature(instructionID, &found);
+
     if (found) {
         return m_dict.instantiateRTL(signature.first, pc, actuals);
     }

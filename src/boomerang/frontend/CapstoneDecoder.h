@@ -20,6 +20,10 @@ namespace cs
 }
 
 
+/**
+ * Instruction decoder using capstone to decode
+ * (32 bit) x86 instructions to SSL RTLs.
+ */
 class CapstoneDecoder : public IDecoder
 {
 public:
@@ -27,22 +31,17 @@ public:
     virtual ~CapstoneDecoder();
 
 public:
-    /**
-     * Decodes the machine instruction at \p pc.
-     * The decode result is stored into \p result, if the decode was successful.
-     * If the decode was not successful, the content of \p result is undefined.
-     * \returns true if decoding the instruction was successful.
-     */
+    /// \copydoc IDecoder::decodeInstruction
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
-    /// \returns machine-specific register name given it's index
-    virtual QString getRegName(int idx) const override;
+    /// \copydoc IDecoder::getRegName
+    virtual QString getRegName(int regID) const override;
 
-    /// \returns index of the named register
+    /// \copydoc IDecoder::getRegIdx
     virtual int getRegIdx(const QString &name) const override;
 
-    /// \returns size of register in bits
-    virtual int getRegSize(int idx) const override;
+    /// \copydoc IDecoder::getRegSize
+    virtual int getRegSize(int regID) const override;
 
 private:
     ICLASS getInstructionClass(const cs::cs_insn *instruction);
