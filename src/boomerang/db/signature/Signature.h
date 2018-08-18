@@ -87,16 +87,16 @@ public:
      */
     virtual void addReturn(SharedType type, SharedExp exp = nullptr);
 
-    SharedConstExp getReturnExp(int n) const;
-    SharedExp getReturnExp(int n);
     /// \deprecated Deprecated. Use the above version.
     virtual void addReturn(SharedExp e);
+
+    SharedConstExp getReturnExp(int n) const;
+    SharedExp getReturnExp(int n);
 
     SharedConstType getReturnType(int n) const;
     SharedType getReturnType(int n);
 
-    virtual SharedExp getReturnExp(size_t n) const { return m_returns[n]->getExp(); }
-    virtual SharedType getReturnType(size_t n) const { return m_returns[n]->getType(); }
+    /// \returns the number of return values.
     virtual int getNumReturns() const { return m_returns.size(); }
 
     /// \returns the index of the return expression \p exp, or -1 if not found.
@@ -112,10 +112,10 @@ public:
     virtual void removeParameter(const SharedExp& e);
     virtual void removeParameter(int i);
 
-    // set the number of parameters using defaults
+    /// set the number of parameters using defaults
     virtual void setNumParams(int n);
 
-    // accessors for parameters
+    /// accessors for parameters
     virtual int getNumParams() const { return m_params.size(); }
 
     const std::vector<std::shared_ptr<Parameter>>& getParameters() const { return m_params; }
@@ -131,7 +131,7 @@ public:
     virtual void setParamName(int n, const QString& name);
     virtual void setParamExp(int n, SharedExp e);
 
-    // Return the index for the given expression, or -1 if not found
+    /// Return the index for the given expression, or -1 if not found
     virtual int findParam(const SharedExp& e) const;
     virtual int findParam(const QString& name) const;
 
@@ -178,11 +178,14 @@ public:
      */
     bool isOpCompatStackLocal(OPER op) const;
 
-    // get anything that can be proven as a result of the signature
+    /// get anything that can be proven as a result of the signature
     virtual SharedExp getProven(SharedExp /*left*/) const { return nullptr; }
-    virtual bool isPreserved(SharedExp /*e*/) const { return false; }     // Return whether e is preserved by this proc
 
-    virtual void getLibraryDefines(StatementList& /*defs*/) {} // Set the locations defined by library calls
+    /// Return whether e is preserved by this proc
+    virtual bool isPreserved(SharedExp /*e*/) const { return false; }
+
+    /// Set the locations defined by library calls
+    virtual void getLibraryDefines(StatementList& /*defs*/) {}
 
     /// Not very satisfying to do things this way. Problem is that the polymorphic CallingConvention objects are set up
     /// very late in the decompilation. Get the set of registers that are not saved in library functions (or any
@@ -191,7 +194,7 @@ public:
 
     virtual CallConv getConvention() const { return CallConv::INVALID; }
 
-    // preferred format
+    /// preferred format
     void setPreferredName(const QString& name) { m_preferredName = name; }
     const QString& getPreferredName() const { return m_preferredName; }
 

@@ -26,23 +26,43 @@ public:
     virtual ~PPCSignature() override = default;
 
 public:
+    /// \copydoc Signature::clone
     virtual std::shared_ptr<Signature> clone() const override;
 
     static bool qualified(UserProc *p, Signature&);
+
+    /// \copydoc Signature::addReturn
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
+
+    /// \copydoc Signature::getArgumentExp
     virtual SharedExp getArgumentExp(int n) const override;
+
+    /// \copydoc Signature::addParameter
     virtual void addParameter(const QString& name, const SharedExp& e,
                               SharedType type = VoidType::get(), const QString& boundMax = "") override;
 
+    /// \copydoc Signature::getStackRegister
     virtual int getStackRegister() const override { return 1; }
-    virtual SharedExp getProven(SharedExp left) const override;
-    virtual bool isPreserved(SharedExp e) const override;         // Return whether e is preserved by this proc
-    virtual void getLibraryDefines(StatementList& defs) override; // Set list of locations def'd by library calls
 
+    /// \copydoc Signature::getProven
+    virtual SharedExp getProven(SharedExp left) const override;
+
+    /// \copydoc Signature::isPreserved
+    virtual bool isPreserved(SharedExp e) const override;
+
+    /// \copydoc Signature::getLibraryDefines
+    virtual void getLibraryDefines(StatementList& defs) override;
+
+    /// \copydoc Signature::isLocalOffsetPositive
     virtual bool isLocalOffsetPositive() const override { return true; }
+
+    /// \copydoc Signature::isPromoted
     virtual bool isPromoted() const override { return true; }
+
+    /// \copydoc Signature::getConvention
     virtual CallConv getConvention() const override { return CallConv::C; }
 
+    /// \copydoc Signature::promote
     std::shared_ptr<Signature> promote(UserProc * /*p*/) override
     {
         // No promotions from here up, obvious idea would be c++ name mangling

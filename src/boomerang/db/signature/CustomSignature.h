@@ -21,11 +21,15 @@ public:
     virtual ~CustomSignature() override = default;
 
 public:
+    /// \copydoc Signature::isPromoted
     virtual bool isPromoted() const override { return true; }
+
+    /// \copydoc Signature::clone
     virtual std::shared_ptr<Signature> clone() const override;
 
     void setSP(int spReg);
 
+    /// \copydoc Signature::getStackRegister
     virtual int getStackRegister() const override { return m_spReg; }
 
 protected:
