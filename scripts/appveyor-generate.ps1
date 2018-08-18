@@ -21,9 +21,9 @@ else {
 }
 
 # Build Visual Studio solution
-cmake -G "$CMAKE_GENERATOR_NAME" \
-    -DCMAKE_TOOLCHAIN_FILE="c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" \
-    -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" \
-    -DBOOMERANG_BUILD_UNIT_TESTS=ON 
+cmake -G "$CMAKE_GENERATOR_NAME" `
+    -DCMAKE_TOOLCHAIN_FILE="c:/tools/vcpkg/scripts/buildsystems/vcpkg.cmake" `
+    -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" `
+    -DBOOMERANG_BUILD_UNIT_TESTS=ON `
     -DBUILD_SHARED_LIBS="$SHARED_LIBS" ..
 
