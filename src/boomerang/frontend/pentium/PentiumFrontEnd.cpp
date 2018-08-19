@@ -17,7 +17,7 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/CapstoneDecoder.h"
+#include "boomerang/frontend/pentium/CapstoneX86Decoder.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -378,7 +378,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : DefaultFrontEnd(binaryFile, prog)
 {
-    m_decoder.reset(new CapstoneDecoder(prog));
+    m_decoder.reset(new CapstoneX86Decoder(prog));
 }
 
 

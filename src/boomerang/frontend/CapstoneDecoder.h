@@ -21,37 +21,27 @@ namespace cs
 
 
 /**
- * Instruction decoder using capstone to decode
- * (32 bit) x86 instructions to SSL RTLs.
+ * Base class for instruction decoders using Capstone for disassembling instructions.
  */
 class CapstoneDecoder : public IDecoder
 {
 public:
-    CapstoneDecoder(Prog *prog);
+    /**
+     * \param prog the program being decompiled.
+     * \param arch Capstone architecture. Usually this is set in the constructor
+     *             of the derived class.
+     * \param mode Capstone dsassembly mode. Usually this is set in the constructor
+     *             of the derived class.
+     * \param sslFileName Path to the ssl file holding the instruction semantics,
+     *                    relative to the data directory.
+     */
+    CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode, const QString &sslFileName);
     virtual ~CapstoneDecoder();
 
-public:
-    /// \copydoc IDecoder::decodeInstruction
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
-
-    /// \copydoc IDecoder::getRegName
-    virtual QString getRegName(int regID) const override;
-
-    /// \copydoc IDecoder::getRegIdx
-    virtual int getRegIdx(const QString &name) const override;
-
-    /// \copydoc IDecoder::getRegSize
-    virtual int getRegSize(int regID) const override;
-
-private:
-    ICLASS getInstructionClass(const cs::cs_insn *instruction);
-    std::unique_ptr<RTL> getRTL(Address pc, const cs::cs_insn *instruction);
-    std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, int numOperands,
-                                        const cs::cs_x86_op *operands);
-
+protected:
     bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
 
-private:
+protected:
     cs::csh m_handle;
     Prog *m_prog;
     RTLInstDict m_dict;
