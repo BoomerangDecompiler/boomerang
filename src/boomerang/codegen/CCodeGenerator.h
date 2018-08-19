@@ -29,30 +29,28 @@ class LocationSet;
 class BinaryImage;
 
 
-// Operator precedence
-
-/*
- * Operator Name                Associativity    Operators
- * Primary scope resolution     left to right    ::
- * Primary                      left to right    ()    [ ]     .    -> dynamic_cast typeid
- * Unary                        right to left    ++    --    +  -  !     ~    &  *  (type_name)  sizeof new delete
- * C++ Pointer to Member        left to right    .* ->*
- * Multiplicative               left to right    *  /  %
- * Additive                     left to right    +  -
- * Bitwise Shift                left to right    <<    >>
- * Relational                   left to right    <  >  <=  >=
- * Equality                     left to right    ==    !=
- * Bitwise AND                  left to right    &
- * Bitwise Exclusive OR         left to right    ^
- * Bitwise Inclusive OR         left to right    |
- * Logical AND                  left to right    &&
- * Logical OR                   left to right    ||
- * Conditional                  right to left    ? :
- * Assignment                   right to left    =  +=  -=  *=    /=    <<=     >>=  %=   &=    ^=    |=
- * Comma                        left to right    ,
- */
 
 /// Operator precedence
+/**
+ * Operator Name            Associativity Operators
+ * Primary scope resolution LTR           ::
+ * Primary                  LTR           () [] . -> dynamic_cast typeid
+ * Unary                    RTL           ++ -- + - ! ~ & * (type_name) sizeof new delete
+ * C++ Pointer to Member    LTR           .* ->*
+ * Multiplicative           LTR           * / %
+ * Additive                 LTR           + -
+ * Bitwise Shift            LTR           << >>
+ * Relational               LTR           < > <= >=
+ * Equality                 LTR           == !=
+ * Bitwise AND              LTR           &
+ * Bitwise Exclusive OR     LTR           ^
+ * Bitwise Inclusive OR     LTR           |
+ * Logical AND              LTR           &&
+ * Logical OR               LTR           ||
+ * Conditional              RTL           ? :
+ * Assignment               RTL           = += -= *= /= <<= >>= %= &= ^= |=
+ * Comma                    LTR           ,
+ */
 enum class OpPrec : uint8_t
 {
     Invalid  =    0,

@@ -80,7 +80,7 @@ public:
     bool useProof            = true;
     bool changeSignatures    = true;
     bool dfaTypeAnalysis     = true;
-    int propMaxDepth         = 3; ///< Max depth of expression that'll be propagated to more than one dest
+    int propMaxDepth         = 3; ///< Max depth of exp that'll be propagated to more than one dest
     bool generateCallGraph   = false;
     bool generateSymbols     = false;
     bool useGlobals          = true;
@@ -89,9 +89,14 @@ public:
 
     QString replayFile;               ///< file with commands to execute in interactive mode
 
-    std::vector<Address> m_entryPoints;     ///< A vector which contains all know entrypoints for the Prog.
-    std::vector<QString> m_symbolFiles;     ///< A vector containing the names of all symbol files to load.
-    std::map<Address, QString> m_symbolMap; ///< A map to find a name by a given address.
+    /// A vector which contains all know entrypoints for the Prog.
+    std::vector<Address> m_entryPoints;
+
+    /// A vector containing the names of all symbol files to load.
+    std::vector<QString> m_symbolFiles;
+
+    /// A map to find a name by a given address.
+    std::map<Address, QString> m_symbolMap;
 
 private:
     QDir m_workingDirectory;       ///< Directory where Boomerang is run from
