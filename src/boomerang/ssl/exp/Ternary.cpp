@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "Ternary.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -30,7 +29,7 @@ Ternary::Ternary(OPER _op, SharedExp _e1, SharedExp _e2, SharedExp _e3)
 }
 
 
-Ternary::Ternary(const Ternary& o)
+Ternary::Ternary(const Ternary &o)
     : Binary(o)
 {
     subExp3 = o.subExp3->clone();
@@ -71,7 +70,7 @@ SharedConstExp Ternary::getSubExp3() const
 }
 
 
-SharedExp& Ternary::refSubExp3()
+SharedExp &Ternary::refSubExp3()
 {
     assert(subExp1 && subExp2 && subExp3);
     return subExp3;
@@ -81,12 +80,13 @@ SharedExp& Ternary::refSubExp3()
 SharedExp Ternary::clone() const
 {
     assert(subExp1 && subExp2 && subExp3);
-    std::shared_ptr<Ternary> c = std::make_shared<Ternary>(m_oper, subExp1->clone(), subExp2->clone(), subExp3->clone());
+    std::shared_ptr<Ternary> c = std::make_shared<Ternary>(m_oper, subExp1->clone(),
+                                                           subExp2->clone(), subExp3->clone());
     return c;
 }
 
 
-bool Ternary::operator==(const Exp& o) const
+bool Ternary::operator==(const Exp &o) const
 {
     if (o.getOper() == opWild) {
         return true;
@@ -95,23 +95,20 @@ bool Ternary::operator==(const Exp& o) const
         return false;
     }
 
-    const Ternary& otherTern = static_cast<const Ternary &>(o);
+    const Ternary &otherTern = static_cast<const Ternary &>(o);
 
-    return
-        m_oper == otherTern.m_oper &&
-        *subExp1 == *otherTern.getSubExp1() &&
-        *subExp2 == *otherTern.getSubExp2() &&
-        *subExp3 == *otherTern.getSubExp3();
+    return m_oper == otherTern.m_oper && *subExp1 == *otherTern.getSubExp1() &&
+           *subExp2 == *otherTern.getSubExp2() && *subExp3 == *otherTern.getSubExp3();
 }
 
 
-bool Ternary::operator<(const Exp& o) const
+bool Ternary::operator<(const Exp &o) const
 {
     if (m_oper != o.getOper()) {
         return m_oper < o.getOper();
     }
 
-    const Ternary& otherTern = static_cast<const Ternary&>(o);
+    const Ternary &otherTern = static_cast<const Ternary &>(o);
 
     if (*subExp1 < *otherTern.getSubExp1()) {
         return true;
@@ -133,7 +130,7 @@ bool Ternary::operator<(const Exp& o) const
 }
 
 
-bool Ternary::operator*=(const Exp& o) const
+bool Ternary::operator*=(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -161,7 +158,7 @@ bool Ternary::operator*=(const Exp& o) const
 }
 
 
-void Ternary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
+void Ternary::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &li, bool once)
 {
     doSearch(pattern, subExp1, li, once);
 
@@ -187,7 +184,8 @@ bool Ternary::acceptVisitor(ExpVisitor *v)
     }
 
     if (visitChildren) {
-        if (!subExp1->acceptVisitor(v) || !subExp2->acceptVisitor(v) || !subExp3->acceptVisitor(v)) {
+        if (!subExp1->acceptVisitor(v) || !subExp2->acceptVisitor(v) ||
+            !subExp3->acceptVisitor(v)) {
             return false;
         }
     }
@@ -198,57 +196,50 @@ bool Ternary::acceptVisitor(ExpVisitor *v)
 
 SharedType Ternary::ascendType()
 {
-    switch (m_oper)
-    {
-    case opFsize:
-        return FloatType::get(subExp2->access<Const>()->getInt());
-
+    switch (m_oper) {
+    case opFsize: return FloatType::get(subExp2->access<Const>()->getInt());
     case opZfill:
-    case opSgnEx:
-        {
-            const int toSize = subExp2->access<Const>()->getInt();
-            return Type::newIntegerLikeType(toSize, m_oper == opZfill ? Sign::Unsigned : Sign::Signed);
-        }
+    case opSgnEx: {
+        const int toSize = subExp2->access<Const>()->getInt();
+        return Type::newIntegerLikeType(toSize, m_oper == opZfill ? Sign::Unsigned : Sign::Signed);
+    }
 
-    default:
-        break;
+    default: break;
     }
 
     return VoidType::get();
 }
 
 
-void Ternary::descendType(SharedType /*parentType*/, bool& changed, Statement *s)
+void Ternary::descendType(SharedType /*parentType*/, bool &changed, Statement *s)
 {
-    switch (m_oper)
-    {
+    switch (m_oper) {
     case opFsize:
         subExp3->descendType(FloatType::get(subExp1->access<Const>()->getInt()), changed, s);
         break;
 
     case opZfill:
-    case opSgnEx:
-        {
-            int        fromSize = subExp1->access<Const>()->getInt();
-            SharedType fromType;
-            fromType = Type::newIntegerLikeType(fromSize, m_oper == opZfill ? Sign::Unsigned : Sign::Signed);
-            subExp3->descendType(fromType, changed, s);
-            break;
-        }
-
-    default:
+    case opSgnEx: {
+        int fromSize = subExp1->access<Const>()->getInt();
+        SharedType fromType;
+        fromType = Type::newIntegerLikeType(fromSize,
+                                            m_oper == opZfill ? Sign::Unsigned : Sign::Signed);
+        subExp3->descendType(fromType, changed, s);
         break;
+    }
+
+    default: break;
     }
 }
 
 
-SharedExp Ternary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+SharedExp Ternary::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 {
     return mod->preModify(access<Ternary>(), visitChildren);
 }
 
 
-SharedExp Ternary::acceptChildModifier(ExpModifier* mod)
+SharedExp Ternary::acceptChildModifier(ExpModifier *mod)
 {
     subExp1 = subExp1->acceptModifier(mod);
     subExp2 = subExp2->acceptModifier(mod);

@@ -9,21 +9,18 @@
 #pragma endregion License
 #include "FuncType.h"
 
-
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/type/SizeType.h"
 
 
-FuncType::FuncType(const std::shared_ptr<Signature>& sig)
+FuncType::FuncType(const std::shared_ptr<Signature> &sig)
     : Type(TypeClass::Func)
     , signature(sig)
-{
-}
+{}
 
 
 FuncType::~FuncType()
-{
-}
+{}
 
 
 SharedType FuncType::clone() const
@@ -38,14 +35,15 @@ size_t FuncType::getSize() const
 }
 
 
-bool FuncType::operator==(const Type& other) const
+bool FuncType::operator==(const Type &other) const
 {
     if (!other.isFunc()) {
         return false;
     }
     const FuncType &otherFunc = static_cast<const FuncType &>(other);
 
-    // Note: some functions don't have a signature (e.g. indirect calls that have not yet been successfully analysed)
+    // Note: some functions don't have a signature (e.g. indirect calls that have not yet been
+    // successfully analysed)
     if (!signature) {
         return otherFunc.signature == nullptr;
     }
@@ -54,7 +52,7 @@ bool FuncType::operator==(const Type& other) const
 }
 
 
-bool FuncType::operator<(const Type& other) const
+bool FuncType::operator<(const Type &other) const
 {
     if (id != other.getId()) {
         return id < other.getId();
@@ -95,7 +93,7 @@ QString FuncType::getCtype(bool final) const
 }
 
 
-void FuncType::getReturnAndParam(QString& ret, QString& param)
+void FuncType::getReturnAndParam(QString &ret, QString &param)
 {
     if (signature == nullptr) {
         ret   = "void";
@@ -121,12 +119,12 @@ void FuncType::getReturnAndParam(QString& ret, QString& param)
         s += signature->getParamType(i)->getCtype();
     }
 
-    s    += ")";
+    s += ")";
     param = s;
 }
 
 
-SharedType FuncType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType FuncType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<FuncType *>(this)->shared_from_this();
@@ -141,7 +139,7 @@ SharedType FuncType::meetWith(SharedType other, bool& changed, bool useHighestPt
 }
 
 
-bool FuncType::isCompatible(const Type& other, bool /*all*/) const
+bool FuncType::isCompatible(const Type &other, bool /*all*/) const
 {
     assert(signature);
 

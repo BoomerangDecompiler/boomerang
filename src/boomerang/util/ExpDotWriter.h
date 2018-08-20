@@ -20,35 +20,35 @@ class OStream;
 class ExpDotWriter : private ExpVisitor
 {
 public:
-    bool writeDotFile(const std::shared_ptr<class Exp>& exp, const QString& filename);
+    bool writeDotFile(const std::shared_ptr<class Exp> &exp, const QString &filename);
 
 private:
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<Unary>& exp) override;
+    bool postVisit(const std::shared_ptr<Unary> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<Binary>& exp) override;
+    bool postVisit(const std::shared_ptr<Binary> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<Ternary>& exp) override;
+    bool postVisit(const std::shared_ptr<Ternary> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<TypedExp>& exp) override;
+    bool postVisit(const std::shared_ptr<TypedExp> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<FlagDef>& exp) override;
+    bool postVisit(const std::shared_ptr<FlagDef> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<RefExp>& exp) override;
+    bool postVisit(const std::shared_ptr<RefExp> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<Location>& exp) override;
+    bool postVisit(const std::shared_ptr<Location> &exp) override;
 
     /// \copydoc ExpVisitor::preVisit
-    bool visit(const std::shared_ptr<Const>& exp) override;
+    bool visit(const std::shared_ptr<Const> &exp) override;
 
     /// \copydoc ExpVisitor::visit
-    bool visit(const std::shared_ptr<Terminal>& exp) override;
+    bool visit(const std::shared_ptr<Terminal> &exp) override;
 
 private:
     OStream *m_os;

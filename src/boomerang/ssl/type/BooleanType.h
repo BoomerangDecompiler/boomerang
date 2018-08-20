@@ -17,13 +17,13 @@ class BOOMERANG_API BooleanType : public Type
 {
 public:
     BooleanType();
-    BooleanType(const BooleanType& other) = default;
-    BooleanType(BooleanType&& other) = default;
+    BooleanType(const BooleanType &other) = default;
+    BooleanType(BooleanType &&other)      = default;
 
     virtual ~BooleanType() override;
 
-    BooleanType& operator=(const BooleanType& other) = default;
-    BooleanType& operator=(BooleanType&& other) = default;
+    BooleanType &operator=(const BooleanType &other) = default;
+    BooleanType &operator=(BooleanType &&other) = default;
 
 public:
     virtual bool isBoolean() const override { return true; }
@@ -31,15 +31,15 @@ public:
 
     virtual SharedType clone() const override;
 
-    virtual bool operator==(const Type& other) const override;
+    virtual bool operator==(const Type &other) const override;
 
-    virtual bool operator<(const Type& other) const override;
+    virtual bool operator<(const Type &other) const override;
 
     virtual size_t getSize() const override;
 
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+    virtual bool isCompatible(const Type &other, bool all) const override;
 };

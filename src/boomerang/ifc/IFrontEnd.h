@@ -45,11 +45,11 @@ public:
 
 public:
     /// Determines whether the proc with name \p procName returns or not (like abort)
-    virtual bool isNoReturnCallDest(const QString& procName) const = 0;
+    virtual bool isNoReturnCallDest(const QString &procName) const = 0;
 
-     // decoding related
+    // decoding related
 public:
-    virtual IDecoder *getDecoder() = 0;
+    virtual IDecoder *getDecoder()             = 0;
     virtual const IDecoder *getDecoder() const = 0;
 
     /// Decode all undecoded procedures.
@@ -79,18 +79,18 @@ public:
 
 public:
     /// Locate the entry address of "main", returning a native address
-    virtual Address findMainEntryPoint(bool& gotMain) = 0;
+    virtual Address findMainEntryPoint(bool &gotMain) = 0;
 
     /// Returns a list of all available entrypoints.
     virtual std::vector<Address> findEntryPoints() = 0;
 
     /// Add a "hint" that an instruction at \p addr references a named global
-    virtual void addRefHint(Address addr, const QString& name) = 0;
+    virtual void addRefHint(Address addr, const QString &name) = 0;
 
     /**
-     * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case statements and
-     * decoded indirect call statements in a new decode following analysis of such instructions. The CFG is
-     * incomplete in these cases, and needs to be restarted from scratch
+     * Add an RTL to the map from native address to previously-decoded-RTLs. Used to restore case
+     * statements and decoded indirect call statements in a new decode following analysis of such
+     * instructions. The CFG is incomplete in these cases, and needs to be restarted from scratch
      */
     virtual void saveDecodedRTL(Address a, RTL *rtl) = 0;
 };

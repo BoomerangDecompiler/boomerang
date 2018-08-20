@@ -9,20 +9,18 @@
 #pragma endregion License
 #include "CallArgumentUpdatePass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
 
 
 CallArgumentUpdatePass::CallArgumentUpdatePass()
     : IPass("CallArgumentUpdate", PassID::CallArgumentUpdate)
-{
-}
+{}
 
 
 bool CallArgumentUpdatePass::execute(UserProc *proc)
@@ -31,7 +29,7 @@ bool CallArgumentUpdatePass::execute(UserProc *proc)
     const bool experimental = proc->getProg()->getProject()->getSettings()->experimental;
 
     for (BasicBlock *bb : *proc->getCFG()) {
-        BasicBlock::RTLRIterator        rrit;
+        BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
         CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 

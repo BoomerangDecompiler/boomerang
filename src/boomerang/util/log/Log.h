@@ -57,13 +57,13 @@ public:
     /// Create a log.
     /// \param level Default logging level.
     Log(LogLevel level = LogLevel::Default);
-    Log(const Log& other) = delete;
-    Log(Log&&) = delete;
+    Log(const Log &other) = delete;
+    Log(Log &&)           = delete;
 
     virtual ~Log();
 
-    Log& operator=(const Log& other) = delete;
-    Log& operator=(Log&& other) = delete;
+    Log &operator=(const Log &other) = delete;
+    Log &operator=(Log &&other) = delete;
 
 public:
     /**
@@ -71,7 +71,7 @@ public:
      * The default behavior is to log to stdout
      * and to the default log file "boomerang.log".
      */
-    static Log& getOrCreateLog();
+    static Log &getOrCreateLog();
 
     /**
      * Log a message to all log sinks.
@@ -81,10 +81,10 @@ public:
      * \param line  Source line frim which this function was called, usually __LINE__
      * \param msg   Log message.
      */
-    void log(LogLevel level, const char *file, int line, const QString& msg);
+    void log(LogLevel level, const char *file, int line, const QString &msg);
 
     /// Same as \ref Log::log, but does not split multiline strings
-    void logDirect(LogLevel level, const char *file, int line, const QString& msg);
+    void logDirect(LogLevel level, const char *file, int line, const QString &msg);
 
     /**
      * Log a message to all log sinks, replacing %1, %2, ... etc by \p args
@@ -95,25 +95,25 @@ public:
      * \param msg   Log message.
      * \param args  Arguments to replace in \p msg
      */
-    template<typename ... Args>
-    void log(LogLevel level, const char *file, int line, const QString& msg, Args ... args)
+    template<typename... Args>
+    void log(LogLevel level, const char *file, int line, const QString &msg, Args... args)
     {
         if (!canLog(level)) {
             return;
         }
 
-        log(level, file, line, collectArgs(msg, args ...));
+        log(level, file, line, collectArgs(msg, args...));
     }
 
     void flush();
 
     /// Add a log sink / target. Takes ownership of the pointer.
     void addLogSink(std::unique_ptr<ILogSink> s);
-    void addDefaultLogSinks(const QString& outputDir);
+    void addDefaultLogSinks(const QString &outputDir);
 
     void removeAllSinks();
 
-    Log& setLogLevel(LogLevel level);
+    Log &setLogLevel(LogLevel level);
     LogLevel getLogLevel() const;
 
 private:
@@ -124,7 +124,8 @@ private:
     void writeLogHeader();
 
     /**
-     * Pretty-print \p fileName to \p dstBuffer, filling up remaining space in \p dstBuffer with whitespace characters.
+     * Pretty-print \p fileName to \p dstBuffer, filling up remaining space in \p dstBuffer with
+     * whitespace characters.
      *
      * \param dstBuffer Destination buffer to write to
      * \param dstCharacters Size (in characters) of the destination buffer
@@ -137,7 +138,7 @@ private:
      * \sa QString::arg
      */
     template<typename T>
-    QString collectArg(const QString& msg, const std::shared_ptr<T>& arg)
+    QString collectArg(const QString &msg, const std::shared_ptr<T> &arg)
     {
         QString tgt;
         OStream os(&tgt);
@@ -145,44 +146,44 @@ private:
         return msg.arg(tgt);
     }
 
-    QString collectArg(const QString& msg, const char *arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, const QString& arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, const Statement *s);
-    QString collectArg(const QString& msg, const SharedConstExp& e);
-    QString collectArg(const QString& msg, const SharedType& ty);
-    QString collectArg(const QString& msg, const IPrintable& ty);
-    QString collectArg(const QString& msg, const RTL *r);
-    QString collectArg(const QString& msg, const LocationSet *l);
+    QString collectArg(const QString &msg, const char *arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, const QString &arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, const Statement *s);
+    QString collectArg(const QString &msg, const SharedConstExp &e);
+    QString collectArg(const QString &msg, const SharedType &ty);
+    QString collectArg(const QString &msg, const IPrintable &ty);
+    QString collectArg(const QString &msg, const RTL *r);
+    QString collectArg(const QString &msg, const LocationSet *l);
 
-    QString collectArg(const QString& msg, char arg)   { return msg.arg(arg); }
-    QString collectArg(const QString& msg, sint16 arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, sint32 arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, sint64 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, char arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, sint16 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, sint32 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, sint64 arg) { return msg.arg(arg); }
 
-    QString collectArg(const QString& msg, uint8 arg)  { return msg.arg(arg); }
-    QString collectArg(const QString& msg, uint16 arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, uint32 arg) { return msg.arg(arg); }
-    QString collectArg(const QString& msg, uint64 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, uint8 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, uint16 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, uint32 arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, uint64 arg) { return msg.arg(arg); }
 
-    QString collectArg(const QString& msg, float arg)  { return msg.arg(arg); }
-    QString collectArg(const QString& msg, double arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, float arg) { return msg.arg(arg); }
+    QString collectArg(const QString &msg, double arg) { return msg.arg(arg); }
 
-    QString collectArg(const QString& msg, Address addr);
+    QString collectArg(const QString &msg, Address addr);
 
     template<typename Arg>
-    QString collectArgs(const QString& msg, Arg arg)
+    QString collectArgs(const QString &msg, Arg arg)
     {
         return collectArg(msg, arg);
     }
 
-    template<typename Arg, typename ... Args>
-    QString collectArgs(QString msg, Arg arg, Args ... args)
+    template<typename Arg, typename... Args>
+    QString collectArgs(QString msg, Arg arg, Args... args)
     {
-        return collectArgs(collectArg(msg, arg), args ...);
+        return collectArgs(collectArg(msg, arg), args...);
     }
 
     /// Write the raw string \p msg to all log sinks.
-    void write(const QString& msg);
+    void write(const QString &msg);
 
     /// Given a log level, get the name of the log level as a string.
     QString levelToString(LogLevel level);
@@ -199,9 +200,11 @@ private:
 
 
 /// Usage: LOG_ERROR("%1, we have a problem", "Houston");
-#define LOG_FATAL(...)             Log::getOrCreateLog().log(LogLevel::Fatal,    __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...)             Log::getOrCreateLog().log(LogLevel::Error,    __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_WARN(...)              Log::getOrCreateLog().log(LogLevel::Warning,  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_MSG(...)               Log::getOrCreateLog().log(LogLevel::Default,  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_VERBOSE(...)           Log::getOrCreateLog().log(LogLevel::Verbose1, __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_VERBOSE2(...)          Log::getOrCreateLog().log(LogLevel::Verbose2, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_FATAL(...) Log::getOrCreateLog().log(LogLevel::Fatal, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_ERROR(...) Log::getOrCreateLog().log(LogLevel::Error, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_WARN(...) Log::getOrCreateLog().log(LogLevel::Warning, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_MSG(...) Log::getOrCreateLog().log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_VERBOSE(...)                                                                           \
+    Log::getOrCreateLog().log(LogLevel::Verbose1, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_VERBOSE2(...)                                                                          \
+    Log::getOrCreateLog().log(LogLevel::Verbose2, __FILE__, __LINE__, __VA_ARGS__)

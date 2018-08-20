@@ -9,20 +9,17 @@
 #pragma endregion License
 #include "CharType.h"
 
-
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/SizeType.h"
 
 
 CharType::CharType()
     : Type(TypeClass::Char)
-{
-}
+{}
 
 
 CharType::~CharType()
-{
-}
+{}
 
 
 SharedType CharType::clone() const
@@ -37,13 +34,13 @@ size_t CharType::getSize() const
 }
 
 
-bool CharType::operator==(const Type& other) const
+bool CharType::operator==(const Type &other) const
 {
     return other.isChar();
 }
 
 
-bool CharType::operator<(const Type& other) const
+bool CharType::operator<(const Type &other) const
 {
     return id < other.getId();
 }
@@ -54,7 +51,7 @@ QString CharType::getCtype(bool /*final*/) const
 }
 
 
-SharedType CharType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType CharType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid() || other->resolvesToChar()) {
         return const_cast<CharType *>(this)->shared_from_this();
@@ -74,7 +71,7 @@ SharedType CharType::meetWith(SharedType other, bool& changed, bool useHighestPt
 }
 
 
-bool CharType::isCompatible(const Type& other, bool /*all*/) const
+bool CharType::isCompatible(const Type &other, bool /*all*/) const
 {
     if (other.resolvesToVoid()) {
         return true;

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ExpCastInserter.h"
 
-
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -22,8 +21,8 @@
 
 static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)
 {
-    SharedConstType ty        = e->ascendType();
-    const bool isInt          = ty->resolvesToInteger();
+    SharedConstType ty  = e->ascendType();
+    const bool isInt    = ty->resolvesToInteger();
     Sign currSignedness = Sign::Unknown;
 
     if (isInt) {
@@ -33,8 +32,8 @@ static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)
     // Don't want to cast e.g. floats to integer
     if (isInt && (currSignedness != reqSignedness)) {
         // Transfer size
-        std::shared_ptr<IntegerType> newtype =
-            IntegerType::get(std::static_pointer_cast<const IntegerType>(ty)->getSize(), reqSignedness);
+        std::shared_ptr<IntegerType> newtype = IntegerType::get(
+            std::static_pointer_cast<const IntegerType>(ty)->getSize(), reqSignedness);
 
         newtype->setSignedness(reqSignedness);
         return std::make_shared<TypedExp>(newtype, e);
@@ -43,19 +42,19 @@ static SharedExp checkSignedness(SharedExp e, Sign reqSignedness)
     return e;
 }
 
-SharedExp ExpCastInserter::preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+SharedExp ExpCastInserter::preModify(const std::shared_ptr<TypedExp> &exp, bool &visitChildren)
 {
     visitChildren = false;
     return exp;
 }
 
 
-void ExpCastInserter::checkMemofType(const SharedExp& memof, SharedType memofType)
+void ExpCastInserter::checkMemofType(const SharedExp &memof, SharedType memofType)
 {
     SharedExp addr = memof->getSubExp1();
 
     if (addr->isSubscript()) {
-        SharedExp  addrBase     = addr->getSubExp1();
+        SharedExp addrBase      = addr->getSubExp1();
         SharedType actType      = addr->access<RefExp>()->getDef()->getTypeFor(addrBase);
         SharedType expectedType = PointerType::get(memofType);
 
@@ -66,7 +65,7 @@ void ExpCastInserter::checkMemofType(const SharedExp& memof, SharedType memofTyp
 }
 
 
-SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp> &exp)
 {
     SharedExp base = exp->getSubExp1();
 
@@ -87,12 +86,11 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<RefExp>& exp)
 }
 
 
-SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary>& exp)
+SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary> &exp)
 {
     OPER op = exp->getOper();
 
-    switch (op)
-    {
+    switch (op) {
     // This case needed for e.g. test/pentium/switch_gcc:
     case opLessUns:
     case opGtrUns:
@@ -121,22 +119,22 @@ SharedExp ExpCastInserter::postModify(const std::shared_ptr<Binary>& exp)
 
         break;
 
-    default:
-        break;
+    default: break;
     }
 
     return exp;
 }
 
 
-SharedExp ExpCastInserter::postModify(const std::shared_ptr<Const>& exp)
+SharedExp ExpCastInserter::postModify(const std::shared_ptr<Const> &exp)
 {
     if (exp->isIntConst()) {
         const bool naturallySigned = exp->getInt() < 0;
-        SharedType ty = exp->getType();
+        SharedType ty              = exp->getType();
 
         if (naturallySigned && ty->isInteger() && ty->as<IntegerType>()->isUnsigned()) {
-            return std::make_shared<TypedExp>(IntegerType::get(ty->as<IntegerType>()->getSize(), Sign::Unsigned), exp);
+            return std::make_shared<TypedExp>(
+                IntegerType::get(ty->as<IntegerType>()->getSize(), Sign::Unsigned), exp);
         }
     }
 

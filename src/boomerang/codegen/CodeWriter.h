@@ -25,14 +25,14 @@ class CodeWriter
 {
     struct WriteDest
     {
-        WriteDest(const QString& outFileName);
-        WriteDest(const WriteDest&) = delete;
-        WriteDest(WriteDest&&) = default;
+        WriteDest(const QString &outFileName);
+        WriteDest(const WriteDest &) = delete;
+        WriteDest(WriteDest &&)      = default;
 
         ~WriteDest();
 
-        WriteDest& operator=(const WriteDest&) = delete;
-        WriteDest& operator=(WriteDest&&) = default;
+        WriteDest &operator=(const WriteDest &) = delete;
+        WriteDest &operator=(WriteDest &&) = default;
 
         QFile m_outFile;
         OStream m_os;
@@ -41,7 +41,7 @@ class CodeWriter
     typedef std::map<const Module *, WriteDest> WriteDestMap;
 
 public:
-    bool writeCode(const Module *module, const QStringList& lines);
+    bool writeCode(const Module *module, const QStringList &lines);
 
 private:
     WriteDestMap m_dests;

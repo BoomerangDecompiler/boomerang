@@ -9,14 +9,12 @@
 #pragma endregion License
 #include "Return.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 
 Return::Return(SharedType _type, SharedExp _exp)
     : m_type(_type)
     , m_exp(_exp)
-{
-}
+{}
 
 
 std::shared_ptr<Return> Return::clone() const
@@ -25,7 +23,7 @@ std::shared_ptr<Return> Return::clone() const
 }
 
 
-bool Return::operator==(const Return& other) const
+bool Return::operator==(const Return &other) const
 {
     if (!(*m_type == *other.m_type)) {
         return false;

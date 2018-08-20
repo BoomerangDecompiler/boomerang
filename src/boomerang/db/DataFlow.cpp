@@ -9,13 +9,12 @@
 #pragma endregion License
 #include "DataFlow.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/statements/Assign.h"
@@ -32,13 +31,11 @@
 DataFlow::DataFlow(UserProc *proc)
     : m_proc(proc)
     , renameLocalsAndParams(false)
-{
-}
+{}
 
 
 DataFlow::~DataFlow()
-{
-}
+{}
 
 
 void DataFlow::dfs(int myIdx, int parentIdx)
@@ -62,7 +59,7 @@ void DataFlow::dfs(int myIdx, int parentIdx)
 
 bool DataFlow::calculateDominators()
 {
-    ProcCFG *cfg = m_proc->getCFG();
+    ProcCFG *cfg        = m_proc->getCFG();
     BasicBlock *entryBB = cfg->getEntryBB();
     const int numBB     = cfg->getNumBBs();
 
@@ -105,22 +102,23 @@ bool DataFlow::calculateDominators()
         }
 
         m_semi[n] = s;
-        /* Calculation of n's dominator is deferred until the path from s to n has been linked into the forest */
+        /* Calculation of n's dominator is deferred until the path from s to n has been linked into
+         * the forest */
         m_bucket[s].insert(n);
         link(p, n);
 
         // for each v in bucket[p]
         for (int v : m_bucket[p]) {
             /* Now that the path from p to v has been linked into the spanning forest,
-             * these lines calculate the dominator of v, based on the first clause of the Dominator Theorem,#
-             * or else defer the calculation until y's dominator is known. */
+             * these lines calculate the dominator of v, based on the first clause of the Dominator
+             * Theorem,# or else defer the calculation until y's dominator is known. */
             int y = getAncestorWithLowestSemi(v);
 
             if (m_semi[y] == m_semi[v]) {
-                m_idom[v] = p;             // Success!
+                m_idom[v] = p; // Success!
             }
             else {
-                m_samedom[v] = y;             // Defer
+                m_samedom[v] = y; // Defer
             }
         }
 
@@ -128,12 +126,12 @@ bool DataFlow::calculateDominators()
     }
 
     for (int i = 1; i < N - 1; i++) {
-        /* Now all the deferred dominator calculations, based on the second clause of the Dominator Theorem, are
-         *              performed. */
+        /* Now all the deferred dominator calculations, based on the second clause of the Dominator
+         * Theorem, are performed. */
         int n = m_vertex[i];
 
         if (m_samedom[n] != -1) {
-            m_idom[n] = m_idom[m_samedom[n]];          // Deferred success!
+            m_idom[n] = m_idom[m_samedom[n]]; // Deferred success!
         }
     }
 
@@ -147,7 +145,7 @@ int DataFlow::getAncestorWithLowestSemi(int v)
     int a = m_ancestor[v];
 
     if (m_ancestor[a] != -1) {
-        int b = getAncestorWithLowestSemi(a);
+        int b         = getAncestorWithLowestSemi(a);
         m_ancestor[v] = m_ancestor[a];
 
         if (m_dfnum[m_semi[b]] < m_dfnum[m_semi[m_best[v]]]) {
@@ -208,7 +206,7 @@ void DataFlow::computeDF(int n)
 
         /* This loop computes DF_up[c] */
         // for each element w of DF[c]
-        std::set<int>&          s = m_DF[c];
+        std::set<int> &s = m_DF[c];
         std::set<int>::iterator ww;
 
         for (int w : s) {
@@ -228,30 +226,31 @@ bool DataFlow::canRename(SharedConstExp exp) const
         exp = exp->getSubExp1(); // Look inside refs
     }
 
-    if (exp->isRegOf()    ||  // Always rename registers
-        exp->isTemp()     ||  // Always rename temps (always want to propagate away)
-        exp->isFlags()    ||  // Always rename flags
-        exp->isMainFlag() ||  // Always rename individual flags like %CF
-        exp->isLocal()) {     // Rename hard locals in the post fromSSA pass
-            return true;
+    if (exp->isRegOf() ||    // Always rename registers
+        exp->isTemp() ||     // Always rename temps (always want to propagate away)
+        exp->isFlags() ||    // Always rename flags
+        exp->isMainFlag() || // Always rename individual flags like %CF
+        exp->isLocal()) {    // Rename hard locals in the post fromSSA pass
+        return true;
     }
 
     if (!exp->isMemOf()) {
         return false; // Can't rename %pc or other junk
     }
 
-    // I used to check here if there was a symbol for the memory expression, and if so allow it to be renamed. However,
-    // even named locals and parameters could have their addresses escape the local function, so we need another test
-    // anyway. So locals and parameters should not be renamed (and hence propagated) until escape analysis is done (and
-    // hence renaleLocalsAndParams is set)
-    // Besides,  before we have types and references, it is not easy to find a type for the location, so we can't tell
-    // if e.g. m[esp{-}+12] is evnp or a separate local.
-    // It certainly needs to have the local/parameter pattern
+    // I used to check here if there was a symbol for the memory expression, and if so allow it to
+    // be renamed. However, even named locals and parameters could have their addresses escape the
+    // local function, so we need another test anyway. So locals and parameters should not be
+    // renamed (and hence propagated) until escape analysis is done (and hence renaleLocalsAndParams
+    // is set) Besides,  before we have types and references, it is not easy to find a type for the
+    // location, so we can't tell if e.g. m[esp{-}+12] is evnp or a separate local. It certainly
+    // needs to have the local/parameter pattern
     if (!m_proc->isLocalOrParamPattern(exp)) {
         return false;
     }
 
-    // e is a local or parameter; allow it to be propagated iff we've done escape analysis and the address has not
+    // e is a local or parameter; allow it to be propagated iff we've done escape analysis and the
+    // address has not
     return renameLocalsAndParams;
 }
 
@@ -270,8 +269,8 @@ bool DataFlow::placePhiFunctions()
     m_defsites.clear();
     m_defallsites.clear();
 
-    for (ExSet& exps : m_definedAt) {
-        for (auto iter = exps.begin(); iter != exps.end(); ) {
+    for (ExSet &exps : m_definedAt) {
+        for (auto iter = exps.begin(); iter != exps.end();) {
             if (m_A_phi.find(*iter) == m_A_phi.end()) {
                 iter = exps.erase(iter);
             }
@@ -281,8 +280,8 @@ bool DataFlow::placePhiFunctions()
         }
     }
 
-    m_definedAt.clear();   // and A_orig,
-    m_defStmts.clear();    // and the map from variable to defining Stmt
+    m_definedAt.clear(); // and A_orig,
+    m_defStmts.clear();  // and the map from variable to defining Stmt
 
 
     // Set the sizes of needed vectors
@@ -300,17 +299,18 @@ bool DataFlow::placePhiFunctions()
     for (int n = 0; n < numBB; n++) {
         BasicBlock::RTLIterator rit;
         StatementList::iterator sit;
-        BasicBlock              *bb = m_BBs[n];
+        BasicBlock *bb = m_BBs[n];
 
         for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt; stmt = bb->getNextStmt(rit, sit)) {
             LocationSet locationSet;
             stmt->getDefinitions(locationSet, assumeABICompliance);
 
-            if (stmt->isCall() && static_cast<const CallStatement *>(stmt)->isChildless()) { // If this is a childless call
-                m_defallsites.insert(n);                              // then this block defines every variable
+            if (stmt->isCall() && static_cast<const CallStatement *>(stmt)
+                                      ->isChildless()) { // If this is a childless call
+                m_defallsites.insert(n);                 // then this block defines every variable
             }
 
-            for (const SharedExp& exp : locationSet) {
+            for (const SharedExp &exp : locationSet) {
                 if (canRename(exp)) {
                     m_definedAt[n].insert(exp->clone());
                     m_defStmts[exp] = stmt;
@@ -320,14 +320,14 @@ bool DataFlow::placePhiFunctions()
     }
 
     for (int n = 0; n < numBB; n++) {
-        for (const SharedExp& a : m_definedAt[n]) {
+        for (const SharedExp &a : m_definedAt[n]) {
             m_defsites[a].insert(n);
         }
     }
 
     bool change = false;
     // For each variable a (in defsites, i.e. defined anywhere)
-    for (auto& val : m_defsites) {
+    for (auto &val : m_defsites) {
         SharedExp a = val.first;
 
         // Those variables that are defined everywhere (i.e. in defallsites)
@@ -378,33 +378,34 @@ void DataFlow::convertImplicits()
     ImplicitConverter ic(cfg);
     m_A_phi.clear();
 
-    for (std::pair<SharedExp, std::set<int> > it : A_phi_copy) {
+    for (std::pair<SharedExp, std::set<int>> it : A_phi_copy) {
         SharedExp e = it.first->clone();
-        e          = e->acceptModifier(&ic);
-        m_A_phi[e] = it.second;       // Copy the set (doesn't have to be deep)
+        e           = e->acceptModifier(&ic);
+        m_A_phi[e]  = it.second; // Copy the set (doesn't have to be deep)
     }
 
     std::map<SharedExp, std::set<int>, lessExpStar> defsites_copy = m_defsites; // Object copy
     m_defsites.clear();
 
-    for (std::pair<SharedExp, std::set<int> > dd : defsites_copy) {
-        SharedExp e = dd.first->clone();
+    for (std::pair<SharedExp, std::set<int>> dd : defsites_copy) {
+        SharedExp e   = dd.first->clone();
         e             = e->acceptModifier(&ic);
-        m_defsites[e] = dd.second;       // Copy the set (doesn't have to be deep)
+        m_defsites[e] = dd.second; // Copy the set (doesn't have to be deep)
     }
 
     std::vector<ExSet> definedAtCopy = m_definedAt;
     m_definedAt.clear();
 
-    for (ExSet& se : definedAtCopy) {
+    for (ExSet &se : definedAtCopy) {
         ExSet se_new;
 
-        for (const SharedExp& ee : se) {
+        for (const SharedExp &ee : se) {
             SharedExp e = ee->clone()->acceptModifier(&ic);
             se_new.insert(e);
         }
 
-        m_definedAt.insert(m_definedAt.end(), se_new);       // Copy the set (doesn't have to be a deep copy)
+        m_definedAt.insert(m_definedAt.end(),
+                           se_new); // Copy the set (doesn't have to be a deep copy)
     }
 }
 
@@ -416,8 +417,8 @@ void DataFlow::findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDo
 }
 
 
-void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
-                                std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi)
+void DataFlow::findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+                                std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi)
 {
     if (m_BBs.empty()) {
         return;
@@ -426,15 +427,15 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
     // For each statement this BB
     BasicBlock::RTLIterator rit;
     StatementList::iterator sit;
-    BasicBlock              *bb = m_BBs[n];
+    BasicBlock *bb                 = m_BBs[n];
     const bool assumeABICompliance = m_proc->getProg()->getProject()->getSettings()->assumeABI;
 
     for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         if (S->isPhi()) {
             // For each phi parameter, insert an entry into usedByDomPhi0
-            PhiAssign           *pa = static_cast<PhiAssign *>(S);
+            PhiAssign *pa = static_cast<PhiAssign *>(S);
 
-            for (RefExp& exp : *pa) {
+            for (RefExp &exp : *pa) {
                 if (exp.getSubExp1()) {
                     auto re = RefExp::get(exp.getSubExp1(), exp.getDef());
                     usedByDomPhi0.insert(re);
@@ -442,7 +443,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
             }
 
             // Insert an entry into the defdByPhi map
-            auto wrappedLhs = RefExp::get(pa->getLeft(), pa);
+            auto wrappedLhs       = RefExp::get(pa->getLeft(), pa);
             defdByPhi[wrappedLhs] = pa;
             // Fall through to the below, because phi uses are also legitimate uses
         }
@@ -451,7 +452,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
         S->addUsedLocs(ls);
 
         // Consider uses of this statement
-        for (const SharedExp& it : ls) {
+        for (const SharedExp &it : ls) {
             // Remove this entry from the map, since it is not unused
             defdByPhi.erase(it);
         }
@@ -460,7 +461,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
         ls.clear();
         S->getDefinitions(ls, assumeABICompliance);
 
-        for (const SharedExp& it : ls) {
+        for (const SharedExp &it : ls) {
             auto wrappedDef(RefExp::get(it, S));
 
             // If this definition is in the usedByDomPhi0 set,
@@ -475,8 +476,8 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 
     // Visit each child in the dominator graph
     // Note: this is a linear search!
-    // Note also that usedByDomPhi0 may have some irrelevant entries, but this will do no harm, and attempting to erase
-    // the irrelevant ones would probably cost more than leaving them alone
+    // Note also that usedByDomPhi0 may have some irrelevant entries, but this will do no harm, and
+    // attempting to erase the irrelevant ones would probably cost more than leaving them alone
     const size_t sz = m_idom.size();
 
     for (size_t c = 0; c < sz; ++c) {
@@ -492,7 +493,7 @@ void DataFlow::findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& u
 
 void DataFlow::allocateData()
 {
-    ProcCFG *cfg = m_proc->getCFG();
+    ProcCFG *cfg     = m_proc->getCFG();
     const int numBBs = cfg->getNumBBs();
 
     m_BBs.assign(numBBs, nullptr);

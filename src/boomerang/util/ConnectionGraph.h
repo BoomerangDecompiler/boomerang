@@ -30,7 +30,7 @@ class BOOMERANG_API ConnectionGraph
     using ExpExpMap = std::multimap<SharedExp, SharedExp, lessExpStar>;
 
 public:
-    typedef ExpExpMap::iterator       iterator;
+    typedef ExpExpMap::iterator iterator;
     typedef ExpExpMap::const_iterator const_iterator;
     typedef ExpExpMap::reverse_iterator reverse_iterator;
     typedef ExpExpMap::const_reverse_iterator const_reverse_iterator;
@@ -39,13 +39,13 @@ public:
     iterator begin();
     iterator end();
     const_iterator begin() const;
-    const_iterator end()   const;
+    const_iterator end() const;
 
     reverse_iterator rbegin();
     reverse_iterator rend();
 
     const_reverse_iterator rbegin() const;
-    const_reverse_iterator rend()   const;
+    const_reverse_iterator rend() const;
 
 public:
     /// Add pair with check for existing
@@ -59,7 +59,7 @@ public:
     void connect(SharedExp a, SharedExp b);
 
     /// Return true if a is connected to b
-    bool isConnected(SharedExp a, const Exp& b) const;
+    bool isConnected(SharedExp a, const Exp &b) const;
 
     /// Return the number of expression connected to \p a
     int count(SharedExp a) const;
@@ -79,5 +79,5 @@ private:
     std::vector<SharedExp> allConnected(SharedExp a);
 
 private:
-    ExpExpMap emap;   ///< The map
+    ExpExpMap emap; ///< The map
 };

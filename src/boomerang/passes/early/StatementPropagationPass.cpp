@@ -9,10 +9,9 @@
 #pragma endregion License
 #include "StatementPropagationPass.h"
 
-
 #include "boomerang/core/Project.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
@@ -23,8 +22,7 @@
 
 StatementPropagationPass::StatementPropagationPass()
     : IPass("StatementPropagation", PassID::StatementPropagation)
-{
-}
+{}
 
 
 bool StatementPropagationPass::execute(UserProc *proc)
@@ -41,12 +39,13 @@ bool StatementPropagationPass::execute(UserProc *proc)
 
     // Also maintain a set of locations which are used by phi statements
     for (Statement *s : stmts) {
-        ExpDestCounter  edc(destCounts);
+        ExpDestCounter edc(destCounts);
         StmtDestCounter sdc(&edc);
         s->accept(&sdc);
     }
 
-    // A fourth pass to propagate only the flags (these must be propagated even if it results in extra locals)
+    // A fourth pass to propagate only the flags (these must be propagated even if it results in
+    // extra locals)
     bool change = false;
 
     Settings *settings = proc->getProg()->getProject()->getSettings();
@@ -72,25 +71,26 @@ bool StatementPropagationPass::execute(UserProc *proc)
 }
 
 
-void StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet& usedByDomPhi)
+void StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &usedByDomPhi)
 {
     LocationSet usedByDomPhi0;
     std::map<SharedExp, PhiAssign *, lessExpStar> defdByPhi;
 
     proc->getDataFlow()->findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
 
-    // Note that the above is not the complete algorithm; it has found the dead phi-functions in the defdAtPhi
+    // Note that the above is not the complete algorithm; it has found the dead phi-functions in the
+    // defdAtPhi
     for (auto it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        for (RefExp& v : *it->second) {
+        for (RefExp &v : *it->second) {
             assert(v.getSubExp1());
             auto wrappedParam = RefExp::get(v.getSubExp1(), v.getDef());
             usedByDomPhi.remove(wrappedParam);
         }
 
         // Now remove the actual phi-function (a PhiAssign Statement)
-        // Ick - some problem with return statements not using their returns until more analysis is done
-        // removeStatement(it->second);
+        // Ick - some problem with return statements not using their returns until more analysis is
+        // done removeStatement(it->second);
     }
 }
 
@@ -104,16 +104,16 @@ void StatementPropagationPass::propagateToCollector(UseCollector *collector)
             continue;
         }
 
-        auto        addr = (*it)->getSubExp1();
+        auto addr = (*it)->getSubExp1();
         LocationSet used;
         addr->addUsedLocs(used);
 
-        for (const SharedExp& v : used) {
+        for (const SharedExp &v : used) {
             if (!v->isSubscript()) {
                 continue;
             }
 
-            auto   r   = v->access<RefExp>();
+            auto r = v->access<RefExp>();
             if (!r->getDef() || !r->getDef()->isAssign()) {
                 continue;
             }
@@ -133,12 +133,12 @@ void StatementPropagationPass::propagateToCollector(UseCollector *collector)
             if (collector->exists(memOfRes)) {
                 // Take care not to use an iterator to the newly erased element.
                 /* it = */
-                collector->remove(it++);            // Already exists; just remove the old one
+                collector->remove(it++); // Already exists; just remove the old one
                 continue;
             }
             else {
-                LOG_VERBOSE("Propagating %1 to %2 in collector; result %3",
-                            r, as->getRight(), memOfRes);
+                LOG_VERBOSE("Propagating %1 to %2 in collector; result %3", r, as->getRight(),
+                            memOfRes);
                 (*it)->setSubExp1(res); // Change the child of the memof
             }
         }

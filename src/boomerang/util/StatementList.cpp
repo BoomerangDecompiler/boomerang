@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "StatementList.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -23,7 +22,6 @@
 
 bool StatementList::remove(Statement *s)
 {
-
     for (auto it = begin(); it != end(); ++it) {
         if (*it == s) {
             erase(it);
@@ -42,11 +40,11 @@ void StatementList::append(Statement *s)
 }
 
 
-void StatementList::append(const StatementList& sl)
+void StatementList::append(const StatementList &sl)
 {
     if (&sl == this) {
         const size_t oldSize = m_list.size();
-        auto it = m_list.begin();
+        auto it              = m_list.begin();
         for (size_t i = 0; i < oldSize; i++) {
             m_list.push_back(*it++);
         }
@@ -57,7 +55,7 @@ void StatementList::append(const StatementList& sl)
 }
 
 
-void StatementList::append(const StatementSet& ss)
+void StatementList::append(const StatementSet &ss)
 {
     m_list.insert(end(), ss.begin(), ss.end());
 }
@@ -65,7 +63,7 @@ void StatementList::append(const StatementSet& ss)
 
 QString StatementList::prints() const
 {
-    QString     tgt;
+    QString tgt;
     OStream ost(&tgt);
 
     for (auto it = m_list.begin(); it != m_list.end(); it++) {
@@ -79,10 +77,10 @@ QString StatementList::prints() const
 }
 
 
-void StatementList::makeIsect(StatementList& a, LocationSet& b)
+void StatementList::makeIsect(StatementList &a, LocationSet &b)
 {
     if (this == &a) { // *this = *this isect b
-        for (auto it = a.begin(); it != a.end(); ) {
+        for (auto it = a.begin(); it != a.end();) {
             assert((*it)->isAssignment());
             Assignment *as = static_cast<Assignment *>(*it);
 
@@ -108,9 +106,9 @@ void StatementList::makeIsect(StatementList& a, LocationSet& b)
 }
 
 
-bool StatementList::existsOnLeft(const SharedExp& loc) const
+bool StatementList::existsOnLeft(const SharedExp &loc) const
 {
-    for (auto& elem : *this) {
+    for (auto &elem : *this) {
         if (*static_cast<Assignment *>(elem)->getLeft() == *loc) {
             return true;
         }
@@ -146,7 +144,7 @@ const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
         return nullptr;
     }
 
-    for (const auto& elem : *this) {
+    for (const auto &elem : *this) {
         assert(elem->isAssignment());
         SharedConstExp left = static_cast<Assignment *>(elem)->getLeft();
 
@@ -155,7 +153,7 @@ const Assignment *StatementList::findOnLeft(SharedConstExp loc) const
         }
 
         if (left->isLocal()) {
-            auto           l = left->access<Location>();
+            auto l           = left->access<Location>();
             SharedConstExp e = l->getProc()->expFromSymbol(l->access<Const, 1>()->getStr());
 
             if (e && ((*e == *loc) || (e->isSubscript() && (*e->getSubExp1() == *loc)))) {
@@ -174,7 +172,7 @@ Assignment *StatementList::findOnLeft(SharedExp loc)
         return nullptr;
     }
 
-    for (auto& elem : *this) {
+    for (auto &elem : *this) {
         assert(elem->isAssignment());
         SharedConstExp left = static_cast<Assignment *>(elem)->getLeft();
 
@@ -183,7 +181,7 @@ Assignment *StatementList::findOnLeft(SharedExp loc)
         }
 
         if (left->isLocal()) {
-            auto           l = left->access<Location>();
+            auto l           = left->access<Location>();
             SharedConstExp e = l->getProc()->expFromSymbol(l->access<Const, 1>()->getStr());
 
             if (e && ((*e == *loc) || (e->isSubscript() && (*e->getSubExp1() == *loc)))) {
@@ -194,4 +192,3 @@ Assignment *StatementList::findOnLeft(SharedExp loc)
 
     return nullptr;
 }
-

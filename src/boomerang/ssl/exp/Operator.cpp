@@ -9,17 +9,14 @@
 #pragma endregion License
 #include "Operator.h"
 
-
 #include <cassert>
 
-#define HANDLE_OPER(op) \
-case (op):              \
-    return  # op
+#define HANDLE_OPER(op)                                                                            \
+    case (op): return #op
 
 const char *operToString(OPER oper)
 {
-    switch (oper)
-    {
+    switch (oper) {
         HANDLE_OPER(opWild);
         HANDLE_OPER(opPlus);
         HANDLE_OPER(opMinus);
@@ -166,8 +163,7 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opCTI);
         HANDLE_OPER(opNEXT);
 
-    case opNumOf:
-        break;
+    case opNumOf: break;
     }
 
     assert(!"operToString: Invalid operator.");

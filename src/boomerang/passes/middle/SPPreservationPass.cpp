@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "SPPreservationPass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -22,8 +21,7 @@
 
 SPPreservationPass::SPPreservationPass()
     : IPass("SPPreservation", PassID::SPPreservation)
-{
-}
+{}
 
 
 bool SPPreservationPass::execute(UserProc *proc)
@@ -49,7 +47,7 @@ bool SPPreservationPass::execute(UserProc *proc)
     if (proc->getProg()->getProject()->getSettings()->debugProof) {
         LOG_MSG("Proven for %1:", getName());
 
-        for (auto& elem : proc->getProvenTrue()) {
+        for (auto &elem : proc->getProvenTrue()) {
             LOG_MSG("    %1 = %2", elem.first, elem.second);
         }
     }

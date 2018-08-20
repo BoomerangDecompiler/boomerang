@@ -17,13 +17,13 @@ class BOOMERANG_API PointerType : public Type
 {
 public:
     PointerType(SharedType p);
-    PointerType(const PointerType& other) = default;
-    PointerType(PointerType&& other) = default;
+    PointerType(const PointerType &other) = default;
+    PointerType(PointerType &&other)      = default;
 
     virtual ~PointerType() override;
 
-    PointerType& operator=(const PointerType& other) = default;
-    PointerType& operator=(PointerType&& other) = default;
+    PointerType &operator=(const PointerType &other) = default;
+    PointerType &operator=(PointerType &&other) = default;
 
 public:
     virtual bool isPointer() const override { return true; }
@@ -36,7 +36,10 @@ public:
     SharedType getPointsTo() { return points_to; }
     const SharedType getPointsTo() const { return points_to; }
 
-    static std::shared_ptr<PointerType> get(SharedType t) { return std::make_shared<PointerType>(t); }
+    static std::shared_ptr<PointerType> get(SharedType t)
+    {
+        return std::make_shared<PointerType>(t);
+    }
 
     /// \returns true if the type is void* (pointer can morph into any other pointer type)
     bool isVoidPointer() const;
@@ -50,21 +53,21 @@ public:
 
     virtual SharedType clone() const override;
 
-    virtual bool operator==(const Type& other) const override;
+    virtual bool operator==(const Type &other) const override;
 
     // virtual bool        operator-=(const Type& other) const;
-    virtual bool operator<(const Type& other) const override;
+    virtual bool operator<(const Type &other) const override;
 
     virtual size_t getSize() const override;
 
-    virtual void setSize(size_t sz)  override;
+    virtual void setSize(size_t sz) override;
 
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
     SharedType points_to;

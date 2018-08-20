@@ -9,16 +9,15 @@
 #pragma endregion License
 #include "Signature.h"
 
-
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/MIPSSignature.h"
-#include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/PPCSignature.h"
-#include "boomerang/db/signature/Signature.h"
+#include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/SPARCSignature.h"
 #include "boomerang/db/signature/ST20Signature.h"
+#include "boomerang/db/signature/Signature.h"
 #include "boomerang/db/signature/Win32Signature.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -28,9 +27,8 @@
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
-
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 #include <cstring>
@@ -38,7 +36,7 @@
 #include <string>
 
 
-Signature::Signature(const QString& name)
+Signature::Signature(const QString &name)
     : m_ellipsis(false)
     , m_unknown(true)
     , m_forced(false)
@@ -53,8 +51,7 @@ Signature::Signature(const QString& name)
 
 
 Signature::~Signature()
-{
-}
+{}
 
 
 std::shared_ptr<Signature> Signature::clone() const
@@ -64,31 +61,28 @@ std::shared_ptr<Signature> Signature::clone() const
     Util::clone(m_params, n->m_params);
     Util::clone(m_returns, n->m_returns);
 
-    n->m_ellipsis        = m_ellipsis;
-    n->m_preferredName   = m_preferredName;
-    n->m_unknown         = m_unknown;
-    n->m_sigFile         = m_sigFile;
+    n->m_ellipsis      = m_ellipsis;
+    n->m_preferredName = m_preferredName;
+    n->m_unknown       = m_unknown;
+    n->m_sigFile       = m_sigFile;
     return n;
 }
 
 
-bool Signature::operator==(const Signature& other) const
+bool Signature::operator==(const Signature &other) const
 {
-    if (m_params.size()  != other.m_params.size() ||
-        m_returns.size() != other.m_returns.size()) {
-            return false;
+    if (m_params.size() != other.m_params.size() || m_returns.size() != other.m_returns.size()) {
+        return false;
     }
 
-    return
-        std::equal(m_params.begin(), m_params.end(), other.m_params.begin(),
-            [](const std::shared_ptr<Parameter>& param, const std::shared_ptr<Parameter>& otherParam) {
-                return *param == *otherParam;
-            })
-        &&
-        std::equal(m_returns.begin(), m_returns.end(), other.m_returns.begin(),
-            [](const std::shared_ptr<Return>& ret, const std::shared_ptr<Return>& otherRet) {
-                return *ret == *otherRet;
-            });
+    return std::equal(m_params.begin(), m_params.end(), other.m_params.begin(),
+                      [](const std::shared_ptr<Parameter> &param,
+                         const std::shared_ptr<Parameter> &otherParam) {
+                          return *param == *otherParam;
+                      }) &&
+           std::equal(m_returns.begin(), m_returns.end(), other.m_returns.begin(),
+                      [](const std::shared_ptr<Return> &ret,
+                         const std::shared_ptr<Return> &otherRet) { return *ret == *otherRet; });
 }
 
 
@@ -98,24 +92,23 @@ QString Signature::getName() const
 }
 
 
-void Signature::setName(const QString& name)
+void Signature::setName(const QString &name)
 {
     m_name = name;
 }
 
 
-void Signature::addParameter(const SharedExp& e, SharedType ty)
+void Signature::addParameter(const SharedExp &e, SharedType ty)
 {
     addParameter("", e, ty);
 }
 
 
-void Signature::addParameter(const QString& name, const SharedExp& e,
-                             SharedType type, const QString& boundMax)
+void Signature::addParameter(const QString &name, const SharedExp &e, SharedType type,
+                             const QString &boundMax)
 {
     if (e == nullptr) {
-        LOG_FATAL("No expression for parameter %1 %2",
-                  type ? type->getCtype() : "<notype>",
+        LOG_FATAL("No expression for parameter %1 %2", type ? type->getCtype() : "<notype>",
                   !name.isEmpty() ? qPrintable(name) : "<noname>");
     }
 
@@ -129,10 +122,10 @@ void Signature::addParameter(const QString& name, const SharedExp& e,
             const QString s = QString("param%1").arg(n++);
 
             if (!std::any_of(m_params.begin(), m_params.end(),
-                [&s](const std::shared_ptr<Parameter>& param) {
-                    return param->getName() == s;
-                })) {
-                    newName = s;
+                             [&s](const std::shared_ptr<Parameter> &param) {
+                                 return param->getName() == s;
+                             })) {
+                newName = s;
             }
         } while (newName.isEmpty());
     }
@@ -144,9 +137,9 @@ void Signature::addParameter(const QString& name, const SharedExp& e,
 
 void Signature::addParameter(std::shared_ptr<Parameter> param)
 {
-    SharedType ty   = param->getType();
-    QString    name = param->getName();
-    SharedExp  e    = param->getExp();
+    SharedType ty = param->getType();
+    QString name  = param->getName();
+    SharedExp e   = param->getExp();
 
     if ((ty == nullptr) || (e == nullptr) || name.isEmpty()) {
         addParameter(name, e, ty, param->getBoundMax());
@@ -157,7 +150,7 @@ void Signature::addParameter(std::shared_ptr<Parameter> param)
 }
 
 
-void Signature::removeParameter(const SharedExp& e)
+void Signature::removeParameter(const SharedExp &e)
 {
     int i = findParam(e);
 
@@ -180,12 +173,12 @@ void Signature::removeParameter(int i)
 
 void Signature::setNumParams(int n)
 {
-    assert(Util::inRange(n, 0, static_cast<int>(m_params.size()+1)));
+    assert(Util::inRange(n, 0, static_cast<int>(m_params.size() + 1)));
     m_params.erase(m_params.begin() + n, m_params.end());
 }
 
 
-const QString& Signature::getParamName(int n) const
+const QString &Signature::getParamName(int n) const
 {
     assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
     return m_params[n]->getName();
@@ -229,7 +222,7 @@ void Signature::setParamType(int n, SharedType ty)
 }
 
 
-void Signature::setParamType(const QString& name, SharedType ty)
+void Signature::setParamType(const QString &name, SharedType ty)
 {
     int idx = findParam(name);
 
@@ -242,7 +235,7 @@ void Signature::setParamType(const QString& name, SharedType ty)
 }
 
 
-void Signature::setParamType(const SharedExp& e, SharedType ty)
+void Signature::setParamType(const SharedExp &e, SharedType ty)
 {
     int idx = findParam(e);
 
@@ -255,7 +248,7 @@ void Signature::setParamType(const SharedExp& e, SharedType ty)
 }
 
 
-void Signature::setParamName(int n, const QString& name)
+void Signature::setParamName(int n, const QString &name)
 {
     assert(Util::inRange(n, 0, static_cast<int>(m_params.size())));
     m_params[n]->setName(name);
@@ -269,7 +262,7 @@ void Signature::setParamExp(int n, SharedExp e)
 }
 
 
-int Signature::findParam(const SharedExp& e) const
+int Signature::findParam(const SharedExp &e) const
 {
     for (int i = 0; i < getNumParams(); i++) {
         if (*getParamExp(i) == *e) {
@@ -281,7 +274,7 @@ int Signature::findParam(const SharedExp& e) const
 }
 
 
-bool Signature::renameParam(const QString& oldName, const QString& newName)
+bool Signature::renameParam(const QString &oldName, const QString &newName)
 {
     for (int i = 0; i < getNumParams(); i++) {
         if (m_params[i]->getName() == oldName) {
@@ -294,7 +287,7 @@ bool Signature::renameParam(const QString& oldName, const QString& newName)
 }
 
 
-int Signature::findParam(const QString& name) const
+int Signature::findParam(const QString &name) const
 {
     for (int i = 0; i < getNumParams(); i++) {
         if (getParamName(i) == name) {
@@ -396,10 +389,9 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 }
 
 
-std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString& name)
+std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, const QString &name)
 {
-    switch (machine)
-    {
+    switch (machine) {
     case Machine::PENTIUM:
         if (cc == CallConv::Pascal) {
             // For now, assume the only pascal calling convention Pentium signatures will be Windows
@@ -412,17 +404,13 @@ std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
             return std::make_shared<CallingConvention::StdC::PentiumSignature>(name);
         }
 
-    case Machine::SPARC:
-        return std::make_shared<CallingConvention::StdC::SPARCSignature>(name);
+    case Machine::SPARC: return std::make_shared<CallingConvention::StdC::SPARCSignature>(name);
 
-    case Machine::PPC:
-        return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
+    case Machine::PPC: return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
 
-    case Machine::ST20:
-        return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
+    case Machine::ST20: return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
 
-    case Machine::MIPS:
-        return std::make_shared<CallingConvention::StdC::MIPSSignature>(name);
+    case Machine::MIPS: return std::make_shared<CallingConvention::StdC::MIPSSignature>(name);
 
     // insert other conventions here
     default:
@@ -432,7 +420,7 @@ std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
 }
 
 
-void Signature::print(OStream& out, bool /*html*/) const
+void Signature::print(OStream &out, bool /*html*/) const
 {
     if (isForced()) {
         out << "*forced* ";
@@ -442,7 +430,7 @@ void Signature::print(OStream& out, bool /*html*/) const
         out << "{ ";
         unsigned n = 0;
 
-        for (const std::shared_ptr<Return>& rr : m_returns) {
+        for (const std::shared_ptr<Return> &rr : m_returns) {
             out << rr->getType()->getCtype() << " " << rr->getExp();
 
             if (n != m_returns.size() - 1) {
@@ -462,7 +450,8 @@ void Signature::print(OStream& out, bool /*html*/) const
     out << m_name << "(";
 
     for (unsigned int i = 0; i < m_params.size(); i++) {
-        out << m_params[i]->getType()->getCtype() << " " << m_params[i]->getName() << " " << m_params[i]->getExp();
+        out << m_params[i]->getType()->getCtype() << " " << m_params[i]->getName() << " "
+            << m_params[i]->getExp();
 
         if (i != m_params.size() - 1) {
             out << ", ";
@@ -473,14 +462,13 @@ void Signature::print(OStream& out, bool /*html*/) const
 }
 
 
-bool Signature::getABIDefines(Machine machine, StatementList& defs)
+bool Signature::getABIDefines(Machine machine, StatementList &defs)
 {
     if (machine == Machine::INVALID || !defs.empty()) {
         return false; // Do only once
     }
 
-    switch (machine)
-    {
+    switch (machine) {
     case Machine::PENTIUM:
         defs.append(new ImplicitAssign(Location::regOf(REG_PENT_EAX))); // eax
         defs.append(new ImplicitAssign(Location::regOf(REG_PENT_ECX))); // ecx
@@ -511,8 +499,7 @@ bool Signature::getABIDefines(Machine machine, StatementList& defs)
         defs.append(new ImplicitAssign(Location::regOf(REG_ST20_C))); // C
         return true;
 
-    default:
-        break;
+    default: break;
     }
 
     return true;
@@ -523,7 +510,6 @@ int Signature::getStackRegister() const
 {
     return -1;
 }
-
 
 
 bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
@@ -540,7 +526,7 @@ bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
 }
 
 
-bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const
+bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const
 {
     OPER op = e->getOper();
 
@@ -553,14 +539,14 @@ bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp& e) const
 
     if ((op != opMinus) && (op != opPlus)) {
         // Matches if e is sp or sp{0} or sp{-}
-        return *e == *sp || (e->isSubscript() &&
-            e->access<RefExp>()->isImplicitDef() && *e->getSubExp1() == *sp);
+        return *e == *sp || (e->isSubscript() && e->access<RefExp>()->isImplicitDef() &&
+                             *e->getSubExp1() == *sp);
     }
 
     // We may have weird expressions like sp + -4
     // which is the address of a stack local on x86
     SharedConstExp exp2 = e->clone()->simplify();
-    op = exp2->getOper();
+    op                  = exp2->getOper();
 
     if (!isOpCompatStackLocal(op)) {
         return false;
@@ -601,13 +587,13 @@ bool Signature::isOpCompatStackLocal(OPER op) const
 }
 
 
-bool Signature::returnCompare(const Assignment& a, const Assignment& b) const
+bool Signature::returnCompare(const Assignment &a, const Assignment &b) const
 {
     return *a.getLeft() < *b.getLeft(); // Default: sort by expression only, no explicit ordering
 }
 
 
-bool Signature::argumentCompare(const Assignment& a, const Assignment& b) const
+bool Signature::argumentCompare(const Assignment &a, const Assignment &b) const
 {
     return *a.getLeft() < *b.getLeft(); // Default: sort by expression only, no explicit ordering
 }

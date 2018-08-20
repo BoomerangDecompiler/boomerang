@@ -9,19 +9,17 @@
 #pragma endregion License
 #include "BinaryImage.h"
 
-
 #include "boomerang/db/binary/BinarySection.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 #include <algorithm>
 
 
-BinaryImage::BinaryImage(const QByteArray& rawData)
+BinaryImage::BinaryImage(const QByteArray &rawData)
     : m_rawData(rawData)
-{
-}
+{}
 
 
 BinaryImage::~BinaryImage()
@@ -105,7 +103,7 @@ QWord BinaryImage::readNative8(Address addr) const
 }
 
 
-bool BinaryImage::readNativeFloat4(Address addr, float& value) const
+bool BinaryImage::readNativeFloat4(Address addr, float &value) const
 {
     const BinarySection *sect = getSectionByAddr(addr);
 
@@ -125,7 +123,7 @@ bool BinaryImage::readNativeFloat4(Address addr, float& value) const
 }
 
 
-bool BinaryImage::readNativeFloat8(Address addr, double& value) const
+bool BinaryImage::readNativeFloat8(Address addr, double &value) const
 {
     const BinarySection *sect = getSectionByAddr(addr);
 
@@ -139,7 +137,7 @@ bool BinaryImage::readNativeFloat8(Address addr, double& value) const
     }
 
     QWord raw = readNative8(addr);
-    value = *reinterpret_cast<double *>(&raw);
+    value     = *reinterpret_cast<double *>(&raw);
     return true;
 }
 
@@ -193,7 +191,8 @@ void BinaryImage::updateTextLimits()
             m_limitTextHigh = highAddress;
         }
 
-        const ptrdiff_t hostNativeDiff = (section->getHostAddr() - section->getSourceAddr()).value();
+        const ptrdiff_t hostNativeDiff = (section->getHostAddr() - section->getSourceAddr())
+                                             .value();
 
         if (m_textDelta == 0) {
             m_textDelta = hostNativeDiff;
@@ -217,7 +216,7 @@ bool BinaryImage::isReadOnly(Address addr) const
         return true;
     }
 
-    return section->isAttributeInRange("ReadOnly", addr, addr+1);
+    return section->isAttributeInRange("ReadOnly", addr, addr + 1);
 }
 
 
@@ -233,14 +232,15 @@ Address BinaryImage::getLimitTextHigh() const
 }
 
 
-BinarySection *BinaryImage::createSection(const QString& name, Address from, Address to)
+BinarySection *BinaryImage::createSection(const QString &name, Address from, Address to)
 {
     if (from == Address::INVALID || to == Address::INVALID || to < from) {
         LOG_ERROR("Could not create section '%1' with invalid extent [%2, %3)", name, from, to);
         return nullptr;
     }
     else if (getSectionByName(name) != nullptr) {
-        LOG_ERROR("Could not create section '%1': A section with the same name already exists", name);
+        LOG_ERROR("Could not create section '%1': A section with the same name already exists",
+                  name);
         return nullptr;
     }
 
@@ -249,17 +249,19 @@ BinarySection *BinaryImage::createSection(const QString& name, Address from, Add
     }
 
 #if DEBUG
-    // see https://stackoverflow.com/questions/25501044/gcc-ld-overlapping-sections-tbss-init-array-in-statically-linked-elf-bin
-    // Basically, the .tbss section is of type SHT_NOBITS, so there is no data associated to the section.
-    // It can therefore overlap other sections containing data.
-    // This is a quirk of ELF programs linked statically with glibc
+    // see
+    // https://stackoverflow.com/questions/25501044/gcc-ld-overlapping-sections-tbss-init-array-in-statically-linked-elf-bin
+    // Basically, the .tbss section is of type SHT_NOBITS, so there is no data associated to the
+    // section. It can therefore overlap other sections containing data. This is a quirk of ELF
+    // programs linked statically with glibc
     if (name != ".tbss") {
         IntervalMap<Address, std::unique_ptr<BinarySection>>::iterator itFrom, itTo;
         std::tie(itFrom, itTo) = m_sectionMap.equalRange(from, to);
 
         for (auto clash_with = itFrom; clash_with != itTo; ++clash_with) {
             if ((*clash_with->second).getName() != ".tbss") {
-                LOG_WARN("Segment %1 would intersect existing segment %2", name, (*clash_with->second).getName());
+                LOG_WARN("Segment %1 would intersect existing segment %2", name,
+                         (*clash_with->second).getName());
                 return nullptr;
             }
         }
@@ -271,8 +273,9 @@ BinarySection *BinaryImage::createSection(const QString& name, Address from, Add
     if (m_sectionMap.insert(from, to, std::unique_ptr<BinarySection>(sect)) == m_sectionMap.end()) {
         // section already existed
         BinarySection *existing = getSectionByAddr(from);
-        LOG_ERROR("Could not create section '%1' from address %2 to %3: Section extent matches existing section '%4",
-            name, from, to, existing->getName());
+        LOG_ERROR("Could not create section '%1' from address %2 to %3: Section extent matches "
+                  "existing section '%4",
+                  name, from, to, existing->getName());
         return nullptr;
     }
     else {
@@ -282,7 +285,7 @@ BinarySection *BinaryImage::createSection(const QString& name, Address from, Add
 }
 
 
-BinarySection *BinaryImage::createSection(const QString& name, Interval<Address> extent)
+BinarySection *BinaryImage::createSection(const QString &name, Interval<Address> extent)
 {
     return createSection(name, extent.lower(), extent.upper());
 }
@@ -300,7 +303,7 @@ const BinarySection *BinaryImage::getSectionByIndex(int idx) const
 }
 
 
-BinarySection *BinaryImage::getSectionByName(const QString& sectionName)
+BinarySection *BinaryImage::getSectionByName(const QString &sectionName)
 {
     for (BinarySection *section : m_sections) {
         if (section->getName() == sectionName) {
@@ -312,7 +315,7 @@ BinarySection *BinaryImage::getSectionByName(const QString& sectionName)
 }
 
 
-const BinarySection *BinaryImage::getSectionByName(const QString& sectionName) const
+const BinarySection *BinaryImage::getSectionByName(const QString &sectionName) const
 {
     for (const BinarySection *section : m_sections) {
         if (section->getName() == sectionName) {

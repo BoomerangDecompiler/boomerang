@@ -9,24 +9,22 @@
 #pragma endregion License
 #include "ProcCFG.h"
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Parameter.h"
-#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/util/log/Log.h"
 
-#include <cassert>
-
 #include <QtAlgorithms>
+
+#include <cassert>
 
 
 ProcCFG::ProcCFG(UserProc *proc)
     : m_myProc(proc)
-{
-}
+{}
 
 
 ProcCFG::~ProcCFG()
@@ -50,7 +48,7 @@ void ProcCFG::clear()
 }
 
 
-bool ProcCFG::hasBB(const BasicBlock* bb) const
+bool ProcCFG::hasBB(const BasicBlock *bb) const
 {
     if (bb == nullptr) {
         return false;
@@ -58,7 +56,7 @@ bool ProcCFG::hasBB(const BasicBlock* bb) const
 
     // we have to use linear search here, since the bb might already have been deleted
     // (invoking UB when calling getLowAddr).
-    for (const auto& val : m_bbStartMap) {
+    for (const auto &val : m_bbStartMap) {
         if (val.second == bb) {
             return true;
         }
@@ -76,22 +74,22 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     // Can't use BasicBlock::getLowAddr(), since we don't yet have a BB!
     Address startAddr = bbRTLs->front()->getAddress();
 
-    // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a delayed branch only,
-    // with its delay instruction moved in front of it (with 0 address).
-    // Note: it is possible to see two RTLs with zero address with SPARC: jmpl %o0, %o1. There will be one for the delay
-    // instr (if not a NOP), and one for the side effect of copying %o7 to %o1.
-    // Note that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the map, but they
-    // have no RTLs with a non zero address.
+    // If this is zero, try the next RTL (only). This may be necessary if e.g. there is a BB with a
+    // delayed branch only, with its delay instruction moved in front of it (with 0 address). Note:
+    // it is possible to see two RTLs with zero address with SPARC: jmpl %o0, %o1. There will be one
+    // for the delay instr (if not a NOP), and one for the side effect of copying %o7 to %o1. Note
+    // that orphaned BBs (for which we must compute addr here to to be 0) must not be added to the
+    // map, but they have no RTLs with a non zero address.
     if (startAddr.isZero() && (bbRTLs->size() > 1)) {
         RTLList::iterator next = std::next(bbRTLs->begin());
-        startAddr = (*next)->getAddress();
+        startAddr              = (*next)->getAddress();
     }
 
-    // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here already
-    // If it is zero, this is a special BB for handling delayed branches or the like
-    bool mustCreateBB = true;
+    // If this addr is non zero, check the map to see if we have a (possibly incomplete) BB here
+    // already If it is zero, this is a special BB for handling delayed branches or the like
+    bool mustCreateBB       = true;
     BBStartMap::iterator mi = m_bbStartMap.end();
-    BasicBlock      *currentBB = nullptr;
+    BasicBlock *currentBB   = nullptr;
 
     if (!startAddr.isZero()) {
         mi = m_bbStartMap.find(startAddr);
@@ -108,7 +106,8 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
                 // This list of RTLs is not needed now
                 bbRTLs.reset();
 
-                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists", currentBB->getLowAddr());
+                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
+                            currentBB->getLowAddr());
                 return nullptr;
             }
             else {
@@ -129,7 +128,7 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
         }
 
         m_bbStartMap[startAddr] = currentBB;
-        mi = m_bbStartMap.find(startAddr);
+        mi                      = m_bbStartMap.find(startAddr);
     }
 
     if (!startAddr.isZero() && (mi != m_bbStartMap.end())) {
@@ -155,23 +154,24 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
         mi = std::next(mi);
 
         if (mi != m_bbStartMap.end()) {
-            BasicBlock *nextBB          = (*mi).second;
-            Address    nextAddr         = (*mi).first;
-            bool       nextIsIncomplete = nextBB->isIncomplete();
+            BasicBlock *nextBB    = (*mi).second;
+            Address nextAddr      = (*mi).first;
+            bool nextIsIncomplete = nextBB->isIncomplete();
 
             if (nextAddr <= currentBB->getRTLs()->back()->getAddress()) {
-                // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it doesn't create a new BB
-                // for the "bottom" BB of the split pair
+                // Need to truncate the current BB. We use splitBB(), but pass it nextBB so it
+                // doesn't create a new BB for the "bottom" BB of the split pair
                 splitBB(currentBB, nextAddr, nextBB);
 
-                // If the overlapped BB was incomplete, return the "bottom" part of the BB, so adding out edges will
-                // work properly.
+                // If the overlapped BB was incomplete, return the "bottom" part of the BB, so
+                // adding out edges will work properly.
                 if (nextIsIncomplete) {
                     assert(nextBB);
                     return nextBB;
                 }
 
-                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists", currentBB->getLowAddr());
+                LOG_VERBOSE("Not creating a BB at address %1 because a BB already exists",
+                            currentBB->getLowAddr());
                 return nullptr;
             }
         }
@@ -210,7 +210,8 @@ bool ProcCFG::ensureBBExists(Address addr, BasicBlock *&currBB)
     }
     else if (itExistingBB != m_bbStartMap.begin()) {
         --itExistingBB;
-        if (itExistingBB->second->getLowAddr() <= addr && itExistingBB->second->getHiAddr() >= addr) {
+        if (itExistingBB->second->getLowAddr() <= addr &&
+            itExistingBB->second->getHiAddr() >= addr) {
             overlappingBB = itExistingBB->second;
         }
     }
@@ -329,7 +330,7 @@ bool ProcCFG::isWellFormed() const
         else if (bb->getFunction() != m_myProc) {
             m_wellFormed = false;
             LOG_ERROR("CFG is not well formed: BB at address %1 does not belong to proc '%2'",
-                        bb->getLowAddr(), m_myProc->getName());
+                      bb->getLowAddr(), m_myProc->getName());
             return false;
         }
 
@@ -337,14 +338,14 @@ bool ProcCFG::isWellFormed() const
             if (!pred->isPredecessorOf(bb)) {
                 m_wellFormed = false;
                 LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                            pred->getLowAddr(), bb->getLowAddr());
+                          pred->getLowAddr(), bb->getLowAddr());
                 return false;
             }
             else if (pred->getFunction() != bb->getFunction()) {
                 m_wellFormed = false;
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                            pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
-                            bb->getFunction()->getName());
+                          pred->getFunction() ? "<invalid>" : pred->getFunction()->getName(),
+                          bb->getFunction()->getName());
                 return false;
             }
         }
@@ -353,14 +354,14 @@ bool ProcCFG::isWellFormed() const
             if (!succ->isSuccessorOf(bb)) {
                 m_wellFormed = false;
                 LOG_ERROR("CFG is not well formed: Edge from BB at %1 to BB at %2 is malformed.",
-                            bb->getLowAddr(), succ->getLowAddr());
+                          bb->getLowAddr(), succ->getLowAddr());
                 return false;
             }
             else if (succ->getFunction() != bb->getFunction()) {
                 m_wellFormed = false;
                 LOG_ERROR("CFG is not well formed: Interprocedural edge from '%1' to '%2' found",
-                            bb->getFunction()->getName(),
-                            succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
+                          bb->getFunction()->getName(),
+                          succ->getFunction() ? "<invalid>" : succ->getFunction()->getName());
                 return false;
             }
         }
@@ -415,19 +416,19 @@ Statement *ProcCFG::findOrCreateImplicitAssign(SharedExp exp)
     }
 
     // A use with no explicit definition. Create a new implicit assignment
-    exp   = exp->clone(); // In case the original gets changed
+    exp                 = exp->clone(); // In case the original gets changed
     ImplicitAssign *def = m_entryBB->addImplicitAssign(exp);
 
-    // Remember it for later so we don't insert more than one implicit assignment for any one location
-    // We don't clone the copy in the map. So if the location is a m[...], the same type information is available in
-    // the definition as at all uses
+    // Remember it for later so we don't insert more than one implicit assignment for any one
+    // location We don't clone the copy in the map. So if the location is a m[...], the same type
+    // information is available in the definition as at all uses
     m_implicitMap[exp] = def;
 
     return def;
 }
 
 
-Statement *ProcCFG::findTheImplicitAssign(const SharedConstExp& x) const
+Statement *ProcCFG::findTheImplicitAssign(const SharedConstExp &x) const
 {
     // As per the above, but don't create an implicit if it doesn't already exist
     ExpStatementMap::const_iterator it = m_implicitMap.find(std::const_pointer_cast<Exp>(x));
@@ -440,8 +441,9 @@ Statement *ProcCFG::findImplicitParamAssign(Parameter *param)
     // As per the above, but for parameters (signatures don't get updated with opParams)
     SharedExp paramExp = param->getExp();
 
-    ExpStatementMap::iterator it = std::find_if(m_implicitMap.begin(), m_implicitMap.end(),
-        [paramExp] (const std::pair<const SharedConstExp&, Statement *>& val) {
+    ExpStatementMap::iterator it = std::find_if(
+        m_implicitMap.begin(), m_implicitMap.end(),
+        [paramExp](const std::pair<const SharedConstExp &, Statement *> &val) {
             return *(val.first) *= *paramExp;
         });
 
@@ -459,8 +461,8 @@ void ProcCFG::removeImplicitAssign(SharedExp x)
 
     assert(it != m_implicitMap.end());
     Statement *ia = it->second;
-    m_implicitMap.erase(it);          // Delete the mapping
-    m_myProc->removeStatement(ia);    // Remove the actual implicit assignment statement as well
+    m_implicitMap.erase(it);       // Delete the mapping
+    m_myProc->removeStatement(ia); // Remove the actual implicit assignment statement as well
 }
 
 
@@ -524,7 +526,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
     assert(_newBB->getNumPredecessors() == 0);
     assert(_newBB->getNumSuccessors() == 0);
 
-    const std::vector<BasicBlock *>& successors = bb->getSuccessors();
+    const std::vector<BasicBlock *> &successors = bb->getSuccessors();
     for (BasicBlock *succ : successors) {
         succ->removePredecessor(bb);
         succ->addPredecessor(_newBB);
@@ -539,7 +541,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
 }
 
 
-void ProcCFG::print(OStream& out)
+void ProcCFG::print(OStream &out)
 {
     out << "Control Flow Graph:\n";
 

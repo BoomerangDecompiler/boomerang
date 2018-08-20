@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Settings.h"
 
-
 #include "boomerang/util/log/Log.h"
 
 
@@ -23,28 +22,28 @@ Settings::Settings()
 }
 
 
-void Settings::setWorkingDirectory(const QString& directoryPath)
+void Settings::setWorkingDirectory(const QString &directoryPath)
 {
     m_workingDirectory = QDir(directoryPath);
     LOG_VERBOSE("wd now '%1'", m_workingDirectory.absolutePath());
 }
 
 
-void Settings::setDataDirectory(const QString& directoryPath)
+void Settings::setDataDirectory(const QString &directoryPath)
 {
     m_dataDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
     LOG_VERBOSE("dd now '%1'", m_dataDirectory.absolutePath());
 }
 
 
-void Settings::setPluginDirectory(const QString& directoryPath)
+void Settings::setPluginDirectory(const QString &directoryPath)
 {
     m_pluginDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
     LOG_VERBOSE("pd now '%1'", m_pluginDirectory.absolutePath());
 }
 
 
-void Settings::setOutputDirectory(const QString& directoryPath)
+void Settings::setOutputDirectory(const QString &directoryPath)
 {
     m_outputDirectory = m_workingDirectory.absoluteFilePath(directoryPath);
     LOG_VERBOSE("od now '%1'", m_outputDirectory.absolutePath());

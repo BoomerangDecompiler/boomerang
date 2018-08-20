@@ -29,13 +29,13 @@ public:
 
     /// Construct a jump to a fixed address \p jumpDest
     GotoStatement(Address jumpDest);
-    GotoStatement(const GotoStatement& other) = default;
-    GotoStatement(GotoStatement&& other) = default;
+    GotoStatement(const GotoStatement &other) = default;
+    GotoStatement(GotoStatement &&other)      = default;
 
     virtual ~GotoStatement() override;
 
-    GotoStatement& operator=(const GotoStatement& other) = default;
-    GotoStatement& operator=(GotoStatement&& other) = default;
+    GotoStatement &operator=(const GotoStatement &other) = default;
+    GotoStatement &operator=(GotoStatement &&other) = default;
 
 public:
     /// \copydoc Statement::clone
@@ -90,16 +90,16 @@ public:
     bool isComputed() const;
 
     /// \copydoc Statement::print
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp& pattern, SharedExp& result) const override;
+    virtual bool search(const Exp &pattern, SharedExp &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) override;
 
 
     // code generation
@@ -109,7 +109,7 @@ public:
     virtual void simplify() override;
 
     // Statement virtual functions
-    virtual bool usesExp(const Exp&) const override;
+    virtual bool usesExp(const Exp &) const override;
 
 protected:
     /// Destination of a jump or call. This is the absolute destination

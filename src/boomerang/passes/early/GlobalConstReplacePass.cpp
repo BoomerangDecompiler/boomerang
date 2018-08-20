@@ -9,18 +9,16 @@
 #pragma endregion License
 #include "GlobalConstReplacePass.h"
 
-
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/util/log/Log.h"
 
 
 GlobalConstReplacePass::GlobalConstReplacePass()
     : IPass("GlobalConstReplace", PassID::GlobalConstReplace)
-{
-}
+{}
 
 
 bool GlobalConstReplacePass::execute(UserProc *proc)
@@ -52,9 +50,8 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
             LOG_VERBOSE("is readonly");
             int val = 0;
 
-            switch (assgn->getType()->getSize())
-            {
-            case  8: val = image->readNative1(addr); break;
+            switch (assgn->getType()->getSize()) {
+            case 8: val = image->readNative1(addr); break;
             case 16: val = image->readNative2(addr); break;
             case 32: val = image->readNative4(addr); break;
             default: assert(false);

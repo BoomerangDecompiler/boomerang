@@ -21,11 +21,11 @@
 class FileLogSink : public ILogSink
 {
 public:
-    FileLogSink(const QString& filename, bool append = false);
+    FileLogSink(const QString &filename, bool append = false);
     virtual ~FileLogSink() override;
 
     /// \copydoc ILogSink::write
-    virtual void write(const QString& s) override;
+    virtual void write(const QString &s) override;
 
     /// \copydoc ILogSink::flush
     virtual void flush() override;

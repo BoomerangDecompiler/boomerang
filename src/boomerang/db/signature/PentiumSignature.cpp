@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "PentiumSignature.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -25,8 +24,7 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
-PentiumSignature::PentiumSignature(const QString& name)
+PentiumSignature::PentiumSignature(const QString &name)
     : Signature(name)
 {
     Signature::addReturn(Location::regOf(REG_PENT_ESP));
@@ -35,10 +33,9 @@ PentiumSignature::PentiumSignature(const QString& name)
 }
 
 
-PentiumSignature::PentiumSignature(Signature& old)
+PentiumSignature::PentiumSignature(Signature &old)
     : Signature(old)
-{
-}
+{}
 
 
 std::shared_ptr<Signature> PentiumSignature::clone() const
@@ -56,13 +53,13 @@ std::shared_ptr<Signature> PentiumSignature::clone() const
 }
 
 
-bool PentiumSignature::operator==(const Signature& other) const
+bool PentiumSignature::operator==(const Signature &other) const
 {
     return Signature::operator==(other);
 }
 
 
-bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
+bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
 {
     if (p->getProg()->getMachine() != Machine::PENTIUM) {
         return false;
@@ -74,8 +71,8 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
     LOG_VERBOSE2("Promotion qualified: always true");
     return true; // For now, always pass
 #else
-    bool          gotcorrectret1 = false;
-    bool          gotcorrectret2 = false;
+    bool gotcorrectret1 = false;
+    bool gotcorrectret2 = false;
     StatementList internal;
     // p->getInternalStatements(internal);
     internal.append(*p->getCFG()->getReachExit());
@@ -94,9 +91,12 @@ bool PentiumSignature::qualified(UserProc *p, Signature& /*candidate*/)
                 gotcorrectret1 = true;
             }
         }
-        else if (e->getLeft()->isRegOfConst() && (e->getLeft()->getSubExp1()->access<Const>()->getInt() == REG_PENT_ESP)) {
-            if ((e->getRight()->getOper() == opPlus) && e->getRight()->getSubExp1()->isRegN(REG_PENT_ESP) &&
-                e->getRight()->getSubExp2()->isIntConst() && (e->getRight()->getSubExp2()->access<Const>()->getInt() == 4)) {
+        else if (e->getLeft()->isRegOfConst() &&
+                 (e->getLeft()->getSubExp1()->access<Const>()->getInt() == REG_PENT_ESP)) {
+            if ((e->getRight()->getOper() == opPlus) &&
+                e->getRight()->getSubExp1()->isRegN(REG_PENT_ESP) &&
+                e->getRight()->getSubExp2()->isIntConst() &&
+                (e->getRight()->getSubExp2()->access<Const>()->getInt() == 4)) {
                 LOG_VERBOSE("Got r[28] = r[28] + 4");
                 gotcorrectret2 = true;
             }
@@ -134,8 +134,8 @@ void PentiumSignature::addReturn(SharedType type, SharedExp e)
 }
 
 
-void PentiumSignature::addParameter(const QString& name, const SharedExp& e,
-                                    SharedType type, const QString& boundMax)
+void PentiumSignature::addParameter(const QString &name, const SharedExp &e, SharedType type,
+                                    const QString &boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
@@ -169,16 +169,14 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
     if (left->isRegOfConst()) {
         const int r = left->access<Const, 1>()->getInt();
 
-        switch (r)
-        {
+        switch (r) {
         case REG_PENT_ESP:                                                            // esp
             return Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get(4)); // esp+4
 
         case REG_PENT_EBP:
         case REG_PENT_ESI:
         case REG_PENT_EDI:
-        case REG_PENT_EBX:
-            return Location::regOf(r);
+        case REG_PENT_EBX: return Location::regOf(r);
         }
     }
 
@@ -189,8 +187,7 @@ SharedExp PentiumSignature::getProven(SharedExp left) const
 bool PentiumSignature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfConst()) {
-        switch (e->access<Const, 1>()->getInt())
-        {
+        switch (e->access<Const, 1>()->getInt()) {
         case REG_PENT_EBP: // ebp
         case REG_PENT_EBX: // ebx
         case REG_PENT_ESI: // esi
@@ -200,11 +197,10 @@ bool PentiumSignature::isPreserved(SharedExp e) const
         case REG_PENT_SI:  // si
         case REG_PENT_DI:  // di
         case REG_PENT_BL:  // bl
-        case REG_PENT_BH: // bh
+        case REG_PENT_BH:  // bh
             return true;
 
-        default:
-            return false;
+        default: return false;
         }
     }
 
@@ -212,28 +208,28 @@ bool PentiumSignature::isPreserved(SharedExp e) const
 }
 
 
-void PentiumSignature::getLibraryDefines(StatementList& defs)
+void PentiumSignature::getLibraryDefines(StatementList &defs)
 {
     if (defs.size() > 0) {
         // Do only once
         return;
     }
 
-    auto       r24 = Location::regOf(REG_PENT_EAX); // eax
-    SharedType ty  = SizeType::get(32);
+    auto r24      = Location::regOf(REG_PENT_EAX); // eax
+    SharedType ty = SizeType::get(32);
 
-    if (m_returns.size() > 1) {                  // Ugh - note the stack pointer is the first return still
+    if (m_returns.size() > 1) { // Ugh - note the stack pointer is the first return still
         ty = m_returns[1]->getType();
     }
 
-    defs.append(new ImplicitAssign(ty, r24));             // eax
+    defs.append(new ImplicitAssign(ty, r24));                       // eax
     defs.append(new ImplicitAssign(Location::regOf(REG_PENT_ECX))); // ecx
     defs.append(new ImplicitAssign(Location::regOf(REG_PENT_EDX))); // edx
     defs.append(new ImplicitAssign(Location::regOf(REG_PENT_ESP))); // esp
 }
 
 
-bool PentiumSignature::returnCompare(const Assignment& a, const Assignment& b) const
+bool PentiumSignature::returnCompare(const Assignment &a, const Assignment &b) const
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();
@@ -259,12 +255,13 @@ bool PentiumSignature::returnCompare(const Assignment& a, const Assignment& b) c
 }
 
 
-bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment& a, const Assignment& b) const
+bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment &a,
+                                                                const Assignment &b) const
 {
     SharedConstExp la = a.getLeft();
     SharedConstExp lb = b.getLeft();
-    int       ma = Util::getStackOffset(la, REG_PENT_ESP);
-    int       mb = Util::getStackOffset(lb, REG_PENT_ESP);
+    int ma            = Util::getStackOffset(la, REG_PENT_ESP);
+    int mb            = Util::getStackOffset(lb, REG_PENT_ESP);
 
     if (ma && mb) {
         return ma < mb;
@@ -281,8 +278,5 @@ bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment
     // Else don't care about the order
     return *la < *lb;
 }
-
-
-
 }
 }

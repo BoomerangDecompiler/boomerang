@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Terminal.h"
 
-
 #include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/VoidType.h"
@@ -20,14 +19,12 @@
 
 Terminal::Terminal(OPER _op)
     : Exp(_op)
-{
-}
+{}
 
 
-Terminal::Terminal(const Terminal& o)
+Terminal::Terminal(const Terminal &o)
     : Exp(o.m_oper)
-{
-}
+{}
 
 
 SharedExp Terminal::clone() const
@@ -36,7 +33,7 @@ SharedExp Terminal::clone() const
 }
 
 
-bool Terminal::operator==(const Exp& o) const
+bool Terminal::operator==(const Exp &o) const
 {
     if (m_oper == opWildIntConst) {
         return o.getOper() == opIntConst;
@@ -58,18 +55,18 @@ bool Terminal::operator==(const Exp& o) const
         return o.getOper() == opAddrOf;
     }
 
-    return((m_oper == opWild) ||  // Wild matches anything
-           (o.getOper() == opWild) || (m_oper == o.getOper()));
+    return ((m_oper == opWild) || // Wild matches anything
+            (o.getOper() == opWild) || (m_oper == o.getOper()));
 }
 
 
-bool Terminal::operator<(const Exp& o) const
+bool Terminal::operator<(const Exp &o) const
 {
-    return(m_oper < o.getOper());
+    return (m_oper < o.getOper());
 }
 
 
-bool Terminal::operator*=(const Exp& o) const
+bool Terminal::operator*=(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -90,37 +87,26 @@ bool Terminal::acceptVisitor(ExpVisitor *v)
 SharedType Terminal::ascendType()
 {
     // Can also find various terminals at the leaves of an expression tree
-    switch (m_oper)
-    {
-    case opPC:
-        return IntegerType::get(STD_SIZE, Sign::Unsigned);
-
+    switch (m_oper) {
+    case opPC: return IntegerType::get(STD_SIZE, Sign::Unsigned);
     case opCF:
-    case opZF:
-        return BooleanType::get();
-
-    case opDefineAll:
-        return VoidType::get();
-
-    case opFlags:
-        return IntegerType::get(STD_SIZE, Sign::Unsigned);
-
-    default:
-        LOG_WARN("Unknown type %1", shared_from_this());
-        return VoidType::get();
+    case opZF: return BooleanType::get();
+    case opDefineAll: return VoidType::get();
+    case opFlags: return IntegerType::get(STD_SIZE, Sign::Unsigned);
+    default: LOG_WARN("Unknown type %1", shared_from_this()); return VoidType::get();
     }
 }
 
 
-void Terminal::descendType(SharedType, bool& changed, Statement*)
+void Terminal::descendType(SharedType, bool &changed, Statement *)
 {
     changed = false;
 }
 
 
-SharedExp Terminal::acceptPreModifier(ExpModifier *, bool& )
+SharedExp Terminal::acceptPreModifier(ExpModifier *, bool &)
 {
-    //return mod->preModify(access<Terminal>(), visitChildren));
+    // return mod->preModify(access<Terminal>(), visitChildren));
     return access<Terminal>();
 }
 

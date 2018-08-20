@@ -9,23 +9,20 @@
 #pragma endregion License
 #include "BinaryFile.h"
 
-
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/ifc/IFileLoader.h"
 
 
-BinaryFile::BinaryFile(const QByteArray& rawData, IFileLoader *loader)
+BinaryFile::BinaryFile(const QByteArray &rawData, IFileLoader *loader)
     : m_image(new BinaryImage(rawData))
     , m_symbols(new BinarySymbolTable())
     , m_loader(loader)
-{
-}
+{}
 
 
 BinaryFile::~BinaryFile()
-{
-}
+{}
 
 
 BinaryImage *BinaryFile::getImage()

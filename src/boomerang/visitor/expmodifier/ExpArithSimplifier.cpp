@@ -9,21 +9,20 @@
 #pragma endregion License
 #include "ExpArithSimplifier.h"
 
-
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 
 #include <numeric>
 
 
-SharedExp ExpArithSimplifier::preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren)
+SharedExp ExpArithSimplifier::preModify(const std::shared_ptr<Unary> &exp, bool &visitChildren)
 {
     visitChildren = exp->isAddrOf();
     return exp->shared_from_this();
 }
 
 
-SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary>& exp)
+SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 {
     if (exp->getOper() != opPlus && exp->getOper() != opMinus) {
         return exp->shared_from_this();
@@ -33,7 +32,7 @@ SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary>& exp)
     // non-integer terms and integer terms.
     std::list<SharedExp> positives;
     std::list<SharedExp> negatives;
-    std::vector<int>     integers;
+    std::vector<int> integers;
     exp->partitionTerms(positives, negatives, integers, false);
 
     // Now reduce these lists by cancelling pairs
@@ -85,27 +84,27 @@ SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary>& exp)
         sum = -sum;
     }
 
-    return Binary::get(_op, Binary::get(opMinus, Exp::accumulate(positives), Exp::accumulate(negatives)),
+    return Binary::get(_op,
+                       Binary::get(opMinus, Exp::accumulate(positives), Exp::accumulate(negatives)),
                        Const::get(sum));
-
 }
 
-void ExpArithSimplifier::cancelDuplicates(std::list<SharedExp>& left, std::list<SharedExp>& right)
+void ExpArithSimplifier::cancelDuplicates(std::list<SharedExp> &left, std::list<SharedExp> &right)
 {
-    // Note: can't improve this algorithm using multisets, since can't instantiate multisets of type Exp (only Exp*).
-    // The Exp* in the multisets would be sorted by address, not by value of the expression.
-    // So they would be unsorted, same as lists!
+    // Note: can't improve this algorithm using multisets, since can't instantiate multisets of type
+    // Exp (only Exp*). The Exp* in the multisets would be sorted by address, not by value of the
+    // expression. So they would be unsorted, same as lists!
     auto itLeft = left.begin();
 
     while (itLeft != left.end()) {
-        auto itRight = right.begin();
+        auto itRight    = right.begin();
         bool removedOne = false;
 
         while (itRight != right.end()) {
             if (**itLeft == **itRight) {
                 removedOne = true;
-                itLeft  = left.erase(itLeft);
-                itRight = right.erase(itRight);
+                itLeft     = left.erase(itLeft);
+                itRight    = right.erase(itRight);
                 break;
             }
             else {

@@ -17,9 +17,10 @@ class ProcCFG;
 
 
 /**
- * Convert any exp{-} (with null definition) so that the definition points instead to an implicit assignment (exp{0})
- * Note it is important to process refs in a depth first manner, so that e.g. m[sp{-}-8]{-} -> m[sp{0}-8]{-} first, so
- * that there is never an implicit definition for m[sp{-}-8], only ever for m[sp{0}-8]
+ * Convert any exp{-} (with null definition) so that the definition points instead to an implicit
+ * assignment (exp{0}) Note it is important to process refs in a depth first manner, so that e.g.
+ * m[sp{-}-8]{-} -> m[sp{0}-8]{-} first, so that there is never an implicit definition for
+ * m[sp{-}-8], only ever for m[sp{0}-8]
  */
 class ImplicitConverter : public ExpModifier
 {
@@ -32,7 +33,7 @@ public:
     /// \note This is in the POST visit function, because it's important to process
     /// any child expressions first. Otherwise, for m[r28{0} - 12]{0},
     /// you could be adding an implicit assignment with a nullptr definition for r28.
-    SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
+    SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
 
 private:
     ProcCFG *m_cfg;

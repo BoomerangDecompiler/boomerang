@@ -9,20 +9,17 @@
 #pragma endregion License
 #include "NamedType.h"
 
-
 #include "boomerang/util/log/Log.h"
 
 
-NamedType::NamedType(const QString& _name)
+NamedType::NamedType(const QString &_name)
     : Type(TypeClass::Named)
     , name(_name)
-{
-}
+{}
 
 
 NamedType::~NamedType()
-{
-}
+{}
 
 
 SharedType NamedType::clone() const
@@ -44,7 +41,7 @@ size_t NamedType::getSize() const
 }
 
 
-bool NamedType::operator==(const Type& other) const
+bool NamedType::operator==(const Type &other) const
 {
     return other.isNamed() && name == static_cast<const NamedType &>(other).name;
 }
@@ -62,7 +59,7 @@ SharedType NamedType::resolvesTo() const
 }
 
 
-bool NamedType::operator<(const Type& other) const
+bool NamedType::operator<(const Type &other) const
 {
     if (id != other.getId()) {
         return id < other.getId();
@@ -78,7 +75,7 @@ QString NamedType::getCtype(bool /*final*/) const
 }
 
 
-SharedType NamedType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType NamedType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     SharedType rt = resolvesTo();
 
@@ -89,7 +86,7 @@ SharedType NamedType::meetWith(SharedType other, bool& changed, bool useHighestP
             return const_cast<NamedType *>(this)->shared_from_this();
         }
 
-        return ret;              // Otherwise, whatever the result is
+        return ret; // Otherwise, whatever the result is
     }
 
     if (other->resolvesToVoid()) {
@@ -104,7 +101,7 @@ SharedType NamedType::meetWith(SharedType other, bool& changed, bool useHighestP
 }
 
 
-bool NamedType::isCompatible(const Type& other, bool /*all*/) const
+bool NamedType::isCompatible(const Type &other, bool /*all*/) const
 {
     if (other.isNamed() && (name == static_cast<const NamedType &>(other).getName())) {
         return true;

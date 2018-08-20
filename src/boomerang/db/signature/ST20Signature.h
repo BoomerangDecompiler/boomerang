@@ -17,12 +17,11 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
 class BOOMERANG_API ST20Signature : public Signature
 {
 public:
-    explicit ST20Signature(const QString& name);
-    explicit ST20Signature(Signature& old);
+    explicit ST20Signature(const QString &name);
+    explicit ST20Signature(Signature &old);
     virtual ~ST20Signature() override = default;
 
 public:
@@ -30,16 +29,16 @@ public:
     std::shared_ptr<Signature> clone() const override;
 
     /// \copydoc Signature::operator==
-    virtual bool operator==(const Signature& other) const override;
+    virtual bool operator==(const Signature &other) const override;
 
-    static bool qualified(UserProc *p, Signature&);
+    static bool qualified(UserProc *p, Signature &);
 
     /// \copydoc Signature::addReturn
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
 
     /// \copydoc Signature::addParameter
-    void addParameter(const QString& name, const SharedExp& e,
-                      SharedType type = VoidType::get(), const QString& boundMax = "") override;
+    void addParameter(const QString &name, const SharedExp &e, SharedType type = VoidType::get(),
+                      const QString &boundMax = "") override;
 
     /// \copydoc Signature::getArgumentExp
     SharedExp getArgumentExp(int n) const override;
@@ -61,5 +60,3 @@ public:
 };
 } // namespace StdC
 } // namespace CallingConvention
-
-

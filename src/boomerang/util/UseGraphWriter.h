@@ -20,5 +20,5 @@ class QString;
 class BOOMERANG_API UseGraphWriter
 {
 public:
-    void writeUseGraph(const UserProc *proc, const QString& fileName);
+    void writeUseGraph(const UserProc *proc, const QString &fileName);
 };

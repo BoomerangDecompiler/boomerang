@@ -29,7 +29,6 @@ class LocationSet;
 class BinaryImage;
 
 
-
 /// Operator precedence
 /**
  * Operator Name            Associativity Operators
@@ -53,27 +52,27 @@ class BinaryImage;
  */
 enum class OpPrec : uint8_t
 {
-    Invalid  =    0,
-    Scope    =    1, ///< (LTR) Primary scope resolution
-    Prim     =    2, ///< (LTR) Primary
-    Unary    =    3, ///< (RTL) Unary
-    PtrMem   =    4, ///< (LTR) C++ Pointer to Member
-    Mult     =    5, ///< (LTR) Multiplicative
-    Add      =    6, ///< (LTR) Additive
-    BitShift =    7, ///< (LTR) Bitwise Shift
-    Comp3Way =    8, ///< (LTR) 3-way comparison operator (C++20)
-    Rel      =    9, ///< (LTR) Relational
-    Equal    =   10, ///< (LTR) Equality
-    BitAnd   =   11, ///< (LTR) Bitwise AND
-    BitXor   =   12, ///< (LTR) Bitwise Exclusive OR
-    BitOr    =   13, ///< (LTR) Bitwise Inclusive OR
-    LogAnd   =   14, ///< (LTR) Logical AND
-    LogOr    =   15, ///< (LTR) Logical OR
-    Cond     =   16, ///< (RTL) Ternary conditional operator
-    Assign   =   16, ///< (RTL) Assignment (same precedence as ?: operator)
-    Comma    =   17, ///< (LTR) Comma
+    Invalid  = 0,
+    Scope    = 1,  ///< (LTR) Primary scope resolution
+    Prim     = 2,  ///< (LTR) Primary
+    Unary    = 3,  ///< (RTL) Unary
+    PtrMem   = 4,  ///< (LTR) C++ Pointer to Member
+    Mult     = 5,  ///< (LTR) Multiplicative
+    Add      = 6,  ///< (LTR) Additive
+    BitShift = 7,  ///< (LTR) Bitwise Shift
+    Comp3Way = 8,  ///< (LTR) 3-way comparison operator (C++20)
+    Rel      = 9,  ///< (LTR) Relational
+    Equal    = 10, ///< (LTR) Equality
+    BitAnd   = 11, ///< (LTR) Bitwise AND
+    BitXor   = 12, ///< (LTR) Bitwise Exclusive OR
+    BitOr    = 13, ///< (LTR) Bitwise Inclusive OR
+    LogAnd   = 14, ///< (LTR) Logical AND
+    LogOr    = 15, ///< (LTR) Logical OR
+    Cond     = 16, ///< (RTL) Ternary conditional operator
+    Assign   = 16, ///< (RTL) Assignment (same precedence as ?: operator)
+    Comma    = 17, ///< (LTR) Comma
 
-    None     = 0xFF,  ///< Outer level (no parens required)
+    None = 0xFF, ///< Outer level (no parens required)
 };
 
 
@@ -85,24 +84,25 @@ enum class OpPrec : uint8_t
 class CCodeGenerator : public ICodeGenerator
 {
 public:
-    CCodeGenerator() = default;
+    CCodeGenerator()                   = default;
     virtual ~CCodeGenerator() override = default;
 
 public:
     /// \copydoc ICodeGenerator::generateCode
-    virtual void generateCode(const Prog *prog, Module *module = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) override;
+    virtual void generateCode(const Prog *prog, Module *module = nullptr, UserProc *proc = nullptr,
+                              bool intermixRTL = false) override;
 
 public:
     /// \copydoc ICodeGenerator::addAssignmentStatement
     virtual void addAssignmentStatement(Assign *assign) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addCallStatement(Function *func, const QString& name,
-                                  const StatementList& args, const StatementList& results) override;
+    virtual void addCallStatement(Function *func, const QString &name, const StatementList &args,
+                                  const StatementList &results) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addIndCallStatement(const SharedExp& exp, const StatementList& args,
-                                     const StatementList& results) override;
+    virtual void addIndCallStatement(const SharedExp &exp, const StatementList &args,
+                                     const StatementList &results) override;
 
     /// \copydoc ICodeGenerator::addReturnStatement
     virtual void addReturnStatement(const StatementList *rets) override;
@@ -118,7 +118,8 @@ private:
     void generateCode(UserProc *proc);
 
     /// Generate global variables from data sections.
-    void generateDataSectionCode(const BinaryImage *image, QString sectionName, Address sectionStart, uint32_t sectionSize);
+    void generateDataSectionCode(const BinaryImage *image, QString sectionName,
+                                 Address sectionStart, uint32_t sectionSize);
 
     /**
      * Print the declaration of a function.
@@ -133,7 +134,7 @@ private:
 
     // pretested loops (cond is optional because it is in the bb [somewhere])
     /// Adds: while (\p cond) {
-    void addPretestedLoopHeader(const SharedExp& cond);
+    void addPretestedLoopHeader(const SharedExp &cond);
 
     /// Adds: }
     void addPretestedLoopEnd();
@@ -150,14 +151,14 @@ private:
     void addPostTestedLoopHeader();
 
     /// Adds: } while (\a cond);
-    void addPostTestedLoopEnd(const SharedExp& cond);
+    void addPostTestedLoopEnd(const SharedExp &cond);
 
     // case conditionals "nways"
     /// Adds: switch(\a cond) {
-    void addCaseCondHeader(const SharedExp& cond);
+    void addCaseCondHeader(const SharedExp &cond);
 
     /// Adds: case \a opt :
-    void addCaseCondOption(Exp& opt);
+    void addCaseCondOption(Exp &opt);
 
     /// Adds: break;
     void addCaseCondOptionEnd();
@@ -170,14 +171,14 @@ private:
 
     // if conditions
     /// Adds: if(\a cond) {
-    void addIfCondHeader(const SharedExp& cond);
+    void addIfCondHeader(const SharedExp &cond);
 
     /// Adds: }
     void addIfCondEnd();
 
     // if else conditions
     /// Adds: if(\a cond) {
-    void addIfElseCondHeader(const SharedExp& cond);
+    void addIfElseCondHeader(const SharedExp &cond);
 
     /// Adds: } else {
     void addIfElseCondOption();
@@ -213,7 +214,7 @@ private:
      * \param type of this local variable
      * \param last true if an empty line should be added.
      */
-    void addLocal(const QString& name, SharedType type, bool last = false);
+    void addLocal(const QString &name, SharedType type, bool last = false);
 
     /**
      * Add the declaration for a global.
@@ -221,10 +222,10 @@ private:
      * \param type The type of the global
      * \param init The initial value of the global.
      */
-    void addGlobal(const QString& name, SharedType type, const SharedExp& init = nullptr);
+    void addGlobal(const QString &name, SharedType type, const SharedExp &init = nullptr);
 
     /// Adds one line of comment to the code.
-    void addLineComment(const QString& cmt);
+    void addLineComment(const QString &cmt);
 
 private:
     /**
@@ -232,39 +233,47 @@ private:
      *
      * \param str           The stream to output to.
      * \param exp           The expresson to output.
-     * \param curPrec       The current operator precedence. Add parens around this expression if necessary.
+     * \param curPrec       The current operator precedence. Add parens around this expression if
+     *                      necessary.
      * \param allowUnsigned If true, cast operands to unsigned if necessary.
      *
      * \todo This function is 800+ lines, and should possibly be split up.
      */
-    void appendExp(OStream& str, const Exp& exp, OpPrec curPrec, bool allowUnsigned = false);
+    void appendExp(OStream &str, const Exp &exp, OpPrec curPrec, bool allowUnsigned = false);
 
     /// Print the type represented by \a typ to \a str.
-    void appendType(OStream& str, SharedConstType typ);
+    void appendType(OStream &str, SharedConstType typ);
 
     /**
      * Print the identified type to \a str.
      */
-    void appendTypeIdent(OStream& str, SharedConstType typ, QString ident);
+    void appendTypeIdent(OStream &str, SharedConstType typ, QString ident);
 
     /// Adds: (
-    void openParen(OStream& str, OpPrec outer, OpPrec inner);
+    void openParen(OStream &str, OpPrec outer, OpPrec inner);
 
     /// Adds: )
-    void closeParen(OStream& str, OpPrec outer, OpPrec inner);
+    void closeParen(OStream &str, OpPrec outer, OpPrec inner);
 
 
-    void generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet, std::list<const BasicBlock *>& gotoSet, UserProc *proc);
-    void generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc, const BasicBlock *latch, std::list<const BasicBlock *>& followSet);
-    void generateCode_Branch(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc, const BasicBlock *latch, std::list<const BasicBlock *>& followSet);
-    void generateCode_Seq(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc, const BasicBlock *latch, std::list<const BasicBlock *>& followSet);
+    void generateCode(const BasicBlock *bb, const BasicBlock *latch,
+                      std::list<const BasicBlock *> &followSet,
+                      std::list<const BasicBlock *> &gotoSet, UserProc *proc);
+    void generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *> &gotoSet,
+                           UserProc *proc, const BasicBlock *latch,
+                           std::list<const BasicBlock *> &followSet);
+    void generateCode_Branch(const BasicBlock *bb, std::list<const BasicBlock *> &gotoSet,
+                             UserProc *proc, const BasicBlock *latch,
+                             std::list<const BasicBlock *> &followSet);
+    void generateCode_Seq(const BasicBlock *bb, std::list<const BasicBlock *> &gotoSet,
+                          UserProc *proc, const BasicBlock *latch,
+                          std::list<const BasicBlock *> &followSet);
 
-    /// Emits a goto statement (at the correct indentation level) with the destination label for dest. Also places the label
-    /// just before the destination code if it isn't already there.    If the goto is to the return block, it would be nice
-    /// to
-    /// emit a 'return' instead (but would have to duplicate the other code in that return BB).    Also, 'continue' and
-    /// 'break'
-    /// statements are used instead if possible
+    /// Emits a goto statement (at the correct indentation level) with the destination label for
+    /// dest. Also places the label just before the destination code if it isn't already there. If
+    /// the goto is to the return block, it would be nice to emit a 'return' instead (but would have
+    /// to duplicate the other code in that return BB).    Also, 'continue' and 'break' statements
+    /// are used instead if possible
     void emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *dest);
 
     /// Generates code for each non-CTI (except procedure calls) statement within the block.
@@ -278,11 +287,11 @@ private:
     void print(const Module *module);
 
     /// Output 4 * \p indLevel spaces to \p str
-    void indent(OStream& str, int indLevel);
+    void indent(OStream &str, int indLevel);
 
     /// Private helper functions, to reduce redundant code, and
     /// have a single place to put a breakpoint on.
-    void appendLine(const QString& s);
+    void appendLine(const QString &s);
 
 private:
     int m_indent = 0;                                     ///< Current indentation depth
@@ -294,5 +303,5 @@ private:
     ControlFlowAnalyzer m_analyzer;
 
     CodeWriter m_writer;
-    QStringList m_lines;                                  ///< The generated code.
+    QStringList m_lines; ///< The generated code.
 };

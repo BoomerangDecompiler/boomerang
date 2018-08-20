@@ -9,12 +9,11 @@
 #pragma endregion License
 #include "CSymbolProvider.h"
 
-
 #include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/module/Module.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/util/log/Log.h"
 
@@ -23,13 +22,12 @@
 #include <QTextStream>
 
 
-CSymbolProvider::CSymbolProvider(Prog* prog)
+CSymbolProvider::CSymbolProvider(Prog *prog)
     : m_prog(prog)
-{
-}
+{}
 
 
-bool CSymbolProvider::readLibraryCatalog(const QString& filePath)
+bool CSymbolProvider::readLibraryCatalog(const QString &filePath)
 {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
     QFile file(filePath);
@@ -64,8 +62,7 @@ bool CSymbolProvider::readLibraryCatalog(const QString& filePath)
             cc = CallConv::ThisCall; // Another exception
         }
 
-        const QString sig_path = QFileInfo(filePath).absoluteDir()
-            .absoluteFilePath(sigFilePath);
+        const QString sig_path = QFileInfo(filePath).absoluteDir().absoluteFilePath(sigFilePath);
         if (!readLibrarySignatures(qPrintable(sig_path), cc)) {
             return false;
         }
@@ -75,7 +72,7 @@ bool CSymbolProvider::readLibraryCatalog(const QString& filePath)
 }
 
 
-bool CSymbolProvider::readLibrarySignatures(const QString& signatureFile, CallConv cc)
+bool CSymbolProvider::readLibrarySignatures(const QString &signatureFile, CallConv cc)
 {
     std::unique_ptr<AnsiCParser> p;
 
@@ -89,7 +86,7 @@ bool CSymbolProvider::readLibrarySignatures(const QString& signatureFile, CallCo
 
     p->yyparse(m_prog->getMachine(), cc);
 
-    for (auto& signature : p->signatures) {
+    for (auto &signature : p->signatures) {
         m_librarySignatures[signature->getName()] = signature;
         signature->setSigFilePath(signatureFile);
     }
@@ -98,7 +95,7 @@ bool CSymbolProvider::readLibrarySignatures(const QString& signatureFile, CallCo
 }
 
 
-bool CSymbolProvider::addSymbolsFromSymbolFile(const QString& fname)
+bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
 {
     std::unique_ptr<AnsiCParser> parser = nullptr;
 
@@ -119,11 +116,12 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString& fname)
         if (sym->sig) {
             QString name = sym->sig->getName();
             targetModule = m_prog->getOrInsertModuleForSymbol(name);
-            auto bin_sym     = m_prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
+            auto bin_sym = m_prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
             const bool isLib = (bin_sym && bin_sym->isImportedFunction()) ||
-                // NODECODE isn't really the right modifier; perhaps we should have a LIB modifier,
-                // to specifically specify that this function obeys library calling conventions
-                sym->mods->noDecode;
+                               // NODECODE isn't really the right modifier; perhaps we should have a
+                               // LIB modifier, to specifically specify that this function obeys
+                               // library calling conventions
+                               sym->mods->noDecode;
             Function *p = targetModule->createFunction(name, sym->addr, isLib);
 
             if (!sym->mods->incomplete) {
@@ -132,7 +130,7 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString& fname)
             }
         }
         else {
-            QString name = sym->name;
+            QString name  = sym->name;
             SharedType ty = sym->ty;
 
             m_prog->createGlobal(sym->addr, sym->ty, sym->name);
@@ -147,10 +145,8 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString& fname)
 }
 
 
-std::shared_ptr<Signature> CSymbolProvider::getSignatureByName(const QString& functionName) const
+std::shared_ptr<Signature> CSymbolProvider::getSignatureByName(const QString &functionName) const
 {
     auto it = m_librarySignatures.find(functionName);
-    return it != m_librarySignatures.end()
-        ? it.value()
-        : nullptr;
+    return it != m_librarySignatures.end() ? it.value() : nullptr;
 }

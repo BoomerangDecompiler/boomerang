@@ -22,7 +22,7 @@ public:
     virtual ~ConsoleLogSink() override = default;
 
     /// \copydoc ILogSink::write
-    virtual void write(const QString& s) override;
+    virtual void write(const QString &s) override;
 
     /// \copydoc ILogSink::flush
     virtual void flush() override;

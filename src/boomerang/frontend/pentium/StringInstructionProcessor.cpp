@@ -9,21 +9,19 @@
 #pragma endregion License
 #include "StringInstructionProcessor.h"
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/log/Log.h"
 
 
-StringInstructionProcessor::StringInstructionProcessor(UserProc* proc)
+StringInstructionProcessor::StringInstructionProcessor(UserProc *proc)
     : m_proc(proc)
-{
-}
+{}
 
 
 bool StringInstructionProcessor::processStringInstructions()
@@ -39,7 +37,7 @@ bool StringInstructionProcessor::processStringInstructions()
 
         Address prev, addr = Address::ZERO;
 
-        for (auto& rtl : *bbRTLs) {
+        for (auto &rtl : *bbRTLs) {
             prev = addr;
             addr = rtl->getAddress();
 
@@ -67,7 +65,7 @@ bool StringInstructionProcessor::processStringInstructions()
     }
 
     for (auto p : stringInstructions) {
-        RTL *skipRTL = p.first;
+        RTL *skipRTL   = p.first;
         BasicBlock *bb = p.second;
 
         BranchStatement *skipBranch = new BranchStatement;
@@ -100,33 +98,34 @@ bool StringInstructionProcessor::processStringInstructions()
 }
 
 
-BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stringRTL, BranchStatement *skipBranch, BranchStatement *rptBranch)
+BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stringRTL,
+                                                       BranchStatement *skipBranch,
+                                                       BranchStatement *rptBranch)
 {
-    Address stringAddr = stringRTL->getAddress();
-    RTLList::iterator stringIt = std::find_if(bb->getRTLs()->begin(), bb->getRTLs()->end(),
-        [stringRTL] (const std::unique_ptr<RTL>& ptr) {
-            return stringRTL == ptr.get();
-        });
+    Address stringAddr         = stringRTL->getAddress();
+    RTLList::iterator stringIt = std::find_if(
+        bb->getRTLs()->begin(), bb->getRTLs()->end(),
+        [stringRTL](const std::unique_ptr<RTL> &ptr) { return stringRTL == ptr.get(); });
 
     assert(stringIt != bb->getRTLs()->end());
 
     const bool haveA = (stringIt != bb->getRTLs()->begin());
     const bool haveB = (std::next(stringIt) != bb->getRTLs()->end());
-    BasicBlock *aBB = nullptr;
-    BasicBlock *bBB = nullptr;
+    BasicBlock *aBB  = nullptr;
+    BasicBlock *bBB  = nullptr;
 
     const std::vector<BasicBlock *> oldPredecessors = bb->getPredecessors();
     const std::vector<BasicBlock *> oldSuccessors   = bb->getSuccessors();
 
     if (haveA) {
         aBB = bb;
-        bb = m_proc->getCFG()->splitBB(aBB, stringAddr);
+        bb  = m_proc->getCFG()->splitBB(aBB, stringAddr);
         assert(aBB->getLowAddr() < bb->getLowAddr());
     }
     stringIt = bb->getRTLs()->begin();
     if (haveB) {
         Address splitAddr = (*std::next(stringIt))->getAddress();
-        bBB = m_proc->getCFG()->splitBB(bb, splitAddr);
+        bBB               = m_proc->getCFG()->splitBB(bb, splitAddr);
         assert(bb->getLowAddr() < bBB->getLowAddr());
     }
     else {
@@ -160,7 +159,7 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     m_proc->getCFG()->removeBB(bb);
 
     BasicBlock *skipBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTLs));
-    BasicBlock *rptBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTLs));
+    BasicBlock *rptBB  = m_proc->getCFG()->createBB(BBType::Twoway, std::move(rptBBRTLs));
 
     assert(skipBB && rptBB);
 

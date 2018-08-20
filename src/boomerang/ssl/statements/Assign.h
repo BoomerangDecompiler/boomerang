@@ -23,13 +23,13 @@ public:
     Assign();
     Assign(SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
     Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard = nullptr);
-    Assign(const Assign& other);
-    Assign(Assign&& other) = default;
+    Assign(const Assign &other);
+    Assign(Assign &&other) = default;
 
     virtual ~Assign() override = default;
 
-    Assign& operator=(const Assign& other) = default;
-    Assign& operator=(Assign&& other) = default;
+    Assign &operator=(const Assign &other) = default;
+    Assign &operator=(Assign &&other) = default;
 
 public:
     /// \copydoc Statement::clone
@@ -38,8 +38,8 @@ public:
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return m_rhs; }
 
-    SharedExp& getRightRef() { return m_rhs; }
-    const SharedExp& getRightRef() const { return m_rhs; }
+    SharedExp &getRightRef() { return m_rhs; }
+    const SharedExp &getRightRef() const { return m_rhs; }
 
     /// set the rhs to something new
     void setRight(SharedExp e) { m_rhs = e; }
@@ -57,7 +57,7 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc Assignment::printCompact
-    virtual void printCompact(OStream& os) const override;
+    virtual void printCompact(OStream &os) const override;
 
     /// Guard
     void setGuard(SharedExp g) { m_guard = g; }
@@ -65,16 +65,16 @@ public:
     inline bool isGuarded() const { return m_guard != nullptr; }
 
     /// \copydoc Assignment::usesExp
-    virtual bool usesExp(const Exp& e) const override;
+    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc Assignment::search
-    virtual bool search(const Exp& search, SharedExp& result) const override;
+    virtual bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc Assignment::searchAll
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Assignment::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// Get memory depth
     virtual int getMemDepth() const;

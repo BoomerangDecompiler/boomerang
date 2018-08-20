@@ -9,14 +9,13 @@
 #pragma endregion License
 #include "LibProc.h"
 
-
-#include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/IFrontEnd.h"
 
 
-LibProc::LibProc(Address addr, const QString& name, Module *module)
+LibProc::LibProc(Address addr, const QString &name, Module *module)
     : Function(addr, nullptr, module)
 {
     if (module && module->getProg()) {
@@ -37,8 +36,7 @@ bool LibProc::isLib() const
 
 bool LibProc::isNoReturn() const
 {
-    return m_prog->getFrontEnd()->isNoReturnCallDest(this->getName())
-        || m_signature->isNoReturn();
+    return m_prog->getFrontEnd()->isNoReturnCallDest(this->getName()) || m_signature->isNoReturn();
 }
 
 

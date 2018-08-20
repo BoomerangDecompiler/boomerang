@@ -9,13 +9,12 @@
 #pragma endregion License
 #include "CodeWriter.h"
 
-
 #include "boomerang/db/module/Module.h"
 
 #include <cassert>
 
 
-CodeWriter::WriteDest::WriteDest(const QString& outFileName)
+CodeWriter::WriteDest::WriteDest(const QString &outFileName)
     : m_outFile(outFileName)
     , m_os(&m_outFile)
 {
@@ -30,7 +29,7 @@ CodeWriter::CodeWriter::WriteDest::~WriteDest()
 }
 
 
-bool CodeWriter::writeCode(const Module *module, const QStringList& lines)
+bool CodeWriter::writeCode(const Module *module, const QStringList &lines)
 {
     WriteDestMap::iterator it = m_dests.find(module);
 
@@ -40,7 +39,7 @@ bool CodeWriter::writeCode(const Module *module, const QStringList& lines)
             module->makeDirs();
         }
 
-        bool inserted = false;
+        bool inserted          = false;
         std::tie(it, inserted) = m_dests.insert(std::make_pair(module, outPath));
         assert(inserted);
     }
@@ -49,4 +48,3 @@ bool CodeWriter::writeCode(const Module *module, const QStringList& lines)
     it->second.m_os << lines.join('\n') << '\n';
     return true;
 }
-

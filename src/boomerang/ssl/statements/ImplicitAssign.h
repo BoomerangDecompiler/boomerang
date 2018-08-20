@@ -24,29 +24,29 @@ class BOOMERANG_API ImplicitAssign : public Assignment
 public:
     ImplicitAssign(SharedExp lhs);
     ImplicitAssign(SharedType ty, SharedExp lhs);
-    ImplicitAssign(const ImplicitAssign& other);
-    ImplicitAssign(ImplicitAssign&& other) = default;
+    ImplicitAssign(const ImplicitAssign &other);
+    ImplicitAssign(ImplicitAssign &&other) = default;
 
     virtual ~ImplicitAssign() override = default;
 
-    ImplicitAssign& operator=(const ImplicitAssign& other) = default;
-    ImplicitAssign& operator=(ImplicitAssign&& other) = default;
+    ImplicitAssign &operator=(const ImplicitAssign &other) = default;
+    ImplicitAssign &operator=(ImplicitAssign &&other) = default;
 
 public:
     /// \copydoc Statement::clone
     virtual Statement *clone() const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp& search, SharedExp& result) const override;
+    virtual bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc Statement::printCompact
-    virtual void printCompact(OStream& os) const override;
+    virtual void printCompact(OStream &os) const override;
 
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return nullptr; }

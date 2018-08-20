@@ -34,7 +34,7 @@ public:
     UserProc *getProc() { return m_proc; }
 
     /// \copydoc ExpModifier::postModify
-    virtual SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
+    virtual SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
 
 private:
     UserProc *m_proc;

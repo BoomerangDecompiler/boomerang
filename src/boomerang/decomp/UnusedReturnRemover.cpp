@@ -9,12 +9,11 @@
 #pragma endregion License
 #include "UnusedReturnRemover.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -26,13 +25,12 @@
 
 UnusedReturnRemover::UnusedReturnRemover(Prog *prog)
     : m_prog(prog)
-{
-}
+{}
 
 
 bool UnusedReturnRemover::removeUnusedReturns()
 {
-    for (const auto& module : m_prog->getModuleList()) {
+    for (const auto &module : m_prog->getModuleList()) {
         for (Function *proc : *module) {
             if (proc && !proc->isLib() && static_cast<UserProc *>(proc)->isDecoded()) {
                 m_removeRetSet.insert(static_cast<UserProc *>(proc));
@@ -47,7 +45,7 @@ bool UnusedReturnRemover::removeUnusedReturns()
     // (no caller uses potential returns for child), and sometimes up the call tree
     // (removal of returns and/or dead code removes parameters, which affects all callers).
     while (!m_removeRetSet.empty()) {
-        auto it = m_removeRetSet.begin(); // Pick the first element of the set
+        auto it                   = m_removeRetSet.begin(); // Pick the first element of the set
         const bool removedReturns = removeUnusedParamsAndReturns(*it);
 
         if (removedReturns) {
@@ -88,8 +86,9 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         // Respect the forced signature, but use it to remove returns if necessary
         bool removedRets = false;
 
-        for (ReturnStatement::iterator rr = proc->getRetStmt()->begin(); rr != proc->getRetStmt()->end();) {
-            Assign    *a  = static_cast<Assign *>(*rr);
+        for (ReturnStatement::iterator rr = proc->getRetStmt()->begin();
+             rr != proc->getRetStmt()->end();) {
+            Assign *a     = static_cast<Assign *>(*rr);
             SharedExp lhs = a->getLeft();
             // For each location in the returns, check if in the signature
             bool found = false;
@@ -110,7 +109,8 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
                 removedRets = true;
 
                 if (m_prog->getProject()->getSettings()->debugUnused) {
-                    LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a, proc->getName());
+                    LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a,
+                            proc->getName());
                 }
             }
         }
@@ -123,12 +123,13 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         return removedRets;
     }
 
-    // FIXME: this needs to be more sensible when we don't decompile down from main! Probably should assume just the
-    // first return is valid, for example (presently assume none are valid)
+    // FIXME: this needs to be more sensible when we don't decompile down from main! Probably should
+    // assume just the first return is valid, for example (presently assume none are valid)
     LocationSet unionOfCallerLiveLocs;
 
     if (proc->getName() == "main") { // Probably not needed: main is forced so handled above
-        // Just insert one return for main. Note: at present, the first parameter is still the stack pointer
+        // Just insert one return for main. Note: at present, the first parameter is still the stack
+        // pointer
         if (proc->getSignature()->getNumReturns() <= 1) {
             // handle the case of missing main() signature
             LOG_WARN("main signature definition is missing; assuming void main()");
@@ -140,12 +141,12 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
     else {
         // For each caller
         for (CallStatement *cc : proc->getCallers()) {
-            #if RECURSION_WIP
+#if RECURSION_WIP
             // TODO: prevent function from blocking it's own removals, needs more work
             if (cc->getProc()->doesRecurseTo(this)) {
                 continue;
             }
-            #endif
+#endif
             // Union in the set of locations live at this call
             UseCollector *useCol = cc->getUseCollector();
             unionOfCallerLiveLocs.makeUnion(useCol->getLocSet());
@@ -167,19 +168,20 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
             LOG_MSG("%%%  removing unused return %1 from proc %2", a, proc->getName());
         }
 
-        // If a component of the RHS referenced a call statement, the liveness used to be killed here.
-        // This was wrong; you need to notice the liveness changing inside updateForUseChange() to correctly
-        // recurse to callee
+        // If a component of the RHS referenced a call statement, the liveness used to be killed
+        // here. This was wrong; you need to notice the liveness changing inside
+        // updateForUseChange() to correctly recurse to callee
         rr          = proc->getRetStmt()->erase(rr);
         removedRets = true;
     }
 
     if (m_prog->getProject()->getSettings()->debugUnused) {
-        QString     tgt;
+        QString tgt;
         OStream ost(&tgt);
         unionOfCallerLiveLocs.print(ost);
         LOG_MSG("%%%  union of caller live locations for %1: %2", proc->getName(), tgt);
-        LOG_MSG("%%%  final returns for %1: %2", proc->getName(), proc->getRetStmt()->getReturns().prints());
+        LOG_MSG("%%%  final returns for %1: %2", proc->getName(),
+                proc->getRetStmt()->getReturns().prints());
     }
 
     // removing returns might result in params that can be removed, might as well do it now.
@@ -192,7 +194,7 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
 
         for (CallStatement *call : proc->getCallers()) {
             PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
-            updateSet.insert(call->getProc());    // Make sure we redo the dataflow
+            updateSet.insert(call->getProc());      // Make sure we redo the dataflow
             m_removeRetSet.insert(call->getProc()); // Also schedule caller proc for more analysis
         }
 
@@ -209,15 +211,16 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         }
     }
 
-    m_prog->getProject()->alertDecompileDebugPoint(proc, "after removing unused and redundant returns");
+    m_prog->getProject()->alertDecompileDebugPoint(proc,
+                                                   "after removing unused and redundant returns");
     return removedRets || removedParams;
 }
 
 
 void UnusedReturnRemover::updateForUseChange(UserProc *proc)
 {
-    // We need to remember the parameters, and all the livenesses for all the calls, to see if these are changed
-    // by removing returns
+    // We need to remember the parameters, and all the livenesses for all the calls, to see if these
+    // are changed by removing returns
     if (m_prog->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% updating %1 for changes to uses (returns or arguments)", proc->getName());
         LOG_MSG("%%% updating dataflow:");
@@ -228,7 +231,7 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     std::map<CallStatement *, UseCollector> callLiveness;
 
     for (BasicBlock *bb : *proc->getCFG()) {
-        BasicBlock::RTLRIterator        rrit;
+        BasicBlock::RTLRIterator rrit;
         StatementList::reverse_iterator srit;
         CallStatement *c = dynamic_cast<CallStatement *>(bb->getLastStmt(rrit, srit));
 
@@ -248,20 +251,23 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     }
 
     // Have to redo dataflow to get the liveness at the calls correct
-    PassManager::get()->executePass(PassID::CallLivenessRemoval, proc); // Want to recompute the call livenesses
+    PassManager::get()->executePass(PassID::CallLivenessRemoval,
+                                    proc); // Want to recompute the call livenesses
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
-    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis processing,
-    // do the local TA pass now. Ellipsis processing often reveals additional uses (e.g. additional parameters
-    // to printf/scanf), and removing unused statements is unsafe without full use information
+    // Perform type analysis. If we are relying (as we are at present) on TA to perform ellipsis
+    // processing, do the local TA pass now. Ellipsis processing often reveals additional uses (e.g.
+    // additional parameters to printf/scanf), and removing unused statements is unsafe without full
+    // use information
     if (proc->getStatus() < PROC_FINAL) {
         PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
 
         // Now that locals are identified, redo the dataflow
         PassManager::get()->executePass(PassID::PhiPlacement, proc);
 
-        PassManager::get()->executePass(PassID::BlockVarRename, proc);       // Rename the locals
-        PassManager::get()->executePass(PassID::StatementPropagation, proc); // Surely need propagation too
+        PassManager::get()->executePass(PassID::BlockVarRename, proc); // Rename the locals
+        PassManager::get()->executePass(PassID::StatementPropagation,
+                                        proc); // Surely need propagation too
 
         if (m_prog->getProject()->getSettings()->verboseOutput) {
             proc->debugPrintAll("after propagating locals");
@@ -282,8 +288,8 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
     PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
 
-    // Have the parameters changed? If so, then all callers will need to update their arguments, and do similar
-    // analysis to the removal of returns
+    // Have the parameters changed? If so, then all callers will need to update their arguments, and
+    // do similar analysis to the removal of returns
     PassManager::get()->executePass(PassID::UnusedParamRemoval, proc);
 
     if (proc->getParameters().size() != oldNumParameters) {
@@ -291,8 +297,8 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
             LOG_MSG("%%%  parameters changed for %1", proc->getName());
         }
 
-        std::set<CallStatement *>& callers = proc->getCallers();
-        const bool experimental = m_prog->getProject()->getSettings()->experimental;
+        std::set<CallStatement *> &callers = proc->getCallers();
+        const bool experimental            = m_prog->getProject()->getSettings()->experimental;
 
         for (CallStatement *cc : callers) {
             cc->updateArguments(experimental);
@@ -304,8 +310,8 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     // Check if the liveness of any calls has changed
     for (auto ll = callLiveness.begin(); ll != callLiveness.end(); ++ll) {
         CallStatement *call             = ll->first;
-        const UseCollector& oldLiveness = ll->second;
-        const UseCollector& newLiveness = *call->getUseCollector();
+        const UseCollector &oldLiveness = ll->second;
+        const UseCollector &newLiveness = *call->getUseCollector();
 
         if (newLiveness != oldLiveness) {
             if (m_prog->getProject()->getSettings()->debugUnused) {

@@ -28,17 +28,17 @@ public:
 
 public:
     /// \copydoc SimpExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
     /// \copydoc SimpExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 
     /// \copydoc SimpExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<Location>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Location> &exp) override;
 
     /// \copydoc SimpExpModifier::postModify
     /// We want to be able to localise a few terminals, in particular <all>
-    SharedExp postModify(const std::shared_ptr<Terminal>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Terminal> &exp) override;
 
 private:
     CallStatement *m_call; ///< The call to localise to

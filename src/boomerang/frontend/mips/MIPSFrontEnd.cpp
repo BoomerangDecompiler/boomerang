@@ -9,17 +9,15 @@
 #pragma endregion License
 #include "MIPSFrontEnd.h"
 
-
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/mips/MIPSDecoder.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/Register.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/log/Log.h"
-
 
 #include <cassert>
 #include <sstream>
@@ -32,7 +30,7 @@ MIPSFrontEnd::MIPSFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address MIPSFrontEnd::findMainEntryPoint(bool& gotMain)
+Address MIPSFrontEnd::findMainEntryPoint(bool &gotMain)
 {
     Address start = m_binaryFile->getMainEntryPoint();
 

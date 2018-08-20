@@ -13,7 +13,7 @@
 #define OPSIZE     0x20 /*< Add current operand size to instruction size */
 #define INVALID    0x40 /*< Invalid / not recognized instruction */
 
-/* *INDENT-OFF* */
+/* clang-format off */
 static const unsigned char opmap[256] =
 {
     /* Note for X86-64, 0x40-0x47 are special escapes! */
@@ -92,7 +92,7 @@ static const unsigned char op0Fmap[256] =
     /* F0-F7 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
     /* F8-FF */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID
 };
-/* *INDENT-ON* */
+/* clang-format on */
 
 
 /**

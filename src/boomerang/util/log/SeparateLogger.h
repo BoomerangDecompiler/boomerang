@@ -20,18 +20,19 @@ class SeparateLogger : public Log
 {
 public:
     /// \param fullFilePath Full absolute path to the log file
-    SeparateLogger(const QString& fullFilePath);
-    SeparateLogger(const SeparateLogger& other) = delete;
-    SeparateLogger(SeparateLogger&& other) = default;
+    SeparateLogger(const QString &fullFilePath);
+    SeparateLogger(const SeparateLogger &other) = delete;
+    SeparateLogger(SeparateLogger &&other)      = default;
 
     virtual ~SeparateLogger() override = default;
 
-    SeparateLogger& operator=(const SeparateLogger& other) = delete;
-    SeparateLogger& operator=(SeparateLogger&& other) = default;
+    SeparateLogger &operator=(const SeparateLogger &other) = delete;
+    SeparateLogger &operator=(SeparateLogger &&other) = default;
 
 public:
-    static SeparateLogger& getOrCreateLog(const QString& name);
+    static SeparateLogger &getOrCreateLog(const QString &name);
 };
 
 
-#define LOG_SEPARATE(name, ...)    SeparateLogger::getOrCreateLog(name).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)
+#define LOG_SEPARATE(name, ...)                                                                    \
+    SeparateLogger::getOrCreateLog(name).log(LogLevel::Default, __FILE__, __LINE__, __VA_ARGS__)

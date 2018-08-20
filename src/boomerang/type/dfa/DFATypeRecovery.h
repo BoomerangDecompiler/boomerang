@@ -23,15 +23,11 @@ class UserProc;
 /**
  * Data-flow based type recovery.
  * This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
- * In classic lattice-based terms, the TOP type is void; there is no BOTTOM type since we handle overconstraints with
- * unions.
- * Consider various pieces of knowledge about the types. There could be:
- * a) void: no information. Void meet x = x.
- * b) size only: find a size large enough to contain the two types.
- * c) broad type only, e.g. floating point
- * d) signedness, no size
- * e) size, no signedness
- * f) broad type, size, and (for integer broad type), signedness
+ * In classic lattice-based terms, the TOP type is void; there is no BOTTOM type since we handle
+ * overconstraints with unions. Consider various pieces of knowledge about the types. There could
+ * be: a) void: no information. Void meet x = x. b) size only: find a size large enough to contain
+ * the two types. c) broad type only, e.g. floating point d) signedness, no size e) size, no
+ * signedness f) broad type, size, and (for integer broad type), signedness
  */
 class DFATypeRecovery : public TypeRecoveryCommon
 {
@@ -48,7 +44,7 @@ private:
     bool dfaTypeAnalysis(Signature *signature, ProcCFG *cfg);
     bool dfaTypeAnalysis(Statement *stmt);
 
-    void printResults(StatementList& stmts, int iter);
+    void printResults(StatementList &stmts, int iter);
 
     void dfa_analyze_scaled_array_ref(Statement *s);
 

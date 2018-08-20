@@ -28,25 +28,25 @@
 class ExpSimplifier : public ExpModifier
 {
 public:
-    ExpSimplifier() = default;
+    ExpSimplifier()          = default;
     virtual ~ExpSimplifier() = default;
 
 public:
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<TypedExp> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<Unary>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Unary> &exp) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<Binary>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Binary> &exp) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<Ternary>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Ternary> &exp) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<Location>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Location> &exp) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
+    SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
 };

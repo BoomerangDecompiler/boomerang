@@ -27,5 +27,5 @@ using SharedConstExp = std::shared_ptr<const Exp>;
  */
 struct BOOMERANG_API lessExpStar
 {
-    bool operator()(const SharedConstExp& x, const SharedConstExp& y) const;
+    bool operator()(const SharedConstExp &x, const SharedConstExp &y) const;
 };

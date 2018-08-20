@@ -11,6 +11,7 @@
 
 
 #include <QString>
+
 #include <deque>
 #include <memory>
 
@@ -35,20 +36,20 @@ class Table
     typedef std::deque<QString> StringQueue;
 
 public:
-    Table(const std::deque<QString>& recs, TABLE_TYPE t = NAMETABLE);
+    Table(const std::deque<QString> &recs, TABLE_TYPE t = NAMETABLE);
     Table(TABLE_TYPE t);
-    Table(const Table& other) = delete;
-    Table(Table&& other) = default;
+    Table(const Table &other) = delete;
+    Table(Table &&other)      = default;
 
     virtual ~Table() = default;
 
-    Table& operator=(const Table& other) = delete;
-    Table& operator=(Table&& other) = default;
+    Table &operator=(const Table &other) = delete;
+    Table &operator=(Table &&other) = default;
 
 public:
     TABLE_TYPE getType() const;
 
-    const StringQueue& getRecords() const { return Records; }
+    const StringQueue &getRecords() const { return Records; }
 
 private:
     TABLE_TYPE TableType;
@@ -59,14 +60,14 @@ private:
 class OpTable : public Table
 {
 public:
-    OpTable(const std::deque<QString>& ops);
+    OpTable(const std::deque<QString> &ops);
 };
 
 
 class ExprTable : public Table
 {
 public:
-    ExprTable(const std::deque<SharedExp>& exprs);
+    ExprTable(const std::deque<SharedExp> &exprs);
     ~ExprTable() = default;
 
 public:

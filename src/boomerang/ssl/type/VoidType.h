@@ -17,13 +17,13 @@ class BOOMERANG_API VoidType : public Type
 {
 public:
     VoidType();
-    VoidType(const VoidType& other) = default;
-    VoidType(VoidType&& other) = default;
+    VoidType(const VoidType &other) = default;
+    VoidType(VoidType &&other)      = default;
 
     virtual ~VoidType() override;
 
-    VoidType& operator=(const VoidType& other) = default;
-    VoidType& operator=(VoidType&& other) = default;
+    VoidType &operator=(const VoidType &other) = default;
+    VoidType &operator=(VoidType &&other) = default;
 
 public:
     virtual bool isVoid() const override { return true; }
@@ -32,9 +32,9 @@ public:
 
     static std::shared_ptr<VoidType> get() { return std::make_shared<VoidType>(); }
 
-    virtual bool operator==(const Type& other) const override;
+    virtual bool operator==(const Type &other) const override;
 
-    virtual bool operator<(const Type& other) const override;
+    virtual bool operator<(const Type &other) const override;
 
     virtual size_t getSize() const override;
 
@@ -46,6 +46,6 @@ public:
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
+    virtual bool isCompatible(const Type &other, bool all) const override;
 };

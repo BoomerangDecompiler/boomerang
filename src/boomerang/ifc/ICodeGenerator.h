@@ -36,7 +36,7 @@ class OStream;
 class ICodeGenerator
 {
 public:
-    ICodeGenerator() = default;
+    ICodeGenerator()          = default;
     virtual ~ICodeGenerator() = default;
 
 public:
@@ -44,11 +44,13 @@ public:
      * Generate code for a module or function, or all modules.
      * \param program The program to generate code for.
      * \param module The module to generate code for, or nullptr to generate code for all modules.
-     * \param proc The function to generate code for, or nullptr to generate code for all procedures in a module.
-     * \param intermixRTL Set this to true to intermix code with underlying intermediate representation.
-     *                    Currently not implemented.
+     * \param proc The function to generate code for, or nullptr to generate code for all procedures
+     *             in a module.
+     * \param intermixRTL Set this to true to intermix code with underlying
+     * intermediate representation. Currently not implemented.
      */
-    virtual void generateCode(const Prog *program, Module *module = nullptr, UserProc *proc = nullptr, bool intermixRTL = false) = 0;
+    virtual void generateCode(const Prog *program, Module *module = nullptr,
+                              UserProc *proc = nullptr, bool intermixRTL = false) = 0;
 
 public:
     /*
@@ -71,8 +73,8 @@ public:
      * \todo                Remove the \p name parameter and use Proc::getName()
      * \todo                Add assignment for when the function returns a struct.
      */
-    virtual void addCallStatement(Function *dest, const QString& name,
-                                  const StatementList& args, const StatementList& results) = 0;
+    virtual void addCallStatement(Function *dest, const QString &name, const StatementList &args,
+                                  const StatementList &results) = 0;
 
     /**
      * Adds an indirect call to \a exp.
@@ -80,8 +82,8 @@ public:
      * \param results UNUSED
      * \todo Add the use of \a results like AddCallStatement.
      */
-    virtual void addIndCallStatement(const SharedExp& exp, const StatementList& args,
-                                     const StatementList& results) = 0;
+    virtual void addIndCallStatement(const SharedExp &exp, const StatementList &args,
+                                     const StatementList &results) = 0;
 
     /**
      * Adds a return statement and returns the first expression in \a rets.

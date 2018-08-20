@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "ST20Signature.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -23,37 +22,36 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
-ST20Signature::ST20Signature(const QString& name)
+ST20Signature::ST20Signature(const QString &name)
     : Signature(name)
 {
     Signature::addReturn(Location::regOf(REG_ST20_C));
-    // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp", Location::regOf(REG_ST20_SP), nullptr);
+    // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "sp",
+    // Location::regOf(REG_ST20_SP), nullptr);
     // FIXME: Should also add m[sp+0] as an implicit parameter? Holds return address
 }
 
 
-ST20Signature::ST20Signature(Signature& old)
+ST20Signature::ST20Signature(Signature &old)
     : Signature(old)
-{
-}
+{}
 
 
 std::shared_ptr<Signature> ST20Signature::clone() const
 {
     ST20Signature *n = new ST20Signature(m_name);
 
-    n->m_params          = m_params;
-    n->m_returns         = m_returns;
-    n->m_ellipsis        = m_ellipsis;
-    n->m_preferredName   = m_preferredName;
-    n->m_unknown         = m_unknown;
+    n->m_params        = m_params;
+    n->m_returns       = m_returns;
+    n->m_ellipsis      = m_ellipsis;
+    n->m_preferredName = m_preferredName;
+    n->m_unknown       = m_unknown;
 
     return std::shared_ptr<Signature>(n);
 }
 
 
-bool ST20Signature::operator==(const Signature& other) const
+bool ST20Signature::operator==(const Signature &other) const
 {
     return Signature::operator==(other);
 }
@@ -97,8 +95,8 @@ std::shared_ptr<Signature> ST20Signature::promote(UserProc * /*p*/)
 }
 
 
-void ST20Signature::addParameter(const QString& name, const SharedExp& e,
-                                 SharedType type, const QString& boundMax)
+void ST20Signature::addParameter(const QString &name, const SharedExp &e, SharedType type,
+                                 const QString &boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
@@ -109,10 +107,8 @@ SharedExp ST20Signature::getProven(SharedExp left) const
     if (left->isRegOfConst()) {
         int r = left->access<Const, 1>()->getInt();
 
-        switch (r)
-        {
-        case REG_ST20_SP:
-            return left;
+        switch (r) {
+        case REG_ST20_SP: return left;
 
         case REG_ST20_A:
         case REG_ST20_B:
@@ -126,7 +122,7 @@ SharedExp ST20Signature::getProven(SharedExp left) const
 }
 
 
-bool ST20Signature::qualified(UserProc *p, Signature& /*candidate*/)
+bool ST20Signature::qualified(UserProc *p, Signature & /*candidate*/)
 {
     if (p->getProg()->getMachine() != Machine::ST20) {
         return false;
@@ -136,7 +132,5 @@ bool ST20Signature::qualified(UserProc *p, Signature& /*candidate*/)
 
     return true;
 }
-
-
 }
 }

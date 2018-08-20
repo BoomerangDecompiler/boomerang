@@ -20,13 +20,13 @@ class BOOMERANG_API BranchStatement : public GotoStatement
 {
 public:
     BranchStatement();
-    BranchStatement(const BranchStatement& other) = default;
-    BranchStatement(BranchStatement&& other) = default;
+    BranchStatement(const BranchStatement &other) = default;
+    BranchStatement(BranchStatement &&other)      = default;
 
     virtual ~BranchStatement() override;
 
-    BranchStatement& operator=(const BranchStatement& other) = default;
-    BranchStatement& operator=(BranchStatement&& other) = default;
+    BranchStatement &operator=(const BranchStatement &other) = default;
+    BranchStatement &operator=(BranchStatement &&other) = default;
 
 public:
     /// \copydoc GotoStatement::clone
@@ -72,22 +72,22 @@ public:
     void setFallBB(BasicBlock *bb);
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// \copydoc GotoStatement::search
-    virtual bool search(const Exp& search, SharedExp& result) const override;
+    virtual bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc GotoStatement::searchAll
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc GotoStatement::generateCode
     virtual void generateCode(ICodeGenerator *generator, const BasicBlock *parentBB) override;
 
     /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp& e) const override;
+    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;

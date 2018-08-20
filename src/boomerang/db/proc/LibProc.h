@@ -25,14 +25,14 @@ public:
      * \param        name    Name of function
      * \param        module  Module that contains this library function
      */
-    LibProc(Address address, const QString& name, Module *module);
-    LibProc(const LibProc&) = delete;
-    LibProc(LibProc&&) = default;
+    LibProc(Address address, const QString &name, Module *module);
+    LibProc(const LibProc &) = delete;
+    LibProc(LibProc &&)      = default;
 
     virtual ~LibProc() override = default;
 
-    LibProc& operator=(const LibProc&) = delete;
-    LibProc& operator=(LibProc&&) = default;
+    LibProc &operator=(const LibProc &) = delete;
+    LibProc &operator=(LibProc &&) = default;
 
 public:
     /// \copydoc Function::isLib

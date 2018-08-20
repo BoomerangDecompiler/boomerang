@@ -31,11 +31,10 @@ public:
 
 private:
     /**
-     * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all the in and out
-     * edges.
-     */
-
-    /**   bb -> +----+    +----+ <= bb
+     * Split the given BB at the RTL given, and turn it into the BranchStatement given. Sort out all
+     * the in and out edges.
+     *
+     *    bb -> +----+    +----+ <= bb
      *   Change | A  | to | A  |            where A or B could be empty. S is the string
      *          |    |    |    |            instruction (which will branch to itself and to the
      *          +----+    +----+            start of the next instruction, i.e. the start of B,
@@ -54,10 +53,11 @@ private:
      *                    | B  |
      *                    |    |
      *                    +----+
-     * S is an RTL with 6 statements representing one string instruction (so this function is highly specialised for the job
-     * of replacing the %SKIP and %RPT parts of string instructions)
+     * S is an RTL with 6 statements representing one string instruction (so this function is highly
+     * specialised for the job of replacing the %SKIP and %RPT parts of string instructions)
      */
-    BasicBlock *splitForBranch(BasicBlock *bb, RTL *stringRTL, BranchStatement *skipBranch, BranchStatement *rptBranch);
+    BasicBlock *splitForBranch(BasicBlock *bb, RTL *stringRTL, BranchStatement *skipBranch,
+                               BranchStatement *rptBranch);
 
 private:
     UserProc *m_proc;

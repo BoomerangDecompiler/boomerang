@@ -73,8 +73,8 @@ enum class TravType : uint8_t
 
 enum class SBBType : uint8_t
 {
-    None,          ///< not structured
-    PreTestLoop,   ///< header of a loop
+    None,        ///< not structured
+    PreTestLoop, ///< header of a loop
     PostTestLoop,
     EndlessLoop,
     JumpInOutLoop, ///< an unstructured jump in or out of a loop
@@ -91,34 +91,39 @@ enum class SBBType : uint8_t
 struct BBStructInfo
 {
     /// Control flow analysis stuff, lifted from Doug Simon's honours thesis.
-    int m_postOrderIndex = -1;    ///< node's position within the ordering structure
+    int m_postOrderIndex    = -1; ///< node's position within the ordering structure
     int m_revPostOrderIndex = -1; ///< position within ordering structure for the reverse graph
 
-    int m_preOrderID = 0;        ///< (unique) id of the node during pre-order traversal
-    int m_postOrderID = 0;       ///< (unique) id of the node during post-order traversal
-    int m_revPreOrderID = 0;     ///< (unique) id of the node during reverse pre-order traversal
-    int m_revPostOrderID = 0;    ///< (unique) id of the node during reverse post-order traversal
+    int m_preOrderID     = 0; ///< (unique) id of the node during pre-order traversal
+    int m_postOrderID    = 0; ///< (unique) id of the node during post-order traversal
+    int m_revPreOrderID  = 0; ///< (unique) id of the node during reverse pre-order traversal
+    int m_revPostOrderID = 0; ///< (unique) id of the node during reverse post-order traversal
 
     /* for traversal */
     TravType m_travType = TravType::Untraversed; ///< traversal flag for the numerous DFS's
 
     /* high level structuring */
-    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as (if any)
-    SBBType m_structType   = SBBType::None; ///< structured type of this node
+    SBBType m_loopCondType = SBBType::None; ///< type of conditional to treat this loop header as
+                                            ///< (if any)
+    SBBType m_structType = SBBType::None;   ///< structured type of this node
 
-    // Structured type of the node
-    StructType   m_structuringType     = StructType::Seq;          ///< the structuring class (Loop, Cond, etc)
-    UnstructType m_unstructuredType    = UnstructType::Structured; ///< the restructured type of a conditional header
-    LoopType     m_loopHeaderType      = LoopType::Invalid;        ///< the loop type of a loop header
-    CondType     m_conditionHeaderType = CondType::Invalid;        ///< the conditional type of a conditional header
+    /// the structuring class (Loop, Cond, etc)
+    StructType m_structuringType = StructType::Seq;
+
+    /// the restructured type of a conditional header
+    UnstructType m_unstructuredType = UnstructType::Structured;
+
+    /// the conditional type of a conditional header
+    CondType m_conditionHeaderType = CondType::Invalid;
+    LoopType m_loopHeaderType      = LoopType::Invalid; ///< the loop type of a loop header
 
     // analysis information
-    const BasicBlock *m_immPDom = nullptr;     ///< immediate post dominator
-    const BasicBlock *m_loopHead = nullptr;    ///< head of the most nested enclosing loop
-    const BasicBlock *m_caseHead = nullptr;    ///< head of the most nested enclosing case
-    const BasicBlock *m_condFollow = nullptr;  ///< follow of a conditional header
-    const BasicBlock *m_loopFollow = nullptr;  ///< follow of a loop header
-    const BasicBlock *m_latchNode = nullptr;   ///< latching node of a loop header
+    const BasicBlock *m_immPDom    = nullptr; ///< immediate post dominator
+    const BasicBlock *m_loopHead   = nullptr; ///< head of the most nested enclosing loop
+    const BasicBlock *m_caseHead   = nullptr; ///< head of the most nested enclosing case
+    const BasicBlock *m_condFollow = nullptr; ///< follow of a conditional header
+    const BasicBlock *m_loopFollow = nullptr; ///< follow of a loop header
+    const BasicBlock *m_latchNode  = nullptr; ///< latching node of a loop header
 };
 
 
@@ -154,46 +159,59 @@ private:
     void structConds();
 
     /// \pre The graph for curProc has been built.
-    /// \post Each node is tagged with the header of the most nested loop of which it is a member (possibly none).
-    /// The header of each loop stores information on the latching node as well as the type of loop it heads.
+    /// \post Each node is tagged with the header of the most nested loop of which it is a member
+    /// (possibly none). The header of each loop stores information on the latching node as well as
+    /// the type of loop it heads.
     void structLoops();
 
-    /// This routine is called after all the other structuring has been done. It detects conditionals that are in fact the
-    /// head of a jump into/outof a loop or into a case body. Only forward jumps are considered as unstructured backward
-    /// jumps will always be generated nicely.
+    /// This routine is called after all the other structuring has been done. It detects
+    /// conditionals that are in fact the head of a jump into/outof a loop or into a case body. Only
+    /// forward jumps are considered as unstructured backward jumps will always be generated nicely.
     void checkConds();
 
-    /// Finds the common post dominator of the current immediate post dominator and its successor's immediate post dominator
+    /// Finds the common post dominator of the current immediate post dominator and its successor's
+    /// immediate post dominator
     const BasicBlock *commonPDom(const BasicBlock *curImmPDom, const BasicBlock *succImmPDom);
 
     /// \pre  The loop induced by (head,latch) has already had all its member nodes tagged
     /// \post The type of loop has been deduced
-    void determineLoopType(const BasicBlock *header, bool *& loopNodes);
+    void determineLoopType(const BasicBlock *header, bool *&loopNodes);
 
     /// \pre  The loop headed by header has been induced and all it's member nodes have been tagged
     /// \post The follow of the loop has been determined.
-    void findLoopFollow(const BasicBlock *header, bool *& loopNodes);
+    void findLoopFollow(const BasicBlock *header, bool *&loopNodes);
 
     /// \pre header has been detected as a loop header and has the details of the
     ///        latching node
     /// \post the nodes within the loop have been tagged
-    void tagNodesInLoop(const BasicBlock *header, bool *& loopNodes);
+    void tagNodesInLoop(const BasicBlock *header, bool *&loopNodes);
 
 public:
-    void setLoopStamps(const BasicBlock *bb, int& time, std::vector<const BasicBlock *>& order);
-    void setRevLoopStamps(const BasicBlock *bb, int& time);
-    void setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *>& order);
+    void setLoopStamps(const BasicBlock *bb, int &time, std::vector<const BasicBlock *> &order);
+    void setRevLoopStamps(const BasicBlock *bb, int &time);
+    void setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order);
 
     void setLoopHead(const BasicBlock *bb, const BasicBlock *head) { m_info[bb].m_loopHead = head; }
-    void setLatchNode(const BasicBlock *bb, const BasicBlock *latch) { m_info[bb].m_latchNode = latch; }
+    void setLatchNode(const BasicBlock *bb, const BasicBlock *latch)
+    {
+        m_info[bb].m_latchNode = latch;
+    }
+
     void setCaseHead(const BasicBlock *bb, const BasicBlock *head, const BasicBlock *follow);
 
     void setUnstructType(const BasicBlock *bb, UnstructType unstructType);
     void setLoopType(const BasicBlock *bb, LoopType loopType);
     void setCondType(const BasicBlock *bb, CondType condType);
 
-    void setLoopFollow(const BasicBlock *bb, const BasicBlock *follow) { m_info[bb].m_loopFollow = follow; }
-    void setCondFollow(const BasicBlock *bb, const BasicBlock *follow) { m_info[bb].m_condFollow = follow; }
+    void setLoopFollow(const BasicBlock *bb, const BasicBlock *follow)
+    {
+        m_info[bb].m_loopFollow = follow;
+    }
+
+    void setCondFollow(const BasicBlock *bb, const BasicBlock *follow)
+    {
+        m_info[bb].m_condFollow = follow;
+    }
 
     /// establish if this bb has any back edges leading FROM it
     bool hasBackEdge(const BasicBlock *bb) const;
@@ -207,7 +225,10 @@ public:
 
     const BasicBlock *getImmPDom(const BasicBlock *bb) const { return m_info[bb].m_immPDom; }
 
-    void setImmPDom(const BasicBlock *bb, const BasicBlock *immPDom) { m_info[bb].m_immPDom = immPDom; }
+    void setImmPDom(const BasicBlock *bb, const BasicBlock *immPDom)
+    {
+        m_info[bb].m_immPDom = immPDom;
+    }
 
     void unTraverse();
 
@@ -222,13 +243,32 @@ public:
         return getLatchNode(loopHead) == bb;
     }
 
-    inline const BasicBlock *getLatchNode(const BasicBlock *bb)  const { return m_info[bb].m_latchNode; }
-    inline const BasicBlock *getLoopHead(const BasicBlock *bb)   const { return m_info[bb].m_loopHead; }
-    inline const BasicBlock *getLoopFollow(const BasicBlock *bb) const { return m_info[bb].m_loopFollow; }
-    inline const BasicBlock *getCondFollow(const BasicBlock *bb) const { return m_info[bb].m_condFollow; }
-    inline const BasicBlock *getCaseHead(const BasicBlock *bb)   const { return m_info[bb].m_caseHead; }
+    inline const BasicBlock *getLatchNode(const BasicBlock *bb) const
+    {
+        return m_info[bb].m_latchNode;
+    }
 
-    TravType getTravType(const BasicBlock *bb)     const { return m_info[bb].m_travType; }
+    inline const BasicBlock *getLoopHead(const BasicBlock *bb) const
+    {
+        return m_info[bb].m_loopHead;
+    }
+
+    inline const BasicBlock *getLoopFollow(const BasicBlock *bb) const
+    {
+        return m_info[bb].m_loopFollow;
+    }
+
+    inline const BasicBlock *getCondFollow(const BasicBlock *bb) const
+    {
+        return m_info[bb].m_condFollow;
+    }
+
+    inline const BasicBlock *getCaseHead(const BasicBlock *bb) const
+    {
+        return m_info[bb].m_caseHead;
+    }
+
+    TravType getTravType(const BasicBlock *bb) const { return m_info[bb].m_travType; }
     StructType getStructType(const BasicBlock *bb) const { return m_info[bb].m_structuringType; }
     CondType getCondType(const BasicBlock *bb) const;
     UnstructType getUnstructType(const BasicBlock *bb) const;
@@ -242,11 +282,14 @@ public:
 private:
     ProcCFG *m_cfg = nullptr;
 
-    std::vector<const BasicBlock *> m_postOrdering;    ///< Ordering of BBs for control flow structuring
-    std::vector<const BasicBlock *> m_revPostOrdering; ///< Ordering of BBs for control flow structuring
+    /// Ordering of BBs for control flow structuring
+    std::vector<const BasicBlock *> m_postOrdering;
+
+    /// Ordering of BBs for control flow structuring
+    std::vector<const BasicBlock *> m_revPostOrdering;
 
 private:
-    // mutable to allow using the map in const methods (might create entries).
-    // DO NOT change BBStructInfo in const methods!
+    /// mutable to allow using the map in const methods (might create entries).
+    /// DO NOT change BBStructInfo in const methods!
     mutable std::unordered_map<const BasicBlock *, BBStructInfo> m_info;
 };

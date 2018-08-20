@@ -17,19 +17,18 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
 class BOOMERANG_API PPCSignature : public Signature
 {
 public:
-    explicit PPCSignature(const QString& name);
-    explicit PPCSignature(Signature& old);
+    explicit PPCSignature(const QString &name);
+    explicit PPCSignature(Signature &old);
     virtual ~PPCSignature() override = default;
 
 public:
     /// \copydoc Signature::clone
     virtual std::shared_ptr<Signature> clone() const override;
 
-    static bool qualified(UserProc *p, Signature&);
+    static bool qualified(UserProc *p, Signature &);
 
     /// \copydoc Signature::addReturn
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
@@ -38,8 +37,9 @@ public:
     virtual SharedExp getArgumentExp(int n) const override;
 
     /// \copydoc Signature::addParameter
-    virtual void addParameter(const QString& name, const SharedExp& e,
-                              SharedType type = VoidType::get(), const QString& boundMax = "") override;
+    virtual void addParameter(const QString &name, const SharedExp &e,
+                              SharedType type         = VoidType::get(),
+                              const QString &boundMax = "") override;
 
     /// \copydoc Signature::getStackRegister
     virtual int getStackRegister() const override { return 1; }
@@ -51,7 +51,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;
 
     /// \copydoc Signature::getLibraryDefines
-    virtual void getLibraryDefines(StatementList& defs) override;
+    virtual void getLibraryDefines(StatementList &defs) override;
 
     /// \copydoc Signature::isLocalOffsetPositive
     virtual bool isLocalOffsetPositive() const override { return true; }
@@ -69,6 +69,5 @@ public:
         return shared_from_this();
     }
 };
-
 }
 }

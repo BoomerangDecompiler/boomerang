@@ -18,11 +18,11 @@
 class TypeRecoveryCommon : public ITypeRecovery
 {
 public:
-    TypeRecoveryCommon(const QString& name);
+    TypeRecoveryCommon(const QString &name);
 
 public:
     /// \copydoc ITypeRecovery::getName
-    const QString& getName() override;
+    const QString &getName() override;
 
     /// \copydoc ITypeRecovery::recoverProgramTypes
     virtual void recoverProgramTypes(Prog *prog) override;

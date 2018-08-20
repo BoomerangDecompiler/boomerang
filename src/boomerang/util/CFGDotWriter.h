@@ -32,11 +32,11 @@ class BOOMERANG_API CFGDotWriter
 {
 public:
     /// Write the CFG of all procedures in the program.
-    void writeCFG(const Prog *prog, const QString& filename);
+    void writeCFG(const Prog *prog, const QString &filename);
 
     /// write the CFG of all procedures in \p procs to \p filename
-    void writeCFG(const ProcSet& procs, const QString& filename);
+    void writeCFG(const ProcSet &procs, const QString &filename);
 
 private:
-    void writeCFG(const ProcCFG *cfg, OStream& os);
+    void writeCFG(const ProcCFG *cfg, OStream &os);
 };

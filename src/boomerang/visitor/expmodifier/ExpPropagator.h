@@ -14,8 +14,9 @@
 
 
 /**
- * A class to propagate everything, regardless, to this expression. Does not consider memory expressions and whether
- * the address expression is primitive. Use with caution; mostly Statement::propagateTo() should be used.
+ * A class to propagate everything, regardless, to this expression. Does not consider memory
+ * expressions and whether the address expression is primitive. Use with caution; mostly
+ * Statement::propagateTo() should be used.
  */
 class ExpPropagator : public SimpExpModifier
 {
@@ -29,9 +30,8 @@ public:
 
     /// \copydoc SimpExpModifier::postModify
     // Ugh! This is still a separate propagation mechanism from Statement::propagateTo()
-    SharedExp postModify(const std::shared_ptr<RefExp>& exp) override;
+    SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
 
 private:
     bool m_changed;
 };
-

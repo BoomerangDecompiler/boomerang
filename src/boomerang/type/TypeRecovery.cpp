@@ -9,22 +9,20 @@
 #pragma endregion License
 #include "TypeRecovery.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/util/log/Log.h"
 
 
-TypeRecoveryCommon::TypeRecoveryCommon(const QString& name)
+TypeRecoveryCommon::TypeRecoveryCommon(const QString &name)
     : m_name(name)
-{
-}
+{}
 
 
-const QString& TypeRecoveryCommon::getName()
+const QString &TypeRecoveryCommon::getName()
 {
     return m_name;
 }
@@ -38,7 +36,7 @@ void TypeRecoveryCommon::recoverProgramTypes(Prog *prog)
 
     // FIXME: This needs to be done in bottom-up order of the call-tree first,
     // repeating until no changes for cycles in the call graph
-    for (const auto& module : prog->getModuleList()) {
+    for (const auto &module : prog->getModuleList()) {
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
@@ -46,8 +44,9 @@ void TypeRecoveryCommon::recoverProgramTypes(Prog *prog)
                 continue;
             }
 
-            // FIXME: this just does local TA again. Need to resolve types for all parameter/arguments,
-            // and return/results! This will require a "repeat until no change" loop
+            // FIXME: this just does local TA again. Need to resolve types for all
+            // parameter/arguments, and return/results! This will require a "repeat until no change"
+            // loop
             LOG_VERBOSE("Global type analysis for %1", proc->getName());
             recoverFunctionTypes(pp);
         }

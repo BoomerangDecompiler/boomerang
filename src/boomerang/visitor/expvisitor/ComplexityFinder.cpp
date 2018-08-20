@@ -9,18 +9,16 @@
 #pragma endregion License
 #include "ComplexityFinder.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 
 
-ComplexityFinder::ComplexityFinder(UserProc* proc)
+ComplexityFinder::ComplexityFinder(UserProc *proc)
     : m_proc(proc)
-{
-}
+{}
 
 
-bool ComplexityFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)
 {
     if (m_proc && (m_proc->findFirstSymbol(exp) != nullptr)) {
         // This is mapped to a local. Count it as zero, not about 3 (m[r28+4] -> memof, regof, plus)
@@ -37,7 +35,7 @@ bool ComplexityFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visi
 }
 
 
-bool ComplexityFinder::preVisit(const std::shared_ptr<Unary>& /*exp*/, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Unary> & /*exp*/, bool &visitChildren)
 {
     m_count++;
 
@@ -46,7 +44,7 @@ bool ComplexityFinder::preVisit(const std::shared_ptr<Unary>& /*exp*/, bool& vis
 }
 
 
-bool ComplexityFinder::preVisit(const std::shared_ptr<Binary>& /*exp*/, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Binary> & /*exp*/, bool &visitChildren)
 {
     m_count++;
     visitChildren = true;
@@ -54,7 +52,7 @@ bool ComplexityFinder::preVisit(const std::shared_ptr<Binary>& /*exp*/, bool& vi
 }
 
 
-bool ComplexityFinder::preVisit(const std::shared_ptr<Ternary>& /*exp*/, bool& visitChildren)
+bool ComplexityFinder::preVisit(const std::shared_ptr<Ternary> & /*exp*/, bool &visitChildren)
 {
     m_count++;
     visitChildren = true;

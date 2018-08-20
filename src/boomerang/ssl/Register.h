@@ -34,20 +34,20 @@ typedef std::shared_ptr<Type> SharedType;
 class BOOMERANG_API Register
 {
 public:
-    Register(const QString& name = "", uint16_t sizeInBits = 0, bool isFloatReg = false);
-    Register(const Register&);
-    Register(Register&&) = default;
+    Register(const QString &name = "", uint16_t sizeInBits = 0, bool isFloatReg = false);
+    Register(const Register &);
+    Register(Register &&) = default;
 
     ~Register() = default;
 
-    Register& operator=(const Register& other);
-    Register& operator=(Register&& other) = default;
+    Register &operator=(const Register &other);
+    Register &operator=(Register &&other) = default;
 
 public:
-    bool operator==(const Register& other) const;
-    bool operator<(const Register& other) const;
+    bool operator==(const Register &other) const;
+    bool operator<(const Register &other) const;
 
-    const QString& getName() const;
+    const QString &getName() const;
 
     uint16_t getSize() const;
 
@@ -63,7 +63,7 @@ public:
     /// Get the mapped index (see above)
     int getMappedIndex() const { return m_mappedIndex; }
 
-    void setName(const QString& name);
+    void setName(const QString &name);
 
     void setSize(uint16_t newSize) { m_size = newSize; }
 

@@ -9,17 +9,15 @@
 #pragma endregion License
 #include "FlagsFinder.h"
 
-
 #include "boomerang/ssl/exp/Binary.h"
 
 
 FlagsFinder::FlagsFinder()
     : m_found(false)
-{
-}
+{}
 
 
-bool FlagsFinder::preVisit(const std::shared_ptr<Binary>& e, bool& visitChildren)
+bool FlagsFinder::preVisit(const std::shared_ptr<Binary> &e, bool &visitChildren)
 {
     if (e->isFlagCall()) {
         m_found = true;

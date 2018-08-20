@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "TypedExp.h"
 
-
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
@@ -19,21 +18,19 @@
 TypedExp::TypedExp(SharedExp e1)
     : Unary(opTypedExp, e1)
     , m_type(nullptr)
-{
-}
+{}
 
 
 TypedExp::TypedExp(SharedType ty, SharedExp e1)
     : Unary(opTypedExp, e1)
     , m_type(ty)
-{
-}
+{}
 
 
-TypedExp::TypedExp(const TypedExp& o)
+TypedExp::TypedExp(const TypedExp &o)
     : Unary(o)
 {
-    m_type    = o.m_type->clone();
+    m_type = o.m_type->clone();
 }
 
 
@@ -43,7 +40,7 @@ SharedExp TypedExp::clone() const
 }
 
 
-bool TypedExp::operator==(const Exp& o) const
+bool TypedExp::operator==(const Exp &o) const
 {
     if (static_cast<const TypedExp &>(o).m_oper == opWild) {
         return true;
@@ -62,7 +59,7 @@ bool TypedExp::operator==(const Exp& o) const
 }
 
 
-bool TypedExp::operator<<(const Exp& o) const   // Type insensitive
+bool TypedExp::operator<<(const Exp &o) const // Type insensitive
 {
     if (m_oper < o.getOper()) {
         return true;
@@ -76,7 +73,7 @@ bool TypedExp::operator<<(const Exp& o) const   // Type insensitive
 }
 
 
-bool TypedExp::operator<(const Exp& o) const   // Type sensitive
+bool TypedExp::operator<(const Exp &o) const // Type sensitive
 {
     if (m_oper < o.getOper()) {
         return true;
@@ -98,7 +95,7 @@ bool TypedExp::operator<(const Exp& o) const   // Type sensitive
 }
 
 
-bool TypedExp::operator*=(const Exp& o) const
+bool TypedExp::operator*=(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -146,12 +143,11 @@ SharedType TypedExp::ascendType()
 }
 
 
-void TypedExp::descendType(SharedType, bool&, Statement*)
-{
-}
+void TypedExp::descendType(SharedType, bool &, Statement *)
+{}
 
 
-SharedExp TypedExp::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+SharedExp TypedExp::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 {
     return mod->preModify(access<TypedExp>(), visitChildren);
 }
@@ -161,4 +157,3 @@ SharedExp TypedExp::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<TypedExp>());
 }
-

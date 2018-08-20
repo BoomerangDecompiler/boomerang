@@ -21,19 +21,19 @@ class PPCFrontEnd : public DefaultFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     PPCFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    PPCFrontEnd(const PPCFrontEnd& other) = delete;
-    PPCFrontEnd(PPCFrontEnd&& other) = default;
+    PPCFrontEnd(const PPCFrontEnd &other) = delete;
+    PPCFrontEnd(PPCFrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~PPCFrontEnd() override = default;
 
-    PPCFrontEnd& operator=(const PPCFrontEnd& other) = delete;
-    PPCFrontEnd& operator=(PPCFrontEnd&& other) = default;
+    PPCFrontEnd &operator=(const PPCFrontEnd &other) = delete;
+    PPCFrontEnd &operator=(PPCFrontEnd &&other) = default;
 
 public:
     /// \copydoc IFrontEnd::processProc
     virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address findMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool &gotMain) override;
 };

@@ -12,5 +12,4 @@
 
 TypingStatement::TypingStatement(SharedType ty)
     : m_type(ty)
-{
-}
+{}

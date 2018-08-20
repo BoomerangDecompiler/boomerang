@@ -23,18 +23,18 @@ class Signature;
 class ISymbolProvider
 {
 public:
-    ISymbolProvider() = default;
+    ISymbolProvider()          = default;
     virtual ~ISymbolProvider() = default;
 
 public:
     /// Read a catalog for library signatures.
     /// \returns true on success.
-    virtual bool readLibraryCatalog(const QString& fileName) = 0;
+    virtual bool readLibraryCatalog(const QString &fileName) = 0;
 
     /// Add symbol information from a symbol file to the program.
     /// \returns true on success.
-    virtual bool addSymbolsFromSymbolFile(const QString& fileName) = 0;
+    virtual bool addSymbolsFromSymbolFile(const QString &fileName) = 0;
 
     /// \returns a library signature by its name
-    virtual std::shared_ptr<Signature> getSignatureByName(const QString& functionName) const = 0;
+    virtual std::shared_ptr<Signature> getSignatureByName(const QString &functionName) const = 0;
 };

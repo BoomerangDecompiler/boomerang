@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ConscriptSetter.h"
 
-
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -30,7 +29,7 @@ int ConscriptSetter::getLast() const
 }
 
 
-SharedExp ConscriptSetter::postModify(const std::shared_ptr<Const>& exp)
+SharedExp ConscriptSetter::postModify(const std::shared_ptr<Const> &exp)
 {
     if (!m_inLocalGlobal) {
         if (m_clear) {
@@ -48,7 +47,7 @@ SharedExp ConscriptSetter::postModify(const std::shared_ptr<Const>& exp)
 }
 
 
-SharedExp ConscriptSetter::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp ConscriptSetter::preModify(const std::shared_ptr<Location> &exp, bool &visitChildren)
 {
     const OPER op = exp->getOper();
 
@@ -61,7 +60,7 @@ SharedExp ConscriptSetter::preModify(const std::shared_ptr<Location>& exp, bool&
 }
 
 
-SharedExp ConscriptSetter::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp ConscriptSetter::preModify(const std::shared_ptr<Binary> &exp, bool &visitChildren)
 {
     const OPER op = exp->getOper();
 

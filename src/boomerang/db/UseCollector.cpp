@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "UseCollector.h"
 
-
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/visitor/expmodifier/ExpSSAXformer.h"
@@ -17,11 +16,10 @@
 
 UseCollector::UseCollector()
     : m_initialised(false)
-{
-}
+{}
 
 
-bool UseCollector::operator==(const UseCollector& other) const
+bool UseCollector::operator==(const UseCollector &other) const
 {
     if (other.m_initialised != m_initialised) {
         return false;
@@ -43,12 +41,12 @@ bool UseCollector::operator==(const UseCollector& other) const
 }
 
 
-void UseCollector::makeCloneOf(const UseCollector& other)
+void UseCollector::makeCloneOf(const UseCollector &other)
 {
     m_initialised = other.m_initialised;
     m_locs.clear();
 
-    for (auto const& elem : other) {
+    for (auto const &elem : other) {
         m_locs.insert((elem)->clone());
     }
 }
@@ -67,7 +65,7 @@ void UseCollector::insert(SharedExp e)
 }
 
 
-void UseCollector::print(OStream& os) const
+void UseCollector::print(OStream &os) const
 {
     if (m_locs.empty()) {
         os << "<None>";
@@ -76,7 +74,7 @@ void UseCollector::print(OStream& os) const
 
     bool first = true;
 
-    for (auto const& elem : m_locs) {
+    for (auto const &elem : m_locs) {
         if (first) {
             first = false;
         }
@@ -91,15 +89,16 @@ void UseCollector::print(OStream& os) const
 
 void UseCollector::fromSSAForm(UserProc *proc, Statement *def)
 {
-    LocationSet   removes, inserts;
-    iterator      it;
+    LocationSet removes, inserts;
+    iterator it;
     ExpSSAXformer esx(proc);
 
     for (it = m_locs.begin(); it != m_locs.end(); ++it) {
-        auto      ref = RefExp::get(*it, def); // Wrap it in a def
+        auto ref      = RefExp::get(*it, def); // Wrap it in a def
         SharedExp ret = ref->acceptModifier(&esx);
 
-        // If there is no change, ret will equal *it again (i.e. fromSSAForm just removed the subscript)
+        // If there is no change, ret will equal *it again (i.e. fromSSAForm just removed the
+        // subscript)
         if (ret != *it) { // Pointer comparison
             // There was a change; we want to replace *it with ret
             removes.insert(*it);
@@ -127,4 +126,3 @@ void UseCollector::remove(iterator it)
 {
     m_locs.erase(it);
 }
-

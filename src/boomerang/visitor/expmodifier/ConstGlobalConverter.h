@@ -29,7 +29,7 @@ public:
 
 public:
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
 private:
     Prog *m_prog; ///< Pointer to the Prog object, for reading memory

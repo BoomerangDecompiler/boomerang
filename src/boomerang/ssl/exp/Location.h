@@ -17,18 +17,18 @@ class BOOMERANG_API Location : public Unary
 {
 public:
     /**
-     * \param op Should be opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
-     * \param exp - child expression
-     * \param proc - enclosing procedure, if null this constructor will try to find it.
+     * \param op   Should be opRegOf, opMemOf, opLocal, opGlobal, opParam or opTemp.
+     * \param exp  child expression
+     * \param proc enclosing procedure, if null this constructor will try to find it.
      */
     Location(OPER op, SharedExp exp, UserProc *proc);
-    Location(const Location& other);
-    Location(Location&& other) = default;
+    Location(const Location &other);
+    Location(Location &&other) = default;
 
     virtual ~Location() override = default;
 
-    Location& operator=(const Location& other) = default;
-    Location& operator=(Location&& other) = default;
+    Location &operator=(const Location &other) = default;
+    Location &operator=(Location &&other) = default;
 
 public:
     /// \copydoc Unary::clone
@@ -43,18 +43,18 @@ public:
     static std::shared_ptr<Location> tempOf(SharedExp e);
 
     static SharedExp global(const char *name, UserProc *proc);
-    static SharedExp global(const QString& name, UserProc *proc);
+    static SharedExp global(const QString &name, UserProc *proc);
 
-    static std::shared_ptr<Location> local(const QString& name, UserProc *proc);
+    static std::shared_ptr<Location> local(const QString &name, UserProc *proc);
 
     static SharedExp param(const char *name, UserProc *proc = nullptr);
-    static SharedExp param(const QString& name, UserProc *proc = nullptr);
+    static SharedExp param(const QString &name, UserProc *proc = nullptr);
 
     void setProc(UserProc *p) { m_proc = p; }
     const UserProc *getProc() const { return m_proc; }
     UserProc *getProc() { return m_proc; }
 
-    void getDefinitions(LocationSet& defs);
+    void getDefinitions(LocationSet &defs);
 
 public:
     /// \copydoc Unary::acceptVisitor
@@ -62,7 +62,7 @@ public:
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptPostModifier
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;

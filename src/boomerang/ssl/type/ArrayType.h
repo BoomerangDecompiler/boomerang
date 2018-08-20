@@ -17,7 +17,7 @@
  * computing aliases.. as such, we give them a very large bound
  * and hope that no-one tries to alias beyond them
  */
-#define ARRAY_UNBOUNDED    9999999
+#define ARRAY_UNBOUNDED 9999999
 
 
 class BOOMERANG_API ArrayType : public Type
@@ -26,13 +26,13 @@ public:
     /// Create a new array type of fixed length
     ArrayType(SharedType baseType, unsigned length = ARRAY_UNBOUNDED);
 
-    ArrayType(const ArrayType& other) = default;
-    ArrayType(ArrayType&& other) = default;
+    ArrayType(const ArrayType &other) = default;
+    ArrayType(ArrayType &&other)      = default;
 
     virtual ~ArrayType() override = default;
 
-    ArrayType& operator=(const ArrayType& other) = default;
-    ArrayType& operator=(ArrayType&& other) = default;
+    ArrayType &operator=(const ArrayType &other) = default;
+    ArrayType &operator=(ArrayType &&other) = default;
 
 public:
     virtual bool isArray() const override { return true; }
@@ -54,20 +54,26 @@ public:
 
     virtual SharedType clone() const override;
 
-    static std::shared_ptr<ArrayType> get(SharedType p, unsigned _length) { return std::make_shared<ArrayType>(p, _length); }
+    static std::shared_ptr<ArrayType> get(SharedType p, unsigned _length)
+    {
+        return std::make_shared<ArrayType>(p, _length);
+    }
     static std::shared_ptr<ArrayType> get(SharedType p) { return std::make_shared<ArrayType>(p); }
 
-    virtual bool operator==(const Type& other) const override;
-    virtual bool operator<(const Type& other) const override;
+    virtual bool operator==(const Type &other) const override;
+    virtual bool operator<(const Type &other) const override;
 
     virtual size_t getSize() const override;
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
-    virtual bool isCompatibleWith(const Type& other, bool all = false) const override { return isCompatible(other, all); }
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const override
+    {
+        return isCompatible(other, all);
+    }
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
     size_t convertLength(SharedType b) const;
 

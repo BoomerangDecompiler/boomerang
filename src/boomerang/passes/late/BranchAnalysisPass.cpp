@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "BranchAnalysisPass.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Binary.h"
@@ -20,8 +19,7 @@
 
 BranchAnalysisPass::BranchAnalysisPass()
     : IPass("BranchAnalysis", PassID::BranchAnalysis)
-{
-}
+{}
 
 
 bool BranchAnalysisPass::execute(UserProc *proc)
@@ -38,13 +36,14 @@ bool BranchAnalysisPass::execute(UserProc *proc)
             BasicBlock::RTLIterator rtlIt;
             StatementList::iterator stmtIt;
 
-            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt; stmt = bb->getNextStmt(rtlIt, stmtIt)) {
+            for (Statement *stmt = bb->getFirstStmt(rtlIt, stmtIt); stmt;
+                 stmt            = bb->getNextStmt(rtlIt, stmtIt)) {
                 if (!stmt->isPhi()) {
                     continue;
                 }
 
-                PhiAssign *phiStmt = static_cast<PhiAssign *>(stmt);
-                PhiAssign::PhiDefs& defs = phiStmt->getDefs();
+                PhiAssign *phiStmt       = static_cast<PhiAssign *>(stmt);
+                PhiAssign::PhiDefs &defs = phiStmt->getDefs();
 
                 for (PhiAssign::PhiDefs::iterator defIt = defs.begin(); defIt != defs.end();) {
                     if (!proc->getCFG()->hasBB(defIt->first)) {
@@ -99,9 +98,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             //
             if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
                 (secondBranch->getBB()->getNumPredecessors() == 1)) {
-
-                SharedExp cond =
-                    Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()), secondBranch->getCondExpr()->clone());
+                SharedExp cond = Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()),
+                                             secondBranch->getCondExpr()->clone());
                 firstBranch->setCondExpr(cond->simplify());
 
                 firstBranch->setDest(secondBranch->getFixedDest());
@@ -134,8 +132,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             // B:
             if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
                 (secondBranch->getBB()->getNumPredecessors() == 1)) {
-
-                SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(), secondBranch->getCondExpr()->clone());
+                SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(),
+                                             secondBranch->getCondExpr()->clone());
                 firstBranch->setCondExpr(cond->simplify());
 
                 firstBranch->setFallBB(secondBranch->getFallBB());
@@ -180,14 +178,15 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
         // of the form: x{n} - 1 >= 0
         if (hl && (hl->getOper() == opGtrEq) && hl->getSubExp2()->isIntConst() &&
             (hl->access<Const, 2>()->getInt() == 0) && (hl->getSubExp1()->getOper() == opMinus) &&
-            hl->getSubExp1()->getSubExp2()->isIntConst() && (hl->access<Const, 1, 2>()->getInt() == 1) &&
+            hl->getSubExp1()->getSubExp2()->isIntConst() &&
+            (hl->access<Const, 1, 2>()->getInt() == 1) &&
             hl->getSubExp1()->getSubExp1()->isSubscript()) {
             Statement *n = hl->access<RefExp, 1, 1>()->getDef();
 
             if (n && n->isPhi()) {
                 PhiAssign *p = static_cast<PhiAssign *>(n);
 
-                for (const auto& phi : *p) {
+                for (const auto &phi : *p) {
                     if (!phi.getDef()->isAssign()) {
                         continue;
                     }
@@ -203,6 +202,3 @@ void BranchAnalysisPass::fixUglyBranches(UserProc *proc)
         }
     }
 }
-
-
-

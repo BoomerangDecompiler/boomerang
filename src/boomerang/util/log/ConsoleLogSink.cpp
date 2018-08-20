@@ -9,13 +9,12 @@
 #pragma endregion License
 #include "ConsoleLogSink.h"
 
-
 #include <QString>
 
 #include <iostream>
 
 
-void ConsoleLogSink::write(const QString& s)
+void ConsoleLogSink::write(const QString &s)
 {
     std::cout << qPrintable(s);
 }

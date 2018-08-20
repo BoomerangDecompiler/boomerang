@@ -49,12 +49,11 @@ enum class TypeClass
 enum class Sign : int8_t
 {
     UnsignedStrong = -2,
-    Unsigned = -1,
-    Unknown = 0,
-    Signed = 1,
-    SignedStrong = 2
+    Unsigned       = -1,
+    Unknown        = 0,
+    Signed         = 1,
+    SignedStrong   = 2
 };
-
 
 
 /**
@@ -68,30 +67,30 @@ class BOOMERANG_API Type : public std::enable_shared_from_this<Type>, public IPr
 public:
     // Constructors
     Type(TypeClass id);
-    Type(const Type& other) = default;
-    Type(Type&& other) = default;
+    Type(const Type &other) = default;
+    Type(Type &&other)      = default;
 
     virtual ~Type() override;
 
-    Type& operator=(const Type& other) = default;
-    Type& operator=(Type&& other) = default;
+    Type &operator=(const Type &other) = default;
+    Type &operator=(Type &&other) = default;
 
 public:
     /// \returns the type class of this type.
     TypeClass getId() const { return id; }
 
     /// Add a named ("typedef'd") type to the global type list.
-    static void addNamedType(const QString& name, SharedType type);
+    static void addNamedType(const QString &name, SharedType type);
 
     /// \returns the actual type of the named type with name \p name
-    static SharedType getNamedType(const QString& name);
+    static SharedType getNamedType(const QString &name);
 
     /**
      * Given the name of a temporary variable, return its Type
      * \param   name reference to a string (e.g. "tmp", "tmpd")
      * \returns Ptr to a new Type object
      */
-    static SharedType getTempType(const QString& name);
+    static SharedType getTempType(const QString &name);
 
     /**
      * parse a C type from a string.
@@ -150,9 +149,9 @@ public:
     virtual SharedType clone() const = 0;
 
     // Comparisons
-    virtual bool operator==(const Type& other) const = 0; ///< Considers sign
-    virtual bool operator!=(const Type& other) const;     ///< Considers sign
-    virtual bool operator<(const Type& other) const = 0;  ///< Considers sign
+    virtual bool operator==(const Type &other) const = 0; ///< Considers sign
+    virtual bool operator!=(const Type &other) const;     ///< Considers sign
+    virtual bool operator<(const Type &other) const = 0;  ///< Considers sign
 
 
     // Acccess functions
@@ -170,11 +169,11 @@ public:
     /// \copydoc Printable::toString
     QString toString() const override;
 
-    /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign information.
-    /// When final, choose a signedness etc
+    /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
+    /// information. When final, choose a signedness etc
     virtual QString getCtype(bool final = false) const = 0;
 
-    QString prints();                    // For debugging
+    QString prints(); // For debugging
 
     /**
      * Return a minimal temporary name for this type. It'd be even
@@ -197,27 +196,28 @@ public:
      * *highest* possible type compatible with both (i.e. this JOIN other)
      * \todo the best possible thing would be to have both types as const
      */
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr = false) const = 0;
+    virtual SharedType meetWith(SharedType other, bool &changed,
+                                bool useHighestPtr = false) const = 0;
 
     /**
-     * When all=false (default), return true if can use this and other interchangeably; in particular,
-     * if at most one of the types is compound and the first element is compatible with the other, then
-     * the types are considered compatible. With all set to true, if one or both types is compound, all
-     * corresponding elements must be compatible
+     * When all=false (default), return true if can use this and other interchangeably; in
+     * particular, if at most one of the types is compound and the first element is compatible with
+     * the other, then the types are considered compatible. With all set to true, if one or both
+     * types is compound, all corresponding elements must be compatible
      */
-    virtual bool isCompatibleWith(const Type& other, bool all = false) const;
+    virtual bool isCompatibleWith(const Type &other, bool all = false) const;
 
     /**
-     * isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if so
-     * reverses the parameters (this and other) to prevent many tedious repetitions
+     * isCompatible does most of the work; isCompatibleWith looks for complex types in other, and if
+     * so reverses the parameters (this and other) to prevent many tedious repetitions
      */
-    virtual bool isCompatible(const Type& other, bool all) const = 0;
+    virtual bool isCompatible(const Type &other, bool all) const = 0;
 
     /// Return true if this is a subset or equal to other
     bool isSubTypeOrEqual(SharedType other);
 
     /// Create a union of this Type and other. Set ch true if any change
-    SharedType createUnion(SharedType other, bool& changed, bool useHighestPtr = false) const;
+    SharedType createUnion(SharedType other, bool &changed, bool useHighestPtr = false) const;
 
     static SharedType newIntegerLikeType(int size, Sign signedness); // Return a new Bool/Char/Int
 
@@ -231,8 +231,8 @@ protected:
 
 
 // Not part of the Type class, but logically belongs with it:
-OStream& operator<<(OStream& os, const SharedConstType& ty); ///< Print the Type pointed to by t
-OStream& operator<<(OStream& os, const Type& ty);            ///< Print the Type pointed to by t
+OStream &operator<<(OStream &os, const SharedConstType &ty); ///< Print the Type pointed to by t
+OStream &operator<<(OStream &os, const Type &ty);            ///< Print the Type pointed to by t
 
 
 template<class T>

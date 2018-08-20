@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "CallLivenessRemovalPass.h"
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -18,13 +17,12 @@
 
 CallLivenessRemovalPass::CallLivenessRemovalPass()
     : IPass("CallLivenessRemoval", PassID::CallLivenessRemoval)
-{
-}
+{}
 
 
 bool CallLivenessRemovalPass::execute(UserProc *proc)
 {
-    BasicBlock::RTLRIterator        rrit;
+    BasicBlock::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *proc->getCFG()) {

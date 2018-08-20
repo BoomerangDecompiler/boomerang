@@ -24,14 +24,14 @@ typedef std::shared_ptr<const RTL> SharedConstRTL;
 class BOOMERANG_API FlagDef : public Unary
 {
 public:
-    FlagDef(const SharedExp& params, const SharedRTL& rtl);
-    FlagDef(const FlagDef& other) = default;
-    FlagDef(FlagDef&& other) = default;
+    FlagDef(const SharedExp &params, const SharedRTL &rtl);
+    FlagDef(const FlagDef &other) = default;
+    FlagDef(FlagDef &&other)      = default;
 
     virtual ~FlagDef() override;
 
-    FlagDef& operator=(const FlagDef& other) = default;
-    FlagDef& operator=(FlagDef&& other) = default;
+    FlagDef &operator=(const FlagDef &other) = default;
+    FlagDef &operator=(FlagDef &&other) = default;
 
     SharedConstRTL getRTL() const { return m_rtl; }
 
@@ -41,7 +41,7 @@ public:
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptPostModifier
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;

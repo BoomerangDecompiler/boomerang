@@ -9,12 +9,11 @@
 #pragma endregion License
 #include "Module.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -26,14 +25,15 @@
 
 
 #if defined(_WIN32) && !defined(__MINGW32__)
-#  include <windows.h>
+#    include <windows.h>
 namespace dbghelp
 {
-#  include <dbghelp.h>
+#    include <dbghelp.h>
 }
 
-#  include <iostream>
-#  include "boomerang/util/log/Log.h"
+#    include "boomerang/util/log/Log.h"
+
+#    include <iostream>
 #endif
 
 
@@ -64,11 +64,10 @@ void Module::updateLibrarySignatures()
 }
 
 
-Module::Module(const QString& name, Prog *prog)
+Module::Module(const QString &name, Prog *prog)
     : m_name(name)
     , m_prog(prog)
-{
-}
+{}
 
 
 Module::~Module()
@@ -151,13 +150,13 @@ QString Module::makeDirs() const
 QString Module::getOutPath(const char *ext) const
 {
     QString basedir = makeDirs();
-    QDir    dr(basedir);
+    QDir dr(basedir);
 
     return dr.absoluteFilePath(m_name + "." + ext);
 }
 
 
-Module *Module::find(const QString& name)
+Module *Module::find(const QString &name)
 {
     if (m_name == name) {
         return this;
@@ -175,7 +174,7 @@ Module *Module::find(const QString& name)
 }
 
 
-void Module::printTree(OStream& ostr) const
+void Module::printTree(OStream &ostr) const
 {
     ostr << "\t\t" << m_name << "\n";
 
@@ -214,20 +213,21 @@ void Module::addWin32DbgInfo(Function *function)
     }
 
     // use debugging information
-    HANDLE               hProcess = GetCurrentProcess();
+    HANDLE hProcess           = GetCurrentProcess();
     dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
-    sym->SizeOfStruct = sizeof(*sym);
-    sym->MaxNameLen = 1000;
-    sym->Name[0] = 0;
-    BOOL  got = dbghelp::SymFromAddr(hProcess, function->getEntryAddress().value(), 0, sym);
+    sym->SizeOfStruct         = sizeof(*sym);
+    sym->MaxNameLen           = 1000;
+    sym->Name[0]              = 0;
+    BOOL got = dbghelp::SymFromAddr(hProcess, function->getEntryAddress().value(), 0, sym);
     DWORD retType;
 
     if (got && *sym->Name &&
-        dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE, &retType)) {
+        dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_TYPE,
+                                &retType)) {
         DWORD d;
         // get a calling convention
-        got =
-            dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex, dbghelp::TI_GET_CALLING_CONVENTION, &d);
+        got = dbghelp::SymGetTypeInfo(hProcess, sym->ModBase, sym->TypeIndex,
+                                      dbghelp::TI_GET_CALLING_CONVENTION, &d);
 
         if (got) {
             LOG_VERBOSE("calling convention: %1", (int)d);
@@ -235,7 +235,8 @@ void Module::addWin32DbgInfo(Function *function)
         }
         else {
             // assume we're stdc calling convention, remove r28, r24 returns
-            function->setSignature(Signature::instantiate(Machine::PENTIUM, CallConv::C, function->getName()));
+            function->setSignature(
+                Signature::instantiate(Machine::PENTIUM, CallConv::C, function->getName()));
         }
 
         // get a return type
@@ -262,7 +263,7 @@ void Module::addWin32DbgInfo(Function *function)
 }
 
 
-Function *Module::createFunction(const QString& name, Address entryAddr, bool libraryFunction)
+Function *Module::createFunction(const QString &name, Address entryAddr, bool libraryFunction)
 {
     Function *function;
 
@@ -281,14 +282,14 @@ Function *Module::createFunction(const QString& name, Address entryAddr, bool li
     m_functionList.push_back(function); // Append this to list of procs
     m_prog->getProject()->alertFunctionCreated(function);
 
-    // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog should just collect info
-    // from Loader
+    // TODO: add platform agnostic way of using debug information, should be moved to Loaders, Prog
+    // should just collect info from Loader
     addWin32DbgInfo(function);
     return function;
 }
 
 
-Function *Module::getFunction(const QString& name) const
+Function *Module::getFunction(const QString &name) const
 {
     for (Function *f : m_functionList) {
         if (f->getName() == name) {

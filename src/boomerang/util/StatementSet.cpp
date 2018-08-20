@@ -10,7 +10,7 @@
 #include "StatementSet.h"
 
 
-bool lessAssign::operator()(const Assign* as1, const Assign* as2) const
+bool lessAssign::operator()(const Assign *as1, const Assign *as2) const
 {
     return *as1->getLeft() < *as2->getLeft();
 }

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "UnionType.h"
 
-
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
@@ -17,19 +16,18 @@
 #include <QHash>
 
 
-size_t hashUnionElem::operator()(const UnionElement& e) const
+size_t hashUnionElem::operator()(const UnionElement &e) const
 {
-        return qHash(e.type->getCtype());
+    return qHash(e.type->getCtype());
 }
 
 
 UnionType::UnionType()
     : Type(TypeClass::Union)
-{
-}
+{}
 
 
-UnionType::UnionType::UnionType(const std::initializer_list<SharedType>& members)
+UnionType::UnionType::UnionType(const std::initializer_list<SharedType> &members)
     : Type(TypeClass::Union)
 {
     for (SharedType member : members) {
@@ -39,8 +37,7 @@ UnionType::UnionType::UnionType(const std::initializer_list<SharedType>& members
 
 
 UnionType::~UnionType()
-{
-}
+{}
 
 
 SharedType UnionType::clone() const
@@ -59,7 +56,7 @@ size_t UnionType::getSize() const
 {
     int max = 0;
 
-    for (const UnionElement& elem : li) {
+    for (const UnionElement &elem : li) {
         int sz = elem.type->getSize();
 
         if (sz > max) {
@@ -71,19 +68,19 @@ size_t UnionType::getSize() const
 }
 
 
-bool UnionType::operator==(const Type& other) const
+bool UnionType::operator==(const Type &other) const
 {
     if (!other.isUnion()) {
         return false;
     }
 
-    const UnionType& uother = static_cast<const UnionType &>(other);
+    const UnionType &uother = static_cast<const UnionType &>(other);
 
     if (uother.li.size() != li.size()) {
         return false;
     }
 
-    for (const UnionElement& el : li) {
+    for (const UnionElement &el : li) {
         if (uother.li.find(el) == uother.li.end()) {
             return false;
         }
@@ -93,7 +90,7 @@ bool UnionType::operator==(const Type& other) const
 }
 
 
-bool UnionType::operator<(const Type& other) const
+bool UnionType::operator<(const Type &other) const
 {
     if (id != other.getId()) {
         return id < other.getId();
@@ -112,7 +109,7 @@ bool UnionType::findType(SharedType ty)
 }
 
 
-void UnionType::addType(SharedType n, const QString& name)
+void UnionType::addType(SharedType n, const QString &name)
 {
     if (n->isUnion()) {
         auto utp = std::static_pointer_cast<UnionType>(n);
@@ -120,7 +117,8 @@ void UnionType::addType(SharedType n, const QString& name)
         li.insert(utp->li.begin(), utp->li.end());
     }
     else {
-        if (n->isPointer() && (n->as<PointerType>()->getPointsTo().get() == this)) { // Note: pointer comparison
+        if (n->isPointer() &&
+            (n->as<PointerType>()->getPointsTo().get() == this)) { // Note: pointer comparison
             n = PointerType::get(VoidType::get());
             LOG_WARN("Attempt to union with pointer to self!");
         }
@@ -137,7 +135,7 @@ QString UnionType::getCtype(bool final) const
 {
     QString tmp("union { ");
 
-    for (const UnionElement& el : li) {
+    for (const UnionElement &el : li) {
         tmp += el.type->getCtype(final);
 
         if (el.name != "") {
@@ -155,14 +153,14 @@ QString UnionType::getCtype(bool final) const
 
 static int nextUnionNumber = 0;
 
-SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<UnionType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToUnion()) {
-        if (this == other.get()) {                          // Note: pointer comparison
+        if (this == other.get()) {                                    // Note: pointer comparison
             return const_cast<UnionType *>(this)->shared_from_this(); // Avoid infinite recursion
         }
 
@@ -204,10 +202,10 @@ SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestP
 
     // Match 'other' agains all fields of 'this' UnionType
     // if a field is found that requires no change to 'meet', this type is returned unchanged
-    // if a new meetWith result is 'better' given simplistic type description length heuristic measure
-    // then the meetWith result, and this types field iterator are stored.
+    // if a new meetWith result is 'better' given simplistic type description length heuristic
+    // measure then the meetWith result, and this types field iterator are stored.
 
-    int bestMeetScore = INT_MAX;
+    int bestMeetScore                      = INT_MAX;
     UnionEntrySet::const_iterator bestElem = li.end();
 
     for (auto it = li.begin(); it != li.end(); ++it) {
@@ -217,7 +215,7 @@ SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestP
             continue;
         }
 
-        changed = false;
+        changed             = false;
         SharedType meet_res = v->meetWith(other, changed, useHighestPtr);
 
         if (!changed) {
@@ -250,7 +248,8 @@ SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestP
 
     if (bestElem != li.end()) {
         ne.name = bestElem->name;
-        ne.type = bestElem->type->meetWith(other, changed, useHighestPtr); // we know this works because the types are compatible
+        ne.type = bestElem->type->meetWith(
+            other, changed, useHighestPtr); // we know this works because the types are compatible
     }
     else {
         // Other is not compatible with any of my component types. Add a new type.
@@ -264,7 +263,7 @@ SharedType UnionType::meetWith(SharedType other, bool& changed, bool useHighestP
 }
 
 
-bool UnionType::isCompatible(const Type& other, bool all) const
+bool UnionType::isCompatible(const Type &other, bool all) const
 {
     if (other.resolvesToVoid()) {
         return true;
@@ -275,18 +274,18 @@ bool UnionType::isCompatible(const Type& other, bool all) const
             return true;      // Avoid infinite recursion
         }
 
-        const UnionType& otherUnion = static_cast<const UnionType &>(other);
+        const UnionType &otherUnion = static_cast<const UnionType &>(other);
 
         // Unions are compatible if one is a subset of the other
         if (li.size() < otherUnion.li.size()) {
-            for (const UnionElement& e : li) {
+            for (const UnionElement &e : li) {
                 if (!otherUnion.isCompatible(*e.type, all)) {
                     return false;
                 }
             }
         }
         else {
-            for (const UnionElement& e : otherUnion.li) {
+            for (const UnionElement &e : otherUnion.li) {
                 if (!isCompatible(*e.type, all)) {
                     return false;
                 }
@@ -297,7 +296,7 @@ bool UnionType::isCompatible(const Type& other, bool all) const
     }
 
     // Other is not a UnionType
-    for (const UnionElement& e : li) {
+    for (const UnionElement &e : li) {
         if (other.isCompatibleWith(*e.type, all)) {
             return true;
         }
@@ -307,8 +306,8 @@ bool UnionType::isCompatible(const Type& other, bool all) const
 }
 
 
-// Dereference this union. If it is a union of pointers, return a union of the dereferenced items. Else return VoidType
-// (note: should probably be bottom)
+// Dereference this union. If it is a union of pointers, return a union of the dereferenced items.
+// Else return VoidType (note: should probably be bottom)
 SharedType UnionType::dereferenceUnion()
 {
     auto ret = UnionType::get();

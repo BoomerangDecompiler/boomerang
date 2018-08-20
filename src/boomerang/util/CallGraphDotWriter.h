@@ -20,5 +20,5 @@ class QString;
 class BOOMERANG_API CallGraphDotWriter
 {
 public:
-    bool writeCallGraph(const Prog *prog, const QString& dstFileName);
+    bool writeCallGraph(const Prog *prog, const QString &dstFileName);
 };

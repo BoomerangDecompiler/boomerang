@@ -9,20 +9,18 @@
 #pragma endregion License
 #include "Parameter.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 
 
-Parameter::Parameter(SharedType type, const QString& name, SharedExp exp, const QString& boundMax)
+Parameter::Parameter(SharedType type, const QString &name, SharedExp exp, const QString &boundMax)
     : m_type(type)
     , m_name(name)
     , m_exp(exp)
     , m_boundMax(boundMax)
-{
-}
+{}
 
 
-bool Parameter::operator==(const Parameter& other) const
+bool Parameter::operator==(const Parameter &other) const
 {
     if (!(*m_type == *other.m_type)) {
         return false;
@@ -47,7 +45,7 @@ std::shared_ptr<Parameter> Parameter::clone() const
 }
 
 
-void Parameter::setBoundMax(const QString& name)
+void Parameter::setBoundMax(const QString &name)
 {
     m_boundMax = name;
 }

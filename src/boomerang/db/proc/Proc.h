@@ -37,21 +37,21 @@ public:
      * \param signature The Signature for this Proc
      * \param module    The Module this procedure belongs to
      */
-    Function(Address address, const std::shared_ptr<Signature>& signature, Module *module);
-    Function(const Function&) = delete;
-    Function(Function&&) = default;
+    Function(Address address, const std::shared_ptr<Signature> &signature, Module *module);
+    Function(const Function &) = delete;
+    Function(Function &&)      = default;
 
     virtual ~Function();
 
-    Function& operator=(const Function&) = delete;
-    Function& operator=(Function&&) = default;
+    Function &operator=(const Function &) = delete;
+    Function &operator=(Function &&) = default;
 
 public:
     /// Get the name of this procedure.
     QString getName() const;
 
     /// Rename this procedure.
-    void setName(const QString& name);
+    void setName(const QString &name);
 
     /// Get the address of the entry point of this procedure.
     Address getEntryAddress() const;
@@ -76,8 +76,8 @@ public:
     void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; }
 
     /// \returns the call statements that call this function.
-    const std::set<CallStatement *>& getCallers() const { return m_callers; }
-    std::set<CallStatement *>& getCallers() { return m_callers; }
+    const std::set<CallStatement *> &getCallers() const { return m_callers; }
+    std::set<CallStatement *> &getCallers() { return m_callers; }
 
     /// Add to the set of callers
     void addCaller(CallStatement *caller) { m_callers.insert(caller); }
@@ -85,22 +85,24 @@ public:
     void removeParameterFromSignature(SharedExp e);
 
     /// Rename the first parameter named \p oldName to \p newName.
-    void renameParameter(const QString& oldName, const QString& newName);
+    void renameParameter(const QString &oldName, const QString &newName);
 
     /// Get the RHS that is proven for left
-    virtual SharedExp getProven(SharedExp left)   = 0; ///< Get the RHS, if any, that is proven for left
-    virtual SharedExp getPremised(SharedExp left) = 0; ///< Get the RHS, if any, that is premised for left
-    virtual bool isPreserved(SharedExp e)         = 0; ///< Return whether \p e is preserved by this proc
+    virtual SharedExp
+    getProven(SharedExp left) = 0; ///< Get the RHS, if any, that is proven for left
+    virtual SharedExp
+    getPremised(SharedExp left)           = 0; ///< Get the RHS, if any, that is premised for left
+    virtual bool isPreserved(SharedExp e) = 0; ///< Return whether \p e is preserved by this proc
 
 protected:
-    Prog *m_prog = nullptr;                     ///< Program containing this function.
-    Module *m_module = nullptr;                 ///< Module containing this function.
-    Address m_entryAddress = Address::INVALID;  ///< Entry address of this function.
+    Prog *m_prog           = nullptr;          ///< Program containing this function.
+    Module *m_module       = nullptr;          ///< Module containing this function.
+    Address m_entryAddress = Address::INVALID; ///< Entry address of this function.
 
     /**
      * The formal signature of this procedure.
-     * This information is determined either by the common.hs file (for a library function) or by analysis.
-     * \note This belongs in the CALL, because the same procedure can have different
+     * This information is determined either by the common.hs file (for a library function) or by
+     * analysis. \note This belongs in the CALL, because the same procedure can have different
      * signatures if it happens to have varargs. Temporarily here till it can be permanently
      * moved.
      */

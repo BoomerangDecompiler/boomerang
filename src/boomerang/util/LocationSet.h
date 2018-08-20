@@ -27,14 +27,14 @@ class BOOMERANG_API LocationSet : public ExpSet<Exp, lessExpStar>
 {
 public:
     LocationSet() = default;
-    LocationSet(const std::initializer_list<SharedExp>& exps);
-    LocationSet(const LocationSet& other);
-    LocationSet(LocationSet&& other) = default;
+    LocationSet(const std::initializer_list<SharedExp> &exps);
+    LocationSet(const LocationSet &other);
+    LocationSet(LocationSet &&other) = default;
 
     ~LocationSet() = default;
 
-    LocationSet& operator=(const LocationSet& other);
-    LocationSet& operator=(LocationSet&& other) = default;
+    LocationSet &operator=(const LocationSet &other);
+    LocationSet &operator=(LocationSet &&other) = default;
 
 public:
     /// Given an unsubscripted location \p e, return true if e{-} or e{0} exists in the set
@@ -51,11 +51,11 @@ public:
     /// Find a location with a different def, but same expression.
     /// For example, pass r28{10}, return true if r28{20} is in the set.
     /// If return true, \p differentRef points to the first different ref
-    bool findDifferentRef(const std::shared_ptr<RefExp>& ref, SharedExp& differentRef);
+    bool findDifferentRef(const std::shared_ptr<RefExp> &ref, SharedExp &differentRef);
 
     /// Add a subscript (to definition \p def) to each element.
     /// Existing exps are not re-subscripted.
     void addSubscript(Statement *def);
 
-    QString prints() const;                        ///< Print to string for debugging
+    QString prints() const; ///< Print to string for debugging
 };

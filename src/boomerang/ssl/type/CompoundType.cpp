@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "CompoundType.h"
 
-
 #include "boomerang/ssl/type/SizeType.h"
 
 
@@ -17,13 +16,11 @@ CompoundType::CompoundType(bool is_generic /* = false */)
     : Type(TypeClass::Compound)
     , m_isGeneric(is_generic)
     , m_nextGenericMemberNum(1)
-{
-}
+{}
 
 
 CompoundType::~CompoundType()
-{
-}
+{}
 
 
 SharedType CompoundType::clone() const
@@ -42,7 +39,7 @@ size_t CompoundType::getSize() const
 {
     int n = 0;
 
-    for (auto& elem : m_types) {
+    for (auto &elem : m_types) {
         // NOTE: this assumes no padding... perhaps explicit padding will be needed
         n += elem->getSize();
     }
@@ -51,14 +48,14 @@ size_t CompoundType::getSize() const
 }
 
 
-bool CompoundType::isSuperStructOf(const SharedType& other) const
+bool CompoundType::isSuperStructOf(const SharedType &other) const
 {
     if (!other->isCompound()) {
         return false;
     }
 
-    auto   otherCmp = other->as<CompoundType>();
-    size_t n        = otherCmp->m_types.size();
+    auto otherCmp = other->as<CompoundType>();
+    size_t n      = otherCmp->m_types.size();
 
     if (n > m_types.size()) {
         return false;
@@ -74,14 +71,14 @@ bool CompoundType::isSuperStructOf(const SharedType& other) const
 }
 
 
-bool CompoundType::isSubStructOf(const SharedType& other) const
+bool CompoundType::isSubStructOf(const SharedType &other) const
 {
     if (!other->isCompound()) {
         return false;
     }
 
-    auto     otherCmp = other->as<CompoundType>();
-    unsigned n        = m_types.size();
+    auto otherCmp = other->as<CompoundType>();
+    unsigned n    = m_types.size();
 
     if (n > otherCmp->m_types.size()) {
         return false;
@@ -97,7 +94,7 @@ bool CompoundType::isSubStructOf(const SharedType& other) const
 }
 
 
-SharedType CompoundType::getMemberTypeByName(const QString& name)
+SharedType CompoundType::getMemberTypeByName(const QString &name)
 {
     for (unsigned i = 0; i < m_types.size(); i++) {
         if (m_names[i] == name) {
@@ -113,7 +110,7 @@ SharedType CompoundType::getMemberTypeByOffset(unsigned bitOffset)
 {
     unsigned offset = 0;
 
-    for (auto& elem : m_types) {
+    for (auto &elem : m_types) {
         if ((offset <= bitOffset) && (bitOffset < offset + elem->getSize())) {
             return elem;
         }
@@ -132,7 +129,7 @@ void CompoundType::setMemberTypeByOffset(unsigned bitOffset, SharedType ty)
     for (unsigned i = 0; i < m_types.size(); i++) {
         if ((offset <= bitOffset) && (bitOffset < offset + m_types[i]->getSize())) {
             unsigned oldsz = m_types[i]->getSize();
-            m_types[i] = ty;
+            m_types[i]     = ty;
 
             if (ty->getSize() < oldsz) {
                 m_types.push_back(m_types[m_types.size() - 1]);
@@ -155,7 +152,7 @@ void CompoundType::setMemberTypeByOffset(unsigned bitOffset, SharedType ty)
 }
 
 
-void CompoundType::setMemberNameByOffset(unsigned n, const QString& name)
+void CompoundType::setMemberNameByOffset(unsigned n, const QString &name)
 {
     unsigned offset = 0;
 
@@ -200,7 +197,7 @@ unsigned CompoundType::getMemberOffsetByIdx(int n)
 }
 
 
-unsigned CompoundType::getMemberOffsetByName(const QString& member)
+unsigned CompoundType::getMemberOffsetByName(const QString &member)
 {
     unsigned offset = 0;
 
@@ -221,7 +218,7 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
     unsigned r      = n;
     unsigned offset = 0;
 
-    for (auto& elem : m_types) {
+    for (auto &elem : m_types) {
         offset += elem->getSize();
 
         if (offset > n) {
@@ -235,13 +232,13 @@ unsigned CompoundType::getOffsetRemainder(unsigned n)
 }
 
 
-bool CompoundType::operator==(const Type& other) const
+bool CompoundType::operator==(const Type &other) const
 {
     if (!other.isCompound()) {
         return false;
     }
 
-    const CompoundType& cother = static_cast<const CompoundType &>(other);
+    const CompoundType &cother = static_cast<const CompoundType &>(other);
 
     if (cother.m_types.size() != m_types.size()) {
         return false;
@@ -257,7 +254,7 @@ bool CompoundType::operator==(const Type& other) const
 }
 
 
-bool CompoundType::operator<(const Type& other) const
+bool CompoundType::operator<(const Type &other) const
 {
     if (id < other.getId()) {
         return true;
@@ -291,10 +288,10 @@ QString CompoundType::getCtype(bool final) const
 }
 
 
-void CompoundType::updateGenericMember(int off, SharedType ty, bool& changed)
+void CompoundType::updateGenericMember(int off, SharedType ty, bool &changed)
 {
     assert(m_isGeneric);
-    int        bit_offset   = off * 8;
+    int bit_offset          = off * 8;
     SharedType existingType = getMemberTypeByOffset(bit_offset);
 
     if (existingType) {
@@ -315,7 +312,7 @@ bool CompoundType::isGeneric() const
 }
 
 
-void CompoundType::addMember(SharedType memberType, const QString& memberName)
+void CompoundType::addMember(SharedType memberType, const QString &memberName)
 {
     // check if it is a user defined type (typedef)
     SharedType existingType = getNamedType(memberType->getCtype());
@@ -343,7 +340,7 @@ QString CompoundType::getMemberNameByIdx(int idx)
 }
 
 
-SharedType CompoundType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType CompoundType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<CompoundType *>(this)->shared_from_this();
@@ -361,7 +358,8 @@ SharedType CompoundType::meetWith(SharedType other, bool& changed, bool useHighe
     auto otherCmp = other->as<CompoundType>();
 
     if (otherCmp->isSuperStructOf(const_cast<CompoundType *>(this)->shared_from_this())) {
-        // The other structure has a superset of my struct's offsets. Preserve the names etc of the bigger struct.
+        // The other structure has a superset of my struct's offsets. Preserve the names etc of the
+        // bigger struct.
         changed = true;
         return other;
     }
@@ -382,7 +380,7 @@ SharedType CompoundType::meetWith(SharedType other, bool& changed, bool useHighe
 }
 
 
-bool CompoundType::isCompatible(const Type& other, bool all) const
+bool CompoundType::isCompatible(const Type &other, bool all) const
 {
     if (other.resolvesToVoid()) {
         return true;
@@ -393,12 +391,13 @@ bool CompoundType::isCompatible(const Type& other, bool all) const
     }
 
     if (!other.resolvesToCompound()) {
-        // Used to always return false here. But in fact, a struct is compatible with its first member (if all is false)
+        // Used to always return false here. But in fact, a struct is compatible with its first
+        // member (if all is false)
         return !all && m_types[0]->isCompatibleWith(other);
     }
 
-    auto   otherComp = other.as<CompoundType>();
-    size_t n         = otherComp->getNumMembers();
+    auto otherComp = other.as<CompoundType>();
+    size_t n       = otherComp->getNumMembers();
 
     if (n != m_types.size()) {
         return false; // Is a subcompound compatible with a supercompound?

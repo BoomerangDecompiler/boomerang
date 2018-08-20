@@ -7,9 +7,7 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "SSLParser.h"
-
-
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -17,16 +15,17 @@
 #include "boomerang/ssl/parser/InsNameElem.h"
 #include "boomerang/ssl/parser/SSLScanner.h"
 #include "boomerang/ssl/parser/Table.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/Statement.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 #include <cassert>
 #include <cstring>
 #include <fstream>
 #include <sstream>
+
+#include "SSLParser.h"
 
 
 class SSLScanner;
@@ -36,7 +35,7 @@ class SSLScanner;
  * \param trace - whether or not to debug
  *
  */
-SSLParser::SSLParser(std::istream& in, bool trace)
+SSLParser::SSLParser(std::istream &in, bool trace)
     : sslFile("input")
     , floatRegister(false)
 {
@@ -60,8 +59,8 @@ SSLParser::SSLParser(std::istream& in, bool trace)
 Statement *SSLParser::parseExp(const char *str, bool verboseOutput)
 {
     std::istringstream ss(str);
-    SSLParser          p(ss, false); // Second arg true for debugging
-    RTLInstDict        d(verboseOutput);
+    SSLParser p(ss, false); // Second arg true for debugging
+    RTLInstDict d(verboseOutput);
     p.yyparse(d);
     return p.the_asgn;
 }
@@ -103,95 +102,50 @@ int SSLParser::yylex()
  * \param   s pointer to the operator C string
  * \returns An OPER, or -1 if not found (enum opWild)
  */
-OPER SSLParser::strToOper(const QString& s)
+OPER SSLParser::strToOper(const QString &s)
 {
-    static QMap<QString, OPER> opMap {
-        {
-            "*", opMult
-        }, {
-            "*!", opMults
-        }, {
-            "*f", opFMult
-        }, {
-            "*fsd", opFMultsd
-        }, {
-            "*fdq", opFMultdq
-        },
-        {
-            "/", opDiv
-        }, {
-            "/!", opDivs
-        }, {
-            "/f", opFDiv
-        }, {
-            "/fs", opFDiv
-        }, {
-            "/fd", opFDivd
-        }, {
-            "/fq", opFDivq
-        },
-        {
-            "%", opMod
-        }, {
-            "%!", opMods
-        },                         // no FMod ?
-        {
-            "+", opPlus
-        }, {
-            "+f", opFPlus
-        }, {
-            "+fs", opFPlus
-        }, {
-            "+fd", opFPlusd
-        }, {
-            "+fq", opFPlusq
-        },
-        {
-            "-", opMinus
-        }, {
-            "-f", opFMinus
-        }, {
-            "-fs", opFMinus
-        }, {
-            "-fd", opFMinusd
-        }, {
-            "-fq", opFMinusq
-        },
-        {
-            "<", opLess
-        }, {
-            "<u", opLessUns
-        }, {
-            "<=", opLessEq
-        }, {
-            "<=u", opLessEqUns
-        }, {
-            "<<", opShiftL
-        },
-        {
-            ">", opGtr
-        }, {
-            ">u", opGtrUns
-        }, {
-            ">=", opGtrEq
-        }, {
-            ">=u", opGtrEqUns
-        },
-        {
-            ">>", opShiftR
-        }, {
-            ">>A", opShiftRA
-        },
-        {
-            "rlc", opRotateLC
-        }, {
-            "rrc", opRotateRC
-        }, {
-            "rl", opRotateL
-        }, {
-            "rr", opRotateR
-        }
+    // clang-format off
+    static QMap<QString, OPER> opMap{
+        { "*",      opMult      },
+        { "*!",     opMults     },
+        { "*f",     opFMult     },
+        { "*fsd",   opFMultsd   },
+        { "*fdq",   opFMultdq   },
+        { "/",      opDiv       },
+        { "/!",     opDivs      },
+        { "/f",     opFDiv      },
+        { "/fs",    opFDiv      },
+        { "/fd",    opFDivd     },
+        { "/fq",    opFDivq     },
+        { "%",      opMod       },
+        { "%!",     opMods      }, // no FMod ?
+        { "+",      opPlus      },
+        { "+f",     opFPlus     },
+        { "+fs",    opFPlus     },
+        { "+fd",    opFPlusd    },
+        { "+fq",    opFPlusq    },
+        { "-",      opMinus     },
+        { "-f",     opFMinus    },
+        { "-fs",    opFMinus    },
+        { "-fd",    opFMinusd   },
+        { "-fq",    opFMinusq   },
+        { "<",      opLess      },
+        { "<u",     opLessUns   },
+        { "<=",     opLessEq    },
+        { "<=u",    opLessEqUns },
+        { "<<",     opShiftL    },
+        { ">",      opGtr       },
+        { ">u",     opGtrUns    },
+        { ">=",     opGtrEq     },
+        { ">=u",    opGtrEqUns  },
+        { ">>",     opShiftR    },
+        { ">>A",    opShiftRA   },
+        { "rlc",    opRotateLC  },
+        { "rrc",    opRotateRC  },
+        { "rl",     opRotateL   },
+        { "rr",     opRotateR   }
     };
+    // clang-format on
 
     // Could be *, *!, *f, *fsd, *fdq, *f[sdq]
     if (opMap.contains(s)) {
@@ -199,10 +153,8 @@ OPER SSLParser::strToOper(const QString& s)
     }
 
     //
-    switch (s[0].toLatin1())
-    {
+    switch (s[0].toLatin1()) {
     case 'a':
-
         // and, arctan, addr
         if (s[1].toLatin1() == 'n') {
             return opAnd;
@@ -330,20 +282,15 @@ OPER SSLParser::strToOper(const QString& s)
 
         return opNot; // Bit inversion
 
-    case '@':
-        return opAt;
+    case '@': return opAt;
 
-    case '&':
-        return opBitAnd;
+    case '&': return opBitAnd;
 
-    case '|':
-        return opBitOr;
+    case '|': return opBitOr;
 
-    case '^':
-        return opBitXor;
+    case '^': return opBitXor;
 
-    default:
-        break;
+    default: break;
     }
 
     yyerror(qPrintable(QString("Unknown operator %1\n").arg(s)));
@@ -351,14 +298,22 @@ OPER SSLParser::strToOper(const QString& s)
 }
 
 
-OPER strToTerm(const QString& s)
+OPER strToTerm(const QString &s)
 {
-    static QMap<QString, OPER> mapping =
-    {
-        { "%pc",     opPC     }, { "%afp", opAFP }, { "%agp", opAGP }, { "%CF", opCF },
-        { "%ZF",     opZF     }, { "%OF",  opOF  }, { "%NF",  opNF  }, { "%DF", opDF },{ "%flags", opFlags },
-        { "%fflags", opFflags },
+    // clang-format off
+    static QMap<QString, OPER> mapping = {
+        { "%pc",        opPC        },
+        { "%afp",       opAFP       },
+        { "%agp",       opAGP       },
+        { "%CF",        opCF        },
+        { "%ZF",        opZF        },
+        { "%OF",        opOF        },
+        { "%NF",        opNF        },
+        { "%DF",        opDF        },
+        { "%flags",     opFlags     },
+        { "%fflags",    opFflags    },
     };
+    // clang-format on
 
     if (mapping.contains(s)) {
         return mapping[s];
@@ -383,7 +338,7 @@ SharedExp listExpToExp(std::list<SharedExp> *le)
     SharedExp *cur = &e;
     SharedExp end  = Terminal::get(opNil); // Terminate the chain
 
-    for (auto& elem : *le) {
+    for (auto &elem : *le) {
         *cur = Binary::get(opList, elem, end);
         // cur becomes the address of the address of the second subexpression
         // In other words, cur becomes a reference to the second subexp ptr
@@ -407,7 +362,7 @@ SharedExp listStrToExp(std::list<QString> *ls)
     SharedExp *cur = &e;
     SharedExp end  = Terminal::get(opNil); // Terminate the chain
 
-    for (auto& l : *ls) {
+    for (auto &l : *ls) {
         *cur = Binary::get(opList, Location::get(opParam, Const::get(l), nullptr), end);
         cur  = &(*cur)->refSubExp2();
     }
@@ -417,8 +372,9 @@ SharedExp listStrToExp(std::list<QString> *ls)
 }
 
 
-static Binary  srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
-static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), Terminal::get(opWild));
+static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
+static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild),
+                      Terminal::get(opWild));
 
 
 /**
@@ -430,7 +386,8 @@ static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild), T
  * \param   o_rtlist Original rtlist object (before expanding)
  * \param   Dict Ref to the dictionary that will contain the results of the parse
  */
-void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::list<QString> *params, SharedRTL o_rtlist, RTLInstDict& Dict)
+void SSLParser::expandTables(const std::shared_ptr<InsNameElem> &iname, std::list<QString> *params,
+                             SharedRTL o_rtlist, RTLInstDict &Dict)
 {
     const int m = iname->getNumInstructions();
     iname->reset();
@@ -449,9 +406,10 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
 
             if (((Assign *)s)->searchAll(srchExpr, le)) {
                 for (SharedExp e : le) {
-                    QString   tbl  = (e)->access<Const, 1>()->getStr();
-                    QString   idx  = (e)->access<Const, 2>()->getStr();
-                    SharedExp repl = ((ExprTable *)TableDict[tbl].get())->expressions[indexrefmap[idx]->getValue()];
+                    QString tbl    = (e)->access<Const, 1>()->getStr();
+                    QString idx    = (e)->access<Const, 2>()->getStr();
+                    SharedExp repl = ((ExprTable *)TableDict[tbl].get())
+                                         ->expressions[indexrefmap[idx]->getValue()];
                     s->searchAndReplace(*e, repl);
                 }
             }
@@ -470,8 +428,8 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
                 }
 
                 assert(t->getOper() == opOpTable);
-                // The ternary opOpTable has a table and index name as strings, then a list of 2 expressions
-                // (and we want to replace it with e1 OP e2)
+                // The ternary opOpTable has a table and index name as strings, then a list of 2
+                // expressions (and we want to replace it with e1 OP e2)
                 QString tbl = t->access<Const, 1>()->getStr();
                 QString idx = t->access<Const, 2>()->getStr();
                 // The expressions to operate on are in the list
@@ -480,17 +438,19 @@ void SSLParser::expandTables(const std::shared_ptr<InsNameElem>& iname, std::lis
                 SharedExp e1 = b->getSubExp1();
                 SharedExp e2 = b->getSubExp2(); // This should be an opList too
                 assert(b->getOper() == opList);
-                e2 = e2->getSubExp1();
-                QString   ops  = ((OpTable *)TableDict[tbl].get())->getRecords()[indexrefmap[idx]->getValue()];
+                e2          = e2->getSubExp1();
+                QString ops = ((OpTable *)TableDict[tbl].get())
+                                  ->getRecords()[indexrefmap[idx]->getValue()];
                 SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
                 s->searchAndReplace(*res, repl);
             }
         }
 
         if (Dict.insert(name, *params, rtl) != 0) {
-            QString     errmsg;
+            QString errmsg;
             OStream o(&errmsg);
-            o << "Pattern " << iname->getInsPattern() << " conflicts with an earlier declaration of " << name << ".\n";
+            o << "Pattern " << iname->getInsPattern()
+              << " conflicts with an earlier declaration of " << name << ".\n";
             yyerror(qPrintable(errmsg));
         }
     }

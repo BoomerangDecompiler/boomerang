@@ -17,12 +17,11 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
 class BOOMERANG_API PentiumSignature : public Signature
 {
 public:
-    explicit PentiumSignature(const QString& name);
-    explicit PentiumSignature(Signature& old);
+    explicit PentiumSignature(const QString &name);
+    explicit PentiumSignature(Signature &old);
     virtual ~PentiumSignature() override = default;
 
 public:
@@ -30,18 +29,19 @@ public:
     virtual std::shared_ptr<Signature> clone() const override;
 
     /// \copydoc Signature::operator==
-    virtual bool operator==(const Signature& other) const override;
+    virtual bool operator==(const Signature &other) const override;
 
     /// FIXME: This needs changing. Would like to check that pc=pc and sp=sp
     /// (or maybe sp=sp+4) for qualifying procs. Need work to get there
-    static bool qualified(UserProc *p, Signature&);
+    static bool qualified(UserProc *p, Signature &);
 
     /// \copydoc Signature::addReturn
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
 
     /// \copydoc Signature::addParameter
-    virtual void addParameter(const QString& name, const SharedExp& e,
-                              SharedType type = VoidType::get(), const QString& boundMax = "") override;
+    virtual void addParameter(const QString &name, const SharedExp &e,
+                              SharedType type         = VoidType::get(),
+                              const QString &boundMax = "") override;
 
     /// \copydoc Signature::getArgumentExp
     virtual SharedExp getArgumentExp(int n) const override;
@@ -59,7 +59,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;
 
     /// \copydoc Signature::getLibraryDefines
-    virtual void getLibraryDefines(StatementList& defs) override;
+    virtual void getLibraryDefines(StatementList &defs) override;
 
     /// \copydoc Signature::isPromoted
     virtual bool isPromoted() const override { return true; }
@@ -68,11 +68,10 @@ public:
     virtual CallConv getConvention() const override { return CallConv::C; }
 
     /// \copydoc Signature::returnCompare
-    virtual bool returnCompare(const Assignment& a, const Assignment& b) const override;
+    virtual bool returnCompare(const Assignment &a, const Assignment &b) const override;
 
     /// \copydoc Signature::argumentCompare
-    virtual bool argumentCompare(const Assignment& a, const Assignment& b) const override;
+    virtual bool argumentCompare(const Assignment &a, const Assignment &b) const override;
 };
-
 }
 }

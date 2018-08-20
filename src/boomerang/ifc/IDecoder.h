@@ -33,17 +33,17 @@ public:
      * If the decode was not successful, the content of \p result is undefined.
      * \returns true if decoding the instruction was successful.
      */
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) = 0;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) = 0;
 
     /// \returns machine-specific register name given it's index
     virtual QString getRegName(int idx) const = 0;
 
     /// \returns index of the named register
-    virtual int getRegIdx(const QString& name) const = 0;
+    virtual int getRegIdx(const QString &name) const = 0;
 
     /// \returns size of register in bits
     virtual int getRegSize(int idx) const = 0;
 
     /// \returns the size of the register with name \p name, in bits
-    int getRegSize(const QString& name) const { return getRegSize(getRegIdx(name)); }
+    int getRegSize(const QString &name) const { return getRegSize(getRegIdx(name)); }
 };

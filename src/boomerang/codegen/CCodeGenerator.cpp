@@ -9,22 +9,21 @@
 #pragma endregion License
 #include "CCodeGenerator.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/ArrayType.h"
@@ -35,7 +34,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-bool isBareMemof(const Exp& exp, UserProc *)
+bool isBareMemof(const Exp &exp, UserProc *)
 {
 #if SYMS_IN_BACK_END
     if (!e.isMemOf()) {
@@ -55,16 +54,17 @@ bool isBareMemof(const Exp& exp, UserProc *)
 #endif
 }
 
-void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *proc, bool /*intermixRTL*/)
+void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *proc,
+                                  bool /*intermixRTL*/)
 {
-    const bool generate_all   = cluster == nullptr || cluster == prog->getRootModule();
-    bool       all_procedures = (proc == nullptr);
+    const bool generate_all = cluster == nullptr || cluster == prog->getRootModule();
+    bool all_procedures     = (proc == nullptr);
 
     if (generate_all) {
         if (proc == nullptr) {
             bool global = false;
 
-            for (auto& elem : prog->getGlobals()) {
+            for (auto &elem : prog->getGlobals()) {
                 // Check for an initial value
                 SharedExp e = elem->getInitialValue();
                 // if (e) {
@@ -79,7 +79,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
     }
 
     // First declare prototypes
-    for (const auto& module : prog->getModuleList()) {
+    for (const auto &module : prog->getModuleList()) {
         for (Function *func : *module) {
             if (func->isLib()) {
                 continue;
@@ -95,7 +95,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
         print(prog->getRootModule());
     }
 
-    for (const auto& module : prog->getModuleList()) {
+    for (const auto &module : prog->getModuleList()) {
         if (!generate_all && (module.get() != cluster)) {
             continue;
         }
@@ -115,7 +115,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
                 continue;
             }
 
-//            CFGCompressor().compressCFG(_proc->getCFG());
+            //            CFGCompressor().compressCFG(_proc->getCFG());
 
             generateCode(_proc);
             print(module.get());
@@ -141,14 +141,14 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
     // if (asgn->getLeft()->isFlags())
     //    return;
 
-    QString     tgt;
+    QString tgt;
     OStream ost(&tgt);
     indent(ost, m_indent);
 
     SharedType asgnType = asgn->getType();
-    SharedExp  lhs      = asgn->getLeft();
-    SharedExp  rhs      = asgn->getRight();
-    UserProc   *proc    = asgn->getProc();
+    SharedExp lhs       = asgn->getLeft();
+    SharedExp rhs       = asgn->getRight();
+    UserProc *proc      = asgn->getProc();
 
     if (*lhs == *rhs) {
         return; // never want to see a = a;
@@ -164,13 +164,15 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
              lhs->getSubExp3()->isIntConst()) {
         // exp1@[n:m] := rhs -> exp1 = exp1 & mask | rhs << m  where mask = ~((1 << m-n+1)-1)
         SharedExp exp1 = lhs->getSubExp1();
-        int       n    = lhs->access<Const, 2>()->getInt();
-        int       m    = lhs->access<Const, 3>()->getInt();
+        int n          = lhs->access<Const, 2>()->getInt();
+        int m          = lhs->access<Const, 3>()->getInt();
         appendExp(ost, *exp1, OpPrec::Assign);
         ost << " = ";
-        int mask = ~(((1 << (m - n + 1)) - 1) << m); // MSVC winges without most of these parentheses
-        rhs = Binary::get(opBitAnd, exp1,
-                          Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
+        int mask = ~(((1 << (m - n + 1)) - 1)
+                     << m); // MSVC winges without most of these parentheses
+        rhs      = Binary::get(
+            opBitAnd, exp1,
+            Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
         rhs = rhs->simplify();
         appendExp(ost, *rhs, OpPrec::Assign);
         ost << ";";
@@ -234,10 +236,10 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
 }
 
 
-void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
-                                      const StatementList& args, const StatementList& results)
+void CCodeGenerator::addCallStatement(Function *proc, const QString &name,
+                                      const StatementList &args, const StatementList &results)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -251,7 +253,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
 
     s << name << "(";
     bool first = true;
-    int  n     = 0;
+    int n      = 0;
 
     for (StatementList::const_iterator ss = args.begin(); ss != args.end(); ++ss, ++n) {
         if (first) {
@@ -263,12 +265,14 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
 
         Assignment *arg_assign = dynamic_cast<Assignment *>(*ss);
         assert(arg_assign != nullptr);
-        SharedType t         = arg_assign->getType();
-        auto       as_arg    = arg_assign->getRight();
-        auto       const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
-        bool       ok        = true;
+        SharedType t   = arg_assign->getType();
+        auto as_arg    = arg_assign->getRight();
+        auto const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
+        bool ok        = true;
 
-        if (t && t->isPointer() && std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() && const_arg->isIntConst()) {
+        if (t && t->isPointer() &&
+            std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() &&
+            const_arg->isIntConst()) {
             Function *p = proc->getProg()->getFunctionByAddr(const_arg->getAddr());
 
             if (p) {
@@ -296,7 +300,7 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
                 s << ", ";
             }
 
-            const Assignment* assign = dynamic_cast<const Assignment *>(*ss);
+            const Assignment *assign = dynamic_cast<const Assignment *>(*ss);
             assert(assign != nullptr);
             appendExp(s, *assign->getLeft(), OpPrec::Comma);
         }
@@ -308,23 +312,23 @@ void CCodeGenerator::addCallStatement(Function *proc, const QString& name,
 }
 
 
-void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementList& args,
-                                         const StatementList& results)
+void CCodeGenerator::addIndCallStatement(const SharedExp &exp, const StatementList &args,
+                                         const StatementList &results)
 {
     Q_UNUSED(results);
     //    FIXME: Need to use 'results', since we can infer some defines...
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
     indent(s, m_indent);
     s << "(*";
     appendExp(s, *exp, OpPrec::None);
     s << ")(";
     QStringList arg_strings;
-    QString     arg_tgt;
+    QString arg_tgt;
 
     for (Statement *ss : args) {
         OStream arg_str(&arg_tgt);
-        SharedExp   arg = static_cast<Assign *>(ss)->getRight();
+        SharedExp arg = static_cast<Assign *>(ss)->getRight();
         appendExp(arg_str, *arg, OpPrec::Comma);
         arg_strings << arg_tgt;
         arg_tgt.clear();
@@ -338,9 +342,10 @@ void CCodeGenerator::addIndCallStatement(const SharedExp& exp, const StatementLi
 void CCodeGenerator::addReturnStatement(const StatementList *rets)
 {
     // FIXME: should be returning a struct of more than one real return */
-    // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be removed here
-    QString                 tgt;
-    OStream             ost(&tgt);
+    // The stack pointer is wanted as a define in calls, and so appears in returns, but needs to be
+    // removed here
+    QString tgt;
+    OStream ost(&tgt);
     indent(ost, m_indent);
     ost << "return";
     size_t n = rets->size();
@@ -386,8 +391,8 @@ void CCodeGenerator::removeUnusedLabels()
 {
     for (QStringList::iterator it = m_lines.begin(); it != m_lines.end();) {
         if (it->startsWith("bb0x") && it->contains(':')) {
-            QStringRef bbAddrString = it->midRef(4, it->indexOf(':')-4);
-            bool ok = false;
+            QStringRef bbAddrString = it->midRef(4, it->indexOf(':') - 4);
+            bool ok                 = false;
             Address bbAddr(bbAddrString.toLongLong(&ok, 16));
             assert(ok);
 
@@ -462,10 +467,13 @@ void CCodeGenerator::generateCode(UserProc *proc)
 }
 
 
-void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString section_name, Address section_start, uint32_t size)
+void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString section_name,
+                                             Address section_start, uint32_t size)
 {
-    addGlobal("start_" + section_name, IntegerType::get(32, Sign::Unsigned), Const::get(section_start));
-    addGlobal(section_name + "_size", IntegerType::get(32, Sign::Unsigned), Const::get(size ? size : static_cast<uint32_t>(-1)));
+    addGlobal("start_" + section_name, IntegerType::get(32, Sign::Unsigned),
+              Const::get(section_start));
+    addGlobal(section_name + "_size", IntegerType::get(32, Sign::Unsigned),
+              Const::get(size ? size : static_cast<uint32_t>(-1)));
     auto l = Terminal::get(opNil);
 
     for (unsigned int i = 0; i < size; i++) {
@@ -480,18 +488,18 @@ void CCodeGenerator::generateDataSectionCode(const BinaryImage *image, QString s
 
 void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 {
-    QString         tgt;
-    OStream     s(&tgt);
+    QString tgt;
+    OStream s(&tgt);
     ReturnStatement *returns = proc->getRetStmt();
-    SharedType      retType;
+    SharedType retType;
 
     if (proc->getSignature()->isForced()) {
         if (proc->getSignature()->getNumReturns() == 0) {
             s << "void ";
         }
         else {
-            int n = 0;
-            SharedExp    e = proc->getSignature()->getReturnExp(0);
+            int n       = 0;
+            SharedExp e = proc->getSignature()->getReturnExp(0);
 
             if (e->isRegN(Util::getStackRegisterIndex(proc->getProg()))) {
                 n = 1;
@@ -511,7 +519,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
     }
     else {
         Assign *firstRet = static_cast<Assign *>(*returns->begin());
-        retType = firstRet->getType();
+        retType          = firstRet->getType();
 
         if ((retType == nullptr) || retType->isVoid()) {
             // There is a real return; make it integer (Remove with AD HOC type analysis)
@@ -528,7 +536,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
     }
 
     s << proc->getName() << "(";
-    StatementList& parameters = proc->getParameters();
+    StatementList &parameters = proc->getParameters();
 
     if ((parameters.size() > 10) && open) {
         LOG_WARN("Proc %1 has %2 parameters", proc->getName(), parameters.size());
@@ -544,9 +552,9 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             s << ", ";
         }
 
-        Assignment *as  = static_cast<Assignment *>(*pp);
-        SharedExp  left = as->getLeft();
-        SharedType ty   = as->getType();
+        Assignment *as = static_cast<Assignment *>(*pp);
+        SharedExp left = as->getLeft();
+        SharedType ty  = as->getType();
 
         if (ty == nullptr) {
             if (proc->getProg()->getProject()->getSettings()->verboseOutput) {
@@ -566,7 +574,8 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             name = "??";
         }
 
-        if (ty->isPointer() && std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isArray()) {
+        if (ty->isPointer() &&
+            std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isArray()) {
             // C does this by default when you pass an array, i.e. you pass &array meaning array
             // Replace all m[param] with foo, param with foo, then foo with param
             ty = std::static_pointer_cast<PointerType>(ty)->getPointsTo();
@@ -594,9 +603,9 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 }
 
 
-void CCodeGenerator::addPretestedLoopHeader(const SharedExp& cond)
+void CCodeGenerator::addPretestedLoopHeader(const SharedExp &cond)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -613,7 +622,7 @@ void CCodeGenerator::addPretestedLoopEnd()
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -624,7 +633,7 @@ void CCodeGenerator::addPretestedLoopEnd()
 
 void CCodeGenerator::addEndlessLoopHeader()
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -638,7 +647,7 @@ void CCodeGenerator::addEndlessLoopHeader()
 void CCodeGenerator::addEndlessLoopEnd()
 {
     m_indent--;
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -649,7 +658,7 @@ void CCodeGenerator::addEndlessLoopEnd()
 
 void CCodeGenerator::addPostTestedLoopHeader()
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -659,11 +668,11 @@ void CCodeGenerator::addPostTestedLoopHeader()
 }
 
 
-void CCodeGenerator::addPostTestedLoopEnd(const SharedExp& cond)
+void CCodeGenerator::addPostTestedLoopEnd(const SharedExp &cond)
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -674,9 +683,9 @@ void CCodeGenerator::addPostTestedLoopEnd(const SharedExp& cond)
 }
 
 
-void CCodeGenerator::addCaseCondHeader(const SharedExp& cond)
+void CCodeGenerator::addCaseCondHeader(const SharedExp &cond)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -689,11 +698,11 @@ void CCodeGenerator::addCaseCondHeader(const SharedExp& cond)
 }
 
 
-void CCodeGenerator::addCaseCondOption(Exp& opt)
+void CCodeGenerator::addCaseCondOption(Exp &opt)
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -708,7 +717,7 @@ void CCodeGenerator::addCaseCondOption(Exp& opt)
 
 void CCodeGenerator::addCaseCondOptionEnd()
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -720,7 +729,7 @@ void CCodeGenerator::addCaseCondOptionEnd()
 void CCodeGenerator::addCaseCondElse()
 {
     m_indent--;
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -735,7 +744,7 @@ void CCodeGenerator::addCaseCondEnd()
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -744,9 +753,9 @@ void CCodeGenerator::addCaseCondEnd()
 }
 
 
-void CCodeGenerator::addIfCondHeader(const SharedExp& cond)
+void CCodeGenerator::addIfCondHeader(const SharedExp &cond)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -763,7 +772,7 @@ void CCodeGenerator::addIfCondEnd()
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -772,9 +781,9 @@ void CCodeGenerator::addIfCondEnd()
 }
 
 
-void CCodeGenerator::addIfElseCondHeader(const SharedExp& cond)
+void CCodeGenerator::addIfElseCondHeader(const SharedExp &cond)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -791,7 +800,7 @@ void CCodeGenerator::addIfElseCondOption()
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -811,7 +820,7 @@ void CCodeGenerator::addIfElseCondEnd()
 {
     m_indent--;
 
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -822,7 +831,7 @@ void CCodeGenerator::addIfElseCondEnd()
 
 void CCodeGenerator::addGoto(const BasicBlock *bb)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -834,7 +843,7 @@ void CCodeGenerator::addGoto(const BasicBlock *bb)
 
 void CCodeGenerator::addContinue()
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -845,7 +854,7 @@ void CCodeGenerator::addContinue()
 
 void CCodeGenerator::addBreak()
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     indent(s, m_indent);
@@ -856,7 +865,7 @@ void CCodeGenerator::addBreak()
 
 void CCodeGenerator::addLabel(const BasicBlock *bb)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     s << "bb0x" << QString::number(bb->getLowAddr().value(), 16) << ":";
@@ -866,7 +875,7 @@ void CCodeGenerator::addLabel(const BasicBlock *bb)
 
 void CCodeGenerator::addProcStart(UserProc *proc)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     s << "/** address: " << proc->getEntryAddress() << " */";
@@ -883,9 +892,9 @@ void CCodeGenerator::addProcEnd()
 }
 
 
-void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
+void CCodeGenerator::addLocal(const QString &name, SharedType type, bool last)
 {
-    QString     tgt;
+    QString tgt;
     OStream ost(&tgt);
 
     indent(ost, 1);
@@ -894,7 +903,8 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 
     if (e) {
         // ? Should never see subscripts in the back end!
-        if ((e->getOper() == opSubscript) && std::static_pointer_cast<const RefExp>(e)->isImplicitDef() &&
+        if ((e->getOper() == opSubscript) &&
+            std::static_pointer_cast<const RefExp>(e)->isImplicitDef() &&
             ((e->getSubExp1()->getOper() == opParam) || (e->getSubExp1()->getOper() == opGlobal))) {
             ost << " = ";
             appendExp(ost, *e->getSubExp1(), OpPrec::None);
@@ -917,9 +927,9 @@ void CCodeGenerator::addLocal(const QString& name, SharedType type, bool last)
 }
 
 
-void CCodeGenerator::addGlobal(const QString& name, SharedType type, const SharedExp& init)
+void CCodeGenerator::addGlobal(const QString &name, SharedType type, const SharedExp &init)
 {
-    QString     tgt;
+    QString tgt;
     OStream s(&tgt);
 
     // Check for array types. These are declared differently in C than
@@ -930,11 +940,12 @@ void CCodeGenerator::addGlobal(const QString& name, SharedType type, const Share
         appendType(s, base);
         s << " " << name << "[" << std::static_pointer_cast<ArrayType>(type)->getLength() << "]";
     }
-    else if (type->isPointer() && std::static_pointer_cast<PointerType>(type)->getPointsTo()->resolvesToFunc()) {
+    else if (type->isPointer() &&
+             std::static_pointer_cast<PointerType>(type)->getPointsTo()->resolvesToFunc()) {
         // These are even more different to declare than to print. Example:
         // void (void)* global0 = foo__1B;     ->
         // void (*global0)(void) = foo__1B;
-        auto pt = std::static_pointer_cast<PointerType>(type);
+        auto pt                      = std::static_pointer_cast<PointerType>(type);
         std::shared_ptr<FuncType> ft = std::static_pointer_cast<FuncType>(pt->getPointsTo());
         QString ret, param;
         ft->getReturnAndParam(ret, param);
@@ -948,7 +959,8 @@ void CCodeGenerator::addGlobal(const QString& name, SharedType type, const Share
     if (init && !init->isNil()) {
         s << " = ";
         SharedType base_type = type->isArray() ? type->as<ArrayType>()->getBaseType() : type;
-        appendExp(s, *init, OpPrec::Assign, base_type->isInteger() ? base_type->as<IntegerType>()->isUnsigned() : false);
+        appendExp(s, *init, OpPrec::Assign,
+                  base_type->isInteger() ? base_type->as<IntegerType>()->isUnsigned() : false);
     }
 
     s << ";";
@@ -961,19 +973,20 @@ void CCodeGenerator::addGlobal(const QString& name, SharedType type, const Share
 }
 
 
-void CCodeGenerator::addLineComment(const QString& cmt)
+void CCodeGenerator::addLineComment(const QString &cmt)
 {
     appendLine(QString("/* %1 */").arg(cmt));
 }
 
 
-void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, bool uns /* = false */)
+void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, bool uns /* = false */)
 {
     const OPER op = exp.getOper();
 
-#if SYMS_IN_BACK_END                    // Should no longer be any unmapped symbols by the back end
+#if SYMS_IN_BACK_END // Should no longer be any unmapped symbols by the back end
     // Check if it's mapped to a symbol
-    if (m_proc && !exp->isTypedExp()) { // Beware: lookupSym will match (cast)r24 to local0, stripping the cast!
+    if (m_proc && !exp->isTypedExp()) { // Beware: lookupSym will match (cast)r24 to local0,
+                                        // stripping the cast!
         const char *sym = m_proc->lookupSym(exp);
 
         if (sym) {
@@ -983,197 +996,151 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
     }
 #endif
 
-    const Const&   constExp(static_cast<const Const&>(exp));
-    const Unary&   unaryExp(static_cast<const Unary&>(exp));
-    const Binary&  binaryExp(static_cast<const Binary&>(exp));
-    const Ternary& ternaryExp(static_cast<const Ternary&>(exp));
+    const Const &constExp(static_cast<const Const &>(exp));
+    const Unary &unaryExp(static_cast<const Unary &>(exp));
+    const Binary &binaryExp(static_cast<const Binary &>(exp));
+    const Ternary &ternaryExp(static_cast<const Ternary &>(exp));
 
-    switch (op)
-    {
-    case opIntConst:
-        {
-            int K = constExp.getInt();
+    switch (op) {
+    case opIntConst: {
+        int K = constExp.getInt();
 
-            if (uns && (K < 0)) {
-                // An unsigned constant. Use some heuristics
-                unsigned rem = static_cast<unsigned int>(K) % 100;
+        if (uns && (K < 0)) {
+            // An unsigned constant. Use some heuristics
+            unsigned rem = static_cast<unsigned int>(K) % 100;
 
-                if ((rem == 0) || (rem == 99) || (K > -128)) {
-                    // A multiple of 100, or one less; use 4000000000U style
-                    char num[16];
-                    sprintf(num, "%u", static_cast<unsigned int>(K));
-                    str << num << "U";
-                }
-                else {
-                    // Output it in 0xF0000000 style
-                    str << "0x" << QString::number(uint32_t(K), 16);
+            if ((rem == 0) || (rem == 99) || (K > -128)) {
+                // A multiple of 100, or one less; use 4000000000U style
+                char num[16];
+                sprintf(num, "%u", static_cast<unsigned int>(K));
+                str << num << "U";
+            }
+            else {
+                // Output it in 0xF0000000 style
+                str << "0x" << QString::number(uint32_t(K), 16);
+            }
+        }
+        else {
+            if (constExp.getType() && constExp.getType()->isChar()) {
+                switch (K) {
+                case '\a': str << "'\\a'"; break;
+                case '\b': str << "'\\b'"; break;
+                case '\f': str << "'\\f'"; break;
+                case '\n': str << "'\\n'"; break;
+                case '\r': str << "'\\r'"; break;
+                case '\t': str << "'\\t'"; break;
+                case '\v': str << "'\\v'"; break;
+                case '\\': str << "'\\\\'"; break;
+                case '\?': str << "'\\?'"; break;
+                case '\'': str << "'\\''"; break;
+                case '\"': str << "'\\\"'"; break;
+                default: str << "'" << static_cast<char>(K) << "'";
                 }
             }
             else {
-                if (constExp.getType() && constExp.getType()->isChar()) {
-                    switch (K)
-                    {
-                    case '\a':
-                        str << "'\\a'";
-                        break;
-
-                    case '\b':
-                        str << "'\\b'";
-                        break;
-
-                    case '\f':
-                        str << "'\\f'";
-                        break;
-
-                    case '\n':
-                        str << "'\\n'";
-                        break;
-
-                    case '\r':
-                        str << "'\\r'";
-                        break;
-
-                    case '\t':
-                        str << "'\\t'";
-                        break;
-
-                    case '\v':
-                        str << "'\\v'";
-                        break;
-
-                    case '\\':
-                        str << "'\\\\'";
-                        break;
-
-                    case '\?':
-                        str << "'\\?'";
-                        break;
-
-                    case '\'':
-                        str << "'\\''";
-                        break;
-
-                    case '\"':
-                        str << "'\\\"'";
-                        break;
-
-                    default:
-                        str << "'" << static_cast<char>(K) << "'";
-                    }
+                // More heuristics
+                if ((-2048 < K) && (K < 2048)) {
+                    str << K; // Just a plain vanilla int
                 }
                 else {
-                    // More heuristics
-                    if ((-2048 < K) && (K < 2048)) {
-                        str << K; // Just a plain vanilla int
-                    }
-                    else {
-                        str << "0x" << QString::number(uint32_t(K), 16); // 0x2000 style
-                    }
+                    str << "0x" << QString::number(uint32_t(K), 16); // 0x2000 style
                 }
             }
-
-            break;
         }
 
-    case opLongConst:
+        break;
+    }
 
+    case opLongConst:
         // str << std::dec << c->getLong() << "LL"; break;
-        if ((static_cast<long long>(constExp.getLong()) < -1000LL) || (constExp.getLong() > 1000ULL)) {
+        if ((static_cast<long long>(constExp.getLong()) < -1000LL) ||
+            (constExp.getLong() > 1000ULL)) {
             str << "0x" << QString::number(constExp.getLong(), 16) << "LL";
         }
         else {
             str << constExp.getLong() << "LL";
         }
-
         break;
 
-    case opFltConst:
-        {
-            // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000 or 0.99999
-            QString flt_val = QString::number(constExp.getFlt(), 'g', 8);
+    case opFltConst: {
+        // str.precision(4);     // What to do with precision here? Would be nice to avoid 1.00000
+        // or 0.99999
+        QString flt_val = QString::number(constExp.getFlt(), 'g', 8);
 
-            if (!flt_val.contains('.')) {
-                flt_val += '.';
-            }
-
-            str << flt_val;
-            break;
+        if (!flt_val.contains('.')) {
+            flt_val += '.';
         }
+
+        str << flt_val;
+        break;
+    }
 
     case opStrConst:
         // escape string:
         str << "\"" << Util::escapeStr(constExp.getStr()) << "\"";
         break;
 
-    case opFuncConst:
-        str << constExp.getFuncName();
-        break;
+    case opFuncConst: str << constExp.getFuncName(); break;
 
-    case opAddrOf:
-        {
-            SharedConstExp sub = unaryExp.getSubExp1();
+    case opAddrOf: {
+        SharedConstExp sub = unaryExp.getSubExp1();
 
-            if (sub->isGlobal()) {
-                Prog *prog = m_proc->getProg();
+        if (sub->isGlobal()) {
+            Prog *prog = m_proc->getProg();
 
-                auto       con = std::static_pointer_cast<const Const>(sub->getSubExp1());
-                SharedType gt  = prog->getGlobalType(con->getStr());
+            auto con      = std::static_pointer_cast<const Const>(sub->getSubExp1());
+            SharedType gt = prog->getGlobalType(con->getStr());
 
-                if (gt && (gt->isArray() || (gt->isPointer() && gt->as<PointerType>()->getPointsTo()->isChar()))) {
-                    // Special C requirement: don't emit "&" for address of an array or char*
-                    appendExp(str, *sub, curPrec);
-                    break;
-                }
+            if (gt && (gt->isArray() ||
+                       (gt->isPointer() && gt->as<PointerType>()->getPointsTo()->isChar()))) {
+                // Special C requirement: don't emit "&" for address of an array or char*
+                appendExp(str, *sub, curPrec);
+                break;
             }
+        }
 
 #if SYMS_IN_BACK_END
-            if (sub->isMemOf() && (m_proc->lookupSym(sub) == nullptr)) { // }
+        if (sub->isMemOf() && (m_proc->lookupSym(sub) == nullptr)) { // }
 #else
-            if (sub->isMemOf()) {
+        if (sub->isMemOf()) {
 #endif
 
-                // Avoid &*(type*)sub, just emit sub
-                appendExp(str, *sub->getSubExp1(), OpPrec::Unary);
-            }
-            else {
-                openParen(str, curPrec, OpPrec::Unary);
-                str << "&";
-                appendExp(str, *sub, OpPrec::Unary);
-                closeParen(str, curPrec, OpPrec::Unary);
-            }
-
-            break;
+            // Avoid &*(type*)sub, just emit sub
+            appendExp(str, *sub->getSubExp1(), OpPrec::Unary);
         }
+        else {
+            openParen(str, curPrec, OpPrec::Unary);
+            str << "&";
+            appendExp(str, *sub, OpPrec::Unary);
+            closeParen(str, curPrec, OpPrec::Unary);
+        }
+
+        break;
+    }
 
     case opParam:
     case opGlobal:
-    case opLocal:
-        {
-            auto c1 = std::dynamic_pointer_cast<const Const>(unaryExp.getSubExp1());
-            assert(c1 && c1->getOper() == opStrConst);
-            str << c1->getStr();
-        }
-        break;
+    case opLocal: {
+        auto c1 = std::dynamic_pointer_cast<const Const>(unaryExp.getSubExp1());
+        assert(c1 && c1->getOper() == opStrConst);
+        str << c1->getStr();
+    } break;
 
-    case opEquals:
-        {
-            openParen(str, curPrec, OpPrec::Equal);
-            appendExp(str, *binaryExp.getSubExp1(), OpPrec::Equal);
-            str << " == ";
-            appendExp(str, *binaryExp.getSubExp2(), OpPrec::Equal);
-            closeParen(str, curPrec, OpPrec::Equal);
-        }
-        break;
+    case opEquals: {
+        openParen(str, curPrec, OpPrec::Equal);
+        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Equal);
+        str << " == ";
+        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Equal);
+        closeParen(str, curPrec, OpPrec::Equal);
+    } break;
 
-    case opNotEqual:
-        {
-            openParen(str, curPrec, OpPrec::Equal);
-            appendExp(str, *binaryExp.getSubExp1(), OpPrec::Equal);
-            str << " != ";
-            appendExp(str, *binaryExp.getSubExp2(), OpPrec::Equal);
-            closeParen(str, curPrec, OpPrec::Equal);
-        }
-        break;
+    case opNotEqual: {
+        openParen(str, curPrec, OpPrec::Equal);
+        appendExp(str, *binaryExp.getSubExp1(), OpPrec::Equal);
+        str << " != ";
+        appendExp(str, *binaryExp.getSubExp2(), OpPrec::Equal);
+        closeParen(str, curPrec, OpPrec::Equal);
+    } break;
 
     case opLess:
     case opLessUns:
@@ -1234,9 +1201,10 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
 
         if (binaryExp.getSubExp2()->isIntConst()) {
             // print it 0x2000 style
-            uint32_t val     = uint32_t(std::static_pointer_cast<const Const>(binaryExp.getSubExp2())->getInt());
-            QString  vanilla = QString("0x") + QString::number(val, 16);
-            QString  negated = QString("~0x") + QString::number(~val, 16);
+            uint32_t val = uint32_t(
+                std::static_pointer_cast<const Const>(binaryExp.getSubExp2())->getInt());
+            QString vanilla = QString("0x") + QString::number(val, 16);
+            QString negated = QString("~0x") + QString::number(~val, 16);
 
             if (negated.size() < vanilla.size()) {
                 str << negated;
@@ -1290,31 +1258,30 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::Unary);
         break;
 
-    case opAt:
-        {
-            // I guess that most people will find this easier to read
-            // s1 >> last & 0xMASK
-            openParen(str, curPrec, OpPrec::BitAnd);
-            appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
-            auto first = std::static_pointer_cast<const Const>(ternaryExp.getSubExp2());
-            auto last  = std::static_pointer_cast<const Const>(ternaryExp.getSubExp3());
-            str << " >> ";
-            appendExp(str, *last, OpPrec::BitShift);
-            str << " & ";
+    case opAt: {
+        // I guess that most people will find this easier to read
+        // s1 >> last & 0xMASK
+        openParen(str, curPrec, OpPrec::BitAnd);
+        appendExp(str, *ternaryExp.getSubExp1(), OpPrec::BitShift);
+        auto first = std::static_pointer_cast<const Const>(ternaryExp.getSubExp2());
+        auto last  = std::static_pointer_cast<const Const>(ternaryExp.getSubExp3());
+        str << " >> ";
+        appendExp(str, *last, OpPrec::BitShift);
+        str << " & ";
 
-            unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
+        unsigned int mask = (1 << (first->getInt() - last->getInt() + 1)) - 1;
 
-            // print 0x3 as 3
-            if (mask < 10) {
-                str << mask;
-            }
-            else {
-                str << "0x" << QString::number(mask, 16);
-            }
-
-            closeParen(str, curPrec, OpPrec::BitAnd);
-            break;
+        // print 0x3 as 3
+        if (mask < 10) {
+            str << mask;
         }
+        else {
+            str << "0x" << QString::number(mask, 16);
+        }
+
+        closeParen(str, curPrec, OpPrec::BitAnd);
+        break;
+    }
 
     case opPlus:
         openParen(str, curPrec, OpPrec::Add);
@@ -1340,32 +1307,30 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         closeParen(str, curPrec, OpPrec::Unary);
         break;
 
-    case opRegOf:
-        {
-            // MVE: this can likely go
-            LOG_VERBOSE("Case opRegOf is deprecated");
+    case opRegOf: {
+        // MVE: this can likely go
+        LOG_VERBOSE("Case opRegOf is deprecated");
 
-            if (unaryExp.getSubExp1()->getOper() == opTemp) {
-                // The great debate: r[tmpb] vs tmpb
-                str << "tmp";
-                break;
-            }
-
-            assert(unaryExp.getSubExp1()->isIntConst());
-            const int regID = unaryExp.access<const Const, 1>()->getInt();
-            QString regName = m_proc->getProg()->getRegName(regID);
-
-            if (!regName.isEmpty()) {
-                str << regName;
-            }
-            else {
-                // What is this doing in the back end???
-                str << "r[";
-                appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
-                str << "]";
-            }
+        if (unaryExp.getSubExp1()->getOper() == opTemp) {
+            // The great debate: r[tmpb] vs tmpb
+            str << "tmp";
+            break;
         }
-        break;
+
+        assert(unaryExp.getSubExp1()->isIntConst());
+        const int regID = unaryExp.access<const Const, 1>()->getInt();
+        QString regName = m_proc->getProg()->getRegName(regID);
+
+        if (!regName.isEmpty()) {
+            str << regName;
+        }
+        else {
+            // What is this doing in the back end???
+            str << "r[";
+            appendExp(str, *unaryExp.getSubExp1(), OpPrec::None);
+            str << "]";
+        }
+    } break;
 
     case opTemp:
         // Should never see this; temps should be mapped to locals now so that they get declared
@@ -1389,19 +1354,12 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
             assert(ternaryExp.getSubExp1()->isIntConst());
             int float_bits = ternaryExp.access<Const, 1>()->getInt();
 
-            switch (float_bits)
-            {
-            case 32:
-                str << "*((float *)&";
-                break;
+            switch (float_bits) {
+            case 32: str << "*((float *)&"; break;
 
-            case 64:
-                str << "*((double *)&";
-                break;
+            case 64: str << "*((double *)&"; break;
 
-            case 80:
-                str << "*((long double*)&";
-                break;
+            case 80: str << "*((long double*)&"; break;
             }
 
             openParen(str, curPrec, curPrec);
@@ -1562,9 +1520,9 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
 
     case opSize:
 
-//         SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
-//         str << "*(" << ty->getCtype(true) << " *)";
-//         appendExp(str, new Unary(opAddrOf, b.getSubExp2()), OpPrec::PREC_UNARY);
+        //         SharedType ty = new IntegerType(((Const*)b.getSubExp1())->getInt(), 1);
+        //         str << "*(" << ty->getCtype(true) << " *)";
+        //         appendExp(str, new Unary(opAddrOf, b.getSubExp2()), OpPrec::PREC_UNARY);
         appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
         break;
 
@@ -1594,65 +1552,57 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         // assert(false);
         break;
 
-    case opFlagCall:
-        {
-            assert(binaryExp.getSubExp1()->getOper() == opStrConst);
-            str << binaryExp.access<Const, 1>()->getStr();
-            str << "(";
-            auto l = binaryExp.getSubExp2();
+    case opFlagCall: {
+        assert(binaryExp.getSubExp1()->getOper() == opStrConst);
+        str << binaryExp.access<Const, 1>()->getStr();
+        str << "(";
+        auto l = binaryExp.getSubExp2();
 
-            for ( ; l && l->getOper() == opList; l = l->getSubExp2()) {
-                appendExp(str, *l->getSubExp1(), OpPrec::None);
+        for (; l && l->getOper() == opList; l = l->getSubExp2()) {
+            appendExp(str, *l->getSubExp1(), OpPrec::None);
 
-                if (l->getSubExp2()->getOper() == opList) {
-                    str << ", ";
-                }
+            if (l->getSubExp2()->getOper() == opList) {
+                str << ", ";
             }
-
-            str << ")";
         }
-        break;
 
-    case opList:
-        {
-            int            elems_on_line = 0; // try to limit line lengths
-            SharedConstExp b2            = binaryExp.shared_from_this();
-            SharedConstExp e2            = binaryExp.getSubExp2();
-            str << "{ ";
+        str << ")";
+    } break;
 
-            if (binaryExp.getSubExp1()->getOper() == opList) {
-                str << "\n ";
-            }
+    case opList: {
+        int elems_on_line = 0; // try to limit line lengths
+        SharedConstExp b2 = binaryExp.shared_from_this();
+        SharedConstExp e2 = binaryExp.getSubExp2();
+        str << "{ ";
 
-            while (e2->getOper() == opList) {
-                appendExp(str, *b2->getSubExp1(), OpPrec::None, uns);
-                ++elems_on_line;
+        if (binaryExp.getSubExp1()->getOper() == opList) {
+            str << "\n ";
+        }
 
-                if ((b2->getSubExp1()->getOper() == opList) ||
-                    (elems_on_line >= 16) /* completely arbitrary, but better than nothing*/) {
-                    str << ",\n ";
-                    elems_on_line = 0;
-                }
-                else {
-                    str << ", ";
-                }
-
-                b2 = e2;
-                e2 = b2->getSubExp2();
-            }
-
+        while (e2->getOper() == opList) {
             appendExp(str, *b2->getSubExp1(), OpPrec::None, uns);
-            str << " }";
+            ++elems_on_line;
+
+            if ((b2->getSubExp1()->getOper() == opList) ||
+                (elems_on_line >= 16) /* completely arbitrary, but better than nothing*/) {
+                str << ",\n ";
+                elems_on_line = 0;
+            }
+            else {
+                str << ", ";
+            }
+
+            b2 = e2;
+            e2 = b2->getSubExp2();
         }
-        break;
 
-    case opFlags:
-        str << "flags";
-        break;
+        appendExp(str, *b2->getSubExp1(), OpPrec::None, uns);
+        str << " }";
+    } break;
 
-    case opPC:
-        str << "pc";
-        break;
+    case opFlags: str << "flags"; break;
+
+    case opPC: str << "pc"; break;
 
     case opZfill:
 
@@ -1661,7 +1611,8 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         //    ((Const*)t.getSubExp1())->getInt(),
         //    ((Const*)t.getSubExp2())->getInt());
         // strcat(str, s); */
-        if (ternaryExp.getSubExp3()->isMemOf() && ternaryExp.getSubExp1()->isIntConst() && ternaryExp.getSubExp2()->isIntConst() &&
+        if (ternaryExp.getSubExp3()->isMemOf() && ternaryExp.getSubExp1()->isIntConst() &&
+            ternaryExp.getSubExp2()->isIntConst() &&
             (ternaryExp.access<Const, 2>()->getInt() == 32)) {
             int sz = ternaryExp.access<Const, 1>()->getInt();
 
@@ -1691,157 +1642,130 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         str << ")";
         break;
 
-    case opTypedExp:
-        {
+    case opTypedExp: {
 #if SYMS_IN_BACK_END
-            Exp        *b   = u.getSubExp1();         // Base expression
-            const char *sym = m_proc->lookupSym(exp); // Check for (cast)sym
+        Exp *b          = u.getSubExp1();         // Base expression
+        const char *sym = m_proc->lookupSym(exp); // Check for (cast)sym
 
-            if (sym) {
-                str << "(";
-                appendType(str, ((TypedExp *)u)->getType());
-                str << ")" << sym;
-                break;
-            }
-#endif
-
-            if ((unaryExp.getSubExp1()->getOper() == opTypedExp) &&
-                (*static_cast<const TypedExp&>(unaryExp).getType() == *unaryExp.access<TypedExp, 1>()->getType())) {
-                // We have (type)(type)x: recurse with type(x)
-                appendExp(str, *unaryExp.getSubExp1(), curPrec);
-            }
-            else if (unaryExp.getSubExp1()->getOper() == opMemOf) {
-                // We have (tt)m[x]
-                SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
-                SharedConstExp x = unaryExp.getSubExp1()->getSubExp1();
-                std::shared_ptr<const PointerType> xType = nullptr; // type of "x"
-                if (x->isTypedExp()) {
-                    // x is of type pointer-to-type
-                    auto ptrTy = std::static_pointer_cast<const TypedExp>(x)->getType();
-                    xType = ptrTy->isPointer() ? std::static_pointer_cast<const PointerType>(ptrTy) : nullptr;
-                }
-
-                if (xType && (*tt == *xType->getPointsTo() || (tt->isSize() && (xType->getPointsTo()->getSize() == tt->getSize())))) {
-                    str << "*"; // memof degrades to dereference if types match
-                }
-                else {//  *(T *)
-                    str << "*(";
-                    appendType(str, tt);
-                    str << "*)";
-                }
-
-                openParen(str, curPrec, OpPrec::Unary);
-                // Emit x
-                // was : ((Location*)((TypedExp&)u).getSubExp1())->getSubExp1()
-                appendExp(str, *unaryExp.getSubExp1()->getSubExp1(), OpPrec::Unary);
-                closeParen(str, curPrec, OpPrec::Unary);
-            }
-            else {
-                // Check for (tt)b where tt is a pointer; could be &local
-                SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
-
-                if (std::dynamic_pointer_cast<const PointerType>(tt)) {
-#if SYMS_IN_BACK_END
-                    const char *sym = m_proc->lookupSym(Location::memOf(b));
-
-                    if (sym) {
-                        openParen(str, curPrec, OpPrec::PREC_UNARY);
-                        str << "&" << sym;
-                        closeParen(str, curPrec, OpPrec::PREC_UNARY);
-                        break;
-                    }
-#endif
-                }
-
-                // Otherwise, fall back to (tt)b
-                str << "(";
-                appendType(str, tt);
-                str << ")";
-                openParen(str, curPrec, OpPrec::Unary);
-                appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
-                closeParen(str, curPrec, OpPrec::Unary);
-            }
-
+        if (sym) {
+            str << "(";
+            appendType(str, ((TypedExp *)u)->getType());
+            str << ")" << sym;
             break;
         }
+#endif
+
+        if ((unaryExp.getSubExp1()->getOper() == opTypedExp) &&
+            (*static_cast<const TypedExp &>(unaryExp).getType() ==
+             *unaryExp.access<TypedExp, 1>()->getType())) {
+            // We have (type)(type)x: recurse with type(x)
+            appendExp(str, *unaryExp.getSubExp1(), curPrec);
+        }
+        else if (unaryExp.getSubExp1()->getOper() == opMemOf) {
+            // We have (tt)m[x]
+            SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
+            SharedConstExp x   = unaryExp.getSubExp1()->getSubExp1();
+            std::shared_ptr<const PointerType> xType = nullptr; // type of "x"
+            if (x->isTypedExp()) {
+                // x is of type pointer-to-type
+                auto ptrTy = std::static_pointer_cast<const TypedExp>(x)->getType();
+                xType      = ptrTy->isPointer() ? std::static_pointer_cast<const PointerType>(ptrTy)
+                                           : nullptr;
+            }
+
+            if (xType && (*tt == *xType->getPointsTo() ||
+                          (tt->isSize() && (xType->getPointsTo()->getSize() == tt->getSize())))) {
+                str << "*"; // memof degrades to dereference if types match
+            }
+            else { //  *(T *)
+                str << "*(";
+                appendType(str, tt);
+                str << "*)";
+            }
+
+            openParen(str, curPrec, OpPrec::Unary);
+            // Emit x
+            // was : ((Location*)((TypedExp&)u).getSubExp1())->getSubExp1()
+            appendExp(str, *unaryExp.getSubExp1()->getSubExp1(), OpPrec::Unary);
+            closeParen(str, curPrec, OpPrec::Unary);
+        }
+        else {
+            // Check for (tt)b where tt is a pointer; could be &local
+            SharedConstType tt = static_cast<const TypedExp &>(unaryExp).getType();
+
+            if (std::dynamic_pointer_cast<const PointerType>(tt)) {
+#if SYMS_IN_BACK_END
+                const char *sym = m_proc->lookupSym(Location::memOf(b));
+
+                if (sym) {
+                    openParen(str, curPrec, OpPrec::PREC_UNARY);
+                    str << "&" << sym;
+                    closeParen(str, curPrec, OpPrec::PREC_UNARY);
+                    break;
+                }
+#endif
+            }
+
+            // Otherwise, fall back to (tt)b
+            str << "(";
+            appendType(str, tt);
+            str << ")";
+            openParen(str, curPrec, OpPrec::Unary);
+            appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
+            closeParen(str, curPrec, OpPrec::Unary);
+        }
+
+        break;
+    }
 
     case opSgnEx:
-    case opTruncs:
-        {
-            SharedConstExp s      = ternaryExp.getSubExp3();
-            int            toSize = ternaryExp.access<Const, 2>()->getInt();
+    case opTruncs: {
+        SharedConstExp s = ternaryExp.getSubExp3();
+        int toSize       = ternaryExp.access<Const, 2>()->getInt();
 
-            switch (toSize)
-            {
-            case 8:
-                str << "(char) ";
-                break;
-
-            case 16:
-                str << "(short) ";
-                break;
-
-            case 64:
-                str << "(long long) ";
-                break;
-
-            default:
-                str << "(int) ";
-                break;
-            }
-
-            appendExp(str, *s, curPrec);
-            break;
+        switch (toSize) {
+        case 8: str << "(char) "; break;
+        case 16: str << "(short) "; break;
+        case 64: str << "(long long) "; break;
+        default: str << "(int) "; break;
         }
 
-    case opTruncu:
-        {
-            SharedConstExp s      = ternaryExp.getSubExp3();
-            int            toSize = ternaryExp.access<Const, 2>()->getInt();
-
-            switch (toSize)
-            {
-            case 8:
-                str << "(unsigned char) ";
-                break;
-
-            case 16:
-                str << "(unsigned short) ";
-                break;
-
-            case 64:
-                str << "(unsigned long long) ";
-                break;
-
-            default:
-                str << "(unsigned int) ";
-                break;
-            }
-
-            appendExp(str, *s, curPrec);
-            break;
-        }
-
-    case opMachFtr:
-        {
-            str << "/* machine specific */ (int) ";
-            auto sub = unaryExp.access<Const, 1>();
-            assert(sub->isStrConst());
-            QString s = sub->getStr();
-
-            if (s[0] == '%') {   // e.g. %Y
-                str << s.mid(1); // Just use Y
-            }
-            else {
-                str << s;
-            }
-
-            break;
-        }
-
-    case opFflags:
-        str << "/* Fflags() */ ";
+        appendExp(str, *s, curPrec);
         break;
+    }
+
+    case opTruncu: {
+        SharedConstExp s = ternaryExp.getSubExp3();
+        int toSize       = ternaryExp.access<Const, 2>()->getInt();
+
+        switch (toSize) {
+        case 8: str << "(unsigned char) "; break;
+        case 16: str << "(unsigned short) "; break;
+        case 64: str << "(unsigned long long) "; break;
+        default: str << "(unsigned int) "; break;
+        }
+
+        appendExp(str, *s, curPrec);
+        break;
+    }
+
+    case opMachFtr: {
+        str << "/* machine specific */ (int) ";
+        auto sub = unaryExp.access<Const, 1>();
+        assert(sub->isStrConst());
+        QString s = sub->getStr();
+
+        if (s[0] == '%') {   // e.g. %Y
+            str << s.mid(1); // Just use Y
+        }
+        else {
+            str << s;
+        }
+
+        break;
+    }
+
+    case opFflags: str << "/* Fflags() */ "; break;
 
     case opPow:
         str << "pow(";
@@ -1898,35 +1822,33 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         LOG_ERROR("Subscript in code generation of proc %1", m_proc->getName());
         break;
 
-    case opMemberAccess:
-        {
-            SharedType ty = nullptr;
+    case opMemberAccess: {
+        SharedType ty = nullptr;
 
-//             if (ty == nullptr) {
-                LOG_MSG("Type failure: no type for subexp1 of %1", binaryExp.shared_from_this());
+        //             if (ty == nullptr) {
+        LOG_MSG("Type failure: no type for subexp1 of %1", binaryExp.shared_from_this());
 
-                // ty = b.getSubExp1()->getType();
-                // No idea why this is hitting! - trentw
-                // str << "/* type failure */ ";
-                // break;
-//             }
+        // ty = b.getSubExp1()->getType();
+        // No idea why this is hitting! - trentw
+        // str << "/* type failure */ ";
+        // break;
+        //             }
 
-            // Trent: what were you thinking here? Fails for things like
-            // local11.lhHeight (where local11 is a register)
-            // Mike: it shouldn't!  local11 should have a compound type
-            // assert(ty->resolvesToCompound());
-            if (binaryExp.getSubExp1()->getOper() == opMemOf) {
-                appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
-                str << "->";
-            }
-            else {
-                appendExp(str, *binaryExp.getSubExp1(), OpPrec::Prim);
-                str << ".";
-            }
-
-            str << binaryExp.access<const Const, 2>()->getStr();
+        // Trent: what were you thinking here? Fails for things like
+        // local11.lhHeight (where local11 is a register)
+        // Mike: it shouldn't!  local11 should have a compound type
+        // assert(ty->resolvesToCompound());
+        if (binaryExp.getSubExp1()->getOper() == opMemOf) {
+            appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
+            str << "->";
         }
-        break;
+        else {
+            appendExp(str, *binaryExp.getSubExp1(), OpPrec::Prim);
+            str << ".";
+        }
+
+        str << binaryExp.access<const Const, 2>()->getStr();
+    } break;
 
     case opArrayIndex:
         openParen(str, curPrec, OpPrec::Prim);
@@ -1934,7 +1856,8 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
         if (binaryExp.getSubExp1()->isMemOf()) {
             SharedType ty = nullptr;
 
-            if (ty && ty->resolvesToPointer() && ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
+            if (ty && ty->resolvesToPointer() &&
+                ty->as<PointerType>()->getPointsTo()->resolvesToArray()) {
                 // a pointer to an array is automatically dereferenced in C
                 appendExp(str, *binaryExp.getSubExp1()->getSubExp1(), OpPrec::Prim);
             }
@@ -1973,7 +1896,7 @@ void CCodeGenerator::appendExp(OStream& str, const Exp& exp, OpPrec curPrec, boo
 }
 
 
-void CCodeGenerator::appendType(OStream& str, SharedConstType typ)
+void CCodeGenerator::appendType(OStream &str, SharedConstType typ)
 {
     if (!typ) {
         str << "int"; // Default type for C
@@ -1984,14 +1907,15 @@ void CCodeGenerator::appendType(OStream& str, SharedConstType typ)
         // C programmers prefer to see pointers to arrays as pointers
         // to the first element of the array.  They then use syntactic
         // sugar to access a pointer as if it were an array.
-        typ = PointerType::get(typ->as<PointerType>()->getPointsTo()->as<ArrayType>()->getBaseType());
+        typ = PointerType::get(
+            typ->as<PointerType>()->getPointsTo()->as<ArrayType>()->getBaseType());
     }
 
     str << typ->getCtype(true);
 }
 
 
-void CCodeGenerator::appendTypeIdent(OStream& str, SharedConstType typ, QString ident)
+void CCodeGenerator::appendTypeIdent(OStream &str, SharedConstType typ, QString ident)
 {
     if (typ == nullptr) {
         return;
@@ -2016,7 +1940,8 @@ void CCodeGenerator::appendTypeIdent(OStream& str, SharedConstType typ, QString 
 
         str << "]";
     }
-    else if (typ->isVoid()) { // Can happen in e.g. twoproc, where really need global parameter and return analysis
+    else if (typ->isVoid()) { // Can happen in e.g. twoproc, where really need global parameter and
+                              // return analysis
         // TMN: Stop crashes by this workaround
         if (ident.isEmpty()) {
             ident = "unknownVoidType";
@@ -2032,7 +1957,7 @@ void CCodeGenerator::appendTypeIdent(OStream& str, SharedConstType typ, QString 
 }
 
 
-void CCodeGenerator::openParen(OStream& str, OpPrec outer, OpPrec inner)
+void CCodeGenerator::openParen(OStream &str, OpPrec outer, OpPrec inner)
 {
     if (inner > outer) {
         str << "(";
@@ -2040,7 +1965,7 @@ void CCodeGenerator::openParen(OStream& str, OpPrec outer, OpPrec inner)
 }
 
 
-void CCodeGenerator::closeParen(OStream& str, OpPrec outer, OpPrec inner)
+void CCodeGenerator::closeParen(OStream &str, OpPrec outer, OpPrec inner)
 {
     if (inner > outer) {
         str << ")";
@@ -2048,15 +1973,18 @@ void CCodeGenerator::closeParen(OStream& str, OpPrec outer, OpPrec inner)
 }
 
 
-void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch, std::list<const BasicBlock *>& followSet,
-                                  std::list<const BasicBlock *>& gotoSet, UserProc *proc)
+void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
+                                  std::list<const BasicBlock *> &followSet,
+                                  std::list<const BasicBlock *> &gotoSet, UserProc *proc)
 {
-    // If this is the follow for the most nested enclosing conditional, then don't generate anything. Otherwise if it is
-    // in the follow set generate a goto to the follow
+    // If this is the follow for the most nested enclosing conditional, then don't generate
+    // anything. Otherwise if it is in the follow set generate a goto to the follow
     const BasicBlock *enclFollow = followSet.empty() ? nullptr : followSet.back();
 
     if (Util::isContained(gotoSet, bb) && !m_analyzer.isLatchNode(bb) &&
-        ((latch && m_analyzer.getLoopHead(latch) && (bb == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)))) || !isAllParentsGenerated(bb))) {
+        ((latch && m_analyzer.getLoopHead(latch) &&
+          (bb == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)))) ||
+         !isAllParentsGenerated(bb))) {
         emitGotoAndLabel(bb, bb);
         return;
     }
@@ -2097,33 +2025,29 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
     //
     if (m_analyzer.isLatchNode(bb)) {
         // FIXME
-//         if (latch && latch->getLoopHead() &&
-//             (m_indent == latch->getLoopHead()->m_indentLevel + ((latch->m_loopHead->m_loopHeaderType == LoopType::PreTested) ? 1 : 0))) {
-//             bb->WriteBB(this);
-//         }
-//         else {
-//             // unset its traversed flag
-//             bb->m_traversed = TravType::Untraversed;
-//             emitGotoAndLabel(this, bb);
-//         }
+        //         if (latch && latch->getLoopHead() &&
+        //             (m_indent == latch->getLoopHead()->m_indentLevel +
+        //             ((latch->m_loopHead->m_loopHeaderType == LoopType::PreTested) ? 1 : 0))) {
+        //             bb->WriteBB(this);
+        //         }
+        //         else {
+        //             // unset its traversed flag
+        //             bb->m_traversed = TravType::Untraversed;
+        //             emitGotoAndLabel(this, bb);
+        //         }
         writeBB(bb);
         return;
     }
 
-    switch (m_analyzer.getStructType(bb))
-    {
+    switch (m_analyzer.getStructType(bb)) {
     case StructType::Loop:
-    case StructType::LoopCond:
-        generateCode_Loop(bb, gotoSet, proc, latch, followSet);
-        break;
+    case StructType::LoopCond: generateCode_Loop(bb, gotoSet, proc, latch, followSet); break;
 
     case StructType::Cond: // if-else / case
         generateCode_Branch(bb, gotoSet, proc, latch, followSet);
         break;
 
-    case StructType::Seq:
-        generateCode_Seq(bb, gotoSet, proc, latch, followSet);
-        break;
+    case StructType::Seq: generateCode_Seq(bb, gotoSet, proc, latch, followSet); break;
 
     default:
         LOG_ERROR("Unhandled structuring type %1", static_cast<int>(m_analyzer.getStructType(bb)));
@@ -2131,8 +2055,9 @@ void CCodeGenerator::generateCode(const BasicBlock *bb, const BasicBlock *latch,
 }
 
 
-void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc,
-                                       const BasicBlock *latch, std::list<const BasicBlock *>& followSet)
+void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const BasicBlock *> &gotoSet,
+                                       UserProc *proc, const BasicBlock *latch,
+                                       std::list<const BasicBlock *> &followSet)
 {
     // add the follow of the loop (if it exists) to the follow set
     if (m_analyzer.getLoopFollow(bb)) {
@@ -2155,7 +2080,9 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
         addPretestedLoopHeader(cond);
 
         // write the code for the body of the loop
-        const BasicBlock *loopBody = (bb->getSuccessor(BELSE) == m_analyzer.getLoopFollow(bb)) ? bb->getSuccessor(BTHEN) : bb->getSuccessor(BELSE);
+        const BasicBlock *loopBody = (bb->getSuccessor(BELSE) == m_analyzer.getLoopFollow(bb))
+                                         ? bb->getSuccessor(BTHEN)
+                                         : bb->getSuccessor(BELSE);
         generateCode(loopBody, m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
 
         // if code has not been generated for the latch node, generate it now
@@ -2164,8 +2091,8 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             writeBB(m_analyzer.getLatchNode(bb));
         }
 
-        // rewrite the body of the block (excluding the predicate) at the next nesting level after making sure
-        // another label won't be generated
+        // rewrite the body of the block (excluding the predicate) at the next nesting level after
+        // making sure another label won't be generated
         writeBB(bb);
 
         // write the loop tail
@@ -2180,10 +2107,11 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             addPostTestedLoopHeader();
         }
 
-        // if this is also a conditional header, then generate code for the conditional. Otherwise generate code
-        // for the loop body.
+        // if this is also a conditional header, then generate code for the conditional. Otherwise
+        // generate code for the loop body.
         if (m_analyzer.getStructType(bb) == StructType::LoopCond) {
-            // set the necessary flags so that generateCode can successfully be called again on this node
+            // set the necessary flags so that generateCode can successfully be called again on this
+            // node
             m_analyzer.setStructType(bb, StructType::Cond);
             m_analyzer.setTravType(bb, TravType::Untraversed);
             m_generatedBBs.erase(bb);
@@ -2193,7 +2121,8 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             writeBB(bb);
 
             // write the code for the body of the loop
-            generateCode(bb->getSuccessor(0), m_analyzer.getLatchNode(bb), followSet, gotoSet, proc);
+            generateCode(bb->getSuccessor(0), m_analyzer.getLatchNode(bb), followSet, gotoSet,
+                         proc);
         }
 
         if (m_analyzer.getLoopType(bb) == LoopType::PostTested) {
@@ -2204,8 +2133,8 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
             }
 
             // addPosttestedLoopEnd(getCond());
-            // MVE: the above seems to fail when there is a call in the middle of the loop (so loop is 2 BBs)
-            // Just a wild stab:
+            // MVE: the above seems to fail when there is a call in the middle of the loop (so loop
+            // is 2 BBs) Just a wild stab:
             addPostTestedLoopEnd(m_analyzer.getLatchNode(bb)->getCond());
         }
         else {
@@ -2237,8 +2166,10 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
 }
 
 
-void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const BasicBlock *>& gotoSet, UserProc *proc,
-                                         const BasicBlock *latch, std::list<const BasicBlock *>& followSet)
+void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
+                                         std::list<const BasicBlock *> &gotoSet, UserProc *proc,
+                                         const BasicBlock *latch,
+                                         std::list<const BasicBlock *> &followSet)
 {
     // reset this back to LoopCond if it was originally of this type
     if (m_analyzer.getLatchNode(bb) != nullptr) {
@@ -2267,12 +2198,14 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
         }
 
         // Otherwise, for a jump into/outof a loop body, the follow is added to the goto set.
-        // The temporary follow is set for any unstructured conditional header branch that is within the
-        // same loop and case.
+        // The temporary follow is set for any unstructured conditional header branch that is within
+        // the same loop and case.
         else {
             if (m_analyzer.getUnstructType(bb) == UnstructType::JumpInOutLoop) {
                 // define the loop header to be compared against
-                const BasicBlock *myLoopHead = (m_analyzer.getStructType(bb) == StructType::LoopCond ? bb : m_analyzer.getLoopHead(bb));
+                const BasicBlock *myLoopHead = (m_analyzer.getStructType(bb) == StructType::LoopCond
+                                                    ? bb
+                                                    : m_analyzer.getLoopHead(bb));
                 gotoSet.push_back(m_analyzer.getCondFollow(bb));
                 gotoTotal++;
 
@@ -2289,7 +2222,8 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
                 }
             }
 
-            tmpCondFollow = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfThen) ? BELSE : BTHEN);
+            tmpCondFollow = bb->getSuccessor(
+                (m_analyzer.getCondType(bb) == CondType::IfThen) ? BELSE : BTHEN);
 
             // for a jump into a case, the temp follow is added to the follow set
             if (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase) {
@@ -2306,9 +2240,9 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
 
     if (m_analyzer.getCondType(bb) == CondType::Case) {
         // The CaseStatement will be in the last RTL this BB
-        RTL           *last = bb->getRTLs()->back().get();
-        CaseStatement *cs   = (CaseStatement *)last->getHlStmt();
-        psi = cs->getSwitchInfo();
+        RTL *last         = bb->getRTLs()->back().get();
+        CaseStatement *cs = (CaseStatement *)last->getHlStmt();
+        psi               = cs->getSwitchInfo();
 
         // Write the switch header (i.e. "switch (var) {")
         addCaseCondHeader(psi->switchExp);
@@ -2335,12 +2269,14 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
 
     // write code for the body of the conditional
     if (m_analyzer.getCondType(bb) != CondType::Case) {
-        const BasicBlock *succ = bb->getSuccessor((m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
+        const BasicBlock *succ = bb->getSuccessor(
+            (m_analyzer.getCondType(bb) == CondType::IfElse) ? BELSE : BTHEN);
         assert(succ != nullptr);
 
         // emit a goto statement if the first clause has already been
         // generated or it is the follow of this node's enclosing loop
-        if (isGenerated(succ) || (m_analyzer.getLoopHead(bb) && succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)))) {
+        if (isGenerated(succ) || (m_analyzer.getLoopHead(bb) &&
+                                  succ == m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)))) {
             emitGotoAndLabel(bb, succ);
         }
         else {
@@ -2372,15 +2308,16 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
         }
     }
     else { // case header
-            // TODO: linearly emitting each branch of the switch does not result in optimal fall-through.
-            // generate code for each out branch
+           // TODO: linearly emitting each branch of the switch does not result in optimal
+           // fall-through. generate code for each out branch
         for (int i = 0; i < bb->getNumSuccessors(); i++) {
             // emit a case label
             // FIXME: Not valid for all switch types
             Const caseVal(0);
 
-            if (psi->switchType == SwitchType::F) {                            // "Fortran" style?
-                caseVal.setInt(reinterpret_cast<int *>(psi->tableAddr.value())[i]); // Yes, use the table value itself
+            if (psi->switchType == SwitchType::F) { // "Fortran" style?
+                caseVal.setInt(reinterpret_cast<int *>(
+                    psi->tableAddr.value())[i]); // Yes, use the table value itself
             }
             // Note that uTable has the address of an int array
             else {
@@ -2409,7 +2346,8 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
     if (m_analyzer.getCondFollow(bb)) {
         // remove the original follow from the follow set if it was
         // added by this header
-        if ((m_analyzer.getUnstructType(bb) == UnstructType::Structured) || (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase)) {
+        if ((m_analyzer.getUnstructType(bb) == UnstructType::Structured) ||
+            (m_analyzer.getUnstructType(bb) == UnstructType::JumpIntoCase)) {
             assert(gotoTotal == 0);
             followSet.resize(followSet.size() - 1);
         }
@@ -2417,8 +2355,8 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
             gotoSet.resize(std::max((int)gotoSet.size() - gotoTotal, 0));
         }
 
-        // do the code generation (or goto emitting) for the new conditional follow if it exists, otherwise do
-        // it for the original follow
+        // do the code generation (or goto emitting) for the new conditional follow if it exists,
+        // otherwise do it for the original follow
         if (!tmpCondFollow) {
             tmpCondFollow = m_analyzer.getCondFollow(bb);
         }
@@ -2433,12 +2371,15 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb, std::list<const B
 }
 
 
-void CCodeGenerator::generateCode_Seq(const BasicBlock* bb, std::list<const BasicBlock *>& gotoSet, UserProc* proc, const BasicBlock* latch, std::list<const BasicBlock *>& followSet)
+void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const BasicBlock *> &gotoSet,
+                                      UserProc *proc, const BasicBlock *latch,
+                                      std::list<const BasicBlock *> &followSet)
 {
     // generate code for the body of this block
     writeBB(bb);
 
-    // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return' statement
+    // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return'
+    // statement
     if (bb->getType() == BBType::Ret) {
         // This should be emitted now, like a normal statement
         // addReturnStatement(getReturnVal());
@@ -2455,7 +2396,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock* bb, std::list<const Basi
             assert(!lastRTL->empty());
             GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
 
-            QString     dat;
+            QString dat;
             OStream ost(&dat);
 
             ost << "goto " << gs->getDest();
@@ -2505,32 +2446,37 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock* bb, std::list<const Basi
     if (isGenerated(child)) {
         emitGotoAndLabel(bb, child);
     }
-    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) && (!isAllParentsGenerated(child) || Util::isContained(followSet, child))) {
+    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) &&
+             (!isAllParentsGenerated(child) || Util::isContained(followSet, child))) {
         emitGotoAndLabel(bb, child);
     }
-    else if (latch && m_analyzer.getLoopHead(latch) && (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
+    else if (latch && m_analyzer.getLoopHead(latch) &&
+             (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
         emitGotoAndLabel(bb, child);
     }
     else if (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
-        (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
-            emitGotoAndLabel(bb, child);
+             (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+        emitGotoAndLabel(bb, child);
     }
     else {
-        if (m_analyzer.getCaseHead(bb) && (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+        if (m_analyzer.getCaseHead(bb) &&
+            (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
             // generate the 'break' statement
             addCaseCondOptionEnd();
         }
         else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
-            (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
-            !m_analyzer.isCaseOption(child)) {
-                generateCode(child, latch, followSet, gotoSet, proc);
+                 (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
+                 !m_analyzer.isCaseOption(child)) {
+            generateCode(child, latch, followSet, gotoSet, proc);
         }
     }
 }
 
 void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *dest)
 {
-    if (m_analyzer.getLoopHead(bb) && ((m_analyzer.getLoopHead(bb) == dest) || (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)) == dest))) {
+    if (m_analyzer.getLoopHead(bb) &&
+        ((m_analyzer.getLoopHead(bb) == dest) ||
+         (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(bb)) == dest))) {
         if (m_analyzer.getLoopHead(bb) == dest) {
             addContinue();
         }
@@ -2554,12 +2500,12 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
         LOG_MSG("Generating code for BB at address %1", bb->getLowAddr());
     }
 
-    // Allocate space for a label to be generated for this node and add this to the generated code. The actual label can
-    // then be generated now or back patched later
+    // Allocate space for a label to be generated for this node and add this to the generated code.
+    // The actual label can then be generated now or back patched later
     addLabel(bb);
 
     if (bb->getRTLs()) {
-        for (const auto& rtl : *(bb->getRTLs())) {
+        for (const auto &rtl : *(bb->getRTLs())) {
             if (m_proc->getProg()->getProject()->getSettings()->debugGen) {
                 LOG_MSG("%1", rtl->getAddress());
             }
@@ -2579,7 +2525,7 @@ void CCodeGenerator::print(const Module *module)
 }
 
 
-void CCodeGenerator::indent(OStream& str, int indLevel)
+void CCodeGenerator::indent(OStream &str, int indLevel)
 {
     // Can probably do more efficiently
     for (int i = 0; i < indLevel; i++) {
@@ -2588,13 +2534,13 @@ void CCodeGenerator::indent(OStream& str, int indLevel)
 }
 
 
-void CCodeGenerator::appendLine(const QString& s)
+void CCodeGenerator::appendLine(const QString &s)
 {
     m_lines.push_back(s);
 }
 
 
-bool CCodeGenerator::isAllParentsGenerated(const BasicBlock* bb) const
+bool CCodeGenerator::isAllParentsGenerated(const BasicBlock *bb) const
 {
     for (BasicBlock *pred : bb->getPredecessors()) {
         if (!m_analyzer.isBackEdge(pred, bb) && !isGenerated(pred)) {
@@ -2606,7 +2552,7 @@ bool CCodeGenerator::isAllParentsGenerated(const BasicBlock* bb) const
 }
 
 
-bool CCodeGenerator::isGenerated(const BasicBlock* bb) const
+bool CCodeGenerator::isGenerated(const BasicBlock *bb) const
 {
     return m_generatedBBs.find(bb) != m_generatedBBs.end();
 }

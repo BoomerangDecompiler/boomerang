@@ -22,7 +22,7 @@ public:
     Return(SharedType _type, SharedExp _exp);
 
 public:
-    bool operator==(const Return& other) const;
+    bool operator==(const Return &other) const;
 
     std::shared_ptr<Return> clone() const;
 

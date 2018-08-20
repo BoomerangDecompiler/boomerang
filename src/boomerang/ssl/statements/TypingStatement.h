@@ -22,18 +22,18 @@ class BOOMERANG_API TypingStatement : public Statement
 {
 public:
     TypingStatement(SharedType ty);
-    TypingStatement(const TypingStatement& other) = default;
-    TypingStatement(TypingStatement&& other) = default;
+    TypingStatement(const TypingStatement &other) = default;
+    TypingStatement(TypingStatement &&other)      = default;
 
     virtual ~TypingStatement() override = default;
 
-    TypingStatement& operator=(const TypingStatement& other) = default;
-    TypingStatement& operator=(TypingStatement&& other) = default;
+    TypingStatement &operator=(const TypingStatement &other) = default;
+    TypingStatement &operator=(TypingStatement &&other) = default;
 
 public:
     /// \returns the type of this statement.
     SharedType getType() { return m_type; }
-    const SharedType& getType() const { return m_type; }
+    const SharedType &getType() const { return m_type; }
     void setType(SharedType ty) { m_type = ty; }
 
     /// \copydoc Statement::isTyping

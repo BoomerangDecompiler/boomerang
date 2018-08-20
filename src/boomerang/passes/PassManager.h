@@ -11,8 +11,8 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
-#include "boomerang/passes/PassGroup.h"
 #include "boomerang/passes/Pass.h"
+#include "boomerang/passes/PassGroup.h"
 
 #include <QMap>
 
@@ -26,20 +26,20 @@ class BOOMERANG_API PassManager
 {
 public:
     PassManager();
-    PassManager(const PassManager&) = delete;
-    PassManager(PassManager&&) = delete;
+    PassManager(const PassManager &) = delete;
+    PassManager(PassManager &&)      = delete;
 
     ~PassManager();
 
-    PassManager& operator=(const PassManager&) = delete;
-    PassManager& operator=(PassManager&&) = delete;
+    PassManager &operator=(const PassManager &) = delete;
+    PassManager &operator=(PassManager &&) = delete;
 
     static PassManager *get();
 
 public:
     /// Creates a pass group with name \p name and elements \p passes
     /// \returns true iff creation was successful.
-    bool createPassGroup(const QString& name, const std::initializer_list<IPass *> &passes);
+    bool createPassGroup(const QString &name, const std::initializer_list<IPass *> &passes);
 
     /// \returns the pass of type \p passType
     IPass *getPass(PassID passID);
@@ -51,7 +51,7 @@ public:
 
     /// Execute all passes in the pass group with name \p name on \p proc.
     /// \returns true iff at least 1 pass updated \p proc
-    bool executePassGroup(const QString& name, UserProc *proc);
+    bool executePassGroup(const QString &name, UserProc *proc);
 
 private:
     void registerPass(PassID passType, std::unique_ptr<IPass> pass);

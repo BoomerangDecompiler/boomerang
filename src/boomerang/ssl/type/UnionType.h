@@ -19,59 +19,60 @@
 struct BOOMERANG_API UnionElement
 {
     SharedType type;
-    QString    name;
+    QString name;
 
-    bool operator==(const UnionElement& other) const
-    {
-        return *type == *other.type;
-    }
+    bool operator==(const UnionElement &other) const { return *type == *other.type; }
 };
 
 
 struct BOOMERANG_API hashUnionElem
 {
-    size_t operator()(const UnionElement& e) const;
+    size_t operator()(const UnionElement &e) const;
 };
 
 
 class BOOMERANG_API UnionType : public Type
 {
 public:
-    typedef std::unordered_set<UnionElement, hashUnionElem>   UnionEntrySet;
-    typedef UnionEntrySet::iterator                           ilUnionElement;
+    typedef std::unordered_set<UnionElement, hashUnionElem> UnionEntrySet;
+    typedef UnionEntrySet::iterator ilUnionElement;
 
 public:
     /// Create a new empty union type.
     UnionType();
 
     /// Create a new union type with unnamed members.
-    UnionType(const std::initializer_list<SharedType>& members);
+    UnionType(const std::initializer_list<SharedType> &members);
 
-    UnionType(const UnionType& other) = default;
-    UnionType(UnionType&& other) = default;
+    UnionType(const UnionType &other) = default;
+    UnionType(UnionType &&other)      = default;
 
     virtual ~UnionType() override;
 
-    UnionType& operator=(const UnionType& other) = default;
-    UnionType& operator=(UnionType&& other) = default;
+    UnionType &operator=(const UnionType &other) = default;
+    UnionType &operator=(UnionType &&other) = default;
 
 public:
     /// \copydoc Type::isUnion
     virtual bool isUnion() const override { return true; }
 
     static std::shared_ptr<UnionType> get() { return std::make_shared<UnionType>(); }
-    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType>& members) { return std::make_shared<UnionType>(members); }
+    static std::shared_ptr<UnionType> get(const std::initializer_list<SharedType> &members)
+    {
+        return std::make_shared<UnionType>(members);
+    }
 
     /**
      * Add a new type to this union
      * \param type the type of the new member
      * \param name the name of the new member
      */
-    void addType(SharedType type, const QString& name = "");
+    void addType(SharedType type, const QString &name = "");
 
     size_t getNumTypes() const { return li.size(); }
 
-    // Return true if this type is already in the union. Note: linear search, but number of types is usually small
+    // Return true if this type is already in the union. Note: linear search, but number of types is
+    // usually small
     bool findType(SharedType ty); // Return true if ty is already in the union
 
     ilUnionElement begin() { return li.begin(); }
@@ -81,26 +82,29 @@ public:
 
     virtual SharedType clone() const override;
 
-    virtual bool operator==(const Type& other) const override;
+    virtual bool operator==(const Type &other) const override;
 
     // virtual bool        operator-=(const Type& other) const;
-    virtual bool operator<(const Type& other) const override;
+    virtual bool operator<(const Type &other) const override;
 
     virtual size_t getSize() const override;
 
     virtual QString getCtype(bool final = false) const override;
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
-    virtual bool isCompatibleWith(const Type& other, bool all) const override { return isCompatible(other, all); }
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    virtual bool isCompatibleWith(const Type &other, bool all) const override
+    {
+        return isCompatible(other, all);
+    }
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
     // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
     SharedType dereferenceUnion();
 
 private:
-    // Note: list, not vector, as it is occasionally desirable to insert elements without affecting iterators
-    // (e.g. meetWith(another Union))
+    // Note: list, not vector, as it is occasionally desirable to insert elements without affecting
+    // iterators (e.g. meetWith(another Union))
     UnionEntrySet li;
 };

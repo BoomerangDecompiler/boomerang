@@ -31,50 +31,50 @@ class BinarySymbol;
  */
 class BOOMERANG_API BinarySymbolTable
 {
-    typedef std::vector<BinarySymbol *>        SymbolList;
+    typedef std::vector<BinarySymbol *> SymbolList;
 
-    typedef SymbolList::iterator               iterator;
-    typedef SymbolList::const_iterator         const_iterator;
-    typedef SymbolList::reverse_iterator       reverse_iterator;
+    typedef SymbolList::iterator iterator;
+    typedef SymbolList::const_iterator const_iterator;
+    typedef SymbolList::reverse_iterator reverse_iterator;
     typedef SymbolList::const_reverse_iterator const_reverse_iterator;
 
 public:
     BinarySymbolTable();
-    BinarySymbolTable(const BinarySymbolTable& other) = delete;
-    BinarySymbolTable(BinarySymbolTable&& other) = default;
+    BinarySymbolTable(const BinarySymbolTable &other) = delete;
+    BinarySymbolTable(BinarySymbolTable &&other)      = default;
 
     ~BinarySymbolTable();
 
-    BinarySymbolTable& operator=(const BinarySymbolTable& other) = delete;
-    BinarySymbolTable& operator=(BinarySymbolTable&& other) = default;
+    BinarySymbolTable &operator=(const BinarySymbolTable &other) = delete;
+    BinarySymbolTable &operator=(BinarySymbolTable &&other) = default;
 
 public:
-    iterator begin()             { return m_symbolList.begin(); }
-    iterator end()               { return m_symbolList.end(); }
+    iterator begin() { return m_symbolList.begin(); }
+    iterator end() { return m_symbolList.end(); }
     const_iterator begin() const { return m_symbolList.begin(); }
-    const_iterator end()   const { return m_symbolList.end(); }
+    const_iterator end() const { return m_symbolList.end(); }
 
     reverse_iterator rbegin() { return m_symbolList.rbegin(); }
-    reverse_iterator rend()   { return m_symbolList.rend(); }
+    reverse_iterator rend() { return m_symbolList.rend(); }
     const_reverse_iterator rbegin() const { return m_symbolList.rbegin(); }
-    const_reverse_iterator rend()   const { return m_symbolList.rend(); }
+    const_reverse_iterator rend() const { return m_symbolList.rend(); }
 
 public:
     int size() const { return m_symbolList.size(); }
-    bool empty()  const { return m_symbolList.empty(); }
+    bool empty() const { return m_symbolList.empty(); }
     void clear();
 
     /// Creates a symbol if it does not exist.
-    BinarySymbol *createSymbol(Address addr, const QString& name, bool local = false);
+    BinarySymbol *createSymbol(Address addr, const QString &name, bool local = false);
 
     BinarySymbol *findSymbolByAddress(Address addr);
     const BinarySymbol *findSymbolByAddress(Address addr) const;
 
-    BinarySymbol *findSymbolByName(const QString& name);
-    const BinarySymbol *findSymbolByName(const QString& name) const;
+    BinarySymbol *findSymbolByName(const QString &name);
+    const BinarySymbol *findSymbolByName(const QString &name) const;
 
     /// \returns true iff the rename was successful
-    bool renameSymbol(const QString& oldName, const QString& newName);
+    bool renameSymbol(const QString &oldName, const QString &newName);
 
 private:
     /// The map indexed by address.

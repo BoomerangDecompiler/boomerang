@@ -10,7 +10,6 @@
 #include "StmtVisitor.h"
 
 
-
 bool StmtVisitor::visit(const RTL *)
 {
     // Mostly, don't do anything at the RTL level

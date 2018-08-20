@@ -26,12 +26,12 @@ class ExpArithSimplifier : public ExpModifier
 {
 public:
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Unary> & exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Unary> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<Binary> & exp) override;
+    SharedExp postModify(const std::shared_ptr<Binary> &exp) override;
 
 private:
     /// Remove pairs of expressions that appear both in \p left and \p right
-    void cancelDuplicates(std::list<SharedExp>& left, std::list<SharedExp>& right);
+    void cancelDuplicates(std::list<SharedExp> &left, std::list<SharedExp> &right);
 };

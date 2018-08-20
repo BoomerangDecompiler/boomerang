@@ -9,23 +9,21 @@
 #pragma endregion License
 #include "CallDefineUpdatePass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
+#include "boomerang/util/log/Log.h"
 
 
 CallDefineUpdatePass::CallDefineUpdatePass()
     : IPass("CallDefineUpdate", PassID::CallDefineUpdate)
-{
-}
+{}
 
 
 bool CallDefineUpdatePass::execute(UserProc *proc)
@@ -57,7 +55,7 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callee->isLib()) {
         StatementList defines;
-        sig->getLibraryDefines(defines);     // Set the locations defined
+        sig->getLibraryDefines(defines); // Set the locations defined
         callStmt->setDefines(defines);
         return true;
     }
@@ -74,11 +72,12 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
 
     if (callee && callStmt->getCalleeReturn()) {
         assert(!callee->isLib());
-        const StatementList& modifieds = static_cast<UserProc *>(callee)->getRetStmt()->getModifieds();
+        const StatementList
+            &modifieds = static_cast<UserProc *>(callee)->getRetStmt()->getModifieds();
 
         for (Statement *mm : modifieds) {
             Assignment *as = static_cast<Assignment *>(mm);
-            SharedExp  loc = as->getLeft();
+            SharedExp loc  = as->getLeft();
 
             if (proc->filterReturns(loc)) {
                 continue;
@@ -95,11 +94,12 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         // Ensure that everything in the UseCollector has an entry in oldDefines
         LocationSet::iterator ll;
 
-        for (ll = callStmt->getUseCollector()->begin(); ll != callStmt->getUseCollector()->end(); ++ll) {
+        for (ll = callStmt->getUseCollector()->begin(); ll != callStmt->getUseCollector()->end();
+             ++ll) {
             SharedExp loc = *ll;
 
             if (proc->filterReturns(loc)) {
-                continue;     // Filtered out
+                continue; // Filtered out
             }
 
             if (!newDefines.existsOnLeft(loc)) {
@@ -114,37 +114,40 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
     for (StatementList::reverse_iterator it = newDefines.rbegin(); it != newDefines.rend(); ++it) {
         // Make sure the LHS is still in the return or collector
         Assignment *as = static_cast<Assignment *>(*it);
-        SharedExp  lhs = as->getLeft();
+        SharedExp lhs  = as->getLeft();
 
         if (callStmt->getCalleeReturn()) {
             if (!callStmt->getCalleeReturn()->definesLoc(lhs)) {
                 delete *it;
-                continue;     // Not in callee returns
+                continue; // Not in callee returns
             }
         }
         else if (!callStmt->getUseCollector()->exists(lhs)) {
             delete *it;
-            continue;     // Not in collector: delete it (don't copy it)
+            continue; // Not in collector: delete it (don't copy it)
         }
 
         if (proc->filterReturns(lhs)) {
             delete *it;
-            continue;     // Filtered out: delete it
+            continue; // Filtered out: delete it
         }
 
         // Insert as, in order, into the existing set of definitions
         bool inserted = false;
 
-        for (StatementList::iterator nn = callStmt->getDefines().begin(); nn != callStmt->getDefines().end(); ++nn) {
-            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {     // If the new assignment is less than the current one
-                nn       = callStmt->getDefines().insert(nn, as);               // then insert before this position
+        for (StatementList::iterator nn = callStmt->getDefines().begin();
+             nn != callStmt->getDefines().end(); ++nn) {
+            if (sig->returnCompare(
+                    *as, *static_cast<Assignment *>(
+                             *nn))) { // If the new assignment is less than the current one
+                nn = callStmt->getDefines().insert(nn, as); // then insert before this position
                 inserted = true;
                 break;
             }
         }
 
         if (!inserted) {
-            callStmt->getDefines().append(as);     // In case larger than all existing elements
+            callStmt->getDefines().append(as); // In case larger than all existing elements
         }
     }
 

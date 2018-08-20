@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "Unary.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -35,7 +34,7 @@ Unary::Unary(OPER _op, SharedExp e)
 }
 
 
-Unary::Unary(const Unary& o)
+Unary::Unary(const Unary &o)
     : Exp(o.m_oper)
 {
     subExp1 = o.subExp1->clone();
@@ -44,8 +43,7 @@ Unary::Unary(const Unary& o)
 
 
 Unary::~Unary()
-{
-}
+{}
 
 
 void Unary::setSubExp1(SharedExp e)
@@ -69,7 +67,7 @@ SharedConstExp Unary::getSubExp1() const
 }
 
 
-SharedExp& Unary::refSubExp1()
+SharedExp &Unary::refSubExp1()
 {
     assert(subExp1);
     return subExp1;
@@ -83,7 +81,7 @@ SharedExp Unary::clone() const
 }
 
 
-bool Unary::operator==(const Exp& o) const
+bool Unary::operator==(const Exp &o) const
 {
     if (o.getOper() == opWild) {
         return true;
@@ -109,7 +107,7 @@ bool Unary::operator==(const Exp& o) const
 }
 
 
-bool Unary::operator<(const Exp& o) const
+bool Unary::operator<(const Exp &o) const
 {
     if (m_oper != static_cast<const Unary &>(o).m_oper) {
         return m_oper < static_cast<const Unary &>(o).m_oper;
@@ -119,7 +117,7 @@ bool Unary::operator<(const Exp& o) const
 }
 
 
-bool Unary::operator*=(const Exp& o) const
+bool Unary::operator*=(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -151,7 +149,7 @@ bool Unary::operator*=(const Exp& o) const
 }
 
 
-void Unary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
+void Unary::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &li, bool once)
 {
     if (m_oper != opInitValueOf) { // don't search child
         doSearch(pattern, subExp1, li, once);
@@ -180,8 +178,7 @@ SharedType Unary::ascendType()
 {
     SharedType ta = subExp1->ascendType();
 
-    switch (m_oper)
-    {
+    switch (m_oper) {
     case opMemOf:
 
         if (ta->resolvesToPointer()) {
@@ -193,22 +190,17 @@ SharedType Unary::ascendType()
 
         break;
 
-    case opAddrOf:
-        return PointerType::get(ta);
+    case opAddrOf: return PointerType::get(ta); break;
 
-        break;
-
-    default:
-        break;
+    default: break;
     }
 
     return VoidType::get();
 }
 
 
-
 // match m[l1{} + K] pattern
-bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
+bool match_l1_K(SharedExp in, std::vector<SharedExp> &matches)
 {
     if (!in->isMemOf()) {
         return false;
@@ -240,81 +232,81 @@ bool match_l1_K(SharedExp in, std::vector<SharedExp>& matches)
 }
 
 
-void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
+void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
 {
     UserProc *owner_proc = s->getProc();
-    auto     sig         = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
-    Prog     *prog       = owner_proc->getProg();
+    auto sig             = owner_proc != nullptr ? owner_proc->getSignature() : nullptr;
+    Prog *prog           = owner_proc->getProg();
 
     std::vector<SharedExp> matches;
 
-    switch (m_oper)
-    {
-    case opMemOf:
-        {
-            auto as_bin = std::dynamic_pointer_cast<Binary>(subExp1);
+    switch (m_oper) {
+    case opMemOf: {
+        auto as_bin = std::dynamic_pointer_cast<Binary>(subExp1);
 
-            // Check for m[x*K1 + K2]: array with base K2 and stride K1
-            if (as_bin && (as_bin->getOper() == opPlus) && (as_bin->getSubExp1()->getOper() == opMult) &&
-                as_bin->getSubExp2()->isIntConst() &&
-                as_bin->getSubExp1()->getSubExp2()->isIntConst()) {
-                SharedExp leftOfPlus = as_bin->getSubExp1();
-                // We would expect the stride to be the same size as the base type
-                size_t stride = leftOfPlus->access<Const, 2>()->getInt();
+        // Check for m[x*K1 + K2]: array with base K2 and stride K1
+        if (as_bin && (as_bin->getOper() == opPlus) &&
+            (as_bin->getSubExp1()->getOper() == opMult) && as_bin->getSubExp2()->isIntConst() &&
+            as_bin->getSubExp1()->getSubExp2()->isIntConst()) {
+            SharedExp leftOfPlus = as_bin->getSubExp1();
+            // We would expect the stride to be the same size as the base type
+            size_t stride = leftOfPlus->access<Const, 2>()->getInt();
 
-                if (stride * 8 != parentType->getSize()) {
-                    LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but parent type %3 has size %4",
-                             shared_from_this(), stride * 8, parentType->getCtype(), parentType->getSize());
-                }
-
-                // The index is integer type
-                SharedExp x = leftOfPlus->getSubExp1();
-                x->descendType(IntegerType::get(parentType->getSize(), Sign::Unknown), changed, s);
-                // K2 is of type <array of parentType>
-                auto    constK2 = subExp1->access<Const, 2>();
-                Address intK2   = Address(constK2->getInt());         // TODO: use getAddr ?
-                constK2->descendType(prog->makeArrayType(intK2, parentType), changed, s);
+            if (stride * 8 != parentType->getSize()) {
+                LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but "
+                         "parent type %3 has size %4",
+                         shared_from_this(), stride * 8, parentType->getCtype(),
+                         parentType->getSize());
             }
-            else if (match_l1_K(shared_from_this(), matches)) {
-                // m[l1 + K]
-                auto       l1     = std::static_pointer_cast<Location>(matches[0]->access<Location, 1>());
-                SharedType l1Type = l1->ascendType();
-                int        K      = matches[1]->access<Const>()->getInt();
 
-                if (l1Type->resolvesToPointer()) {
-                    // This is a struct reference m[ptr + K]; ptr points to the struct and K is an offset into it
-                    // First find out if we already have struct information
-                    SharedType st(l1Type->as<PointerType>()->getPointsTo());
+            // The index is integer type
+            SharedExp x = leftOfPlus->getSubExp1();
+            x->descendType(IntegerType::get(parentType->getSize(), Sign::Unknown), changed, s);
+            // K2 is of type <array of parentType>
+            auto constK2  = subExp1->access<Const, 2>();
+            Address intK2 = Address(constK2->getInt()); // TODO: use getAddr ?
+            constK2->descendType(prog->makeArrayType(intK2, parentType), changed, s);
+        }
+        else if (match_l1_K(shared_from_this(), matches)) {
+            // m[l1 + K]
+            auto l1 = std::static_pointer_cast<Location>(matches[0]->access<Location, 1>());
+            SharedType l1Type = l1->ascendType();
+            int K             = matches[1]->access<Const>()->getInt();
 
-                    if (st->resolvesToCompound()) {
-                        auto ct = st->as<CompoundType>();
+            if (l1Type->resolvesToPointer()) {
+                // This is a struct reference m[ptr + K]; ptr points to the struct and K is an
+                // offset into it First find out if we already have struct information
+                SharedType st(l1Type->as<PointerType>()->getPointsTo());
 
-                        if (ct->isGeneric()) {
-                            ct->updateGenericMember(K, parentType, changed);
-                        }
-                        else {
-                            // would like to force a simplify here; I guess it will happen soon enough
-                        }
+                if (st->resolvesToCompound()) {
+                    auto ct = st->as<CompoundType>();
+
+                    if (ct->isGeneric()) {
+                        ct->updateGenericMember(K, parentType, changed);
                     }
                     else {
-                        // Need to create a generic stuct with a least one member at offset K
-                        auto ct = CompoundType::get(true);
-                        ct->updateGenericMember(K, parentType, changed);
+                        // would like to force a simplify here; I guess it will happen soon enough
                     }
                 }
                 else {
-                    // K must be the pointer, so this is a global array
-                    // FIXME: finish this case
+                    // Need to create a generic stuct with a least one member at offset K
+                    auto ct = CompoundType::get(true);
+                    ct->updateGenericMember(K, parentType, changed);
                 }
-
-                // FIXME: many other cases
             }
             else {
-                subExp1->descendType(PointerType::get(parentType), changed, s);
+                // K must be the pointer, so this is a global array
+                // FIXME: finish this case
             }
 
-            break;
+            // FIXME: many other cases
         }
+        else {
+            subExp1->descendType(PointerType::get(parentType), changed, s);
+        }
+
+        break;
+    }
 
     case opAddrOf:
 
@@ -324,30 +316,28 @@ void Unary::descendType(SharedType parentType, bool& changed, Statement *s)
 
         break;
 
-    case opGlobal:
-        {
-            Prog       *_prog = s->getProc()->getProg();
-            QString    name   = subExp1->access<Const>()->getStr();
-            SharedType ty     = _prog->getGlobalType(name);
+    case opGlobal: {
+        Prog *_prog   = s->getProc()->getProg();
+        QString name  = subExp1->access<Const>()->getStr();
+        SharedType ty = _prog->getGlobalType(name);
 
-            if (ty) {
-                ty = ty->meetWith(parentType, changed);
+        if (ty) {
+            ty = ty->meetWith(parentType, changed);
 
-                if (changed) {
-                    _prog->setGlobalType(name, ty);
-                }
+            if (changed) {
+                _prog->setGlobalType(name, ty);
             }
-
-            break;
         }
 
-    default:
         break;
+    }
+
+    default: break;
     }
 }
 
 
-SharedExp Unary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+SharedExp Unary::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 {
     return mod->preModify(access<Unary>(), visitChildren);
 }

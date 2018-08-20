@@ -9,18 +9,17 @@
 #pragma endregion License
 #include "ProgSymbolWriter.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/util/log/Log.h"
 
 #include <QSaveFile>
 
 
-void printProcsRecursive(Function *function, int indent, OStream& f, std::set<Function *>& seen)
+void printProcsRecursive(Function *function, int indent, OStream &f, std::set<Function *> &seen)
 {
     const bool firsttime = (seen.find(function) == seen.end());
 
@@ -54,10 +53,11 @@ void printProcsRecursive(Function *function, int indent, OStream& f, std::set<Fu
 }
 
 
-bool ProgSymbolWriter::writeSymbolsToFile(const Prog *prog, const QString& dstFileName)
+bool ProgSymbolWriter::writeSymbolsToFile(const Prog *prog, const QString &dstFileName)
 {
     LOG_VERBOSE("Writing symbols to '%1'", dstFileName);
-    const QString fname = prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(dstFileName);
+    const QString fname = prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(
+        dstFileName);
     QSaveFile tgt(fname);
 
     if (!tgt.open(QFile::WriteOnly)) {
@@ -77,7 +77,7 @@ bool ProgSymbolWriter::writeSymbolsToFile(const Prog *prog, const QString& dstFi
 
     f << "/* Leftovers: */\n";
 
-    for (const auto& m : prog->getModuleList()) {
+    for (const auto &m : prog->getModuleList()) {
         for (Function *pp : *m) {
             if (!pp->isLib() && (seen.find(pp) == seen.end())) {
                 printProcsRecursive(pp, 0, f, seen);

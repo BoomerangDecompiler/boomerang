@@ -9,13 +9,11 @@
 #pragma endregion License
 #include "ByteUtil.h"
 
-
 #include <cassert>
 
 
 namespace Util
 {
-
 SWord normEndian(SWord value, Endian srcEndian)
 {
     constexpr Endian myEndian = static_cast<Endian>(BOOMERANG_BIG_ENDIAN);
@@ -25,7 +23,6 @@ SWord normEndian(SWord value, Endian srcEndian)
 
 DWord normEndian(DWord value, Endian srcEndian)
 {
-
     constexpr Endian myEndian = static_cast<Endian>(BOOMERANG_BIG_ENDIAN);
     return (myEndian == srcEndian) ? value : swapEndian(value);
 }
@@ -94,7 +91,7 @@ void writeQWord(void *dst, QWord value, Endian dstEndian)
 }
 
 
-bool testMagic(const Byte* buf, const std::initializer_list<Byte>& magic)
+bool testMagic(const Byte *buf, const std::initializer_list<Byte> &magic)
 {
     for (std::size_t i = 0; i < magic.size(); i++) {
         if (buf[i] != *(magic.begin() + i)) {
@@ -103,5 +100,4 @@ bool testMagic(const Byte* buf, const std::initializer_list<Byte>& magic)
     }
     return true;
 }
-
 }

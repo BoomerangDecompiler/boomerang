@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "CallStatement.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
@@ -61,19 +60,19 @@ public:
     explicit ArgSourceProvider(CallStatement *call);
 
 public:
-    SharedExp nextArgLoc();              // Get the next location (not subscripted)
-    SharedType curType(SharedExp e);     // Get the current location's type
-    bool exists(SharedExp loc);          // True if the given location (not subscripted) exists as a source
-    SharedExp localise(SharedExp e);     // Localise to this call if necessary
+    SharedExp nextArgLoc();          // Get the next location (not subscripted)
+    SharedType curType(SharedExp e); // Get the current location's type
+    bool exists(SharedExp loc); // True if the given location (not subscripted) exists as a source
+    SharedExp localise(SharedExp e); // Localise to this call if necessary
 
 public:
     Src src;
     CallStatement *call;
-    int i, n;                       // For SRC_LIB
+    int i, n; // For SRC_LIB
     std::shared_ptr<Signature> callSig;
-    StatementList::iterator pp;     // For SRC_CALLEE
+    StatementList::iterator pp; // For SRC_CALLEE
     StatementList *calleeParams;
-    DefCollector::iterator cc;      // For SRC_COL
+    DefCollector::iterator cc; // For SRC_COL
     DefCollector *defCol;
 };
 
@@ -119,10 +118,9 @@ ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
 SharedExp ArgSourceProvider::nextArgLoc()
 {
     SharedExp s;
-    bool      allZero;
+    bool allZero;
 
-    switch (src)
-    {
+    switch (src) {
     case SRC_LIB:
 
         if (i == n) {
@@ -130,7 +128,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
         }
 
         s = callSig->getParamExp(i++)->clone();
-        s->removeSubscripts(allZero);     // e.g. m[sp{-} + 4] -> m[sp + 4]
+        s->removeSubscripts(allZero); // e.g. m[sp{-} + 4] -> m[sp + 4]
         call->localiseComp(s);
         return s;
 
@@ -142,7 +140,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
 
         s = static_cast<Assignment *>(*pp++)->getLeft()->clone();
         s->removeSubscripts(allZero);
-        call->localiseComp(s);     // Localise the components. Has the effect of translating into
+        call->localiseComp(s); // Localise the components. Has the effect of translating into
         // the contect of this caller
         return s;
 
@@ -156,7 +154,7 @@ SharedExp ArgSourceProvider::nextArgLoc()
         return static_cast<Assign *>(*cc++)->getLeft();
     }
 
-    return nullptr;     // Suppress warning
+    return nullptr; // Suppress warning
 }
 
 
@@ -177,26 +175,22 @@ SharedType ArgSourceProvider::curType(SharedExp e)
 {
     Q_UNUSED(e);
 
-    switch (src)
-    {
-    case SRC_LIB:
-        return callSig->getParamType(i - 1);
+    switch (src) {
+    case SRC_LIB: return callSig->getParamType(i - 1);
 
-    case SRC_CALLEE:
-        {
-            SharedType ty = static_cast<Assignment *>(*std::prev(pp))->getType();
-            return ty;
-        }
-
-    case SRC_COL:
-        {
-            // Mostly, there won't be a type here, I would think...
-            SharedType ty = (*std::prev(cc))->getType();
-            return ty;
-        }
+    case SRC_CALLEE: {
+        SharedType ty = static_cast<Assignment *>(*std::prev(pp))->getType();
+        return ty;
     }
 
-    return nullptr;     // Suppress warning
+    case SRC_COL: {
+        // Mostly, there won't be a type here, I would think...
+        SharedType ty = (*std::prev(cc))->getType();
+        return ty;
+    }
+    }
+
+    return nullptr; // Suppress warning
 }
 
 
@@ -204,8 +198,7 @@ bool ArgSourceProvider::exists(SharedExp e)
 {
     bool allZero;
 
-    switch (src)
-    {
+    switch (src) {
     case SRC_LIB:
 
         if (callSig->hasEllipsis()) {
@@ -226,7 +219,6 @@ bool ArgSourceProvider::exists(SharedExp e)
         return false;
 
     case SRC_CALLEE:
-
         for (pp = calleeParams->begin(); pp != calleeParams->end(); ++pp) {
             SharedExp par = static_cast<Assignment *>(*pp)->getLeft()->clone();
             par->removeSubscripts(allZero);
@@ -239,11 +231,10 @@ bool ArgSourceProvider::exists(SharedExp e)
 
         return false;
 
-    case SRC_COL:
-        return defCol->existsOnLeft(e);
+    case SRC_COL: return defCol->existsOnLeft(e);
     }
 
-    return false;     // Suppress warning
+    return false; // Suppress warning
 }
 
 
@@ -281,7 +272,7 @@ void CallStatement::localiseComp(SharedExp e)
 SharedExp CallStatement::localiseExp(SharedExp e)
 {
     if (!m_defCol.isInitialised()) {
-        return e;     // Don't attempt to subscript if the data flow not started yet
+        return e; // Don't attempt to subscript if the data flow not started yet
     }
 
     Localiser l(this);
@@ -301,7 +292,7 @@ SharedType CallStatement::getArgumentType(int i) const
 {
     assert(Util::inRange(i, 0, getNumArguments()));
     StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
-    Assign *assign = dynamic_cast<Assign *>(*aa);
+    Assign *assign                   = dynamic_cast<Assign *>(*aa);
     assert(assign != nullptr);
 
     return assign->getType();
@@ -312,13 +303,13 @@ void CallStatement::setArgumentType(int i, SharedType ty)
 {
     assert(Util::inRange(i, 0, getNumArguments()));
     StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
-    Assign *assign = dynamic_cast<Assign *>(*aa);
+    Assign *assign                   = dynamic_cast<Assign *>(*aa);
     assert(assign != nullptr);
     assign->setType(ty);
 }
 
 
-void CallStatement::setArguments(const StatementList& args)
+void CallStatement::setArguments(const StatementList &args)
 {
     qDeleteAll(m_arguments);
     m_arguments.clear();
@@ -337,7 +328,7 @@ void CallStatement::setArguments(const StatementList& args)
 void CallStatement::setSigArguments()
 {
     if (m_signature) {
-        return;     // Already done
+        return; // Already done
     }
 
     if (m_procDest == nullptr) {
@@ -345,12 +336,13 @@ void CallStatement::setSigArguments()
         return;
     }
 
-    // Clone here because each call to procDest could have a different signature, modified by ellipsisProcessing
+    // Clone here because each call to procDest could have a different signature, modified by
+    // ellipsisProcessing
     m_signature = m_procDest->getSignature()->clone();
     m_procDest->addCaller(this);
 
     if (!m_procDest->isLib()) {
-        return;     // Using dataflow analysis now
+        return; // Using dataflow analysis now
     }
 
 
@@ -364,15 +356,14 @@ void CallStatement::setSigArguments()
         auto l = std::dynamic_pointer_cast<Location>(e);
 
         if (l) {
-            l->setProc(m_proc);     // Needed?
+            l->setProc(m_proc); // Needed?
         }
 
-        Assign *as = new Assign(m_signature->getParamType(i)->clone(),
-                                e->clone(),
-                                e->clone());
+        Assign *as = new Assign(m_signature->getParamType(i)->clone(), e->clone(), e->clone());
         as->setProc(m_proc);
         as->setBB(m_bb);
-        as->setNumber(m_number);     // So fromSSAForm will work later. But note: this call is probably not numbered yet!
+        as->setNumber(m_number); // So fromSSAForm will work later. But note: this call is probably
+                                 // not numbered yet!
         // as->setParent(this);
         m_arguments.append(as);
     }
@@ -382,7 +373,7 @@ void CallStatement::setSigArguments()
 }
 
 
-bool CallStatement::search(const Exp& pattern, SharedExp& result) const
+bool CallStatement::search(const Exp &pattern, SharedExp &result) const
 {
     if (GotoStatement::search(pattern, result)) {
         return true;
@@ -404,7 +395,7 @@ bool CallStatement::search(const Exp& pattern, SharedExp& result) const
 }
 
 
-bool CallStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
+bool CallStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
 {
     bool change = GotoStatement::searchAndReplace(pattern, replace, cc);
 
@@ -429,7 +420,7 @@ bool CallStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
 }
 
 
-bool CallStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
+bool CallStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
     bool found = GotoStatement::searchAll(pattern, result);
 
@@ -449,7 +440,7 @@ bool CallStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void CallStatement::print(OStream& os) const
+void CallStatement::print(OStream &os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
 
@@ -505,7 +496,7 @@ void CallStatement::print(OStream& os) const
             os << "0x" << QString::number(m_dest->access<Const>()->getInt(), 16);
         }
         else {
-            m_dest->print(os);     // Could still be an expression
+            m_dest->print(os); // Could still be an expression
         }
     }
 
@@ -567,7 +558,7 @@ Statement *CallStatement::clone() const
     }
 
     // Statement members
-    ret->m_bb = m_bb;
+    ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
@@ -613,7 +604,8 @@ void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
     assert(dest);
 
     if (dest->isLib() && !dest->getSignature()->getPreferredName().isEmpty()) {
-        gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments, *results);
+        gen->addCallStatement(dest, dest->getSignature()->getPreferredName(), m_arguments,
+                              *results);
     }
     else {
         gen->addCallStatement(dest, dest->getName(), m_arguments, *results);
@@ -634,7 +626,7 @@ void CallStatement::simplify()
 }
 
 
-bool CallStatement::usesExp(const Exp& e) const
+bool CallStatement::usesExp(const Exp &e) const
 {
     if (GotoStatement::usesExp(e)) {
         return true;
@@ -656,7 +648,7 @@ bool CallStatement::usesExp(const Exp& e) const
 }
 
 
-void CallStatement::getDefinitions(LocationSet& defs, bool assumeABICompliance) const
+void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) const
 {
     for (auto dd = m_defines.begin(); dd != m_defines.end(); ++dd) {
         defs.insert(static_cast<Assignment *>(*dd)->getLeft());
@@ -683,13 +675,14 @@ bool CallStatement::convertToDirect()
         Statement *def = e->access<RefExp>()->getDef();
 
         if (def && !def->isImplicit()) {
-            return false;     // If an already defined global, don't convert
+            return false; // If an already defined global, don't convert
         }
 
         e = e->getSubExp1();
     }
 
-    if ((e->getOper() == opArrayIndex) && e->getSubExp2()->isIntConst() && (e->access<Const, 2>()->getInt() == 0)) {
+    if ((e->getOper() == opArrayIndex) && e->getSubExp2()->isIntConst() &&
+        (e->access<Const, 2>()->getInt() == 0)) {
         e = e->getSubExp1();
     }
 
@@ -712,8 +705,8 @@ bool CallStatement::convertToDirect()
             Address u = Address(sub->access<Const>()->getInt());
             m_proc->getProg()->markGlobalUsed(u);
             QString name = m_proc->getProg()->newGlobalName(u);
-            e      = Location::global(name, m_proc);
-            m_dest = RefExp::get(e, nullptr);
+            e            = Location::global(name, m_proc);
+            m_dest       = RefExp::get(e, nullptr);
         }
     }
 
@@ -722,7 +715,7 @@ bool CallStatement::convertToDirect()
     }
 
     QString name    = e->access<Const, 1>()->getStr();
-    Prog    *prog   = m_proc->getProg();
+    Prog *prog      = m_proc->getProg();
     Address gloAddr = prog->getGlobalAddrByName(name);
     Address dest    = Address(prog->readNative4(gloAddr));
 
@@ -730,31 +723,32 @@ bool CallStatement::convertToDirect()
     // This does not guarantee that it's a valid proc pointer,
     // but it may help
     if (!Util::inRange(dest, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
-        return false;     // Not a valid proc pointer
+        return false; // Not a valid proc pointer
     }
 
-    Function *p        = prog->getFunctionByName(name);
+    Function *p          = prog->getFunctionByName(name);
     const bool isNewProc = p == nullptr;
 
     if (isNewProc) {
         p = prog->getOrCreateFunction(dest);
     }
 
-    LOG_VERBOSE("%1 procedure for call to global '%2' is %3",
-                (isNewProc ? "new" : "existing"), name, p->getName());
+    LOG_VERBOSE("%1 procedure for call to global '%2' is %3", (isNewProc ? "new" : "existing"),
+                name, p->getName());
 
     // we need to:
     // 1) replace the current return set with the return set of the new procDest
     // 2) call fixCallBypass (now CallAndPhiFix) on the enclosing procedure
-    // 3) fix the arguments (this will only affect the implicit arguments, the regular arguments should
+    // 3) fix the arguments (this will only affect the implicit arguments, the regular arguments
+    // should
     //    be empty at this point)
     // 3a replace current arguments with those of the new proc
     // 3b copy the signature from the new proc
     // 4) change this to a non-indirect call
     m_procDest = p;
-    auto sig = p->getSignature();
-    // m_dest is currently still global5{-}, but we may as well make it a constant now, since that's how it will be
-    // treated now
+    auto sig   = p->getSignature();
+    // m_dest is currently still global5{-}, but we may as well make it a constant now, since that's
+    // how it will be treated now
     m_dest = Const::get(dest);
 
     // 1
@@ -767,8 +761,8 @@ bool CallStatement::convertToDirect()
     m_arguments.clear();
 
     for (int i = 0; i < sig->getNumParams(); i++) {
-        SharedExp a   = sig->getParamExp(i);
-        Assign    *as = new Assign(VoidType::get(), a->clone(), a->clone());
+        SharedExp a = sig->getParamExp(i);
+        Assign *as  = new Assign(VoidType::get(), a->clone(), a->clone());
         as->setProc(m_proc);
         as->setBB(m_bb);
         m_arguments.append(as);
@@ -797,10 +791,8 @@ bool CallStatement::convertToDirect()
 
 bool CallStatement::isCallToMemOffset() const
 {
-    return
-        getKind() == StmtType::Call && getDest() &&
-        getDest()->getOper() == opMemOf &&
-        getDest()->getSubExp1()->getOper() == opIntConst;
+    return getKind() == StmtType::Call && getDest() && getDest()->getOper() == opMemOf &&
+           getDest()->getSubExp1()->getOper() == opIntConst;
 }
 
 
@@ -819,8 +811,8 @@ void CallStatement::setArgumentExp(int i, SharedExp e)
     assert(Util::inRange(i, 0, getNumArguments()));
 
     Statement *stmt = *std::next(m_arguments.begin(), i);
-    SharedExp& a = dynamic_cast<Assign *>(stmt)->getRightRef();
-    a = e->clone();
+    SharedExp &a    = dynamic_cast<Assign *>(stmt)->getRightRef();
+    a               = e->clone();
 }
 
 
@@ -842,7 +834,7 @@ void CallStatement::setNumArguments(int n)
 
     // MVE: check if these need extra propagation
     for (int i = oldSize; i < n; i++) {
-        SharedExp  a  = m_procDest->getSignature()->getArgumentExp(i);
+        SharedExp a   = m_procDest->getSignature()->getArgumentExp(i);
         SharedType ty = m_procDest->getSignature()->getParamType(i);
 
         if ((ty == nullptr) && oldSize) {
@@ -933,7 +925,7 @@ void CallStatement::setTypeFor(SharedExp e, SharedType ty)
 }
 
 
-bool CallStatement::objcSpecificProcessing(const QString& formatStr)
+bool CallStatement::objcSpecificProcessing(const QString &formatStr)
 {
     Function *_proc = getDestProc();
 
@@ -950,7 +942,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
             int p      = 0;
 
             while ((p = formatStr.indexOf(':', p)) != -1) {
-                p++;     // Point past the :
+                p++; // Point past the :
                 n++;
                 addSigParam(PointerType::get(VoidType::get()), false);
             }
@@ -964,11 +956,13 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
             LOG_MSG("%1", this);
 
             for (int i = 0; i < getNumArguments(); i++) {
-                SharedExp  e  = getArgumentExp(i);
+                SharedExp e   = getArgumentExp(i);
                 SharedType ty = getArgumentType(i);
                 LOG_MSG("arg %1 e: %2 ty: %3", i, e, ty);
 
-                if (!(ty->isPointer() && (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) && e->isIntConst())) {
+                if (!(ty->isPointer() &&
+                      (std::static_pointer_cast<PointerType>(ty)->getPointsTo()->isChar()) &&
+                      e->isIntConst())) {
                     Address addr = Address(e->access<Const>()->getInt());
                     LOG_MSG("Addr: %1", addr);
 
@@ -987,7 +981,7 @@ bool CallStatement::objcSpecificProcessing(const QString& formatStr)
     return false;
 }
 
-void CallStatement::setDefines(const StatementList& defines)
+void CallStatement::setDefines(const StatementList &defines)
 {
     if (!m_defines.empty()) {
         for (const Statement *stmt : defines) {
@@ -1013,7 +1007,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     // functions like printf almost always have too many args
     QString name(getDestProc()->getName());
-    int     format = -1;
+    int format = -1;
 
     if (((name == "printf") || (name == "scanf"))) {
         format = 0;
@@ -1030,7 +1024,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     LOG_VERBOSE("Ellipsis processing for %1", name);
 
-    QString   formatStr;
+    QString formatStr;
     SharedExp formatExp = getArgumentExp(format);
 
     // We sometimes see a[m[blah{...}]]
@@ -1051,7 +1045,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         Statement *def = formatExp->access<RefExp>()->getDef();
 
         if (def == nullptr) {
-            return false;     // Not all nullptr refs get converted to implicits
+            return false; // Not all nullptr refs get converted to implicits
         }
 
         if (def->isAssign()) {
@@ -1068,7 +1062,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             // More likely. Example: switch_gcc. Only need ONE candidate format string
             PhiAssign *pa = static_cast<PhiAssign *>(def);
 
-            for (auto& v : *pa) {
+            for (auto &v : *pa) {
                 def = v.getDef();
 
                 if (!def || !def->isAssign()) {
@@ -1106,26 +1100,26 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
 
     // actually have to parse it
     // Format string is: % [flags] [width] [.precision] [size] type
-    int  n = 1;     // Count the format string itself (may also be "format" more arguments)
+    int n = 1; // Count the format string itself (may also be "format" more arguments)
     char ch;
     // Set a flag if the name of the function is scanf/sscanf/fscanf
     bool isScanf = name.contains("scanf");
-    int  p_idx   = 0;
+    int p_idx    = 0;
 
     // TODO: use qregularexpression to match scanf arguments
     while ((p_idx = formatStr.indexOf('%', p_idx)) != -1) {
-        p_idx++;                   // Point past the %
-        bool veryLong = false;     // %lld or %L
+        p_idx++;               // Point past the %
+        bool veryLong = false; // %lld or %L
 
         do {
-            ch = formatStr[p_idx++].toLatin1();     // Skip size and precisionA
+            ch = formatStr[p_idx++].toLatin1(); // Skip size and precisionA
 
-            switch (ch)
-            {
+            switch (ch) {
             case '*':
                 // Example: printf("Val: %*.*f\n", width, precision, val);
-                n++;     // There is an extra parameter for the width or precision
-                // This extra parameter is of type integer, never int* (so pass false as last argument)
+                n++; // There is an extra parameter for the width or precision
+                // This extra parameter is of type integer, never int* (so pass false as last
+                // argument)
                 addSigParam(IntegerType::get(STD_SIZE), false);
                 continue;
 
@@ -1149,7 +1143,7 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
                 // TODO: at least h has implications for scanf
                 if (formatStr[p_idx] == 'l') {
                     // %llx
-                    p_idx++;     // Skip second l
+                    p_idx++; // Skip second l
                     veryLong = true;
                 }
 
@@ -1164,30 +1158,29 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
             default:
 
                 if (('0' <= ch) && (ch <= '9')) {
-                    continue;     // width or precision
+                    continue; // width or precision
                 }
 
-                break;            // Else must be format type, handled below
+                break; // Else must be format type, handled below
             }
 
             break;
         } while (1);
 
-        if (ch != '%') {     // Don't count %%
+        if (ch != '%') { // Don't count %%
             n++;
         }
 
-        switch (ch)
-        {
+        switch (ch) {
         case 'd':
-        case 'i':     // Signed integer
+        case 'i': // Signed integer
             addSigParam(IntegerType::get(veryLong ? 64 : 32), isScanf);
             break;
 
         case 'u':
         case 'x':
         case 'X':
-        case 'o':     // Unsigned integer
+        case 'o': // Unsigned integer
             addSigParam(IntegerType::get(32, Sign::Unsigned), isScanf);
             break;
 
@@ -1195,31 +1188,30 @@ bool CallStatement::ellipsisProcessing(Prog *prog)
         case 'g':
         case 'G':
         case 'e':
-        case 'E':     // Various floating point formats
-            // Note that for scanf, %f means float, and %lf means double, whereas for printf, both of these mean
-            // double
-            addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)), isScanf);     // Note: may not be 64 bits
+        case 'E': // Various floating point formats
+            // Note that for scanf, %f means float, and %lf means double, whereas for printf, both
+            // of these mean double
+            addSigParam(FloatType::get(veryLong ? 128 : (isScanf ? 32 : 64)),
+                        isScanf); // Note: may not be 64 bits
             // for some archs
             break;
 
-        case 's':     // String
+        case 's': // String
             addSigParam(PointerType::get(ArrayType::get(CharType::get())), isScanf);
             break;
 
-        case 'c':     // Char
+        case 'c': // Char
             addSigParam(CharType::get(), isScanf);
             break;
 
-        case '%':
-            break;     // Ignore %% (emits 1 percent char)
+        case '%': break; // Ignore %% (emits 1 percent char)
 
-        default:
-            LOG_WARN("Unhandled format character %1 in format string for call %2", ch, this);
+        default: LOG_WARN("Unhandled format character %1 in format string for call %2", ch, this);
         }
     }
 
     setNumArguments(format + n);
-    m_signature->setHasEllipsis(false);     // So we don't do this again
+    m_signature->setHasEllipsis(false); // So we don't do this again
     return true;
 }
 
@@ -1228,16 +1220,16 @@ Assign *CallStatement::makeArgAssign(SharedType ty, SharedExp e)
 {
     SharedExp lhs = e->clone();
 
-    localiseComp(lhs);     // Localise the components of lhs (if needed)
+    localiseComp(lhs); // Localise the components of lhs (if needed)
     SharedExp rhs = localiseExp(e->clone());
-    Assign    *as = new Assign(ty, lhs, rhs);
+    Assign *as    = new Assign(ty, lhs, rhs);
     as->setProc(m_proc);
     as->setBB(m_bb);
     // It may need implicit converting (e.g. sp{-} -> sp{0})
     ProcCFG *cfg = m_proc->getCFG();
 
     if (cfg->isImplicitsDone()) {
-        ImplicitConverter     ic(cfg);
+        ImplicitConverter ic(cfg);
         StmtImplicitConverter sm(&ic, cfg);
         as->accept(&sm);
     }
@@ -1297,14 +1289,14 @@ void CallStatement::updateArguments(bool experimental)
      *                  if filterParams(lhs) continue
      *                  insert as into arguments, considering sig->argumentCompare
      */
-    // Note that if propagations are limited, arguments and collected reaching definitions can be in terms of phi
-    // statements that have since been translated to assignments. So propagate through them now
-    // FIXME: reconsider! There are problems (e.g. with test/pentium/fromSSA2, test/pentium/fbranch) if you
-    // propagate
-    // to the expressions in the arguments (e.g. m[esp{phi1}-20]) but don't propagate into ordinary statements that
-    // define the actual argument. For example, you might have m[esp{-}-56] in the call, but the actual definition
-    // of
-    // the printf argument is still m[esp{phi1} -20] = "%d".
+    // Note that if propagations are limited, arguments and collected reaching definitions can be in
+    // terms of phi statements that have since been translated to assignments. So propagate through
+    // them now
+    // FIXME: reconsider! There are problems (e.g. with test/pentium/fromSSA2, test/pentium/fbranch)
+    // if you propagate to the expressions in the arguments (e.g. m[esp{phi1}-20]) but don't
+    // propagate into ordinary statements that define the actual argument. For example, you might
+    // have m[esp{-}-56] in the call, but the actual definition of the printf argument is still
+    // m[esp{phi1} -20] = "%d".
     if (experimental) {
         PassManager::get()->executePass(PassID::StatementPropagation, m_proc);
     }
@@ -1314,7 +1306,8 @@ void CallStatement::updateArguments(bool experimental)
     m_arguments.clear();
 
     if (experimental) {
-        // I don't really know why this is needed, but I was seeing r28 := ((((((r28{-}-4)-4)-4)-8)-4)-4)-4:
+        // I don't really know why this is needed, but I was seeing r28 :=
+        // ((((((r28{-}-4)-4)-4)-8)-4)-4)-4:
         DefCollector::iterator dd;
 
         for (dd = m_defCol.begin(); dd != m_defCol.end(); ++dd) {
@@ -1329,7 +1322,7 @@ void CallStatement::updateArguments(bool experimental)
     //  - or the def collector if not,
     // exists in oldArguments
     ArgSourceProvider asp(this);
-    SharedExp         loc;
+    SharedExp loc;
 
     while ((loc = asp.nextArgLoc()) != nullptr) {
         if (m_proc->filterParams(loc)) {
@@ -1337,8 +1330,9 @@ void CallStatement::updateArguments(bool experimental)
         }
 
         if (!oldArguments.existsOnLeft(loc)) {
-            // Check if the location is renamable. If not, localising won't work, since it relies on definitions
-            // collected in the call, and you just get m[...]{-} even if there are definitions.
+            // Check if the location is renamable. If not, localising won't work, since it relies on
+            // definitions collected in the call, and you just get m[...]{-} even if there are
+            // definitions.
             SharedExp rhs;
 
             if (m_proc->canRename(loc)) {
@@ -1348,9 +1342,10 @@ void CallStatement::updateArguments(bool experimental)
                 rhs = loc->clone();
             }
 
-            SharedType ty  = asp.curType(loc);
-            Assign     *as = new Assign(ty, loc->clone(), rhs);
-            as->setNumber(m_number);     // Give the assign the same statement number as the call (for now)
+            SharedType ty = asp.curType(loc);
+            Assign *as    = new Assign(ty, loc->clone(), rhs);
+            as->setNumber(
+                m_number); // Give the assign the same statement number as the call (for now)
             // as->setParent(this);
             as->setProc(m_proc);
             as->setBB(m_bb);
@@ -1358,9 +1353,10 @@ void CallStatement::updateArguments(bool experimental)
         }
     }
 
-    for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend(); ++it) {
+    for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend();
+         ++it) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
-        Assign    *as = static_cast<Assign *>(*it);
+        Assign *as    = static_cast<Assign *>(*it);
         SharedExp lhs = as->getLeft();
 
         if (!asp.exists(lhs)) {
@@ -1377,9 +1373,10 @@ void CallStatement::updateArguments(bool experimental)
         m_arguments.append(as);
     }
 
-    m_arguments.sort([&sig] (const Statement *arg1, const Statement *arg2) {
-            return sig->argumentCompare(*static_cast<const Assignment *>(arg1), *static_cast<const Assignment *>(arg2));
-        });
+    m_arguments.sort([&sig](const Statement *arg1, const Statement *arg2) {
+        return sig->argumentCompare(*static_cast<const Assignment *>(arg1),
+                                    *static_cast<const Assignment *>(arg2));
+    });
 }
 
 
@@ -1395,7 +1392,8 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
         for (Statement *dd : m_defines) {
             SharedExp lhs = static_cast<Assignment *>(dd)->getLeft();
 
-            // The stack pointer is allowed as a define, so remove it here as a special case non result
+            // The stack pointer is allowed as a define, so remove it here as a special case non
+            // result
             if (*lhs == *rsp) {
                 continue;
             }
@@ -1406,38 +1404,38 @@ std::unique_ptr<StatementList> CallStatement::calcResults()
         }
     }
     else {
-        // For a call with no destination at this late stage, use everything live at the call except for the stack
-        // pointer register. Needs to be sorted
-        UseCollector::iterator  rr;     // Iterates through reaching definitions
-        StatementList::iterator nn;     // Iterates through new results
+        // For a call with no destination at this late stage, use everything live at the call except
+        // for the stack pointer register. Needs to be sorted
+        UseCollector::iterator rr;  // Iterates through reaching definitions
+        StatementList::iterator nn; // Iterates through new results
         auto sig = m_proc->getSignature();
-        int  sp  = sig->getStackRegister();
+        int sp   = sig->getStackRegister();
 
         for (rr = m_useCol.begin(); rr != m_useCol.end(); ++rr) {
             SharedExp loc = *rr;
 
             if (m_proc->filterReturns(loc)) {
-                continue;     // Ignore filtered locations
+                continue; // Ignore filtered locations
             }
 
             if (loc->isRegN(sp)) {
-                continue;                                          // Ignore the stack pointer
+                continue; // Ignore the stack pointer
             }
 
-            ImplicitAssign *as      = new ImplicitAssign(loc);
-            bool           inserted = false;
+            ImplicitAssign *as = new ImplicitAssign(loc);
+            bool inserted      = false;
 
             for (nn = result->begin(); nn != result->end(); ++nn) {
                 // If the new assignment is less than the current one,
                 if (sig->returnCompare(*as, static_cast<const Assignment &>(**nn))) {
-                    nn       = result->insert(nn, as);     // then insert before this position
+                    nn       = result->insert(nn, as); // then insert before this position
                     inserted = true;
                     break;
                 }
             }
 
             if (!inserted) {
-                result->insert(result->end(), as);     // In case larger than all existing elements
+                result->insert(result->end(), as); // In case larger than all existing elements
             }
         }
     }
@@ -1472,7 +1470,8 @@ bool CallStatement::isChildless() const
         return false;
     }
 
-    // Early in the decompile process, recursive calls are treated as childless, so they use and define all
+    // Early in the decompile process, recursive calls are treated as childless, so they use and
+    // define all
     if (static_cast<UserProc *>(m_procDest)->isEarlyRecursive()) {
         return true;
     }
@@ -1481,7 +1480,7 @@ bool CallStatement::isChildless() const
 }
 
 
-SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& changed)
+SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &changed)
 {
     SharedExp base = r->getSubExp1();
     SharedExp proven;
@@ -1490,45 +1489,48 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp>& r, bool& chang
 
     if (m_procDest && m_procDest->isLib()) {
         auto sig = m_procDest->getSignature();
-        proven = sig->getProven(base);
+        proven   = sig->getProven(base);
 
-        if (proven == nullptr) {                  // Not (known to be) preserved
+        if (proven == nullptr) { // Not (known to be) preserved
             if (sig->findReturn(base) != -1) {
-                return r->shared_from_this();     // Definately defined, it's the return
+                return r->shared_from_this(); // Definately defined, it's the return
             }
 
-            // Otherwise, not all that sure. Assume that library calls pass things like local variables
+            // Otherwise, not all that sure. Assume that library calls pass things like local
+            // variables
         }
     }
     else {
-        // Was using the defines to decide if something is preserved, but consider sp+4 for stack based machines
-        // Have to use the proven information for the callee (if any)
+        // Was using the defines to decide if something is preserved, but consider sp+4 for stack
+        // based machines Have to use the proven information for the callee (if any)
         if (m_procDest == nullptr) {
-            return r->shared_from_this();     // Childless callees transmit nothing
+            return r->shared_from_this(); // Childless callees transmit nothing
         }
 
-        // if (procDest->isLocal(base))                    // ICK! Need to prove locals and parameters through
-        // calls...
+        // if (procDest->isLocal(base))                    // ICK! Need to prove locals and
+        // parameters through calls...
         // FIXME: temporary HACK! Ignores alias issues.
-        if (!m_procDest->isLib() && static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
-            SharedExp ret = localiseExp(base->clone());     // Assume that it is proved as preserved
-            changed = true;
+        if (!m_procDest->isLib() &&
+            static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
+            SharedExp ret = localiseExp(base->clone()); // Assume that it is proved as preserved
+            changed       = true;
 
-            LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3", base, m_number, ret);
+            LOG_VERBOSE2("%1 allowed to bypass call statement %2 ignoring aliasing; result %3",
+                         base, m_number, ret);
             return ret;
         }
 
-        proven = m_procDest->getProven(base);     // e.g. r28+4
+        proven = m_procDest->getProven(base); // e.g. r28+4
     }
 
     if (proven == nullptr) {
-        return r->shared_from_this();                     // Can't bypass, since nothing proven
+        return r->shared_from_this(); // Can't bypass, since nothing proven
     }
 
-    SharedExp to = localiseExp(base);                     // e.g. r28{17}
+    SharedExp to = localiseExp(base); // e.g. r28{17}
     assert(to);
-    proven = proven->clone();                             // Don't modify the expressions in destProc->proven!
-    proven = proven->searchReplaceAll(*base, to, changed);     // e.g. r28{17} + 4
+    proven = proven->clone(); // Don't modify the expressions in destProc->proven!
+    proven = proven->searchReplaceAll(*base, to, changed); // e.g. r28{17} + 4
 
     if (changed) {
         LOG_VERBOSE2("Replacing %1 with %2", r, proven);
@@ -1567,9 +1569,8 @@ void CallStatement::eliminateDuplicateArgs()
 void CallStatement::setNumber(int num)
 {
     m_number = num;
-    // Also number any existing arguments. Important for library procedures, since these have arguments set by the
-    // front
-    // end based in their signature
+    // Also number any existing arguments. Important for library procedures, since these have
+    // arguments set by the front end based in their signature
 
     for (Statement *stmt : m_arguments) {
         stmt->setNumber(num);
@@ -1596,12 +1597,10 @@ bool CallStatement::accept(StmtModifier *v)
         }
     }
 
-    // For example: needed for CallBypasser so that a collected definition that happens to be another call gets
-    // adjusted
-    // I'm thinking no at present... let the bypass and propagate while possible logic take care of it, and leave
-    // the
-    // collectors as the rename logic set it
-    // Well, sort it out with ignoreCollector()
+    // For example: needed for CallBypasser so that a collected definition that happens to be
+    // another call gets adjusted I'm thinking no at present... let the bypass and propagate while
+    // possible logic take care of it, and leave the collectors as the rename logic set it Well,
+    // sort it out with ignoreCollector()
     if (!v->ignoreCollector()) {
         DefCollector::iterator cc;
 
@@ -1622,7 +1621,7 @@ bool CallStatement::accept(StmtModifier *v)
 bool CallStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -1656,17 +1655,18 @@ bool CallStatement::accept(StmtPartModifier *v)
         }
     }
 
-    // For example: needed for CallBypasser so that a collected definition that happens to be another call gets
-    // adjusted
-    // But now I'm thinking no, the bypass and propagate while possible logic should take care of it.
-    // Then again, what about the use collectors in calls? Best to do it.
+    // For example: needed for CallBypasser so that a collected definition that happens to be
+    // another call gets adjusted But now I'm thinking no, the bypass and propagate while possible
+    // logic should take care of it. Then again, what about the use collectors in calls? Best to do
+    // it.
     if (!v->ignoreCollector()) {
         for (Statement *s : m_defCol) {
             s->accept(v);
         }
 
         for (SharedExp exp : m_useCol) {
-            // I believe that these should never change at the top level, e.g. m[esp{30} + 4] -> m[esp{-} - 20]
+            // I believe that these should never change at the top level, e.g. m[esp{30} + 4] ->
+            // m[esp{-} - 20]
             exp->acceptModifier(v->mod);
         }
     }
@@ -1681,4 +1681,3 @@ bool CallStatement::accept(StmtPartModifier *v)
 
     return true;
 }
-

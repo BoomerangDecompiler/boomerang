@@ -24,21 +24,21 @@ class ITypeRecovery
 public:
     ITypeRecovery() = default;
 
-    ITypeRecovery(const ITypeRecovery& other) = delete;
-    ITypeRecovery(ITypeRecovery&& other) = default;
+    ITypeRecovery(const ITypeRecovery &other) = delete;
+    ITypeRecovery(ITypeRecovery &&other)      = default;
 
     virtual ~ITypeRecovery() = default;
 
-    ITypeRecovery& operator=(const ITypeRecovery& other) = delete;
-    ITypeRecovery& operator=(ITypeRecovery&& other) = default;
+    ITypeRecovery &operator=(const ITypeRecovery &other) = delete;
+    ITypeRecovery &operator=(ITypeRecovery &&other) = default;
 
 public:
     /// \returns A descriptive name of this type recovery engine.
-    virtual const QString& getName() = 0;
+    virtual const QString &getName() = 0;
 
     /// Recover program types for a single function \p function
     virtual void recoverFunctionTypes(Function *function) = 0;
 
     /// Recover program types for the whole program
-    virtual void recoverProgramTypes(Prog *prog)          = 0;
+    virtual void recoverProgramTypes(Prog *prog) = 0;
 };

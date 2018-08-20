@@ -26,7 +26,7 @@ class Statement;
 class RTL;
 class Parameter;
 
-using RTLList   = std::list<std::unique_ptr<RTL>>;
+using RTLList = std::list<std::unique_ptr<RTL>>;
 
 enum class BBType;
 
@@ -38,37 +38,37 @@ enum class BBType;
  */
 class BOOMERANG_API ProcCFG
 {
-    typedef std::map<Address, BasicBlock *, std::less<Address> >   BBStartMap;
-    typedef std::map<SharedConstExp, Statement *, lessExpStar>     ExpStatementMap;
+    typedef std::map<Address, BasicBlock *, std::less<Address>> BBStartMap;
+    typedef std::map<SharedConstExp, Statement *, lessExpStar> ExpStatementMap;
 
 public:
-    typedef MapValueIterator<BBStartMap>                iterator;
-    typedef MapValueConstIterator<BBStartMap>           const_iterator;
-    typedef MapValueReverseIterator<BBStartMap>         reverse_iterator;
-    typedef MapValueConstReverseIterator<BBStartMap>    const_reverse_iterator;
+    typedef MapValueIterator<BBStartMap> iterator;
+    typedef MapValueConstIterator<BBStartMap> const_iterator;
+    typedef MapValueReverseIterator<BBStartMap> reverse_iterator;
+    typedef MapValueConstReverseIterator<BBStartMap> const_reverse_iterator;
 
 public:
     /// Creates an empty CFG for the function \p proc
     ProcCFG(UserProc *proc);
-    ProcCFG(const ProcCFG& other) = delete;
-    ProcCFG(ProcCFG&& other) = default;
+    ProcCFG(const ProcCFG &other) = delete;
+    ProcCFG(ProcCFG &&other)      = default;
 
     ~ProcCFG();
 
-    ProcCFG& operator=(const ProcCFG& other) = delete;
-    ProcCFG& operator=(ProcCFG&& other) = default;
+    ProcCFG &operator=(const ProcCFG &other) = delete;
+    ProcCFG &operator=(ProcCFG &&other) = default;
 
 public:
     /// Note: When removing a BB, the iterator(s) pointing to the removed BB are invalidated.
-    iterator begin()                      { return iterator(m_bbStartMap.begin()); }
-    iterator end()                        { return iterator(m_bbStartMap.end()); }
-    const_iterator begin()          const { return const_iterator(m_bbStartMap.begin()); }
-    const_iterator end()            const { return const_iterator(m_bbStartMap.end()); }
+    iterator begin() { return iterator(m_bbStartMap.begin()); }
+    iterator end() { return iterator(m_bbStartMap.end()); }
+    const_iterator begin() const { return const_iterator(m_bbStartMap.begin()); }
+    const_iterator end() const { return const_iterator(m_bbStartMap.end()); }
 
-    reverse_iterator rbegin()             { return reverse_iterator(m_bbStartMap.rbegin()); }
-    reverse_iterator rend()               { return reverse_iterator(m_bbStartMap.rend()); }
+    reverse_iterator rbegin() { return reverse_iterator(m_bbStartMap.rbegin()); }
+    reverse_iterator rend() { return reverse_iterator(m_bbStartMap.rend()); }
     const_reverse_iterator rbegin() const { return const_reverse_iterator(m_bbStartMap.rbegin()); }
-    const_reverse_iterator rend()   const { return const_reverse_iterator(m_bbStartMap.rend()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(m_bbStartMap.rend()); }
 
 public:
     UserProc *getProc() { return m_myProc; }
@@ -85,10 +85,10 @@ public:
 
     /**
      * Create a new Basic Block for this CFG.
-     * If the BB is blocked by a larger complete BB, the existing BB will be split at the first address of
-     * \p bbRTLs; in this case this function returns nullptr (since no BB was created).
+     * If the BB is blocked by a larger complete BB, the existing BB will be split at the first
+     * address of \p bbRTLs; in this case this function returns nullptr (since no BB was created).
      * The case of the new BB being blocked by a smaller complete BB is not handled by this method;
-     * use \ref ProcCFG::label instead.
+     * use \ref ProcCFG::ensureBBExists instead.
      *
      * The new BB might also be blocked by exising incomplete BBs.
      * If this is the case, the new BB will be split at all blocking incomplete BBs,
@@ -115,10 +115,10 @@ public:
      * Ensures that \p addr is the start of a complete or incomplete BasicBlock.
      *
      * Explicit labels are addresses that have already been tagged as being labels
-     * due to transfers of control to that address (i.e. they are the start of a complete Basic Block)
-     * Non explicit labels are addresses that are in the middle of a complete Basic Block. In this case, the
-     * existing complete BB is split. If \p currBB is the BB that gets split, \p currBB is updated
-     * to point to the "high" part of the split BB.
+     * due to transfers of control to that address (i.e. they are the start of a complete Basic
+     * Block) Non explicit labels are addresses that are in the middle of a complete Basic Block. In
+     * this case, the existing complete BB is split. If \p currBB is the BB that gets split, \p
+     * currBB is updated to point to the "high" part of the split BB.
      *
      * \param         addr   native (source) address to check
      * \param         currBB See above
@@ -198,7 +198,7 @@ public:
     // Implicit assignments
 
     /// Find the existing implicit assign for x (if any)
-    Statement *findTheImplicitAssign(const SharedConstExp& x) const;
+    Statement *findTheImplicitAssign(const SharedConstExp &x) const;
 
     /// Find exiting implicit assign for parameter p
     Statement *findImplicitParamAssign(Parameter *p);
@@ -214,7 +214,8 @@ public:
 
     /**
      * Split \p bb into a "low" and "high" part at the RTL associated with \p splitAddr.
-     * The type of the "low" BB becomes fall-through. The type of the "high" part becomes the type of \p bb.
+     * The type of the "low" BB becomes fall-through. The type of the "high" part becomes the type
+     * of \p bb.
      *
      * \ | /                    \ | /
      * +---+ bb                 +---+ BB1
@@ -227,23 +228,27 @@ public:
      * If \p splitAddr is not in the range [bb->getLowAddr, bb->getHiAddr], the split fails.
      * \param   bb         pointer to the BB to be split
      * \param   splitAddr  address of RTL to become the start of the new BB
-     * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only modifies the top part
-     *                     to not overlap. If this is the case, the RTLs of the original BB are deleted.
-     * \returns If the merge is successful, returns the "high" part of the split BB. Otherwise, returns the original BB.
+     * \param   newBB      if non zero, it remains as the "bottom" part of the BB, and splitBB only
+     * modifies the top part to not overlap. If this is the case, the RTLs of the original BB are
+     * deleted. \returns If the merge is successful, returns the "high" part of the split BB.
+     * Otherwise, returns the original BB.
      */
     BasicBlock *splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *newBB = nullptr);
 
 public:
     /// print this CFG, mainly for debugging
-    void print(OStream& out);
+    void print(OStream &out);
 
 private:
-    UserProc *m_myProc = nullptr;            ///< Procedure to which this CFG belongs.
-    BBStartMap m_bbStartMap;                 ///< The Address to BB map
-    BasicBlock *m_entryBB = nullptr;         ///< The CFG entry BasicBlock.
-    BasicBlock *m_exitBB = nullptr;          ///< The CFG exit BasicBlock.
+    UserProc *m_myProc = nullptr;    ///< Procedure to which this CFG belongs.
+    BBStartMap m_bbStartMap;         ///< The Address to BB map
+    BasicBlock *m_entryBB = nullptr; ///< The CFG entry BasicBlock.
+    BasicBlock *m_exitBB  = nullptr; ///< The CFG exit BasicBlock.
 
-    ExpStatementMap m_implicitMap;           ///< Map from expression to implicit assignment. The purpose is to prevent multiple implicit assignments for the same location.
-    bool m_implicitsDone = false;            ///< True when the implicits are done; they can cause problems (e.g. with ad-hoc global assignment)
+    ExpStatementMap
+        m_implicitMap; ///< Map from expression to implicit assignment. The purpose is to prevent
+                       ///< multiple implicit assignments for the same location.
+    bool m_implicitsDone = false; ///< True when the implicits are done; they can cause problems
+                                  ///< (e.g. with ad-hoc global assignment)
     mutable bool m_wellFormed = false;
 };

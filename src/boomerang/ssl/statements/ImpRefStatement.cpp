@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ImpRefStatement.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/log/Log.h"
@@ -29,14 +28,14 @@ ImpRefStatement::ImpRefStatement(SharedType ty, SharedExp a)
 }
 
 
-void ImpRefStatement::print(OStream& os) const
+void ImpRefStatement::print(OStream &os) const
 {
-    os << "     *";     // No statement number
+    os << "     *"; // No statement number
     os << m_type << "* IMP REF " << m_addressExp;
 }
 
 
-void ImpRefStatement::meetWith(SharedType ty, bool& changed)
+void ImpRefStatement::meetWith(SharedType ty, bool &changed)
 {
     m_type = m_type->meetWith(ty, changed);
 }
@@ -57,7 +56,7 @@ bool ImpRefStatement::accept(StmtVisitor *visitor) const
 bool ImpRefStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -110,20 +109,21 @@ bool ImpRefStatement::accept(StmtPartModifier *v)
 }
 
 
-bool ImpRefStatement::search(const Exp& pattern, SharedExp& result) const
+bool ImpRefStatement::search(const Exp &pattern, SharedExp &result) const
 {
     result = nullptr;
     return m_addressExp->search(pattern, result);
 }
 
 
-bool ImpRefStatement::searchAll(const Exp& pattern, std::list<SharedExp, std::allocator<SharedExp> >& result) const
+bool ImpRefStatement::searchAll(const Exp &pattern,
+                                std::list<SharedExp, std::allocator<SharedExp>> &result) const
 {
     return m_addressExp->searchAll(pattern, result);
 }
 
 
-bool ImpRefStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
+bool ImpRefStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
     bool change;
 

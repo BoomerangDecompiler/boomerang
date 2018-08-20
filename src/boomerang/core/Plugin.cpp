@@ -9,17 +9,16 @@
 #pragma endregion License
 #include "Plugin.h"
 
-
 #include <cassert>
 
 #ifdef _MSC_VER
-#  include "Windows.h"
+#    include "Windows.h"
 #else
-#  include <dlfcn.h>
+#    include <dlfcn.h>
 #endif
 
 
-PluginHandle::PluginHandle(const QString& filePath)
+PluginHandle::PluginHandle(const QString &filePath)
 {
 #ifdef _MSC_VER
     m_handle = LoadLibrary(qPrintable(filePath));

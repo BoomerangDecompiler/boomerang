@@ -9,18 +9,17 @@
 #pragma endregion License
 #include "CFGDotWriter.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/proc/ProcCFG.h"
-#include "boomerang/db/module/Module.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/module/Module.h"
+#include "boomerang/db/proc/ProcCFG.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Exp.h"
 
 
-void CFGDotWriter::writeCFG(const Prog *prog, const QString& filename)
+void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
 {
     QFile tgt(prog->getProject()->getSettings()->getOutputDirectory().absoluteFilePath(filename));
 
@@ -31,7 +30,7 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString& filename)
     OStream of(&tgt);
     of << "digraph ProcCFG {\n";
 
-    for (const auto& module : prog->getModuleList()) {
+    for (const auto &module : prog->getModuleList()) {
         for (Function *func : *module) {
             if (func->isLib()) {
                 continue;
@@ -52,11 +51,10 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString& filename)
     }
 
     of << "}";
-
 }
 
 
-void CFGDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
+void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 {
     QFile outFile(filename);
     outFile.open(QFile::WriteOnly | QFile::Text);
@@ -73,7 +71,7 @@ void CFGDotWriter::writeCFG(const ProcSet& procs, const QString& filename)
 }
 
 
-void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream& of)
+void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream &of)
 {
     Address returnAddress = Address::INVALID;
 
@@ -83,11 +81,8 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream& of)
            << "bb" << bb->getLowAddr() << " ["
            << "label=\"" << bb->getLowAddr() << " ";
 
-        switch (bb->getType())
-        {
-        case BBType::Oneway:
-            of << "oneway";
-            break;
+        switch (bb->getType()) {
+        case BBType::Oneway: of << "oneway"; break;
 
         case BBType::Twoway:
             if (bb->getCond()) {
@@ -101,31 +96,29 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream& of)
             }
             break;
 
-        case BBType::Nway:
-            {
-                of << "nway";
-                SharedExp de = bb->getDest();
+        case BBType::Nway: {
+            of << "nway";
+            SharedExp de = bb->getDest();
 
-                if (de) {
-                    of << "\\n";
-                    of << de;
-                }
-
-                of << "\" shape=trapezium];\n";
-                continue;
+            if (de) {
+                of << "\\n";
+                of << de;
             }
 
-        case BBType::Call:
-            {
-                of << "call";
-                Function *dest = bb->getCallDestProc();
+            of << "\" shape=trapezium];\n";
+            continue;
+        }
 
-                if (dest) {
-                    of << "\\n" << dest->getName();
-                }
+        case BBType::Call: {
+            of << "call";
+            Function *dest = bb->getCallDestProc();
 
-                break;
+            if (dest) {
+                of << "\\n" << dest->getName();
             }
+
+            break;
+        }
 
         case BBType::Ret:
             of << "ret\" shape=triangle];\n";
@@ -133,21 +126,10 @@ void CFGDotWriter::writeCFG(const ProcCFG *cfg, OStream& of)
             returnAddress = bb->getLowAddr();
             continue;
 
-        case BBType::Fall:
-            of << "fall";
-            break;
-
-        case BBType::CompJump:
-            of << "compjump";
-            break;
-
-        case BBType::CompCall:
-            of << "compcall";
-            break;
-
-        case BBType::Invalid:
-            of << "invalid";
-            break;
+        case BBType::Fall: of << "fall"; break;
+        case BBType::CompJump: of << "compjump"; break;
+        case BBType::CompCall: of << "compcall"; break;
+        case BBType::Invalid: of << "invalid"; break;
         }
 
         of << "\"];\n";

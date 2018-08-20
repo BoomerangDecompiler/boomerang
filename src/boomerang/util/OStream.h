@@ -34,23 +34,23 @@ public:
     OStream(FILE *tgt);
     OStream(QSaveFile *tgt);
 
-    OStream(const OStream&) = delete;
-    OStream(OStream&&) = delete;
+    OStream(const OStream &) = delete;
+    OStream(OStream &&)      = delete;
 
     ~OStream();
 
-    OStream& operator=(const OStream&) = delete;
-    OStream& operator=(OStream&&) = delete;
+    OStream &operator=(const OStream &) = delete;
+    OStream &operator=(OStream &&) = delete;
 
 public:
-    OStream& operator<<(const QString& rhs);
-    OStream& operator<<(const QTextStreamManipulator& rhs);
-    OStream& operator<<(size_t rhs);
-    OStream& operator<<(int rhs);
-    OStream& operator<<(unsigned int rhs);
-    OStream& operator<<(double rhs);
-    OStream& operator<<(const char *rhs);
-    OStream& operator<<(char rhs);
+    OStream &operator<<(const QString &rhs);
+    OStream &operator<<(const QTextStreamManipulator &rhs);
+    OStream &operator<<(size_t rhs);
+    OStream &operator<<(int rhs);
+    OStream &operator<<(unsigned int rhs);
+    OStream &operator<<(double rhs);
+    OStream &operator<<(const char *rhs);
+    OStream &operator<<(char rhs);
 
     /// \copydoc QTextStream::flush
     void flush();

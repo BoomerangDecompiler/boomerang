@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DebugInfo.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Binary.h"
@@ -30,15 +29,14 @@
 #include <cassert>
 
 #ifdef _WIN32
-#  include <windows.h>
-#  ifndef __MINGW32__
+#    include <windows.h>
+#    ifndef __MINGW32__
 namespace dbghelp
-#  endif
+#    endif
 {
-    #  include <dbghelp.h>
+#    include <dbghelp.h>
 }
 #endif
-
 
 
 #if defined(_WIN32) && !defined(__MINGW32__)
@@ -48,9 +46,10 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase);
 SharedType makeUDT(int index, DWORD64 ModBase)
 {
     HANDLE hProcess = GetCurrentProcess();
-    WCHAR  *name;
+    WCHAR *name;
 
-    BOOL gotType = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME, &name);
+    BOOL gotType = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMNAME,
+                                           &name);
     if (!gotType) {
         return nullptr;
     }
@@ -63,11 +62,12 @@ SharedType makeUDT(int index, DWORD64 ModBase)
         return NamedType::get(nameA);
     }
 
-    auto  cty   = CompoundType::get();
+    auto cty    = CompoundType::get();
     DWORD count = 0;
     dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_CHILDRENCOUNT, &count);
     int FindChildrenSize = sizeof(dbghelp::TI_FINDCHILDREN_PARAMS) + count * sizeof(ULONG);
-    dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(FindChildrenSize);
+    dbghelp::TI_FINDCHILDREN_PARAMS *pFC = (dbghelp::TI_FINDCHILDREN_PARAMS *)malloc(
+        FindChildrenSize);
     memset(pFC, 0, FindChildrenSize);
     pFC->Count = count;
     SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_FINDCHILDREN, pFC);
@@ -85,7 +85,6 @@ SharedType makeUDT(int index, DWORD64 ModBase)
     ty = Type::getNamedType(nameA);
     assert(ty);
     return NamedType::get(nameA);
-
 }
 
 
@@ -93,75 +92,65 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
 {
     HANDLE hProcess = GetCurrentProcess();
 
-    int     got;
-    DWORD   d;
+    int got;
+    DWORD d;
     ULONG64 lsz = 0;
 
     got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_SYMTAG, &d);
     assert(got);
-    got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
+    got    = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
     int sz = (int)lsz * 8; // bits
 
-    switch (d)
-    {
-        case 11:
-            return makeUDT(index, ModBase);
+    switch (d) {
+    case 11: return makeUDT(index, ModBase);
 
-        case 13:
-            // TODO: signature
-            return FuncType::get();
+    case 13:
+        // TODO: signature
+        return FuncType::get();
 
-        case 14:
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
-            assert(got);
-            return PointerType::get(typeFromDebugInfo(d, ModBase));
+    case 14:
+        got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
+        assert(got);
+        return PointerType::get(typeFromDebugInfo(d, ModBase));
 
-        case 15:
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
-            assert(got);
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
-            assert(got);
-            return ArrayType::get(typeFromDebugInfo(d, ModBase), (unsigned)lsz);
+    case 15:
+        got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_TYPE, &d);
+        assert(got);
+        got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_LENGTH, &lsz);
+        assert(got);
+        return ArrayType::get(typeFromDebugInfo(d, ModBase), (unsigned)lsz);
 
-            break;
+        break;
 
-        case 16:
-            got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_BASETYPE, &d);
-            assert(got);
+    case 16:
+        got = dbghelp::SymGetTypeInfo(hProcess, ModBase, index, dbghelp::TI_GET_BASETYPE, &d);
+        assert(got);
 
-            switch (d)
-            {
-                case 1:
-                    return VoidType::get();
+        switch (d) {
+        case 1: return VoidType::get();
 
-                case 2:
-                    return CharType::get();
+        case 2: return CharType::get();
 
-                case 3:
-                    return CharType::get();
+        case 3: return CharType::get();
 
-                case 6:  // int
-                case 13: // long
-                    return IntegerType::get(sz, Sign::Signed);
+        case 6:  // int
+        case 13: // long
+            return IntegerType::get(sz, Sign::Signed);
 
-                case 7:  // unsigned int
-                case 14: // ulong
-                    return IntegerType::get(sz, Sign::Unsigned);
+        case 7:  // unsigned int
+        case 14: // ulong
+            return IntegerType::get(sz, Sign::Unsigned);
 
-                case 8:
-                    return FloatType::get(sz);
+        case 8: return FloatType::get(sz);
 
-                case 10:
-                    return BooleanType::get();
+        case 10: return BooleanType::get();
 
-                default:
-                    LOG_FATAL("Unhandled base type %1", (int)d);
-            }
+        default: LOG_FATAL("Unhandled base type %1", (int)d);
+        }
 
-            break;
+        break;
 
-                default:
-                    LOG_FATAL("Unhandled symtag %1", (int)d);
+    default: LOG_FATAL("Unhandled symtag %1", (int)d);
     }
 
     return nullptr;
@@ -170,8 +159,7 @@ SharedType typeFromDebugInfo(int index, DWORD64 ModBase)
 
 int debugRegister(int r)
 {
-    switch (r)
-    {
+    switch (r) {
     case 2: return REG_PENT_EDX;
     case 4: return REG_PENT_ECX;
     case 8: return REG_PENT_EBP;
@@ -191,20 +179,24 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
 
         if (symInfo->Flags & SYMFLAG_REGREL) {
             assert(symInfo->Register == 8); // ebp
-            proc->getSignature()->addParameter(symInfo->Name,
-                                               Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP), Const::get((int)symInfo->Address - 4))), ty);
+            proc->getSignature()->addParameter(
+                symInfo->Name,
+                Location::memOf(Binary::get(opPlus, Location::regOf(REG_PENT_ESP),
+                                            Const::get((int)symInfo->Address - 4))),
+                ty);
         }
         else if (symInfo->Flags & SYMFLAG_REGISTER) {
-            proc->getSignature()->addParameter(symInfo->Name, Location::regOf(debugRegister(symInfo->Register)), ty);
+            proc->getSignature()->addParameter(
+                symInfo->Name, Location::regOf(debugRegister(symInfo->Register)), ty);
         }
     }
     else if ((symInfo->Flags & SYMFLAG_LOCAL) && !proc->isLib()) {
         UserProc *uproc = static_cast<UserProc *>(proc);
         assert(symInfo->Flags & SYMFLAG_REGREL);
         assert(symInfo->Register == 8);
-        SharedExp memref =
-        Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP), Const::get(-((int)symInfo->Address - 4))));
-        SharedType ty = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
+        SharedExp memref = Location::memOf(Binary::get(opMinus, Location::regOf(REG_PENT_ESP),
+                                                       Const::get(-((int)symInfo->Address - 4))));
+        SharedType ty    = typeFromDebugInfo(symInfo->TypeIndex, symInfo->ModBase);
         uproc->addLocal(ty, symInfo->Name, memref);
     }
 
@@ -215,15 +207,15 @@ BOOL CALLBACK addSymbol(dbghelp::PSYMBOL_INFO symInfo, ULONG /*SymbolSize*/, PVO
 
 namespace DebugInfo
 {
-SharedType typeFromDebugInfo(const QString& name, Address addr)
+SharedType typeFromDebugInfo(const QString &name, Address addr)
 {
 #if defined(_WIN32) && !defined(__MINGW32__)
-    HANDLE               hProcess = GetCurrentProcess();
-    dbghelp::SYMBOL_INFO *sym     = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
-    sym->SizeOfStruct = sizeof(*sym);
-    sym->MaxNameLen   = 1000;
-    sym->Name[0]      = 0;
-    BOOL got = dbghelp::SymFromAddr(hProcess, addr.value(), 0, sym);
+    HANDLE hProcess           = GetCurrentProcess();
+    dbghelp::SYMBOL_INFO *sym = (dbghelp::SYMBOL_INFO *)malloc(sizeof(dbghelp::SYMBOL_INFO) + 1000);
+    sym->SizeOfStruct         = sizeof(*sym);
+    sym->MaxNameLen           = 1000;
+    sym->Name[0]              = 0;
+    BOOL got                  = dbghelp::SymFromAddr(hProcess, addr.value(), 0, sym);
 
     if (got && *sym->Name && sym->TypeIndex) {
         assert(name == sym->Name);

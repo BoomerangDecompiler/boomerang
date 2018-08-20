@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/ByteUtil.h"
 
@@ -36,7 +36,6 @@ using SharedExp = std::shared_ptr<Exp>;
 using SharedRTL = std::shared_ptr<RTL>;
 
 
-
 /**
  * The TableEntry class represents a single instruction - a string/RTL pair.
  */
@@ -44,7 +43,7 @@ class BOOMERANG_API TableEntry
 {
 public:
     TableEntry();
-    TableEntry(const std::list<QString>& params, const RTL& rtl);
+    TableEntry(const std::list<QString> &params, const RTL &rtl);
 
 public:
     /**
@@ -56,13 +55,12 @@ public:
      *
      * \returns Zero on success, non-zero on failure.
      */
-    int appendRTL(const std::list<QString>& params, const RTL& rtl);
+    int appendRTL(const std::list<QString> &params, const RTL &rtl);
 
 public:
     std::list<QString> m_params;
     RTL m_rtl;
 };
-
 
 
 typedef enum
@@ -80,17 +78,17 @@ typedef enum
 struct BOOMERANG_API ParamEntry
 {
 public:
-    std::list<QString> m_params;          ///< PARAM_VARIANT & PARAM_ASGN only */
-    std::list<QString> m_funcParams;      ///< PARAM_LAMBDA - late bound params */
-    Statement          *m_asgn = nullptr; ///< PARAM_ASGN only */
-    bool               m_lhs   = false;   ///< True if this param ever appears on the LHS of an expression */
-    ParamKind          m_kind  = PARAM_SIMPLE;
-    SharedType         m_regType;         ///< Type of r[this], if any (void otherwise)
-    std::set<int>      m_regIdx;          ///< Values this param can take as an r[param]
-    int                m_mark = 0;        ///< Traversal mark. (free temporary use, basically)
+    std::list<QString> m_params;     ///< PARAM_VARIANT & PARAM_ASGN only */
+    std::list<QString> m_funcParams; ///< PARAM_LAMBDA - late bound params */
+    Statement *m_asgn = nullptr;     ///< PARAM_ASGN only */
+    bool m_lhs        = false; ///< True if this param ever appears on the LHS of an expression */
+    ParamKind m_kind  = PARAM_SIMPLE;
+    SharedType m_regType;   ///< Type of r[this], if any (void otherwise)
+    std::set<int> m_regIdx; ///< Values this param can take as an r[param]
+    int m_mark = 0;         ///< Traversal mark. (free temporary use, basically)
 
 protected:
-    SharedType         m_type;
+    SharedType m_type;
 };
 
 
@@ -108,13 +106,13 @@ class BOOMERANG_API RTLInstDict
 
 public:
     RTLInstDict(bool verboseOutput = false) { m_verboseOutput = verboseOutput; }
-    RTLInstDict(const RTLInstDict&) = delete;
-    RTLInstDict(RTLInstDict&&) = default;
+    RTLInstDict(const RTLInstDict &) = delete;
+    RTLInstDict(RTLInstDict &&)      = default;
 
     ~RTLInstDict() = default;
 
-    RTLInstDict& operator=(const RTLInstDict&) = delete;
-    RTLInstDict& operator=(RTLInstDict&&) = default;
+    RTLInstDict &operator=(const RTLInstDict &) = delete;
+    RTLInstDict &operator=(RTLInstDict &&) = default;
 
 public:
     /**
@@ -124,7 +122,7 @@ public:
      * \param sslFileName the name of the file containing the SSL specification.
      * \returns           true if the file was read successfully.
      */
-    bool readSSLFile(const QString& sslFileName);
+    bool readSSLFile(const QString &sslFileName);
 
     /// \returns the name and the number of operands of the instruction wwith name \p name
     std::pair<QString, DWord> getSignature(const char *name);
@@ -136,15 +134,16 @@ public:
      * \param pc      address at which the named instruction is located
      * \param actuals the actual values of the instruction parameters
      */
-    std::unique_ptr<RTL> instantiateRTL(const QString& name, Address pc, const std::vector<SharedExp>& actuals);
+    std::unique_ptr<RTL> instantiateRTL(const QString &name, Address pc,
+                                        const std::vector<SharedExp> &actuals);
 
 private:
     /// Reset the object to "undo" a readSSLFile()
     void reset();
 
     /**
-     * Returns an instance of a register transfer list for the parameterized rtlist with the given formals
-     * replaced with the actuals given as the third parameter.
+     * Returns an instance of a register transfer list for the parameterized rtlist with the given
+     * formals replaced with the actuals given as the third parameter.
      *
      * \param   rtls    a register transfer list
      * \param   pc      address at which the named instruction is located
@@ -152,8 +151,8 @@ private:
      * \param   actuals the actual parameter values
      * \returns the instantiated list of Exps
      */
-    std::unique_ptr<RTL> instantiateRTL(RTL& rtls, Address pc, std::list<QString>& params,
-                                           const std::vector<SharedExp>& actuals);
+    std::unique_ptr<RTL> instantiateRTL(RTL &rtls, Address pc, std::list<QString> &params,
+                                        const std::vector<SharedExp> &actuals);
 
     /**
      * Appends one RTL to the dictionary, or adds it to idict if an
@@ -164,7 +163,7 @@ private:
      * \param rtl reference to the RTL to add
      * \returns zero for success, non-zero for failure
      */
-    int insert(const QString& name, std::list<QString>& parameters, const RTL& rtl);
+    int insert(const QString &name, std::list<QString> &parameters, const RTL &rtl);
 
     /**
      * Transform an RTL to eliminate any uses of post-variables by either
@@ -181,10 +180,10 @@ private:
      * \param rts the list of statements
      * \param optimize - try to remove temporary registers
      */
-    void transformPostVars(RTL& rts, bool optimize);
+    void transformPostVars(RTL &rts, bool optimize);
 
     /// Print a textual representation of the dictionary.
-    void print(OStream& os);
+    void print(OStream &os);
 
     /**
      * Add a new register definition to the dictionary
@@ -192,18 +191,18 @@ private:
      * \param size - register size in bits
      * \param flt  - is float register?
      */
-    void addRegister(const QString& name, int id, int size, bool flt);
+    void addRegister(const QString &name, int id, int size, bool flt);
 
     /**
-     * Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type, then set
-     * the expression's type, and return true
-     * \note This version only inspects one expression
+     * Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type,
+     * then set the expression's type, and return true \note This version only inspects one
+     * expression
      *
      * \param  exp - points to a Exp* to be scanned
      * \param  ty - ref to a Type object to put the partial type into
      * \returns true if a partial type is found
      */
-    bool partialType(Exp *exp, Type& ty);
+    bool partialType(Exp *exp, Type &ty);
 
     /**
      * Runs after the ssl file is parsed to fix up variant params
@@ -211,7 +210,8 @@ private:
      */
     void fixupParams();
 
-    void fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark);
+    void fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount,
+                        int mark);
 
 private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
@@ -220,11 +220,13 @@ private:
     /// An RTL describing the machine's basic fetch-execute cycle
     SharedRTL fetchExecCycle;
 
-    /// A map from the symbolic representation of a register (e.g. "%g0") to its index within an array of registers.
-    std::map<QString, int, std::less<QString> > RegMap;
+    /// A map from the symbolic representation of a register (e.g. "%g0") to its index within an
+    /// array of registers.
+    std::map<QString, int, std::less<QString>> RegMap;
 
-    /// Similar to r_map but stores more info about a register such as its size, its addresss etc (see register.h).
-    std::map<int, Register, std::less<int> > DetRegMap;
+    /// Similar to r_map but stores more info about a register such as its size, its addresss etc
+    /// (see register.h).
+    std::map<int, Register, std::less<int>> DetRegMap;
 
 
     /// A set of parameter names, to make sure they are declared (?).
@@ -236,18 +238,20 @@ private:
 
     /// The maps which summarise the semantics (.ssl) file
     std::map<QString, SharedExp> FlagFuncs;
-    /// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as exact) switch
+    /// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as
+    /// exact) switch
     std::map<QString, QString> fastMap;
 
     Endian m_bigEndian; // True if this source is big endian
 
-    /// A map from symbolic representation of a special (non-addressable) register to a Register object
-    std::map<QString, Register, std::less<QString> > SpecialRegMap;
+    /// A map from symbolic representation of a special (non-addressable) register to a Register
+    /// object
+    std::map<QString, Register, std::less<QString>> SpecialRegMap;
 
     std::map<QString, std::pair<int, void *> *> DefMap;
 
     std::map<int, SharedExp> AliasMap;
 
     /// The actual dictionary.
-    std::map<QString, TableEntry, std::less<QString> > idict;
+    std::map<QString, TableEntry, std::less<QString>> idict;
 };

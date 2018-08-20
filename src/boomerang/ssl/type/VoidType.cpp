@@ -12,13 +12,11 @@
 
 VoidType::VoidType()
     : Type(TypeClass::Void)
-{
-}
+{}
 
 
 VoidType::~VoidType()
-{
-}
+{}
 
 
 SharedType VoidType::clone() const
@@ -33,13 +31,13 @@ size_t VoidType::getSize() const
 }
 
 
-bool VoidType::operator==(const Type& other) const
+bool VoidType::operator==(const Type &other) const
 {
     return other.isVoid();
 }
 
 
-bool VoidType::operator<(const Type& other) const
+bool VoidType::operator<(const Type &other) const
 {
     return id < other.getId();
 }
@@ -51,7 +49,7 @@ QString VoidType::getCtype(bool /*final*/) const
 }
 
 
-SharedType VoidType::meetWith(SharedType other, bool& changed, bool) const
+SharedType VoidType::meetWith(SharedType other, bool &changed, bool) const
 {
     // void meet x = x
     changed |= !other->resolvesToVoid();
@@ -59,7 +57,7 @@ SharedType VoidType::meetWith(SharedType other, bool& changed, bool) const
 }
 
 
-bool VoidType::isCompatible(const Type& /*other*/, bool /*all*/) const
+bool VoidType::isCompatible(const Type & /*other*/, bool /*all*/) const
 {
     return true; // Void is compatible with any type
 }

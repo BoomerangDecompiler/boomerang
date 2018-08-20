@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "StmtRegMapper.h"
 
-
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
@@ -18,17 +17,16 @@
 #include "boomerang/visitor/expvisitor/ExpRegMapper.h"
 
 
-StmtRegMapper::StmtRegMapper(ExpRegMapper* erm)
+StmtRegMapper::StmtRegMapper(ExpRegMapper *erm)
     : StmtExpVisitor(erm)
-{
-}
+{}
 
 
-bool StmtRegMapper::common(Assignment *stmt, bool& visitChildren)
+bool StmtRegMapper::common(Assignment *stmt, bool &visitChildren)
 {
     // In case lhs is a reg or m[reg] such that reg is otherwise unused
     SharedExp lhs = stmt->getLeft();
-    auto      re  = RefExp::get(lhs, stmt);
+    auto re       = RefExp::get(lhs, stmt);
 
     re->acceptVisitor(ev);
     visitChildren = true;
@@ -36,25 +34,25 @@ bool StmtRegMapper::common(Assignment *stmt, bool& visitChildren)
 }
 
 
-bool StmtRegMapper::visit(Assign *stmt, bool& visitChildren)
+bool StmtRegMapper::visit(Assign *stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }
 
 
-bool StmtRegMapper::visit(PhiAssign *stmt, bool& visitChildren)
+bool StmtRegMapper::visit(PhiAssign *stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }
 
 
-bool StmtRegMapper::visit(ImplicitAssign *stmt, bool& visitChildren)
+bool StmtRegMapper::visit(ImplicitAssign *stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }
 
 
-bool StmtRegMapper::visit(BoolAssign *stmt, bool& visitChildren)
+bool StmtRegMapper::visit(BoolAssign *stmt, bool &visitChildren)
 {
     return common(stmt, visitChildren);
 }

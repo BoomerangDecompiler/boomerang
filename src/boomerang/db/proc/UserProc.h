@@ -10,10 +10,10 @@
 #pragma once
 
 
-#include "boomerang/db/proc/Proc.h"
-#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/DataFlow.h"
 #include "boomerang/db/UseCollector.h"
+#include "boomerang/db/proc/Proc.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/util/StatementList.h"
 
 
@@ -36,8 +36,8 @@ enum ProcStatus : uint8_t
 };
 
 
-typedef std::set<UserProc *>    ProcSet;
-typedef std::list<UserProc *>   ProcList;
+typedef std::set<UserProc *> ProcSet;
+typedef std::list<UserProc *> ProcList;
 
 
 /**
@@ -59,7 +59,7 @@ public:
      * differentiated by type.
      * E.g. r24 -> eax for int, r24 -> eax_1 for float
      */
-    typedef std::multimap<SharedConstExp, SharedExp, lessExpStar>   SymbolMap;
+    typedef std::multimap<SharedConstExp, SharedExp, lessExpStar> SymbolMap;
 
 public:
     /**
@@ -67,14 +67,14 @@ public:
      * \param name    Name of function
      * \param mod     Module that contains this function
      */
-    UserProc(Address address, const QString& name, Module *mod);
-    UserProc(const UserProc&) = delete;
-    UserProc(UserProc&&) = default;
+    UserProc(Address address, const QString &name, Module *mod);
+    UserProc(const UserProc &) = delete;
+    UserProc(UserProc &&)      = default;
 
     virtual ~UserProc() override;
 
-    UserProc& operator=(const UserProc&) = delete;
-    UserProc& operator=(UserProc&&) = default;
+    UserProc &operator=(const UserProc &) = delete;
+    UserProc &operator=(UserProc &&) = default;
 
 public:
     /// \copydoc Function::isNoReturn
@@ -98,8 +98,11 @@ public:
     DataFlow *getDataFlow() { return &m_df; }
     const DataFlow *getDataFlow() const { return &m_df; }
 
-    const std::shared_ptr<ProcSet>& getRecursionGroup() { return m_recursionGroup; }
-    void setRecursionGroup(const std::shared_ptr<ProcSet>& recursionGroup) { m_recursionGroup = recursionGroup; }
+    const std::shared_ptr<ProcSet> &getRecursionGroup() { return m_recursionGroup; }
+    void setRecursionGroup(const std::shared_ptr<ProcSet> &recursionGroup)
+    {
+        m_recursionGroup = recursionGroup;
+    }
 
     ProcStatus getStatus() const { return m_status; }
     void setStatus(ProcStatus s);
@@ -111,8 +114,15 @@ public:
     /// Records that this procedure has been decoded.
     void setDecoded();
 
-    bool isEarlyRecursive() const { return m_recursionGroup != nullptr && m_status <= PROC_INCYCLE; }
-    bool doesRecurseTo(UserProc *proc) const { return m_recursionGroup && m_recursionGroup->find(proc) != m_recursionGroup->end(); }
+    bool isEarlyRecursive() const
+    {
+        return m_recursionGroup != nullptr && m_status <= PROC_INCYCLE;
+    }
+
+    bool doesRecurseTo(UserProc *proc) const
+    {
+        return m_recursionGroup && m_recursionGroup->find(proc) != m_recursionGroup->end();
+    }
 
     /**
      * Get the BB with the entry point address for this procedure.
@@ -134,7 +144,7 @@ public:
     void numberStatements() const;
 
     /// \returns all statements in this UserProc
-    void getStatements(StatementList& stmts) const;
+    void getStatements(StatementList &stmts) const;
 
     /// Remove (but not delete) \p stmt from this UserProc
     /// \returns true iff successfully removed
@@ -150,8 +160,8 @@ public:
 public:
     // parameter related
 
-    StatementList& getParameters() { return m_parameters; }
-    const StatementList& getParameters() const { return m_parameters; }
+    StatementList &getParameters() { return m_parameters; }
+    const StatementList &getParameters() const { return m_parameters; }
 
     /// Add the parameter to the signature
     void addParameterToSignature(SharedExp e, SharedType ty);
@@ -163,10 +173,10 @@ public:
      */
     void insertParameter(SharedExp e, SharedType ty);
 
-    SharedConstType getParamType(const QString& name) const;
-    SharedType getParamType(const QString& name);
+    SharedConstType getParamType(const QString &name) const;
+    SharedType getParamType(const QString &name);
 
-    void setParamType(const QString& name, SharedType ty);
+    void setParamType(const QString &name, SharedType ty);
     void setParamType(int idx, SharedType ty);
 
     /// e is a parameter location, e.g. r8 or m[r28{0}+8]. Lookup a symbol for it
@@ -204,21 +214,21 @@ public:
 public:
     // local variable related
 
-    const std::map<QString, SharedType>& getLocals() const { return m_locals; }
-    std::map<QString, SharedType>& getLocals() { return m_locals; }
+    const std::map<QString, SharedType> &getLocals() const { return m_locals; }
+    std::map<QString, SharedType> &getLocals() { return m_locals; }
 
     /**
      * Return the next available local variable; make it the given type.
      * \note was returning TypedExp*.
      * If \p name is non null, use that name
      */
-    SharedExp createLocal(SharedType ty, const SharedExp& e, const QString& name = "");
+    SharedExp createLocal(SharedType ty, const SharedExp &e, const QString &name = "");
 
     /// Add a new local supplying all needed information.
-    void addLocal(SharedType ty, const QString& name, SharedExp e);
+    void addLocal(SharedType ty, const QString &name, SharedExp e);
 
     /// Check if \p r is already mapped to a local, else add one
-    void ensureExpIsMappedToLocal(const std::shared_ptr<RefExp>& ref);
+    void ensureExpIsMappedToLocal(const std::shared_ptr<RefExp> &ref);
 
     /// Return an expression that is equivalent to \p le in terms of local variables.
     /// Creates new locals as needed.
@@ -228,11 +238,11 @@ public:
     /// (e.g. generated by fromSSA), or if it is in the symbol map
     ///  and the name is in the locals map.
     /// If it is a local, return its name, else the empty string.
-    QString findLocal(const SharedExp& e, SharedType ty);
+    QString findLocal(const SharedExp &e, SharedType ty);
 
     /// return a local's type
-    SharedConstType getLocalType(const QString& name) const;
-    void setLocalType(const QString& name, SharedType ty);
+    SharedConstType getLocalType(const QString &name) const;
+    void setLocalType(const QString &name, SharedType ty);
 
     /// Checks wheether \p e could represent a stack local or stack param,
     /// i.e. whether \p e is of the form m[sp{-} +/- K]
@@ -242,25 +252,25 @@ public:
 
 public:
     // symbol related
-    SymbolMap& getSymbolMap() { return m_symbolMap; }
-    const SymbolMap& getSymbolMap() const { return m_symbolMap; }
+    SymbolMap &getSymbolMap() { return m_symbolMap; }
+    const SymbolMap &getSymbolMap() const { return m_symbolMap; }
 
     /// \returns the original expression that maps to the local variable with name \p name
     /// Example: If eax maps to the local variable foo, return eax
     /// (not Location::local("foo", proc))
-    SharedConstExp expFromSymbol(const QString& name) const;
+    SharedConstExp expFromSymbol(const QString &name) const;
 
-    void mapSymbolTo(const SharedConstExp& from, SharedExp to);
+    void mapSymbolTo(const SharedConstExp &from, SharedExp to);
 
     /// \returns the name of a symbol (local variable or parameter)
     /// of a used expression \p e with type \p ty.
-    QString lookupSym(const SharedConstExp& e, SharedConstType ty) const;
+    QString lookupSym(const SharedConstExp &e, SharedConstType ty) const;
 
     /// Lookup a specific symbol for the given ref
-    QString lookupSymFromRef(const std::shared_ptr<const RefExp>& ref) const;
+    QString lookupSymFromRef(const std::shared_ptr<const RefExp> &ref) const;
 
     /// Lookup a specific symbol if any, else the general one if any
-    QString lookupSymFromRefAny(const std::shared_ptr<const RefExp>& ref) const;
+    QString lookupSymFromRefAny(const std::shared_ptr<const RefExp> &ref) const;
 
 public:
     // call / recursion related
@@ -270,10 +280,10 @@ public:
      * (each child has had middleDecompile called on it now).
      * \todo Not sure that this is needed...
      */
-    void markAsNonChildless(const std::shared_ptr<ProcSet>& cs);
+    void markAsNonChildless(const std::shared_ptr<ProcSet> &cs);
 
     /// Get the callees.
-    std::list<Function *>& getCallees() { return m_calleeList; }
+    std::list<Function *> &getCallees() { return m_calleeList; }
 
     /**
      * Add this callee to the set of callees for this proc
@@ -283,88 +293,89 @@ public:
 
     /// \return true if this procedure does not define \p exp,
     /// or saves and restores the value of \p exp.
-    bool preservesExp(const SharedExp& exp);
+    bool preservesExp(const SharedExp &exp);
 
     /// Same as \ref preservesExp, but \p exp is restored tp \p exp + \p offset
     /// (e.g. x86 esp is restored to esp+4)
-    bool preservesExpWithOffset(const SharedExp& exp, int offset);
+    bool preservesExpWithOffset(const SharedExp &exp, int offset);
 
 public:
     bool canRename(SharedConstExp e) const { return m_df.canRename(e); }
 
-    UseCollector& getUseCollector() { return m_procUseCollector; }
-    const UseCollector& getUseCollector() const { return m_procUseCollector; }
+    UseCollector &getUseCollector() { return m_procUseCollector; }
+    const UseCollector &getUseCollector() const { return m_procUseCollector; }
 
     /// promote the signature if possible
     void promoteSignature();
 
-    QString findFirstSymbol(const SharedConstExp& e) const;
+    QString findFirstSymbol(const SharedConstExp &e) const;
 
     /// Replace all occurrences of \p pattern in all statements by \p replacement
     /// \returns true if the pattern was found at least once
     /// (Therefore, replacing an expression with itself will return true)
-    bool searchAndReplace(const Exp& pattern, SharedExp replacement);
+    bool searchAndReplace(const Exp &pattern, SharedExp replacement);
 
     /// Add a location to the UseCollector; this means this location is used
     /// before defined, and hence is an *initial* parameter.
     /// \note final parameters don't use this information;
     /// it's only for handling recursion.
-    void markAsInitialParam(const SharedExp& loc);
+    void markAsInitialParam(const SharedExp &loc);
 
     bool allPhisHaveDefs() const;
 
-    const ExpExpMap& getProvenTrue() const { return m_provenTrue; }
+    const ExpExpMap &getProvenTrue() const { return m_provenTrue; }
 
 public:
     QString toString() const;
 
     /// print this proc, mainly for debugging
-    void print(OStream& out) const;
+    void print(OStream &out) const;
 
-    void debugPrintAll(const QString& stepName);
+    void debugPrintAll(const QString &stepName);
 
 private:
-    void printParams(OStream& out) const;
+    void printParams(OStream &out) const;
 
     /// Print just the symbol map
-    void printSymbolMap(OStream& out) const;
+    void printSymbolMap(OStream &out) const;
 
     /// For debugging
-    void printLocals(OStream& os) const;
+    void printLocals(OStream &os) const;
 
 private:
     /// True if a local exists with name \p name
-    bool existsLocal(const QString& name) const;
+    bool existsLocal(const QString &name) const;
 
     /// Return a string for a new local suitable for \p e
-    QString newLocalName(const SharedExp& e);
+    QString newLocalName(const SharedExp &e);
 
     /// Get a name like eax or o2 from r24 or r8
     QString getRegName(SharedExp r);
 
     /// Find the type of the local or parameter \a e
-    SharedType getTypeForLocation(const SharedExp& e);
-    SharedConstType getTypeForLocation(const SharedConstExp& e) const;
+    SharedType getTypeForLocation(const SharedExp &e);
+    SharedConstType getTypeForLocation(const SharedConstExp &e) const;
 
     /// Prove any arbitary property of this procedure.
     /// If \p conditional is true, do not save the result,
     /// as it may be conditional on premises stored in other procedures
     /// \note this function was non-reentrant, but now reentrancy is frequently used
-    bool proveEqual(const SharedExp& lhs, const SharedExp& rhs, bool conditional = false);
+    bool proveEqual(const SharedExp &lhs, const SharedExp &rhs, bool conditional = false);
 
     /// helper function for proveEqual()
-    bool prover(SharedExp query, std::set<PhiAssign *>& lastPhis, std::map<PhiAssign *, SharedExp>& cache,
-                PhiAssign *lastPhi = nullptr);
+    bool prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
+                std::map<PhiAssign *, SharedExp> &cache, PhiAssign *lastPhi = nullptr);
 
     // FIXME: is this the same as lookupSym() now?
-    /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use the Type* ty to
-    /// select from several names in the multimap; the name corresponding to the first compatible type is returned
-    SharedExp getSymbolFor(const SharedConstExp& e, const SharedConstType& ty) const;
+    /// Lookup the expression in the symbol map. Return nullptr or a C string with the symbol. Use
+    /// the Type* ty to select from several names in the multimap; the name corresponding to the
+    /// first compatible type is returned
+    SharedExp getSymbolFor(const SharedConstExp &e, const SharedConstType &ty) const;
 
     /// Set a location as a new premise, i.e. assume e=e
-    void setPremise(const SharedExp& e);
+    void setPremise(const SharedExp &e);
 
-    void killPremise(const SharedExp& e);
+    void killPremise(const SharedExp &e);
 
 private:
     /**
@@ -372,7 +383,8 @@ private:
      * Status: undecoded .. final decompiled
      */
     ProcStatus m_status = PROC_UNDECODED;
-    int m_nextLocal = 0; ///< Number of the next local. Can't use locals.size() because some get deleted
+    int m_nextLocal     = 0; ///< Number of the next local. Can't use locals.size() because some get
+                             ///< deleted
 
     std::unique_ptr<ProcCFG> m_cfg; ///< The control flow graph.
 
@@ -402,12 +414,11 @@ private:
 
     /**
      * Somewhat DEPRECATED now. Eventually use the localTable.
-     * This map records the names and types for local variables. It should be a subset of the symbolMap, which also
-     * stores parameters.
-     * It is a convenient place to store the types of locals after conversion from SSA form,
-     * since it is then difficult to access the definitions of locations.
-     * This map could be combined with symbolMap below, but beware of parameters
-     * (in symbols but not locals)
+     * This map records the names and types for local variables. It should be a subset of the
+     * symbolMap, which also stores parameters. It is a convenient place to store the types of
+     * locals after conversion from SSA form, since it is then difficult to access the definitions
+     * of locations. This map could be combined with symbolMap below, but beware of parameters (in
+     * symbols but not locals)
      */
     std::map<QString, SharedType> m_locals;
 
@@ -422,8 +433,8 @@ private:
      * All the expressions that have been proven true.
      * (Could perhaps do with a list of some that are proven false)
      * Proof the form r28 = r28 + 4 is stored as map from "r28" to "r28+4" (NOTE: no subscripts)
-     * FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing the equivalent thing
-     * for LibProcs?
+     * FIXME: shouldn't provenTrue be in UserProc, with logic associated with the signature doing
+     * the equivalent thing for LibProcs?
      */
     ExpExpMap m_provenTrue;
 

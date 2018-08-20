@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "FileLogSink.h"
 
-
 #include <QDir>
 #include <QFileInfo>
 #include <QString>
@@ -17,11 +16,13 @@
 #include <cassert>
 
 
-FileLogSink::FileLogSink(const QString& filename, bool append)
+FileLogSink::FileLogSink(const QString &filename, bool append)
     : m_logFile(filename)
 {
     QIODevice::OpenMode openFlags = QFile::WriteOnly;
-    if (append) { openFlags |= QFile::Append; }
+    if (append) {
+        openFlags |= QFile::Append;
+    }
 
     bool ok = m_logFile.open(openFlags);
     if (!ok) {
@@ -39,7 +40,7 @@ FileLogSink::~FileLogSink()
 }
 
 
-void FileLogSink::write(const QString& s)
+void FileLogSink::write(const QString &s)
 {
     m_logFile.write(qPrintable(s));
 }

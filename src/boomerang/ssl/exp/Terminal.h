@@ -21,13 +21,13 @@ class BOOMERANG_API Terminal : public Exp
 {
 public:
     Terminal(OPER op);
-    Terminal(const Terminal& other);
-    Terminal(Terminal&& other) = default;
+    Terminal(const Terminal &other);
+    Terminal(Terminal &&other) = default;
 
     virtual ~Terminal() override = default;
 
-    Terminal& operator=(const Terminal&) = default;
-    Terminal& operator=(Terminal&&) = default;
+    Terminal &operator=(const Terminal &) = default;
+    Terminal &operator=(Terminal &&) = default;
 
 public:
     /// \copydoc Exp::clone
@@ -37,13 +37,13 @@ public:
     static SharedExp get(OPER op) { return std::make_shared<Terminal>(op); }
 
     /// \copydoc Exp::operator==
-    bool operator==(const Exp& o) const override;
+    bool operator==(const Exp &o) const override;
 
     /// \copydoc Exp::operator<
-    bool operator<(const Exp& o) const override;
+    bool operator<(const Exp &o) const override;
 
     /// \copydoc Exp::operator*=
-    bool operator*=(const Exp& o) const override;
+    bool operator*=(const Exp &o) const override;
 
     /// \copydoc Exp::isTerminal
     bool isTerminal() const override { return true; }
@@ -52,7 +52,7 @@ public:
     SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    void descendType(SharedType parentType, bool& changed, Statement *s) override;
+    void descendType(SharedType parentType, bool &changed, Statement *s) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
@@ -60,7 +60,7 @@ public:
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptPostModifier
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;

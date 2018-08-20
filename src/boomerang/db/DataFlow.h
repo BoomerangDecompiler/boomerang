@@ -30,13 +30,13 @@ class BOOMERANG_API DataFlow
 
 public:
     DataFlow(UserProc *proc);
-    DataFlow(const DataFlow& other) = delete;
-    DataFlow(DataFlow&& other) = default;
+    DataFlow(const DataFlow &other) = delete;
+    DataFlow(DataFlow &&other)      = default;
 
     ~DataFlow();
 
-    DataFlow& operator=(const DataFlow& other) = delete;
-    DataFlow& operator=(DataFlow&& other) = default;
+    DataFlow &operator=(const DataFlow &other) = delete;
+    DataFlow &operator=(DataFlow &&other) = default;
 
 public:
     /**
@@ -58,34 +58,40 @@ public:
     void convertImplicits();
 
     /**
-     * Find the locations in the CFG used by a live, dominating phi-function; also removes dead phi-funcions.
-     * Helper function for StatementPropagationPass.
+     * Find the locations in the CFG used by a live, dominating phi-function; also removes dead
+     * phi-funcions. Helper function for StatementPropagationPass.
      *
-     * If an SSA location is in \p usedByDomPhi it means it is used in a phi that dominates its assignment
-     * However, it could turn out that the phi is dead, in which case we don't want to keep the associated entries in
-     * \p usedByDomPhi. So we maintain the map \p defdByPhi which maps locations defined at a phi to the phi statements. Every
-     * time we see a use of a location in \p defdByPhi, we remove that map entry. At the end of the procedure we therefore have
-     * only dead phi statements in the map, so we can delete the associated entries in \p defdByPhi and also remove the dead
-     * phi statements.
+     * If an SSA location is in \p usedByDomPhi it means it is used in a phi that dominates its
+     * assignment However, it could turn out that the phi is dead, in which case we don't want to
+     * keep the associated entries in \p usedByDomPhi. So we maintain the map \p defdByPhi which
+     * maps locations defined at a phi to the phi statements. Every time we see a use of a location
+     * in \p defdByPhi, we remove that map entry. At the end of the procedure we therefore have only
+     * dead phi statements in the map, so we can delete the associated entries in \p defdByPhi and
+     * also remove the dead phi statements.
      *
-     * We add to the set \p usedByDomPhi0 whenever we see a location referenced by a phi parameter. When we see a definition
-     * for such a location, we remove it from the usedByDomPhi0 set (to save memory) and add it to the usedByDomPhi set.
-     * For locations defined before they are used in a phi parameter, there will be no entry in usedByDomPhi, so we ignore
-     * it. Remember that each location is defined only once, so that's the time to decide if it is dominated by a phi use or
-     * not.
+     * We add to the set \p usedByDomPhi0 whenever we see a location referenced by a phi parameter.
+     * When we see a definition for such a location, we remove it from the usedByDomPhi0 set (to
+     * save memory) and add it to the usedByDomPhi set. For locations defined before they are used
+     * in a phi parameter, there will be no entry in usedByDomPhi, so we ignore it. Remember that
+     * each location is defined only once, so that's the time to decide if it is dominated by a phi
+     * use or not.
      */
-    void findLiveAtDomPhi(LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
-                          std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
+    void findLiveAtDomPhi(LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+                          std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi);
 
     // for testing
 public:
     /// \note can only be called after \ref calculateDominators()
     const BasicBlock *getSemiDominator(const BasicBlock *bb) const
-    { return nodeToBB(getSemi(pbbToNode(bb))); }
+    {
+        return nodeToBB(getSemi(pbbToNode(bb)));
+    }
 
     /// \note can only be called after \ref calculateDominators()
     const BasicBlock *getDominator(const BasicBlock *bb) const
-    { return nodeToBB(getIdom(pbbToNode(bb))); }
+    {
+        return nodeToBB(getIdom(pbbToNode(bb)));
+    }
 
     /// \note can only be called after \ref calculateDominators()
     std::set<const BasicBlock *> getDominanceFrontier(const BasicBlock *bb) const
@@ -102,13 +108,12 @@ public:
     const BasicBlock *nodeToBB(int node) const { return m_BBs.at(node); }
     BasicBlock *nodeToBB(int node) { return m_BBs.at(node); }
 
-    int pbbToNode(const BasicBlock *bb) const
-    { return m_indices.at(const_cast<BasicBlock *>(bb)); }
+    int pbbToNode(const BasicBlock *bb) const { return m_indices.at(const_cast<BasicBlock *>(bb)); }
 
-    std::set<int>& getDF(int node) { return m_DF[node]; }
+    std::set<int> &getDF(int node) { return m_DF[node]; }
     int getIdom(int node) const { return m_idom[node]; }
     int getSemi(int node) const { return m_semi[node]; }
-    std::set<int>& getA_phi(SharedExp e) { return m_A_phi[e]; }
+    std::set<int> &getA_phi(SharedExp e) { return m_A_phi[e]; }
 
 private:
     /// depth first search
@@ -116,8 +121,8 @@ private:
     /// \param parentIdx index of the parent of the current BB
     void dfs(int myIdx, int parentIdx);
 
-    /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time per operation
-    /// (overall O(N log N))
+    /// Basically algorithm 19.10b of Appel 2002 (uses path compression for O(log N) amortised time
+    /// per operation (overall O(N log N))
     int getAncestorWithLowestSemi(int v);
 
     void link(int p, int n);
@@ -134,11 +139,11 @@ private:
 private:
     void allocateData();
 
-    void findLiveAtDomPhi(int n, LocationSet& usedByDomPhi, LocationSet& usedByDomPhi0,
-                        std::map<SharedExp, PhiAssign *, lessExpStar>& defdByPhi);
+    void findLiveAtDomPhi(int n, LocationSet &usedByDomPhi, LocationSet &usedByDomPhi0,
+                          std::map<SharedExp, PhiAssign *, lessExpStar> &defdByPhi);
 
 private:
-    UserProc* m_proc = nullptr;
+    UserProc *m_proc = nullptr;
 
     /* Dominance Frontier Data */
 
@@ -185,8 +190,8 @@ private:
 
     /**
      * Initially false, meaning that locals and parameters are not renamed and hence not propagated.
-     * When true, locals and parameters can be renamed if their address does not escape the local procedure.
-     * See Mike's thesis for details.
+     * When true, locals and parameters can be renamed if their address does not escape the local
+     * procedure. See Mike's thesis for details.
      */
     bool renameLocalsAndParams;
 };

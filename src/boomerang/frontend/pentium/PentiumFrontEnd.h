@@ -24,14 +24,14 @@ class BOOMERANG_API PentiumFrontEnd : public DefaultFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    PentiumFrontEnd(const PentiumFrontEnd& other) = delete;
-    PentiumFrontEnd(PentiumFrontEnd&& other) = default;
+    PentiumFrontEnd(const PentiumFrontEnd &other) = delete;
+    PentiumFrontEnd(PentiumFrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~PentiumFrontEnd() override;
 
-    PentiumFrontEnd& operator=(const PentiumFrontEnd& other) = delete;
-    PentiumFrontEnd& operator=(PentiumFrontEnd&& other) = default;
+    PentiumFrontEnd &operator=(const PentiumFrontEnd &other) = delete;
+    PentiumFrontEnd &operator=(PentiumFrontEnd &&other) = default;
 
 public:
     /// \copydoc IFrontEnd::processProc
@@ -42,13 +42,13 @@ public:
      * Locate the starting address of "main" in the code section.
      * \returns  Native pointer if found; Address::INVALID if not
      */
-    virtual Address findMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool &gotMain) override;
 
-    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result) override;
+    virtual bool decodeSingleInstruction(Address pc, DecodeResult &result) override;
 
 protected:
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
-    virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls) override;
+    virtual void extraProcessCall(CallStatement *call, const RTLList &BB_rtls) override;
 
 private:
     /**
@@ -59,19 +59,20 @@ private:
 
     /**
      * Process a basic block, and all its successors, for floating point code.
-     * Remove FPUSH/FPOP, instead decrementing or incrementing respectively the tos value to be used from
-     * here down.
+     * Remove FPUSH/FPOP, instead decrementing or incrementing respectively the tos value to be used
+     * from here down.
      *
      * \note tos has to be a parameter, not a global, to get the right value at any point in
      * the call tree
      *
      * \param bb pointer to the current BB
-     * \param tos reference to the value of the "top of stack" pointer currently. Starts at zero, and is
-     *        decremented to 7 with the first load, so r[39] should be used first, then r[38] etc. However, it is
-     *        reset to 0 for calls, so that if a function returns a float, then it will always appear in r[32]
+     * \param tos reference to the value of the "top of stack" pointer currently. Starts at zero,
+     *            and is decremented to 7 with the first load, so r[39] should be used first,
+     *            then r[38] etc. However, it is reset to 0 for calls, so that if a function
+     *            returns a float, then it will always appear in r[32]
      * \param cfg passed to processFloatCode
      */
-    void processFloatCode(BasicBlock *bb, int& tos, ProcCFG *cfg);
+    void processFloatCode(BasicBlock *bb, int &tos, ProcCFG *cfg);
 
     /**
      * Process away %rpt and %skip in string instructions
@@ -94,7 +95,7 @@ private:
      *
      * \returns true if a helper function is converted; false otherwise
      */
-    bool isHelperFunc(Address dest, Address addr, RTLList& lrtl) override;
+    bool isHelperFunc(Address dest, Address addr, RTLList &lrtl) override;
 
     /**
      * Finds a subexpression within this expression of the form
@@ -117,9 +118,9 @@ private:
      */
     void bumpRegisterAll(SharedExp exp, int min, int max, int delta, int mask);
 
-    bool decodeSpecial(Address pc, DecodeResult& r);
-    bool decodeSpecial_out(Address pc, DecodeResult& r);
-    bool decodeSpecial_invalid(Address pc, DecodeResult& r);
+    bool decodeSpecial(Address pc, DecodeResult &r);
+    bool decodeSpecial_out(Address pc, DecodeResult &r);
+    bool decodeSpecial_invalid(Address pc, DecodeResult &r);
 
     bool isOverlappedRegsProcessed(const BasicBlock *bb) const
     {

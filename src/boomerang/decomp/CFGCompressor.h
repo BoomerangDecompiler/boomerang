@@ -33,5 +33,4 @@ public:
 private:
     /// Removes BBs that are not reachable from the entry BB.
     bool removeOrphanBBs(ProcCFG *cfg);
-
 };

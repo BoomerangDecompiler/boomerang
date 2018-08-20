@@ -9,14 +9,13 @@
 #pragma endregion License
 #include "LivenessAnalyzer.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
-#include "boomerang/ssl/exp/RefExp.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/util/ConnectionGraph.h"
 #include "boomerang/util/log/Log.h"
@@ -25,11 +24,11 @@
 
 
 /**
- * Check for overlap of liveness between the currently live locations (liveLocs) and the set of locations in ls
- * Also check for type conflicts when using DFA type analysis
- * This is a helper function that is not directly declared in the BasicBlock class
+ * Check for overlap of liveness between the currently live locations (liveLocs) and the set of
+ * locations in ls Also check for type conflicts when using DFA type analysis This is a helper
+ * function that is not directly declared in the BasicBlock class
  */
-void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig, UserProc *proc)
+void checkForOverlap(LocationSet &liveLocs, LocationSet &ls, ConnectionGraph &ig, UserProc *proc)
 {
     // For each location to be considered
     for (SharedExp exp : ls) {
@@ -54,14 +53,14 @@ void checkForOverlap(LocationSet& liveLocs, LocationSet& ls, ConnectionGraph& ig
             }
         }
 
-        // Add the uses one at a time. Note: don't use makeUnion, because then we don't discover interferences
-        // from the same statement, e.g.  blah := r24{2} + r24{3}
+        // Add the uses one at a time. Note: don't use makeUnion, because then we don't discover
+        // interferences from the same statement, e.g.  blah := r24{2} + r24{3}
         liveLocs.insert(exp);
     }
 }
 
 
-bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserProc *myProc)
+bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph &ig, UserProc *myProc)
 {
     // Start with the liveness at the bottom of the BB
     LocationSet liveLocs, phiLocs;
@@ -81,7 +80,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
 
             // For each statement this RTL
             for (sit = (*rit)->rbegin(); sit != (*rit)->rend(); ++sit) {
-                Statement   *s = *sit;
+                Statement *s = *sit;
                 LocationSet defs;
                 s->getDefinitions(defs, assumeABICompliance);
                 // The definitions don't have refs yet
@@ -90,10 +89,12 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
                 // Definitions kill uses. Now we are moving to the "top" of statement s
                 liveLocs.makeDiff(defs);
 
-                // Phi functions are a special case. The operands of phi functions are uses, but they don't interfere
-                // with each other (since they come via different BBs). However, we don't want to put these uses into
-                // liveLocs, because then the livenesses will flow to all predecessors. Only the appropriate livenesses
-                // from the appropriate phi parameter should flow to the predecessor. This is done in getLiveOut()
+                // Phi functions are a special case. The operands of phi functions are uses, but
+                // they don't interfere with each other (since they come via different BBs).
+                // However, we don't want to put these uses into liveLocs, because then the
+                // livenesses will flow to all predecessors. Only the appropriate livenesses from
+                // the appropriate phi parameter should flow to the predecessor. This is done in
+                // getLiveOut()
                 if (s->isPhi()) {
                     continue;
                 }
@@ -121,7 +122,7 @@ bool LivenessAnalyzer::calcLiveness(BasicBlock *bb, ConnectionGraph& ig, UserPro
 }
 
 
-void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, LocationSet& phiLocs)
+void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet &liveout, LocationSet &phiLocs)
 {
     ProcCFG *cfg = static_cast<UserProc *>(bb->getFunction())->getCFG();
 
@@ -140,17 +141,19 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
         assert(phiRTL);
 
         for (Statement *st : *phiRTL) {
-            // Only interested in phi assignments. Note that it is possible that some phi assignments have been
-            // converted to ordinary assignments. So the below is a continue, not a break.
+            // Only interested in phi assignments. Note that it is possible that some phi
+            // assignments have been converted to ordinary assignments. So the below is a continue,
+            // not a break.
             if (!st->isPhi()) {
                 continue;
             }
 
             PhiAssign *pa = dynamic_cast<PhiAssign *>(st);
 
-            for (const auto& v : pa->getDefs()) {
+            for (const auto &v : pa->getDefs()) {
                 if (!cfg->hasBB(v.first)) {
-                    LOG_WARN("Someone removed the BB that defined the PHI! Need to update PhiAssign defs");
+                    LOG_WARN("Someone removed the BB that defined the PHI! Need to update "
+                             "PhiAssign defs");
                 }
             }
 
@@ -159,13 +162,12 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
             Statement *def = pa->getStmtAt(bb);
 
             if (!def) {
-                std::set<BasicBlock *> tried { bb };
-                std::deque<BasicBlock *> to_visit(
-                    bb->getPredecessors().begin(),
-                    bb->getPredecessors().end());
+                std::set<BasicBlock *> tried{ bb };
+                std::deque<BasicBlock *> to_visit(bb->getPredecessors().begin(),
+                                                  bb->getPredecessors().end());
 
-                // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is defined in parent of
-                // 'this'
+                // TODO: this looks like a hack ?  but sometimes PhiAssign has value which is
+                // defined in parent of 'this'
                 //  BB1 1  - defines r20
                 //  BB2 33 - transfers control to BB3
                 //  BB3 40 - r10 = phi { 1 }
@@ -202,8 +204,8 @@ void LivenessAnalyzer::getLiveOut(BasicBlock *bb, LocationSet& liveout, Location
             phiLocs.insert(ref);
 
             if (bb->getFunction()->getProg()->getProject()->getSettings()->debugLiveness) {
-                LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3",
-                        ref, st, bb->getLowAddr());
+                LOG_MSG(" ## Liveness: adding %1 due due to ref to phi %2 in BB at %3", ref, st,
+                        bb->getLowAddr());
             }
         }
     }

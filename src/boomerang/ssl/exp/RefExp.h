@@ -32,15 +32,15 @@ class BOOMERANG_API RefExp : public Unary
 {
 public:
     /// \param usedExp Expression that is used
-    /// \param definition Pointer to the statment where the expression is defined
+    /// \param definition Statment where the expression is defined. May be nullptr.
     RefExp(SharedExp usedExp, Statement *definition);
-    RefExp(const RefExp& other) = default;
-    RefExp(RefExp&& other) = default;
+    RefExp(const RefExp &other) = default;
+    RefExp(RefExp &&other)      = default;
 
     virtual ~RefExp() override { m_def = nullptr; }
 
-    RefExp& operator=(const RefExp& other) = default;
-    RefExp& operator=(RefExp&& other) = default;
+    RefExp &operator=(const RefExp &other) = default;
+    RefExp &operator=(RefExp &&other) = default;
 
 public:
     /// \copydoc Unary::clone
@@ -50,13 +50,13 @@ public:
     static std::shared_ptr<RefExp> get(SharedExp usedExp, Statement *definition);
 
     /// \copydoc Unary::operator==
-    bool operator==(const Exp& o) const override;
+    bool operator==(const Exp &o) const override;
 
     /// \copydoc Unary::operator<
-    bool operator<(const Exp& o) const override;
+    bool operator<(const Exp &o) const override;
 
     /// \copydoc Unary::operator*=
-    bool operator*=(const Exp& o) const override;
+    bool operator*=(const Exp &o) const override;
 
     Statement *getDef() const { return m_def; } // Ugh was called getRef()
     void setDef(Statement *_def);
@@ -75,7 +75,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::descendType
-    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
 
 public:
     /// \copydoc Unary::acceptVisitor
@@ -83,7 +83,7 @@ public:
 
 private:
     /// \copydoc Unary::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Unary::acceptPostModifier
     virtual SharedExp acceptPostModifier(ExpModifier *mod) override;

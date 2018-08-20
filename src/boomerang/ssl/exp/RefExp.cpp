@@ -9,13 +9,11 @@
 #pragma endregion License
 #include "RefExp.h"
 
-
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/ExpModifier.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
-
 
 
 RefExp::RefExp(SharedExp e, Statement *d)
@@ -38,7 +36,7 @@ SharedExp RefExp::clone() const
 }
 
 
-bool RefExp::operator==(const Exp& o) const
+bool RefExp::operator==(const Exp &o) const
 {
     if (o.getOper() == opWild) {
         return true;
@@ -59,7 +57,7 @@ bool RefExp::operator==(const Exp& o) const
 
     assert(dynamic_cast<const RefExp *>(&o) != nullptr);
 
-    const RefExp& otherRef = static_cast<const RefExp &>(o);
+    const RefExp &otherRef = static_cast<const RefExp &>(o);
 
     // Allow a def of nullptr to match a def of an implicit assignment
     if (otherRef.m_def == STMT_WILD) {
@@ -78,7 +76,7 @@ bool RefExp::operator==(const Exp& o) const
 }
 
 
-bool RefExp::operator<(const Exp& o) const
+bool RefExp::operator<(const Exp &o) const
 {
     if (opSubscript < o.getOper()) {
         return true;
@@ -109,7 +107,7 @@ bool RefExp::operator<(const Exp& o) const
 }
 
 
-bool RefExp::operator*=(const Exp& o) const
+bool RefExp::operator*=(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -119,7 +117,6 @@ bool RefExp::operator*=(const Exp& o) const
 
     return *subExp1 *= *other;
 }
-
 
 
 bool RefExp::acceptVisitor(ExpVisitor *v)
@@ -145,16 +142,16 @@ bool RefExp::isImplicitDef() const
 }
 
 
-SharedExp RefExp::addSubscript(Statement* _def)
+SharedExp RefExp::addSubscript(Statement *_def)
 {
     m_def = _def;
     return shared_from_this();
 }
 
 
-void RefExp::setDef(Statement* _def)
+void RefExp::setDef(Statement *_def)
 {
-//         assert(_def != nullptr);
+    //         assert(_def != nullptr);
     m_def = _def;
 }
 
@@ -172,12 +169,14 @@ SharedType RefExp::ascendType()
 }
 
 
-void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
+void RefExp::descendType(SharedType parentType, bool &changed, Statement *s)
 {
     assert(getSubExp1());
 
     if (m_def == nullptr) {
-        LOG_ERROR("Cannot descendType of expression '%1' since it does not have a defining statement!", getSubExp1());
+        LOG_ERROR(
+            "Cannot descendType of expression '%1' since it does not have a defining statement!",
+            getSubExp1());
         changed = false;
         return;
     }
@@ -188,13 +187,13 @@ void RefExp::descendType(SharedType parentType, bool& changed, Statement *s)
 }
 
 
-SharedExp RefExp::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+SharedExp RefExp::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 {
     return mod->preModify(access<RefExp>(), visitChildren);
 }
 
 
-SharedExp RefExp::acceptPostModifier(ExpModifier* mod)
+SharedExp RefExp::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<RefExp>());
 }

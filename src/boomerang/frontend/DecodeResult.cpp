@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DecodeResult.h"
 
-
 #include "boomerang/ssl/RTL.h"
 
 
@@ -19,29 +18,27 @@ DecodeResult::DecodeResult()
 }
 
 
-DecodeResult::DecodeResult(DecodeResult&& other)
+DecodeResult::DecodeResult(DecodeResult &&other)
     : valid(std::move(other.valid))
     , type(std::move(other.type))
     , reDecode(std::move(other.reDecode))
     , numBytes(std::move(other.numBytes))
     , rtl(std::move(other.rtl))
     , forceOutEdge(other.forceOutEdge)
-{
-}
+{}
 
 
 DecodeResult::~DecodeResult()
-{
-}
+{}
 
 
-DecodeResult& DecodeResult::operator=(DecodeResult&& other)
+DecodeResult &DecodeResult::operator=(DecodeResult &&other)
 {
-    valid = std::move(other.valid);
-    type = std::move(other.type);
-    reDecode = std::move(other.reDecode);
-    numBytes = std::move(other.numBytes);
-    rtl = std::move(other.rtl);
+    valid        = std::move(other.valid);
+    type         = std::move(other.type);
+    reDecode     = std::move(other.reDecode);
+    numBytes     = std::move(other.numBytes);
+    rtl          = std::move(other.rtl);
     forceOutEdge = std::move(other.forceOutEdge);
 
     return *this;

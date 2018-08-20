@@ -13,5 +13,4 @@
 PassGroup::PassGroup(const QString &name, const std::initializer_list<IPass *> &passes)
     : m_name(name)
     , m_passes(passes)
-{
-}
+{}

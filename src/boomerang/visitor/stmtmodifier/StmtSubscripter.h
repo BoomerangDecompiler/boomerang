@@ -23,17 +23,17 @@ public:
 
 public:
     /// \copydoc StmtModifier::visit
-    virtual void visit(Assign *stmt, bool& visitChildren) override;
+    virtual void visit(Assign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
+    virtual void visit(PhiAssign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(ImplicitAssign *stmt, bool& visitChildren) override;
+    virtual void visit(ImplicitAssign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(BoolAssign *stmt, bool& visitChildren) override;
+    virtual void visit(BoolAssign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(CallStatement *stmt, bool& visitChildren) override;
+    virtual void visit(CallStatement *stmt, bool &visitChildren) override;
 };

@@ -9,12 +9,11 @@
 #pragma endregion License
 #include "ExpAddressSimplifier.h"
 
-
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Unary.h"
 
 
-SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Unary>& exp, bool&)
+SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Unary> &exp, bool &)
 {
     if (exp->isAddrOf()) {
         if (exp->getSubExp1()->isMemOf()) {
@@ -33,7 +32,7 @@ SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Unary>& exp, boo
 }
 
 
-SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Location>& exp, bool&)
+SharedExp ExpAddressSimplifier::preModify(const std::shared_ptr<Location> &exp, bool &)
 {
     if (exp->isMemOf() && exp->getSubExp1()->isAddrOf()) {
         m_modified = true;

@@ -38,5 +38,5 @@ private:
      *
      * \returns true if location \p e is used gainfully in this procedure.
      */
-    bool checkForGainfulUse(UserProc *proc, SharedExp e, ProcSet& Visited);
+    bool checkForGainfulUse(UserProc *proc, SharedExp e, ProcSet &Visited);
 };

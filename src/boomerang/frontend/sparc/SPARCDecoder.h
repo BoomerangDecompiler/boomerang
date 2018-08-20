@@ -35,17 +35,17 @@ class SPARCDecoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     SPARCDecoder(Prog *prog);
-    SPARCDecoder(const SPARCDecoder& other) = delete;
-    SPARCDecoder(SPARCDecoder&& other) = default;
+    SPARCDecoder(const SPARCDecoder &other) = delete;
+    SPARCDecoder(SPARCDecoder &&other)      = default;
 
     virtual ~SPARCDecoder() override = default;
 
-    SPARCDecoder& operator=(const SPARCDecoder& other) = delete;
-    SPARCDecoder& operator=(SPARCDecoder&& other) = default;
+    SPARCDecoder &operator=(const SPARCDecoder &other) = delete;
+    SPARCDecoder &operator=(SPARCDecoder &&other) = default;
 
 public:
     /// \copydoc NJMCDecoder::decodeInstruction
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
     /**
      * Check to see if the instruction at the given offset is a restore instruction.
@@ -56,7 +56,6 @@ public:
     bool isRestore(HostAddress hostPC);
 
 private:
-
     /*
      * Various functions to decode the operands of an instruction into
      * a SemStr representation.
@@ -96,7 +95,8 @@ private:
      * \param name - instruction name (e.g. "BNE,a", or "BPNE")
      * \returns            Pointer to newly created RTL, or nullptr if invalid
      */
-    std::unique_ptr<RTL> createBranchRTL(const char *insnName, Address pc, std::unique_ptr<RTL> stmts);
+    std::unique_ptr<RTL> createBranchRTL(const char *insnName, Address pc,
+                                         std::unique_ptr<RTL> stmts);
 
     /**
      * Check to see if the instructions at the given offset match any callee prologue,

@@ -23,13 +23,13 @@ class BOOMERANG_API BoolAssign : public Assignment
 public:
     /// \param size the size of the assignment
     BoolAssign(int size);
-    BoolAssign(const BoolAssign& other) = default;
-    BoolAssign(BoolAssign&& other) = default;
+    BoolAssign(const BoolAssign &other) = default;
+    BoolAssign(BoolAssign &&other)      = default;
 
     virtual ~BoolAssign() override;
 
-    BoolAssign& operator=(const BoolAssign& other) = default;
-    BoolAssign& operator=(BoolAssign&& other) = default;
+    BoolAssign &operator=(const BoolAssign &other) = default;
+    BoolAssign &operator=(BoolAssign &&other) = default;
 
 public:
     /// \copydoc Statement::clone
@@ -82,7 +82,7 @@ public:
     void makeSigned();
 
     /// \copydoc Assignment::printCompact
-    virtual void printCompact(OStream& os) const override;
+    virtual void printCompact(OStream &os) const override;
 
     /// \copydoc Statement::generateCode
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
@@ -91,30 +91,30 @@ public:
     virtual void simplify() override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& def, bool assumeABICompliance) const override;
+    virtual void getDefinitions(LocationSet &def, bool assumeABICompliance) const override;
 
     /// \copydoc Assignment::getRight
     virtual SharedExp getRight() const override { return getCondExpr(); }
 
     /// \copydoc Assignment::usesExp
-    virtual bool usesExp(const Exp& e) const override;
+    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp& search, SharedExp& result) const override;
+    virtual bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// a hack for the SETS macro
     /// This is for setting up SETcc instructions; see include/decoder.h macro SETS
-    void setLeftFromList(const std::list<Statement *>& stmts);
+    void setLeftFromList(const std::list<Statement *> &stmts);
 
 private:
     BranchType m_jumpType = BranchType::INVALID; ///< the condition for setting true
-    SharedExp m_cond;      ///< Exp representation of the high level condition: e.g. r[8] == 5
-    bool m_isFloat;        ///< True if condition uses floating point CC
-    int m_size;            ///< The size of the dest
+    SharedExp m_cond; ///< Exp representation of the high level condition: e.g. r[8] == 5
+    bool m_isFloat;   ///< True if condition uses floating point CC
+    int m_size;       ///< The size of the dest
 };

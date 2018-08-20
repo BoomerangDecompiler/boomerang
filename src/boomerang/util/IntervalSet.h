@@ -22,20 +22,20 @@ template<typename T>
 class IntervalSet
 {
 public:
-    typedef typename std::set<Interval<T>, std::less<Interval<T> > >   Data;
+    typedef typename std::set<Interval<T>, std::less<Interval<T>>> Data;
 
-    typedef typename Data::iterator                                    iterator;
-    typedef typename Data::const_iterator                              const_iterator;
-    typedef typename Data::reverse_iterator                            reverse_iterator;
-    typedef typename Data::const_reverse_iterator                      const_reverse_iterator;
+    typedef typename Data::iterator iterator;
+    typedef typename Data::const_iterator const_iterator;
+    typedef typename Data::reverse_iterator reverse_iterator;
+    typedef typename Data::const_reverse_iterator const_reverse_iterator;
 
 public:
     iterator begin() { return m_data.begin(); }
-    iterator end()   { return m_data.end(); }
+    iterator end() { return m_data.end(); }
     const_iterator begin() const { return m_data.begin(); }
-    const_iterator end()   const { return m_data.end(); }
+    const_iterator end() const { return m_data.end(); }
     reverse_iterator rbegin() { return m_data.rbegin(); }
-    reverse_iterator rend()   { return m_data.rend(); }
+    reverse_iterator rend() { return m_data.rend(); }
     const_reverse_iterator rbegin() const { return m_data.rbegin(); }
     const_reverse_iterator rend() const { return m_data.rend(); }
 
@@ -46,8 +46,8 @@ public:
     /// Removes all intervals from the set.
     void clear() { m_data.clear(); }
 
-    iterator insert(const T& from, const T& to) { return insert(Interval<T>(from, to)); }
-    iterator insert(const Interval<T>& interval)
+    iterator insert(const T &from, const T &to) { return insert(Interval<T>(from, to)); }
+    iterator insert(const Interval<T> &interval)
     {
         if (interval.lower() >= interval.upper()) {
             return end(); // Don't insert invalid intervals
@@ -59,8 +59,12 @@ public:
         T minLower = interval.lower();
         T maxUpper = interval.upper();
 
-        if (firstInRange != m_data.end()) { minLower = std::min(minLower, firstInRange->lower()); }
-        if (lastInRange != m_data.end())  { maxUpper = std::max(maxUpper, lastInRange->upper()); }
+        if (firstInRange != m_data.end()) {
+            minLower = std::min(minLower, firstInRange->lower());
+        }
+        if (lastInRange != m_data.end()) {
+            maxUpper = std::max(maxUpper, lastInRange->upper());
+        }
 
         typename Data::iterator it = m_data.erase(firstInRange, lastInRange);
 
@@ -71,12 +75,12 @@ public:
     /**
      * Returns an iterator range containing all intervals between \p lower and \p upper
      */
-    std::pair<iterator, iterator> equalRange(const T& lower, const T& upper)
+    std::pair<iterator, iterator> equalRange(const T &lower, const T &upper)
     {
         return equalRange(Interval<T>(lower, upper));
     }
 
-    std::pair<iterator, iterator> equalRange(const Interval<T>& interval)
+    std::pair<iterator, iterator> equalRange(const Interval<T> &interval)
     {
         if (interval.lower() >= interval.upper()) {
             return { end(), end() };
@@ -111,7 +115,7 @@ public:
     }
 
     /// \returns true if \p value is contained in any interval of this set.
-    bool isContained(const T& value) const
+    bool isContained(const T &value) const
     {
         if (isEmpty()) {
             return false;

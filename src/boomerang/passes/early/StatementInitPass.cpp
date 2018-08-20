@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "StatementInitPass.h"
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -17,17 +16,17 @@
 
 StatementInitPass::StatementInitPass()
     : IPass("StatementInit", PassID::StatementInit)
-{
-}
+{}
 
 
-bool StatementInitPass::execute(UserProc* proc)
+bool StatementInitPass::execute(UserProc *proc)
 {
     BasicBlock::RTLIterator rit;
     StatementList::iterator sit;
 
     for (BasicBlock *bb : *proc->getCFG()) {
-        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr; stmt = bb->getNextStmt(rit, sit)) {
+        for (Statement *stmt = bb->getFirstStmt(rit, sit); stmt != nullptr;
+             stmt            = bb->getNextStmt(rit, sit)) {
             stmt->setProc(proc);
             stmt->setBB(bb);
             CallStatement *call = dynamic_cast<CallStatement *>(stmt);
@@ -36,10 +35,12 @@ bool StatementInitPass::execute(UserProc* proc)
                 call->setSigArguments();
 
                 // Remove out edges of BBs of noreturn calls (e.g. call BBs to abort())
-                if (call->getDestProc() && call->getDestProc()->isNoReturn() && (bb->getNumSuccessors() == 1)) {
+                if (call->getDestProc() && call->getDestProc()->isNoReturn() &&
+                    (bb->getNumSuccessors() == 1)) {
                     BasicBlock *nextBB = bb->getSuccessor(0);
 
-                    if ((nextBB != proc->getCFG()->getExitBB()) || (proc->getCFG()->getExitBB()->getNumPredecessors() != 1)) {
+                    if ((nextBB != proc->getCFG()->getExitBB()) ||
+                        (proc->getCFG()->getExitBB()->getNumPredecessors() != 1)) {
                         nextBB->removePredecessor(bb);
                         bb->removeAllSuccessors();
                     }
@@ -50,4 +51,3 @@ bool StatementInitPass::execute(UserProc* proc)
 
     return true;
 }
-

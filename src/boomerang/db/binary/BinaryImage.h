@@ -32,36 +32,36 @@ class BinarySection;
 class BOOMERANG_API BinaryImage
 {
     typedef std::vector<BinarySection *> SectionList;
-    typedef SectionList::iterator               iterator;
-    typedef SectionList::const_iterator         const_iterator;
-    typedef SectionList::reverse_iterator       reverse_iterator;
+    typedef SectionList::iterator iterator;
+    typedef SectionList::const_iterator const_iterator;
+    typedef SectionList::reverse_iterator reverse_iterator;
     typedef SectionList::const_reverse_iterator const_reverse_iterator;
 
 public:
-    BinaryImage(const QByteArray& rawData);
-    BinaryImage(const BinaryImage& other) = delete;
-    BinaryImage(BinaryImage&& other) = delete;
+    BinaryImage(const QByteArray &rawData);
+    BinaryImage(const BinaryImage &other) = delete;
+    BinaryImage(BinaryImage &&other)      = delete;
 
     virtual ~BinaryImage();
 
-    BinaryImage& operator=(const BinaryImage& other) = delete;
-    BinaryImage& operator=(BinaryImage&& other) = delete;
+    BinaryImage &operator=(const BinaryImage &other) = delete;
+    BinaryImage &operator=(BinaryImage &&other) = delete;
 
 public:
     // Section iteration
-    iterator begin()             { return m_sections.begin(); }
-    iterator end()               { return m_sections.end(); }
+    iterator begin() { return m_sections.begin(); }
+    iterator end() { return m_sections.end(); }
     const_iterator begin() const { return m_sections.begin(); }
-    const_iterator end()   const { return m_sections.end(); }
+    const_iterator end() const { return m_sections.end(); }
 
-    reverse_iterator rbegin()             { return m_sections.rbegin(); }
-    reverse_iterator rend()               { return m_sections.rend(); }
+    reverse_iterator rbegin() { return m_sections.rbegin(); }
+    reverse_iterator rend() { return m_sections.rend(); }
     const_reverse_iterator rbegin() const { return m_sections.rbegin(); }
-    const_reverse_iterator rend()   const { return m_sections.rend(); }
+    const_reverse_iterator rend() const { return m_sections.rend(); }
 
 public:
-    QByteArray& getRawData() { return m_rawData; }
-    const QByteArray& getRawData() const { return m_rawData; }
+    QByteArray &getRawData() { return m_rawData; }
+    const QByteArray &getRawData() const { return m_rawData; }
 
     /// \returns the number of sections in this image
     int getNumSections() const { return m_sections.size(); }
@@ -73,16 +73,16 @@ public:
 
     /// Creates a new section with name \p name between \p from and \p to
     /// \returns the new section, or nullptr on failure.
-    BinarySection *createSection(const QString& name, Address from, Address to);
-    BinarySection *createSection(const QString& name, Interval<Address> extent);
+    BinarySection *createSection(const QString &name, Address from, Address to);
+    BinarySection *createSection(const QString &name, Interval<Address> extent);
 
     /// \returns the section with index \p idx, or nullptr if not found.
     BinarySection *getSectionByIndex(int idx);
     const BinarySection *getSectionByIndex(int idx) const;
 
     /// \returns the section with name \p sectionName, or nullptr if not found.
-    BinarySection *getSectionByName(const QString& sectionName);
-    const BinarySection *getSectionByName(const QString& sectionName) const;
+    BinarySection *getSectionByName(const QString &sectionName);
+    const BinarySection *getSectionByName(const QString &sectionName) const;
 
     /// \returns the section containing address \p addr, or nullptr if not found.
     BinarySection *getSectionByAddr(Address addr);
@@ -108,8 +108,8 @@ public:
     DWord readNative4(Address addr) const;
     QWord readNative8(Address addr) const;
 
-    bool readNativeFloat4(Address addr, float& value) const;
-    bool readNativeFloat8(Address addr, double& value) const;
+    bool readNativeFloat4(Address addr, float &value) const;
+    bool readNativeFloat8(Address addr, double &value) const;
 
     bool writeNative4(Address addr, DWord value);
 
@@ -118,9 +118,9 @@ public:
 
 private:
     QByteArray m_rawData;
-    Address m_limitTextLow = Address::INVALID;
+    Address m_limitTextLow  = Address::INVALID;
     Address m_limitTextHigh = Address::INVALID;
-    ptrdiff_t m_textDelta = 0;
+    ptrdiff_t m_textDelta   = 0;
 
     SectionList m_sections; ///< The section info
     IntervalMap<Address, std::unique_ptr<BinarySection>> m_sectionMap;

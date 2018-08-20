@@ -9,23 +9,21 @@
 #pragma endregion License
 #include "AssignRemovalPass.h"
 
-
 #include "boomerang/core/Project.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Unary.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
+#include "boomerang/util/log/Log.h"
 
 
 AssignRemovalPass::AssignRemovalPass()
     : IPass("AssignRemoval", PassID::AssignRemoval)
-{
-}
+{}
 
 
 bool AssignRemovalPass::execute(UserProc *proc)
@@ -43,13 +41,13 @@ bool AssignRemovalPass::execute(UserProc *proc)
 }
 
 
-bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
+bool AssignRemovalPass::removeSpAssigns(UserProc *proc)
 {
     // if there are no uses of sp other than sp{-} in the whole procedure,
     // we can safely remove all assignments to sp, this will make the output
     // more readable for human eyes.
 
-    SharedExp sp = Location::regOf(Util::getStackRegisterIndex(proc->getProg()));
+    SharedExp sp  = Location::regOf(Util::getStackRegisterIndex(proc->getProg()));
     bool foundone = false;
 
     StatementList stmts;
@@ -64,7 +62,7 @@ bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
         LocationSet refs;
         stmt->addUsedLocs(refs);
 
-        for (const SharedExp& rr : refs) {
+        for (const SharedExp &rr : refs) {
             if (rr->isSubscript() && (*rr->getSubExp1() == *sp)) {
                 Statement *def = rr->access<RefExp>()->getDef();
 
@@ -79,9 +77,10 @@ bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
         return false;
     }
 
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before removing stack pointer assigns.");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(
+        proc, "Before removing stack pointer assigns.");
 
-    for (auto& stmt : stmts) {
+    for (auto &stmt : stmts) {
         if (stmt->isAssign()) {
             Assign *a = static_cast<Assign *>(stmt);
 
@@ -91,7 +90,8 @@ bool AssignRemovalPass::removeSpAssigns(UserProc* proc)
         }
     }
 
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "After removing stack pointer assigns.");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(
+        proc, "After removing stack pointer assigns.");
     return true;
 }
 
@@ -123,7 +123,7 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
         LocationSet refs;
         stmt->addUsedLocs(refs);
 
-        for (const SharedExp& rr : refs) {
+        for (const SharedExp &rr : refs) {
             if (rr->isSubscript() && (*rr->getSubExp1() == *e)) {
                 Statement *def = rr->access<RefExp>()->getDef();
 
@@ -138,13 +138,13 @@ bool AssignRemovalPass::removeMatchingAssigns(UserProc *proc, SharedExp e)
         return false;
     }
 
-    QString     msg;
+    QString msg;
     OStream str(&msg);
     str << "Before removing matching assigns (" << e << ").";
 
     proc->getProg()->getProject()->alertDecompileDebugPoint(proc, qPrintable(msg));
 
-    for (auto& stmt : stmts) {
+    for (auto &stmt : stmts) {
         if ((stmt)->isAssign()) {
             Assign *a = static_cast<Assign *>(stmt);
 

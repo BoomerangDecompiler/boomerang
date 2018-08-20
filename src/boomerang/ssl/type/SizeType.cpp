@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "SizeType.h"
 
-
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/util/log/Log.h"
 
@@ -17,20 +16,17 @@
 SizeType::SizeType()
     : Type(TypeClass::Size)
     , size(0)
-{
-}
+{}
 
 
 SizeType::SizeType(unsigned sz)
     : Type(TypeClass::Size)
     , size(sz)
-{
-}
+{}
 
 
 SizeType::~SizeType()
-{
-}
+{}
 
 
 SharedType SizeType::clone() const
@@ -45,13 +41,13 @@ size_t SizeType::getSize() const
 }
 
 
-bool SizeType::operator==(const Type& other) const
+bool SizeType::operator==(const Type &other) const
 {
     return other.isSize() && (size == static_cast<const SizeType &>(other).size);
 }
 
 
-bool SizeType::operator<(const Type& other) const
+bool SizeType::operator<(const Type &other) const
 {
     if (id != other.getId()) {
         return id < other.getId();
@@ -94,7 +90,7 @@ bool SizeType::isComplete()
 QString SizeType::getCtype(bool /*final*/) const
 {
     // Emit a comment and the size
-    QString     res;
+    QString res;
     OStream ost(&res);
 
     ost << "__size" << size;
@@ -102,7 +98,7 @@ QString SizeType::getCtype(bool /*final*/) const
 }
 
 
-SharedType SizeType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType SizeType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<SizeType *>(this)->shared_from_this();
@@ -129,8 +125,7 @@ SharedType SizeType::meetWith(SharedType other, bool& changed, bool useHighestPt
         }
 
         if (other->getSize() != size) {
-            LOG_VERBOSE("Size %1 meet with %2; allowing temporarily",
-                     size, other->getCtype());
+            LOG_VERBOSE("Size %1 meet with %2; allowing temporarily", size, other->getCtype());
         }
 
         return other->clone();
@@ -140,7 +135,7 @@ SharedType SizeType::meetWith(SharedType other, bool& changed, bool useHighestPt
 }
 
 
-bool SizeType::isCompatible(const Type& other, bool /*all*/) const
+bool SizeType::isCompatible(const Type &other, bool /*all*/) const
 {
     if (other.resolvesToVoid()) {
         return true;
@@ -153,7 +148,8 @@ bool SizeType::isCompatible(const Type& other, bool /*all*/) const
     }
 
     // FIXME: why is there a test for size 0 here?
-    // This is because some signatures leave us with 0-sized NamedType -> using GLEnum when it was not defined.
+    // This is because some signatures leave us with 0-sized NamedType -> using GLEnum when it was
+    // not defined.
     if (otherSize == size) {
         return true;
     }
@@ -170,4 +166,3 @@ bool SizeType::isCompatible(const Type& other, bool /*all*/) const
     // For now, size32 and double will be considered compatible (helps test/pentium/global2)
     return false;
 }
-

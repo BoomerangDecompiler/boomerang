@@ -28,10 +28,10 @@ public:
     Settings();
 
 public:
-    void setWorkingDirectory(const QString& directoryPath);
-    void setDataDirectory(const QString& directoryPath);
-    void setPluginDirectory(const QString& directoryPath);
-    void setOutputDirectory(const QString& directoryPath);
+    void setWorkingDirectory(const QString &directoryPath);
+    void setDataDirectory(const QString &directoryPath);
+    void setPluginDirectory(const QString &directoryPath);
+    void setOutputDirectory(const QString &directoryPath);
 
     /// Get the path where the boomerang executable is run from.
     QDir getWorkingDirectory() const { return m_workingDirectory; }
@@ -73,21 +73,21 @@ public:
 
     /// When true, attempt to decode main, all children, and all procs.
     /// \a decodeMain is set when there are no -e or -E switches given
-    bool decodeMain          = true;
-    bool removeReturns       = true;
-    bool decodeThruIndCall   = false;
-    bool decodeChildren      = true;
-    bool useProof            = true;
-    bool changeSignatures    = true;
-    bool dfaTypeAnalysis     = true;
-    int propMaxDepth         = 3; ///< Max depth of exp that'll be propagated to more than one dest
-    bool generateCallGraph   = false;
-    bool generateSymbols     = false;
-    bool useGlobals          = true;
-    bool assumeABI           = false; ///< Assume ABI compliance
-    bool experimental        = false; ///< Activate experimental code. Caution!
+    bool decodeMain        = true;
+    bool removeReturns     = true;
+    bool decodeThruIndCall = false;
+    bool decodeChildren    = true;
+    bool useProof          = true;
+    bool changeSignatures  = true;
+    bool dfaTypeAnalysis   = true;
+    int propMaxDepth       = 3; ///< Max depth of exp that'll be propagated to more than one dest
+    bool generateCallGraph = false;
+    bool generateSymbols   = false;
+    bool useGlobals        = true;
+    bool assumeABI         = false; ///< Assume ABI compliance
+    bool experimental      = false; ///< Activate experimental code. Caution!
 
-    QString replayFile;               ///< file with commands to execute in interactive mode
+    QString replayFile; ///< file with commands to execute in interactive mode
 
     /// A vector which contains all know entrypoints for the Prog.
     std::vector<Address> m_entryPoints;
@@ -99,7 +99,7 @@ public:
     std::map<Address, QString> m_symbolMap;
 
 private:
-    QDir m_workingDirectory;       ///< Directory where Boomerang is run from
+    QDir m_workingDirectory; ///< Directory where Boomerang is run from
     QDir m_dataDirectory;
     QDir m_pluginDirectory;
     QDir m_outputDirectory;

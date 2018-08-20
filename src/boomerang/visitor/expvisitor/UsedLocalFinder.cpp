@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "UsedLocalFinder.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -17,14 +16,13 @@
 #include "boomerang/ssl/type/Type.h"
 
 
-UsedLocalFinder::UsedLocalFinder(LocationSet& used, UserProc* proc)
+UsedLocalFinder::UsedLocalFinder(LocationSet &used, UserProc *proc)
     : m_used(&used)
     , m_proc(proc)
     , all(false)
-{
-}
+{}
 
-bool UsedLocalFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool UsedLocalFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)
 {
     visitChildren = true;
 
@@ -32,11 +30,11 @@ bool UsedLocalFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visit
         m_used->insert(exp); // Found a local
     }
 
-    return true;         // Continue looking for other locations
+    return true; // Continue looking for other locations
 }
 
 
-bool UsedLocalFinder::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+bool UsedLocalFinder::preVisit(const std::shared_ptr<TypedExp> &exp, bool &visitChildren)
 {
     visitChildren = true;
     SharedType ty = exp->getType();
@@ -56,7 +54,7 @@ bool UsedLocalFinder::preVisit(const std::shared_ptr<TypedExp>& exp, bool& visit
 }
 
 
-bool UsedLocalFinder::visit(const std::shared_ptr<Terminal>& exp)
+bool UsedLocalFinder::visit(const std::shared_ptr<Terminal> &exp)
 {
     if (exp->getOper() == opDefineAll) {
         all = true;

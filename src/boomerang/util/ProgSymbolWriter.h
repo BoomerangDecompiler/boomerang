@@ -20,5 +20,5 @@ class QString;
 class ProgSymbolWriter
 {
 public:
-    bool writeSymbolsToFile(const Prog *prog, const QString& dstFileName);
+    bool writeSymbolsToFile(const Prog *prog, const QString &dstFileName);
 };

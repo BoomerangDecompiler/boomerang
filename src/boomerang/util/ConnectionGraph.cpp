@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ConnectionGraph.h"
 
-
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/log/Log.h"
 
@@ -56,7 +55,7 @@ ConnectionGraph::const_reverse_iterator ConnectionGraph::rbegin() const
 }
 
 
-ConnectionGraph::const_reverse_iterator ConnectionGraph::rend()   const
+ConnectionGraph::const_reverse_iterator ConnectionGraph::rend() const
 {
     return emap.rend();
 }
@@ -84,7 +83,7 @@ bool ConnectionGraph::add(SharedExp a, SharedExp b)
 std::vector<SharedExp> ConnectionGraph::allConnected(SharedExp a)
 {
     std::vector<SharedExp> res;
-    const_iterator         ff = emap.find(a);
+    const_iterator ff = emap.find(a);
 
     while (ff != emap.end() && *ff->first == *a) {
         res.push_back(ff->second);
@@ -102,7 +101,7 @@ void ConnectionGraph::connect(SharedExp a, SharedExp b)
     std::vector<SharedExp> b_connections = allConnected(b);
     add(a, b);
 
-    for (const SharedExp& e : b_connections) {
+    for (const SharedExp &e : b_connections) {
         add(a, e);
     }
 
@@ -117,7 +116,7 @@ void ConnectionGraph::connect(SharedExp a, SharedExp b)
 int ConnectionGraph::count(SharedExp e) const
 {
     const_iterator ff = emap.find(e);
-    int            n  = 0;
+    int n             = 0;
 
     while (ff != emap.end() && *ff->first == *e) {
         ++n;
@@ -128,7 +127,7 @@ int ConnectionGraph::count(SharedExp e) const
 }
 
 
-bool ConnectionGraph::isConnected(SharedExp a, const Exp& b) const
+bool ConnectionGraph::isConnected(SharedExp a, const Exp &b) const
 {
     const_iterator ff = emap.find(a);
 

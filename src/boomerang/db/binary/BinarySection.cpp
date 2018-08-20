@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "BinarySection.h"
 
-
 #include "boomerang/util/IntervalMap.h"
 #include "boomerang/util/IntervalSet.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QVariantMap>
 
@@ -21,31 +20,22 @@
 struct VariantHolder
 {
     mutable QVariantMap val;
-    QVariantMap&        get() const { return val; }
-    VariantHolder& operator+=(const VariantHolder& other)
+    QVariantMap &get() const { return val; }
+    VariantHolder &operator+=(const VariantHolder &other)
     {
         val = val.unite(other.val);
         return *this;
     }
 
-    bool operator==(const VariantHolder& other) const
-    {
-        return val == other.val;
-    }
+    bool operator==(const VariantHolder &other) const { return val == other.val; }
 };
 
 class BinarySectionImpl
 {
 public:
-    void clearDefinedArea()
-    {
-        m_hasDefinedValue.clear();
-    }
+    void clearDefinedArea() { m_hasDefinedValue.clear(); }
 
-    void addDefinedArea(Address from, Address to)
-    {
-        m_hasDefinedValue.insert(from, to);
-    }
+    void addDefinedArea(Address from, Address to) { m_hasDefinedValue.insert(from, to); }
 
     bool isAddressBss(Address a) const
     {
@@ -55,16 +45,16 @@ public:
         return !m_hasDefinedValue.isContained(a);
     }
 
-    void setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
+    void setAttributeForRange(const QString &name, const QVariant &val, Address from, Address to)
     {
         QVariantMap vmap;
 
         vmap[name] = val;
-        VariantHolder map { vmap };
+        VariantHolder map{ vmap };
         m_attributeMap.insert(from, to, map);
     }
 
-    QVariant attributeInRange(const QString& attrib, Address from, Address to) const
+    QVariant attributeInRange(const QString &attrib, Address from, Address to) const
     {
         auto startIt = m_attributeMap.find(from);
         auto endIt   = m_attributeMap.find(to);
@@ -91,7 +81,7 @@ public:
     QVariantMap getAttributesForRange(Address from, Address to)
     {
         QVariantMap res;
-        auto        v = m_attributeMap.equalRange(from, to);
+        auto v = m_attributeMap.equalRange(from, to);
 
         if (v.first == m_attributeMap.end()) {
             return res;
@@ -110,8 +100,7 @@ public:
 };
 
 
-
-BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString& name)
+BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString &name)
     : m_impl(new BinarySectionImpl)
     , m_sectionName(name)
     , m_nativeAddr(sourceAddr)
@@ -122,8 +111,7 @@ BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString& nam
     , m_data(false)
     , m_bss(0)
     , m_readOnly(0)
-{
-}
+{}
 
 
 BinarySection::~BinarySection()
@@ -159,12 +147,13 @@ void BinarySection::resize(uint32_t sz)
     LOG_VERBOSE("Function not fully implemented yet");
     m_size = sz;
 
-//    assert(false && "This function is not implmented yet");
-//    if(sz!=m_Size) {
-//        const BinarySection *sect = Boomerang::get()->getImage()->getSectionByAddr(uNativeAddr+sz);
-//        if(sect==nullptr || sect==this ) {
-//        }
-//    }
+    //    assert(false && "This function is not implmented yet");
+    //    if(sz!=m_Size) {
+    //        const BinarySection *sect =
+    //        Boomerang::get()->getImage()->getSectionByAddr(uNativeAddr+sz); if(sect==nullptr ||
+    //        sect==this ) {
+    //        }
+    //    }
 }
 
 
@@ -180,7 +169,8 @@ void BinarySection::addDefinedArea(Address from, Address to)
 }
 
 
-void BinarySection::setAttributeForRange(const QString& name, const QVariant& val, Address from, Address to)
+void BinarySection::setAttributeForRange(const QString &name, const QVariant &val, Address from,
+                                         Address to)
 {
     m_impl->setAttributeForRange(name, val, from, to);
 }
@@ -192,7 +182,7 @@ QVariantMap BinarySection::getAttributesForRange(Address from, Address to)
 }
 
 
-bool BinarySection::isAttributeInRange(const QString& attrib, Address from, Address to) const
+bool BinarySection::isAttributeInRange(const QString &attrib, Address from, Address to) const
 {
     return !m_impl->attributeInRange(attrib, from, to).isNull();
 }

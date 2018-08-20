@@ -10,9 +10,9 @@
 #pragma once
 
 
-#include "StatementSet.h"
-
 #include <list>
+
+#include "StatementSet.h"
 
 
 class LocationSet;
@@ -44,16 +44,16 @@ public:
 
 public:
     iterator begin() { return m_list.begin(); }
-    iterator end()   { return m_list.end();   }
+    iterator end() { return m_list.end(); }
 
     const_iterator begin() const { return m_list.begin(); }
-    const_iterator end()   const { return m_list.end(); }
+    const_iterator end() const { return m_list.end(); }
 
     reverse_iterator rbegin() { return m_list.rbegin(); }
-    reverse_iterator rend()   { return m_list.rend();   }
+    reverse_iterator rend() { return m_list.rend(); }
 
     const_reverse_iterator rbegin() const { return m_list.rbegin(); }
-    const_reverse_iterator rend()   const { return m_list.rend();   }
+    const_reverse_iterator rend() const { return m_list.rend(); }
 
 public:
     bool empty() const { return m_list.empty(); }
@@ -71,7 +71,10 @@ public:
     iterator insert(iterator where, Statement *stmt) { return m_list.insert(where, stmt); }
 
     template<typename Comp = std::less<Statement *>>
-    void sort(Comp comp) { return m_list.sort(comp); }
+    void sort(Comp comp)
+    {
+        return m_list.sort(comp);
+    }
 
     /**
      * Special intersection method: *this := a intersect b
@@ -80,11 +83,11 @@ public:
      * with the LocationSet b.
      * Used for calculating returns for a CallStatement
      */
-    void makeIsect(StatementList& a, LocationSet& b);
+    void makeIsect(StatementList &a, LocationSet &b);
 
     void append(Statement *s);
-    void append(const StatementList& list);
-    void append(const StatementSet& set);
+    void append(const StatementList &list);
+    void append(const StatementSet &set);
 
     /// \returns true if successfully removed, false if not found
     bool remove(Statement *stmt);
@@ -96,15 +99,15 @@ public:
 
     /// Return true if loc appears on the left of any statements in this list
     /// Note: statements in this list are assumed to be assignments
-    bool existsOnLeft(const SharedExp& loc) const; ///< True if loc exists on the LHS of any Assignment in this list
+    bool existsOnLeft(const SharedExp &loc)
+        const; ///< True if loc exists on the LHS of any Assignment in this list
 
     /// Find the first Assignment with loc on the LHS
     const Assignment *findOnLeft(SharedConstExp loc) const;
-    Assignment *findOnLeft(SharedExp loc);   ///< Return the first stmt with loc on the LHS
+    Assignment *findOnLeft(SharedExp loc); ///< Return the first stmt with loc on the LHS
 
     QString prints() const;
 
 private:
     List m_list;
 };
-

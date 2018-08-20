@@ -9,15 +9,14 @@
 #pragma endregion License
 #include "PPCFrontEnd.h"
 
-
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/frontend/ppc/PPCDecoder.h"
-#include "boomerang/ssl/exp/Location.h"
-#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/Register.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/log/Log.h"
 
 #include <cassert>
@@ -32,9 +31,9 @@ PPCFrontEnd::PPCFrontEnd(BinaryFile *binaryFile, Prog *prog)
 }
 
 
-Address PPCFrontEnd::findMainEntryPoint(bool& gotMain)
+Address PPCFrontEnd::findMainEntryPoint(bool &gotMain)
 {
-    gotMain = true;
+    gotMain       = true;
     Address start = m_binaryFile->getMainEntryPoint();
 
     if (start != Address::INVALID) {

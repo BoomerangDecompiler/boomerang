@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "BadMemofFinder.h"
 
-
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 
@@ -19,10 +18,10 @@ BadMemofFinder::BadMemofFinder()
 {}
 
 
-bool BadMemofFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren)
+bool BadMemofFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)
 {
     if (exp->isMemOf()) {
-        m_found = true;       // A bare memof
+        m_found = true; // A bare memof
         return false;
     }
 
@@ -31,7 +30,7 @@ bool BadMemofFinder::preVisit(const std::shared_ptr<Location>& exp, bool& visitC
 }
 
 
-bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren)
 {
     SharedExp base = exp->getSubExp1();
 
@@ -44,7 +43,7 @@ bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChi
             return false; // Don't continue searching
         }
 
-#if NEW                   // FIXME: not ready for this until have incremental propagation
+#if NEW // FIXME: not ready for this until have incremental propagation
         const char *sym = proc->lookupSym(e);
 
         if (sym == nullptr) {
@@ -56,6 +55,5 @@ bool BadMemofFinder::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChi
     }
 
     visitChildren = false; // Don't look inside the refexp
-    return true;     // It has a symbol; noting bad foound yet but continue searching
+    return true;           // It has a symbol; noting bad foound yet but continue searching
 }
-

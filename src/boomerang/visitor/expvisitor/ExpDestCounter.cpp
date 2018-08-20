@@ -9,17 +9,15 @@
 #pragma endregion License
 #include "ExpDestCounter.h"
 
-
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/Statement.h"
 
 
-ExpDestCounter::ExpDestCounter(ExpDestCounter::ExpCountMap& dc)
+ExpDestCounter::ExpDestCounter(ExpDestCounter::ExpCountMap &dc)
     : m_destCounts(dc)
-{
-}
+{}
 
-bool ExpDestCounter::preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+bool ExpDestCounter::preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren)
 {
     if (Statement::canPropagateToExp(*exp)) {
         m_destCounts[exp->clone()]++;
