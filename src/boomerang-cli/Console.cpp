@@ -9,18 +9,16 @@
 #pragma endregion License
 #include "Console.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/ifc/ICodeGenerator.h"
-#include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/CFGDotWriter.h"
+#include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/DFGWriter.h"
 #include "boomerang/util/UseGraphWriter.h"
-
 
 #include <QFile>
 #include <QString>
@@ -49,10 +47,10 @@ Console::Console(Project *project)
 }
 
 
-CommandStatus Console::handleCommand(const QString& commandWithArgs)
+CommandStatus Console::handleCommand(const QString &commandWithArgs)
 {
     QStringList args;
-    QString     command;
+    QString command;
 
     if (!commandSucceeded(splitCommand(commandWithArgs, command, args))) {
         return CommandStatus::Failure;
@@ -62,7 +60,7 @@ CommandStatus Console::handleCommand(const QString& commandWithArgs)
 }
 
 
-CommandStatus Console::replayFile(const QString& filePath)
+CommandStatus Console::replayFile(const QString &filePath)
 {
     if (filePath.isEmpty()) {
         // nothing to execute
@@ -78,8 +76,8 @@ CommandStatus Console::replayFile(const QString& filePath)
     }
 
     // execute commands until the first failure
-    QString       line;
-    QTextStream   ist(&file);
+    QString line;
+    QTextStream ist(&file);
     CommandStatus lastResult = CommandStatus::Success;
 
     while (!ist.atEnd()) {
@@ -100,7 +98,8 @@ CommandStatus Console::replayFile(const QString& filePath)
 }
 
 
-CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mainCommand, QStringList& args)
+CommandStatus Console::splitCommand(const QString &commandWithArgs, QString &mainCommand,
+                                    QStringList &args)
 {
     // remove unnecessary whitespace
     const QString command = commandWithArgs.simplified();
@@ -111,8 +110,9 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
     // find first whitespace
     while (i < command.size() && command[i] != ' ') {
         if (command[i] == '\"') {
+            // quotation marks in commands are not allowed
             return CommandStatus::ParseError;
-        }                                                             // quotation marks in commands are not allowed
+        }
 
         i++;
     }
@@ -120,7 +120,7 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
     mainCommand = QStringRef(&command, 0, i).toString();
 
     /// extract arguments
-    int  lastSeparator = i; // position of last space ' ' not within quotation marks
+    int lastSeparator  = i; // position of last space ' ' not within quotation marks
     bool isInQuotation = false;
 
     while (i < command.size()) {
@@ -136,13 +136,15 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
         }
 
         if (isInQuotation) {
+            // missing closing "
             return CommandStatus::ParseError;
-        }                                                                 // missing closing "
+        }
 
-        const bool    argIsQuoted = (command[lastSeparator + 1] == '\"'); // Were we in a quotation before?
-        const int     posBegin    = lastSeparator + (argIsQuoted ? 2 : 1);
-        const int     posEnd      = i - (argIsQuoted ? 2 : 1);
-        const QString arg         = command.mid(posBegin, posEnd - posBegin + 1);
+        // Were we in a quotation before?
+        const bool argIsQuoted = (command[lastSeparator + 1] == '\"');
+        const int posBegin     = lastSeparator + (argIsQuoted ? 2 : 1);
+        const int posEnd       = i - (argIsQuoted ? 2 : 1);
+        const QString arg      = command.mid(posBegin, posEnd - posBegin + 1);
 
         args.push_back(arg);
         lastSeparator = i;
@@ -152,64 +154,42 @@ CommandStatus Console::splitCommand(const QString& commandWithArgs, QString& mai
 }
 
 
-CommandStatus Console::processCommand(const QString& command, const QStringList& args)
+CommandStatus Console::processCommand(const QString &command, const QStringList &args)
 {
-    switch (commandNameToType(command))
-    {
-    case CT_decode:
-        return handleDecode(args);
-
-    case CT_decompile:
-        return handleDecompile(args);
-
-    case CT_codegen:
-        return handleCodegen(args);
-
-    case CT_replay:
-        return handleReplay(args);
-
-    case CT_move:
-        return handleMove(args);
-
-    case CT_add:
-        return handleAdd(args);
-
-    case CT_delete:
-        return handleDelete(args);
-
-    case CT_rename:
-        return handleRename(args);
-
-    case CT_info:
-        return handleInfo(args);
-
-    case CT_print:
-        return handlePrint(args);
-
-    case CT_exit:
-        return handleExit(args);
-
-    case CT_help:
-        return handleHelp(args);
+    switch (commandNameToType(command)) {
+    case CT_decode: return handleDecode(args);
+    case CT_decompile: return handleDecompile(args);
+    case CT_codegen: return handleCodegen(args);
+    case CT_replay: return handleReplay(args);
+    case CT_move: return handleMove(args);
+    case CT_add: return handleAdd(args);
+    case CT_delete: return handleDelete(args);
+    case CT_rename: return handleRename(args);
+    case CT_info: return handleInfo(args);
+    case CT_print: return handlePrint(args);
+    case CT_exit: return handleExit(args);
+    case CT_help: return handleHelp(args);
 
     default:
-        std::cerr << "Unrecognized command '" << command.toStdString() << "', try 'help'" << std::endl;
+        std::cerr << "Unrecognized command '" << command.toStdString() << "', try 'help'\n";
+        std::cerr.flush();
         return CommandStatus::ParseError;
     }
 }
 
 
-CommandType Console::commandNameToType(const QString& command)
+CommandType Console::commandNameToType(const QString &command)
 {
     QMap<QString, CommandType>::iterator it = m_commandTypes.find(command);
     return (it != m_commandTypes.end()) ? *it : CT_unknown;
 }
 
 
-CommandStatus Console::handleDecode(const QStringList& args)
+CommandStatus Console::handleDecode(const QStringList &args)
 {
     if (args.size() != 1) {
-        std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
+        std::cerr << "Wrong number of arguments for command: Expected 1, got " << args.size() << "."
+                  << std::endl;
         return CommandStatus::ParseError;
     }
     else if (m_project->isBinaryLoaded()) {
@@ -233,7 +213,7 @@ CommandStatus Console::handleDecode(const QStringList& args)
 }
 
 
-CommandStatus Console::handleDecompile(const QStringList& args)
+CommandStatus Console::handleDecompile(const QStringList &args)
 {
     if (!m_project->isBinaryLoaded()) {
         std::cerr << "Cannot decompile: Need to 'decode' a program first.\n";
@@ -251,7 +231,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
         // decompile all specified procedures
         ProcSet procSet;
 
-        for (const QString& procName : args) {
+        for (const QString &procName : args) {
             Function *proc = prog->getFunctionByName(procName);
 
             if (proc == nullptr) {
@@ -259,7 +239,8 @@ CommandStatus Console::handleDecompile(const QStringList& args)
                 return CommandStatus::Failure;
             }
             else if (proc->isLib()) {
-                std::cerr << "Cannot decompile library function '" << procName.toStdString() << "'\n";
+                std::cerr << "Cannot decompile library function '" << procName.toStdString()
+                          << "'\n";
                 return CommandStatus::Failure;
             }
 
@@ -278,7 +259,7 @@ CommandStatus Console::handleDecompile(const QStringList& args)
 }
 
 
-CommandStatus Console::handleCodegen(const QStringList& args)
+CommandStatus Console::handleCodegen(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
     if (!prog) {
@@ -313,10 +294,11 @@ CommandStatus Console::handleCodegen(const QStringList& args)
 }
 
 
-CommandStatus Console::handleReplay(const QStringList& args)
+CommandStatus Console::handleReplay(const QStringList &args)
 {
     if (args.size() != 1) {
-        std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "." << std::endl;
+        std::cerr << "Wrong number of arguments for command; Expected 1, got " << args.size() << "."
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 
@@ -324,7 +306,7 @@ CommandStatus Console::handleReplay(const QStringList& args)
 }
 
 
-CommandStatus Console::handleMove(const QStringList& args)
+CommandStatus Console::handleMove(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
 
@@ -382,7 +364,8 @@ CommandStatus Console::handleMove(const QStringList& args)
         parentModule->addChild(module);
     }
     else {
-        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'move'." << std::endl;
+        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'move'."
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 
@@ -390,7 +373,7 @@ CommandStatus Console::handleMove(const QStringList& args)
 }
 
 
-CommandStatus Console::handleAdd(const QStringList& args)
+CommandStatus Console::handleAdd(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
 
@@ -422,7 +405,8 @@ CommandStatus Console::handleAdd(const QStringList& args)
 
                 if (existingChild->getName() == args[1]) {
                     // new module would be a sibling of an existing module with the same name
-                    std::cerr << "Cannot create module: A module of the same name already exists." << std::endl;
+                    std::cerr << "Cannot create module: A module of the same name already exists."
+                              << std::endl;
                     return CommandStatus::Failure;
                 }
             }
@@ -438,13 +422,14 @@ CommandStatus Console::handleAdd(const QStringList& args)
         return CommandStatus::Success;
     }
     else {
-        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'add'" << std::endl;
+        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'add'"
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 }
 
 
-CommandStatus Console::handleDelete(const QStringList& args)
+CommandStatus Console::handleDelete(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
 
@@ -492,7 +477,7 @@ CommandStatus Console::handleDelete(const QStringList& args)
 }
 
 
-CommandStatus Console::handleRename(const QStringList& args)
+CommandStatus Console::handleRename(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
 
@@ -552,13 +537,14 @@ CommandStatus Console::handleRename(const QStringList& args)
         return CommandStatus::Success;
     }
     else {
-        std::cerr << "Unknown argument '" << args[0].toStdString() << "' for command 'rename'" << std::endl;
+        std::cerr << "Unknown argument '" << args[0].toStdString() << "' for command 'rename'"
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 }
 
 
-CommandStatus Console::handleInfo(const QStringList& args)
+CommandStatus Console::handleInfo(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
 
@@ -581,9 +567,9 @@ CommandStatus Console::handleInfo(const QStringList& args)
         std::list<const Function *> libFunctions;
         std::list<const Function *> userFunctions;
 
-        const Prog::ModuleList& modules = prog->getModuleList();
+        const Prog::ModuleList &modules = prog->getModuleList();
 
-        for (const auto& module : modules) {
+        for (const auto &module : modules) {
             for (const Function *function : *module) {
                 if (function->isLib()) {
                     libFunctions.push_back(function);
@@ -597,13 +583,15 @@ CommandStatus Console::handleInfo(const QStringList& args)
         ost << "\n\tLibrary functions:\n";
 
         for (const Function *function : libFunctions) {
-            ost << "\t\t" << function->getModule()->getName() << "::" << function->getName() << "\n";
+            ost << "\t\t" << function->getModule()->getName() << "::" << function->getName()
+                << "\n";
         }
 
         ost << "\n\tUser functions:\n";
 
         for (const Function *function : userFunctions) {
-            ost << "\t\t" << function->getModule()->getName() << "::" << function->getName() << "\n";
+            ost << "\t\t" << function->getModule()->getName() << "::" << function->getName()
+                << "\n";
         }
 
         ost << "\n";
@@ -681,13 +669,14 @@ CommandStatus Console::handleInfo(const QStringList& args)
         return CommandStatus::Success;
     }
     else {
-        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'info'" << std::endl;
+        std::cerr << "Unknown argument " << args[0].toStdString() << " for command 'info'"
+                  << std::endl;
         return CommandStatus::Failure;
     }
 }
 
 
-CommandStatus Console::handlePrint(const QStringList& args)
+CommandStatus Console::handlePrint(const QStringList &args)
 {
     Prog *prog = m_project->getProg();
 
@@ -731,7 +720,8 @@ CommandStatus Console::handlePrint(const QStringList& args)
     }
     else if (args[0] == "callgraph") {
         if (args.size() > 2) {
-            std::cerr << "Wrong number of arguments for command; Expected 1 or 2, got " << args.size() << "." << std::endl;
+            std::cerr << "Wrong number of arguments for command; Expected 1 or 2, got "
+                      << args.size() << "." << std::endl;
             return CommandStatus::ParseError;
         }
 
@@ -745,7 +735,8 @@ CommandStatus Console::handlePrint(const QStringList& args)
         QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
 
         if (args.size() == 1) {
-            CFGDotWriter().writeCFG(prog, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
+            CFGDotWriter().writeCFG(
+                prog, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
             return CommandStatus::Success;
         }
         else {
@@ -759,7 +750,8 @@ CommandStatus Console::handlePrint(const QStringList& args)
                     return CommandStatus::Failure;
                 }
                 else if (proc->isLib()) {
-                    std::cerr << "Cannot print library procedure '" << args[i].toStdString() << "'.";
+                    std::cerr << "Cannot print library procedure '" << args[i].toStdString()
+                              << "'.";
                     return CommandStatus::Failure;
                 }
 
@@ -768,7 +760,8 @@ CommandStatus Console::handlePrint(const QStringList& args)
                 procs.insert(userProc);
             }
 
-            CFGDotWriter().writeCFG(procs, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
+            CFGDotWriter().writeCFG(
+                procs, m_project->getSettings()->getOutputDirectory().absoluteFilePath("cfg.dot"));
             return CommandStatus::Success;
         }
     }
@@ -798,12 +791,11 @@ CommandStatus Console::handlePrint(const QStringList& args)
         QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
 
         for (UserProc *proc : procs) {
-            const QString fname = QString("%2-%3-dfg.dot")
-                .arg(proc->getName())
-                .arg(m_dfgCounts[proc]++);
+            const QString
+                fname = QString("%2-%3-dfg.dot").arg(proc->getName()).arg(m_dfgCounts[proc]++);
 
-            DFGWriter().printDFG(proc,
-                m_project->getSettings()->getOutputDirectory().absoluteFilePath(fname));
+            DFGWriter().printDFG(
+                proc, m_project->getSettings()->getOutputDirectory().absoluteFilePath(fname));
         }
 
         return CommandStatus::Success;
@@ -822,7 +814,8 @@ CommandStatus Console::handlePrint(const QStringList& args)
                 return CommandStatus::Failure;
             }
             else if (proc->isLib()) {
-                std::cerr << "Cannot print library procedure '" << args[i].toStdString() << "'." << std::endl;
+                std::cerr << "Cannot print library procedure '" << args[i].toStdString() << "'."
+                          << std::endl;
                 return CommandStatus::Failure;
             }
 
@@ -834,8 +827,8 @@ CommandStatus Console::handlePrint(const QStringList& args)
         QDir().mkpath(m_project->getSettings()->getOutputDirectory().absolutePath());
 
         for (UserProc *proc : procs) {
-            const QString fname = m_project->getSettings()->getOutputDirectory()
-                .absoluteFilePath(proc->getName() + "-usegraph.dot");
+            const QString fname = m_project->getSettings()->getOutputDirectory().absoluteFilePath(
+                proc->getName() + "-usegraph.dot");
 
             UseGraphWriter().writeUseGraph(proc, fname);
         }
@@ -843,16 +836,18 @@ CommandStatus Console::handlePrint(const QStringList& args)
         return CommandStatus::Success;
     }
     else {
-        std::cerr << "Unknown argument " << args[1].toStdString() << " for command 'print'" << std::endl;
+        std::cerr << "Unknown argument " << args[1].toStdString() << " for command 'print'"
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 }
 
 
-CommandStatus Console::handleExit(const QStringList& args)
+CommandStatus Console::handleExit(const QStringList &args)
 {
     if (args.size() != 0) {
-        std::cerr << "Wrong number of arguments for command; Expected 0, got " << args.size() << "." << std::endl;
+        std::cerr << "Wrong number of arguments for command; Expected 0, got " << args.size() << "."
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 
@@ -860,39 +855,47 @@ CommandStatus Console::handleExit(const QStringList& args)
 }
 
 
-CommandStatus Console::handleHelp(const QStringList& args)
+CommandStatus Console::handleHelp(const QStringList &args)
 {
     if (args.size() != 0) {
-        std::cerr << "Wrong number of arguments for command; Expected 0, got " << args.size() << "." << std::endl;
+        std::cerr << "Wrong number of arguments for command; Expected 0, got " << args.size() << "."
+                  << std::endl;
         return CommandStatus::ParseError;
     }
 
     // Column 98 of this source file is column 80 of output (don't use tabs)
     //   ____.____1____.____2____.____3____.____4____.____5____.____6____.____7____.____8
-    std::cout <<
-        "Available commands:\n"
-        "  decode <file>                      : Loads and decodes the specified binary.\n"
-        "  decompile [<proc1> [<proc2>...]]   : Decompiles the program or specified function(s).\n"
-        "  codegen [<module1> [<module2>...]] : Generates code for the program or a specified module.\n"
-        "  info prog                          : Print information about the program.\n"
-        "  info module <module>               : Print information about a module.\n"
-        "  info proc <proc>                   : Print information about a proc.\n"
-        "  move proc <proc> <module>          : Moves the specified proc to the specified module.\n"
-        "  move module <module> <parent>      : Moves the specified module to the specified parent module.\n"
-        "  add module <module> [<parent>]     : Adds a new module to the root/specified module.\n"
-        "  delete module <module> [...]       : Deletes empty modules.\n"
-        "  rename proc <proc> <newname>       : Renames the specified proc.\n"
-        "  rename module <module> <newname>   : Renames the specified module.\n"
-        "  print callgraph [<filename>]       : prints the call graph of the program. (filename defaults to 'callgraph.dot')\n"
-        "  print cfg [<proc1> [<proc2>...]]   : prints the Control Flow Graph of the program or a set of procedures.\n"
-        "  print dfg <proc1> [<proc2>...]     : prints the Data Flow Graph of a proc.\n"
-        "  print rtl [<proc1> [<proc2>...]]   : Print the RTL(s) for a proc.\n"
-        "  print use-graph <proc1> [<proc2>]  : Print the Use Graph of a proc.\n"
-        "  replay <file>                      : Reads file and executes commands line by line.\n"
-        "\n"
-        "  help                               : This help.\n"
-        "  exit                               : Quit Boomerang.\n"
-        "\n";
+    std::cout
+        << "Available commands:\n"
+           "  decode <file>                      : Loads and decodes the specified binary.\n"
+           "  decompile [<proc1> [<proc2>...]]   : Decompiles the program or specified "
+           "function(s).\n"
+           "  codegen [<module1> [<module2>...]] : Generates code for the program or a specified "
+           "module.\n"
+           "  info prog                          : Print information about the program.\n"
+           "  info module <module>               : Print information about a module.\n"
+           "  info proc <proc>                   : Print information about a proc.\n"
+           "  move proc <proc> <module>          : Moves the specified proc to the specified "
+           "module.\n"
+           "  move module <module> <parent>      : Moves the specified module to the specified "
+           "parent module.\n"
+           "  add module <module> [<parent>]     : Adds a new module to the root/specified "
+           "module.\n"
+           "  delete module <module> [...]       : Deletes empty modules.\n"
+           "  rename proc <proc> <newname>       : Renames the specified proc.\n"
+           "  rename module <module> <newname>   : Renames the specified module.\n"
+           "  print callgraph [<filename>]       : prints the call graph of the program. (filename "
+           "defaults to 'callgraph.dot')\n"
+           "  print cfg [<proc1> [<proc2>...]]   : prints the Control Flow Graph of the program or "
+           "a set of procedures.\n"
+           "  print dfg <proc1> [<proc2>...]     : prints the Data Flow Graph of a proc.\n"
+           "  print rtl [<proc1> [<proc2>...]]   : Print the RTL(s) for a proc.\n"
+           "  print use-graph <proc1> [<proc2>]  : Print the Use Graph of a proc.\n"
+           "  replay <file>                      : Reads file and executes commands line by line.\n"
+           "\n"
+           "  help                               : This help.\n"
+           "  exit                               : Quit Boomerang.\n"
+           "\n";
     std::cout.flush();
     return CommandStatus::Success;
 }

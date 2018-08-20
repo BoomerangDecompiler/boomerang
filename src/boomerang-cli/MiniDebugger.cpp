@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "MiniDebugger.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/Statement.h"
 
 #include <QTextStream>
@@ -73,7 +72,7 @@ void MiniDebugger::miniDebugger(UserProc *proc, const char *description)
                 QStringList parts = line.trimmed().split(" ", QString::SkipEmptyParts);
 
                 if (parts.size() > 1) {
-                    int           n = parts[1].toInt();
+                    int n = parts[1].toInt();
                     StatementList stmts;
                     proc->getStatements(stmts);
                     StatementList::iterator it;
