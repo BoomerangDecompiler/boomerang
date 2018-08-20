@@ -39,7 +39,7 @@
 - Performance: Slightly increased performance of code generation.
 - Performance: Slightly increased performance of instruction decoding.
 - Technical: Dropped boost as a dependency.
-- Technical: Code base now uses 4 spaces for indentation exclusively.
+- Technical: Reformatted code base to be consistent; correct code style is now enforced.
 - Technical: Added option to auto-generate Doxygen documentation using CMake.
 - Technical: Allow compilation using GCC, Clang and Visual Studio (MSVC) compilers.
 - Technical: Removed unused files from the repository.
