@@ -9,22 +9,22 @@
 #pragma endregion License
 #include "SigEnum.h"
 
-
 #include <QString>
 
 
-static const QString g_callConvNames[(int)CallConv::CallConvCount] = {
+// clang-format off
+static const QString g_callConvNames[(int)CallConv::CallConvCount] =
+{
     "??",
     "stdc",
     "pascal",
     "thiscall",
     "fastcall"
 };
+// clang-format on
 
 
-
-
-const QString& Util::getCallConvName(CallConv cc)
+const QString &Util::getCallConvName(CallConv cc)
 {
     return g_callConvNames[(int)cc];
 }

@@ -21,25 +21,25 @@
 class BOOMERANG_API ReturnStatement : public Statement
 {
 public:
-    typedef StatementList::iterator         iterator;
-    typedef StatementList::const_iterator   const_iterator;
+    typedef StatementList::iterator iterator;
+    typedef StatementList::const_iterator const_iterator;
 
 public:
     ReturnStatement();
-    ReturnStatement(const ReturnStatement& other) = default;
-    ReturnStatement(ReturnStatement&& other) = default;
+    ReturnStatement(const ReturnStatement &other) = default;
+    ReturnStatement(ReturnStatement &&other)      = default;
 
     virtual ~ReturnStatement() override;
 
-    ReturnStatement& operator=(const ReturnStatement& other) = default;
-    ReturnStatement& operator=(ReturnStatement&& other) = default;
+    ReturnStatement &operator=(const ReturnStatement &other) = default;
+    ReturnStatement &operator=(ReturnStatement &&other) = default;
 
 public:
     iterator begin() { return m_returns.begin(); }
-    iterator end()   { return m_returns.end(); }
+    iterator end() { return m_returns.end(); }
 
     const_iterator begin() const { return m_returns.begin(); }
-    const_iterator end()   const { return m_returns.end(); }
+    const_iterator end() const { return m_returns.end(); }
 
 public:
     /// \copydoc Statement::clone
@@ -47,13 +47,14 @@ public:
 
     iterator erase(iterator it);
 
-    const StatementList& getModifieds() { return m_modifieds; }
-    const StatementList& getReturns() { return m_returns; }
+    const StatementList &getModifieds() { return m_modifieds; }
+    const StatementList &getReturns() { return m_returns; }
 
     size_t getNumReturns() const { return m_returns.size(); }
 
-    /// Update the modifieds, in case the signature and hence ordering and filtering has changed, or the locations in the
-    /// collector have changed. Does NOT remove preserveds (deferred until updating returns).
+    /// Update the modifieds, in case the signature and hence ordering and filtering has changed, or
+    /// the locations in the collector have changed. Does NOT remove preserveds (deferred until
+    /// updating returns).
     void updateModifieds(); // Update modifieds from the collector
 
     /// Update the returns, in case the signature and hence ordering
@@ -61,22 +62,22 @@ public:
     void updateReturns();
 
     /// \copydoc Statement::print
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp&, SharedExp&) const override;
+    virtual bool search(const Exp &, SharedExp &) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc Statement::usesExp
-    virtual bool usesExp(const Exp& e) const override;
+    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& defs, bool assumeABICompliance) const override;
+    virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
     /// Remove from modifieds AND from returns
     void removeModified(SharedExp loc);
@@ -131,26 +132,25 @@ protected:
 
     /**
      * The progression of return information is as follows:
-     * First, reaching definitions are collected in the DefCollector col. These are not sorted or filtered.
-     * Second, some of those definitions make it to the modifieds list, which is sorted and filtered. These are
-     * the locations that are modified by the enclosing procedure. As locations are proved to be preserved (with NO
-     * modification, not even sp = sp+4), they are removed from this list. Defines in calls to the enclosing
-     * procedure are based on this list.
-     * Third, the modifications are initially copied to the returns list (also sorted and filtered, but the returns
-     * have RHS where the modifieds don't). Locations not live at any caller are removed from the returns, but not
-     * from the modifieds.
+     * First, reaching definitions are collected in the DefCollector col. These are not sorted or
+     * filtered. Second, some of those definitions make it to the modifieds list, which is sorted
+     * and filtered. These are the locations that are modified by the enclosing procedure. As
+     * locations are proved to be preserved (with NO modification, not even sp = sp+4), they are
+     * removed from this list. Defines in calls to the enclosing procedure are based on this list.
+     * Third, the modifications are initially copied to the returns list (also sorted and filtered,
+     * but the returns have RHS where the modifieds don't). Locations not live at any caller are
+     * removed from the returns, but not from the modifieds.
      */
     DefCollector m_col;
 
-    /// A list of assignments that represents the locations modified by the enclosing procedure. These assignments
-    /// have no RHS?
-    /// These transmit type information to callers
-    /// Note that these include preserved locations early on (?)
+    /// A list of assignments that represents the locations modified by the enclosing procedure.
+    /// These assignments have no RHS? These transmit type information to callers Note that these
+    /// include preserved locations early on (?)
     StatementList m_modifieds;
 
     /// A list of assignments of locations to expressions.
-    /// Initially definitions reaching the exit less preserveds; later has locations unused by any callers removed.
-    /// A list is used to facilitate ordering. (A set would be ideal, but the ordering depends at runtime on the
-    /// signature)
+    /// Initially definitions reaching the exit less preserveds; later has locations unused by any
+    /// callers removed. A list is used to facilitate ordering. (A set would be ideal, but the
+    /// ordering depends at runtime on the signature)
     StatementList m_returns;
 };

@@ -23,7 +23,7 @@ public:
 
 public:
     /// Write a string to the log.
-    virtual void write(const QString& s) = 0;
+    virtual void write(const QString &s) = 0;
 
     /// If the log sink is buffered, flush the underlying buffer
     /// to the target device. If the device is unbuffered, do nothing.

@@ -24,7 +24,7 @@ enum class PluginType
 
 struct PluginInfo
 {
-    PluginType  type;    ///< type of plugin (loader, etc)
+    PluginType type;     ///< type of plugin (loader, etc)
     const char *name;    ///< Name of this plugin
     const char *version; ///< Plugin version
     const char *author;  ///< Plugin creator (copyright information)
@@ -40,14 +40,14 @@ public:
     typedef void *Symbol;
 
 public:
-    PluginHandle(const QString& filePath);
-    PluginHandle(const PluginHandle& other) = delete;
-    PluginHandle(PluginHandle&& other) = default;
+    PluginHandle(const QString &filePath);
+    PluginHandle(const PluginHandle &other) = delete;
+    PluginHandle(PluginHandle &&other)      = default;
 
     ~PluginHandle();
 
-    PluginHandle& operator=(const PluginHandle& other) = delete;
-    PluginHandle& operator=(PluginHandle&& other) = default;
+    PluginHandle &operator=(const PluginHandle &other) = delete;
+    PluginHandle &operator=(PluginHandle &&other) = default;
 
 public:
     Symbol getSymbol(const char *name) const;
@@ -76,14 +76,14 @@ private:
 template<typename IFC, PluginType ty = PluginType::Invalid>
 class Plugin
 {
-    using PluginInitFunction   = IFC * (*)();
+    using PluginInitFunction   = IFC *(*)();
     using PluginDeinitFunction = void (*)();
-    using PluginInfoFunction   = const PluginInfo * (*)();
+    using PluginInfoFunction   = const PluginInfo *(*)();
 
 public:
     /// Create a plugin from a dynamic library file.
     /// \param pluginPath path to the library file.
-    explicit Plugin(const QString& pluginPath)
+    explicit Plugin(const QString &pluginPath)
         : m_pluginHandle(pluginPath)
         , m_ifc(nullptr)
     {
@@ -92,8 +92,8 @@ public:
         }
     }
 
-    Plugin(const Plugin& other) = delete;
-    Plugin(Plugin&& other) = default;
+    Plugin(const Plugin &other) = delete;
+    Plugin(Plugin &&other)      = default;
 
     ~Plugin()
     {
@@ -101,8 +101,8 @@ public:
         // library is automatically unloaded
     }
 
-    Plugin& operator=(const Plugin& other) = delete;
-    Plugin& operator=(Plugin&& other) = default;
+    Plugin &operator=(const Plugin &other) = delete;
+    Plugin &operator=(Plugin &&other) = default;
 
 public:
     /// Get information about the plugin.
@@ -174,32 +174,33 @@ private:
 
 
 /// Do not use this macro directly. Use the BOOMERANG_*_PLUGIN macros below instead.
-#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor) \
-    static Classname * g_pluginInstance = nullptr;                          \
-    extern "C" {                                                            \
-    Q_DECL_EXPORT Interface *initPlugin()                                   \
-    {                                                                       \
-        if (!g_pluginInstance) {                                            \
-            g_pluginInstance = new Classname();                             \
-        }                                                                   \
-        return g_pluginInstance;                                            \
-    }                                                                       \
-                                                                            \
-    Q_DECL_EXPORT void deinitPlugin()                                       \
-    {                                                                       \
-        delete g_pluginInstance;                                            \
-        g_pluginInstance = nullptr;                                         \
-    }                                                                       \
-                                                                            \
-    Q_DECL_EXPORT const PluginInfo *getInfo()                               \
-    {                                                                       \
-        static PluginInfo info;                                             \
-        info.name    = PName;                                               \
-        info.version = PVersion;                                            \
-        info.author  = PAuthor;                                             \
-        info.type    = Type;                                                \
-        return &info;                                                       \
-    }                                                                       \
+#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor)                        \
+    static Classname *g_pluginInstance = nullptr;                                                  \
+    extern "C"                                                                                     \
+    {                                                                                              \
+        Q_DECL_EXPORT Interface *initPlugin()                                                      \
+        {                                                                                          \
+            if (!g_pluginInstance) {                                                               \
+                g_pluginInstance = new Classname();                                                \
+            }                                                                                      \
+            return g_pluginInstance;                                                               \
+        }                                                                                          \
+                                                                                                   \
+        Q_DECL_EXPORT void deinitPlugin()                                                          \
+        {                                                                                          \
+            delete g_pluginInstance;                                                               \
+            g_pluginInstance = nullptr;                                                            \
+        }                                                                                          \
+                                                                                                   \
+        Q_DECL_EXPORT const PluginInfo *getInfo()                                                  \
+        {                                                                                          \
+            static PluginInfo info;                                                                \
+            info.name    = PName;                                                                  \
+            info.version = PVersion;                                                               \
+            info.author  = PAuthor;                                                                \
+            info.type    = Type;                                                                   \
+            return &info;                                                                          \
+        }                                                                                          \
     }
 
 
@@ -208,5 +209,6 @@ private:
  * Usage:
  *   BOOMERANG_LOADER_PLUGIN(TestLoader, "TestLoader Plugin", "3.1.4", "test");
  */
-#define BOOMERANG_LOADER_PLUGIN(Classname, PluginName, PluginVersion, PluginAuthor) \
-    DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Classname, PluginName, PluginVersion, PluginAuthor)
+#define BOOMERANG_LOADER_PLUGIN(Classname, PluginName, PluginVersion, PluginAuthor)                \
+    DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Classname, PluginName, PluginVersion,           \
+                  PluginAuthor)

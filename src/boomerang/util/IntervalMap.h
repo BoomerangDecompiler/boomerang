@@ -24,20 +24,20 @@ template<typename Key, typename Value>
 class IntervalMap
 {
 public:
-    typedef typename std::map<Interval<Key>, Value>   Data;
+    typedef typename std::map<Interval<Key>, Value> Data;
 
-    typedef typename Data::iterator                   iterator;
-    typedef typename Data::const_iterator             const_iterator;
-    typedef typename Data::reverse_iterator           reverse_iterator;
-    typedef typename Data::const_reverse_iterator     const_reverse_iterator;
+    typedef typename Data::iterator iterator;
+    typedef typename Data::const_iterator const_iterator;
+    typedef typename Data::reverse_iterator reverse_iterator;
+    typedef typename Data::const_reverse_iterator const_reverse_iterator;
 
 public:
     iterator begin() { return m_data.begin(); }
-    iterator end()   { return m_data.end(); }
+    iterator end() { return m_data.end(); }
     const_iterator begin() const { return m_data.begin(); }
-    const_iterator end()   const { return m_data.end(); }
+    const_iterator end() const { return m_data.end(); }
     reverse_iterator rbegin() { return m_data.rbegin(); }
-    reverse_iterator rend()   { return m_data.rend(); }
+    reverse_iterator rend() { return m_data.rend(); }
     const_reverse_iterator rbegin() const { return m_data.rbegin(); }
     const_reverse_iterator rend() const { return m_data.rend(); }
 
@@ -49,27 +49,32 @@ public:
     void clear() { m_data.clear(); }
 
     /// Inserts an interval with a mapped value into this map.
-    iterator insert(const Interval<Key>& key, Value value)
+    iterator insert(const Interval<Key> &key, Value value)
     {
         if (key.lower() >= key.upper()) {
             return end(); // do not insert degenerate intervals
         }
 
-        std::pair<typename Data::iterator, bool> p = m_data.insert(std::make_pair(key, std::forward<Value>(value)));
+        std::pair<typename Data::iterator, bool> p = m_data.insert(
+            std::make_pair(key, std::forward<Value>(value)));
         return p.second ? p.first : m_data.end();
     }
 
-    iterator insert(const Key& lower, const Key& upper, Value value)
+    iterator insert(const Key &lower, const Key &upper, Value value)
     {
         return insert(Interval<Key>(lower, upper), std::forward<Value>(value));
     }
 
     /// Erase the item referenced by \p it
     /// \returns an iterator to the element immediately after the deleted element
-    iterator erase(iterator it) { assert(it != end()); return m_data.erase(it); }
+    iterator erase(iterator it)
+    {
+        assert(it != end());
+        return m_data.erase(it);
+    }
 
     /// Remove all intervals containing \p key
-    void eraseAll(const Key& key)
+    void eraseAll(const Key &key)
     {
         iterator it = find(key);
 
@@ -83,7 +88,7 @@ public:
     }
 
     /// Remove all intervals overlapping with \p interval
-    void eraseAll(const Interval<Key>& interval)
+    void eraseAll(const Interval<Key> &interval)
     {
         iterator it1, it2;
 
@@ -99,12 +104,12 @@ public:
      * If there are muliple candidate intervals,
      * the interval with the lowest lower bound is retrieved.
      */
-    const_iterator find(const Key& key) const
+    const_iterator find(const Key &key) const
     {
         // todo: speed up
         for (const_iterator it = begin(); it != end(); ++it) {
-            const Key& lower = it->first.lower();
-            const Key& upper = it->first.upper();
+            const Key &lower = it->first.lower();
+            const Key &upper = it->first.upper();
 
             if (upper <= key) {
                 continue;
@@ -121,12 +126,12 @@ public:
         return end();
     }
 
-    iterator find(const Key& key)
+    iterator find(const Key &key)
     {
         // todo: speed up
         for (iterator it = begin(); it != end(); ++it) {
-            const Key& lower = it->first.lower();
-            const Key& upper = it->first.upper();
+            const Key &lower = it->first.lower();
+            const Key &upper = it->first.upper();
 
             if (upper <= key) {
                 continue;
@@ -147,12 +152,12 @@ public:
      * \returns an iterator range containing all intervals between \p lower and \p upper.
      * If there are no intervals between lower and upper, the function returns (end(), end).
      */
-    std::pair<const_iterator, const_iterator> equalRange(const Key& lower, const Key& upper) const
+    std::pair<const_iterator, const_iterator> equalRange(const Key &lower, const Key &upper) const
     {
         return equalRange(Interval<Key>(lower, upper));
     }
 
-    std::pair<const_iterator, const_iterator> equalRange(const Interval<Key>& interval) const
+    std::pair<const_iterator, const_iterator> equalRange(const Interval<Key> &interval) const
     {
         const_iterator itLower = end();
         const_iterator itUpper = end();
@@ -173,12 +178,12 @@ public:
         return std::make_pair(itLower, itUpper);
     }
 
-    std::pair<iterator, iterator> equalRange(const Key& lower, const Key& upper)
+    std::pair<iterator, iterator> equalRange(const Key &lower, const Key &upper)
     {
         return equalRange(Interval<Key>(lower, upper));
     }
 
-    std::pair<iterator, iterator> equalRange(const Interval<Key>& interval)
+    std::pair<iterator, iterator> equalRange(const Interval<Key> &interval)
     {
         if (interval.lower() >= interval.upper()) {
             return { end(), end() };
@@ -213,5 +218,5 @@ public:
     }
 
 private:
-    std::map<Interval<Key>, Value, std::less<Interval<Key> > > m_data;
+    std::map<Interval<Key>, Value, std::less<Interval<Key>>> m_data;
 };

@@ -9,17 +9,16 @@
 #pragma endregion License
 #include "Proc.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/module/Module.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/module/Module.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/util/log/Log.h"
 
 
-Function::Function(Address entryAddr, const std::shared_ptr<Signature>& sig, Module *module)
+Function::Function(Address entryAddr, const std::shared_ptr<Signature> &sig, Module *module)
     : m_module(module)
     , m_entryAddress(entryAddr)
     , m_signature(sig)
@@ -31,8 +30,7 @@ Function::Function(Address entryAddr, const std::shared_ptr<Signature>& sig, Mod
 
 
 Function::~Function()
-{
-}
+{}
 
 
 QString Function::getName() const
@@ -42,7 +40,7 @@ QString Function::getName() const
 }
 
 
-void Function::setName(const QString& name)
+void Function::setName(const QString &name)
 {
     assert(m_signature);
     m_signature->setName(name);
@@ -59,7 +57,7 @@ void Function::setEntryAddress(Address entryAddr)
 {
     if (m_module) {
         m_module->setLocationMap(m_entryAddress, nullptr);
-        m_module->setLocationMap(entryAddr,      this);
+        m_module->setLocationMap(entryAddr, this);
     }
 
     m_entryAddress = entryAddr;
@@ -122,7 +120,7 @@ void Function::removeParameterFromSignature(SharedExp e)
 }
 
 
-void Function::renameParameter(const QString& oldName, const QString& newName)
+void Function::renameParameter(const QString &oldName, const QString &newName)
 {
     assert(m_signature != nullptr);
     m_signature->renameParam(oldName, newName);

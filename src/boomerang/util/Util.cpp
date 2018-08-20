@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Util.h"
 
-
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/util/Types.h"
@@ -24,9 +23,10 @@
 
 namespace Util
 {
-QString escapeStr(const QString& inp)
+QString escapeStr(const QString &inp)
 {
-    static const QMap<char, QString> replacements {
+    // clang-format off
+    static const QMap<char, QString> replacements{
         { '\n', "\\n" },
         { '\t', "\\t" },
         { '\v', "\\v" },
@@ -36,6 +36,7 @@ QString escapeStr(const QString& inp)
         { '\a', "\\a" },
         { '"', "\\\"" }
     };
+    // clang-format on
 
     QString res;
 
@@ -57,7 +58,7 @@ QString escapeStr(const QString& inp)
 }
 
 
-OStream& alignStream(OStream& str, int align)
+OStream &alignStream(OStream &str, int align)
 {
     str << qSetFieldWidth(align) << " " << qSetFieldWidth(0);
     return str;
@@ -70,7 +71,7 @@ int getStackOffset(SharedConstExp e, int sp)
 
     if (e->isMemOf()) {
         SharedConstExp sub = e->getSubExp1();
-        OPER      op  = sub->getOper();
+        OPER op            = sub->getOper();
 
         if ((op == opPlus) || (op == opMinus)) {
             SharedConstExp op1 = sub->getSubExp1();
@@ -99,16 +100,13 @@ int getStackOffset(SharedConstExp e, int sp)
 
 int getStackRegisterIndex(const Prog *prog)
 {
-    switch (prog->getMachine())
-    {
-    case Machine::SPARC:        return REG_SPARC_SP;
-    case Machine::PENTIUM:      return REG_PENT_ESP;
-    case Machine::PPC:          return  1;
-    case Machine::ST20:         return  3;
-    case Machine::MIPS:         return 29;
-    default:                    return -1;
+    switch (prog->getMachine()) {
+    case Machine::SPARC: return REG_SPARC_SP;
+    case Machine::PENTIUM: return REG_PENT_ESP;
+    case Machine::PPC: return REG_PPC_G1;
+    case Machine::ST20: return REG_ST20_SP;
+    case Machine::MIPS: return REG_MIPS_SP;
+    default: return -1;
     }
 }
-
-
 }

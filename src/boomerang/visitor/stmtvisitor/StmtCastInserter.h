@@ -25,7 +25,7 @@ class BoolAssign;
 class StmtCastInserter : public StmtVisitor
 {
 public:
-    StmtCastInserter() = default;
+    StmtCastInserter()          = default;
     virtual ~StmtCastInserter() = default;
 
 public:

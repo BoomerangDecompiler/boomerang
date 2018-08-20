@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "BoolAssign.h"
 
-
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -36,8 +35,7 @@ BoolAssign::BoolAssign(int size)
 
 
 BoolAssign::~BoolAssign()
-{
-}
+{}
 
 
 void BoolAssign::setCondType(BranchType cond, bool usesFloat /*= false*/)
@@ -51,23 +49,11 @@ void BoolAssign::setCondType(BranchType cond, bool usesFloat /*= false*/)
 void BoolAssign::makeSigned()
 {
     // Make this into a signed branch
-    switch (m_jumpType)
-    {
-    case BranchType::JUL:
-        m_jumpType = BranchType::JSL;
-        break;
-
-    case BranchType::JULE:
-        m_jumpType = BranchType::JSLE;
-        break;
-
-    case BranchType::JUGE:
-        m_jumpType = BranchType::JSGE;
-        break;
-
-    case BranchType::JUG:
-        m_jumpType = BranchType::JSG;
-        break;
+    switch (m_jumpType) {
+    case BranchType::JUL: m_jumpType = BranchType::JSL; break;
+    case BranchType::JULE: m_jumpType = BranchType::JSLE; break;
+    case BranchType::JUGE: m_jumpType = BranchType::JSGE; break;
+    case BranchType::JUG: m_jumpType = BranchType::JSG; break;
 
     default:
         // Do nothing for other cases
@@ -88,31 +74,30 @@ void BoolAssign::setCondExpr(SharedExp pss)
 }
 
 
-void BoolAssign::printCompact(OStream& os) const
+void BoolAssign::printCompact(OStream &os) const
 {
     os << "BOOL ";
     m_lhs->print(os);
     os << " := CC(";
 
-    switch (m_jumpType)
-    {
-    case BranchType::JE:    os << "equals";                     break;
-    case BranchType::JNE:   os << "not equals";                 break;
-    case BranchType::JSL:   os << "signed less";                break;
-    case BranchType::JSLE:  os << "signed less or equals";      break;
-    case BranchType::JSGE:  os << "signed greater or equals";   break;
-    case BranchType::JSG:   os << "signed greater";             break;
-    case BranchType::JUL:   os << "unsigned less";              break;
-    case BranchType::JULE:  os << "unsigned less or equals";    break;
-    case BranchType::JUGE:  os << "unsigned greater or equals"; break;
-    case BranchType::JUG:   os << "unsigned greater";           break;
-    case BranchType::JMI:   os << "minus";                      break;
-    case BranchType::JPOS:  os << "plus";                       break;
-    case BranchType::JOF:   os << "overflow";                   break;
-    case BranchType::JNOF:  os << "no overflow";                break;
-    case BranchType::JPAR:  os << "ev parity";                  break;
-    case BranchType::JNPAR: os << "odd parity";                 break;
-    case BranchType::INVALID: assert(false);                    break;
+    switch (m_jumpType) {
+    case BranchType::JE: os << "equals"; break;
+    case BranchType::JNE: os << "not equals"; break;
+    case BranchType::JSL: os << "signed less"; break;
+    case BranchType::JSLE: os << "signed less or equals"; break;
+    case BranchType::JSGE: os << "signed greater or equals"; break;
+    case BranchType::JSG: os << "signed greater"; break;
+    case BranchType::JUL: os << "unsigned less"; break;
+    case BranchType::JULE: os << "unsigned less or equals"; break;
+    case BranchType::JUGE: os << "unsigned greater or equals"; break;
+    case BranchType::JUG: os << "unsigned greater"; break;
+    case BranchType::JMI: os << "minus"; break;
+    case BranchType::JPOS: os << "plus"; break;
+    case BranchType::JOF: os << "overflow"; break;
+    case BranchType::JNOF: os << "no overflow"; break;
+    case BranchType::JPAR: os << "ev parity"; break;
+    case BranchType::JNPAR: os << "odd parity"; break;
+    case BranchType::INVALID: assert(false); break;
     }
 
     os << ")";
@@ -141,7 +126,7 @@ Statement *BoolAssign::clone() const
     ret->m_isFloat  = m_isFloat;
     ret->m_size     = m_size;
     // Statement members
-    ret->m_bb = m_bb;
+    ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
@@ -159,7 +144,8 @@ void BoolAssign::generateCode(ICodeGenerator *gen, const BasicBlock *)
     assert(m_lhs);
     assert(m_cond);
     // lhs := (m_cond) ? 1 : 0
-    Assign as(m_lhs->clone(), std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
+    Assign as(m_lhs->clone(),
+              std::make_shared<Ternary>(opTern, m_cond->clone(), Const::get(1), Const::get(0)));
     gen->addAssignmentStatement(&as);
 }
 
@@ -172,21 +158,22 @@ void BoolAssign::simplify()
 }
 
 
-void BoolAssign::getDefinitions(LocationSet& defs, bool) const
+void BoolAssign::getDefinitions(LocationSet &defs, bool) const
 {
     defs.insert(getLeft());
 }
 
 
-bool BoolAssign::usesExp(const Exp& e) const
+bool BoolAssign::usesExp(const Exp &e) const
 {
     assert(m_lhs && m_cond);
     SharedExp where = nullptr;
-    return(m_cond->search(e, where) || (m_lhs->isMemOf() && m_lhs->getSubExp1()->search(e, where)));
+    return (m_cond->search(e, where) ||
+            (m_lhs->isMemOf() && m_lhs->getSubExp1()->search(e, where)));
 }
 
 
-bool BoolAssign::search(const Exp& pattern, SharedExp& result) const
+bool BoolAssign::search(const Exp &pattern, SharedExp &result) const
 {
     assert(m_lhs);
 
@@ -199,7 +186,7 @@ bool BoolAssign::search(const Exp& pattern, SharedExp& result) const
 }
 
 
-bool BoolAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
+bool BoolAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
     bool ch = false;
 
@@ -214,7 +201,7 @@ bool BoolAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) con
 }
 
 
-bool BoolAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
+bool BoolAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
 {
     Q_UNUSED(cc);
 
@@ -229,7 +216,7 @@ bool BoolAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc
 }
 
 
-void BoolAssign::setLeftFromList(const std::list< Statement *>& stmts)
+void BoolAssign::setLeftFromList(const std::list<Statement *> &stmts)
 {
     assert(stmts.size() == 1);
     Assign *first = static_cast<Assign *>(stmts.front());
@@ -242,7 +229,7 @@ void BoolAssign::setLeftFromList(const std::list< Statement *>& stmts)
 bool BoolAssign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
         return ret;
@@ -291,4 +278,3 @@ bool BoolAssign::accept(StmtPartModifier *v)
 
     return true;
 }
-

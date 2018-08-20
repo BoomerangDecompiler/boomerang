@@ -26,13 +26,13 @@ public:
 private:
     ProcStatus tryDecompileRecursive(UserProc *proc);
 
-    void createRecursionGoup(const std::shared_ptr<ProcSet>& newGroup);
-    void addToRecursionGroup(UserProc *proc, const std::shared_ptr<ProcSet>& recursionGroup);
+    void createRecursionGoup(const std::shared_ptr<ProcSet> &newGroup);
+    void addToRecursionGroup(UserProc *proc, const std::shared_ptr<ProcSet> &recursionGroup);
 
 private:
     /// Early decompile:
-    /// sort CFG, number statements, dominator tree, place phi functions, number statements, first rename,
-    /// propagation: ready for preserveds.
+    /// sort CFG, number statements, dominator tree, place phi functions, number statements, first
+    /// rename, propagation: ready for preserveds.
     void earlyDecompile(UserProc *proc);
 
     /// Middle decompile: All the decompilation from preservation up to
@@ -42,10 +42,10 @@ private:
 
     /// Analyse the whole group of procedures for conditional preserveds, and update till no change.
     /// Also finalise the whole group.
-    void recursionGroupAnalysis(const std::shared_ptr<ProcSet>& callStack);
+    void recursionGroupAnalysis(const std::shared_ptr<ProcSet> &callStack);
 
     /// \returns true if any change
-    bool decompileProcInRecursionGroup(UserProc *proc, ProcSet& visited);
+    bool decompileProcInRecursionGroup(UserProc *proc, ProcSet &visited);
 
     /// Remove unused statements etc.
     void lateDecompile(UserProc *proc);

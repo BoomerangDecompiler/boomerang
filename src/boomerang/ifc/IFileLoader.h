@@ -41,7 +41,7 @@ public:
     /// If the file can be loaded, the function returns a score ( > 0)
     /// corresponding to the number of bytes checked.
     /// If the file cannot be loaded, this function returns 0.
-    virtual int canLoad(QIODevice& data) const = 0;
+    virtual int canLoad(QIODevice &data) const = 0;
 
     /// Load the file with path \p path into memory.
     virtual bool loadFromFile(BinaryFile *file)
@@ -53,7 +53,7 @@ public:
     /// Load the file from an already existing buffer.
     /// \note \p data cannot be const
     /// \returns true for a good load
-    virtual bool loadFromMemory(QByteArray& data) = 0;
+    virtual bool loadFromMemory(QByteArray &data) = 0;
 
     /// Unload the file.
     /// Cleans up and unloads the binary image.
@@ -76,11 +76,19 @@ public:
 
 public:
     /// Relocation functions
-    virtual bool isRelocationAt(Address addr) { Q_UNUSED(addr); return false; }
+    virtual bool isRelocationAt(Address addr)
+    {
+        Q_UNUSED(addr);
+        return false;
+    }
 
     /// \returns the target of the jmp/jXX instruction at address \p addr.
     /// If there is no jump at address \p addr, returns Address::INVALID.
-    virtual Address getJumpTarget(Address addr) const { Q_UNUSED(addr); return Address::INVALID; }
+    virtual Address getJumpTarget(Address addr) const
+    {
+        Q_UNUSED(addr);
+        return Address::INVALID;
+    }
     virtual bool hasDebugInfo() const { return false; }
 };
 

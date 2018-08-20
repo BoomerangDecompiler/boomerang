@@ -47,16 +47,16 @@ public:
     explicit RTL(Address instrAddr, const std::list<Statement *> *listStmt = nullptr);
 
     /// Take ownership of the statements in the initializer list.
-    explicit RTL(Address instrAddr, const std::initializer_list<Statement *>& statements);
+    explicit RTL(Address instrAddr, const std::initializer_list<Statement *> &statements);
 
-    explicit RTL(const RTL& other); ///< Deep copies the content
-    explicit RTL(RTL&& other) = default;
+    explicit RTL(const RTL &other); ///< Deep copies the content
+    explicit RTL(RTL &&other) = default;
 
     ~RTL();
 
     /// Makes this RTL a deep copy of \p other.
-    RTL& operator=(const RTL& other);
-    RTL& operator=(RTL&& other) = default;
+    RTL &operator=(const RTL &other);
+    RTL &operator=(RTL &&other) = default;
 
 public:
     /// Return RTL's native address
@@ -73,17 +73,17 @@ public:
     void append(Statement *s);
 
     /// Append a deep copy of \p le to this RTL.
-    void append(const std::list<Statement *>& le);
+    void append(const std::list<Statement *> &le);
 
     /// Deep copy the elements of this RTL into the given list.
-    void deepCopyList(std::list<Statement *>& dest) const;
+    void deepCopyList(std::list<Statement *> &dest) const;
 
     /**
      * Prints this object to a stream in text form.
      * \param   os   stream to output to (often cout or cerr)
      * \param   html if true output is in html
      */
-    void print(OStream& os) const;
+    void print(OStream &os) const;
 
     // Print to a static buffer (mainly for debugging)
     QString prints() const;
@@ -98,8 +98,8 @@ public:
     /// unnecessary statements (like branches with constant conditions)
     void simplify();
 
-    const StmtList& getStatements() const { return m_stmts; }
-    StmtList& getStatements() { return m_stmts; }
+    const StmtList &getStatements() const { return m_stmts; }
+    StmtList &getStatements() { return m_stmts; }
 
     // delegates to std::list
 public:
@@ -108,27 +108,27 @@ public:
     size_type size() const { return m_stmts.size(); }
 
     reference front() { return m_stmts.front(); }
-    reference back()  { return m_stmts.back();  }
+    reference back() { return m_stmts.back(); }
     const_reference front() const { return m_stmts.front(); }
-    const_reference back()  const { return m_stmts.back();  }
+    const_reference back() const { return m_stmts.back(); }
 
     iterator begin() { return m_stmts.begin(); }
-    iterator end()   { return m_stmts.end();   }
+    iterator end() { return m_stmts.end(); }
     const_iterator begin() const { return m_stmts.begin(); }
-    const_iterator end()   const { return m_stmts.end();   }
+    const_iterator end() const { return m_stmts.end(); }
 
     reverse_iterator rbegin() { return m_stmts.rbegin(); }
-    reverse_iterator rend()   { return m_stmts.rend();   }
+    reverse_iterator rend() { return m_stmts.rend(); }
     const_reverse_iterator rbegin() const { return m_stmts.rbegin(); }
-    const_reverse_iterator rend()   const { return m_stmts.rend();   }
+    const_reverse_iterator rend() const { return m_stmts.rend(); }
 
     void pop_front() { m_stmts.pop_front(); }
-    void pop_back()  { m_stmts.pop_back(); }
+    void pop_back() { m_stmts.pop_back(); }
 
-    void push_front(const value_type& val) { m_stmts.push_front(val); }
-    void push_back(const value_type& val)  { m_stmts.push_back(val);  }
+    void push_front(const value_type &val) { m_stmts.push_front(val); }
+    void push_back(const value_type &val) { m_stmts.push_back(val); }
 
-    void insert(iterator where, const value_type& val) { m_stmts.insert(where, val); }
+    void insert(iterator where, const value_type &val) { m_stmts.insert(where, val); }
     void clear() { m_stmts.clear(); }
 
     iterator erase(iterator it) { return m_stmts.erase(it); }
@@ -140,4 +140,3 @@ private:
 
 using SharedRTL = std::shared_ptr<RTL>;
 using RTLList   = std::list<std::unique_ptr<RTL>>;
-

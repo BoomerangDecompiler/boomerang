@@ -19,10 +19,11 @@
 class BOOMERANG_API Parameter
 {
 public:
-    Parameter(SharedType type, const QString& name, SharedExp exp = nullptr, const QString& boundMax = "");
+    Parameter(SharedType type, const QString &name, SharedExp exp = nullptr,
+              const QString &boundMax = "");
 
 public:
-    bool operator==(const Parameter& other) const;
+    bool operator==(const Parameter &other) const;
 
     /// Make a deep copy clone of this Parameter
     std::shared_ptr<Parameter> clone() const;
@@ -31,17 +32,17 @@ public:
     SharedType getType() const { return m_type; }
 
     /// \returns the name of this function paramter
-    const QString& getName() const { return m_name; }
+    const QString &getName() const { return m_name; }
 
-    SharedExp getExp()  const { return m_exp; }
-    QString getBoundMax()    const { return m_boundMax; }
+    SharedExp getExp() const { return m_exp; }
+    QString getBoundMax() const { return m_boundMax; }
 
     void setType(SharedType ty) { m_type = ty; }
-    void setName(const QString& name) { m_name = name; }
+    void setName(const QString &name) { m_name = name; }
     void setExp(SharedExp e) { m_exp = e; }
 
     /// this parameter is the bound of another parameter with name \p name
-    void setBoundMax(const QString& name);
+    void setBoundMax(const QString &name);
 
 private:
     SharedType m_type;
@@ -49,4 +50,3 @@ private:
     SharedExp m_exp = nullptr;
     QString m_boundMax;
 };
-

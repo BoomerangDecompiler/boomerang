@@ -9,12 +9,11 @@
 #pragma endregion License
 #include "TargetQueue.h"
 
-
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/util/log/Log.h"
 
 
-void TargetQueue::visit(ProcCFG *cfg, Address newAddr, BasicBlock *& newBB)
+void TargetQueue::visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
 {
     const BasicBlock *existingBB = cfg->getBBStartingAt(newAddr);
     if (existingBB) {
@@ -43,7 +42,7 @@ void TargetQueue::initial(Address addr)
 }
 
 
-Address TargetQueue::getNextAddress(const ProcCFG& cfg)
+Address TargetQueue::getNextAddress(const ProcCFG &cfg)
 {
     while (!m_targets.empty()) {
         Address address = m_targets.front();
@@ -53,7 +52,8 @@ Address TargetQueue::getNextAddress(const ProcCFG& cfg)
             LOG_MSG("<%1", address);
         }
 
-        // If no label there at all, or if there is a BB, it's incomplete, then we can parse this address next
+        // If no label there at all, or if there is a BB, it's incomplete, then we can parse this
+        // address next
         if (!cfg.isStartOfBB(address) || cfg.isStartOfIncompleteBB(address)) {
             return address;
         }

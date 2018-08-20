@@ -14,25 +14,25 @@
 /// \sa http://docs.oracle.com/cd/E18752_01/pdf/817-1984.pdf
 
 // Data types for 32 bit ELF files
-typedef uint8    Elf32_Byte;
-typedef uint16   Elf32_Half;
-typedef sint32   Elf32_Sword;
-typedef uint32   Elf32_Word;
-typedef uint32   Elf32_Addr;
-typedef uint32   Elf32_Off;
+typedef uint8 Elf32_Byte;
+typedef uint16 Elf32_Half;
+typedef sint32 Elf32_Sword;
+typedef uint32 Elf32_Word;
+typedef uint32 Elf32_Addr;
+typedef uint32 Elf32_Off;
 
-typedef uint8    Elf64_Byte;
-typedef uint16   Elf64_Half;
-typedef uint32   Elf64_Sword;
-typedef sint32   Elf64_Word;
-typedef sint64   Elf64_Sxword;
-typedef uint64   Elf64_Xword;
-typedef uint64   Elf64_Addr;
-typedef uint64   Elf64_Off;
+typedef uint8 Elf64_Byte;
+typedef uint16 Elf64_Half;
+typedef uint32 Elf64_Sword;
+typedef sint32 Elf64_Word;
+typedef sint64 Elf64_Sxword;
+typedef uint64 Elf64_Xword;
+typedef uint64 Elf64_Addr;
+typedef uint64 Elf64_Off;
 
 
 // number of bytes for ELF file type identification
-#define EI_NIDENT    16
+#define EI_NIDENT 16
 
 #pragma pack(push, 1)
 /// Internal elf info
@@ -40,19 +40,21 @@ struct Elf32_Ehdr
 {
     Elf32_Byte e_ident[EI_NIDENT]; ///< ELF file identification bytes
 
-    Elf32_Half e_type;             ///< ELF file type
-    Elf32_Half e_machine;          ///< Instruction set architecture. For valid values, see https://en.wikipedia.org/wiki/Executable_and_Linkable_Format
-    Elf32_Word e_version;          ///< See above.
-    Elf32_Addr e_entry;            ///< Address of the entry point.
-    Elf32_Off  e_phoff;            ///< Offset of the Program Header table.
-    Elf32_Off  e_shoff;            ///< Offset of the Section Header table.
-    Elf32_Word e_flags;            ///< architecture specific flags.
-    Elf32_Half e_ehsize;           ///< Size of this header. Normally 64 bytes.
-    Elf32_Half e_phentsize;        ///< Size of an entry in the Program Header table.
-    Elf32_Half e_phnum;            ///< Number of entries in the Program Header table.
-    Elf32_Half e_shentsize;        ///< Size of an entry in the Section Header table.
-    Elf32_Half e_shnum;            ///< Number of entries in the Section Header table.
-    Elf32_Half e_shstrndx;         ///< The index of the entry in the Section Header Table containing the section names.
+    Elf32_Half e_type;      ///< ELF file type
+    Elf32_Half e_machine;   ///< Instruction set architecture.
+    Elf32_Word e_version;   ///< See above.
+    Elf32_Addr e_entry;     ///< Address of the entry point.
+    Elf32_Off e_phoff;      ///< Offset of the Program Header table.
+    Elf32_Off e_shoff;      ///< Offset of the Section Header table.
+    Elf32_Word e_flags;     ///< architecture specific flags.
+    Elf32_Half e_ehsize;    ///< Size of this header. Normally 64 bytes.
+    Elf32_Half e_phentsize; ///< Size of an entry in the Program Header table.
+    Elf32_Half e_phnum;     ///< Number of entries in the Program Header table.
+    Elf32_Half e_shentsize; ///< Size of an entry in the Section Header table.
+    Elf32_Half e_shnum;     ///< Number of entries in the Section Header table.
+
+    /// The index of the entry in the Section Header Table containing the section names.
+    Elf32_Half e_shstrndx;
 };
 
 struct Elf64_Ehdr
@@ -62,8 +64,8 @@ struct Elf64_Ehdr
     Elf64_Half e_machine;
     Elf64_Word e_version;
     Elf64_Addr e_entry;
-    Elf64_Off  e_phoff;
-    Elf64_Off  e_shoff;
+    Elf64_Off e_phoff;
+    Elf64_Off e_shoff;
     Elf64_Word e_flags;
     Elf64_Half e_ehsize;
     Elf64_Half e_phentsize;
@@ -74,7 +76,7 @@ struct Elf64_Ehdr
 };
 #pragma pack(pop)
 
-
+// clang-format off
 #define EI_MAGO              0
 #define EI_MAG1              1
 #define EI_MAG2              2
@@ -166,34 +168,35 @@ struct Elf64_Ehdr
 #define SHN_COMMON           0xfff2
 #define SHN_XINDEX           0xffff
 #define SHN_HIRESERVE        0xffff
+// clang-format on
 
 
 #pragma pack(push, 1)
 struct Elf32_Shdr
 {
-    Elf32_Word sh_name;         ///< section name.
-    Elf32_Word sh_type;         ///< section type. See SHT_* values.
-    Elf32_Word sh_flags;        ///< section flags See SHF_* values.
-    Elf32_Addr sh_addr;         ///< section base address in memory.
-    Elf32_Off  sh_offset;       ///< byte offset of the section data from the beginning of the file
-    Elf32_Word sh_size;         ///< section data size in bytes.
-    Elf32_Word sh_link;         ///< Interpretation depends on the section type.
-    Elf32_Word sh_info;         ///< Extra information; Interpretation depends on section type.
-    Elf32_Word sh_addralign;    ///< Force alignment to x bytes; 0 = no alignment
-    Elf32_Word sh_entsize;      ///< Entry size for fixed-entrysize tables (symbol tables etc.)
+    Elf32_Word sh_name;      ///< section name.
+    Elf32_Word sh_type;      ///< section type. See SHT_* values.
+    Elf32_Word sh_flags;     ///< section flags See SHF_* values.
+    Elf32_Addr sh_addr;      ///< section base address in memory.
+    Elf32_Off sh_offset;     ///< byte offset of the section data from the beginning of the file
+    Elf32_Word sh_size;      ///< section data size in bytes.
+    Elf32_Word sh_link;      ///< Interpretation depends on the section type.
+    Elf32_Word sh_info;      ///< Extra information; Interpretation depends on section type.
+    Elf32_Word sh_addralign; ///< Force alignment to x bytes; 0 = no alignment
+    Elf32_Word sh_entsize;   ///< Entry size for fixed-entrysize tables (symbol tables etc.)
 };
 
 
 struct Elf64_Shdr
 {
-    Elf64_Word  sh_name;
-    Elf64_Word  sh_type;
+    Elf64_Word sh_name;
+    Elf64_Word sh_type;
     Elf64_Xword sh_flags;
-    Elf64_Addr  sh_addr;
-    Elf64_Off   sh_offset;
+    Elf64_Addr sh_addr;
+    Elf64_Off sh_offset;
     Elf64_Xword sh_size;
-    Elf64_Word  sh_link;
-    Elf64_Word  sh_info;
+    Elf64_Word sh_link;
+    Elf64_Word sh_info;
     Elf64_Xword sh_addralign;
     Elf64_Xword sh_entsize;
 };
@@ -205,16 +208,16 @@ enum ElfSectionTypes
 {
     SHT_NULL           = 0,
     SHT_PROGBITS       = 1,
-    SHT_SYMTAB         = 2,   ///< Symbol table
+    SHT_SYMTAB         = 2, ///< Symbol table
     SHT_STRTAB         = 3,
-    SHT_RELA           = 4,   ///< Relocation table (with addend, e.g. RISC)
+    SHT_RELA           = 4, ///< Relocation table (with addend, e.g. RISC)
     SHT_HASH           = 5,
     SHT_DYNAMIC        = 6,
     SHT_NOTE           = 7,
-    SHT_NOBITS         = 8,   ///< Bss
-    SHT_REL            = 9,   ///< Relocation table (no addend)
+    SHT_NOBITS         = 8, ///< Bss
+    SHT_REL            = 9, ///< Relocation table (no addend)
     SHT_SHLIB          = 10,
-    SHT_DYNSYM         = 11,  ///< Dynamic symbol table
+    SHT_DYNSYM         = 11, ///< Dynamic symbol table
     SHT_INIT_ARRAY     = 14,
     SHT_FINI_ARRAY     = 15,
     SHT_PREINIT_ARRAY  = 16,
@@ -249,7 +252,7 @@ enum ElfSectionTypes
     SHT_HIUSER         = 0xffffffff
 };
 
-
+// clang-format off
 // sh_flags
 #define SHF_WRITE               (1 << 0) ///< Writeable
 #define SHF_ALLOC               (1 << 1) ///< Consumes memory in exe
@@ -273,7 +276,7 @@ enum ElfSectionTypes
 #define ELF64_C_SYM(info)         ((info) >> 32)
 #define ELF64_C_GROUP(info)       ((Elf64_Word)(info))
 #define ELF64_C_INFO(sym, grp)    (((Elf64_Xword)(sym) << 32) + (Elf64_Xword)
-
+// clang-format on
 
 #pragma pack(push, 1)
 // Relocation
@@ -285,26 +288,26 @@ struct Elf32_Rel
 
 struct Elf32_Rela
 {
-    Elf32_Addr  r_offset;
-    Elf32_Word  r_info;
+    Elf32_Addr r_offset;
+    Elf32_Word r_info;
     Elf32_Sword r_addend;
 };
 
 struct Elf64_Rel
 {
-    Elf64_Addr  r_offset;
+    Elf64_Addr r_offset;
     Elf64_Xword r_info;
 };
 
 struct Elf64_Rela
 {
-    Elf64_Addr   r_offset;
-    Elf64_Xword  r_info;
+    Elf64_Addr r_offset;
+    Elf64_Xword r_info;
     Elf64_Sxword r_addend;
 };
 #pragma pack(pop)
 
-
+// clang-format off
 #define ELF32_R_SYM(info)                ((info) >> 8)
 #define ELF32_R_TYPE(info)               (static_cast<unsigned char>(info))
 #define ELF32_R_INFO(sym, type)          (((sym) << 8) + (unsigned char)(type))
@@ -454,6 +457,7 @@ struct Elf64_Rela
 #define R_SPARC_UA64                54 ///< V-xword64  S + A
 #define R_SPARC_H34                 85 ///< V-imm22    (S + A) >> 12
 #define R_SPARC_SIZE64              87 ///< V-xword64  Z + A
+// clang-format on
 
 
 #pragma pack(push, 1)
@@ -462,7 +466,7 @@ struct Elf64_Rela
 struct Elf32_Phdr
 {
     Elf32_Word p_type;   /* entry type */
-    Elf32_Off  p_offset; /* file offset */
+    Elf32_Off p_offset;  /* file offset */
     Elf32_Addr p_vaddr;  /* virtual address */
     Elf32_Addr p_paddr;  /* physical address */
     Elf32_Word p_filesz; /* file size */
@@ -473,18 +477,18 @@ struct Elf32_Phdr
 
 struct Elf64_Phdr
 {
-    Elf64_Word  p_type;
-    Elf64_Word  p_flags;
-    Elf64_Off   p_offset;
-    Elf64_Addr  p_vaddr;
-    Elf64_Addr  p_paddr;
+    Elf64_Word p_type;
+    Elf64_Word p_flags;
+    Elf64_Off p_offset;
+    Elf64_Addr p_vaddr;
+    Elf64_Addr p_paddr;
     Elf64_Xword p_filesz;
     Elf64_Xword p_memsz;
     Elf64_Xword p_align;
 };
 #pragma pack(pop)
 
-
+// clang-format off
 // p_type
 #define PT_NULL             0
 #define PT_LOAD             1
@@ -512,10 +516,10 @@ struct Elf64_Phdr
 #define PF_W                0x2 ///< Write
 #define PF_R                0x4 ///< Read
 #define PF_MASKPROC         0xf0000000
-
+// clang-format on
 
 // ELF symbols
-#pragma pack(push,1)
+#pragma pack(push, 1)
 struct Elf32_Sym
 {
     Elf32_Word st_name;
@@ -528,16 +532,16 @@ struct Elf32_Sym
 
 struct Elf64_Sym
 {
-    Elf64_Word  st_name;
-    Elf64_Byte  st_info;
-    Elf64_Byte  st_other;
-    Elf64_Half  st_shndx;
-    Elf64_Addr  st_value;
+    Elf64_Word st_name;
+    Elf64_Byte st_info;
+    Elf64_Byte st_other;
+    Elf64_Half st_shndx;
+    Elf64_Addr st_value;
     Elf64_Xword st_size;
 };
 #pragma pack(pop)
 
-
+// clang-format off
 #define ELF32_ST_BIND(info)          static_cast<ElfSymBinding>((info) >> 4)
 #define ELF32_ST_TYPE(info)          static_cast<ElfSymType>((info) & 0xf)
 #define ELF32_ST_INFO(bind, type)    (((bind) << 4) + ((type) & 0xf))
@@ -547,7 +551,7 @@ struct Elf64_Sym
 
 #define ELF32_ST_VISIBILITY(o)       static_cast<ElfSymVisibility>((o) & 0x3)
 #define ELF64_ST_VISIBILITY(o)       static_cast<ElfSymVisibility>((o) & 0x3)
-
+// clang-format on
 
 enum ElfSymBinding
 {
@@ -598,7 +602,7 @@ struct Elf32_Dyn
     {
         Elf32_Word d_val;
         Elf32_Addr d_ptr;
-        Elf32_Off  d_off;
+        Elf32_Off d_off;
     } d_un;
 };
 
@@ -608,12 +612,12 @@ struct Elf64_Dyn
     union
     {
         Elf64_Xword d_val;
-        Elf64_Addr  d_ptr;
+        Elf64_Addr d_ptr;
     } d_un;
 };
 #pragma pack(pop)
 
-
+// clang-format off
 // Tag values
 #define DT_NULL                0 ///< Last entry in list
 #define DT_NEEDED              1 ///< A needed link-type object
@@ -700,3 +704,4 @@ struct Elf64_Dyn
 #define DT_USED                0x7ffffffe
 #define DT_FILTER              0x7fffffff
 #define DT_HIPROC              0x7fffffff
+// clang-format on

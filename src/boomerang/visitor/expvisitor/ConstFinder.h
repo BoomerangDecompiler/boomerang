@@ -21,16 +21,16 @@
 class ConstFinder : public ExpVisitor
 {
 public:
-    ConstFinder(std::list<std::shared_ptr<Const> >& results);
+    ConstFinder(std::list<std::shared_ptr<Const>> &results);
     virtual ~ConstFinder() = default;
 
 public:
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    virtual bool preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    virtual bool visit(const std::shared_ptr<Const>& exp) override;
+    virtual bool visit(const std::shared_ptr<Const> &exp) override;
 
 private:
-    std::list<std::shared_ptr<Const> >& m_constList;
+    std::list<std::shared_ptr<Const>> &m_constList;
 };

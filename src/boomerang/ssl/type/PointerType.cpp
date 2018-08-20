@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "PointerType.h"
 
-
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
@@ -23,8 +22,7 @@ PointerType::PointerType(SharedType p)
 
 
 PointerType::~PointerType()
-{
-}
+{}
 
 
 void PointerType::setPointsTo(SharedType p)
@@ -62,7 +60,7 @@ void PointerType::setSize(size_t sz)
 
 static int pointerCompareNest = 0;
 
-bool PointerType::operator==(const Type& other) const
+bool PointerType::operator==(const Type &other) const
 {
     if (!other.isPointer()) {
         return false;
@@ -79,7 +77,7 @@ bool PointerType::operator==(const Type& other) const
 }
 
 
-bool PointerType::operator<(const Type& other) const
+bool PointerType::operator<(const Type &other) const
 {
     if (id != other.getId()) {
         return false;
@@ -97,7 +95,7 @@ bool PointerType::isVoidPointer() const
 
 int PointerType::getPointerDepth() const
 {
-    int  d  = 1;
+    int d   = 1;
     auto pt = points_to;
 
     while (pt->isPointer()) {
@@ -136,7 +134,7 @@ QString PointerType::getCtype(bool final) const
 }
 
 
-SharedType PointerType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType PointerType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<PointerType *>(this)->shared_from_this();
@@ -147,7 +145,8 @@ SharedType PointerType::meetWith(SharedType other, bool& changed, bool useHighes
     }
 
     if (!other->resolvesToPointer()) {
-        // Would be good to understand class hierarchies, so we know if a* is the same as b* when b is a subclass of a
+        // Would be good to understand class hierarchies, so we know if a* is the same as b* when b
+        // is a subclass of a
         return createUnion(other, changed, useHighestPtr);
     }
 
@@ -184,11 +183,13 @@ SharedType PointerType::meetWith(SharedType other, bool& changed, bool useHighes
 
     // See if the base types will meet
     if (otherBase->resolvesToPointer()) {
-        if (thisBase->resolvesToPointer() && (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
+        if (thisBase->resolvesToPointer() &&
+            (thisBase->as<PointerType>()->getPointsTo() == thisBase)) {
             LOG_VERBOSE("HACK! BAD POINTER 1");
         }
 
-        if (otherBase->resolvesToPointer() && (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
+        if (otherBase->resolvesToPointer() &&
+            (otherBase->as<PointerType>()->getPointsTo() == otherBase)) {
             LOG_VERBOSE("HACK! BAD POINTER 2");
         }
 
@@ -221,7 +222,7 @@ SharedType PointerType::meetWith(SharedType other, bool& changed, bool useHighes
 }
 
 
-bool PointerType::isCompatible(const Type& other, bool /*all*/) const
+bool PointerType::isCompatible(const Type &other, bool /*all*/) const
 {
     if (other.resolvesToVoid()) {
         return true;

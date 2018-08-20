@@ -22,12 +22,10 @@ public:
 
 public:
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    virtual bool preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 
     int getDepth() { return depth; }
 
 private:
     int depth;
 };
-
-

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ExpRegMapper.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/RefExp.h"
 
@@ -21,7 +20,7 @@ ExpRegMapper::ExpRegMapper(UserProc *p)
 }
 
 
-bool ExpRegMapper::preVisit(const std::shared_ptr<RefExp>& e, bool& visitChildren)
+bool ExpRegMapper::preVisit(const std::shared_ptr<RefExp> &e, bool &visitChildren)
 {
     SharedExp base = e->getSubExp1();
 

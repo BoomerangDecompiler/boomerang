@@ -20,7 +20,7 @@ class Project;
 enum class CommandStatus
 {
     Success      = 0,
-    AsyncSuccess = 1,  ///< Command started asynchronously
+    AsyncSuccess = 1, ///< Command started asynchronously
     ExitProgram  = 2,
     Failure      = -1, ///< Generic error
     ParseError   = -2
@@ -57,10 +57,10 @@ public:
     ~Console() = default;
 
 public:
-    CommandStatus handleCommand(const QString& command);
+    CommandStatus handleCommand(const QString &command);
 
     /// Execute the commands in \p file line by line
-    CommandStatus replayFile(const QString& file);
+    CommandStatus replayFile(const QString &file);
 
     bool commandSucceeded(CommandStatus status)
     {
@@ -72,26 +72,26 @@ private:
      * Split \p commandWithArgs into \p command and \p args.
      * \returns Success or ParseError
      */
-    CommandStatus splitCommand(const QString& commandWithArgs, QString& command, QStringList& args);
+    CommandStatus splitCommand(const QString &commandWithArgs, QString &command, QStringList &args);
 
-    CommandType commandNameToType(const QString& command);
+    CommandType commandNameToType(const QString &command);
 
-    CommandStatus processCommand(const QString& command, const QStringList& args);
+    CommandStatus processCommand(const QString &command, const QStringList &args);
 
 private:
-    CommandStatus handleDecode(const QStringList& args);
-    CommandStatus handleDecompile(const QStringList& args);
-    CommandStatus handleCodegen(const QStringList& args);
-    CommandStatus handleReplay(const QStringList& args);
-    CommandStatus handleMove(const QStringList& args);
-    CommandStatus handleAdd(const QStringList& args);
-    CommandStatus handleDelete(const QStringList& args);
-    CommandStatus handleRename(const QStringList& args);
-    CommandStatus handleInfo(const QStringList& args);
-    CommandStatus handlePrint(const QStringList& args);
+    CommandStatus handleDecode(const QStringList &args);
+    CommandStatus handleDecompile(const QStringList &args);
+    CommandStatus handleCodegen(const QStringList &args);
+    CommandStatus handleReplay(const QStringList &args);
+    CommandStatus handleMove(const QStringList &args);
+    CommandStatus handleAdd(const QStringList &args);
+    CommandStatus handleDelete(const QStringList &args);
+    CommandStatus handleRename(const QStringList &args);
+    CommandStatus handleInfo(const QStringList &args);
+    CommandStatus handlePrint(const QStringList &args);
 
-    CommandStatus handleExit(const QStringList& args);
-    CommandStatus handleHelp(const QStringList& args);
+    CommandStatus handleExit(const QStringList &args);
+    CommandStatus handleHelp(const QStringList &args);
 
 private:
     QMap<QString, CommandType> m_commandTypes;

@@ -9,19 +9,17 @@
 #pragma endregion License
 #include "CallBypasser.h"
 
-
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 
 
-CallBypasser::CallBypasser(Statement* enclosing)
+CallBypasser::CallBypasser(Statement *enclosing)
     : m_enclosingStmt(enclosing)
-{
-}
+{}
 
 
-SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp>& exp)
+SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp> &exp)
 {
     // If child was modified, simplify now
     SharedExp ret = exp;
@@ -31,8 +29,9 @@ SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp>& exp)
     }
 
     m_mask >>= 1;
-    // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and avoids a cast
-    Statement     *def  = exp->getDef();
+    // Note: r (the pointer) will always == ret (also the pointer) here, so the below is safe and
+    // avoids a cast
+    Statement *def      = exp->getDef();
     CallStatement *call = dynamic_cast<CallStatement *>(def);
 
     if (call) {
@@ -57,7 +56,7 @@ SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp>& exp)
 }
 
 
-SharedExp CallBypasser::postModify(const std::shared_ptr<Location>& exp)
+SharedExp CallBypasser::postModify(const std::shared_ptr<Location> &exp)
 {
     // Hack to preserve a[m[x]]. Can likely go when ad hoc TA goes.
     bool isAddrOfMem = exp->isAddrOf() && exp->getSubExp1()->isMemOf();

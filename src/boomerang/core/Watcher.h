@@ -22,7 +22,7 @@ class UserProc;
 class BOOMERANG_API IWatcher
 {
 public:
-    IWatcher() = default;
+    IWatcher()          = default;
     virtual ~IWatcher() = default;
 
 public:

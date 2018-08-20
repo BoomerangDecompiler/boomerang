@@ -25,19 +25,19 @@
  */
 
 
-typedef struct  /* exe file header, just the signature really */
+typedef struct /* exe file header, just the signature really */
 {
     Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
     Byte sigHi;
 } Header;
 
-#pragma pack(push,1)
+#pragma pack(push, 1)
 
 /// IMAGE_OPTIONAL_HEADER on Windows
 typedef struct
 {
-    Byte  sigLo;
-    Byte  sigHi;
+    Byte sigLo;
+    Byte sigHi;
     SWord sigver;
     SWord cputype;       ///< Machine
     SWord numObjects;    ///< number of sections
@@ -47,8 +47,8 @@ typedef struct
     SWord NtHdrSize;     ///< Size of the optional header
     SWord Flags;         ///< Characteristics
     SWord Reserved3;     ///< Magic number
-    Byte  LMajor;        ///< Linker version major
-    Byte  LMinor;        ///< Linker version minor
+    Byte LMajor;         ///< Linker version major
+    Byte LMinor;         ///< Linker version minor
     DWord Reserved4;     ///< SizeOfCode (sum of all sections)
     DWord Reserved5;     ///< Size of initialized data
     DWord Reserved6;     ///< Size of uninitialized data
@@ -106,7 +106,7 @@ typedef struct
 /// The real Win32 name of this struct is IMAGE_SECTION_HEADER
 typedef struct
 {
-    char  ObjectName[8];  // Name
+    char ObjectName[8]; // Name
     DWord VirtualSize;
     DWord RVA;            // VirtualAddress
     DWord PhysicalSize;   // SizeOfRawData
@@ -122,10 +122,10 @@ typedef struct
     DWord originalFirstThunk; // 0 for end of array; also ptr to hintNameArray
     DWord preSnapDate;        // Time and date the import data was pre-snapped
     // or zero if not pre-snapped
-    SWord verMajor;           // Major version number of dll being ref'd
-    SWord verMinor;           // Minor "         "
-    DWord name;               // RVA of dll name (ascii)
-    DWord firstThunk;         // RVA of start of import address table (IAT)
+    SWord verMajor;   // Major version number of dll being ref'd
+    SWord verMinor;   // Minor "         "
+    DWord name;       // RVA of dll name (ascii)
+    DWord firstThunk; // RVA of start of import address table (IAT)
 } PEImportDtor;
 
 typedef struct
@@ -137,7 +137,8 @@ typedef struct
     DWord name;          // RVA of the ascii string containing the name of the DLL
     DWord base;          // Starting ordinal number for exports in this image. Usually set to 1.
     DWord numEatEntries; // Number of entries in EAT (Export ADdress Table)
-    DWord numNptEntries; // Number of entries in NPT (Name Pointer Table) (also #entries in the Ordinal Table)
+    DWord numNptEntries; // Number of entries in NPT (Name Pointer Table) (also #entries in the
+                         // Ordinal Table)
     DWord eatRVA;        // RVA of the EAT
     DWord nptRVA;        // RVA of the NPT
     DWord otRVA;         // RVA of the OT
@@ -160,10 +161,10 @@ public:
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
-    int canLoad(QIODevice& fl) const override;
+    int canLoad(QIODevice &fl) const override;
 
     /// \copydoc IFileLoader::loadFromMemory
-    bool loadFromMemory(QByteArray& arr) override;
+    bool loadFromMemory(QByteArray &arr) override;
 
     /// \copydoc IFileLoader::unload
     void unload() override;
@@ -213,12 +214,12 @@ private:
     void findJumps(Address curr);
 
 private:
-    char *m_image;                  ///< Beginning of the loaded image
-    int m_imageSize;                ///< Size of image, in bytes
+    char *m_image;   ///< Beginning of the loaded image
+    int m_imageSize; ///< Size of image, in bytes
 
-    Header *m_header;              ///< Pointer to header
-    PEHeader *m_peHeader;          ///< Pointer to pe header
-    int m_numRelocs;                ///< Number of relocation entries
+    Header *m_header;     ///< Pointer to header
+    PEHeader *m_peHeader; ///< Pointer to pe header
+    int m_numRelocs;      ///< Number of relocation entries
     bool m_hasDebugInfo;
     bool m_mingwMain;
 

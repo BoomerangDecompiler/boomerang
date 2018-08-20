@@ -22,5 +22,5 @@ using SharedType = std::shared_ptr<class Type>;
 
 namespace DebugInfo
 {
-    SharedType typeFromDebugInfo(const QString& name, Address addr);
+SharedType typeFromDebugInfo(const QString &name, Address addr);
 }

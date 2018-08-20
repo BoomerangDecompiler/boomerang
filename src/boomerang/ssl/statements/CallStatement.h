@@ -31,13 +31,13 @@ class BOOMERANG_API CallStatement : public GotoStatement
 {
 public:
     CallStatement();
-    CallStatement(const CallStatement& other) = default;
-    CallStatement(CallStatement&& other) = default;
+    CallStatement(const CallStatement &other) = default;
+    CallStatement(CallStatement &&other)      = default;
 
     virtual ~CallStatement() override;
 
-    CallStatement& operator=(const CallStatement& other) = default;
-    CallStatement& operator=(CallStatement&& other) = default;
+    CallStatement &operator=(const CallStatement &other) = default;
+    CallStatement &operator=(CallStatement &&other) = default;
 
 public:
     /// \copydoc GotoStatement::clone
@@ -61,15 +61,15 @@ public:
     /// Set the arguments of this call. Takes ownership of the statements
     /// in \p args.
     /// \param args The list of locations to set the arguments to (for testing)
-    void setArguments(const StatementList& args);
+    void setArguments(const StatementList &args);
 
     /// Set the arguments of this call based on signature info
     /// \note Should only be called for calls to library functions
     void setSigArguments();
 
     /// Return call's arguments
-    StatementList& getArguments() { return m_arguments; }
-    const StatementList& getArguments() const { return m_arguments; }
+    StatementList &getArguments() { return m_arguments; }
+    const StatementList &getArguments() const { return m_arguments; }
 
     /// Update the arguments based on a callee change
     void updateArguments(bool experimental);
@@ -81,8 +81,8 @@ public:
     void addDefine(ImplicitAssign *as);
 
     // Calculate results(this) = defines(this) intersect live(this)
-    // Note: could use a LocationList for this, but then there is nowhere to store the types (for DFA based TA)
-    // So the RHS is just ignored
+    // Note: could use a LocationList for this, but then there is nowhere to store the types (for
+    // DFA based TA) So the RHS is just ignored
     std::unique_ptr<StatementList> calcResults(); // Calculate defines(this) isect live(this)
 
     ReturnStatement *getCalleeReturn() { return m_calleeReturn; }
@@ -91,15 +91,19 @@ public:
     SharedExp getProven(SharedExp e);
 
     std::shared_ptr<Signature> getSignature() { return m_signature; }
-    void setSignature(std::shared_ptr<Signature> sig) { m_signature = sig; } ///< Only used by range analysis
+    void setSignature(std::shared_ptr<Signature> sig)
+    {
+        m_signature = sig;
+    } ///< Only used by range analysis
 
     /// Localise the various components of expression e with reaching definitions to this call
     /// Note: can change e so usually need to clone the argument
     /// Was called substituteParams
     ///
     /// Substitute the various components of expression e with the appropriate reaching definitions.
-    /// Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are replaced with their proven
-    /// values, which are in terms of the initial values at the start of the call (reaching definitions at the call)
+    /// Used in e.g. fixCallBypass (via the CallBypasser). Locations defined in this call are
+    /// replaced with their proven values, which are in terms of the initial values at the start of
+    /// the call (reaching definitions at the call)
     SharedExp localiseExp(SharedExp e);
 
     /// Localise only components of e, i.e. xxx if e is m[xxx]
@@ -107,7 +111,7 @@ public:
 
     // Do the call bypass logic e.g. r28{20} -> r28{17} + 4 (where 20 is this CallStatement)
     // Set ch if changed (bypassed)
-    SharedExp bypassRef(const std::shared_ptr<RefExp>& r, bool& changed);
+    SharedExp bypassRef(const std::shared_ptr<RefExp> &r, bool &changed);
 
     void clearUseCollector() { m_useCol.clear(); }
 
@@ -126,16 +130,16 @@ public:
     void eliminateDuplicateArgs();
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// \copydoc GotoStatement::search
-    virtual bool search(const Exp& search, SharedExp& result) const override;
+    virtual bool search(const Exp &search, SharedExp &result) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc GotoStatement::search
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /**
      * Sets a bit that says that this call is effectively followed by a return.
@@ -162,10 +166,10 @@ public:
     virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
 
     /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp& exp) const override;
+    virtual bool usesExp(const Exp &exp) const override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& defs, bool assumeABICompliance) const override;
+    virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override; // True if this Statement defines loc
@@ -180,7 +184,9 @@ public:
     virtual SharedType getTypeFor(SharedExp e) override;
 
     /// \copydoc Statement::setTypeFor
-    virtual void setTypeFor(SharedExp e, SharedType ty) override;  // Set the type for this location, defined in this statement
+    virtual void
+    setTypeFor(SharedExp e,
+               SharedType ty) override; // Set the type for this location, defined in this statement
 
     /// \returns pointer to the def collector object
     const DefCollector *getDefCollector() const { return &m_defCol; }
@@ -201,14 +207,14 @@ public:
     void removeAllLive() { m_useCol.clear(); }
 
     /// Get list of locations defined by this call
-    const StatementList& getDefines() const { return m_defines; }
-    StatementList& getDefines() { return m_defines; }
+    const StatementList &getDefines() const { return m_defines; }
+    StatementList &getDefines() { return m_defines; }
 
-    void setDefines(const StatementList& defines);
+    void setDefines(const StatementList &defines);
 
-    /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the number of
-    /// parameters if needed, and return true if any signature parameters added
-    /// This function has two jobs. One is to truncate the list of arguments based on the format string.
+    /// Process this call for ellipsis parameters. If found, in a printf/scanf call, truncate the
+    /// number of parameters if needed, and return true if any signature parameters added This
+    /// function has two jobs. One is to truncate the list of arguments based on the format string.
     /// The second is to add parameter types to the signature.
     /// If -Td is used, type analysis will be rerun with these changes.
     bool ellipsisProcessing(Prog *prog);
@@ -232,17 +238,19 @@ private:
     /// Make an assign suitable for use as an argument from a callee context expression
     Assign *makeArgAssign(SharedType ty, SharedExp e);
 
-    bool objcSpecificProcessing(const QString& formatStr);
+    bool objcSpecificProcessing(const QString &formatStr);
 
 private:
     bool m_returnAfterCall = false; // True if call is effectively followed by a return.
 
-    /// The list of arguments passed by this call, actually a list of Assign statements (location := expr)
+    /// The list of arguments passed by this call, actually a list of Assign statements (location :=
+    /// expr)
     StatementList m_arguments;
 
     /// The list of defines for this call, a list of ImplicitAssigns (used to be called returns).
-    /// Essentially a localised copy of the modifies of the callee, so the callee could be deleted. Stores types and
-    /// locations.  Note that not necessarily all of the defines end up being declared as results.
+    /// Essentially a localised copy of the modifies of the callee, so the callee could be deleted.
+    /// Stores types and locations.  Note that not necessarily all of the defines end up being
+    /// declared as results.
     StatementList m_defines;
 
     /// Destination of call. In the case of an analysed indirect call,

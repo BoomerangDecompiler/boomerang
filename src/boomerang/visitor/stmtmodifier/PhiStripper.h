@@ -29,7 +29,7 @@ public:
     bool getDelete() const { return m_del; }
 
     /// \copydoc StmtModifier::visit
-    virtual void visit(PhiAssign *stmt, bool& visitChildren) override;
+    virtual void visit(PhiAssign *stmt, bool &visitChildren) override;
 
 private:
     bool m_del; ///< Set true if this statment is to be deleted

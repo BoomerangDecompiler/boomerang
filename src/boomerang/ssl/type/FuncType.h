@@ -19,25 +19,28 @@ class Signature;
 class BOOMERANG_API FuncType : public Type
 {
 public:
-    FuncType(const std::shared_ptr<Signature>& sig = nullptr);
-    FuncType(const FuncType& other) = default;
-    FuncType(FuncType&& other) = default;
+    FuncType(const std::shared_ptr<Signature> &sig = nullptr);
+    FuncType(const FuncType &other) = default;
+    FuncType(FuncType &&other)      = default;
 
     virtual ~FuncType() override;
 
-    FuncType& operator=(const FuncType& other) = default;
-    FuncType& operator=(FuncType&& other) = default;
+    FuncType &operator=(const FuncType &other) = default;
+    FuncType &operator=(FuncType &&other) = default;
 
 public:
-    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature>& sig = nullptr) { return std::make_shared<FuncType>(sig); }
+    static std::shared_ptr<FuncType> get(const std::shared_ptr<Signature> &sig = nullptr)
+    {
+        return std::make_shared<FuncType>(sig);
+    }
     virtual bool isFunc() const override { return true; }
 
     virtual SharedType clone() const override;
-    virtual bool operator==(const Type& other) const override;
-    virtual bool operator<(const Type& other) const override;
+    virtual bool operator==(const Type &other) const override;
+    virtual bool operator<(const Type &other) const override;
 
     Signature *getSignature() { return signature.get(); }
-    void setSignature(std::shared_ptr<Signature>& sig) { signature = sig; }
+    void setSignature(std::shared_ptr<Signature> &sig) { signature = sig; }
 
 
     virtual size_t getSize() const override;
@@ -46,12 +49,12 @@ public:
 
     // Split the C type into return and parameter parts
     // As above, but split into the return and parameter parts
-    void getReturnAndParam(QString& ret, QString& param);
+    void getReturnAndParam(QString &ret, QString &param);
 
     /// \copydoc Type::meetWith
-    virtual SharedType meetWith(SharedType other, bool& changed, bool useHighestPtr) const override;
+    virtual SharedType meetWith(SharedType other, bool &changed, bool useHighestPtr) const override;
 
-    virtual bool isCompatible(const Type& other, bool all) const override;
+    virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
     std::shared_ptr<Signature> signature;

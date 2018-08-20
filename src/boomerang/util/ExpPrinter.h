@@ -22,18 +22,18 @@ class ExpPrinter
 {
 public:
     /// print \p exp to \p os
-    void print(OStream& os, const SharedConstExp& exp) const;
+    void print(OStream &os, const SharedConstExp &exp) const;
 
 private:
     /// print \p exp to \p os
-    void printPlain(OStream& os, const SharedConstExp& exp) const;
+    void printPlain(OStream &os, const SharedConstExp &exp) const;
 
     /// print \p exp to \p os
-    void printHTML(OStream& os, const SharedConstExp& exp) const;
+    void printHTML(OStream &os, const SharedConstExp &exp) const;
 
     /**
      * Given an expression, and an immediate child expression, determine if
      * the child expression needs to be parenthesized or not.
      */
-    bool childNeedsParentheses(const SharedConstExp& exp, const SharedConstExp& child) const;
+    bool childNeedsParentheses(const SharedConstExp &exp, const SharedConstExp &child) const;
 };

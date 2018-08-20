@@ -27,17 +27,17 @@ class PPCDecoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     PPCDecoder(Prog *prog);
-    PPCDecoder(const PPCDecoder& other) = delete;
-    PPCDecoder(PPCDecoder&& other) = default;
+    PPCDecoder(const PPCDecoder &other) = delete;
+    PPCDecoder(PPCDecoder &&other)      = default;
 
     virtual ~PPCDecoder() override = default;
 
-    PPCDecoder& operator=(const PPCDecoder& other) = delete;
-    PPCDecoder& operator=(PPCDecoder&& other) = default;
+    PPCDecoder &operator=(const PPCDecoder &other) = delete;
+    PPCDecoder &operator=(PPCDecoder &&other) = default;
 
 public:
     /// \copydoc NJMCDecoder::decodeInstruction
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 
 private:
     Exp *dis_RegImm(Address pc);

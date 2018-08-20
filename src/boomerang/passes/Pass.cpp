@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "Pass.h"
 
-
 #include <cassert>
 
 
-IPass::IPass(const QString& name, PassID type)
+IPass::IPass(const QString &name, PassID type)
     : m_name(name)
     , m_type(type)
 {

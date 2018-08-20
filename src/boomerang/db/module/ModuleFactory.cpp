@@ -12,13 +12,13 @@
 #include "boomerang/db/module/Class.h"
 
 
-Module *DefaultModFactory::create(const QString& name, Prog *prog) const
+Module *DefaultModFactory::create(const QString &name, Prog *prog) const
 {
     return new Module(name, prog);
 }
 
 
-Module *ClassModFactory::create(const QString& name, Prog *prog) const
+Module *ClassModFactory::create(const QString &name, Prog *prog) const
 {
     return new Class(name, prog);
 }

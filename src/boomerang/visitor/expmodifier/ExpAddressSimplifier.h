@@ -25,8 +25,8 @@ class ExpAddressSimplifier : public ExpModifier
 {
 public:
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Unary> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 };

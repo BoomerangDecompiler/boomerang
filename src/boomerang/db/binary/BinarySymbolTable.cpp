@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "BinarySymbolTable.h"
 
-
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/util/log/Log.h"
 
@@ -17,8 +16,7 @@
 
 
 BinarySymbolTable::BinarySymbolTable()
-{
-}
+{}
 
 
 BinarySymbolTable::~BinarySymbolTable()
@@ -35,7 +33,7 @@ void BinarySymbolTable::clear()
 }
 
 
-BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString& name, bool local)
+BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString &name, bool local)
 {
     if (m_addrIndex.find(addr) != m_addrIndex.end()) {
         return nullptr; // symbol already exists
@@ -47,12 +45,12 @@ BinarySymbol *BinarySymbolTable::createSymbol(Address addr, const QString& name,
     if (it != m_nameIndex.end()) {
         LOG_WARN("Symbol '%1' already exists in the global symbol table!", name);
         std::shared_ptr<BinarySymbol> existingSymbol = it->second;
-        m_addrIndex[addr] = existingSymbol;
+        m_addrIndex[addr]                            = existingSymbol;
         return existingSymbol.get();
     }
 
     std::shared_ptr<BinarySymbol> sym = std::make_shared<BinarySymbol>(addr, name);
-    m_addrIndex[addr]    = sym;
+    m_addrIndex[addr]                 = sym;
 
     if (!local) {
         m_nameIndex[name] = sym;
@@ -77,21 +75,21 @@ const BinarySymbol *BinarySymbolTable::findSymbolByAddress(Address addr) const
 }
 
 
-BinarySymbol *BinarySymbolTable::findSymbolByName(const QString& name)
+BinarySymbol *BinarySymbolTable::findSymbolByName(const QString &name)
 {
     auto ff = m_nameIndex.find(name);
     return (ff != m_nameIndex.end()) ? ff->second.get() : nullptr;
 }
 
 
-const BinarySymbol *BinarySymbolTable::findSymbolByName(const QString& name) const
+const BinarySymbol *BinarySymbolTable::findSymbolByName(const QString &name) const
 {
     auto ff = m_nameIndex.find(name);
     return (ff != m_nameIndex.end()) ? ff->second.get() : nullptr;
 }
 
 
-bool BinarySymbolTable::renameSymbol(const QString& oldName, const QString& newName)
+bool BinarySymbolTable::renameSymbol(const QString &oldName, const QString &newName)
 {
     if (oldName == newName) {
         return true;
@@ -113,7 +111,7 @@ bool BinarySymbolTable::renameSymbol(const QString& oldName, const QString& newN
 
     std::shared_ptr<BinarySymbol> oldSymbol = oldIt->second;
     m_nameIndex.erase(oldIt);
-    oldSymbol->m_name = newName;
+    oldSymbol->m_name    = newName;
     m_nameIndex[newName] = oldSymbol;
 
     return true;

@@ -17,8 +17,8 @@
 
 
 /**
- * Count the number of times a reference expression is used. Increments the count multiple times if the same reference
- * expression appears multiple times (so can't use UsedLocsFinder for this)
+ * Count the number of times a reference expression is used. Increments the count multiple times if
+ * the same reference expression appears multiple times (so can't use UsedLocsFinder for this)
  */
 class ExpDestCounter : public ExpVisitor
 {
@@ -26,14 +26,13 @@ public:
     typedef std::map<SharedExp, int, lessExpStar> ExpCountMap;
 
 public:
-    ExpDestCounter(ExpCountMap& dc);
+    ExpDestCounter(ExpCountMap &dc);
     virtual ~ExpDestCounter() = default;
 
 public:
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    bool preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
 private:
-    ExpCountMap& m_destCounts;
+    ExpCountMap &m_destCounts;
 };
-

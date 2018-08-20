@@ -33,5 +33,6 @@ public:
     bool execute(UserProc *proc) override;
 
 private:
-    bool renameBlockVars(UserProc *proc, int n, std::map<SharedExp, std::deque<Statement *>, lessExpStar>& stacks);
+    bool renameBlockVars(UserProc *proc, int n,
+                         std::map<SharedExp, std::deque<Statement *>, lessExpStar> &stacks);
 };

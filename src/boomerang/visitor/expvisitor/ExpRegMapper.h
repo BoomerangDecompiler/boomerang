@@ -30,7 +30,7 @@ public:
 
 public:
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    bool preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
 private:
     UserProc *m_proc; ///< Proc object for storing the symbols

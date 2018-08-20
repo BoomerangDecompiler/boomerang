@@ -9,14 +9,12 @@
 #pragma endregion License
 #include "PhiPlacementPass.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 
 
 PhiPlacementPass::PhiPlacementPass()
     : IPass("PhiPlacement", PassID::PhiPlacement)
-{
-}
+{}
 
 
 bool PhiPlacementPass::execute(UserProc *proc)

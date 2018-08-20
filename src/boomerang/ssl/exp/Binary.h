@@ -20,29 +20,31 @@ class BOOMERANG_API Binary : public Unary
 {
 public:
     Binary(OPER op, SharedExp e1, SharedExp e2);
-    Binary(const Binary& other);
-    Binary(Binary&& other) = default;
+    Binary(const Binary &other);
+    Binary(Binary &&other) = default;
 
     virtual ~Binary() override;
 
-    Binary& operator=(const Binary& other) = default;
-    Binary& operator=(Binary&& other) = default;
+    Binary &operator=(const Binary &other) = default;
+    Binary &operator=(Binary &&other) = default;
 
 public:
     /// \copydoc Unary::clone
     virtual SharedExp clone() const override;
 
     static std::shared_ptr<Binary> get(OPER op, SharedExp e1, SharedExp e2)
-    { return std::make_shared<Binary>(op, e1, e2); }
+    {
+        return std::make_shared<Binary>(op, e1, e2);
+    }
 
     /// \copydoc Unary::operator==
-    bool operator==(const Exp& o) const override;
+    bool operator==(const Exp &o) const override;
 
     /// \copydoc Unary::operator<
-    bool operator<(const Exp& o) const override;
+    bool operator<(const Exp &o) const override;
 
     /// \copydoc Unary::operator*=
-    bool operator*=(const Exp& o) const override;
+    bool operator*=(const Exp &o) const override;
 
     /// \copydoc Unary::getArity
     int getArity() const override { return 2; }
@@ -52,7 +54,7 @@ public:
     SharedConstExp getSubExp2() const override;
 
     /// \copydoc Exp::getSubExp2
-    SharedExp& refSubExp2() override;
+    SharedExp &refSubExp2() override;
 
     /// \copydoc Exp::getSubExp2
     void setSubExp2(SharedExp e) override;
@@ -62,13 +64,13 @@ public:
     void commute();
 
     /// \copydoc Unary::doSearchChildren
-    void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
+    void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
     /// \copydoc Unary::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::ascendType
-    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
 
 public:
     /// \copydoc Unary::acceptVisitor
@@ -76,7 +78,7 @@ public:
 
 protected:
     /// \copydoc Unary::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Unary::acceptChildModifier
     virtual SharedExp acceptChildModifier(ExpModifier *mod) override;

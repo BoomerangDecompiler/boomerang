@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "BlockVarRenamePass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -24,8 +23,7 @@
 
 BlockVarRenamePass::BlockVarRenamePass()
     : IPass("BlockVarRename", PassID::BlockVarRename)
-{
-}
+{}
 
 
 static SharedExp defineAll = Terminal::get(opDefineAll); // An expression representing <all>
@@ -38,23 +36,24 @@ static SharedExp defineAll = Terminal::get(opDefineAll); // An expression repres
 
 // Care with the Stacks object (a map from expression to stack);
 // using Stacks[q].empty() can needlessly insert an empty stack
-#define STACKS_EMPTY(q)    (stacks.find(q) == stacks.end() || stacks[q].empty())
+#define STACKS_EMPTY(q) (stacks.find(q) == stacks.end() || stacks[q].empty())
 
 
 // Subscript dataflow variables
-bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedExp, std::deque<Statement *>, lessExpStar>& stacks)
+bool BlockVarRenamePass::renameBlockVars(
+    UserProc *proc, int n, std::map<SharedExp, std::deque<Statement *>, lessExpStar> &stacks)
 {
     if (proc->getCFG()->getNumBBs() == 0) {
         return false;
     }
 
-    bool changed = false;
+    bool changed                   = false;
     const bool assumeABICompliance = proc->getProg()->getProject()->getSettings()->assumeABI;
 
     // For each statement S in block n
     BasicBlock::RTLIterator rit;
     StatementList::iterator sit;
-    BasicBlock              *bb = proc->getDataFlow()->nodeToBB(n);
+    BasicBlock *bb = proc->getDataFlow()->nodeToBB(n);
 
     for (Statement *S = bb->getFirstStmt(rit, sit); S; S = bb->getNextStmt(rit, sit)) {
         {
@@ -71,7 +70,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
                 // A phi statement may use a location defined in a childless call,
                 // in which case its use collector needs updating
-                for (auto& pp : *pa) {
+                for (auto &pp : *pa) {
                     Statement *def = pp.getDef();
 
                     if (def && def->isCall()) {
@@ -79,7 +78,7 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
                     }
                 }
             }
-            else {   // Not a phi assignment
+            else { // Not a phi assignment
                 S->addUsedLocs(locs);
             }
 
@@ -92,14 +91,15 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
                 Statement *def = nullptr;
 
                 if (location->isSubscript()) { // Already subscripted?
-                    // No renaming required, but redo the usage analysis, in case this is a new return, and also because
-                    // we may have just removed all call livenesses
-                    // Update use information in calls, and in the proc (for parameters)
+                    // No renaming required, but redo the usage analysis, in case this is a new
+                    // return, and also because we may have just removed all call livenesses Update
+                    // use information in calls, and in the proc (for parameters)
                     SharedExp base = location->getSubExp1();
-                    def = std::static_pointer_cast<RefExp>(location)->getDef();
+                    def            = std::static_pointer_cast<RefExp>(location)->getDef();
 
                     if (def && def->isCall()) {
-                        // Calls have UseCollectors for locations that are used before definition at the call
+                        // Calls have UseCollectors for locations that are used before definition at
+                        // the call
                         static_cast<CallStatement *>(def)->useBeforeDefine(base->clone());
                         continue;
                     }
@@ -119,9 +119,10 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
                     def = stacks[defineAll].back();
                 }
                 else {
-                    // If the both stacks are empty, use a nullptr definition. This will be changed into a pointer
-                    // to an implicit definition at the start of type analysis, but not until all the m[...]
-                    // have stopped changing their expressions (complicates implicit assignments considerably).
+                    // If the both stacks are empty, use a nullptr definition. This will be changed
+                    // into a pointer to an implicit definition at the start of type analysis, but
+                    // not until all the m[...] have stopped changing their expressions (complicates
+                    // implicit assignments considerably).
                     def = nullptr;
                     // Update the collector at the start of the UserProc
                     proc->markAsInitialParam(location->clone());
@@ -129,7 +130,8 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
 
                 if (def && def->isCall()) {
-                    // Calls have UseCollectors for locations that are used before definition at the call
+                    // Calls have UseCollectors for locations that are used before definition at the
+                    // call
                     static_cast<CallStatement *>(def)->useBeforeDefine(location->clone());
                 }
 
@@ -146,8 +148,8 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
             }
         }
 
-        // MVE: Check for Call and Return Statements; these have DefCollector objects that need to be updated
-        // Do before the below, so CallStatements have not yet processed their defines
+        // MVE: Check for Call and Return Statements; these have DefCollector objects that need to
+        // be updated Do before the below, so CallStatements have not yet processed their defines
         if (S->isCall() || S->isReturn()) {
             DefCollector *col;
 
@@ -187,7 +189,8 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
 
             // FIXME: MVE: do we need this awful hack?
             if (a->getOper() == opLocal) {
-                SharedConstExp a1 = S->getProc()->expFromSymbol(std::static_pointer_cast<Const>(a->getSubExp1())->getStr());
+                SharedConstExp a1 = S->getProc()->expFromSymbol(
+                    std::static_pointer_cast<Const>(a->getSubExp1())->getStr());
                 assert(a1);
 
                 // Stacks already has a definition for a (as just the bare local)
@@ -201,13 +204,13 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
         // But note that only 'everythings' at the current memory level are defined!
         if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless() &&
             !proc->getProg()->getProject()->getSettings()->assumeABI) {
-                // S is a childless call (and we're not assuming ABI compliance)
-                stacks[defineAll];          // Ensure that there is an entry for defineAll
+            // S is a childless call (and we're not assuming ABI compliance)
+            stacks[defineAll]; // Ensure that there is an entry for defineAll
 
-                for (auto& elem : stacks) {
-                    // if (dd->first->isMemDepth(memDepth))
-                    elem.second.push_back(S); // Add a definition for all vars
-                }
+            for (auto &elem : stacks) {
+                // if (dd->first->isMemDepth(memDepth))
+                elem.second.push_back(S); // Add a definition for all vars
+            }
         }
     }
 
@@ -252,10 +255,10 @@ bool BlockVarRenamePass::renameBlockVars(UserProc *proc, int n, std::map<SharedE
     }
 
     // For each statement S in block n
-    // NOTE: Because of the need to pop childless calls from the Stacks, it is important in my algorithm to process the
-    // statments in the BB *backwards*. (It is not important in Appel's algorithm, since he always pushes a definition
-    // for every variable defined on the Stacks).
-    BasicBlock::RTLRIterator              rrit;
+    // NOTE: Because of the need to pop childless calls from the Stacks, it is important in my
+    // algorithm to process the statments in the BB *backwards*. (It is not important in Appel's
+    // algorithm, since he always pushes a definition for every variable defined on the Stacks).
+    BasicBlock::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
     for (Statement *S = bb->getLastStmt(rrit, srit); S; S = bb->getPrevStmt(rrit, srit)) {

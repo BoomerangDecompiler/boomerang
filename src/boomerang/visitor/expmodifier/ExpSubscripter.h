@@ -22,21 +22,21 @@ class Statement;
 class ExpSubscripter : public ExpModifier
 {
 public:
-    ExpSubscripter(const SharedExp& s, Statement *d);
+    ExpSubscripter(const SharedExp &s, Statement *d);
     virtual ~ExpSubscripter() = default;
 
 public:
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<Binary> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    SharedExp preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::preModify
-    SharedExp postModify(const std::shared_ptr<Terminal>& exp) override;
+    SharedExp postModify(const std::shared_ptr<Terminal> &exp) override;
 
 private:
     SharedExp m_search;

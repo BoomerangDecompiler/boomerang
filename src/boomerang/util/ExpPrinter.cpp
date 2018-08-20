@@ -9,15 +9,14 @@
 #pragma endregion License
 #include "ExpPrinter.h"
 
-
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/exp/TypedExp.h"
-#include "boomerang/ssl/type/Type.h"
 #include "boomerang/ssl/statements/Statement.h"
+#include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/OStream.h"
 #include "boomerang/util/log/Log.h"
 
@@ -34,116 +33,117 @@ struct FixSyntax
 
 
 // ordered by OPER value
+// clang-format off
 static const QMap<OPER, FixSyntax> g_syntaxTable = {
-    { opPlus,           { "",           " + ",          "",             ""          } },
-    { opMinus,          { "",           " - ",          "",             ""          } },
-    { opMult,           { "",           " * ",          "",             ""          } },
-    { opDiv,            { "",           " / ",          "",             ""          } },
-    { opFPlus,          { "",           " +f ",         "",             ""          } },
-    { opFMinus,         { "",           " -f ",         "",             ""          } },
-    { opFMult,          { "",           " *f ",         "",             ""          } },
-    { opFDiv,           { "",           " /f ",         "",             ""          } },
-    { opFNeg,           { "",           " -f ",         "",             ""          } },
-    { opMults,          { "",           " *! ",         "",             ""          } },
-    { opDivs,           { "",           " /! ",         "",             ""          } },
-    { opMod,            { "",           " % ",          "",             ""          } },
-    { opMods,           { "",           " %! ",         "",             ""          } },
-    { opNeg,            { "-",          "",             "",             ""          } },
-    { opAnd,            { "",           " and ",        "",             ""          } },
-    { opOr,             { "",           " or ",         "",             ""          } },
-    { opEquals,         { "",           " = ",          "",             ""          } },
-    { opNotEqual,       { "",           " ~= ",         "",             ""          } },
-    { opLess,           { "",           " < ",          "",             ""          } },
-    { opGtr,            { "",           " > ",          "",             ""          } },
-    { opLessEq,         { "",           " <= ",         "",             ""          } },
-    { opGtrEq,          { "",           " >= ",         "",             ""          } },
-    { opLessUns,        { "",           " <u ",         "",             ""          } },
-    { opGtrUns,         { "",           " >u ",         "",             ""          } },
-    { opLessEqUns,      { "",           " <=u ",        "",             ""          } },
-    { opGtrEqUns,       { "",           " >=u ",        "",             ""          } },
-    { opNot,            { "~",          "",             "",             ""          } },
-    { opLNot,           { "L~",         "",             "",             ""          } },
-    { opSignExt,        { "",           "",             "",             "! "        } },
-    { opBitAnd,         { "",           " & ",          "",             ""          } },
-    { opBitOr,          { "",           " | ",          "",             ""          } },
-    { opBitXor,         { "",           " ^ ",          "",             ""          } },
-    { opShiftL,         { "",           " << ",         "",             ""          } },
-    { opShiftR,         { "",           " >> ",         "",             ""          } },
-    { opShiftRA,        { "",           " >>A ",        "",             ""          } },
-    { opRotateL,        { "",           " rl ",         "",             ""          } },
-    { opRotateR,        { "",           " rr ",         "",             ""          } },
-    { opRotateLC,       { "",           " rlc ",        "",             ""          } },
-    { opRotateRC,       { "",           " rrc ",        "",             ""          } },
-    { opExpTable,       { "exptable(",  ", ",           "",             ")"         } },
-    { opNameTable,      { "nametable(", ", ",           "",             ")"         } },
-    { opOpTable,        { "optable(",   ", ",           ", ",           ")"         } },
-    { opSuccessor,      { "succ(",      "",             "",             ")"         } },
-    { opTern,           { "",           " ? ",          " : ",          "",         } },
-    { opAt,             { "",           "@",            ":",            "",         } },
-    { opRegOf,          { "r[",         "",             "",             "]"         } },
-    { opMemOf,          { "m[",         "",             "",             "]"         } },
-    { opAddrOf,         { "a[",         "",             "",             "]"         } },
-    { opWildMemOf,      { "m[wild]",    "",             "",             ""          } },
-    { opWildRegOf,      { "r[wild]",    "",             "",             ""          } },
-    { opWildAddrOf,     { "a[wild]",    "",             "",             ""          } },
-    { opDefineAll,      { "<all>",      "",             "",             ""          } },
-    { opPhi,            { "phi(",       "",             "",             ")"         } },
-    { opArrayIndex,     { "",           "[",            "",             "]"         } },
-    { opMachFtr,        { "machine(",   "",             "",             ")"         } },
-    { opTruncu,         { "truncu(",    ", ",           ", ",           ")"         } },
-    { opTruncs,         { "truncs(",    ", ",           ", ",           ")"         } },
-    { opZfill,          { "zfill(",     ", ",           ", ",           ")"         } },
-    { opSgnEx,          { "sgnex(",     ", ",           ", ",           ")"         } },
-    { opFsize,          { "fsize(",     ", ",           ", ",           ")"         } },
-    { opItof,           { "itof(",      ", ",           ", ",           ")"         } },
-    { opFtoi,           { "ftoi(",      ", ",           ", ",           ")"         } },
-    { opFround,         { "fround(",    ", ",           ", ",           ")"         } },
-    { opFtrunc,         { "ftrunc(",    ", ",           ", ",           ")"         } },
-    { opFabs,           { "fabs(",      "",             "",             ")"         } },
-    { opFpush,          { "FPUSH",      "",             "",             ""          } },
-    { opFpop,           { "FPOP",       "",             "",             ""          } },
-    { opSin,            { "sin(",       "",             "",             ")"         } },
-    { opCos,            { "cos(",       "",             "",             ")"         } },
-    { opTan,            { "tan(",       "",             "",             ")"         } },
-    { opSin,            { "sin(",       "",             "",             ")"         } },
-    { opArcTan,         { "arctan(",    "",             "",             ")"         } },
-    { opLog2,           { "log2(",      "",             "",             ")"         } },
-    { opLog10,          { "log10(",     "",             "",             ")"         } },
-    { opLoge,           { "loge(",      "",             "",             ")"         } },
-    { opPow,            { "",           " pow ",        "",             ")"         } },
-    { opSqrt,           { "sqrt(",      "",             "",             ")"         } },
-    { opExecute,        { "execute(",   "",             "",             ")"         } },
-    { opWildIntConst,   { "WILDINT",    "",             "",             ""          } },
-    { opWildStrConst,   { "WILDSTR",    "",             "",             ""          } },
-    { opPC,             { "%pc",        "",             "",             ""          } },
-    { opAFP,            { "%afp",       "",             "",             ""          } },
-    { opAGP,            { "%agp",       "",             "",             ""          } },
-    { opNil,            { "",           "",             "",             ""          } },
-    { opFlags,          { "%flags",     "",             "",             ""          } },
-    { opFflags,         { "%fflags",    "",             "",             ""          } },
-    { opAnull,          { "%anul",      "",             "",             ""          } },
-    { opTrue,           { "true",       "",             "",             ""          } },
-    { opFalse,          { "false",      "",             "",             ""          } },
-    { opTypeOf,         { "T[",         "",             "",             "]"         } },
-    { opKindOf,         { "K[",         "",             "",             "]"         } },
-    { opInitValueOf,    { "",           "",             "",             "'"         } },
-    { opZF,             { "%ZF",        "",             "",             ""          } },
-    { opCF,             { "%CF",        "",             "",             ""          } },
-    { opNF,             { "%NF",        "",             "",             ""          } },
-    { opOF,             { "%OF",        "",             "",             ""          } },
-    { opDF,             { "%DF",        "",             "",             ""          } },
-    { opFZF,            { "%FZF",       "",             "",             ""          } },
-    { opFLF,            { "%FLF",       "",             "",             ""          } }
+    { opPlus,           { "",           " + ",      "",         ""      } },
+    { opMinus,          { "",           " - ",      "",         ""      } },
+    { opMult,           { "",           " * ",      "",         ""      } },
+    { opDiv,            { "",           " / ",      "",         ""      } },
+    { opFPlus,          { "",           " +f ",     "",         ""      } },
+    { opFMinus,         { "",           " -f ",     "",         ""      } },
+    { opFMult,          { "",           " *f ",     "",         ""      } },
+    { opFDiv,           { "",           " /f ",     "",         ""      } },
+    { opFNeg,           { "",           " -f ",     "",         ""      } },
+    { opMults,          { "",           " *! ",     "",         ""      } },
+    { opDivs,           { "",           " /! ",     "",         ""      } },
+    { opMod,            { "",           " % ",      "",         ""      } },
+    { opMods,           { "",           " %! ",     "",         ""      } },
+    { opNeg,            { "-",          "",         "",         ""      } },
+    { opAnd,            { "",           " and ",    "",         ""      } },
+    { opOr,             { "",           " or ",     "",         ""      } },
+    { opEquals,         { "",           " = ",      "",         ""      } },
+    { opNotEqual,       { "",           " ~= ",     "",         ""      } },
+    { opLess,           { "",           " < ",      "",         ""      } },
+    { opGtr,            { "",           " > ",      "",         ""      } },
+    { opLessEq,         { "",           " <= ",     "",         ""      } },
+    { opGtrEq,          { "",           " >= ",     "",         ""      } },
+    { opLessUns,        { "",           " <u ",     "",         ""      } },
+    { opGtrUns,         { "",           " >u ",     "",         ""      } },
+    { opLessEqUns,      { "",           " <=u ",    "",         ""      } },
+    { opGtrEqUns,       { "",           " >=u ",    "",         ""      } },
+    { opNot,            { "~",          "",         "",         ""      } },
+    { opLNot,           { "L~",         "",         "",         ""      } },
+    { opSignExt,        { "",           "",         "",         "! "    } },
+    { opBitAnd,         { "",           " & ",      "",         ""      } },
+    { opBitOr,          { "",           " | ",      "",         ""      } },
+    { opBitXor,         { "",           " ^ ",      "",         ""      } },
+    { opShiftL,         { "",           " << ",     "",         ""      } },
+    { opShiftR,         { "",           " >> ",     "",         ""      } },
+    { opShiftRA,        { "",           " >>A ",    "",         ""      } },
+    { opRotateL,        { "",           " rl ",     "",         ""      } },
+    { opRotateR,        { "",           " rr ",     "",         ""      } },
+    { opRotateLC,       { "",           " rlc ",    "",         ""      } },
+    { opRotateRC,       { "",           " rrc ",    "",         ""      } },
+    { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
+    { opNameTable,      { "nametable(", ", ",       "",         ")"     } },
+    { opOpTable,        { "optable(",   ", ",       ", ",       ")"     } },
+    { opSuccessor,      { "succ(",      "",         "",         ")"     } },
+    { opTern,           { "",           " ? ",      " : ",      "",     } },
+    { opAt,             { "",           "@",        ":",        ""      } },
+    { opRegOf,          { "r[",         "",         "",         "]"     } },
+    { opMemOf,          { "m[",         "",         "",         "]"     } },
+    { opAddrOf,         { "a[",         "",         "",         "]"     } },
+    { opWildMemOf,      { "m[wild]",    "",         "",         ""      } },
+    { opWildRegOf,      { "r[wild]",    "",         "",         ""      } },
+    { opWildAddrOf,     { "a[wild]",    "",         "",         ""      } },
+    { opDefineAll,      { "<all>",      "",         "",         ""      } },
+    { opPhi,            { "phi(",       "",         "",         ")"     } },
+    { opArrayIndex,     { "",           "[",        "",         "]"     } },
+    { opMachFtr,        { "machine(",   "",         "",         ")"     } },
+    { opTruncu,         { "truncu(",    ", ",       ", ",       ")"     } },
+    { opTruncs,         { "truncs(",    ", ",       ", ",       ")"     } },
+    { opZfill,          { "zfill(",     ", ",       ", ",       ")"     } },
+    { opSgnEx,          { "sgnex(",     ", ",       ", ",       ")"     } },
+    { opFsize,          { "fsize(",     ", ",       ", ",       ")"     } },
+    { opItof,           { "itof(",      ", ",       ", ",       ")"     } },
+    { opFtoi,           { "ftoi(",      ", ",       ", ",       ")"     } },
+    { opFround,         { "fround(",    ", ",       ", ",       ")"     } },
+    { opFtrunc,         { "ftrunc(",    ", ",       ", ",       ")"     } },
+    { opFabs,           { "fabs(",      "",         "",         ")"     } },
+    { opFpush,          { "FPUSH",      "",         "",         ""      } },
+    { opFpop,           { "FPOP",       "",         "",         ""      } },
+    { opSin,            { "sin(",       "",         "",         ")"     } },
+    { opCos,            { "cos(",       "",         "",         ")"     } },
+    { opTan,            { "tan(",       "",         "",         ")"     } },
+    { opSin,            { "sin(",       "",         "",         ")"     } },
+    { opArcTan,         { "arctan(",    "",         "",         ")"     } },
+    { opLog2,           { "log2(",      "",         "",         ")"     } },
+    { opLog10,          { "log10(",     "",         "",         ")"     } },
+    { opLoge,           { "loge(",      "",         "",         ")"     } },
+    { opPow,            { "",           " pow ",    "",         ")"     } },
+    { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
+    { opExecute,        { "execute(",   "",         "",         ")"     } },
+    { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
+    { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
+    { opPC,             { "%pc",        "",         "",         ""      } },
+    { opAFP,            { "%afp",       "",         "",         ""      } },
+    { opAGP,            { "%agp",       "",         "",         ""      } },
+    { opNil,            { "",           "",         "",         ""      } },
+    { opFlags,          { "%flags",     "",         "",         ""      } },
+    { opFflags,         { "%fflags",    "",         "",         ""      } },
+    { opAnull,          { "%anul",      "",         "",         ""      } },
+    { opTrue,           { "true",       "",         "",         ""      } },
+    { opFalse,          { "false",      "",         "",         ""      } },
+    { opTypeOf,         { "T[",         "",         "",         "]"     } },
+    { opKindOf,         { "K[",         "",         "",         "]"     } },
+    { opInitValueOf,    { "",           "",         "",         "'"     } },
+    { opZF,             { "%ZF",        "",         "",         ""      } },
+    { opCF,             { "%CF",        "",         "",         ""      } },
+    { opNF,             { "%NF",        "",         "",         ""      } },
+    { opOF,             { "%OF",        "",         "",         ""      } },
+    { opDF,             { "%DF",        "",         "",         ""      } },
+    { opFZF,            { "%FZF",       "",         "",         ""      } },
+    { opFLF,            { "%FLF",       "",         "",         ""      } }
 };
+// clang-format on
 
-
-void ExpPrinter::print(OStream& os, const SharedConstExp& exp) const
+void ExpPrinter::print(OStream &os, const SharedConstExp &exp) const
 {
     printPlain(os, exp);
 }
 
 
-void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
+void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
 {
     const OPER oper = exp->getOper();
 
@@ -172,8 +172,7 @@ void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
         os << "*";
         print(os, exp->getSubExp1());
         os << "*";
-        return
-        ;
+        return;
     case opTemp:
         if (exp->getSubExp1()->getOper() == opWildStrConst) {
             assert(exp->getSubExp1()->isTerminal());
@@ -276,23 +275,32 @@ void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
     os << g_syntaxTable[oper].m_prefix;
 
     if (exp->getArity() >= 1) {
-        if (childNeedsParentheses(exp, exp->getSubExp1())) os << "(";
-        assert(exp->getSubExp1()); print(os, exp->getSubExp1());
-        if (childNeedsParentheses(exp, exp->getSubExp1())) os << ")";
+        if (childNeedsParentheses(exp, exp->getSubExp1()))
+            os << "(";
+        assert(exp->getSubExp1());
+        print(os, exp->getSubExp1());
+        if (childNeedsParentheses(exp, exp->getSubExp1()))
+            os << ")";
 
         if (exp->getArity() >= 2) {
             os << g_syntaxTable[oper].m_infix1;
 
-            if (childNeedsParentheses(exp, exp->getSubExp2())) os << "(";
-            assert(exp->getSubExp2()); print(os, exp->getSubExp2());
-            if (childNeedsParentheses(exp, exp->getSubExp2())) os << ")";
+            if (childNeedsParentheses(exp, exp->getSubExp2()))
+                os << "(";
+            assert(exp->getSubExp2());
+            print(os, exp->getSubExp2());
+            if (childNeedsParentheses(exp, exp->getSubExp2()))
+                os << ")";
 
             if (exp->getArity() >= 3) {
                 os << g_syntaxTable[oper].m_infix2;
 
-                if (childNeedsParentheses(exp, exp->getSubExp3())) os << "(";
-                assert(exp->getSubExp3()); print(os, exp->getSubExp3());
-                if (childNeedsParentheses(exp, exp->getSubExp3())) os << ")";
+                if (childNeedsParentheses(exp, exp->getSubExp3()))
+                    os << "(";
+                assert(exp->getSubExp3());
+                print(os, exp->getSubExp3());
+                if (childNeedsParentheses(exp, exp->getSubExp3()))
+                    os << ")";
             }
         }
     }
@@ -301,7 +309,7 @@ void ExpPrinter::printPlain(OStream& os, const SharedConstExp& exp) const
 }
 
 
-void ExpPrinter::printHTML(OStream& os, const SharedConstExp& exp) const
+void ExpPrinter::printHTML(OStream &os, const SharedConstExp &exp) const
 {
     Q_UNUSED(os);
     Q_UNUSED(exp);
@@ -309,8 +317,7 @@ void ExpPrinter::printHTML(OStream& os, const SharedConstExp& exp) const
 }
 
 
-
-bool ExpPrinter::childNeedsParentheses(const SharedConstExp& exp, const SharedConstExp& child) const
+bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedConstExp &child) const
 {
     // never parenthesize things like m[...] or foo{-} or constants
     if (child->getArity() < 2) {
@@ -327,10 +334,8 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp& exp, const SharedCo
         case opFtoi:
         case opFround:
         case opFtrunc:
-        case opOpTable:
-            return false;
-        default:
-            return true;
+        case opOpTable: return false;
+        default: return true;
         }
     }
 
@@ -345,10 +350,8 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp& exp, const SharedCo
         case opFtoi:
         case opFround:
         case opFtrunc:
-        case opOpTable:
-            return false;
-        default:
-            return true;
+        case opOpTable: return false;
+        default: return true;
         }
     }
     else if (exp->getArity() == 2) {
@@ -359,11 +362,9 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp& exp, const SharedCo
 
         switch (exp->getOper()) {
         case opSize:
-        case opList:
-            return false;
+        case opList: return false;
 
-        default:
-            return true;
+        default: return true;
         }
     }
 

@@ -27,7 +27,7 @@ public:
     explicit CommandlineDriver(QObject *parent = nullptr);
 
 public:
-    int applyCommandline(const QStringList& args);
+    int applyCommandline(const QStringList &args);
     int decompile();
 
     /**
@@ -44,7 +44,7 @@ private:
      * \param fname The name of the file to load.
      * \param pname How the Prog will be named.
      */
-    bool loadAndDecode(const QString& fname, const QString& pname);
+    bool loadAndDecode(const QString &fname, const QString &pname);
 
     /**
      * The program will be subsequently be loaded, decoded, decompiled and written to a source file.
@@ -55,7 +55,7 @@ private:
      *
      * \return Zero on success, nonzero on faillure.
      */
-    int decompile(const QString& fname, const QString& pname);
+    int decompile(const QString &fname, const QString &pname);
 
 public slots:
     void onCompilationTimeout();

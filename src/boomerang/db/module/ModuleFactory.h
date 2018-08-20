@@ -21,17 +21,17 @@ class QString;
 
 struct BOOMERANG_API IModuleFactory
 {
-    virtual Module *create(const QString& name, Prog *prog) const = 0;
+    virtual Module *create(const QString &name, Prog *prog) const = 0;
 };
 
 
 struct BOOMERANG_API DefaultModFactory : public IModuleFactory
 {
-    Module *create(const QString& name, Prog *prog) const override;
+    Module *create(const QString &name, Prog *prog) const override;
 };
 
 
 struct ClassModFactory : public IModuleFactory
 {
-    Module *create(const QString& name, Prog *prog) const override;
+    Module *create(const QString &name, Prog *prog) const override;
 };

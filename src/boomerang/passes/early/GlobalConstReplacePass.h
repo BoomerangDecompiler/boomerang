@@ -17,11 +17,14 @@
  * Replace simple global constant references. This is useful for obj-c.
  *
  * Statement level transform :
- * PREDICATE: (statement IS_A Assign) AND (statement.rhs IS_A MemOf) AND (statement.rhs.sub(1) IS_A IntConst)
+ * PREDICATE:
+ *      (statement IS_A Assign) AND
+ *      (statement.rhs IS_A MemOf) AND
+ *      (statement.rhs.sub(1) IS_A IntConst)
  * ACTION:
- *     $tmp_addr = assgn.rhs.sub(1);
- *     $tmp_val  = prog->readNative($tmp_addr,statement.type.bitwidth/8);
- *     statement.rhs.replace_with(Const($tmp_val))
+ *      $tmp_addr = assgn.rhs.sub(1);
+ *      $tmp_val = prog->readNative($tmp_addr,statement.type.bitwidth/8);
+ *      statement.rhs.replace_with(Const($tmp_val))
  */
 class GlobalConstReplacePass : public IPass
 {

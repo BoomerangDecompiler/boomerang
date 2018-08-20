@@ -46,31 +46,31 @@ public:
      * \param prog   program being decoded
      */
     DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    DefaultFrontEnd(const DefaultFrontEnd&) = delete;
-    DefaultFrontEnd(DefaultFrontEnd&&) = default;
+    DefaultFrontEnd(const DefaultFrontEnd &) = delete;
+    DefaultFrontEnd(DefaultFrontEnd &&)      = default;
 
     virtual ~DefaultFrontEnd();
 
-    DefaultFrontEnd& operator=(const DefaultFrontEnd&) = delete;
-    DefaultFrontEnd& operator=(DefaultFrontEnd&&) = default;
+    DefaultFrontEnd &operator=(const DefaultFrontEnd &) = delete;
+    DefaultFrontEnd &operator=(DefaultFrontEnd &&) = default;
 
 public:
     /// \copydoc IFrontEnd::isNoReturnCallDest
-    virtual bool isNoReturnCallDest(const QString& procName) const override;
+    virtual bool isNoReturnCallDest(const QString &procName) const override;
 
     /// \copydoc IFrontEnd::getDecoder
     IDecoder *getDecoder() override { return m_decoder.get(); }
     const IDecoder *getDecoder() const override { return m_decoder.get(); }
 
     /// \copydoc IFrontEnd::addRefHint
-    void addRefHint(Address addr, const QString& name) override { m_refHints[addr] = name; }
+    void addRefHint(Address addr, const QString &name) override { m_refHints[addr] = name; }
 
     /// Decode a single instruction at address \p addr
-    virtual bool decodeSingleInstruction(Address pc, DecodeResult& result);
+    virtual bool decodeSingleInstruction(Address pc, DecodeResult &result);
 
     /// Do extra processing of call instructions.
     /// Does nothing by default.
-    virtual void extraProcessCall(CallStatement *call, const RTLList& BB_rtls);
+    virtual void extraProcessCall(CallStatement *call, const RTLList &BB_rtls);
 
     /// \copydoc IFrontEnd::decodeEntryPointsRecursive
     bool decodeEntryPointsRecursive(bool decodeMain = true) override;
@@ -102,23 +102,24 @@ protected:
      *                  (including a ReturnStatement as the last statement)
      * \returns  Pointer to the newly created BB
      */
-    BasicBlock *createReturnBlock(UserProc *proc,
-        std::unique_ptr<RTLList> bb_rtls, std::unique_ptr<RTL> returnRTL);
+    BasicBlock *createReturnBlock(UserProc *proc, std::unique_ptr<RTLList> bb_rtls,
+                                  std::unique_ptr<RTL> returnRTL);
 
 
 private:
-    bool refersToImportedFunction(const SharedExp& exp);
+    bool refersToImportedFunction(const SharedExp &exp);
 
     /**
-     * Given the dest of a call, determine if this is a machine specific helper function with special semantics.
-     * If so, return true and set the semantics in lrtl.
+     * Given the dest of a call, determine if this is a machine specific helper function with
+     * special semantics. If so, return true and set the semantics in lrtl.
      *
      * \param addr the native address of the call instruction
      */
-    virtual bool isHelperFunc(Address dest, Address addr, RTLList& lrtl);
+    virtual bool isHelperFunc(Address dest, Address addr, RTLList &lrtl);
 
     /**
-     * Add a synthetic return instruction and basic block (or a branch to the existing return instruction).
+     * Add a synthetic return instruction and basic block (or a branch to the existing return
+     * instruction).
      *
      * \note the call BB should be created with one out edge (the return or branch BB)
      * \param callBB  the call BB that will be followed by the return or jump
@@ -127,8 +128,9 @@ private:
      */
     void appendSyntheticReturn(BasicBlock *callBB, UserProc *proc, RTL *callRTL);
 
-    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest, const std::list<Statement *>& sl, RTL *originalRTL);
-    void checkEntryPoint(std::vector<Address>& entrypoints, Address addr, const char *type);
+    void preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest,
+                            const std::list<Statement *> &sl, RTL *originalRTL);
+    void checkEntryPoint(std::vector<Address> &entrypoints, Address addr, const char *type);
 
 protected:
     std::unique_ptr<IDecoder> m_decoder;
@@ -140,6 +142,7 @@ protected:
     /// Map from address to meaningful name
     std::map<Address, QString> m_refHints;
 
-    /// Map from address to previously decoded RTLs for decoded indirect control transfer instructions
+    /// Map from address to previously decoded RTLs for decoded indirect control transfer
+    /// instructions
     std::map<Address, RTL *> m_previouslyDecoded;
 };

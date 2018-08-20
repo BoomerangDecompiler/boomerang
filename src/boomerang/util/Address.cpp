@@ -9,15 +9,14 @@
 #pragma endregion License
 #include "Address.h"
 
-
 #include "boomerang/util/ByteUtil.h"
 #include "boomerang/util/log/Log.h"
 
 #include <cassert>
 
-const Address Address::ZERO         = Address(0);
-const Address Address::INVALID      = Address(static_cast<Address::value_type>(-1));
-Byte          Address::m_sourceBits = 32U;
+const Address Address::ZERO    = Address(0);
+const Address Address::INVALID = Address(static_cast<Address::value_type>(-1));
+Byte Address::m_sourceBits     = 32U;
 
 const HostAddress HostAddress::ZERO    = HostAddress(nullptr);
 const HostAddress HostAddress::INVALID = HostAddress(static_cast<HostAddress::value_type>(-1));
@@ -25,8 +24,7 @@ const HostAddress HostAddress::INVALID = HostAddress(static_cast<HostAddress::va
 
 Address::Address()
     : m_value(0)
-{
-}
+{}
 
 
 Address::Address(value_type _value)
@@ -34,7 +32,7 @@ Address::Address(value_type _value)
 {
     if ((m_value != static_cast<value_type>(-1)) && ((_value & ~getSourceMask()) != 0)) {
         LOG_VERBOSE2("Address initialized with invalid value %1",
-                QString("0x%1").arg(m_value, 2 * sizeof(value_type), 16, QChar('0')));
+                     QString("0x%1").arg(m_value, 2 * sizeof(value_type), 16, QChar('0')));
     }
 }
 
@@ -59,14 +57,12 @@ Address::value_type Address::getSourceMask()
 
 HostAddress::HostAddress(const void *ptr)
     : m_value(reinterpret_cast<value_type>(ptr))
-{
-}
+{}
 
 
 HostAddress::HostAddress(value_type _value)
     : m_value(_value)
-{
-}
+{}
 
 
 HostAddress::HostAddress(Address srcAddr, ptrdiff_t hostDiff)
@@ -81,13 +77,13 @@ QString HostAddress::toString() const
 }
 
 
-OStream& operator<<(OStream& os, const Address& addr)
+OStream &operator<<(OStream &os, const Address &addr)
 {
     return os << addr.toString();
 }
 
 
-OStream& operator<<(OStream& os, const HostAddress& addr)
+OStream &operator<<(OStream &os, const HostAddress &addr)
 {
     return os << addr.toString();
 }

@@ -26,6 +26,6 @@ enum class CallConv
 
 namespace Util
 {
-    // ascii version of calling convention name
-    const QString& getCallConvName(CallConv cc);
+// ascii version of calling convention name
+const QString &getCallConvName(CallConv cc);
 }

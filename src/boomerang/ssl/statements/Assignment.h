@@ -22,26 +22,26 @@ class BOOMERANG_API Assignment : public TypingStatement
 public:
     Assignment(SharedExp lhs);
     Assignment(SharedType ty, SharedExp lhs);
-    Assignment(const Assignment& other) = default;
-    Assignment(Assignment&& other) = default;
+    Assignment(const Assignment &other) = default;
+    Assignment(Assignment &&other)      = default;
 
     virtual ~Assignment() override;
 
-    Assignment& operator=(const Assignment& other) = default;
-    Assignment& operator=(Assignment&& other) = default;
+    Assignment &operator=(const Assignment &other) = default;
+    Assignment &operator=(Assignment &&other) = default;
 
 public:
     /// We also want operator< for assignments. For example, we want ReturnStatement
     /// to contain a set of (pointers to) Assignments, so we can automatically
     /// make sure that existing assignments are not duplicated.
     /// Assume that we won't want sets of assignments differing by anything other than LHSs
-    bool operator<(const Assignment& o) { return m_lhs < o.m_lhs; }
+    bool operator<(const Assignment &o) { return m_lhs < o.m_lhs; }
 
     /// \copydoc Assignment::print
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// Like print, but print without statement number
-    virtual void printCompact(OStream& os) const = 0;
+    virtual void printCompact(OStream &os) const = 0;
 
     /// \copydoc Statement::getTypeFor
     virtual SharedConstType getTypeFor(SharedConstExp e) const override;
@@ -54,10 +54,10 @@ public:
 
     /// \copydoc Statement::usesExp
     /// \internal PhiAssign and ImplicitAssign don't override
-    virtual bool usesExp(const Exp& e) const override;
+    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc Statement::getDefinitions
-    virtual void getDefinitions(LocationSet& defs, bool assumeABICompliance) const override;
+    virtual void getDefinitions(LocationSet &defs, bool assumeABICompliance) const override;
 
     /// \copydoc Statement::definesLoc
     virtual bool definesLoc(SharedExp loc) const override;

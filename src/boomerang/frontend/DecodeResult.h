@@ -36,10 +36,10 @@ enum ICLASS : uint8
     SU,    ///< Static Unconditional (not delayed)
     SKIP,  ///< Skip successor
     // TRAP, ///< Trap
-    NOP,   ///< No operation (e.g. SPARC BN,A)
+    NOP, ///< No operation (e.g. SPARC BN,A)
     // HPPA only
-    DU,    ///< Dynamic Unconditional (not delayed)
-    NCTA   ///< Non Control Transfer, with following instr Anulled
+    DU,  ///< Dynamic Unconditional (not delayed)
+    NCTA ///< Non Control Transfer, with following instr Anulled
 };
 
 
@@ -52,41 +52,41 @@ class BOOMERANG_API DecodeResult
 {
 public:
     DecodeResult();
-    DecodeResult(const DecodeResult&) = delete;
-    DecodeResult(DecodeResult&&);
+    DecodeResult(const DecodeResult &) = delete;
+    DecodeResult(DecodeResult &&);
 
     ~DecodeResult();
 
-    DecodeResult& operator=(const DecodeResult&) = delete;
-    DecodeResult& operator=(DecodeResult&&);
+    DecodeResult &operator=(const DecodeResult &) = delete;
+    DecodeResult &operator                        =(DecodeResult &&);
 
     /// Resets all the fields to their default values.
     void reset();
 
 public:
-    bool    valid; ///< Indicates whether or not a valid instruction was decoded.
+    bool valid; ///< Indicates whether or not a valid instruction was decoded.
 
     /**
-     * The class of the instruction decoded. Will be one of the classes described in "A Transformational Approach
-     * to Binary Translation of Delayed Branches" (plus two more HPPA specific entries).
-     * Ignored by machines with no delay slots
+     * The class of the instruction decoded. Will be one of the classes described in "A
+     * Transformational Approach to Binary Translation of Delayed Branches" (plus two more HPPA
+     * specific entries). Ignored by machines with no delay slots
      */
-    ICLASS  type;
+    ICLASS type;
 
     /**
-     * If true, don't add numBytes and decode there; instead, re-decode the current instruction. Needed for
-     * instructions like the Pentium BSF/BSR, which emit branches (so numBytes needs to be carefully set for the
-     * fall through out edge after the branch)
+     * If true, don't add numBytes and decode there; instead, re-decode the current instruction.
+     * Needed for instructions like the Pentium BSF/BSR, which emit branches (so numBytes needs to
+     * be carefully set for the fall through out edge after the branch)
      */
-    bool    reDecode;
-    int     numBytes; ///< The number of bytes decoded in the main instruction
+    bool reDecode;
+    int numBytes; ///< The number of bytes decoded in the main instruction
 
     /// The RTL constructed (if any).
     std::unique_ptr<RTL> rtl;
 
     /**
-     * If non zero, this field represents a new native address to be used as the out-edge for this instruction's BB.
-     * At present, only used for the SPARC call/add caller prologue
+     * If non zero, this field represents a new native address to be used as the out-edge for this
+     * instruction's BB. At present, only used for the SPARC call/add caller prologue
      */
     Address forceOutEdge;
 };

@@ -21,13 +21,13 @@ class BOOMERANG_API Unary : public Exp
 {
 public:
     Unary(OPER op, SharedExp subExp1);
-    Unary(const Unary& other);
-    Unary(Unary&& other) = default;
+    Unary(const Unary &other);
+    Unary(Unary &&other) = default;
 
     virtual ~Unary() override;
 
-    Unary& operator=(const Unary& other) = default;
-    Unary& operator=(Unary&& other) = default;
+    Unary &operator=(const Unary &other) = default;
+    Unary &operator=(Unary &&other) = default;
 
 public:
     /// \copydoc Exp::clone
@@ -37,19 +37,19 @@ public:
     static SharedExp get(OPER op, SharedExp e1) { return std::make_shared<Unary>(op, e1); }
 
     /// \copydoc Exp::operator==
-    virtual bool operator==(const Exp& o) const override;
+    virtual bool operator==(const Exp &o) const override;
 
     /// \copydoc Exp::operator<
-    virtual bool operator<(const Exp& o) const override;
+    virtual bool operator<(const Exp &o) const override;
 
     /// \copydoc Exp::operator*=
-    bool operator*=(const Exp& o) const override;
+    bool operator*=(const Exp &o) const override;
 
     /// \copydoc Exp::getArity
     virtual int getArity() const override { return 1; }
 
     /// \copydoc Exp::doSearchChildren
-    void doSearchChildren(const Exp& search, std::list<SharedExp *>& li, bool once) override;
+    void doSearchChildren(const Exp &search, std::list<SharedExp *> &li, bool once) override;
 
     /// \copydoc Exp::getSubExp1
     SharedExp getSubExp1() override;
@@ -61,13 +61,13 @@ public:
     void setSubExp1(SharedExp e) override;
 
     /// \copydoc Exp::refSubExp1
-    SharedExp& refSubExp1() override;
+    SharedExp &refSubExp1() override;
 
     /// \copydoc Exp::ascendType
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool& changed, Statement *s) override;
+    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
@@ -75,7 +75,7 @@ public:
 
 protected:
     /// \copydoc Exp::acceptPreModifier
-    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool& visitChildren) override;
+    virtual SharedExp acceptPreModifier(ExpModifier *mod, bool &visitChildren) override;
 
     /// \copydoc Exp::acceptChildModifier
     virtual SharedExp acceptChildModifier(ExpModifier *mod) override;

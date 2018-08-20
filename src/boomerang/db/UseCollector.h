@@ -27,24 +27,24 @@ class UserProc;
 class BOOMERANG_API UseCollector
 {
 public:
-    typedef LocationSet::iterator         iterator;
-    typedef LocationSet::const_iterator   const_iterator;
+    typedef LocationSet::iterator iterator;
+    typedef LocationSet::const_iterator const_iterator;
 
 public:
     UseCollector();
 
 public:
-    bool operator==(const UseCollector& other) const;
-    bool operator!=(const UseCollector& other) const { return !(*this == other); }
+    bool operator==(const UseCollector &other) const;
+    bool operator!=(const UseCollector &other) const { return !(*this == other); }
 
     inline iterator begin() { return m_locs.begin(); }
-    inline iterator end()   { return m_locs.end(); }
+    inline iterator end() { return m_locs.end(); }
     inline const_iterator begin() const { return m_locs.begin(); }
     inline const_iterator end() const { return m_locs.end(); }
 
 public:
     /// clone the given Collector into this one
-    void makeCloneOf(const UseCollector& other);
+    void makeCloneOf(const UseCollector &other);
 
     /// \returns true if initialised
     inline bool isInitialised() const { return m_initialised; }
@@ -56,11 +56,11 @@ public:
     void insert(SharedExp e);
 
     /// Print the collected locations to stream \p os
-    void print(OStream& os) const;
+    void print(OStream &os) const;
 
     /// \returns true if \p e is in the collection
     inline bool exists(SharedExp e) { return m_locs.contains(e); }
-    LocationSet& getLocSet() { return m_locs; }
+    LocationSet &getLocSet() { return m_locs; }
 
 public:
     /// Remove the given location

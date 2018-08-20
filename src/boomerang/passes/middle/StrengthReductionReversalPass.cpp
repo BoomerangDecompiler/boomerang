@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "StrengthReductionReversalPass.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -21,8 +20,7 @@
 
 StrengthReductionReversalPass::StrengthReductionReversalPass()
     : IPass("StrengthReductionReversal", PassID::StrengthReductionReversal)
-{
-}
+{}
 
 
 bool StrengthReductionReversalPass::execute(UserProc *proc)
@@ -41,7 +39,7 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
         if ((as->getRight()->getOper() == opPlus) && as->getRight()->getSubExp1()->isSubscript() &&
             (*as->getLeft() == *as->getRight()->getSubExp1()->getSubExp1()) &&
             as->getRight()->getSubExp2()->isIntConst()) {
-            int  c = as->getRight()->access<Const, 2>()->getInt();
+            int c  = as->getRight()->access<Const, 2>()->getInt();
             auto r = as->getRight()->access<RefExp, 1>();
 
             if (r->getDef() && r->getDef()->isPhi()) {
@@ -57,7 +55,8 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
                     }
 
                     // first must be of form x := 0
-                    if (first && first->isAssign() && static_cast<Assign *>(first)->getRight()->isIntConst() &&
+                    if (first && first->isAssign() &&
+                        static_cast<Assign *>(first)->getRight()->isIntConst() &&
                         static_cast<Assign *>(first)->getRight()->access<Const>()->getInt() == 0) {
                         // ok, fun, now we need to find every reference to p and
                         // replace with x{p} * c
@@ -66,7 +65,8 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
 
                         for (auto it2 = stmts2.begin(); it2 != stmts2.end(); ++it2) {
                             if (*it2 != as) {
-                                (*it2)->searchAndReplace(*r, Binary::get(opMult, r->clone(), Const::get(c)));
+                                (*it2)->searchAndReplace(
+                                    *r, Binary::get(opMult, r->clone(), Const::get(c)));
                             }
                         }
 

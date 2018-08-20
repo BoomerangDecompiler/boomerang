@@ -28,12 +28,12 @@ class PassGroup
     typedef Passes::const_iterator const_iterator;
 
 public:
-    explicit PassGroup(const QString& name, const std::initializer_list<IPass *>& passes);
+    explicit PassGroup(const QString &name, const std::initializer_list<IPass *> &passes);
 
     const_iterator begin() const { return m_passes.begin(); }
     const_iterator end() const { return m_passes.end(); }
 
-    const QString& getName() const { return m_name; }
+    const QString &getName() const { return m_name; }
 
 private:
     QString m_name;

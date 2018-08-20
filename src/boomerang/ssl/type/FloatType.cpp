@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "FloatType.h"
 
-
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/SizeType.h"
 
@@ -17,8 +16,7 @@
 FloatType::FloatType(int sz)
     : Type(TypeClass::Float)
     , size(sz)
-{
-}
+{}
 
 
 std::shared_ptr<FloatType> FloatType::get(int sz)
@@ -28,8 +26,7 @@ std::shared_ptr<FloatType> FloatType::get(int sz)
 
 
 FloatType::~FloatType()
-{
-}
+{}
 
 
 SharedType FloatType::clone() const
@@ -44,7 +41,7 @@ size_t FloatType::getSize() const
 }
 
 
-bool FloatType::operator==(const Type& other) const
+bool FloatType::operator==(const Type &other) const
 {
     if (!other.isFloat()) {
         return false;
@@ -57,7 +54,7 @@ bool FloatType::operator==(const Type& other) const
 }
 
 
-bool FloatType::operator<(const Type& other) const
+bool FloatType::operator<(const Type &other) const
 {
     if (id != other.getId()) {
         return id < other.getId();
@@ -69,42 +66,28 @@ bool FloatType::operator<(const Type& other) const
 
 QString FloatType::getCtype(bool /*final*/) const
 {
-    switch (size)
-    {
-    case 32:
-        return "float";
-
-    case 64:
-        return "double";
-
-    default:
-        return "double";
+    switch (size) {
+    case 32: return "float";
+    case 64: return "double";
+    default: return "double";
     }
 }
 
 
 QString FloatType::getTempName() const
 {
-    switch (size)
-    {
-    case 32:
-        return "tmpf";
-
-    case 64:
-        return "tmpd";
-
-    case 80:
-        return "tmpF";
-
-    case 128:
-        return "tmpD";
+    switch (size) {
+    case 32: return "tmpf";
+    case 64: return "tmpd";
+    case 80: return "tmpF";
+    case 128: return "tmpD";
     }
 
     return "tmp";
 }
 
 
-SharedType FloatType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType FloatType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<FloatType *>(this)->shared_from_this();
@@ -120,7 +103,7 @@ SharedType FloatType::meetWith(SharedType other, bool& changed, bool useHighestP
 }
 
 
-bool FloatType::isCompatible(const Type& other, bool /*all*/) const
+bool FloatType::isCompatible(const Type &other, bool /*all*/) const
 {
     if (other.resolvesToVoid() || other.resolvesToFloat()) {
         return true;

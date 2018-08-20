@@ -9,21 +9,19 @@
 #pragma endregion License
 #include "UnusedStatementRemovalPass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementSet.h"
+#include "boomerang/util/log/Log.h"
 
 
 UnusedStatementRemovalPass::UnusedStatementRemovalPass()
     : IPass("UnusedStatementRemoval", PassID::UnusedStatementRemoval)
-{
-}
+{}
 
 
 bool UnusedStatementRemovalPass::execute(UserProc *proc)
@@ -45,7 +43,7 @@ bool UnusedStatementRemovalPass::execute(UserProc *proc)
 }
 
 
-void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter& refCounts)
+void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter &refCounts)
 {
     StatementList stmts;
     proc->getStatements(stmts);
@@ -64,13 +62,14 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter& ref
         LocationSet refs;
         s->addUsedLocs(refs, false); // Ignore uses in collectors
 
-        for (const SharedExp& rr : refs) {
+        for (const SharedExp &rr : refs) {
             if (rr->isSubscript()) {
                 Statement *def = rr->access<RefExp>()->getDef();
 
-                // Used to not count implicit refs here (def->getNumber() == 0), meaning that implicit definitions get
-                // removed as dead code! But these are the ideal place to read off final parameters, and it is
-                // guaranteed now that implicit statements are sorted out for us by now (for dfa type analysis)
+                // Used to not count implicit refs here (def->getNumber() == 0), meaning that
+                // implicit definitions get removed as dead code! But these are the ideal place to
+                // read off final parameters, and it is guaranteed now that implicit statements are
+                // sorted out for us by now (for dfa type analysis)
                 if (def /* && def->getNumber() */) {
                     refCounts[def]++;
 
@@ -94,14 +93,14 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter& ref
 }
 
 
-void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter& refCounts)
+void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &refCounts)
 {
     StatementList stmts;
     proc->getStatements(stmts);
     bool change;
 
     do { // FIXME: check if this is ever needed
-        change = false;
+        change                     = false;
         StatementList::iterator ll = stmts.begin();
 
         while (ll != stmts.end()) {
@@ -113,8 +112,8 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter& re
                 continue;
             }
 
-            const Assignment *as    = static_cast<const Assignment *>(s);
-            SharedConstExp  asLeft = as->getLeft();
+            const Assignment *as  = static_cast<const Assignment *>(s);
+            SharedConstExp asLeft = as->getLeft();
 
             // If depth < 0, consider all depths
             // if (asLeft && depth >= 0 && asLeft->getMemDepth() > depth) {
@@ -140,13 +139,16 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter& re
                 continue;
             }
 
-            if ((refCounts.find(s) == refCounts.end()) || (refCounts[s] == 0)) { // Care not to insert unnecessarily
-                // First adjust the counts, due to statements only referenced by statements that are themselves unused.
-                // Need to be careful not to count two refs to the same def as two; refCounts is a count of the number
-                // of statements that use a definition, not the total number of refs
+            if ((refCounts.find(s) == refCounts.end()) ||
+                (refCounts[s] == 0)) { // Care not to insert unnecessarily
+                // First adjust the counts, due to statements only referenced by statements that are
+                // themselves unused. Need to be careful not to count two refs to the same def as
+                // two; refCounts is a count of the number of statements that use a definition, not
+                // the total number of refs
                 StatementSet stmtsRefdByUnused;
-                LocationSet    components;
-                s->addUsedLocs(components, false); // Second parameter false to ignore uses in collectors
+                LocationSet components;
+                s->addUsedLocs(components,
+                               false); // Second parameter false to ignore uses in collectors
 
                 for (auto cc = components.begin(); cc != components.end(); ++cc) {
                     if ((*cc)->isSubscript() && (*cc)->access<RefExp>()->getDef()) {
@@ -160,7 +162,8 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter& re
                     }
 
                     if (proc->getProg()->getProject()->getSettings()->debugUnused) {
-                        LOG_MSG("Decrementing ref count of %1 because %2 is unused", (*dd)->getNumber(), s->getNumber());
+                        LOG_MSG("Decrementing ref count of %1 because %2 is unused",
+                                (*dd)->getNumber(), s->getNumber());
                     }
 
                     refCounts[*dd]--;
@@ -173,25 +176,26 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter& re
                 proc->removeStatement(s);
                 ll     = stmts.erase(ll); // So we don't try to re-remove it
                 change = true;
-                continue;                 // Don't call getNext this time
+                continue; // Don't call getNext this time
             }
 
             ++ll;
         }
     } while (change);
 
-    // Recaluclate at least the livenesses. Example: first call to printf in test/pentium/fromssa2, eax used only in a
-    // removed statement, so liveness in the call needs to be removed
-    PassManager::get()->executePass(PassID::CallLivenessRemoval, proc); // Kill all existing livenesses
-    PassManager::get()->executePass(PassID::BlockVarRename, proc);      // Recalculate new livenesses
+    // Recalulate at least the livenesses. Example: first call to printf in test/pentium/fromssa2,
+    // eax used only in a removed statement, so liveness in the call needs to be removed
+    PassManager::get()->executePass(PassID::CallLivenessRemoval, proc);
+    PassManager::get()->executePass(PassID::BlockVarRename, proc);
 
     // Now fully decompiled (apart from one final pass, and transforming out of SSA form)
     proc->setStatus(PROC_FINAL);
 }
 
-bool UnusedStatementRemovalPass::removeNullStatements(UserProc* proc)
+
+bool UnusedStatementRemovalPass::removeNullStatements(UserProc *proc)
 {
-    bool          change = false;
+    bool change = false;
     StatementList stmts;
     proc->getStatements(stmts);
 
@@ -208,4 +212,3 @@ bool UnusedStatementRemovalPass::removeNullStatements(UserProc* proc)
 
     return change;
 }
-

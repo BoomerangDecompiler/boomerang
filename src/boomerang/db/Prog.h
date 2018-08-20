@@ -11,8 +11,8 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
-#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/Global.h"
+#include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/module/ModuleFactory.h"
 #include "boomerang/frontend/SigEnum.h"
 #include "boomerang/type/DataIntervalMap.h"
@@ -43,20 +43,20 @@ class BOOMERANG_API Prog
 {
 public:
     /// The type for the list of functions.
-    typedef std::list<std::unique_ptr<Module>>  ModuleList;
-    typedef std::map<Address, BinarySymbol *>   AddressToSymbolMap;
+    typedef std::list<std::unique_ptr<Module>> ModuleList;
+    typedef std::map<Address, BinarySymbol *> AddressToSymbolMap;
 
     typedef std::set<std::shared_ptr<Global>, GlobalComparator> GlobalSet;
 
 public:
-    Prog(const QString& name, Project *project);
-    Prog(const Prog& other) = delete;
-    Prog(Prog&& other) = delete;
+    Prog(const QString &name, Project *project);
+    Prog(const Prog &other) = delete;
+    Prog(Prog &&other)      = delete;
 
     ~Prog();
 
-    Prog& operator=(const Prog& other) = delete;
-    Prog& operator=(Prog&& other) = delete;
+    Prog &operator=(const Prog &other) = delete;
+    Prog &operator=(Prog &&other) = delete;
 
 public:
     void setFrontEnd(IFrontEnd *fe);
@@ -66,7 +66,7 @@ public:
     const Project *getProject() const { return m_project; }
 
     /// Assign a new name to this program
-    void setName(const QString& name);
+    void setName(const QString &name);
     QString getName() const { return m_name; }
 
     BinaryFile *getBinaryFile() { return m_binaryFile; }
@@ -77,26 +77,29 @@ public:
      * \param name   The name of the new module.
      * \param parent The parent of the new module.
      * \param modFactory Determines the type of Module to be created.
-     * \returns the new module, or nullptr if there already exists a module with the same name and parent.
+     * \returns the new module, or nullptr if there already exists a module with the same name and
+     * parent.
      */
-    Module *createModule(const QString& name, Module *parent = nullptr, const IModuleFactory& modFactory = DefaultModFactory());
+    Module *createModule(const QString &name, Module *parent = nullptr,
+                         const IModuleFactory &modFactory = DefaultModFactory());
 
     /**
      * Create or retrieve existing module
      * \param name retrieve/create module with this name.
      * \param fact abstract factory object that creates Module instance
      */
-    Module *getOrInsertModule(const QString& name, const IModuleFactory& fact = DefaultModFactory());
+    Module *getOrInsertModule(const QString &name,
+                              const IModuleFactory &fact = DefaultModFactory());
 
     Module *getRootModule() { return m_rootModule; }
     Module *getRootModule() const { return m_rootModule; }
 
-    Module *findModule(const QString& name);
-    const Module *findModule(const QString& name) const;
+    Module *findModule(const QString &name);
+    const Module *findModule(const QString &name) const;
 
     bool isModuleUsed(Module *module) const;
 
-    const ModuleList& getModuleList() const { return m_moduleList; }
+    const ModuleList &getModuleList() const { return m_moduleList; }
 
     /// Add an entry procedure at the specified address.
     /// This will fail if \p entryAddr is already the entry address of a LibProc.
@@ -117,7 +120,7 @@ public:
     Function *getOrCreateFunction(Address entryAddr);
 
     /// lookup a library procedure by name; create if does not exist
-    LibProc *getOrCreateLibraryProc(const QString& name);
+    LibProc *getOrCreateLibraryProc(const QString &name);
 
     /// \returns the function with entry address \p entryAddr,
     /// or nullptr if no such function exists.
@@ -125,12 +128,12 @@ public:
 
     /// \returns the function with name \p name,
     /// or nullptr if no such function exists.
-    Function *getFunctionByName(const QString& name) const;
+    Function *getFunctionByName(const QString &name) const;
 
     /// Removes the function with name \p name.
     /// If there is no such function, nothing happens.
     /// \returns true if function was found and removed.
-    bool removeFunction(const QString& name);
+    bool removeFunction(const QString &name);
 
     /// \param userOnly If true, only count user functions, not lbrary functions.
     /// \returns the number of functions in this program.
@@ -149,17 +152,17 @@ public:
     Machine getMachine() const;
 
     void readDefaultLibraryCatalogues();
-    bool addSymbolsFromSymbolFile(const QString& fname);
-    std::shared_ptr<Signature> getLibSignature(const QString& name);
+    bool addSymbolsFromSymbolFile(const QString &fname);
+    std::shared_ptr<Signature> getLibSignature(const QString &name);
 
-    std::shared_ptr<Signature> getDefaultSignature(const QString& name) const;
+    std::shared_ptr<Signature> getDefaultSignature(const QString &name) const;
 
 
     /// get a string constant at a given address if appropriate
     /// if knownString, it is already known to be a char*
     /// get a string constant at a give address if appropriate
     const char *getStringConstant(Address addr, bool knownString = false) const;
-    bool getFloatConstant(Address addr, double& value, int bits = 64) const;
+    bool getFloatConstant(Address addr, double &value, int bits = 64) const;
 
     /// Get a symbol from an address
     QString getSymbolNameByAddr(Address dest) const;
@@ -171,10 +174,10 @@ public:
     bool isReadOnly(Address a) const;
     bool isInStringsSection(Address a) const;
     bool isDynamicallyLinkedProcPointer(Address dest) const;
-    const QString& getDynamicProcName(Address addr) const;
+    const QString &getDynamicProcName(Address addr) const;
 
     /// \returns the default module for a symbol with name \p name.
-    Module *getOrInsertModuleForSymbol(const QString& symbolName);
+    Module *getOrInsertModuleForSymbol(const QString &symbolName);
 
     int readNative4(Address a) const;
 
@@ -192,7 +195,7 @@ public:
     /// Re-decode this proc from scratch
     bool reDecode(UserProc *proc);
 
-    const std::list<UserProc *>& getEntryProcs() const { return m_entryProcs; }
+    const std::list<UserProc *> &getEntryProcs() const { return m_entryProcs; }
 
     // globals
 
@@ -205,15 +208,15 @@ public:
      */
     Global *createGlobal(Address addr, SharedType ty = nullptr, QString name = "");
 
-    GlobalSet& getGlobals() { return m_globals; }
-    const GlobalSet& getGlobals() const { return m_globals; }
+    GlobalSet &getGlobals() { return m_globals; }
+    const GlobalSet &getGlobals() const { return m_globals; }
 
     /// Get a global variable if possible, looking up the loader's symbol table if necessary
     QString getGlobalNameByAddr(Address addr) const;
 
     /// Get a named global variable if possible, looking up the loader's symbol table if necessary
-    Address getGlobalAddrByName(const QString& name) const;
-    Global *getGlobalByName(const QString& name) const;
+    Address getGlobalAddrByName(const QString &name) const;
+    Global *getGlobalByName(const QString &name) const;
 
     /**
      * Indicate that a given global is used in the program.
@@ -231,31 +234,31 @@ public:
     std::shared_ptr<ArrayType> makeArrayType(Address startAddr, SharedType baseType);
 
     /// Guess a global's type based on its name and address
-    SharedType guessGlobalType(const QString& name, Address addr) const;
+    SharedType guessGlobalType(const QString &name, Address addr) const;
 
     /// Make up a name for a new global at address \a uaddr
     /// (or return an existing name if address already used)
     QString newGlobalName(Address uaddr);
 
     /// Get the type of a global variable
-    SharedType getGlobalType(const QString& name) const;
+    SharedType getGlobalType(const QString &name) const;
 
     /// Set the type of a global variable
-    void setGlobalType(const QString& name, SharedType ty);
+    void setGlobalType(const QString &name, SharedType ty);
 
 private:
-    QString m_name;                         ///< name of the program
+    QString m_name; ///< name of the program
     std::unique_ptr<ISymbolProvider> m_symbolProvider;
-    Project *m_project = nullptr;
+    Project *m_project       = nullptr;
     BinaryFile *m_binaryFile = nullptr;
-    IFrontEnd *m_fe = nullptr; ///< Pointer to the FrontEnd object for the project
-    Module *m_rootModule = nullptr;         ///< Root of the module tree
-    ModuleList m_moduleList;                ///< The Modules that make up this program
+    IFrontEnd *m_fe          = nullptr; ///< Pointer to the FrontEnd object for the project
+    Module *m_rootModule     = nullptr; ///< Root of the module tree
+    ModuleList m_moduleList;            ///< The Modules that make up this program
 
     /// list of UserProcs for entry point(s)
     std::list<UserProc *> m_entryProcs;
 
     // FIXME: is a set of Globals the most appropriate data structure? Surely not.
-    GlobalSet m_globals; ///< globals to print at code generation time
-    DataIntervalMap m_globalMap;  ///< Map from address to DataInterval (has size, name, type)
+    GlobalSet m_globals;         ///< globals to print at code generation time
+    DataIntervalMap m_globalMap; ///< Map from address to DataInterval (has size, name, type)
 };

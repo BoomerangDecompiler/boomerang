@@ -9,23 +9,21 @@
 #pragma endregion License
 #include "UnusedLocalRemovalPass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/statements/CallStatement.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QSet>
 
 
 UnusedLocalRemovalPass::UnusedLocalRemovalPass()
     : IPass("UnusedLocalRemoval", PassID::UnusedLocalRemoval)
-{
-}
+{}
 
 
 bool UnusedLocalRemovalPass::execute(UserProc *proc)
@@ -42,8 +40,8 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         all |= s->addUsedLocals(locs);
 
         for (SharedExp u : locs) {
-            // Must be a real symbol, and not defined in this statement, unless it is a return statement
-            // (in which case it is used outside this procedure), or a call statement.
+            // Must be a real symbol, and not defined in this statement, unless it is a return
+            // statement (in which case it is used outside this procedure), or a call statement.
             // Consider local7 = local7+1 and return local7 = local7+1 and local7 = call(local7+1),
             // where in all cases, local7 is not used elsewhere outside this procedure.
             // With the assign, it can be deleted, but with the return or call statements, it can't.
@@ -61,10 +59,11 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
             }
         }
 
-        if (s->isAssignment() && !s->isImplicit() && static_cast<Assignment *>(s)->getLeft()->isLocal()) {
+        if (s->isAssignment() && !s->isImplicit() &&
+            static_cast<Assignment *>(s)->getLeft()->isLocal()) {
             Assignment *as = static_cast<Assignment *>(s);
-            auto       c   = as->getLeft()->access<Const, 1>();
-            QString    name(c->getStr());
+            auto c         = as->getLeft()->access<Const, 1>();
+            QString name(c->getStr());
             usedLocals.insert(name);
 
             if (proc->getProg()->getProject()->getSettings()->debugUnused) {
@@ -78,11 +77,11 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     QSet<QString> removes;
 
     for (auto it = proc->getLocals().begin(); it != proc->getLocals().end(); ++it) {
-        const QString& name(it->first);
+        const QString &name(it->first);
 
         if (all && removes.size()) {
-            LOG_VERBOSE("WARNING: defineall seen in procedure %1, so not removing %2 locals",
-                        name, removes.size());
+            LOG_VERBOSE("WARNING: defineall seen in procedure %1, so not removing %2 locals", name,
+                        removes.size());
         }
 
         if ((usedLocals.find(name) == usedLocals.end()) && !all) {
@@ -102,8 +101,8 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         s->getDefinitions(ls, assumeABICompliance);
 
         for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
-            SharedType ty   = s->getTypeFor(*ll);
-            QString    name = proc->findLocal(*ll, ty);
+            SharedType ty = s->getTypeFor(*ll);
+            QString name  = proc->findLocal(*ll, ty);
 
             if (name.isEmpty()) {
                 continue;
@@ -120,7 +119,8 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
                     static_cast<CallStatement *>(s)->removeDefine(*ll);
                 }
 
-                // else if a ReturnStatement, don't attempt to remove it. The definition is used *outside* this proc.
+                // else if a ReturnStatement, don't attempt to remove it. The definition is used
+                // *outside* this proc.
             }
         }
     }
@@ -131,7 +131,8 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     }
 
     // Also remove them from the symbols, since symbols are a superset of locals at present
-    for (UserProc::SymbolMap::iterator sm = proc->getSymbolMap().begin(); sm != proc->getSymbolMap().end();) {
+    for (UserProc::SymbolMap::iterator sm = proc->getSymbolMap().begin();
+         sm != proc->getSymbolMap().end();) {
         SharedExp mapsTo = sm->second;
 
         if (mapsTo->isLocal()) {

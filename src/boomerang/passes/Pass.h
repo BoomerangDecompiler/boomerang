@@ -18,9 +18,9 @@ class UserProc;
 
 enum class PassID
 {
-    INVALID                 = -1,
-    Dominators              = 0,
-    PhiPlacement            = 1,
+    INVALID      = -1,
+    Dominators   = 0,
+    PhiPlacement = 1,
     BlockVarRename,
     CallDefineUpdate,
     CallArgumentUpdate,
@@ -60,7 +60,7 @@ public:
     virtual ~IPass() = default;
 
 public:
-    const QString& getName() const { return m_name; }
+    const QString &getName() const { return m_name; }
     PassID getType() const { return m_type; }
 
     /// \returns true iff the pass only accesses statements inside the function.

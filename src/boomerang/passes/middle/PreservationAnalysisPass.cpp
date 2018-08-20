@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "PreservationAnalysisPass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/util/log/Log.h"
@@ -21,8 +20,7 @@
 
 PreservationAnalysisPass::PreservationAnalysisPass()
     : IPass("PreservationAnalysis", PassID::PreservationAnalysis)
-{
-}
+{}
 
 
 bool PreservationAnalysisPass::execute(UserProc *proc)
@@ -39,8 +37,8 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
 
     // prove preservation for all modifieds in the return statement
     for (Statement *mod : proc->getRetStmt()->getModifieds()) {
-        SharedExp lhs      = static_cast<Assignment *>(mod)->getLeft();
-        auto      equation = Binary::get(opEquals, lhs, lhs);
+        SharedExp lhs = static_cast<Assignment *>(mod)->getLeft();
+        auto equation = Binary::get(opEquals, lhs, lhs);
 
         if (proc->getProg()->getProject()->getSettings()->debugProof) {
             LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
@@ -54,7 +52,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
     if (proc->getProg()->getProject()->getSettings()->debugProof) {
         LOG_MSG("### proven true for procedure %1:", getName());
 
-        for (auto& elem : proc->getProvenTrue()) {
+        for (auto &elem : proc->getProvenTrue()) {
             LOG_MSG("  %1 = %2", elem.first, elem.second);
         }
 
@@ -66,7 +64,8 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
         SharedExp lhs = pp->first;
         SharedExp rhs = pp->second;
 
-        // Has to be of the form loc = loc, not say loc+4, otherwise the bypass logic won't see the add of 4
+        // Has to be of the form loc = loc, not say loc+4, otherwise the bypass logic won't see the
+        // add of 4
         if (!(*lhs == *rhs)) {
             continue;
         }

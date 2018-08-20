@@ -30,7 +30,7 @@ class BinarySection;
  */
 class ElfBinaryLoader : public IFileLoader
 {
-    typedef std::map<Address, QString, std::less<Address> > RelocMap;
+    typedef std::map<Address, QString, std::less<Address>> RelocMap;
 
 public:
     ElfBinaryLoader();
@@ -40,11 +40,11 @@ public:
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
-    int canLoad(QIODevice& fl) const override;
+    int canLoad(QIODevice &fl) const override;
 
     /// \copydoc IFileLoader::loadFromMemory
     /// Note that empty sections will not be added to the image.
-    bool loadFromMemory(QByteArray& img) override;
+    bool loadFromMemory(QByteArray &img) override;
 
     /// \copydoc IFileLoader::unload
     void unload() override;
@@ -95,22 +95,27 @@ private:
     /// \p secIndex is the section index of the symbol table.
     void addSymbolsForSection(int secIndex);
 
-    /// FIXME: this function is way off the rails. It seems to always overwrite the relocation entry with the 32 bit value
-    /// from the symbol table. Totally invalid for SPARC, and most X86 relocations!
-    /// So currently not called
+    /// FIXME: this function is way off the rails. It seems to always overwrite the relocation entry
+    /// with the 32 bit value from the symbol table. Totally invalid for SPARC, and most X86
+    /// relocations! So currently not called
     void addRelocsAsSyms(uint32_t secIndex);
 
     /// Search the .rel[a].plt section for an entry with symbol table index i.
     /// If found, return the native address of the associated PLT entry.
-    /// A linear search will be needed. However, starting at offset i and searching backwards with wraparound should
-    /// typically minimise the number of entries to search
+    /// A linear search will be needed. However, starting at offset i and searching backwards with
+    /// wraparound should typically minimise the number of entries to search
     Address findRelPltOffset(int i);
 
     // Internal elf reading methods // TODO replace by Util::swapEndian
 
-    SWord elfRead2(const SWord *ps) const; // Read a 16 bit value, respecting source endianness
-    DWord elfRead4(const DWord *pi) const; // Read a 32 bit value, respecting source endianness
-    void elfWrite4(DWord *pi, DWord val);  // Write an 32 bit value, respecting destination endianness
+    /// Read a 16 bit value, respecting source endianness
+    SWord elfRead2(const SWord *ps) const;
+
+    /// Read a 32 bit value, respecting source endianness
+    DWord elfRead4(const DWord *pi) const;
+
+    /// Write a 32 bit value, respecting destination endianness
+    void elfWrite4(DWord *pi, DWord val);
 
     /**
      * Mark all imported symbols as such.
@@ -119,35 +124,35 @@ private:
      */
     void markImports();
 
-    void processSymbol(Translated_ElfSym& sym, int e_type, int i, const QString& currentFile = "");
+    void processSymbol(Translated_ElfSym &sym, int e_type, int i, const QString &currentFile = "");
 
 private:
-    size_t m_loadedImageSize = 0;               ///< Size of image in bytes
-    Byte *m_loadedImage = nullptr;              ///< Pointer to the loaded image
+    size_t m_loadedImageSize = 0;       ///< Size of image in bytes
+    Byte *m_loadedImage      = nullptr; ///< Pointer to the loaded image
 
-    Elf32_Ehdr *m_elfHeader   = nullptr;        ///< ELF header
-    Elf32_Phdr *m_programHdrs = nullptr;        ///< Pointer to program headers
-    Elf32_Shdr *m_sectionHdrs = nullptr;        ///< Array of section header structs
+    Elf32_Ehdr *m_elfHeader   = nullptr; ///< ELF header
+    Elf32_Phdr *m_programHdrs = nullptr; ///< Pointer to program headers
+    Elf32_Shdr *m_sectionHdrs = nullptr; ///< Array of section header structs
 
-    const char *m_strings = nullptr;            ///< Pointer to the string section
-    Endian m_endian = Endian::Little;
+    const char *m_strings = nullptr; ///< Pointer to the string section
+    Endian m_endian       = Endian::Little;
 
     const Elf32_Rel *m_relocSection  = nullptr; ///< Pointer to the relocation section
     const Elf32_Sym *m_symbolSection = nullptr; ///< Pointer to loaded symbol section
 
-    bool m_relocHasAddend = false;              ///< true if reloc table has addend
-    Address m_lastAddr = Address::INVALID;      ///< Save last address looked up
-    int m_lastSize = 0;                         ///< Size associated with that name
-    Address m_pltMin = Address::INVALID;        ///< Min address of PLT table
-    Address m_pltMax = Address::INVALID;        ///< Max address (1 past last) of PLT
-    Address *m_importStubs = nullptr;           ///< An array of import stubs
-    Address m_baseAddr = Address::INVALID;      ///< Base image virtual address
-    Address m_firstExtern = Address::INVALID;   ///< where the first extern will be placed
-    Address m_nextExtern = Address::INVALID;    ///< where the next extern will be placed
-    uint32 *m_shLink = nullptr;                 ///< pointer to array of sh_link values
-    uint32 *m_shInfo = nullptr;                 ///< pointer to array of sh_info values
+    bool m_relocHasAddend  = false;            ///< true if reloc table has addend
+    Address m_lastAddr     = Address::INVALID; ///< Save last address looked up
+    int m_lastSize         = 0;                ///< Size associated with that name
+    Address m_pltMin       = Address::INVALID; ///< Min address of PLT table
+    Address m_pltMax       = Address::INVALID; ///< Max address (1 past last) of PLT
+    Address *m_importStubs = nullptr;          ///< An array of import stubs
+    Address m_baseAddr     = Address::INVALID; ///< Base image virtual address
+    Address m_firstExtern  = Address::INVALID; ///< where the first extern will be placed
+    Address m_nextExtern   = Address::INVALID; ///< where the next extern will be placed
+    uint32 *m_shLink       = nullptr;          ///< pointer to array of sh_link values
+    uint32 *m_shInfo       = nullptr;          ///< pointer to array of sh_info values
 
     std::vector<struct SectionParam> m_elfSections;
-    BinaryImage *m_binaryImage = nullptr;
+    BinaryImage *m_binaryImage   = nullptr;
     BinarySymbolTable *m_symbols = nullptr;
 };

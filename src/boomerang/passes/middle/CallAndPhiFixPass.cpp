@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "CallAndPhiFixPass.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/passes/PassManager.h"
@@ -17,15 +16,14 @@
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/ssl/type/Type.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 
 
 CallAndPhiFixPass::CallAndPhiFixPass()
     : IPass("CallAndPhiFix", PassID::CallAndPhiFix)
-{
-}
+{}
 
 
 bool CallAndPhiFixPass::execute(UserProc *proc)
@@ -51,10 +49,9 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
      *                if first != current
      *                      allSame = false
      *              if allSame
-     *                let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
-     *                replace ps with an assignment lhs := best
-     *      else (ordinary statement)
-     *        do bypass and propagation for s
+     *                let best be ref built from the "best" parameter p in ps ({-} better than
+     * {assign} better than {call}) replace ps with an assignment lhs := best else (ordinary
+     * statement) do bypass and propagation for s
      */
     std::map<SharedExp, int, lessExpStar> destCounts;
     StatementList stmts;
@@ -70,7 +67,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
         CallStatement *call = static_cast<CallStatement *>(s);
 
-        for (auto& elem : call->getArguments()) {
+        for (auto &elem : call->getArguments()) {
             Assign *a = static_cast<Assign *>(elem);
 
             if (!a->getType()->resolvesToPointer()) {
@@ -82,7 +79,8 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             if ((e->getOper() == opPlus) || (e->getOper() == opMinus)) {
                 if (e->getSubExp2()->isIntConst()) {
                     if (e->getSubExp1()->isSubscript() &&
-                        e->getSubExp1()->getSubExp1()->isRegN(proc->getSignature()->getStackRegister()) &&
+                        e->getSubExp1()->getSubExp1()->isRegN(
+                            proc->getSignature()->getStackRegister()) &&
                         (((e->access<RefExp, 1>())->getDef() == nullptr) ||
                          (e->access<RefExp, 1>())->getDef()->isImplicit())) {
                         a->setRight(Unary::get(opAddrOf, Location::memOf(e->clone())));
@@ -108,7 +106,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
             continue;
         }
 
-        PhiAssign *phi = static_cast<PhiAssign *>(s);
+        PhiAssign *phi                 = static_cast<PhiAssign *>(s);
         std::shared_ptr<RefExp> refExp = RefExp::get(phi->getLeft(), phi);
 
         phi->removeAllReferences(refExp);
@@ -134,11 +132,11 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         PhiAssign::iterator phi_iter = phi->begin();
 
         while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
-            ++phi_iter;                // Skip any null parameters
+            ++phi_iter; // Skip any null parameters
         }
 
         assert(phi_iter != phi->end()); // Should have been deleted
-        RefExp&  phi_inf = *phi_iter;
+        RefExp &phi_inf = *phi_iter;
         SharedExp first = RefExp::get(phi_inf.getSubExp1(), phi_inf.getDef());
 
         // bypass to first
@@ -151,7 +149,7 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
         first = first->propagateAll(); // Propagate everything repeatedly
 
-        if (cb.isModified()) {              // Modified?
+        if (cb.isModified()) { // Modified?
             // if first is of the form lhs{x}
             if (first->isSubscript() && (*first->getSubExp1() == *lhs)) {
                 // replace first with x
@@ -162,8 +160,8 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         // For each parameter p of ps after the first
         for (++phi_iter; phi_iter != phi->end(); ++phi_iter) {
             assert(phi_iter->getSubExp1());
-            RefExp&      phi_inf2 = *phi_iter;
-            SharedExp    current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
+            RefExp &phi_inf2  = *phi_iter;
+            SharedExp current = RefExp::get(phi_inf2.getSubExp1(), phi_inf2.getDef());
             CallBypasser cb2(phi);
             current = current->acceptModifier(&cb2);
 
@@ -187,11 +185,12 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
         }
 
         if (allSame) {
-            // let best be ref built from the "best" parameter p in ps ({-} better than {assign} better than {call})
+            // let best be ref built from the "best" parameter p in ps ({-} better than {assign}
+            // better than {call})
             phi_iter = phi->begin();
 
             while (phi_iter != phi->end() && phi_iter->getSubExp1() == nullptr) {
-                ++phi_iter;                // Skip any null parameters
+                ++phi_iter; // Skip any null parameters
             }
 
             assert(phi_iter != phi->end()); // Should have been deleted
@@ -220,12 +219,12 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
     }
 
     // Also do xxx in m[xxx] in the use collector
-    for (const SharedExp& cc : proc->getUseCollector()) {
+    for (const SharedExp &cc : proc->getUseCollector()) {
         if (!cc->isMemOf()) {
             continue;
         }
 
-        auto         addr = cc->getSubExp1();
+        auto addr = cc->getSubExp1();
         CallBypasser cb(nullptr);
         addr = addr->acceptModifier(&cb);
 
@@ -236,4 +235,3 @@ bool CallAndPhiFixPass::execute(UserProc *proc)
 
     return true;
 }
-

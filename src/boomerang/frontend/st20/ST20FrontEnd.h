@@ -23,19 +23,19 @@ class ST20FrontEnd : public DefaultFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     ST20FrontEnd(BinaryFile *binaryFile, Prog *prog);
-    ST20FrontEnd(const ST20FrontEnd& other) = delete;
-    ST20FrontEnd(ST20FrontEnd&& other) = default;
+    ST20FrontEnd(const ST20FrontEnd &other) = delete;
+    ST20FrontEnd(ST20FrontEnd &&other)      = default;
 
     /// \copydoc IFrontEnd::~IFrontEnd
     virtual ~ST20FrontEnd() override = default;
 
-    ST20FrontEnd& operator=(const ST20FrontEnd& other) = delete;
-    ST20FrontEnd& operator=(ST20FrontEnd&& other) = default;
+    ST20FrontEnd &operator=(const ST20FrontEnd &other) = delete;
+    ST20FrontEnd &operator=(ST20FrontEnd &&other) = default;
 
 public:
     /// \copydoc IFrontEnd::processProc
     virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    virtual Address findMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool &gotMain) override;
 };

@@ -20,5 +20,5 @@ class QString;
 class BOOMERANG_API DFGWriter
 {
 public:
-    void printDFG(const UserProc *proc, const QString& fname);
+    void printDFG(const UserProc *proc, const QString &fname);
 };

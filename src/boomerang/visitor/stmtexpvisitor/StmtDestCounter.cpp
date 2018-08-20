@@ -9,18 +9,16 @@
 #pragma endregion License
 #include "StmtDestCounter.h"
 
-
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/visitor/expvisitor/ExpDestCounter.h"
 
 
-StmtDestCounter::StmtDestCounter(ExpDestCounter* edc)
+StmtDestCounter::StmtDestCounter(ExpDestCounter *edc)
     : StmtExpVisitor(edc)
-{
-}
+{}
 
 
-bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool& visitChildren)
+bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool &visitChildren)
 {
     visitChildren = true;
     return true;

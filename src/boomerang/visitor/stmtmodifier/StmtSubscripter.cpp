@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "StmtSubscripter.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
@@ -21,10 +20,9 @@
 
 StmtSubscripter::StmtSubscripter(ExpSubscripter *es)
     : StmtModifier(es)
-{
-}
+{}
 
-void StmtSubscripter::visit(Assign *stmt, bool& visitChildren)
+void StmtSubscripter::visit(Assign *stmt, bool &visitChildren)
 {
     SharedExp rhs = stmt->getRight();
 
@@ -40,7 +38,7 @@ void StmtSubscripter::visit(Assign *stmt, bool& visitChildren)
 }
 
 
-void StmtSubscripter::visit(PhiAssign *stmt, bool& visitChildren)
+void StmtSubscripter::visit(PhiAssign *stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -52,7 +50,7 @@ void StmtSubscripter::visit(PhiAssign *stmt, bool& visitChildren)
 }
 
 
-void StmtSubscripter::visit(ImplicitAssign *stmt, bool& visitChildren)
+void StmtSubscripter::visit(ImplicitAssign *stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -64,7 +62,7 @@ void StmtSubscripter::visit(ImplicitAssign *stmt, bool& visitChildren)
 }
 
 
-void StmtSubscripter::visit(BoolAssign *stmt, bool& visitChildren)
+void StmtSubscripter::visit(BoolAssign *stmt, bool &visitChildren)
 {
     SharedExp lhs = stmt->getLeft();
 
@@ -78,7 +76,7 @@ void StmtSubscripter::visit(BoolAssign *stmt, bool& visitChildren)
 }
 
 
-void StmtSubscripter::visit(CallStatement *stmt, bool& visitChildren)
+void StmtSubscripter::visit(CallStatement *stmt, bool &visitChildren)
 {
     SharedExp condExp = stmt->getDest();
 
@@ -87,7 +85,7 @@ void StmtSubscripter::visit(CallStatement *stmt, bool& visitChildren)
     }
 
     // Subscript the ordinary arguments
-    const StatementList& arguments = stmt->getArguments();
+    const StatementList &arguments = stmt->getArguments();
 
     for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
         (*ss)->accept(this);

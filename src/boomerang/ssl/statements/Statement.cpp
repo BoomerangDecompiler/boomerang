@@ -9,30 +9,29 @@
 #pragma endregion License
 #include "Statement.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ifc/ICodeGenerator.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
-#include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ImpRefStatement.h"
+#include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expmodifier/CallBypasser.h"
 #include "boomerang/visitor/expmodifier/DFALocalMapper.h"
 #include "boomerang/visitor/expmodifier/ExpCastInserter.h"
@@ -54,7 +53,6 @@
 #include "boomerang/visitor/stmtvisitor/StmtCastInserter.h"
 #include "boomerang/visitor/stmtvisitor/StmtConscriptSetter.h"
 
-
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -66,16 +64,16 @@ Statement::Statement()
     : m_bb(nullptr)
     , m_proc(nullptr)
     , m_number(0)
-{
-
-}
+{}
 
 
 void Statement::setProc(UserProc *proc)
 {
     m_proc = proc;
 
-    const bool assumeABICompliance = (proc && proc->getProg()) ? proc->getProg()->getProject()->getSettings()->assumeABI : false;
+    const bool assumeABICompliance = (proc && proc->getProg())
+                                         ? proc->getProg()->getProject()->getSettings()->assumeABI
+                                         : false;
     LocationSet exps, defs;
     addUsedLocs(exps);
     getDefinitions(defs, assumeABICompliance);
@@ -103,8 +101,8 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 
     // constant memory accesses
     if (e1a->isIntConst() && e2a->isIntConst()) {
-        Address   a1   = e1a->access<Const>()->getAddr();
-        Address   a2   = e2a->access<Const>()->getAddr();
+        Address a1     = e1a->access<Const>()->getAddr();
+        Address a2     = e2a->access<Const>()->getAddr();
         ptrdiff_t diff = (a1 - a2).value();
 
         if (diff < 0) {
@@ -117,35 +115,36 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
     }
 
     // same left op constant memory accesses
-    if ((e1a->getArity() == 2) && (e1a->getOper() == e2a->getOper()) && e1a->getSubExp2()->isIntConst() &&
-        e2a->getSubExp2()->isIntConst() && (*e1a->getSubExp1() == *e2a->getSubExp1())) {
-            int i1   = e1a->access<Const, 2>()->getInt();
-            int i2   = e2a->access<Const, 2>()->getInt();
-            int diff = i1 - i2;
+    if ((e1a->getArity() == 2) && (e1a->getOper() == e2a->getOper()) &&
+        e1a->getSubExp2()->isIntConst() && e2a->getSubExp2()->isIntConst() &&
+        (*e1a->getSubExp1() == *e2a->getSubExp1())) {
+        int i1   = e1a->access<Const, 2>()->getInt();
+        int i2   = e2a->access<Const, 2>()->getInt();
+        int diff = i1 - i2;
 
-            if (diff < 0) {
-                diff = -diff;
-            }
+        if (diff < 0) {
+            diff = -diff;
+        }
 
-            if (diff * 8 >= size) {
-                return false;
-            }
+        if (diff * 8 >= size) {
+            return false;
+        }
     }
 
     // [left] vs [left +/- constant] memory accesses
-    if (((e2a->getOper() == opPlus) || (e2a->getOper() == opMinus)) && (*e1a == *e2a->getSubExp1()) &&
-        e2a->getSubExp2()->isIntConst()) {
-            int i1   = 0;
-            int i2   = e2a->access<Const, 2>()->getInt();
-            int diff = i1 - i2;
+    if (((e2a->getOper() == opPlus) || (e2a->getOper() == opMinus)) &&
+        (*e1a == *e2a->getSubExp1()) && e2a->getSubExp2()->isIntConst()) {
+        int i1   = 0;
+        int i2   = e2a->access<Const, 2>()->getInt();
+        int diff = i1 - i2;
 
-            if (diff < 0) {
-                diff = -diff;
-            }
+        if (diff < 0) {
+            diff = -diff;
+        }
 
-            if (diff * 8 >= size) {
-                return false;
-            }
+        if (diff * 8 >= size) {
+            return false;
+        }
     }
 
     // Don't need [left +/- constant ] vs [left] because called twice with
@@ -154,7 +153,7 @@ bool Statement::calcMayAlias(SharedExp e1, SharedExp e2, int size) const
 }
 
 
-OStream& operator<<(OStream& os, const Statement *s)
+OStream &operator<<(OStream &os, const Statement *s)
 {
     if (s == nullptr) {
         os << "nullptr ";
@@ -179,14 +178,14 @@ bool Statement::isFlagAssign() const
 
 QString Statement::prints() const
 {
-    QString     tgt;
+    QString tgt;
     OStream ost(&tgt);
     print(ost);
     return tgt;
 }
 
 
-bool Statement::canPropagateToExp(const Exp& exp)
+bool Statement::canPropagateToExp(const Exp &exp)
 {
     if (!exp.isSubscript()) {
         return false;
@@ -205,7 +204,8 @@ bool Statement::canPropagateToExp(const Exp& exp)
     // Don't propagate to self! Can happen with %pc's (?!)
     //        return false;
     if (def->isNullStatement()) {
-        // Don't propagate a null statement! Can happen with %pc's (would have no effect, and would infinitely loop)
+        // Don't propagate a null statement! Can happen with %pc's (would have no effect, and would
+        // infinitely loop)
         return false;
     }
 
@@ -224,17 +224,18 @@ bool Statement::canPropagateToExp(const Exp& exp)
 }
 
 
-bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedExp, int, lessExpStar> *destCounts,
+bool Statement::propagateTo(bool &convert, Settings *settings,
+                            std::map<SharedExp, int, lessExpStar> *destCounts,
                             LocationSet *usedByDomPhi, bool force)
 {
-    bool change = false;
-    int  changes = 0;
+    bool change            = false;
+    int changes            = 0;
     const int propMaxDepth = settings->propMaxDepth;
 
     do {
         LocationSet exps;
-        // addUsedLocs(..,true) -> true to also add uses from collectors. For example, want to propagate into
-        // the reaching definitions of calls. Third parameter defaults to false, to
+        // addUsedLocs(..,true) -> true to also add uses from collectors. For example, want to
+        // propagate into the reaching definitions of calls. Third parameter defaults to false, to
         // find all locations, not just those inside m[...]
         addUsedLocs(exps, true);
         change = false; // True if changed this iteration of the do/while loop
@@ -248,12 +249,13 @@ bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedEx
 
             assert(dynamic_cast<Assignment *>(e->access<RefExp>()->getDef()) != nullptr);
             Assignment *def = static_cast<Assignment *>(e->access<RefExp>()->getDef());
-            SharedExp  rhs  = def->getRight();
+            SharedExp rhs   = def->getRight();
 
-            // If force is true, ignore the fact that a memof should not be propagated (for switch analysis)
+            // If force is true, ignore the fact that a memof should not be propagated (for switch
+            // analysis)
             if (rhs->containsBadMemof() && !(force && rhs->isMemOf())) {
-                // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols. You could be
-                // propagating past a definition, thereby invalidating the IR
+                // Must never propagate unsubscripted memofs, or memofs that don't yet have symbols.
+                // You could be propagating past a definition, thereby invalidating the IR
                 continue;
             }
 
@@ -278,8 +280,8 @@ bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedEx
                         }
 
                         SharedExp rhsBase = (*rcit)->getSubExp1();
-                        // We don't know the statement number for the one definition in usedInDomPhi that might exist,
-                        // so we use findNS()
+                        // We don't know the statement number for the one definition in usedInDomPhi
+                        // that might exist, so we use findNS()
                         SharedExp OW = usedByDomPhi->findNS(rhsBase);
 
                         if (OW) {
@@ -289,13 +291,14 @@ bool Statement::propagateTo(bool& convert, Settings *settings, std::map<SharedEx
                                 continue;
                             }
 
-                            SharedExp   lhsOWdef = static_cast<Assign *>(OWdef)->getLeft();
+                            SharedExp lhsOWdef = static_cast<Assign *>(OWdef)->getLeft();
                             LocationSet OWcomps;
                             def->addUsedLocs(OWcomps);
 
                             bool isOverwrite = false;
 
-                            for (LocationSet::iterator cc = OWcomps.begin(); cc != OWcomps.end(); ++cc) {
+                            for (LocationSet::iterator cc = OWcomps.begin(); cc != OWcomps.end();
+                                 ++cc) {
                                 if (**cc *= *lhsOWdef) {
                                     isOverwrite = true;
                                     break;
@@ -350,7 +353,7 @@ bool Statement::propagateFlagsTo(Settings *settings)
 {
     bool change  = false;
     bool convert = false;
-    int  changes = 0;
+    int changes  = 0;
 
     do {
         LocationSet exps;
@@ -358,16 +361,17 @@ bool Statement::propagateFlagsTo(Settings *settings)
 
         for (SharedExp e : exps) {
             if (!e->isSubscript()) {
-                continue;     // e.g. %pc
+                continue; // e.g. %pc
             }
 
             Assignment *def = dynamic_cast<Assignment *>(e->access<RefExp>()->getDef());
 
-            if ((def == nullptr) || (nullptr == def->getRight())) {     // process if it has definition with rhs
+            if ((def == nullptr) ||
+                (nullptr == def->getRight())) { // process if it has definition with rhs
                 continue;
             }
 
-            SharedExp base = e->access<Exp, 1>();     // Either RefExp or Location ?
+            SharedExp base = e->access<Exp, 1>(); // Either RefExp or Location ?
 
             if (base->isFlags() || base->isMainFlag()) {
                 change |= doPropagateTo(e, def, convert, settings);
@@ -386,7 +390,8 @@ void Statement::setTypeFor(SharedExp, SharedType)
 }
 
 
-bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert, Settings *settings)
+bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool &convert,
+                              Settings *settings)
 {
     // Respect the -p N switch
     if (settings->numToPropagate >= 0) {
@@ -407,7 +412,7 @@ bool Statement::doPropagateTo(const SharedExp &e, Assignment *def, bool& convert
 }
 
 
-bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
+bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
 {
     SharedExp rhs = def->getRight();
 
@@ -426,10 +431,10 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
 
         // FIXME: check SUBFLAGSFL handling, and implement it if needed
         if (str.startsWith("SUBFLAGS") && (str != "SUBFLAGSFL")) {
-            /* When the carry flag is used bare, and was defined in a subtract of the form lhs - rhs, then CF has
-             * the value (lhs <u rhs).  lhs and rhs are the first and second parameters of the flagcall.
-             * Note: the flagcall is a binary, with a Const (the name) and a list of expressions:
-             *       defRhs
+            /* When the carry flag is used bare, and was defined in a subtract of the form lhs -
+             * rhs, then CF has the value (lhs <u rhs).  lhs and rhs are the first and second
+             * parameters of the flagcall. Note: the flagcall is a binary, with a Const (the name)
+             * and a list of expressions: defRhs
              *      /      \
              * Const       opList
              * "SUBFLAGS"    /    \
@@ -439,8 +444,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
              *    /     \
              *  P3     opNil
              */
-            SharedExp relExp = Binary::get(opLessUns,
-                                           rhs->getSubExp2()->getSubExp1(),
+            SharedExp relExp = Binary::get(opLessUns, rhs->getSubExp2()->getSubExp1(),
                                            rhs->getSubExp2()->getSubExp2()->getSubExp1());
             searchAndReplace(*RefExp::get(Terminal::get(opCF), def), relExp, true);
             return true;
@@ -457,19 +461,17 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
 
         if (str.startsWith("SUBFLAGS") && (str != "SUBFLAGSFL")) {
             // for zf we're only interested in if the result part of the subflags is equal to zero
-            SharedExp relExp = Binary::get(opEquals,
-                                           rhs->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
-                                           Const::get(0));
+            SharedExp relExp = Binary::get(
+                opEquals, rhs->getSubExp2()->getSubExp2()->getSubExp2()->getSubExp1(),
+                Const::get(0));
             searchAndReplace(*RefExp::get(Terminal::get(opZF), def), relExp, true);
             return true;
         }
 
         if (str == "SUBFLAGSFL") {
             // for float zf we'll replace the ZF with (P1==P2)
-            SharedExp relExp = Binary::get(opEquals,
-                                           rhs->getSubExp2()->getSubExp1(),
-                                           rhs->getSubExp2()->getSubExp2()->getSubExp1()
-                                           );
+            SharedExp relExp = Binary::get(opEquals, rhs->getSubExp2()->getSubExp1(),
+                                           rhs->getSubExp2()->getSubExp2()->getSubExp1());
             searchAndReplace(*RefExp::get(Terminal::get(opZF), def), relExp, true);
             return true;
         }
@@ -477,7 +479,7 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool& convert)
 
     // do the replacement
     // bool convert = doReplaceRef(re, rhs);
-    bool ret = searchAndReplace(*e, rhs, true);     // Last parameter true to change collectors
+    bool ret = searchAndReplace(*e, rhs, true); // Last parameter true to change collectors
     // assert(ret);
 
     if (ret && isCall()) {
@@ -547,7 +549,7 @@ void Statement::clearConscripts()
 bool Statement::castConst(int num, SharedType ty)
 {
     ExpConstCaster ecc(num, ty);
-    StmtModifier   scc(&ecc);
+    StmtModifier scc(&ecc);
 
     accept(&scc);
     return ecc.isChanged();
@@ -565,27 +567,28 @@ void Statement::stripSizes()
 
 void Statement::bypass()
 {
-    CallBypasser     cb(this);
-    StmtPartModifier sm(&cb);     // Use the Part modifier so we don't change the top level of LHS of assigns etc
+    CallBypasser cb(this);
+    StmtPartModifier sm(
+        &cb); // Use the Part modifier so we don't change the top level of LHS of assigns etc
 
     accept(&sm);
 
     if (cb.isTopChanged()) {
-        simplify();     // E.g. m[esp{20}] := blah -> m[esp{-}-20+4] := blah
+        simplify(); // E.g. m[esp{20}] := blah -> m[esp{-}-20+4] := blah
     }
 }
 
 
-void Statement::addUsedLocs(LocationSet& used, bool cc /* = false */, bool memOnly /*= false */)
+void Statement::addUsedLocs(LocationSet &used, bool cc /* = false */, bool memOnly /*= false */)
 {
-    UsedLocsFinder  ulf(used, memOnly);
+    UsedLocsFinder ulf(used, memOnly);
     UsedLocsVisitor ulv(&ulf, cc);
 
     accept(&ulv);
 }
 
 
-bool Statement::addUsedLocals(LocationSet& used)
+bool Statement::addUsedLocals(LocationSet &used)
 {
     UsedLocalFinder ulf(used, m_proc);
     UsedLocsVisitor ulv(&ulf, false);
@@ -597,16 +600,16 @@ bool Statement::addUsedLocals(LocationSet& used)
 
 void Statement::subscriptVar(SharedExp e, Statement *def /*, ProcCFG* cfg */)
 {
-    ExpSubscripter  es(e, def /*, cfg*/);
+    ExpSubscripter es(e, def /*, cfg*/);
     StmtSubscripter ss(&es);
 
     accept(&ss);
 }
 
 
-void Statement::findConstants(std::list<std::shared_ptr<Const> >& lc)
+void Statement::findConstants(std::list<std::shared_ptr<Const>> &lc)
 {
-    ConstFinder     cf(lc);
+    ConstFinder cf(lc);
     StmtConstFinder scf(&cf);
 
     accept(&scf);
@@ -615,7 +618,7 @@ void Statement::findConstants(std::list<std::shared_ptr<Const> >& lc)
 
 void Statement::mapRegistersToLocals()
 {
-    ExpRegMapper  erm(m_proc);
+    ExpRegMapper erm(m_proc);
     StmtRegMapper srm(&erm);
 
     accept(&srm);
@@ -626,7 +629,7 @@ void Statement::insertCasts()
 {
     // First we postvisit expressions using a StmtModifier and an ExpCastInserter
     ExpCastInserter eci;
-    StmtModifier    sm(&eci, true);     // True to ignore collectors
+    StmtModifier sm(&eci, true); // True to ignore collectors
 
     accept(&sm);
     // Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
@@ -637,7 +640,7 @@ void Statement::insertCasts()
 
 void Statement::replaceSubscriptsWithLocals()
 {
-    ExpSSAXformer  esx(m_proc);
+    ExpSSAXformer esx(m_proc);
     StmtSSAXformer ssx(&esx, m_proc);
 
     accept(&ssx);
@@ -647,7 +650,7 @@ void Statement::replaceSubscriptsWithLocals()
 void Statement::dfaMapLocals()
 {
     DfaLocalMapper dlm(m_proc);
-    StmtModifier   sm(&dlm, true);     // True to ignore def collector in return statement
+    StmtModifier sm(&dlm, true); // True to ignore def collector in return statement
 
     accept(&sm);
 
@@ -657,9 +660,9 @@ void Statement::dfaMapLocals()
 }
 
 
-SharedType Statement::meetWithFor(const SharedType &ty, const SharedExp &e, bool& changed)
+SharedType Statement::meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed)
 {
-    bool       thisCh  = false;
+    bool thisCh        = false;
     SharedType typeFor = getTypeFor(e);
 
     assert(typeFor);

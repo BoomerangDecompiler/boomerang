@@ -47,10 +47,10 @@ enum class BBType
 
 
 // index of the "then" branch of conditional jumps
-#define BTHEN    0
+#define BTHEN 0
 
 // index of the "else" branch of conditional jumps
-#define BELSE    1
+#define BELSE 1
 
 
 /**
@@ -62,8 +62,8 @@ enum class BBType
 class BOOMERANG_API BasicBlock
 {
 public:
-    typedef RTLList::iterator                     RTLIterator;
-    typedef RTLList::reverse_iterator             RTLRIterator;
+    typedef RTLList::iterator RTLIterator;
+    typedef RTLList::reverse_iterator RTLRIterator;
 
     class BBComparator
     {
@@ -71,6 +71,7 @@ public:
         /// \returns bb1->getLowAddr() < bb2->getLowAddr();
         bool operator()(const BasicBlock *bb1, const BasicBlock *bb2) const;
     };
+
 public:
     /**
      * Creates an incomplete BB.
@@ -86,22 +87,22 @@ public:
      */
     BasicBlock(BBType bbType, std::unique_ptr<RTLList> rtls, Function *function);
 
-    BasicBlock(const BasicBlock& other);
-    BasicBlock(BasicBlock&& other) = delete;
+    BasicBlock(const BasicBlock &other);
+    BasicBlock(BasicBlock &&other) = delete;
     ~BasicBlock();
 
-    BasicBlock& operator=(const BasicBlock& other);
-    BasicBlock& operator=(BasicBlock&& other) = delete;
+    BasicBlock &operator=(const BasicBlock &other);
+    BasicBlock &operator=(BasicBlock &&other) = delete;
 
 public:
     /// \returns the type of the BasicBlock
-    inline BBType getType()         const { return m_bbType; }
+    inline BBType getType() const { return m_bbType; }
     inline bool isType(BBType type) const { return m_bbType == type; }
-    inline void setType(BBType bbType)    { m_bbType = bbType; }
+    inline void setType(BBType bbType) { m_bbType = bbType; }
 
     /// \returns enclosing function, nullptr if the BB does not belong to a function.
     inline const Function *getFunction() const { return m_function; }
-    inline Function *getFunction()             { return m_function; }
+    inline Function *getFunction() { return m_function; }
 
     /**
      * \returns the lowest real address associated with this BB.
@@ -128,13 +129,13 @@ public:
     // predecessor / successor functions
 
     inline int getNumPredecessors() const { return m_predecessors.size(); }
-    inline int getNumSuccessors()   const { return m_successors.size(); }
+    inline int getNumSuccessors() const { return m_successors.size(); }
 
     /// \returns all predecessors of this BB.
-    const std::vector<BasicBlock *>& getPredecessors() const;
+    const std::vector<BasicBlock *> &getPredecessors() const;
 
     /// \returns all successors of this BB.
-    const std::vector<BasicBlock *>& getSuccessors() const;
+    const std::vector<BasicBlock *> &getSuccessors() const;
 
     /// \returns the \p i-th predecessor of this BB.
     /// Returns nullptr if \p i is out of range.
@@ -200,13 +201,13 @@ public:
 
     /**
      * Get first/next statement this BB
-     * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated, easily-bugged
-     * code
+     * Somewhat intricate because of the post call semantics; these funcs save a lot of duplicated,
+     * easily-bugged code
      */
-    Statement *getFirstStmt(RTLIterator& rit, StatementList::iterator& sit);
-    Statement *getNextStmt(RTLIterator& rit, StatementList::iterator& sit);
-    Statement *getLastStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
-    Statement *getPrevStmt(RTLRIterator& rit, StatementList::reverse_iterator& sit);
+    Statement *getFirstStmt(RTLIterator &rit, StatementList::iterator &sit);
+    Statement *getNextStmt(RTLIterator &rit, StatementList::iterator &sit);
+    Statement *getLastStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit);
+    Statement *getPrevStmt(RTLRIterator &rit, StatementList::reverse_iterator &sit);
 
     Statement *getFirstStmt();
     const Statement *getFirstStmt() const;
@@ -214,13 +215,13 @@ public:
     const Statement *getLastStmt() const;
 
     /// Appends all statements in this BB to \p stmts.
-    void appendStatementsTo(StatementList& stmts) const;
+    void appendStatementsTo(StatementList &stmts) const;
 
     ///
-    ImplicitAssign *addImplicitAssign(const SharedExp& lhs);
+    ImplicitAssign *addImplicitAssign(const SharedExp &lhs);
 
     /// Add a new phi assignment of the form <usedExp> := phi() to the beginning of the BB.
-    PhiAssign *addPhi(const SharedExp& usedExp);
+    PhiAssign *addPhi(const SharedExp &usedExp);
 
     bool hasStatement(const Statement *stmt) const;
 
@@ -249,7 +250,7 @@ public:
      * Set the condition of a conditional branch BB.
      * If the BB is not a branch, nothing happens.
      */
-    void setCond(const SharedExp& cond);
+    void setCond(const SharedExp &cond);
 
     /// Get the destination of the high level jump in this BB, if any
     SharedExp getDest() const;
@@ -266,7 +267,7 @@ public:
      * \param os   stream to output to
      * \param html print in html mode
      */
-    void print(OStream& os);
+    void print(OStream &os);
 
     QString prints();
 
@@ -275,12 +276,12 @@ protected:
     Function *m_function = nullptr;
     std::unique_ptr<RTLList> m_listOfRTLs; ///< Ptr to list of RTLs
 
-    Address m_lowAddr = Address::ZERO;
+    Address m_lowAddr  = Address::ZERO;
     Address m_highAddr = Address::INVALID;
 
-    BBType m_bbType = BBType::Invalid;      ///< type of basic block
+    BBType m_bbType = BBType::Invalid; ///< type of basic block
 
     /* in-edges and out-edges */
-    std::vector<BasicBlock *> m_predecessors;  ///< Vector of in-edges
-    std::vector<BasicBlock *> m_successors;    ///< Vector of out-edges
+    std::vector<BasicBlock *> m_predecessors; ///< Vector of in-edges
+    std::vector<BasicBlock *> m_successors;   ///< Vector of out-edges
 };

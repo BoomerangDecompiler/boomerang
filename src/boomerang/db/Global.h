@@ -24,22 +24,22 @@ class Prog;
 class BOOMERANG_API Global
 {
 public:
-    Global(SharedType type, Address addr, const QString& name, Prog *prog);
-    Global(const Global& other) = delete;
-    Global(Global&& other) = default;
+    Global(SharedType type, Address addr, const QString &name, Prog *prog);
+    Global(const Global &other) = delete;
+    Global(Global &&other)      = default;
 
     ~Global() = default;
 
-    Global& operator=(const Global& other) = delete;
-    Global& operator=(Global&& other) = default;
+    Global &operator=(const Global &other) = delete;
+    Global &operator=(Global &&other) = default;
 
 public:
     SharedType getType() const { return m_type; }
     void setType(SharedType ty) { m_type = ty; }
     void meetType(SharedType ty);
 
-    Address getAddress()     const { return m_addr; }
-    const QString& getName() const { return m_name; }
+    Address getAddress() const { return m_addr; }
+    const QString &getName() const { return m_name; }
 
     /// return true if \p address is contained within this global.
     bool containsAddress(Address addr) const;
@@ -61,6 +61,6 @@ private:
 class GlobalComparator
 {
 public:
-    bool operator()(const std::shared_ptr<const Global>& g1,
-                    const std::shared_ptr<const Global>& g2) const;
+    bool operator()(const std::shared_ptr<const Global> &g1,
+                    const std::shared_ptr<const Global> &g2) const;
 };

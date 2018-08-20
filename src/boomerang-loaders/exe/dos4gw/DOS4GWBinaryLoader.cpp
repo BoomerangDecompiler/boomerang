@@ -9,13 +9,12 @@
 #pragma endregion License
 #include "DOS4GWBinaryLoader.h"
 
-
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QBuffer>
 #include <QFile>
@@ -25,24 +24,22 @@ namespace
 {
 struct SectionParam
 {
-    QString     Name;
-    Address     from;
-    size_t      Size;
+    QString Name;
+    Address from;
+    size_t Size;
     HostAddress ImageAddress;
-    bool        Bss, Code, Data, ReadOnly;
+    bool Bss, Code, Data, ReadOnly;
 };
 }
 
 extern "C" int microX86Dis(void *p); // From microX86dis.c
 
 DOS4GWBinaryLoader::DOS4GWBinaryLoader()
-{
-}
+{}
 
 
 DOS4GWBinaryLoader::~DOS4GWBinaryLoader()
-{
-}
+{}
 
 
 void DOS4GWBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
@@ -60,7 +57,8 @@ void DOS4GWBinaryLoader::close()
 
 Address DOS4GWBinaryLoader::getEntryPoint()
 {
-    return Address((READ4_LE(m_LXObjects[READ4_LE(m_LXHeader.eipobjectnum)].RelocBaseAddr) + READ4_LE(m_LXHeader.eip)));
+    return Address((READ4_LE(m_LXObjects[READ4_LE(m_LXHeader.eipobjectnum)].RelocBaseAddr) +
+                    READ4_LE(m_LXHeader.eip)));
 }
 
 
@@ -80,15 +78,16 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
 
     // Search with this crude pattern: call, sub ebp, ebp, call __Cmain in the first 0x300 bytes
     // Start at program entry point
-    unsigned      p = READ4_LE(m_LXHeader.eip);
-    unsigned      lim = p + 0x300;
-    Address       addr;
+    unsigned p   = READ4_LE(m_LXHeader.eip);
+    unsigned lim = p + 0x300;
+    Address addr;
 
     // unsigned lastOrdCall = 0; //TODO: identify the point of setting this variable
-    bool gotSubEbp   = false;                               // True if see sub ebp, ebp
-    bool lastWasCall = false;                               // True if the last instruction was a call
+    bool gotSubEbp   = false; // True if see sub ebp, ebp
+    bool lastWasCall = false; // True if the last instruction was a call
 
-    BinarySection *textSection = m_image->getSectionByName("seg0"); // Assume the first section is text
+    BinarySection *textSection = m_image->getSectionByName(
+        "seg0"); // Assume the first section is text
 
     if (textSection == nullptr) {
         textSection = m_image->getSectionByName(".text");
@@ -103,8 +102,8 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
         return Address::INVALID;
     }
 
-    const Address  nativeOrigin = textSection->getSourceAddr();
-    const unsigned textSize     = textSection->getSize();
+    const Address nativeOrigin = textSection->getSourceAddr();
+    const unsigned textSize    = textSection->getSize();
 
     if (textSize < 0x300) {
         lim = p + textSize;
@@ -114,8 +113,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
         const Byte op1 = Util::readByte(&m_imageBase[p + 0]);
         const Byte op2 = Util::readByte(&m_imageBase[p + 1]);
 
-        switch (op1)
-        {
+        switch (op1) {
         case 0xE8:
 
             // An ordinary call
@@ -144,7 +142,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
             lastWasCall = false;
             break;
 
-        case 0xEB:             // Short relative jump
+        case 0xEB: // Short relative jump
 
             if (op2 >= 0x80) { // Branch backwards?
                 break;         // Yes, just ignore it
@@ -169,7 +167,7 @@ Address DOS4GWBinaryLoader::getMainEntryPoint()
 }
 
 
-bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
+bool DOS4GWBinaryLoader::loadFromMemory(QByteArray &data)
 {
     QBuffer buf(&data);
 
@@ -194,16 +192,16 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
     if (!Util::testMagic(&m_LXHeader.sigLo, { 'L', 'X' }) ||
         !Util::testMagic(&m_LXHeader.sigLo, { 'L', 'E' })) {
-            LOG_ERROR("Error loading file: bad LE/LX magic");
-            return false;
+        LOG_ERROR("Error loading file: bad LE/LX magic");
+        return false;
     }
 
     const DWord objTableOffset = READ4_LE(m_LXHeader.objtbloffset);
     if (!Util::inRange(lxoff, sizeof(LXHeader), buf.size()) ||
         !Util::inRange(objTableOffset, 0U, (DWord)buf.size()) ||
         !Util::inRange(lxoff + objTableOffset, sizeof(LXHeader), buf.size())) {
-            LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
-            return false;
+        LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
+        return false;
     }
     else if (!buf.seek(lxoff + READ4_LE(m_LXHeader.objtbloffset))) {
         LOG_ERROR("Cannot read LX object table");
@@ -211,7 +209,8 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     }
 
     const DWord numObjsInModule = READ4_LE(m_LXHeader.numobjsinmodule);
-    if (!Util::inRange(numObjsInModule, 0UL, (buf.size() - lxoff - objTableOffset) / sizeof(LXObject))) {
+    if (!Util::inRange(numObjsInModule, 0UL,
+                       (buf.size() - lxoff - objTableOffset) / sizeof(LXObject))) {
         LOG_ERROR("Cannot read LX file: Object table extends past file boundary");
         return false;
     }
@@ -221,12 +220,15 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     buf.read(reinterpret_cast<char *>(&m_LXObjects[0]), numObjsInModule * sizeof(LXObject));
 
     unsigned npages = 0;
-    int cbImage = 0;
+    int cbImage     = 0;
 
     for (unsigned n = 0; n < numObjsInModule; n++) {
         if (READ4_LE(m_LXObjects[n].ObjectFlags) & 0x40) {
-            if (READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1 > npages) {
-                npages = READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1;
+            if (READ4_LE(m_LXObjects[n].PageTblIdx) + READ4_LE(m_LXObjects[n].NumPageTblEntries) -
+                    1 >
+                npages) {
+                npages = READ4_LE(m_LXObjects[n].PageTblIdx) +
+                         READ4_LE(m_LXObjects[n].NumPageTblEntries) - 1;
             }
 
             cbImage = READ4_LE(m_LXObjects[n].RelocBaseAddr) + READ4_LE(m_LXObjects[n].VirtualSize);
@@ -249,26 +251,28 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 
     for (unsigned n = 0; n < numSections; n++) {
         if (READ4_LE(m_LXObjects[n].ObjectFlags) & 0x40) {
-            printf("vsize %x reloc %x flags %x page %u npage %u\n", READ4_LE(m_LXObjects[n].VirtualSize),
-                   READ4_LE(m_LXObjects[n].RelocBaseAddr), READ4_LE(m_LXObjects[n].ObjectFlags),
-                   READ4_LE(m_LXObjects[n].PageTblIdx), READ4_LE(m_LXObjects[n].NumPageTblEntries));
+            printf("vsize %x reloc %x flags %x page %u npage %u\n",
+                   READ4_LE(m_LXObjects[n].VirtualSize), READ4_LE(m_LXObjects[n].RelocBaseAddr),
+                   READ4_LE(m_LXObjects[n].ObjectFlags), READ4_LE(m_LXObjects[n].PageTblIdx),
+                   READ4_LE(m_LXObjects[n].NumPageTblEntries));
 
             SectionParam sect;
-            DWord        Flags = READ4_LE(m_LXObjects[n].ObjectFlags);
+            DWord Flags = READ4_LE(m_LXObjects[n].ObjectFlags);
 
             sect.Name         = QString("seg%1").arg(n); // no section names in LX
             sect.from         = Address(READ4_LE(m_LXObjects[n].RelocBaseAddr));
-            sect.ImageAddress = HostAddress(&m_imageBase[0]) + (sect.from - params.front().from).value();
-            sect.Size         = READ4_LE(m_LXObjects[n].VirtualSize);
-            sect.Bss          = 0; // TODO
-            sect.Code         = (Flags & 0x4) ? true  : false;
-            sect.Data         = (Flags & 0x4) ? false : true;
-            sect.ReadOnly     = (Flags & 0x1) ? false : true;
+            sect.ImageAddress = HostAddress(&m_imageBase[0]) +
+                                (sect.from - params.front().from).value();
+            sect.Size     = READ4_LE(m_LXObjects[n].VirtualSize);
+            sect.Bss      = 0; // TODO
+            sect.Code     = (Flags & 0x4) ? true : false;
+            sect.Data     = (Flags & 0x4) ? false : true;
+            sect.ReadOnly = (Flags & 0x1) ? false : true;
 
-            buf.seek(
-                m_LXHeader.datapagesoffset + (READ4_LE(m_LXObjects[n].PageTblIdx) - 1) * READ4_LE(m_LXHeader.pagesize)
-                );
-            char *p = &m_imageBase[0] + READ4_LE(m_LXObjects[n].RelocBaseAddr) - READ4_LE(m_LXObjects[0].RelocBaseAddr);
+            buf.seek(m_LXHeader.datapagesoffset +
+                     (READ4_LE(m_LXObjects[n].PageTblIdx) - 1) * READ4_LE(m_LXHeader.pagesize));
+            char *p = &m_imageBase[0] + READ4_LE(m_LXObjects[n].RelocBaseAddr) -
+                      READ4_LE(m_LXObjects[0].RelocBaseAddr);
             buf.read(p, READ4_LE(m_LXObjects[n].NumPageTblEntries) * READ4_LE(m_LXHeader.pagesize));
         }
     }
@@ -300,23 +304,22 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
     // printf("offset to end of fixup rec: %x\n", fixuppagetbl[npages]);
 
     buf.seek(READ4_LE(m_LXHeader.fixuprecordtbloffset) + lxoff);
-    LXFixup  fixup;
+    LXFixup fixup;
     unsigned srcpage = 0;
 
     do {
         buf.read(reinterpret_cast<char *>(&fixup), sizeof(fixup));
 
         if ((fixup.src != 7) || (fixup.flags & ~0x50)) {
-            LOG_WARN("Unknown fixup type %1 %2",
-                     QString("%1").arg(fixup.src,   2, 16, QChar('0')),
+            LOG_WARN("Unknown fixup type %1 %2", QString("%1").arg(fixup.src, 2, 16, QChar('0')),
                      QString("%1").arg(fixup.flags, 2, 16, QChar('0')));
 
             return false;
         }
 
-        // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff, fixup.object,
-        // fixup.trgoff);
-        unsigned long  src    = srcpage * READ4_LE(m_LXHeader.pagesize) + READ2_LE(fixup.srcoff);
+        // printf("srcpage = %i srcoff = %x object = %02x trgoff = %x\n", srcpage + 1, fixup.srcoff,
+        // fixup.object, fixup.trgoff);
+        unsigned long src     = srcpage * READ4_LE(m_LXHeader.pagesize) + READ2_LE(fixup.srcoff);
         unsigned short object = 0;
 
         if (fixup.flags & 0x40) {
@@ -339,7 +342,8 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
         //        printf("relocate dword at %x to point to %x\n", src, target);
         Util::writeDWord(&m_imageBase[src], target, Endian::Little);
 
-        while (buf.pos() - (READ4_LE(m_LXHeader.fixuprecordtbloffset) + lxoff) >= READ4_LE(fixuppagetbl[srcpage + 1])) {
+        while (buf.pos() - (READ4_LE(m_LXHeader.fixuprecordtbloffset) + lxoff) >=
+               READ4_LE(fixuppagetbl[srcpage + 1])) {
             srcpage++;
         }
     } while (srcpage < npages);
@@ -348,12 +352,12 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray& data)
 }
 
 
-int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
+int DOS4GWBinaryLoader::canLoad(QIODevice &fl) const
 {
     LXHeader testHeader;
 
     if (fl.read(reinterpret_cast<char *>(&testHeader), sizeof(testHeader)) != sizeof(LXHeader)) {
-        return 0;  // file too small
+        return 0; // file too small
     }
     else if (!Util::testMagic(&testHeader.sigLo, { 'M', 'Z' })) {
         return 0; // not a DOS-based file
@@ -380,8 +384,7 @@ int DOS4GWBinaryLoader::canLoad(QIODevice& fl) const
 
 // Clean up and unload the binary image
 void DOS4GWBinaryLoader::unload()
-{
-}
+{}
 
 
 SWord DOS4GWBinaryLoader::dos4gwRead2(const void *src) const
@@ -417,5 +420,5 @@ DWord DOS4GWBinaryLoader::getDelta()
 }
 
 
-BOOMERANG_LOADER_PLUGIN(DOS4GWBinaryLoader,
-    "DOS4GW loader plugin", BOOMERANG_VERSION, "Boomerang developers")
+BOOMERANG_LOADER_PLUGIN(DOS4GWBinaryLoader, "DOS4GW loader plugin", BOOMERANG_VERSION,
+                        "Boomerang developers")

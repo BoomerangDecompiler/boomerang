@@ -33,24 +33,24 @@ class Assignment;
 class Settings;
 
 
-typedef std::shared_ptr<Exp>         SharedExp;
-typedef std::shared_ptr<Type>        SharedType;
-typedef std::shared_ptr<const Type>  SharedConstType;
+typedef std::shared_ptr<Exp> SharedExp;
+typedef std::shared_ptr<Type> SharedType;
+typedef std::shared_ptr<const Type> SharedConstType;
 
 
 /// Types of Statements, or high-level register transfer lists.
 enum class StmtType : uint8_t
 {
     INVALID = 0,
-    Assign = 1,
-    PhiAssign,  ///< x := phi(a, b, c)
+    Assign  = 1,
+    PhiAssign, ///< x := phi(a, b, c)
     ImpAssign,
     BoolAssign, ///< For "setCC" instructions
     Call,
-    Ret,        ///< Return
+    Ret, ///< Return
     Branch,
     Goto,
-    Case,       ///< switch statement
+    Case, ///< switch statement
     ImpRef
 };
 
@@ -61,22 +61,22 @@ enum class StmtType : uint8_t
 enum class BranchType : uint8_t
 {
     INVALID = 0,
-    JE = 1, ///< Jump if equals
-    JNE,    ///< Jump if not equals
-    JSL,    ///< Jump if signed less
-    JSLE,   ///< Jump if signed less or equal
-    JSGE,   ///< Jump if signed greater or equal
-    JSG,    ///< Jump if signed greater
-    JUL,    ///< Jump if unsigned less
-    JULE,   ///< Jump if unsigned less or equal
-    JUGE,   ///< Jump if unsigned greater or equal
-    JUG,    ///< Jump if unsigned greater
-    JMI,    ///< Jump if result is minus
-    JPOS,   ///< Jump if result is positive
-    JOF,    ///< Jump if overflow
-    JNOF,   ///< Jump if no overflow
-    JPAR,   ///< Jump if parity even (Intel only)
-    JNPAR   ///< Jump if parity odd  (Intel only)
+    JE      = 1, ///< Jump if equals
+    JNE,         ///< Jump if not equals
+    JSL,         ///< Jump if signed less
+    JSLE,        ///< Jump if signed less or equal
+    JSGE,        ///< Jump if signed greater or equal
+    JSG,         ///< Jump if signed greater
+    JUL,         ///< Jump if unsigned less
+    JULE,        ///< Jump if unsigned less or equal
+    JUGE,        ///< Jump if unsigned greater or equal
+    JUG,         ///< Jump if unsigned greater
+    JMI,         ///< Jump if result is minus
+    JPOS,        ///< Jump if result is positive
+    JOF,         ///< Jump if overflow
+    JNOF,        ///< Jump if no overflow
+    JPAR,        ///< Jump if parity even (Intel only)
+    JNPAR        ///< Jump if parity odd  (Intel only)
 };
 
 
@@ -99,13 +99,13 @@ class BOOMERANG_API Statement
 
 public:
     Statement();
-    Statement(const Statement& other) = default;
-    Statement(Statement&& other) = default;
+    Statement(const Statement &other) = default;
+    Statement(Statement &&other)      = default;
 
     virtual ~Statement() = default;
 
-    Statement& operator=(const Statement& other) = default;
-    Statement& operator=(Statement&& other) = default;
+    Statement &operator=(const Statement &other) = default;
+    Statement &operator=(Statement &&other) = default;
 
 public:
     /// Make copy of self, and make the copy a derived object if needed.
@@ -151,10 +151,8 @@ public:
     /// true if this statement is a any kind of assignment
     bool isAssignment() const
     {
-        return m_kind == StmtType::Assign
-            || m_kind == StmtType::PhiAssign
-            || m_kind == StmtType::ImpAssign
-            || m_kind == StmtType::BoolAssign;
+        return m_kind == StmtType::Assign || m_kind == StmtType::PhiAssign ||
+               m_kind == StmtType::ImpAssign || m_kind == StmtType::BoolAssign;
     }
 
     /// \returns true if this statement is a phi assignment
@@ -169,7 +167,7 @@ public:
     /// \returns true if this statement is an implicit reference
     bool isImpRef() const { return m_kind == StmtType::ImpRef; }
 
-    virtual bool isGoto()   { return m_kind == StmtType::Goto; }
+    virtual bool isGoto() { return m_kind == StmtType::Goto; }
     virtual bool isBranch() { return m_kind == StmtType::Branch; }
 
     /// \returns true if this statement is a call
@@ -193,12 +191,15 @@ public:
 
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
     /// returns a set of locations defined by this statement in a LocationSet argument.
-    virtual void getDefinitions(LocationSet& /*def*/, bool /*assumeABICompliance*/) const {}
+    virtual void getDefinitions(LocationSet & /*def*/, bool /*assumeABICompliance*/) const {}
 
-    virtual bool definesLoc(SharedExp /*loc*/) const { return false; }  // True if this Statement defines loc
+    virtual bool definesLoc(SharedExp /*loc*/) const
+    {
+        return false;
+    } // True if this Statement defines loc
 
     /// returns true if this statement uses the given expression
-    virtual bool usesExp(const Exp& exp) const = 0;
+    virtual bool usesExp(const Exp &exp) const = 0;
 
     /**
      * Display a text reprentation of this statement to the given stream
@@ -206,12 +207,12 @@ public:
      *        chars of the print have already been output to os
      * \param os - stream to write to
      */
-    virtual void print(OStream& os) const = 0;
+    virtual void print(OStream &os) const = 0;
 
     QString prints() const; // For logging, was also for debugging
 
     /// general search
-    virtual bool search(const Exp& pattern, SharedExp& result) const = 0;
+    virtual bool search(const Exp &pattern, SharedExp &result) const = 0;
 
     /**
      * Find all instances of \p pattern and adds all found expressions
@@ -222,7 +223,7 @@ public:
      *                  appended to it in reverse nesting order.
      * \returns true if there were any matches
      */
-    virtual bool searchAll(const Exp& pattern, std::list<SharedExp>& result) const = 0;
+    virtual bool searchAll(const Exp &pattern, std::list<SharedExp> &result) const = 0;
 
     /**
      * Replace all instances of search with replace.
@@ -231,7 +232,8 @@ public:
      * \param cc      Set to true to change collectors as well.
      * \returns True if any change
      */
-    virtual bool searchAndReplace(const Exp& pattern, SharedExp replace, bool cc = false) = 0; // TODO: consider constness
+    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace,
+                                  bool cc = false) = 0; // TODO: consider constness
 
     /**
      * \returns true if can propagate to \p exp (must be a RefExp to return true)
@@ -239,7 +241,7 @@ public:
      * (from a memory Primitive point of view),
      * only if the definition can be propagated TO this stmt
      */
-    static bool canPropagateToExp(const Exp& exp);
+    static bool canPropagateToExp(const Exp &exp);
 
     /**
      * Propagate to this statement.
@@ -249,7 +251,7 @@ public:
      * \param usedByDomPhi is a set of subscripted locations used in phi statements
      * \returns true if a change
      */
-    bool propagateTo(bool& convert, Settings *settings, ExpIntMap *destCounts = nullptr,
+    bool propagateTo(bool &convert, Settings *settings, ExpIntMap *destCounts = nullptr,
                      LocationSet *usedByDomPhi = nullptr, bool force = false);
 
     /// Experimental: may want to propagate flags first,
@@ -269,7 +271,8 @@ public:
     /// map registers and temporaries to local variables
     void mapRegistersToLocals();
 
-    /// The last part of the fromSSA logic: replace subscripted locations with suitable local variables
+    /// The last part of the fromSSA logic: replace subscripted locations with suitable local
+    /// variables
     void replaceSubscriptsWithLocals();
 
     /// insert casts where needed, since fromSSA will erase type information
@@ -279,7 +282,8 @@ public:
     virtual void fixSuccessor() {}
 
     // Data flow based type analysis
-    SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool& changed); // Meet the type associated with e with ty
+    SharedType meetWithFor(const SharedType &ty, const SharedExp &e,
+                           bool &changed); // Meet the type associated with e with ty
 
 public:
     /**
@@ -291,11 +295,11 @@ public:
      * \param cc count collectors
      * \param memOnly - only add memory references.
      */
-    void addUsedLocs(LocationSet& used, bool cc = false, bool memOnly = false);
+    void addUsedLocs(LocationSet &used, bool cc = false, bool memOnly = false);
 
     /// Special version of Statement::addUsedLocs for finding used locations.
     /// \return true if defineAll was found
-    bool addUsedLocals(LocationSet& used);
+    bool addUsedLocals(LocationSet &used);
 
     /// Fix references to the returns of call statements
     /// Bypass calls for references in this statement
@@ -305,10 +309,10 @@ public:
     /// replaces a use in this statement with an expression from an ordinary assignment
     /// \returns true if change
     /// \note Internal use only
-    bool replaceRef(SharedExp e, Assignment *def, bool& convert);
+    bool replaceRef(SharedExp e, Assignment *def, bool &convert);
 
     /// Find all constants in this statement
-    void findConstants(std::list<std::shared_ptr<Const> >& lc);
+    void findConstants(std::list<std::shared_ptr<Const>> &lc);
 
     /// Set or clear the constant subscripts (using a visitor)
     int setConscripts(int n);
@@ -342,7 +346,7 @@ public:
     /// Note: this procedure does not control what part of this statement is propagated to
     /// Propagate to e from definition statement def.
     /// Set convert to true if convert a call from indirect to direct.
-    bool doPropagateTo(const SharedExp &e, Assignment *def, bool& convert, Settings *settings);
+    bool doPropagateTo(const SharedExp &e, Assignment *def, bool &convert, Settings *settings);
 
     /// returns true if e1 may alias e2
     bool calcMayAlias(SharedExp e1, SharedExp e2, int size) const;
@@ -350,7 +354,7 @@ public:
 protected:
     BasicBlock *m_bb = nullptr; ///< contains a pointer to the enclosing BB
     UserProc *m_proc = nullptr; ///< procedure containing this statement
-    int m_number = -1;          ///< Statement number for printing
+    int m_number     = -1;      ///< Statement number for printing
 
     StmtType m_kind = StmtType::INVALID; ///< Statement kind (e.g. STMT_BRANCH)
 };
@@ -363,17 +367,20 @@ protected:
  * \param stmt  ptr to Statement to print to the stream
  * \returns copy of os (for concatenation)
  */
-BOOMERANG_API OStream& operator<<(OStream& os, const Statement *stmt);
+BOOMERANG_API OStream &operator<<(OStream &os, const Statement *stmt);
 
 
 enum class SwitchType : char
 {
     Invalid = 0,
-    a = 'a', A = 'A',
-    o = 'o', O = 'O',
-    r = 'r', R = 'R',
-    H = 'H',
-    F = 'F', // Fortran style
+    a       = 'a',
+    A       = 'A',
+    o       = 'o',
+    O       = 'O',
+    r       = 'r',
+    R       = 'R',
+    H       = 'H',
+    F       = 'F', // Fortran style
 };
 
 /**
@@ -382,13 +389,13 @@ enum class SwitchType : char
  */
 struct SwitchInfo
 {
-    SharedExp   switchExp;             ///< Expression to switch on, e.g. v[7]
-    SwitchType  switchType;            ///< Switch type: 'A', 'O', 'R', 'H', or 'F' etc
-    int         lowerBound;            ///< Lower bound of the switch variable
-    int         upperBound;            ///< Upper bound for the switch variable
-    Address     tableAddr;             ///< Native address of the table, or ptr to array of values for form F
-    int         numTableEntries;       ///< Number of entries in the table (form H only)
-    int         offsetFromJumpTbl = 0; ///< Distance from jump to table (form R only)
+    SharedExp switchExp;   ///< Expression to switch on, e.g. v[7]
+    SwitchType switchType; ///< Switch type: 'A', 'O', 'R', 'H', or 'F' etc
+    int lowerBound;        ///< Lower bound of the switch variable
+    int upperBound;        ///< Upper bound for the switch variable
+    Address tableAddr;     ///< Native address of the table, or ptr to array of values for form F
+    int numTableEntries;   ///< Number of entries in the table (form H only)
+    int offsetFromJumpTbl = 0; ///< Distance from jump to table (form R only)
 };
 
 /// Wildcard for statment search

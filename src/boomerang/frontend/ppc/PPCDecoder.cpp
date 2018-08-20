@@ -9,15 +9,14 @@
 #pragma endregion License
 #include "PPCDecoder.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/Proc.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Ternary.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -29,52 +28,51 @@
 #include <cstring>
 
 
-#define sign_extend(N, SIZE)    Util::signExtend(N, SIZE)
+#define sign_extend(N, SIZE) Util::signExtend(N, SIZE)
 
 
 SharedExp crBit(int bitNum); // Get an expression for a CR bit access
 
-#define DIS_UIMM       (Const::get(uimm))
-#define DIS_SIMM       (Const::get(simm))
-#define DIS_RS         (dis_Reg(rs))
-#define DIS_RD         (dis_Reg(rd))
+#define DIS_UIMM (Const::get(uimm))
+#define DIS_SIMM (Const::get(simm))
+#define DIS_RS (dis_Reg(rs))
+#define DIS_RD (dis_Reg(rd))
 // #define DIS_CRFD    (dis_Reg(64/* condition registers start*/ + crfd))
-#define DIS_CRFD       (Const::get(crfd))
-#define DIS_RDR        (dis_Reg(rd))
-#define DIS_RA         (dis_Reg(ra))
-#define DIS_RAZ        (dis_RAmbz(ra)) // As above, but May Be constant Zero
-#define DIS_RB         (dis_Reg(rb))
-#define DIS_D          (Const::get(d))
-#define DIS_NZRA       (dis_Reg(ra))
-#define DIS_NZRB       (dis_Reg(rb))
-#define DIS_ADDR       (Const::get(addr))
-#define DIS_RELADDR    (Const::get(Address(reladdr.value() - delta)))
-#define DIS_CRBD       (crBit(crbD))
-#define DIS_CRBA       (crBit(crbA))
-#define DIS_CRBB       (crBit(crbB))
-#define DIS_DISP       (Binary::get(opPlus, dis_RAmbz(ra), Const::get(d)))
-#define DIS_INDEX      (Binary::get(opPlus, DIS_RAZ, DIS_NZRB))
-#define DIS_BICR       (Const::get(BIcr))
-#define DIS_RS_NUM     (Const::get(rs))
-#define DIS_RD_NUM     (Const::get(rd))
-#define DIS_BEG        (Const::get(beg))
-#define DIS_END        (Const::get(end))
-#define DIS_FD         (dis_Reg(fd + 32))
-#define DIS_FS         (dis_Reg(fs + 32))
-#define DIS_FA         (dis_Reg(fa + 32))
-#define DIS_FB         (dis_Reg(fb + 32))
+#define DIS_CRFD (Const::get(crfd))
+#define DIS_RDR (dis_Reg(rd))
+#define DIS_RA (dis_Reg(ra))
+#define DIS_RAZ (dis_RAmbz(ra)) // As above, but May Be constant Zero
+#define DIS_RB (dis_Reg(rb))
+#define DIS_D (Const::get(d))
+#define DIS_NZRA (dis_Reg(ra))
+#define DIS_NZRB (dis_Reg(rb))
+#define DIS_ADDR (Const::get(addr))
+#define DIS_RELADDR (Const::get(Address(reladdr.value() - delta)))
+#define DIS_CRBD (crBit(crbD))
+#define DIS_CRBA (crBit(crbA))
+#define DIS_CRBB (crBit(crbB))
+#define DIS_DISP (Binary::get(opPlus, dis_RAmbz(ra), Const::get(d)))
+#define DIS_INDEX (Binary::get(opPlus, DIS_RAZ, DIS_NZRB))
+#define DIS_BICR (Const::get(BIcr))
+#define DIS_RS_NUM (Const::get(rs))
+#define DIS_RD_NUM (Const::get(rd))
+#define DIS_BEG (Const::get(beg))
+#define DIS_END (Const::get(end))
+#define DIS_FD (dis_Reg(fd + 32))
+#define DIS_FS (dis_Reg(fs + 32))
+#define DIS_FA (dis_Reg(fa + 32))
+#define DIS_FB (dis_Reg(fb + 32))
 
-#define PPC_COND_JUMP(name, size, relocd, cond, BIcr) \
-    BranchStatement *jump = new BranchStatement;      \
-    result.rtl->append(jump);                         \
-    result.numBytes = size;                           \
-    jump->setDest(Address((relocd).value() - delta)); \
-    jump->setCondType(cond);                          \
+#define PPC_COND_JUMP(name, size, relocd, cond, BIcr)                                              \
+    BranchStatement *jump = new BranchStatement;                                                   \
+    result.rtl->append(jump);                                                                      \
+    result.numBytes = size;                                                                        \
+    jump->setDest(Address((relocd).value() - delta));                                              \
+    jump->setCondType(cond);                                                                       \
     SHOW_ASM(name << " " << BIcr << ", 0x" << relocd - delta)
 
 
-
-bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result)
+bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)
 {
     result.reset();
     result.rtl.reset(new RTL(pc));
@@ -84,492 +82,345 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
     // #line 119 "frontend/machine/ppc/decoder.m"
     {
-        HostAddress       MATCH_p = hostPC;
-        const char        *MATCH_name;
-        static const char *MATCH_name_OPCD_0[] =
-        {
-            nullptr, nullptr,  nullptr,   nullptr,    nullptr,    nullptr,
-            nullptr, "mulli",  "subfic",  nullptr,    nullptr,    nullptr,
-            "addic", "addicq", "addi",    "addis",    nullptr,    nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,    nullptr,    nullptr,
-            "ori",   "oris",   "xori",    "xoris",    "andiq",    "andisq",
-            nullptr, nullptr,  "lwz",     "lwzu",     "lbz",      "lbzu",
-            "stw",   "stwu",   "stb",     "stbu",     "lhz",      "lhzu",
-            "lha",   "lhau",   "sth",     "sthu",     "lmw",      "stmw",
-            "lfs",   "lfsu",   "lfd",     "lfdu",     "stfs",     "stfsu",
-            "stfd",  "stfdu",
+        HostAddress MATCH_p = hostPC;
+        const char *MATCH_name;
+        static const char *MATCH_name_OPCD_0[] = {
+            nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr, "mulli",
+            "subfic", nullptr, nullptr, nullptr, "addic", "addicq", "addi",  "addis",
+            nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr, nullptr,
+            "ori",    "oris",  "xori",  "xoris", "andiq", "andisq", nullptr, nullptr,
+            "lwz",    "lwzu",  "lbz",   "lbzu",  "stw",   "stwu",   "stb",   "stbu",
+            "lhz",    "lhzu",  "lha",   "lhau",  "sth",   "sthu",   "lmw",   "stmw",
+            "lfs",    "lfsu",  "lfd",   "lfdu",  "stfs",  "stfsu",  "stfd",  "stfdu",
         };
-        static const char *MATCH_name_BO4_3[] =
-        {
+        static const char *MATCH_name_BO4_3[] = {
             nullptr, nullptr, "bge", nullptr, nullptr, nullptr, "blt",
         };
-        static const char *MATCH_name_BO4_4[] =
-        {
+        static const char *MATCH_name_BO4_4[] = {
             nullptr, nullptr, "ble", nullptr, nullptr, nullptr, "bgt",
         };
-        static const char *MATCH_name_BO4_5[] =
-        {
+        static const char *MATCH_name_BO4_5[] = {
             nullptr, nullptr, "bne", nullptr, nullptr, nullptr, "beq",
         };
-        static const char *MATCH_name_BO4_6[] =
-        {
+        static const char *MATCH_name_BO4_6[] = {
             nullptr, nullptr, "bns", nullptr, nullptr, nullptr, "bso",
         };
-        static const char *MATCH_name_LK_8[] =
-        {
-            "crnor", "bl",
+        static const char *MATCH_name_LK_8[] = {
+            "crnor",
+            "bl",
         };
-        static const char *MATCH_name_BO4_10[] =
-        {
+        static const char *MATCH_name_BO4_10[] = {
             nullptr, nullptr, "bgelr", nullptr, nullptr, nullptr, "bltlr",
         };
-        static const char *MATCH_name_BO4_11[] =
-        {
+        static const char *MATCH_name_BO4_11[] = {
             nullptr, nullptr, "blelr", nullptr, nullptr, nullptr, "bgtlr",
         };
-        static const char *MATCH_name_BO4_12[] =
-        {
+        static const char *MATCH_name_BO4_12[] = {
             nullptr, nullptr, "bnelr", nullptr, nullptr, nullptr, "beqlr",
         };
-        static const char *MATCH_name_BO4_13[] =
-        {
+        static const char *MATCH_name_BO4_13[] = {
             nullptr, nullptr, "bnslr", nullptr, nullptr, nullptr, "bsolr",
         };
-        static const char *MATCH_name_LK_14[] =
-        {
-            "crandc", "balctrl",
+        static const char *MATCH_name_LK_14[] = {
+            "crandc",
+            "balctrl",
         };
-        static const char *MATCH_name_Rc_22[] =
-        {
-            "rlwimi", "rlwimiq",
+        static const char *MATCH_name_Rc_22[] = {
+            "rlwimi",
+            "rlwimiq",
         };
-        static const char *MATCH_name_Rc_23[] =
-        {
-            "rlwinm", "rlwinmq",
+        static const char *MATCH_name_Rc_23[] = {
+            "rlwinm",
+            "rlwinmq",
         };
-        static const char *MATCH_name_Xo1_26[] =
-        {
-            "fcmpu",  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "frsp",   nullptr,     "fctiw",      "fctiwz",       nullptr,          nullptr,
-            nullptr,  nullptr,     "lwarx",      "ldx",          nullptr,          "lwzx",
-            "slw",    nullptr,     "cntlzw",     "sld",          "and",            nullptr,
-            nullptr,  nullptr,     "fcmpo",      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        "fneg",           nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "ldux",
-            nullptr,  "lwzux",     nullptr,      nullptr,        "cntlzd",         nullptr,
-            "andc",   nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "fmr",    nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "ldarx",  nullptr,     nullptr,      "lbzx",         nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "lbzux",
-            nullptr,  nullptr,     nullptr,      nullptr,        "nor",            nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        "fnabs",          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "stdx",
-            "stwcxq", "stwx",      nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  "stdux",     nullptr,      "stwux",        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        "stdcxq",         "stbx",
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  "stbux",     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "fabs",   nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      "lhzx",         nullptr,          nullptr,
-            nullptr,  nullptr,     "eqv",        nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        "eciwx",          "lhzux",
-            nullptr,  nullptr,     nullptr,      nullptr,        "xor",            nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      "mfspr",        nullptr,          "lwax",
-            nullptr,  "lhax",      nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  "lwaux",     nullptr,      "lhaux",        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "sthx",
-            nullptr,  nullptr,     nullptr,      nullptr,        "orc",            nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "ecowx",  "sthux",     nullptr,      nullptr,        nullptr,          nullptr,
-            "or",     nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "mtspr",
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     "nand",       nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "lswx",
-            "lwbrx",  "lfsx",      "srw",        nullptr,        nullptr,          "srd",
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      "lfsux",        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "lfdx",
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  "lfdux",     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  "stswx",     "stwbrx",     "stfsx",        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "stfsux",
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  "stfdx",     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      "stfdux",       nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        "lhbrx",          nullptr,
-            "sraw",   nullptr,     "srad",       nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        "fctid",          "fctidz",
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     "srawi",      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "fcfid",  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "sthbrx", nullptr,     nullptr,      nullptr,        "extsh",          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            "extsb",  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          nullptr,
-            nullptr,  nullptr,     nullptr,      nullptr,        nullptr,          "stfiwx",
-            nullptr,  nullptr,     "extsw",
+        static const char *MATCH_name_Xo1_26[] = {
+            "fcmpu",  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  "frsp",   nullptr,  "fctiw",  "fctiwz", nullptr,  nullptr,
+            nullptr,  nullptr, "lwarx",  "ldx",    nullptr,  "lwzx",   "slw",    nullptr,  "cntlzw",
+            "sld",    "and",   nullptr,  nullptr,  nullptr,  "fcmpo",  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  "fneg",   nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  "ldux",
+            nullptr,  "lwzux", nullptr,  nullptr,  "cntlzd", nullptr,  "andc",   nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            "fmr",    nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  "ldarx",  nullptr,  nullptr,  "lbzx",   nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, "lbzux",  nullptr,  nullptr,  nullptr,  nullptr,  "nor",    nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  "fnabs", nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  "stdx",   "stwcxq", "stwx",   nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  "stdux", nullptr,  "stwux",  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  "stdcxq", "stbx",
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  "stbux",  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  "fabs",   nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            "lhzx",   nullptr, nullptr,  nullptr,  nullptr,  "eqv",    nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  "eciwx",  "lhzux",  nullptr,  nullptr,  nullptr,
+            nullptr,  "xor",   nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  "mfspr",  nullptr,  "lwax",
+            nullptr,  "lhax",  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  "lwaux",  nullptr,  "lhaux",  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, "sthx",   nullptr,  nullptr,  nullptr,  nullptr,  "orc",    nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  "ecowx",  "sthux",  nullptr,
+            nullptr,  nullptr, nullptr,  "or",     nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  "mtspr",
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  "nand",
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, "lswx",   "lwbrx",  "lfsx",   "srw",    nullptr,  nullptr,  "srd",
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            "lfsux",  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  "lfdx",   nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  "lfdux", nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  "stswx",  "stwbrx", "stfsx",  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, "stfsux", nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  "stfdx",  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  "stfdux", nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  "lhbrx",  nullptr,
+            "sraw",   nullptr, "srad",   nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  "fctid",  "fctidz", nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  "srawi",  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            "fcfid",  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            "sthbrx", nullptr, nullptr,  nullptr,  "extsh",  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            "extsb",  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
+            nullptr,  nullptr, "stfiwx", nullptr,  nullptr,  "extsw",
         };
-        static const char *MATCH_name_Xo9_29[] =
-        {
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  "subfc",   nullptr,     "addc",       nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     "subf",       nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  "neg",     nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     "subfe",      nullptr,
-            "adde",  nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  "subfze",  nullptr,     "addze",      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     "subfme",     "mulld",
-            "addme", "mullw",  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  "add",     nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, "divdu",  nullptr,   "divwu",     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   nullptr,     nullptr,      nullptr,
-            nullptr, nullptr,  nullptr,   "divd",      nullptr,      "divw",
+        static const char *MATCH_name_Xo9_29[] = {
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  "subfc",
+            nullptr, "addc",  nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, "subf",  nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, "neg",   nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, "subfe", nullptr,  "adde",  nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, "subfze", nullptr, "addze", nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, "subfme", "mulld",
+            "addme", "mullw", nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, "add",   nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, "divdu",  nullptr,
+            "divwu", nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  nullptr, nullptr, nullptr, nullptr, nullptr,  nullptr,
+            nullptr, nullptr, nullptr,  "divd",  nullptr, "divw",
         };
-        static const char *MATCH_name_Xo1_30[] =
-        {
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "frspq",  nullptr,    "fctiwq",    "fctiwzq",    nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "slwq",   nullptr,    nullptr,     "sldq",       "andq",        nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      "fnegq",       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "andcq",  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "fmrq",   nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      "norq",        nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      "fnabsq",      nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "fabsq",  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    "eqvq",      nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      "xorq",        nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      "orcq",        nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "orq",    nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    "nandq",     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    "srwq",      nullptr,      nullptr,       "srdq",
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            "srawq",  nullptr,    "sradq",     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      "fctidq",      "fctidzq",
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    "srawiq",    nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
-            nullptr,  nullptr,    nullptr,     nullptr,      nullptr,       nullptr,
+        static const char *MATCH_name_Xo1_30[] = {
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, "frspq", nullptr,  "fctiwq",  "fctiwzq", nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   "slwq",    nullptr, nullptr,
+            "sldq",   "andq",   nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, "fnegq",  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   "andcq",   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            "fmrq",   nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   "norq",  nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  "fnabsq", nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, "fabsq", nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  "eqvq",    nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  "xorq",   nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   "orcq",  nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, "orq",   nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, "nandq",
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  "srwq",    nullptr,   nullptr, "srdq",
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            "srawq",  nullptr,  "sradq", nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, "fctidq", "fctidzq", nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  "srawiq",  nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
+            nullptr,  nullptr,  nullptr, nullptr, nullptr,  nullptr,   nullptr,   nullptr, nullptr,
             "fcfidq",
         };
-        static const char *MATCH_name_Rc_36[] =
-        {
-            "fdivs", "fdivsq",
+        static const char *MATCH_name_Rc_36[] = {
+            "fdivs",
+            "fdivsq",
         };
-        static const char *MATCH_name_Rc_37[] =
-        {
-            "fsubs", "fsubsq",
+        static const char *MATCH_name_Rc_37[] = {
+            "fsubs",
+            "fsubsq",
         };
-        static const char *MATCH_name_Rc_38[] =
-        {
-            "fadds", "faddsq",
+        static const char *MATCH_name_Rc_38[] = {
+            "fadds",
+            "faddsq",
         };
-        static const char *MATCH_name_Xo5_40[] =
-        {
-            nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
-            nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
-            nullptr, nullptr,  nullptr,  nullptr,  nullptr,  nullptr,
-            "fdiv",  nullptr,  "fsub",   "fadd",
+        static const char *MATCH_name_Xo5_40[] = {
+            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+            nullptr, nullptr, "fdiv",  nullptr, "fsub",  "fadd",
         };
         unsigned MATCH_w_32_0;
         {
             MATCH_w_32_0 = getDword(MATCH_p);
 
-            switch ((MATCH_w_32_0 >> 26 & 0x3f))
-            {
+            switch ((MATCH_w_32_0 >> 26 & 0x3f)) {
             case 0:
             case 1:
             case 2:
@@ -587,9 +438,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
             case 58:
             case 60:
             case 61:
-            case 62:
-                goto MATCH_label_a0;
-                break;
+            case 62: goto MATCH_label_a0; break;
 
             case 7:
             case 8:
@@ -599,11 +448,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
             case 15:
                 MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
                 {
-                    const char                *name = MATCH_name;
-                    unsigned                  ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-                    unsigned                  rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-                    int /* [~32768..32767] */ simm  = sign_extend((MATCH_w_32_0 & 0xffff), 16);
-                    nextPC = MATCH_p + 4;
+                    const char *name               = MATCH_name;
+                    unsigned ra                    = (MATCH_w_32_0 >> 16 & 0x1f);
+                    unsigned rd                    = (MATCH_w_32_0 >> 21 & 0x1f);
+                    int /* [~32768..32767] */ simm = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+                    nextPC                         = MATCH_p + 4;
 
                     // #line 139 "frontend/machine/ppc/decoder.m"
 
@@ -625,11 +474,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     MATCH_name = "cmpli";
                     {
                         const char *name = MATCH_name;
-                        unsigned   crfd  = (MATCH_w_32_0 >> 23 & 0x7);
-                        unsigned   l     = (MATCH_w_32_0 >> 21 & 0x1);
-                        unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-                        unsigned   uimm  = (MATCH_w_32_0 & 0xffff);
-                        nextPC = MATCH_p + 4;
+                        unsigned crfd    = (MATCH_w_32_0 >> 23 & 0x7);
+                        unsigned l       = (MATCH_w_32_0 >> 21 & 0x1);
+                        unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+                        unsigned uimm    = (MATCH_w_32_0 & 0xffff);
+                        nextPC           = MATCH_p + 4;
 
                         // #line 239 "frontend/machine/ppc/decoder.m"
 
@@ -649,12 +498,12 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                 if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
                     MATCH_name = "cmpi";
                     {
-                        const char                *name = MATCH_name;
-                        unsigned                  crfd  = (MATCH_w_32_0 >> 23 & 0x7);
-                        unsigned                  l     = (MATCH_w_32_0 >> 21 & 0x1);
-                        unsigned                  ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-                        int /* [~32768..32767] */ simm  = sign_extend((MATCH_w_32_0 & 0xffff), 16);
-                        nextPC = MATCH_p + 4;
+                        const char *name               = MATCH_name;
+                        unsigned crfd                  = (MATCH_w_32_0 >> 23 & 0x7);
+                        unsigned l                     = (MATCH_w_32_0 >> 21 & 0x1);
+                        unsigned ra                    = (MATCH_w_32_0 >> 16 & 0x1f);
+                        int /* [~32768..32767] */ simm = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+                        nextPC                         = MATCH_p + 4;
 
                         // #line 236 "frontend/machine/ppc/decoder.m"
 
@@ -678,9 +527,10 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     if ((MATCH_w_32_0 >> 21 & 0x1f) == 20) {
                         MATCH_name = "ball";
                         {
-                            const char  *name   = MATCH_name;
-                            unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                            HostAddress reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                            const char *name    = MATCH_name;
+                            unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                            HostAddress reladdr = addressToPC(MATCH_p) +
+                                                  4 * (MATCH_w_32_0 >> 2 & 0x3fff);
                             nextPC = MATCH_p + 4;
 
                             // #line 210 "frontend/machine/ppc/decoder.m"
@@ -690,7 +540,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 // Effectively %LR = %pc+4, but give the actual value for %pc
 
                                 Assign *as = new Assign(IntegerType::get(STD_SIZE, Sign::Unknown),
-                                                        Unary::get(opMachFtr, Const::get("%LR")), Const::get(pc + 4));
+                                                        Unary::get(opMachFtr, Const::get("%LR")),
+                                                        Const::get(pc + 4));
 
                                 result.rtl->append(as);
                                 SHOW_ASM(name << " " << BIcr << ", .+4"
@@ -716,12 +567,10 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     }
                 }
                 else {
-                    switch ((MATCH_w_32_0 >> 16 & 0x3))
-                    {
+                    switch ((MATCH_w_32_0 >> 16 & 0x3)) {
                     case 0:
 
-                        switch ((MATCH_w_32_0 >> 22 & 0xf))
-                        {
+                        switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                         case 0:
                         case 1:
                         case 3:
@@ -749,11 +598,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 2:
                             MATCH_name = MATCH_name_BO4_3[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
-                                const char  *name   = MATCH_name;
-                                unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t     off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                const char *name    = MATCH_name;
+                                unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off         = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 275 "frontend/machine/ppc/decoder.m"
 
@@ -765,11 +614,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 6:
                             MATCH_name = MATCH_name_BO4_3[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
-                                const char  *name   = MATCH_name;
-                                unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t     off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                const char *name    = MATCH_name;
+                                unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off         = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 269 "frontend/machine/ppc/decoder.m"
 
@@ -778,16 +627,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                         break;
 
                     case 1:
 
-                        switch ((MATCH_w_32_0 >> 22 & 0xf))
-                        {
+                        switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                         case 0:
                         case 1:
                         case 3:
@@ -815,11 +662,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 2:
                             MATCH_name = MATCH_name_BO4_4[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
-                                const char  *name   = MATCH_name;
-                                unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t     off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                const char *name    = MATCH_name;
+                                unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off         = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 271 "frontend/machine/ppc/decoder.m"
 
@@ -831,33 +678,31 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 6:
                             MATCH_name = MATCH_name_BO4_4[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
-                                const char  *name   = MATCH_name;
-                                unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t     off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                const char *name    = MATCH_name;
+                                unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off         = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 278 "frontend/machine/ppc/decoder.m"
 
                                 PPC_COND_JUMP(name, 4, reladdr, BranchType::JSG, BIcr);
 
-                                //    | bnl(BIcr, reladdr) [name] =>                                // bnl same as bge
+                                //    | bnl(BIcr, reladdr) [name] => // bnl same as bge
 
                                 //        PPC_COND_JUMP(name, 4, reladdr, BranchType::JSGE, BIcr);
                             }
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                         break;
 
                     case 2:
 
-                        switch ((MATCH_w_32_0 >> 22 & 0xf))
-                        {
+                        switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                         case 0:
                         case 1:
                         case 3:
@@ -886,17 +731,17 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             MATCH_name = MATCH_name_BO4_5[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
                                 const char *name = MATCH_name;
-                                unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t    off   = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off      = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
 
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 282 "frontend/machine/ppc/decoder.m"
 
                                 PPC_COND_JUMP(name, 4, reladdr, BranchType::JNE, BIcr);
 
-                                //    | bng(BIcr, reladdr) [name] =>                                // bng same as blt
+                                //    | bng(BIcr, reladdr) [name] => // bng same as blt
 
                                 //        PPC_COND_JUMP(name, 4, reladdr, BranchType::JSLE, BIcr);
                             }
@@ -906,11 +751,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 6:
                             MATCH_name = MATCH_name_BO4_5[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
-                                const char  *name   = MATCH_name;
-                                unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t     off     = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                const char *name    = MATCH_name;
+                                unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off         = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 273 "frontend/machine/ppc/decoder.m"
 
@@ -919,16 +764,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                         break;
 
                     case 3:
 
-                        switch ((MATCH_w_32_0 >> 22 & 0xf))
-                        {
+                        switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                         case 0:
                         case 1:
                         case 3:
@@ -957,11 +800,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             MATCH_name = MATCH_name_BO4_6[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
                                 const char *name = MATCH_name;
-                                unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                int16_t    off   = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
+                                unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                int16_t off      = (MATCH_w_32_0 >> 2 & 0x3fff) << 2;
 
                                 HostAddress reladdr = addressToPC(MATCH_p) + off;
-                                nextPC = MATCH_p + 4;
+                                nextPC              = MATCH_p + 4;
 
                                 // #line 288 "frontend/machine/ppc/decoder.m"
 
@@ -981,9 +824,10 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 6:
                             MATCH_name = MATCH_name_BO4_6[(MATCH_w_32_0 >> 22 & 0xf)];
                             {
-                                const char  *name   = MATCH_name;
-                                unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
-                                HostAddress reladdr = addressToPC(MATCH_p) + 4 * (MATCH_w_32_0 >> 2 & 0x3fff);
+                                const char *name    = MATCH_name;
+                                unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
+                                HostAddress reladdr = addressToPC(MATCH_p) +
+                                                      4 * (MATCH_w_32_0 >> 2 & 0x3fff);
                                 nextPC = MATCH_p + 4;
 
                                 // #line 285 "frontend/machine/ppc/decoder.m"
@@ -995,14 +839,12 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                         break;
 
-                    default:
-                        assert(0);
+                    default: assert(0);
                     } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/
                 }
 
@@ -1016,8 +858,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                 else if ((MATCH_w_32_0 & 0x1) == 1) {
                     MATCH_name = MATCH_name_LK_8[(MATCH_w_32_0 & 0x1)];
                     {
-                        const char  *name   = MATCH_name;
-                        HostAddress reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
+                        const char *name    = MATCH_name;
+                        HostAddress reladdr = addressToPC(MATCH_p) +
+                                              4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
                         nextPC = MATCH_p + 4;
 
                         // #line 193 "frontend/machine/ppc/decoder.m"
@@ -1032,7 +875,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         result.rtl->append(newCall);
 
-                        Function *destProc = m_prog->getOrCreateFunction(Address(reladdr.value() - delta));
+                        Function *destProc = m_prog->getOrCreateFunction(
+                            Address(reladdr.value() - delta));
 
                         if (destProc == reinterpret_cast<Function *>(-1)) {
                             destProc = nullptr;
@@ -1042,7 +886,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     }
                 } /*opt-block*/
                 else {
-                    HostAddress reladdr = addressToPC(MATCH_p) + 4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
+                    HostAddress reladdr = addressToPC(MATCH_p) +
+                                          4 * sign_extend((MATCH_w_32_0 >> 2 & 0xffffff), 24);
                     nextPC = MATCH_p + 4;
                     // #line 207 "frontend/machine/ppc/decoder.m"
                     processUnconditionalJump("b", 4, reladdr, delta, pc, result);
@@ -1060,8 +905,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     goto MATCH_label_a0; /*opt-block+*/
                 }
                 else {
-                    switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                    {
+                    switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                     case 0:
                     case 1:
                     case 2:
@@ -1217,9 +1061,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     case 445:
                     case 446:
                     case 447:
-                    case 448:
-                        goto MATCH_label_a0;
-                        break;
+                    case 448: goto MATCH_label_a0; break;
 
                     case 16:
 
@@ -1227,12 +1069,10 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             goto MATCH_label_a0; /*opt-block+*/
                         }
                         else if ((MATCH_w_32_0 >> 11 & 0x1f) == 0) {
-                            switch ((MATCH_w_32_0 >> 16 & 0x3))
-                            {
+                            switch ((MATCH_w_32_0 >> 16 & 0x3)) {
                             case 0:
 
-                                switch ((MATCH_w_32_0 >> 22 & 0xf))
-                                {
+                                switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                                 case 0:
                                 case 1:
                                 case 3:
@@ -1262,8 +1102,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_10[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 321 "frontend/machine/ppc/decoder.m"
 
@@ -1278,8 +1118,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_10[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 309 "frontend/machine/ppc/decoder.m"
 
@@ -1290,16 +1130,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                     break;
 
-                                default:
-                                    assert(0);
+                                default: assert(0);
                                 } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                                 break;
 
                             case 1:
 
-                                switch ((MATCH_w_32_0 >> 22 & 0xf))
-                                {
+                                switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                                 case 0:
                                 case 1:
                                 case 3:
@@ -1329,8 +1167,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_11[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 313 "frontend/machine/ppc/decoder.m"
 
@@ -1345,8 +1183,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_11[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 325 "frontend/machine/ppc/decoder.m"
 
@@ -1357,16 +1195,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                     break;
 
-                                default:
-                                    assert(0);
+                                default: assert(0);
                                 } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                                 break;
 
                             case 2:
 
-                                switch ((MATCH_w_32_0 >> 22 & 0xf))
-                                {
+                                switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                                 case 0:
                                 case 1:
                                 case 3:
@@ -1396,8 +1232,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_12[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 329 "frontend/machine/ppc/decoder.m"
 
@@ -1412,8 +1248,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_12[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 317 "frontend/machine/ppc/decoder.m"
 
@@ -1424,16 +1260,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                     break;
 
-                                default:
-                                    assert(0);
+                                default: assert(0);
                                 } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                                 break;
 
                             case 3:
 
-                                switch ((MATCH_w_32_0 >> 22 & 0xf))
-                                {
+                                switch ((MATCH_w_32_0 >> 22 & 0xf)) {
                                 case 0:
                                 case 1:
                                 case 3:
@@ -1463,12 +1297,13 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_13[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 337 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::INVALID, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::INVALID,
+                                                      BIcr);
 
                                         result.rtl->append(new ReturnStatement);
                                     }
@@ -1479,26 +1314,25 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_BO4_13[(MATCH_w_32_0 >> 22 & 0xf)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 333 "frontend/machine/ppc/decoder.m"
 
-                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::INVALID, BIcr);
+                                        PPC_COND_JUMP(name, 4, hostPC + 4, BranchType::INVALID,
+                                                      BIcr);
 
                                         result.rtl->append(new ReturnStatement);
                                     }
 
                                     break;
 
-                                default:
-                                    assert(0);
+                                default: assert(0);
                                 } /* (MATCH_w_32_0 >> 22 & 0xf) -- BO4 at 0 --*/
 
                                 break;
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 16 & 0x3) -- BIcc at 0 --*/
                         }
                         else {
@@ -1611,12 +1445,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = MATCH_name_LK_14[(MATCH_w_32_0 & 0x1)];
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 299 "frontend/machine/ppc/decoder.m"
 
-                                        processComputedCall(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, result);
+                                        processComputedCall(
+                                            name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc,
+                                            result);
 
                                         Q_UNUSED(BIcr);
                                     }
@@ -1625,12 +1461,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     MATCH_name = "balctr";
                                     {
                                         const char *name = MATCH_name;
-                                        unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-                                        nextPC = MATCH_p + 4;
+                                        unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+                                        nextPC           = MATCH_p + 4;
 
                                         // #line 295 "frontend/machine/ppc/decoder.m"
 
-                                        processComputedJump(name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc, result);
+                                        processComputedJump(
+                                            name, 4, Unary::get(opMachFtr, Const::get("%CTR")), pc,
+                                            result);
 
                                         Q_UNUSED(BIcr);
                                     }
@@ -1646,8 +1484,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         break;
 
-                    default:
-                        assert(0);
+                    default: assert(0);
                     } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                 }
 
@@ -1674,10 +1511,10 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                 MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
                 {
                     const char *name = MATCH_name;
-                    unsigned   ra    = (MATCH_w_32_0 >> 21 & 0x1f);
-                    unsigned   rd    = (MATCH_w_32_0 >> 16 & 0x1f);
-                    unsigned   uimm  = (MATCH_w_32_0 & 0xffff);
-                    nextPC = MATCH_p + 4;
+                    unsigned ra      = (MATCH_w_32_0 >> 21 & 0x1f);
+                    unsigned rd      = (MATCH_w_32_0 >> 16 & 0x1f);
+                    unsigned uimm    = (MATCH_w_32_0 & 0xffff);
+                    nextPC           = MATCH_p + 4;
 
                     // #line 136 "frontend/machine/ppc/decoder.m"
 
@@ -1700,8 +1537,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         goto MATCH_label_a0; /*opt-block+*/
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                         case 0:
                         case 1:
                         case 2:
@@ -1968,9 +1804,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 982:
                         case 983:
                         case 984:
-                        case 985:
-                            goto MATCH_label_a0;
-                            break;
+                        case 985: goto MATCH_label_a0; break;
 
                         case 24:
                         case 27:
@@ -2026,10 +1860,10 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             MATCH_name = MATCH_name_Xo1_30[(MATCH_w_32_0 >> 1 & 0x3ff)];
                             {
                                 const char *name = MATCH_name;
-                                unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-                                unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
-                                unsigned   uimm  = (MATCH_w_32_0 >> 11 & 0x1f);
-                                nextPC = MATCH_p + 4;
+                                unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+                                unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
+                                unsigned uimm    = (MATCH_w_32_0 >> 11 & 0x1f);
+                                nextPC           = MATCH_p + 4;
 
                                 // #line 350 "frontend/machine/ppc/decoder.m"
 
@@ -2074,8 +1908,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                     }
                 }
@@ -2087,8 +1920,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             goto MATCH_label_a0; /*opt-block+*/
                         }
                         else {
-                            switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                            {
+                            switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                             case 0:
 
                                 if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
@@ -2873,9 +2705,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             case 981:
                             case 982:
                             case 984:
-                            case 985:
-                                goto MATCH_label_a0;
-                                break;
+                            case 985: goto MATCH_label_a0; break;
 
                             case 19:
 
@@ -3019,8 +2849,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 break;
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                         }
                     }
@@ -3033,8 +2862,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             goto MATCH_label_a0; /*opt-block+*/
                         }
                         else {
-                            switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                            {
+                            switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                             case 0:
 
                                 if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
@@ -3819,9 +3647,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             case 981:
                             case 982:
                             case 984:
-                            case 985:
-                                goto MATCH_label_a0;
-                                break;
+                            case 985: goto MATCH_label_a0; break;
 
                             case 19:
 
@@ -3965,14 +3791,12 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 break;
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                         }
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x1ff))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x1ff)) {
                         case 0:
                         case 1:
                         case 2:
@@ -4161,8 +3985,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 goto MATCH_label_a0; /*opt-block+*/
                             }
                             else {
-                                switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                                {
+                                switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                                 case 0:
 
                                     if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
@@ -4947,9 +4770,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 case 981:
                                 case 982:
                                 case 984:
-                                case 985:
-                                    goto MATCH_label_a0;
-                                    break;
+                                case 985: goto MATCH_label_a0; break;
 
                                 case 19:
 
@@ -5093,8 +4914,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                     break;
 
-                                default:
-                                    assert(0);
+                                default: assert(0);
                                 } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                             }
 
@@ -5125,9 +4945,9 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             MATCH_name = MATCH_name_Xo9_29[(MATCH_w_32_0 >> 1 & 0x1ff)];
                             {
                                 const char *name = MATCH_name;
-                                unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-                                unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-                                nextPC = MATCH_p + 4;
+                                unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+                                unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+                                nextPC           = MATCH_p + 4;
 
                                 // #line 122 "frontend/machine/ppc/decoder.m"
 
@@ -5136,8 +4956,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x1ff) -- Xo9 at 0 --*/
                     }
                 }
@@ -5149,8 +4968,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         goto MATCH_label_a0; /*opt-block+*/
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                         case 0:
 
                             if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
@@ -5875,9 +5693,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 820:
                         case 821:
                         case 822:
-                        case 823:
-                            goto MATCH_label_a0;
-                            break;
+                        case 823: goto MATCH_label_a0; break;
 
                         case 20:
                         case 21:
@@ -5987,8 +5803,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                     }
                 }
@@ -6002,8 +5817,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         goto MATCH_label_a0; /*opt-block+*/
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                         case 0:
 
                             if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
@@ -6728,9 +6542,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 820:
                         case 821:
                         case 822:
-                        case 823:
-                            goto MATCH_label_a0;
-                            break;
+                        case 823: goto MATCH_label_a0; break;
 
                         case 20:
                         case 21:
@@ -6840,14 +6652,12 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                     }
                 }
                 else {
-                    switch ((MATCH_w_32_0 >> 1 & 0x1ff))
-                    {
+                    switch ((MATCH_w_32_0 >> 1 & 0x1ff)) {
                     case 0:
                     case 1:
                     case 2:
@@ -6977,8 +6787,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             goto MATCH_label_a0; /*opt-block+*/
                         }
                         else {
-                            switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                            {
+                            switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                             case 0:
 
                                 if ((MATCH_w_32_0 >> 22 & 0x1) == 0) {
@@ -7703,9 +7512,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             case 820:
                             case 821:
                             case 822:
-                            case 823:
-                                goto MATCH_label_a0;
-                                break;
+                            case 823: goto MATCH_label_a0; break;
 
                             case 20:
                             case 21:
@@ -7815,8 +7622,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 break;
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                         }
 
@@ -7839,8 +7645,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         break;
 
-                    default:
-                        assert(0);
+                    default: assert(0);
                     } /* (MATCH_w_32_0 >> 1 & 0x1ff) -- Xo9 at 0 --*/
                 }
 
@@ -7857,11 +7662,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
             case 46:
                 MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
                 {
-                    const char                *name = MATCH_name;
-                    int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
-                    unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
-                    unsigned rd = (MATCH_w_32_0 >> 21 & 0x1f);
-                    nextPC = MATCH_p + 4;
+                    const char *name            = MATCH_name;
+                    int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+                    unsigned ra                 = (MATCH_w_32_0 >> 16 & 0x1f);
+                    unsigned rd                 = (MATCH_w_32_0 >> 21 & 0x1f);
+                    nextPC                      = MATCH_p + 4;
 
                     // #line 152 "frontend/machine/ppc/decoder.m"
 
@@ -7874,12 +7679,13 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         result.rtl = instantiate(pc, name, { DIS_RD, DIS_DISP, DIS_NZRA });
                     }
 
-//    | XLb_ (b0, b1) [name] =>
+                    //    | XLb_ (b0, b1) [name] =>
 
-#if BCCTR_LONG      // Prefer to see bltctr instead of bcctr 12,0
-                    // But also affects return instructions (bclr)
+#if BCCTR_LONG // Prefer to see bltctr instead of bcctr 12,0
+               // But also affects return instructions (bclr)
 
-                    /*FIXME: since this is used for returns, do a jump to LR instead (ie ignoring control registers) */
+                    /*FIXME: since this is used for returns, do a jump to LR instead (ie ignoring
+                     * control registers) */
 
                     result.rtl = instantiate(pc, name);
 
@@ -7904,11 +7710,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
             case 47:
                 MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
                 {
-                    const char                *name = MATCH_name;
-                    int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
-                    unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
-                    unsigned rs = (MATCH_w_32_0 >> 21 & 0x1f);
-                    nextPC = MATCH_p + 4;
+                    const char *name            = MATCH_name;
+                    int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+                    unsigned ra                 = (MATCH_w_32_0 >> 16 & 0x1f);
+                    unsigned rs                 = (MATCH_w_32_0 >> 21 & 0x1f);
+                    nextPC                      = MATCH_p + 4;
 
                     // #line 130 "frontend/machine/ppc/decoder.m"
 
@@ -7930,16 +7736,18 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
             case 51:
                 MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
                 {
-                    const char                *name = MATCH_name;
-                    int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
-                    unsigned fd = (MATCH_w_32_0 >> 21 & 0x1f);
-                    unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
-                    nextPC = MATCH_p + 4;
+                    const char *name            = MATCH_name;
+                    int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+                    unsigned fd                 = (MATCH_w_32_0 >> 21 & 0x1f);
+                    unsigned ra                 = (MATCH_w_32_0 >> 16 & 0x1f);
+                    nextPC                      = MATCH_p + 4;
 
                     // #line 243 "frontend/machine/ppc/decoder.m"
                     // Floating point loads (non indexed)
 
-                    result.rtl = instantiate(pc, name, { DIS_FD, DIS_DISP, DIS_RA }); // Pass RA twice (needed for update})
+                    result.rtl = instantiate(
+                        pc, name,
+                        { DIS_FD, DIS_DISP, DIS_RA }); // Pass RA twice (needed for update})
                 }
 
                 break;
@@ -7950,24 +7758,25 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
             case 55:
                 MATCH_name = MATCH_name_OPCD_0[(MATCH_w_32_0 >> 26 & 0x3f)];
                 {
-                    const char                *name = MATCH_name;
-                    int /* [~32768..32767] */ d     = sign_extend((MATCH_w_32_0 & 0xffff), 16);
-                    unsigned fs = (MATCH_w_32_0 >> 21 & 0x1f);
-                    unsigned ra = (MATCH_w_32_0 >> 16 & 0x1f);
-                    nextPC = MATCH_p + 4;
+                    const char *name            = MATCH_name;
+                    int /* [~32768..32767] */ d = sign_extend((MATCH_w_32_0 & 0xffff), 16);
+                    unsigned fs                 = (MATCH_w_32_0 >> 21 & 0x1f);
+                    unsigned ra                 = (MATCH_w_32_0 >> 16 & 0x1f);
+                    nextPC                      = MATCH_p + 4;
 
                     // #line 249 "frontend/machine/ppc/decoder.m"
                     // Floating point stores (non indexed)
 
-                    result.rtl = instantiate(pc, name, { DIS_FS, DIS_DISP, DIS_RA }); // Pass RA twice (needed for update})
+                    result.rtl = instantiate(
+                        pc, name,
+                        { DIS_FS, DIS_DISP, DIS_RA }); // Pass RA twice (needed for update})
                 }
 
                 break;
 
             case 59:
 
-                switch ((MATCH_w_32_0 >> 1 & 0x1f))
-                {
+                switch ((MATCH_w_32_0 >> 1 & 0x1f)) {
                 case 0:
                 case 1:
                 case 2:
@@ -7996,9 +7805,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                 case 28:
                 case 29:
                 case 30:
-                case 31:
-                    goto MATCH_label_a0;
-                    break;
+                case 31: goto MATCH_label_a0; break;
 
                 case 18:
 
@@ -8036,8 +7843,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                     break;
 
-                default:
-                    assert(0);
+                default: assert(0);
                 } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
 
                 break;
@@ -8050,8 +7856,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 137U, 264U) ||
                             Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 265U, 814U) ||
                             Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 847U, 1024U)) {
-                            switch ((MATCH_w_32_0 >> 1 & 0x1f))
-                            {
+                            switch ((MATCH_w_32_0 >> 1 & 0x1f)) {
                             case 0:
                             case 1:
                             case 2:
@@ -8080,9 +7885,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             case 28:
                             case 29:
                             case 30:
-                            case 31:
-                                goto MATCH_label_a0;
-                                break;
+                            case 31: goto MATCH_label_a0; break;
 
                             case 18:
 
@@ -8120,13 +7923,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 break;
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
                         }
                         else {
-                            switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                            {
+                            switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                             case 0:
                             case 1:
                             case 2:
@@ -8226,8 +8027,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             case 844:
                             case 845:
 
-                                switch ((MATCH_w_32_0 >> 1 & 0x1f))
-                                {
+                                switch ((MATCH_w_32_0 >> 1 & 0x1f)) {
                                 case 0:
                                 case 1:
                                 case 2:
@@ -8256,9 +8056,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                 case 28:
                                 case 29:
                                 case 30:
-                                case 31:
-                                    goto MATCH_label_a0;
-                                    break;
+                                case 31: goto MATCH_label_a0; break;
 
                                 case 18:
 
@@ -8296,8 +8094,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                     break;
 
-                                default:
-                                    assert(0);
+                                default: assert(0);
                                 } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
 
                                 break;
@@ -8317,14 +8114,12 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                                 break;
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                         }
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x1f))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x1f)) {
                         case 0:
                         case 1:
                         case 2:
@@ -8353,9 +8148,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 28:
                         case 29:
                         case 30:
-                        case 31:
-                            goto MATCH_label_a0;
-                            break;
+                        case 31: goto MATCH_label_a0; break;
 
                         case 18:
 
@@ -8393,8 +8186,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
                     }
                 }
@@ -8403,8 +8195,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 137U, 264U) ||
                         Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 265U, 814U) ||
                         Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 847U, 1024U)) {
-                        switch ((MATCH_w_32_0 >> 1 & 0x1f))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x1f)) {
                         case 0:
                         case 1:
                         case 2:
@@ -8433,9 +8224,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 28:
                         case 29:
                         case 30:
-                        case 31:
-                            goto MATCH_label_a0;
-                            break;
+                        case 31: goto MATCH_label_a0; break;
 
                         case 18:
 
@@ -8473,13 +8262,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                         case 0:
 
                             if ((MATCH_w_32_0 >> 6 & 0x1f) == 0) {
@@ -8508,7 +8295,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     goto MATCH_label_a18;
                                 } /*opt-block*/
                             }
-                            else if (((((MATCH_w_32_0 >> 21) & 0x1) == 0) && ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
+                            else if (((((MATCH_w_32_0 >> 21) & 0x1) == 0) &&
+                                      ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
                                      (((MATCH_w_32_0 >> 21) & 0x1) == 1)) {
                                 goto MATCH_label_a0; /*opt-block+*/
                             }
@@ -8616,8 +8404,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 844:
                         case 845:
 
-                            switch ((MATCH_w_32_0 >> 1 & 0x1f))
-                            {
+                            switch ((MATCH_w_32_0 >> 1 & 0x1f)) {
                             case 0:
                             case 1:
                             case 2:
@@ -8646,9 +8433,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                             case 28:
                             case 29:
                             case 30:
-                            case 31:
-                                goto MATCH_label_a0;
-                                break;
+                            case 31: goto MATCH_label_a0; break;
 
                             case 18:
 
@@ -8684,8 +8469,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     goto MATCH_label_a0; /*opt-block+*/
                                 }
 
-                            default:
-                                assert(0);
+                            default: assert(0);
                             } /* (MATCH_w_32_0 >> 1 & 0x1f) -- Xo5 at 0 --*/
 
                             break;
@@ -8731,7 +8515,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                                     goto MATCH_label_a18;
                                 } /*opt-block*/
                             }
-                            else if ((((MATCH_w_32_0 >> 21 & 0x1) == 0) && ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
+                            else if ((((MATCH_w_32_0 >> 21 & 0x1) == 0) &&
+                                      ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
                                      ((MATCH_w_32_0 >> 21 & 0x1) == 1)) {
                                 goto MATCH_label_a0; /*opt-block+*/
                             }
@@ -8742,14 +8527,14 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                     }
                 }
                 else if ((MATCH_w_32_0 >> 6 & 0x1f) == 0) {
                     if ((MATCH_w_32_0 >> 21 & 0x1) == 1) {
-                        if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+                        if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
+                            Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
                             MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
                             goto MATCH_label_a17;
                         } /*opt-block*/
@@ -8758,7 +8543,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         }
                     }
                     else if ((MATCH_w_32_0 >> 22 & 0x1) == 1) {
-                        if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+                        if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
+                            Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
                             MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
                             goto MATCH_label_a17;
                         } /*opt-block*/
@@ -8767,7 +8553,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         }
                     }
                     else if (Util::inRange((MATCH_w_32_0 >> 1 & 0x3ff), 33U, 1024U)) {
-                        if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+                        if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
+                            Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
                             MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
                             goto MATCH_label_a17;
                         } /*opt-block*/
@@ -8776,8 +8563,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         }
                     }
                     else {
-                        switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                        {
+                        switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                         case 0:
                         case 32:
                             MATCH_name = MATCH_name_Xo1_26[(MATCH_w_32_0 >> 1 & 0x3ff)];
@@ -8817,7 +8603,8 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                         case 30:
                         case 31:
 
-                            if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) || Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
+                            if (((MATCH_w_32_0 >> 1 & 0x1f) == 18) ||
+                                Util::inRange((MATCH_w_32_0 >> 1 & 0x1f), 20U, 22U)) {
                                 MATCH_name = MATCH_name_Xo5_40[(MATCH_w_32_0 >> 1 & 0x1f)];
                                 goto MATCH_label_a17;
                             } /*opt-block*/
@@ -8827,8 +8614,7 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                             break;
 
-                        default:
-                            assert(0);
+                        default: assert(0);
                         } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                     }
                 }
@@ -8836,11 +8622,11 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     goto MATCH_label_a0; /*opt-block+*/
                 }
                 else {
-                    switch ((MATCH_w_32_0 >> 1 & 0x3ff))
-                    {
+                    switch ((MATCH_w_32_0 >> 1 & 0x3ff)) {
                     case 0:
 
-                        if ((((MATCH_w_32_0 >> 21 & 0x1) == 0) && ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
+                        if ((((MATCH_w_32_0 >> 21 & 0x1) == 0) &&
+                             ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
                             ((MATCH_w_32_0 >> 21 & 0x1) == 1)) {
                             goto MATCH_label_a0; /*opt-block+*/
                         }
@@ -8881,13 +8667,12 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
                     case 28:
                     case 29:
                     case 30:
-                    case 31:
-                        goto MATCH_label_a0;
-                        break;
+                    case 31: goto MATCH_label_a0; break;
 
                     case 32:
 
-                        if ((((MATCH_w_32_0 >> 21 & 0x1) == 0) && ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
+                        if ((((MATCH_w_32_0 >> 21 & 0x1) == 0) &&
+                             ((MATCH_w_32_0 >> 22 & 0x1) == 1)) ||
                             ((MATCH_w_32_0 >> 21 & 0x1) == 1)) {
                             goto MATCH_label_a0; /*opt-block+*/
                         }
@@ -8898,36 +8683,34 @@ bool PPCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& re
 
                         break;
 
-                    default:
-                        assert(0);
+                    default: assert(0);
                     } /* (MATCH_w_32_0 >> 1 & 0x3ff) -- Xo1 at 0 --*/
                 }
 
                 break;
 
-            default:
-                assert(0);
+            default: assert(0);
             } /* (MATCH_w_32_0 >> 26 & 0x3f) -- OPCD at 0 --*/
         }
         goto MATCH_finished_a;
 
-MATCH_label_a0:
+    MATCH_label_a0:
         (void)0; /*placeholder for label*/
         {
             nextPC = MATCH_p;
 
             // #line 353 "frontend/machine/ppc/decoder.m"
-            result.valid = false;
+            result.valid    = false;
             result.numBytes = 4;
         }
         goto MATCH_finished_a;
 
-MATCH_label_a1:
+    MATCH_label_a1:
         (void)0; /*placeholder for label*/
         {
-            unsigned    BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+            unsigned BIcr       = (MATCH_w_32_0 >> 18 & 0x7);
             HostAddress reladdr = addressToPC(MATCH_p) + Address(4 * (MATCH_w_32_0 >> 2 & 0x3fff));
-            nextPC = MATCH_p + 4;
+            nextPC              = MATCH_p + 4;
 
             // #line 303 "frontend/machine/ppc/decoder.m"
 
@@ -8935,18 +8718,19 @@ MATCH_label_a1:
 
             Q_UNUSED(BIcr);
 
-            // b<cond>lr: Branch conditionally to the link register. Model this as a conditional branch around a return
+            // b<cond>lr: Branch conditionally to the link register. Model this as a conditional
+            // branch around a return
 
             // statement.
         }
         goto MATCH_finished_a;
 
-MATCH_label_a2:
+    MATCH_label_a2:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   BIcr  = (MATCH_w_32_0 >> 18 & 0x7);
-            nextPC = MATCH_p + 4;
+            unsigned BIcr    = (MATCH_w_32_0 >> 18 & 0x7);
+            nextPC           = MATCH_p + 4;
 
             // #line 341 "frontend/machine/ppc/decoder.m"
             result.rtl->append(new ReturnStatement);
@@ -8959,14 +8743,14 @@ MATCH_label_a2:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a3:
+    MATCH_label_a3:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   crbA  = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   crbB  = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   crbD  = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned crbA    = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned crbB    = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned crbD    = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 168 "frontend/machine/ppc/decoder.m"
 
@@ -8974,16 +8758,16 @@ MATCH_label_a3:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a4:
+    MATCH_label_a4:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   beg   = (MATCH_w_32_0 >> 6 & 0x1f);
-            unsigned   end   = (MATCH_w_32_0 >> 1 & 0x1f);
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   uimm  = (MATCH_w_32_0 >> 11 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned beg     = (MATCH_w_32_0 >> 6 & 0x1f);
+            unsigned end     = (MATCH_w_32_0 >> 1 & 0x1f);
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned uimm    = (MATCH_w_32_0 >> 11 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 189 "frontend/machine/ppc/decoder.m"
 
@@ -8991,15 +8775,15 @@ MATCH_label_a4:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a5:
+    MATCH_label_a5:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   crfd  = (MATCH_w_32_0 >> 23 & 0x7);
-            unsigned   l     = (MATCH_w_32_0 >> 21 & 0x1);
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned crfd    = (MATCH_w_32_0 >> 23 & 0x7);
+            unsigned l       = (MATCH_w_32_0 >> 21 & 0x1);
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 233 "frontend/machine/ppc/decoder.m"
 
@@ -9009,12 +8793,12 @@ MATCH_label_a5:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a6:
+    MATCH_label_a6:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 186 "frontend/machine/ppc/decoder.m"
 
@@ -9022,14 +8806,14 @@ MATCH_label_a6:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a7:
+    MATCH_label_a7:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 146 "frontend/machine/ppc/decoder.m"
 
@@ -9037,14 +8821,14 @@ MATCH_label_a7:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a8:
+    MATCH_label_a8:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   ra    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   rd    = (MATCH_w_32_0 >> 16 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned ra      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned rd      = (MATCH_w_32_0 >> 16 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 144 "frontend/machine/ppc/decoder.m"
 
@@ -9052,34 +8836,37 @@ MATCH_label_a8:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a9:
+    MATCH_label_a9:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   ra    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   rd    = (MATCH_w_32_0 >> 16 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned ra      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned rd      = (MATCH_w_32_0 >> 16 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 125 "frontend/machine/ppc/decoder.m"
 
             result.rtl = instantiate(pc, name, { DIS_RD, DIS_RA });
 
-            // The number of parameters in these matcher arms has to agree with the number in core.spec
+            // The number of parameters in these matcher arms has to agree with the number in
+            // core.spec
 
-            // The number of parameters passed to instantiate() after pc and name has to agree with ppc.ssl
+            // The number of parameters passed to instantiate() after pc and name has to agree with
+            // ppc.ssl
 
-            // Stores and loads pass rA to instantiate twice: as part of DIS_DISP, and separately as DIS_NZRA
+            // Stores and loads pass rA to instantiate twice: as part of DIS_DISP, and separately as
+            // DIS_NZRA
         }
         goto MATCH_finished_a;
 
-MATCH_label_a10:
+    MATCH_label_a10:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 149 "frontend/machine/ppc/decoder.m"
 
@@ -9089,13 +8876,13 @@ MATCH_label_a10:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a11:
+    MATCH_label_a11:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   uimm  = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned uimm    = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 170 "frontend/machine/ppc/decoder.m"
 
@@ -9103,82 +8890,72 @@ MATCH_label_a11:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a12:
+    MATCH_label_a12:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   uimm  = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned uimm    = ((MATCH_w_32_0 >> 11 & 0x1f) << 5) + (MATCH_w_32_0 >> 16 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 173 "frontend/machine/ppc/decoder.m"
 
-            switch (uimm)
-            {
-            case 1:
+            switch (uimm) {
+            case 1: result.rtl = instantiate(pc, "MTXER", { DIS_RS }); break;
 
-                result.rtl = instantiate(pc, "MTXER", { DIS_RS });
-                break;
+            case 8: result.rtl = instantiate(pc, "MTLR", { DIS_RS }); break;
 
-            case 8:
+            case 9: result.rtl = instantiate(pc, "MTCTR", { DIS_RS }); break;
 
-                result.rtl = instantiate(pc, "MTLR", { DIS_RS });
-                break;
-
-            case 9:
-
-                result.rtl = instantiate(pc, "MTCTR", { DIS_RS });
-                break;
-
-            default:
-
-                LOG_ERROR("MTSPR instruction with invalid S field: %1", uimm);
+            default: LOG_ERROR("MTSPR instruction with invalid S field: %1", uimm);
             }
 
             Q_UNUSED(name);
         }
         goto MATCH_finished_a;
 
-MATCH_label_a13:
+    MATCH_label_a13:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   fd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned fd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 246 "frontend/machine/ppc/decoder.m"
             // Floating point loads (indexed)
 
-            result.rtl = instantiate(pc, name, { DIS_FD, DIS_INDEX, DIS_RA }); // Pass RA twice (needed for update})
+            result.rtl = instantiate(
+                pc, name, { DIS_FD, DIS_INDEX, DIS_RA }); // Pass RA twice (needed for update})
         }
         goto MATCH_finished_a;
 
-MATCH_label_a14:
+    MATCH_label_a14:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   fs    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned fs      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 252 "frontend/machine/ppc/decoder.m"
             // Floating point stores (indexed)
 
-            result.rtl = instantiate(pc, name, { DIS_FS, DIS_INDEX, DIS_RA }); // Pass RA twice (needed for update})
+            result.rtl = instantiate(
+                pc, name, { DIS_FS, DIS_INDEX, DIS_RA }); // Pass RA twice (needed for update})
         }
         goto MATCH_finished_a;
 
-MATCH_label_a15:
+    MATCH_label_a15:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rs    = (MATCH_w_32_0 >> 21 & 0x1f);
-            unsigned   uimm  = (MATCH_w_32_0 >> 11 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rs      = (MATCH_w_32_0 >> 21 & 0x1f);
+            unsigned uimm    = (MATCH_w_32_0 >> 11 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 347 "frontend/machine/ppc/decoder.m"
 
@@ -9186,14 +8963,14 @@ MATCH_label_a15:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a16:
+    MATCH_label_a16:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   ra    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   rb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   rd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned ra      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned rb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned rd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 120 "frontend/machine/ppc/decoder.m"
 
@@ -9201,14 +8978,14 @@ MATCH_label_a16:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a17:
+    MATCH_label_a17:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   fa    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   fb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   fd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned fa      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned fb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned fd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 262 "frontend/machine/ppc/decoder.m"
             // Floating point binary
@@ -9217,18 +8994,19 @@ MATCH_label_a17:
 
             // Conditional branches
 
-            // bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal (branch always)
+            // bcc_ is blt | ble | beq | bge | bgt | bnl | bne | bng | bso | bns | bun | bnu | bal
+            // (branch always)
         }
         goto MATCH_finished_a;
 
-MATCH_label_a18:
+    MATCH_label_a18:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   crfd  = (MATCH_w_32_0 >> 23 & 0x7);
-            unsigned   fa    = (MATCH_w_32_0 >> 16 & 0x1f);
-            unsigned   fb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned crfd    = (MATCH_w_32_0 >> 23 & 0x7);
+            unsigned fa      = (MATCH_w_32_0 >> 16 & 0x1f);
+            unsigned fb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 256 "frontend/machine/ppc/decoder.m"
             // Floating point compare
@@ -9237,13 +9015,13 @@ MATCH_label_a18:
         }
         goto MATCH_finished_a;
 
-MATCH_label_a19:
+    MATCH_label_a19:
         (void)0; /*placeholder for label*/
         {
             const char *name = MATCH_name;
-            unsigned   fb    = (MATCH_w_32_0 >> 11 & 0x1f);
-            unsigned   fd    = (MATCH_w_32_0 >> 21 & 0x1f);
-            nextPC = MATCH_p + 4;
+            unsigned fb      = (MATCH_w_32_0 >> 11 & 0x1f);
+            unsigned fd      = (MATCH_w_32_0 >> 21 & 0x1f);
+            nextPC           = MATCH_p + 4;
 
             // #line 259 "frontend/machine/ppc/decoder.m"
             // Floating point unary
@@ -9252,7 +9030,7 @@ MATCH_label_a19:
         }
         goto MATCH_finished_a;
 
-MATCH_finished_a:
+    MATCH_finished_a:
         (void)0; /*placeholder for label*/
     }
 
@@ -9291,8 +9069,8 @@ bool PPCDecoder::isFuncPrologue(Address /*hostPC*/)
 
 
 /**********************************
-* These are the fetch routines.
-**********************************/
+ * These are the fetch routines.
+ **********************************/
 
 /**
  * Returns the double starting at the given address.
@@ -9307,8 +9085,7 @@ DWord PPCDecoder::getDword(HostAddress lc)
 
 PPCDecoder::PPCDecoder(Prog *_prog)
     : NJMCDecoder(_prog, "ssl/ppc.ssl")
-{
-}
+{}
 
 
 // Get an expression for a CR bit. For example, if bitNum is 6, return r65@[2:2]
@@ -9318,5 +9095,6 @@ SharedExp crBit(int bitNum)
     int crNum = bitNum / 4;
 
     bitNum = bitNum & 3;
-    return std::make_shared<Ternary>(opAt, Location::regOf(REG_PPC_CR0 + crNum), Const::get(bitNum), Const::get(bitNum));
+    return std::make_shared<Ternary>(opAt, Location::regOf(REG_PPC_CR0 + crNum), Const::get(bitNum),
+                                     Const::get(bitNum));
 }

@@ -10,15 +10,14 @@
 #include "BinarySymbol.h"
 
 
-BinarySymbol::BinarySymbol(Address location, const QString& name)
+BinarySymbol::BinarySymbol(Address location, const QString &name)
     : m_name(name)
     , m_address(location)
     , m_size(0)
-{
-}
+{}
 
 
-void BinarySymbol::setAttribute(const QString& key, const QVariant& value) const
+void BinarySymbol::setAttribute(const QString &key, const QVariant &value) const
 {
     m_attributes[key] = value;
 }

@@ -47,5 +47,5 @@ private:
     void removeSubscriptsFromParameters(UserProc *proc);
 
     /// Find the locations united by Phi-functions
-    void findPhiUnites(UserProc *proc, ConnectionGraph& pu);
+    void findPhiUnites(UserProc *proc, ConnectionGraph &pu);
 };

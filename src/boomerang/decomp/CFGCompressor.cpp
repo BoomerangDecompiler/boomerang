@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "CFGCompressor.h"
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/RTL.h"
@@ -22,8 +21,9 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
 {
     bool changed = false;
 
-    // FIXME: The below was working while we still had reaching definitions. It seems to me that it would be easy to
-    // search the BB for definitions between the two branches (so we don't need reaching defs, just the SSA property of
+    // FIXME: The below was working while we still had reaching definitions. It seems to me that it
+    // would be easy to search the BB for definitions between the two branches (so we don't need
+    // reaching defs, just the SSA property of
     //  unique definition).
     //
     // Look in CVS for old code.
@@ -37,8 +37,7 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
                 continue;
             }
 
-            if (jmpBB->getRTLs()->size() != 1 ||
-                jmpBB->getRTLs()->front()->size() != 1 ||
+            if (jmpBB->getRTLs()->size() != 1 || jmpBB->getRTLs()->front()->size() != 1 ||
                 !jmpBB->getRTLs()->front()->front()->isGoto()) {
                 continue;
             }
@@ -55,8 +54,8 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
                 }
             }
 
-            // remove predecessor from j. Cannot remove successor now since there might be several predecessors
-            // which need the successor information.
+            // remove predecessor from j. Cannot remove successor now since there might be several
+            // predecessors which need the successor information.
             jmpBB->removePredecessor(aBB);
 
             if (jmpBB->getNumPredecessors() == 0) {

@@ -9,14 +9,14 @@
 #pragma endregion License
 
 
+/* clang-format off */
 #define MODRM      0x10 /*< instruction size is dependent on modrm byte */
 #define OPSIZE     0x20 /*< Add current operand size to instruction size */
 #define INVALID    0x40 /*< Invalid / not recognized instruction */
 
-/* *INDENT-OFF* */
 static const unsigned char opmap[256] =
 {
-    /* Note for X86-64, 0x40-0x47 are special escapes! */
+    /* Note that for X86-64, 0x40-0x47 are special escapes! */
 
     /*          0               1                   2               3               4                   5                   6                   7 */
     /* 00-07 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
@@ -92,7 +92,7 @@ static const unsigned char op0Fmap[256] =
     /* F0-F7 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
     /* F8-FF */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID
 };
-/* *INDENT-ON* */
+/* clang-format on */
 
 
 /**
@@ -104,20 +104,19 @@ static const unsigned char op0Fmap[256] =
 int microX86Dis(const unsigned char *instruction)
 {
     const unsigned char *p = instruction;
-    int                 opsize = 4; /* Operand size override will change to 2 */
-    int                 size = 0;
-    unsigned char       modrm;
-    unsigned char       op     = *p++;
-    int                 prefix = 1;
+    int opsize             = 4; /* Operand size override will change to 2 */
+    int size               = 0;
+    unsigned char modrm;
+    unsigned char op = *p++;
+    int prefix       = 1;
 
     while (prefix) {
-        switch (op)
-        {
+        switch (op) {
         case 0x66:
             /* Operand size override */
             opsize = 2;
             op     = *p++;
-            size  += 1;                 /* Count the 0x66 */
+            size += 1; /* Count the 0x66 */
             break;
 
         case 0xF0:
@@ -133,18 +132,17 @@ int microX86Dis(const unsigned char *instruction)
              * Count these as part of the instruction rather than
              * returning 1 byte.
              * Easier to compare output with disassembly */
-            op    = *p++;
-            size += 1;                  /* Count the prefix */
+            op = *p++;
+            size += 1; /* Count the prefix */
             break;
 
-        default:
-            prefix = 0;
+        default: prefix = 0;
         }
     }
 
     if (op == 0x0F) {
         /* Two byte escape */
-        unsigned char op2   = *p++;
+        unsigned char op2 = *p++;
         size += op0Fmap[op2];
     }
     else {
@@ -153,14 +151,14 @@ int microX86Dis(const unsigned char *instruction)
     }
 
     if (size & MODRM) {
-        size &= ~MODRM;     /* Remove flag from size */
-        size++;             /* Count the mod/rm itself */
-        modrm = *p++;
-        unsigned char mod   = modrm >> 6;
+        size &= ~MODRM; /* Remove flag from size */
+        size++;         /* Count the mod/rm itself */
+        modrm             = *p++;
+        unsigned char mod = modrm >> 6;
 
         if ((mod != 3) && ((modrm & 0x7) == 4)) {
             /* SIB also present */
-            size++;     /* Count the SIB itself */
+            size++; /* Count the SIB itself */
             unsigned char sib = *p++;
 
             if ((mod == 0) && ((sib & 0x7) == 0x5)) {
@@ -171,15 +169,15 @@ int microX86Dis(const unsigned char *instruction)
 
         /* Regardless of whether a SIB is present or not... */
         if (mod == 1) {
-            size++;                     /* d8 */
+            size++; /* d8 */
         }
         else if (mod == 2) {
-            size += 4;                  /* d32 */
+            size += 4; /* d32 */
         }
 
         /* ds:d32 is a special case */
         if ((mod == 0) && ((modrm & 0x7) == 5)) {
-            size += 4;                  /* ds:d32 */
+            size += 4; /* ds:d32 */
         }
     }
     else {

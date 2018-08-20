@@ -9,16 +9,14 @@
 #pragma endregion License
 #include "CustomSignature.h"
 
-
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/util/Util.h"
 
 
-CustomSignature::CustomSignature(const QString& name)
+CustomSignature::CustomSignature(const QString &name)
     : Signature(name)
     , m_spReg(0)
-{
-}
+{}
 
 
 std::shared_ptr<Signature> CustomSignature::clone() const
@@ -28,12 +26,12 @@ std::shared_ptr<Signature> CustomSignature::clone() const
     Util::clone(m_params, result->m_params);
     Util::clone(m_returns, result->m_returns);
 
-    result->m_ellipsis        = m_ellipsis;
-    result->m_spReg           = m_spReg;
-    result->m_forced          = m_forced;
-    result->m_preferredName   = m_preferredName;
-    result->m_unknown         = m_unknown;
-    result->m_sigFile         = m_sigFile;
+    result->m_ellipsis      = m_ellipsis;
+    result->m_spReg         = m_spReg;
+    result->m_forced        = m_forced;
+    result->m_preferredName = m_preferredName;
+    result->m_unknown       = m_unknown;
+    result->m_sigFile       = m_sigFile;
 
     return result;
 }

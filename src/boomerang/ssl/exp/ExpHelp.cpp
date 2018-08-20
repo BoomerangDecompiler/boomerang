@@ -9,14 +9,13 @@
 #pragma endregion License
 #include "ExpHelp.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/util/log/Log.h"
 
 
 // A helper class for comparing Exp*'s sensibly
-bool lessExpStar::operator()(const SharedConstExp& x, const SharedConstExp& y) const
+bool lessExpStar::operator()(const SharedConstExp &x, const SharedConstExp &y) const
 {
-    return (*x < *y);   // Compare the actual Exps
+    return (*x < *y); // Compare the actual Exps
 }

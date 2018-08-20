@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "RTLEditor.h"
 
-
 #include "Decompiler.h"
 
 #include <QApplication>
@@ -17,7 +16,7 @@
 #include <QScrollBar>
 
 
-RTLEditor::RTLEditor(Decompiler *_decompiler, const QString& _name)
+RTLEditor::RTLEditor(Decompiler *_decompiler, const QString &_name)
     : decompiler(_decompiler)
     , name(_name)
 {

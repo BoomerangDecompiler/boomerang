@@ -9,14 +9,12 @@
 #pragma endregion License
 #include "CaseStatement.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 #include "boomerang/visitor/stmtexpvisitor/StmtExpVisitor.h"
 #include "boomerang/visitor/stmtmodifier/StmtModifier.h"
 #include "boomerang/visitor/stmtmodifier/StmtPartModifier.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"
-
 
 #include <QTextStreamManipulator>
 
@@ -29,8 +27,7 @@ CaseStatement::CaseStatement()
 
 
 CaseStatement::~CaseStatement()
-{
-}
+{}
 
 
 SwitchInfo *CaseStatement::getSwitchInfo()
@@ -51,7 +48,7 @@ void CaseStatement::setSwitchInfo(SwitchInfo *psi)
 }
 
 
-bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
+bool CaseStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
 {
     bool ch  = GotoStatement::searchAndReplace(pattern, replace, cc);
     bool ch2 = false;
@@ -64,14 +61,15 @@ bool CaseStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
 }
 
 
-bool CaseStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
+bool CaseStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
     return GotoStatement::searchAll(pattern, result) ||
-           (m_switchInfo && m_switchInfo->switchExp && m_switchInfo->switchExp->searchAll(pattern, result));
+           (m_switchInfo && m_switchInfo->switchExp &&
+            m_switchInfo->switchExp->searchAll(pattern, result));
 }
 
 
-void CaseStatement::print(OStream& os) const
+void CaseStatement::print(OStream &os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     if (m_switchInfo == nullptr) {
@@ -100,13 +98,13 @@ Statement *CaseStatement::clone() const
     ret->m_isComputed = m_isComputed;
 
     if (m_switchInfo) {
-        ret->m_switchInfo             = new SwitchInfo;
-        *ret->m_switchInfo            = *m_switchInfo;
+        ret->m_switchInfo            = new SwitchInfo;
+        *ret->m_switchInfo           = *m_switchInfo;
         ret->m_switchInfo->switchExp = m_switchInfo->switchExp->clone();
     }
 
     // Statement members
-    ret->m_bb = m_bb;
+    ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
@@ -125,14 +123,15 @@ void CaseStatement::generateCode(ICodeGenerator *, const BasicBlock *)
 }
 
 
-bool CaseStatement::usesExp(const Exp& e) const
+bool CaseStatement::usesExp(const Exp &e) const
 {
     // Before a switch statement is recognised, m_dest is non null
     if (m_dest) {
         return *m_dest == e;
     }
 
-    // After a switch statement is recognised, m_dest is null, and m_switchInfo->m_switchVar takes over
+    // After a switch statement is recognised, m_dest is null, and m_switchInfo->m_switchVar takes
+    // over
     if (m_switchInfo->switchExp) {
         return *m_switchInfo->switchExp == e;
     }
@@ -155,7 +154,7 @@ void CaseStatement::simplify()
 bool CaseStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
         return ret;

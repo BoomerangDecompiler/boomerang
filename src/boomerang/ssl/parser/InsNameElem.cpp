@@ -9,23 +9,20 @@
 #pragma endregion License
 #include "InsNameElem.h"
 
-
 #include "boomerang/util/Types.h"
 
 #include <cassert>
-#include <string>
 #include <map>
+#include <string>
 
 
-InsNameElem::InsNameElem(const QString& name)
+InsNameElem::InsNameElem(const QString &name)
     : m_elemName(name)
-{
-}
+{}
 
 
 InsNameElem::~InsNameElem()
-{
-}
+{}
 
 
 size_t InsNameElem::getNumTokens() const
@@ -46,7 +43,7 @@ QString InsNameElem::getInsPattern() const
 }
 
 
-void InsNameElem::getRefMap(std::map<QString, InsNameElem *>& map)
+void InsNameElem::getRefMap(std::map<QString, InsNameElem *> &map)
 {
     if (m_nextElem != nullptr) {
         m_nextElem->getRefMap(map);
@@ -59,7 +56,8 @@ void InsNameElem::getRefMap(std::map<QString, InsNameElem *>& map)
 
 int InsNameElem::getNumInstructions() const
 {
-    return (m_nextElem != nullptr) ? (m_nextElem->getNumInstructions() * getNumTokens()) : getNumTokens();
+    return (m_nextElem != nullptr) ? (m_nextElem->getNumInstructions() * getNumTokens())
+                                   : getNumTokens();
 }
 
 
@@ -105,10 +103,9 @@ int InsNameElem::getValue(void) const
 }
 
 
-InsOptionElem::InsOptionElem(const QString& name)
+InsOptionElem::InsOptionElem(const QString &name)
     : InsNameElem(name)
-{
-}
+{}
 
 
 size_t InsOptionElem::getNumTokens() const
@@ -120,8 +117,9 @@ size_t InsOptionElem::getNumTokens() const
 QString InsOptionElem::getInstruction() const
 {
     QString s = (m_nextElem != nullptr)
-                ? ((getValue() == 0) ? (m_elemName + m_nextElem->getInstruction()) : m_nextElem->getInstruction())
-                : ((getValue() == 0) ? m_elemName : "");
+                    ? ((getValue() == 0) ? (m_elemName + m_nextElem->getInstruction())
+                                         : m_nextElem->getInstruction())
+                    : ((getValue() == 0) ? m_elemName : "");
 
     return s;
 }
@@ -129,16 +127,16 @@ QString InsOptionElem::getInstruction() const
 
 QString InsOptionElem::getInsPattern() const
 {
-    return (m_nextElem != nullptr) ? ('\'' + m_elemName + '\'' + m_nextElem->getInsPattern()) : ('\'' + m_elemName + '\'');
+    return (m_nextElem != nullptr) ? ('\'' + m_elemName + '\'' + m_nextElem->getInsPattern())
+                                   : ('\'' + m_elemName + '\'');
 }
 
 
-InsListElem::InsListElem(const QString& name, const std::shared_ptr<Table>& t, const QString& idx)
+InsListElem::InsListElem(const QString &name, const std::shared_ptr<Table> &t, const QString &idx)
     : InsNameElem(name)
     , m_indexName(idx)
     , m_theTable(t)
-{
-}
+{}
 
 
 size_t InsListElem::getNumTokens() const
@@ -149,19 +147,21 @@ size_t InsListElem::getNumTokens() const
 
 QString InsListElem::getInstruction() const
 {
-    return (m_nextElem != nullptr) ? (m_theTable->getRecords()[getValue()] + m_nextElem->getInstruction())
-           : m_theTable->getRecords()[getValue()];
+    return (m_nextElem != nullptr)
+               ? (m_theTable->getRecords()[getValue()] + m_nextElem->getInstruction())
+               : m_theTable->getRecords()[getValue()];
 }
 
 
 QString InsListElem::getInsPattern() const
 {
-    return (m_nextElem != nullptr) ? (m_elemName + '[' + m_indexName + ']' + m_nextElem->getInsPattern())
-           : (m_elemName + '[' + m_indexName + ']');
+    return (m_nextElem != nullptr)
+               ? (m_elemName + '[' + m_indexName + ']' + m_nextElem->getInsPattern())
+               : (m_elemName + '[' + m_indexName + ']');
 }
 
 
-void InsListElem::getRefMap(std::map<QString, InsNameElem *>& m)
+void InsListElem::getRefMap(std::map<QString, InsNameElem *> &m)
 {
     if (m_nextElem != nullptr) {
         m_nextElem->getRefMap(m);

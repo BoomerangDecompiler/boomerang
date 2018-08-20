@@ -26,15 +26,15 @@ class MIPSDecoder : public NJMCDecoder
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
     MIPSDecoder(Prog *prog);
-    MIPSDecoder(const MIPSDecoder& other) = delete;
-    MIPSDecoder(MIPSDecoder&& other) = default;
+    MIPSDecoder(const MIPSDecoder &other) = delete;
+    MIPSDecoder(MIPSDecoder &&other)      = default;
 
     virtual ~MIPSDecoder() override = default;
 
-    MIPSDecoder& operator=(const MIPSDecoder& other) = delete;
-    MIPSDecoder& operator=(MIPSDecoder&& other) = default;
+    MIPSDecoder &operator=(const MIPSDecoder &other) = delete;
+    MIPSDecoder &operator=(MIPSDecoder &&other) = default;
 
 public:
     /// \copydoc NJMCDecoder::decodeInstruction
-    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult& result) override;
+    virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) override;
 };

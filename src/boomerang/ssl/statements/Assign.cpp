@@ -9,10 +9,9 @@
 #pragma endregion License
 #include "Assign.h"
 
-
 #include "boomerang/core/Project.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -46,7 +45,7 @@ Assign::Assign(SharedType ty, SharedExp lhs, SharedExp rhs, SharedExp guard)
 }
 
 
-Assign::Assign(const Assign& other)
+Assign::Assign(const Assign &other)
     : Assignment(m_lhs->clone())
 {
     m_kind  = StmtType::Assign;
@@ -66,12 +65,11 @@ Assign::Assign(const Assign& other)
 
 Statement *Assign::clone() const
 {
-    Assign *asgn = new Assign(m_type == nullptr ? nullptr : m_type->clone(),
-                           m_lhs->clone(), m_rhs->clone(),
-                           m_guard == nullptr ? nullptr : m_guard->clone());
+    Assign *asgn = new Assign(m_type == nullptr ? nullptr : m_type->clone(), m_lhs->clone(),
+                              m_rhs->clone(), m_guard == nullptr ? nullptr : m_guard->clone());
 
     // Statement members
-    asgn->m_bb = m_bb;
+    asgn->m_bb     = m_bb;
     asgn->m_proc   = m_proc;
     asgn->m_number = m_number;
     return asgn;
@@ -102,8 +100,9 @@ void Assign::simplify()
     }
 
     // Perhaps the guard can go away
-    if (m_guard && (m_guard->isTrue() || (m_guard->isIntConst() && (m_guard->access<Const>()->getInt() == 1)))) {
-        m_guard = nullptr;     // No longer a guarded assignment
+    if (m_guard && (m_guard->isTrue() ||
+                    (m_guard->isIntConst() && (m_guard->access<Const>()->getInt() == 1)))) {
+        m_guard = nullptr; // No longer a guarded assignment
     }
 
     if (m_lhs->getOper() == opMemOf) {
@@ -126,7 +125,7 @@ void Assign::simplifyAddr()
 }
 
 
-void Assign::printCompact(OStream& os) const
+void Assign::printCompact(OStream &os) const
 {
     os << "*" << m_type << "* ";
 
@@ -146,7 +145,7 @@ void Assign::printCompact(OStream& os) const
 }
 
 
-bool Assign::search(const Exp& pattern, SharedExp& result) const
+bool Assign::search(const Exp &pattern, SharedExp &result) const
 {
     if (m_lhs->search(pattern, result)) {
         return true;
@@ -156,11 +155,11 @@ bool Assign::search(const Exp& pattern, SharedExp& result) const
 }
 
 
-bool Assign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
+bool Assign::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
     bool res;
 
-    std::list<SharedExp>           leftResult;
+    std::list<SharedExp> leftResult;
     res = m_lhs->searchAll(pattern, leftResult);
     // Ugh: searchAll clears the list!
     res |= m_rhs->searchAll(pattern, result);
@@ -173,7 +172,7 @@ bool Assign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
 }
 
 
-bool Assign::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
+bool Assign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
     bool chl = false, chr = false, chg = false;
 
@@ -200,23 +199,24 @@ int Assign::getMemDepth() const
 }
 
 
-bool Assign::usesExp(const Exp& e) const
+bool Assign::usesExp(const Exp &e) const
 {
     SharedExp where = nullptr;
 
-    return(m_rhs->search(e, where) ||
-           ((m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where)));
+    return (m_rhs->search(e, where) ||
+            ((m_lhs->isMemOf() || m_lhs->isRegOf()) && m_lhs->getSubExp1()->search(e, where)));
 }
 
 
 bool Assign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
-        // The visitor has overridden this functionality.  This is needed for example in UsedLocFinder, where the
-        // lhs of an assignment is not used (but if it's m[blah], then blah is used)
+        // The visitor has overridden this functionality.  This is needed for example in
+        // UsedLocFinder, where the lhs of an assignment is not used (but if it's m[blah], then blah
+        // is used)
         return ret;
     }
 
@@ -284,5 +284,4 @@ Assign::Assign()
     : Assignment(nullptr)
     , m_rhs(nullptr)
     , m_guard(nullptr)
-{
-}
+{}

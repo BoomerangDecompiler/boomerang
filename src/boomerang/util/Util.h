@@ -31,14 +31,14 @@ namespace Util
  * Turns things like newline, return, tab into \n, \r, \t etc
  * \note Assumes a C or C++ back end
  */
-QString BOOMERANG_API escapeStr(const QString& str);
+QString BOOMERANG_API escapeStr(const QString &str);
 
-OStream& alignStream(OStream& str, int align);
+OStream &alignStream(OStream &str, int align);
 
 
 /// Check if \p value is in [\p rangeStart, \p rangeEnd)
 template<class T, class U1, class U2>
-bool inRange(const T& value, const U1& rangeStart, const U2& rangeEnd)
+bool inRange(const T &value, const U1 &rangeStart, const U2 &rangeEnd)
 {
     return (value >= rangeStart) && (value < rangeEnd);
 }
@@ -46,7 +46,7 @@ bool inRange(const T& value, const U1& rangeStart, const U2& rangeEnd)
 
 /// Check if a value is in a container
 template<typename Cont, typename T>
-bool isContained(const Cont& cont, const T& value)
+bool isContained(const Cont &cont, const T &value)
 {
     return std::find(cont.begin(), cont.end(), value) != cont.end();
 }
@@ -56,14 +56,14 @@ bool isContained(const Cont& cont, const T& value)
 /// that is not available in C++11. Can be removed when
 /// dropping support for compilers that are not C++14 compilant.
 template<typename T, typename... Args>
-std::unique_ptr<T> makeUnique(Args&&... args)
+std::unique_ptr<T> makeUnique(Args &&... args)
 {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 
 template<class Container>
-void clone(const Container& from, Container& to)
+void clone(const Container &from, Container &to)
 {
     if (&from == &to) {
         return;
@@ -86,5 +86,4 @@ int getStackOffset(SharedConstExp e, int sp);
  * of an architecture, or -1 if the architecture does not have a stack register.
  */
 int getStackRegisterIndex(const Prog *prog);
-
 }

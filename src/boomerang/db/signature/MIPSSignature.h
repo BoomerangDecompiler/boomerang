@@ -17,19 +17,17 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
-
 class BOOMERANG_API MIPSSignature : public Signature
 {
 public:
-    explicit MIPSSignature(const QString& name);
+    explicit MIPSSignature(const QString &name);
     virtual ~MIPSSignature() override = default;
 
 public:
     /// \copydoc Signature::clone
     virtual std::shared_ptr<Signature> clone() const override;
 
-    static bool qualified(UserProc *p, Signature&);
+    static bool qualified(UserProc *p, Signature &);
 
     /// \copydoc Signature::addReturn
     virtual void addReturn(SharedType type, SharedExp e = nullptr) override;
@@ -38,8 +36,9 @@ public:
     virtual SharedExp getArgumentExp(int n) const override;
 
     /// \copydoc Signature::addParameter
-    virtual void addParameter(const QString& name, const SharedExp& e,
-                              SharedType type = VoidType::get(), const QString& boundMax = "") override;
+    virtual void addParameter(const QString &name, const SharedExp &e,
+                              SharedType type         = VoidType::get(),
+                              const QString &boundMax = "") override;
 
     /// \copydoc Signature::getStackRegister
     virtual int getStackRegister() const override { return 29; }
@@ -51,7 +50,7 @@ public:
     virtual bool isPreserved(SharedExp e) const override;
 
     /// \copydoc Signature::getLibraryDefines
-    virtual void getLibraryDefines(StatementList& defs) override;
+    virtual void getLibraryDefines(StatementList &defs) override;
 
     /// \copydoc Signature::isLocalOffsetNegative
     virtual bool isLocalOffsetNegative() const override { return false; }
@@ -62,6 +61,5 @@ public:
     /// \copydoc Signature::getConvention
     virtual CallConv getConvention() const override { return CallConv::C; }
 };
-
 }
 }

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ImplicitAssign.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/log/Log.h"
@@ -35,7 +34,7 @@ ImplicitAssign::ImplicitAssign(SharedType ty, SharedExp _lhs)
 }
 
 
-ImplicitAssign::ImplicitAssign(const ImplicitAssign& other)
+ImplicitAssign::ImplicitAssign(const ImplicitAssign &other)
     : Assignment(other.m_type ? other.m_type->clone() : nullptr, other.m_lhs->clone())
 {
     m_kind = StmtType::ImpAssign;
@@ -54,7 +53,7 @@ bool ImplicitAssign::accept(StmtVisitor *visitor) const
 }
 
 
-void ImplicitAssign::printCompact(OStream& os) const
+void ImplicitAssign::printCompact(OStream &os) const
 {
     os << "*" << m_type << "* ";
 
@@ -66,19 +65,19 @@ void ImplicitAssign::printCompact(OStream& os) const
 }
 
 
-bool ImplicitAssign::search(const Exp& pattern, SharedExp& result) const
+bool ImplicitAssign::search(const Exp &pattern, SharedExp &result) const
 {
     return m_lhs->search(pattern, result);
 }
 
 
-bool ImplicitAssign::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
+bool ImplicitAssign::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
     return m_lhs->searchAll(pattern, result);
 }
 
 
-bool ImplicitAssign::searchAndReplace(const Exp& pattern, SharedExp replace, bool cc)
+bool ImplicitAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool cc)
 {
     Q_UNUSED(cc);
     bool change;
@@ -90,7 +89,7 @@ bool ImplicitAssign::searchAndReplace(const Exp& pattern, SharedExp replace, boo
 bool ImplicitAssign::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
         return ret;

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DFGWriter.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/log/Log.h"
@@ -18,7 +17,7 @@
 #include <QString>
 
 
-void DFGWriter::printDFG(const UserProc *proc, const QString& fname)
+void DFGWriter::printDFG(const UserProc *proc, const QString &fname)
 {
     LOG_MSG("Outputing DFG to '%1'", fname);
     QFile file(fname);

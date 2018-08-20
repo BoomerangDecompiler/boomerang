@@ -9,11 +9,9 @@
 #pragma endregion License
 #include "StmtConstFinder.h"
 
-
 #include "boomerang/visitor/expvisitor/ConstFinder.h"
 
 
-StmtConstFinder::StmtConstFinder(ConstFinder* v)
+StmtConstFinder::StmtConstFinder(ConstFinder *v)
     : StmtExpVisitor(v)
-{
-}
+{}

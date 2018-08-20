@@ -17,13 +17,13 @@ class BOOMERANG_API CaseStatement : public GotoStatement
 {
 public:
     CaseStatement();
-    CaseStatement(const CaseStatement& other) = default;
-    CaseStatement(CaseStatement&& other) = default;
+    CaseStatement(const CaseStatement &other) = default;
+    CaseStatement(CaseStatement &&other)      = default;
 
     virtual ~CaseStatement() override;
 
-    CaseStatement& operator=(const CaseStatement& other) = default;
-    CaseStatement& operator=(CaseStatement&& other) = default;
+    CaseStatement &operator=(const CaseStatement &other) = default;
+    CaseStatement &operator=(CaseStatement &&other) = default;
 
 public:
     /// \copydoc GotoStatement::clone
@@ -42,19 +42,19 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc GotoStatement::print
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// \copydoc GotoStatement::searchAndReplace
-    virtual bool searchAndReplace(const Exp& search, SharedExp replace, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &search, SharedExp replace, bool cc = false) override;
 
     /// \copydoc GotoStatement::searchAll
-    virtual bool searchAll(const Exp& search, std::list<SharedExp>& result) const override;
+    virtual bool searchAll(const Exp &search, std::list<SharedExp> &result) const override;
 
     /// \copydoc GotoStatement::generateCode
     virtual void generateCode(ICodeGenerator *generator, const BasicBlock *parentBB) override;
 
     /// \copydoc GotoStatement::usesExp
-    virtual bool usesExp(const Exp& e) const override;
+    virtual bool usesExp(const Exp &e) const override;
 
     /// \copydoc GotoStatement::simplify
     virtual void simplify() override;

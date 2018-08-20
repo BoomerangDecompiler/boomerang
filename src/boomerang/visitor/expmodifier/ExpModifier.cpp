@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ExpModifier.h"
 
-
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/FlagDef.h"
@@ -21,104 +20,104 @@
 #include "boomerang/ssl/exp/Unary.h"
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<Unary>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<Unary> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<Binary> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<Ternary>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<Ternary> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<TypedExp>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<TypedExp> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<FlagDef>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<FlagDef> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<RefExp>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::preModify(const std::shared_ptr<Location>& exp, bool& visitChildren)
+SharedExp ExpModifier::preModify(const std::shared_ptr<Location> &exp, bool &visitChildren)
 {
     visitChildren = true;
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Unary>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Unary> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Binary>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Binary> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Ternary>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Ternary> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<TypedExp>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<TypedExp> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<FlagDef>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<FlagDef> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<RefExp> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Location>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Location> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Const>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Const> &exp)
 {
     return exp;
 }
 
 
-SharedExp ExpModifier::postModify(const std::shared_ptr<Terminal>& exp)
+SharedExp ExpModifier::postModify(const std::shared_ptr<Terminal> &exp)
 {
     return exp;
 }

@@ -14,8 +14,7 @@ ArrayType::ArrayType(SharedType baseType, unsigned length)
     : Type(TypeClass::Array)
     , BaseType(baseType)
     , m_length(length)
-{
-}
+{}
 
 
 ArrayType::ArrayType()
@@ -23,8 +22,7 @@ ArrayType::ArrayType()
     , BaseType(nullptr)
     , m_length(0)
 
-{
-}
+{}
 
 
 bool ArrayType::isUnbounded() const
@@ -40,7 +38,7 @@ size_t ArrayType::convertLength(SharedType b) const
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
-            baseSize = 1;   // Count void as size 1
+            baseSize = 1; // Count void as size 1
         }
 
         baseSize *= m_length; // Old base size (length elements) in bytes
@@ -64,7 +62,7 @@ void ArrayType::setBaseType(SharedType b)
         size_t baseSize = BaseType->getSize() / 8; // Old base size (one element) in bytes
 
         if (baseSize == 0) {
-            baseSize = 1;   // Count void as size 1
+            baseSize = 1; // Count void as size 1
         }
 
         baseSize *= m_length; // Old base size (length elements) in bytes
@@ -93,13 +91,14 @@ size_t ArrayType::getSize() const
 }
 
 
-bool ArrayType::operator==(const Type& other) const
+bool ArrayType::operator==(const Type &other) const
 {
-    return other.isArray() && *BaseType == *static_cast<const ArrayType &>(other).BaseType && static_cast<const ArrayType &>(other).m_length == m_length;
+    return other.isArray() && *BaseType == *static_cast<const ArrayType &>(other).BaseType &&
+           static_cast<const ArrayType &>(other).m_length == m_length;
 }
 
 
-bool ArrayType::operator<(const Type& other) const
+bool ArrayType::operator<(const Type &other) const
 {
     if (id < other.getId()) {
         return true;
@@ -109,7 +108,7 @@ bool ArrayType::operator<(const Type& other) const
         return false;
     }
 
-    return(*BaseType < *static_cast<const ArrayType &>(other).BaseType);
+    return (*BaseType < *static_cast<const ArrayType &>(other).BaseType);
 }
 
 
@@ -137,19 +136,20 @@ void ArrayType::fixBaseType(SharedType b)
 }
 
 
-SharedType ArrayType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType ArrayType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid()) {
         return const_cast<ArrayType *>(this)->shared_from_this();
     }
 
     if (other->resolvesToArray()) {
-        auto       otherArr  = other->as<ArrayType>();
-        SharedType newBase   = BaseType->clone()->meetWith(otherArr->BaseType, changed, useHighestPtr);
-        size_t     newLength = m_length;
+        auto otherArr      = other->as<ArrayType>();
+        SharedType newBase = BaseType->clone()->meetWith(otherArr->BaseType, changed,
+                                                         useHighestPtr);
+        size_t newLength   = m_length;
 
         if (*newBase != *BaseType) {
-            changed        = true;
+            changed   = true;
             newLength = convertLength(newBase);
         }
 
@@ -163,11 +163,12 @@ SharedType ArrayType::meetWith(SharedType other, bool& changed, bool useHighestP
 
     /*
      * checks if 'other' is compatible with the ArrayType, if it is
-     * checks if other's 'completeness' is less then current BaseType, if it is, unchanged type is returned.
-     * checks if sizes of BaseType and other match, if they do, checks if other is less complete ( SizeType vs NonSize type ),
-     *  if that happens unchanged type is returned
-     * then it clones the BaseType and tries to 'meetWith' with other, if this results in unchanged type, unchanged type is returned
-     * otherwise a new ArrayType is returned, with it's size recalculated based on new BaseType
+     * checks if other's 'completeness' is less then current BaseType, if it is, unchanged type is
+     * returned. checks if sizes of BaseType and other match, if they do, checks if other is less
+     * complete ( SizeType vs NonSize type ), if that happens unchanged type is returned then it
+     * clones the BaseType and tries to 'meetWith' with other, if this results in unchanged type,
+     * unchanged type is returned otherwise a new ArrayType is returned, with it's size recalculated
+     * based on new BaseType
      */
     if (isCompatible(*other, false)) { // compatible with all ?
         size_t bitsize  = BaseType->getSize();
@@ -207,7 +208,7 @@ SharedType ArrayType::meetWith(SharedType other, bool& changed, bool useHighestP
 }
 
 
-bool ArrayType::isCompatible(const Type& other, bool all) const
+bool ArrayType::isCompatible(const Type &other, bool all) const
 {
     if (other.resolvesToVoid()) {
         return true;

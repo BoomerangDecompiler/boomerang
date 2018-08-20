@@ -9,20 +9,18 @@
 #pragma endregion License
 #include "ExpSSAXformer.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/log/Log.h"
 
 
-ExpSSAXformer::ExpSSAXformer(UserProc* p)
+ExpSSAXformer::ExpSSAXformer(UserProc *p)
     : m_proc(p)
-{
-}
+{}
 
 
-SharedExp ExpSSAXformer::postModify(const std::shared_ptr<RefExp>& exp)
+SharedExp ExpSSAXformer::postModify(const std::shared_ptr<RefExp> &exp)
 {
     QString sym = m_proc->lookupSymFromRefAny(exp);
 

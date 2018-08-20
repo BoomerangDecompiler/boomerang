@@ -26,31 +26,28 @@ using SharedExp = std::shared_ptr<class Exp>;
  * \tparam Sorter Binary functor type that defines the sorting order.
  *                If Sorter == void, the set is unordered.
  */
-template<
-        typename T,
-        typename Sorter = void,
-        typename Enabler = std::enable_if<std::is_base_of<Statement, T>::value>
-    >
+template<typename T, typename Sorter = void,
+         typename Enabler = std::enable_if<std::is_base_of<Statement, T>::value>>
 class StmtSet
 {
-    using Set = typename std::conditional<std::is_void<Sorter>::value,
-        std::unordered_set<T *>, std::set<T *, Sorter> >::type;
+    using Set = typename std::conditional<std::is_void<Sorter>::value, std::unordered_set<T *>,
+                                          std::set<T *, Sorter>>::type;
 
 public:
-    typedef typename Set::iterator       iterator;
+    typedef typename Set::iterator iterator;
     typedef typename Set::const_iterator const_iterator;
 
 public:
     iterator begin() { return m_set.begin(); }
-    iterator end()   { return m_set.end(); }
+    iterator end() { return m_set.end(); }
 
     const_iterator begin() const { return m_set.begin(); }
-    const_iterator end()   const { return m_set.end();   }
+    const_iterator end() const { return m_set.end(); }
 
 public:
-    bool empty() const  { return m_set.empty(); }
-    void clear()        { m_set.clear(); }
-    int size() const    { return m_set.size(); }
+    bool empty() const { return m_set.empty(); }
+    void clear() { m_set.clear(); }
+    int size() const { return m_set.size(); }
 
     void insert(T *stmt)
     {
@@ -70,10 +67,7 @@ public:
         return false;
     }
 
-    bool contains(T *stmt) const
-    {
-        return m_set.find(stmt) != m_set.end();
-    }
+    bool contains(T *stmt) const { return m_set.find(stmt) != m_set.end(); }
 
 
     /// \returns true if any statement in this set defines \p loc
@@ -84,13 +78,11 @@ public:
         }
 
         return std::any_of(m_set.begin(), m_set.end(),
-            [loc] (const T *stmt) {
-                return stmt->definesLoc(loc);
-            });
+                           [loc](const T *stmt) { return stmt->definesLoc(loc); });
     }
 
     /// \returns true if this set is a subset of \p other
-    bool isSubSetOf(const StmtSet& other)
+    bool isSubSetOf(const StmtSet &other)
     {
         if (m_set.size() > other.m_set.size()) {
             return false;
@@ -106,7 +98,7 @@ public:
     }
 
     /// Set union: this = this union \p other
-    void makeUnion(const StmtSet& other)
+    void makeUnion(const StmtSet &other)
     {
         for (T *stmt : other) {
             m_set.insert(stmt);
@@ -114,9 +106,9 @@ public:
     }
 
     /// Set intersection: this = this intersect other
-    void makeIsect(const StmtSet& other)
+    void makeIsect(const StmtSet &other)
     {
-        for (auto it = m_set.begin(); it != m_set.end(); ) {
+        for (auto it = m_set.begin(); it != m_set.end();) {
             if (!other.contains(*it)) {
                 // Not in both sets
                 it = m_set.erase(it);
@@ -128,7 +120,7 @@ public:
     }
 
     /// Set difference: this = this - other
-    void makeDiff(const StmtSet& other)
+    void makeDiff(const StmtSet &other)
     {
         if (&other == this) {
             m_set.clear(); // A \ A == empty set
@@ -149,7 +141,7 @@ public:
             return nullptr;
         }
 
-        Assign   as(loc, Terminal::get(opWild));
+        Assign as(loc, Terminal::get(opWild));
         iterator ff = m_set.find(&as);
 
         return (ff != end()) ? *ff : nullptr;
@@ -162,9 +154,9 @@ private:
 
 struct BOOMERANG_API lessAssign
 {
-    bool operator() (const Assign *as1, const Assign *as2) const;
+    bool operator()(const Assign *as1, const Assign *as2) const;
 };
 
 
-typedef StmtSet<Statement>          StatementSet;
+typedef StmtSet<Statement> StatementSet;
 typedef StmtSet<Assign, lessAssign> AssignSet;

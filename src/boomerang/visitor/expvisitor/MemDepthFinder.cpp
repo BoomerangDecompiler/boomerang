@@ -9,17 +9,15 @@
 #pragma endregion License
 #include "MemDepthFinder.h"
 
-
 #include "boomerang/ssl/exp/Location.h"
 
 
 MemDepthFinder::MemDepthFinder()
     : depth(0)
-{
-}
+{}
 
 
-bool MemDepthFinder::preVisit(const std::shared_ptr<Location>& e, bool& visitChildren)
+bool MemDepthFinder::preVisit(const std::shared_ptr<Location> &e, bool &visitChildren)
 {
     if (e->isMemOf()) {
         ++depth;
@@ -28,4 +26,3 @@ bool MemDepthFinder::preVisit(const std::shared_ptr<Location>& e, bool& visitChi
     visitChildren = true;
     return true;
 }
-

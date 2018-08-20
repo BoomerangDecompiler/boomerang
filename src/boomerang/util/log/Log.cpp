@@ -9,15 +9,14 @@
 #pragma endregion License
 #include "Log.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/statements/Statement.h"
 #include "boomerang/ssl/type/Type.h"
+#include "boomerang/util/Util.h"
 #include "boomerang/util/log/ConsoleLogSink.h"
 #include "boomerang/util/log/FileLogSink.h"
-#include "boomerang/util/Util.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -35,7 +34,7 @@ Log::Log(LogLevel level)
 
     while ((p = strstr(lastSrc + 1, "src")) != nullptr) {
         m_fileNameOffset += (p - lastSrc);
-        lastSrc           = p;
+        lastSrc = p;
     }
 }
 
@@ -46,7 +45,7 @@ Log::~Log()
 }
 
 
-Log& Log::getOrCreateLog()
+Log &Log::getOrCreateLog()
 {
     if (!g_log) {
         g_log = new Log(LogLevel::Default);
@@ -58,17 +57,17 @@ Log& Log::getOrCreateLog()
 
 void Log::flush()
 {
-    for (std::unique_ptr<ILogSink>& s : m_sinks) {
+    for (std::unique_ptr<ILogSink> &s : m_sinks) {
         s->flush();
     }
 }
 
 
-void Log::log(LogLevel level, const char *file, int line, const QString& msg)
+void Log::log(LogLevel level, const char *file, int line, const QString &msg)
 {
     const QStringList msgLines = msg.split('\n');
 
-    for (const QString& msgLine : msgLines) {
+    for (const QString &msgLine : msgLines) {
         logDirect(level, file, line, msgLine);
     }
 
@@ -76,7 +75,7 @@ void Log::log(LogLevel level, const char *file, int line, const QString& msg)
 }
 
 
-void Log::logDirect(LogLevel level, const char *file, int line, const QString& msg)
+void Log::logDirect(LogLevel level, const char *file, int line, const QString &msg)
 {
     if (!canLog(level)) {
         return;
@@ -105,7 +104,7 @@ void Log::addLogSink(std::unique_ptr<ILogSink> s)
 }
 
 
-void Log::addDefaultLogSinks(const QString& outputDir)
+void Log::addDefaultLogSinks(const QString &outputDir)
 {
     addLogSink(Util::makeUnique<ConsoleLogSink>());
 
@@ -124,7 +123,7 @@ void Log::removeAllSinks()
 }
 
 
-Log& Log::setLogLevel(LogLevel level)
+Log &Log::setLogLevel(LogLevel level)
 {
     m_level = level;
     return *this;
@@ -171,13 +170,13 @@ void Log::truncateFileName(char *dstBuffer, size_t dstCharacters, const char *fi
 }
 
 
-QString Log::collectArg(const QString& msg, const Statement *s)
+QString Log::collectArg(const QString &msg, const Statement *s)
 {
     return msg.arg(s->prints());
 }
 
 
-QString Log::collectArg(const QString& msg, const SharedConstExp& e)
+QString Log::collectArg(const QString &msg, const SharedConstExp &e)
 {
     QString tgt;
     OStream os(&tgt);
@@ -186,39 +185,39 @@ QString Log::collectArg(const QString& msg, const SharedConstExp& e)
 }
 
 
-QString Log::collectArg(const QString& msg, const SharedType& ty)
+QString Log::collectArg(const QString &msg, const SharedType &ty)
 {
     return msg.arg(ty->toString());
 }
 
 
-QString Log::collectArg(const QString& msg, const IPrintable& ty)
+QString Log::collectArg(const QString &msg, const IPrintable &ty)
 {
     return msg.arg(ty.toString());
 }
 
 
-QString Log::collectArg(const QString& msg, const RTL *r)
+QString Log::collectArg(const QString &msg, const RTL *r)
 {
     return msg.arg(r->prints());
 }
 
 
-QString Log::collectArg(const QString& msg, Address a)
+QString Log::collectArg(const QString &msg, Address a)
 {
     return msg.arg(a.toString());
 }
 
 
-QString Log::collectArg(const QString& msg, const LocationSet *l)
+QString Log::collectArg(const QString &msg, const LocationSet *l)
 {
     return msg.arg(l->prints());
 }
 
 
-void Log::write(const QString& msg)
+void Log::write(const QString &msg)
 {
-    for (std::unique_ptr<ILogSink>& s : m_sinks) {
+    for (std::unique_ptr<ILogSink> &s : m_sinks) {
         s->write(msg);
     }
 }
@@ -226,18 +225,13 @@ void Log::write(const QString& msg)
 
 QString Log::levelToString(LogLevel level)
 {
-    switch (level)
-    {
-    case LogLevel::Fatal:
-        return QString("Fatal");
+    switch (level) {
+    case LogLevel::Fatal: return QString("Fatal");
 
-    case LogLevel::Error:
-        return QString("Error");
+    case LogLevel::Error: return QString("Error");
 
-    case LogLevel::Warning:
-        return QString("Warn ");
+    case LogLevel::Warning: return QString("Warn ");
 
-    default:
-        return QString("Msg  ");
+    default: return QString("Msg  ");
     }
 }

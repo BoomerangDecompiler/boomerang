@@ -9,19 +9,17 @@
 #pragma endregion License
 #include "PhiStripper.h"
 
-
 #include "boomerang/ssl/statements/PhiAssign.h"
 
 
-PhiStripper::PhiStripper(ExpModifier* em)
+PhiStripper::PhiStripper(ExpModifier *em)
     : StmtModifier(em)
     , m_del(false)
-{
-}
+{}
 
 
-void PhiStripper::visit(PhiAssign * /*stmt*/, bool& visitChildren)
+void PhiStripper::visit(PhiAssign * /*stmt*/, bool &visitChildren)
 {
-    m_del = true;
+    m_del         = true;
     visitChildren = true;
 }

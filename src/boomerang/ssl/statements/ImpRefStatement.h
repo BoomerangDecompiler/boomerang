@@ -26,13 +26,13 @@ class BOOMERANG_API ImpRefStatement : public TypingStatement
 {
 public:
     ImpRefStatement(SharedType ty, SharedExp a);
-    ImpRefStatement(const ImpRefStatement& other) = default;
-    ImpRefStatement(ImpRefStatement&& other) = default;
+    ImpRefStatement(const ImpRefStatement &other) = default;
+    ImpRefStatement(ImpRefStatement &&other)      = default;
 
     virtual ~ImpRefStatement() override = default;
 
-    ImpRefStatement& operator=(const ImpRefStatement& other) = default;
-    ImpRefStatement& operator=(ImpRefStatement&& other) = default;
+    ImpRefStatement &operator=(const ImpRefStatement &other) = default;
+    ImpRefStatement &operator=(ImpRefStatement &&other) = default;
 
 public:
     /// \copydoc Statement::clone
@@ -51,26 +51,27 @@ public:
     virtual bool accept(StmtPartModifier *modifier) override;
 
     /// \copydoc Statement::usesExp
-    virtual bool usesExp(const Exp&) const override { return false; }
+    virtual bool usesExp(const Exp &) const override { return false; }
 
     /// \copydoc Statement::search
-    virtual bool search(const Exp&, SharedExp&) const override;
+    virtual bool search(const Exp &, SharedExp &) const override;
 
     /// \copydoc Statement::searchAll
-    virtual bool searchAll(const Exp&, std::list<SharedExp, std::allocator<SharedExp> >&) const override;
+    virtual bool searchAll(const Exp &,
+                           std::list<SharedExp, std::allocator<SharedExp>> &) const override;
 
     /// \copydoc Statement::searchAndReplace
-    virtual bool searchAndReplace(const Exp&, SharedExp, bool cc = false) override;
+    virtual bool searchAndReplace(const Exp &, SharedExp, bool cc = false) override;
 
     /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *, const BasicBlock *)  override {}
+    virtual void generateCode(ICodeGenerator *, const BasicBlock *) override {}
 
     /// \copydoc Statement::simplify
     virtual void simplify() override;
 
     /// \copydoc Statement::print
     /// \note ImpRefStatement not yet used
-    virtual void print(OStream& os) const override;
+    virtual void print(OStream &os) const override;
 
     /// \returns the address expression of the (implicitly) referenced location.
     SharedExp getAddressExp() const { return m_addressExp; }
@@ -79,7 +80,7 @@ public:
     SharedType getType() const { return m_type; }
 
     /// Meet the internal type with ty. Set ch if a change
-    void meetWith(SharedType ty, bool& changed);
+    void meetWith(SharedType ty, bool &changed);
 
 private:
     SharedExp m_addressExp; ///< The expression representing the address of the location referenced

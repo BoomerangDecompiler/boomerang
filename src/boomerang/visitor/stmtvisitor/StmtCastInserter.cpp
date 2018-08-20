@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "StmtCastInserter.h"
 
-
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/statements/BoolAssign.h"

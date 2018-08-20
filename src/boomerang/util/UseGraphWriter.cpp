@@ -9,22 +9,21 @@
 #pragma endregion License
 #include "UseGraphWriter.h"
 
-
 #include "boomerang/core/Project.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/LocationSet.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementList.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QFile>
 #include <QString>
 
 
-void UseGraphWriter::writeUseGraph(const UserProc *proc, const QString& filePath)
+void UseGraphWriter::writeUseGraph(const UserProc *proc, const QString &filePath)
 {
-    QFile   file(filePath);
+    QFile file(filePath);
 
     if (!file.open(QFile::Text | QFile::WriteOnly)) {
         LOG_ERROR("Can't write to file %1", file.fileName());

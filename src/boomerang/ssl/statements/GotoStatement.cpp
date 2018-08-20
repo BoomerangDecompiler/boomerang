@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "GotoStatement.h"
 
-
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -38,8 +37,7 @@ GotoStatement::GotoStatement(Address jumpDest)
 
 
 GotoStatement::~GotoStatement()
-{
-}
+{}
 
 
 Address GotoStatement::getFixedDest() const
@@ -89,7 +87,7 @@ void GotoStatement::adjustFixedDest(int delta)
 }
 
 
-bool GotoStatement::search(const Exp& pattern, SharedExp& result) const
+bool GotoStatement::search(const Exp &pattern, SharedExp &result) const
 {
     result = nullptr;
 
@@ -101,7 +99,7 @@ bool GotoStatement::search(const Exp& pattern, SharedExp& result) const
 }
 
 
-bool GotoStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool /*cc*/)
+bool GotoStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/)
 {
     bool change = false;
 
@@ -113,7 +111,7 @@ bool GotoStatement::searchAndReplace(const Exp& pattern, SharedExp replace, bool
 }
 
 
-bool GotoStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) const
+bool GotoStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) const
 {
     if (m_dest) {
         return m_dest->searchAll(pattern, result);
@@ -123,7 +121,7 @@ bool GotoStatement::searchAll(const Exp& pattern, std::list<SharedExp>& result) 
 }
 
 
-void GotoStatement::print(OStream& os) const
+void GotoStatement::print(OStream &os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     os << "GOTO ";
@@ -159,7 +157,7 @@ Statement *GotoStatement::clone() const
     ret->m_dest       = m_dest->clone();
     ret->m_isComputed = m_isComputed;
     // Statement members
-    ret->m_bb = m_bb;
+    ret->m_bb     = m_bb;
     ret->m_proc   = m_proc;
     ret->m_number = m_number;
     return ret;
@@ -187,7 +185,7 @@ void GotoStatement::simplify()
 }
 
 
-bool GotoStatement::usesExp(const Exp& e) const
+bool GotoStatement::usesExp(const Exp &e) const
 {
     SharedExp where;
 
@@ -198,7 +196,7 @@ bool GotoStatement::usesExp(const Exp& e) const
 bool GotoStatement::accept(StmtExpVisitor *v)
 {
     bool visitChildren = true;
-    bool ret = v->visit(this, visitChildren);
+    bool ret           = v->visit(this, visitChildren);
 
     if (!visitChildren) {
         return ret;

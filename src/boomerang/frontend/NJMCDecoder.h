@@ -11,9 +11,8 @@
 
 
 #include "boomerang/ifc/IDecoder.h"
-#include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/ssl/RTLInstDict.h"
-
+#include "boomerang/ssl/exp/ExpHelp.h"
 #include "boomerang/util/Util.h"
 
 
@@ -26,18 +25,18 @@ class BinaryImage;
 class NJMCDecoder : public IDecoder
 {
 public:
-    NJMCDecoder(Prog *prog, const QString& sslFilePath);
-    NJMCDecoder(const NJMCDecoder& other) = delete;
-    NJMCDecoder(NJMCDecoder&& other) = default;
+    NJMCDecoder(Prog *prog, const QString &sslFilePath);
+    NJMCDecoder(const NJMCDecoder &other) = delete;
+    NJMCDecoder(NJMCDecoder &&other)      = default;
 
     /// \copydoc IDecoder::~IDecoder
     virtual ~NJMCDecoder() override = default;
 
-    NJMCDecoder& operator=(const NJMCDecoder& other) = delete;
-    NJMCDecoder& operator=(NJMCDecoder&& other) = default;
+    NJMCDecoder &operator=(const NJMCDecoder &other) = delete;
+    NJMCDecoder &operator=(NJMCDecoder &&other) = default;
 
 public:
-    RTLInstDict& getRTLDict() { return m_rtlDict; }
+    RTLInstDict &getRTLDict() { return m_rtlDict; }
 
     /**
      * Process an indirect jump instruction.
@@ -48,7 +47,8 @@ public:
      * \param   stmts list of statements (?)
      * \param   result ref to decoder result object
      */
-    void processComputedJump(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result);
+    void processComputedJump(const char *name, int size, SharedExp dest, Address pc,
+                             DecodeResult &result);
 
     /**
      * Process an indirect call instruction.
@@ -58,7 +58,8 @@ public:
      * \param   pc native pc
      * \param   result ref to decoder result object
      */
-    void processComputedCall(const char *name, int size, SharedExp dest, Address pc, DecodeResult& result);
+    void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
+                             DecodeResult &result);
 
     /// \copydoc IInstructionTranslator::getRegName
     QString getRegName(int idx) const override;
@@ -67,7 +68,7 @@ public:
     int getRegSize(int idx) const override;
 
     /// \copydoc IInstructionTranslator::getRegIdx
-    int getRegIdx(const QString& name) const override;
+    int getRegIdx(const QString &name) const override;
 
 protected:
     /**
@@ -83,7 +84,8 @@ protected:
      * \param   args Semantic String ptrs representing actual operands
      * \returns an instantiated list of Exps
      */
-    std::unique_ptr<RTL> instantiate(Address pc, const char *name, const std::initializer_list<SharedExp>& args = {});
+    std::unique_ptr<RTL> instantiate(Address pc, const char *name,
+                                     const std::initializer_list<SharedExp> &args = {});
 
     /**
      * Similarly to \ref NJMCDecoder::instantiate, given a parameter name
@@ -94,7 +96,7 @@ protected:
      *          ...   Exp* representing actual operands
      * \returns an instantiated list of Exps
      */
-    SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp>& args);
+    SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp> &args);
 
     /**
      * In the event that it's necessary to synthesize the call of a
@@ -109,7 +111,8 @@ protected:
      * \param   exp   expression to instantiate into
      * \param   args Exp* representing actual operands
      */
-    void substituteCallArgs(char *name, SharedExp *exp, const std::initializer_list<SharedExp>& args);
+    void substituteCallArgs(char *name, SharedExp *exp,
+                            const std::initializer_list<SharedExp> &args);
 
     /**
      * Process an unconditional jump instruction
@@ -120,8 +123,8 @@ protected:
      * \param   pc native pc
      * \param   result ref to decoder result object
      */
-    void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta, Address pc,
-                                  DecodeResult& result);
+    void processUnconditionalJump(const char *name, int size, HostAddress relocd, ptrdiff_t delta,
+                                  Address pc, DecodeResult &result);
 
 
     /**
@@ -142,7 +145,7 @@ protected:
     // Dictionary of instruction patterns, and other information summarised from the SSL file
     // (e.g. source machine's endianness)
     RTLInstDict m_rtlDict;
-    Prog *m_prog = nullptr;
+    Prog *m_prog         = nullptr;
     BinaryImage *m_image = nullptr;
 };
 
@@ -151,37 +154,37 @@ protected:
  * These are the macros that each of the .m files depend upon.
  */
 
-#define SHOW_ASM(output)               \
-    if (m_prog->getProject()->getSettings()->debugDecoder) {               \
-        QString asmStr;                \
-        OStream ost(&asmStr);      \
-        ost << output;                 \
-        LOG_MSG("%1: %2", pc, asmStr); \
+#define SHOW_ASM(output)                                                                           \
+    if (m_prog->getProject()->getSettings()->debugDecoder) {                                       \
+        QString asmStr;                                                                            \
+        OStream ost(&asmStr);                                                                      \
+        ost << output;                                                                             \
+        LOG_MSG("%1: %2", pc, asmStr);                                                             \
     }
 
 /*
  * addresstoPC returns the raw number as the address.  PC could be an
  * abstract type, in our case, PC is the raw address.
  */
-#define addressToPC(pc)    pc
+#define addressToPC(pc) pc
 
 // Macros for branches. Note: don't put inside a "match" statement, since
 // the ordering is changed and multiple copies may be made
 
-#define COND_JUMP(name, size, relocd, cond)                                    \
-    BranchStatement *jump = new BranchStatement;                               \
-    result.rtl->append(jump);                                                  \
-    result.numBytes = size;                                                    \
-    jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta))); \
-    jump->setCondType(cond);                                                   \
+#define COND_JUMP(name, size, relocd, cond)                                                        \
+    BranchStatement *jump = new BranchStatement;                                                   \
+    result.rtl->append(jump);                                                                      \
+    result.numBytes = size;                                                                        \
+    jump->setDest(Address(relocd.value() - Util::signExtend<int64_t>(delta)));                     \
+    jump->setCondType(cond);                                                                       \
     SHOW_ASM(name << " " << relocd)
 
 // This one is X86 specific
-#define SETS(name, dest, cond)                          \
-    BoolAssign * bs = new BoolAssign(8);                \
-    bs->setLeftFromList(result.rtl->getStatements());   \
-    result.rtl->clear();                                \
-    result.rtl->append(bs);                             \
-    bs->setCondType(cond);                              \
-    result.numBytes = 3;                                \
+#define SETS(name, dest, cond)                                                                     \
+    BoolAssign *bs = new BoolAssign(8);                                                            \
+    bs->setLeftFromList(result.rtl->getStatements());                                              \
+    result.rtl->clear();                                                                           \
+    result.rtl->append(bs);                                                                        \
+    bs->setCondType(cond);                                                                         \
+    result.numBytes = 3;                                                                           \
     SHOW_ASM(name << " " << dest)

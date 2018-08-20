@@ -9,41 +9,40 @@
 #pragma endregion License
 #include "Prog.h"
 
-
+#include "boomerang/c/CSymbolProvider.h"
+#include "boomerang/c/parser/AnsiCParser.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/c/parser/AnsiCParser.h"
-#include "boomerang/c/CSymbolProvider.h"
+#include "boomerang/db/DebugInfo.h"
+#include "boomerang/db/Global.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/proc/ProcCFG.h"
-#include "boomerang/db/DebugInfo.h"
-#include "boomerang/db/Global.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/LibProc.h"
+#include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ifc/IFrontEnd.h"
-#include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/Register.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/Types.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QDir>
 #include <QFileInfo>
@@ -52,21 +51,20 @@
 #include <cctype>
 
 
-Prog::Prog(const QString& name, Project *project)
+Prog::Prog(const QString &name, Project *project)
     : m_name(name)
     , m_symbolProvider(new CSymbolProvider(this))
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
 {
-    m_rootModule    = getOrInsertModule(getName());
+    m_rootModule = getOrInsertModule(getName());
     assert(m_rootModule != nullptr);
 }
 
 
 Prog::~Prog()
-{
-}
+{}
 
 
 void Prog::setFrontEnd(IFrontEnd *frontEnd)
@@ -78,7 +76,7 @@ void Prog::setFrontEnd(IFrontEnd *frontEnd)
 }
 
 
-void Prog::setName(const QString& name)
+void Prog::setName(const QString &name)
 {
     m_name = name;
     if (m_rootModule) {
@@ -87,7 +85,7 @@ void Prog::setName(const QString& name)
 }
 
 
-Module *Prog::createModule(const QString& name, Module *parentModule, const IModuleFactory& factory)
+Module *Prog::createModule(const QString &name, Module *parentModule, const IModuleFactory &factory)
 {
     if (parentModule == nullptr) {
         parentModule = m_rootModule;
@@ -107,9 +105,9 @@ Module *Prog::createModule(const QString& name, Module *parentModule, const IMod
 }
 
 
-Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact)
+Module *Prog::getOrInsertModule(const QString &name, const IModuleFactory &fact)
 {
-    for (const auto& m : m_moduleList) {
+    for (const auto &m : m_moduleList) {
         if (m->getName() == name) {
             return m.get();
         }
@@ -121,23 +119,21 @@ Module *Prog::getOrInsertModule(const QString& name, const IModuleFactory& fact)
 }
 
 
-Module *Prog::findModule(const QString& name)
+Module *Prog::findModule(const QString &name)
 {
-    auto it = std::find_if(m_moduleList.begin(), m_moduleList.end(),
-        [name](const std::unique_ptr<Module>& mod) {
-            return mod->getName() == name;
-        });
+    auto it = std::find_if(
+        m_moduleList.begin(), m_moduleList.end(),
+        [name](const std::unique_ptr<Module> &mod) { return mod->getName() == name; });
 
     return (it != m_moduleList.end()) ? it->get() : nullptr;
 }
 
 
-const Module *Prog::findModule(const QString& name) const
+const Module *Prog::findModule(const QString &name) const
 {
-    auto it = std::find_if(m_moduleList.begin(), m_moduleList.end(),
-        [name](const std::unique_ptr<Module>& mod) {
-            return mod->getName() == name;
-        });
+    auto it = std::find_if(
+        m_moduleList.begin(), m_moduleList.end(),
+        [name](const std::unique_ptr<Module> &mod) { return mod->getName() == name; });
 
     return (it != m_moduleList.end()) ? it->get() : nullptr;
 }
@@ -180,9 +176,7 @@ Function *Prog::getOrCreateFunction(Address startAddress)
         return existingFunction; // Yes, we are done
     }
 
-    Address tgt = m_binaryFile
-        ? m_binaryFile->getJumpTarget(startAddress)
-        : Address::INVALID;
+    Address tgt = m_binaryFile ? m_binaryFile->getJumpTarget(startAddress) : Address::INVALID;
 
 
     if (tgt != Address::INVALID) {
@@ -195,11 +189,11 @@ Function *Prog::getOrCreateFunction(Address startAddress)
         return existingFunction; // Yes, we are done
     }
 
-    QString             procName;
-    bool                isLibFunction = false;
+    QString procName;
+    bool isLibFunction      = false;
     const BinarySymbol *sym = m_binaryFile
-        ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
-        : nullptr;
+                                  ? m_binaryFile->getSymbols()->findSymbolByAddress(startAddress)
+                                  : nullptr;
 
     if (sym) {
         isLibFunction = sym->isImportedFunction() || sym->isStaticFunction();
@@ -216,7 +210,7 @@ Function *Prog::getOrCreateFunction(Address startAddress)
 }
 
 
-LibProc *Prog::getOrCreateLibraryProc(const QString& name)
+LibProc *Prog::getOrCreateLibraryProc(const QString &name)
 {
     if (name == "") {
         return nullptr;
@@ -234,7 +228,7 @@ LibProc *Prog::getOrCreateLibraryProc(const QString& name)
 
 Function *Prog::getFunctionByAddr(Address entryAddr) const
 {
-    for (const auto& m : m_moduleList) {
+    for (const auto &m : m_moduleList) {
         Function *proc = m->getFunction(entryAddr);
 
         if (proc != nullptr) {
@@ -247,13 +241,13 @@ Function *Prog::getFunctionByAddr(Address entryAddr) const
 }
 
 
-Function *Prog::getFunctionByName(const QString& name) const
+Function *Prog::getFunctionByName(const QString &name) const
 {
-    for (const auto& module : m_moduleList) {
+    for (const auto &module : m_moduleList) {
         Function *f = module->getFunction(name);
 
         if (f) {
-            assert(f != reinterpret_cast<Function*>(-1));
+            assert(f != reinterpret_cast<Function *>(-1));
             return f;
         }
     }
@@ -262,7 +256,7 @@ Function *Prog::getFunctionByName(const QString& name) const
 }
 
 
-bool Prog::removeFunction(const QString& name)
+bool Prog::removeFunction(const QString &name)
 {
     Function *function = getFunctionByName(name);
 
@@ -282,7 +276,7 @@ int Prog::getNumFunctions(bool userOnly) const
     int n = 0;
 
     if (userOnly) {
-        for (const auto& m : m_moduleList) {
+        for (const auto &m : m_moduleList) {
             for (Function *proc : *m) {
                 if (!proc->isLib()) {
                     n++;
@@ -291,7 +285,7 @@ int Prog::getNumFunctions(bool userOnly) const
         }
     }
     else {
-        for (const auto& module : m_moduleList) {
+        for (const auto &module : m_moduleList) {
             n += module->size();
         }
     }
@@ -304,7 +298,7 @@ bool Prog::isWellFormed() const
 {
     bool wellformed = true;
 
-    for (const auto& module : m_moduleList) {
+    for (const auto &module : m_moduleList) {
         for (Function *func : *module) {
             if (!func->isLib()) {
                 UserProc *proc = static_cast<UserProc *>(func);
@@ -337,9 +331,7 @@ int Prog::getRegSize(int idx) const
 
 Machine Prog::getMachine() const
 {
-    return m_binaryFile
-        ? m_binaryFile->getMachine()
-        : Machine::INVALID;
+    return m_binaryFile ? m_binaryFile->getMachine() : Machine::INVALID;
 }
 
 
@@ -349,13 +341,13 @@ void Prog::readDefaultLibraryCatalogues()
 
     QString libCatalogName;
     switch (getMachine()) {
-        case Machine::PENTIUM:  libCatalogName = "signatures/pentium.hs";  break;
-        case Machine::SPARC:    libCatalogName = "signatures/sparc.hs";    break;
-        case Machine::HPRISC:   libCatalogName = "signatures/parisc.hs";   break;
-        case Machine::PPC:      libCatalogName = "signatures/ppc.hs";      break;
-        case Machine::ST20:     libCatalogName = "signatures/st20.hs";     break;
-        case Machine::MIPS:     libCatalogName = "signatures/mips.hs";     break;
-        default:                libCatalogName = "";                       break;
+    case Machine::PENTIUM: libCatalogName = "signatures/pentium.hs"; break;
+    case Machine::SPARC: libCatalogName = "signatures/sparc.hs"; break;
+    case Machine::HPRISC: libCatalogName = "signatures/parisc.hs"; break;
+    case Machine::PPC: libCatalogName = "signatures/ppc.hs"; break;
+    case Machine::ST20: libCatalogName = "signatures/st20.hs"; break;
+    case Machine::MIPS: libCatalogName = "signatures/mips.hs"; break;
+    default: libCatalogName = ""; break;
     }
 
     m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
@@ -375,17 +367,17 @@ void Prog::readDefaultLibraryCatalogues()
 }
 
 
-bool Prog::addSymbolsFromSymbolFile(const QString& fname)
+bool Prog::addSymbolsFromSymbolFile(const QString &fname)
 {
     return m_symbolProvider->addSymbolsFromSymbolFile(fname);
 }
 
 
-std::shared_ptr<Signature> Prog::getLibSignature(const QString& name)
+std::shared_ptr<Signature> Prog::getLibSignature(const QString &name)
 {
     std::shared_ptr<Signature> signature = m_symbolProvider
-        ? m_symbolProvider->getSignatureByName(name)
-        : nullptr;
+                                               ? m_symbolProvider->getSignatureByName(name)
+                                               : nullptr;
 
     if (signature) {
         signature->setUnknown(false);
@@ -398,7 +390,7 @@ std::shared_ptr<Signature> Prog::getLibSignature(const QString& name)
 }
 
 
-std::shared_ptr<Signature> Prog::getDefaultSignature(const QString& name) const
+std::shared_ptr<Signature> Prog::getDefaultSignature(const QString &name) const
 {
     if (isWin32()) {
         return Signature::instantiate(getMachine(), CallConv::Pascal, name);
@@ -424,7 +416,8 @@ const char *Prog::getStringConstant(Address addr, bool knownString /* = false */
 
     // At this stage, only support ascii, null terminated, non unicode strings.
     // At least 4 of the first 6 chars should be printable ascii
-    const char *p = reinterpret_cast<const char *>((sect->getHostAddr() - sect->getSourceAddr() + addr).value());
+    const char *p = reinterpret_cast<const char *>(
+        (sect->getHostAddr() - sect->getSourceAddr() + addr).value());
 
     if (knownString) {
         // No need to guess... this is hopefully a known string
@@ -433,8 +426,8 @@ const char *Prog::getStringConstant(Address addr, bool knownString /* = false */
 
     // this address is not known to be a string -> use heuristic
     int numPrintables = 0;
-    int numControl = 0; // Control characters like \n, \r, \t
-    int numTotal = 0;
+    int numControl    = 0; // Control characters like \n, \r, \t
+    int numTotal      = 0;
 
     for (int i = 0; i < 6; i++, numTotal++) {
         if (p[i] == 0) {
@@ -459,7 +452,7 @@ const char *Prog::getStringConstant(Address addr, bool knownString /* = false */
 }
 
 
-bool Prog::getFloatConstant(Address addr, double& value, int bits) const
+bool Prog::getFloatConstant(Address addr, double &value, int bits) const
 {
     const BinarySection *section = m_binaryFile->getImage()->getSectionByAddr(addr);
     if (!section || !section->isReadOnly()) {
@@ -520,7 +513,8 @@ bool Prog::isReadOnly(Address a) const
 
 bool Prog::isInStringsSection(Address a) const
 {
-    const BinarySection *si = static_cast<const BinarySection *>(m_binaryFile->getImage()->getSectionByAddr(a));
+    const BinarySection *si = static_cast<const BinarySection *>(
+        m_binaryFile->getImage()->getSectionByAddr(a));
     return si && si->isAttributeInRange("StringsSection", a, a + 1);
 }
 
@@ -532,7 +526,7 @@ bool Prog::isDynamicallyLinkedProcPointer(Address dest) const
 }
 
 
-const QString& Prog::getDynamicProcName(Address addr) const
+const QString &Prog::getDynamicProcName(Address addr) const
 {
     static const QString defaultName("");
     const BinarySymbol *sym = m_binaryFile->getSymbols()->findSymbolByAddress(addr);
@@ -540,7 +534,7 @@ const QString& Prog::getDynamicProcName(Address addr) const
 }
 
 
-Module *Prog::getOrInsertModuleForSymbol(const QString& symbolName)
+Module *Prog::getOrInsertModuleForSymbol(const QString &symbolName)
 {
     const BinarySymbol *sym = nullptr;
     if (m_binaryFile) {
@@ -579,7 +573,7 @@ int Prog::readNative4(Address a) const
 
 void Prog::updateLibrarySignatures()
 {
-    for (const auto& m : m_moduleList) {
+    for (const auto &m : m_moduleList) {
         m->updateLibrarySignatures();
     }
 }
@@ -590,7 +584,8 @@ bool Prog::decodeEntryPoint(Address entryAddr)
     Function *func = getFunctionByAddr(entryAddr);
 
     if (!func || (!func->isLib() && !static_cast<UserProc *>(func)->isDecoded())) {
-        if (!Util::inRange(entryAddr, m_binaryFile->getImage()->getLimitTextLow(), m_binaryFile->getImage()->getLimitTextHigh())) {
+        if (!Util::inRange(entryAddr, m_binaryFile->getImage()->getLimitTextLow(),
+                           m_binaryFile->getImage()->getLimitTextHigh())) {
             LOG_WARN("Attempt to decode entrypoint at address %1 outside text area", entryAddr);
             return false;
         }
@@ -625,7 +620,8 @@ bool Prog::decodeEntryPoint(Address entryAddr)
 
 bool Prog::decodeFragment(UserProc *proc, Address a)
 {
-    if ((a >= m_binaryFile->getImage()->getLimitTextLow()) && (a < m_binaryFile->getImage()->getLimitTextHigh())) {
+    if ((a >= m_binaryFile->getImage()->getLimitTextLow()) &&
+        (a < m_binaryFile->getImage()->getLimitTextHigh())) {
         return m_fe->decodeFragment(proc, a);
     }
     else {
@@ -671,7 +667,7 @@ Global *Prog::createGlobal(Address addr, SharedType ty, QString name)
 QString Prog::getGlobalNameByAddr(Address uaddr) const
 {
     // FIXME: inefficient
-    for (auto& glob : m_globals) {
+    for (auto &glob : m_globals) {
         if (glob->containsAddress(uaddr)) {
             return glob->getName();
         }
@@ -681,7 +677,7 @@ QString Prog::getGlobalNameByAddr(Address uaddr) const
 }
 
 
-Address Prog::getGlobalAddrByName(const QString& name) const
+Address Prog::getGlobalAddrByName(const QString &name) const
 {
     const Global *glob = getGlobalByName(name);
     if (glob) {
@@ -693,12 +689,11 @@ Address Prog::getGlobalAddrByName(const QString& name) const
 }
 
 
-Global *Prog::getGlobalByName(const QString& name) const
+Global *Prog::getGlobalByName(const QString &name) const
 {
-    auto iter = std::find_if(m_globals.begin(), m_globals.end(),
-        [&name](const std::shared_ptr<Global>& g) -> bool {
-            return g->getName() == name;
-        });
+    auto iter = std::find_if(
+        m_globals.begin(), m_globals.end(),
+        [&name](const std::shared_ptr<Global> &g) -> bool { return g->getName() == name; });
 
     return iter != m_globals.end() ? iter->get() : nullptr;
 }
@@ -706,7 +701,7 @@ Global *Prog::getGlobalByName(const QString& name) const
 
 bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 {
-    for (auto& glob : m_globals) {
+    for (auto &glob : m_globals) {
         if (glob->containsAddress(uaddr)) {
             if (knownType) {
                 glob->meetType(knownType);
@@ -718,11 +713,12 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 
     if (!m_binaryFile || m_binaryFile->getImage()->getSectionByAddr(uaddr) == nullptr) {
         LOG_VERBOSE("Refusing to create a global at address %1 "
-                    "that is in no known section of the binary", uaddr);
+                    "that is in no known section of the binary",
+                    uaddr);
         return false;
     }
 
-    QString    name = newGlobalName(uaddr);
+    QString name = newGlobalName(uaddr);
     SharedType ty;
 
     if (knownType) {
@@ -730,17 +726,18 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 
         if (ty->resolvesToArray() && ty->as<ArrayType>()->isUnbounded()) {
             SharedType baseType = ty->as<ArrayType>()->getBaseType();
-            int        baseSize = 0;
+            int baseSize        = 0;
 
             if (baseType) {
                 baseSize = baseType->getSizeInBytes();
             }
 
             auto symbol = m_binaryFile->getSymbols()->findSymbolByName(name);
-            int  sz     = symbol ? symbol->getSize() : 0;
+            int sz      = symbol ? symbol->getSize() : 0;
 
             if (sz && baseSize) {
-                // Note: since ty is a pointer and has not been cloned, this will also set the type for knownType
+                // Note: since ty is a pointer and has not been cloned, this will also set the type
+                // for knownType
                 ty->as<ArrayType>()->setLength(sz / baseSize);
             }
         }
@@ -751,8 +748,8 @@ bool Prog::markGlobalUsed(Address uaddr, SharedType knownType)
 
     m_globals.insert(std::make_shared<Global>(ty, uaddr, name, this));
 
-    LOG_VERBOSE("globalUsed: name %1, address %2, %3 type %4",
-                name, uaddr, knownType ? "known" : "guessed", ty->getCtype());
+    LOG_VERBOSE("globalUsed: name %1, address %2, %3 type %4", name, uaddr,
+                knownType ? "known" : "guessed", ty->getCtype());
 
     return true;
 }
@@ -763,15 +760,14 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
     QString name = newGlobalName(startAddr);
 
     // TODO: fix the case of missing symbol table interface
-    const BinarySymbol *symbol = m_binaryFile
-        ? m_binaryFile->getSymbols()->findSymbolByName(name)
-        : nullptr;
+    const BinarySymbol *symbol = m_binaryFile ? m_binaryFile->getSymbols()->findSymbolByName(name)
+                                              : nullptr;
 
     if (!symbol || (symbol->getSize() == 0)) {
         return ArrayType::get(baseType); // An "unbounded" array
     }
 
-    size_t size   = symbol->getSize();
+    size_t size  = symbol->getSize();
     int elemSize = baseType->getSizeInBytes();
     if (elemSize < 1) {
         elemSize = 1;
@@ -781,7 +777,7 @@ std::shared_ptr<ArrayType> Prog::makeArrayType(Address startAddr, SharedType bas
 }
 
 
-SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) const
+SharedType Prog::guessGlobalType(const QString &globalName, Address globAddr) const
 {
     SharedType type = DebugInfo::typeFromDebugInfo(globalName, globAddr);
     if (type) {
@@ -792,7 +788,7 @@ SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) co
     }
 
     auto symbol = m_binaryFile->getSymbols()->findSymbolByName(globalName);
-    int  sz     = symbol ? symbol->getSize() : 0;
+    int sz      = symbol ? symbol->getSize() : 0;
 
     if (sz == 0) {
         // Check if it might be a string
@@ -806,17 +802,13 @@ SharedType Prog::guessGlobalType(const QString& globalName, Address globAddr) co
 
     SharedType ty;
 
-    switch (sz)
-    {
+    switch (sz) {
     case 1:
     case 2:
     case 4:
-    case 8:
-        ty = IntegerType::get(sz * 8);
-        break;
+    case 8: ty = IntegerType::get(sz * 8); break;
 
-    default:
-        ty = std::make_shared<ArrayType>(std::make_shared<CharType>(), sz);
+    default: ty = std::make_shared<ArrayType>(std::make_shared<CharType>(), sz);
     }
 
     return ty;
@@ -837,9 +829,9 @@ QString Prog::newGlobalName(Address uaddr)
 }
 
 
-SharedType Prog::getGlobalType(const QString& name) const
+SharedType Prog::getGlobalType(const QString &name) const
 {
-    for (auto& global : m_globals) {
+    for (auto &global : m_globals) {
         if (global->getName() == name) {
             return global->getType();
         }
@@ -849,10 +841,10 @@ SharedType Prog::getGlobalType(const QString& name) const
 }
 
 
-void Prog::setGlobalType(const QString& name, SharedType ty)
+void Prog::setGlobalType(const QString &name, SharedType ty)
 {
     // FIXME: inefficient
-    for (auto& gl : m_globals) {
+    for (auto &gl : m_globals) {
         if (gl->getName() == name) {
             gl->setType(ty);
             return;

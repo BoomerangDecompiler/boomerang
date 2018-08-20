@@ -21,7 +21,7 @@ class LocationSet;
 class UsedLocsFinder : public ExpVisitor
 {
 public:
-    UsedLocsFinder(LocationSet& used, bool memOnly);
+    UsedLocsFinder(LocationSet &used, bool memOnly);
     virtual ~UsedLocsFinder() = default;
 
 public:
@@ -31,13 +31,13 @@ public:
     void setMemOnly(bool b) { m_memOnly = b; }
 
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<RefExp>& exp, bool& visitChildren) override;
+    bool preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    bool preVisit(const std::shared_ptr<Location>& exp, bool& visitChildren) override;
+    bool preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpVisitor::preVisit
-    bool visit(const std::shared_ptr<Terminal>& exp) override;
+    bool visit(const std::shared_ptr<Terminal> &exp) override;
 
 private:
     LocationSet *m_used; ///< Set of Exps

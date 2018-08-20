@@ -9,23 +9,22 @@
 #pragma endregion License
 #include "SeparateLogger.h"
 
-
-#include "boomerang/util/log/FileLogSink.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/FileLogSink.h"
 
 #include <QDir>
 #include <QMap>
 #include <QSharedPointer>
 
 
-SeparateLogger::SeparateLogger(const QString& fullFilePath)
+SeparateLogger::SeparateLogger(const QString &fullFilePath)
 {
     QDir().remove(fullFilePath); // overwrite old logs
     addLogSink(Util::makeUnique<FileLogSink>(fullFilePath, true));
 }
 
 
-SeparateLogger& SeparateLogger::getOrCreateLog(const QString& name)
+SeparateLogger &SeparateLogger::getOrCreateLog(const QString &name)
 {
     static QMap<QString, QSharedPointer<SeparateLogger>> loggers;
 

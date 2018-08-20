@@ -13,74 +13,73 @@
 StmtExpVisitor::StmtExpVisitor(ExpVisitor *v, bool ignoreCol)
     : ev(v)
     , m_ignoreCol(ignoreCol)
-{
-}
+{}
 
 
-bool StmtExpVisitor::visit(Assign *, bool& visitChildren)
-{
-    visitChildren = true;
-    return true;
-}
-
-
-bool StmtExpVisitor::visit(PhiAssign *, bool& visitChildren)
+bool StmtExpVisitor::visit(Assign *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImplicitAssign *, bool& visitChildren)
+bool StmtExpVisitor::visit(PhiAssign *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BoolAssign *, bool& visitChildren)
+bool StmtExpVisitor::visit(ImplicitAssign *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(GotoStatement *, bool& visitChildren)
+bool StmtExpVisitor::visit(BoolAssign *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(BranchStatement *, bool& visitChildren)
+bool StmtExpVisitor::visit(GotoStatement *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CaseStatement *, bool& visitChildren)
+bool StmtExpVisitor::visit(BranchStatement *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(CallStatement *, bool& visitChildren)
+bool StmtExpVisitor::visit(CaseStatement *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ReturnStatement *, bool& visitChildren)
+bool StmtExpVisitor::visit(CallStatement *, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool StmtExpVisitor::visit(ImpRefStatement *, bool& visitChildren)
+bool StmtExpVisitor::visit(ReturnStatement *, bool &visitChildren)
+{
+    visitChildren = true;
+    return true;
+}
+
+
+bool StmtExpVisitor::visit(ImpRefStatement *, bool &visitChildren)
 {
     visitChildren = true;
     return true;

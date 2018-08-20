@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DefCollector.h"
 
-
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/Util.h"
 
@@ -29,7 +28,8 @@ void DefCollector::clear()
 }
 
 
-void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar>& Stacks, UserProc *proc)
+void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar> &Stacks,
+                              UserProc *proc)
 {
     for (auto it = Stacks.begin(); it != Stacks.end(); ++it) {
         if (it->second.empty()) {
@@ -37,7 +37,7 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessE
         }
 
         // Create an assignment of the form loc := loc{def}
-        auto   re  = RefExp::get(it->first->clone(), it->second.back());
+        auto re    = RefExp::get(it->first->clone(), it->second.back());
         Assign *as = new Assign(it->first->clone(), re);
         as->setProc(proc); // Simplify sometimes needs this
         insert(as);
@@ -47,20 +47,20 @@ void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessE
 }
 
 
-#define DEFCOL_COLS    120
+#define DEFCOL_COLS 120
 
-void DefCollector::print(OStream& os) const
+void DefCollector::print(OStream &os) const
 {
     if (m_defs.empty()) {
         os << "<None>";
         return;
     }
 
-    size_t   col   = 36;
-    bool     first = true;
+    size_t col = 36;
+    bool first = true;
 
     for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
-        QString     tgt;
+        QString tgt;
         OStream ost(&tgt);
         (*it)->getLeft()->print(ost);
         ost << "=";
@@ -72,7 +72,7 @@ void DefCollector::print(OStream& os) const
         }
         else if (col + 4 + len >= DEFCOL_COLS) { // 4 for a comma and three spaces
             if (col != DEFCOL_COLS - 1) {
-                os << ",";                       // Comma at end of line
+                os << ","; // Comma at end of line
             }
 
             os << "\n                ";
@@ -103,26 +103,24 @@ SharedExp DefCollector::findDefFor(SharedExp e) const
 }
 
 
-void DefCollector::makeCloneOf(const DefCollector& other)
+void DefCollector::makeCloneOf(const DefCollector &other)
 {
     m_initialised = other.m_initialised;
     qDeleteAll(m_defs);
     m_defs.clear();
 
-    for (const auto& elem : other) {
+    for (const auto &elem : other) {
         m_defs.insert(static_cast<Assign *>(elem->clone()));
     }
 }
 
 
-
-void DefCollector::searchReplaceAll(const Exp& from, SharedExp to, bool& change)
+void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &change)
 {
     for (iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
         change |= (*it)->searchAndReplace(from, to);
     }
 }
-
 
 
 void DefCollector::insert(Assign *a)

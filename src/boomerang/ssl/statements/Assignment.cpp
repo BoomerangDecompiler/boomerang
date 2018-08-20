@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "Assignment.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -21,7 +20,6 @@
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
-
 
 #include <QTextStreamManipulator>
 
@@ -43,13 +41,11 @@ Assignment::Assignment(SharedExp lhs)
 Assignment::Assignment(SharedType ty, SharedExp lhs)
     : TypingStatement(ty)
     , m_lhs(lhs)
-{
-}
+{}
 
 
 Assignment::~Assignment()
-{
-}
+{}
 
 
 SharedConstType Assignment::getTypeFor(SharedConstExp) const
@@ -72,10 +68,9 @@ void Assignment::setTypeFor(SharedExp /*e*/, SharedType ty)
 }
 
 
-
 bool Assignment::definesLoc(SharedExp loc) const
 {
-    if (m_lhs->getOper() == opAt) {     // For foo@[x:y], match of foo==loc OR whole thing == loc
+    if (m_lhs->getOper() == opAt) { // For foo@[x:y], match of foo==loc OR whole thing == loc
         if (*m_lhs->getSubExp1() == *loc) {
             return true;
         }
@@ -85,7 +80,7 @@ bool Assignment::definesLoc(SharedExp loc) const
 }
 
 
-bool Assignment::usesExp(const Exp& e) const
+bool Assignment::usesExp(const Exp &e) const
 {
     SharedExp where = nullptr;
 
@@ -93,9 +88,9 @@ bool Assignment::usesExp(const Exp& e) const
 }
 
 
-void Assignment::getDefinitions(LocationSet& defs, bool) const
+void Assignment::getDefinitions(LocationSet &defs, bool) const
 {
-    if (m_lhs->getOper() == opAt) {     // foo@[m:n] really only defines foo
+    if (m_lhs->getOper() == opAt) { // foo@[m:n] really only defines foo
         defs.insert(m_lhs->getSubExp1());
     }
     else {
@@ -110,7 +105,7 @@ void Assignment::getDefinitions(LocationSet& defs, bool) const
 }
 
 
-void Assignment::print(OStream& os) const
+void Assignment::print(OStream &os) const
 {
     os << qSetFieldWidth(4) << m_number << qSetFieldWidth(0) << " ";
     printCompact(os);

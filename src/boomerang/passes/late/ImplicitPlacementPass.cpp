@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "ImplicitPlacementPass.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/util/StatementList.h"
 #include "boomerang/visitor/expmodifier/ImplicitConverter.h"
@@ -18,15 +17,14 @@
 
 ImplicitPlacementPass::ImplicitPlacementPass()
     : IPass("ImplicitPlacement", PassID::ImplicitPlacement)
-{
-}
+{}
 
 
 bool ImplicitPlacementPass::execute(UserProc *proc)
 {
     StatementList stmts;
     proc->getStatements(stmts);
-    ImplicitConverter     ic(proc->getCFG());
+    ImplicitConverter ic(proc->getCFG());
     StmtImplicitConverter sm(&ic, proc->getCFG());
 
     for (Statement *stmt : stmts) {
@@ -41,9 +39,10 @@ bool ImplicitPlacementPass::execute(UserProc *proc)
 }
 
 
-bool ImplicitPlacementPass::makeSymbolsImplicit(UserProc* proc)
+bool ImplicitPlacementPass::makeSymbolsImplicit(UserProc *proc)
 {
-    UserProc::SymbolMap sm2 = proc->getSymbolMap(); // Copy the whole map; necessary because the keys (Exps) change
+    // Copy the whole map; necessary because the keys (Exps) change
+    UserProc::SymbolMap sm2 = proc->getSymbolMap();
     proc->getSymbolMap().clear();
     ImplicitConverter ic(proc->getCFG());
 

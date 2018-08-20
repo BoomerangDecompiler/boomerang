@@ -30,7 +30,8 @@ class ImpRefStatement;
  * but in m[xxx] := rhs, the rhs and xxx are modified,
  * but not the m[xxx]
  *
- * \note This class' visitor functions don't return anything. Maybe we'll need return values at a later stage.
+ * \note This class' visitor functions don't return anything. Maybe we'll need return values at a
+ * later stage.
  */
 class StmtPartModifier
 {
@@ -44,34 +45,34 @@ public:
     /// Visit this statement.
     /// \param[in] stmt Statement to visit
     /// \param[out] visitChildren set to true to visit children of this statement
-    virtual void visit(Assign *stmt, bool& visitChildren);
+    virtual void visit(Assign *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(PhiAssign *stmt, bool& visitChildren);
+    virtual void visit(PhiAssign *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(ImplicitAssign *stmt, bool& visitChildren);
+    virtual void visit(ImplicitAssign *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(BoolAssign *stmt, bool& visitChildren);
+    virtual void visit(BoolAssign *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(GotoStatement *stmt, bool& visitChildren);
+    virtual void visit(GotoStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(BranchStatement *stmt, bool& visitChildren);
+    virtual void visit(BranchStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(CaseStatement *stmt, bool& visitChildren);
+    virtual void visit(CaseStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(CallStatement *stmt, bool& visitChildren);
+    virtual void visit(CallStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(ReturnStatement *stmt, bool& visitChildren);
+    virtual void visit(ReturnStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtPartModifier::visit
-    virtual void visit(ImpRefStatement *stmt, bool& visitChildren);
+    virtual void visit(ImpRefStatement *stmt, bool &visitChildren);
 
 public:
     ExpModifier *mod; ///< The expression modifier object

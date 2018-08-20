@@ -9,7 +9,7 @@
 #pragma endregion License
 
 
-#include "CommandlineDriver.h"
+#include "boomerang-cli/CommandlineDriver.h"
 
 #include <QCoreApplication>
 #include <QStringList>

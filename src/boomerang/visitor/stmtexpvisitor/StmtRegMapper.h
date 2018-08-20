@@ -27,18 +27,17 @@ public:
     virtual ~StmtRegMapper() = default;
 
 public:
-    virtual bool common(Assignment *stmt, bool& visitChildren);
+    virtual bool common(Assignment *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(Assign *stmt, bool& visitChildren) override;
+    virtual bool visit(Assign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(PhiAssign *stmt, bool& visitChildren) override;
+    virtual bool visit(PhiAssign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt, bool& visitChildren) override;
+    virtual bool visit(ImplicitAssign *stmt, bool &visitChildren) override;
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BoolAssign *stmt, bool& visitChildren) override;
+    virtual bool visit(BoolAssign *stmt, bool &visitChildren) override;
 };
-

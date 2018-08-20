@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "SizeStripper.h"
 
-
 #include "boomerang/ssl/exp/Binary.h"
 
 
-SharedExp SizeStripper::preModify(const std::shared_ptr<Binary>& exp, bool& visitChildren)
+SharedExp SizeStripper::preModify(const std::shared_ptr<Binary> &exp, bool &visitChildren)
 {
     visitChildren = true;
 

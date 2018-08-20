@@ -9,23 +9,21 @@
 #pragma endregion License
 #include "InterferenceFinder.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/util/log/Log.h"
 
 
 InterferenceFinder::InterferenceFinder(ProcCFG *cfg)
     : m_cfg(cfg)
-{
-}
+{}
 
 
-void InterferenceFinder::findInterferences(ConnectionGraph& ig)
+void InterferenceFinder::findInterferences(ConnectionGraph &ig)
 {
     if (m_cfg->getNumBBs() == 0) {
         return;
@@ -44,7 +42,8 @@ void InterferenceFinder::findInterferences(ConnectionGraph& ig)
 
         // Calculate live locations and interferences
         assert(currBB->getFunction() && !currBB->getFunction()->isLib());
-        bool change = m_livenessAna.calcLiveness(currBB, ig, static_cast<UserProc *>(currBB->getFunction()));
+        bool change = m_livenessAna.calcLiveness(currBB, ig,
+                                                 static_cast<UserProc *>(currBB->getFunction()));
 
         if (!change) {
             continue;
@@ -62,7 +61,8 @@ void InterferenceFinder::findInterferences(ConnectionGraph& ig)
 }
 
 
-void InterferenceFinder::updateWorkListRev(BasicBlock* currBB, std::list<BasicBlock *>& workList, std::set<BasicBlock *>& workSet)
+void InterferenceFinder::updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *> &workList,
+                                           std::set<BasicBlock *> &workSet)
 {
     // Insert inedges of currBB into the worklist, unless already there
     for (BasicBlock *currIn : currBB->getPredecessors()) {
@@ -74,7 +74,8 @@ void InterferenceFinder::updateWorkListRev(BasicBlock* currBB, std::list<BasicBl
 }
 
 
-void InterferenceFinder::appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset)
+void InterferenceFinder::appendBBs(std::list<BasicBlock *> &worklist,
+                                   std::set<BasicBlock *> &workset)
 {
     // Append my list of BBs to the worklist
     worklist.insert(worklist.end(), m_cfg->begin(), m_cfg->end());

@@ -16,6 +16,11 @@ install:
 matrix:
   include:
     - env:
+        - TARGET="source-check"
+      before_script:
+      script:
+        - docker exec -t build-env bash -c "cd boomerang && ./scripts/run-clang-format.py -r src/ -e */machO/objc/*"
+    - env:
         - TARGET="clang5-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
         - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="ON"

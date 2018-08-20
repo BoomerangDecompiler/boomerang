@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "PPCSignature.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -24,9 +23,7 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
-
-PPCSignature::PPCSignature(const QString& name)
+PPCSignature::PPCSignature(const QString &name)
     : Signature(name)
 {
     Signature::addReturn(Location::regOf(REG_PPC_G1));
@@ -36,10 +33,9 @@ PPCSignature::PPCSignature(const QString& name)
 }
 
 
-PPCSignature::PPCSignature(Signature& old)
+PPCSignature::PPCSignature(Signature &old)
     : Signature(old)
-{
-}
+{}
 
 
 std::shared_ptr<Signature> PPCSignature::clone() const
@@ -52,7 +48,7 @@ std::shared_ptr<Signature> PPCSignature::clone() const
     n->m_ellipsis      = m_ellipsis;
     n->m_preferredName = m_preferredName;
 
-    n->m_unknown         = m_unknown;
+    n->m_unknown = m_unknown;
     return std::shared_ptr<Signature>(n);
 }
 
@@ -68,7 +64,8 @@ SharedExp PPCSignature::getArgumentExp(int n) const
     if (n >= 8) {
         // PPCs pass the ninth and subsequent parameters at m[%r1+8],
         // m[%r1+12], etc.
-        e = Location::memOf(Binary::get(opPlus, Location::regOf(REG_PPC_G1), Const::get(8 + (n - 8) * 4)));
+        e = Location::memOf(
+            Binary::get(opPlus, Location::regOf(REG_PPC_G1), Const::get(8 + (n - 8) * 4)));
     }
     else {
         e = Location::regOf(REG_PPC_G3 + n);
@@ -92,8 +89,8 @@ void PPCSignature::addReturn(SharedType type, SharedExp e)
 }
 
 
-void PPCSignature::addParameter(const QString& name, const SharedExp& e,
-                                SharedType type, const QString& boundMax)
+void PPCSignature::addParameter(const QString &name, const SharedExp &e, SharedType type,
+                                const QString &boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
@@ -124,20 +121,20 @@ bool PPCSignature::isPreserved(SharedExp e) const
 
 
 // Return a list of locations defined by library calls
-void PPCSignature::getLibraryDefines(StatementList& defs)
+void PPCSignature::getLibraryDefines(StatementList &defs)
 {
     if (defs.size() > 0) {
         return; // Do only once
     }
 
     for (int r = REG_PPC_G3; r <= REG_PPC_G12; ++r) {
-        defs.append(new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
+        defs.append(
+            new ImplicitAssign(Location::regOf(r))); // Registers 3-12 are volatile (caller save)
     }
 }
 
 
-
-bool PPCSignature::qualified(UserProc *p, Signature& /*candidate*/)
+bool PPCSignature::qualified(UserProc *p, Signature & /*candidate*/)
 {
     LOG_VERBOSE2("Consider promotion to stdc PPC signature for %1", p->getName());
 
@@ -149,6 +146,5 @@ bool PPCSignature::qualified(UserProc *p, Signature& /*candidate*/)
 
     return true;
 }
-
 }
 }

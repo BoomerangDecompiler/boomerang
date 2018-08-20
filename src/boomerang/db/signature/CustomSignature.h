@@ -13,11 +13,10 @@
 #include "boomerang/db/signature/Signature.h"
 
 
-
 class BOOMERANG_API CustomSignature : public Signature
 {
 public:
-    CustomSignature(const QString& name);
+    CustomSignature(const QString &name);
     virtual ~CustomSignature() override = default;
 
 public:
@@ -35,4 +34,3 @@ public:
 protected:
     int m_spReg;
 };
-

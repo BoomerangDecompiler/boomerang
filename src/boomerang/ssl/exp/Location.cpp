@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Location.h"
 
-
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/util/LocationSet.h"
@@ -18,18 +17,18 @@
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
 
 
-Location::Location(const Location& other)
+Location::Location(const Location &other)
     : Unary(other.m_oper, other.subExp1->clone())
     , m_proc(other.m_proc)
-{
-}
+{}
 
 
 Location::Location(OPER oper, SharedExp exp, UserProc *proc)
     : Unary(oper, exp)
     , m_proc(proc)
 {
-    assert(m_oper == opRegOf || m_oper == opMemOf || m_oper == opLocal || m_oper == opGlobal || m_oper == opParam || m_oper == opTemp);
+    assert(m_oper == opRegOf || m_oper == opMemOf || m_oper == opLocal || m_oper == opGlobal ||
+           m_oper == opParam || m_oper == opTemp);
 
     if (proc == nullptr) {
         // eep.. this almost always causes problems
@@ -39,8 +38,7 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
             bool giveUp = false;
 
             while (this->m_proc == nullptr && !giveUp) {
-                switch (e->getOper())
-                {
+                switch (e->getOper()) {
                 case opRegOf:
                 case opMemOf:
                 case opTemp:
@@ -48,16 +46,12 @@ Location::Location(OPER oper, SharedExp exp, UserProc *proc)
                 case opGlobal:
                 case opParam:
                     this->m_proc = std::static_pointer_cast<Location>(e)->getProc();
-                    giveUp     = true;
+                    giveUp       = true;
                     break;
 
-                case opSubscript:
-                    e = e->getSubExp1();
-                    break;
+                case opSubscript: e = e->getSubExp1(); break;
 
-                default:
-                    giveUp = true;
-                    break;
+                default: giveUp = true; break;
                 }
             }
         }
@@ -89,7 +83,7 @@ SharedExp Location::regOf(SharedExp exp)
 }
 
 
-SharedExp Location::memOf(SharedExp exp, UserProc* proc)
+SharedExp Location::memOf(SharedExp exp, UserProc *proc)
 {
     return get(opMemOf, exp, proc);
 }
@@ -101,35 +95,36 @@ std::shared_ptr<Location> Location::tempOf(SharedExp e)
 }
 
 
-SharedExp Location::global(const char* name, UserProc* proc)
+SharedExp Location::global(const char *name, UserProc *proc)
 {
     return get(opGlobal, Const::get(name), proc);
 }
 
 
-SharedExp Location::global(const QString& name, UserProc* proc)
+SharedExp Location::global(const QString &name, UserProc *proc)
 {
     return get(opGlobal, Const::get(name), proc);
 }
 
 
-SharedExp Location::param(const char* name, UserProc* proc)
+SharedExp Location::param(const char *name, UserProc *proc)
 {
     return get(opParam, Const::get(name), proc);
 }
 
 
-SharedExp Location::param(const QString& name, UserProc* proc)
+SharedExp Location::param(const QString &name, UserProc *proc)
 {
     return get(opParam, Const::get(name), proc);
 }
 
 
-void Location::getDefinitions(LocationSet& defs)
+void Location::getDefinitions(LocationSet &defs)
 {
     // This is a hack to fix aliasing (replace with something general)
     // FIXME! This is x86 specific too. Use -O for overlapped registers!
-    if ((m_oper == opRegOf) && (std::static_pointer_cast<const Const>(subExp1)->getInt() == REG_PENT_EAX)) {
+    if ((m_oper == opRegOf) &&
+        (std::static_pointer_cast<const Const>(subExp1)->getInt() == REG_PENT_EAX)) {
         defs.insert(Location::regOf(REG_PENT_AX));
     }
 }
@@ -152,19 +147,19 @@ bool Location::acceptVisitor(ExpVisitor *v)
 }
 
 
-std::shared_ptr<Location> Location::local(const QString& name, UserProc *p)
+std::shared_ptr<Location> Location::local(const QString &name, UserProc *p)
 {
     return std::make_shared<Location>(opLocal, Const::get(name), p);
 }
 
 
-SharedExp Location::acceptPreModifier(ExpModifier* mod, bool& visitChildren)
+SharedExp Location::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 {
     return mod->preModify(access<Location>(), visitChildren);
 }
 
 
-SharedExp Location::acceptPostModifier(ExpModifier* mod)
+SharedExp Location::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<Location>());
 }

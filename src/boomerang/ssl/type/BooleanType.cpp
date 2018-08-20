@@ -9,19 +9,16 @@
 #pragma endregion License
 #include "BooleanType.h"
 
-
 #include "boomerang/ssl/type/SizeType.h"
 
 
 BooleanType::BooleanType()
     : Type(TypeClass::Boolean)
-{
-}
+{}
 
 
 BooleanType::~BooleanType()
-{
-}
+{}
 
 
 SharedType BooleanType::clone() const
@@ -36,13 +33,13 @@ size_t BooleanType::getSize() const
 }
 
 
-bool BooleanType::operator==(const Type& other) const
+bool BooleanType::operator==(const Type &other) const
 {
     return other.isBoolean();
 }
 
 
-bool BooleanType::operator<(const Type& other) const
+bool BooleanType::operator<(const Type &other) const
 {
     if (id < other.getId()) {
         return true;
@@ -62,7 +59,7 @@ QString BooleanType::getCtype(bool /*final*/) const
 }
 
 
-SharedType BooleanType::meetWith(SharedType other, bool& changed, bool useHighestPtr) const
+SharedType BooleanType::meetWith(SharedType other, bool &changed, bool useHighestPtr) const
 {
     if (other->resolvesToVoid() || other->resolvesToBoolean()) {
         return const_cast<BooleanType *>(this)->shared_from_this();
@@ -72,7 +69,7 @@ SharedType BooleanType::meetWith(SharedType other, bool& changed, bool useHighes
 }
 
 
-bool BooleanType::isCompatible(const Type& other, bool /*all*/) const
+bool BooleanType::isCompatible(const Type &other, bool /*all*/) const
 {
     if (other.resolvesToVoid()) {
         return true;

@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Binary.h"
 
-
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/RefExp.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -29,7 +28,6 @@
 #include <numeric>
 
 
-
 Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
     : Unary(op, e1)
     , subExp2(e2)
@@ -38,7 +36,7 @@ Binary::Binary(OPER op, SharedExp e1, SharedExp e2)
 }
 
 
-Binary::Binary(const Binary& o)
+Binary::Binary(const Binary &o)
     : Unary(o)
 {
     subExp2 = o.subExp2->clone();
@@ -47,8 +45,7 @@ Binary::Binary(const Binary& o)
 
 
 Binary::~Binary()
-{
-}
+{}
 
 
 void Binary::setSubExp2(SharedExp e)
@@ -65,7 +62,7 @@ SharedExp Binary::getSubExp2()
 }
 
 
-SharedExp& Binary::refSubExp2()
+SharedExp &Binary::refSubExp2()
 {
     assert(subExp1 && subExp2);
     return subExp2;
@@ -86,7 +83,7 @@ SharedExp Binary::clone() const
 }
 
 
-bool Binary::operator==(const Exp& o) const
+bool Binary::operator==(const Exp &o) const
 {
     assert(subExp1 && subExp2);
 
@@ -110,7 +107,7 @@ bool Binary::operator==(const Exp& o) const
 }
 
 
-bool Binary::operator<(const Exp& o) const
+bool Binary::operator<(const Exp &o) const
 {
     assert(subExp1 && subExp2);
 
@@ -134,7 +131,7 @@ bool Binary::operator<(const Exp& o) const
 }
 
 
-bool Binary::operator*=(const Exp& o) const
+bool Binary::operator*=(const Exp &o) const
 {
     assert(subExp1 && subExp2);
     const Exp *other = &o;
@@ -159,7 +156,7 @@ bool Binary::operator*=(const Exp& o) const
 }
 
 
-void Binary::doSearchChildren(const Exp& pattern, std::list<SharedExp *>& li, bool once)
+void Binary::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &li, bool once)
 {
     assert(subExp1 && subExp2);
     doSearch(pattern, subExp1, li, once);
@@ -257,30 +254,24 @@ SharedType Binary::ascendType()
     SharedType ta = subExp1->ascendType();
     SharedType tb = subExp2->ascendType();
 
-    switch (m_oper)
-    {
-    case opPlus:
-        return sigmaSum(ta, tb);
+    switch (m_oper) {
+    case opPlus: return sigmaSum(ta, tb);
 
     // Do I need to check here for Array* promotion? I think checking in descendType is enough
-    case opMinus:
-        return deltaDifference(ta, tb);
+    case opMinus: return deltaDifference(ta, tb);
 
     case opMult:
-    case opDiv:
-        return IntegerType::get(ta->getSize(), Sign::Unsigned);
+    case opDiv: return IntegerType::get(ta->getSize(), Sign::Unsigned);
 
     case opMults:
     case opDivs:
-    case opShiftRA:
-        return IntegerType::get(ta->getSize(), Sign::Signed);
+    case opShiftRA: return IntegerType::get(ta->getSize(), Sign::Signed);
 
     case opBitAnd:
     case opBitOr:
     case opBitXor:
     case opShiftR:
-    case opShiftL:
-        return IntegerType::get(ta->getSize(), Sign::Unknown);
+    case opShiftL: return IntegerType::get(ta->getSize(), Sign::Unknown);
 
     case opLess:
     case opGtr:
@@ -289,12 +280,10 @@ SharedType Binary::ascendType()
     case opLessUns:
     case opGtrUns:
     case opLessEqUns:
-    case opGtrEqUns:
-        return BooleanType::get();
+    case opGtrEqUns: return BooleanType::get();
 
     case opFMinus:
-    case opFPlus:
-        return FloatType::get(ta->getSize());
+    case opFPlus: return FloatType::get(ta->getSize());
 
     default:
         // Many more cases to implement
@@ -400,7 +389,7 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
     return ta->clone();
 }
 
-void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
+void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
 {
     if (m_oper == opFlagCall) {
         return;
@@ -409,12 +398,12 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
     SharedType ta = subExp1->ascendType();
     SharedType tb = subExp2->ascendType();
     SharedType nt; // "New" type for certain operators
-    // The following is an idea of Mike's that is not yet implemented well. It is designed to handle the situation
-    // where the only reference to a local is where its address is taken. In the current implementation, it incorrectly
-    // triggers with every ordinary local reference, causing esp to appear used in the final program
+    // The following is an idea of Mike's that is not yet implemented well. It is designed to handle
+    // the situation where the only reference to a local is where its address is taken. In the
+    // current implementation, it incorrectly triggers with every ordinary local reference, causing
+    // esp to appear used in the final program
 
-    switch (m_oper)
-    {
+    switch (m_oper) {
     case opPlus:
         ta = ta->meetWith(sigmaAddend(parentType, tb), changed);
         subExp1->descendType(ta, changed, s);
@@ -460,51 +449,41 @@ void Binary::descendType(SharedType parentType, bool& changed, Statement *s)
     case opDivs:
     case opShiftRA:
     case opMult:
-    case opDiv:
-        {
-            Sign signedness;
+    case opDiv: {
+        Sign signedness;
 
-            switch (m_oper)
-            {
-            case opBitAnd:
-            case opBitOr:
-            case opBitXor:
-            case opShiftR:
-            case opShiftL:
-                signedness = Sign::Unknown;
-                break;
+        switch (m_oper) {
+        case opBitAnd:
+        case opBitOr:
+        case opBitXor:
+        case opShiftR:
+        case opShiftL: signedness = Sign::Unknown; break;
 
-            case opMults:
-            case opDivs:
-            case opShiftRA:
-                signedness = Sign::Signed;
-                break;
+        case opMults:
+        case opDivs:
+        case opShiftRA: signedness = Sign::Signed; break;
 
-            case opMult:
-            case opDiv:
-                signedness = Sign::Unsigned;
-                break;
+        case opMult:
+        case opDiv: signedness = Sign::Unsigned; break;
 
-            default:
-                signedness = Sign::Unknown;
-                break; // Unknown signedness
-            }
-
-            int parentSize = parentType->getSize();
-            ta = ta->meetWith(IntegerType::get(parentSize, signedness), changed);
-            subExp1->descendType(ta, changed, s);
-
-            if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
-                // These operators are not symmetric; doesn't force a signedness on the second operand
-                // FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by negative
-                // amounts.
-                signedness = Sign::Unknown;
-            }
-
-            tb = tb->meetWith(IntegerType::get(parentSize, signedness), changed);
-            subExp2->descendType(tb, changed, s);
-            break;
+        default: signedness = Sign::Unknown; break; // Unknown signedness
         }
+
+        int parentSize = parentType->getSize();
+        ta             = ta->meetWith(IntegerType::get(parentSize, signedness), changed);
+        subExp1->descendType(ta, changed, s);
+
+        if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
+            // These operators are not symmetric; doesn't force a signedness on the second operand
+            // FIXME: should there be a gentle bias twowards unsigned? Generally, you can't shift by
+            // negative amounts.
+            signedness = Sign::Unknown;
+        }
+
+        tb = tb->meetWith(IntegerType::get(parentSize, signedness), changed);
+        subExp2->descendType(tb, changed, s);
+        break;
+    }
 
     default:
         // Many more cases to implement
@@ -532,13 +511,13 @@ bool Binary::acceptVisitor(ExpVisitor *v)
 }
 
 
-SharedExp Binary::acceptPreModifier(ExpModifier *mod, bool& visitChildren)
+SharedExp Binary::acceptPreModifier(ExpModifier *mod, bool &visitChildren)
 {
     return mod->preModify(access<Binary>(), visitChildren);
 }
 
 
-SharedExp Binary::acceptChildModifier(ExpModifier* mod)
+SharedExp Binary::acceptChildModifier(ExpModifier *mod)
 {
     subExp1 = subExp1->acceptModifier(mod);
     subExp2 = subExp2->acceptModifier(mod);

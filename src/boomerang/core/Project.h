@@ -37,13 +37,13 @@ class BOOMERANG_API Project
 {
 public:
     Project();
-    Project(const Project& other) = delete;
-    Project(Project&& other) = delete;
+    Project(const Project &other) = delete;
+    Project(Project &&other)      = delete;
 
     virtual ~Project();
 
-    Project& operator=(const Project& other) = delete;
-    Project& operator=(Project&& other) = delete;
+    Project &operator=(const Project &other) = delete;
+    Project &operator=(Project &&other) = delete;
 
 public:
     Settings *getSettings();
@@ -72,7 +72,7 @@ public:
      * If a binary file is already loaded, it is unloaded first (all unsaved data is lost).
      * \returns true iff loading was successful.
      */
-    bool loadBinaryFile(const QString& filePath);
+    bool loadBinaryFile(const QString &filePath);
 
     /**
      * Load a saved file from \p filePath.
@@ -80,7 +80,7 @@ public:
      * \note Not yet implemented.
      * \returns true iff loading was successful.
      */
-    bool loadSaveFile(const QString& filePath);
+    bool loadSaveFile(const QString &filePath);
 
     /**
      * Save data to the save file at \p filePath.
@@ -88,7 +88,7 @@ public:
      * \note Not yet implemented.
      * \returns true iff saving was successful.
      */
-    bool writeSaveFile(const QString& filePath);
+    bool writeSaveFile(const QString &filePath);
 
     /**
      * Check if the project contains a loaded binary.
@@ -171,12 +171,12 @@ public:
 
 private:
     /// Get the best loader that is able to load the file at \p filePath
-    IFileLoader *getBestLoader(const QString& filePath) const;
+    IFileLoader *getBestLoader(const QString &filePath) const;
 
     /**
      * Create a Prog from a loaded binary file. Returns nullptr on failure.
      */
-    Prog *createProg(BinaryFile *file, const QString& name);
+    Prog *createProg(BinaryFile *file, const QString &name);
 
     /**
      * Create a FrontEnd object. Will fail if one is already created
@@ -207,7 +207,7 @@ private:
     std::set<IWatcher *> m_watchers;
 
     // Plugins
-    std::vector<std::unique_ptr<LoaderPlugin> > m_loaderPlugins;
+    std::vector<std::unique_ptr<LoaderPlugin>> m_loaderPlugins;
 
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;

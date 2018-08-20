@@ -42,34 +42,34 @@ public:
     /// \param[in]  stmt The statement to visit.
     /// \param[out] visitChildren set to false to not visit child expressions.
     /// \returns true to continue visit
-    virtual bool visit(Assign *stmt, bool& visitChildren);
+    virtual bool visit(Assign *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(PhiAssign *stmt, bool& visitChildren);
+    virtual bool visit(PhiAssign *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImplicitAssign *stmt, bool& visitChildren);
+    virtual bool visit(ImplicitAssign *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BoolAssign *stmt, bool& visitChildren);
+    virtual bool visit(BoolAssign *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(GotoStatement *stmt, bool& visitChildren);
+    virtual bool visit(GotoStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(BranchStatement *stmt, bool& visitChildren);
+    virtual bool visit(BranchStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(CaseStatement *stmt, bool& visitChildren);
+    virtual bool visit(CaseStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(CallStatement *stmt, bool& visitChildren);
+    virtual bool visit(CallStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ReturnStatement *stmt, bool& visitChildren);
+    virtual bool visit(ReturnStatement *stmt, bool &visitChildren);
 
     /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImpRefStatement *stmt, bool& visitChildren);
+    virtual bool visit(ImpRefStatement *stmt, bool &visitChildren);
 
     bool isIgnoreCol() const { return m_ignoreCol; }
 

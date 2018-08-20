@@ -28,18 +28,18 @@ class UserProc;
 class BOOMERANG_API DefCollector
 {
 public:
-    typedef AssignSet::const_iterator   const_iterator;
-    typedef AssignSet::iterator         iterator;
+    typedef AssignSet::const_iterator const_iterator;
+    typedef AssignSet::iterator iterator;
 
 public:
-    DefCollector() = default;
-    DefCollector(const DefCollector& other) = delete;
-    DefCollector(DefCollector&& other) = default;
+    DefCollector()                          = default;
+    DefCollector(const DefCollector &other) = delete;
+    DefCollector(DefCollector &&other)      = default;
 
     ~DefCollector();
 
-    DefCollector& operator=(const DefCollector& other) = delete;
-    DefCollector& operator=(DefCollector&& other) = default;
+    DefCollector &operator=(const DefCollector &other) = delete;
+    DefCollector &operator=(DefCollector &&other) = default;
 
 public:
     iterator begin() { return m_defs.begin(); }
@@ -49,7 +49,7 @@ public:
 
 public:
     /// Clone the given Collector into this one
-    void makeCloneOf(const DefCollector& other);
+    void makeCloneOf(const DefCollector &other);
 
     /// \returns true if initialised
     inline bool isInitialised() const { return m_initialised; }
@@ -65,7 +65,7 @@ public:
     void insert(Assign *a);
 
     /// Print the collected locations to stream os
-    void print(OStream& os) const;
+    void print(OStream &os) const;
 
     bool existsOnLeft(SharedExp e) const { return m_defs.definesLoc(e); }
 
@@ -73,7 +73,8 @@ public:
      * Update the definitions with the current set of reaching definitions
      * proc is the enclosing procedure
      */
-    void updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar>& Stacks, UserProc *proc);
+    void updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar> &Stacks,
+                    UserProc *proc);
 
     /**
      * Find the definition for a location.
@@ -83,7 +84,7 @@ public:
     SharedExp findDefFor(SharedExp e) const;
 
     /// Search and replace all occurrences
-    void searchReplaceAll(const Exp& pattern, SharedExp replacement, bool& change);
+    void searchReplaceAll(const Exp &pattern, SharedExp replacement, bool &change);
 
 private:
     /**
@@ -93,4 +94,3 @@ private:
     bool m_initialised = false;
     AssignSet m_defs; ///< The set of definitions.
 };
-

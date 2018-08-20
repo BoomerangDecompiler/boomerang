@@ -9,11 +9,10 @@
 #pragma endregion License
 #include "UnusedParamRemovalPass.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
@@ -24,8 +23,7 @@
 
 UnusedParamRemovalPass::UnusedParamRemovalPass()
     : IPass("UnusedParamRemoval", PassID::UnusedParamRemoval)
-{
-}
+{}
 
 
 bool UnusedParamRemovalPass::execute(UserProc *proc)
@@ -35,26 +33,30 @@ bool UnusedParamRemovalPass::execute(UserProc *proc)
         return false;
     }
 
-    bool          ret = false;
+    bool ret = false;
     StatementList newParameters;
 
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before removing redundant parameters");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc,
+                                                            "Before removing redundant parameters");
 
     if (proc->getProg()->getProject()->getSettings()->debugUnused) {
         LOG_MSG("%%% removing unused parameters for %1", proc->getName());
     }
 
     // Note: this would be far more efficient if we had def-use information
-    for (StatementList::iterator pp = proc->getParameters().begin(); pp != proc->getParameters().end(); ++pp) {
+    for (StatementList::iterator pp = proc->getParameters().begin();
+         pp != proc->getParameters().end(); ++pp) {
         SharedExp param = static_cast<Assignment *>(*pp)->getLeft();
-        bool      az;
-        SharedExp bparam = param->clone()->removeSubscripts(az); // FIXME: why does main have subscripts on parameters?
-        // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found in uses
-        bparam = bparam->expSubscriptAllNull();                  // Now m[sp{-}+K]{-}
+        bool az;
+        SharedExp bparam = param->clone()->removeSubscripts(
+            az); // FIXME: why does main have subscripts on parameters?
+        // Memory parameters will be of the form m[sp + K]; convert to m[sp{0} + K] as will be found
+        // in uses
+        bparam = bparam->expSubscriptAllNull(); // Now m[sp{-}+K]{-}
         ImplicitConverter ic(proc->getCFG());
-        bparam = bparam->acceptModifier(&ic);                            // Now m[sp{0}+K]{0}
+        bparam = bparam->acceptModifier(&ic); // Now m[sp{0}+K]{0}
         assert(bparam->isSubscript());
-        bparam = bparam->access<Exp, 1>();                       // now m[sp{0}+K] (bare parameter)
+        bparam = bparam->access<Exp, 1>(); // now m[sp{0}+K] (bare parameter)
 
         ProcSet visited;
 
@@ -73,11 +75,12 @@ bool UnusedParamRemovalPass::execute(UserProc *proc)
             UserProc::SymbolMap::iterator ss = proc->getSymbolMap().find(param);
 
             if (ss != proc->getSymbolMap().end()) {
-                proc->getSymbolMap().erase(ss);           // Kill the symbol
+                proc->getSymbolMap().erase(ss); // Kill the symbol
             }
 
             proc->getSignature()->removeParameter(param); // Also remove from the signature
-            proc->getCFG()->removeImplicitAssign(param);  // Remove the implicit assignment so it doesn't come back
+            proc->getCFG()->removeImplicitAssign(
+                param); // Remove the implicit assignment so it doesn't come back
         }
     }
 
@@ -87,13 +90,14 @@ bool UnusedParamRemovalPass::execute(UserProc *proc)
         LOG_MSG("%%% end removing unused parameters for %1", proc->getName());
     }
 
-    proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "after removing redundant parameters");
+    proc->getProg()->getProject()->alertDecompileDebugPoint(proc,
+                                                            "after removing redundant parameters");
 
     return ret;
 }
 
 
-bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam, ProcSet& visited)
+bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam, ProcSet &visited)
 {
     visited.insert(proc); // Prevent infinite recursion
 
@@ -103,8 +107,8 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
     for (Statement *s : stmts) {
         // Special checking for recursive calls
         if (s->isCall()) {
-            CallStatement *c    = static_cast<CallStatement *>(s);
-            UserProc      *dest = dynamic_cast<UserProc *>(c->getDestProc());
+            CallStatement *c = static_cast<CallStatement *>(s);
+            UserProc *dest   = dynamic_cast<UserProc *>(c->getDestProc());
 
             if (dest && dest->doesRecurseTo(proc)) {
                 // In the destination expression?
@@ -116,11 +120,11 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                 }
 
                 // Else check for arguments of the form lloc := f(bparam{0})
-                const StatementList& args = c->getArguments();
+                const StatementList &args = c->getArguments();
 
                 for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
                     const Assign *a = dynamic_cast<const Assign *>(*aa);
-                    SharedExp   rhs = a ? a->getRight() : nullptr;
+                    SharedExp rhs   = a ? a->getRight() : nullptr;
                     if (!rhs) {
                         continue;
                     }
@@ -131,28 +135,32 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                     if (argUses.containsImplicit(bparam)) {
                         SharedExp lloc = static_cast<Assign *>(*aa)->getLeft();
 
-                        if ((visited.find(dest) == visited.end()) && checkForGainfulUse(dest, lloc, visited)) {
+                        if ((visited.find(dest) == visited.end()) &&
+                            checkForGainfulUse(dest, lloc, visited)) {
                             return true;
                         }
                     }
                 }
 
-                // If get to here, then none of the arguments is of this form, and we can ignore this call
+                // If get to here, then none of the arguments is of this form, and we can ignore
+                // this call
                 continue;
             }
         }
         else if (s->isReturn()) {
-            if (proc->getRecursionGroup() && !proc->getRecursionGroup()->empty()) { // If this function is involved in recursion
-                continue;                               //  then ignore this return statement
+            if (proc->getRecursionGroup() &&
+                !proc->getRecursionGroup()->empty()) { // If this function is involved in recursion
+                continue;                              //  then ignore this return statement
             }
         }
-        else if (s->isPhi() && (proc->getRetStmt() != nullptr) && proc->getRecursionGroup() && !proc->getRecursionGroup()->empty()) {
-            SharedExp  phiLeft = static_cast<PhiAssign *>(s)->getLeft();
-            auto       refPhi  = RefExp::get(phiLeft, s);
-            bool       foundPhi = false;
+        else if (s->isPhi() && (proc->getRetStmt() != nullptr) && proc->getRecursionGroup() &&
+                 !proc->getRecursionGroup()->empty()) {
+            SharedExp phiLeft = static_cast<PhiAssign *>(s)->getLeft();
+            auto refPhi       = RefExp::get(phiLeft, s);
+            bool foundPhi     = false;
 
             for (Statement *stmt : *proc->getRetStmt()) {
-                SharedExp   rhs = static_cast<Assign *>(stmt)->getRight();
+                SharedExp rhs = static_cast<Assign *>(stmt)->getRight();
                 LocationSet uses;
                 rhs->addUsedLocs(uses);
 
@@ -175,7 +183,7 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
         if (uses.containsImplicit(bparam)) {
             return true; // A gainful use
         }
-    }                    // for each statement s
+    } // for each statement s
 
     return false;
 }

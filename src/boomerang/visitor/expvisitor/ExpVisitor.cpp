@@ -10,104 +10,104 @@
 #include "ExpVisitor.h"
 
 
-bool ExpVisitor::preVisit(const std::shared_ptr<Unary>&, bool& visitChildren)
+bool ExpVisitor::preVisit(const std::shared_ptr<Unary> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::postVisit(const std::shared_ptr<Unary>&)
+bool ExpVisitor::postVisit(const std::shared_ptr<Unary> &)
 {
     return true;
 }
 
 
-bool ExpVisitor::preVisit(const std::shared_ptr<Binary>&, bool& visitChildren)
-{
-    visitChildren = true;
-    return true;
-}
-
-
-bool ExpVisitor::postVisit(const std::shared_ptr<Binary>&)
-{
-    return true;
-}
-
-
-bool ExpVisitor::preVisit(const std::shared_ptr<Ternary>&, bool& visitChildren)
+bool ExpVisitor::preVisit(const std::shared_ptr<Binary> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::postVisit(const std::shared_ptr<Ternary>&)
+bool ExpVisitor::postVisit(const std::shared_ptr<Binary> &)
 {
     return true;
 }
 
 
-bool ExpVisitor::preVisit(const std::shared_ptr<TypedExp>&, bool& visitChildren)
-{
-    visitChildren = true;
-    return true;
-}
-
-
-bool ExpVisitor::postVisit(const std::shared_ptr<TypedExp>&)
-{
-    return true;
-}
-
-
-bool ExpVisitor::preVisit(const std::shared_ptr<FlagDef>&, bool& visitChildren)
+bool ExpVisitor::preVisit(const std::shared_ptr<Ternary> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::postVisit(const std::shared_ptr<FlagDef>&)
+bool ExpVisitor::postVisit(const std::shared_ptr<Ternary> &)
 {
     return true;
 }
 
 
-bool ExpVisitor::preVisit(const std::shared_ptr<RefExp>&, bool& visitChildren)
-{
-    visitChildren = true;
-    return true;
-}
-
-
-bool ExpVisitor::postVisit(const std::shared_ptr<RefExp>&)
-{
-    return true;
-}
-
-
-bool ExpVisitor::preVisit(const std::shared_ptr<Location>&, bool& visitChildren)
+bool ExpVisitor::preVisit(const std::shared_ptr<TypedExp> &, bool &visitChildren)
 {
     visitChildren = true;
     return true;
 }
 
 
-bool ExpVisitor::postVisit(const std::shared_ptr<Location>&)
+bool ExpVisitor::postVisit(const std::shared_ptr<TypedExp> &)
 {
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<Const>&)
+bool ExpVisitor::preVisit(const std::shared_ptr<FlagDef> &, bool &visitChildren)
+{
+    visitChildren = true;
+    return true;
+}
+
+
+bool ExpVisitor::postVisit(const std::shared_ptr<FlagDef> &)
 {
     return true;
 }
 
 
-bool ExpVisitor::visit(const std::shared_ptr<Terminal>&)
+bool ExpVisitor::preVisit(const std::shared_ptr<RefExp> &, bool &visitChildren)
+{
+    visitChildren = true;
+    return true;
+}
+
+
+bool ExpVisitor::postVisit(const std::shared_ptr<RefExp> &)
+{
+    return true;
+}
+
+
+bool ExpVisitor::preVisit(const std::shared_ptr<Location> &, bool &visitChildren)
+{
+    visitChildren = true;
+    return true;
+}
+
+
+bool ExpVisitor::postVisit(const std::shared_ptr<Location> &)
+{
+    return true;
+}
+
+
+bool ExpVisitor::visit(const std::shared_ptr<Const> &)
+{
+    return true;
+}
+
+
+bool ExpVisitor::visit(const std::shared_ptr<Terminal> &)
 {
     return true;
 }

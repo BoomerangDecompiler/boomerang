@@ -27,16 +27,16 @@ public:
 
 public:
     /// \copydoc ISymbolProvider::readLibraryCatalog
-    bool readLibraryCatalog(const QString& fileName) override;
+    bool readLibraryCatalog(const QString &fileName) override;
 
     /// \copydoc ISymbolProvider::addSymbolsFromSymbolFile
-    bool addSymbolsFromSymbolFile(const QString& fileName) override;
+    bool addSymbolsFromSymbolFile(const QString &fileName) override;
 
     /// \copydoc ISymbolProvider::getSignatureByName
-    std::shared_ptr<Signature> getSignatureByName(const QString& functionName) const override;
+    std::shared_ptr<Signature> getSignatureByName(const QString &functionName) const override;
 
 private:
-    bool readLibrarySignatures(const QString& signatureFile, CallConv cc);
+    bool readLibrarySignatures(const QString &signatureFile, CallConv cc);
 
 private:
     Prog *m_prog;

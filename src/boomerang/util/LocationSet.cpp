@@ -9,21 +9,19 @@
 #pragma endregion License
 #include "LocationSet.h"
 
-
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/util/StatementSet.h"
 #include "boomerang/util/Util.h"
+#include "boomerang/util/log/Log.h"
 
 
-LocationSet::LocationSet(const std::initializer_list<SharedExp>& exps)
+LocationSet::LocationSet(const std::initializer_list<SharedExp> &exps)
     : ExpSet<Exp, lessExpStar>(exps)
-{
-}
+{}
 
 
-LocationSet& LocationSet::operator=(const LocationSet& o)
+LocationSet &LocationSet::operator=(const LocationSet &o)
 {
     m_set.clear();
 
@@ -35,15 +33,14 @@ LocationSet& LocationSet::operator=(const LocationSet& o)
 }
 
 
-LocationSet::LocationSet(const LocationSet& o)
+LocationSet::LocationSet(const LocationSet &o)
     : ExpSet<Exp, lessExpStar>(o)
-{
-}
+{}
 
 
 QString LocationSet::prints() const
 {
-    QString     tgt;
+    QString tgt;
     OStream ost(&tgt);
 
     for (const_iterator it = begin(); it != end(); ++it) {
@@ -64,7 +61,8 @@ SharedExp LocationSet::findNS(SharedExp e)
         return nullptr;
     }
 
-    // Note: can't search with a wildcard, since it doesn't have the weak ordering required (I think)
+    // Note: can't search with a wildcard, since it doesn't have the weak ordering required (I
+    // think)
     auto ref = RefExp::get(e, nullptr);
 
     // Note: the below assumes that nullptr is less than any other pointer
@@ -89,13 +87,14 @@ bool LocationSet::containsImplicit(SharedExp e) const
         return false;
     }
 
-    auto     r(RefExp::get(e, nullptr));
+    auto r(RefExp::get(e, nullptr));
     iterator it = m_set.lower_bound(r); // First element >= r
 
-    // Note: the below relies on the fact that nullptr is less than any other pointer. Try later entries in the set:
+    // Note: the below relies on the fact that nullptr is less than any other pointer. Try later
+    // entries in the set:
     while (it != m_set.end()) {
         if (!(*it)->isSubscript()) {
-            return false;                            // Looking for e{something} (could be e.g. %pc)
+            return false; // Looking for e{something} (could be e.g. %pc)
         }
 
         if (!(*(*it)->getSubExp1() == *e)) { // Gone past e{anything}?
@@ -106,21 +105,21 @@ bool LocationSet::containsImplicit(SharedExp e) const
             return true;                                // Found
         }
 
-        ++it;                                           // Else check next entry
+        ++it; // Else check next entry
     }
 
     return false;
 }
 
 
-bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp>& ref, SharedExp& differentRef)
+bool LocationSet::findDifferentRef(const std::shared_ptr<RefExp> &ref, SharedExp &differentRef)
 {
     if (!ref) {
         return false;
     }
 
-    auto     search = RefExp::get(ref->getSubExp1()->clone(), STMT_WILD);
-    iterator pos    = m_set.find(search);
+    auto search  = RefExp::get(ref->getSubExp1()->clone(), STMT_WILD);
+    iterator pos = m_set.find(search);
 
     if (pos == m_set.end()) {
         return false;

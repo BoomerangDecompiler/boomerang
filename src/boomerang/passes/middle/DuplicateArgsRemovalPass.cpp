@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DuplicateArgsRemovalPass.h"
 
-
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/statements/CallStatement.h"
@@ -18,13 +17,12 @@
 
 DuplicateArgsRemovalPass::DuplicateArgsRemovalPass()
     : IPass("DuplicateArgsRemoval", PassID::DuplicateArgsRemoval)
-{
-}
+{}
 
 
 bool DuplicateArgsRemovalPass::execute(UserProc *proc)
 {
-    BasicBlock::RTLRIterator        rrit;
+    BasicBlock::RTLRIterator rrit;
     StatementList::reverse_iterator srit;
 
     for (BasicBlock *bb : *proc->getCFG()) {

@@ -35,7 +35,7 @@ class ImpRefStatement;
 class BOOMERANG_API StmtVisitor
 {
 public:
-    StmtVisitor() = default;
+    StmtVisitor()          = default;
     virtual ~StmtVisitor() = default;
 
 public:

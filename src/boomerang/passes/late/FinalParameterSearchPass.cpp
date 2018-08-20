@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "FinalParameterSearchPass.h"
 
-
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -23,8 +22,7 @@
 
 FinalParameterSearchPass::FinalParameterSearchPass()
     : IPass("FinalParameterUpdate", PassID::FinalParameterSearch)
-{
-}
+{}
 
 
 bool FinalParameterSearchPass::execute(UserProc *proc)
@@ -34,25 +32,27 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
 
     if (proc->getSignature()->isForced()) {
         // Copy from signature
-        int               n = proc->getSignature()->getNumParams();
+        int n = proc->getSignature()->getNumParams();
         ImplicitConverter ic(proc->getCFG());
 
         for (int i = 0; i < n; ++i) {
-            SharedExp             paramLoc = proc->getSignature()->getParamExp(i)->clone(); // E.g. m[r28 + 4]
-            LocationSet           components;
+            SharedExp paramLoc = proc->getSignature()->getParamExp(i)->clone(); // E.g. m[r28 + 4]
+            LocationSet components;
             paramLoc->addUsedLocs(components);
 
             for (auto cc = components.begin(); cc != components.end(); ++cc) {
                 if (*cc != paramLoc) {                       // Don't subscript outer level
                     paramLoc->expSubscriptVar(*cc, nullptr); // E.g. r28 -> r28{-}
-                    paramLoc->acceptModifier(&ic);                   // E.g. r28{-} -> r28{0}
+                    paramLoc->acceptModifier(&ic);           // E.g. r28{-} -> r28{0}
                 }
             }
 
-            proc->getParameters().append(new ImplicitAssign(proc->getSignature()->getParamType(i), paramLoc));
-            QString   name       = proc->getSignature()->getParamName(i);
+            proc->getParameters().append(
+                new ImplicitAssign(proc->getSignature()->getParamType(i), paramLoc));
+            QString name         = proc->getSignature()->getParamName(i);
             SharedExp param      = Location::param(name, proc);
-            SharedExp reParamLoc = RefExp::get(paramLoc, proc->getCFG()->findOrCreateImplicitAssign(paramLoc));
+            SharedExp reParamLoc = RefExp::get(
+                paramLoc, proc->getCFG()->findOrCreateImplicitAssign(paramLoc));
             proc->mapSymbolTo(reParamLoc, param); // Update name map
         }
 
@@ -69,10 +69,11 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
     proc->getStatements(stmts);
 
     for (Statement *s : stmts) {
-        // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at the start of the
-        // program
+        // Assume that all parameters will be m[]{0} or r[]{0}, and in the implicit definitions at
+        // the start of the program
         if (!s->isImplicit()) {
-            // Note: phis can get converted to assignments, but I hope that this is only later on: check this!
+            // Note: phis can get converted to assignments, but I hope that this is only later on:
+            // check this!
             break; // Stop after reading all implicit assignments
         }
 
@@ -83,8 +84,8 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
                 LOG_VERBOSE("Potential param %1", e);
             }
 
-            // I believe that the only true parameters will be registers or memofs that look like locals (stack
-            // pararameters)
+            // I believe that the only true parameters will be registers or memofs that look like
+            // locals (stack pararameters)
             if (!(e->isRegOf() || proc->isLocalOrParamPattern(e))) {
                 continue;
             }

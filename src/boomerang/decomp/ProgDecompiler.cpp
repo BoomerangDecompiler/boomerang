@@ -9,13 +9,12 @@
 #pragma endregion License
 #include "ProgDecompiler.h"
 
-
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/Global.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/decomp/UnusedReturnRemover.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -23,10 +22,9 @@
 #include "boomerang/util/log/Log.h"
 
 
-ProgDecompiler::ProgDecompiler(Prog* prog)
+ProgDecompiler::ProgDecompiler(Prog *prog)
     : m_prog(prog)
-{
-}
+{}
 
 
 void ProgDecompiler::decompile()
@@ -44,27 +42,27 @@ void ProgDecompiler::decompile()
 
     if (m_prog->getProject()->getSettings()->decodeMain &&
         m_prog->getProject()->getSettings()->decodeChildren) {
-            bool foundone = true;
+        bool foundone = true;
 
-            while (foundone) {
-                foundone = false;
+        while (foundone) {
+            foundone = false;
 
-                for (const auto& module : m_prog->getModuleList()) {
-                    for (Function *pp : *module) {
-                        if (pp->isLib()) {
-                            continue;
-                        }
-
-                        UserProc *proc = static_cast<UserProc *>(pp);
-
-                        if (proc->isDecompiled()) {
-                            continue;
-                        }
-                        proc->decompileRecursive();
-                        foundone = true;
+            for (const auto &module : m_prog->getModuleList()) {
+                for (Function *pp : *module) {
+                    if (pp->isLib()) {
+                        continue;
                     }
+
+                    UserProc *proc = static_cast<UserProc *>(pp);
+
+                    if (proc->isDecompiled()) {
+                        continue;
+                    }
+                    proc->decompileRecursive();
+                    foundone = true;
                 }
             }
+        }
     }
 
     globalTypeAnalysis();
@@ -72,13 +70,14 @@ void ProgDecompiler::decompile()
     if (m_prog->getProject()->getSettings()->removeReturns) {
         // Repeat until no change. Not 100% sure if needed.
         while (removeUnusedParamsAndReturns()) {
-            for (auto& module : m_prog->getModuleList()) {
+            for (auto &module : m_prog->getModuleList()) {
                 for (Function *proc : *module) {
                     if (proc->isLib()) {
                         continue;
                     }
 
-                    PassManager::get()->executePass(PassID::BranchAnalysis, static_cast<UserProc *>(proc));
+                    PassManager::get()->executePass(PassID::BranchAnalysis,
+                                                    static_cast<UserProc *>(proc));
                 }
             }
         }
@@ -101,7 +100,7 @@ void ProgDecompiler::globalTypeAnalysis()
         LOG_VERBOSE("### Start global data-flow-based type analysis ###");
     }
 
-    for (const auto& module : m_prog->getModuleList()) {
+    for (const auto &module : m_prog->getModuleList()) {
         for (Function *pp : *module) {
             UserProc *proc = dynamic_cast<UserProc *>(pp);
 
@@ -109,8 +108,8 @@ void ProgDecompiler::globalTypeAnalysis()
                 continue;
             }
 
-            // FIXME: this just does local TA again. Need to meet types for all parameter/arguments, and return/results!
-            // This will require a repeat until no change loop
+            // FIXME: this just does local TA again. Need to meet types for all parameter/arguments,
+            // and return/results! This will require a repeat until no change loop
             LOG_VERBOSE("Global type analysis for '%1'", proc->getName());
             PassManager::get()->executePass(PassID::LocalTypeAnalysis, proc);
         }
@@ -129,7 +128,7 @@ void ProgDecompiler::removeUnusedGlobals()
     // seach for used globals
     std::list<SharedExp> usedGlobals;
 
-    for (const auto& module : m_prog->getModuleList()) {
+    for (const auto &module : m_prog->getModuleList()) {
         for (Function *func : *module) {
             if (func->isLib()) {
                 continue;
@@ -137,9 +136,9 @@ void ProgDecompiler::removeUnusedGlobals()
 
             UserProc *proc = static_cast<UserProc *>(func);
             Location search(opGlobal, Terminal::get(opWild), proc);
-            // Search each statement in u, excepting implicit assignments (their uses don't count, since they don't really
-            // exist in the program representation)
-            StatementList           stmts;
+            // Search each statement in u, excepting implicit assignments (their uses don't count,
+            // since they don't really exist in the program representation)
+            StatementList stmts;
             StatementList::iterator ss;
             proc->getStatements(stmts);
 
@@ -160,7 +159,7 @@ void ProgDecompiler::removeUnusedGlobals()
     // make a map to find a global by its name (could be a global var too)
     QMap<QString, std::shared_ptr<Global>> namedGlobals;
 
-    for (auto& g : m_prog->getGlobals()) {
+    for (auto &g : m_prog->getGlobals()) {
         namedGlobals[g->getName()] = g;
     }
 
@@ -168,13 +167,13 @@ void ProgDecompiler::removeUnusedGlobals()
     Prog::GlobalSet oldGlobals = m_prog->getGlobals();
     m_prog->getGlobals().clear();
 
-    for (const SharedExp& e : usedGlobals) {
+    for (const SharedExp &e : usedGlobals) {
         if (m_prog->getProject()->getSettings()->debugUnused) {
             LOG_MSG(" %1 is used", e);
         }
 
         QString name(e->access<Const, 1>()->getStr());
-        auto& usedGlobal = namedGlobals[name];
+        auto &usedGlobal = namedGlobals[name];
 
         if (usedGlobal) {
             m_prog->getGlobals().insert(usedGlobal);
@@ -197,7 +196,7 @@ void ProgDecompiler::fromSSAForm()
 {
     LOG_MSG("Transforming from SSA form...");
 
-    for (const auto& module : m_prog->getModuleList()) {
+    for (const auto &module : m_prog->getModuleList()) {
         for (Function *pp : *module) {
             if (pp->isLib()) {
                 continue;

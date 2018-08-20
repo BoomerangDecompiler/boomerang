@@ -22,10 +22,9 @@ class ConstFinder;
 class StmtConstFinder : public StmtExpVisitor
 {
 public:
-    StmtConstFinder() = default;
+    StmtConstFinder()          = default;
     virtual ~StmtConstFinder() = default;
 
 public:
     StmtConstFinder(ConstFinder *v);
 };
-

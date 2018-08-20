@@ -9,9 +9,8 @@
 #pragma endregion License
 #include "MIPSSignature.h"
 
-
-#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/Prog.h"
+#include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -24,8 +23,7 @@ namespace CallingConvention
 {
 namespace StdC
 {
-
-MIPSSignature::MIPSSignature(const QString& _name)
+MIPSSignature::MIPSSignature(const QString &_name)
     : Signature(_name)
 {
     Signature::addReturn(Location::regOf(REG_MIPS_V0));
@@ -41,13 +39,13 @@ std::shared_ptr<Signature> MIPSSignature::clone() const
 
     n->m_ellipsis      = m_ellipsis;
     n->m_preferredName = m_preferredName;
-    n->m_unknown         = m_unknown;
+    n->m_unknown       = m_unknown;
 
     return std::shared_ptr<Signature>(n);
 }
 
 
-bool MIPSSignature::qualified(UserProc *p, Signature& /*candidate*/)
+bool MIPSSignature::qualified(UserProc *p, Signature & /*candidate*/)
 {
     LOG_VERBOSE("Consider promotion to stdc MIPS signature for %1", p->getName());
 
@@ -108,8 +106,8 @@ SharedExp MIPSSignature::getArgumentExp(int n) const
 }
 
 
-void MIPSSignature::addParameter(const QString& name, const SharedExp& e,
-                                 SharedType type, const QString& boundMax)
+void MIPSSignature::addParameter(const QString &name, const SharedExp &e, SharedType type,
+                                 const QString &boundMax)
 {
     Signature::addParameter(name, e ? e : getArgumentExp(m_params.size()), type, boundMax);
 }
@@ -140,18 +138,18 @@ bool MIPSSignature::isPreserved(SharedExp e) const
 }
 
 
-void MIPSSignature::getLibraryDefines(StatementList& defs)
+void MIPSSignature::getLibraryDefines(StatementList &defs)
 {
     if (defs.size() > 0) {
         return; // Do only once
     }
 
     for (int r = 16; r <= 23; ++r) {
-        defs.append(new ImplicitAssign(Location::regOf(r))); // Registers 16-23 are volatile (caller save)
+        defs.append(
+            new ImplicitAssign(Location::regOf(r))); // Registers 16-23 are volatile (caller save)
     }
 
     defs.append(new ImplicitAssign(Location::regOf(REG_MIPS_FP)));
 }
-
 }
 }

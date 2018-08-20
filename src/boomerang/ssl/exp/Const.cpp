@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Const.h"
 
-
 #include "boomerang/db/proc/Proc.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -58,7 +57,7 @@ Const::Const(double d)
 }
 
 
-Const::Const(const QString& p)
+Const::Const(const QString &p)
     : Exp(opStrConst)
     , m_conscript(0)
     , m_type(VoidType::get())
@@ -85,7 +84,7 @@ Const::Const(Address addr)
 }
 
 
-Const::Const(const Const& other)
+Const::Const(const Const &other)
     : Exp(other.m_oper)
     , m_string(other.m_string)
     , m_conscript(other.m_conscript)
@@ -95,41 +94,32 @@ Const::Const(const Const& other)
 }
 
 
-bool Const::operator<(const Exp& o) const
+bool Const::operator<(const Exp &o) const
 {
     if (m_oper != o.getOper()) {
         return m_oper < o.getOper();
     }
 
-    const Const& otherConst = static_cast<const Const&>(o);
+    const Const &otherConst = static_cast<const Const &>(o);
 
     if (m_conscript != otherConst.m_conscript) {
         return m_conscript < otherConst.m_conscript;
     }
 
-    switch (m_oper)
-    {
-    case opIntConst:
-        return m_value.i < otherConst.m_value.i;
+    switch (m_oper) {
+    case opIntConst: return m_value.i < otherConst.m_value.i;
+    case opLongConst: return m_value.ll < otherConst.m_value.ll;
+    case opFltConst: return m_value.d < otherConst.m_value.d;
+    case opStrConst: return m_string < otherConst.m_string;
 
-    case opLongConst:
-        return m_value.ll < otherConst.m_value.ll;
-
-    case opFltConst:
-        return m_value.d < otherConst.m_value.d;
-
-    case opStrConst:
-        return m_string < otherConst.m_string;
-
-    default:
-        LOG_FATAL("Invalid operator %1", operToString(m_oper));
+    default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     return false;
 }
 
 
-bool Const::operator*=(const Exp& o) const
+bool Const::operator*=(const Exp &o) const
 {
     const Exp *other = &o;
 
@@ -154,7 +144,7 @@ SharedExp Const::clone() const
 }
 
 
-void Const::printNoQuotes(OStream& os) const
+void Const::printNoQuotes(OStream &os) const
 {
     if (m_oper == opStrConst) {
         os << m_string;
@@ -165,7 +155,7 @@ void Const::printNoQuotes(OStream& os) const
 }
 
 
-bool Const::operator==(const Exp& other) const
+bool Const::operator==(const Exp &other) const
 {
     // Note: the casts of o to Const& are needed, else op is protected! Duh.
     if (other.getOper() == opWild) {
@@ -184,27 +174,17 @@ bool Const::operator==(const Exp& other) const
         return false;
     }
 
-    if ((m_conscript && (m_conscript != static_cast<const Const&>(other).m_conscript)) ||
+    if ((m_conscript && (m_conscript != static_cast<const Const &>(other).m_conscript)) ||
         static_cast<const Const &>(other).m_conscript) {
-            return false;
+        return false;
     }
 
-    switch (m_oper)
-    {
-    case opIntConst:
-        return m_value.i == static_cast<const Const &>(other).m_value.i;
-
-    case opLongConst:
-        return m_value.ll == static_cast<const Const &>(other).m_value.ll;
-
-    case opFltConst:
-        return m_value.d == static_cast<const Const &>(other).m_value.d;
-
-    case opStrConst:
-        return m_string == static_cast<const Const &>(other).m_string;
-
-    default:
-        LOG_FATAL("Invalid operator %1", operToString(m_oper));
+    switch (m_oper) {
+    case opIntConst: return m_value.i == static_cast<const Const &>(other).m_value.i;
+    case opLongConst: return m_value.ll == static_cast<const Const &>(other).m_value.ll;
+    case opFltConst: return m_value.d == static_cast<const Const &>(other).m_value.d;
+    case opStrConst: return m_string == static_cast<const Const &>(other).m_string;
+    default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
     return false;
@@ -214,17 +194,15 @@ bool Const::operator==(const Exp& other) const
 SharedType Const::ascendType()
 {
     if (m_type->resolvesToVoid()) {
-        switch (m_oper)
-        {
-            // could be anything, Boolean, Character, we could be bit fiddling pointers for all we know - trentw
-        case opIntConst:  return VoidType::get();
+        switch (m_oper) {
+            // could be anything, Boolean, Character, we could be bit fiddling pointers for all we
+            // know - trentw
+        case opIntConst: return VoidType::get();
         case opLongConst: return m_type = IntegerType::get(STD_SIZE * 2, Sign::Unknown);
-        case opFltConst:  return m_type = FloatType::get(64);
-        case opStrConst:  return m_type = PointerType::get(CharType::get());
+        case opFltConst: return m_type = FloatType::get(64);
+        case opStrConst: return m_type = PointerType::get(CharType::get());
         case opFuncConst: return m_type = PointerType::get(FuncType::get());
-            // More needed here?
-        default:
-            assert(false); // Bad Const
+        default: assert(false); // Bad Const
         }
     }
 
@@ -232,25 +210,25 @@ SharedType Const::ascendType()
 }
 
 
-void Const::descendType(SharedType parentType, bool& changed, Statement *)
+void Const::descendType(SharedType parentType, bool &changed, Statement *)
 {
     bool thisCh = false;
 
     m_type = m_type->meetWith(parentType, thisCh);
-    changed    |= thisCh;
+    changed |= thisCh;
 
     if (thisCh) {
         // May need to change the representation
         if (m_type->resolvesToFloat()) {
             if (m_oper == opIntConst) {
-                m_oper = opFltConst;
-                m_type = FloatType::get(64);
-                float f = *reinterpret_cast<float *>(&m_value.i);
+                m_oper    = opFltConst;
+                m_type    = FloatType::get(64);
+                float f   = *reinterpret_cast<float *>(&m_value.i);
                 m_value.d = static_cast<double>(f);
             }
             else if (m_oper == opLongConst) {
-                m_oper = opFltConst;
-                m_type = FloatType::get(64);
+                m_oper    = opFltConst;
+                m_type    = FloatType::get(64);
                 m_value.d = *reinterpret_cast<double *>(&m_value.ll);
             }
         }
@@ -266,13 +244,13 @@ bool Const::acceptVisitor(ExpVisitor *v)
 }
 
 
-SharedExp Const::acceptPreModifier(ExpModifier* , bool& )
+SharedExp Const::acceptPreModifier(ExpModifier *, bool &)
 {
     return shared_from_this();
 }
 
 
-SharedExp Const::acceptPostModifier(ExpModifier* mod)
+SharedExp Const::acceptPostModifier(ExpModifier *mod)
 {
     return mod->postModify(access<Const>());
 }

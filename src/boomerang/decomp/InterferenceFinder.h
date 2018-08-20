@@ -29,12 +29,13 @@ public:
     InterferenceFinder(ProcCFG *cfg);
 
 public:
-    void findInterferences(ConnectionGraph& interferences);
+    void findInterferences(ConnectionGraph &interferences);
 
 private:
-    void appendBBs(std::list<BasicBlock *>& worklist, std::set<BasicBlock *>& workset);
+    void appendBBs(std::list<BasicBlock *> &worklist, std::set<BasicBlock *> &workset);
 
-    void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *>& workList, std::set<BasicBlock *>& workSet);
+    void updateWorkListRev(BasicBlock *currBB, std::list<BasicBlock *> &workList,
+                           std::set<BasicBlock *> &workSet);
 
 private:
     ProcCFG *m_cfg;

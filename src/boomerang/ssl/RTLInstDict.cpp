@@ -9,34 +9,31 @@
 #pragma endregion License
 #include "RTLInstDict.h"
 
-
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/parser/SSLParser.h"
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
 
 
-
 TableEntry::TableEntry()
     : m_rtl(Address::INVALID)
-{
-}
+{}
 
 
-TableEntry::TableEntry(const std::list<QString>& params, const RTL& rtl)
+TableEntry::TableEntry(const std::list<QString> &params, const RTL &rtl)
     : m_rtl(rtl)
 {
     std::copy(params.begin(), params.end(), std::back_inserter(m_params));
 }
 
 
-int TableEntry::appendRTL(const std::list<QString>& params, const RTL& rtl)
+int TableEntry::appendRTL(const std::list<QString> &params, const RTL &rtl)
 {
     if (!std::equal(m_params.begin(), m_params.end(), params.begin())) {
         return -1;
@@ -47,7 +44,7 @@ int TableEntry::appendRTL(const std::list<QString>& params, const RTL& rtl)
 }
 
 
-int RTLInstDict::insert(const QString& name, std::list<QString>& params, const RTL& rtl)
+int RTLInstDict::insert(const QString &name, std::list<QString> &params, const RTL &rtl)
 {
     QString opcode = name.toUpper();
 
@@ -64,7 +61,7 @@ int RTLInstDict::insert(const QString& name, std::list<QString>& params, const R
 }
 
 
-bool RTLInstDict::readSSLFile(const QString& SSLFileName)
+bool RTLInstDict::readSSLFile(const QString &SSLFileName)
 {
     // emptying the rtl dictionary
     idict.clear();
@@ -79,7 +76,7 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 #else
                         false
 #endif
-                        );
+    );
 
     if (theParser.theScanner == nullptr) {
         return false;
@@ -103,7 +100,7 @@ bool RTLInstDict::readSSLFile(const QString& SSLFileName)
 }
 
 
-void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
+void RTLInstDict::addRegister(const QString &name, int id, int size, bool flt)
 {
     RegMap[name] = id;
 
@@ -116,14 +113,14 @@ void RTLInstDict::addRegister(const QString& name, int id, int size, bool flt)
 }
 
 
-void RTLInstDict::print(OStream& os /*= std::cout*/)
+void RTLInstDict::print(OStream &os /*= std::cout*/)
 {
-    for (auto& elem : idict) {
+    for (auto &elem : idict) {
         // print the instruction name
         os << (elem).first << "  ";
 
         // print the parameters
-        const std::list<QString>& params((elem).second.m_params);
+        const std::list<QString> &params((elem).second.m_params);
         int i = params.size();
 
         for (auto s = params.begin(); s != params.end(); ++s, i--) {
@@ -133,7 +130,7 @@ void RTLInstDict::print(OStream& os /*= std::cout*/)
         os << "\n";
 
         // print the RTL
-        RTL& rtlist = (elem).second.m_rtl;
+        RTL &rtlist = (elem).second.m_rtl;
         rtlist.print(os);
         os << "\n";
     }
@@ -142,7 +139,7 @@ void RTLInstDict::print(OStream& os /*= std::cout*/)
 
 void RTLInstDict::fixupParams()
 {
-    for (ParamEntry& param : DetParamMap) {
+    for (ParamEntry &param : DetParamMap) {
         param.m_mark = 0;
     }
 
@@ -151,19 +148,22 @@ void RTLInstDict::fixupParams()
     for (auto iter = DetParamMap.begin(); iter != DetParamMap.end(); ++iter) {
         if (iter.value().m_kind == PARAM_VARIANT) {
             std::list<QString> funcParams;
-            bool               haveCount = false;
+            bool haveCount = false;
             fixupParamsSub(iter.key(), funcParams, haveCount, mark++);
         }
     }
 }
 
 
-void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParams, bool& haveCount, int mark)
+void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount,
+                                 int mark)
 {
-    ParamEntry& param = DetParamMap[s];
+    ParamEntry &param = DetParamMap[s];
 
     if (param.m_params.empty()) {
-        LOG_ERROR("Error in SSL File: Variant operand %1 has no branches. Well that's really useful...", s);
+        LOG_ERROR("Error in SSL File: Variant operand %1 has no branches. "
+                  "Well that's really useful...",
+                  s);
         return;
     }
 
@@ -173,8 +173,8 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
 
     param.m_mark = mark;
 
-    for (const QString& name : param.m_params) {
-        ParamEntry& sub = DetParamMap[name];
+    for (const QString &name : param.m_params) {
+        ParamEntry &sub = DetParamMap[name];
 
         if (sub.m_kind == PARAM_VARIANT) {
             fixupParamsSub(name, funcParams, haveCount, mark);
@@ -194,13 +194,17 @@ void RTLInstDict::fixupParamsSub(const QString& s, std::list<QString>& funcParam
         }
 
         if (funcParams.size() != sub.m_funcParams.size()) {
-            LOG_ERROR("Error in SSL File: Variant operand %1 does not have a fixed number of functional parameters:", s);
-            LOG_ERROR("Expected %1 parameters, but branch %2 has %3 parameters.", funcParams.size(), name, sub.m_funcParams.size());
+            LOG_ERROR("Error in SSL File: Variant operand %1 does not have a fixed number of "
+                      "functional parameters:",
+                      s);
+            LOG_ERROR("Expected %1 parameters, but branch %2 has %3 parameters.", funcParams.size(),
+                      name, sub.m_funcParams.size());
         }
         else if ((funcParams != sub.m_funcParams) && (sub.m_asgn != nullptr)) {
             /* Rename so all the parameter names match */
-            for (auto i = funcParams.begin(), j = sub.m_funcParams.begin(); i != funcParams.end(); i++, j++) {
-                Location  paramLoc(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
+            for (auto i = funcParams.begin(), j = sub.m_funcParams.begin(); i != funcParams.end();
+                 i++, j++) {
+                Location paramLoc(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
                 SharedExp replace = Location::param(*i);
                 sub.m_asgn->searchAndReplace(paramLoc, replace);
             }
@@ -226,17 +230,17 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
         LOG_ERROR("No entry for '%1' in RTL dictionary", name);
         it = idict.find("NOP");
 
-		if (it == idict.end()) {
+        if (it == idict.end()) {
             LOG_ERROR("No entry for 'NOP' in RTL dictionary");
-			return { hlpr, 0 }; // At least, don't cause segfault
-		}
+            return { hlpr, 0 }; // At least, don't cause segfault
+        }
     }
 
     return { hlpr, (it->second).m_params.size() };
 }
 
 
-bool RTLInstDict::partialType(Exp *exp, Type& ty)
+bool RTLInstDict::partialType(Exp *exp, Type &ty)
 {
     if (exp->isSizeCast()) {
         ty = *IntegerType::get(exp->access<Const, 1>()->getInt());
@@ -252,8 +256,8 @@ bool RTLInstDict::partialType(Exp *exp, Type& ty)
 }
 
 
-std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString& name, Address natPC,
-                                                    const std::vector<SharedExp>& actuals)
+std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address natPC,
+                                                 const std::vector<SharedExp> &actuals)
 {
     // TODO try to retrieve fast instruction mappings
     // before trying the verbose instructions
@@ -262,14 +266,14 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString& name, Address na
         return nullptr; // instruction not found
     }
 
-    TableEntry& entry(dict_entry->second);
+    TableEntry &entry(dict_entry->second);
     return instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
 }
 
 
-std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC,
-                                             std::list<QString>& params,
-                                             const std::vector<SharedExp>& actuals)
+std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
+                                                 std::list<QString> &params,
+                                                 const std::vector<SharedExp> &actuals)
 {
     assert(params.size() == actuals.size());
 
@@ -280,12 +284,13 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC
     // Iterate through each Statement of the new list of stmts
     for (Statement *ss : *newList) {
         // Search for the formals and replace them with the actuals
-        auto param = params.begin();
+        auto param                                    = params.begin();
         std::vector<SharedExp>::const_iterator actual = actuals.begin();
 
-        for ( ; param != params.end(); ++param, ++actual) {
+        for (; param != params.end(); ++param, ++actual) {
             /* Simple parameter - just construct the formal to search for */
-            Location formal(opParam, Const::get(*param), nullptr); // Location::param(param->c_str());
+            Location formal(opParam, Const::get(*param),
+                            nullptr); // Location::param(param->c_str());
             ss->searchAndReplace(formal, *actual);
             // delete formal;
         }
@@ -312,18 +317,18 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL& existingRTL, Address natPC
 /* Small struct for transformPostVars */
 struct transPost
 {
-    bool       used; // If the base expression (e.g. r[0]) is used
+    bool used; // If the base expression (e.g. r[0]) is used
     // Important because if not, we don't have to make any
     // substitutions at all
-    bool       isNew; // Not sure (MVE)
-    SharedExp  tmp;   // The temp to replace r[0]' with
-    SharedExp  post;  // The whole postvar expression. e.g. r[0]'
-    SharedExp  base;  // The base expression (e.g. r[0])
-    SharedType type;  // The type of the temporary (needed for the final assign)
+    bool isNew;      // Not sure (MVE)
+    SharedExp tmp;   // The temp to replace r[0]' with
+    SharedExp post;  // The whole postvar expression. e.g. r[0]'
+    SharedExp base;  // The base expression (e.g. r[0])
+    SharedType type; // The type of the temporary (needed for the final assign)
 };
 
 
-void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
+void RTLInstDict::transformPostVars(RTL &rts, bool optimise)
 {
     // Map from var (could be any expression really) to details
     std::map<SharedExp, transPost, lessExpStar> vars;
@@ -337,22 +342,23 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
         SharedExp ss;
 
         if (rt->isAssign()) {
-            Assign    *rt_asgn = static_cast<Assign *>(rt);
-            SharedExp lhs = rt_asgn->getLeft();
-            SharedExp rhs = rt_asgn->getRight();
+            Assign *rt_asgn = static_cast<Assign *>(rt);
+            SharedExp lhs   = rt_asgn->getLeft();
+            SharedExp rhs   = rt_asgn->getRight();
 
             // Look for assignments to post-variables
             if (lhs && lhs->isPostVar()) {
                 if (vars.find(lhs) == vars.end()) {
                     // Add a record in the map for this postvar
-                    transPost& el = vars[lhs];
-                    el.used = false;
-                    el.type = rt_asgn->getType();
+                    transPost &el = vars[lhs];
+                    el.used       = false;
+                    el.type       = rt_asgn->getType();
 
                     // Constuct a temporary. We should probably be smarter and actually check
                     // that it's not otherwise used here.
-                    QString tmpname = QString("%1%2post").arg(el.type->getTempName()).arg((tmpcount++));
-                    el.tmp = Location::tempOf(Const::get(tmpname));
+                    QString
+                        tmpname = QString("%1%2post").arg(el.type->getTempName()).arg((tmpcount++));
+                    el.tmp      = Location::tempOf(Const::get(tmpname));
 
                     // Keep a copy of the referrent. For example, if the lhs is r[0]', base is r[0]
                     el.base  = lhs->getSubExp1();
@@ -368,11 +374,12 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
                 }
             }
 
-            // For an assignment, the two expressions to search are the left and right hand sides (could just put the
-            // whole assignment on, I suppose)
+            // For an assignment, the two expressions to search are the left and right hand sides
+            // (could just put the whole assignment on, I suppose)
             assert(lhs != nullptr);
             assert(rhs != nullptr);
-            ss = Binary::get(opList, lhs->clone(), Binary::get(opList, rhs->clone(), Terminal::get(opNil)));
+            ss = Binary::get(opList, lhs->clone(),
+                             Binary::get(opList, rhs->clone(), Terminal::get(opNil)));
         }
         else if (rt->isFlagAssign()) {
             Assign *rt_asgn = static_cast<Assign *>(rt);
@@ -384,14 +391,14 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
         }
 
         /* Look for usages of post-variables' referents
-         * Trickier than you'd think, as we need to make sure to skip over the post-variables themselves. ie match
-         * r[0] but not r[0]'
-         * Note: back with SemStrs, we could use a match expression which was a wildcard prepended to the base
-         * expression; this would match either the base (r[0]) or the post-var (r[0]').
-         * Can't really use this with Exps, so we search twice; once for the base, and once for the post, and if we
-         * get more with the former, then we have a use of the base (consider r[0] + r[0]')
+         * Trickier than you'd think, as we need to make sure to skip over the post-variables
+         * themselves. ie match r[0] but not r[0]' Note: back with SemStrs, we could use a match
+         * expression which was a wildcard prepended to the base expression; this would match either
+         * the base (r[0]) or the post-var (r[0]'). Can't really use this with Exps, so we search
+         * twice; once for the base, and once for the post, and if we get more with the former, then
+         * we have a use of the base (consider r[0] + r[0]')
          */
-        for (auto& var : vars) {
+        for (auto &var : vars) {
             if (var.second.isNew) {
                 // Make sure we don't match a var in its defining statement
                 var.second.isNew = false;
@@ -419,7 +426,8 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
                 s->searchAll(*var.second.post, res2);
 
                 // Each match of a post will also match the base.
-                // But if there is a bare (non-post) use of the base, there will be a result in res1 that is not in res2
+                // But if there is a bare (non-post) use of the base, there will be a result in res1
+                // that is not in res2
                 if (res1.size() > res2.size()) {
                     var.second.used = true;
                 }
@@ -429,7 +437,7 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
 
     // Second pass: Replace post-variables with temporaries where needed
     for (Statement *rt : rts) {
-        for (auto& var : vars) {
+        for (auto &var : vars) {
             if (var.second.used) {
                 rt->searchAndReplace(*var.first, var.second.tmp);
             }
@@ -441,8 +449,9 @@ void RTLInstDict::transformPostVars(RTL& rts, bool optimise)
 
     // Finally: Append assignments where needed from temps to base vars
     // Example: esp' = esp-4; m[esp'] = modrm; FLAG(esp)
-    // all the esp' are replaced with say tmp1, you need a "esp = tmp1" at the end to actually make the change
-    for (auto& var : vars) {
+    // all the esp' are replaced with say tmp1, you need a "esp = tmp1" at the end to actually make
+    // the change
+    for (auto &var : vars) {
         if (var.second.used) {
             Assign *te = new Assign(var.second.type, var.second.base->clone(), var.second.tmp);
             rts.push_back(te);

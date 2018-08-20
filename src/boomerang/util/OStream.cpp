@@ -9,10 +9,10 @@
 #pragma endregion License
 #include "OStream.h"
 
-#include <QTextStream>
 #include <QFile>
-#include <QString>
 #include <QSaveFile>
+#include <QString>
+#include <QTextStream>
 
 
 OStream::OStream(QFile *tgt)
@@ -30,7 +30,7 @@ OStream::OStream(FILE *tgt)
 {}
 
 
-OStream::OStream(QSaveFile* tgt)
+OStream::OStream(QSaveFile *tgt)
     : m_os(new QTextStream(tgt))
 {}
 
@@ -41,56 +41,56 @@ OStream::~OStream()
 }
 
 
-OStream& OStream::operator<<(const QString& rhs)
+OStream &OStream::operator<<(const QString &rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(const QTextStreamManipulator& rhs)
+OStream &OStream::operator<<(const QTextStreamManipulator &rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(size_t rhs)
+OStream &OStream::operator<<(size_t rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(int rhs)
+OStream &OStream::operator<<(int rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(unsigned int rhs)
+OStream &OStream::operator<<(unsigned int rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(double rhs)
+OStream &OStream::operator<<(double rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(const char* rhs)
+OStream &OStream::operator<<(const char *rhs)
 {
     *m_os << rhs;
     return *this;
 }
 
 
-OStream& OStream::operator<<(char rhs)
+OStream &OStream::operator<<(char rhs)
 {
     *m_os << rhs;
     return *this;

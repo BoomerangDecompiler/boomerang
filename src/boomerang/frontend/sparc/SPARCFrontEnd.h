@@ -26,13 +26,13 @@ class BOOMERANG_API SPARCFrontEnd : public DefaultFrontEnd
 public:
     /// \copydoc IFrontEnd::IFrontEnd
     SPARCFrontEnd(BinaryFile *binaryFile, Prog *prog);
-    SPARCFrontEnd(const SPARCFrontEnd& other) = delete;
-    SPARCFrontEnd(SPARCFrontEnd&& other) = default;
+    SPARCFrontEnd(const SPARCFrontEnd &other) = delete;
+    SPARCFrontEnd(SPARCFrontEnd &&other)      = default;
 
     virtual ~SPARCFrontEnd() = default;
 
-    SPARCFrontEnd& operator=(const SPARCFrontEnd&) = delete;
-    SPARCFrontEnd& operator=(SPARCFrontEnd&&) = default;
+    SPARCFrontEnd &operator=(const SPARCFrontEnd &) = delete;
+    SPARCFrontEnd &operator=(SPARCFrontEnd &&) = default;
 
 public:
     /**
@@ -50,15 +50,15 @@ public:
      * \param gotMain set if main found
      * \returns Native pointer if found; Address::INVALID if not
      */
-    virtual Address findMainEntryPoint(bool& gotMain) override;
+    virtual Address findMainEntryPoint(bool &gotMain) override;
 
 private:
     /**
      * Check if delay instruction can be optimized.
      *
-     * Determines if a delay instruction is exactly the same as the instruction immediately preceding the
-     * destination of a CTI; i.e. has been copied from the real destination to the delay slot as an
-     * optimisation
+     * Determines if a delay instruction is exactly the same as the instruction immediately
+     * preceding the destination of a CTI; i.e. has been copied from the real destination to the
+     * delay slot as an optimisation
      *
      * \param src        the logical source address of a CTI
      * \param dest       the logical destination address of the CTI
@@ -105,105 +105,110 @@ private:
      * that must be decoded (if this destination has not already been visited).
      * but newBB may be changed if the destination of the branch is in the middle of an existing
      * BB. It will then be changed to point to a new BB beginning with the dest
-     * \param newBB - the new basic block delimited by the branch instruction. May be nullptr if this block has been
-     *        built before.
-     * \param dest - the destination being branched to
-     * \param hiAddress - the last address in the current procedure
-     * \param cfg - the CFG of the current procedure
+     * \param newBB the new basic block delimited by the branch instruction. May be nullptr if
+     *              this block has been built before.
+     * \param dest the destination being branched to
+     * \param hiAddress the last address in the current procedure
+     * \param cfg the CFG of the current procedure
      * \param tq Object managing the target queue
      */
-    void handleBranch(Address dest, Address hiAddress, BasicBlock *& newBB, ProcCFG *cfg, TargetQueue& tq);
+    void handleBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
+                      TargetQueue &tq);
 
     /**
      * Records the fact that there is a procedure at a given address. Also adds the out edge to the
-     * lexical successor of the call site (taking into consideration the delay slot and possible UNIMP
-     * instruction).
+     * lexical successor of the call site (taking into consideration the delay slot and possible
+     * UNIMP instruction).
      *
-     * \param  proc - caller - only used to access Prog
-     * \param  dest - the address of the callee
-     * \param  callBB - the basic block delimited by the call
-     * \param  cfg - CFG of the enclosing procedure
-     * \param  address - the address of the call instruction
-     * \param  offset - the offset from the call instruction to which an outedge must be added. A value of 0
-     *         means no edge is to be added.
+     * \param  proc caller - only used to access Prog
+     * \param  dest the address of the callee
+     * \param  callBB the basic block delimited by the call
+     * \param  cfg CFG of the enclosing procedure
+     * \param  address the address of the call instruction
+     * \param  offset the offset from the call instruction to which an outedge must be added. A
+     *                value of 0 means no edge is to be added.
      */
-    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address, int offset = 0);
+    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address,
+                    int offset = 0);
 
     /**
      * This is the stub for cases of DCTI couples that we haven't written
      * analysis code for yet. It simply displays an informative warning and returns.
-     * \param         addr - the address of the first CTI in the couple
-     *
+     * \param addr the address of the first CTI in the couple
      */
     void case_unhandled_stub(Address addr);
 
     /**
      * Handles a call instruction
-     * \param address - the native address of the call instruction
-     * \param inst - the info summaries when decoding the call instruction
-     * \param delay_inst - the info summaries when decoding the delay instruction
-     * \param BB_rtls - the list of RTLs currently built for the BB under construction
-     * \param proc - the enclosing procedure
-     * \param callList - a list of pointers to CallStatements for procs yet to be processed
-     * \param os - output stream for rtls
-     * \param isPattern - true if the call is an idiomatic pattern (e.g. a move_call_move pattern)
-     * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
-     * \returns              true if next instruction is to be fetched sequentially from this one
+     * \param address the native address of the call instruction
+     * \param inst the info summaries when decoding the call instruction
+     * \param delay_inst the info summaries when decoding the delay instruction
+     * \param BB_rtls the list of RTLs currently built for the BB under construction
+     * \param proc the enclosing procedure
+     * \param callList a list of pointers to CallStatements for procs yet to be processed
+     * \param os output stream for rtls
+     * \param isPattern true if the call is an idiomatic pattern (e.g. a move_call_move pattern)
+     * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
+     * \returns true if next instruction is to be fetched sequentially from this one
      */
-    bool case_CALL(Address& address, DecodeResult& inst, DecodeResult& delay_inst, std::unique_ptr<RTLList> BB_rtls,
-                   UserProc *proc, std::list<CallStatement *>& callList, bool isPattern = false);
+    bool case_CALL(Address &address, DecodeResult &inst, DecodeResult &delay_inst,
+                   std::unique_ptr<RTLList> BB_rtls, UserProc *proc,
+                   std::list<CallStatement *> &callList, bool isPattern = false);
 
     /**
      * Handles a non-call, static delayed (SD) instruction
-     * \param address - the native address of the SD
-     * \param delta - the offset of the above address from the logical address at which the procedure starts
-     *                (i.e. the one given by dis)
-     * \param inst - the info summaries when decoding the SD instruction
+     * \param address the native address of the SD
+     * \param delta the offset of the above address from the logical address at which the
+     *              procedure starts (i.e. the one given by dis)
+     * \param inst the info summaries when decoding the SD instruction
      * \param delay_inst - the info summaries when decoding the delay instruction
-     * \param BB_rtls - the list of RTLs currently built for the BB under construction
-     * \param cfg - the CFG of the enclosing procedure
-     * \param tq - Object managing the target queue
-     * \param os - output stream for rtls
-     * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
+     * \param BB_rtls the list of RTLs currently built for the BB under construction
+     * \param cfg the CFG of the enclosing procedure
+     * \param tq Object managing the target queue
+     * \param os output stream for rtls
+     * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
      *
      */
-    void case_SD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
+    void case_SD(Address &address, ptrdiff_t delta, Address hiAddress, DecodeResult &inst,
+                 DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
+                 TargetQueue &tq);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)
-     * \param address - the native address of the DD
-     * \param delta - the offset of the above address from the logical address at which the procedure
-     *                starts (i.e. the one given by dis)
-     * \param inst - the info summaries when decoding the SD instruction
-     * \param delay_inst - the info summaries when decoding the delay instruction
-     * \param BB_rtls - the list of RTLs currently built for the BB under construction
+     * \param address the native address of the DD
+     * \param delta the offset of the above address from the logical address at which the
+     *              procedure starts (i.e. the one given by dis)
+     * \param inst the info summaries when decoding the SD instruction
+     * \param delay_inst the info summaries when decoding the delay instruction
+     * \param BB_rtls the list of RTLs currently built for the BB under construction
      * \param tq Object managing the target queue
      * \param proc pointer to the current Proc object
-     * \param callList - a set of pointers to CallStatements for procs yet to be processed
-     * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
-     * \returns              true if next instruction is to be fetched sequentially from this one
+     * \param callList a set of pointers to CallStatements for procs yet to be processed
+     * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
+     * \returns true if next instruction is to be fetched sequentially from this one
      */
-    bool case_DD(Address& address, ptrdiff_t delta, DecodeResult& inst, DecodeResult& delay_inst,
-                 std::unique_ptr<RTLList> BB_rtls, TargetQueue& tq, UserProc *proc, std::list<CallStatement *>& callList);
+    bool case_DD(Address &address, ptrdiff_t delta, DecodeResult &inst, DecodeResult &delay_inst,
+                 std::unique_ptr<RTLList> BB_rtls, TargetQueue &tq, UserProc *proc,
+                 std::list<CallStatement *> &callList);
 
 
     /**
      * Handles all Static Conditional Delayed non-anulled branches
-     * \param   address - the native address of the DD
-     * \param   delta - the offset of the above address from the logical address at which the procedure starts
-     *                  (i.e. the one given by dis)
-     * \param   hiAddress - first address outside this code section
-     * \param   inst - the info summaries when decoding the SD instruction
-     * \param   delay_inst - the info summaries when decoding the delay instruction
-     * \param   BB_rtls - the list of RTLs currently built for the BB under construction
-     * \param   cfg - the CFG of the enclosing procedure
-     * \param   tq Object managing the target queue
+     * \param address    the native address of the DD
+     * \param delta      the offset of the above address from the logical address at which the
+     *                   procedure starts (i.e. the one given by dis)
+     * \param hiAddress  first address outside this code section
+     * \param inst       the info summaries when decoding the SD instruction
+     * \param delay_inst the info summaries when decoding the delay instruction
+     * \param BB_rtls    the list of RTLs currently built for the BB under construction
+     * \param cfg        the CFG of the enclosing procedure
+     * \param tq         Object managing the target queue
      * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
      * \returns true if next instruction is to be fetched sequentially from this one
      */
-    bool case_SCD(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                  std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
+    bool case_SCD(Address &address, ptrdiff_t delta, Address hiAddress, DecodeResult &inst,
+                  DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
+                  TargetQueue &tq);
 
     /**
      * Handles all static conditional delayed anulled branches followed by
@@ -220,46 +225,48 @@ private:
      * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
      * \returns          true if next instruction is to be fetched sequentially from this one
      */
-    bool case_SCDAN(Address& address, ptrdiff_t delta, Address hiAddress, DecodeResult& inst, DecodeResult& delay_inst,
-                    std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue& tq);
+    bool case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddress, DecodeResult &inst,
+                    DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
+                    TargetQueue &tq);
 
     /**
      * Emit a null RTL with the given address.
      * \param rtls List of RTLs to append this instruction to
      * \param instAddr Native address of this instruction
      */
-    void emitNop(RTLList& rtls, Address instAddr);
+    void emitNop(RTLList &rtls, Address instAddr);
 
     /**
      * Emit the RTL for a call $+8 instruction, which is merely %o7 = %pc
-     * \note   Assumes that the delay slot RTL has already been pushed; we must push the semantics BEFORE that RTL,
-     *         since the delay slot instruction may use %o7. Example:
-     *         CALL $+8            ! This code is common in startup code
-     *         ADD     %o7, 20, %o0
+     * \note   Assumes that the delay slot RTL has already been pushed; we must push the semantics
+     * BEFORE that RTL, since the delay slot instruction may use %o7. Example: CALL $+8            !
+     * This code is common in startup code ADD     %o7, 20, %o0
      * \param rtls list of RTLs to append to
      * \param addr native address for the RTL
      */
-    void emitCopyPC(RTLList& rtls, Address addr);
+    void emitCopyPC(RTLList &rtls, Address addr);
 
     // Append one assignment to a list of RTLs
-    void appendAssignment(const SharedExp& lhs, const SharedExp& rhs, SharedType type, Address addr, RTLList& rtls);
+    void appendAssignment(const SharedExp &lhs, const SharedExp &rhs, SharedType type, Address addr,
+                          RTLList &rtls);
 
     /*
      * Small helper function to build an expression with
      * *128* m[m[r[14]+64]] = m[r[8]] OP m[r[9]]
      */
-    void quadOperation(Address addr, RTLList& lrtl, OPER op);
+    void quadOperation(Address addr, RTLList &lrtl, OPER op);
 
     /**
      * Checks for SPARC specific helper functions like .urem, which have specific sematics.
-     * Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to lrtl, and return true
-     * \note   This needs to be handled in a resourcable way.
+     * Determine if this is a helper function, e.g. .mul. If so, append the appropriate RTLs to
+     * lrtl, and return true
+     * \note This needs to be handled in a resourcable way.
      * \param  dest destination of the call (native address)
      * \param  addr address of current instruction (native addr)
      * \param  lrtl list of RTL* for current BB
      * \returns True if a helper function was found and handled; false otherwise
      */
-    bool isHelperFunc(Address dest, Address addr, RTLList& lrtl) override;
+    bool isHelperFunc(Address dest, Address addr, RTLList &lrtl) override;
 
     /**
      * Another small helper function to generate either (for V9):
@@ -271,11 +278,11 @@ private:
      * 32* r8 = r[tmp]
      * 32* r9 = %Y
      */
-    void gen32op32gives64(OPER op, RTLList& lrtl, Address addr);
+    void gen32op32gives64(OPER op, RTLList &lrtl, Address addr);
 
     /// This is the long version of helperFunc (i.e. -f not used).
     /// This does the complete 64 bit semantics
-    bool helperFuncLong(Address dest, Address addr, RTLList& lrtl, QString& name);
+    bool helperFuncLong(Address dest, Address addr, RTLList &lrtl, QString &name);
 
 private:
     // This struct represents a single nop instruction.
