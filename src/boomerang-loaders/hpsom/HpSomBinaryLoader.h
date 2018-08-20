@@ -18,20 +18,20 @@
 
 struct import_entry
 {
-    int   name;
+    int name;
     short reserved2;
-    Byte  type;
-    Byte  reserved1;
+    Byte type;
+    Byte reserved1;
 };
 
 struct export_entry
 {
-    int   next;
-    int   name;
-    int   value;
-    int   size; // Also misc_info
-    Byte  type;
-    char  reserved1;
+    int next;
+    int name;
+    int value;
+    int size; // Also misc_info
+    Byte type;
+    char reserved1;
     short module_index;
 };
 
@@ -39,27 +39,27 @@ struct space_dictionary_record
 {
     unsigned name;
     unsigned flags;
-    int      space_number;
-    int      subspace_index;
+    int space_number;
+    int subspace_index;
     unsigned subspace_quantity;
-    int      loader_fix_index;
+    int loader_fix_index;
     unsigned loader_fix_quantity;
-    int      init_pointer_index;
+    int init_pointer_index;
     unsigned init_pointer_quantity;
 };
 
 struct subspace_dictionary_record
 {
-    int      space_index;
+    int space_index;
     unsigned flags;
-    int      file_loc_init_value;
+    int file_loc_init_value;
     unsigned initialization_length;
     unsigned subspace_start;
     unsigned subspace_length;
     unsigned alignment;
     unsigned name;
-    int      fixup_request_index;
-    int      fixup_request_quantity;
+    int fixup_request_index;
+    int fixup_request_quantity;
 };
 
 struct plt_record
@@ -71,7 +71,7 @@ struct plt_record
 struct symElem
 {
     const char *name; // Simple symbol table entry
-    Address    value;
+    Address value;
 };
 
 
@@ -81,7 +81,7 @@ struct symElem
 class HpSomBinaryLoader : public IFileLoader
 {
 public:
-    HpSomBinaryLoader();    // Constructor
+    HpSomBinaryLoader(); // Constructor
     virtual ~HpSomBinaryLoader();
 
 public:
@@ -89,10 +89,10 @@ public:
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
-    int canLoad(QIODevice& dev) const override;
+    int canLoad(QIODevice &dev) const override;
 
     /// \copydoc IFileLoader::loadFromMemory
-    bool loadFromMemory(QByteArray& data) override;
+    bool loadFromMemory(QByteArray &data) override;
 
     /// \copydoc IFileLoader::unload
     void unload() override;
@@ -136,14 +136,13 @@ private:
     std::pair<Address, int> getSubspaceInfo(const char *ssname);
 
     BinaryImage *m_image;
-    BinarySymbolTable *m_symbols;  ///< Symbol table object
+    BinarySymbolTable *m_symbols; ///< Symbol table object
 
     // file format info
     struct header *m_header;
 
-    std::set<Address> m_imports;   ///< Set of imported proc addr's
-
+    std::set<Address> m_imports; ///< Set of imported proc addr's
 
 public:
-    void processSymbols(const QByteArray& imgdata);
+    void processSymbols(const QByteArray &imgdata);
 };

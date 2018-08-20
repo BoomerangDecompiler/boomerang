@@ -19,7 +19,6 @@
 struct mach_header;
 
 
-
 // Objective-C stuff
 class ObjcIvar
 {
@@ -59,7 +58,7 @@ class ObjcAccessInterface
 public:
     virtual ~ObjcAccessInterface() {}
 
-    virtual std::map<QString, ObjcModule>& getObjcModules() = 0;
+    virtual std::map<QString, ObjcModule> &getObjcModules() = 0;
 };
 
 
@@ -78,10 +77,10 @@ public:
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::loadFromMemory
-    bool loadFromMemory(QByteArray& data) override;
+    bool loadFromMemory(QByteArray &data) override;
 
     /// \copydoc IFileLoader::canLoad
-    int canLoad(QIODevice& dev) const override;
+    int canLoad(QIODevice &dev) const override;
 
     /// \copydoc IFileLoader::unload
     void unload() override;
@@ -105,7 +104,7 @@ public:
 
     bool isLibrary() const;
 
-    std::map<QString, ObjcModule>& getObjcModules() override  { return modules; }
+    std::map<QString, ObjcModule> &getObjcModules() override { return modules; }
 
 protected:
     SWord machORead2(const void *ps) const;
@@ -120,7 +119,7 @@ private:
     void findJumps(Address curr);
 
 private:
-    char *base = nullptr;                    ///< Beginning of the loaded image
+    char *base           = nullptr; ///< Beginning of the loaded image
     Address entrypoint   = Address::INVALID;
     Address loaded_addr  = Address::INVALID;
     unsigned loaded_size = 0;
@@ -129,6 +128,6 @@ private:
 
     std::map<QString, ObjcModule> modules;
     std::vector<struct section> sections;
-    BinaryImage *Image = nullptr;
+    BinaryImage *Image         = nullptr;
     BinarySymbolTable *Symbols = nullptr;
 };

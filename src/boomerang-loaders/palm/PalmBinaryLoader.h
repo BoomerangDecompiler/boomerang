@@ -29,10 +29,10 @@ public:
     void initialize(BinaryImage *image, BinarySymbolTable *table) override;
 
     /// \copydoc IFileLoader::canLoad
-    int canLoad(QIODevice& dev) const override;
+    int canLoad(QIODevice &dev) const override;
 
     /// \copydoc IFileLoader::loadFromMemory
-    bool loadFromMemory(QByteArray& data) override;
+    bool loadFromMemory(QByteArray &data) override;
 
     /// \copydoc IFileLoader::unload
     void unload() override;
@@ -56,8 +56,13 @@ public:
     bool isLibrary() const;
 
 private:
-    // Specific to BinaryFile objects that implement a "global pointer"
-    // Gets a pair of unsigned integers representing the address of %agp (first) and the value for GLOBALOFFSET (second)
+    /**
+     * Specific to BinaryFile objects that implement a "global pointer"
+     * Gets a pair of unsigned integers representing the address of %agp (first)
+     * and the value for GLOBALOFFSET (second).
+     * For Palm, the latter is the amount of space allocated below %a5,
+     * i.e. the difference between %a5 and %agp (%agp points to the bottom of the global data area).
+     */
     std::pair<Address, unsigned> getGlobalPointerInfo();
 
     // Palm specific calls
@@ -67,18 +72,17 @@ private:
     int getAppID() const;
 
     // Generate binary files for non code and data sections
-    void generateBinFiles(const QString& path) const;
-
+    void generateBinFiles(const QString &path) const;
 
     void addTrapSymbols();
 
 private:
     Byte *m_image = nullptr; ///< Points to loaded image
-    Byte *m_data = nullptr;  ///< Points to data
+    Byte *m_data  = nullptr; ///< Points to data
 
     /// Offset from start of data to where register a5 should be initialised to
     unsigned int m_sizeBelowA5 = 0;
 
-    BinaryImage *m_binaryImage = nullptr;
+    BinaryImage *m_binaryImage   = nullptr;
     BinarySymbolTable *m_symbols = nullptr;
 };

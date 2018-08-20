@@ -17,20 +17,20 @@
 class QFile;
 
 
-typedef struct  /* exe file header, just the signature really */
+typedef struct /* exe file header, just the signature really */
 {
     Byte sigLo; /* .EXE signature: 0x4D 0x5A     */
     Byte sigHi;
 } Header;
 
 // The following structures should have their members byte aligned
-#pragma pack(push,1)
+#pragma pack(push, 1)
 typedef struct
 {
-    Byte  sigLo;
-    Byte  sigHi;
-    Byte  byteord;
-    Byte  wordord;
+    Byte sigLo;
+    Byte sigHi;
+    Byte byteord;
+    Byte wordord;
     DWord formatlvl;
     SWord cputype;
     SWord ostype;
@@ -98,7 +98,7 @@ typedef struct
 {
     unsigned char src;
     unsigned char flags;
-    short         srcoff;
+    short srcoff;
     //    unsigned char object;         // these are now variable length
     //    unsigned short trgoff;
 } LXFixup;
@@ -124,10 +124,10 @@ public:
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 
     /// \copydoc IFileLoader::canLoad
-    int canLoad(QIODevice& fl) const override;
+    int canLoad(QIODevice &fl) const override;
 
     /// \copydoc IFileLoader::loadFromMemory
-    bool loadFromMemory(QByteArray& data) override;
+    bool loadFromMemory(QByteArray &data) override;
 
     /// \copydoc IFileLoader::unload
     void unload() override;
@@ -154,11 +154,11 @@ protected:
     DWord dos4gwRead4(const void *src) const; ///< Read 4 bytes from native addr
 
 private:
-    LXHeader m_LXHeader;                ///< LX header
-    std::vector<LXObject> m_LXObjects;  ///< LX objects
-    std::vector<char> m_imageBase;      ///< LoadedImage
+    LXHeader m_LXHeader;               ///< LX header
+    std::vector<LXObject> m_LXObjects; ///< LX objects
+    std::vector<char> m_imageBase;     ///< LoadedImage
 
     /// Map from address of dynamic pointers to library procedure names:
     BinarySymbolTable *m_symbols = nullptr;
-    BinaryImage *m_image = nullptr;
+    BinaryImage *m_image         = nullptr;
 };
