@@ -10,9 +10,9 @@
 #pragma once
 
 
-#include <list>
-
 #include "StatementSet.h"
+
+#include <list>
 
 
 class LocationSet;

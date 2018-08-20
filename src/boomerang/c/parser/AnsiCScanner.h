@@ -52,9 +52,9 @@
 
 /* % here is the declaration from section1 %header{  */
 
-#    include <cstdio>
-
 #    include "AnsiCParser.h"
+
+#    include <cstdio>
 
 #    define MAX_LINE 1024 // the longest line
 

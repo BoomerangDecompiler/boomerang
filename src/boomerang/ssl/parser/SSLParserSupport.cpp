@@ -7,6 +7,8 @@
  * WARRANTIES.
  */
 #pragma endregion License
+#include "SSLParser.h"
+
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -24,8 +26,6 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
-
-#include "SSLParser.h"
 
 
 class SSLScanner;
