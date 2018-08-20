@@ -9,11 +9,11 @@
 #pragma endregion License
 #include "SettingsDlg.h"
 
+#include "boomerang-gui/Decompiler.h"
+#include "boomerang-gui/ui_SettingsDlg.h"
 
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
-#include "boomerang-gui/Decompiler.h"
-#include "boomerang-gui/ui_SettingsDlg.h"
 #include "boomerang/type/TypeRecovery.h"
 #include "boomerang/util/log/Log.h"
 
@@ -31,10 +31,10 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     // fill combo box with possible logging levels
     ui->cbLogLevel->clear();
     ui->cbLogLevel->setEditable(false);
-    ui->cbLogLevel->addItem("Fatal",     static_cast<int>(LogLevel::Fatal));
-    ui->cbLogLevel->addItem("Error",     static_cast<int>(LogLevel::Error));
-    ui->cbLogLevel->addItem("Warning",   static_cast<int>(LogLevel::Warning));
-    ui->cbLogLevel->addItem("Message",   static_cast<int>(LogLevel::Message));
+    ui->cbLogLevel->addItem("Fatal", static_cast<int>(LogLevel::Fatal));
+    ui->cbLogLevel->addItem("Error", static_cast<int>(LogLevel::Error));
+    ui->cbLogLevel->addItem("Warning", static_cast<int>(LogLevel::Warning));
+    ui->cbLogLevel->addItem("Message", static_cast<int>(LogLevel::Message));
     ui->cbLogLevel->addItem("Verbose 1", static_cast<int>(LogLevel::Verbose1));
     ui->cbLogLevel->addItem("Verbose 2", static_cast<int>(LogLevel::Verbose2));
 
@@ -71,7 +71,7 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     ui->spbNumToPropagate->setValue(m_settings->numToPropagate);
 
     ITypeRecovery *rec = decompiler->getProject()->getTypeRecoveryEngine();
-    ui->cbTypeRecoveryEngine->addItem("<None>",       QVariant::fromValue<ITypeRecovery *>(nullptr));
+    ui->cbTypeRecoveryEngine->addItem("<None>", QVariant::fromValue<ITypeRecovery *>(nullptr));
     ui->cbTypeRecoveryEngine->addItem(rec->getName(), QVariant::fromValue<ITypeRecovery *>(rec));
     ui->cbTypeRecoveryEngine->setCurrentIndex(m_settings->dfaTypeAnalysis ? 1 : 0);
 
@@ -103,21 +103,18 @@ void SettingsDlg::changeEvent(QEvent *e)
 {
     QDialog::changeEvent(e);
 
-    switch (e->type())
-    {
-    case QEvent::LanguageChange:
-        ui->retranslateUi(this);
-        break;
+    switch (e->type()) {
+    case QEvent::LanguageChange: ui->retranslateUi(this); break;
 
-    default:
-        break;
+    default: break;
     }
 }
 
 
 void SettingsDlg::on_btnApply_clicked()
 {
-    Log::getOrCreateLog().setLogLevel(static_cast<LogLevel>(ui->cbLogLevel->currentData().value<int>()));
+    Log::getOrCreateLog().setLogLevel(
+        static_cast<LogLevel>(ui->cbLogLevel->currentData().value<int>()));
 
     m_settings->debugDecoder  = ui->chkDebugDecoder->isChecked();
     m_settings->debugGen      = ui->chkDebugGenerator->isChecked();
@@ -139,23 +136,24 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->dotFile         = ui->cbDotFile->currentData().value<QString>();
     m_settings->propMaxDepth    = ui->spbPropMaxDepth->value();
     m_settings->numToPropagate  = ui->spbNumToPropagate->value();
-    m_settings->dfaTypeAnalysis = ui->cbTypeRecoveryEngine->currentData().value<ITypeRecovery *>() != nullptr;
+    m_settings->dfaTypeAnalysis = ui->cbTypeRecoveryEngine->currentData()
+                                      .value<ITypeRecovery *>() != nullptr;
 
-    m_settings->assumeABI           = ui->chkAssumeABI->isChecked();
-    m_settings->changeSignatures    = ui->chkChangeSignatures->isChecked();
-    m_settings->experimental        = ui->chkExperimental->isChecked();
-    m_settings->generateSymbols     = ui->chkGenSymbols->isChecked();
-    m_settings->nameParameters      = ui->chkNameParameters->isChecked();
-    m_settings->propOnlyToAll       = ui->chkPropOnlyToAll->isChecked();
-    m_settings->removeLabels        = ui->chkRemoveLabels->isChecked();
-    m_settings->removeNull          = ui->chkRemoveNull->isChecked();
-    m_settings->removeReturns       = ui->chkRemoveReturns->isChecked();
-    m_settings->stopAtDebugPoints   = ui->chkStopAtDebugPoints->isChecked();
-    m_settings->useDataflow         = ui->chkUseDataflow->isChecked();
-    m_settings->useGlobals          = ui->chkUseGlobals->isChecked();
-    m_settings->useLocals           = ui->chkUseLocals->isChecked();
-    m_settings->usePromotion        = ui->chkUsePromotion->isChecked();
-    m_settings->useProof            = ui->chkUseProof->isChecked();
+    m_settings->assumeABI         = ui->chkAssumeABI->isChecked();
+    m_settings->changeSignatures  = ui->chkChangeSignatures->isChecked();
+    m_settings->experimental      = ui->chkExperimental->isChecked();
+    m_settings->generateSymbols   = ui->chkGenSymbols->isChecked();
+    m_settings->nameParameters    = ui->chkNameParameters->isChecked();
+    m_settings->propOnlyToAll     = ui->chkPropOnlyToAll->isChecked();
+    m_settings->removeLabels      = ui->chkRemoveLabels->isChecked();
+    m_settings->removeNull        = ui->chkRemoveNull->isChecked();
+    m_settings->removeReturns     = ui->chkRemoveReturns->isChecked();
+    m_settings->stopAtDebugPoints = ui->chkStopAtDebugPoints->isChecked();
+    m_settings->useDataflow       = ui->chkUseDataflow->isChecked();
+    m_settings->useGlobals        = ui->chkUseGlobals->isChecked();
+    m_settings->useLocals         = ui->chkUseLocals->isChecked();
+    m_settings->usePromotion      = ui->chkUsePromotion->isChecked();
+    m_settings->useProof          = ui->chkUseProof->isChecked();
 }
 
 

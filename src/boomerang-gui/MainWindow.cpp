@@ -9,20 +9,19 @@
 #pragma endregion License
 #include "MainWindow.h"
 
-
 #include "boomerang-gui/Decompiler.h"
 #include "boomerang-gui/RTLEditor.h"
 #include "boomerang-gui/SettingsDlg.h"
 #include "boomerang-gui/ui_About.h"
 #include "boomerang-gui/ui_MainWindow.h"
 
-#include "boomerang/type/TypeRecovery.h"
+#include "boomerang/ifc/ITypeRecovery.h"
 
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QSettings>
-#include <QToolButton>
 #include <QTextStream>
+#include <QToolButton>
 
 
 MainWindow::MainWindow(QWidget *_parent)
@@ -39,38 +38,45 @@ MainWindow::MainWindow(QWidget *_parent)
 
     m_decompilerThread.start();
 
-    connect(m_decompiler, &Decompiler::moduleCreated,           this, &MainWindow::showNewCluster);
-    connect(m_decompiler, &Decompiler::functionAddedToModule,   this, &MainWindow::showNewProcInCluster);
-    connect(m_decompiler, &Decompiler::debugPointHit,           this, &MainWindow::showDebuggingPoint);
-    connect(m_decompiler, &Decompiler::loadingStarted,          this, &MainWindow::showLoadPage);
-    connect(m_decompiler, &Decompiler::decodingStarted,         this, &MainWindow::showDecodePage);
-    connect(m_decompiler, &Decompiler::decompilingStarted,      this, &MainWindow::showDecompilePage);
-    connect(m_decompiler, &Decompiler::generatingCodeStarted,   this, &MainWindow::showGenerateCodePage);
-    connect(m_decompiler, &Decompiler::loadCompleted,           this, &MainWindow::loadComplete);
-    connect(m_decompiler, &Decompiler::machineTypeChanged,      this, &MainWindow::showMachineType);
-    connect(m_decompiler, &Decompiler::entryPointAdded,         this, &MainWindow::showNewEntrypoint);
-    connect(m_decompiler, &Decompiler::decodeCompleted,         this, &MainWindow::decodeComplete);
-    connect(m_decompiler, &Decompiler::decompileCompleted,      this, &MainWindow::decompileComplete);
-    connect(m_decompiler, &Decompiler::generateCodeCompleted,   this, &MainWindow::generateCodeComplete);
-    connect(m_decompiler, &Decompiler::procDiscovered,          this, &MainWindow::showConsideringProc);
-    connect(m_decompiler, &Decompiler::procDecompileStarted,    this, &MainWindow::showDecompilingProc);
-    connect(m_decompiler, &Decompiler::userProcCreated,         this, &MainWindow::showNewUserProc);
-    connect(m_decompiler, &Decompiler::libProcCreated,          this, &MainWindow::showNewLibProc);
-    connect(m_decompiler, &Decompiler::userProcRemoved,         this, &MainWindow::showRemoveUserProc);
-    connect(m_decompiler, &Decompiler::libProcRemoved,          this, &MainWindow::showRemoveLibProc);
-    connect(m_decompiler, &Decompiler::sectionAdded,            this, &MainWindow::showNewSection);
+    connect(m_decompiler, &Decompiler::moduleCreated, this, &MainWindow::showNewCluster);
+    connect(m_decompiler, &Decompiler::functionAddedToModule, this,
+            &MainWindow::showNewProcInCluster);
+    connect(m_decompiler, &Decompiler::debugPointHit, this, &MainWindow::showDebuggingPoint);
+    connect(m_decompiler, &Decompiler::loadingStarted, this, &MainWindow::showLoadPage);
+    connect(m_decompiler, &Decompiler::decodingStarted, this, &MainWindow::showDecodePage);
+    connect(m_decompiler, &Decompiler::decompilingStarted, this, &MainWindow::showDecompilePage);
+    connect(m_decompiler, &Decompiler::generatingCodeStarted, this,
+            &MainWindow::showGenerateCodePage);
+    connect(m_decompiler, &Decompiler::loadCompleted, this, &MainWindow::loadComplete);
+    connect(m_decompiler, &Decompiler::machineTypeChanged, this, &MainWindow::showMachineType);
+    connect(m_decompiler, &Decompiler::entryPointAdded, this, &MainWindow::showNewEntrypoint);
+    connect(m_decompiler, &Decompiler::decodeCompleted, this, &MainWindow::decodeComplete);
+    connect(m_decompiler, &Decompiler::decompileCompleted, this, &MainWindow::decompileComplete);
+    connect(m_decompiler, &Decompiler::generateCodeCompleted, this,
+            &MainWindow::generateCodeComplete);
+    connect(m_decompiler, &Decompiler::procDiscovered, this, &MainWindow::showConsideringProc);
+    connect(m_decompiler, &Decompiler::procDecompileStarted, this,
+            &MainWindow::showDecompilingProc);
+    connect(m_decompiler, &Decompiler::userProcCreated, this, &MainWindow::showNewUserProc);
+    connect(m_decompiler, &Decompiler::libProcCreated, this, &MainWindow::showNewLibProc);
+    connect(m_decompiler, &Decompiler::userProcRemoved, this, &MainWindow::showRemoveUserProc);
+    connect(m_decompiler, &Decompiler::libProcRemoved, this, &MainWindow::showRemoveLibProc);
+    connect(m_decompiler, &Decompiler::sectionAdded, this, &MainWindow::showNewSection);
 
     connect(ui->btnToLoad, &QPushButton::clicked, this, [=]() {
-        m_decompiler->loadInputFile(ui->cbInputFile->currentText(), ui->cbOutputPath->currentText());
+        m_decompiler->loadInputFile(ui->cbInputFile->currentText(),
+                                    ui->cbOutputPath->currentText());
     });
 
-    connect(ui->btnToDecode,         SIGNAL(clicked()), m_decompiler, SLOT(decode()));
-    connect(ui->btnToDecompile,      SIGNAL(clicked()), m_decompiler, SLOT(decompile()));
-    connect(ui->btnToGenerateCode,   SIGNAL(clicked()), m_decompiler, SLOT(generateCode()));
+    connect(ui->btnToDecode, SIGNAL(clicked()), m_decompiler, SLOT(decode()));
+    connect(ui->btnToDecompile, SIGNAL(clicked()), m_decompiler, SLOT(decompile()));
+    connect(ui->btnToGenerateCode, SIGNAL(clicked()), m_decompiler, SLOT(generateCode()));
 
     connect(this, SIGNAL(librarySignaturesOutdated()), m_decompiler, SLOT(rereadLibSignatures()));
-    connect(this, SIGNAL(entryPointAdded(Address, const QString&)), m_decompiler, SLOT(addEntryPoint(Address, const QString&)));
-    connect(this, SIGNAL(entryPointRemoved(Address)), m_decompiler, SLOT(removeEntryPoint(Address)));
+    connect(this, SIGNAL(entryPointAdded(Address, const QString &)), m_decompiler,
+            SLOT(addEntryPoint(Address, const QString &)));
+    connect(this, SIGNAL(entryPointRemoved(Address)), m_decompiler,
+            SLOT(removeEntryPoint(Address)));
 
     ui->tblUserProcs->horizontalHeader()->disconnect(SIGNAL(sectionClicked(int)));
     connect(ui->tblUserProcs->horizontalHeader(), &QHeaderView::sectionClicked, this,
@@ -101,15 +107,18 @@ MainWindow::MainWindow(QWidget *_parent)
 
     if (ui->cbInputFile->count() > 0) {
         int currentIdx = ui->cbInputFile->findText(settings.value("inputfile").toString());
-        currentIdx = std::max(currentIdx, 0); // if selected input file could not be found, use last one
+        currentIdx     = std::max(currentIdx,
+                              0); // if selected input file could not be found, use last one
         ui->cbInputFile->setCurrentIndex(currentIdx);
     }
 
     ui->cbOutputPath->addItems(settings.value("outputpaths").toStringList());
 
     if (ui->cbOutputPath->count() > 0) {
+        // if selected output path could not be found, use last one
         int currentIdx = ui->cbOutputPath->findText(settings.value("outputpath").toString());
-        currentIdx = std::max(currentIdx, 0); // if selected output path could not be found, use last one
+        currentIdx     = std::max(currentIdx, 0);
+
         ui->cbOutputPath->setCurrentIndex(currentIdx);
     }
 
@@ -179,8 +188,9 @@ void MainWindow::on_btnInputFileBrowse_clicked()
         }
     }
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Select a file to decompile..."), openFileDir,
-                                                    "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*)");
+    QString fileName = QFileDialog::getOpenFileName(
+        this, tr("Select a file to decompile..."), openFileDir,
+        "Windows Binaries (*.exe *.dll *.scr *.sys);;Other Binaries (*)");
 
     if (fileName.isEmpty()) {
         // user cancelled
@@ -205,7 +215,8 @@ void MainWindow::on_btnInputFileBrowse_clicked()
 
 void MainWindow::on_btnOutputPathBrowse_clicked()
 {
-    QString outputDir = QFileDialog::getExistingDirectory(this, tr("Select a location to write the output to..."), "output");
+    QString outputDir = QFileDialog::getExistingDirectory(
+        this, tr("Select a location to write the output to..."), "output");
 
     if (outputDir.isEmpty()) {
         // user cancelled
@@ -228,13 +239,13 @@ void MainWindow::on_btnOutputPathBrowse_clicked()
 }
 
 
-void MainWindow::on_cbInputFile_currentIndexChanged(const QString& )
+void MainWindow::on_cbInputFile_currentIndexChanged(const QString &)
 {
     saveSettings();
 }
 
 
-void MainWindow::on_cbOutputPath_currentIndexChanged(const QString& )
+void MainWindow::on_cbOutputPath_currentIndexChanged(const QString &)
 {
     saveSettings();
 }
@@ -280,13 +291,11 @@ void MainWindow::on_actCloseProject_triggered()
 
 
 void MainWindow::on_tabWidget_currentChanged(int)
-{
-}
+{}
 
 
 void MainWindow::errorLoadingFile()
-{
-}
+{}
 
 
 void MainWindow::showInitPage()
@@ -309,7 +318,7 @@ void MainWindow::showInitPage()
     ui->twModuleTree->clear();
 
     m_numDecompiledProcs = 0;
-    m_numCodeGenProcs = 0;
+    m_numCodeGenProcs    = 0;
 
     ui->actLoad->setEnabled(false);
     ui->actDecode->setEnabled(false);
@@ -404,13 +413,13 @@ void MainWindow::loadComplete()
 }
 
 
-void MainWindow::showMachineType(const QString& machine)
+void MainWindow::showMachineType(const QString &machine)
 {
     ui->lblMachineType->setText(machine);
 }
 
 
-void MainWindow::showNewEntrypoint(Address addr, const QString& name)
+void MainWindow::showNewEntrypoint(Address addr, const QString &name)
 {
     const int nrows = ui->tblEntryPoints->rowCount();
 
@@ -468,10 +477,10 @@ void MainWindow::generateCodeComplete()
 }
 
 
-void MainWindow::showConsideringProc(const QString& calledByName, const QString& procName)
+void MainWindow::showConsideringProc(const QString &calledByName, const QString &procName)
 {
-    QList<QTreeWidgetItem *> foundit =
-        ui->twProcTree->findItems(procName, Qt::MatchExactly | Qt::MatchRecursive);
+    QList<QTreeWidgetItem *> foundit = ui->twProcTree->findItems(procName, Qt::MatchExactly |
+                                                                               Qt::MatchRecursive);
 
     if (foundit.isEmpty()) {
         QStringList texts(procName);
@@ -480,8 +489,8 @@ void MainWindow::showConsideringProc(const QString& calledByName, const QString&
             ui->twProcTree->addTopLevelItem(new QTreeWidgetItem(texts));
         }
         else {
-            QList<QTreeWidgetItem *> found =
-                ui->twProcTree->findItems(calledByName, Qt::MatchExactly | Qt::MatchRecursive);
+            QList<QTreeWidgetItem *> found = ui->twProcTree->findItems(
+                calledByName, Qt::MatchExactly | Qt::MatchRecursive);
 
             if (!found.isEmpty()) {
                 QTreeWidgetItem *n = new QTreeWidgetItem(found.first(), texts);
@@ -495,10 +504,10 @@ void MainWindow::showConsideringProc(const QString& calledByName, const QString&
 }
 
 
-void MainWindow::showDecompilingProc(const QString& name)
+void MainWindow::showDecompilingProc(const QString &name)
 {
-    QList<QTreeWidgetItem *> foundit =
-        ui->twProcTree->findItems(name, Qt::MatchExactly | Qt::MatchRecursive);
+    QList<QTreeWidgetItem *> foundit = ui->twProcTree->findItems(name, Qt::MatchExactly |
+                                                                           Qt::MatchRecursive);
 
     if (!foundit.isEmpty()) {
         ui->twProcTree->setCurrentItem(foundit.first(), 0);
@@ -512,7 +521,7 @@ void MainWindow::showDecompilingProc(const QString& name)
 }
 
 
-void MainWindow::showNewUserProc(const QString& name, Address addr)
+void MainWindow::showNewUserProc(const QString &name, Address addr)
 {
     const int nrows = ui->tblUserProcs->rowCount();
 
@@ -546,7 +555,7 @@ void MainWindow::showNewUserProc(const QString& name, Address addr)
 }
 
 
-void MainWindow::showNewLibProc(const QString& name, const QString& params)
+void MainWindow::showNewLibProc(const QString &name, const QString &params)
 {
     const int nrows = ui->tblLibProcs->rowCount();
 
@@ -565,11 +574,11 @@ void MainWindow::showNewLibProc(const QString& name, const QString& params)
 }
 
 
-void MainWindow::showRemoveUserProc(const QString& name, Address addr)
+void MainWindow::showRemoveUserProc(const QString &name, Address addr)
 {
     Q_UNUSED(name);
 
-    const int nrows = ui->tblUserProcs->rowCount();
+    const int nrows          = ui->tblUserProcs->rowCount();
     const QString addrString = addr.toString();
 
     for (int i = 0; i < nrows; i++) {
@@ -584,7 +593,7 @@ void MainWindow::showRemoveUserProc(const QString& name, Address addr)
 }
 
 
-void MainWindow::showRemoveLibProc(const QString& name)
+void MainWindow::showRemoveLibProc(const QString &name)
 {
     const int nrows = ui->tblLibProcs->rowCount();
 
@@ -600,7 +609,7 @@ void MainWindow::showRemoveLibProc(const QString& name)
 }
 
 
-void MainWindow::showNewSection(const QString& name, Address start, Address end)
+void MainWindow::showNewSection(const QString &name, Address start, Address end)
 {
     const int nrows = ui->tblSections->rowCount();
 
@@ -614,23 +623,21 @@ void MainWindow::showNewSection(const QString& name, Address start, Address end)
 }
 
 
-void MainWindow::showNewCluster(const QString& name)
+void MainWindow::showNewCluster(const QString &name)
 {
     QString cname = name;
 
-    cname = cname.append(".c");
+    cname              = cname.append(".c");
     QTreeWidgetItem *n = new QTreeWidgetItem(QStringList(cname));
     ui->twModuleTree->addTopLevelItem(n);
     ui->twModuleTree->expandItem(n);
 }
 
 
-void MainWindow::showNewProcInCluster(const QString& name, const QString& cluster)
+void MainWindow::showNewProcInCluster(const QString &name, const QString &moduleName)
 {
-    QString cname = cluster;
-
-    cname = cname.append(".c");
-    QList<QTreeWidgetItem *> found = ui->twModuleTree->findItems(cname, Qt::MatchExactly);
+    const QString fileName         = moduleName + ".c";
+    QList<QTreeWidgetItem *> found = ui->twModuleTree->findItems(fileName, Qt::MatchExactly);
 
     if (!found.isEmpty()) {
         QTreeWidgetItem *n = new QTreeWidgetItem(found.first(), QStringList(name));
@@ -645,7 +652,7 @@ void MainWindow::showNewProcInCluster(const QString& name, const QString& cluste
 }
 
 
-void MainWindow::showDebuggingPoint(const QString& name, const QString& description)
+void MainWindow::showDebuggingPoint(const QString &name, const QString &description)
 {
     QString msg = "debugging ";
 
@@ -668,7 +675,7 @@ void MainWindow::showDebuggingPoint(const QString& name, const QString& descript
 }
 
 
-void MainWindow::showRTLEditor(const QString& name)
+void MainWindow::showRTLEditor(const QString &name)
 {
     RTLEditor *n = nullptr;
 
@@ -732,18 +739,18 @@ void MainWindow::on_twModuleTree_itemDoubleClicked(QTreeWidgetItem *item, int co
     }
 
     if (n == nullptr) {
-        n = new QTextEdit();
-        QString name = top->text(0);
-        name = name.left(name.lastIndexOf("."));
+        n                = new QTextEdit();
+        QString name     = top->text(0);
+        name             = name.left(name.lastIndexOf("."));
         QString filename = m_decompiler->getClusterFile(name);
-        QFile   file(filename);
+        QFile file(filename);
 
         if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
             return;
         }
 
         QTextStream in(&file);
-        QString     contents = in.readAll();
+        QString contents = in.readAll();
         file.close();
         n->insertPlainText(contents);
         m_openFiles[n] = filename;
@@ -805,7 +812,8 @@ void MainWindow::onUserProcsHorizontalHeaderSectionClicked(int logicalIndex)
             }
 
             Qt::CheckState state = ui->tblUserProcs->item(i, 2)->checkState();
-            ui->tblUserProcs->item(i, 2)->setCheckState(state == Qt::Checked ? Qt::Unchecked : Qt::Checked);
+            ui->tblUserProcs->item(i, 2)->setCheckState(state == Qt::Checked ? Qt::Unchecked
+                                                                             : Qt::Checked);
         }
     }
 }
@@ -816,8 +824,8 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
     Q_UNUSED(column);
     QString name = "";
     QString sigFile;
-    QString params   = ui->tblLibProcs->item(row, 1)->text();
-    bool    existing = true;
+    QString params = ui->tblLibProcs->item(row, 1)->text();
+    bool existing  = true;
 
     if (params == "<unknown>") {
         existing = false;
@@ -840,7 +848,7 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
         name = ui->tblLibProcs->item(row, 0)->text();
     }
 
-    sigFile = m_decompiler->getSigFilePath(name);
+    sigFile          = m_decompiler->getSigFilePath(name);
     QString filename = sigFile;
 
     int lastIndex = sigFile.lastIndexOf(QRegExp("[/\\\\]"));
@@ -870,7 +878,7 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
         }
 
         QTextStream in(&file);
-        QString     contents = in.readAll();
+        QString contents = in.readAll();
         file.close();
         n->insertPlainText(contents);
         m_openFiles[n] = filename;
@@ -882,7 +890,8 @@ void MainWindow::on_tblLibProcs_cellDoubleClicked(int row, int column)
     ui->tabWidget->setCurrentWidget(n);
 
     if (existing) {
-        n->find(name, QTextDocument::FindBackward | QTextDocument::FindCaseSensitively | QTextDocument::FindWholeWords);
+        n->find(name, QTextDocument::FindBackward | QTextDocument::FindCaseSensitively |
+                          QTextDocument::FindWholeWords);
     }
     else {
         QTextCursor textCursor = n->textCursor();
@@ -946,18 +955,15 @@ void MainWindow::on_actDelete_triggered()
 
 
 void MainWindow::on_actFind_triggered()
-{
-}
+{}
 
 
 void MainWindow::on_actFindNext_triggered()
-{
-}
+{}
 
 
 void MainWindow::on_actGoTo_triggered()
-{
-}
+{}
 
 
 void MainWindow::on_actSelectAll_triggered()
@@ -1046,12 +1052,11 @@ void MainWindow::on_tblEntryPoints_currentItemChanged(QTableWidgetItem *, QTable
 
 void MainWindow::on_btnEntryPointAdd_pressed()
 {
-    if ((ui->edtEntryAddress->text() == "") ||
-        (ui->edtEntryPointName->text() == "")) {
+    if ((ui->edtEntryAddress->text() == "") || (ui->edtEntryPointName->text() == "")) {
         return;
     }
 
-    bool    ok = false;
+    bool ok   = false;
     Address a = Address(ui->edtEntryAddress->text().toInt(&ok, 16));
 
     if (!ok) {
@@ -1071,8 +1076,9 @@ void MainWindow::on_btnEntryPointAdd_pressed()
 
 void MainWindow::on_btnEntryPointRemove_pressed()
 {
-    bool    ok = false;
-    Address a = Address(ui->tblEntryPoints->item(ui->tblEntryPoints->currentRow(), 0)->text().toInt(&ok, 16));
+    bool ok   = false;
+    Address a = Address(
+        ui->tblEntryPoints->item(ui->tblEntryPoints->currentRow(), 0)->text().toInt(&ok, 16));
 
     if (!ok) {
         return;
@@ -1087,4 +1093,3 @@ void MainWindow::on_actSettings_triggered()
 {
     SettingsDlg(m_decompiler).exec();
 }
-

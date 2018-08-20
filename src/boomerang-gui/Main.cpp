@@ -9,10 +9,11 @@
 #pragma endregion License
 
 
-#include <QApplication>
+#include "boomerang-gui/MainWindow.h"
 
-#include "MainWindow.h"
 #include "boomerang/util/log/Log.h"
+
+#include <QApplication>
 
 
 int main(int argc, char *argv[])

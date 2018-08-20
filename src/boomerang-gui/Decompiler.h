@@ -57,24 +57,24 @@ signals: // Decompiler -> ui
     void decompileCompleted();
     void generateCodeCompleted();
 
-    void procDiscovered(const QString& callerName, const QString& procName);
-    void procDecompileStarted(const QString& procName);
+    void procDiscovered(const QString &callerName, const QString &procName);
+    void procDecompileStarted(const QString &procName);
 
-    void userProcCreated(const QString& name, Address entryAddr);
-    void libProcCreated(const QString& name, const QString& params);
-    void userProcRemoved(const QString& name, Address entryAddr);
-    void libProcRemoved(const QString& name);
-    void moduleCreated(const QString& name);
-    void functionAddedToModule(const QString& functionName, const QString& moduleName);
-    void entryPointAdded(Address entryAddr, const QString& name);
-    void sectionAdded(const QString& sectionName, Address start, Address end);
+    void userProcCreated(const QString &name, Address entryAddr);
+    void libProcCreated(const QString &name, const QString &params);
+    void userProcRemoved(const QString &name, Address entryAddr);
+    void libProcRemoved(const QString &name);
+    void moduleCreated(const QString &name);
+    void functionAddedToModule(const QString &functionName, const QString &moduleName);
+    void entryPointAdded(Address entryAddr, const QString &name);
+    void sectionAdded(const QString &sectionName, Address start, Address end);
 
-    void machineTypeChanged(const QString& machine);
+    void machineTypeChanged(const QString &machine);
 
-    void debugPointHit(const QString& name, const QString& description);
+    void debugPointHit(const QString &name, const QString &description);
 
 public slots: // ui -> Decompiler
-    void loadInputFile(const QString& inputFile, const QString& outputPath);
+    void loadInputFile(const QString &inputFile, const QString &outputPath);
     void decode();
     void decompile();
     void generateCode();
@@ -82,16 +82,16 @@ public slots: // ui -> Decompiler
     void stopWaiting();
     void rereadLibSignatures();
 
-    void addEntryPoint(Address entryAddr, const QString& name);
+    void addEntryPoint(Address entryAddr, const QString &name);
     void removeEntryPoint(Address entryAddr);
 
     // todo: provide thread-safe access mechanism
 public:
-    bool getRTLForProc(const QString& name, QString& rtl);
-    QString getSigFilePath(const QString& name);
-    QString getClusterFile(const QString& name);
-    void renameProc(const QString& oldName, const QString& newName);
-    void getCompoundMembers(const QString& name, QTableWidget *tbl);
+    bool getRTLForProc(const QString &name, QString &rtl);
+    QString getSigFilePath(const QString &name);
+    QString getClusterFile(const QString &name);
+    void renameProc(const QString &oldName, const QString &newName);
+    void getCompoundMembers(const QString &name, QTableWidget *tbl);
 
     void setDebugEnabled(bool debug) { m_debugging = debug; }
     Project *getProject() { return &m_project; }
@@ -102,7 +102,7 @@ private:
 
 protected:
     bool m_debugging = false;
-    bool m_waiting = false;
+    bool m_waiting   = false;
 
     Project m_project;
 

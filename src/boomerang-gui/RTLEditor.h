@@ -12,8 +12,8 @@
 
 #include "boomerang/util/Types.h"
 
-#include <QString>
 #include <QPlainTextEdit>
+#include <QString>
 
 #include <map>
 #include <set>
@@ -28,7 +28,7 @@ class RTLEditor : public QPlainTextEdit
     Q_OBJECT
 
 public:
-    RTLEditor(Decompiler *decompiler, const QString& name);
+    RTLEditor(Decompiler *decompiler, const QString &name);
 
 public slots:
     void updateContents();
