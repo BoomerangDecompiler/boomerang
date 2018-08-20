@@ -19,7 +19,7 @@ matrix:
         - TARGET="source-check"
       before_script:
       script:
-        - docker exec -t build-env bash -c "cd boomerang && ./scripts/run-clang-format.py -r src/boomerang/"
+        - docker exec -t build-env bash -c "cd boomerang && ./scripts/run-clang-format.py -r src/ -e */machO/objc/*"
     - env:
         - TARGET="clang5-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
