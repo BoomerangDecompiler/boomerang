@@ -8,3 +8,10 @@
  */
 #pragma endregion License
 #include "Class.h"
+
+
+Class::Class(const QString &name, Prog *_prog)
+    : Module(name, _prog)
+    , m_type(CompoundType::get())
+{
+}
