@@ -87,12 +87,14 @@ public:
     /// Rename the first parameter named \p oldName to \p newName.
     void renameParameter(const QString &oldName, const QString &newName);
 
-    /// Get the RHS that is proven for left
-    virtual SharedExp
-    getProven(SharedExp left) = 0; ///< Get the RHS, if any, that is proven for left
-    virtual SharedExp
-    getPremised(SharedExp left)           = 0; ///< Get the RHS, if any, that is premised for left
-    virtual bool isPreserved(SharedExp e) = 0; ///< Return whether \p e is preserved by this proc
+    /// Get the RHS, if any, that is proven for left
+    virtual SharedExp getProven(SharedExp left) = 0;
+
+    /// Get the RHS, if any, that is premised for left
+    virtual SharedExp getPremised(SharedExp left) = 0;
+
+    /// \returns true iff \p e is preserved by this proc
+    virtual bool isPreserved(SharedExp e) = 0;
 
 protected:
     Prog *m_prog           = nullptr;          ///< Program containing this function.
@@ -102,7 +104,8 @@ protected:
     /**
      * The formal signature of this procedure.
      * This information is determined either by the common.hs file (for a library function) or by
-     * analysis. \note This belongs in the CALL, because the same procedure can have different
+     * analysis.
+     * \note This belongs in the CALL, because the same procedure can have different
      * signatures if it happens to have varargs. Temporarily here till it can be permanently
      * moved.
      */

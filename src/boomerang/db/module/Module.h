@@ -51,6 +51,15 @@ public:
     Module &operator=(Module &&other) = default;
 
 public:
+    iterator begin() { return m_functionList.begin(); }
+    const_iterator begin() const { return m_functionList.begin(); }
+    iterator end() { return m_functionList.end(); }
+    const_iterator end() const { return m_functionList.end(); }
+
+public:
+    size_t size() const { return m_functionList.size(); }
+    bool empty() const { return m_functionList.empty(); }
+
     QString getName() const { return m_name; }
     void setName(const QString &name) { m_name = name; }
 
@@ -84,14 +93,6 @@ public:
     // Function list management
     const FunctionList &getFunctionList() const { return m_functionList; }
     FunctionList &getFunctionList() { return m_functionList; }
-
-    iterator begin() { return m_functionList.begin(); }
-    const_iterator begin() const { return m_functionList.begin(); }
-    iterator end() { return m_functionList.end(); }
-    const_iterator end() const { return m_functionList.end(); }
-    size_t size() const { return m_functionList.size(); }
-    bool empty() const { return m_functionList.empty(); }
-
 
     /**
      * Creates a new Function object, adds it to the list of procs in this Module,

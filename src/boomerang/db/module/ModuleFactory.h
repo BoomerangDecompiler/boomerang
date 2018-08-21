@@ -21,6 +21,7 @@ class QString;
 
 struct BOOMERANG_API IModuleFactory
 {
+    /// Creates a new module with name \p name.
     virtual Module *create(const QString &name, Prog *prog) const = 0;
 };
 
