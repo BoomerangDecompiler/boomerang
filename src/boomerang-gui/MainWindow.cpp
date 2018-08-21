@@ -291,11 +291,13 @@ void MainWindow::on_actCloseProject_triggered()
 
 
 void MainWindow::on_tabWidget_currentChanged(int)
-{}
+{
+}
 
 
 void MainWindow::errorLoadingFile()
-{}
+{
+}
 
 
 void MainWindow::showInitPage()
@@ -955,15 +957,18 @@ void MainWindow::on_actDelete_triggered()
 
 
 void MainWindow::on_actFind_triggered()
-{}
+{
+}
 
 
 void MainWindow::on_actFindNext_triggered()
-{}
+{
+}
 
 
 void MainWindow::on_actGoTo_triggered()
-{}
+{
+}
 
 
 void MainWindow::on_actSelectAll_triggered()

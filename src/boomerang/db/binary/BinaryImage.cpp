@@ -19,7 +19,8 @@
 
 BinaryImage::BinaryImage(const QByteArray &rawData)
     : m_rawData(rawData)
-{}
+{
+}
 
 
 BinaryImage::~BinaryImage()

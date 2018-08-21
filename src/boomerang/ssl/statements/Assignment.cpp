@@ -41,11 +41,13 @@ Assignment::Assignment(SharedExp lhs)
 Assignment::Assignment(SharedType ty, SharedExp lhs)
     : TypingStatement(ty)
     , m_lhs(lhs)
-{}
+{
+}
 
 
 Assignment::~Assignment()
-{}
+{
+}
 
 
 SharedConstType Assignment::getTypeFor(SharedConstExp) const

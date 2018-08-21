@@ -21,7 +21,8 @@
 
 UnusedStatementRemovalPass::UnusedStatementRemovalPass()
     : IPass("UnusedStatementRemoval", PassID::UnusedStatementRemoval)
-{}
+{
+}
 
 
 bool UnusedStatementRemovalPass::execute(UserProc *proc)

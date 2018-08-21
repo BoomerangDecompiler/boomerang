@@ -15,7 +15,8 @@
 
 ExpPropagator::ExpPropagator()
     : m_changed(false)
-{}
+{
+}
 
 
 SharedExp ExpPropagator::postModify(const std::shared_ptr<RefExp> &exp)

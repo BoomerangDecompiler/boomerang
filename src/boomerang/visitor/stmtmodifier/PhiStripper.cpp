@@ -15,7 +15,8 @@
 PhiStripper::PhiStripper(ExpModifier *em)
     : StmtModifier(em)
     , m_del(false)
-{}
+{
+}
 
 
 void PhiStripper::visit(PhiAssign * /*stmt*/, bool &visitChildren)

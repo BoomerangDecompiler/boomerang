@@ -14,11 +14,13 @@
 
 BooleanType::BooleanType()
     : Type(TypeClass::Boolean)
-{}
+{
+}
 
 
 BooleanType::~BooleanType()
-{}
+{
+}
 
 
 SharedType BooleanType::clone() const

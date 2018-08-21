@@ -35,7 +35,8 @@ PentiumSignature::PentiumSignature(const QString &name)
 
 PentiumSignature::PentiumSignature(Signature &old)
     : Signature(old)
-{}
+{
+}
 
 
 std::shared_ptr<Signature> PentiumSignature::clone() const

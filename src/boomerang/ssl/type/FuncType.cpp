@@ -16,11 +16,13 @@
 FuncType::FuncType(const std::shared_ptr<Signature> &sig)
     : Type(TypeClass::Func)
     , signature(sig)
-{}
+{
+}
 
 
 FuncType::~FuncType()
-{}
+{
+}
 
 
 SharedType FuncType::clone() const

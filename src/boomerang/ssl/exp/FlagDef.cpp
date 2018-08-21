@@ -17,11 +17,13 @@
 FlagDef::FlagDef(const SharedExp &params, const SharedRTL &_rtl)
     : Unary(opFlagDef, params)
     , m_rtl(_rtl)
-{}
+{
+}
 
 
 FlagDef::~FlagDef()
-{}
+{
+}
 
 
 bool FlagDef::acceptVisitor(ExpVisitor *v)

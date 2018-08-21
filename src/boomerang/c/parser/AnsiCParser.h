@@ -41,7 +41,8 @@ public:
         , name("")
         , sig(nullptr)
         , mods(nullptr)
-    {}
+    {
+    }
 };
 
 class SymbolMods
@@ -53,7 +54,8 @@ public:
     SymbolMods()
         : noDecode(false)
         , incomplete(false)
-    {}
+    {
+    }
 };
 
 class CustomOptions
@@ -65,7 +67,8 @@ public:
     CustomOptions()
         : exp(nullptr)
         , sp(0)
-    {}
+    {
+    }
 };
 
 class SymbolRef
@@ -77,7 +80,8 @@ public:
     SymbolRef(Address addr, const QString &name)
         : m_addr(addr)
         , m_name(name)
-    {}
+    {
+    }
 };
 
 class Bound
@@ -89,7 +93,8 @@ public:
     Bound(int kind, const QString &name)
         : m_kind(kind)
         , m_name(name)
-    {}
+    {
+    }
 };
 
 typedef struct

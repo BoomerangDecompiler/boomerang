@@ -16,7 +16,8 @@
 
 CallBypasser::CallBypasser(Statement *enclosing)
     : m_enclosingStmt(enclosing)
-{}
+{
+}
 
 
 SharedExp CallBypasser::postModify(const std::shared_ptr<RefExp> &exp)

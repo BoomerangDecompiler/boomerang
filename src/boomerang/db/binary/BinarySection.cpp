@@ -111,7 +111,8 @@ BinarySection::BinarySection(Address sourceAddr, uint64 size, const QString &nam
     , m_data(false)
     , m_bss(0)
     , m_readOnly(0)
-{}
+{
+}
 
 
 BinarySection::~BinarySection()

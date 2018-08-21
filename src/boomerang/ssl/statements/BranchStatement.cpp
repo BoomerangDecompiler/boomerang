@@ -37,7 +37,8 @@ BranchStatement::BranchStatement()
 
 
 BranchStatement::~BranchStatement()
-{}
+{
+}
 
 
 void BranchStatement::setCondType(BranchType cond, bool usesFloat /*= false*/)

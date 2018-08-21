@@ -17,7 +17,8 @@
 
 ExpSSAXformer::ExpSSAXformer(UserProc *p)
     : m_proc(p)
-{}
+{
+}
 
 
 SharedExp ExpSSAXformer::postModify(const std::shared_ptr<RefExp> &exp)

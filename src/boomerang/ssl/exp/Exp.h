@@ -64,7 +64,8 @@ class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
 public:
     Exp(OPER oper)
         : m_oper(oper)
-    {}
+    {
+    }
 
     Exp(const Exp &other) = default;
     Exp(Exp &&other)      = default;

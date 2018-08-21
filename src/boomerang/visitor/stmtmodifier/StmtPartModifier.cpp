@@ -13,7 +13,8 @@
 StmtPartModifier::StmtPartModifier(ExpModifier *em, bool ignoreCol)
     : mod(em)
     , m_ignoreCol(ignoreCol)
-{}
+{
+}
 
 
 void StmtPartModifier::visit(Assign *, bool &visitChildren)

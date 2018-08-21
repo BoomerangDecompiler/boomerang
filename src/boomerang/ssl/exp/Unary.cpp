@@ -43,7 +43,8 @@ Unary::Unary(const Unary &o)
 
 
 Unary::~Unary()
-{}
+{
+}
 
 
 void Unary::setSubExp1(SharedExp e)

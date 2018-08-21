@@ -16,7 +16,8 @@
 FloatType::FloatType(int sz)
     : Type(TypeClass::Float)
     , size(sz)
-{}
+{
+}
 
 
 std::shared_ptr<FloatType> FloatType::get(int sz)
@@ -26,7 +27,8 @@ std::shared_ptr<FloatType> FloatType::get(int sz)
 
 
 FloatType::~FloatType()
-{}
+{
+}
 
 
 SharedType FloatType::clone() const

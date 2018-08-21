@@ -23,7 +23,8 @@
 
 UnusedLocalRemovalPass::UnusedLocalRemovalPass()
     : IPass("UnusedLocalRemoval", PassID::UnusedLocalRemoval)
-{}
+{
+}
 
 
 bool UnusedLocalRemovalPass::execute(UserProc *proc)

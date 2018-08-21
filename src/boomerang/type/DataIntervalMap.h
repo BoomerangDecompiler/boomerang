@@ -26,7 +26,8 @@ struct TypedVariable
         , size(_type->getSize())
         , name(_name)
         , type(_type)
-    {}
+    {
+    }
 
     Address baseAddr; ///< The address of the variable, or the SP offset for local variables
     size_t size;      ///< The size of this type in bits

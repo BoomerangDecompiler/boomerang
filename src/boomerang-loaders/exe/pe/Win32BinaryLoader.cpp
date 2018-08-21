@@ -84,7 +84,8 @@ Win32BinaryLoader::Win32BinaryLoader()
     , m_mingwMain(false)
     , m_binaryImage(nullptr)
     , m_symbols(nullptr)
-{}
+{
+}
 
 
 Win32BinaryLoader::~Win32BinaryLoader()

@@ -15,7 +15,8 @@
 StmtModifier::StmtModifier(ExpModifier *em, bool ignnoreCol)
     : m_mod(em)
     , m_ignoreCol(ignnoreCol)
-{}
+{
+}
 
 
 void StmtModifier::visit(Assign *, bool &visitChildren)

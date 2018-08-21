@@ -87,7 +87,8 @@ PassManager::PassManager()
 
 
 PassManager::~PassManager()
-{}
+{
+}
 
 
 PassManager *PassManager::get()

@@ -24,7 +24,8 @@
 
 CSymbolProvider::CSymbolProvider(Prog *prog)
     : m_prog(prog)
-{}
+{
+}
 
 
 bool CSymbolProvider::readLibraryCatalog(const QString &filePath)

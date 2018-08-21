@@ -20,7 +20,8 @@
 Location::Location(const Location &other)
     : Unary(other.m_oper, other.subExp1->clone())
     , m_proc(other.m_proc)
-{}
+{
+}
 
 
 Location::Location(OPER oper, SharedExp exp, UserProc *proc)

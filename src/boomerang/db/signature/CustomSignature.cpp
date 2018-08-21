@@ -16,7 +16,8 @@
 CustomSignature::CustomSignature(const QString &name)
     : Signature(name)
     , m_spReg(0)
-{}
+{
+}
 
 
 std::shared_ptr<Signature> CustomSignature::clone() const

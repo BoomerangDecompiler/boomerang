@@ -20,7 +20,8 @@
 
 MIPSDecoder::MIPSDecoder(Prog *prog)
     : NJMCDecoder(prog, "ssl/mips.ssl")
-{}
+{
+}
 
 
 bool MIPSDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result)

@@ -17,7 +17,8 @@
 
 CallLivenessRemovalPass::CallLivenessRemovalPass()
     : IPass("CallLivenessRemoval", PassID::CallLivenessRemoval)
-{}
+{
+}
 
 
 bool CallLivenessRemovalPass::execute(UserProc *proc)

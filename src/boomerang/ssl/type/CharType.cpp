@@ -15,11 +15,13 @@
 
 CharType::CharType()
     : Type(TypeClass::Char)
-{}
+{
+}
 
 
 CharType::~CharType()
-{}
+{
+}
 
 
 SharedType CharType::clone() const

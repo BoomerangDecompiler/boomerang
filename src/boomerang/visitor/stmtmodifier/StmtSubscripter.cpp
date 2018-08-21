@@ -20,7 +20,8 @@
 
 StmtSubscripter::StmtSubscripter(ExpSubscripter *es)
     : StmtModifier(es)
-{}
+{
+}
 
 void StmtSubscripter::visit(Assign *stmt, bool &visitChildren)
 {

@@ -15,7 +15,8 @@
 
 
 ControlFlowAnalyzer::ControlFlowAnalyzer()
-{}
+{
+}
 
 
 void ControlFlowAnalyzer::structureCFG(ProcCFG *cfg)

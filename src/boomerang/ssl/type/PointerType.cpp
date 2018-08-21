@@ -22,7 +22,8 @@ PointerType::PointerType(SharedType p)
 
 
 PointerType::~PointerType()
-{}
+{
+}
 
 
 void PointerType::setPointsTo(SharedType p)

@@ -33,7 +33,8 @@ Win32Signature::Win32Signature(const QString &name)
 
 Win32Signature::Win32Signature(Signature &old)
     : Signature(old)
-{}
+{
+}
 
 
 Win32TcSignature::Win32TcSignature(const QString &name)
@@ -47,7 +48,8 @@ Win32TcSignature::Win32TcSignature(const QString &name)
 
 Win32TcSignature::Win32TcSignature(Signature &old)
     : Win32Signature(old)
-{}
+{
+}
 
 
 std::shared_ptr<Signature> Win32Signature::clone() const

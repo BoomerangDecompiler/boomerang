@@ -22,7 +22,8 @@ DfaLocalMapper::DfaLocalMapper(UserProc *proc)
     : m_proc(proc)
     , m_prog(proc->getProg())
     , m_sig(proc->getSignature())
-{}
+{
+}
 
 
 bool DfaLocalMapper::processExp(const SharedExp &exp)

@@ -284,4 +284,5 @@ Assign::Assign()
     : Assignment(nullptr)
     , m_rhs(nullptr)
     , m_guard(nullptr)
-{}
+{
+}

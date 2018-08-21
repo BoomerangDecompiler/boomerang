@@ -35,7 +35,8 @@ PPCSignature::PPCSignature(const QString &name)
 
 PPCSignature::PPCSignature(Signature &old)
     : Signature(old)
-{}
+{
+}
 
 
 std::shared_ptr<Signature> PPCSignature::clone() const

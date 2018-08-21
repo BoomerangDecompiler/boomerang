@@ -12,11 +12,13 @@
 
 VoidType::VoidType()
     : Type(TypeClass::Void)
-{}
+{
+}
 
 
 VoidType::~VoidType()
-{}
+{
+}
 
 
 SharedType VoidType::clone() const

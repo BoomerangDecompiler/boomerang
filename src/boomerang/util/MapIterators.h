@@ -27,7 +27,8 @@ public:
 public:
     MapValueIterator(typename M::iterator it)
         : m_it(it)
-    {}
+    {
+    }
 
     MapValueIterator(const MapValueIterator<M> &it) { this->m_it = it.m_it; }
 
@@ -77,7 +78,8 @@ public:
 public:
     MapValueConstIterator(typename M::const_iterator it)
         : m_it(it)
-    {}
+    {
+    }
     MapValueConstIterator(const MapValueConstIterator<M> &it) { this->m_it = it.m_it; }
 
     MapValueConstIterator<M> &operator=(const MapValueConstIterator<M> &it)

@@ -64,7 +64,8 @@ Prog::Prog(const QString &name, Project *project)
 
 
 Prog::~Prog()
-{}
+{
+}
 
 
 void Prog::setFrontEnd(IFrontEnd *frontEnd)

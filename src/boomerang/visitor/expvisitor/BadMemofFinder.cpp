@@ -15,7 +15,8 @@
 
 BadMemofFinder::BadMemofFinder()
     : m_found(false)
-{}
+{
+}
 
 
 bool BadMemofFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)

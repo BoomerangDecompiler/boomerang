@@ -23,7 +23,8 @@
 
 AssignRemovalPass::AssignRemovalPass()
     : IPass("AssignRemoval", PassID::AssignRemoval)
-{}
+{
+}
 
 
 bool AssignRemovalPass::execute(UserProc *proc)

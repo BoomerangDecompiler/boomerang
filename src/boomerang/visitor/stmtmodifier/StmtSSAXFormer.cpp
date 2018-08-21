@@ -26,7 +26,8 @@
 StmtSSAXformer::StmtSSAXformer(ExpSSAXformer *esx, UserProc *proc)
     : StmtModifier(esx)
     , m_proc(proc)
-{}
+{
+}
 
 
 void StmtSSAXformer::handleCommonLHS(Assignment *as)

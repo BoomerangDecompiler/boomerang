@@ -14,7 +14,8 @@
 
 PhiPlacementPass::PhiPlacementPass()
     : IPass("PhiPlacement", PassID::PhiPlacement)
-{}
+{
+}
 
 
 bool PhiPlacementPass::execute(UserProc *proc)

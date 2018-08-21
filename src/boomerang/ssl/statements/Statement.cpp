@@ -64,7 +64,8 @@ Statement::Statement()
     : m_bb(nullptr)
     , m_proc(nullptr)
     , m_number(0)
-{}
+{
+}
 
 
 void Statement::setProc(UserProc *proc)

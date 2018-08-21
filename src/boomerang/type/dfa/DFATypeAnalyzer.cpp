@@ -30,7 +30,8 @@
 
 DFATypeAnalyzer::DFATypeAnalyzer()
     : StmtModifier(nullptr)
-{}
+{
+}
 
 
 void DFATypeAnalyzer::visitAssignment(Assignment *stmt, bool &visitChildren)

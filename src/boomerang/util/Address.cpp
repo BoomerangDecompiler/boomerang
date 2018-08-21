@@ -24,7 +24,8 @@ const HostAddress HostAddress::INVALID = HostAddress(static_cast<HostAddress::va
 
 Address::Address()
     : m_value(0)
-{}
+{
+}
 
 
 Address::Address(value_type _value)
@@ -57,12 +58,14 @@ Address::value_type Address::getSourceMask()
 
 HostAddress::HostAddress(const void *ptr)
     : m_value(reinterpret_cast<value_type>(ptr))
-{}
+{
+}
 
 
 HostAddress::HostAddress(value_type _value)
     : m_value(_value)
-{}
+{
+}
 
 
 HostAddress::HostAddress(Address srcAddr, ptrdiff_t hostDiff)

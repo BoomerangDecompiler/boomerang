@@ -20,7 +20,8 @@
 
 StrengthReductionReversalPass::StrengthReductionReversalPass()
     : IPass("StrengthReductionReversal", PassID::StrengthReductionReversal)
-{}
+{
+}
 
 
 bool StrengthReductionReversalPass::execute(UserProc *proc)

@@ -17,7 +17,8 @@ Parameter::Parameter(SharedType type, const QString &name, SharedExp exp, const 
     , m_name(name)
     , m_exp(exp)
     , m_boundMax(boundMax)
-{}
+{
+}
 
 
 bool Parameter::operator==(const Parameter &other) const

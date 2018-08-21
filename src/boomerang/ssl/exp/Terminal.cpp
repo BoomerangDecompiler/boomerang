@@ -19,12 +19,14 @@
 
 Terminal::Terminal(OPER _op)
     : Exp(_op)
-{}
+{
+}
 
 
 Terminal::Terminal(const Terminal &o)
     : Exp(o.m_oper)
-{}
+{
+}
 
 
 SharedExp Terminal::clone() const

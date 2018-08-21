@@ -17,22 +17,26 @@
 
 OStream::OStream(QFile *tgt)
     : m_os(new QTextStream(tgt))
-{}
+{
+}
 
 
 OStream::OStream(QString *tgt)
     : m_os(new QTextStream(tgt))
-{}
+{
+}
 
 
 OStream::OStream(FILE *tgt)
     : m_os(new QTextStream(tgt))
-{}
+{
+}
 
 
 OStream::OStream(QSaveFile *tgt)
     : m_os(new QTextStream(tgt))
-{}
+{
+}
 
 
 OStream::~OStream()

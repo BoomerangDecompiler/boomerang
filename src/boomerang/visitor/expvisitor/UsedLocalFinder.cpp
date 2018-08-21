@@ -20,7 +20,8 @@ UsedLocalFinder::UsedLocalFinder(LocationSet &used, UserProc *proc)
     : m_used(&used)
     , m_proc(proc)
     , all(false)
-{}
+{
+}
 
 bool UsedLocalFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)
 {

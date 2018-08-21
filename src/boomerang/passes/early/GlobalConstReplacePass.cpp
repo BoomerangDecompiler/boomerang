@@ -18,7 +18,8 @@
 
 GlobalConstReplacePass::GlobalConstReplacePass()
     : IPass("GlobalConstReplace", PassID::GlobalConstReplace)
-{}
+{
+}
 
 
 bool GlobalConstReplacePass::execute(UserProc *proc)

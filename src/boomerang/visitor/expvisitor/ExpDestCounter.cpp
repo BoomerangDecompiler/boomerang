@@ -15,7 +15,8 @@
 
 ExpDestCounter::ExpDestCounter(ExpDestCounter::ExpCountMap &dc)
     : m_destCounts(dc)
-{}
+{
+}
 
 bool ExpDestCounter::preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren)
 {

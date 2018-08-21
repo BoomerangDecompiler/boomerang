@@ -30,7 +30,8 @@ Function::Function(Address entryAddr, const std::shared_ptr<Signature> &sig, Mod
 
 
 Function::~Function()
-{}
+{
+}
 
 
 QString Function::getName() const

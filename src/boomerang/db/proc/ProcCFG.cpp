@@ -24,7 +24,8 @@
 
 ProcCFG::ProcCFG(UserProc *proc)
     : m_myProc(proc)
-{}
+{
+}
 
 
 ProcCFG::~ProcCFG()

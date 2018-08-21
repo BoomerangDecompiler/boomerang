@@ -17,7 +17,8 @@
 
 ImplicitPlacementPass::ImplicitPlacementPass()
     : IPass("ImplicitPlacement", PassID::ImplicitPlacement)
-{}
+{
+}
 
 
 bool ImplicitPlacementPass::execute(UserProc *proc)

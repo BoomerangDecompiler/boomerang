@@ -15,7 +15,8 @@
 
 BBSimplifyPass::BBSimplifyPass()
     : IPass("BBSimplify", PassID::BBSimplify)
-{}
+{
+}
 
 
 bool BBSimplifyPass::execute(UserProc *proc)

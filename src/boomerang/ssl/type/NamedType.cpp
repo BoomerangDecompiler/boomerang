@@ -15,11 +15,13 @@
 NamedType::NamedType(const QString &_name)
     : Type(TypeClass::Named)
     , name(_name)
-{}
+{
+}
 
 
 NamedType::~NamedType()
-{}
+{
+}
 
 
 SharedType NamedType::clone() const

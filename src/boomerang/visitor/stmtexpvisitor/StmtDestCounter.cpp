@@ -15,7 +15,8 @@
 
 StmtDestCounter::StmtDestCounter(ExpDestCounter *edc)
     : StmtExpVisitor(edc)
-{}
+{
+}
 
 
 bool StmtDestCounter::visit(PhiAssign * /*stmt*/, bool &visitChildren)

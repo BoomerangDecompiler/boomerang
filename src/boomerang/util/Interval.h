@@ -21,19 +21,22 @@ public:
     explicit Interval(const T &_lower, const T &_upper)
         : m_lower(_lower)
         , m_upper(_upper)
-    {}
+    {
+    }
 
     ~Interval() = default;
 
     Interval(const Interval<T> &other)
         : m_lower(other.m_lower)
         , m_upper(other.m_upper)
-    {}
+    {
+    }
 
     Interval(Interval<T> &&other)
         : m_lower(std::move(other.m_lower))
         , m_upper(std::move(other.m_upper))
-    {}
+    {
+    }
 
     const Interval<T> &operator=(const Interval<T> &other)
     {

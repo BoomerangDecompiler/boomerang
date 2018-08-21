@@ -16,17 +16,20 @@
 SizeType::SizeType()
     : Type(TypeClass::Size)
     , size(0)
-{}
+{
+}
 
 
 SizeType::SizeType(unsigned sz)
     : Type(TypeClass::Size)
     , size(sz)
-{}
+{
+}
 
 
 SizeType::~SizeType()
-{}
+{
+}
 
 
 SharedType SizeType::clone() const

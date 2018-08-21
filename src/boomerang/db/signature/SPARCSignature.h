@@ -87,7 +87,8 @@ class SPARCLibSignature : public SPARCSignature
 public:
     explicit SPARCLibSignature(const QString &name)
         : SPARCSignature(name)
-    {}
+    {
+    }
 
     /// \copydoc SPARCSignature::clone
     virtual std::shared_ptr<Signature> clone() const override;

@@ -18,7 +18,8 @@
 UsedLocsFinder::UsedLocsFinder(LocationSet &used, bool memOnly)
     : m_used(&used)
     , m_memOnly(memOnly)
-{}
+{
+}
 
 
 bool UsedLocsFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)

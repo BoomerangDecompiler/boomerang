@@ -17,7 +17,8 @@
 
 DuplicateArgsRemovalPass::DuplicateArgsRemovalPass()
     : IPass("DuplicateArgsRemoval", PassID::DuplicateArgsRemoval)
-{}
+{
+}
 
 
 bool DuplicateArgsRemovalPass::execute(UserProc *proc)

@@ -15,7 +15,8 @@
 
 ComplexityFinder::ComplexityFinder(UserProc *proc)
     : m_proc(proc)
-{}
+{
+}
 
 
 bool ComplexityFinder::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)

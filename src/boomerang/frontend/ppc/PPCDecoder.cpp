@@ -9085,7 +9085,8 @@ DWord PPCDecoder::getDword(HostAddress lc)
 
 PPCDecoder::PPCDecoder(Prog *_prog)
     : NJMCDecoder(_prog, "ssl/ppc.ssl")
-{}
+{
+}
 
 
 // Get an expression for a CR bit. For example, if bitNum is 6, return r65@[2:2]

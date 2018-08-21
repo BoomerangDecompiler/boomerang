@@ -22,7 +22,8 @@
 
 StatementPropagationPass::StatementPropagationPass()
     : IPass("StatementPropagation", PassID::StatementPropagation)
-{}
+{
+}
 
 
 bool StatementPropagationPass::execute(UserProc *proc)

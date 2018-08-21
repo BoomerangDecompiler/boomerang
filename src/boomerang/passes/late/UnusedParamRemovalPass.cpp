@@ -23,7 +23,8 @@
 
 UnusedParamRemovalPass::UnusedParamRemovalPass()
     : IPass("UnusedParamRemoval", PassID::UnusedParamRemoval)
-{}
+{
+}
 
 
 bool UnusedParamRemovalPass::execute(UserProc *proc)

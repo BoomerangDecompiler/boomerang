@@ -23,7 +23,8 @@
 
 TableEntry::TableEntry()
     : m_rtl(Address::INVALID)
-{}
+{
+}
 
 
 TableEntry::TableEntry(const std::list<QString> &params, const RTL &rtl)

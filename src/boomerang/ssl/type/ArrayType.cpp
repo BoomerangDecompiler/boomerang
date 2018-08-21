@@ -14,7 +14,8 @@ ArrayType::ArrayType(SharedType baseType, unsigned length)
     : Type(TypeClass::Array)
     , BaseType(baseType)
     , m_length(length)
-{}
+{
+}
 
 
 ArrayType::ArrayType()
@@ -22,7 +23,8 @@ ArrayType::ArrayType()
     , BaseType(nullptr)
     , m_length(0)
 
-{}
+{
+}
 
 
 bool ArrayType::isUnbounded() const

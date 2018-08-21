@@ -23,7 +23,8 @@
 
 BlockVarRenamePass::BlockVarRenamePass()
     : IPass("BlockVarRename", PassID::BlockVarRename)
-{}
+{
+}
 
 
 static SharedExp defineAll = Terminal::get(opDefineAll); // An expression representing <all>

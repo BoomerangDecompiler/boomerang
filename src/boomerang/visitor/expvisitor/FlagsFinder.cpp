@@ -14,7 +14,8 @@
 
 FlagsFinder::FlagsFinder()
     : m_found(false)
-{}
+{
+}
 
 
 bool FlagsFinder::preVisit(const std::shared_ptr<Binary> &e, bool &visitChildren)

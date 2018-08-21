@@ -45,11 +45,13 @@ static QMap<QString, SharedType> g_namedTypes;
 
 Type::Type(TypeClass _class)
     : id(_class)
-{}
+{
+}
 
 
 Type::~Type()
-{}
+{
+}
 
 
 bool Type::isCString() const

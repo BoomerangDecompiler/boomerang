@@ -23,7 +23,8 @@
 
 CallAndPhiFixPass::CallAndPhiFixPass()
     : IPass("CallAndPhiFix", PassID::CallAndPhiFix)
-{}
+{
+}
 
 
 bool CallAndPhiFixPass::execute(UserProc *proc)

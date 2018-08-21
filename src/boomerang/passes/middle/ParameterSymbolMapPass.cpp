@@ -17,7 +17,8 @@
 
 ParameterSymbolMapPass::ParameterSymbolMapPass()
     : IPass("ParameterSymbolMap", PassID::ParameterSymbolMap)
-{}
+{
+}
 
 
 bool ParameterSymbolMapPass::execute(UserProc *proc)

@@ -31,11 +31,13 @@
 DataFlow::DataFlow(UserProc *proc)
     : m_proc(proc)
     , renameLocalsAndParams(false)
-{}
+{
+}
 
 
 DataFlow::~DataFlow()
-{}
+{
+}
 
 
 void DataFlow::dfs(int myIdx, int parentIdx)

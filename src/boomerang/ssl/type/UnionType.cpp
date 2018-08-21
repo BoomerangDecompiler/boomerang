@@ -24,7 +24,8 @@ size_t hashUnionElem::operator()(const UnionElement &e) const
 
 UnionType::UnionType()
     : Type(TypeClass::Union)
-{}
+{
+}
 
 
 UnionType::UnionType::UnionType(const std::initializer_list<SharedType> &members)
@@ -37,7 +38,8 @@ UnionType::UnionType::UnionType(const std::initializer_list<SharedType> &members
 
 
 UnionType::~UnionType()
-{}
+{
+}
 
 
 SharedType UnionType::clone() const

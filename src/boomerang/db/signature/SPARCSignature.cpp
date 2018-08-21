@@ -35,7 +35,8 @@ SPARCSignature::SPARCSignature(const QString &name)
 
 SPARCSignature::SPARCSignature(Signature &old)
     : Signature(old)
-{}
+{
+}
 
 
 bool SPARCSignature::operator==(const Signature &other) const

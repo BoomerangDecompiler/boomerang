@@ -58,7 +58,8 @@ static const Binary unscaledArrayPat(opPlus, Terminal::get(opWild), Terminal::ge
 
 DFATypeRecovery::DFATypeRecovery()
     : TypeRecoveryCommon("data-flow based")
-{}
+{
+}
 
 
 void DFATypeRecovery::printResults(StatementList &stmts, int iter)

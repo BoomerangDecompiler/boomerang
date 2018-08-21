@@ -26,7 +26,8 @@
 
 FromSSAFormPass::FromSSAFormPass()
     : IPass("FromSSAForm", PassID::FromSSAForm)
-{}
+{
+}
 
 
 bool FromSSAFormPass::execute(UserProc *proc)

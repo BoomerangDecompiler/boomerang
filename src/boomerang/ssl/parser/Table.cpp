@@ -12,13 +12,15 @@
 
 Table::Table(TABLE_TYPE t)
     : TableType(t)
-{}
+{
+}
 
 
 Table::Table(const std::deque<QString> &recs, TABLE_TYPE t /* = NAMETABLE */)
     : TableType(t)
     , Records(recs)
-{}
+{
+}
 
 
 TABLE_TYPE Table::getType() const
@@ -29,10 +31,12 @@ TABLE_TYPE Table::getType() const
 
 OpTable::OpTable(const std::deque<QString> &ops)
     : Table(ops, OPTABLE)
-{}
+{
+}
 
 
 ExprTable::ExprTable(const std::deque<SharedExp> &exprs)
     : Table(EXPRTABLE)
     , expressions(exprs)
-{}
+{
+}

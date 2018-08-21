@@ -20,7 +20,8 @@
 
 PreservationAnalysisPass::PreservationAnalysisPass()
     : IPass("PreservationAnalysis", PassID::PreservationAnalysis)
-{}
+{
+}
 
 
 bool PreservationAnalysisPass::execute(UserProc *proc)

@@ -19,7 +19,8 @@
 
 StmtRegMapper::StmtRegMapper(ExpRegMapper *erm)
     : StmtExpVisitor(erm)
-{}
+{
+}
 
 
 bool StmtRegMapper::common(Assignment *stmt, bool &visitChildren)

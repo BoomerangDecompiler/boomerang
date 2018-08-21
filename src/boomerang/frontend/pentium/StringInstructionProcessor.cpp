@@ -21,7 +21,8 @@
 
 StringInstructionProcessor::StringInstructionProcessor(UserProc *proc)
     : m_proc(proc)
-{}
+{
+}
 
 
 bool StringInstructionProcessor::processStringInstructions()

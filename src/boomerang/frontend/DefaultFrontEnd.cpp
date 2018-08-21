@@ -38,11 +38,13 @@ DefaultFrontEnd::DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : m_binaryFile(binaryFile)
     , m_program(prog)
     , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
-{}
+{
+}
 
 
 DefaultFrontEnd::~DefaultFrontEnd()
-{}
+{
+}
 
 
 bool DefaultFrontEnd::isNoReturnCallDest(const QString &name) const
@@ -327,7 +329,8 @@ bool DefaultFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
 
 
 void DefaultFrontEnd::extraProcessCall(CallStatement *, const RTLList &)
-{}
+{
+}
 
 
 void DefaultFrontEnd::preprocessProcGoto(std::list<Statement *>::iterator ss, Address dest,

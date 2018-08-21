@@ -37,7 +37,8 @@ GotoStatement::GotoStatement(Address jumpDest)
 
 
 GotoStatement::~GotoStatement()
-{}
+{
+}
 
 
 Address GotoStatement::getFixedDest() const

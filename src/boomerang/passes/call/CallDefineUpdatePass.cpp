@@ -23,7 +23,8 @@
 
 CallDefineUpdatePass::CallDefineUpdatePass()
     : IPass("CallDefineUpdate", PassID::CallDefineUpdate)
-{}
+{
+}
 
 
 bool CallDefineUpdatePass::execute(UserProc *proc)

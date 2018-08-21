@@ -25,7 +25,8 @@
 
 UnusedReturnRemover::UnusedReturnRemover(Prog *prog)
     : m_prog(prog)
-{}
+{
+}
 
 
 bool UnusedReturnRemover::removeUnusedReturns()

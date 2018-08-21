@@ -17,7 +17,8 @@
 
 Localiser::Localiser(CallStatement *call)
     : m_call(call)
-{}
+{
+}
 
 
 SharedExp Localiser::preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren)

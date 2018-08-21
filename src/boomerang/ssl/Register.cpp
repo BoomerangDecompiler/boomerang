@@ -23,7 +23,8 @@ Register::Register(const QString &name, uint16_t sizeInBits, bool isFloatReg)
     , m_fltRegister(isFloatReg)
     , m_mappedIndex(-1)
     , m_mappedOffset(-1)
-{}
+{
+}
 
 
 Register::Register(const Register &r)

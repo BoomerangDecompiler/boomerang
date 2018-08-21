@@ -45,7 +45,8 @@ Binary::Binary(const Binary &o)
 
 
 Binary::~Binary()
-{}
+{
+}
 
 
 void Binary::setSubExp2(SharedExp e)

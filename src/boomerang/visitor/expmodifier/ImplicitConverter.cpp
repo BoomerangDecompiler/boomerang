@@ -15,7 +15,8 @@
 
 ImplicitConverter::ImplicitConverter(ProcCFG *cfg)
     : m_cfg(cfg)
-{}
+{
+}
 
 
 SharedExp ImplicitConverter::postModify(const std::shared_ptr<RefExp> &exp)

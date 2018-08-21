@@ -24,7 +24,8 @@
 
 
 ProcDecompiler::ProcDecompiler()
-{}
+{
+}
 
 
 void ProcDecompiler::decompileRecursive(UserProc *proc)

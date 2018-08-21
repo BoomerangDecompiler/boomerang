@@ -17,7 +17,8 @@
 
 LocalAndParamMapPass::LocalAndParamMapPass()
     : IPass("LocalAndParamMap", PassID::LocalAndParamMap)
-{}
+{
+}
 
 
 bool LocalAndParamMapPass::execute(UserProc *proc)

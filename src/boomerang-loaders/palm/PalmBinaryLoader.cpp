@@ -87,7 +87,8 @@ static_assert(sizeof(PRCResource) == 10, "PRCRecordList size does not match");
 PalmBinaryLoader::PalmBinaryLoader()
     : m_image(nullptr)
     , m_data(nullptr)
-{}
+{
+}
 
 
 PalmBinaryLoader::~PalmBinaryLoader()
@@ -345,7 +346,8 @@ int PalmBinaryLoader::canLoad(QIODevice &dev) const
 
 
 void PalmBinaryLoader::unload()
-{}
+{
+}
 
 
 Address PalmBinaryLoader::getEntryPoint()

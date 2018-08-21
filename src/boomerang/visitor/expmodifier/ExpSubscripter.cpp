@@ -18,7 +18,8 @@
 ExpSubscripter::ExpSubscripter(const SharedExp &s, Statement *def)
     : m_search(s)
     , m_def(def)
-{}
+{
+}
 
 
 SharedExp ExpSubscripter::preModify(const std::shared_ptr<Location> &exp, bool &visitChildren)

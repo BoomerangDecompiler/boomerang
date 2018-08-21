@@ -20,7 +20,8 @@
 
 LocalTypeAnalysisPass::LocalTypeAnalysisPass()
     : IPass("LocalTypeAnalysis", PassID::LocalTypeAnalysis)
-{}
+{
+}
 
 
 bool LocalTypeAnalysisPass::execute(UserProc *proc)

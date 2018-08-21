@@ -35,11 +35,13 @@ struct SectionParam
 extern "C" int microX86Dis(void *p); // From microX86dis.c
 
 DOS4GWBinaryLoader::DOS4GWBinaryLoader()
-{}
+{
+}
 
 
 DOS4GWBinaryLoader::~DOS4GWBinaryLoader()
-{}
+{
+}
 
 
 void DOS4GWBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
@@ -384,7 +386,8 @@ int DOS4GWBinaryLoader::canLoad(QIODevice &fl) const
 
 // Clean up and unload the binary image
 void DOS4GWBinaryLoader::unload()
-{}
+{
+}
 
 
 SWord DOS4GWBinaryLoader::dos4gwRead2(const void *src) const

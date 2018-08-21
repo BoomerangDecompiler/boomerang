@@ -14,7 +14,8 @@
 
 DominatorPass::DominatorPass()
     : IPass("Dominator", PassID::Dominators)
-{}
+{
+}
 
 
 bool DominatorPass::execute(UserProc *proc)

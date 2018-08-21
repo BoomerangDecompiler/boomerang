@@ -16,7 +16,8 @@
 
 StatementInitPass::StatementInitPass()
     : IPass("StatementInit", PassID::StatementInit)
-{}
+{
+}
 
 
 bool StatementInitPass::execute(UserProc *proc)

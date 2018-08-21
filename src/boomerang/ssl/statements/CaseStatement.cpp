@@ -27,7 +27,8 @@ CaseStatement::CaseStatement()
 
 
 CaseStatement::~CaseStatement()
-{}
+{
+}
 
 
 SwitchInfo *CaseStatement::getSwitchInfo()

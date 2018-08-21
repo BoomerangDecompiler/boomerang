@@ -20,7 +20,8 @@
 
 CallArgumentUpdatePass::CallArgumentUpdatePass()
     : IPass("CallArgumentUpdate", PassID::CallArgumentUpdate)
-{}
+{
+}
 
 
 bool CallArgumentUpdatePass::execute(UserProc *proc)

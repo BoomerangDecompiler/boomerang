@@ -34,7 +34,8 @@ ST20Signature::ST20Signature(const QString &name)
 
 ST20Signature::ST20Signature(Signature &old)
     : Signature(old)
-{}
+{
+}
 
 
 std::shared_ptr<Signature> ST20Signature::clone() const

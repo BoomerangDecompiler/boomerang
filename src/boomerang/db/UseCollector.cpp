@@ -16,7 +16,8 @@
 
 UseCollector::UseCollector()
     : m_initialised(false)
-{}
+{
+}
 
 
 bool UseCollector::operator==(const UseCollector &other) const

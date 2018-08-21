@@ -26,7 +26,8 @@ BasicBlock::BasicBlock(Address lowAddr, Function *function)
     : m_function(function)
     , m_lowAddr(lowAddr)
     , m_bbType(BBType::Invalid)
-{}
+{
+}
 
 
 BasicBlock::BasicBlock(BBType bbType, std::unique_ptr<RTLList> bbRTLs, Function *function)
@@ -65,7 +66,8 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
 
 
 BasicBlock::~BasicBlock()
-{}
+{
+}
 
 
 BasicBlock &BasicBlock::operator=(const BasicBlock &bb)

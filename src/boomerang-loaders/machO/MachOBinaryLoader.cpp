@@ -51,7 +51,8 @@ MachOBinaryLoader::MachOBinaryLoader()
 
 
 MachOBinaryLoader::~MachOBinaryLoader()
-{}
+{
+}
 
 
 void MachOBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
@@ -481,7 +482,8 @@ int MachOBinaryLoader::canLoad(QIODevice &dev) const
 
 // Clean up and unload the binary image
 void MachOBinaryLoader::unload()
-{}
+{
+}
 
 
 SWord MachOBinaryLoader::machORead2(const void *ps) const

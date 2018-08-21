@@ -47050,7 +47050,8 @@ bool PentiumDecoder::isFuncPrologue(Address)
 
 PentiumDecoder::PentiumDecoder(Prog *_prog)
     : NJMCDecoder(_prog, "ssl/pentium.ssl")
-{}
+{
+}
 
 
 void PentiumDecoder::genBSFR(Address pc, SharedExp dest, SharedExp modrm, int init, int size,

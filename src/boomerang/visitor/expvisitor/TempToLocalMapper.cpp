@@ -17,7 +17,8 @@
 
 TempToLocalMapper::TempToLocalMapper(UserProc *proc)
     : m_proc(proc)
-{}
+{
+}
 
 
 bool TempToLocalMapper::preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren)

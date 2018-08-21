@@ -21,7 +21,8 @@
 
 SPPreservationPass::SPPreservationPass()
     : IPass("SPPreservation", PassID::SPPreservation)
-{}
+{
+}
 
 
 bool SPPreservationPass::execute(UserProc *proc)

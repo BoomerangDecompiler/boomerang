@@ -14,4 +14,5 @@
 
 StmtConstFinder::StmtConstFinder(ConstFinder *v)
     : StmtExpVisitor(v)
-{}
+{
+}

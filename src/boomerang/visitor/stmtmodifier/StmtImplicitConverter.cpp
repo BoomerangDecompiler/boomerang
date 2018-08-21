@@ -19,7 +19,8 @@
 StmtImplicitConverter::StmtImplicitConverter(ImplicitConverter *ic, ProcCFG *cfg)
     : StmtModifier(ic, false) // False to not ignore collectors (want to make sure that
     , m_cfg(cfg)              //  collectors have valid expressions so you can ascendType)
-{}
+{
+}
 
 
 void StmtImplicitConverter::visit(PhiAssign *stmt, bool &visitChildren)

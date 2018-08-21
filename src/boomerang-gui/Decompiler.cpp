@@ -40,7 +40,8 @@ Decompiler::Decompiler()
 
 
 Decompiler::~Decompiler()
-{}
+{
+}
 
 
 void Decompiler::addEntryPoint(Address entryAddr, const QString &name)

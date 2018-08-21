@@ -25,11 +25,13 @@ DecodeResult::DecodeResult(DecodeResult &&other)
     , numBytes(std::move(other.numBytes))
     , rtl(std::move(other.rtl))
     , forceOutEdge(other.forceOutEdge)
-{}
+{
+}
 
 
 DecodeResult::~DecodeResult()
-{}
+{
+}
 
 
 DecodeResult &DecodeResult::operator=(DecodeResult &&other)

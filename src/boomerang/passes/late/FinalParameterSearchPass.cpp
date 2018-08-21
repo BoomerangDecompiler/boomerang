@@ -22,7 +22,8 @@
 
 FinalParameterSearchPass::FinalParameterSearchPass()
     : IPass("FinalParameterUpdate", PassID::FinalParameterSearch)
-{}
+{
+}
 
 
 bool FinalParameterSearchPass::execute(UserProc *proc)

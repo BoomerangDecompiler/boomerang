@@ -14,7 +14,8 @@
 
 ConstFinder::ConstFinder(std::list<std::shared_ptr<Const>> &list)
     : m_constList(list)
-{}
+{
+}
 
 
 bool ConstFinder::visit(const std::shared_ptr<Const> &exp)

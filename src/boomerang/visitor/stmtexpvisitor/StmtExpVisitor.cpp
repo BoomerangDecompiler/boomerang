@@ -13,7 +13,8 @@
 StmtExpVisitor::StmtExpVisitor(ExpVisitor *v, bool ignoreCol)
     : ev(v)
     , m_ignoreCol(ignoreCol)
-{}
+{
+}
 
 
 bool StmtExpVisitor::visit(Assign *, bool &visitChildren)

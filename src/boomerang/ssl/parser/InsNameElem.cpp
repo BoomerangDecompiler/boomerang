@@ -18,11 +18,13 @@
 
 InsNameElem::InsNameElem(const QString &name)
     : m_elemName(name)
-{}
+{
+}
 
 
 InsNameElem::~InsNameElem()
-{}
+{
+}
 
 
 size_t InsNameElem::getNumTokens() const
@@ -105,7 +107,8 @@ int InsNameElem::getValue(void) const
 
 InsOptionElem::InsOptionElem(const QString &name)
     : InsNameElem(name)
-{}
+{
+}
 
 
 size_t InsOptionElem::getNumTokens() const
@@ -136,7 +139,8 @@ InsListElem::InsListElem(const QString &name, const std::shared_ptr<Table> &t, c
     : InsNameElem(name)
     , m_indexName(idx)
     , m_theTable(t)
-{}
+{
+}
 
 
 size_t InsListElem::getNumTokens() const

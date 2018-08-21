@@ -24,7 +24,8 @@
 
 ProgDecompiler::ProgDecompiler(Prog *prog)
     : m_prog(prog)
-{}
+{
+}
 
 
 void ProgDecompiler::decompile()

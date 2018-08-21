@@ -156,11 +156,13 @@ HpSomBinaryLoader::HpSomBinaryLoader()
     : m_image(nullptr)
     , m_symbols(nullptr)
     , m_header(nullptr)
-{}
+{
+}
 
 
 HpSomBinaryLoader::~HpSomBinaryLoader()
-{}
+{
+}
 
 
 void HpSomBinaryLoader::initialize(BinaryImage *image, BinarySymbolTable *symbols)
@@ -483,7 +485,8 @@ int HpSomBinaryLoader::canLoad(QIODevice &dev) const
 
 
 void HpSomBinaryLoader::unload()
-{}
+{
+}
 
 
 Address HpSomBinaryLoader::getEntryPoint()

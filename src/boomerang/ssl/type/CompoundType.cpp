@@ -16,11 +16,13 @@ CompoundType::CompoundType(bool is_generic /* = false */)
     : Type(TypeClass::Compound)
     , m_isGeneric(is_generic)
     , m_nextGenericMemberNum(1)
-{}
+{
+}
 
 
 CompoundType::~CompoundType()
-{}
+{
+}
 
 
 SharedType CompoundType::clone() const

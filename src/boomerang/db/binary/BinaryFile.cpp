@@ -18,11 +18,13 @@ BinaryFile::BinaryFile(const QByteArray &rawData, IFileLoader *loader)
     : m_image(new BinaryImage(rawData))
     , m_symbols(new BinarySymbolTable())
     , m_loader(loader)
-{}
+{
+}
 
 
 BinaryFile::~BinaryFile()
-{}
+{
+}
 
 
 BinaryImage *BinaryFile::getImage()

@@ -25,7 +25,8 @@
 StmtConscriptSetter::StmtConscriptSetter(int n, bool clear)
     : m_curConscript(n)
     , m_clear(clear)
-{}
+{
+}
 
 
 bool StmtConscriptSetter::visit(const Assign *stmt)

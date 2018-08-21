@@ -20,7 +20,8 @@
 
 InterferenceFinder::InterferenceFinder(ProcCFG *cfg)
     : m_cfg(cfg)
-{}
+{
+}
 
 
 void InterferenceFinder::findInterferences(ConnectionGraph &ig)

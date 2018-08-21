@@ -47,7 +47,7 @@ BraceWrapping:
     BeforeCatch: true
     BeforeElse: true
     IndentBraces: false
-    SplitEmptyFunction: false
+    SplitEmptyFunction: true
     SplitEmptyNamespace: true
 
 CompactNamespaces: true

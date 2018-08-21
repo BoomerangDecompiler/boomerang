@@ -19,7 +19,8 @@
 
 BranchAnalysisPass::BranchAnalysisPass()
     : IPass("BranchAnalysis", PassID::BranchAnalysis)
-{}
+{
+}
 
 
 bool BranchAnalysisPass::execute(UserProc *proc)

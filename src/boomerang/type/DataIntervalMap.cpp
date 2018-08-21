@@ -23,7 +23,8 @@
 
 DataIntervalMap::DataIntervalMap(UserProc *userProc)
     : m_proc(userProc)
-{}
+{
+}
 
 
 bool DataIntervalMap::isClear(Address addr, unsigned size) const

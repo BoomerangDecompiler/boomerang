@@ -22,7 +22,8 @@
 UsedLocsVisitor::UsedLocsVisitor(ExpVisitor *v, bool cc)
     : StmtExpVisitor(v)
     , m_countCol(cc)
-{}
+{
+}
 
 
 bool UsedLocsVisitor::visit(Assign *stmt, bool &visitChildren)

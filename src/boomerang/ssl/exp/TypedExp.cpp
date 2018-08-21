@@ -18,13 +18,15 @@
 TypedExp::TypedExp(SharedExp e1)
     : Unary(opTypedExp, e1)
     , m_type(nullptr)
-{}
+{
+}
 
 
 TypedExp::TypedExp(SharedType ty, SharedExp e1)
     : Unary(opTypedExp, e1)
     , m_type(ty)
-{}
+{
+}
 
 
 TypedExp::TypedExp(const TypedExp &o)
@@ -144,7 +146,8 @@ SharedType TypedExp::ascendType()
 
 
 void TypedExp::descendType(SharedType, bool &, Statement *)
-{}
+{
+}
 
 
 SharedExp TypedExp::acceptPreModifier(ExpModifier *mod, bool &visitChildren)

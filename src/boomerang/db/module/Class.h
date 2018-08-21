@@ -23,7 +23,8 @@ public:
     Class(const QString &name, Prog *_prog)
         : Module(name, _prog)
         , m_type(CompoundType::get())
-    {}
+    {
+    }
 
     /// A Class tends to be aggregated into the parent Module,
     /// this isn't the case with Java, but hey, we're not doing that yet.

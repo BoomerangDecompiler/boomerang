@@ -35,7 +35,8 @@ BoolAssign::BoolAssign(int size)
 
 
 BoolAssign::~BoolAssign()
-{}
+{
+}
 
 
 void BoolAssign::setCondType(BranchType cond, bool usesFloat /*= false*/)

@@ -41,7 +41,8 @@ public:
     ExpSet() = default;
     ExpSet(const std::initializer_list<std::shared_ptr<T>> &exps)
         : m_set(exps)
-    {}
+    {
+    }
 
     ExpSet(const ExpSet &o)
     {

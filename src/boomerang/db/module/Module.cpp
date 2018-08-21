@@ -67,7 +67,8 @@ void Module::updateLibrarySignatures()
 Module::Module(const QString &name, Prog *prog)
     : m_name(name)
     , m_prog(prog)
-{}
+{
+}
 
 
 Module::~Module()

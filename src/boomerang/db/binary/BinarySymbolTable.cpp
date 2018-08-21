@@ -16,7 +16,8 @@
 
 
 BinarySymbolTable::BinarySymbolTable()
-{}
+{
+}
 
 
 BinarySymbolTable::~BinarySymbolTable()

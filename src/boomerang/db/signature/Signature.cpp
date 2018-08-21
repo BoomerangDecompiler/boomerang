@@ -51,7 +51,8 @@ Signature::Signature(const QString &name)
 
 
 Signature::~Signature()
-{}
+{
+}
 
 
 std::shared_ptr<Signature> Signature::clone() const

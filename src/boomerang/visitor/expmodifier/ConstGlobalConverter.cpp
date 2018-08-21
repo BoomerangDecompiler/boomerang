@@ -19,7 +19,8 @@
 
 ConstGlobalConverter::ConstGlobalConverter(Prog *prog)
     : m_prog(prog)
-{}
+{
+}
 
 
 SharedExp ConstGlobalConverter::preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren)

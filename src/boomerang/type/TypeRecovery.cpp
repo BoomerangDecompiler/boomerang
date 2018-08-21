@@ -19,7 +19,8 @@
 
 TypeRecoveryCommon::TypeRecoveryCommon(const QString &name)
     : m_name(name)
-{}
+{
+}
 
 
 const QString &TypeRecoveryCommon::getName()

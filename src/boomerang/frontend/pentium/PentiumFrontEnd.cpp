@@ -383,7 +383,8 @@ PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
 
 
 PentiumFrontEnd::~PentiumFrontEnd()
-{}
+{
+}
 
 
 Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
