@@ -111,7 +111,10 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     m_callStack.push_back(proc);
-    printCallStack();
+
+    if (project->getSettings()->verboseOutput) {
+        printCallStack();
+    }
 
     if (project->getSettings()->decodeChildren) {
         // Recurse to callees first, to perform a depth first search
@@ -215,7 +218,10 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
         earlyDecompile(proc);
         middleDecompile(proc);
-        printCallStack();
+
+        if (project->getSettings()->verboseOutput) {
+            printCallStack();
+        }
     }
 
     if (proc->getStatus() != PROC_INCYCLE) {
@@ -257,7 +263,11 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     LOG_MSG("Finished decompile of '%1'", proc->getName());
-    printCallStack();
+
+    if (project->getSettings()->verboseOutput) {
+        printCallStack();
+    }
+
     return proc->getStatus();
 }
 
