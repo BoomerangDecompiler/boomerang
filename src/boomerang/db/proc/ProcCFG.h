@@ -117,17 +117,17 @@ public:
      * Explicit labels are addresses that have already been tagged as being labels
      * due to transfers of control to that address (i.e. they are the start of a complete Basic
      * Block) Non explicit labels are addresses that are in the middle of a complete Basic Block. In
-     * this case, the existing complete BB is split. If \p currBB is the BB that gets split, \p
-     * currBB is updated to point to the "high" part of the split BB.
+     * this case, the existing complete BB is split. If \p currBB is the BB that gets split,
+     * \p currBB is updated to point to the "high" part of the split BB.
      *
-     * \param         addr   native (source) address to check
-     * \param         currBB See above
+     * \param  addr   native (source) address to check
+     * \param  currBB See above
      * \returns true if the BB starting at \p address is (now) complete, false otherwise.
      */
     bool ensureBBExists(Address addr, BasicBlock *&currBB);
 
     /**
-     * Get a BasicBlock starting at the given address.
+     * Get a (complete or incomplete) BasicBlock starting at the given address.
      * If there is no such block, return nullptr.
      */
     inline BasicBlock *getBBStartingAt(Address addr)
@@ -245,10 +245,12 @@ private:
     BasicBlock *m_entryBB = nullptr; ///< The CFG entry BasicBlock.
     BasicBlock *m_exitBB  = nullptr; ///< The CFG exit BasicBlock.
 
-    ExpStatementMap
-        m_implicitMap; ///< Map from expression to implicit assignment. The purpose is to prevent
-                       ///< multiple implicit assignments for the same location.
-    bool m_implicitsDone = false; ///< True when the implicits are done; they can cause problems
-                                  ///< (e.g. with ad-hoc global assignment)
+    /// Map from expression to implicit assignment. The purpose is to prevent
+    /// multiple implicit assignments for the same location.
+    ExpStatementMap m_implicitMap;
+
+    /// True when the implicits are done; they can cause problems
+    /// (e.g. with ad-hoc global assignment)
+    bool m_implicitsDone      = false;
     mutable bool m_wellFormed = false;
 };
