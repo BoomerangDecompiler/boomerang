@@ -38,10 +38,6 @@ public:
     virtual bool processProc(UserProc *proc, Address addr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    /**
-     * Locate the starting address of "main" in the code section.
-     * \returns  Native pointer if found; Address::INVALID if not
-     */
     virtual Address findMainEntryPoint(bool &gotMain) override;
 
     virtual bool decodeSingleInstruction(Address pc, DecodeResult &result) override;

@@ -43,10 +43,6 @@ class BOOMERANG_API IFrontEnd
 public:
     virtual ~IFrontEnd() = default;
 
-public:
-    /// Determines whether the proc with name \p procName returns or not (like abort)
-    virtual bool isNoReturnCallDest(const QString &procName) const = 0;
-
     // decoding related
 public:
     virtual IDecoder *getDecoder()             = 0;
@@ -57,6 +53,7 @@ public:
     virtual bool decodeEntryPointsRecursive(bool decodeMain = true) = 0;
 
     /// Decode all procs starting at a given address
+    /// \returns true iff decoded successfully.
     virtual bool decodeRecursive(Address addr) = 0;
 
     /// Decode all undecoded functions.
@@ -64,6 +61,7 @@ public:
     virtual bool decodeUndecoded() = 0;
 
     /// Decode a fragment of a procedure, e.g. for each destination of a switch statement
+    /// \returns true iff decoded successfully.
     virtual bool decodeFragment(UserProc *proc, Address addr) = 0;
 
     /**
@@ -83,6 +81,9 @@ public:
 
     /// Returns a list of all available entrypoints.
     virtual std::vector<Address> findEntryPoints() = 0;
+
+    /// Determines whether the proc with name \p procName returns or not (like abort)
+    virtual bool isNoReturnCallDest(const QString &procName) const = 0;
 
     /// Add a "hint" that an instruction at \p addr references a named global
     virtual void addRefHint(Address addr, const QString &name) = 0;
