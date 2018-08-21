@@ -23,7 +23,14 @@ class BasicBlock;
 class TargetQueue
 {
 public:
-    TargetQueue(bool traceDecoder) { m_traceDecoder = traceDecoder; }
+    TargetQueue(bool traceDecoder);
+
+    /**
+     * Seed the queue with an initial address.
+     * \note     Can be some targets already in the queue now
+     * \param    addr Native address to seed the queue with
+     */
+    void initial(Address addr);
 
     /**
      * Visit a destination as a label, i.e. check whether we need to queue it as a new BB to create
@@ -41,13 +48,6 @@ public:
      *          as a non explicit label (BB has to be split)
      */
     void visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB);
-
-    /**
-     * Seed the queue with an initial address.
-     * \note     Can be some targets already in the queue now
-     * \param    addr Native address to seed the queue with
-     */
-    void initial(Address addr);
 
     /**
      * Return the next target from the queue of non-processed targets.

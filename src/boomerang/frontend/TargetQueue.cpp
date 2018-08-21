@@ -13,11 +13,17 @@
 #include "boomerang/util/log/Log.h"
 
 
+TargetQueue::TargetQueue(bool traceDecoder)
+    : m_traceDecoder(traceDecoder)
+{
+}
+
+
 void TargetQueue::visit(ProcCFG *cfg, Address newAddr, BasicBlock *&newBB)
 {
-    const BasicBlock *existingBB = cfg->getBBStartingAt(newAddr);
-    if (existingBB) {
-        // BB was already visited - don't visit it again.
+    if (cfg->isStartOfBB(newAddr)) {
+        // BB is already complete or the start address is already in the queue.
+        // Don't visit it twice.
         return;
     }
 
