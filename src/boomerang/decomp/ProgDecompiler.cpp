@@ -35,7 +35,7 @@ void ProgDecompiler::decompile()
 
     // Start decompiling each entry point
     for (UserProc *up : m_prog->getEntryProcs()) {
-        LOG_VERBOSE("Decompiling entry point '%1'", up->getName());
+        LOG_MSG("Decompiling entry point '%1'", up->getName());
         up->decompileRecursive();
     }
 

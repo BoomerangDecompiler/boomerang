@@ -81,9 +81,11 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
      *     else
      *       // Is involved in recursion
      *       find first element f in callStack that is also in cycleGrp
-     *       if (f == this)             // The big test: have we got the complete strongly connected
-     * component? recursionGroupAnalysis() // Yes, we have child = new ProcSet      // Don't add
-     * these processed cycles to the parent remove last element (= this) from callStack return child
+     *       if (f == this) // The big test: have we got the complete strongly connected component?
+     *         recursionGroupAnalysis() // Yes, we have
+     *         child = new ProcSet      // Don't add these processed cycles to the parent
+     *     remove last element (= this) from callStack
+     *     return child
      */
 
     Project *project = proc->getProg()->getProject();
@@ -175,20 +177,6 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
                         addToRecursionGroup(*it, recursionGroup);
                     }
                 }
-                /*
-                                // update the recursion group for each element in the new group;
-                                // this will union all the recursion groups that are reached along
-                   the call path. ProcSet oldRecursionGroup = *recursionGroup; for (UserProc *_proc
-                   : oldRecursionGroup) { if (_proc->m_recursionGroup) {
-                                        recursionGroup->insert(_proc->m_recursionGroup->begin(),
-                   _proc->m_recursionGroup->end());
-                                    }
-                                }
-
-                                // update the recursion group from the old one(s) to the new one
-                                for (UserProc *_proc : *recursionGroup) {
-                                    _proc->m_recursionGroup = recursionGroup;
-                                }*/
 
                 proc->setStatus(PROC_INCYCLE);
             }
@@ -274,9 +262,9 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
 
 void ProcDecompiler::createRecursionGoup(const std::shared_ptr<ProcSet> &newGroup)
 {
-    LOG_MSG("Creating recursion group:");
+    LOG_VERBOSE("Creating recursion group:");
     for (UserProc *proc : *newGroup) {
-        LOG_MSG("    %1", proc->getName());
+        LOG_VERBOSE("    %1", proc->getName());
     }
 
     // find all exisiting groups and union them with the new one
@@ -313,9 +301,9 @@ void ProcDecompiler::createRecursionGoup(const std::shared_ptr<ProcSet> &newGrou
 void ProcDecompiler::addToRecursionGroup(UserProc *proc,
                                          const std::shared_ptr<ProcSet> &recursionGroup)
 {
-    LOG_MSG("Adding %1 to recursion group:", proc->getName());
+    LOG_VERBOSE("Adding %1 to recursion group:", proc->getName());
     for (UserProc *_proc : *recursionGroup) {
-        LOG_MSG("    %1", _proc->getName());
+        LOG_VERBOSE("    %1", _proc->getName());
     }
 
     // find all exisiting groups and union them with the new one
@@ -682,15 +670,13 @@ void ProcDecompiler::recursionGroupAnalysis(const std::shared_ptr<ProcSet> &grou
      *  for each proc in cs
      *          update parameters and returns, redoing call bypass, until no change
      */
-
-    LOG_VERBOSE("# # # recursion group analysis for # # #");
-    for (UserProc *proc : *group) {
-        LOG_VERBOSE("    %1", proc->getName());
-    }
-    LOG_VERBOSE("# # #");
-
     if (group->empty()) {
         return;
+    }
+
+    LOG_MSG("Performing recursion group analysis for %1 recursive procedures: ", group->size());
+    for (UserProc *proc : *group) {
+        LOG_MSG("    %1", proc->getName());
     }
 
     UserProc *entry = *group->begin();
