@@ -155,8 +155,11 @@ Function *Prog::addEntryPoint(Address entryAddr)
     }
 
     if (func && !func->isLib()) {
-        m_entryProcs.push_back(static_cast<UserProc *>(func));
-        return func;
+        UserProc *proc = static_cast<UserProc *>(func);
+        if (std::find(m_entryProcs.begin(), m_entryProcs.end(), proc) == m_entryProcs.end()) {
+            m_entryProcs.push_back(static_cast<UserProc *>(func));
+        }
+        return proc;
     }
     else {
         return nullptr;
