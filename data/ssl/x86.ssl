@@ -903,6 +903,11 @@ CMP.rm64.reg64 lhs, rhs
     SUBFLAGS64(lhs, rhs, tmp1)
 ;
 
+CMP.reg8.reg8 lhs, rhs
+    *8* tmpb := lhs - rhs
+    SUBFLAGS8(lhs, rhs, tmpb)
+;
+
 CMP.reg8.rm8 lhs, rhs
     *8* tmp1 := lhs - rhs
     SUBFLAGS8(lhs, rhs, tmp1)
@@ -2377,6 +2382,12 @@ TEST.rm8.reg8 lhs, rhs
 TEST.rm32.reg32 lhs, rhs
     *32* tmp1 := lhs & rhs
     LOGICALFLAGS32(tmp1)
+;
+
+
+# WAIT
+WAIT
+    _
 ;
 
 
