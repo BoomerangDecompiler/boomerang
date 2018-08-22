@@ -195,7 +195,6 @@ static const QString operandNames[] = {
 
 std::unique_ptr<RTL> CapstoneX86Decoder::getRTL(Address pc, const cs::cs_insn *instruction)
 {
-    // TODO Add support for address size override (-> X86_PREFIX_OPSIZE)
     const int numOperands         = instruction->detail->x86.op_count;
     const cs::cs_x86_op *operands = instruction->detail->x86.operands;
 
