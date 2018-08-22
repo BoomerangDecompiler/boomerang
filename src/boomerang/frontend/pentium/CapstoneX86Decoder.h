@@ -36,8 +36,26 @@ public:
     virtual int getRegSize(int regID) const override;
 
 private:
-    ICLASS getInstructionClass(const cs::cs_insn *instruction);
-    std::unique_ptr<RTL> getRTL(Address pc, const cs::cs_insn *instruction);
+    /**
+     * Creates a new RTL for a single instruction.
+     * \param pc the address of the instruction to instantiate.
+     * \param instruction the actual instruction.
+     *
+     * \internal Note that for some instruction groups (e.g. calls, jumps, setCC instructions)
+     * hard-coded adjustments are performed due to SSL limitations. See the function definition
+     * for details.
+     */
+    std::unique_ptr<RTL> createRTLForInstruction(Address pc, const cs::cs_insn *instruction);
+
+    /**
+     * Instantiates an RTL for a single instruction, replacing formal parameters with actual
+     * arguments from \p operands.
+     *
+     * \param pc the address of the instruction.
+     * \param instructionID the unique name of the instruction (e.g. MOV.reg32.reg32)
+     * \param numOperands number of instruction operands (e.g. 2 for MOV.reg32.reg32)
+     * \param operands Array containing actual arguments containing \p numOperands elements.
+     */
     std::unique_ptr<RTL> instantiateRTL(Address pc, const char *instructionID, int numOperands,
                                         const cs::cs_x86_op *operands);
 };

@@ -142,10 +142,10 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
         return false;
     }
 
-    result.type         = getInstructionClass(decodedInstruction);
+    result.type         = ICLASS::NOP; // ICLASS is irrelevant for x86
     result.numBytes     = decodedInstruction->size;
     result.reDecode     = false;
-    result.rtl          = getRTL(pc, decodedInstruction);
+    result.rtl          = createRTLForInstruction(pc, decodedInstruction);
     result.forceOutEdge = Address::ZERO;
     result.valid        = (result.rtl != nullptr);
 
@@ -179,13 +179,6 @@ int CapstoneX86Decoder::getRegSize(int idx) const
 }
 
 
-ICLASS CapstoneX86Decoder::getInstructionClass(const cs::cs_insn *)
-{
-    // ICLASS is irrelevant for x86
-    return ICLASS::NOP;
-}
-
-
 static const QString operandNames[] = {
     "",    // X86_OP_INVALID
     "reg", // X86_OP_REG
@@ -193,7 +186,8 @@ static const QString operandNames[] = {
     "rm",  // X86_OP_MEM
 };
 
-std::unique_ptr<RTL> CapstoneX86Decoder::getRTL(Address pc, const cs::cs_insn *instruction)
+std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
+                                                                 const cs::cs_insn *instruction)
 {
     const int numOperands         = instruction->detail->x86.op_count;
     const cs::cs_x86_op *operands = instruction->detail->x86.operands;
