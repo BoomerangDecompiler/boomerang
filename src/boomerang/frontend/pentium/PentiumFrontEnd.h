@@ -40,17 +40,16 @@ public:
     /// \copydoc IFrontEnd::getMainEntryPoint
     virtual Address findMainEntryPoint(bool &gotMain) override;
 
+    /// \copydoc IFrontEnd::decodeSingleInstruction
     virtual bool decodeSingleInstruction(Address pc, DecodeResult &result) override;
 
 protected:
+    /// \copydoc IFrontEnd::extraProcessCall
     /// EXPERIMENTAL: can we find function pointers in arguments to calls this early?
     virtual void extraProcessCall(CallStatement *call, const RTLList &BB_rtls) override;
 
 private:
-    /**
-     * Little simpler, just replaces FPUSH and FPOP with more complex
-     * semantics.
-     */
+    /// Little simpler, just replaces FPUSH and FPOP with more complex semantics.
     void processFloatCode(ProcCFG *cfg);
 
     /**

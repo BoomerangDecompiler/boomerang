@@ -77,10 +77,11 @@ public:
                                   const StatementList &results) = 0;
 
     /**
-     * Adds an indirect call to \a exp.
-     * \see AddCallStatement
+     * Adds an indirect call to \p exp.
      * \param results UNUSED
-     * \todo Add the use of \a results like AddCallStatement.
+     *
+     * \sa AddCallStatement
+     * \todo Add the use of \p results like AddCallStatement.
      */
     virtual void addIndCallStatement(const SharedExp &exp, const StatementList &args,
                                      const StatementList &results) = 0;

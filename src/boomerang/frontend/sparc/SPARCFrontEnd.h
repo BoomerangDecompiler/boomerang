@@ -45,11 +45,6 @@ public:
     virtual bool processProc(UserProc *proc, Address entryAddr) override;
 
     /// \copydoc IFrontEnd::getMainEntryPoint
-    /**
-     * Locate the starting address of "main" in the code section
-     * \param gotMain set if main found
-     * \returns Native pointer if found; Address::INVALID if not
-     */
     virtual Address findMainEntryPoint(bool &gotMain) override;
 
 private:
