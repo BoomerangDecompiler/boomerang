@@ -268,7 +268,16 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
     }
 
     TableEntry &entry(dict_entry->second);
-    return instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
+    std::unique_ptr<RTL> rtl = instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
+    if (rtl) {
+        return rtl;
+    }
+    else {
+        LOG_ERROR("Cannot instantiate instruction '%1' at address %2: "
+                  "Instruction has %3 parameters, but got %4 arguments",
+                  name, natPC, entry.m_params.size(), actuals.size());
+        return nullptr;
+    }
 }
 
 
@@ -276,7 +285,9 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC
                                                  std::list<QString> &params,
                                                  const std::vector<SharedExp> &actuals)
 {
-    assert(params.size() == actuals.size());
+    if (params.size() != actuals.size()) {
+        return nullptr;
+    }
 
     // Get a deep copy of the template RTL
     std::unique_ptr<RTL> newList(new RTL(existingRTL));
