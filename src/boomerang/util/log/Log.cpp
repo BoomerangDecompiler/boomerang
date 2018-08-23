@@ -191,7 +191,7 @@ QString Log::collectArg(const QString &msg, const SharedType &ty)
 }
 
 
-QString Log::collectArg(const QString &msg, const IPrintable &ty)
+QString Log::collectArg(const QString &msg, const Type &ty)
 {
     return msg.arg(ty.toString());
 }

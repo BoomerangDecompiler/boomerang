@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include "boomerang/ifc/IPrintable.h"
 #include "boomerang/util/Address.h"
 #include "boomerang/util/Types.h"
 
@@ -151,7 +150,7 @@ private:
     QString collectArg(const QString &msg, const Statement *s);
     QString collectArg(const QString &msg, const SharedConstExp &e);
     QString collectArg(const QString &msg, const SharedType &ty);
-    QString collectArg(const QString &msg, const IPrintable &ty);
+    QString collectArg(const QString &msg, const Type &ty);
     QString collectArg(const QString &msg, const RTL *r);
     QString collectArg(const QString &msg, const LocationSet *l);
 

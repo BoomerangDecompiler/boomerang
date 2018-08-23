@@ -9,8 +9,9 @@
 #pragma endregion License
 #pragma once
 
+#include "boomerang/core/BoomerangAPI.h"
 
-#include "boomerang/ifc/IPrintable.h"
+#include <QString>
 
 #include <cassert>
 #include <memory>
@@ -62,7 +63,7 @@ enum class Sign : int8_t
  * Note that we may have a completely different system for
  * recording high level types
  */
-class BOOMERANG_API Type : public std::enable_shared_from_this<Type>, public IPrintable
+class BOOMERANG_API Type : public std::enable_shared_from_this<Type>
 {
 public:
     // Constructors
@@ -70,7 +71,7 @@ public:
     Type(const Type &other) = default;
     Type(Type &&other)      = default;
 
-    virtual ~Type() override;
+    virtual ~Type();
 
     Type &operator=(const Type &other) = default;
     Type &operator=(Type &&other) = default;
@@ -166,8 +167,7 @@ public:
     /// Does not include struct padding.
     size_t getSizeInBytes() const { return (getSize() + 7) / 8; }
 
-    /// \copydoc Printable::toString
-    QString toString() const override;
+    QString toString() const;
 
     /// Get the C type, e.g. "unsigned int". If not final, include comment for lack of sign
     /// information. When final, choose a signedness etc
