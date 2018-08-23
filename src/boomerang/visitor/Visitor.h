@@ -10,14 +10,10 @@
 #pragma once
 
 /**
- * \file      visitor.h
- * \details   Provides the definition for the various visitor and modifier classes.
- *            These classes sometimes are associated with Statement and Exp classes, so they are
- * here to avoid
- *            \#include problems, to make exp.cpp and statement.cpp a little less huge.
- *            The main advantage is that they are quick and easy to implement (once you get used to
- * them), and it avoids having to declare methods in every Statement or Exp subclass TOP LEVEL
- * CLASSES:
+ * \file visitor.h  Provides documentation about expression and statement
+ *                  visitors and modifiers.
+ *
+ * TOP LEVEL CLASSES:
  *     Class name    |  description
  * ------------------|-----------------------------
  * ExpVisitor        | (visit expressions)
@@ -35,7 +31,5 @@
  * level expression can change class (e.g. RefExp to Binary). The accept() functions (in the target
  * classes) are always the same for all visitors; they encapsulate where the visitable parts of a
  * Statement or expression are. The visit() functions contain the logic of the
- * search/modify/whatever.  Often only a few visitor functions have to do anything. Unfortunately,
- * the visit functions are members of the Visitor (or Modifier) classes, and so have to use public
- * functions of the target classes.
+ * search/modify/whatever. Often only a few visitor functions have to do anything.
  */

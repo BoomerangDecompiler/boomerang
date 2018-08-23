@@ -21,11 +21,8 @@ using SharedExp      = std::shared_ptr<Exp>;
 using SharedConstExp = std::shared_ptr<const Exp>;
 
 
-/**
- * A class for comparing Exp*s (comparing the actual expressions).
- * Type sensitive.
- */
+/// A class for comparing Exp*s (comparing the actual expressions). Type sensitive.
 struct BOOMERANG_API lessExpStar
 {
-    bool operator()(const SharedConstExp &x, const SharedConstExp &y) const;
+    bool operator()(const SharedConstExp &left, const SharedConstExp &right) const;
 };

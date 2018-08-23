@@ -15,7 +15,7 @@
 
 
 // A helper class for comparing Exp*'s sensibly
-bool lessExpStar::operator()(const SharedConstExp &x, const SharedConstExp &y) const
+bool lessExpStar::operator()(const SharedConstExp &left, const SharedConstExp &right) const
 {
-    return (*x < *y); // Compare the actual Exps
+    return (*left < *right); // Compare the actual Exps
 }
