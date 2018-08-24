@@ -10,6 +10,7 @@
 - Fixed: Crash when loading HPPA binaries.
 - Fixed: Crash when loading binaries without sections.
 - Fixed: Crash when decoding backwards relative jumps.
+- Fixed: Crash when decoding tail-self-recursive functions.
 - Fixed: Crash when decompiling library thunks.
 - Fixed: Crash when the instruction at the entry point is a jump instruction.
 - Fixed: Crash when accessing a Phi reference in a removed Basic Block.

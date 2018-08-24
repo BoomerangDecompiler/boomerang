@@ -69,7 +69,9 @@ bool UserProc::isNoReturn() const
 
         const CallStatement *call = static_cast<const CallStatement *>(s);
 
-        if (call->getDestProc() && call->getDestProc()->isNoReturn()) {
+        // FIXME: This only handles self recursion properly, not mutual tail recursion.
+        if (call->getDestProc() && call->getDestProc() != this &&
+            call->getDestProc()->isNoReturn()) {
             return true;
         }
     }
