@@ -235,19 +235,9 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
     }
 
     // Remove last element (= this) from path
-    // The if should not be neccesary, but nestedswitch needs it
-    if (!m_callStack.empty()) {
-        assert(std::find(m_callStack.begin(), m_callStack.end(), proc) != m_callStack.end());
-
-        if (m_callStack.back() != proc) {
-            LOG_WARN("Last UserProc in UserProc::decompile/path is not this!");
-        }
-
-        m_callStack.remove(proc);
-    }
-    else {
-        LOG_WARN("Empty path when trying to remove last proc");
-    }
+    assert(!m_callStack.empty());
+    assert(m_callStack.back() == proc);
+    m_callStack.pop_back();
 
     LOG_MSG("Finished decompile of '%1'", proc->getName());
 
