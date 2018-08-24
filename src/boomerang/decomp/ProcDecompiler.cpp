@@ -228,8 +228,7 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         // The big test: have we found the whole strongly connected component (in the call graph)?
         if (*f == proc) {
             // Yes, process these procs as a group
-            recursionGroupAnalysis(
-                proc->getRecursionGroup()); // Includes remUnusedStmtEtc on all procs in cycleGrp
+            recursionGroupAnalysis(proc->getRecursionGroup());
             proc->setStatus(PROC_FINAL);
             project->alertEndDecompile(proc);
         }

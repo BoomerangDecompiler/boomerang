@@ -16,6 +16,7 @@
 - Fixed: Crash when accessing a Phi reference in a removed Basic Block.
 - Fixed: Crash when decompiling recursive functions containing switch statements or computed calls.
 - Fixed: Crash when decompiling x86 binaries that contain a JO/JNO instruction.
+- Fixed: Crash when analyzing specific kinds of switch statements.
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
 - Fixed: A large number of memory leaks.

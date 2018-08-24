@@ -80,9 +80,16 @@ struct SwitchForm
     SwitchType type;
 };
 
-static const SwitchForm hlForms[] = { { form_a, SwitchType::a }, { form_A, SwitchType::A },
-                                      { form_o, SwitchType::o }, { form_O, SwitchType::O },
-                                      { form_R, SwitchType::R }, { form_r, SwitchType::r } };
+// clang-format off
+static const SwitchForm hlForms[] = {
+    { form_a, SwitchType::a },
+    { form_A, SwitchType::A },
+    { form_o, SwitchType::o },
+    { form_O, SwitchType::O },
+    { form_R, SwitchType::R },
+    { form_r, SwitchType::r }
+};
+// clang-format on
 
 
 // Vcall high level patterns
@@ -140,15 +147,21 @@ void findSwParams(SwitchType form, SharedExp e, SharedExp &expr, Address &T)
     switch (form) {
     case SwitchType::a: {
         // Pattern: <base>{}[<index>]{}
-        e              = e->getSubExp1();
+        if (e->isSubscript()) {
+            e = e->getSubExp1();
+        }
+
+        assert(e->getOper() == opArrayIndex);
         SharedExp base = e->getSubExp1();
 
         if (base->isSubscript()) {
             base = base->getSubExp1();
         }
 
-        auto con        = base->access<Const, 1>();
-        QString gloName = con->getStr();
+        assert(base->isGlobal());
+        assert(base->getSubExp1()->isStrConst());
+
+        QString gloName = base->access<Const, 1>()->getStr();
         UserProc *p     = std::static_pointer_cast<Location>(base)->getProc();
         Prog *prog      = p->getProg();
         T               = prog->getGlobalAddrByName(gloName);
