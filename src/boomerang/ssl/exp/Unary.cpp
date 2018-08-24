@@ -254,10 +254,10 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
             size_t stride = leftOfPlus->access<Const, 2>()->getInt();
 
             if (stride * 8 != parentType->getSize()) {
-                LOG_WARN("Type WARNING: apparent array reference at %1 has stride %2 bits, but "
-                         "parent type %3 has size %4",
-                         shared_from_this(), stride * 8, parentType->getCtype(),
-                         parentType->getSize());
+                LOG_VERBOSE("Type WARNING: apparent array reference at %1 has stride %2 bits, but "
+                            "parent type %3 has size %4",
+                            shared_from_this(), stride * 8, parentType->getCtype(),
+                            parentType->getSize());
             }
 
             // The index is integer type
