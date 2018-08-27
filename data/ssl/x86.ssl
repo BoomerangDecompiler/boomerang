@@ -359,30 +359,30 @@ STOS_OR := OREPS STOS;      # Store with optional repeat
 STRS_R[X]ALLSZ[Y] dest, src
             *1* %SKIP := (%ecx = 0);
 
-CMPS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := m[%esi]{8}  - m[%edi]{8};
-CMPS_OR[X].W.rm16.rm16 dest, src            *16* tmph := m[%esi]{16} - m[%edi]{16};
-CMPS_OR[X].D.rm32.rm32 dest, src            *32* tmp1 := m[%esi]{32} - m[%edi]{32};
+CMPS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := dest{8}  - src{8};
+CMPS_OR[X].W.rm16.rm16 dest, src            *16* tmph := dest{16} - src{16};
+CMPS_OR[X].D.rm32.rm32 dest, src            *32* tmp1 := dest{32} - src{32};
 
-LODS_OR[X].B.rm8.rm8 dest, src              *8*  %al  := m[%esi]{8};
-LODS_OR[X].W.rm16.rm16 dest, src            *16* %ax  := m[%esi]{16};
-LODS_OR[X].D.rm32.rm32 dest, src            *32* %eax := m[%esi]{32};
+LODS_OR[X].B.rm8.rm8 dest, src              *8*  dest := src{8};
+LODS_OR[X].W.rm16.rm16 dest, src            *16* dest := src{16};
+LODS_OR[X].D.rm32.rm32 dest, src            *32* dest := src{32};
 
-MOVS_OR[X].B.rm8.rm8 dest, src              *8*  m[%edi] := m[%esi]{8};
-MOVS_OR[X].W.rm16.rm16 dest, src            *16* m[%edi] := m[%esi]{16};
-MOVS_OR[X].D.rm32.rm32 dest, src            *32* m[%edi] := m[%esi]{32};
+MOVS_OR[X].B.rm8.rm8 dest, src              *8*  dest := src{8};
+MOVS_OR[X].W.rm16.rm16 dest, src            *16* dest := src{16};
+MOVS_OR[X].D.rm32.rm32 dest, src            *32* dest := src{32};
 
-SCAS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := %al  - m[%edi]{8};
-SCAS_OR[X].W.rm16.rm16 dest, src            *16* tmph := %ax  - m[%edi];
-SCAS_OR[X].D.rm32.rm32 dest, src            *32* tmp1 := %eax - m[%edi];
+SCAS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := dest{8}  - src{8};
+SCAS_OR[X].W.rm16.rm16 dest, src            *16* tmph := dest{16} - src{16};
+SCAS_OR[X].D.rm32.rm32 dest, src            *32* tmp1 := dest{32} - src{32};
 
-STOS_OR[X].B.rm8.rm8 dest, src              *8*  m[%edi] := %al;
-STOS_OR[X].W.rm16.rm16 dest, src            *16* m[%edi] := %ax;
-STOS_OR[X].D.rm32.rm32 dest, src            *32* m[%edi] := %eax;
+STOS_OR[X].B.rm8.rm8 dest, src              *8*  dest := src;
+STOS_OR[X].W.rm16.rm16 dest, src            *16* dest := src;
+STOS_OR[X].D.rm32.rm32 dest, src            *32* dest := src;
 
 # update flags
-STRFL_OR[X].B.rm8.rm8 dest, src             SUBFLAGS8(m[%esi]{8},   m[%edi]{8},  tmpb);
-STRFL_OR[X].W.rm16.rm16 dest, src           SUBFLAGS16(m[%esi]{16}, m[%edi]{16}, tmph);
-STRFL_OR[X].D.rm32.rm32 dest, src           SUBFLAGS32(m[%esi]{32}, m[%edi]{32}, tmp1);
+STRFL_OR[X].B.rm8.rm8 dest, src             SUBFLAGS8(dest{8},   src{8},  tmpb);
+STRFL_OR[X].W.rm16.rm16 dest, src           SUBFLAGS16(dest{16}, src{16}, tmph);
+STRFL_OR[X].D.rm32.rm32 dest, src           SUBFLAGS32(dest{32}, src{32}, tmp1);
 
 # update (e)si
 STRSI[IDX].B.rm8.rm8 dest, src              *32* %esi := %esi + [%DF = 0?1:-1];
@@ -405,6 +405,15 @@ REPALL := REPS STRNF;
 REPIFZ[X]ALLSZ[Y]  dest, src                *1* %RPT := %ZF;
 REPIFNZ[X]ALLSZ[Y] dest, src                *1* %RPT := ~%ZF;
 REPALL[X]ALLSZ[Y]  dest, src                *1* %RPT := 1;
+
+#
+REP.STOSD.rm32.reg32 dest, src
+    *1* %SKIP := (%ecx = 0)
+    *32* dest := src
+    *32* %edi := %edi + [%DF = 0?4:-4]
+    *32* %ecx := %ecx - 1
+    *1* %RPT  := 1
+;
 
 
 #
