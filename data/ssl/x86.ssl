@@ -407,7 +407,6 @@ REPIFNZ[X]ALLSZ[Y] dest, src                *1* %RPT := ~%ZF;
 REPALL[X]ALLSZ[Y]  dest, src                *1* %RPT := 1;
 
 
-
 #
 # Remaining instructions (sorted alphabetically)
 #
@@ -935,6 +934,92 @@ CLI
 CMC
     *1*%CF := ~%CF
 ;
+
+
+# CMOVcc
+CMOVA.reg32.reg32    dest, src      *32* ~%CF & ~%ZF         => dest := src;
+CMOVA.reg32.rm32     dest, src      *32* ~%CF & ~%ZF         => dest := src;
+
+CMOVAE.reg32.reg32   dest, src      *32* %CF = 0             => dest := src;
+CMOVAE.reg32.rm32    dest, src      *32* %CF = 0             => dest := src;
+
+CMOVB.reg32.reg32    dest, src      *32* %CF = 1             => dest := src;
+CMOVB.reg32.rm32     dest, src      *32* %CF = 1             => dest := src;
+
+CMOVBE.reg32.reg32   dest, src      *32* %CF | %ZF           => dest := src;
+CMOVBE.reg32.rm32    dest, src      *32* %CF | %ZF           => dest := src;
+
+CMOVC.reg32.reg32    dest, src      *32* %CF = 1             => dest := src;
+CMOVC.reg32.rm32     dest, src      *32* %CF = 1             => dest := src;
+
+CMOVE.reg32.reg32    dest, src      *32* %ZF = 1             => dest := src;
+CMOVE.reg32.rm32     dest, src      *32* %ZF = 1             => dest := src;
+
+CMOVG.reg32.reg32    dest, src      *32* ~%ZF & ~(%SF ^ %OF) => dest := src;
+CMOVG.reg32.rm32     dest, src      *32* ~%ZF & ~(%SF ^ %OF) => dest := src;
+
+CMOVGE.reg32.reg32   dest, src      *32* ~(%SF ^ %OF)        => dest := src;
+CMOVGE.reg32.rm32    dest, src      *32* ~(%SF ^ %OF)        => dest := src;
+
+CMOVL.reg32.reg32    dest, src      *32* %SF ^ %OF           => dest := src;
+CMOVL.reg32.rm32     dest, src      *32* %SF ^ %OF           => dest := src;
+
+CMOVLE.reg32.reg32   dest, src      *32* %ZF | (%SF ^ %OF)   => dest := src;
+CMOVLE.reg32.rm32    dest, src      *32* %ZF | (%SF ^ %OF)   => dest := src;
+
+CMOVNA.reg32.reg32   dest, src      *32* %CF | %ZF           => dest := src;
+CMOVNA.reg32.rm32    dest, src      *32* %CF | %ZF           => dest := src;
+
+CMOVNAE.reg32.reg32  dest, src      *32* %CF = 1             => dest := src;
+CMOVNAE.reg32.rm32   dest, src      *32* %CF = 1             => dest := src;
+
+CMOVNB.reg32.reg32   dest, src      *32* %CF = 0             => dest := src;
+CMOVNB.reg32.rm32    dest, src      *32* %CF = 0             => dest := src;
+
+CMOVNBE.reg32.reg32  dest, src      *32* (~%CF & ~%ZF)       => dest := src;
+CMOVNBE.reg32.rm32   dest, src      *32* (~%CF & ~%ZF)       => dest := src;
+
+CMOVNC.reg32.reg32   dest, src      *32* %CF = 0             => dest := src;
+CMOVNC.reg32.rm32    dest, src      *32* %CF = 0             => dest := src;
+
+CMOVNE.reg32.reg32   dest, src      *32* %ZF = 0             => dest := src;
+CMOVNE.reg32.rm32    dest, src      *32* %ZF = 0             => dest := src;
+
+CMOVNG.reg32.reg32   dest, src      *32* %ZF | (%SF ^ %OF)   => dest := src;
+CMOVNG.reg32.rm32    dest, src      *32* %ZF | (%SF ^ %OF)   => dest := src;
+
+CMOVNGE.reg32.reg32  dest, src      *32* ~%ZF & ~(%SF ^ %OF) => dest := src;
+CMOVNGE.reg32.rm32   dest, src      *32* ~%ZF & ~(%SF ^ %OF) => dest := src;
+
+CMOVNL.reg32.reg32   dest, src      *32* ~(%SF ^ %OF)        => dest := src;
+CMOVNL.reg32.rm32    dest, src      *32* ~(%SF ^ %OF)        => dest := src;
+
+CMOVNLE.reg32.reg32  dest, src      *32* ~%ZF & ~(%SF ^ %OF) => dest := src;
+CMOVNLE.reg32.rm32   dest, src      *32* ~%ZF & ~(%SF ^ %OF) => dest := src;
+
+CMOVNO.reg32.reg32   dest, src      *32* ~%OF                => dest := src;
+CMOVNO.reg32.rm32    dest, src      *32* ~%OF                => dest := src;
+
+CMOVNP.reg32.reg32   dest, src      *32* ~%PF                => dest := src;
+CMOVNP.reg32.rm32    dest, src      *32* ~%PF                => dest := src;
+
+CMOVNS.reg32.reg32   dest, src      *32* ~%SF                => dest := src;
+CMOVNS.reg32.rm32    dest, src      *32* ~%SF                => dest := src;
+
+CMOVNE.reg32.reg32   dest, src      *32* ~%ZF                => dest := src;
+CMOVNE.reg32.rm32    dest, src      *32* ~%ZF                => dest := src;
+
+CMOVO.reg32.reg32    dest, src      *32* %OF                 => dest := src;
+CMOVO.reg32.rm32     dest, src      *32* %OF                 => dest := src;
+
+CMOVP.reg32.reg32    dest, src      *32* %PF                 => dest := src;
+CMOVP.reg32.rm32     dest, src      *32* %PF                 => dest := src;
+
+CMOVS.reg32.reg32    dest, src      *32* %SF                 => dest := src;
+CMOVS.reg32.rm32     dest, src      *32* %SF                 => dest := src;
+
+CMOVZ.reg32.reg32    dest, src      *32* %ZF                 => dest := src;
+CMOVZ.reg32.rm32     dest, src      *32* %ZF                 => dest := src;
 
 
 # CMP
@@ -1613,195 +1698,40 @@ INTO
 ;
 
 
-# JA
-JA.imm32 dest
-    *32* ~%CF & ~%ZF => %pc := dest
-;
-
-
-# JAE
-JAE.imm32 dest
-    *32* %CF = 0 => %pc := dest
-;
-
-
-# JB
-JB.imm32 dest
-    *32* %CF = 1 => %pc := dest
-;
-
-
-# JBE
-JBE.imm32 dest
-    *32* %CF | %ZF => %pc := dest
-;
-
-
-# JC
-JC.imm32 dest
-    *32* %CF = 1 => %pc := dest
-;
-
-
-# JCXZ
-JCXZ.imm32 dest
-    *32* %cx = 0 => %pc := dest
-;
-
-# JE
-JE.imm32 dest
-    *32* %ZF = 0 => %pc := dest
-;
-
-# JECXZ
-JECXZ.imm32 dest
-    *32* %ecx = 0 => %pc := dest
-;
-
-# JG
-JG.imm32 dest
-    *32* ~%ZF & ~(%SF ^ %OF) => %pc := dest
-;
-
-
-# JGE
-JGE.imm32 dest
-    *32* ~(%SF ^ %OF) => %pc := dest
-;
-
-
-# JL
-JL.imm32 dest
-    *32* %SF ^ %OF => %pc := dest
-;
-
-
-# JLE
-JLE.imm32 dest
-    *32* %ZF | (%SF ^ %OF) => %pc := dest
-;
-
-
-# JMP
-JMP.imm32 dest
-    *32* %pc := dest
-;
-
-JMP.reg32 dest
-    *32* %pc := dest
-;
-
-JMP.rm32 dest
-    *32* %pc := dest
-;
-
-
-# JNA
-JNA.imm32 dest
-    *32* %CF | %ZF  => %pc := dest
-;
-
-
-# JNAE
-JNAE.imm32 dest
-    *32* %CF => %pc := dest
-;
-
-
-# JNB
-JNB.imm32 dest
-    *32* ~%CF => %pc := dest
-;
-
-
-# JNBE
-JNBE.imm32 dest
-    *32* (~%CF & ~%ZF) => %pc := dest
-;
-
-
-# JNC
-JNC.imm32 dest
-    *32* ~%CF => %pc := dest
-;
-
-
-# JNE
-JNE.imm32 dest
-    *32* ~%ZF => %pc := dest
-;
-
-
-# JNG
-JNG.imm32 dest
-    *32* %ZF | (%SF ^ %OF) => %pc := dest
-;
-
-
-# JNGE
-JNGE.imm32 dest
-    *32* ~%ZF & ~(%SF ^ %OF) => %pc := dest
-;
-
-
-# JNL
-JNL.imm32 dest
-    *32* ~(%SF ^ %OF) => %pc := dest
-;
-
-
-# JNLE
-JNLE.imm32 dest
-    *32* ~%ZF & ~(%SF ^ %OF) => %pc := dest
-;
-
-
-# JNO
-JNO.imm32 dest
-    *32* ~%OF => %pc := dest
-;
-
-
-# JNP
-JNP.imm32 dest
-    *32* ~%PF => %pc := dest
-;
-
-
-# JNS
-JNS.imm32 dest
-    *32* ~%SF => %pc := dest
-;
-
-
-# JNZ
-JNZ.imm32 dest
-    *32* ~%ZF => %pc := dest
-;
-
-
-# JO
-JO.imm32 dest
-    *32* %OF => %pc := dest
-;
-
-
-# JP
-JP.imm32 dest
-    *32* %PF => %pc := dest
-;
-
-
-# JS
-JS.imm32 dest
-    *32* %SF => %pc := dest
-;
-
-
-# JZ
-JZ.imm32 dest
-    *32* %ZF => %pc := dest
-;
+# Jcc
+JA.imm32 dest       *32* ~%CF & ~%ZF            => %pc := dest;
+JAE.imm32 dest      *32* %CF = 0                => %pc := dest;
+JB.imm32 dest       *32* %CF = 1                => %pc := dest;
+JBE.imm32 dest      *32* %CF | %ZF              => %pc := dest;
+JC.imm32 dest       *32* %CF = 1                => %pc := dest;
+JCXZ.imm32 dest     *32* %cx = 0                => %pc := dest;
+JE.imm32 dest       *32* %ZF = 0                => %pc := dest;
+JECXZ.imm32 dest    *32* %ecx = 0               => %pc := dest;
+JG.imm32 dest       *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
+JGE.imm32 dest      *32* ~(%SF ^ %OF)           => %pc := dest;
+JL.imm32 dest       *32* %SF ^ %OF              => %pc := dest;
+JLE.imm32 dest      *32* %ZF | (%SF ^ %OF)      => %pc := dest;
+JMP.imm32 dest      *32*                           %pc := dest;
+JMP.reg32 dest      *32*                           %pc := dest;
+JMP.rm32 dest       *32*                           %pc := dest;
+JNA.imm32 dest      *32* %CF | %ZF              => %pc := dest;
+JNAE.imm32 dest     *32* %CF                    => %pc := dest;
+JNB.imm32 dest      *32* ~%CF                   => %pc := dest;
+JNBE.imm32 dest     *32* (~%CF & ~%ZF)          => %pc := dest;
+JNC.imm32 dest      *32* ~%CF                   => %pc := dest;
+JNE.imm32 dest      *32* ~%ZF                   => %pc := dest;
+JNG.imm32 dest      *32* %ZF | (%SF ^ %OF)      => %pc := dest;
+JNGE.imm32 dest     *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
+JNL.imm32 dest      *32* ~(%SF ^ %OF)           => %pc := dest;
+JNLE.imm32 dest     *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
+JNO.imm32 dest      *32* ~%OF                   => %pc := dest;
+JNP.imm32 dest      *32* ~%PF                   => %pc := dest;
+JNS.imm32 dest      *32* ~%SF                   => %pc := dest;
+JNZ.imm32 dest      *32* ~%ZF                   => %pc := dest;
+JO.imm32 dest       *32* %OF                    => %pc := dest;
+JP.imm32 dest       *32* %PF                    => %pc := dest;
+JS.imm32 dest       *32* %SF                    => %pc := dest;
+JZ.imm32 dest       *32* %ZF                    => %pc := dest;
 
 
 # LAHF
