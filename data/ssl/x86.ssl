@@ -884,6 +884,11 @@ BTR.rm32.reg32 dest, bit
 
 
 # BTS
+BTS.rm32.imm32
+    *1* %CF := dest@[bit:bit]
+    *32* dest := dest | (1 << bit)
+;
+
 BTS.reg32.reg32 dest, bit
     *1* %CF := dest@[bit:bit]
     *32* dest := dest | (1 << bit)
@@ -1769,6 +1774,13 @@ LEAVE
     *32* %esp := %ebp
     *32* %ebp := m[%esp]
     *32* %esp := %esp + 4
+;
+
+
+# LOOP
+LOOP.imm32 dest
+    *32* %ecx := %ecx - 1
+    *32* %ecx ~= 0 => %pc := dest
 ;
 
 
