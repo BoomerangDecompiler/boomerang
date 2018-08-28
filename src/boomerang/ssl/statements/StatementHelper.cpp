@@ -19,11 +19,6 @@
 bool condToRelational(SharedExp &condExp, BranchType jtCond)
 {
     condExp = condExp->simplifyArith()->simplify();
-
-    QString tgt;
-    OStream os(&tgt);
-    condExp->print(os);
-
     OPER condOp = condExp->getOper();
 
     if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("SUBFLAGS")) {
