@@ -194,7 +194,7 @@ std::shared_ptr<Signature> Win32Signature::promote(UserProc * /*p*/)
 
 SharedExp Win32Signature::getProven(SharedExp left) const
 {
-    size_t nparams = m_params.size();
+    int nparams = m_params.size();
 
     if ((nparams > 0) && (*m_params[0]->getExp() == *Location::regOf(REG_PENT_ESP))) {
         nparams--;

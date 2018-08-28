@@ -406,8 +406,8 @@ void DataFlow::convertImplicits()
             se_new.insert(e);
         }
 
-        m_definedAt.insert(m_definedAt.end(),
-                           se_new); // Copy the set (doesn't have to be a deep copy)
+        // Copy the set (doesn't have to be a deep copy)
+        m_definedAt.insert(m_definedAt.end(), se_new);
     }
 }
 

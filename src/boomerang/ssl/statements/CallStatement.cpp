@@ -1507,8 +1507,6 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
             return r->shared_from_this(); // Childless callees transmit nothing
         }
 
-        // if (procDest->isLocal(base))                    // ICK! Need to prove locals and
-        // parameters through calls...
         // FIXME: temporary HACK! Ignores alias issues.
         if (!m_procDest->isLib() &&
             static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {
