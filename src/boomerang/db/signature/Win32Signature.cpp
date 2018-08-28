@@ -16,6 +16,7 @@
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
+#include "boomerang/ssl/type/PointerType.h"
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/util/log/Log.h"
 
@@ -25,9 +26,7 @@ namespace CallingConvention
 Win32Signature::Win32Signature(const QString &name)
     : Signature(name)
 {
-    Signature::addReturn(Location::regOf(REG_PENT_ESP));
-    // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
-    //                                Location::regOf(REG_PENT_ESP), nullptr);
+    Signature::addReturn(Location::regOf(REG_PENT_EAX));
 }
 
 
@@ -40,9 +39,8 @@ Win32Signature::Win32Signature(Signature &old)
 Win32TcSignature::Win32TcSignature(const QString &name)
     : Win32Signature(name)
 {
-    Signature::addReturn(Location::regOf(REG_PENT_ESP));
-    // Signature::addImplicitParameter(PointerType::get(new IntegerType()), "esp",
-    //                                Location::regOf(REG_PENT_ESP), nullptr);
+    Signature::addParameter("this", Location::regOf(REG_PENT_ECX),
+                            PointerType::get(VoidType::get()));
 }
 
 
