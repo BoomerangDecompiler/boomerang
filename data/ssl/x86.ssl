@@ -57,7 +57,7 @@ INTEGER %pc[32] -> -1;
 
 # flags
 INTEGER %eflags[32] -> 100;
-INTEGER %flags[32]  -> 101 SHARES %eflags@[0..15];
+INTEGER %flags[16]  -> 101 SHARES %eflags@[0..15];
 
 INTEGER
 [ %NF, %ZF, %AF, %PF, %SF,
@@ -1403,13 +1403,13 @@ FILD.rm64 val
 
 
 # FISTP
-FISTP.rm32 val
-    *32* modrm := ftoi(80, 32, %st)
+FISTP.rm32 dest
+    *32* dest := ftoi(80, 32, %st)
     FPOP
 ;
 
-FISTP.rm64 val
-    *64* modrm := ftoi(80, 64, %st)
+FISTP.rm64 dest
+    *64* dest := ftoi(80, 64, %st)
     FPOP
 ;
 
