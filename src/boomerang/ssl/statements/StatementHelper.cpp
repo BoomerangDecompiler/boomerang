@@ -18,7 +18,7 @@
 // Return true if this is now a floating point Branch
 bool condToRelational(SharedExp &condExp, BranchType jtCond)
 {
-    condExp = condExp->simplifyArith()->simplify();
+    condExp     = condExp->simplifyArith()->simplify();
     OPER condOp = condExp->getOper();
 
     if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("SUBFLAGS")) {
@@ -198,6 +198,11 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             }
 
             SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
+            if (!at_opFlagsCall_List) {
+                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                return false;
+            }
+
             // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time.
             // So effectively the branch is for any one of the (one or two) bits being on. For
             // example, if the mask is 0x41, we are branching of less (0x1) or equal (0x41).
