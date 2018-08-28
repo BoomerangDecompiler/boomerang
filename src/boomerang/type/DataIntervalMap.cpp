@@ -52,6 +52,19 @@ bool DataIntervalMap::isClear(Address addr, unsigned size) const
 }
 
 
+bool DataIntervalMap::isClear(Address lower, Address upper) const
+{
+    assert(upper >= lower);
+    return isClear(lower, (upper - lower).value());
+}
+
+
+bool DataIntervalMap::isClear(const Interval<Address> interval) const
+{
+    return isClear(interval.lower(), interval.upper());
+}
+
+
 const TypedVariable *DataIntervalMap::find(Address addr) const
 {
     const_iterator it = find_it(addr);
@@ -88,9 +101,17 @@ DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString 
         TypedVariable &var = it1->second;
 
         if (it1->first.isFullyContained(newTypeRange)) {
-            // new type may be part of an existing type
-            insertComponentType(&var, baseAddr, name, type, forced);
-            return it1;
+            if (newTypeRange.isFullyContained(it1->first)) {
+                // both types are of equal size
+                bool changed;
+                it1->second.type = it1->second.type->meetWith(type, changed);
+                return it1;
+            }
+            else {
+                // new type may be part of an existing type
+                insertComponentType(&var, baseAddr, name, type, forced);
+                return it1;
+            }
         }
         else if (newTypeRange.isFullyContained(it1->first)) {
             // the new type is a larger/derived type which contains the old type
@@ -166,9 +187,8 @@ void DataIntervalMap::insertComponentType(TypedVariable *existingVar, Address ad
 DataIntervalMap::iterator DataIntervalMap::replaceComponents(Address addr, const QString &name,
                                                              SharedType ty, bool /*forced*/)
 {
-    const Address endAddr = addr +
-                            ty->getSize() /
-                                8; // This is the byte address just past the type to be inserted
+    // This is the byte address just past the type to be inserted
+    const Address endAddr = addr + ty->getSize() / 8;
 
     VariableMap::const_iterator it1, it2;
 

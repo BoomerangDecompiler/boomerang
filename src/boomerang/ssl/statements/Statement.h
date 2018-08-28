@@ -193,10 +193,8 @@ public:
     /// returns a set of locations defined by this statement in a LocationSet argument.
     virtual void getDefinitions(LocationSet & /*def*/, bool /*assumeABICompliance*/) const {}
 
-    virtual bool definesLoc(SharedExp /*loc*/) const
-    {
-        return false;
-    } // True if this Statement defines loc
+    /// \returns true if this Statement defines loc
+    virtual bool definesLoc(SharedExp /*loc*/) const { return false; }
 
     /// returns true if this statement uses the given expression
     virtual bool usesExp(const Exp &exp) const = 0;
