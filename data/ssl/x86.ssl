@@ -22,30 +22,44 @@ MAX16NEG  := 0x8000;
 MAX32POS  := 0x7FFFFFFF;
 MAX32NEG  := 0x80000000;
 
+INTEGER %eax[32] -> 24;
+INTEGER %ecx[32] -> 25;
+INTEGER %edx[32] -> 26;
+INTEGER %ebx[32] -> 27;
+INTEGER %esp[32] -> 28;
+INTEGER %ebp[32] -> 29;
+INTEGER %esi[32] -> 30;
+INTEGER %edi[32] -> 31;
+
+INTEGER %ax[16] -> 0 SHARES %eax@[0..15];
+INTEGER %cx[16] -> 1 SHARES %ecx@[0..15];
+INTEGER %dx[16] -> 2 SHARES %edx@[0..15];
+INTEGER %bx[16] -> 3 SHARES %ebx@[0..15];
+INTEGER %sp[16] -> 4 SHARES %esp@[0..15];
+INTEGER %bp[16] -> 5 SHARES %ebp@[0..15];
+INTEGER %si[16] -> 6 SHARES %esi@[0..15];
+INTEGER %di[16] -> 7 SHARES %edi@[0..15];
+
+INTEGER %al[8]  -> 8  SHARES %ax@[0..7];
+INTEGER %cl[8]  -> 9  SHARES %cx@[0..7];
+INTEGER %dl[8]  -> 10 SHARES %dx@[0..7];
+INTEGER %bl[8]  -> 11 SHARES %bx@[0..7];
+INTEGER %ah[8]  -> 12 SHARES %ax@[8..15];
+INTEGER %ch[8]  -> 13 SHARES %cx@[8..15];
+INTEGER %dh[8]  -> 14 SHARES %dx@[8..15];
+INTEGER %bh[8]  -> 15 SHARES %bx@[8..15];
+
+INTEGER %es[8]  -> 16;
+INTEGER %cs[8]  -> 17;
+INTEGER %ss[8]  -> 18;
+INTEGER %ds[8]  -> 19;
+INTEGER %pc[32] -> -1;
+
+# flags
+INTEGER %eflags[32] -> 100;
+INTEGER %flags[32]  -> 101 SHARES %eflags@[0..15];
+
 INTEGER
-[ %eax, %ecx, %edx, %ebx,
-  %esp, %ebp, %esi, %edi ][32] -> 24..31,
-%ax[16] -> 0 SHARES %eax@[0..15],
-%cx[16] -> 1 SHARES %ecx@[0..15],
-%dx[16] -> 2 SHARES %edx@[0..15],
-%bx[16] -> 3 SHARES %ebx@[0..15],
-%sp[16] -> 4 SHARES %esp@[0..15],
-%bp[16] -> 5 SHARES %ebp@[0..15],
-%si[16] -> 6 SHARES %esi@[0..15],
-%di[16] -> 7 SHARES %edi@[0..15],
-%al[8]  -> 8 SHARES %ax@[0..7],
-%cl[8]  -> 9 SHARES %cx@[0..7],
-%dl[8]  -> 10 SHARES %dx@[0..7],
-%bl[8]  -> 11 SHARES %bx@[0..7],
-%ah[8]  -> 12 SHARES %ax@[8..15],
-%ch[8]  -> 13 SHARES %cx@[8..15],
-%dh[8]  -> 14 SHARES %dx@[8..15],
-%bh[8]  -> 15 SHARES %bx@[8..15],
-%es[8]  -> 16,
-%cs[8]  -> 17,
-%ss[8]  -> 18,
-%ds[8]  -> 19,
-%pc[32] -> -1,
 [ %NF, %ZF, %AF, %PF, %SF,
   %CF, %OF, %DF, %IF,
   %FP, %SKIP, %RPT,
