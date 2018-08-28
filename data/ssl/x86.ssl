@@ -747,6 +747,11 @@ AND.reg32.reg32 dest, src
     LOGICALFLAGS32(dest)
 ;
 
+AND.reg32.rm32 dest, src
+    *32* dest := dest & src
+    LOGICALFLAGS32(dest)
+;
+
 AND.reg64.rm64 dest, src
     *64* dest := dest & src
     LOGICALFLAGS64(dest)
@@ -897,6 +902,11 @@ BTS.reg32.reg32 dest, bit
 BTS.rm16.imm16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
+;
+
+BTS.rm32.reg32 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *32* dest := dest | (1 << bit)
 ;
 
 
@@ -2314,6 +2324,12 @@ SAR.rm64.imm8 dest, src
 
 
 # SBB
+SBB.reg8.reg8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest - src - %CF
+    SUBFLAGS8(tmpb, src, dest)
+;
+
 SBB.reg8.rm8 dest, src
     *8* tmpb := dest
     *8* dest := dest - src - %CF
@@ -2526,6 +2542,12 @@ SHR.reg32.reg8 dest, src
     SHRFLAGS32(dest, tmp1, src)
 ;
 
+SHR.rm32.imm32 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest >> src
+    SHRFLAGS32(dest, tmp1, src)
+;
+
 
 # SHRD
 SHRD.reg32.reg32.imm32 dest, src, count
@@ -2679,6 +2701,11 @@ TEST.rm16.imm16 lhs, rhs
     LOGICALFLAGS16(tmph)
 ;
 
+TEST.rm16.reg16 lhs, rhs
+    *16* tmph := lhs & rhs
+    LOGICALFLAGS16(tmph)
+;
+
 TEST.rm32.imm32 lhs, rhs
     *32* tmp1 := lhs & rhs
     LOGICALFLAGS32(tmp1)
@@ -2767,4 +2794,9 @@ XOR.reg32.rm32 dest, src
 XOR.rm8.imm8 dest, src
     *8* dest := dest ^ src
     LOGICALFLAGS8(dest)
+;
+
+XOR.rm32.reg32 dest, src
+    *32* dest := dest ^ src
+    LOGICALFLAGS32(dest)
 ;
