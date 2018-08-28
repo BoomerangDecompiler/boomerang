@@ -1279,6 +1279,17 @@ FCHS
 ;
 
 
+# FCOMPP
+FCOMPP
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := %st1
+    *f80* tmpD := %st -f %st1
+    FPOP
+    FPOP
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
+
 # FDECSTP
 FDECSTP
     FPOP
@@ -2406,51 +2417,19 @@ SBB.rm64.reg64 dest, src
 ;
 
 
-# SETA
-SETA.reg8 dest
-    *8* dest := (~%CF & ~%ZF)
-;
-
-
-# SETAE
-SETAE.reg8 dest
-    *8* dest := ~%CF
-;
-
-# SETB
-SETB.reg8 dest
-    *8* dest := %CF
-;
-
-
-# SETBE
-SETBE.reg8 dest
-    *8* dest := %CF | %ZF
-;
-
-
-# SETE
-SETE.reg8 dest
-    *8* dest := %ZF
-;
-
-
-# SETG
-SETG.reg8 dest
-    *8* dest := ~%ZF & ~(%SF ^ %OF)
-;
-
-
-# SETNE
-SETNE.reg8 dest
-    *8* dest := ~%ZF
-;
-
-
-# SETNS
-SETNS.reg8 dest
-    *8* dest := ~%SF
-;
+# SETcc
+SETA.reg8  dest         *8* dest := ~%CF & ~%ZF;
+SETAE.reg8 dest         *8* dest := ~%CF;
+SETB.reg8  dest         *8* dest := %CF;
+SETB.rm8   dest         *8* dest := %CF;
+SETBE.reg8 dest         *8* dest := %CF | %ZF;
+SETE.reg8  dest         *8* dest := %ZF;
+SETE.rm8   dest         *8* dest := %ZF;
+SETG.reg8  dest         *8* dest := ~%ZF & ~(%SF ^ %OF);
+SETNE.reg8 dest         *8* dest := ~%ZF;
+SETNS.reg8 dest         *8* dest := ~%SF;
+SETNP.reg8 dest         *8* dest := ~%PF;
+SETP.reg8  dest         *8* dest := %PF;
 
 
 # SHL
