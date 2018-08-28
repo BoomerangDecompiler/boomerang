@@ -1303,6 +1303,16 @@ FCHS
 ;
 
 
+# FCOMP
+FCOMP.rm64 val
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := fsize(64, 80, val)
+    *f80* tmpD  := %st -f fsize(64, 80, val)
+    FPOP
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
+
 # FCOMPP
 FCOMPP
     *f80* tmpD1 := %st
@@ -1392,6 +1402,18 @@ FILD.rm64 val
 ;
 
 
+# FISTP
+FISTP.rm32 val
+    *32* modrm := ftoi(80, 32, %st)
+    FPOP
+;
+
+FISTP.rm64 val
+    *64* modrm := ftoi(80, 64, %st)
+    FPOP
+;
+
+
 # FISUB
 FISUB.rm16 val
     *f80* %st := %st - itof(16, 80, val)
@@ -1405,14 +1427,25 @@ FISUBR.rm16 val
 
 
 # FLD
+FLD.reg80 val
+    *f80* tmpD1 := val
+    FPUSH
+    *f80* %st := tmpD1
+;
+
 FLD.rm32 val
     FPUSH
-    *f80* %st := fsize(32,80,val)
+    *f80* %st := fsize(32, 80, val)
 ;
 
 FLD.rm64 val
     FPUSH
-    *f80* %st := fsize(64,80,val)
+    *f80* %st := fsize(64, 80, val)
+;
+
+FLD.rm80 val
+    FPUSH
+    *f80* %st := val
 ;
 
 
@@ -1420,6 +1453,19 @@ FLD.rm64 val
 FLD1
     FPUSH
     *f80* %st := 1.0
+;
+
+
+# FLDCW
+FLDCW val
+    *16* %fcw := val
+;
+
+
+# FLDPI
+FLDPI
+    FPUSH
+    *f80* %st := 3.141592653589793
 ;
 
 
@@ -1431,6 +1477,10 @@ FLDZ
 
 
 # FMUL
+FMUL.rm32 val
+    *f80* %st := %st *f fsize(32, 80, val)
+;
+
 FMUL.rm64 val
     *f80* %st := %st *f fsize(64, 80, val)
 ;
@@ -1440,6 +1490,19 @@ FMUL.rm64 val
 FMULP.reg80 val
     *f80* val := val *f %st
     FPOP
+;
+
+
+# FNCLEX
+FNCLEX
+    *8* %fsw@[0:7] := 0
+    *1* %fsw@[15:15] := 0
+;
+
+
+# FNSTCW
+FNSTCW.rm16 dest
+    *16* dest := %fcw
 ;
 
 
@@ -1456,6 +1519,22 @@ FNSTSW.rm16 dest
     *1* dest@[10:10] := %C2
     *1* dest@[ 9: 9] := %C1
     *1* dest@[ 8: 8] := %C0
+;
+
+
+# FRNDINT
+FRNDINT
+    *f80* %st := fround(80, 80, %st)
+;
+
+
+# FST
+FST.rm32 dest
+    *32* dest := fsize(80, 32, %st)
+;
+
+FST.rm64 dest
+    *64* dest := fsize(80, 64, %st)
 ;
 
 
@@ -1975,6 +2054,31 @@ MOVZX.reg64.rm16 dest, src
 ;
 
 
+# MUL
+MUL.reg16 src
+    *32* tmp2 := %eax * src{16}
+    *16* %ax := tmp2
+    *16* %dx := tmp2 >> 16
+    MULTFLAGS16(tmp2)
+;
+
+MUL.reg32 src
+    *32* tmp1 := src{32}
+    *64* tmpl := zfill(32, 64, %eax) * zfill(32, 64, tmp1)
+    *32* %eax := tmpl
+    *32* %edx := tmpl >> 32
+    MULTFLAGS32(tmpl)
+;
+
+MUL.rm32 src
+    *32* tmp1 := src{32}
+    *64* tmpl := zfill(32, 64, %eax) * zfill(32, 64, tmp1)
+    *32* %eax := tmpl
+    *32* %edx := tmpl >> 32
+    MULTFLAGS32(tmpl)
+;
+
+
 # NEG
 NEG.reg8 val
     *8* tmpval := val
@@ -2246,6 +2350,20 @@ PUSHAL
     *16* m[%sp - 28] := %esi
     *16* m[%sp - 32] := %edi
     *16* %esp := %esp - 32
+;
+
+
+# PUSHF
+PUSHF
+    *16* m[%esp - 2] := %flags
+    *32* %esp := %esp - 2
+;
+
+
+# PUSHFD
+PUSHFD
+    *32* m[%esp - 4] := %eflags
+    *32* %esp := %esp - 4
 ;
 
 
