@@ -3,15 +3,16 @@ int main(int argc, char *argv[]);
 /** address: 0x10000418 */
 int main(int argc, char *argv[])
 {
-    __size32 g31; 		// r31
+    int g3; 		// r3
 
-    g31 = 1;
     if (argc <= 1) {
         printf("Result is %d\n", 0);
+        g3 = 0;
     }
     else {
         printf("Result is %d\n", 1);
+        g3 = 1;
     }
-    return g31;
+    return g3;
 }
 
