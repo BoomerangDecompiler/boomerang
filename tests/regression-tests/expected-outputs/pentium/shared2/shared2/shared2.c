@@ -6,12 +6,12 @@ void gcc2_compiled.()
 {
     unsigned char al; 		// r8
     union { __size32; void *; } *eax; 		// r24
-    __size32 ebp; 		// r29
-    __size32 ebx; 		// r27
+    int ebp; 		// r29
+    union { void *; __size32; } ebx; 		// r27
     int ecx; 		// r25
     __size32 edi; 		// r31
     int edx; 		// r26
-    __size32 esi; 		// r30
+    union { union { void *; __size32; } *; __size32; } esi; 		// r30
     int esp; 		// r28
     union { __size32; __size32 *; } esp_1; 		// r28{0}
     union { __size32; __size32 *; } esp_10; 		// r28{0}
@@ -31,7 +31,7 @@ void gcc2_compiled.()
     union { __size32; __size32 *; } esp_8; 		// r28{0}
     union { __size32; __size32 *; } esp_9; 		// r28{0}
     int local0; 		// m[esp - 44]
-    unsigned int local1; 		// m[esp - 48]
+    __size32 local1; 		// m[esp - 4]
     int local10; 		// m[esp_16 - 4]{0}
     int local11; 		// m[esp_16 - 8]{0}
     int local12; 		// m[esp_16 - 8]{0}
@@ -42,7 +42,7 @@ void gcc2_compiled.()
     int local17; 		// m[esp_16 - 12]{0}
     int local18; 		// m[esp_16 - 12]{0}
     int local19; 		// m[esp_16 - 16]{0}
-    void *local2; 		// m[esp - 44]
+    __size32 local2; 		// m[esp - 8]
     int local20; 		// m[esp_16 - 16]{0}
     int local21; 		// m[esp_16 - 16]{0}
     int local22; 		// m[esp_16 - 16]{0}
@@ -53,7 +53,7 @@ void gcc2_compiled.()
     int local27; 		// m[esp_16 - 48]{0}
     int local28; 		// m[esp_16 - 48]{0}
     int local29; 		// m[esp_16 - 48]{0}
-    __size32 local3; 		// m[esp - 16]
+    __size32 local3; 		// m[esp - 12]
     int local30; 		// m[esp_16 - 48]{0}
     int local31; 		// %flags{0}
     int local32; 		// %flags{0}
@@ -64,13 +64,13 @@ void gcc2_compiled.()
     int local37; 		// %ZF{0}
     int local38; 		// %ZF{0}
     int local39; 		// %CF{0}
-    __size32 local4; 		// m[esp - 12]
+    __size32 local4; 		// m[esp - 16]
     int local40; 		// %CF{0}
     int local41; 		// %CF{0}
     int local42; 		// %CF{0}
     int local43; 		// m[esp - 40]
-    __size32 local5; 		// m[esp - 8]
-    __size32 local6; 		// m[esp - 4]
+    void *local5; 		// m[esp - 44]
+    unsigned int local6; 		// m[esp - 48]
     int local7; 		// m[esp_16 - 4]{0}
     int local8; 		// m[esp_16 - 4]{0}
     int local9; 		// m[esp_16 - 4]{0}
@@ -93,30 +93,30 @@ void gcc2_compiled.()
     *(__size32*)(eax + 28) = 7;
     *(__size32*)(eax + 44) = 0x8049c10;
     *(__size32*)(eax + 32) = 8;
-    ecx = gcc2_compiled.(pc, eax + 36, ebx, esi, edi, ebp, eax + 36, ecx, edx, eax + 16, esp_16 - 4, eax, edi, SUBFLAGS32(esp_16 - 16, 24, (esp_16 - 40)), esp_16 == 40, (unsigned int)(esp_16 - 16) < 24); /* Warning: also results in edx, ebx, esp_1, ebp, esi, edi */
+    ecx = gcc2_compiled.(eax + 36, ecx, edx, eax + 16, esp_16 - 4, eax, SUBFLAGS32(esp_16 - 16, 24, (esp_16 - 40)), esp_16 == 40, (unsigned int)(esp_16 - 16) < 24, edi, ebp, edi, esi, ebx, eax + 36, pc); /* Warning: also results in edx, ebx, esp_1, ebp, esi, edi */
     eax = *(esi + 12);
     *(__size32*)esp_1 = esi;
-    (**(*(esi + 12) + 8))(local27, local23, local19, local15, local11, local7, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local31, local35, local39);
+    (**(*(esi + 12) + 8))(eax, ecx, edx, ebx, ebp, esi, <all>, local31, local35, local39, edi, local7, local11, local15, local19, local23, local27);
     al =  (esi == 0) ? 1 : 0;
     edi = (0 >> 8 & 0xffffff | (al)) - 1 & ebx;
     eax = *edi;
     edx = *(eax + 8);
     *(__size32*)esp_4 = eax;
-    (**(*(eax + 8) + 8))(local28, local24, local20, local16, local12, local8, al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(edi), LOGICALFLAGS32(edi), LOGICALFLAGS32(edi));
+    (**(*(eax + 8) + 8))(al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, LOGICALFLAGS32(edi), LOGICALFLAGS32(edi), LOGICALFLAGS32(edi), local8, local12, local16, local20, local24, local28);
     ebx = 0;
     if (esi != 0) {
         ebx = *esi;
     }
     eax = *(ebx + 8);
     *(__size32*)esp_7 = ebx;
-    (**(*(ebx + 8) + 8))(local29, local25, local21, local17, local13, local9, al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, SUBFLAGS32(esp_7 + 16, 12, esp_7 + 4), esp_7 == -4, esp_7 + 16 < 12);
+    (**(*(ebx + 8) + 8))(al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, SUBFLAGS32(esp_7 + 16, 12, esp_7 + 4), esp_7 == -4, esp_7 + 16 < 12, local9, local13, local17, local21, local25, local29);
     ebx = *edi;
     eax = *(ebx + 8);
-    *(__size32*)esp_10 = ebx;
-    (**(*(ebx + 8) + 8))(local30, local26, local22, local18, local14, local10, al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local33, local37, local41);
+    *(__size32*)esp_13 = ebx;
+    (**(*(ebx + 8) + 8))(al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local33, local37, local41, local10, local14, local18, local22, local26, local30);
     eax = *(ebx + 8);
     *(__size32*)esp_13 = ebx;
-    (**(*(ebx + 8) + 8))(*(esp_16 - 48), *(esp_16 - 44), *(esp_16 - 16), *(esp_16 - 12), *(esp_16 - 8), *(esp_16 - 4), al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local34, local38, local42);
+    (**(*(ebx + 8) + 8))(al, eax, ecx, edx, ebx, ebp, esi, edi, <all>, local34, local38, local42, *(esp_16 - 4), *(esp_16 - 8), *(esp_16 - 12), *(esp_16 - 16), *(esp_16 - 44), *(esp_16 - 48));
     return;
 }
 

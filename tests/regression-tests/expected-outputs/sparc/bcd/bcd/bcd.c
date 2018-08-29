@@ -41,7 +41,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 o7; 		// r15
 
     l7_1 = proc_0x00000960(o7, 0x118e4);
-    proc_0x00012090(argc, argv, o2, o3, o4, o5, 0, g7, o7, l0, l1, l2, l3, l4, l5, l6, l7_1, argc, argv, o2, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, g1);
+    proc_0x00012090(0, l7_1, argc, argv, o2, o3, o4, o5, o6, o7, g7, argc, argv, o2, o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, g1);
 }
 
 /** address: 0x00000960 */
@@ -83,7 +83,7 @@ void proc_0x00000980(__size32 param1, __size32 param2, __size32 param3, __size32
     __size32 o6; 		// r14
 
     l7_1 = proc_0x00000960(param7, 0x11644);
-    proc_0x0001206c(param1, 10, param3, param4, param5, param6, param7, l0, l1, l2, l3, l4, l5, l6, l7_1, param1, param2, param3, param4, param5, param6, o6, param7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7);
+    proc_0x0001206c(param1, 10, l7_1, param1, param2, param3, param4, param5, param6, o6, param7, param3, param4, param5, param6, param7, l0, l1, l2, l3, l4, l5, l6, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7);
 }
 
 /** address: 0x0001203c */

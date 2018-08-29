@@ -1353,8 +1353,7 @@ void CallStatement::updateArguments(bool experimental)
         }
     }
 
-    for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend();
-         ++it) {
+    for (StatementList::iterator it = oldArguments.begin(); it != oldArguments.end(); ++it) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
         Assign *as    = static_cast<Assign *>(*it);
         SharedExp lhs = as->getLeft();
@@ -1372,11 +1371,6 @@ void CallStatement::updateArguments(bool experimental)
 
         m_arguments.append(as);
     }
-
-    m_arguments.sort([&sig](const Statement *arg1, const Statement *arg2) {
-        return sig->argumentCompare(*static_cast<const Assignment *>(arg1),
-                                    *static_cast<const Assignment *>(arg2));
-    });
 }
 
 

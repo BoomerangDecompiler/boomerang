@@ -33,7 +33,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 o7; 		// r15
 
     l7_1 = proc_0x00001400(o7, 0x11570);
-    proc_0x000120d8(argc, argv, o2, o3, o4, o5, o7, 0x10800, l1, l2, l3, l4, l5, l6, l7_1, argc, argv, o2, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7);
+    proc_0x000120d8(0x10800, l7_1, argc, argv, o2, o3, o4, o5, o6, o7, argc, argv, o2, o3, o4, o5, o7, l1, l2, l3, l4, l5, l6, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7);
 }
 
 /** address: 0x00001400 */

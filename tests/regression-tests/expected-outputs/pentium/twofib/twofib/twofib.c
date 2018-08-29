@@ -29,7 +29,7 @@ void twofib(__size32 param3, __size32 param4, union { __size32 *; __size32; } pa
     __size32 local9; 		// m[esp - 92]
 
     if (param4 != 0) {
-        twofib(local9, local10, local11, local12, esp - 12, param4 - 1);
+        twofib(local11, local12, esp - 12, param4 - 1, local9, local10);
         local2 = param4;
         local3 = param4 + param3;
     }

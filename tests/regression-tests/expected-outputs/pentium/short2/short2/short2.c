@@ -23,14 +23,14 @@ int main(int argc, char *argv[])
     *(__size32*)(esp + 8) = 5;
     *(__size32*)(esp + 4) = 6;
     *(__size32*)esp = 4;
-    eax = test(*(esp + 4), *(esp + 8), ebp, *esp); /* Warning: also results in esp, ebp */
+    eax = test(*esp, *(esp + 4), *(esp + 8), ebp); /* Warning: also results in esp, ebp */
     *(__size32*)(esp + 16) = eax;
     *(__size32*)(esp + 12) = 0x80484e0;
     printf(*(esp + 12));
     *(__size32*)(esp + 8) = 5;
     *(__size32*)(esp + 4) = 4;
     *(__size32*)esp = 6;
-    eax = test(*(esp + 4), *(esp + 8), ebp, *esp); /* Warning: also results in esp */
+    eax = test(*esp, *(esp + 4), *(esp + 8), ebp); /* Warning: also results in esp */
     *(__size32*)(esp + 16) = eax;
     *(__size32*)(esp + 12) = 0x80484f8;
     printf(*(esp + 12));

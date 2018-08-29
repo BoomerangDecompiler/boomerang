@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     g12 = *(/* machine specific */ (int) LR + 800);
     (*/* machine specific */ (int) CTR)(/* machine specific */ (int) LR, /* machine specific */ (int) LR, g12, /* machine specific */ (int) LR, /* machine specific */ (int) LR, g31, g1);
     g12 = *(g31 + 796);
-    (*/* machine specific */ (int) CTR)(g31, g3, g4, g12, g31, local0, local1, local2, <all>);
+    (*/* machine specific */ (int) CTR)(g31, g3, g4, g12, g31, <all>, local0, local1, local2);
     return 0;
 }
 

@@ -36,7 +36,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
 
     printf("Input number: ");
     o1 = scanf("%d", &local0); /* Warning: also results in o2_1, o3_1, o4_1, o5_1, o7_1 */
-    fib1(local0, o1, o2_1, o3_1, o4_1, o5_1, 0x10800, o7_1, l0, l1, l2, l3, l4, l5, l6, l7, 0, argv, o2, o3, o4, o5, o6, o7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0);
+    fib1(0x10800, local0, o1, o2_1, o3_1, o4_1, o5_1, o7_1, 0, argv, o2, o3, o4, o5, o6, o7, l0, l1, l2, l3, l4, l5, l6, l7, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0);
 }
 
 /** address: 0x000106f4 */
