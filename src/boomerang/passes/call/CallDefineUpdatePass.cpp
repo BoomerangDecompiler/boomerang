@@ -136,11 +136,9 @@ bool CallDefineUpdatePass::updateCallDefines(UserProc *proc, CallStatement *call
         // Insert as, in order, into the existing set of definitions
         bool inserted = false;
 
-        for (StatementList::iterator nn = callStmt->getDefines().begin();
-             nn != callStmt->getDefines().end(); ++nn) {
-            if (sig->returnCompare(
-                    *as, *static_cast<Assignment *>(
-                             *nn))) { // If the new assignment is less than the current one
+        for (auto nn = callStmt->getDefines().begin(); nn != callStmt->getDefines().end(); ++nn) {
+            // If the new assignment is less than the current one
+            if (sig->returnCompare(*as, *static_cast<Assignment *>(*nn))) {
                 nn = callStmt->getDefines().insert(nn, as); // then insert before this position
                 inserted = true;
                 break;

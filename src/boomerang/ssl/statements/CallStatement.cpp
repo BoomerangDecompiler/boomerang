@@ -1344,8 +1344,9 @@ void CallStatement::updateArguments(bool experimental)
 
             SharedType ty = asp.curType(loc);
             Assign *as    = new Assign(ty, loc->clone(), rhs);
-            as->setNumber(
-                m_number); // Give the assign the same statement number as the call (for now)
+
+            // Give the assign the same statement number as the call (for now)
+            as->setNumber(m_number);
             // as->setParent(this);
             as->setProc(m_proc);
             as->setBB(m_bb);

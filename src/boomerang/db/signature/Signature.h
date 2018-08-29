@@ -200,10 +200,10 @@ public:
 
     // A compare function for arguments and returns. Used for sorting returns in calcReturn() etc
 
-    /// \returns \p a < \p b
+    /// \returns true if \p a < \p b
     virtual bool argumentCompare(const Assignment &a, const Assignment &b) const;
 
-    /// \returns \p a < \p b
+    /// \returns true if \p a < \p b
     virtual bool returnCompare(const Assignment &a, const Assignment &b) const;
 
 public:

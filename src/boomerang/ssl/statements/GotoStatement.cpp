@@ -47,7 +47,7 @@ Address GotoStatement::getFixedDest() const
         return Address::INVALID;
     }
 
-    return std::static_pointer_cast<Const>(m_dest)->getAddr();
+    return m_dest->access<Const>()->getAddr();
 }
 
 
