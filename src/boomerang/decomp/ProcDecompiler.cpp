@@ -426,8 +426,9 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
     bool change = PassManager::get()->executePass(PassID::PhiPlacement, proc);
 
     PassManager::get()->executePass(PassID::BlockVarRename, proc);
-    PassManager::get()->executePass(PassID::StatementPropagation,
-                                    proc); // Otherwise sometimes sp is not fully propagated
+
+    // Otherwise sometimes sp is not fully propagated
+    PassManager::get()->executePass(PassID::StatementPropagation, proc);
     PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
     PassManager::get()->executePass(PassID::StrengthReductionReversal, proc);
 

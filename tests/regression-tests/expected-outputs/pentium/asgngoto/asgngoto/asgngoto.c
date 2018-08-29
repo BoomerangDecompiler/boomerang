@@ -6,7 +6,7 @@ void MAIN__(__size32 param1);
 int main(int argc, char *argv[])
 {
     __size32 eax; 		// r24
-    __size32 ebp; 		// r29
+    int ebp; 		// r29
     int ecx; 		// r25
     int edx; 		// r26
     int esp; 		// r28
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     f_setsig();
     f_init();
     eax = atexit(); /* Warning: also results in ecx, edx */
-    MAIN__(pc, 0x8048584, argv, ebp, argc, argv, eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, (unsigned int)(esp - 12) < 16);
+    MAIN__(eax, ecx, edx, esp - 4, SUBFLAGS32((esp - 12), 16, esp - 28), esp == 28, (unsigned int)(esp - 12) < 16, argc, argv, ebp, argv, 0x8048584, pc);
 }
 
 /** address: 0x08048904 */

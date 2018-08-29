@@ -4,19 +4,16 @@ __size32 fib(int param1);
 /** address: 0x100004a8 */
 int main(int argc, char *argv[])
 {
-    __size32 g1; 		// r1
-    __size32 g29; 		// r29
     int g3; 		// r3
-    int g31; 		// r31
+    __size32 g3_2; 		// r3{0}
     int local0; 		// m[g1 - 24]
 
     printf("Input number: ");
     scanf("%d", &local0);
     if (local0 > 1) {
-        g31 = fib(local0 - 1);
-        g1 = fib(g31 - 2); /* Warning: also results in g3, g29 */
-        g31 = *(g1 + 8);
-        printf("fibonacci(%d) = %d\n", g31, g29 + g3);
+        g3_2 = fib(local0 - 1);
+        g3 = fib(local0 - 2);
+        printf("fibonacci(%d) = %d\n", local0, g3_2 + g3);
     }
     else {
         printf("fibonacci(%d) = %d\n", local0, local0);
@@ -28,23 +25,18 @@ int main(int argc, char *argv[])
 __size32 fib(int param1)
 {
     __size32 g0; 		// r0
-    __size32 g1; 		// r1
-    int g29; 		// r29
-    int g29_1; 		// r29{0}
-    __size32 g31; 		// r31
+    int g3; 		// r3
+    __size32 g3_1; 		// r3{0}
 
     g0 = /* machine specific */ (int) LR;
-    g1 -= 32;
-    g29 = param1;
     if (param1 > 1) {
-        g31 = fib(param1 - 1);
-        g0 = fib(g31 - 2); /* Warning: also results in g1 */
-        g29 = *(g1 + 20);
-        g1 += 32;
+        g3_1 = fib(param1 - 1);
+        g0 = fib(param1 - 2); /* Warning: also results in g3 */
+        g3 = g3_1 + g3;
     }
-    g29_1 = g29;
-    g31 = *(g1 + 28);
-    g29 = *(g1 + 20);
-    return g0; /* WARNING: Also returning: g3 := g29_1, g29 := g29, g31 := g31 */
+    else {
+        g3 = param1;
+    }
+    return g0; /* WARNING: Also returning: g3 := g3 */
 }
 

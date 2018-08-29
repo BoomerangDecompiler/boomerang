@@ -14,10 +14,10 @@ int main(int argc, char *argv[])
     int local2; 		// m[g1 - 24]
     __size32 local3; 		// m[g1 - 32]
 
-    (*/* machine specific */ (int) CTR)(0x10000418, argc, argv, 0x10000000, g1 - 32, /* machine specific */ (int) LR, g31, 0x10000418, g1);
+    (*/* machine specific */ (int) CTR)(0x10000418, 0x10000000, g1 - 32, /* machine specific */ (int) LR, g31, 0x10000418, g1, argc, argv);
     *(__size32*)(g31 + 8) = 0x10000450;
     g0 = *(g31 + 8);
-    (*/* machine specific */ (int) CTR)(g0, g3, g4, 0x10000000, g31, local0, local1, local2, local3, <all>);
+    (*/* machine specific */ (int) CTR)(g0, 0x10000000, g31, <all>, local0, local1, local2, local3, g3, g4);
     return 0;
 }
 

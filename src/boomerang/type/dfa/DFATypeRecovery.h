@@ -46,7 +46,9 @@ private:
 
     void printResults(StatementList &stmts, int iter);
 
-    void dfa_analyze_scaled_array_ref(Statement *s);
+    /// Replace array references of the form m[idx*K1 + K2]
+    /// in \p s. Create global array variables as needed.
+    void replaceArrayIndices(Statement *s);
 
     // 3) Check implicit assigns for parameter and global types.
     void dfa_analyze_implict_assigns(Statement *s);

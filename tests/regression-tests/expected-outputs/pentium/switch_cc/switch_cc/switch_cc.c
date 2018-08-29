@@ -7,7 +7,6 @@ int main(int argc, char *argv[])
         switch(argc) {
         case 2:
             printf("Two!\n");
-bb0x804890c:
             return 0;
         case 3:
             printf("Three!\n");
@@ -28,7 +27,6 @@ bb0x804890c:
     }
     else {
         printf("Other!\n");
-        goto bb0x804890c;
     }
     return 0;
 }

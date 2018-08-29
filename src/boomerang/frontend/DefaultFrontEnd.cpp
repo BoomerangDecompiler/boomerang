@@ -946,6 +946,7 @@ BasicBlock *DefaultFrontEnd::createReturnBlock(UserProc *proc, std::unique_ptr<R
         newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
 
         if (newBB) {
+            cfg->ensureBBExists(retAddr, retBB);
             cfg->addEdge(newBB, retBB);
 
             // Visit the return instruction. This will be needed in most cases to split the return

@@ -110,50 +110,47 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
 }
 
 
+// clang-format off
 // m[idx*K1 + K2]; leave idx wild
-static const Location scaledArrayPat(
-    opMemOf,
-    Binary::get(opPlus, Binary::get(opMult, Terminal::get(opWild), Terminal::get(opWildIntConst)),
-                Terminal::get(opWildIntConst)),
-    nullptr);
+static const Location scaledArrayPat(opMemOf,
+                                     Binary::get(opPlus,
+                                                 Binary::get(opMult,
+                                                             Terminal::get(opWild),
+                                                             Terminal::get(opWildIntConst)),
+                                                 Terminal::get(opWildIntConst)),
+                                     nullptr);
+// clang-format on
 
-void DFATypeRecovery::dfa_analyze_scaled_array_ref(Statement *s)
+
+void DFATypeRecovery::replaceArrayIndices(Statement *s)
 {
-    UserProc *pr = s->getProc();
-    Prog *prog   = pr->getProg();
-    SharedExp arr;
+    UserProc *proc = s->getProc();
+    Prog *prog     = proc->getProg();
 
     std::list<SharedExp> result;
     s->searchAll(scaledArrayPat, result);
 
-    // query: (memOf (opPlus (opMult ? ?:IntConst) ?:IntConst))
-    // rewrite_as (opArrayIndex (global `(getOrCreateGlobalName arg3) ) arg2 ) assert (= (typeSize
-    // (getOrCreateGlobalName arg3)) (arg1))
-    for (SharedExp rr : result) {
-        // Type* ty = s->getTypeFor(*rr);
-        // FIXME: should check that we use with array type...
-        // Find idx and K2
-        assert(rr->getSubExp1() == rr->getSubExp1());
-        SharedExp t   = rr->getSubExp1(); // idx*K1 + K2
-        SharedExp l   = t->getSubExp1();  // idx*K1
-        SharedExp r   = t->getSubExp2();  // K2
-        Address K2    = r->access<Const>()->getAddr().native();
-        SharedExp idx = l->getSubExp1();
+    // We have m[idx*stride + base]
+    // Rewrite it as globalN[idx] with addr(globalN) == base
+    // with a global array globalN with base type size \e stride
+    for (SharedExp arrayExp : result) {
+        const Address base = arrayExp->access<Const, 1, 2>()->getAddr();
+        // const int stride   = arrayExp->access<Const, 1, 1, 2>()->getInt();
+        SharedExp idx = arrayExp->access<Exp, 1, 1, 1>();
 
         // Replace with the array expression
-        QString name = prog->getGlobalNameByAddr(K2);
-
+        QString name = prog->getGlobalNameByAddr(base);
         if (name.isEmpty()) {
-            name = prog->newGlobalName(K2);
+            name = prog->newGlobalName(base);
         }
 
-        arr = Binary::get(opArrayIndex, Location::global(name, pr), idx);
+        SharedExp array = Binary::get(opArrayIndex, Location::global(name, proc), idx);
 
-        if (s->searchAndReplace(scaledArrayPat, arr)) {
+        if (s->searchAndReplace(scaledArrayPat, array)) {
             if (s->isImplicit()) {
                 // Register an array of appropriate type
                 prog->markGlobalUsed(
-                    K2, ArrayType::get(static_cast<const ImplicitAssign *>(s)->getType()));
+                    base, ArrayType::get(static_cast<const ImplicitAssign *>(s)->getType()));
             }
         }
     }
@@ -242,8 +239,6 @@ void DFATypeRecovery::recoverFunctionTypes(Function *function)
 void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
 {
     ProcCFG *cfg = proc->getCFG();
-    DataIntervalMap localsMap(proc); // map of all local variables of proc
-
     proc->getProg()->getProject()->alertDecompileDebugPoint(proc, "Before DFA type analysis");
 
     // First use the type information from the signature.
@@ -309,13 +304,14 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
     proc->debugPrintAll("Before other uses of DFA type analysis");
 
     Prog *_prog = proc->getProg();
+    DataIntervalMap localsMap(proc); // map of all local variables of proc
 
     for (Statement *s : stmts) {
         // 1) constants
-        std::list<std::shared_ptr<Const>> lc;
-        s->findConstants(lc);
+        std::list<std::shared_ptr<Const>> constList;
+        s->findConstants(constList);
 
-        for (const std::shared_ptr<Const> &con : lc) {
+        for (const std::shared_ptr<Const> &con : constList) {
             if (!con || (con->getOper() == opStrConst)) {
                 continue;
             }
@@ -459,7 +455,7 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
         }
 
         // 2) Search for the scaled array pattern and replace it with an array use m[idx*K1 + K2]
-        dfa_analyze_scaled_array_ref(s);
+        replaceArrayIndices(s);
 
         // 3) Check implicit assigns for parameter and global types.
         dfa_analyze_implict_assigns(s);

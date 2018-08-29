@@ -67,25 +67,18 @@ public:
     const_iterator begin() const { return m_varMap.begin(); }
     const_iterator end() const { return m_varMap.end(); }
 
+public:
     /// \returns true iff the interval [addr; addr+size) does not contain a variable.
     bool isClear(Address addr, unsigned size) const;
+    bool isClear(Address lower, Address upper) const;
+    bool isClear(const Interval<Address> interval) const;
 
-    bool isClear(Address lower, Address upper) const
-    {
-        assert(upper >= lower);
-        return isClear(lower, (upper - lower).value());
-    }
-    bool isClear(const Interval<Address> interval) const
-    {
-        return isClear(interval.lower(), interval.upper());
-    }
-
-    /// \returns the variable that overlaps with address \p addr, or nullptr if no such variable
-    /// exists.
+    /// \returns the variable that overlaps with address \p addr,
+    /// or nullptr if no such variable exists.
     const TypedVariable *find(Address addr) const;
 
-    /// \returns the iterator to the variable that overlaps with \p addr, or end() if no such
-    /// variable exists.
+    /// \returns the iterator to the variable that overlaps with \p addr,
+    /// or end() if no such variable exists.
     const_iterator find_it(Address addr) const;
 
     /**
@@ -102,7 +95,7 @@ public:
      */
     iterator insertItem(Address baseAddr, QString name, SharedType type, bool forced = false);
 
-    /// Mainly for testing?
+    /// \deprecated For testing only
     void deleteItem(Address addr);
 
     /// For test and debug

@@ -140,23 +140,23 @@ int main(int argc, char *argv[])
     o3 = _ZN1D3fooEv(o0_1, global_0x000217a8, 8, 0x217a4, 0x21740, global_0x0002174c, o7_1, o0_1, l1, o0_1 + 12, l3, l4, l5, l6, l7, 0, argv, o2, o3, o4, o5, o6, o7_4, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7); /* Warning: also results in o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7 */
     o2 = *l0;
     o1 = *o2;
-    (*o1)(l0, o1, o2, o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local15, local19, local23, local27, local31, local35, local39, local43, local47, local51, local55, local59, local63, local67, local71, <all>);
+    (*o1)(l0, o1, o2, o3, o4, o5, o7, l0, l2, i0, i1, i2, i3, i4, i5, fp, i7, <all>, l1, l3, l4, l5, l6, l7, local15, local19, local23, local27, local31, local35, local39, local43, local47, local51, local55, local59, local63, local67, local71);
     o2 = *(l0 + 12);
     o1 = *o2;
-    (*o1)(l2, o1, o2, o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local16, local20, local24, local28, local32, local36, local40, local44, local48, local52, local56, local60, local64, local68, local72, <all>);
+    (*o1)(l2, o1, o2, o3, o4, o5, o7, l0, l2, i0, i1, i2, i3, i4, i5, fp, i7, <all>, l1, l3, l4, l5, l6, l7, local16, local20, local24, local28, local32, local36, local40, local44, local48, local52, local56, local60, local64, local68, local72);
     o0 = *l0;
     o1 = *(o0 - 12);
     o2 = *(l0 + o1);
     o3 = *o2;
-    (*o3)(l0 + o1, o1, o2, o3, o4, o5, o7, l0, l1, l2, l0 + o1, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local17, local21, local25, local29, local33, local37, local41, local45, local49, local53, local57, local61, local65, local69, local73, <all>);
+    (*o3)(l0 + o1, o1, o2, o3, o4, o5, o7, l0, l2, l0 + o1, i0, i1, i2, i3, i4, i5, fp, i7, <all>, l1, l4, l5, l6, l7, local17, local21, local25, local29, local33, local37, local41, local45, local49, local53, local57, local61, local65, local69, local73);
     o0 = *(l0 + 12);
     l1 = *(o0 - 12);
     o1 = *(l2 + l1);
     o2 = *o1;
-    (*o2)(l2 + l1, o1, o2, o3, o4, o5, o7, l0, l1, l2, l2 + l1, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local18, local22, local26, local30, local34, local38, local42, local46, local50, local54, local58, local62, local66, local70, local74, <all>);
+    (*o2)(l2 + l1, o1, o2, o3, o4, o5, o7, l0, l1, l2, l2 + l1, i0, i1, i2, i3, i4, i5, fp, i7, <all>, l4, l5, l6, l7, local18, local22, local26, local30, local34, local38, local42, local46, local50, local54, local58, local62, local66, local70, local74);
     o3 = *(l2 + l1);
     o1 = *o3;
-    (*o1)(l3, o1, o2, o3, o4, o5, o7, l0, l1, l2, l3, l4, l5, l6, l7, i0, i1, i2, i3, i4, i5, fp, i7, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, local14, <all>);
+    (*o1)(l3, o1, o2, o3, o4, o5, o7, l0, l1, l2, l3, i0, i1, i2, i3, i4, i5, fp, i7, <all>, l4, l5, l6, l7, local0, local1, local2, local3, local4, local5, local6, local7, local8, local9, local10, local11, local12, local13, local14);
     return i0;
 }
 

@@ -1344,8 +1344,9 @@ void CallStatement::updateArguments(bool experimental)
 
             SharedType ty = asp.curType(loc);
             Assign *as    = new Assign(ty, loc->clone(), rhs);
-            as->setNumber(
-                m_number); // Give the assign the same statement number as the call (for now)
+
+            // Give the assign the same statement number as the call (for now)
+            as->setNumber(m_number);
             // as->setParent(this);
             as->setProc(m_proc);
             as->setBB(m_bb);
@@ -1353,8 +1354,7 @@ void CallStatement::updateArguments(bool experimental)
         }
     }
 
-    for (StatementList::reverse_iterator it = oldArguments.rbegin(); it != oldArguments.rend();
-         ++it) {
+    for (StatementList::iterator it = oldArguments.begin(); it != oldArguments.end(); ++it) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
         Assign *as    = static_cast<Assign *>(*it);
         SharedExp lhs = as->getLeft();
@@ -1372,11 +1372,6 @@ void CallStatement::updateArguments(bool experimental)
 
         m_arguments.append(as);
     }
-
-    m_arguments.sort([&sig](const Statement *arg1, const Statement *arg2) {
-        return sig->argumentCompare(*static_cast<const Assignment *>(arg1),
-                                    *static_cast<const Assignment *>(arg2));
-    });
 }
 
 
@@ -1507,8 +1502,6 @@ SharedExp CallStatement::bypassRef(const std::shared_ptr<RefExp> &r, bool &chang
             return r->shared_from_this(); // Childless callees transmit nothing
         }
 
-        // if (procDest->isLocal(base))                    // ICK! Need to prove locals and
-        // parameters through calls...
         // FIXME: temporary HACK! Ignores alias issues.
         if (!m_procDest->isLib() &&
             static_cast<const UserProc *>(m_procDest)->isLocalOrParamPattern(base)) {

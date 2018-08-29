@@ -15,7 +15,8 @@
 
 namespace CallingConvention
 {
-/// Win32Signature is for non-thiscall signatures: all parameters pushed
+/// Win32Signature is for __stdcall calling convention: parameters pushed right-to-left,
+/// return value in %eax register
 class BOOMERANG_API Win32Signature : public Signature
 {
 public:
