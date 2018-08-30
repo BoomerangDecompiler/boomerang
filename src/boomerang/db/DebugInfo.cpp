@@ -221,10 +221,10 @@ SharedType typeFromDebugInfo(const QString &name, Address addr)
         assert(name == sym->Name);
         return ::typeFromDebugInfo(sym->TypeIndex, sym->ModBase);
     }
-#else
+#endif
+
     Q_UNUSED(name);
     Q_UNUSED(addr);
-#endif
     return nullptr;
 }
 }
