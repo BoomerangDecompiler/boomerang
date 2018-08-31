@@ -39,7 +39,11 @@ CommandlineDriver::CommandlineDriver(QObject *_parent)
  */
 static void help()
 {
-    std::cout << "Symbols\n"
+    std::cout << "Usage:\n"
+                 "  boomerang-cli [ switches ] [ -- ] program\n"
+                 "  boomerang-cli ( -h | --help | --version )\n"
+                 "\n"
+                 "Symbols\n"
                  "  -s <addr> <name> : Define a symbol\n"
                  "  -sf <filename>   : Read a symbol/signature file\n"
                  "Decoding/decompilation options\n"
@@ -53,8 +57,9 @@ static void help()
                  "  -Td              : Use data-flow-based type analysis\n"
                  "  -a               : Assume ABI compliance\n"
                  "Output\n"
-                 "  -v               : Verbose\n"
-                 "  -h               : This help\n"
+                 "  --version        : Print version information and exit\n"
+                 "  -h, --help       : Show this help\n"
+                 "  -v               : Verbose decompilation output\n"
                  "  -o <output path> : Where to generate output (defaults to ./output/)\n"
                  "  -r               : Print RTL for each proc to log before code generation\n"
                  "  -gd <dot file>   : Generate a dotty graph of the program's CFG\n"
@@ -207,7 +212,16 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             break;
         }
 
-        case '-': break; // No effect: ignored
+        case '-':
+            if (arg == "--version") {
+                std::cout << "boomerang-cli " << m_project->getVersionStr() << std::endl;
+                return 1;
+            }
+            else if (arg == "--help") {
+                help();
+                return 1;
+            }
+            break;
 
         case 'i':
             if (arg[2] == 'c') {
