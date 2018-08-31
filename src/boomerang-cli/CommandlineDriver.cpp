@@ -99,8 +99,8 @@ static void help()
  */
 static void usage()
 {
-    std::cout << "Usage: boomerang [ switches ] <program>\n"
-                 "boomerang -h for switch help\n";
+    std::cout << "Usage: boomerang-cli [ switches ] <program>\n"
+                 "Use boomerang-cli -h for switch help\n";
 }
 
 
