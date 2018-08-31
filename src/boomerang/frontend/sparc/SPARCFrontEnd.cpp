@@ -766,8 +766,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                 if (last->getKind() == StmtType::Call) {
                     // Check the delay slot of this call. First case of interest is when the
-                    // instruction is a restore, e.g. 142c8:  40 00 5b 91          call exit 142cc:
-                    // 91 e8 3f ff          restore       %g0, -1, %o0
+                    // instruction is a restore, e.g.
+                    // 142c8:  40 00 5b 91          call exit
+                    // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
                     if (static_cast<SPARCDecoder *>(m_decoder.get())
                             ->isRestore(HostAddress(
                                 addr.value() + 4 +
@@ -786,9 +787,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     }
 
                     // Next class of interest is if it assigns to %o7 (could be a move, add, and
-                    // possibly others). E.g.: 14e4c:  82 10 00 0f          mov           %o7, %g1
-                    // 14e50:  7f ff ff 60          call           blah
-                    // 14e54:  9e 10 00 01          mov           %g1, %o7
+                    // possibly others). E.g.:
+                    // 14e4c:  82 10 00 0f      mov     %o7, %g1
+                    // 14e50:  7f ff ff 60      call    blah
+                    // 14e54:  9e 10 00 01      mov     %g1, %o7
                     // Note there could be an unrelated instruction between the first move and the
                     // call (move/x/call/move in UQBT terms).  In boomerang, we leave the semantics
                     // of the moves there (to be likely removed by dataflow analysis) and merely
@@ -996,7 +998,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                 switch (delay_inst.type) {
                 case NOP: {
-                    // This is an ordinary two-way branch.  Add the branch to the list of RTLs for
+                    // This is an ordinary two-way branch. Add the branch to the list of RTLs for
                     // this BB
                     BB_rtls->push_back(std::move(inst.rtl));
                     // Create the BB and add it to the CFG
@@ -1090,9 +1092,10 @@ void SPARCFrontEnd::emitCopyPC(RTLList &rtls, Address addr)
 {
     // Emit %o7 = %pc
     Assign *asgn = new Assign(Location::regOf(REG_SPARC_O7), Terminal::get(opPC));
+    assert(!rtls.empty());
 
     // Add the RTL to the list of RTLs, but to the second last position
-    rtls.insert(--rtls.end(), std::unique_ptr<RTL>(new RTL(addr, { asgn })));
+    rtls.insert(std::prev(rtls.end()), std::unique_ptr<RTL>(new RTL(addr, { asgn })));
 }
 
 
