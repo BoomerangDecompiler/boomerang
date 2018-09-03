@@ -139,7 +139,7 @@ public:
     virtual bool accept(StmtModifier *modifier)     = 0;
     virtual bool accept(StmtPartModifier *modifier) = 0;
 
-    /// true if is a null statement
+    /// \returns true iff the statement is of the form x := x
     bool isNullStatement() const;
 
     /// Return true if a TypingStatement

@@ -568,9 +568,9 @@ void Statement::stripSizes()
 
 void Statement::bypass()
 {
+    // Use the Part modifier so we don't change the top level of LHS of assigns etc
     CallBypasser cb(this);
-    StmtPartModifier sm(
-        &cb); // Use the Part modifier so we don't change the top level of LHS of assigns etc
+    StmtPartModifier sm(&cb);
 
     accept(&sm);
 
