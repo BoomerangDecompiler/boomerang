@@ -673,31 +673,6 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                 jumpStmt = static_cast<GotoStatement *>(last);
             }
 
-#if BRANCH_DS_ERROR
-            if ((last->getKind() == JUMP_RTL) || (last->getKind() == StmtType::Call) ||
-                (last->getKind() == JCOND_RTL) || (last->getKind() == StmtType::Ret)) {
-                Address dest = stmt_jump->getFixedDest();
-
-                if ((dest != Address::INVALID) && (dest < hiAddress)) {
-                    unsigned inst_before_dest = *((unsigned *)(dest - 4 + loader->getTextDelta()));
-
-                    unsigned bits31_30 = inst_before_dest >> 30;
-                    unsigned bits23_22 = (inst_before_dest >> 22) & 3;
-                    unsigned bits24_19 = (inst_before_dest >> 19) & 0x3f;
-                    unsigned bits29_25 = (inst_before_dest >> 25) & 0x1f;
-
-                    if ((bits31_30 == 0x01) ||                          // Call
-                        ((bits31_30 == 0x02) && (bits24_19 == 0x38)) || // Jmpl
-                        ((bits31_30 == 0x00) && (bits23_22 == 0x02) &&
-                         (bits29_25 != 0x18))) { // Branch, but not (f)ba,a
-                        // The above test includes floating point branches
-                        std::cerr << "Target of branch at " << std::hex << rtl->getAddress()
-                                  << " is delay slot of CTI at " << dest - 4 << '\n';
-                    }
-                }
-            }
-#endif
-
             switch (inst.type) {
             case NOP:
                 // Always put the NOP into the BB. It may be needed if it is the

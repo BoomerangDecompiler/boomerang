@@ -93,8 +93,7 @@ add_definitions(-DDEBUG_PARAMS=1)     #
 add_definitions(-DRECURSION_WIP=0)
 add_definitions(-DPRINT_UNION=0)      # Set to 1 to debug unions to stderr
 add_definitions(-DV9_ONLY=0)
-add_definitions(-DBRANCH_DS_ERROR=0)  # If set, a branch to the delay slot of a delayed
-                                      # CTI instruction is flagged as an error
+
 
 if (NOT BUILD_SHARED_LIBS)
     add_definitions(-DBOOMERANG_BUILD_STATIC=1)
