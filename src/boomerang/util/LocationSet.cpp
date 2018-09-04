@@ -22,12 +22,12 @@ LocationSet::LocationSet(const std::initializer_list<SharedExp> &exps)
 }
 
 
-LocationSet &LocationSet::operator=(const LocationSet &o)
+LocationSet &LocationSet::operator=(const LocationSet &otherSet)
 {
     m_set.clear();
 
-    for (const_iterator it = o.begin(); it != o.end(); ++it) {
-        insert((*it)->clone());
+    for (const SharedExp &loc : otherSet) {
+        insert(loc->clone());
     }
 
     return *this;

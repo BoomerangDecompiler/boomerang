@@ -148,26 +148,26 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
                 // the total number of refs
                 StatementSet stmtsRefdByUnused;
                 LocationSet components;
-                s->addUsedLocs(components,
-                               false); // Second parameter false to ignore uses in collectors
+                // Second parameter false to ignore uses in collectors
+                s->addUsedLocs(components, false);
 
-                for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                    if ((*cc)->isSubscript() && (*cc)->access<RefExp>()->getDef()) {
-                        stmtsRefdByUnused.insert((*cc)->access<RefExp>()->getDef());
+                for (const SharedExp& component : components) {
+                    if (component->isSubscript() && component->access<RefExp>()->getDef()) {
+                        stmtsRefdByUnused.insert(component->access<RefExp>()->getDef());
                     }
                 }
 
-                for (auto dd = stmtsRefdByUnused.begin(); dd != stmtsRefdByUnused.end(); ++dd) {
-                    if (*dd == nullptr) {
+                for (Statement *refd : stmtsRefdByUnused) {
+                    if (refd == nullptr) {
                         continue;
                     }
 
                     if (proc->getProg()->getProject()->getSettings()->debugUnused) {
                         LOG_MSG("Decrementing ref count of %1 because %2 is unused",
-                                (*dd)->getNumber(), s->getNumber());
+                                refd->getNumber(), s->getNumber());
                     }
 
-                    refCounts[*dd]--;
+                    refCounts[refd]--;
                 }
 
                 if (proc->getProg()->getProject()->getSettings()->debugUnused) {

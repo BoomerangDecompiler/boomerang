@@ -93,8 +93,8 @@ bool BlockVarRenamePass::renameBlockVars(
 
                 if (location->isSubscript()) { // Already subscripted?
                     // No renaming required, but redo the usage analysis, in case this is a new
-                    // return, and also because we may have just removed all call livenesses Update
-                    // use information in calls, and in the proc (for parameters)
+                    // return, and also because we may have just removed all call livenesses
+                    // Update use information in calls, and in the proc (for parameters)
                     SharedExp base = location->getSubExp1();
                     def            = std::static_pointer_cast<RefExp>(location)->getDef();
 
@@ -267,16 +267,16 @@ bool BlockVarRenamePass::renameBlockVars(
         LocationSet defs;
         S->getDefinitions(defs, assumeABICompliance);
 
-        for (auto dd = defs.begin(); dd != defs.end(); ++dd) {
-            if (!proc->canRename(*dd)) {
+        for (const auto &def : defs) {
+            if (!proc->canRename(def)) {
                 continue;
             }
 
             // if ((*dd)->getMemDepth() == memDepth)
-            auto ss = stacks.find(*dd);
+            auto ss = stacks.find(def);
 
             if (ss == stacks.end()) {
-                LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", (*dd));
+                LOG_FATAL("Tried to pop '%1' from Stacks; does not exist", def);
             }
 
             ss->second.pop_back();
@@ -284,9 +284,9 @@ bool BlockVarRenamePass::renameBlockVars(
 
         // Pop all defs due to childless calls
         if (S->isCall() && static_cast<const CallStatement *>(S)->isChildless()) {
-            for (auto sss = stacks.begin(); sss != stacks.end(); ++sss) {
-                if (!sss->second.empty() && (sss->second.back() == S)) {
-                    sss->second.pop_back();
+            for (auto &stack : stacks) {
+                if (!stack.second.empty() && (stack.second.back() == S)) {
+                    stack.second.pop_back();
                 }
             }
         }

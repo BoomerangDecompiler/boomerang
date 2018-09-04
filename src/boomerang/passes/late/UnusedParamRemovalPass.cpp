@@ -123,8 +123,8 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                 // Else check for arguments of the form lloc := f(bparam{0})
                 const StatementList &args = c->getArguments();
 
-                for (StatementList::const_iterator aa = args.begin(); aa != args.end(); ++aa) {
-                    const Assign *a = dynamic_cast<const Assign *>(*aa);
+                for (const Statement *arg : args) {
+                    const Assign *a = dynamic_cast<const Assign *>(arg);
                     SharedExp rhs   = a ? a->getRight() : nullptr;
                     if (!rhs) {
                         continue;
@@ -134,7 +134,7 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                     rhs->addUsedLocs(argUses);
 
                     if (argUses.containsImplicit(bparam)) {
-                        SharedExp lloc = static_cast<Assign *>(*aa)->getLeft();
+                        SharedExp lloc = static_cast<const Assign *>(arg)->getLeft();
 
                         if ((visited.find(dest) == visited.end()) &&
                             checkForGainfulUse(dest, lloc, visited)) {
@@ -143,8 +143,8 @@ bool UnusedParamRemovalPass::checkForGainfulUse(UserProc *proc, SharedExp bparam
                     }
                 }
 
-                // If get to here, then none of the arguments is of this form, and we can ignore
-                // this call
+                // If get to here, then none of the arguments is of this form,
+                // and we can ignore this call
                 continue;
             }
         }

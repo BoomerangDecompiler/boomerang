@@ -101,9 +101,9 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
         LocationSet ls;
         s->getDefinitions(ls, assumeABICompliance);
 
-        for (auto ll = ls.begin(); ll != ls.end(); ++ll) {
-            SharedType ty = s->getTypeFor(*ll);
-            QString name  = proc->findLocal(*ll, ty);
+        for (const SharedExp &loc : ls) {
+            SharedType ty = s->getTypeFor(loc);
+            QString name  = proc->findLocal(loc, ty);
 
             if (name.isEmpty()) {
                 continue;
@@ -117,7 +117,7 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
                 }
                 else if (s->isCall()) {
                     // Remove just this define. May end up removing several defines from this call.
-                    static_cast<CallStatement *>(s)->removeDefine(*ll);
+                    static_cast<CallStatement *>(s)->removeDefine(loc);
                 }
 
                 // else if a ReturnStatement, don't attempt to remove it. The definition is used
@@ -127,8 +127,8 @@ bool UnusedLocalRemovalPass::execute(UserProc *proc)
     }
 
     // Finally, remove them from locals, so they don't get declared
-    for (QString str : removes) {
-        proc->getLocals().erase(str);
+    for (QString localName : removes) {
+        proc->getLocals().erase(localName);
     }
 
     // Also remove them from the symbols, since symbols are a superset of locals at present

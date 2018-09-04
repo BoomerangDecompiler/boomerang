@@ -544,7 +544,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 
     bool first = true;
 
-    for (auto pp = parameters.begin(); pp != parameters.end(); ++pp) {
+    for (auto & parameter : parameters) {
         if (first) {
             first = false;
         }
@@ -552,7 +552,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
             s << ", ";
         }
 
-        Assignment *as = static_cast<Assignment *>(*pp);
+        Assignment *as = static_cast<Assignment *>(parameter);
         SharedExp left = as->getLeft();
         SharedType ty  = as->getType();
 

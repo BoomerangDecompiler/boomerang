@@ -182,13 +182,12 @@ SharedExp Exp::searchReplaceAll(const Exp &pattern, const SharedExp &replace, bo
         return replace->clone();
     }
 
-    std::list<SharedExp *> li;
+    std::list<SharedExp *> matches;
     SharedExp top = shared_from_this(); // top may change; that's why we have to return it
-    doSearch(pattern, top, li, false);
+    doSearch(pattern, top, matches, false);
 
-    for (auto it = li.begin(); it != li.end(); ++it) {
-        SharedExp *pp = *it;
-        *pp           = replace->clone(); // Do the replacement
+    for (SharedExp *pexp : matches) {
+        *pexp = replace->clone(); // Do the replacement
 
         if (once) {
             change = true;
@@ -196,7 +195,7 @@ SharedExp Exp::searchReplaceAll(const Exp &pattern, const SharedExp &replace, bo
         }
     }
 
-    change = !li.empty();
+    change = !matches.empty();
     return top;
 }
 

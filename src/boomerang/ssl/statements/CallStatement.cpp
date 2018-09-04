@@ -315,8 +315,8 @@ void CallStatement::setArguments(const StatementList &args)
     m_arguments.clear();
     m_arguments.append(args);
 
-    for (StatementList::iterator ll = m_arguments.begin(); ll != m_arguments.end(); ++ll) {
-        Assign *asgn = dynamic_cast<Assign *>(*ll);
+    for (Statement *arg : m_arguments) {
+        Assign *asgn = dynamic_cast<Assign *>(arg);
         if (asgn) {
             asgn->setProc(m_proc);
             asgn->setBB(m_bb);
@@ -424,14 +424,14 @@ bool CallStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result) 
 {
     bool found = GotoStatement::searchAll(pattern, result);
 
-    for (auto ss = m_defines.begin(); ss != m_defines.end(); ++ss) {
-        if ((*ss)->searchAll(pattern, result)) {
+    for (const Statement *def : m_defines) {
+        if (def->searchAll(pattern, result)) {
             found = true;
         }
     }
 
-    for (const Statement *ss : m_arguments) {
-        if (ss->searchAll(pattern, result)) {
+    for (const Statement *arg : m_arguments) {
+        if (arg->searchAll(pattern, result)) {
             found = true;
         }
     }
@@ -452,9 +452,9 @@ void CallStatement::print(OStream &os) const
 
         bool first = true;
 
-        for (StatementList::const_iterator rr = m_defines.begin(); rr != m_defines.end(); ++rr) {
-            assert((*rr)->isAssignment());
-            Assignment *as = static_cast<Assignment *>(*rr);
+        for (const Statement *def : m_defines) {
+            assert(def->isAssignment());
+            const Assignment *as = static_cast<const Assignment *>(def);
 
             if (first) {
                 first = false;
@@ -466,7 +466,7 @@ void CallStatement::print(OStream &os) const
             os << "*" << as->getType() << "* " << as->getLeft();
 
             if (as->isAssign()) {
-                Assign *a = dynamic_cast<Assign *>(as);
+                const Assign *a = dynamic_cast<const Assign *>(as);
                 if (a) {
                     os << " := " << a->getRight();
                 }
@@ -507,9 +507,9 @@ void CallStatement::print(OStream &os) const
     else {
         os << "(\n";
 
-        for (const Statement *aa : m_arguments) {
+        for (const Statement *arg : m_arguments) {
             os << "                ";
-            const Assignment *a = dynamic_cast<const Assignment *>(aa);
+            const Assignment *a = dynamic_cast<const Assignment *>(arg);
             if (a) {
                 a->printCompact(os);
             }
@@ -632,14 +632,14 @@ bool CallStatement::usesExp(const Exp &e) const
         return true;
     }
 
-    for (const Statement *ss : m_arguments) {
-        if (ss->usesExp(e)) {
+    for (const Statement *arg : m_arguments) {
+        if (arg->usesExp(e)) {
             return true;
         }
     }
 
-    for (const Statement *ss : m_defines) {
-        if (ss->usesExp(e)) {
+    for (const Statement *def : m_defines) {
+        if (def->usesExp(e)) {
             return true;
         }
     }
@@ -650,8 +650,8 @@ bool CallStatement::usesExp(const Exp &e) const
 
 void CallStatement::getDefinitions(LocationSet &defs, bool assumeABICompliance) const
 {
-    for (auto dd = m_defines.begin(); dd != m_defines.end(); ++dd) {
-        defs.insert(static_cast<Assignment *>(*dd)->getLeft());
+    for (Statement *def : m_defines) {
+        defs.insert(static_cast<Assignment *>(def)->getLeft());
     }
 
     // Childless calls are supposed to define everything.
@@ -1258,8 +1258,8 @@ void CallStatement::addSigParam(SharedType ty, bool isScanf)
 
 bool CallStatement::definesLoc(SharedExp loc) const
 {
-    for (auto dd = m_defines.begin(); dd != m_defines.end(); ++dd) {
-        SharedExp lhs = static_cast<Assign *>(*dd)->getLeft();
+    for (const Statement *def : m_defines) {
+        SharedExp lhs = static_cast<const Assign *>(def)->getLeft();
 
         if (*lhs == *loc) {
             return true;
@@ -1354,19 +1354,19 @@ void CallStatement::updateArguments(bool experimental)
         }
     }
 
-    for (StatementList::iterator it = oldArguments.begin(); it != oldArguments.end(); ++it) {
+    for (Statement *oldArg : oldArguments) {
         // Make sure the LHS is still in the callee signature / callee parameters / use collector
-        Assign *as    = static_cast<Assign *>(*it);
+        Assign *as    = static_cast<Assign *>(oldArg);
         SharedExp lhs = as->getLeft();
 
         if (!asp.exists(lhs)) {
-            delete *it;
+            delete oldArg;
             continue;
         }
 
         if (m_proc->filterParams(lhs)) {
             // Filtered out: delete it
-            delete *it;
+            delete oldArg;
             continue;
         }
 

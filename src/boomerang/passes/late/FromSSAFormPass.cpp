@@ -106,25 +106,25 @@ bool FromSSAFormPass::execute(UserProc *proc)
     if (proc->getProg()->getProject()->getSettings()->debugLiveness) {
         LOG_MSG("## ig interference graph:");
 
-        for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ++ii) {
-            LOG_MSG("   ig %1 -> %2", ii->first, ii->second);
+        for (const auto &[from, to] : ig) {
+            LOG_MSG("   ig %1 -> %2", from, to);
         }
 
         LOG_MSG("## pu phi unites graph:");
 
-        for (ConnectionGraph::iterator ii = pu.begin(); ii != pu.end(); ++ii) {
-            LOG_MSG("   pu %1 -> %2", ii->first, ii->second);
+        for (const auto &[from, to] : pu) {
+            LOG_MSG("   pu %1 -> %2", from, to);
         }
     }
 
     // Choose one of each interfering location to give a new name to
     assert(ig.allRefsHaveDefs());
 
-    for (ConnectionGraph::iterator ii = ig.begin(); ii != ig.end(); ++ii) {
-        auto r1       = ii->first->access<RefExp>();
-        auto r2       = ii->second->access<RefExp>(); // r1 -> r2 and vice versa
-        QString name1 = proc->lookupSymFromRefAny(r1);
-        QString name2 = proc->lookupSymFromRefAny(r2);
+    for (const auto &[first, second] : ig) {
+        auto ref1     = first->access<RefExp>();
+        auto ref2     = second->access<RefExp>(); // r1 -> r2 and vice versa
+        QString name1 = proc->lookupSymFromRefAny(ref1);
+        QString name2 = proc->lookupSymFromRefAny(ref2);
 
         if (!name1.isEmpty() && !name2.isEmpty() && (name1 != name2)) {
             continue; // Already different names, probably because of the redundant mapping
@@ -132,23 +132,23 @@ bool FromSSAFormPass::execute(UserProc *proc)
 
         std::shared_ptr<RefExp> rename;
 
-        if (r1->isImplicitDef()) {
+        if (ref1->isImplicitDef()) {
             // If r1 is an implicit definition, don't rename it (it is probably a parameter, and
             // should retain its current name)
-            rename = r2;
+            rename = ref2;
         }
-        else if (r2->isImplicitDef()) {
-            rename = r1; // Ditto for r2
+        else if (ref2->isImplicitDef()) {
+            rename = ref1; // Ditto for r2
         }
 
         if (rename == nullptr) {
-            Statement *def2 = r2->getDef();
+            Statement *def2 = ref2->getDef();
 
             if (def2->isPhi()) { // Prefer the destinations of phis
-                rename = r2;
+                rename = ref2;
             }
             else {
-                rename = r1;
+                rename = ref1;
             }
         }
 
@@ -167,20 +167,20 @@ bool FromSSAFormPass::execute(UserProc *proc)
     // have to unite, and exactly one of them already has a local/name, you can implement the
     // unification by giving the unnamed one the same name as the named one, as long as they don't
     // interfere
-    for (ConnectionGraph::iterator ii = pu.begin(); ii != pu.end(); ++ii) {
-        auto r1       = ii->first->access<RefExp>();
-        auto r2       = ii->second->access<RefExp>();
-        QString name1 = proc->lookupSymFromRef(r1);
-        QString name2 = proc->lookupSymFromRef(r2);
+    for (const auto &[first, second] : pu) {
+        auto ref1     = first->access<RefExp>();
+        auto ref2     = second->access<RefExp>();
+        QString name1 = proc->lookupSymFromRef(ref1);
+        QString name2 = proc->lookupSymFromRef(ref2);
 
-        if (!name1.isEmpty() && !name2.isEmpty() && !ig.isConnected(r1, *r2)) {
+        if (!name1.isEmpty() && !name2.isEmpty() && !ig.isConnected(ref1, *ref2)) {
             // There is a case where this is unhelpful, and it happen in test/pentium/fromssa2. We
             // have renamed the destination of the phi to ebx_1, and that leaves the two phi
             // operands as ebx. However, we attempt to unite them here, which will cause one of the
             // operands to become ebx_1, so the neat oprimisation of replacing the phi with one copy
             // doesn't work. The result is an extra copy. So check of r1 is a phi and r2 one of its
             // operands, and all other operands for the phi have the same name. If so, don't rename.
-            Statement *def1 = r1->getDef();
+            Statement *def1 = ref1->getDef();
 
             if (def1->isPhi()) {
                 bool allSame     = true;
@@ -191,7 +191,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 for (RefExp &refExp : *pa) {
                     auto re(RefExp::get(refExp.getSubExp1(), refExp.getDef()));
 
-                    if (*re == *r2) {
+                    if (*re == *ref2) {
                         r2IsOperand = true;
                     }
 
@@ -213,7 +213,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
                 }
             }
 
-            proc->mapSymbolTo(r2, Location::local(name1, proc));
+            proc->mapSymbolTo(ref2, Location::local(name1, proc));
             continue;
         }
     }
@@ -414,8 +414,8 @@ void FromSSAFormPass::removeSubscriptsFromSymbols(UserProc *proc)
     proc->getSymbolMap().clear();
     ExpSSAXformer esx(proc);
 
-    for (auto it = sm2.begin(); it != sm2.end(); ++it) {
-        SharedExp from = std::const_pointer_cast<Exp>(it->first);
+    for (const auto &[first, second] : sm2) {
+        SharedExp from = std::const_pointer_cast<Exp>(first);
 
         if (from->isSubscript()) {
             // As noted above, don't touch the outer level of subscripts
@@ -426,7 +426,7 @@ void FromSSAFormPass::removeSubscriptsFromSymbols(UserProc *proc)
             from = from->acceptModifier(&esx);
         }
 
-        proc->mapSymbolTo(from, it->second);
+        proc->mapSymbolTo(from, second);
     }
 }
 

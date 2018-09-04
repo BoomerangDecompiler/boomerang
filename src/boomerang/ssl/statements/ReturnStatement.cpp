@@ -112,8 +112,8 @@ bool ReturnStatement::search(const Exp &pattern, SharedExp &result) const
 {
     result = nullptr;
 
-    for (auto rr = begin(); rr != end(); ++rr) {
-        if ((*rr)->search(pattern, result)) {
+    for (const Statement *ret : m_returns) {
+        if (ret->search(pattern, result)) {
             return true;
         }
     }
@@ -126,17 +126,13 @@ bool ReturnStatement::searchAndReplace(const Exp &pattern, SharedExp replace, bo
 {
     bool change = false;
 
-    ReturnStatement::iterator rr;
-
-    for (rr = begin(); rr != end(); ++rr) {
-        change |= (*rr)->searchAndReplace(pattern, replace, cc);
+    for (Statement *ret : m_returns) {
+        change |= ret->searchAndReplace(pattern, replace, cc);
     }
 
     if (cc) {
-        DefCollector::iterator dd;
-
-        for (dd = m_col.begin(); dd != m_col.end(); ++dd) {
-            change |= (*dd)->searchAndReplace(pattern, replace);
+        for (Assign *def : m_col) {
+            change |= def->searchAndReplace(pattern, replace);
         }
     }
 
@@ -148,8 +144,8 @@ bool ReturnStatement::searchAll(const Exp &pattern, std::list<SharedExp> &result
 {
     bool found = false;
 
-    for (auto rr = begin(); rr != end(); ++rr) {
-        if ((*rr)->searchAll(pattern, result)) {
+    for (Statement *ret : m_returns) {
+        if (ret->searchAll(pattern, result)) {
             found = true;
         }
     }
@@ -162,8 +158,8 @@ bool ReturnStatement::usesExp(const Exp &e) const
 {
     SharedExp where;
 
-    for (auto rr = begin(); rr != end(); ++rr) {
-        if ((*rr)->search(e, where)) {
+    for (Statement *ret : m_returns) {
+        if (ret->search(e, where)) {
             return true;
         }
     }
@@ -184,8 +180,8 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
     }
 
     if (!v->isIgnoreCol()) {
-        for (DefCollector::iterator dd = m_col.begin(); dd != m_col.end(); ++dd) {
-            if (!(*dd)->accept(v)) {
+        for (Statement *stmt : m_col) {
+            if (!stmt->accept(v)) {
                 return false;
             }
         }
@@ -193,8 +189,8 @@ bool ReturnStatement::accept(StmtExpVisitor *v)
         // EXPERIMENTAL: for now, count the modifieds as if they are a collector (so most, if not
         // all of the time, ignore them). This is so that we can detect better when a definition is
         // used only once, and therefore propagate anything to it
-        for (ReturnStatement::iterator rr = m_modifieds.begin(); rr != m_modifieds.end(); ++rr) {
-            if (!(*rr)->accept(v)) {
+        for (Statement *stmt : m_modifieds) {
+            if (!stmt->accept(v)) {
                 return false;
             }
         }
@@ -274,8 +270,8 @@ bool ReturnStatement::definesLoc(SharedExp loc) const
     /// to pretend it does, and this is a place to store the return type(s) for example.
     /// FIXME: seems it would be cleaner to say that Return Statements don't define anything.
 
-    for (auto &elem : m_modifieds) {
-        if ((elem)->definesLoc(loc)) {
+    for (const Statement *stmt : m_modifieds) {
+        if (stmt->definesLoc(loc)) {
             return true;
         }
     }
@@ -286,17 +282,17 @@ bool ReturnStatement::definesLoc(SharedExp loc) const
 
 void ReturnStatement::getDefinitions(LocationSet &ls, bool assumeABICompliance) const
 {
-    for (auto &elem : m_modifieds) {
-        (elem)->getDefinitions(ls, assumeABICompliance);
+    for (Statement *stmt : m_modifieds) {
+        stmt->getDefinitions(ls, assumeABICompliance);
     }
 }
 
 
 SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
 {
-    for (auto &elem : m_modifieds) {
-        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
-            return static_cast<Assignment *>(elem)->getType();
+    for (Statement *stmt : m_modifieds) {
+        if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
+            return static_cast<Assignment *>(stmt)->getType();
         }
     }
 
@@ -306,9 +302,9 @@ SharedConstType ReturnStatement::getTypeFor(SharedConstExp e) const
 
 SharedType ReturnStatement::getTypeFor(SharedExp e)
 {
-    for (auto &elem : m_modifieds) {
-        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
-            return static_cast<Assignment *>(elem)->getType();
+    for (Statement *stmt : m_modifieds) {
+        if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
+            return static_cast<Assignment *>(stmt)->getType();
         }
     }
 
@@ -318,16 +314,16 @@ SharedType ReturnStatement::getTypeFor(SharedExp e)
 
 void ReturnStatement::setTypeFor(SharedExp e, SharedType ty)
 {
-    for (auto &elem : m_modifieds) {
-        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
-            static_cast<Assignment *>(elem)->setType(ty);
+    for (Statement *stmt : m_modifieds) {
+        if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
+            static_cast<Assignment *>(stmt)->setType(ty);
             break;
         }
     }
 
-    for (auto &elem : m_returns) {
-        if (*static_cast<Assignment *>(elem)->getLeft() == *e) {
-            static_cast<Assignment *>(elem)->setType(ty);
+    for (Statement *stmt : m_returns) {
+        if (*static_cast<Assignment *>(stmt)->getLeft() == *e) {
+            static_cast<Assignment *>(stmt)->setType(ty);
             return;
         }
     }
@@ -381,10 +377,10 @@ void ReturnStatement::print(OStream &os) const
         first  = true;
         column = 25;
 
-        for (auto const &elem : m_modifieds) {
+        for (const Statement *stmt : m_modifieds) {
             QString tgt2;
             OStream ost(&tgt2);
-            const Assignment *as = static_cast<const Assignment *>(elem);
+            const Assignment *as = static_cast<const Assignment *>(stmt);
             const SharedType ty  = as->getType();
 
             if (ty) {
@@ -443,9 +439,9 @@ void ReturnStatement::updateModifieds()
     // modifieds, which will be filtered and sorted to become the new modifieds Ick... O(N*M) (N
     // existing modifeds, M collected locations)
 
-    for (DefCollector::iterator ll = m_col.begin(); ll != m_col.end(); ++ll) {
+    for (Statement *stmt : m_col) {
         bool found       = false;
-        Assign *as       = static_cast<Assign *>(*ll);
+        Assign *as       = static_cast<Assign *>(stmt);
         SharedExp colLhs = as->getLeft();
 
         if (m_proc->filterReturns(colLhs)) {
@@ -473,18 +469,18 @@ void ReturnStatement::updateModifieds()
     // Mostly the old modifications will be in the correct order,
     // and inserting will be fastest near the start of the
     // new list. So read the old modifications in reverse order
-    for (StatementList::reverse_iterator it = oldMods.rbegin(); it != oldMods.rend(); ++it) {
+    for (auto rit = oldMods.rbegin(); rit != oldMods.rend(); ++rit) {
         // Make sure the LHS is still in the collector
-        Assignment *as = static_cast<Assignment *>(*it);
+        Assignment *as = static_cast<Assignment *>(*rit);
         SharedExp lhs  = as->getLeft();
 
         if (!m_col.existsOnLeft(lhs)) {
-            delete *it;
+            delete *rit;
             continue; // Not in collector: delete it (don't copy it)
         }
 
         if (m_proc->filterReturns(lhs)) {
-            delete *it;
+            delete *rit;
             continue; // Filtered out: delete it
         }
 
@@ -500,8 +496,8 @@ void ReturnStatement::updateModifieds()
 
 void ReturnStatement::updateReturns()
 {
-    auto sig = m_proc->getSignature();
-    int sp   = sig->getStackRegister();
+    auto sig     = m_proc->getSignature();
+    const int sp = sig->getStackRegister();
 
     StatementList oldRets(m_returns); // Copy the old returns
     m_returns.clear();
@@ -509,9 +505,9 @@ void ReturnStatement::updateReturns()
     // For each location in the modifieds, make sure that there is an assignment in the old returns,
     // which will be filtered and sorted to become the new returns Ick... O(N*M) (N existing
     // returns, M modifieds locations)
-    for (auto dd = m_modifieds.begin(); dd != m_modifieds.end(); ++dd) {
+    for (Statement *stmt : m_modifieds) {
         bool found    = false;
-        SharedExp loc = static_cast<Assignment *>(*dd)->getLeft();
+        SharedExp loc = static_cast<Assignment *>(stmt)->getLeft();
 
         if (m_proc->filterReturns(loc)) {
             continue; // Filtered out
@@ -523,8 +519,8 @@ void ReturnStatement::updateReturns()
             continue;
         }
 
-        for (StatementList::iterator it = oldRets.begin(); it != oldRets.end(); ++it) {
-            SharedExp lhs = static_cast<Assign *>(*it)->getLeft();
+        for (Statement *oldRet : oldRets) {
+            SharedExp lhs = static_cast<Assign *>(oldRet)->getLeft();
 
             if (*lhs == *loc) {
                 found = true;
@@ -533,8 +529,8 @@ void ReturnStatement::updateReturns()
         }
 
         if (!found) {
-            SharedExp rhs = m_col.findDefFor(
-                loc); // Find the definition that reaches the return statement's collector
+            // Find the definition that reaches the return statement's collector
+            SharedExp rhs = m_col.findDefFor(loc);
             Assign *as = new Assign(loc->clone(), rhs->clone());
             as->setProc(m_proc);
             as->setBB(m_bb);

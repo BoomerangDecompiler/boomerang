@@ -41,9 +41,9 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
             LocationSet components;
             paramLoc->addUsedLocs(components);
 
-            for (auto cc = components.begin(); cc != components.end(); ++cc) {
-                if (*cc != paramLoc) {                       // Don't subscript outer level
-                    paramLoc->expSubscriptVar(*cc, nullptr); // E.g. r28 -> r28{-}
+            for (const SharedExp &component : components) {
+                if (component != paramLoc) {                       // Don't subscript outer level
+                    paramLoc->expSubscriptVar(component, nullptr); // E.g. r28 -> r28{-}
                     paramLoc->acceptModifier(&ic);           // E.g. r28{-} -> r28{0}
                 }
             }

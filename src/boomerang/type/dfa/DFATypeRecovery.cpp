@@ -73,8 +73,8 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
         std::list<std::shared_ptr<Const>> lc;
         s->findConstants(lc);
 
-        for (auto cc = lc.begin(); cc != lc.end(); ++cc) {
-            LOG_MSG("    %1, %2", (*cc)->getType()->getCtype(), *cc);
+        for (std::shared_ptr<Const> &cc : lc) {
+            LOG_MSG("    %1, %2", cc->getType()->getCtype(), cc);
         }
 
         // If s is a call, also display its return types
@@ -90,16 +90,15 @@ void DFATypeRecovery::printResults(StatementList &stmts, int iter)
 
             LOG_VERBOSE("  returns:");
 
-            for (ReturnStatement::iterator rr = rs->begin(); rr != rs->end(); ++rr) {
-                // Intersect the callee's returns with the live locations at the call, i.e. make
-                // sure that they exist in *uc
-                Assignment *assgn = dynamic_cast<Assignment *>(*rr);
+            for (Statement *ret : *rs) {
+                // Intersect the callee's returns with the live locations at the call,
+                // i.e. make sure that they exist in *uc
+                Assignment *assgn = dynamic_cast<Assignment *>(ret);
                 if (!assgn) {
                     continue;
                 }
-                SharedExp lhs = assgn->getLeft();
 
-                if (!uc->exists(lhs)) {
+                if (!uc->exists(assgn->getLeft())) {
                     continue; // Intersection fails
                 }
 

@@ -309,9 +309,7 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
     }
 
     // Check if the liveness of any calls has changed
-    for (auto ll = callLiveness.begin(); ll != callLiveness.end(); ++ll) {
-        CallStatement *call             = ll->first;
-        const UseCollector &oldLiveness = ll->second;
+    for (auto &[call, oldLiveness] : callLiveness) {
         const UseCollector &newLiveness = *call->getUseCollector();
 
         if (newLiveness != oldLiveness) {

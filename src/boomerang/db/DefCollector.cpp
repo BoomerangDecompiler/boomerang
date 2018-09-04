@@ -31,14 +31,14 @@ void DefCollector::clear()
 void DefCollector::updateDefs(std::map<SharedExp, std::deque<Statement *>, lessExpStar> &Stacks,
                               UserProc *proc)
 {
-    for (auto it = Stacks.begin(); it != Stacks.end(); ++it) {
-        if (it->second.empty()) {
+    for (auto &Stack : Stacks) {
+        if (Stack.second.empty()) {
             continue; // This variable's definition doesn't reach here
         }
 
         // Create an assignment of the form loc := loc{def}
-        auto re    = RefExp::get(it->first->clone(), it->second.back());
-        Assign *as = new Assign(it->first->clone(), re);
+        auto re    = RefExp::get(Stack.first->clone(), Stack.second.back());
+        Assign *as = new Assign(Stack.first->clone(), re);
         as->setProc(proc); // Simplify sometimes needs this
         insert(as);
     }
@@ -59,12 +59,12 @@ void DefCollector::print(OStream &os) const
     size_t col = 36;
     bool first = true;
 
-    for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
+    for (auto def : m_defs) {
         QString tgt;
         OStream ost(&tgt);
-        (*it)->getLeft()->print(ost);
+        def->getLeft()->print(ost);
         ost << "=";
-        (*it)->getRight()->print(ost);
+        def->getRight()->print(ost);
         size_t len = tgt.length();
 
         if (first) {
@@ -91,11 +91,11 @@ void DefCollector::print(OStream &os) const
 
 SharedExp DefCollector::findDefFor(SharedExp e) const
 {
-    for (const_iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
-        SharedExp lhs = (*it)->getLeft();
+    for (Assign *def : m_defs) {
+        SharedExp lhs = def->getLeft();
 
         if (*lhs == *e) {
-            return (*it)->getRight();
+            return def->getRight();
         }
     }
 
@@ -115,10 +115,10 @@ void DefCollector::makeCloneOf(const DefCollector &other)
 }
 
 
-void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &change)
+void DefCollector::searchReplaceAll(const Exp &from, SharedExp to, bool &changed)
 {
-    for (iterator it = m_defs.begin(); it != m_defs.end(); ++it) {
-        change |= (*it)->searchAndReplace(from, to);
+    for (auto def : m_defs) {
+        changed |= def->searchAndReplace(from, to);
     }
 }
 

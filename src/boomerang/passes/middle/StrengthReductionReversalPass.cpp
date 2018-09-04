@@ -64,9 +64,9 @@ bool StrengthReductionReversalPass::execute(UserProc *proc)
                         StatementList stmts2;
                         proc->getStatements(stmts2);
 
-                        for (auto it2 = stmts2.begin(); it2 != stmts2.end(); ++it2) {
-                            if (*it2 != as) {
-                                (*it2)->searchAndReplace(
+                        for (Statement *stmt2 : stmts2) {
+                            if (stmt2 != as) {
+                                stmt2->searchAndReplace(
                                     *r, Binary::get(opMult, r->clone(), Const::get(c)));
                             }
                         }

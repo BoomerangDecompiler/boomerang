@@ -80,11 +80,9 @@ void Statement::setProc(UserProc *proc)
     getDefinitions(defs, assumeABICompliance);
     exps.makeUnion(defs);
 
-    for (auto ll = exps.begin(); ll != exps.end(); ++ll) {
-        auto l = std::dynamic_pointer_cast<Location>(*ll);
-
-        if (l) {
-            l->setProc(proc);
+    for (SharedExp exp : exps) {
+        if (exp->isLocation()) {
+            exp->access<Location>()->setProc(proc);
         }
     }
 }
@@ -298,9 +296,8 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
 
                             bool isOverwrite = false;
 
-                            for (LocationSet::iterator cc = OWcomps.begin(); cc != OWcomps.end();
-                                 ++cc) {
-                                if (**cc *= *lhsOWdef) {
+                            for (const SharedExp& loc : OWcomps) {
+                                if (*loc *= *lhsOWdef) {
                                     isOverwrite = true;
                                     break;
                                 }

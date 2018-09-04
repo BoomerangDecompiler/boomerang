@@ -111,9 +111,9 @@ void StmtSSAXformer::visit(CallStatement *stmt, bool &visitChildren)
     // fromSSA() function
     StatementList &defines = stmt->getDefines();
 
-    for (StatementList::iterator ss = defines.begin(); ss != defines.end(); ++ss) {
-        assert((*ss)->isAssignment());
-        Assignment *as = static_cast<Assignment *>(*ss);
+    for (Statement *define : defines) {
+        assert(define->isAssignment());
+        Assignment *as = static_cast<Assignment *>(define);
         // FIXME: use of fromSSAleft is deprecated
         SharedExp e = as->getLeft()->fromSSAleft(static_cast<ExpSSAXformer *>(m_mod)->getProc(),
                                                  stmt);
@@ -136,10 +136,7 @@ void StmtSSAXformer::visit(CallStatement *stmt, bool &visitChildren)
         as->setLeft(e);
     }
 
-    // Don't think we'll need this anyway:
-    // defCol.fromSSAForm(ig);
-
-    // However, need modifications of the use collector; needed when say eax is renamed to local5,
+    // Need modifications of the use collector; needed when say %eax is renamed to local5,
     // otherwise local5 is removed from the results of the call
     stmt->useColfromSSAForm(stmt);
     visitChildren = false; // TODO: verify recur setting

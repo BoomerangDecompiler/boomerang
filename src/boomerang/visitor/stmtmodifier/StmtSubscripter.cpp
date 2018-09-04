@@ -79,17 +79,13 @@ void StmtSubscripter::visit(BoolAssign *stmt, bool &visitChildren)
 
 void StmtSubscripter::visit(CallStatement *stmt, bool &visitChildren)
 {
-    SharedExp condExp = stmt->getDest();
-
-    if (condExp) {
-        stmt->setDest(condExp->acceptModifier(m_mod));
+    if (stmt->getDest()) {
+        stmt->setDest(stmt->getDest()->acceptModifier(m_mod));
     }
 
     // Subscript the ordinary arguments
-    const StatementList &arguments = stmt->getArguments();
-
-    for (StatementList::const_iterator ss = arguments.begin(); ss != arguments.end(); ++ss) {
-        (*ss)->accept(this);
+    for (Statement *arg : stmt->getArguments()) {
+        arg->accept(this);
     }
 
     // Returns are like the LHS of an assignment;

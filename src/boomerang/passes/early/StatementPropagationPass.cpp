@@ -79,11 +79,11 @@ void StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &use
 
     proc->getDataFlow()->findLiveAtDomPhi(usedByDomPhi, usedByDomPhi0, defdByPhi);
 
-    // Note that the above is not the complete algorithm; it has found the dead phi-functions in the
-    // defdAtPhi
-    for (auto it = defdByPhi.begin(); it != defdByPhi.end(); ++it) {
+    // Note that the above is not the complete algorithm; it has found the dead phi-functions
+    // in the defdAtPhi
+    for (auto& def : defdByPhi) {
         // For each phi parameter, remove from the final usedByDomPhi set
-        for (RefExp &v : *it->second) {
+        for (RefExp &v : *def.second) {
             assert(v.getSubExp1());
             auto wrappedParam = RefExp::get(v.getSubExp1(), v.getDef());
             usedByDomPhi.remove(wrappedParam);
