@@ -151,7 +151,7 @@ void UnusedStatementRemovalPass::remUnusedStmtEtc(UserProc *proc, RefCounter &re
                 // Second parameter false to ignore uses in collectors
                 s->addUsedLocs(components, false);
 
-                for (const SharedExp& component : components) {
+                for (const SharedExp &component : components) {
                     if (component->isSubscript() && component->access<RefExp>()->getDef()) {
                         stmtsRefdByUnused.insert(component->access<RefExp>()->getDef());
                     }

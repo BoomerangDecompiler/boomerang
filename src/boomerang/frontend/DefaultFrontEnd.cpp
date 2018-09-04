@@ -276,9 +276,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 // instructions Emit the RTL anyway, so we have the address and maybe some other
                 // clues
                 BB_rtls->push_back(Util::makeUnique<RTL>(addr));
-                currentBB        = cfg->createBB(BBType::Invalid, std::move(BB_rtls));
-                sequentialDecode = false;
-                BB_rtls          = nullptr;
+                cfg->createBB(BBType::Invalid, std::move(BB_rtls));
                 break; // try the next instruction in the queue
             }
 
@@ -441,7 +439,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // We create the BB as a COMPJUMP type, then change to an NWAY if it turns out
                     // to be a switch stmt
-                    currentBB = cfg->createBB(BBType::CompJump, std::move(BB_rtls));
+                    cfg->createBB(BBType::CompJump, std::move(BB_rtls));
 
                     LOG_VERBOSE2("COMPUTED JUMP at address %1, jumpDest = %2", addr, jumpDest);
 
@@ -686,7 +684,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Create the list of RTLs for the next basic block and
                     // continue with the next instruction.
-                    currentBB = createReturnBlock(proc, std::move(BB_rtls), std::move(inst.rtl));
+                    createReturnBlock(proc, std::move(BB_rtls), std::move(inst.rtl));
                     break;
 
                 case StmtType::BoolAssign:

@@ -296,7 +296,7 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
 
                             bool isOverwrite = false;
 
-                            for (const SharedExp& loc : OWcomps) {
+                            for (const SharedExp &loc : OWcomps) {
                                 if (*loc *= *lhsOWdef) {
                                     isOverwrite = true;
                                     break;

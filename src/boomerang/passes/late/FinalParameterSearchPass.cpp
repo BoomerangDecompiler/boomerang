@@ -44,7 +44,7 @@ bool FinalParameterSearchPass::execute(UserProc *proc)
             for (const SharedExp &component : components) {
                 if (component != paramLoc) {                       // Don't subscript outer level
                     paramLoc->expSubscriptVar(component, nullptr); // E.g. r28 -> r28{-}
-                    paramLoc->acceptModifier(&ic);           // E.g. r28{-} -> r28{0}
+                    paramLoc->acceptModifier(&ic);                 // E.g. r28{-} -> r28{0}
                 }
             }
 

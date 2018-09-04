@@ -531,7 +531,7 @@ void ReturnStatement::updateReturns()
         if (!found) {
             // Find the definition that reaches the return statement's collector
             SharedExp rhs = m_col.findDefFor(loc);
-            Assign *as = new Assign(loc->clone(), rhs->clone());
+            Assign *as    = new Assign(loc->clone(), rhs->clone());
             as->setProc(m_proc);
             as->setBB(m_bb);
             oldRets.append(as);

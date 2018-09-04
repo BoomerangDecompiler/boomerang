@@ -668,7 +668,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
             GotoStatement *jumpStmt = nullptr;
             Statement *last         = nullptr;
 
-            if (rtl->size()) {
+            if (!rtl->empty()) {
                 last     = rtl->back();
                 jumpStmt = static_cast<GotoStatement *>(last);
             }

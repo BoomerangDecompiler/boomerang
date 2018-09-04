@@ -81,7 +81,7 @@ void StatementPropagationPass::findLiveAtDomPhi(UserProc *proc, LocationSet &use
 
     // Note that the above is not the complete algorithm; it has found the dead phi-functions
     // in the defdAtPhi
-    for (auto& def : defdByPhi) {
+    for (auto &def : defdByPhi) {
         // For each phi parameter, remove from the final usedByDomPhi set
         for (RefExp &v : *def.second) {
             assert(v.getSubExp1());

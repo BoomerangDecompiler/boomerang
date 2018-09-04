@@ -544,7 +544,7 @@ void CCodeGenerator::addFunctionSignature(UserProc *proc, bool open)
 
     bool first = true;
 
-    for (auto & parameter : parameters) {
+    for (auto &parameter : parameters) {
         if (first) {
             first = false;
         }
