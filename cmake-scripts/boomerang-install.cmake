@@ -10,7 +10,6 @@
 # always install those
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/signatures/"      DESTINATION "share/boomerang/signatures")
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/ssl/"             DESTINATION "share/boomerang/ssl")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/transformations/" DESTINATION "share/boomerang/transformations")
 
 if (BOOMERANG_BUILD_GUI)
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/images/" DESTINATION "share/boomerang/images")
