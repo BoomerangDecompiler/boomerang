@@ -7,8 +7,8 @@ Right now, there are no pre-compiled binaries available, so you'll have to compi
 
 | **Build status** | Linux | Windows | Test Coverage |
 |------------------|-------|---------|---------------|
-|    **develop**   | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=develop)](https://travis-ci.org/ceeac/boomerang) | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) | [![codecov](https://codecov.io/gh/ceeac/boomerang/branch/develop/graph/badge.svg)](https://codecov.io/gh/ceeac/boomerang/branch/develop) |
-|    **master**    | [![Travis CI](https://travis-ci.org/ceeac/boomerang.svg?branch=master)](https://travis-ci.org/ceeac/boomerang)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/850gpt2u2wm6sxjs/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   | [![codecov](https://codecov.io/gh/ceeac/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/ceeac/boomerang/branch/master) |
+|    **develop**   | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=develop)](https://travis-ci.com/BoomerangDecompiler/boomerang) | [![Appveyor](https://ci.appveyor.com/api/projects/status/9ftcn56cys23784j/branch/develop?svg=true)](https://ci.appveyor.com/project/BoomerangDecompiler/boomerang/branch/develop) | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang) |
+|    **master**    | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=master)](https://travis-ci.com/BoomerangDecompiler/boomerang)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/9ftcn56cys23784j/branch/master?svg=true)](https://ci.appveyor.com/project/BoomerangDecompiler/boomerang/branch/master)   | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master) |
 
 ### Building prerequisites
 
