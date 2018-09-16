@@ -37,6 +37,7 @@ if (NOT MSVC)
 endif (NOT MSVC)
 
 
+include(boomerang-install)
 include(boomerang-version)      # get project version
 include(boomerang-dependencies) # library dependencies
 include(boomerang-configure)    # boomerang configuration (options)
@@ -47,4 +48,3 @@ add_subdirectory(docs)
 add_subdirectory(src)
 
 include(boomerang-tests)
-include(boomerang-install)

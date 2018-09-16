@@ -41,16 +41,14 @@ else (BUILD_SHARED_LIBS) # static lib
     target_compile_definitions(boomerang PRIVATE BOOMERANG_BUILD_STATIC=1)
 endif (BUILD_SHARED_LIBS)
 
+# install library and headers
+install(TARGETS boomerang
+    ARCHIVE DESTINATION lib/boomerang
+    LIBRARY DESTINATION lib/boomerang
+)
 
-option(BOOMERANG_INSTALL_DEV "Install boomerang libraries and headers." OFF)
-
+option(BOOMERANG_INSTALL_DEV "Install header files for development." OFF)
 if (BOOMERANG_INSTALL_DEV)
-    # install library and headers
-    install(TARGETS boomerang
-        ARCHIVE DESTINATION lib/boomerang
-        LIBRARY DESTINATION lib/boomerang
-    )
-
     install(DIRECTORY . DESTINATION include/boomerang
         FILES_MATCHING PATTERN "*.h"
     )

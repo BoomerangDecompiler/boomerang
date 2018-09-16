@@ -6,6 +6,12 @@
 # WARRANTIES.
 #
 
+# Make sure libbooomerang is found
+if (APPLE)
+    set(CMAKE_MACOSX_RPATH 1)
+endif(APPLE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/boomerang")
+
 
 # always install those
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/signatures/"      DESTINATION "share/boomerang/signatures")
