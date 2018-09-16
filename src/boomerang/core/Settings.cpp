@@ -11,13 +11,16 @@
 
 #include "boomerang/util/log/Log.h"
 
+#include <QCoreApplication>
+
 
 Settings::Settings()
 {
     m_workingDirectory = QDir("./").absolutePath();
 
-    setDataDirectory("../share/boomerang");
-    setPluginDirectory("../lib/boomerang/plugins");
+    const QString appDirPath = QCoreApplication::applicationDirPath();
+    setDataDirectory(appDirPath + "/../share/boomerang");
+    setPluginDirectory(appDirPath + "/../lib/boomerang/plugins");
     setOutputDirectory("./output");
 }
 
