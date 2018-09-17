@@ -59,7 +59,7 @@ OStream &OStream::operator<<(const QTextStreamManipulator &rhs)
 }
 
 
-OStream &OStream::operator<<(size_t rhs)
+OStream &OStream::operator<<(uint64 rhs)
 {
     *m_os << rhs;
     return *this;

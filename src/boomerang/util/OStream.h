@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
 
 #include <cstdio>
 
@@ -45,7 +46,7 @@ public:
 public:
     OStream &operator<<(const QString &rhs);
     OStream &operator<<(const QTextStreamManipulator &rhs);
-    OStream &operator<<(size_t rhs);
+    OStream &operator<<(uint64 rhs);
     OStream &operator<<(int rhs);
     OStream &operator<<(unsigned int rhs);
     OStream &operator<<(double rhs);
