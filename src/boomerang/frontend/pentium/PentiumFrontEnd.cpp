@@ -405,6 +405,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
     int numInstructionsLeft = 100;
     Address addr            = start;
+    Address prevAddr        = Address::INVALID; // address of previous instruction
 
     BinarySymbolTable *symbols = m_program->getBinaryFile()->getSymbols();
     // Look for 3 calls in a row in the first 100 instructions, with no other instructions between
@@ -438,8 +439,8 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             const int oldInstLength = inst.numBytes;
 
             if (decodeSingleInstruction(addr + oldInstLength, inst) && (inst.rtl->size() == 2)) {
-                const Assign *asgn = dynamic_cast<Assign *>(
-                    inst.rtl->back()); // using back instead of rtl[1], since size()==2
+                // using back instead of rtl[1], since size()==2
+                const Assign *asgn = dynamic_cast<Assign *>(inst.rtl->back());
 
                 if (asgn && (*asgn->getRight() == *Location::regOf(REG_PENT_EAX))) {
                     decodeSingleInstruction(addr + oldInstLength + inst.numBytes, inst);
@@ -457,27 +458,32 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             }
         }
 
-        if ((cs && ((dest = (cs->getFixedDest())) != Address::INVALID))) {
+        if (cs && (dest = cs->getFixedDest()) != Address::INVALID) {
             const QString destSym = m_program->getSymbolNameByAddr(dest);
 
             if (destSym == "__libc_start_main") {
                 // This is a gcc 3 pattern. The first parameter will be a pointer to main.
-                // Assume it's the 5 byte push immediately preceeding this instruction
-                // Note: the RTL changed recently from esp = esp-4; m[esp] = K tp m[esp-4] = K; esp
-                // = esp-4
-                decodeSingleInstruction(addr - 5, inst);
-                assert(inst.valid);
-                assert(inst.rtl->size() == 2);
-                Assign *a     = static_cast<Assign *>(inst.rtl->front()); // Get m[esp-4] = K
-                SharedExp rhs = a->getRight();
-                assert(rhs->isIntConst());
-                gotMain = true;
-                return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
+                // Assume it's the 5 byte push immediately preceeding this instruction.
+                // For newer GCCs, this is not the case. Make sure the code only fails
+                // instead of crashing.
+                // Note: For GCC3, the RTL has the following pattern:
+                //   m[esp-4] = K
+                //   esp = esp-4
+                decodeSingleInstruction(prevAddr, inst);
+                if (inst.valid && inst.rtl->size() == 2 && inst.rtl->front()->isAssign()) {
+                    Assign *a     = static_cast<Assign *>(inst.rtl->front()); // Get m[esp-4] = K
+                    SharedExp rhs = a->getRight();
+                    if (rhs->isIntConst()) {
+                        gotMain = true;
+                        return Address(rhs->access<Const>()->getInt()); // TODO: use getAddr ?
+                    }
+                }
             }
         }
 
-        const GotoStatement *gs = static_cast<const GotoStatement *>(cs);
+        prevAddr = addr;
 
+        const GotoStatement *gs = static_cast<const GotoStatement *>(cs);
         if (gs && (gs->getKind() == StmtType::Goto)) {
             // Example: Borland often starts with a branch around some debug
             // info
