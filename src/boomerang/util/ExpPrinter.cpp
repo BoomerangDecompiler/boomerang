@@ -205,9 +205,6 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
             os << exp->access<const Const>()->getInt();
         }
 
-        if (exp->access<const Const>()->getConscript() != 0) {
-            os << "\\" << exp->access<const Const>()->getConscript() << "\\";
-        }
         return;
 
     case opLongConst:
@@ -224,13 +221,7 @@ void ExpPrinter::printPlain(OStream &os, const SharedConstExp &exp) const
         os << QString("%1").arg(exp->access<const Const>()->getFlt()); // respects English locale
         return;
 
-    case opStrConst:
-        os << "\"" << exp->access<const Const>()->getStr() << "\"";
-
-        if (exp->access<const Const>()->getConscript() != 0) {
-            os << "\\" << exp->access<const Const>()->getConscript() << "\\";
-        }
-        return;
+    case opStrConst: os << "\"" << exp->access<const Const>()->getStr() << "\""; return;
 
     case opRegOf:
         if (exp->getSubExp1()->isIntConst()) {
