@@ -38,7 +38,7 @@ enum class BBType;
  */
 class BOOMERANG_API ProcCFG
 {
-    typedef std::map<Address, BasicBlock *, std::less<Address>> BBStartMap;
+    typedef std::multimap<Address, BasicBlock *, std::less<Address>> BBStartMap;
     typedef std::map<SharedConstExp, Statement *, lessExpStar> ExpStatementMap;
 
 public:
@@ -148,8 +148,6 @@ public:
     /// Check if the given address is the start of an incomplete basic block.
     bool isStartOfIncompleteBB(Address addr) const;
 
-    void setBBStart(BasicBlock *bb, Address startAddr) { m_bbStartMap[startAddr] = bb; }
-
     /// \returns the entry BB of the procedure of this CFG
     BasicBlock *getEntryBB() { return m_entryBB; }
     const BasicBlock *getEntryBB() const { return m_entryBB; }
@@ -238,6 +236,9 @@ public:
 public:
     /// print this CFG, mainly for debugging
     void print(OStream &out);
+
+private:
+    void insertBB(BasicBlock *bb);
 
 private:
     UserProc *m_myProc = nullptr;    ///< Procedure to which this CFG belongs.
