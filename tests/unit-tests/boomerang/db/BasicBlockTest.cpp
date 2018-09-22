@@ -41,7 +41,7 @@ void BasicBlockTest::testConstruct()
     QVERIFY(bb2.isType(BBType::Call));
 
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(Util::makeUnique<RTL>(Address(0x2000), nullptr));
+    bbRTLs->push_back(std::make_unique<RTL>(Address(0x2000), nullptr));
 
     BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
     QVERIFY(bb3.getLowAddr() == Address(0x2000));
@@ -64,7 +64,7 @@ void BasicBlockTest::testAssign()
     QVERIFY(bb2.isType(BBType::Invalid));
 
     std::unique_ptr<RTLList> bbRTLs(new RTLList);
-    bbRTLs->push_back(Util::makeUnique<RTL>(Address(0x2000), nullptr));
+    bbRTLs->push_back(std::make_unique<RTL>(Address(0x2000), nullptr));
 
     BasicBlock bb3(BBType::Fall, std::move(bbRTLs), &proc);
 

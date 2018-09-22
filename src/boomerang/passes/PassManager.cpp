@@ -51,33 +51,33 @@ PassManager::PassManager()
 {
     m_passes.resize(static_cast<size_t>(PassID::NUM_PASSES));
 
-    registerPass(PassID::Dominators, Util::makeUnique<DominatorPass>());
-    registerPass(PassID::PhiPlacement, Util::makeUnique<PhiPlacementPass>());
-    registerPass(PassID::BlockVarRename, Util::makeUnique<BlockVarRenamePass>());
-    registerPass(PassID::CallDefineUpdate, Util::makeUnique<CallDefineUpdatePass>());
-    registerPass(PassID::CallArgumentUpdate, Util::makeUnique<CallArgumentUpdatePass>());
-    registerPass(PassID::StatementInit, Util::makeUnique<StatementInitPass>());
-    registerPass(PassID::GlobalConstReplace, Util::makeUnique<GlobalConstReplacePass>());
-    registerPass(PassID::StatementPropagation, Util::makeUnique<StatementPropagationPass>());
-    registerPass(PassID::BBSimplify, Util::makeUnique<BBSimplifyPass>());
-    registerPass(PassID::CallAndPhiFix, Util::makeUnique<CallAndPhiFixPass>());
-    registerPass(PassID::SPPreservation, Util::makeUnique<SPPreservationPass>());
-    registerPass(PassID::PreservationAnalysis, Util::makeUnique<PreservationAnalysisPass>());
+    registerPass(PassID::Dominators, std::make_unique<DominatorPass>());
+    registerPass(PassID::PhiPlacement, std::make_unique<PhiPlacementPass>());
+    registerPass(PassID::BlockVarRename, std::make_unique<BlockVarRenamePass>());
+    registerPass(PassID::CallDefineUpdate, std::make_unique<CallDefineUpdatePass>());
+    registerPass(PassID::CallArgumentUpdate, std::make_unique<CallArgumentUpdatePass>());
+    registerPass(PassID::StatementInit, std::make_unique<StatementInitPass>());
+    registerPass(PassID::GlobalConstReplace, std::make_unique<GlobalConstReplacePass>());
+    registerPass(PassID::StatementPropagation, std::make_unique<StatementPropagationPass>());
+    registerPass(PassID::BBSimplify, std::make_unique<BBSimplifyPass>());
+    registerPass(PassID::CallAndPhiFix, std::make_unique<CallAndPhiFixPass>());
+    registerPass(PassID::SPPreservation, std::make_unique<SPPreservationPass>());
+    registerPass(PassID::PreservationAnalysis, std::make_unique<PreservationAnalysisPass>());
     registerPass(PassID::StrengthReductionReversal,
-                 Util::makeUnique<StrengthReductionReversalPass>());
-    registerPass(PassID::AssignRemoval, Util::makeUnique<AssignRemovalPass>());
-    registerPass(PassID::DuplicateArgsRemoval, Util::makeUnique<DuplicateArgsRemovalPass>());
-    registerPass(PassID::CallLivenessRemoval, Util::makeUnique<CallLivenessRemovalPass>());
-    registerPass(PassID::LocalTypeAnalysis, Util::makeUnique<LocalTypeAnalysisPass>());
-    registerPass(PassID::BranchAnalysis, Util::makeUnique<BranchAnalysisPass>());
-    registerPass(PassID::FromSSAForm, Util::makeUnique<FromSSAFormPass>());
-    registerPass(PassID::FinalParameterSearch, Util::makeUnique<FinalParameterSearchPass>());
-    registerPass(PassID::UnusedStatementRemoval, Util::makeUnique<UnusedStatementRemovalPass>());
-    registerPass(PassID::ParameterSymbolMap, Util::makeUnique<ParameterSymbolMapPass>());
-    registerPass(PassID::UnusedLocalRemoval, Util::makeUnique<UnusedLocalRemovalPass>());
-    registerPass(PassID::UnusedParamRemoval, Util::makeUnique<UnusedParamRemovalPass>());
-    registerPass(PassID::ImplicitPlacement, Util::makeUnique<ImplicitPlacementPass>());
-    registerPass(PassID::LocalAndParamMap, Util::makeUnique<LocalAndParamMapPass>());
+                 std::make_unique<StrengthReductionReversalPass>());
+    registerPass(PassID::AssignRemoval, std::make_unique<AssignRemovalPass>());
+    registerPass(PassID::DuplicateArgsRemoval, std::make_unique<DuplicateArgsRemovalPass>());
+    registerPass(PassID::CallLivenessRemoval, std::make_unique<CallLivenessRemovalPass>());
+    registerPass(PassID::LocalTypeAnalysis, std::make_unique<LocalTypeAnalysisPass>());
+    registerPass(PassID::BranchAnalysis, std::make_unique<BranchAnalysisPass>());
+    registerPass(PassID::FromSSAForm, std::make_unique<FromSSAFormPass>());
+    registerPass(PassID::FinalParameterSearch, std::make_unique<FinalParameterSearchPass>());
+    registerPass(PassID::UnusedStatementRemoval, std::make_unique<UnusedStatementRemovalPass>());
+    registerPass(PassID::ParameterSymbolMap, std::make_unique<ParameterSymbolMapPass>());
+    registerPass(PassID::UnusedLocalRemoval, std::make_unique<UnusedLocalRemovalPass>());
+    registerPass(PassID::UnusedParamRemoval, std::make_unique<UnusedParamRemovalPass>());
+    registerPass(PassID::ImplicitPlacement, std::make_unique<ImplicitPlacementPass>());
+    registerPass(PassID::LocalAndParamMap, std::make_unique<LocalAndParamMapPass>());
 
     for (auto &pass : m_passes) {
         Q_UNUSED(pass);

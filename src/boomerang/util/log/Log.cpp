@@ -106,10 +106,10 @@ void Log::addLogSink(std::unique_ptr<ILogSink> s)
 
 void Log::addDefaultLogSinks(const QString &outputDir)
 {
-    addLogSink(Util::makeUnique<ConsoleLogSink>());
+    addLogSink(std::make_unique<ConsoleLogSink>());
 
     QFileInfo fi(QDir(outputDir), "boomerang.log");
-    addLogSink(Util::makeUnique<FileLogSink>(fi.absoluteFilePath()));
+    addLogSink(std::make_unique<FileLogSink>(fi.absoluteFilePath()));
 
     writeLogHeader();
 }

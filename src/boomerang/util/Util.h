@@ -52,16 +52,6 @@ bool isContained(const Cont &cont, const T &value)
 }
 
 
-/// Basically the same as C++14's std::make_unique
-/// that is not available in C++11. Can be removed when
-/// dropping support for compilers that are not C++14 compilant.
-template<typename T, typename... Args>
-std::unique_ptr<T> makeUnique(Args &&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-
-
 template<class Container>
 void clone(const Container &from, Container &to)
 {

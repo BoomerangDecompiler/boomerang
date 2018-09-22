@@ -58,7 +58,7 @@ BasicBlock::BasicBlock(const BasicBlock &bb)
         RTLList::iterator destIt      = newList->begin();
 
         while (srcIt != endIt) {
-            *destIt++ = Util::makeUnique<RTL>(**srcIt++);
+            *destIt++ = std::make_unique<RTL>(**srcIt++);
         }
         setRTLs(std::move(newList));
     }
@@ -90,7 +90,7 @@ BasicBlock &BasicBlock::operator=(const BasicBlock &bb)
         RTLList::iterator destIt      = newList->begin();
 
         while (srcIt != endIt) {
-            *destIt++ = Util::makeUnique<RTL>(**srcIt++);
+            *destIt++ = std::make_unique<RTL>(**srcIt++);
         }
         setRTLs(std::move(newList));
     }

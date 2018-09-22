@@ -275,7 +275,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 // _exit()), etc. Best thing is to emit an INVALID BB, and continue with valid
                 // instructions Emit the RTL anyway, so we have the address and maybe some other
                 // clues
-                BB_rtls->push_back(Util::makeUnique<RTL>(addr));
+                BB_rtls->push_back(std::make_unique<RTL>(addr));
                 cfg->createBB(BBType::Invalid, std::move(BB_rtls));
                 break; // try the next instruction in the queue
             }

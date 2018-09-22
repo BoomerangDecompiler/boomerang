@@ -20,7 +20,7 @@
 SeparateLogger::SeparateLogger(const QString &fullFilePath)
 {
     QDir().remove(fullFilePath); // overwrite old logs
-    addLogSink(Util::makeUnique<FileLogSink>(fullFilePath, true));
+    addLogSink(std::make_unique<FileLogSink>(fullFilePath, true));
 }
 
 
