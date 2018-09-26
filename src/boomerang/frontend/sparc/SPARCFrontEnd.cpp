@@ -642,15 +642,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                 OStream ost(&instructionString);
 
                 for (int j = 0; j < inst.numBytes; j++) {
-                    if (!m_binaryFile->getImage()->getSectionByAddr(addr + delta + j)) {
-                        break;
-                    }
-                    ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
+                    ost << QString("0x%1 ").arg(instructionData[j], 2, 16, QChar('0'));
                 }
 
                 LOG_ERROR("Invalid or unrecognized instruction at address %1: %2", addr,
-                          instructionString);
-                return false;
+                          instructionString.trimmed());
+                break; // try next instruction in queue
             }
 
             // Don't display the RTL here; do it after the switch statement in case the delay slot
