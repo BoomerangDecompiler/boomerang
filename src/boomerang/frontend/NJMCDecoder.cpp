@@ -76,6 +76,8 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
             else {
                 itd->print(q_cout);
             }
+
+            q_cout << " ";
         }
 
         q_cout << '\n';
