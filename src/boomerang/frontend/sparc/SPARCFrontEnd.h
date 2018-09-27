@@ -107,7 +107,7 @@ private:
      * \param cfg the CFG of the current procedure
      * \param tq Object managing the target queue
      */
-    void updatePCForBranch(Address dest, BasicBlock *&newBB, ProcCFG *cfg, TargetQueue &tq,
+    void createJumpToAddress(Address dest, BasicBlock *&newBB, ProcCFG *cfg, TargetQueue &tq,
                            Interval<Address> textLimit);
 
     /**
