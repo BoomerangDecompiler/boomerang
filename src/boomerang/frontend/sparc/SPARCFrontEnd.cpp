@@ -86,7 +86,7 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 }
 
 
-void SPARCFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
+void SPARCFrontEnd::updatePCForBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
                                  TargetQueue &tq)
 {
     if (newBB == nullptr) {
@@ -291,7 +291,7 @@ void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress
     if (newBB != nullptr) {
         // Visit the destination, and add the out-edge
         Address jumpDest = SD_stmt->getFixedDest();
-        handleBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest, hiAddress, newBB, cfg, tq);
     }
 }
 
@@ -416,7 +416,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
             return false;
         }
 
-        handleBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest, hiAddress, newBB, cfg, tq);
         // Add the "false" leg
         cfg->addEdge(newBB, address + 4);
         address += 4; // Skip the SCD only
@@ -446,7 +446,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
             return false;
         }
 
-        handleBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest, hiAddress, newBB, cfg, tq);
         // Add the "false" leg; skips the NCT
         cfg->addEdge(newBB, address + 8);
         // Skip the NCT/NOP instruction
@@ -460,7 +460,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
         BasicBlock *newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
         assert(newBB);
 
-        handleBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
         // Add the "false" leg: point to the delay inst
         cfg->addEdge(newBB, address + 4);
         address += 4; // Skip branch but not delay
@@ -534,7 +534,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddr
         newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
         assert(newBB);
 
-        handleBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
     }
     else { // SCDAN; must move delay instr to orphan. Assume it's not a NOP (though if it is, no
            // harm done)
@@ -662,42 +662,38 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             }
 
             switch (inst.type) {
-            case NOP:
-                // Always put the NOP into the BB. It may be needed if it is the
-                // the destinsation of a branch. Even if not the start of a BB,
-                // some other branch may be discovered to it later.
-                BB_rtls->push_back(std::move(inst.rtl));
-
-                pc += 4;
-                break;
-
-            case NCT:
-                // Ordinary instruction. Add it to the list of RTLs this BB
-                BB_rtls->push_back(std::move(inst.rtl));
-                pc += inst.numBytes;
-
+            case NCT: {
                 // Ret/restore epilogues are handled as ordinary RTLs now
                 if (last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
                 }
+                // fallthrough
 
+            case NOP: {
+                // Always put the NOP into the BB. It may be needed if it is the
+                // the destinsation of a branch. Even if not the start of a BB,
+                // some other branch may be discovered to it later.
+                BB_rtls->push_back(std::move(inst.rtl));
+                pc += inst.numBytes;
                 break;
+            }
 
             case SKIP: {
                 // We can't simply ignore the skipped delay instruction as there
                 // will most likely be a branch to it so we simply set the jump
                 // to go to one past the skipped instruction.
-                jumpStmt->setDest(pc + 8);
+                jumpStmt->setDest(pc + 2 * inst.numBytes);
                 BB_rtls->push_back(std::move(inst.rtl));
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
 
-                handleBranch(pc + 8, m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
-                             newBB, cfg, _targetQueue);
+                updatePCForBranch(pc + 2 * inst.numBytes,
+                                  m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
+                                  newBB, cfg, _targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
-                pc += 8;
+                pc += 2 * inst.numBytes;
                 break;
             }
 
@@ -707,13 +703,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
-                handleBranch(jumpStmt->getFixedDest(),
-                             m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg,
-                             _targetQueue);
+                updatePCForBranch(jumpStmt->getFixedDest(),
+                                  m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
+                                  newBB, cfg, _targetQueue);
 
                 // There is no fall through branch.
                 sequentialDecode = false;
-                pc += 8; // Update address for coverage
                 break;
             }
 
@@ -865,7 +860,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     else {
                         BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                         assert(newBB);
-                        handleBranch(dest,
+                        updatePCForBranch(dest,
                                      m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
                                      newBB, cfg, _targetQueue);
 
@@ -970,7 +965,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                     // Visit the destination of the branch; add "true" leg
                     Address jumpDest = jumpStmt->getFixedDest();
-                    handleBranch(jumpDest,
+                    updatePCForBranch(jumpDest,
                                  m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB,
                                  cfg, _targetQueue);
                     // Add the "false" leg: point past the delay inst

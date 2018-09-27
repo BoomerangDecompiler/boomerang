@@ -107,7 +107,7 @@ private:
      * \param cfg the CFG of the current procedure
      * \param tq Object managing the target queue
      */
-    void handleBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
+    void updatePCForBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
                       TargetQueue &tq);
 
     /**
