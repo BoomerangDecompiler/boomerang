@@ -100,6 +100,8 @@ public:
     /// If no such sections exist, return Address::INVALID
     Address getLimitTextHigh() const;
 
+    Interval<Address> getLimitText() const;
+
     ptrdiff_t getTextDelta() const { return m_textDelta; }
 
 

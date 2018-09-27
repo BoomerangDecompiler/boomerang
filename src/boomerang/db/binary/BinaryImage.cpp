@@ -233,6 +233,12 @@ Address BinaryImage::getLimitTextHigh() const
 }
 
 
+Interval<Address> BinaryImage::getLimitText() const
+{
+    return Interval<Address>(m_limitTextLow, m_limitTextHigh);
+}
+
+
 BinarySection *BinaryImage::createSection(const QString &name, Address from, Address to)
 {
     if (from == Address::INVALID || to == Address::INVALID || to < from) {

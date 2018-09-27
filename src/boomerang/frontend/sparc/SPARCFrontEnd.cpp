@@ -42,11 +42,11 @@
 
 
 bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta,
-                                         Address upperLimit) const
+                                         Interval<Address> textLimit) const
 {
     // Check that the destination is within the main test section; may not be when we speculatively
     // decode junk
-    if ((dest - 4) > upperLimit) {
+    if (!textLimit.contains(dest - 4)) {
         return false;
     }
 
@@ -86,20 +86,19 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 }
 
 
-void SPARCFrontEnd::updatePCForBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
-                                 TargetQueue &tq)
+void SPARCFrontEnd::updatePCForBranch(Address dest, BasicBlock *&newBB, ProcCFG *cfg,
+                                      TargetQueue &tq, Interval<Address> textLimit)
 {
-    if (newBB == nullptr) {
+    if (!textLimit.contains(dest)) {
+        LOG_ERROR("Branch to address %1 is beyond section limits", dest);
+        return;
+    }
+    else if (newBB == nullptr) {
         return;
     }
 
-    if (dest < hiAddress) {
-        tq.visit(cfg, dest, newBB);
-        cfg->addEdge(newBB, dest);
-    }
-    else {
-        LOG_ERROR("Branch to address %1 is beyond section limits", dest);
-    }
+    tq.visit(cfg, dest, newBB);
+    cfg->addEdge(newBB, dest);
 }
 
 
@@ -257,7 +256,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
 }
 
 
-void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress,
+void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> textLimit,
                             DecodeResult &inst, DecodeResult &delay_inst,
                             std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
@@ -268,19 +267,19 @@ void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress
     // Try the "delay instruction has been copied" optimisation,
     // emitting the delay instruction now if the optimisation won't apply
     if (delay_inst.type != NOP) {
-        if (canOptimizeDelayCopy(address, SD_stmt->getFixedDest(), delta, hiAddress)) {
+        if (canOptimizeDelayCopy(pc, SD_stmt->getFixedDest(), delta, textLimit)) {
             SD_stmt->adjustFixedDest(-4);
         }
         else {
             // Move the delay instruction before the SD. Must update the address in case there is a
             // branch to the SD
-            delay_rtl->setAddress(address);
+            delay_rtl->setAddress(pc);
             BB_rtls->push_back(std::move(delay_inst.rtl));
         }
     }
 
     // Update the address (for coverage)
-    address += 8;
+    pc += 2 * inst.numBytes;
 
     // Add the SD
     BB_rtls->push_back(std::move(inst.rtl));
@@ -291,7 +290,7 @@ void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress
     if (newBB != nullptr) {
         // Visit the destination, and add the out-edge
         Address jumpDest = SD_stmt->getFixedDest();
-        updatePCForBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest, newBB, cfg, tq, textLimit);
     }
 }
 
@@ -395,7 +394,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
 }
 
 
-bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddress,
+bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
                              DecodeResult &inst, DecodeResult &delay_inst,
                              std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
@@ -416,10 +415,10 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
             return false;
         }
 
-        updatePCForBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest, newBB, cfg, tq, textLimit);
         // Add the "false" leg
-        cfg->addEdge(newBB, address + 4);
-        address += 4; // Skip the SCD only
+        cfg->addEdge(newBB, address + inst.numBytes);
+        address += inst.numBytes; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
         LOG_WARN("Instruction at address %1 not copied to true leg of preceding branch", address);
@@ -446,13 +445,13 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
             return false;
         }
 
-        updatePCForBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest, newBB, cfg, tq, textLimit);
         // Add the "false" leg; skips the NCT
         cfg->addEdge(newBB, address + 8);
         // Skip the NCT/NOP instruction
         address += 8;
     }
-    else if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
+    else if (canOptimizeDelayCopy(address, jumpDest, delta, textLimit)) {
         // We can just branch to the instr before jumpDest. Adjust the destination of the branch
         jumpStmt->adjustFixedDest(-4);
         // Now emit the branch
@@ -460,7 +459,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
         BasicBlock *newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
         assert(newBB);
 
-        updatePCForBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest - 4, newBB, cfg, tq, textLimit);
         // Add the "false" leg: point to the delay inst
         cfg->addEdge(newBB, address + 4);
         address += 4; // Skip branch but not delay
@@ -513,7 +512,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
 }
 
 
-bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddress,
+bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
                                DecodeResult &inst, DecodeResult &delayInst,
                                std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
@@ -526,7 +525,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddr
     Address jumpDest        = jumpStmt->getFixedDest();
     BasicBlock *newBB       = nullptr;
 
-    if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
+    if (canOptimizeDelayCopy(address, jumpDest, delta, textLimit)) {
         // Adjust the destination of the branch
         jumpStmt->adjustFixedDest(-4);
         // Now emit the branch
@@ -534,7 +533,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddr
         newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
         assert(newBB);
 
-        updatePCForBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
+        updatePCForBranch(jumpDest - 4, newBB, cfg, tq, textLimit);
     }
     else { // SCDAN; must move delay instr to orphan. Assume it's not a NOP (though if it is, no
            // harm done)
@@ -667,7 +666,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 if (last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
                 }
-                // fallthrough
+            }
+            // fallthrough
 
             case NOP: {
                 // Always put the NOP into the BB. It may be needed if it is the
@@ -687,9 +687,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
 
-                updatePCForBranch(pc + 2 * inst.numBytes,
-                                  m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
-                                  newBB, cfg, _targetQueue);
+                updatePCForBranch(pc + 2 * inst.numBytes, newBB, cfg, _targetQueue,
+                                  m_program->getBinaryFile()->getImage()->getLimitText());
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -703,9 +702,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
-                updatePCForBranch(jumpStmt->getFixedDest(),
-                                  m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
-                                  newBB, cfg, _targetQueue);
+                updatePCForBranch(jumpStmt->getFixedDest(), newBB, cfg, _targetQueue,
+                                  m_program->getBinaryFile()->getImage()->getLimitText());
 
                 // There is no fall through branch.
                 sequentialDecode = false;
@@ -812,7 +810,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     else {
                         // This is a non-call followed by an NCT/NOP
                         case_SD(pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                                m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
+                                m_program->getBinaryFile()->getImage()->getLimitText(), inst,
                                 delay_inst, std::move(BB_rtls), cfg, _targetQueue);
 
                         // There is no fall through branch.
@@ -860,9 +858,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     else {
                         BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                         assert(newBB);
-                        updatePCForBranch(dest,
-                                     m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
-                                     newBB, cfg, _targetQueue);
+                        updatePCForBranch(dest, newBB, cfg, _targetQueue,
+                                          m_program->getBinaryFile()->getImage()->getLimitText());
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -926,7 +923,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 case NCT:
                     sequentialDecode = case_SCD(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                        m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
+                        m_program->getBinaryFile()->getImage()->getLimitText(), inst,
                         delay_inst, std::move(BB_rtls), cfg, _targetQueue);
                     break;
 
@@ -936,7 +933,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                         // Assume it's the move/call/move pattern
                         sequentialDecode = case_SCD(
                             pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                            m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
+                            m_program->getBinaryFile()->getImage()->getLimitText(), inst,
                             delay_inst, std::move(BB_rtls), cfg, _targetQueue);
                         break;
                     }
@@ -965,9 +962,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                     // Visit the destination of the branch; add "true" leg
                     Address jumpDest = jumpStmt->getFixedDest();
-                    updatePCForBranch(jumpDest,
-                                 m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB,
-                                 cfg, _targetQueue);
+                    updatePCForBranch(jumpDest, newBB, cfg, _targetQueue,
+                                      m_program->getBinaryFile()->getImage()->getLimitText());
+
                     // Add the "false" leg: point past the delay inst
                     cfg->addEdge(newBB, pc + 8);
                     pc += 8; // Skip branch and delay
@@ -977,7 +974,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 case NCT:
                     sequentialDecode = case_SCDAN(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                        m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
+                        m_program->getBinaryFile()->getImage()->getLimitText(), inst,
                         delay_inst, std::move(BB_rtls), cfg, _targetQueue);
                     break;
 
