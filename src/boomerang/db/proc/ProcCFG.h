@@ -116,9 +116,9 @@ public:
      *
      * Explicit labels are addresses that have already been tagged as being labels
      * due to transfers of control to that address (i.e. they are the start of a complete Basic
-     * Block) Non explicit labels are addresses that are in the middle of a complete Basic Block. In
-     * this case, the existing complete BB is split. If \p currBB is the BB that gets split,
-     * \p currBB is updated to point to the "high" part of the split BB.
+     * Block). Non explicit labels are addresses that are in the middle of a complete Basic Block.
+     * In this case, the existing complete BB is split. If \p currBB is the BB that gets split,
+     * \p currBB is updated to point to the "high" part of the split BB (address wise).
      *
      * \param  addr   native (source) address to check
      * \param  currBB See above
