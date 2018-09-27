@@ -62,7 +62,7 @@ public:
      * Checks if \p value is contained in this interval.
      * Returns false for the upper bound (since it is a right-open interval).
      */
-    inline bool isContained(const T &value) const { return m_lower <= value && m_upper > value; }
+    inline bool contains(const T &value) const { return m_lower <= value && m_upper > value; }
 
     /**
      * \returns true if this and the other interval are adjacent
@@ -76,7 +76,7 @@ public:
 
     /// \returns whether the other interval is fully contained within this
     /// interval, i.e. other - *this == empty
-    inline bool isFullyContained(const Interval<T> &other) const
+    inline bool containsInterval(const Interval<T> &other) const
     {
         return lower() <= other.lower() && upper() >= other.upper();
     }

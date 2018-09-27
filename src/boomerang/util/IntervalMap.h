@@ -84,7 +84,7 @@ public:
 
         do {
             it = erase(it);
-        } while (it != end() && it->first.isContained(key));
+        } while (it != end() && it->first.contains(key));
     }
 
     /// Remove all intervals overlapping with \p interval
@@ -118,7 +118,7 @@ public:
                 break;
             }
             else {
-                assert(it->first.isContained(key));
+                assert(it->first.contains(key));
                 return it;
             }
         }
@@ -140,7 +140,7 @@ public:
                 break;
             }
             else {
-                assert(it->first.isContained(key));
+                assert(it->first.contains(key));
                 return it;
             }
         }
