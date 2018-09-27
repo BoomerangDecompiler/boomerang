@@ -115,7 +115,6 @@ private:
      * lexical successor of the call site (taking into consideration the delay slot and possible
      * UNIMP instruction).
      *
-     * \param  proc caller - only used to access Prog
      * \param  dest the address of the callee
      * \param  callBB the basic block delimited by the call
      * \param  cfg CFG of the enclosing procedure
@@ -123,8 +122,8 @@ private:
      * \param  offset the offset from the call instruction to which an outedge must be added. A
      *                value of 0 means no edge is to be added.
      */
-    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address,
-                    int offset = 0);
+    void createCallToAddress(Address dest, Address address, BasicBlock *callBB,
+                             ProcCFG *cfg, int offset = 0);
 
     /**
      * This is the stub for cases of DCTI couples that we haven't written

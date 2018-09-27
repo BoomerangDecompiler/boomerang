@@ -102,16 +102,18 @@ void SPARCFrontEnd::createJumpToAddress(Address dest, BasicBlock *&newBB, ProcCF
 }
 
 
-void SPARCFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg,
-                               Address address, int offset /* = 0*/)
+void SPARCFrontEnd::createCallToAddress(Address dest, Address address, BasicBlock *callBB,
+                                        ProcCFG *cfg, int offset /* = 0*/)
 {
     if (callBB == nullptr) {
         return;
     }
 
+    const Prog *prog = cfg->getProc()->getProg();
+
     // If the destination address is the same as this very instruction,
     // we have a call with iDisp30 == 0. Don't treat this as the start of a real procedure.
-    if ((dest != address) && (proc->getProg()->getFunctionByAddr(dest) == nullptr)) {
+    if (dest != address && prog->getFunctionByAddr(dest) == nullptr) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that
         // failed. Instead, we use the set of CallStatements (not in this procedure) that is needed
         // by CSR
@@ -133,25 +135,25 @@ void SPARCFrontEnd::case_unhandled_stub(Address addr)
 }
 
 
-bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult &delay_inst,
+bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult &delayInst,
                               std::unique_ptr<RTLList> BB_rtls, UserProc *proc,
                               std::list<CallStatement *> &callList, bool isPattern /* = false*/)
 {
     // Aliases for the call and delay RTLs
-    CallStatement *call_stmt = static_cast<CallStatement *>(inst.rtl->back());
-    RTL *delay_rtl           = delay_inst.rtl.get();
+    CallStatement *callStmt = static_cast<CallStatement *>(inst.rtl->back());
+    RTL *delayRTL           = delayInst.rtl.get();
 
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or
     // are followed by a restore
-    if ((delay_inst.type != NOP) && !call_stmt->isReturnAfterCall()) {
-        delay_rtl->setAddress(address);
-        BB_rtls->push_back(std::move(delay_inst.rtl));
+    if (delayInst.type != NOP && !callStmt->isReturnAfterCall()) {
+        delayRTL->setAddress(address);
+        BB_rtls->push_back(std::move(delayInst.rtl));
     }
 
     // Get the new return basic block for the special case where the delay instruction is a restore
-    BasicBlock *returnBB = optimizeCallReturn(call_stmt, inst.rtl.get(), delay_rtl, proc);
+    BasicBlock *returnBB = optimizeCallReturn(callStmt, inst.rtl.get(), delayRTL, proc);
 
-    int disp30 = (call_stmt->getFixedDest().value() - address.value()) >> 2;
+    int disp30 = (callStmt->getFixedDest().value() - address.value()) >> 2;
 
     // Don't test for small offsets if part of a move_call_move pattern.
     // These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to
@@ -168,7 +170,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
         assert(disp30 != 1);
 
         // First check for helper functions
-        Address dest             = call_stmt->getFixedDest();
+        Address dest             = callStmt->getFixedDest();
         const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
             dest);
 
@@ -201,7 +203,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
 
         if (returnBB) {
             // Handle the call but don't add any outedges from it just yet.
-            handleCall(proc, call_stmt->getFixedDest(), callBB, cfg, address);
+            createCallToAddress(callStmt->getFixedDest(), address, callBB, cfg);
 
             // Now add the out edge
             cfg->addEdge(callBB, returnBB);
@@ -236,7 +238,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
             }
 
             // Handle the call (register the destination as a proc) and possibly set the outedge.
-            handleCall(proc, dest, callBB, cfg, address, offset);
+            createCallToAddress(dest, address, callBB, cfg, offset);
 
             if (!inst.forceOutEdge.isZero()) {
                 // There is no need to force a goto to the new out-edge, since we will continue
@@ -725,9 +727,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
-                    if (static_cast<SPARCDecoder *>(m_decoder.get())
-                            ->isRestore(HostAddress(
-                                pc.value() + 4 +
+                    if (static_cast<SPARCDecoder *>(m_decoder.get())->isRestore(
+                            HostAddress(pc.value() + inst.numBytes +
                                 m_program->getBinaryFile()->getImage()->getTextDelta()))) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
@@ -838,8 +839,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    GotoStatement *delay_jump = static_cast<GotoStatement *>(delayRTL->back());
-                    Address dest              = pc + 4 + delay_jump->getFixedDest();
+                    GotoStatement *delayJump = static_cast<GotoStatement *>(delayRTL->back());
+                    const Address dest       = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
 
@@ -848,8 +849,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                         BasicBlock *newBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                         assert(newBB);
 
-                        handleCall(proc, dest, newBB, cfg, pc, 8);
-                        pc = pc + 8;
+                        createCallToAddress(dest, pc, newBB, cfg, 2 * inst.numBytes);
+                        pc += 2 * inst.numBytes;
 
                         // Add this call site to the set of call sites which need to be analyzed
                         // later.
@@ -859,7 +860,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                         BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                         assert(newBB);
                         createJumpToAddress(dest, newBB, cfg, _targetQueue,
-                                          m_program->getBinaryFile()->getImage()->getLimitText());
+                                            m_program->getBinaryFile()->getImage()->getLimitText());
 
                         // There is no fall through branch.
                         sequentialDecode = false;
