@@ -639,11 +639,18 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                                 image->readNative1(pc + 1), image->readNative1(pc + 2),
                                 image->readNative1(pc + 3));
                 LOG_WARN(message);
-                break;
+                break; // try next instruction in queue
             }
 
-            // Don't display the RTL here; do it after the switch statement in case the delay slot
-            // instruction is moved before this one
+            // Display RTL representation if asked
+            if (m_program->getProject()->getSettings()->printRTLs) {
+                QString tgt;
+                OStream st(&tgt);
+                inst.rtl->print(st);
+                LOG_MSG(tgt);
+            }
+
+            assert(inst.numBytes == 4); // all instructions have the same length
 
             // Need to construct a new list of RTLs if a basic block has just been finished but
             // decoding is continuing from its lexical successor
@@ -694,7 +701,6 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 // There is no fall through branch.
                 sequentialDecode = false;
-                pc += 2 * inst.numBytes;
                 break;
             }
 
@@ -822,7 +828,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 case SKIP:
                     case_unhandled_stub(pc);
-                    pc += 8;
+                    pc += 2 * inst.numBytes;
                     break;
 
                 case SU: {
@@ -871,7 +877,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 default:
                     case_unhandled_stub(pc);
-                    pc += 8; // Skip the pair
+                    pc += 2 * inst.numBytes; // Skip the pair
                     break;
                 }
 
@@ -883,7 +889,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                 if (inst.numBytes == 4) {
                     // Ordinary instruction. Look at the delay slot
-                    decodeSingleInstruction(pc + 4, delayInst);
+                    decodeSingleInstruction(pc + inst.numBytes, delayInst);
                 }
                 else {
                     // Must be a prologue or epilogue or something.
@@ -916,26 +922,26 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // need the orphan.  We do just a binary comparison; that may fail to make this
                 // optimisation if the instr has relative fields.
 
-                DecodeResult delay_inst;
-                decodeSingleInstruction(pc + 4, delay_inst);
+                DecodeResult delayInst;
+                decodeSingleInstruction(pc + inst.numBytes, delayInst);
 
-                switch (delay_inst.type) {
+                switch (delayInst.type) {
                 case NOP:
                 case NCT:
                     sequentialDecode = case_SCD(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
                         m_program->getBinaryFile()->getImage()->getLimitText(), inst,
-                        delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                        delayInst, std::move(BB_rtls), cfg, _targetQueue);
                     break;
 
                 default:
 
-                    if (delay_inst.rtl->back()->getKind() == StmtType::Call) {
+                    if (delayInst.rtl->back()->getKind() == StmtType::Call) {
                         // Assume it's the move/call/move pattern
                         sequentialDecode = case_SCD(
                             pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
                             m_program->getBinaryFile()->getImage()->getLimitText(), inst,
-                            delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                            delayInst, std::move(BB_rtls), cfg, _targetQueue);
                         break;
                     }
 
@@ -949,10 +955,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             case SCDAN: {
                 // Execute the delay instruction if the branch is taken; skip (anull) the delay
                 // instruction if branch not taken.
-                DecodeResult delay_inst;
-                decodeSingleInstruction(pc + 4, delay_inst);
+                DecodeResult delayInst;
+                decodeSingleInstruction(pc + inst.numBytes, delayInst);
 
-                switch (delay_inst.type) {
+                switch (delayInst.type) {
                 case NOP: {
                     // This is an ordinary two-way branch. Add the branch to the list of RTLs for
                     // this BB
@@ -968,7 +974,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
                     // Add the "false" leg: point past the delay inst
                     cfg->addEdge(newBB, pc + 8);
-                    pc += 8; // Skip branch and delay
+                    pc += 2 * inst.numBytes; // Skip branch and delay
                     break;
                 }
 
@@ -976,12 +982,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     sequentialDecode = case_SCDAN(
                         pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
                         m_program->getBinaryFile()->getImage()->getLimitText(), inst,
-                        delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                        delayInst, std::move(BB_rtls), cfg, _targetQueue);
                     break;
 
                 default:
                     case_unhandled_stub(pc);
-                    pc = pc + 8;
+                    pc += 2 * inst.numBytes;
                     break;
                 }
 
@@ -989,6 +995,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
             }
 
             default: // Others are non SPARC cases
+                LOG_WARN("Encountered instruction class '%1' which is invalid for SPARC",
+                         (int)inst.type);
                 break;
             }
 
