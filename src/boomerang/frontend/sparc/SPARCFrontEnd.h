@@ -275,6 +275,9 @@ private:
     /// This does the complete 64 bit semantics
     bool helperFuncLong(Address dest, Address addr, RTLList &lrtl, QString &name);
 
+    /// Warn about an invalid or unrecognized instruction at \p pc
+    void warnInvalidInstruction(Address pc);
+
 private:
     // This struct represents a single nop instruction.
     // Used as a substitute delay slot instruction
