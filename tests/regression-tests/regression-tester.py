@@ -276,7 +276,10 @@ smoke_tests = [
     "ppc/o4/frontier",
     "ppc/o4/phi",
     "sparc/asgngoto",
+    "sparc/ass2.SunOS",
+    "sparc/ass3.SunOS",
     "sparc/fromssa2",
+    "sparc/mutual_recurse",
     "sparc/recursion",
     "sparc/sumarray-O4",
     "sparc/switchAnd_gcc",
@@ -290,15 +293,8 @@ smoke_tests = [
     "windows/switch_msvc5.exe"
 ]
 
-# These files are currently disabled and/or unused
+# These files are disabled explicitly because decompilation fails for them.
 disabled_tests = [
-    # Actual crashes
-    "sparc/ass2.SunOS",
-    "sparc/ass3.SunOS",
-    "sparc/mutual_recurse",
-    "sparc/RayTracer",
-
-    # failures
     "elf/hello-clang4-static",
     "hppa/hello",
     "m68k/bcd",
@@ -320,6 +316,7 @@ disabled_tests = [
     "ppc/o4/semi",
     "sparc/daysofxmas",
     "sparc/fibo_iter",
+    "sparc/RayTracer",
     "sparc/switch_gpc",
     "sparc/twofib"
 ]
