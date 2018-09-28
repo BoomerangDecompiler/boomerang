@@ -843,8 +843,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    const GotoStatement *delayJump = static_cast<const GotoStatement *>(delayRTL->back());
-                    const Address dest             = pc + inst.numBytes + delayJump->getFixedDest();
+                    const GotoStatement *delayJump = static_cast<const GotoStatement *>(
+                        delayRTL->back());
+                    const Address dest = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
 
