@@ -94,7 +94,8 @@ private:
      * \returns    The basic block containing the single return instruction
      *             if this optimisation applies, nullptr otherwise.
      */
-    BasicBlock *optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc);
+    BasicBlock *optimizeCallReturn(CallStatement *call, const RTL *rtl, const RTL *delay,
+                                   UserProc *proc);
 
     /**
      * Adds the destination of a branch to the queue of address
@@ -274,6 +275,9 @@ private:
     /// This is the long version of helperFunc (i.e. -f not used).
     /// This does the complete 64 bit semantics
     bool helperFuncLong(Address dest, Address addr, RTLList &lrtl, QString &name);
+
+    /// Warn about an invalid or unrecognized instruction at \p pc
+    void warnInvalidInstruction(Address pc);
 
 private:
     // This struct represents a single nop instruction.

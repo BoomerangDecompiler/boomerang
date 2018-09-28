@@ -57,7 +57,7 @@ bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t de
 }
 
 
-BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay,
+BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, const RTL *delay,
                                               UserProc *proc)
 {
     if (call->isReturnAfterCall()) {
@@ -68,7 +68,7 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
         // that preservation or otherwise of %o7 is correct
         if (delay && (delay->size() == 1) && delay->front()->isAssign() &&
             static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
-            ls->push_back(delay->front());
+            ls->push_back(delay->front()->clone());
         }
 
         ls->push_back(new ReturnStatement);
@@ -631,15 +631,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 inst.type  = DD; // E.g. decode the delay slot instruction
             }
             else if (!decodeSingleInstruction(pc, inst)) {
-                QString message;
-                BinaryImage *image = m_program->getBinaryFile()->getImage();
-                message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
-                                "0x%02X 0x%02X 0x%02X 0x%02X",
-                                qPrintable(pc.toString()), image->readNative1(pc + 0),
-                                image->readNative1(pc + 1), image->readNative1(pc + 2),
-                                image->readNative1(pc + 3));
-                LOG_WARN(message);
-                break; // try next instruction in queue
+                warnInvalidInstruction(pc);
+                sequentialDecode = false;
+                continue;
             }
 
             // Display RTL representation if asked
@@ -722,7 +716,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // This includes "call" and "ba". If a "call", it might be a move_call_move idiom,
                 // or a call to .stret4
                 DecodeResult delayInst;
-                decodeSingleInstruction(pc + 4, delayInst);
+                if (!decodeSingleInstruction(pc + inst.numBytes, delayInst)) {
+                    warnInvalidInstruction(pc + inst.numBytes);
+                    sequentialDecode = false;
+                    continue;
+                }
 
                 if (m_program->getProject()->getSettings()->traceDecoder) {
                     LOG_MSG("*%1", pc + 4);
@@ -761,8 +759,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // insert a return BB after the call Note that if an add, there may be an
                     // assignment to a temp register first. So look at last RT
                     // TODO: why would delay_inst.rtl->empty() be empty here ?
-                    Statement *a = delayInst.rtl->empty() ? nullptr
-                                                          : delayInst.rtl->back(); // Look at last
+                    Statement *a = delayInst.rtl->empty() ? nullptr : delayInst.rtl->back();
 
                     if (a && a->isAssign()) {
                         SharedExp lhs = static_cast<Assign *>(a)->getLeft();
@@ -802,7 +799,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     }
                 }
 
-                RTL *delayRTL = delayInst.rtl.get();
+                const RTL *delayRTL = delayInst.rtl.get();
 
                 switch (delayInst.type) {
                 case NOP:
@@ -846,8 +843,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    GotoStatement *delayJump = static_cast<GotoStatement *>(delayRTL->back());
-                    const Address dest       = pc + inst.numBytes + delayJump->getFixedDest();
+                    const GotoStatement *delayJump = static_cast<const GotoStatement *>(
+                        delayRTL->back());
+                    const Address dest = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
 
@@ -887,16 +885,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 
             case DD: {
                 DecodeResult delayInst;
-
-                if (inst.numBytes == 4) {
-                    // Ordinary instruction. Look at the delay slot
-                    decodeSingleInstruction(pc + inst.numBytes, delayInst);
-                }
-                else {
-                    // Must be a prologue or epilogue or something.
-                    delayInst = std::move(nop_inst);
-                    // Should be no need to adjust the coverage; the number of bytes should take
-                    // care of it
+                if (!decodeSingleInstruction(pc + inst.numBytes, delayInst)) {
+                    warnInvalidInstruction(pc + inst.numBytes);
+                    sequentialDecode = false;
+                    continue;
                 }
 
                 switch (delayInst.type) {
@@ -924,7 +916,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // optimisation if the instr has relative fields.
 
                 DecodeResult delayInst;
-                decodeSingleInstruction(pc + inst.numBytes, delayInst);
+                if (!decodeSingleInstruction(pc + inst.numBytes, delayInst)) {
+                    warnInvalidInstruction(pc + inst.numBytes);
+                    sequentialDecode = false;
+                    continue;
+                }
 
                 switch (delayInst.type) {
                 case NOP:
@@ -957,7 +953,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                 // Execute the delay instruction if the branch is taken; skip (anull) the delay
                 // instruction if branch not taken.
                 DecodeResult delayInst;
-                decodeSingleInstruction(pc + inst.numBytes, delayInst);
+                if (!decodeSingleInstruction(pc + inst.numBytes, delayInst)) {
+                    warnInvalidInstruction(pc + inst.numBytes);
+                    sequentialDecode = false;
+                    continue;
+                }
 
                 switch (delayInst.type) {
                 case NOP: {
@@ -1301,4 +1301,23 @@ Address SPARCFrontEnd::findMainEntryPoint(bool &gotMain)
 
     gotMain = true;
     return start;
+}
+
+
+void SPARCFrontEnd::warnInvalidInstruction(Address pc)
+{
+    QString message;
+    BinaryImage *image = m_program->getBinaryFile()->getImage();
+
+    // clang-format off
+    message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
+                    "0x%02X 0x%02X 0x%02X 0x%02X",
+                    qPrintable(pc.toString()),
+                    image->readNative1(pc + 0),
+                    image->readNative1(pc + 1),
+                    image->readNative1(pc + 2),
+                    image->readNative1(pc + 3));
+    // clang-format on
+
+    LOG_WARN(message);
 }
