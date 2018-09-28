@@ -123,16 +123,16 @@ public:
 
         const_iterator it = std::lower_bound(m_data.begin(), m_data.end(), value);
 
-        if ((it != end()) && it->isContained(value)) {
+        if ((it != end()) && it->contains(value)) {
             return true;
         }
         else if (it == m_data.begin()) {
-            return it->isContained(value); // cannot do std::prev(begin());
+            return it->contains(value); // cannot do std::prev(begin());
         }
         else {
             // we know it exists since the set is not empty
             it = std::prev(it);
-            return it->isContained(value);
+            return it->contains(value);
         }
     }
 

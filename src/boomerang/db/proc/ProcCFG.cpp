@@ -124,12 +124,13 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
     if (mustCreateBB) {
         currentBB = new BasicBlock(bbType, std::move(bbRTLs), m_myProc);
 
-        if (startAddr.isZero() || startAddr == Address::INVALID) {
+        // Note that currentBB->getLowAddr() == startAddr
+        if (startAddr == Address::INVALID) {
             LOG_FATAL("Cannot add BB with invalid lowAddr %1", startAddr);
         }
 
-        m_bbStartMap[startAddr] = currentBB;
-        mi                      = m_bbStartMap.find(startAddr);
+        insertBB(currentBB);
+        mi = m_bbStartMap.find(startAddr);
     }
 
     if (!startAddr.isZero() && (mi != m_bbStartMap.end())) {
@@ -196,7 +197,9 @@ BasicBlock *ProcCFG::createBB(BBType bbType, std::unique_ptr<RTLList> bbRTLs)
 
 BasicBlock *ProcCFG::createIncompleteBB(Address lowAddr)
 {
-    return (m_bbStartMap[lowAddr] = new BasicBlock(lowAddr, m_myProc));
+    BasicBlock *newBB = new BasicBlock(lowAddr, m_myProc);
+    insertBB(newBB);
+    return newBB;
 }
 
 
@@ -501,7 +504,7 @@ BasicBlock *ProcCFG::splitBB(BasicBlock *bb, Address splitAddr, BasicBlock *_new
         bb->removeAllSuccessors();
         addEdge(bb, _newBB);
         bb->setType(BBType::Fall);
-        m_bbStartMap[_newBB->getLowAddr()] = _newBB;
+        insertBB(_newBB);
         return _newBB;
     }
     else if (!_newBB) {
@@ -551,4 +554,25 @@ void ProcCFG::print(OStream &out)
     }
 
     out << '\n';
+}
+
+void ProcCFG::insertBB(BasicBlock *bb)
+{
+    assert(bb != nullptr);
+    assert(bb->getLowAddr() != Address::INVALID);
+    if (bb->getLowAddr() != Address::ZERO) {
+        auto it = m_bbStartMap.find(bb->getLowAddr());
+        if (it != m_bbStartMap.end()) {
+            // replace it
+            it->second = bb;
+        }
+        else {
+            // just insert it
+            m_bbStartMap.insert({ bb->getLowAddr(), bb });
+        }
+    }
+    else {
+        // this is an orpahned BB (e.g. delay slot)
+        m_bbStartMap.insert({ Address::ZERO, bb });
+    }
 }

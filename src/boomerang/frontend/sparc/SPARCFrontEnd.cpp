@@ -42,11 +42,11 @@
 
 
 bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta,
-                                         Address upperLimit) const
+                                         Interval<Address> textLimit) const
 {
     // Check that the destination is within the main test section; may not be when we speculatively
     // decode junk
-    if ((dest - 4) > upperLimit) {
+    if (!textLimit.contains(dest - 4)) {
         return false;
     }
 
@@ -86,33 +86,34 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
 }
 
 
-void SPARCFrontEnd::handleBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
-                                 TargetQueue &tq)
+void SPARCFrontEnd::createJumpToAddress(Address dest, BasicBlock *&newBB, ProcCFG *cfg,
+                                        TargetQueue &tq, Interval<Address> textLimit)
 {
-    if (newBB == nullptr) {
+    if (!textLimit.contains(dest)) {
+        LOG_ERROR("Branch to address %1 is beyond section limits", dest);
+        return;
+    }
+    else if (newBB == nullptr) {
         return;
     }
 
-    if (dest < hiAddress) {
-        tq.visit(cfg, dest, newBB);
-        cfg->addEdge(newBB, dest);
-    }
-    else {
-        LOG_ERROR("Branch to address %1 is beyond section limits", dest);
-    }
+    tq.visit(cfg, dest, newBB);
+    cfg->addEdge(newBB, dest);
 }
 
 
-void SPARCFrontEnd::handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg,
-                               Address address, int offset /* = 0*/)
+void SPARCFrontEnd::createCallToAddress(Address dest, Address address, BasicBlock *callBB,
+                                        ProcCFG *cfg, int offset /* = 0*/)
 {
     if (callBB == nullptr) {
         return;
     }
 
+    const Prog *prog = cfg->getProc()->getProg();
+
     // If the destination address is the same as this very instruction,
     // we have a call with iDisp30 == 0. Don't treat this as the start of a real procedure.
-    if ((dest != address) && (proc->getProg()->getFunctionByAddr(dest) == nullptr)) {
+    if (dest != address && prog->getFunctionByAddr(dest) == nullptr) {
         // We don't want to call prog.visitProc just yet, in case this is a speculative decode that
         // failed. Instead, we use the set of CallStatements (not in this procedure) that is needed
         // by CSR
@@ -134,25 +135,25 @@ void SPARCFrontEnd::case_unhandled_stub(Address addr)
 }
 
 
-bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult &delay_inst,
+bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult &delayInst,
                               std::unique_ptr<RTLList> BB_rtls, UserProc *proc,
                               std::list<CallStatement *> &callList, bool isPattern /* = false*/)
 {
     // Aliases for the call and delay RTLs
-    CallStatement *call_stmt = static_cast<CallStatement *>(inst.rtl->back());
-    RTL *delay_rtl           = delay_inst.rtl.get();
+    CallStatement *callStmt = static_cast<CallStatement *>(inst.rtl->back());
+    RTL *delayRTL           = delayInst.rtl.get();
 
     // Emit the delay instruction, unless the delay instruction is a nop, or we have a pattern, or
     // are followed by a restore
-    if ((delay_inst.type != NOP) && !call_stmt->isReturnAfterCall()) {
-        delay_rtl->setAddress(address);
-        BB_rtls->push_back(std::move(delay_inst.rtl));
+    if (delayInst.type != NOP && !callStmt->isReturnAfterCall()) {
+        delayRTL->setAddress(address);
+        BB_rtls->push_back(std::move(delayInst.rtl));
     }
 
     // Get the new return basic block for the special case where the delay instruction is a restore
-    BasicBlock *returnBB = optimizeCallReturn(call_stmt, inst.rtl.get(), delay_rtl, proc);
+    BasicBlock *returnBB = optimizeCallReturn(callStmt, inst.rtl.get(), delayRTL, proc);
 
-    int disp30 = (call_stmt->getFixedDest().value() - address.value()) >> 2;
+    int disp30 = (callStmt->getFixedDest().value() - address.value()) >> 2;
 
     // Don't test for small offsets if part of a move_call_move pattern.
     // These patterns assign to %o7 in the delay slot, and so can't possibly be used to copy %pc to
@@ -169,7 +170,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
         assert(disp30 != 1);
 
         // First check for helper functions
-        Address dest             = call_stmt->getFixedDest();
+        Address dest             = callStmt->getFixedDest();
         const BinarySymbol *symb = m_program->getBinaryFile()->getSymbols()->findSymbolByAddress(
             dest);
 
@@ -202,7 +203,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
 
         if (returnBB) {
             // Handle the call but don't add any outedges from it just yet.
-            handleCall(proc, call_stmt->getFixedDest(), callBB, cfg, address);
+            createCallToAddress(callStmt->getFixedDest(), address, callBB, cfg);
 
             // Now add the out edge
             cfg->addEdge(callBB, returnBB);
@@ -237,7 +238,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
             }
 
             // Handle the call (register the destination as a proc) and possibly set the outedge.
-            handleCall(proc, dest, callBB, cfg, address, offset);
+            createCallToAddress(dest, address, callBB, cfg, offset);
 
             if (!inst.forceOutEdge.isZero()) {
                 // There is no need to force a goto to the new out-edge, since we will continue
@@ -257,7 +258,7 @@ bool SPARCFrontEnd::case_CALL(Address &address, DecodeResult &inst, DecodeResult
 }
 
 
-void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress,
+void SPARCFrontEnd::case_SD(Address &pc, ptrdiff_t delta, Interval<Address> textLimit,
                             DecodeResult &inst, DecodeResult &delay_inst,
                             std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
@@ -268,19 +269,19 @@ void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress
     // Try the "delay instruction has been copied" optimisation,
     // emitting the delay instruction now if the optimisation won't apply
     if (delay_inst.type != NOP) {
-        if (canOptimizeDelayCopy(address, SD_stmt->getFixedDest(), delta, hiAddress)) {
+        if (canOptimizeDelayCopy(pc, SD_stmt->getFixedDest(), delta, textLimit)) {
             SD_stmt->adjustFixedDest(-4);
         }
         else {
             // Move the delay instruction before the SD. Must update the address in case there is a
             // branch to the SD
-            delay_rtl->setAddress(address);
+            delay_rtl->setAddress(pc);
             BB_rtls->push_back(std::move(delay_inst.rtl));
         }
     }
 
     // Update the address (for coverage)
-    address += 8;
+    pc += 2 * inst.numBytes;
 
     // Add the SD
     BB_rtls->push_back(std::move(inst.rtl));
@@ -291,7 +292,7 @@ void SPARCFrontEnd::case_SD(Address &address, ptrdiff_t delta, Address hiAddress
     if (newBB != nullptr) {
         // Visit the destination, and add the out-edge
         Address jumpDest = SD_stmt->getFixedDest();
-        handleBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        createJumpToAddress(jumpDest, newBB, cfg, tq, textLimit);
     }
 }
 
@@ -395,7 +396,7 @@ bool SPARCFrontEnd::case_DD(Address &address, ptrdiff_t, DecodeResult &inst,
 }
 
 
-bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddress,
+bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
                              DecodeResult &inst, DecodeResult &delay_inst,
                              std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
@@ -416,10 +417,10 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
             return false;
         }
 
-        handleBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        createJumpToAddress(jumpDest, newBB, cfg, tq, textLimit);
         // Add the "false" leg
-        cfg->addEdge(newBB, address + 4);
-        address += 4; // Skip the SCD only
+        cfg->addEdge(newBB, address + inst.numBytes);
+        address += inst.numBytes; // Skip the SCD only
         // Start a new list of RTLs for the next BB
         BB_rtls = nullptr;
         LOG_WARN("Instruction at address %1 not copied to true leg of preceding branch", address);
@@ -446,13 +447,13 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
             return false;
         }
 
-        handleBranch(jumpDest, hiAddress, newBB, cfg, tq);
+        createJumpToAddress(jumpDest, newBB, cfg, tq, textLimit);
         // Add the "false" leg; skips the NCT
         cfg->addEdge(newBB, address + 8);
         // Skip the NCT/NOP instruction
         address += 8;
     }
-    else if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
+    else if (canOptimizeDelayCopy(address, jumpDest, delta, textLimit)) {
         // We can just branch to the instr before jumpDest. Adjust the destination of the branch
         jumpStmt->adjustFixedDest(-4);
         // Now emit the branch
@@ -460,7 +461,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
         BasicBlock *newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
         assert(newBB);
 
-        handleBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
+        createJumpToAddress(jumpDest - 4, newBB, cfg, tq, textLimit);
         // Add the "false" leg: point to the delay inst
         cfg->addEdge(newBB, address + 4);
         address += 4; // Skip branch but not delay
@@ -513,7 +514,7 @@ bool SPARCFrontEnd::case_SCD(Address &address, ptrdiff_t delta, Address hiAddres
 }
 
 
-bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddress,
+bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
                                DecodeResult &inst, DecodeResult &delayInst,
                                std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg, TargetQueue &tq)
 {
@@ -526,7 +527,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddr
     Address jumpDest        = jumpStmt->getFixedDest();
     BasicBlock *newBB       = nullptr;
 
-    if (canOptimizeDelayCopy(address, jumpDest, delta, hiAddress)) {
+    if (canOptimizeDelayCopy(address, jumpDest, delta, textLimit)) {
         // Adjust the destination of the branch
         jumpStmt->adjustFixedDest(-4);
         // Now emit the branch
@@ -534,7 +535,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddr
         newBB = cfg->createBB(BBType::Twoway, std::move(BB_rtls));
         assert(newBB);
 
-        handleBranch(jumpDest - 4, hiAddress, newBB, cfg, tq);
+        createJumpToAddress(jumpDest - 4, newBB, cfg, tq, textLimit);
     }
     else { // SCDAN; must move delay instr to orphan. Assume it's not a NOP (though if it is, no
            // harm done)
@@ -580,7 +581,7 @@ bool SPARCFrontEnd::case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddr
 }
 
 
-bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
+bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
 {
     // Declare an object to manage the queue of targets not yet processed yet.
     // This has to be individual to the procedure! (so not a global)
@@ -602,12 +603,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
     assert(cfg);
 
     // Initialise the queue of control flow targets that have yet to be decoded.
-    _targetQueue.initial(addr);
+    _targetQueue.initial(pc);
 
     // Get the next address from which to continue decoding and go from
     // there. Exit the loop if there are no more addresses or they all
     // correspond to locations that have been decoded.
-    while ((addr = _targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
+    while ((pc = _targetQueue.getNextAddress(*cfg)) != Address::INVALID) {
         // The list of RTLs for the current basic block
         std::unique_ptr<RTLList> BB_rtls(new RTLList);
         DecodeResult inst;
@@ -617,44 +618,39 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
         while (sequentialDecode) {
             // Decode and classify the current source instruction
             if (m_program->getProject()->getSettings()->traceDecoder) {
-                LOG_MSG("*%1", addr);
+                LOG_MSG("*%1", pc);
             }
 
             // Check if this is an already decoded jump instruction (from a previous pass with
             // propagation etc) If so, we don't need to decode this instruction
-            std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(addr);
+            std::map<Address, RTL *>::iterator ff = m_previouslyDecoded.find(pc);
 
             if (ff != m_previouslyDecoded.end()) {
                 inst.rtl.reset(ff->second);
                 inst.valid = true;
                 inst.type  = DD; // E.g. decode the delay slot instruction
             }
-            else {
-                decodeSingleInstruction(addr, inst);
+            else if (!decodeSingleInstruction(pc, inst)) {
+                QString message;
+                BinaryImage *image = m_program->getBinaryFile()->getImage();
+                message.sprintf("Encountered invalid or unrecognized instruction at address %s: "
+                                "0x%02X 0x%02X 0x%02X 0x%02X",
+                                qPrintable(pc.toString()), image->readNative1(pc + 0),
+                                image->readNative1(pc + 1), image->readNative1(pc + 2),
+                                image->readNative1(pc + 3));
+                LOG_WARN(message);
+                break; // try next instruction in queue
             }
 
-            // Check for invalid instructions
-            if (!inst.valid) {
-                ptrdiff_t delta = m_program->getBinaryFile()->getImage()->getTextDelta();
-
-                const Byte *instructionData = reinterpret_cast<const Byte *>(addr.value() + delta);
-                QString instructionString;
-                OStream ost(&instructionString);
-
-                for (int j = 0; j < inst.numBytes; j++) {
-                    if (!m_binaryFile->getImage()->getSectionByAddr(addr + delta + j)) {
-                        break;
-                    }
-                    ost << QString("0x%1").arg(instructionData[j], 2, 16, QChar('0'));
-                }
-
-                LOG_ERROR("Invalid or unrecognized instruction at address %1: %2", addr,
-                          instructionString);
-                return false;
+            // Display RTL representation if asked
+            if (m_program->getProject()->getSettings()->printRTLs) {
+                QString tgt;
+                OStream st(&tgt);
+                inst.rtl->print(st);
+                LOG_MSG(tgt);
             }
 
-            // Don't display the RTL here; do it after the switch statement in case the delay slot
-            // instruction is moved before this one
+            assert(inst.numBytes == 4); // all instructions have the same length
 
             // Need to construct a new list of RTLs if a basic block has just been finished but
             // decoding is continuing from its lexical successor
@@ -674,42 +670,37 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             switch (inst.type) {
-            case NOP:
-                // Always put the NOP into the BB. It may be needed if it is the
-                // the destinsation of a branch. Even if not the start of a BB,
-                // some other branch may be discovered to it later.
-                BB_rtls->push_back(std::move(inst.rtl));
-
-                addr += 4;
-                break;
-
-            case NCT:
-                // Ordinary instruction. Add it to the list of RTLs this BB
-                BB_rtls->push_back(std::move(inst.rtl));
-                addr += inst.numBytes;
-
+            case NCT: {
                 // Ret/restore epilogues are handled as ordinary RTLs now
                 if (last->getKind() == StmtType::Ret) {
                     sequentialDecode = false;
                 }
+            }
+                // fallthrough
 
+            case NOP: {
+                // Always put the NOP into the BB. It may be needed if it is the
+                // the destinsation of a branch. Even if not the start of a BB,
+                // some other branch may be discovered to it later.
+                BB_rtls->push_back(std::move(inst.rtl));
+                pc += inst.numBytes;
                 break;
+            }
 
             case SKIP: {
                 // We can't simply ignore the skipped delay instruction as there
                 // will most likely be a branch to it so we simply set the jump
                 // to go to one past the skipped instruction.
-                jumpStmt->setDest(addr + 8);
+                jumpStmt->setDest(pc + 2 * inst.numBytes);
                 BB_rtls->push_back(std::move(inst.rtl));
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
 
-                handleBranch(addr + 8, m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
-                             newBB, cfg, _targetQueue);
+                createJumpToAddress(pc + 2 * inst.numBytes, newBB, cfg, _targetQueue,
+                                    m_program->getBinaryFile()->getImage()->getLimitText());
 
                 // There is no fall through branch.
                 sequentialDecode = false;
-                addr += 8;
                 break;
             }
 
@@ -719,24 +710,22 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                 BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                 assert(newBB);
-                handleBranch(jumpStmt->getFixedDest(),
-                             m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB, cfg,
-                             _targetQueue);
+                createJumpToAddress(jumpStmt->getFixedDest(), newBB, cfg, _targetQueue,
+                                    m_program->getBinaryFile()->getImage()->getLimitText());
 
                 // There is no fall through branch.
                 sequentialDecode = false;
-                addr += 8; // Update address for coverage
                 break;
             }
 
             case SD: {
                 // This includes "call" and "ba". If a "call", it might be a move_call_move idiom,
                 // or a call to .stret4
-                DecodeResult delay_inst;
-                decodeSingleInstruction(addr + 4, delay_inst);
+                DecodeResult delayInst;
+                decodeSingleInstruction(pc + 4, delayInst);
 
                 if (m_program->getProject()->getSettings()->traceDecoder) {
-                    LOG_MSG("*%1", addr + 4);
+                    LOG_MSG("*%1", pc + 4);
                 }
 
                 if (last->getKind() == StmtType::Call) {
@@ -746,18 +735,18 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
                     if (static_cast<SPARCDecoder *>(m_decoder.get())
                             ->isRestore(HostAddress(
-                                addr.value() + 4 +
+                                pc.value() + inst.numBytes +
                                 m_program->getBinaryFile()->getImage()->getTextDelta()))) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
-                        delay_inst.rtl->setAddress(addr);
-                        BB_rtls->push_back(std::move(delay_inst.rtl));
+                        delayInst.rtl->setAddress(pc);
+                        BB_rtls->push_back(std::move(delayInst.rtl));
 
                         // The restore means it is effectively followed by a return (since the
                         // resore semantics chop off one level of return address)
                         static_cast<CallStatement *>(last)->setReturnAfterCall(true);
                         sequentialDecode = false;
-                        case_CALL(addr, inst, nop_inst, std::move(BB_rtls), proc, callList, true);
+                        case_CALL(pc, inst, nop_inst, std::move(BB_rtls), proc, callList, true);
                         break;
                     }
 
@@ -772,8 +761,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     // insert a return BB after the call Note that if an add, there may be an
                     // assignment to a temp register first. So look at last RT
                     // TODO: why would delay_inst.rtl->empty() be empty here ?
-                    Statement *a = delay_inst.rtl->empty() ? nullptr
-                                                           : delay_inst.rtl->back(); // Look at last
+                    Statement *a = delayInst.rtl->empty() ? nullptr
+                                                          : delayInst.rtl->back(); // Look at last
 
                     if (a && a->isAssign()) {
                         SharedExp lhs = static_cast<Assign *>(a)->getLeft();
@@ -791,12 +780,12 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                                 (*rhs->getSubExp1() == *o7)) {
                                 // Get the constant
                                 int K = rhs->access<Const, 2>()->getInt();
-                                case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc,
-                                          callList, true);
+                                case_CALL(pc, inst, delayInst, std::move(BB_rtls), proc, callList,
+                                          true);
                                 // We don't generate a goto; instead, we just decode from the new
                                 // address Note: the call to case_CALL has already incremented
                                 // address by 8, so don't do again
-                                addr += K;
+                                pc += K;
                                 break;
                             }
                             else {
@@ -805,17 +794,17 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                                 // after this call
                                 static_cast<CallStatement *>(last)->setReturnAfterCall(true);
                                 sequentialDecode = false;
-                                case_CALL(addr, inst, delay_inst, std::move(BB_rtls), proc,
-                                          callList, true);
+                                case_CALL(pc, inst, delayInst, std::move(BB_rtls), proc, callList,
+                                          true);
                                 break;
                             }
                         }
                     }
                 }
 
-                RTL *delayRTL = delay_inst.rtl.get();
+                RTL *delayRTL = delayInst.rtl.get();
 
-                switch (delay_inst.type) {
+                switch (delayInst.type) {
                 case NOP:
                 case NCT:
 
@@ -823,14 +812,14 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     // we put the delay instruction before the jump or call
                     if (last->getKind() == StmtType::Call) {
                         // This is a call followed by an NCT/NOP
-                        sequentialDecode = case_CALL(addr, inst, delay_inst, std::move(BB_rtls),
-                                                     proc, callList);
+                        sequentialDecode = case_CALL(pc, inst, delayInst, std::move(BB_rtls), proc,
+                                                     callList);
                     }
                     else {
                         // This is a non-call followed by an NCT/NOP
-                        case_SD(addr, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                                m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
-                                delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                        case_SD(pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
+                                m_program->getBinaryFile()->getImage()->getLimitText(), inst,
+                                delayInst, std::move(BB_rtls), cfg, _targetQueue);
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -839,8 +828,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     break;
 
                 case SKIP:
-                    case_unhandled_stub(addr);
-                    addr += 8;
+                    case_unhandled_stub(pc);
+                    pc += 2 * inst.numBytes;
                     break;
 
                 case SU: {
@@ -854,11 +843,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Just so that we can check that our interpretation is correct the first time
                     // we hit this case...
-                    case_unhandled_stub(addr);
+                    case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    GotoStatement *delay_jump = static_cast<GotoStatement *>(delayRTL->back());
-                    Address dest              = addr + 4 + delay_jump->getFixedDest();
+                    GotoStatement *delayJump = static_cast<GotoStatement *>(delayRTL->back());
+                    const Address dest       = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
 
@@ -867,8 +856,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                         BasicBlock *newBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                         assert(newBB);
 
-                        handleCall(proc, dest, newBB, cfg, addr, 8);
-                        addr = addr + 8;
+                        createCallToAddress(dest, pc, newBB, cfg, 2 * inst.numBytes);
+                        pc += 2 * inst.numBytes;
 
                         // Add this call site to the set of call sites which need to be analyzed
                         // later.
@@ -877,9 +866,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                     else {
                         BasicBlock *newBB = cfg->createBB(BBType::Oneway, std::move(BB_rtls));
                         assert(newBB);
-                        handleBranch(dest,
-                                     m_program->getBinaryFile()->getImage()->getLimitTextHigh(),
-                                     newBB, cfg, _targetQueue);
+                        createJumpToAddress(dest, newBB, cfg, _targetQueue,
+                                            m_program->getBinaryFile()->getImage()->getLimitText());
 
                         // There is no fall through branch.
                         sequentialDecode = false;
@@ -889,8 +877,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                 }
 
                 default:
-                    case_unhandled_stub(addr);
-                    addr += 8; // Skip the pair
+                    case_unhandled_stub(pc);
+                    pc += 2 * inst.numBytes; // Skip the pair
                     break;
                 }
 
@@ -902,7 +890,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                 if (inst.numBytes == 4) {
                     // Ordinary instruction. Look at the delay slot
-                    decodeSingleInstruction(addr + 4, delayInst);
+                    decodeSingleInstruction(pc + inst.numBytes, delayInst);
                 }
                 else {
                     // Must be a prologue or epilogue or something.
@@ -915,11 +903,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                 case NOP:
                 case NCT:
                     sequentialDecode = case_DD(
-                        addr, m_program->getBinaryFile()->getImage()->getTextDelta(), inst,
-                        delayInst, std::move(BB_rtls), _targetQueue, proc, callList);
+                        pc, m_program->getBinaryFile()->getImage()->getTextDelta(), inst, delayInst,
+                        std::move(BB_rtls), _targetQueue, proc, callList);
                     break;
 
-                default: case_unhandled_stub(addr); break;
+                default: case_unhandled_stub(pc); break;
                 }
 
                 break;
@@ -935,30 +923,30 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
                 // need the orphan.  We do just a binary comparison; that may fail to make this
                 // optimisation if the instr has relative fields.
 
-                DecodeResult delay_inst;
-                decodeSingleInstruction(addr + 4, delay_inst);
+                DecodeResult delayInst;
+                decodeSingleInstruction(pc + inst.numBytes, delayInst);
 
-                switch (delay_inst.type) {
+                switch (delayInst.type) {
                 case NOP:
                 case NCT:
                     sequentialDecode = case_SCD(
-                        addr, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                        m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
-                        delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                        pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
+                        m_program->getBinaryFile()->getImage()->getLimitText(), inst, delayInst,
+                        std::move(BB_rtls), cfg, _targetQueue);
                     break;
 
                 default:
 
-                    if (delay_inst.rtl->back()->getKind() == StmtType::Call) {
+                    if (delayInst.rtl->back()->getKind() == StmtType::Call) {
                         // Assume it's the move/call/move pattern
                         sequentialDecode = case_SCD(
-                            addr, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                            m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
-                            delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                            pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
+                            m_program->getBinaryFile()->getImage()->getLimitText(), inst, delayInst,
+                            std::move(BB_rtls), cfg, _targetQueue);
                         break;
                     }
 
-                    case_unhandled_stub(addr);
+                    case_unhandled_stub(pc);
                     break;
                 }
 
@@ -968,10 +956,10 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
             case SCDAN: {
                 // Execute the delay instruction if the branch is taken; skip (anull) the delay
                 // instruction if branch not taken.
-                DecodeResult delay_inst;
-                decodeSingleInstruction(addr + 4, delay_inst);
+                DecodeResult delayInst;
+                decodeSingleInstruction(pc + inst.numBytes, delayInst);
 
-                switch (delay_inst.type) {
+                switch (delayInst.type) {
                 case NOP: {
                     // This is an ordinary two-way branch. Add the branch to the list of RTLs for
                     // this BB
@@ -982,25 +970,25 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
 
                     // Visit the destination of the branch; add "true" leg
                     Address jumpDest = jumpStmt->getFixedDest();
-                    handleBranch(jumpDest,
-                                 m_program->getBinaryFile()->getImage()->getLimitTextHigh(), newBB,
-                                 cfg, _targetQueue);
+                    createJumpToAddress(jumpDest, newBB, cfg, _targetQueue,
+                                        m_program->getBinaryFile()->getImage()->getLimitText());
+
                     // Add the "false" leg: point past the delay inst
-                    cfg->addEdge(newBB, addr + 8);
-                    addr += 8; // Skip branch and delay
+                    cfg->addEdge(newBB, pc + 8);
+                    pc += 2 * inst.numBytes; // Skip branch and delay
                     break;
                 }
 
                 case NCT:
                     sequentialDecode = case_SCDAN(
-                        addr, m_program->getBinaryFile()->getImage()->getTextDelta(),
-                        m_program->getBinaryFile()->getImage()->getLimitTextHigh(), inst,
-                        delay_inst, std::move(BB_rtls), cfg, _targetQueue);
+                        pc, m_program->getBinaryFile()->getImage()->getTextDelta(),
+                        m_program->getBinaryFile()->getImage()->getLimitText(), inst, delayInst,
+                        std::move(BB_rtls), cfg, _targetQueue);
                     break;
 
                 default:
-                    case_unhandled_stub(addr);
-                    addr = addr + 8;
+                    case_unhandled_stub(pc);
+                    pc += 2 * inst.numBytes;
                     break;
                 }
 
@@ -1008,6 +996,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
             }
 
             default: // Others are non SPARC cases
+                LOG_WARN("Encountered instruction class '%1' which is invalid for SPARC",
+                         (int)inst.type);
                 break;
             }
 
@@ -1017,17 +1007,17 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
             // mustn't decode twice, because it will muck up the coverage, but also will cause
             // subtle problems like add a call to the list of calls to be processed, then delete the
             // call RTL (e.g. Pentium 134.perl benchmark)
-            if (sequentialDecode && cfg->isStartOfBB(addr)) {
+            if (sequentialDecode && cfg->isStartOfBB(pc)) {
                 // Create the fallthrough BB, if there are any RTLs at all
                 if (BB_rtls) {
                     BasicBlock *newBB = cfg->createBB(BBType::Fall, std::move(BB_rtls));
                     assert(newBB);
                     // Add an out edge to this address
-                    cfg->addEdge(newBB, addr);
+                    cfg->addEdge(newBB, pc);
                 }
 
                 // Pick a new address to decode from, if the BB is complete
-                if (!cfg->isStartOfIncompleteBB(addr)) {
+                if (!cfg->isStartOfIncompleteBB(pc)) {
                     sequentialDecode = false;
                 }
             }
@@ -1042,9 +1032,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address addr)
         Address dest = call->getFixedDest();
 
         // Don't visit the destination of a register call
-        // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
         if (dest != Address::INVALID) {
-            proc->getProg()->getOrCreateFunction(dest);
+            Function *callee = proc->getProg()->getOrCreateFunction(dest);
+            if (callee) {
+                proc->addCallee(callee);
+            }
         }
     }
 

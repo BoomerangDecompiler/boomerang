@@ -38,7 +38,7 @@ enum class BBType;
  */
 class BOOMERANG_API ProcCFG
 {
-    typedef std::map<Address, BasicBlock *, std::less<Address>> BBStartMap;
+    typedef std::multimap<Address, BasicBlock *, std::less<Address>> BBStartMap;
     typedef std::map<SharedConstExp, Statement *, lessExpStar> ExpStatementMap;
 
 public:
@@ -116,9 +116,9 @@ public:
      *
      * Explicit labels are addresses that have already been tagged as being labels
      * due to transfers of control to that address (i.e. they are the start of a complete Basic
-     * Block) Non explicit labels are addresses that are in the middle of a complete Basic Block. In
-     * this case, the existing complete BB is split. If \p currBB is the BB that gets split,
-     * \p currBB is updated to point to the "high" part of the split BB.
+     * Block). Non explicit labels are addresses that are in the middle of a complete Basic Block.
+     * In this case, the existing complete BB is split. If \p currBB is the BB that gets split,
+     * \p currBB is updated to point to the "high" part of the split BB (address wise).
      *
      * \param  addr   native (source) address to check
      * \param  currBB See above
@@ -147,8 +147,6 @@ public:
 
     /// Check if the given address is the start of an incomplete basic block.
     bool isStartOfIncompleteBB(Address addr) const;
-
-    void setBBStart(BasicBlock *bb, Address startAddr) { m_bbStartMap[startAddr] = bb; }
 
     /// \returns the entry BB of the procedure of this CFG
     BasicBlock *getEntryBB() { return m_entryBB; }
@@ -238,6 +236,9 @@ public:
 public:
     /// print this CFG, mainly for debugging
     void print(OStream &out);
+
+private:
+    void insertBB(BasicBlock *bb);
 
 private:
     UserProc *m_myProc = nullptr;    ///< Procedure to which this CFG belongs.

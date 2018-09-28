@@ -14,6 +14,7 @@
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/exp/Operator.h"
 #include "boomerang/ssl/type/Type.h"
+#include "boomerang/util/Interval.h"
 
 
 /**
@@ -58,12 +59,12 @@ private:
      * \param src        the logical source address of a CTI
      * \param dest       the logical destination address of the CTI
      * \param delta      used to convert logical to real addresses
-     * \param upperLimit first address past the end of the main text section
      * SIDE EFFECT:    Optionally displays an error message if the target of the branch
      *                 is the delay slot of another delayed CTI
      * \returns true if delay instruction can be optimized away
      */
-    bool canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta, Address upperLimit) const;
+    bool canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t delta,
+                              Interval<Address> textLimit) const;
 
     /**
      * Determines if the given call and delay instruction consitute a call
@@ -103,19 +104,17 @@ private:
      * \param newBB the new basic block delimited by the branch instruction. May be nullptr if
      *              this block has been built before.
      * \param dest the destination being branched to
-     * \param hiAddress the last address in the current procedure
      * \param cfg the CFG of the current procedure
      * \param tq Object managing the target queue
      */
-    void handleBranch(Address dest, Address hiAddress, BasicBlock *&newBB, ProcCFG *cfg,
-                      TargetQueue &tq);
+    void createJumpToAddress(Address dest, BasicBlock *&newBB, ProcCFG *cfg, TargetQueue &tq,
+                             Interval<Address> textLimit);
 
     /**
      * Records the fact that there is a procedure at a given address. Also adds the out edge to the
      * lexical successor of the call site (taking into consideration the delay slot and possible
      * UNIMP instruction).
      *
-     * \param  proc caller - only used to access Prog
      * \param  dest the address of the callee
      * \param  callBB the basic block delimited by the call
      * \param  cfg CFG of the enclosing procedure
@@ -123,8 +122,8 @@ private:
      * \param  offset the offset from the call instruction to which an outedge must be added. A
      *                value of 0 means no edge is to be added.
      */
-    void handleCall(UserProc *proc, Address dest, BasicBlock *callBB, ProcCFG *cfg, Address address,
-                    int offset = 0);
+    void createCallToAddress(Address dest, Address address, BasicBlock *callBB, ProcCFG *cfg,
+                             int offset = 0);
 
     /**
      * This is the stub for cases of DCTI couples that we haven't written
@@ -164,7 +163,7 @@ private:
      * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
      *
      */
-    void case_SD(Address &address, ptrdiff_t delta, Address hiAddress, DecodeResult &inst,
+    void case_SD(Address &address, ptrdiff_t delta, Interval<Address> textLimit, DecodeResult &inst,
                  DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
                  TargetQueue &tq);
 
@@ -186,13 +185,11 @@ private:
                  std::unique_ptr<RTLList> BB_rtls, TargetQueue &tq, UserProc *proc,
                  std::list<CallStatement *> &callList);
 
-
     /**
      * Handles all Static Conditional Delayed non-anulled branches
      * \param address    the native address of the DD
      * \param delta      the offset of the above address from the logical address at which the
      *                   procedure starts (i.e. the one given by dis)
-     * \param hiAddress  first address outside this code section
      * \param inst       the info summaries when decoding the SD instruction
      * \param delay_inst the info summaries when decoding the delay instruction
      * \param BB_rtls    the list of RTLs currently built for the BB under construction
@@ -201,9 +198,9 @@ private:
      * SIDE EFFECTS:     address may change; BB_rtls may be appended to or set nullptr
      * \returns true if next instruction is to be fetched sequentially from this one
      */
-    bool case_SCD(Address &address, ptrdiff_t delta, Address hiAddress, DecodeResult &inst,
-                  DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
-                  TargetQueue &tq);
+    bool case_SCD(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
+                  DecodeResult &inst, DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls,
+                  ProcCFG *cfg, TargetQueue &tq);
 
     /**
      * Handles all static conditional delayed anulled branches followed by
@@ -211,7 +208,6 @@ private:
      * \param address    the native address of the DD
      * \param delta      the offset of the above address from the logical
      *                   address at which the procedure starts (i.e. the one given by dis)
-     * \param hiAddress  first address outside this code section
      * \param inst       the info summaries when decoding the SD instruction
      * \param delay_inst the info summaries when decoding the delay instruction
      * \param BB_rtls    the list of RTLs currently built for the BB under construction
@@ -220,9 +216,9 @@ private:
      * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
      * \returns          true if next instruction is to be fetched sequentially from this one
      */
-    bool case_SCDAN(Address &address, ptrdiff_t delta, Address hiAddress, DecodeResult &inst,
-                    DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
-                    TargetQueue &tq);
+    bool case_SCDAN(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
+                    DecodeResult &inst, DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls,
+                    ProcCFG *cfg, TargetQueue &tq);
 
     /**
      * Emit a null RTL with the given address.

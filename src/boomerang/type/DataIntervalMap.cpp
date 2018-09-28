@@ -100,8 +100,8 @@ DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString 
     while (it1 != it2) {
         TypedVariable &var = it1->second;
 
-        if (it1->first.isFullyContained(newTypeRange)) {
-            if (newTypeRange.isFullyContained(it1->first)) {
+        if (it1->first.containsInterval(newTypeRange)) {
+            if (newTypeRange.containsInterval(it1->first)) {
                 // both types are of equal size
                 bool changed;
                 it1->second.type = it1->second.type->meetWith(type, changed);
@@ -113,7 +113,7 @@ DataIntervalMap::iterator DataIntervalMap::insertItem(Address baseAddr, QString 
                 return it1;
             }
         }
-        else if (newTypeRange.isFullyContained(it1->first)) {
+        else if (newTypeRange.containsInterval(it1->first)) {
             // the new type is a larger/derived type which contains the old type
             return replaceComponents(baseAddr, name, type, forced);
         }

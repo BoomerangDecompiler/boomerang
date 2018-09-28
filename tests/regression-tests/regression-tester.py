@@ -275,9 +275,13 @@ smoke_tests = [
     "ppc/o4/fib",
     "ppc/o4/frontier",
     "ppc/o4/phi",
+    "sparc/asgngoto",
     "sparc/fromssa2",
+    "sparc/recursion",
     "sparc/sumarray-O4",
     "sparc/switchAnd_gcc",
+    "sparc/switch_epc2",
+    "sparc/twoproc",
     "windows/fbranch.exe",
     "windows/hello.exe",
     "windows/hello_release.exe",
@@ -288,6 +292,13 @@ smoke_tests = [
 
 # These files are currently disabled and/or unused
 disabled_tests = [
+    # Actual crashes
+    "sparc/ass2.SunOS",
+    "sparc/ass3.SunOS",
+    "sparc/mutual_recurse",
+    "sparc/RayTracer",
+
+    # failures
     "elf/hello-clang4-static",
     "hppa/hello",
     "m68k/bcd",
@@ -307,21 +318,11 @@ disabled_tests = [
     "ppc/o4/daysofxmas",
     "ppc/o4/fibo_iter",
     "ppc/o4/semi",
-    "sparc/asgngoto",
-    "sparc/ass2.SunOS",
-    "sparc/ass3.SunOS",
     "sparc/daysofxmas",
     "sparc/fibo_iter",
-    "sparc/mutual_recurse",
-    "sparc/rain",
-    "sparc/RayTracer",
-    "sparc/recursion",
-    "sparc/switch_epc2",
     "sparc/switch_gpc",
-    "sparc/twofib",
-    "sparc/twoproc"
+    "sparc/twofib"
 ]
-
 
 
 """ Clean output directories from old data. """
