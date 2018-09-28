@@ -1031,9 +1031,11 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
         Address dest = call->getFixedDest();
 
         // Don't visit the destination of a register call
-        // if (dest != Address::INVALID) newProc(proc->getProg(), dest);
         if (dest != Address::INVALID) {
-            proc->getProg()->getOrCreateFunction(dest);
+            Function *callee = proc->getProg()->getOrCreateFunction(dest);
+            if (callee) {
+                proc->addCallee(callee);
+            }
         }
     }
 
