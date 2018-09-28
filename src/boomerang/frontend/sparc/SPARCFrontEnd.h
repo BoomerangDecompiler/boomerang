@@ -108,7 +108,7 @@ private:
      * \param tq Object managing the target queue
      */
     void createJumpToAddress(Address dest, BasicBlock *&newBB, ProcCFG *cfg, TargetQueue &tq,
-                           Interval<Address> textLimit);
+                             Interval<Address> textLimit);
 
     /**
      * Records the fact that there is a procedure at a given address. Also adds the out edge to the
@@ -122,8 +122,8 @@ private:
      * \param  offset the offset from the call instruction to which an outedge must be added. A
      *                value of 0 means no edge is to be added.
      */
-    void createCallToAddress(Address dest, Address address, BasicBlock *callBB,
-                             ProcCFG *cfg, int offset = 0);
+    void createCallToAddress(Address dest, Address address, BasicBlock *callBB, ProcCFG *cfg,
+                             int offset = 0);
 
     /**
      * This is the stub for cases of DCTI couples that we haven't written
@@ -163,9 +163,9 @@ private:
      * SIDE EFFECTS: address may change; BB_rtls may be appended to or set nullptr
      *
      */
-    void case_SD(Address &address, ptrdiff_t delta, Interval<Address> textLimit,
-                 DecodeResult &inst, DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls,
-                 ProcCFG *cfg, TargetQueue &tq);
+    void case_SD(Address &address, ptrdiff_t delta, Interval<Address> textLimit, DecodeResult &inst,
+                 DecodeResult &delay_inst, std::unique_ptr<RTLList> BB_rtls, ProcCFG *cfg,
+                 TargetQueue &tq);
 
     /**
      * Handles all dynamic delayed jumps (jmpl, also dynamic calls)
