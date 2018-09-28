@@ -94,7 +94,7 @@ private:
      * \returns    The basic block containing the single return instruction
      *             if this optimisation applies, nullptr otherwise.
      */
-    BasicBlock *optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay, UserProc *proc);
+    BasicBlock *optimizeCallReturn(CallStatement *call, const RTL *rtl, const RTL *delay, UserProc *proc);
 
     /**
      * Adds the destination of a branch to the queue of address

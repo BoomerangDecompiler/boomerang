@@ -57,7 +57,7 @@ bool SPARCFrontEnd::canOptimizeDelayCopy(Address src, Address dest, ptrdiff_t de
 }
 
 
-BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, RTL *delay,
+BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rtl, const RTL *delay,
                                               UserProc *proc)
 {
     if (call->isReturnAfterCall()) {
@@ -68,7 +68,7 @@ BasicBlock *SPARCFrontEnd::optimizeCallReturn(CallStatement *call, const RTL *rt
         // that preservation or otherwise of %o7 is correct
         if (delay && (delay->size() == 1) && delay->front()->isAssign() &&
             static_cast<Assign *>(delay->front())->getLeft()->isRegN(REG_SPARC_O7)) {
-            ls->push_back(delay->front());
+            ls->push_back(delay->front()->clone());
         }
 
         ls->push_back(new ReturnStatement);
@@ -759,8 +759,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // insert a return BB after the call Note that if an add, there may be an
                     // assignment to a temp register first. So look at last RT
                     // TODO: why would delay_inst.rtl->empty() be empty here ?
-                    Statement *a = delayInst.rtl->empty() ? nullptr
-                                                          : delayInst.rtl->back(); // Look at last
+                    Statement *a = delayInst.rtl->empty() ? nullptr : delayInst.rtl->back();
 
                     if (a && a->isAssign()) {
                         SharedExp lhs = static_cast<Assign *>(a)->getLeft();
@@ -800,7 +799,7 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     }
                 }
 
-                RTL *delayRTL = delayInst.rtl.get();
+                const RTL *delayRTL = delayInst.rtl.get();
 
                 switch (delayInst.type) {
                 case NOP:
@@ -844,8 +843,8 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     case_unhandled_stub(pc);
 
                     // Adjust the destination of the SD and emit it.
-                    GotoStatement *delayJump = static_cast<GotoStatement *>(delayRTL->back());
-                    const Address dest       = pc + inst.numBytes + delayJump->getFixedDest();
+                    const GotoStatement *delayJump = static_cast<const GotoStatement *>(delayRTL->back());
+                    const Address dest             = pc + inst.numBytes + delayJump->getFixedDest();
                     jumpStmt->setDest(dest);
                     BB_rtls->push_back(std::move(inst.rtl));
 
