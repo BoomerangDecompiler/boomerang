@@ -154,7 +154,7 @@ protected:
     DWord dos4gwRead4(const void *src) const; ///< Read 4 bytes from native addr
 
 private:
-    LXHeader m_LXHeader;               ///< LX header
+    LXHeader m_LXHeader = {};          ///< LX header
     std::vector<LXObject> m_LXObjects; ///< LX objects
     std::vector<char> m_imageBase;     ///< LoadedImage
 

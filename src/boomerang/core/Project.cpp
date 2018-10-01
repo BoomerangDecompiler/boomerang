@@ -111,7 +111,7 @@ bool Project::loadBinaryFile(const QString &filePath)
     }
 
     QFile srcFile(filePath);
-    if (false == srcFile.open(QFile::ReadOnly)) {
+    if (!srcFile.open(QFile::ReadOnly)) {
         LOG_WARN("Opening '%1' failed");
         return false;
     }

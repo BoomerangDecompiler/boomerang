@@ -43,7 +43,10 @@ bool ExeBinaryLoader::loadFromMemory(QByteArray &data)
     m_header = new ExeHeader;
 
     QBuffer fp(&data);
-    fp.open(QBuffer::ReadOnly);
+    if (!fp.open(QBuffer::ReadOnly)) {
+        LOG_ERROR("Cannot read exe file");
+        return false;
+    }
 
     /* Read in first 2 bytes to check EXE signature */
     if (fp.read(reinterpret_cast<char *>(m_header), 2) != 2) {

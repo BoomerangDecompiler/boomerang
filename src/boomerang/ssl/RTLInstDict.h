@@ -105,7 +105,7 @@ class BOOMERANG_API RTLInstDict
     friend class NJMCDecoder;
 
 public:
-    RTLInstDict(bool verboseOutput = false) { m_verboseOutput = verboseOutput; }
+    RTLInstDict(bool verboseOutput = false);
     RTLInstDict(const RTLInstDict &) = delete;
     RTLInstDict(RTLInstDict &&)      = default;
 

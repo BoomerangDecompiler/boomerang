@@ -173,7 +173,9 @@ bool DOS4GWBinaryLoader::loadFromMemory(QByteArray &data)
 {
     QBuffer buf(&data);
 
-    buf.open(QBuffer::ReadOnly);
+    if (!buf.open(QBuffer::ReadOnly)) {
+        return false;
+    }
 
     DWord lxoffLE, lxoff;
 

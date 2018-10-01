@@ -93,7 +93,10 @@ SharedExp listStrToExp(std::list<QString> *ls);   // Convert a STL list of strin
 
 /*apres const  */
 SSLParser::SSLParser(const QString &_sslFile, bool _trace)
-    : sslFile(_sslFile)
+    : yynerrs(0)
+    , yychar(0)
+    , sslFile(_sslFile)
+    , the_asgn(nullptr)
     , floatRegister(false)
 {
 #if YY_SSLParser_DEBUG != 0
