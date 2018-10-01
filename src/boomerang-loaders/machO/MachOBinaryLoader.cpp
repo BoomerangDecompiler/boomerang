@@ -151,10 +151,13 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
     // uint32_t  startlocal, nlocal,ndef, startdef;
     std::vector<section> stubs_sects;
 
-    char *strtbl             = nullptr;
-    unsigned *indirectsymtbl = nullptr;
-    Address objc_symbols = Address::INVALID, objc_modules = Address::INVALID,
-            objc_strings = Address::INVALID, objc_refs = Address::INVALID;
+    std::vector<char> strtbl;
+    std::vector<DWord> indirectsymtbl;
+
+    Address objc_symbols = Address::INVALID;
+    Address objc_modules = Address::INVALID;
+    Address objc_strings = Address::INVALID;
+    Address objc_refs    = Address::INVALID;
     unsigned objc_modules_size = 0;
 
     fp.seek(imgoffs + sizeof(*header));
@@ -213,8 +216,8 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
             symtab_command syms;
             fp.read(reinterpret_cast<char *>(&syms), sizeof(syms));
             fp.seek(imgoffs + BMMH(syms.stroff));
-            strtbl = new char[BMMH(syms.strsize)];
-            fp.read(strtbl, BMMH(syms.strsize));
+            strtbl.resize(BMMH(syms.strsize));
+            fp.read(&strtbl[0], BMMH(syms.strsize));
             fp.seek(imgoffs + BMMH(syms.symoff));
 
             for (unsigned n = 0; n < BMMH(syms.nsyms); n++) {
@@ -244,10 +247,10 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
             // nundef = BMMH(syms.nundefsym);
 
             DEBUG_PRINT("dysymtab has %1 indirect symbols: ", BMMH(syms.nindirectsyms));
-            indirectsymtbl = new unsigned[BMMH(syms.nindirectsyms)];
+            indirectsymtbl.resize(BMMH(syms.nindirectsyms));
             fp.seek(imgoffs + BMMH(syms.indirectsymoff));
-            fp.read(reinterpret_cast<char *>(indirectsymtbl),
-                    BMMH(syms.nindirectsyms) * sizeof(unsigned));
+            fp.read(reinterpret_cast<char *>(&indirectsymtbl[0]),
+                    indirectsymtbl.size() * sizeof(DWord));
 
             for (unsigned j = 0; j < BMMH(syms.nindirectsyms); j++) {
                 DEBUG_PRINT("  %1 ", BMMH(indirectsymtbl[j]));
@@ -282,8 +285,6 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
 
     if (!base) {
         LOG_ERROR("Cannot allocate memory for copy of image");
-        delete[] strtbl;
-        delete[] indirectsymtbl;
         return false;
     }
 
@@ -342,7 +343,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
 
             DEBUG_PRINT("stub for %1 at %2", strtbl + BMMH(symbols[symbol].n_un.n_strx),
                         addr.value());
-            char *name = strtbl + BMMH(symbols[symbol].n_un.n_strx);
+            char *name = &strtbl.at(BMMH(symbols[symbol].n_un.n_strx));
 
             if (*name == '_') { // we want printf not _printf
                 name++;
@@ -356,7 +357,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
 
     // process the remaining symbols
     for (unsigned i = 0; i < symbols.size(); i++) {
-        char *name = strtbl + BMMH(symbols[i].n_un.n_strx);
+        char *name = &strtbl.at(BMMH(symbols[i].n_un.n_strx));
 
         if ((BMMH(symbols[i].n_un.n_strx) != 0) && (BMMH(symbols[i].n_value) != 0) &&
             (*name != 0)) {
@@ -454,11 +455,7 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
         }
     }
 
-    // Give the entry point a symbol
-    // ADDRESS entry = GetMainEntryPoint();
     entrypoint = getMainEntryPoint();
-    delete[] strtbl;
-    delete[] indirectsymtbl;
     return true;
 }
 
