@@ -415,16 +415,14 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
     HostAddress addrRelPlt = HostAddress::ZERO;
     int numRelPlt          = 0;
 
-    if (siRelPlt) {
-        addrRelPlt = siRelPlt->getHostAddr();
-        numRelPlt  = siRelPlt->getSize() / sizeRelPlt;
+    if (siPlt == nullptr || siRelPlt == nullptr) {
+        return Address::INVALID; // neither .plt nor .rel.plt nor .rela.plt are available
     }
-    else {
-        return Address::INVALID; // neither .rel.plt nor .rela.plt are available
-    }
+
+    addrRelPlt = siRelPlt->getHostAddr();
+    numRelPlt  = siRelPlt->getSize() / sizeRelPlt;
 
     int first = i;
-
     if (first >= numRelPlt) {
         first = numRelPlt - 1;
     }
