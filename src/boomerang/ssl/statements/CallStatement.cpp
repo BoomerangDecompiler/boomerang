@@ -306,9 +306,8 @@ void CallStatement::setArgumentType(int i, SharedType ty)
 {
     assert(Util::inRange(i, 0, getNumArguments()));
     StatementList::const_iterator aa = std::next(m_arguments.begin(), i);
-    Assign *assign                   = dynamic_cast<Assign *>(*aa);
-    assert(assign != nullptr);
-    assign->setType(ty);
+    assert((*aa)->isAssign());
+    static_cast<Assign *>(*aa)->setType(ty);
 }
 
 
