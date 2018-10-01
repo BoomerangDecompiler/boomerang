@@ -405,11 +405,11 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
     const BinarySection *siPlt    = m_binaryImage->getSectionByName(".plt");
     Address addrPlt               = siPlt ? siPlt->getSourceAddr() : Address::ZERO;
     const BinarySection *siRelPlt = m_binaryImage->getSectionByName(".rel.plt");
-    int sizeRelPlt                = 8; // Size of each entry in the .rel.plt table
+    int sizeRelPlt                = sizeof(Elf32_Rel); // Size of each entry in the .rel.plt table
 
     if (siRelPlt == nullptr) {
         siRelPlt   = m_binaryImage->getSectionByName(".rela.plt");
-        sizeRelPlt = 12; // Size of each entry in the .rela.plt table is 12 bytes
+        sizeRelPlt = sizeof(Elf32_Rela); // Size of each entry in the .rela.plt table is 12 bytes
     }
 
     HostAddress addrRelPlt = HostAddress::ZERO;
@@ -435,8 +435,8 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
     }
 
     do {
-        // Each entry is sizeRelPlt bytes, and will contain the offset, then the info (addend
-        // optionally follows)
+        // Each entry is sizeRelPlt bytes, and will contain the offset, then the info
+        // (addend optionally follows)
         DWord *pltEntry     = reinterpret_cast<DWord *>((addrRelPlt + (curr * sizeRelPlt)).value());
         const int entry     = elfRead4(pltEntry + 1);
         const int sym       = entry >> 8; // The symbol index is in the top 24 bits (Elf32 only)
