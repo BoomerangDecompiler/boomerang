@@ -439,6 +439,7 @@ CommandStatus Console::handleDelete(const QStringList &args)
     }
     else if (prog == nullptr) {
         std::cerr << "no valid Prog object!" << std::endl;
+        return CommandStatus::Failure;
     }
 
     if (args[0] == "module") {
