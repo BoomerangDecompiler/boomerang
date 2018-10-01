@@ -189,22 +189,19 @@ bool PhiAssign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*c
 bool PhiAssign::accept(StmtExpVisitor *visitor)
 {
     bool visitChildren = true;
-    bool ret           = visitor->visit(this, visitChildren);
-
-    if (!visitChildren) {
-        return ret;
+    if (!visitor->visit(this, visitChildren)) {
+        return false;
+    }
+    else if (!visitChildren) {
+        return true;
+    }
+    else if (m_lhs && !m_lhs->acceptVisitor(visitor->ev)) {
+        return false;
     }
 
-    if (ret && m_lhs) {
-        ret = m_lhs->acceptVisitor(visitor->ev);
-    }
-
-    for (auto &refExp : *this) {
+    for (RefExp &refExp : *this) {
         assert(refExp.getSubExp1() != nullptr);
-        // RefExp *re = RefExp::get(v.second.e, v.second.def());
-        ret = RefExp::get(refExp.getSubExp1(), refExp.getDef())->acceptVisitor(visitor->ev);
-
-        if (ret == false) {
+        if (!RefExp::get(refExp.getSubExp1(), refExp.getDef())->acceptVisitor(visitor->ev)) {
             return false;
         }
     }
