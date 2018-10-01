@@ -45,6 +45,13 @@ int TableEntry::appendRTL(const std::list<QString> &params, const RTL &rtl)
 }
 
 
+RTLInstDict::RTLInstDict(bool verboseOutput)
+    : m_verboseOutput(verboseOutput)
+    , m_bigEndian(Endian::Little)
+{
+}
+
+
 int RTLInstDict::insert(const QString &name, std::list<QString> &params, const RTL &rtl)
 {
     QString opcode = name.toUpper();
