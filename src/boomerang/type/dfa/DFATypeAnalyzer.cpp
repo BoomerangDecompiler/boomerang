@@ -248,7 +248,8 @@ void DFATypeAnalyzer::visit(ReturnStatement *stmt, bool &visitChildren)
             LOG_WARN("Non assignment in modifieds of ReturnStatement");
         }
 
-        visitAssignment(dynamic_cast<Assignment *>(mm), visitChildren);
+        assert(dynamic_cast<Assignment *>(mm) != nullptr);
+        visitAssignment(static_cast<Assignment *>(mm), visitChildren);
     }
 
     for (Statement *rr : stmt->getReturns()) {
@@ -256,7 +257,8 @@ void DFATypeAnalyzer::visit(ReturnStatement *stmt, bool &visitChildren)
             LOG_WARN("Non assignment in returns of ReturnStatement");
         }
 
-        visitAssignment(dynamic_cast<Assignment *>(rr), visitChildren);
+        assert(dynamic_cast<Assignment *>(rr) != nullptr);
+        visitAssignment(static_cast<Assignment *>(rr), visitChildren);
     }
 
     visitChildren = false; // don't visit the expressions
