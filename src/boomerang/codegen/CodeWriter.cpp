@@ -46,7 +46,7 @@ bool CodeWriter::writeCode(const Module *module, const QStringList &lines)
             std::tie(it, inserted) = m_dests.insert(std::make_pair(module, outPath));
             assert(inserted);
         }
-        catch (const std::runtime_error &err) {
+        catch (const std::runtime_error &) {
             return false;
         }
     }

@@ -154,10 +154,10 @@ bool MachOBinaryLoader::loadFromMemory(QByteArray &img)
     std::vector<char> strtbl;
     std::vector<DWord> indirectsymtbl;
 
-    Address objc_symbols = Address::INVALID;
-    Address objc_modules = Address::INVALID;
-    Address objc_strings = Address::INVALID;
-    Address objc_refs    = Address::INVALID;
+    Address objc_symbols       = Address::INVALID;
+    Address objc_modules       = Address::INVALID;
+    Address objc_strings       = Address::INVALID;
+    Address objc_refs          = Address::INVALID;
     unsigned objc_modules_size = 0;
 
     fp.seek(imgoffs + sizeof(*header));
