@@ -79,6 +79,9 @@ public:
 
 ArgSourceProvider::ArgSourceProvider(CallStatement *_call)
     : call(_call)
+    , i(0)
+    , n(0)
+    , defCol(nullptr)
 {
     Function *procDest = call->getDestProc();
 
