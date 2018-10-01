@@ -417,7 +417,7 @@ Address ElfBinaryLoader::findRelPltOffset(int i)
 
     if (siRelPlt) {
         addrRelPlt = siRelPlt->getHostAddr();
-        numRelPlt  = sizeRelPlt ? siRelPlt->getSize() / sizeRelPlt : 0;
+        numRelPlt  = siRelPlt->getSize() / sizeRelPlt;
     }
     else {
         return Address::INVALID; // neither .rel.plt nor .rela.plt are available
