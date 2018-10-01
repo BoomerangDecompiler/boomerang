@@ -17,6 +17,7 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/ssl/exp/Exp.h"
+#include "boomerang/util/log/Log.h"
 
 
 void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
@@ -57,7 +58,10 @@ void CFGDotWriter::writeCFG(const Prog *prog, const QString &filename)
 void CFGDotWriter::writeCFG(const ProcSet &procs, const QString &filename)
 {
     QFile outFile(filename);
-    outFile.open(QFile::WriteOnly | QFile::Text);
+    if (!outFile.open(QFile::WriteOnly | QFile::Text)) {
+        LOG_ERROR("Could not open '%1' for writing", filename);
+        return;
+    }
 
     OStream textStream(&outFile);
     textStream << "digraph ProcCFG {\n";

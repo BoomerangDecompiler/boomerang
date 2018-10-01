@@ -18,7 +18,9 @@ CodeWriter::WriteDest::WriteDest(const QString &outFileName)
     : m_outFile(outFileName)
     , m_os(&m_outFile)
 {
-    m_outFile.open(QFile::WriteOnly | QFile::Text);
+    if (!m_outFile.open(QFile::WriteOnly | QFile::Text)) {
+        throw std::runtime_error("Could not open file!");
+    }
 }
 
 
@@ -39,9 +41,14 @@ bool CodeWriter::writeCode(const Module *module, const QStringList &lines)
             module->makeDirs();
         }
 
-        bool inserted          = false;
-        std::tie(it, inserted) = m_dests.insert(std::make_pair(module, outPath));
-        assert(inserted);
+        bool inserted = false;
+        try {
+            std::tie(it, inserted) = m_dests.insert(std::make_pair(module, outPath));
+            assert(inserted);
+        }
+        catch (const std::runtime_error &err) {
+            return false;
+        }
     }
 
     assert(it != m_dests.end());
