@@ -117,12 +117,9 @@ void DFATypeAnalyzer::visit(PhiAssign *stmt, bool &visitChildren)
     }
 
     for (defIt = defs.begin(); defIt != defs.end(); ++defIt) {
-        if (defIt->getSubExp1() == nullptr) {
-            continue;
+        if (defIt->getSubExp1() && defIt->getDef()) {
+            defIt->getDef()->meetWithFor(stmt->getType(), defIt->getSubExp1(), ch);
         }
-
-        assert(defIt->getDef());
-        defIt->getDef()->meetWithFor(stmt->getType(), defIt->getSubExp1(), ch);
     }
 
     m_changed |= ch;
