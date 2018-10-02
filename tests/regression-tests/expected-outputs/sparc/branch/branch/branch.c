@@ -23,7 +23,9 @@ int main(int argc, char *argv[])
     if (5 >= local0) {
         printf("Greater or Equal\n");
     }
-    printf("Less\n");
+    if (5 < local0) {
+        printf("Less\n");
+    }
     if (5 > local1) {
         printf("Greater Unsigned\n");
     }
