@@ -20,6 +20,7 @@
 - Fixed: Crash when analyzing specific kinds of switch statements.
 - Fixed: Crash when trying to find main for binaries compiled with recent GCCs.
 - Fixed: Potential crash after removing unused global variables.
+- Fixed: Potential crash due to wrong decode of anulled branches (e.g. BG,a) when decoding SPARC binaries.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
 - Fixed: A large number of memory leaks.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.

@@ -1844,36 +1844,31 @@ bool SPARCDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &
                 return false;
             }
 
-            // Instantiate a GotoStatement for the unconditional branches, HLJconds for the rest.
+            // The class of this instruction depends on whether or not it is one of the
+            // 'unconditional' conditional branches
 
-            // NOTE: NJMC toolkit cannot handle embedded else statements!
-
-            GotoStatement *jump = nullptr;
-            if ((strcmp(name, "BA,a") == 0) || (strcmp(name, "BN,a") == 0)) {
-                jump = new GotoStatement;
-                inst.rtl->append(jump);
+            // "BA,A" or "BN,A"
+            if (strcmp(name, "BA,a") == 0) {
+                inst.type = SU;
             }
-            else if ((strcmp(name, "BVS,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
+            else if (strcmp(name, "BN,a") == 0) {
+                inst.type = SKIP;
+            }
+            else {
+                // ordinary branch instruction
+                inst.type = SCDAN;
+            }
+
+            // Instantiate a GotoStatement for the unconditional branches,
+            // BranchStatements for the rest.
+            GotoStatement *jump = nullptr;
+            if (inst.type == SU || inst.type == SKIP) {
                 jump = new GotoStatement;
                 inst.rtl->append(jump);
             }
             else {
                 inst.rtl = createBranchRTL(name, pc, std::move(inst.rtl));
                 jump     = static_cast<GotoStatement *>(inst.rtl->back());
-            }
-
-            // The class of this instruction depends on whether or not it is one of the
-            // 'unconditional' conditional branches
-
-            // "BA,A" or "BN,A"
-
-            inst.type = SCDAN;
-
-            if ((strcmp(name, "BA,a") == 0) || (strcmp(name, "BVC,a") == 0)) {
-                inst.type = SU;
-            }
-            else {
-                inst.type = SKIP;
             }
 
             jump->setDest(Address((tgt - delta).value()));
