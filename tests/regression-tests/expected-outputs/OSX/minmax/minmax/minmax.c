@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
     if (argc < -2) {
         local0 = -2;
     }
-    if (local0 > 3) {
+    if (local0 <= 3) {
     }
     printf(/* machine specific */ (int) LR + 684);
     return 0;

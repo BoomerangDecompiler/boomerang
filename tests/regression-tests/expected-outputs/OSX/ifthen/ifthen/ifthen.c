@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 
     printf(/* machine specific */ (int) LR + 748);
     printf(/* machine specific */ (int) LR + 764);
-    if (argc <= 3) {
+    if (argc > 3) {
     }
     g3 = printf(/* machine specific */ (int) LR + 768);
     return g3;

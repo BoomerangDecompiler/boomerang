@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     if (argc < -2) {
         g4 = -2;
     }
-    if (g4 > 3) {
+    if (g4 <= 3) {
     }
     printf(/* machine specific */ (int) LR + 788);
     printf(/* machine specific */ (int) LR + 788);

@@ -17,8 +17,7 @@ int main(int argc, char *argv[])
             local4 = local1;
             if (local2 <= 1) {
                 if (local1 == 12) {
-bb0x80483b2:
-                    return 13;
+                    break;
                 }
 bb0x8048386:
                 local0 = local4;
@@ -33,21 +32,13 @@ bb0x8048347:
                 }
                 goto bb0x8048386;
             }
-            return 13;
         } while (local0 > 0);
     }
     else {
         if (argc > 5) {
             if (argc == 9) {
-                if (argc != 10) {
-                    goto bb0x80483b2;
+                if (argc == 10) {
                 }
-                else {
-                    goto bb0x80483b2;
-                }
-                goto bb0x80483b2;
-            }
-            else {
             }
         }
         else {
@@ -55,8 +46,6 @@ bb0x8048347:
                 do {
                 } while (argc > 0);
                 goto bb0x8048347;
-            }
-            else {
             }
         }
     }

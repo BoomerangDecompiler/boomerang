@@ -32,8 +32,6 @@ bb0x100006e8:
                     if (g3 != 0) {
                         goto bb0x100006e8;
                     }
-                    else {
-                    }
                 }
             }
             else {

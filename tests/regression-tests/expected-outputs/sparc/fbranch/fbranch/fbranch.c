@@ -24,8 +24,6 @@ bb0x10768:
     if (global_0x00010938 > local0) {
         puts("Greater");
     }
-    else {
-    }
     if (global_0x00010938 <= local0) {
         puts("Less or Equal");
     }

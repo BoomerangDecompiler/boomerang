@@ -12,33 +12,21 @@ int main(int argc, char *argv[])
     if (0x40a00000 == local0) {
         puts("Equal");
     }
-    else {
-    }
     if (0x40a00000 != local0) {
         puts("Not Equal");
-    }
-    else {
     }
     if (5. > local0) {
         puts("Greater");
     }
-    else {
-    }
     if (local0 >= 5.) {
         puts("Less or Equal");
-    }
-    else {
     }
     if (5. >= local0) {
         puts("Greater or Equal");
     }
-    else {
-    }
     st7 = local0;
     if (local0 > 5.) {
         puts("Less");
-    }
-    else {
     }
     return 0;
 }
