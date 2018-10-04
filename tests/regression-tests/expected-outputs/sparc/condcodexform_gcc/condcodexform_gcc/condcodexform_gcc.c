@@ -21,41 +21,27 @@ int main(int argc, char *argv[])
     *(__size32*)(%o6 + 60) = %i7;
     if (flags) {
     }
-    else {
+    if ( ~flags) {
     }
-    if (flags) {
+    if ( ~flags) {
     }
-    else {
+    if ( ~flags) {
     }
-    if (flags) {
-    }
-    else {
-    }
-    if (flags) {
-    }
-    else {
-    }
-    if (flags) {
-    }
-    else {
+    if ( ~flags) {
     }
     if (flags) {
         if ( ~flags) {
-            if ( ~flags) {
-bb0x10cc4:
+            if (flags) {
             }
         }
     }
     else {
         if ( ~flags) {
             if ( ~flags) {
-                goto bb0x10cc4;
             }
         }
     }
-    if (flags) {
-    }
-    else {
+    if ( ~flags) {
     }
     printf(%o0);
     return;

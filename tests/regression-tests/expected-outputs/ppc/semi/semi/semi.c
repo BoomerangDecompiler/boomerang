@@ -17,14 +17,8 @@ int main(int argc, union { __size32; char *[] *; } argv)
     if (argc <= 2) {
         do {
             if (argc != 11) {
-bb0x100004f8:
             }
-            else {
-                goto bb0x1000050c;
-            }
-            goto bb0x100004f8;
         } while (argc <= 11);
-bb0x1000050c:
     }
     else {
         do {

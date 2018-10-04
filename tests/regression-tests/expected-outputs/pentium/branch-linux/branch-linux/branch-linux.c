@@ -17,8 +17,6 @@ bb0x804844e:
             eax = *0x8049854;
             fwrite("Not Equal\n", 1, 10, eax);
         }
-        else {
-        }
     }
     else {
         goto bb0x804844e;

@@ -62,12 +62,11 @@ bb0x10000564:
             while (local2 >= 0) {
                 g0 = *(unsigned char*)(g1 + local2 - 96);
                 if ((ROTL(g0) & 0xff) != 32) {
-                    goto bb0x10000688;
+                    break;
                 }
                 *(__size8*)(g1 + local2 - 96) = 0;
                 local2--;
             }
-bb0x10000688:
             g10 = puts(&local3); /* Warning: also results in g11 */
             local7++;
             goto bb0x10000500;

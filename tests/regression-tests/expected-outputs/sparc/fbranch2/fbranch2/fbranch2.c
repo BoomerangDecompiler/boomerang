@@ -13,32 +13,20 @@ int main(int argc, char *argv[])
     if (f8 == local0) {
         printf("Equal\n");
     }
-    else {
-    }
     if (f8 != local0) {
         printf("Not Equal\n");
-    }
-    else {
     }
     if (f8 > local0) {
         printf("Greater\n");
     }
-    else {
-    }
     if (f8 <= local0) {
         printf("Less or Equal\n");
-    }
-    else {
     }
     if (f8 >= local0) {
         printf("Greater or Equal\n");
     }
-    else {
-    }
     if (f8 < local0) {
         printf("Less\n");
-    }
-    else {
     }
     return 0;
 }

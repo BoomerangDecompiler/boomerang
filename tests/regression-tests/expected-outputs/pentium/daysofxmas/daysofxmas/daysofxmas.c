@@ -52,7 +52,6 @@ bb0x8048463:
                 }
             }
             else {
-bb0x80483b8:
                 goto bb0x80483ba;
             }
         }
@@ -69,7 +68,7 @@ bb0x80483b8:
         eax = main(-94, argc - 27);
         if (eax != 0 && argc == 2) {
             if (argv <= 12) {
-                goto bb0x80483b8;
+                goto bb0x80483ba;
             }
             else {
                 ebx = 9;

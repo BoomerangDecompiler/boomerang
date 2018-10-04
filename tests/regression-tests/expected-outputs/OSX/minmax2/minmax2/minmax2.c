@@ -27,7 +27,7 @@ __size32 test(__size32 param1, int param2)
     if (param2 < -2) {
         local0 = -2;
     }
-    if (local0 > 3) {
+    if (local0 <= 3) {
     }
     printf(/* machine specific */ (int) LR + 772);
     return param1; /* WARNING: Also returning: g31 := param1, g30 := (g1 - 80), g31 := /* machine specific */ (int) LR */

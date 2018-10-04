@@ -25,7 +25,7 @@ __size32 atexit()
     int ecx; 		// r25
     int edx; 		// r26
 
-    if (edx != 0) {
+    if (edx == 0) {
     }
     eax = __cxa_atexit(); /* Warning: also results in ecx, edx */
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */

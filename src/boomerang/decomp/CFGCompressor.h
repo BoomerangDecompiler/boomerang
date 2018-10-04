@@ -11,6 +11,7 @@
 
 
 class ProcCFG;
+class BasicBlock;
 
 
 class CFGCompressor
@@ -23,6 +24,7 @@ public:
      *
      * Optimizations performed are:
      *  - Removal of redundant jumps (e.g. remove J in A->J->B if J only contains a jump)
+     *  - Removal of empty BBs (not containing any semantics), if possible
      *  - Removal of BBs not reachable from the entry BB.
      *
      * \sa ProcCFG::isWellFormed
@@ -31,6 +33,17 @@ public:
     bool compressCFG(ProcCFG *cfg);
 
 private:
+    /// Removes empty jumps and empty BBs.
+    bool removeEmptyJumps(ProcCFG *cfg);
+
+    /// \returns true iff \p bb does not contain any statements.
+    /// \note This is different from a BB that does not contain
+    /// any RTLs, since all RTLs could be empty.
+    bool isEmptyBB(const BasicBlock *bb) const;
+
+    /// \returns true iff \p bb only contains an unconditional jump statement.
+    bool isEmptyJump(const BasicBlock *bb) const;
+
     /// Removes BBs that are not reachable from the entry BB.
     bool removeOrphanBBs(ProcCFG *cfg);
 };

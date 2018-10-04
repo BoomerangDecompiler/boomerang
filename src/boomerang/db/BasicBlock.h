@@ -267,9 +267,9 @@ public:
      * \param os   stream to output to
      * \param html print in html mode
      */
-    void print(OStream &os);
+    void print(OStream &os) const;
 
-    QString prints();
+    QString prints() const;
 
 protected:
     /// The function this BB is part of, or nullptr if this BB is not part of a function.

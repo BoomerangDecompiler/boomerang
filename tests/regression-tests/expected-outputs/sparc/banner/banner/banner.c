@@ -64,12 +64,11 @@ bb0x10804:
             while (local0 >= 0) {
                 o0 = *(unsigned char*)(o6 + local0 - 128);
                 if ((int)(o0 * 0x1000000) >> 24 != 32) {
-                    goto bb0x10960;
+                    break;
                 }
                 *(__size8*)(o6 + local0 - 128) = 0;
                 local0--;
             }
-bb0x10960:
             o2 = puts(&local3); /* Warning: also results in o3, o4 */
             local7++;
             goto bb0x10794;

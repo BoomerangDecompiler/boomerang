@@ -31,8 +31,6 @@ __size32 interleaved(int param1, __size32 param2, __size32 param3)
             o0 = 0;
             local0 = o0;
         }
-        else {
-        }
     }
     else {
         o0_1 = 2;

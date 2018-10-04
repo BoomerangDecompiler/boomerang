@@ -14,33 +14,21 @@ int main(int argc, char *argv[])
     if (0x40a00000 == local0) {
         printf("Equal\n");
     }
-    else {
-    }
     if (0x40a00000 != local0) {
         printf("Not Equal\n");
-    }
-    else {
     }
     if (5. > local0) {
         printf("Greater\n");
     }
-    else {
-    }
     if (0x40a00000 == local0) {
         printf("Less or Equal\n");
-    }
-    else {
     }
     if (0x40a00000 == local0) {
         printf("Greater or Equal\n");
     }
-    else {
-    }
     f13 = local0;
     if (5. < local0) {
         printf("Less\n");
-    }
-    else {
     }
     return g1 - 20;
 }

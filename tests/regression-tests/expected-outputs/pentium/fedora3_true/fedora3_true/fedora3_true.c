@@ -76,7 +76,7 @@ void proc_0x0804a0a0()
 {
     int edx; 		// r26
 
-    if (edx != 0) {
+    if (edx == 0) {
     }
     __cxa_atexit();
     return;

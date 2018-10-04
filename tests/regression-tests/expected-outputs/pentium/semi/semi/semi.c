@@ -11,14 +11,8 @@ int main(int argc, char *argv[])
     if (argc <= 2) {
         do {
             if (argc != 11) {
-bb0x80483ce:
             }
-            else {
-                goto bb0x80483db;
-            }
-            goto bb0x80483ce;
         } while (argc <= 11);
-bb0x80483db:
     }
     else {
         do {

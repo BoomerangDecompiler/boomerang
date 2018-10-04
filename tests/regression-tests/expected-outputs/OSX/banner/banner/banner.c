@@ -61,12 +61,11 @@ bb0x2874:
             while (local2 >= 0) {
                 g0 = *(unsigned char*)(g1 + local2 - 96);
                 if ((int) g0 != 32) {
-                    goto bb0x2998;
+                    break;
                 }
                 *(__size8*)(g1 + local2 - 96) = 0;
                 local2--;
             }
-bb0x2998:
             g10 = puts(&local3); /* Warning: also results in g11 */
             local7++;
             goto bb0x2810;
