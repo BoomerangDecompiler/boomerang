@@ -117,7 +117,7 @@ void BasicBlock::setRTLs(std::unique_ptr<RTLList> rtls)
 }
 
 
-QString BasicBlock::prints()
+QString BasicBlock::prints() const
 {
     QString tgt;
     OStream ost(&tgt);
@@ -126,7 +126,7 @@ QString BasicBlock::prints()
 }
 
 
-void BasicBlock::print(OStream &os)
+void BasicBlock::print(OStream &os) const
 {
     switch (getType()) {
     case BBType::Oneway: os << "Oneway BB"; break;

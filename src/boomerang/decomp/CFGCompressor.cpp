@@ -13,14 +13,13 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/statements/Statement.h"
+#include "boomerang/util/log/Log.h"
 
 #include <deque>
 
 
 bool CFGCompressor::compressCFG(ProcCFG *cfg)
 {
-    bool changed = false;
-
     // FIXME: The below was working while we still had reaching definitions. It seems to me that it
     // would be easy to search the BB for definitions between the two branches (so we don't need
     // reaching defs, just the SSA property of
@@ -28,46 +27,77 @@ bool CFGCompressor::compressCFG(ProcCFG *cfg)
     //
     // Look in CVS for old code.
 
-    // Find A -> J -> B where J is a BB that is only a jump and replace it by A -> B
-    for (BasicBlock *aBB : *cfg) {
-        for (int i = 0; i < aBB->getNumSuccessors(); i++) {
-            BasicBlock *jmpBB = aBB->getSuccessor(i);
+    bool changed = false;
 
-            if (jmpBB->getNumSuccessors() != 1) { // only consider oneway jumps
-                continue;
-            }
-
-            if (jmpBB->getRTLs()->size() != 1 || jmpBB->getRTLs()->front()->size() != 1 ||
-                !jmpBB->getRTLs()->front()->front()->isGoto()) {
-                continue;
-            }
-
-            // Found an out-edge to an only-jump BB.
-            // Replace edge A -> J -> B by A -> B
-            BasicBlock *bBB = jmpBB->getSuccessor(0);
-            aBB->setSuccessor(i, bBB);
-
-            for (int j = 0; j < bBB->getNumPredecessors(); j++) {
-                if (bBB->getPredecessor(j) == jmpBB) {
-                    bBB->setPredecessor(j, aBB);
-                    break;
-                }
-            }
-
-            // remove predecessor from j. Cannot remove successor now since there might be several
-            // predecessors which need the successor information.
-            jmpBB->removePredecessor(aBB);
-
-            if (jmpBB->getNumPredecessors() == 0) {
-                jmpBB->removeAllSuccessors(); // now we can remove the successors
-                cfg->removeBB(jmpBB);
-            }
-        }
-    }
-
+    changed |= removeEmptyJumps(cfg);
     changed |= removeOrphanBBs(cfg);
     return changed;
 }
+
+
+bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
+{
+    std::deque<BasicBlock *> bbsToRemove;
+
+    for (BasicBlock *bb : *cfg) {
+        // Check if the BB can be removed
+        if (bb->getNumSuccessors() == 1 && bb != cfg->getEntryBB() &&
+            (isEmptyBB(bb) || isEmptyJump(bb))) {
+            bbsToRemove.push_back(bb);
+        }
+    }
+
+    const bool changed = !bbsToRemove.empty();
+
+    while (!bbsToRemove.empty()) {
+        BasicBlock *bb = bbsToRemove.front();
+        bbsToRemove.pop_front();
+
+        assert(bb->getNumSuccessors() == 1);
+        BasicBlock *succ = bb->getSuccessor(0); // the one and only successor
+
+        succ->removePredecessor(bb);
+        bb->removeSuccessor(succ);
+
+        for (BasicBlock *pred : bb->getPredecessors()) {
+            for (int i = 0; i < pred->getNumSuccessors(); i++) {
+                if (pred->getSuccessor(i) == bb) {
+                    pred->setSuccessor(i, succ);
+                    succ->addPredecessor(pred);
+                }
+            }
+        }
+
+        bb->removeAllPredecessors();
+        cfg->removeBB(bb);
+    }
+
+    return changed;
+}
+
+
+bool CFGCompressor::isEmptyBB(const BasicBlock *bb) const
+{
+    if (bb->getRTLs() == nullptr) {
+        return true;
+    }
+
+    for (const auto &rtl : *bb->getRTLs()) {
+        if (!rtl->empty()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool CFGCompressor::isEmptyJump(const BasicBlock *jmpBB) const
+{
+    return jmpBB->getRTLs()->size() == 1 && jmpBB->getRTLs()->front()->size() == 1 &&
+           jmpBB->getRTLs()->front()->front()->isGoto();
+}
+
 
 bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
 {
@@ -96,10 +126,7 @@ bool CFGCompressor::removeOrphanBBs(ProcCFG *cfg)
 
         for (BasicBlock *child : b->getSuccessors()) {
             child->removePredecessor(b);
-
-            if (child->getNumPredecessors() == 0) {
-                orphans.push_back(child);
-            }
+            b->removeSuccessor(child);
         }
 
         cfg->removeBB(b);
