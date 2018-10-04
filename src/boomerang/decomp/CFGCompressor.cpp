@@ -56,6 +56,10 @@ bool CFGCompressor::removeEmptyJumps(ProcCFG *cfg)
         assert(bb->getNumSuccessors() == 1);
         BasicBlock *succ = bb->getSuccessor(0); // the one and only successor
 
+        if (succ == bb) {
+            continue;
+        }
+
         succ->removePredecessor(bb);
         bb->removeSuccessor(succ);
 

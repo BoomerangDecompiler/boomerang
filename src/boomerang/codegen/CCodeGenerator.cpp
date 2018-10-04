@@ -2394,13 +2394,9 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
             assert(!bb->getRTLs()->empty());
             RTL *lastRTL = bb->getRTLs()->back().get();
             assert(!lastRTL->empty());
+
             GotoStatement *gs = static_cast<GotoStatement *>(lastRTL->back());
-
-            QString dat;
-            OStream ost(&dat);
-
-            ost << "goto " << gs->getDest();
-            addLineComment(dat);
+            addLineComment("goto " + gs->getDest()->toString());
         }
 
         return;
@@ -2471,6 +2467,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
         }
     }
 }
+
 
 void CCodeGenerator::emitGotoAndLabel(const BasicBlock *bb, const BasicBlock *dest)
 {
