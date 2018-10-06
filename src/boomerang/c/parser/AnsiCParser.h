@@ -222,7 +222,7 @@ public:
 #endif
 
 public:
-    AnsiCParser(const char *file, bool trace);
+    AnsiCParser(const QString &file, bool trace);
     AnsiCParser(std::istream *is, bool trace);
 
 private:
@@ -233,7 +233,7 @@ public:
     std::list<Symbol *> symbols;
     std::list<SymbolRef *> refs;
     std::istream *in;
-    const char *fileName;
+    QString fileName;
 
     virtual ~AnsiCParser();
 };
