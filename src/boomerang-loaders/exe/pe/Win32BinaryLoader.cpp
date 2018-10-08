@@ -660,24 +660,28 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
     const DWord numSections = Util::readWord(&m_peHeader->numObjects, Endian::Little);
 
     for (DWord i = 0; i < numSections; i++, o++) {
+        const DWord rva      = READ4_LE(o->RVA);
+        const DWord size     = READ4_LE(o->VirtualSize);
+        const DWord physOff  = READ4_LE(o->PhysicalOffset);
+        const DWord physSize = READ4_LE(o->PhysicalSize);
+
         SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
-        memset(m_image + READ4_LE(o->RVA), 0, READ4_LE(o->VirtualSize));
-        memcpy(m_image + READ4_LE(o->RVA), fileData + READ4_LE(o->PhysicalOffset),
-               READ4_LE(o->PhysicalSize));
+        memset(m_image + rva, 0, size);
+        memcpy(m_image + rva, fileData + physOff, std::min(physSize, size));
 
         sect.Name         = QByteArray(o->ObjectName, 8);
-        sect.From         = Address(READ4_LE(m_peHeader->Imagebase)) + Address(READ4_LE(o->RVA));
-        sect.ImageAddress = HostAddress(m_image) + READ4_LE(o->RVA);
-        sect.Size         = READ4_LE(o->VirtualSize);
-        sect.PhysSize     = READ4_LE(o->PhysicalSize);
-        DWord peFlags     = READ4_LE(o->Flags);
+        sect.From         = Address(READ4_LE(m_peHeader->Imagebase) + rva);
+        sect.ImageAddress = HostAddress(m_image) + rva;
+        sect.Size         = size;
+        sect.PhysSize     = physSize;
 
         // clang-format off
-        sect.Bss          = (peFlags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? true : false;
-        sect.Code         = (peFlags & IMAGE_SCN_CNT_CODE)               ? true : false;
-        sect.Data         = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA)   ? true : false;
-        sect.ReadOnly     = (peFlags & IMAGE_SCN_MEM_WRITE)              ? false : true;
+        const DWord peFlags = READ4_LE(o->Flags);
+        sect.Bss            = (peFlags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? true  : false;
+        sect.Code           = (peFlags & IMAGE_SCN_CNT_CODE)               ? true  : false;
+        sect.Data           = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA)   ? true  : false;
+        sect.ReadOnly       = (peFlags & IMAGE_SCN_MEM_WRITE)              ? false : true;
         // clang-fomat on
 
         params.push_back(sect);
