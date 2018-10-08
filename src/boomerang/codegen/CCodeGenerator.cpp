@@ -1879,6 +1879,10 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         LOG_ERROR("Should not see opDefineAll in codegen");
         break;
 
+    case opTrue: str << "true"; break;
+
+    case opFalse: str << "false"; break;
+
     default:
         // others
         OPER other_op = exp.getOper();
