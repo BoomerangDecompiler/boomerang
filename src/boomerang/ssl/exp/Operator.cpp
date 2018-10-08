@@ -96,7 +96,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opArg);
         HANDLE_OPER(opLocal);
         HANDLE_OPER(opGlobal);
-        HANDLE_OPER(opExpand);
         HANDLE_OPER(opMemberAccess);
         HANDLE_OPER(opArrayIndex);
         HANDLE_OPER(opTemp);

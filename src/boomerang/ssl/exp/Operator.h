@@ -113,7 +113,6 @@ enum OPER
     opArg,          ///< Used a temporary for arguments to calls
     opLocal,        ///< used to represent a local, takes a string
     opGlobal,       ///< used to represent a global, takes a string
-    opExpand,       ///< Expandable expression
     opMemberAccess, ///< . and -> in C
     opArrayIndex,   ///< [] in C
     opTemp,         ///< Temp register name
