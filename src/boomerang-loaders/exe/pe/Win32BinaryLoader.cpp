@@ -385,31 +385,33 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if (op1 == 0xE8) { // CALL opcode
             unsigned int dest = rva + 5 + READ4_LE_P(m_image + rva + 1);
-            const Byte op2    = Util::readByte(m_image + dest);
+            if (Util::inRange(dest, 0U, m_imageSize)) {
+                const Byte op2 = Util::readByte(m_image + dest);
 
-            if (in_mingw_CRTStartup) {
-                const Byte op2a = Util::readByte(m_image + dest + 1);
-                Address desti   = Address(READ4_LE_P(m_image + dest + 2));
+                if (in_mingw_CRTStartup) {
+                    const Byte op2a = Util::readByte(m_image + dest + 1);
+                    Address desti   = Address(READ4_LE_P(m_image + dest + 2));
 
-                // skip all the call statements until we hit a call to an indirect call to
-                // ExitProcess; main is the 2nd call before this one
-                if (op2 == 0xff && op2a == 0x25) {
-                    const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(desti);
+                    // skip all the call statements until we hit a call to an indirect call to
+                    // ExitProcess; main is the 2nd call before this one
+                    if (op2 == 0xff && op2a == 0x25) {
+                        const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(desti);
 
-                    if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
-                        m_mingwMain = true;
-                        return READ4_LE(m_peHeader->Imagebase) + lastlastcall + 5 +
-                               READ4_LE_P(m_image + lastlastcall.value() + 1);
+                        if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
+                            m_mingwMain = true;
+                            return Address(READ4_LE(m_peHeader->Imagebase)) + lastlastcall + 5 +
+                                   READ4_LE_P(m_image + lastlastcall.value() + 1);
+                        }
                     }
-                }
 
-                lastlastcall = lastcall;
-                lastcall     = Address(rva);
-            }
-            else {
-                rva                 = dest;
-                in_mingw_CRTStartup = true;
-                continue;
+                    lastlastcall = lastcall;
+                    lastcall     = Address(rva);
+                }
+                else {
+                    rva                 = dest;
+                    in_mingw_CRTStartup = true;
+                    continue;
+                }
             }
         }
 
