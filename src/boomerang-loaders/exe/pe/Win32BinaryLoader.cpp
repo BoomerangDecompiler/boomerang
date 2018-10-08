@@ -140,7 +140,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     // Start at program entry point
     const Address imageBase = Address(READ4_LE(m_peHeader->Imagebase));
-    unsigned p              = READ4_LE(m_peHeader->EntrypointRVA);
+    unsigned rva            = READ4_LE(m_peHeader->EntrypointRVA);
     Address addr;
     unsigned lastOrdCall = 0;
     int gap;              // Number of instructions from the last ordinary call
@@ -160,7 +160,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 #define MAIN_RANGE (0x200U) // number of bytes to look for main/WinMain from start of entry point
 
     const unsigned int textSize    = section->getSize();
-    const unsigned int searchLimit = p + std::min(MAIN_RANGE, textSize);
+    const unsigned int searchLimit = rva + std::min(MAIN_RANGE, textSize);
 
     if (m_peHeader->Subsystem == 1) {
         // native -> _start == main
@@ -169,17 +169,17 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     gap = 0xF0000000; // Large positive number (in case no ordinary calls)
 
-    while (p < searchLimit) {
-        const Byte op1 = *reinterpret_cast<Byte *>(m_image + p + 0);
-        const Byte op2 = *reinterpret_cast<Byte *>(m_image + p + 1);
+    while (rva + 1 < searchLimit) { // make sure not to read past the end of the section
+        const Byte op1 = Util::readByte(m_image + rva + 0);
+        const Byte op2 = Util::readByte(m_image + rva + 1);
 
-        LOG_VERBOSE("At %1, ops 0x%2, 0x%3", QString::number(p, 16), QString::number(op1, 16),
+        LOG_VERBOSE("At %1, ops 0x%2, 0x%3", QString::number(rva, 16), QString::number(op1, 16),
                     QString::number(op2, 16));
 
         switch (op1) {
         case 0xE8:
             // An ordinary call; this could be to winmain/main
-            lastOrdCall = p;
+            lastOrdCall = rva;
             gap         = 0;
 
             if (borlandState == 1) {
@@ -192,20 +192,18 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0xFF:
-
             if (op2 == 0x15) { // Opcode FF 15 is indirect call
                 // Get the 4 byte address from the instruction
-                addr = Address(READ4_LE(*(m_image + p + 2)));
+                addr = Address(READ4_LE_P(m_image + rva + 2));
                 //                    const char *c = dlprocptrs[addr].c_str();
                 //                    printf("Checking %x finding %s\n", addr, c);
-                const BinarySymbol *exit_sym = m_symbols->findSymbolByAddress(addr);
+                const BinarySymbol *calleeSym = m_symbols->findSymbolByAddress(addr);
 
-                if (exit_sym && (exit_sym->getName() == "exit")) {
+                if (calleeSym && (calleeSym->getName() == "exit")) {
                     if (gap <= 10) {
                         // This is it. The instruction at lastOrdCall is (win)main
-                        addr = Address(READ4_LE(*(m_image + lastOrdCall + 1)));
+                        addr = Address(READ4_LE_P(m_image + lastOrdCall + 1));
                         addr += lastOrdCall + 5; // Addr is dest of call
-                        //                            printf("*** MAIN AT 0x%x ***\n", addr);
                         return imageBase + addr;
                     }
                 }
@@ -217,18 +215,16 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0xEB: // Short relative jump, e.g. Borland
-
             if (op2 >= 0x80) { // Branch backwards?
                 break;         // Yes, just ignore it
             }
 
             // Otherwise, actually follow the branch. May have to modify this some time...
-            p += op2 + 2; // +2 for the instruction itself, and op2 for the displacement
+            rva += op2 + 2; // +2 for the instruction itself, and op2 for the displacement
             gap++;
             continue;
 
         case 0x6A:
-
             if (op2 == 0) { // Push 00
                 // Borland pattern:             Borland state before:
                 //     push 0                   0
@@ -241,7 +237,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 }
                 else if (borlandState == 4) {
                     // Borland pattern succeeds. p-4 has the offset of mainInfo
-                    Address mainInfo = Address(READ4_LE(*(m_image + p - 4)));
+                    Address mainInfo = Address(READ4_LE(*(m_image + rva - 4)));
 
                     // Address of main is at mainInfo+0x18
                     Address main = Address(m_binaryImage->readNative4(mainInfo + 0x18));
@@ -255,7 +251,6 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0x59: // Pop ecx
-
             if (borlandState == 2) {
                 borlandState = 3;
             }
@@ -266,7 +261,6 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0x68: // Push 4 byte immediate
-
             if (borlandState == 3) {
                 borlandState++;
             }
@@ -279,35 +273,35 @@ Address Win32BinaryLoader::getMainEntryPoint()
         default: borlandState = 0; break;
         }
 
-        int size = microX86Dis(p + m_image);
+        const int size = microX86Dis(rva + m_image);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
             break;
         }
 
-        p += size;
+        rva += size;
         gap++;
     }
 
     // VS.NET release console mode pattern
-    p = READ4_LE(m_peHeader->EntrypointRVA);
+    rva = READ4_LE(m_peHeader->EntrypointRVA);
 
-    if ((*reinterpret_cast<Byte *>(p + m_image + 0x20) == 0xff) &&
-        (*reinterpret_cast<Byte *>(p + m_image + 0x21) == 0x15)) {
-        Address desti = Address(READ4_LE(*(p + m_image + 0x22)));
-        auto dest_sym = m_symbols->findSymbolByAddress(desti);
+    if ((Util::readByte(m_image + rva + 0x20) == 0xff) &&
+        (Util::readByte(m_image + rva + 0x21) == 0x15)) {
+        Address desti                = Address(READ4_LE_P(m_image + rva + 0x22));
+        const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(desti);
 
         if (dest_sym && (dest_sym->getName() == "GetVersionExA")) {
-            if ((*reinterpret_cast<Byte *>(p + m_image + 0x6d) == 0xff) &&
-                (*reinterpret_cast<Byte *>(p + m_image + 0x6e) == 0x15)) {
-                desti    = Address(READ4_LE(*(p + m_image + 0x6f)));
+            if ((Util::readByte(m_image + rva + 0x6d) == 0xff) &&
+                (Util::readByte(m_image + rva + 0x6e) == 0x15)) {
+                desti    = Address(READ4_LE_P(m_image + rva + 0x6f));
                 dest_sym = m_symbols->findSymbolByAddress(desti);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
-                    if (*reinterpret_cast<Byte *>(p + m_image + 0x16e) == 0xe8) {
-                        Address dest = Address(p + 0x16e + 5 + READ4_LE(*(p + m_image + 0x16f)));
-                        return dest + READ4_LE(m_peHeader->Imagebase);
+                    if (Util::readByte(m_image + rva + 0x16e) == 0xe8) {
+                        Address dest = Address(rva + 0x16e + 5 + READ4_LE_P(rva + m_image + 0x16f));
+                        return imageBase + dest;
                     }
                 }
             }
@@ -316,19 +310,19 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     // For VS.NET, need an old favourite: find a call with three pushes in the first 100 instuctions
     int count  = 100;
-    int pushes = 0;
-    p          = READ4_LE(m_peHeader->EntrypointRVA);
+    int numPushes = 0;
+    rva           = READ4_LE(m_peHeader->EntrypointRVA);
 
     while (count > 0) {
         count--;
-        const Byte op1 = *reinterpret_cast<Byte *>(m_image + p + 0);
-        const Byte op2 = *reinterpret_cast<Byte *>(m_image + p + 1);
+        const Byte op1 = Util::readByte(m_image + rva + 0);
+        const Byte op2 = Util::readByte(m_image + rva + 1);
 
         if (op1 == 0xE8) { // CALL opcode
-            if (pushes == 3) {
+            if (numPushes == 3) {
                 // Get the offset
-                int off      = READ4_LE(*(m_image + p + 1));
-                Address dest = Address(p + 5 + off);
+                int off      = READ4_LE(*(m_image + rva + 1));
+                Address dest = Address(rva + 5 + off);
 
                 // Check for a jump there
                 const Byte destOp = *reinterpret_cast<Byte *>(m_image + dest.value());
@@ -342,118 +336,116 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 return dest + READ4_LE(m_peHeader->Imagebase);
             }
             else {
-                pushes = 0; // Assume pushes don't accumulate over calls
+                numPushes = 0; // Assume pushes don't accumulate over calls
             }
         }
         else if ((op1 >= 0x50) && (op1 <= 0x57)) { // PUSH opcode
-            pushes++;
+            numPushes++;
         }
         else if (op1 == 0xFF) {
             // FF 35 is push m[K]
 
             if (op2 == 0x35) {
-                pushes++;
+                numPushes++;
             }
         }
         else if (op1 == 0xE9) {
             // Follow the jump
-            int off = READ4_LE(*(m_image + p + 1));
-            p += off + 5;
+            int off = READ4_LE(*(m_image + rva + 1));
+            rva += off + 5;
             continue;
         }
 
-        int size = microX86Dis(p + m_image);
+        int size = microX86Dis(rva + m_image);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
             break;
         }
 
-        p += size;
+        rva += size;
 
-        if (p >= textSize) {
+        if (rva >= textSize) {
             break;
         }
     }
 
     // mingw pattern
-    p                        = READ4_LE(m_peHeader->EntrypointRVA);
+    rva                      = READ4_LE(m_peHeader->EntrypointRVA);
     bool in_mingw_CRTStartup = false;
     Address lastcall         = Address::ZERO;
     Address lastlastcall     = Address::ZERO;
 
     while (true) {
-        const Byte op1 = *reinterpret_cast<Byte *>(m_image + p);
+        const Byte op1 = Util::readByte(m_image + rva);
 
-        if (in_mingw_CRTStartup && (op1 == 0xC3)) {
+        if (in_mingw_CRTStartup && op1 == 0xC3) {
             break;
         }
 
         if (op1 == 0xE8) { // CALL opcode
-            unsigned int dest = p + 5 + READ4_LE(*(p + m_image + 1));
-            const Byte op2    = *reinterpret_cast<Byte *>(m_image + dest);
+            unsigned int dest = rva + 5 + READ4_LE_P(m_image + rva + 1);
+            const Byte op2    = Util::readByte(m_image + dest);
 
             if (in_mingw_CRTStartup) {
-                const Byte op2a = *reinterpret_cast<Byte *>(m_image + dest + 1);
-                Address desti   = Address(READ4_LE(*(m_image + dest + 2)));
+                const Byte op2a = Util::readByte(m_image + dest + 1);
+                Address desti   = Address(READ4_LE_P(m_image + dest + 2));
 
                 // skip all the call statements until we hit a call to an indirect call to
-                // ExitProcess main is the 2nd call before this one
-                if ((op2 == 0xff) && (op2a == 0x25)) {
-                    auto dest_sym = m_symbols->findSymbolByAddress(desti);
+                // ExitProcess; main is the 2nd call before this one
+                if (op2 == 0xff && op2a == 0x25) {
+                    const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(desti);
 
                     if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
                         m_mingwMain = true;
-                        return lastlastcall + 5 + READ4_LE(*(lastlastcall.value() + m_image + 1)) +
-                               READ4_LE(m_peHeader->Imagebase);
+                        return READ4_LE(m_peHeader->Imagebase) + lastlastcall + 5 +
+                               READ4_LE_P(m_image + lastlastcall.value() + 1);
                     }
                 }
 
                 lastlastcall = lastcall;
-                lastcall     = Address(p);
+                lastcall     = Address(rva);
             }
             else {
-                p                   = dest;
+                rva                 = dest;
                 in_mingw_CRTStartup = true;
                 continue;
             }
         }
 
-        int size = microX86Dis(p + m_image);
+        int size = microX86Dis(m_image + rva);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
             break;
         }
 
-        p += size;
+        rva += size;
 
-        if (p >= textSize) {
+        if (rva >= textSize) {
             break;
         }
     }
 
     // Microsoft VisualC 2-6/net runtime
-    p            = READ4_LE(m_peHeader->EntrypointRVA);
+    rva          = READ4_LE(m_peHeader->EntrypointRVA);
     bool gotGMHA = false; // has GetModuleHandleA been found?
 
-    while (p < textSize) {
-        const Byte op1 = *reinterpret_cast<const Byte *>(m_image + p + 0);
-        const Byte op2 = *reinterpret_cast<const Byte *>(m_image + p + 1);
+    while (rva < textSize) {
+        const Byte op1 = Util::readByte(m_image + rva + 0);
+        const Byte op2 = Util::readByte(m_image + rva + 1);
 
-        if (op1 == 0xFF) {
-            if ((op2 == 0x15)) { // indirect CALL opcode
-                const Address destAddr       = Address(READ4_LE(*(m_image + p + 2)));
-                const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(destAddr);
+        if (op1 == 0xFF && op2 == 0x15) { // indirect CALL opcode
+            const Address destAddr      = Address(READ4_LE_P(m_image + rva + 2));
+            const BinarySymbol *destSym = m_symbols->findSymbolByAddress(destAddr);
 
-                if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
-                    gotGMHA = true;
-                }
+            if (destSym && (destSym->getName() == "GetModuleHandleA")) {
+                gotGMHA = true;
             }
         }
 
-        if ((op1 == 0xE8) && gotGMHA) { // CALL opcode
-            Address dest = Address(p + 5 + READ4_LE(*(m_image + p + 1)));
+        if (op1 == 0xE8 && gotGMHA) { // CALL opcode
+            Address dest = Address(rva + 5 + READ4_LE(*(m_image + rva + 1)));
             m_symbols->createSymbol(dest + READ4_LE(m_peHeader->Imagebase), "WinMain");
             return dest + READ4_LE(m_peHeader->Imagebase);
         }
@@ -462,14 +454,14 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
         }
 
-        int size = microX86Dis(p + m_image);
+        int size = microX86Dis(rva + m_image);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
             break;
         }
 
-        p += size;
+        rva += size;
     }
 
     return Address::INVALID;
