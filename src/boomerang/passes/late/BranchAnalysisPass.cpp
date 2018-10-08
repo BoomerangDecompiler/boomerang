@@ -133,11 +133,10 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             // B:
             if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
                 (secondBranch->getBB()->getNumPredecessors() == 1)) {
-                const SharedExp lhs = firstBranch->getCondExpr()->clone();
-                const SharedExp rhs = secondBranch->getCondExpr()->clone();
-                SharedExp cond      = Binary::get(opOr, lhs, rhs);
+                const SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(),
+                                                   secondBranch->getCondExpr());
 
-                firstBranch->setCondExpr(cond->simplify());
+                firstBranch->setCondExpr(cond->clone()->simplify());
                 firstBranch->setFallBB(secondBranch->getFallBB());
 
                 BasicBlock *secondBranchBB = secondBranch->getBB();
