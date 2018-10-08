@@ -143,7 +143,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFflags);
         HANDLE_OPER(opAnull);
         HANDLE_OPER(opHLCTI);
-        HANDLE_OPER(opDEFINE);
         HANDLE_OPER(opTrue);
         HANDLE_OPER(opFalse);
         HANDLE_OPER(opTypeOf);

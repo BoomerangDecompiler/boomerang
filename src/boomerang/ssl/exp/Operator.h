@@ -174,7 +174,6 @@ enum OPER
 
     // Added for type analysis
     opHLCTI,  ///< High level Control transfer instruction
-    opDEFINE, ///< Define Type of use with lexer
     opTrue,
     opFalse,
     opTypeOf, ///< Unary: takes a location, makes a type variable
