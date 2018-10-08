@@ -2377,7 +2377,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
     // generate code for the body of this block
     writeBB(bb);
 
-    // return if this is the 'return' block (i.e. has no out edges) after emmitting a 'return'
+    // return if this is the 'return' block (i.e. has no out edges) after emitting a 'return'
     // statement
     if (bb->getType() == BBType::Ret) {
         // This should be emitted now, like a normal statement
