@@ -37,6 +37,7 @@ namespace dbghelp
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
 
 #include <QFile>
@@ -486,53 +487,78 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE /*SourceFile*/, PVOID UserConte
 void Win32BinaryLoader::processIAT()
 {
     PEImportDtor *id = reinterpret_cast<PEImportDtor *>(
-        (HostAddress(m_image) + READ4_LE(m_peHeader->ImportTableRVA)).value());
+        (m_image + READ4_LE(m_peHeader->ImportTableRVA)));
 
-    if (m_peHeader->ImportTableRVA) { // If any import table entry exists
-        while (id->name != 0) {
-            char *dllName     = READ4_LE(id->name) + m_image;
-            unsigned thunk    = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
-            unsigned *iat     = reinterpret_cast<unsigned *>(m_image + READ4_LE(thunk));
-            unsigned iatEntry = READ4_LE_P(iat);
-            Address paddr = Address(READ4_LE(id->firstThunk) + READ4_LE(m_peHeader->Imagebase)); //
+    // If any import table entry exists
+    if (m_peHeader->ImportTableRVA == 0 || id->name == 0) {
+        return;
+    }
 
-            while (iatEntry) {
-                if (iatEntry >> 31) {
-                    // This is an ordinal number (stupid idea)
-                    QString nodots    = QString(dllName).replace(".",
-                                                              "_"); // Dots can't be in identifiers
-                    nodots            = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    BinarySymbol *sym = m_symbols->createSymbol(paddr, nodots);
-                    sym->setAttribute("Imported", true);
-                    sym->setAttribute("Function", true);
-                }
-                else {
-                    // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
-                    QString name(static_cast<const char *>(m_image + iatEntry + 2));
+    do {
+        const DWord nameOffset = READ4_LE(id->name);
+        const char *dllName    = m_image + nameOffset;
+        if (!Util::inRange(nameOffset, 0U, m_imageSize)) {
+            LOG_WARN("Cannot read IAT entry: name offset out or range");
+            continue;
+        }
 
-                    BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
-                    sym->setAttribute("Imported", true);
-                    sym->setAttribute("Function", true);
-                    Address old_loc = Address(HostAddress(iat).value() -
-                                              HostAddress(m_image).value() +
-                                              READ4_LE(m_peHeader->Imagebase));
+        const DWord originalFirstThunk = READ4_LE(id->originalFirstThunk);
+        const DWord firstThunk         = READ4_LE(id->firstThunk);
 
-                    if (paddr != old_loc) { // add both possibilities
-                        BinarySymbol *symbol = m_symbols->createSymbol(old_loc,
-                                                                       QString("old_") + name);
-                        symbol->setAttribute("Imported", true);
-                        symbol->setAttribute("Function", true);
-                    }
-                }
+        if (!Util::inRange(originalFirstThunk, 0U, m_imageSize) ||
+            !Util::inRange(firstThunk, 0U, m_imageSize)) {
+            LOG_WARN("Cannot read IAT entry: thunk offset out of range");
+            continue;
+        }
 
-                iat++;
-                iatEntry = READ4_LE_P(iat);
-                paddr += 4;
+        const DWord thunk = (originalFirstThunk != 0) ? originalFirstThunk : firstThunk;
+
+        const DWord *iat = reinterpret_cast<const DWord *>(m_image + thunk);
+        DWord iatEntry   = Util::readDWord(iat, Endian::Little);
+        Address paddr    = Address(READ4_LE(m_peHeader->Imagebase) + firstThunk);
+
+        while (iatEntry != 0) {
+            if ((char *)iat > m_image + m_imageSize) {
+                LOG_WARN("Cannot read IAT entry: entry extends past file size");
+                break;
             }
 
-            id++;
+            if ((iatEntry >> 31) != 0) {
+                // This is an ordinal number (stupid idea)
+                // Dots can't be in identifiers
+                QString nodots    = QString(dllName).replace(".", "_");
+                nodots            = QString("%1_%2").arg(nodots).arg(iatEntry & ~(1 << 31));
+                BinarySymbol *sym = m_symbols->createSymbol(paddr, nodots);
+                sym->setAttribute("Imported", true);
+                sym->setAttribute("Function", true);
+            }
+            else {
+                // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
+                if (!Util::inRange(iatEntry + 2, 0U, m_imageSize)) {
+                    LOG_WARN("Cannot read IAT entry: entry name offset out of range");
+                    break;
+                }
+
+                QString name = m_image + iatEntry + 2;
+
+                BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
+                sym->setAttribute("Imported", true);
+                sym->setAttribute("Function", true);
+                Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_image).value() +
+                                          READ4_LE(m_peHeader->Imagebase));
+
+                if (paddr != old_loc) { // add both possibilities
+                    BinarySymbol *symbol = m_symbols->createSymbol(old_loc, QString("old_") + name);
+                    symbol->setAttribute("Imported", true);
+                    symbol->setAttribute("Function", true);
+                }
+            }
+
+            iat++;
+            iatEntry = READ4_LE_P(iat);
+            paddr += 4;
         }
-    }
+    } while ((++id)->name != 0);
 }
 
 
@@ -598,6 +624,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
     try {
         const DWord imageSize = READ4_LE(peHdr->ImageSize);
         m_image               = new char[imageSize];
+        m_imageSize           = imageSize;
     }
     catch (const std::bad_alloc &) {
         LOG_ERROR("Cannot allocate memory for copy of image");
