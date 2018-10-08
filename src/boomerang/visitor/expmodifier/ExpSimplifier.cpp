@@ -451,9 +451,10 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 
     // Check for (x <  y) || (x == y), becomes x <= y
     // Check for (x <= y) || (x == y), becomes x <= y
-    if (exp->getOper() == opOr && opSub2 == opEquals && exp->getSubExp1()->isComparison() &&
-        exp->getSubExp2()->isComparison() &&
-        (exp->getSubExp1()->isEquality() || exp->getSubExp2()->isEquality())) {
+    if (exp->isOr() && exp->getSubExp1()->isComparison() && exp->getSubExp2()->isComparison() &&
+        (exp->getSubExp1()->isEquality() || exp->getSubExp2()->isEquality()) &&
+        *exp->access<Exp, 1, 1>() == *exp->access<Exp, 2, 1>() && // x on left == x on right
+        *exp->access<Exp, 1, 2>() == *exp->access<Exp, 2, 2>()) { // y on left == y on right
         OPER otherOper = exp->getSubExp1()->isEquality() ? exp->getSubExp2()->getOper()
                                                          : exp->getSubExp1()->getOper();
 
