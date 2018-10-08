@@ -75,7 +75,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opRotateLC,       { "",           " rlc ",    "",         ""      } },
     { opRotateRC,       { "",           " rrc ",    "",         ""      } },
     { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
-    { opNameTable,      { "nametable(", ", ",       "",         ")"     } },
     { opOpTable,        { "optable(",   ", ",       ", ",       ")"     } },
     { opSuccessor,      { "succ(",      "",         "",         ")"     } },
     { opTern,           { "",           " ? ",      " : ",      "",     } },
