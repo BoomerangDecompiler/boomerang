@@ -181,9 +181,9 @@ public:
     /// \returns true if this is the constant "false"
     bool isFalse() const { return m_oper == opFalse; }
     /// \returns true if this is a disjunction, i.e. x or y
-    bool isDisjunction() const { return m_oper == opOr; }
+    bool isOr() const { return m_oper == opOr; }
     /// \returns true if this is a conjunction, i.e. x and y
-    bool isConjunction() const { return m_oper == opAnd; }
+    bool isAnd() const { return m_oper == opAnd; }
     /// \returns true if this is a boolean constant
     bool isBoolConst() const { return m_oper == opTrue || m_oper == opFalse; }
     /// \returns true if this is an equality comparison using ==

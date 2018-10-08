@@ -73,8 +73,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Unary> &exp)
         }
     }
 
-    if ((exp->getOper() == opMemOf && exp->getSubExp1()->getOper() == opAddrOf) ||
-        (exp->getOper() == opAddrOf && exp->getSubExp1()->getOper() == opMemOf)) {
+    if ((exp->isMemOf() && exp->getSubExp1()->isAddrOf()) ||
+        (exp->isAddrOf() && exp->getSubExp1()->isMemOf())) {
         changed = true;
         return exp->getSubExp1()->getSubExp1();
     }
@@ -182,7 +182,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
 
     // Similarly for boolean constants
     if (exp->getSubExp1()->isBoolConst() && !exp->getSubExp2()->isBoolConst() &&
-        (exp->getOper() == opAnd || exp->getOper() == opOr)) {
+        (exp->isOr() || exp->isAnd())) {
         exp->commute();
         // Swap opSub1 and opSub2 as well
         std::swap(opSub1, opSub2);
@@ -466,14 +466,14 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
         case opLessEq: otherOper = opLessEq; break;
         case opLessUns:
         case opLessEqUns: otherOper = opLessEqUns; break;
-        case opEquals: { // (a || a) == a
+        case opEquals:
+            // x == y || x == y -> x == y
             changed = true;
             return exp->getSubExp1();
-        }
-        case opNotEqual: { // (a || !a) == true
+        case opNotEqual:
+            // x == y || x != y -> true
             changed = true;
             return Terminal::get(opTrue);
-        }
         default: break;
         }
 
@@ -640,8 +640,8 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Ternary> &exp)
         return Const::get(*reinterpret_cast<float *>(&n));
     }
 
-    if (exp->getOper() == opFsize && exp->getSubExp3()->getOper() == opMemOf &&
-        exp->getSubExp3()->getSubExp1()->isIntConst()) {
+    if (exp->getOper() == opFsize && exp->getSubExp3()->isMemOf() &&
+        exp->access<Exp, 3, 1>()->isIntConst()) {
         assert(exp->getSubExp3()->isLocation());
         Address u   = exp->access<Const, 3, 1>()->getAddr();
         UserProc *p = exp->access<Location, 3>()->getProc();
