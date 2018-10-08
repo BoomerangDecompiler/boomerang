@@ -283,7 +283,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if (size == 0x40) {
             LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            break;
         }
 
         p += size;
@@ -366,7 +366,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if (size == 0x40) {
             LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            break;
         }
 
         p += size;
@@ -423,7 +423,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if (size == 0x40) {
             LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            break;
         }
 
         p += size;
@@ -466,7 +466,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
         if (size == 0x40) {
             LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            break;
         }
 
         p += size;
