@@ -100,8 +100,8 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             if ((secondBranch->getFallBB() == firstBranch->getTakenBB()) &&
                 (secondBranch->getBB()->getNumPredecessors() == 1)) {
                 SharedExp cond = Binary::get(opAnd, Unary::get(opNot, firstBranch->getCondExpr()),
-                                             secondBranch->getCondExpr()->clone());
-                firstBranch->setCondExpr(cond->simplify());
+                                             secondBranch->getCondExpr());
+                firstBranch->setCondExpr(cond->clone()->simplify());
 
                 firstBranch->setDest(secondBranch->getFixedDest());
                 firstBranch->setTakenBB(secondBranch->getTakenBB());
@@ -133,10 +133,10 @@ bool BranchAnalysisPass::doBranchAnalysis(UserProc *proc)
             // B:
             if ((secondBranch->getTakenBB() == firstBranch->getTakenBB()) &&
                 (secondBranch->getBB()->getNumPredecessors() == 1)) {
-                SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(),
-                                             secondBranch->getCondExpr()->clone());
-                firstBranch->setCondExpr(cond->simplify());
+                const SharedExp cond = Binary::get(opOr, firstBranch->getCondExpr(),
+                                                   secondBranch->getCondExpr());
 
+                firstBranch->setCondExpr(cond->clone()->simplify());
                 firstBranch->setFallBB(secondBranch->getFallBB());
 
                 BasicBlock *secondBranchBB = secondBranch->getBB();
