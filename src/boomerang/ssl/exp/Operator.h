@@ -79,13 +79,10 @@ enum OPER
     opTypedExp,   ///< Typed expression
     opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,      ///< Guarded expression (should be assignment)
-
-    /// \deprecated The below is (and should) probably no longer used. Use opList instead
-    opComma,    ///< Separate expressions in a list (e.g. params)
-    opFlagCall, ///< A flag call (Binary with string and params)
-    opFlagDef,  ///< A flag function definition (class FlagDef)
-    opList,     ///< A binary, with expression (1) and next element
-                ///< in chain (2). Last element in chain is opNil
+    opFlagCall,   ///< A flag call (Binary with string and params)
+    opFlagDef,    ///< A flag function definition (class FlagDef)
+    opList,       ///< A binary, with expression (1) and next element
+                  ///< in chain (2). Last element in chain is opNil
 
     // Next three are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the

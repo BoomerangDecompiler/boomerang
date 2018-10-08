@@ -74,7 +74,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opTypedExp);
         HANDLE_OPER(opNamedExp);
         HANDLE_OPER(opGuard);
-        HANDLE_OPER(opComma);
         HANDLE_OPER(opFlagCall);
         HANDLE_OPER(opFlagDef);
         HANDLE_OPER(opList);
