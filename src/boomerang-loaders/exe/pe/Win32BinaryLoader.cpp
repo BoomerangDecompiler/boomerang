@@ -667,6 +667,8 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
 
         SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
+        // FIXME Using std::min fixes the crash but does not solve the root issue.
+        // This needs further consideration.
         memset(m_image + rva, 0, size);
         memcpy(m_image + rva, fileData + physOff, std::min(physSize, size));
 
