@@ -110,7 +110,6 @@ enum OPER
     opPhi,          ///< Represents phi(a1, a2, a3) .. ie SSA form merging
     opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
     opParam,        ///< SSL parameter param`'
-    opArg,          ///< Used a temporary for arguments to calls
     opLocal,        ///< used to represent a local, takes a string
     opGlobal,       ///< used to represent a global, takes a string
     opMemberAccess, ///< . and -> in C
