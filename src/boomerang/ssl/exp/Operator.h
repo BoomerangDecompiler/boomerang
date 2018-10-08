@@ -177,7 +177,6 @@ enum OPER
     opTrue,
     opFalse,
     opTypeOf, ///< Unary: takes a location, makes a type variable
-    opKindOf,
 
     // ---------------------- "The line" --------------------------//
     // All id's greater or equal to idMachSpec are assumed to be source machine
