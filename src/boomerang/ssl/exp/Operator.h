@@ -87,7 +87,7 @@ enum OPER
     // Next two are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the
     // TableDict object
-    opExpTable,  // A table of expressions
+    opExpTable, ///< A table of expressions
 
     /// A table of operators
     /// Actually, opOptable needs 4 subexpressions (table, index, and two
@@ -115,33 +115,33 @@ enum OPER
     opArrayIndex,   ///< [] in C
     opTemp,         ///< Temp register name
     opSize,         ///< Size specifier
-    opPostVar,  ///< Post-instruction variable marker (unary with any subexpression). Can arise in
-                ///< some SSL files when ticked variables are used
-    opMachFtr,  ///< A Unary with Const(string) representing a machine specific feature (register,
-                ///< instruction or whatever; the analysis better understand it and transform it
-                ///< away)
-    opTruncu,   ///< Integer truncate (unsigned)
-    opTruncs,   ///< Integer truncate (signed)
-    opZfill,    ///< Integer zero fill
-    opSgnEx,    ///< Integer sign extend
-    opFsize,    ///< Floating point size conversion
-    opItof,     ///< Integer to floating point (and size) conversion
-    opFtoi,     ///< Floating point to integer (and size) conversion
-    opFround,   ///< Floating point to nearest float conversion
-    opFtrunc,   ///< chop float to int, e.g. 3.99 -> 3.00
-    opFabs,     ///< floating point absolute function
-    opFpush,    ///< Floating point stack push
-    opFpop,     ///< Floating point stack pop
-    opSin,      ///< sine
-    opCos,      ///< cosine
-    opTan,      ///< tangent
-    opArcTan,   ///< inverse tangent
-    opLog2,     ///< logarithm to base 2
-    opLog10,    ///< logarithm to base 10
-    opLoge,     ///< logarithm to base e
-    opPow,      ///< raise to a power
-    opSqrt,     ///< square root
-    opExecute,  ///< Execute instruction at(addr)
+    opPostVar,      ///< Post-instruction variable marker (unary with any subexpression).
+                    ///< Can arise in some SSL files when ticked variables are used
+    opMachFtr,      ///< A Unary with Const(string) representing a machine specific feature
+                    ///< (register, instruction or whatever); the analysis better understand it
+                    ///< and transform it away)
+    opTruncu,       ///< Integer truncate (unsigned)
+    opTruncs,       ///< Integer truncate (signed)
+    opZfill,        ///< Integer zero fill
+    opSgnEx,        ///< Integer sign extend
+    opFsize,        ///< Floating point size conversion
+    opItof,         ///< Integer to floating point (and size) conversion
+    opFtoi,         ///< Floating point to integer (and size) conversion
+    opFround,       ///< Floating point to nearest float conversion
+    opFtrunc,       ///< chop float to int, e.g. 3.99 -> 3.00
+    opFabs,         ///< floating point absolute function
+    opFpush,        ///< Floating point stack push
+    opFpop,         ///< Floating point stack pop
+    opSin,          ///< sine
+    opCos,          ///< cosine
+    opTan,          ///< tangent
+    opArcTan,       ///< inverse tangent
+    opLog2,         ///< logarithm to base 2
+    opLog10,        ///< logarithm to base 10
+    opLoge,         ///< logarithm to base e
+    opPow,          ///< raise to a power
+    opSqrt,         ///< square root
+    opExecute,      ///< Execute instruction at(addr)
 
     // constants
     opIntConst,     ///< integer constant TODO: differentiate IntConst by adding AddressConst ?
