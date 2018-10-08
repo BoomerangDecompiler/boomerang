@@ -903,9 +903,8 @@ void CCodeGenerator::addLocal(const QString &name, SharedType type, bool last)
 
     if (e) {
         // ? Should never see subscripts in the back end!
-        if ((e->getOper() == opSubscript) &&
-            std::static_pointer_cast<const RefExp>(e)->isImplicitDef() &&
-            ((e->getSubExp1()->getOper() == opParam) || (e->getSubExp1()->getOper() == opGlobal))) {
+        if (e->isSubscript() && (e->getSubExp1()->isParam() || e->getSubExp1()->isGlobal()) &&
+            e->access<const RefExp>()->isImplicitDef()) {
             ost << " = ";
             appendExp(ost, *e->getSubExp1(), OpPrec::None);
             ost << ";";

@@ -1707,7 +1707,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                              Util::signExtend<int64_t>(
                                                                  MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
-                                        COND_JUMP("Jv.NPod", 6, relocd, BranchType::INVALID)
+                                        COND_JUMP("Jv.NPod", 6, relocd, BranchType::JNPAR)
                                     }
                                     break;
 
@@ -1767,7 +1767,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                              Util::signExtend<int64_t>(
                                                                  MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
-                                        COND_JUMP("Jv.Ood", 6, relocd, BranchType::INVALID)
+                                        COND_JUMP("Jv.Ood", 6, relocd, BranchType::JOF)
                                     }
                                     break;
 
@@ -1778,7 +1778,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                              Util::signExtend<int64_t>(
                                                                  MATCH_w_32_16) /* i32 at 16 */;
                                         nextPC = MATCH_p + 6;
-                                        COND_JUMP("Jv.NOod", 6, relocd, BranchType::INVALID)
+                                        COND_JUMP("Jv.NOod", 6, relocd, BranchType::JNOF)
                                     }
                                     break;
 
@@ -16491,7 +16491,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                              16);
                                                     nextPC = MATCH_p + 5;
                                                     COND_JUMP("Jv.NPow", 4, relocd,
-                                                              BranchType::INVALID)
+                                                              BranchType::JNPAR)
                                                 }
                                                 break;
 
@@ -16566,8 +16566,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                               0xffff),
                                                                              16);
                                                     nextPC = MATCH_p + 5;
-                                                    COND_JUMP("Jv.Oow", 4, relocd,
-                                                              BranchType::INVALID)
+                                                    COND_JUMP("Jv.Oow", 4, relocd, BranchType::JOF)
 
                                                     /*
                                                      * Conditional branches, 32 bit offset: 0F 8X XX
@@ -16586,7 +16585,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                                                              16);
                                                     nextPC = MATCH_p + 5;
                                                     COND_JUMP("Jv.NOow", 4, relocd,
-                                                              BranchType::INVALID)
+                                                              BranchType::JNOF)
                                                 }
                                                 break;
 

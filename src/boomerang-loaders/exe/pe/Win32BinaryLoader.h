@@ -214,8 +214,8 @@ private:
     void findJumps(Address curr);
 
 private:
-    char *m_image;   ///< Beginning of the loaded image
-    int m_imageSize; ///< Size of image, in bytes
+    char *m_image;     ///< Beginning of the loaded image
+    DWord m_imageSize; ///< Size of image, in bytes
 
     Header *m_header;     ///< Pointer to header
     PEHeader *m_peHeader; ///< Pointer to pe header

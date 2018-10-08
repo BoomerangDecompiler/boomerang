@@ -37,6 +37,7 @@ namespace dbghelp
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
+#include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
 
 #include <QFile>
@@ -139,7 +140,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     // Start at program entry point
     const Address imageBase = Address(READ4_LE(m_peHeader->Imagebase));
-    unsigned p              = READ4_LE(m_peHeader->EntrypointRVA);
+    unsigned rva            = READ4_LE(m_peHeader->EntrypointRVA);
     Address addr;
     unsigned lastOrdCall = 0;
     int gap;              // Number of instructions from the last ordinary call
@@ -159,7 +160,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
 #define MAIN_RANGE (0x200U) // number of bytes to look for main/WinMain from start of entry point
 
     const unsigned int textSize    = section->getSize();
-    const unsigned int searchLimit = p + std::min(MAIN_RANGE, textSize);
+    const unsigned int searchLimit = rva + std::min(MAIN_RANGE, textSize);
 
     if (m_peHeader->Subsystem == 1) {
         // native -> _start == main
@@ -168,17 +169,17 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
     gap = 0xF0000000; // Large positive number (in case no ordinary calls)
 
-    while (p < searchLimit) {
-        const Byte op1 = *reinterpret_cast<Byte *>(m_image + p + 0);
-        const Byte op2 = *reinterpret_cast<Byte *>(m_image + p + 1);
+    while (rva + 1 < searchLimit) { // make sure not to read past the end of the section
+        const Byte op1 = Util::readByte(m_image + rva + 0);
+        const Byte op2 = Util::readByte(m_image + rva + 1);
 
-        LOG_VERBOSE("At %1, ops 0x%2, 0x%3", QString::number(p, 16), QString::number(op1, 16),
+        LOG_VERBOSE("At %1, ops 0x%2, 0x%3", QString::number(rva, 16), QString::number(op1, 16),
                     QString::number(op2, 16));
 
         switch (op1) {
         case 0xE8:
             // An ordinary call; this could be to winmain/main
-            lastOrdCall = p;
+            lastOrdCall = rva;
             gap         = 0;
 
             if (borlandState == 1) {
@@ -191,20 +192,18 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0xFF:
-
             if (op2 == 0x15) { // Opcode FF 15 is indirect call
                 // Get the 4 byte address from the instruction
-                addr = Address(READ4_LE(*(m_image + p + 2)));
+                addr = Address(READ4_LE_P(m_image + rva + 2));
                 //                    const char *c = dlprocptrs[addr].c_str();
                 //                    printf("Checking %x finding %s\n", addr, c);
-                const BinarySymbol *exit_sym = m_symbols->findSymbolByAddress(addr);
+                const BinarySymbol *calleeSym = m_symbols->findSymbolByAddress(addr);
 
-                if (exit_sym && (exit_sym->getName() == "exit")) {
+                if (calleeSym && (calleeSym->getName() == "exit")) {
                     if (gap <= 10) {
                         // This is it. The instruction at lastOrdCall is (win)main
-                        addr = Address(READ4_LE(*(m_image + lastOrdCall + 1)));
+                        addr = Address(READ4_LE_P(m_image + lastOrdCall + 1));
                         addr += lastOrdCall + 5; // Addr is dest of call
-                        //                            printf("*** MAIN AT 0x%x ***\n", addr);
                         return imageBase + addr;
                     }
                 }
@@ -215,19 +214,18 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
             break;
 
-        case 0xEB: // Short relative jump, e.g. Borland
-
+            // Short relative jump, e.g. Borland
+        case 0xEB:
             if (op2 >= 0x80) { // Branch backwards?
                 break;         // Yes, just ignore it
             }
 
             // Otherwise, actually follow the branch. May have to modify this some time...
-            p += op2 + 2; // +2 for the instruction itself, and op2 for the displacement
+            rva += op2 + 2; // +2 for the instruction itself, and op2 for the displacement
             gap++;
             continue;
 
         case 0x6A:
-
             if (op2 == 0) { // Push 00
                 // Borland pattern:             Borland state before:
                 //     push 0                   0
@@ -240,7 +238,7 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 }
                 else if (borlandState == 4) {
                     // Borland pattern succeeds. p-4 has the offset of mainInfo
-                    Address mainInfo = Address(READ4_LE(*(m_image + p - 4)));
+                    Address mainInfo = Address(READ4_LE(*(m_image + rva - 4)));
 
                     // Address of main is at mainInfo+0x18
                     Address main = Address(m_binaryImage->readNative4(mainInfo + 0x18));
@@ -254,7 +252,6 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0x59: // Pop ecx
-
             if (borlandState == 2) {
                 borlandState = 3;
             }
@@ -265,7 +262,6 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
 
         case 0x68: // Push 4 byte immediate
-
             if (borlandState == 3) {
                 borlandState++;
             }
@@ -278,35 +274,35 @@ Address Win32BinaryLoader::getMainEntryPoint()
         default: borlandState = 0; break;
         }
 
-        int size = microX86Dis(p + m_image);
+        const int size = microX86Dis(rva + m_image);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
+            break;
         }
 
-        p += size;
+        rva += size;
         gap++;
     }
 
     // VS.NET release console mode pattern
-    p = READ4_LE(m_peHeader->EntrypointRVA);
+    rva = READ4_LE(m_peHeader->EntrypointRVA);
 
-    if ((*reinterpret_cast<Byte *>(p + m_image + 0x20) == 0xff) &&
-        (*reinterpret_cast<Byte *>(p + m_image + 0x21) == 0x15)) {
-        Address desti = Address(READ4_LE(*(p + m_image + 0x22)));
-        auto dest_sym = m_symbols->findSymbolByAddress(desti);
+    if ((Util::readByte(m_image + rva + 0x20) == 0xff) &&
+        (Util::readByte(m_image + rva + 0x21) == 0x15)) {
+        Address desti                = Address(READ4_LE_P(m_image + rva + 0x22));
+        const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(desti);
 
         if (dest_sym && (dest_sym->getName() == "GetVersionExA")) {
-            if ((*reinterpret_cast<Byte *>(p + m_image + 0x6d) == 0xff) &&
-                (*reinterpret_cast<Byte *>(p + m_image + 0x6e) == 0x15)) {
-                desti    = Address(READ4_LE(*(p + m_image + 0x6f)));
+            if ((Util::readByte(m_image + rva + 0x6d) == 0xff) &&
+                (Util::readByte(m_image + rva + 0x6e) == 0x15)) {
+                desti    = Address(READ4_LE_P(m_image + rva + 0x6f));
                 dest_sym = m_symbols->findSymbolByAddress(desti);
 
                 if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
-                    if (*reinterpret_cast<Byte *>(p + m_image + 0x16e) == 0xe8) {
-                        Address dest = Address(p + 0x16e + 5 + READ4_LE(*(p + m_image + 0x16f)));
-                        return dest + READ4_LE(m_peHeader->Imagebase);
+                    if (Util::readByte(m_image + rva + 0x16e) == 0xe8) {
+                        Address dest = Address(rva + 0x16e + 5 + READ4_LE_P(rva + m_image + 0x16f));
+                        return imageBase + dest;
                     }
                 }
             }
@@ -314,20 +310,20 @@ Address Win32BinaryLoader::getMainEntryPoint()
     }
 
     // For VS.NET, need an old favourite: find a call with three pushes in the first 100 instuctions
-    int count  = 100;
-    int pushes = 0;
-    p          = READ4_LE(m_peHeader->EntrypointRVA);
+    int count     = 100;
+    int numPushes = 0;
+    rva           = READ4_LE(m_peHeader->EntrypointRVA);
 
-    while (count > 0) {
+    while (count > 0 && rva + 1 < m_imageSize) {
         count--;
-        const Byte op1 = *reinterpret_cast<Byte *>(m_image + p + 0);
-        const Byte op2 = *reinterpret_cast<Byte *>(m_image + p + 1);
+        const Byte op1 = Util::readByte(m_image + rva + 0);
+        const Byte op2 = Util::readByte(m_image + rva + 1);
 
         if (op1 == 0xE8) { // CALL opcode
-            if (pushes == 3) {
+            if (numPushes == 3) {
                 // Get the offset
-                int off      = READ4_LE(*(m_image + p + 1));
-                Address dest = Address(p + 5 + off);
+                int off      = READ4_LE(*(m_image + rva + 1));
+                Address dest = Address(rva + 5 + off);
 
                 // Check for a jump there
                 const Byte destOp = *reinterpret_cast<Byte *>(m_image + dest.value());
@@ -341,118 +337,118 @@ Address Win32BinaryLoader::getMainEntryPoint()
                 return dest + READ4_LE(m_peHeader->Imagebase);
             }
             else {
-                pushes = 0; // Assume pushes don't accumulate over calls
+                numPushes = 0; // Assume pushes don't accumulate over calls
             }
         }
         else if ((op1 >= 0x50) && (op1 <= 0x57)) { // PUSH opcode
-            pushes++;
+            numPushes++;
         }
         else if (op1 == 0xFF) {
             // FF 35 is push m[K]
 
             if (op2 == 0x35) {
-                pushes++;
+                numPushes++;
             }
         }
         else if (op1 == 0xE9) {
             // Follow the jump
-            int off = READ4_LE(*(m_image + p + 1));
-            p += off + 5;
+            int off = READ4_LE(*(m_image + rva + 1));
+            rva += off + 5;
             continue;
         }
 
-        int size = microX86Dis(p + m_image);
+        int size = microX86Dis(rva + m_image);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
+            break;
         }
 
-        p += size;
+        rva += size;
 
-        if (p >= textSize) {
+        if (rva >= textSize) {
             break;
         }
     }
 
     // mingw pattern
-    p                        = READ4_LE(m_peHeader->EntrypointRVA);
+    rva                      = READ4_LE(m_peHeader->EntrypointRVA);
     bool in_mingw_CRTStartup = false;
     Address lastcall         = Address::ZERO;
     Address lastlastcall     = Address::ZERO;
 
     while (true) {
-        const Byte op1 = *reinterpret_cast<Byte *>(m_image + p);
+        const Byte op1 = Util::readByte(m_image + rva);
 
-        if (in_mingw_CRTStartup && (op1 == 0xC3)) {
+        if (in_mingw_CRTStartup && op1 == 0xC3) {
             break;
         }
 
         if (op1 == 0xE8) { // CALL opcode
-            unsigned int dest = p + 5 + READ4_LE(*(p + m_image + 1));
-            const Byte op2    = *reinterpret_cast<Byte *>(m_image + dest);
+            unsigned int dest = rva + 5 + READ4_LE_P(m_image + rva + 1);
+            if (Util::inRange(dest, 0U, m_imageSize)) {
+                const Byte op2 = Util::readByte(m_image + dest);
 
-            if (in_mingw_CRTStartup) {
-                const Byte op2a = *reinterpret_cast<Byte *>(m_image + dest + 1);
-                Address desti   = Address(READ4_LE(*(m_image + dest + 2)));
+                if (in_mingw_CRTStartup) {
+                    const Byte op2a = Util::readByte(m_image + dest + 1);
+                    Address desti   = Address(READ4_LE_P(m_image + dest + 2));
 
-                // skip all the call statements until we hit a call to an indirect call to
-                // ExitProcess main is the 2nd call before this one
-                if ((op2 == 0xff) && (op2a == 0x25)) {
-                    auto dest_sym = m_symbols->findSymbolByAddress(desti);
+                    // skip all the call statements until we hit a call to an indirect call to
+                    // ExitProcess; main is the 2nd call before this one
+                    if (op2 == 0xff && op2a == 0x25) {
+                        const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(desti);
 
-                    if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
-                        m_mingwMain = true;
-                        return lastlastcall + 5 + READ4_LE(*(lastlastcall.value() + m_image + 1)) +
-                               READ4_LE(m_peHeader->Imagebase);
+                        if (dest_sym && (dest_sym->getName() == "ExitProcess")) {
+                            m_mingwMain = true;
+                            return Address(READ4_LE(m_peHeader->Imagebase)) + lastlastcall + 5 +
+                                   READ4_LE_P(m_image + lastlastcall.value() + 1);
+                        }
                     }
-                }
 
-                lastlastcall = lastcall;
-                lastcall     = Address(p);
-            }
-            else {
-                p                   = dest;
-                in_mingw_CRTStartup = true;
-                continue;
+                    lastlastcall = lastcall;
+                    lastcall     = Address(rva);
+                }
+                else {
+                    rva                 = dest;
+                    in_mingw_CRTStartup = true;
+                    continue;
+                }
             }
         }
 
-        int size = microX86Dis(p + m_image);
+        int size = microX86Dis(m_image + rva);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
+            break;
         }
 
-        p += size;
+        rva += size;
 
-        if (p >= textSize) {
+        if (rva >= textSize) {
             break;
         }
     }
 
     // Microsoft VisualC 2-6/net runtime
-    p            = READ4_LE(m_peHeader->EntrypointRVA);
+    rva          = READ4_LE(m_peHeader->EntrypointRVA);
     bool gotGMHA = false; // has GetModuleHandleA been found?
 
-    while (p < textSize) {
-        const Byte op1 = *reinterpret_cast<const Byte *>(m_image + p + 0);
-        const Byte op2 = *reinterpret_cast<const Byte *>(m_image + p + 1);
+    while (rva < textSize) {
+        const Byte op1 = Util::readByte(m_image + rva + 0);
+        const Byte op2 = Util::readByte(m_image + rva + 1);
 
-        if (op1 == 0xFF) {
-            if ((op2 == 0x15)) { // indirect CALL opcode
-                const Address destAddr       = Address(READ4_LE(*(m_image + p + 2)));
-                const BinarySymbol *dest_sym = m_symbols->findSymbolByAddress(destAddr);
+        if (op1 == 0xFF && op2 == 0x15) { // indirect CALL opcode
+            const Address destAddr      = Address(READ4_LE_P(m_image + rva + 2));
+            const BinarySymbol *destSym = m_symbols->findSymbolByAddress(destAddr);
 
-                if (dest_sym && (dest_sym->getName() == "GetModuleHandleA")) {
-                    gotGMHA = true;
-                }
+            if (destSym && (destSym->getName() == "GetModuleHandleA")) {
+                gotGMHA = true;
             }
         }
 
-        if ((op1 == 0xE8) && gotGMHA) { // CALL opcode
-            Address dest = Address(p + 5 + READ4_LE(*(m_image + p + 1)));
+        if (op1 == 0xE8 && gotGMHA) { // CALL opcode
+            Address dest = Address(rva + 5 + READ4_LE(*(m_image + rva + 1)));
             m_symbols->createSymbol(dest + READ4_LE(m_peHeader->Imagebase), "WinMain");
             return dest + READ4_LE(m_peHeader->Imagebase);
         }
@@ -461,14 +457,14 @@ Address Win32BinaryLoader::getMainEntryPoint()
             break;
         }
 
-        int size = microX86Dis(p + m_image);
+        int size = microX86Dis(rva + m_image);
 
         if (size == 0x40) {
-            LOG_WARN("Microdisassembler out of step at offset %1", p);
-            size = 1;
+            LOG_WARN("Microdisassembler out of step at offset %1", rva);
+            break;
         }
 
-        p += size;
+        rva += size;
     }
 
     return Address::INVALID;
@@ -486,53 +482,78 @@ BOOL CALLBACK lookforsource(dbghelp::PSOURCEFILE /*SourceFile*/, PVOID UserConte
 void Win32BinaryLoader::processIAT()
 {
     PEImportDtor *id = reinterpret_cast<PEImportDtor *>(
-        (HostAddress(m_image) + READ4_LE(m_peHeader->ImportTableRVA)).value());
+        (m_image + READ4_LE(m_peHeader->ImportTableRVA)));
 
-    if (m_peHeader->ImportTableRVA) { // If any import table entry exists
-        while (id->name != 0) {
-            char *dllName     = READ4_LE(id->name) + m_image;
-            unsigned thunk    = id->originalFirstThunk ? id->originalFirstThunk : id->firstThunk;
-            unsigned *iat     = reinterpret_cast<unsigned *>(m_image + READ4_LE(thunk));
-            unsigned iatEntry = READ4_LE_P(iat);
-            Address paddr = Address(READ4_LE(id->firstThunk) + READ4_LE(m_peHeader->Imagebase)); //
+    // If any import table entry exists
+    if (m_peHeader->ImportTableRVA == 0 || id->name == 0) {
+        return;
+    }
 
-            while (iatEntry) {
-                if (iatEntry >> 31) {
-                    // This is an ordinal number (stupid idea)
-                    QString nodots    = QString(dllName).replace(".",
-                                                              "_"); // Dots can't be in identifiers
-                    nodots            = QString("%1_%2").arg(nodots).arg(iatEntry & 0x7FFFFFFF);
-                    BinarySymbol *sym = m_symbols->createSymbol(paddr, nodots);
-                    sym->setAttribute("Imported", true);
-                    sym->setAttribute("Function", true);
-                }
-                else {
-                    // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
-                    QString name(static_cast<const char *>(m_image + iatEntry + 2));
+    do {
+        const DWord nameOffset = READ4_LE(id->name);
+        const char *dllName    = m_image + nameOffset;
+        if (!Util::inRange(nameOffset, 0U, m_imageSize)) {
+            LOG_WARN("Cannot read IAT entry: name offset out or range");
+            continue;
+        }
 
-                    BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
-                    sym->setAttribute("Imported", true);
-                    sym->setAttribute("Function", true);
-                    Address old_loc = Address(HostAddress(iat).value() -
-                                              HostAddress(m_image).value() +
-                                              READ4_LE(m_peHeader->Imagebase));
+        const DWord originalFirstThunk = READ4_LE(id->originalFirstThunk);
+        const DWord firstThunk         = READ4_LE(id->firstThunk);
 
-                    if (paddr != old_loc) { // add both possibilities
-                        BinarySymbol *symbol = m_symbols->createSymbol(old_loc,
-                                                                       QString("old_") + name);
-                        symbol->setAttribute("Imported", true);
-                        symbol->setAttribute("Function", true);
-                    }
-                }
+        if (!Util::inRange(originalFirstThunk, 0U, m_imageSize) ||
+            !Util::inRange(firstThunk, 0U, m_imageSize)) {
+            LOG_WARN("Cannot read IAT entry: thunk offset out of range");
+            continue;
+        }
 
-                iat++;
-                iatEntry = READ4_LE_P(iat);
-                paddr += 4;
+        const DWord thunk = (originalFirstThunk != 0) ? originalFirstThunk : firstThunk;
+
+        const DWord *iat = reinterpret_cast<const DWord *>(m_image + thunk);
+        DWord iatEntry   = Util::readDWord(iat, Endian::Little);
+        Address paddr    = Address(READ4_LE(m_peHeader->Imagebase) + firstThunk);
+
+        while (iatEntry != 0) {
+            if ((char *)iat > m_image + m_imageSize) {
+                LOG_WARN("Cannot read IAT entry: entry extends past file size");
+                break;
             }
 
-            id++;
+            if ((iatEntry >> 31) != 0) {
+                // This is an ordinal number (stupid idea)
+                // Dots can't be in identifiers
+                QString nodots    = QString(dllName).replace(".", "_");
+                nodots            = QString("%1_%2").arg(nodots).arg(iatEntry & ~(1 << 31));
+                BinarySymbol *sym = m_symbols->createSymbol(paddr, nodots);
+                sym->setAttribute("Imported", true);
+                sym->setAttribute("Function", true);
+            }
+            else {
+                // Normal case (IMAGE_IMPORT_BY_NAME). Skip the useless hint (2 bytes)
+                if (!Util::inRange(iatEntry + 2, 0U, m_imageSize)) {
+                    LOG_WARN("Cannot read IAT entry: entry name offset out of range");
+                    break;
+                }
+
+                QString name = m_image + iatEntry + 2;
+
+                BinarySymbol *sym = m_symbols->createSymbol(paddr, name);
+                sym->setAttribute("Imported", true);
+                sym->setAttribute("Function", true);
+                Address old_loc = Address(HostAddress(iat).value() - HostAddress(m_image).value() +
+                                          READ4_LE(m_peHeader->Imagebase));
+
+                if (paddr != old_loc) { // add both possibilities
+                    BinarySymbol *symbol = m_symbols->createSymbol(old_loc, QString("old_") + name);
+                    symbol->setAttribute("Imported", true);
+                    symbol->setAttribute("Function", true);
+                }
+            }
+
+            iat++;
+            iatEntry = READ4_LE_P(iat);
+            paddr += 4;
         }
-    }
+    } while ((++id)->name != 0);
 }
 
 
@@ -575,79 +596,91 @@ void Win32BinaryLoader::readDebugData(QString exename)
 }
 
 
+#define DOS_HEADER_SIZE 0x3C
+
 bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
 {
-    const char *data     = arr.constData();
-    const char *data_end = arr.constData() + arr.size();
+    const char *fileData = arr.constData();
+    const DWord fileSize = arr.size();
 
-    if (arr.size() < int(0x40 + sizeof(PEHeader))) {
+    if (DOS_HEADER_SIZE + 4 /* ptr to PE header */ + sizeof(PEHeader) > fileSize) {
+        LOG_ERROR("Invalid PE: File size too small");
         return false;
     }
 
-    DWord peoffLE, peoff;
-    peoffLE = *reinterpret_cast<const DWord *>(data +
-                                               0x3C); // Note: peoffLE will be in Little Endian
-    peoff   = READ4_LE(peoffLE);
-
-    if (data + peoff >= data_end) {
+    DWord peHeaderOffset = Util::readDWord(fileData + DOS_HEADER_SIZE, Endian::Little);
+    if (peHeaderOffset + sizeof(PEHeader) > fileSize) {
+        LOG_ERROR("Invalid PE: PE header extends past file boundary");
         return false;
     }
 
-    const PEHeader *tmphdr = reinterpret_cast<const PEHeader *>(data + peoff);
+    const PEHeader *peHdr = reinterpret_cast<const PEHeader *>(fileData + peHeaderOffset);
 
-    // Note: all tmphdr fields will be little endian
-
-    m_image = reinterpret_cast<char *>(malloc(READ4_LE(tmphdr->ImageSize)));
-
-    if (!m_image) {
+    try {
+        const DWord imageSize = READ4_LE(peHdr->ImageSize);
+        m_image               = new char[imageSize];
+        m_imageSize           = imageSize;
+    }
+    catch (const std::bad_alloc &) {
         LOG_ERROR("Cannot allocate memory for copy of image");
         return false;
     }
 
-    if (data + READ4_LE(tmphdr->HeaderSize) >= data_end) {
+    const DWord dosHeaderSize = READ4_LE(peHdr->HeaderSize);
+    if (dosHeaderSize >= fileSize) {
+        LOG_ERROR("Invalid PE: DOS header extends past file boundary");
         return false;
     }
 
-    memcpy(m_image, data, READ4_LE(tmphdr->HeaderSize));
+    memcpy(m_image, fileData, dosHeaderSize);
     m_header = reinterpret_cast<Header *>(m_image);
 
-    if ((m_header->sigLo != 'M') || (m_header->sigHi != 'Z')) {
-        LOG_ERROR("Error loading file - bad magic");
+    if (!Util::testMagic((Byte *)m_header, { 'M', 'Z' })) {
+        LOG_ERROR("Invalid PE: Bad magic");
         return false;
     }
 
-    m_peHeader = reinterpret_cast<PEHeader *>(m_image + peoff);
-
-    if ((m_peHeader->sigLo != 'P') || (m_peHeader->sigHi != 'E')) {
-        LOG_ERROR("Error loading file: bad PE magic");
+    m_peHeader = reinterpret_cast<PEHeader *>(m_image + peHeaderOffset);
+    if (!Util::testMagic((Byte *)m_peHeader, { 'P', 'E' })) {
+        LOG_ERROR("Invalid PE: Bad PE magic");
         return false;
     }
 
     const SWord ntHeaderSize = Util::readWord(&m_peHeader->NtHdrSize, Endian::Little);
-    const PEObject *o        = reinterpret_cast<PEObject *>(reinterpret_cast<char *>(m_peHeader) +
-                                                     ntHeaderSize + 24);
+    const PEObject *o = reinterpret_cast<const PEObject *>((Byte *)(m_peHeader) + ntHeaderSize +
+                                                           24);
 
     std::vector<SectionParam> params;
 
     const DWord numSections = Util::readWord(&m_peHeader->numObjects, Endian::Little);
 
     for (DWord i = 0; i < numSections; i++, o++) {
+        const DWord rva      = READ4_LE(o->RVA);
+        const DWord size     = READ4_LE(o->VirtualSize);
+        const DWord physOff  = READ4_LE(o->PhysicalOffset);
+        const DWord physSize = READ4_LE(o->PhysicalSize);
+
         SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
-        memset(m_image + READ4_LE(o->RVA), 0, READ4_LE(o->VirtualSize));
-        memcpy(m_image + READ4_LE(o->RVA), data + READ4_LE(o->PhysicalOffset),
-               READ4_LE(o->PhysicalSize));
+        // FIXME Using std::min fixes the crash but does not solve the root issue.
+        // This needs further consideration.
+        memset(m_image + rva, 0, size);
+        memcpy(m_image + rva, fileData + physOff, std::min(physSize, size));
 
         sect.Name         = QByteArray(o->ObjectName, 8);
-        sect.From         = Address(READ4_LE(m_peHeader->Imagebase)) + Address(READ4_LE(o->RVA));
-        sect.ImageAddress = HostAddress(m_image) + READ4_LE(o->RVA);
-        sect.Size         = READ4_LE(o->VirtualSize);
-        sect.PhysSize     = READ4_LE(o->PhysicalSize);
-        DWord peFlags     = READ4_LE(o->Flags);
-        sect.Bss          = (peFlags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? true : false;
-        sect.Code         = (peFlags & IMAGE_SCN_CNT_CODE) ? true : false;
-        sect.Data         = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA) ? true : false;
-        sect.ReadOnly     = (peFlags & IMAGE_SCN_MEM_WRITE) ? false : true;
+        sect.From         = Address(READ4_LE(m_peHeader->Imagebase) + rva);
+        sect.ImageAddress = HostAddress(m_image) + rva;
+        sect.Size         = size;
+        sect.PhysSize     = physSize;
+
+        // clang-format off
+        const DWord peFlags = READ4_LE(o->Flags);
+        sect.Bss            = (peFlags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? true  : false;
+        sect.Code           = (peFlags & IMAGE_SCN_CNT_CODE)               ? true  : false;
+        sect.Data           = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA)   ? true  : false;
+        sect.ReadOnly       = (peFlags & IMAGE_SCN_MEM_WRITE)              ? false : true;
+        // clang-fomat on
+
         params.push_back(sect);
     }
 
@@ -655,6 +688,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
         BinarySection *sect = m_binaryImage->createSection(par.Name, par.From, par.From + par.Size);
 
         if (!sect) {
+            LOG_WARN("Cannot create PE section '%1'", par.Name);
             continue;
         }
 
@@ -786,10 +820,7 @@ void Win32BinaryLoader::unload()
     m_imageSize = 0;
     m_numRelocs = 0;
 
-    if (m_image) {
-        free(m_image);
-    }
-
+    delete[] m_image;
     m_image = nullptr;
 }
 
@@ -799,48 +830,31 @@ void Win32BinaryLoader::unload()
 // clang-format off
 char *SymTagEnums[] =
 {
-    "SymTagNull",            "SymTagExe",                     "SymTagCompiland",                      "SymTagCompilandDetails",
-    "SymTagCompilandEnv",    "SymTagFunction",                "SymTagBlock",                          "SymTagData",
-    "SymTagAnnotation",      "SymTagLabel",                   "SymTagPublicSymbol",                   "SymTagUDT",
-    "SymTagEnum",            "SymTagFunctionType",            "SymTagPointerType",                    "SymTagArrayType",
-    "SymTagBaseType",        "SymTagTypedef",                 "SymTagBaseClass",                      "SymTagFriend",
-    "SymTagFunctionArgType", "SymTagFuncDebugStart",          "SymTagFuncDebugEnd",                   "SymTagUsingNamespace",
-    "SymTagVTableShape",     "SymTagVTable",                  "SymTagCustom",                         "SymTagThunk",
-    "SymTagCustomType",      "SymTagManagedType",             "SymTagDimension"
+    "SymTagNull",               "SymTagExe",                "SymTagCompiland",
+    "SymTagCompilandDetails",   "SymTagCompilandEnv",       "SymTagFunction",
+    "SymTagBlock",              "SymTagData",               "SymTagAnnotation",
+    "SymTagLabel",              "SymTagPublicSymbol",       "SymTagUDT",
+    "SymTagEnum",               "SymTagFunctionType",       "SymTagPointerType",
+    "SymTagArrayType",          "SymTagBaseType",           "SymTagTypedef",
+    "SymTagBaseClass",          "SymTagFriend",             "SymTagFunctionArgType",
+    "SymTagFuncDebugStart",     "SymTagFuncDebugEnd",       "SymTagUsingNamespace",
+    "SymTagVTableShape",        "SymTagVTable",             "SymTagCustom",
+    "SymTagThunk",              "SymTagCustomType",         "SymTagManagedType",
+    "SymTagDimension"
 };
 
 enum SymTagEnum
 {
-    SymTagNull,
-    SymTagExe,
-    SymTagCompiland,
-    SymTagCompilandDetails,
-    SymTagCompilandEnv,
-    SymTagFunction,
-    SymTagBlock,
-    SymTagData,
-    SymTagAnnotation,
-    SymTagLabel,
-    SymTagPublicSymbol,
-    SymTagUDT,
-    SymTagEnum,
-    SymTagFunctionType,
-    SymTagPointerType,
-    SymTagArrayType,
-    SymTagBaseType,
-    SymTagTypedef,
-    SymTagBaseClass,
-    SymTagFriend,
-    SymTagFunctionArgType,
-    SymTagFuncDebugStart,
-    SymTagFuncDebugEnd,
-    SymTagUsingNamespace,
-    SymTagVTableShape,
-    SymTagVTable,
-    SymTagCustom,
-    SymTagThunk,
-    SymTagCustomType,
-    SymTagManagedType,
+    SymTagNull,                 SymTagExe,                  SymTagCompiland,
+    SymTagCompilandDetails,     SymTagCompilandEnv,         SymTagFunction,
+    SymTagBlock,                SymTagData,                 SymTagAnnotation,
+    SymTagLabel,                SymTagPublicSymbol,         SymTagUDT,
+    SymTagEnum,                 SymTagFunctionType,         SymTagPointerType,
+    SymTagArrayType,            SymTagBaseType,             SymTagTypedef,
+    SymTagBaseClass,            SymTagFriend,               SymTagFunctionArgType,
+    SymTagFuncDebugStart,       SymTagFuncDebugEnd,         SymTagUsingNamespace,
+    SymTagVTableShape,          SymTagVTable,               SymTagCustom,
+    SymTagThunk,                SymTagCustomType,           SymTagManagedType,
     SymTagDimension
 };
 

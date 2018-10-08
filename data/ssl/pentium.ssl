@@ -1151,6 +1151,10 @@ RET
             *32* %pc := m[%esp]{32}
             *32* %esp := %esp + 4;
 
+RET.far
+            *32* %pc := m[%esp]{32}
+            *32* %esp := %esp + 4;
+
 RET.IW   i16 
             *32* %pc := m[%esp]{32}
             *32* %esp := %esp + 4 + i16;

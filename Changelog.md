@@ -5,6 +5,7 @@
 - Fixed: Crashes when loading corrupted ELF binaries.
 - Fixed: Crashes when loading corrupted DOS binaries.
 - Fixed: Crashes when loading corrupted Mach-O binaries.
+- Fixed: Crashes when loading corrupted PE binaries.
 - Fixed: Crash when supplying an invalid entry address using the -e or -E command line switches.
 - Fixed: Crash when generating code for switch statements.
 - Fixed: Crash when loading MIPS binaries.
@@ -12,6 +13,7 @@
 - Fixed: Crash when loading binaries without sections.
 - Fixed: Crash when decoding backwards relative jumps.
 - Fixed: Crash when decoding tail-self-recursive functions.
+- Fixed: Crash when decoding x86 binaries containing a RETF instruction.
 - Fixed: Crash when decompiling library thunks.
 - Fixed: Crash when the instruction at the entry point is a jump instruction.
 - Fixed: Crash when accessing a Phi reference in a removed Basic Block.
@@ -22,6 +24,9 @@
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Potential crash due to wrong decode of anulled branches (e.g. BG,a) when decoding SPARC binaries.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
+- Fixed: Generation of -= and -- operators in addition to += and ++ operators in high level code.
+- Fixed: Empty conditional blocks in high level code in some cases.
+- Fixed: Goto statements instead of break statements in high level code in some cases.
 - Fixed: A large number of memory leaks.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
 - Improved: Log output formatting.
@@ -29,6 +34,7 @@
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Improved: The regression test script now produces a unified diff when detecting a regression.
+- Improved: General high level code output quality.
 - Feature: Added 'replay' console command to read console commands from a file.
 - Feature: Added 'print dfg' console command to write the DFG of a function to a file.
 - Feature: Added 'print use-graph' console command to write the Use Graph of a function to a file.
@@ -37,7 +43,6 @@
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
 - Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
-- Changed: Slight changes to generated C code.
 - Changed: Split old regression test suite into "real" regression tests and smoke tests (that only check for crashes or failures).
 - Removed: Constraint-based type analysis.
 - Removed: Ability to read/write XML files, to be replaced by new save format.
@@ -51,4 +56,3 @@
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
 - Technical: Upgraded code base to C++17.
 - Numerous other small changes and fixes.
-
