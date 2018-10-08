@@ -214,7 +214,8 @@ Address Win32BinaryLoader::getMainEntryPoint()
 
             break;
 
-        case 0xEB: // Short relative jump, e.g. Borland
+            // Short relative jump, e.g. Borland
+        case 0xEB:
             if (op2 >= 0x80) { // Branch backwards?
                 break;         // Yes, just ignore it
             }
@@ -309,11 +310,11 @@ Address Win32BinaryLoader::getMainEntryPoint()
     }
 
     // For VS.NET, need an old favourite: find a call with three pushes in the first 100 instuctions
-    int count  = 100;
+    int count     = 100;
     int numPushes = 0;
     rva           = READ4_LE(m_peHeader->EntrypointRVA);
 
-    while (count > 0) {
+    while (count > 0 && rva + 1 < m_imageSize) {
         count--;
         const Byte op1 = Util::readByte(m_image + rva + 0);
         const Byte op2 = Util::readByte(m_image + rva + 1);
