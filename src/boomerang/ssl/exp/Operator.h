@@ -117,7 +117,6 @@ enum OPER
     opArrayIndex,   ///< [] in C
     opTemp,         ///< Temp register name
     opSize,         ///< Size specifier
-    opCastIntStar,  ///< Cast to int*
     opPostVar,  ///< Post-instruction variable marker (unary with any subexpression). Can arise in
                 ///< some SSL files when ticked variables are used
     opMachFtr,  ///< A Unary with Const(string) representing a machine specific feature (register,

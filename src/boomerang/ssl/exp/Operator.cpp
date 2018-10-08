@@ -100,7 +100,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opArrayIndex);
         HANDLE_OPER(opTemp);
         HANDLE_OPER(opSize);
-        HANDLE_OPER(opCastIntStar);
         HANDLE_OPER(opPostVar);
         HANDLE_OPER(opMachFtr);
         HANDLE_OPER(opTruncu);
