@@ -61,8 +61,6 @@ enum OPER
     opGtrUns,     ///< Logical greater than (unsigned)
     opLessEqUns,  ///< Logical <= (unsigned)
     opGtrEqUns,   ///< Logical >= (unsigned)
-    opUpper,      ///< Greater (signed or unsigned; used by switch code)
-    opLower,      ///< Less than signed or unsigned; used by switch code
     opNot,        ///< Bitwise inversion
     opLNot,       ///< Logical not
     opSignExt,    ///< Sign extend
