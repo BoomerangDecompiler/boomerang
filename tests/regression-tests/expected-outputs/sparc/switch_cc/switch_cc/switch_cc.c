@@ -10,22 +10,22 @@ int main(int argc, char *argv[])
         switch(argc) {
         case 2:
             printf("Two!\n");
-            return 0;
+            break;
         case 3:
             printf("Three!\n");
-            return 0;
+            break;
         case 4:
             printf("Four!\n");
-            return 0;
+            break;
         case 5:
             printf("Five!\n");
-            return 0;
+            break;
         case 6:
             printf("Six!\n");
-            return 0;
+            break;
         case 7:
             printf("Seven!\n");
-            return 0;
+            break;
         }
     }
     return 0;

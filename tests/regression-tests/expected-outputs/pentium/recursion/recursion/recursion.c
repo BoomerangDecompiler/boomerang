@@ -47,19 +47,19 @@ __size32 c(unsigned int param1)
         case 1:
         case 2:
             eax = d(2); /* Warning: also results in ecx, edx */
-            return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+            break;
         case 3:
             eax = f(3); /* Warning: also results in ecx, edx */
-            return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+            break;
         case 4:
             eax = h(4); /* Warning: also results in ecx, edx */
-            return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+            break;
         case 5:
             eax = j(5); /* Warning: also results in ecx, edx */
-            return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+            break;
         case 6:
             eax = l(6); /* Warning: also results in ecx, edx */
-            return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */
+            break;
         }
     }
     return eax; /* WARNING: Also returning: ecx := ecx, edx := edx */

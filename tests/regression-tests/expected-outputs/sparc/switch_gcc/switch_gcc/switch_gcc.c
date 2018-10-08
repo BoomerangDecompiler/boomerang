@@ -12,25 +12,24 @@ int main(int argc, char *argv[])
         switch(argc) {
         case 2:
             o0 = 0x11648;
-            goto bb0x10ae4;
+            break;
         case 3:
             o0 = 0x11650;
-            goto bb0x10ae4;
+            break;
         case 4:
             o0 = 0x11658;
-            goto bb0x10ae4;
+            break;
         case 5:
             o0 = 0x11660;
-            goto bb0x10ae4;
+            break;
         case 6:
             o0 = 0x11668;
-            goto bb0x10ae4;
+            break;
         case 7:
             o0 = 0x11670;
-            goto bb0x10ae4;
+            break;
         }
     }
-bb0x10ae4:
     printf(o0);
     return 0;
 }

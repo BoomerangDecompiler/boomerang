@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
     if ((unsigned int)argc > 7) {
 bb0x80483a8:
         puts("Other!");
-        return 0;
+        break;
     }
     switch(argc) {
     case 0:
@@ -16,29 +16,29 @@ bb0x80483a8:
     case 2:
 bb0x80483bc:
         puts("Two!");
-        return 0;
+        break;
     case 3:
 bb0x804840c:
         puts("Three!");
-        return 0;
+        break;
     case 4:
         if (7 - argc <= 5) {
             switch(7 - argc) {
             case 0:
 bb0x80483d0:
                 puts("Seven!");
-                return 0;
+                break;
             case 1:
 bb0x80483e4:
                 puts("Six!");
-                return 0;
+                break;
             case 2:
 bb0x80483f8:
                 puts("Five!");
-                return 0;
+                break;
             case 3:
                 puts("Four!");
-                return 0;
+                break;
             case 4:
                 goto bb0x804840c;
             case 5:

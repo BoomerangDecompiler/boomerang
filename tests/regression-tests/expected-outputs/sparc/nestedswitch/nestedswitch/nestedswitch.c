@@ -8,7 +8,7 @@ int main(unsigned int argc, char *argv[])
     if (argc > 7) {
 bb0x106d0:
         o0 = 0x107e8;
-        goto bb0x10744;
+        break;
     }
     switch(argc) {
     case 0:
@@ -18,29 +18,29 @@ bb0x106d0:
     case 2:
 bb0x106e8:
         o0 = 0x107f8;
-        goto bb0x10744;
+        break;
     case 3:
 bb0x106f4:
         o0 = 0x10800;
-        goto bb0x10744;
+        break;
     case 4:
         if (7 - argc <= 5) {
             switch(7 - argc) {
             case 0:
 bb0x106dc:
                 o0 = 0x107f0;
-                goto bb0x10744;
+                break;
             case 1:
 bb0x1070c:
                 o0 = 0x10810;
-                goto bb0x10744;
+                break;
             case 2:
 bb0x10700:
                 o0 = 0x10808;
-                goto bb0x10744;
+                break;
             case 3:
                 o0 = 0x10818;
-                goto bb0x10744;
+                break;
             case 4:
                 goto bb0x106f4;
             case 5:

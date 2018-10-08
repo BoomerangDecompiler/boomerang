@@ -2448,8 +2448,9 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
              (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
         emitGotoAndLabel(bb, child);
     }
-    else if (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
-             (m_analyzer.getCaseHead(bb) && m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+    else if (m_analyzer.getCaseHead(child) && m_analyzer.getCaseHead(bb) &&
+             m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
+             m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb))) {
         emitGotoAndLabel(bb, child);
     }
     else {

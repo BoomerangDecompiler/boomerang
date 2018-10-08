@@ -12,25 +12,24 @@ int main(int argc, char *argv[])
         switch(argc) {
         case 2:
             local0 = 0x8049458;
-            goto bb0x8048981;
+            break;
         case 3:
             local0 = 0x804945e;
-            goto bb0x8048981;
+            break;
         case 4:
             local0 = 0x8049466;
-            goto bb0x8048981;
+            break;
         case 5:
             local0 = 0x804946d;
-            goto bb0x8048981;
+            break;
         case 6:
             local0 = 0x8049474;
-            goto bb0x8048981;
+            break;
         case 7:
             local0 = 0x804947a;
-            goto bb0x8048981;
+            break;
         }
     }
-bb0x8048981:
     printf(local0);
     return 0;
 }
