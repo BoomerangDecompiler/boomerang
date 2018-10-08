@@ -126,7 +126,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opFalse,          { "false",      "",         "",         ""      } },
     { opTypeOf,         { "T[",         "",         "",         "]"     } },
     { opKindOf,         { "K[",         "",         "",         "]"     } },
-    { opInitValueOf,    { "",           "",         "",         "'"     } },
     { opZF,             { "%ZF",        "",         "",         ""      } },
     { opCF,             { "%CF",        "",         "",         ""      } },
     { opNF,             { "%NF",        "",         "",         ""      } },
