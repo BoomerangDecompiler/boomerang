@@ -169,11 +169,6 @@ enum OPER
     opAnull,  ///< This is an abstract boolean that if true causes the following instruction to be
               ///< anulled
 
-    // This is a special terminal representing "all locations", which in practice means "every
-    // location whose definition reaches here".
-
-    // Added for type analysis
-    opHLCTI,  ///< High level Control transfer instruction
     opTrue,
     opFalse,
     opTypeOf, ///< Unary: takes a location, makes a type variable
