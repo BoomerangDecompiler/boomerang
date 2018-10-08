@@ -574,6 +574,7 @@ void Win32BinaryLoader::readDebugData(QString exename)
 #endif
 }
 
+
 #define DOS_HEADER_SIZE 0x3C
 
 bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
@@ -624,8 +625,8 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
     }
 
     const SWord ntHeaderSize = Util::readWord(&m_peHeader->NtHdrSize, Endian::Little);
-    const PEObject *o        = reinterpret_cast<PEObject *>(reinterpret_cast<char *>(m_peHeader) +
-                                                     ntHeaderSize + 24);
+    const PEObject *o = reinterpret_cast<const PEObject *>((Byte *)(m_peHeader) + ntHeaderSize +
+                                                           24);
 
     std::vector<SectionParam> params;
 
@@ -644,10 +645,14 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
         sect.Size         = READ4_LE(o->VirtualSize);
         sect.PhysSize     = READ4_LE(o->PhysicalSize);
         DWord peFlags     = READ4_LE(o->Flags);
+
+        // clang-format off
         sect.Bss          = (peFlags & IMAGE_SCN_CNT_UNINITIALIZED_DATA) ? true : false;
-        sect.Code         = (peFlags & IMAGE_SCN_CNT_CODE) ? true : false;
-        sect.Data         = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA) ? true : false;
-        sect.ReadOnly     = (peFlags & IMAGE_SCN_MEM_WRITE) ? false : true;
+        sect.Code         = (peFlags & IMAGE_SCN_CNT_CODE)               ? true : false;
+        sect.Data         = (peFlags & IMAGE_SCN_CNT_INITIALIZED_DATA)   ? true : false;
+        sect.ReadOnly     = (peFlags & IMAGE_SCN_MEM_WRITE)              ? false : true;
+        // clang-fomat on
+
         params.push_back(sect);
     }
 
@@ -655,6 +660,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
         BinarySection *sect = m_binaryImage->createSection(par.Name, par.From, par.From + par.Size);
 
         if (!sect) {
+            LOG_WARN("Cannot create PE section '%1'", par.Name);
             continue;
         }
 
