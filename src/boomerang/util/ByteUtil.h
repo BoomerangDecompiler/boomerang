@@ -112,6 +112,7 @@ TgtType signExtend(const SrcType &src, std::size_t numSrcBits = 8 * sizeof(SrcTy
 /**
  * Tests if \p data starts with a specific byte sequence.
  * \note The size of \p data must not be smaller than \p magic.
+ * \returns true if \p data matches the bytes in \p magic
  */
 BOOMERANG_API bool testMagic(const Byte *data, const std::initializer_list<Byte> &magic);
 }

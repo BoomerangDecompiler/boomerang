@@ -574,52 +574,52 @@ void Win32BinaryLoader::readDebugData(QString exename)
 #endif
 }
 
+#define DOS_HEADER_SIZE 0x3C
 
 bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
 {
-    const char *data     = arr.constData();
-    const char *data_end = arr.constData() + arr.size();
+    const char *fileData = arr.constData();
+    const DWord fileSize = arr.size();
 
-    if (arr.size() < int(0x40 + sizeof(PEHeader))) {
+    if (DOS_HEADER_SIZE + 4 /* ptr to PE header */ + sizeof(PEHeader) > fileSize) {
+        LOG_ERROR("Invalid PE: File size too small");
         return false;
     }
 
-    DWord peoffLE, peoff;
-    peoffLE = *reinterpret_cast<const DWord *>(data +
-                                               0x3C); // Note: peoffLE will be in Little Endian
-    peoff   = READ4_LE(peoffLE);
-
-    if (data + peoff >= data_end) {
+    DWord peHeaderOffset = Util::readDWord(fileData + DOS_HEADER_SIZE, Endian::Little);
+    if (peHeaderOffset + sizeof(PEHeader) > fileSize) {
+        LOG_ERROR("Invalid PE: PE header extends past file boundary");
         return false;
     }
 
-    const PEHeader *tmphdr = reinterpret_cast<const PEHeader *>(data + peoff);
+    const PEHeader *peHdr = reinterpret_cast<const PEHeader *>(fileData + peHeaderOffset);
 
-    // Note: all tmphdr fields will be little endian
-
-    m_image = reinterpret_cast<char *>(malloc(READ4_LE(tmphdr->ImageSize)));
-
-    if (!m_image) {
+    try {
+        const DWord imageSize = READ4_LE(peHdr->ImageSize);
+        m_image               = new char[imageSize];
+    }
+    catch (const std::bad_alloc &) {
         LOG_ERROR("Cannot allocate memory for copy of image");
         return false;
     }
 
-    if (data + READ4_LE(tmphdr->HeaderSize) >= data_end) {
+    const DWord dosHeaderSize = READ4_LE(peHdr->HeaderSize);
+    if (dosHeaderSize >= fileSize) {
+        LOG_ERROR("Invalid PE: DOS header extends past file boundary");
         return false;
     }
 
-    memcpy(m_image, data, READ4_LE(tmphdr->HeaderSize));
+    memcpy(m_image, fileData, dosHeaderSize);
     m_header = reinterpret_cast<Header *>(m_image);
 
-    if ((m_header->sigLo != 'M') || (m_header->sigHi != 'Z')) {
-        LOG_ERROR("Error loading file - bad magic");
+    if (!Util::testMagic((Byte *)m_header, { 'M', 'Z' })) {
+        LOG_ERROR("Invalid PE: Bad magic");
         return false;
     }
 
-    m_peHeader = reinterpret_cast<PEHeader *>(m_image + peoff);
-
-    if ((m_peHeader->sigLo != 'P') || (m_peHeader->sigHi != 'E')) {
-        LOG_ERROR("Error loading file: bad PE magic");
+    m_peHeader = reinterpret_cast<PEHeader *>(m_image + peHeaderOffset);
+    if (!Util::testMagic((Byte *)m_peHeader, { 'P', 'E' })) {
+        LOG_ERROR("Invalid PE: Bad PE magic");
         return false;
     }
 
@@ -635,7 +635,7 @@ bool Win32BinaryLoader::loadFromMemory(QByteArray &arr)
         SectionParam sect;
         // TODO: Check for unreadable sections (!IMAGE_SCN_MEM_READ)?
         memset(m_image + READ4_LE(o->RVA), 0, READ4_LE(o->VirtualSize));
-        memcpy(m_image + READ4_LE(o->RVA), data + READ4_LE(o->PhysicalOffset),
+        memcpy(m_image + READ4_LE(o->RVA), fileData + READ4_LE(o->PhysicalOffset),
                READ4_LE(o->PhysicalSize));
 
         sect.Name         = QByteArray(o->ObjectName, 8);
@@ -786,10 +786,7 @@ void Win32BinaryLoader::unload()
     m_imageSize = 0;
     m_numRelocs = 0;
 
-    if (m_image) {
-        free(m_image);
-    }
-
+    delete[] m_image;
     m_image = nullptr;
 }
 
