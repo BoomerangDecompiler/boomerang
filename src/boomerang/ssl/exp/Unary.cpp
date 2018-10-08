@@ -152,9 +152,7 @@ bool Unary::operator*=(const Exp &o) const
 
 void Unary::doSearchChildren(const Exp &pattern, std::list<SharedExp *> &li, bool once)
 {
-    if (m_oper != opInitValueOf) { // don't search child
-        doSearch(pattern, subExp1, li, once);
-    }
+    doSearch(pattern, subExp1, li, once);
 }
 
 

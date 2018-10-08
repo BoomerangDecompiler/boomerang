@@ -61,8 +61,6 @@ enum OPER
     opGtrUns,     ///< Logical greater than (unsigned)
     opLessEqUns,  ///< Logical <= (unsigned)
     opGtrEqUns,   ///< Logical >= (unsigned)
-    opUpper,      ///< Greater (signed or unsigned; used by switch code)
-    opLower,      ///< Less than signed or unsigned; used by switch code
     opNot,        ///< Bitwise inversion
     opLNot,       ///< Logical not
     opSignExt,    ///< Sign extend
@@ -81,19 +79,15 @@ enum OPER
     opTypedExp,   ///< Typed expression
     opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,      ///< Guarded expression (should be assignment)
+    opFlagCall,   ///< A flag call (Binary with string and params)
+    opFlagDef,    ///< A flag function definition (class FlagDef)
+    opList,       ///< A binary, with expression (1) and next element
+                  ///< in chain (2). Last element in chain is opNil
 
-    /// \deprecated The below is (and should) probably no longer used. Use opList instead
-    opComma,    ///< Separate expressions in a list (e.g. params)
-    opFlagCall, ///< A flag call (Binary with string and params)
-    opFlagDef,  ///< A flag function definition (class FlagDef)
-    opList,     ///< A binary, with expression (1) and next element
-                ///< in chain (2). Last element in chain is opNil
-
-    // Next three are for parser use only. Binary with name of table and name
+    // Next two are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the
     // TableDict object
-    opNameTable, // A table of strings
-    opExpTable,  // A table of expressions
+    opExpTable, ///< A table of expressions
 
     /// A table of operators
     /// Actually, opOptable needs 4 subexpressions (table, index, and two
@@ -115,44 +109,39 @@ enum OPER
     opPhi,          ///< Represents phi(a1, a2, a3) .. ie SSA form merging
     opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
     opParam,        ///< SSL parameter param`'
-    opArg,          ///< Used a temporary for arguments to calls
     opLocal,        ///< used to represent a local, takes a string
     opGlobal,       ///< used to represent a global, takes a string
-    opExpand,       ///< Expandable expression
     opMemberAccess, ///< . and -> in C
     opArrayIndex,   ///< [] in C
     opTemp,         ///< Temp register name
     opSize,         ///< Size specifier
-    opCastIntStar,  ///< Cast to int*
-    opPostVar,  ///< Post-instruction variable marker (unary with any subexpression). Can arise in
-                ///< some SSL files when ticked variables are used
-    opMachFtr,  ///< A Unary with Const(string) representing a machine specific feature (register,
-                ///< instruction or whatever; the analysis better understand it and transform it
-                ///< away)
-    opTruncu,   ///< Integer truncate (unsigned)
-    opTruncs,   ///< Integer truncate (signed)
-    opZfill,    ///< Integer zero fill
-    opSgnEx,    ///< Integer sign extend
-    opFsize,    ///< Floating point size conversion
-    opItof,     ///< Integer to floating point (and size) conversion
-    opFtoi,     ///< Floating point to integer (and size) conversion
-    opFround,   ///< Floating point to nearest float conversion
-    opFtrunc,   ///< chop float to int, e.g. 3.99 -> 3.00
-    opFabs,     ///< floating point absolute function
-    opForceInt, ///< Forcibly change current type to int/flt,
-    opForceFlt, ///<    without changing any of the bits
-    opFpush,    ///< Floating point stack push
-    opFpop,     ///< Floating point stack pop
-    opSin,      ///< sine
-    opCos,      ///< cosine
-    opTan,      ///< tangent
-    opArcTan,   ///< inverse tangent
-    opLog2,     ///< logarithm to base 2
-    opLog10,    ///< logarithm to base 10
-    opLoge,     ///< logarithm to base e
-    opPow,      ///< raise to a power
-    opSqrt,     ///< square root
-    opExecute,  ///< Execute instruction at(addr)
+    opPostVar,      ///< Post-instruction variable marker (unary with any subexpression).
+                    ///< Can arise in some SSL files when ticked variables are used
+    opMachFtr,      ///< A Unary with Const(string) representing a machine specific feature
+                    ///< (register, instruction or whatever); the analysis better understand it
+                    ///< and transform it away)
+    opTruncu,       ///< Integer truncate (unsigned)
+    opTruncs,       ///< Integer truncate (signed)
+    opZfill,        ///< Integer zero fill
+    opSgnEx,        ///< Integer sign extend
+    opFsize,        ///< Floating point size conversion
+    opItof,         ///< Integer to floating point (and size) conversion
+    opFtoi,         ///< Floating point to integer (and size) conversion
+    opFround,       ///< Floating point to nearest float conversion
+    opFtrunc,       ///< chop float to int, e.g. 3.99 -> 3.00
+    opFabs,         ///< floating point absolute function
+    opFpush,        ///< Floating point stack push
+    opFpop,         ///< Floating point stack pop
+    opSin,          ///< sine
+    opCos,          ///< cosine
+    opTan,          ///< tangent
+    opArcTan,       ///< inverse tangent
+    opLog2,         ///< logarithm to base 2
+    opLog10,        ///< logarithm to base 10
+    opLoge,         ///< logarithm to base e
+    opPow,          ///< raise to a power
+    opSqrt,         ///< square root
+    opExecute,      ///< Execute instruction at(addr)
 
     // constants
     opIntConst,     ///< integer constant TODO: differentiate IntConst by adding AddressConst ?
@@ -174,19 +163,9 @@ enum OPER
     opAnull,  ///< This is an abstract boolean that if true causes the following instruction to be
               ///< anulled
 
-    // This is a special terminal representing "all locations", which in practice means "every
-    // location whose definition reaches here".
-
-    // Added for type analysis
-    opHLCTI,  ///< High level Control transfer instruction
-    opDEFINE, ///< Define Type of use with lexer
     opTrue,
     opFalse,
     opTypeOf, ///< Unary: takes a location, makes a type variable
-    opKindOf,
-
-    // Added for range analysis
-    opInitValueOf, ///< The initial value of a location, typically the stack pointer
 
     // ---------------------- "The line" --------------------------//
     // All id's greater or equal to idMachSpec are assumed to be source machine
