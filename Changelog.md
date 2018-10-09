@@ -27,6 +27,7 @@
 - Fixed: Generation of -= and -- operators in addition to += and ++ operators in high level code.
 - Fixed: Empty conditional blocks in high level code in some cases.
 - Fixed: Goto statements instead of break statements in high level code in some cases.
+- Fixed: Wrong assignments to overlapped registers on x86.
 - Fixed: A large number of memory leaks.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
 - Improved: Log output formatting.

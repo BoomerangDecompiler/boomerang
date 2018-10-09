@@ -5,7 +5,7 @@ int main(int argc, char *argv[])
 {
     int eax; 		// r24
 
-    eax = printf("%08X\n", (0x87654321 >> 8 & 0xffffff | 18) & ~0xff00 | 0x3400);
+    eax = printf("%08X\n", (unsigned int)0x87653412);
     return eax;
 }
 

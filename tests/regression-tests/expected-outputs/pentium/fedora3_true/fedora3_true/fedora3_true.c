@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
             ecx = *(argv + 4);
             edi = ebx + 0x1610;
             esi = ecx;
-            ecx = eax >> 8 & 0xffffff | 7;
-            if ((eax >> 8 & 0xffffff | 7) != 0) {
+            ecx = eax & ~0xff | 7;
+            if ((eax & ~0xff | 7) != 0) {
                 do {
                     tmpb = *esi - *edi;
                     flags = SUBFLAGS8(*esi, *edi, tmpb);
