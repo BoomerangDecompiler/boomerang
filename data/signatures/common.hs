@@ -21,3 +21,5 @@ netdb.h
 socket.h
 termios.h
 ctype.h
+
+stdlib/ctype.h
