@@ -24,3 +24,4 @@ ctype.h
 
 stdlib/ctype.h
 stdlib/fenv.h
+stdlib/locale.h
