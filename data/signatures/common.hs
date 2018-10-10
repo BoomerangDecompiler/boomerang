@@ -35,3 +35,4 @@ stdlib/string.h
 stdlib/time.h
 stdlib/uchar.h
 stdlib/wchar.h
+stdlib/wctype.h
