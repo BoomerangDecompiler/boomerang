@@ -26,3 +26,7 @@ stdlib/ctype.h
 stdlib/fenv.h
 stdlib/locale.h
 stdlib/math.h
+stdlib/setjmp.h
+stdlib/signal.h
+stdlib/stddef.h
+stdlib/stdio.h
