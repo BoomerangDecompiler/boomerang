@@ -52,7 +52,8 @@ bb0x100006e8:
                         local6 = g3;
                     }
                     else {
-                        g3 = putchar();
+                        g0 = *(unsigned char*)(g5 + 31);
+                        g3 = putchar(ROTL(g0) & 0xff);
                         local6 = g3;
                     }
                 }

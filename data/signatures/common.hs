@@ -30,3 +30,4 @@ stdlib/setjmp.h
 stdlib/signal.h
 stdlib/stddef.h
 stdlib/stdio.h
+stdlib/stdlib.h

@@ -13,19 +13,16 @@ int stat(const char *filename, struct stat *st);
 
 void abort();
 
-typedef void atexitfunc ();
-int atexit(atexitfunc *function);
+int atexit(atexitfunc function);
 int system(const char *command);
 
 typedef void onexitfunc (int a, void *b);
 int on_exit(onexitfunc *function, void *arg);
 
-typedef int comparfunc (const void *a, const void *b);
-
-void qsort(void *base, size_t nmemb, size_t size, comparfunc *compar);
-void qsort_r(void *base, size_t nmemb, size_t size, void *thunk, comparfunc *compar);
-int heapsort(void *base, size_t nmemb, size_t size, comparfunc *compar);
-int mergesort(void *base, size_t nmemb, size_t size, comparfunc *compar);
+void qsort(void *base, size_t nmemb, size_t size, comparfunc compar);
+void qsort_r(void *base, size_t nmemb, size_t size, void *thunk, comparfunc compar);
+int heapsort(void *base, size_t nmemb, size_t size, comparfunc compar);
+int mergesort(void *base, size_t nmemb, size_t size, comparfunc compar);
 
 // exported by msvcrt.dll
 void _assert(const char *cond, const char *file, int errcode);

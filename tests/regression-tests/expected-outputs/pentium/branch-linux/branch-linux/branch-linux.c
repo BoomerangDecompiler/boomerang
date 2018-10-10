@@ -3,7 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x08048410 */
 int main(int argc, char *argv[])
 {
-    int eax; 		// r24
+    size_t eax; 		// r24
     int local0; 		// m[esp - 12]
     unsigned int local1; 		// m[esp - 16]
 

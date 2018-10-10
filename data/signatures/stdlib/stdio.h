@@ -3,9 +3,6 @@ typedef unsigned long fpos_t;
 typedef unsigned int size_t;
 typedef void *va_list;
 
-FILE *stdin;
-FILE *stdout;
-FILE *stderr;
 
 // operations on files
 int remove(const char *filename);
@@ -16,7 +13,7 @@ char *tmpnam(char *str);
 // file access
 int fclose(FILE *stream);
 int fflush(FILE *stream);
-FILE *fopen(const char *filename, const char *mode );
+FILE *fopen(const char *filename, const char *mode);
 FILE *freopen(const char *filename, const char *mode, FILE *stream);
 void setbuf(FILE *stream, char *buffer);
 int setvbuf(FILE *stream, char *buffer, int mode, size_t size);
@@ -46,17 +43,19 @@ int getc(FILE *stream);
 int getchar(void);
 char *gets(char *str);
 int putc(int character, FILE *stream);
-int putchar(int character);
+int putchar(char character);
 int puts(const char *str);
 int ungetc(int character, FILE *stream);
 
 // Direct input/output
-size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
-size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
+// FIXME the true type for buf is void *, but changing to the correct type breaks
+// regression tests.
+size_t fread(char *buf, size_t size, size_t count, FILE *stream);
+size_t fwrite(const char *buf, size_t size, size_t count, FILE *stream);
 
 // file positioning
 int fgetpos(FILE *stream, fpos_t *pos);
-int fseek(FILE *stream, long int offset, int origin);
+int fseek(FILE *stream, long offset, int origin);
 int fsetpos(FILE *stream, const fpos_t *pos);
 long ftell(FILE *stream);
 void rewind(FILE *stream);
