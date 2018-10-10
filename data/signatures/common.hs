@@ -4,8 +4,6 @@ glut.h
 gl.h
 gcc3.h
 gcc2.9.h
-math.h
-stdlib.h
 string.h
 locale.h
 libintl.h
@@ -14,13 +12,11 @@ getopt.h
 xf86.h
 pwd.h
 utmp.h
-time.h
 fcntl.h
 signal.h
 netdb.h
 socket.h
 termios.h
-ctype.h
 
 stdlib/ctype.h
 stdlib/fenv.h

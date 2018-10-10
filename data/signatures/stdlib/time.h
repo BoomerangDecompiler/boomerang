@@ -1,6 +1,6 @@
 
 typedef long clock_t;
-typedef long time_t;
+typedef int time_t;
 typedef unsigned int size_t;
 
 typedef struct
@@ -27,5 +27,12 @@ char *asctime(const tm *timeptr);
 char *ctime(const time_t *timer);
 tm *gmtime(const time_t *timer);
 tm *localtime(const time_t *timer);
-size_t strftime(char *ptr, size_t maxsize @max(ptr), const char *format, const tm *timeptr);
+size_t strftime(char *buf, size_t maxsize @max(buf), const char *format, const tm *timeptr);
+
+// Other
+time_t timegm(tm *tm);
+char *ctime_r(const time_t *clock, char *buf);
+tm *localtime_r(const time_t *clock, tm *result);
+tm *gmtime_r(const time_t *clock, tm *result);
+char *asctime_r(const tm *tm, char *buf);
 

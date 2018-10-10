@@ -1,5 +1,6 @@
 
 typedef unsigned int size_t;
+typedef short        wchar_t;
 
 // copying
 void *memcpy(void *destination, const void *source, size_t num);
