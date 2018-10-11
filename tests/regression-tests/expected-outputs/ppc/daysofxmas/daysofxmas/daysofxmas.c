@@ -3,13 +3,13 @@ int main(int argc, union { char *[] *; int; } argv);
 /** address: 0x10000418 */
 int main(int argc, union { char *[] *; int; } argv)
 {
-    unsigned int CR0; 		// r64
-    unsigned int CR1; 		// r65
-    unsigned int CR2; 		// r66
-    unsigned int CR3; 		// r67
-    unsigned int CR4; 		// r68
-    unsigned int CR5; 		// r69
-    unsigned int CR6; 		// r70
+    int CR0; 		// r64
+    int CR1; 		// r65
+    int CR2; 		// r66
+    int CR3; 		// r67
+    int CR4; 		// r68
+    int CR5; 		// r69
+    int CR6; 		// r70
     __size32 CR7; 		// r71
     unsigned int g0; 		// r0
     unsigned int g0_1; 		// r0{0}
@@ -42,7 +42,7 @@ bb0x100006e8:
         else {
             if (argc >= -72) {
                 if (argc >= -50) {
-                    g3 = main((ROTL((CR0 * 0x10000000 + CR1 * 0x1000000 + CR2 * 0x100000 + CR3 * 0x10000 + CR4 * 0x1000 + CR5 * 256 + CR6 * 16 + CR7)) & 0x1) + argc, argv);
+                    g3 = main((ROTL(((CR0 << 28) + (CR1 << 24) + (CR2 << 20) + (CR3 << 16) + (CR4 << 12) + (CR5 << 8) + (CR6 << 4) + CR7)) & 0x1) + argc, argv);
                     local6 = g3;
                 }
                 else {

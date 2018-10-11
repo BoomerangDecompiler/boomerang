@@ -385,11 +385,10 @@ ADD.RMOD   reg32, modrm ADDFLAGS32(tmp1, modrm, reg32);
 SUB.RMOD   reg32, modrm SUBFLAGS32(tmp1, modrm, reg32);
 
 BSWAP       reg32
-            *32* tmp1 := zfill(8, 32, reg32@[31:24])
-            *32* tmp2 := zfill(8, 32, reg32@[23:16])
-            *32* tmp3 := zfill(8, 32, reg32@[15: 8])
-            *32* tmp4 := reg32 & 0xFF
-            *32* reg32 := (tmp4 << 24) + (tmp3 << 16) + (tmp2 << 8) + tmp1;
+            *32* reg32 := ((reg32 & 0x000000FF) << 24) |
+                          ((reg32 & 0x0000FF00) <<  8) |
+                          ((reg32 & 0x00FF0000) >>  8) |
+                          ((reg32 & 0xFF000000) >> 24);
 
 CMP.IAL   i8 
             *8* tmpb := %al - i8

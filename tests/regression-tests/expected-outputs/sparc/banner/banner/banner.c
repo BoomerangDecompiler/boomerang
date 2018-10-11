@@ -39,7 +39,7 @@ bb0x10794:
             while (local0 < local6) {
                 o1 = *local5;
                 o0 = *(unsigned char*)(o1 + local0);
-                o0 = ((int)(o0 * 0x1000000) >> 24) - 32;
+                o0 = (o0 << 24 >> 24) - 32;
                 local2 = o0;
                 if (o0 < 0) {
                     local2 = 0;
@@ -63,7 +63,7 @@ bb0x10804:
             local0 = local6 * 8 - 1;
             while (local0 >= 0) {
                 o0 = *(unsigned char*)(o6 + local0 - 128);
-                if ((int)(o0 * 0x1000000) >> 24 != 32) {
+                if (o0 << 24 >> 24 != 32) {
                     break;
                 }
                 *(__size8*)(o6 + local0 - 128) = 0;

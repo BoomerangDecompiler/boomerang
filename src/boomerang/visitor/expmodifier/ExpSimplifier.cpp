@@ -348,7 +348,7 @@ SharedExp ExpSimplifier::postModify(const std::shared_ptr<Binary> &exp)
     if (exp->getOper() == opShiftL && opSub2 == opIntConst) {
         const int k = exp->access<Const, 2>()->getInt();
 
-        if (Util::inRange(k, 0, 32)) {
+        if (Util::inRange(k, 0, 4)) { // do not express e.g. a << 4 as multiplication
             exp->setOper(opMult);
             exp->access<Const, 2>()->setInt(1 << k);
             changed = true;

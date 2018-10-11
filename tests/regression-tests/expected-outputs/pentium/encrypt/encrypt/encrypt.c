@@ -46,7 +46,7 @@ void rux_encrypt(__size32 param1)
         ecx = (local0);
         bl = (bl_1 >> 4 ^ *((local0) + 0x8049648));
         bl = *((bl) + esp - 24);
-        bl = (bl * 16 ^ *((local0) + param1));
+        bl = (bl << 4 ^ *((local0) + param1));
         *(unsigned char*)((local0) + param1) = bl;
         local0++;
     }

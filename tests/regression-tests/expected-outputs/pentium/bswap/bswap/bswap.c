@@ -14,6 +14,6 @@ int main(int argc, char *argv[])
 /** address: 0x08048370 */
 __size32 bswap(int param1)
 {
-    return (param1 & 0xff) * 0x1000000 + (param1 >> 8 & 0xff) * 0x10000 + (param1 >> 16 & 0xff) * 256 + (param1 >> 24 & 0xff);
+    return (param1 & 0xff) << 24 | (param1 & 0xff00) << 8 | (unsigned int)(param1 & 0xff0000) >> 8 | (unsigned int)(param1 & ~0xffffff) >> 24;
 }
 

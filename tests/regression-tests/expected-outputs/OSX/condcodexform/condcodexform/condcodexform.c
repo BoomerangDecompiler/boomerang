@@ -3,13 +3,13 @@ int main(int argc, char *argv[]);
 /** address: 0x00001b70 */
 int main(int argc, char *argv[])
 {
-    unsigned int CR0; 		// r64
-    unsigned int CR1; 		// r65
-    unsigned int CR2; 		// r66
-    unsigned int CR3; 		// r67
-    unsigned int CR4; 		// r68
-    unsigned int CR5; 		// r69
-    unsigned int CR6; 		// r70
+    int CR0; 		// r64
+    int CR1; 		// r65
+    int CR2; 		// r66
+    int CR3; 		// r67
+    int CR4; 		// r68
+    int CR5; 		// r69
+    int CR6; 		// r70
     __size32 CR7; 		// r71
     __size32 g0; 		// r0
     int g9; 		// r9
@@ -94,6 +94,6 @@ int main(int argc, char *argv[])
     else {
         printf(/* machine specific */ (int) LR + 1124);
     }
-    return ROTL((CR0 * 0x10000000 + CR1 * 0x1000000 + CR2 * 0x100000 + CR3 * 0x10000 + CR4 * 0x1000 + CR5 * 256 + CR6 * 16 + CR7)) & 0x1;
+    return ROTL(((CR0 << 28) + (CR1 << 24) + (CR2 << 20) + (CR3 << 16) + (CR4 << 12) + (CR5 << 8) + (CR6 << 4) + CR7)) & 0x1;
 }
 

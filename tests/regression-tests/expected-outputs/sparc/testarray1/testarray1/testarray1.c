@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     local1 = 0;
     while (local1 <= 4) {
         o0 = *(unsigned char*)(local1 + 0x20930);
-        local0 += (int)(o0 * 0x1000000) >> 24;
+        local0 += o0 << 24 >> 24;
         local1++;
     }
     printf("Sum is %d\n", local0);

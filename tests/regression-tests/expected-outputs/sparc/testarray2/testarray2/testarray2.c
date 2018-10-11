@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     local2 = 0;
     while (local2 <= 4) {
         o0 = *(unsigned char*)local1;
-        local0 += (int)(o0 * 0x1000000) >> 24;
+        local0 += o0 << 24 >> 24;
         local1++;
         local2++;
     }
@@ -31,7 +31,7 @@ void mid(__size32 param1)
     int o0; 		// r8
 
     o0 = *(unsigned char*)(param1 + 2);
-    printf("Middle elment is %d\n", (int)(o0 * 0x1000000) >> 24);
+    printf("Middle elment is %d\n", o0 << 24 >> 24);
     return;
 }
 
@@ -41,7 +41,7 @@ void fst(__size32 param1)
     int o0; 		// r8
 
     o0 = *(unsigned char*)(param1 + 10);
-    printf("First element is %d\n", (int)(o0 * 0x1000000) >> 24);
+    printf("First element is %d\n", o0 << 24 >> 24);
     return;
 }
 
