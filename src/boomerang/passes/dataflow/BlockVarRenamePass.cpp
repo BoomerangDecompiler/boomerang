@@ -190,8 +190,7 @@ bool BlockVarRenamePass::renameBlockVars(
 
             // FIXME: MVE: do we need this awful hack?
             if (a->getOper() == opLocal) {
-                SharedConstExp a1 = S->getProc()->expFromSymbol(
-                    std::static_pointer_cast<Const>(a->getSubExp1())->getStr());
+                SharedConstExp a1 = S->getProc()->expFromSymbol(a->access<Const, 1>()->getStr());
                 assert(a1);
 
                 // Stacks already has a definition for a (as just the bare local)
