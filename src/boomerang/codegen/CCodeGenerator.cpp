@@ -2407,7 +2407,7 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
         LOG_MSG("Found seq with more than one outedge!");
         std::shared_ptr<Const> constDest = std::static_pointer_cast<Const>(bb->getDest());
 
-        if (constDest->isIntConst() && (constDest->getAddr() == child->getLowAddr())) {
+        if (constDest && constDest->isIntConst() && (constDest->getAddr() == child->getLowAddr())) {
             std::swap(other, child);
             LOG_MSG("Taken branch is first out edge");
         }
