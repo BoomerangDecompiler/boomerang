@@ -1429,15 +1429,15 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
                     change = true;
                 }
                 else if (s && s->isAssign()) {
-                    if (s && (refsTo.find(s) != refsTo.end())) {
+                    if (refsTo.find(s) != refsTo.end()) {
                         LOG_ERROR("Detected ref loop %1", s);
                         LOG_ERROR("refsTo: ");
 
                         for (Statement *ins : refsTo) {
-                            LOG_MSG("  %1, ", ins->getNumber());
+                            LOG_MSG("  %1, ", ins->prints());
                         }
 
-                        assert(false);
+                        return false;
                     }
                     else {
                         refsTo.insert(s);
@@ -1510,7 +1510,7 @@ bool UserProc::prover(SharedExp query, std::set<PhiAssign *> &lastPhis,
         }
     }
 
-    return query->getOper() == opTrue;
+    return query->isTrue();
 }
 
 
