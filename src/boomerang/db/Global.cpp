@@ -125,13 +125,12 @@ SharedExp Global::readInitialValue(Address uaddr, SharedType type) const
         const int baseSize = type->as<ArrayType>()->getBaseType()->getSize() / 8;
         int numElements    = type->as<ArrayType>()->getLength();
 
-        if (numElements <= 0 || numElements == ARRAY_UNBOUNDED) {
+        if ((numElements <= 0 || numElements == ARRAY_UNBOUNDED) && baseSize > 0) {
             // try to read number of elements from information
             // contained in the binary file
             QString symbolName = m_prog->getGlobalNameByAddr(uaddr);
 
             if (!symbolName.isEmpty()) {
-                assert(baseSize);
                 BinarySymbol *symbol = m_prog->getBinaryFile()->getSymbols()->findSymbolByName(
                     symbolName);
                 numElements = (symbol ? symbol->getSize() : 0) / baseSize;
