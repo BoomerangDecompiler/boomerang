@@ -43,7 +43,7 @@
 - Feature: Added option to build shared or static libraries.
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
-- Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
+- Changed: Replaced '-k' command line option for interactive mode by '-i'.
 - Changed: Split old regression test suite into "real" regression tests and smoke tests (that only check for crashes or failures).
 - Removed: Constraint-based type analysis.
 - Removed: Ability to read/write XML files, to be replaced by new save format.

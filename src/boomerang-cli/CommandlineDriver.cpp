@@ -75,7 +75,6 @@ static void help()
 "\n"
 "Misc.\n"
 "  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
-"  -k               : Same as -i, deprecated\n"
 "  -P <path>        : Path to Boomerang files, defaults to the path to the Boomerang executable\n"
 "  -X               : activate eXperimental code; errors likely\n"
 "  --               : No effect (used for testing)\n"
@@ -245,16 +244,14 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
                 // unknown command
                 break;
             }
+            else { // -i
+                interactiveMode = true;
 
-            /* fallthrough */
-
-        case 'k': {
-            interactiveMode = true;
-
-            if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
-                m_project->getSettings()->replayFile = args[++i];
+                if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
+                    m_project->getSettings()->replayFile = args[++i];
+                }
             }
-        } break;
+            break;
 
         case 'P': {
             QDir wd(args[++i] + "/");
