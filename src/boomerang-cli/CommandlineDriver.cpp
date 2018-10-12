@@ -53,7 +53,8 @@ static void help()
 "  -sf <filename>   : Read a symbol/signature file\n"
 "\n"
 "Decoding/decompilation options\n"
-"  -e <addr>        : Decode the procedure beginning at addr, and callees\n"
+"  --decode-only    : Decode only, do not decompile\n"
+"  -e <addr>        : Decode or decompile the procedure beginning at addr, and callees\n"
 "  -E <addr>        : Equivalent to -nc -e <addr>\n"
 "  -ic              : Decode through type 0 Indirect Calls\n"
 "  -S <min>         : Stop decompilation after specified number of minutes\n"
@@ -232,6 +233,10 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             else if (arg == "--help") {
                 help();
                 return 1;
+            }
+            else if (arg == "--decode-only") {
+                m_project->getSettings()->stopBeforeDecompile = true;
+                break;
             }
             break;
 

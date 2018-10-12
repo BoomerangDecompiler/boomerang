@@ -41,6 +41,7 @@
 - Feature: Added 'print use-graph' console command to write the Use Graph of a function to a file.
 - Feature: Added C++ API.
 - Feature: Added option to build shared or static libraries.
+- Feature: Added '--decode-only' switch to only decode a binary.
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
 - Changed: Replaced '-k' command line option for interactive mode by '-i'.
