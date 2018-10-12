@@ -38,10 +38,12 @@ bool LocalTypeAnalysisPass::execute(UserProc *proc)
 
     // Data flow based type analysis
     // Want to be after all propagation, but before converting expressions to locals etc
-    if (rec) {
-        assert(project->getSettings()->dfaTypeAnalysis);
+    if (rec && project->getSettings()->useTypeAnalysis) {
         rec->recoverFunctionTypes(proc);
+        return true;
+    }
+    else {
+        return false;
     }
 
-    return true;
 }

@@ -73,7 +73,7 @@ SettingsDlg::SettingsDlg(Decompiler *decompiler, QWidget *_parent)
     ITypeRecovery *rec = decompiler->getProject()->getTypeRecoveryEngine();
     ui->cbTypeRecoveryEngine->addItem("<None>", QVariant::fromValue<ITypeRecovery *>(nullptr));
     ui->cbTypeRecoveryEngine->addItem(rec->getName(), QVariant::fromValue<ITypeRecovery *>(rec));
-    ui->cbTypeRecoveryEngine->setCurrentIndex(m_settings->dfaTypeAnalysis ? 1 : 0);
+    ui->cbTypeRecoveryEngine->setCurrentIndex(m_settings->useTypeAnalysis ? 1 : 0);
 
     ui->chkAssumeABI->setChecked(m_settings->assumeABI);
     ui->chkChangeSignatures->setChecked(m_settings->changeSignatures);
@@ -136,7 +136,7 @@ void SettingsDlg::on_btnApply_clicked()
     m_settings->dotFile         = ui->cbDotFile->currentData().value<QString>();
     m_settings->propMaxDepth    = ui->spbPropMaxDepth->value();
     m_settings->numToPropagate  = ui->spbNumToPropagate->value();
-    m_settings->dfaTypeAnalysis = ui->cbTypeRecoveryEngine->currentData()
+    m_settings->useTypeAnalysis = ui->cbTypeRecoveryEngine->currentData()
                                       .value<ITypeRecovery *>() != nullptr;
 
     m_settings->assumeABI         = ui->chkAssumeABI->isChecked();

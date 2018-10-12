@@ -59,8 +59,6 @@ static void help()
 "  -ic              : Decode through type 0 Indirect Calls\n"
 "  -S <min>         : Stop decompilation after specified number of minutes\n"
 "  -t               : Trace (print address of) every instruction decoded\n"
-"  -Tc              : Use old constraint-based type analysis\n"
-"  -Td              : Use data-flow-based type analysis\n"
 "  -a               : Assume ABI compliance\n"
 "\n"
 "Output\n"
@@ -86,20 +84,21 @@ static void help()
 "  -dg              : Debug Dode Generation\n"
 "  -dl              : Debug SSA Liveness Analysis\n"
 "  -dp              : Debug Proof Engine\n"
+"  -ds              : Stop at debug points for keypress\n"
 "  -dt              : Debug Type Analysis\n"
 "  -du              : Debug removal of unused statements etc.\n"
-"  -ds              : Stop at debug points for keypress\n"
 "\n"
 "Restrictions\n"
 "  -nc              : Do not decode callees of functions\n"
 "  -nd              : No (reduced) Dataflow Analysis\n"
-"  -nl              : Do not create local variables\n"
 "  -ng              : Do not create global variables from expressions\n"
+"  -nl              : Do not create local variables\n"
 "  -nn              : Do not remove unused or tautological statements\n"
 "  -np              : Do not replace expressions with Parameter names\n"
 "  -nP              : No promotion of signatures (other than main/WinMain/DriverMain)\n"
 "  -nr              : Do not remove unneeded labels\n"
 "  -nR              : Do not remove unused return values\n"
+"  -nT              : No Type Analysis\n"
 "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n"
 "  -p <num>         : Only do <num> propagations\n";
 // clang-format on
@@ -187,18 +186,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
 
         case 't': m_project->getSettings()->traceDecoder = true; break;
 
-        case 'T':
-            if (arg[2] == 'c') {
-                LOG_WARN("Constraint-based type analysis is no longer supported. "
-                         "Falling back to Data-Flow based type analysis.");
-                m_project->getSettings()->dfaTypeAnalysis = true;
-            }
-            else if (arg[2] == 'd') {
-                m_project->getSettings()->dfaTypeAnalysis = true;
-            }
-
-            break;
-
         case 'g':
 
             if (arg[2] == 'd') {
@@ -278,13 +265,14 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             switch (arg[2].toLatin1()) {
             case 'c': m_project->getSettings()->decodeChildren = false; break;
             case 'd': m_project->getSettings()->useDataflow = false; break;
+            case 'g': m_project->getSettings()->useGlobals = false; break;
             case 'l': m_project->getSettings()->useLocals = false; break;
             case 'n': m_project->getSettings()->removeNull = false; break;
-            case 'P': m_project->getSettings()->usePromotion = false; break;
             case 'p': m_project->getSettings()->nameParameters = false; break;
+            case 'P': m_project->getSettings()->usePromotion = false; break;
             case 'r': m_project->getSettings()->removeLabels = false; break;
             case 'R': m_project->getSettings()->removeReturns = false; break;
-            case 'g': m_project->getSettings()->useGlobals = false; break;
+            case 'T': m_project->getSettings()->useTypeAnalysis = false; break;
             default: help();
             }
 
