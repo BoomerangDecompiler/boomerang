@@ -2497,6 +2497,34 @@ PUSHFD
 ;
 
 
+# RCL
+RCL.reg16.imm16 dest, src
+    *16* tmph := dest
+    *16* dest := dest{16} rlc src
+    ROLFLAGS16(dest, tmph, src)
+;
+
+RCL.reg32.imm32 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest{32} rlc src
+    ROLFLAGS32(dest, tmp1, src)
+;
+
+
+# RCR
+RCR.reg32.imm32 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest{32} rrc src
+    RORFLAGS32(dest, tmp1, src)
+;
+
+RCR.rm32.imm32 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest{32} rrc src
+    RORFLAGS32(dest, tmp1, src)
+;
+
+
 # RET
 RET
     *32* %pc := m[%esp]
@@ -2520,6 +2548,18 @@ RETF
 
 
 # ROL
+ROL.reg8.imm8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest rl src
+    ROLFLAGS8(dest, tmpb, src)
+;
+
+ROL.reg8.reg8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest rl src
+    ROLFLAGS8(dest, tmpb, src)
+;
+
 ROL.reg32.imm32 dest, src
     *32* tmp1 := dest
     *32* dest := dest rl src
@@ -2529,12 +2569,24 @@ ROL.reg32.imm32 dest, src
 
 # ROR
 ROR.reg8.imm8 dest, src
-    *8* tmp1 := dest
+    *8* tmpb := dest
     *8* dest := dest rr src
-    RORFLAGS8(dest, tmp1, src)
+    RORFLAGS8(dest, tmpb, src)
+;
+
+ROR.reg32.reg8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest rr src
+    RORFLAGS32(dest, tmp1, src)
 ;
 
 ROR.reg32.imm32 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest rr src
+    RORFLAGS32(dest, tmp1, src)
+;
+
+ROR.rm32.imm32 dest, src
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
@@ -2576,6 +2628,12 @@ SAR.reg32.imm32 dest, src
     SARFLAGS(dest, tmp1, src)
 ;
 
+SAR.reg32.reg8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest >>A src
+    SARFLAGS(dest, tmp1, src)
+;
+
 SAR.rm8.imm8 dest, src
     *8* tmpb := dest
     *8* dest := dest >>A src
@@ -2607,6 +2665,12 @@ SAR.rm16.reg8 dest, src
 ;
 
 SAR.rm32.imm8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest >>A src
+    SARFLAGS(dest, tmp1, src)
+;
+
+SAR.rm32.imm32 dest, src
     *32* tmp1 := dest
     *32* dest := dest >>A src
     SARFLAGS(dest, tmp1, src)
@@ -2795,13 +2859,13 @@ SHL.reg8.reg8 dest, src
     SALFLAGS8(dest, tmpb, src)
 ;
 
-SHL.reg16.imm16 dest, src
+SHL.reg16.reg8 dest, src
     *16* tmph := dest
     *16* dest := dest << src
-    SALFLAGS16(dest, tmpb, src)
+    SALFLAGS16(dest, tmph, src)
 ;
 
-SHL.reg16.reg8 dest, src
+SHL.reg16.imm16 dest, src
     *16* tmph := dest
     *16* dest := dest << src
     SALFLAGS16(dest, tmph, src)
@@ -2829,6 +2893,12 @@ SHL.rm8.reg8 dest, src
     *8* tmpb := dest
     *8* dest := dest << src
     SALFLAGS8(dest, tmpb, src)
+;
+
+SHL.rm16.reg8 dest, src
+    *16* tmph := dest
+    *16* dest := dest << src
+    SALFLAGS16(dest, tmph, src)
 ;
 
 SHL.rm16.imm16 dest, src
