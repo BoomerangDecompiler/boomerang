@@ -79,7 +79,7 @@ public:
     bool decodeChildren    = true;
     bool useProof          = true;
     bool changeSignatures  = true;
-    bool dfaTypeAnalysis   = true;
+    bool useTypeAnalysis   = true;
     int propMaxDepth       = 3; ///< Max depth of exp that'll be propagated to more than one dest
     bool generateCallGraph = false;
     bool generateSymbols   = false;

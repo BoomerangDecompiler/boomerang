@@ -39,63 +39,68 @@ CommandlineDriver::CommandlineDriver(QObject *_parent)
  */
 static void help()
 {
-    std::cout << "Usage:\n"
-                 "  boomerang-cli [ switches ] [ -- ] program\n"
-                 "  boomerang-cli ( -h | --help | --version )\n"
-                 "\n"
-                 "Symbols\n"
-                 "  -s <addr> <name> : Define a symbol\n"
-                 "  -sf <filename>   : Read a symbol/signature file\n"
-                 "Decoding/decompilation options\n"
-                 "  -e <addr>        : Decode the procedure beginning at addr, and callees\n"
-                 "  -E <addr>        : Decode the procedure at addr, no callees\n"
-                 "                     Use -e and -E repeatedly for multiple entry points\n"
-                 "  -ic              : Decode through type 0 Indirect Calls\n"
-                 "  -S <min>         : Stop decompilation after specified number of minutes\n"
-                 "  -t               : Trace (print address of) every instruction decoded\n"
-                 "  -Tc              : Use old constraint-based type analysis\n"
-                 "  -Td              : Use data-flow-based type analysis\n"
-                 "  -a               : Assume ABI compliance\n"
-                 "Output\n"
-                 "  --version        : Print version information and exit\n"
-                 "  -h, --help       : Show this help\n"
-                 "  -v               : Verbose decompilation output\n"
-                 "  -o <output path> : Where to generate output (defaults to ./output/)\n"
-                 "  -r               : Print RTL for each proc to log before code generation\n"
-                 "  -gd <dot file>   : Generate a dotty graph of the program's CFG\n"
-                 "  -gc              : Generate a call graph to callgraph.dot\n"
-                 "  -gs              : Generate a symbol file (symbols.h)\n"
-                 "  -iw              : Write indirect call report to output/indirect.txt\n"
-                 "Misc.\n"
-                 "  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
-                 "  -k               : Same as -i, deprecated\n"
-                 "  -P <path>        : Path to Boomerang files, defaults to where you run\n"
-                 "                     Boomerang from\n"
-                 "  -X               : activate eXperimental code; errors likely\n"
-                 "  --               : No effect (used for testing)\n"
-                 "Debug\n"
-                 "  -dc              : Debug switch (Case) analysis\n"
-                 "  -dd              : Debug decoder to stdout\n"
-                 "  -dg              : Debug code Generation\n"
-                 "  -dl              : Debug liveness (from SSA) code\n"
-                 "  -dp              : Debug proof engine\n"
-                 "  -ds              : Stop at debug points for keypress\n"
-                 "  -dt              : Debug type analysis\n"
-                 "  -du              : Debug removal of unused statements etc\n"
-                 "Restrictions\n"
-                 "  -nc              : No decode children in the call graph (callees)\n"
-                 "  -nd              : No (reduced) dataflow analysis\n"
-                 "  -nl              : No creation of local variables\n"
-                 "  -ng              : No replacement of expressions with Globals\n"
-                 "  -nn              : No removal of nullptr and unused statements\n"
-                 "  -np              : No replacement of expressions with Parameter names\n"
-                 "  -nP              : No promotion of signatures (other than main/WinMain/\n"
-                 "                     DriverMain)\n"
-                 "  -nr              : No removal of unneeded labels\n"
-                 "  -nR              : No removal of unused Returns\n"
-                 "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n"
-                 "  -p <num>         : Only do num propagations\n"
-                 "  -m <num>         : Max memory depth\n";
+    // clang-format off
+    std::cout <<
+"Usage:\n"
+"  boomerang-cli [ switches ] [ -- ] program\n"
+"  boomerang-cli -i [ command_file ]\n"
+"  boomerang-cli ( -h | --help | --version )\n"
+"\n"
+"\n"
+"Symbols\n"
+"  -s <addr> <name> : Define a symbol\n"
+"  -sf <filename>   : Read a symbol/signature file\n"
+"\n"
+"Decoding/decompilation options\n"
+"  --decode-only    : Decode only, do not decompile\n"
+"  -e <addr>        : Decode or decompile the procedure beginning at addr, and callees\n"
+"  -E <addr>        : Equivalent to -nc -e <addr>\n"
+"  -ic              : Decode through type 0 Indirect Calls\n"
+"  -S <min>         : Stop decompilation after specified number of minutes\n"
+"  -t               : Trace (print address of) every instruction decoded\n"
+"  -a               : Assume ABI compliance\n"
+"\n"
+"Output\n"
+"  --version        : Print version information and exit\n"
+"  -h, --help       : Show this help and exit\n"
+"  -v               : Verbose decompilation output\n"
+"  -o <output_path> : Where to generate output (defaults to ./output/)\n"
+"  -r               : Print RTL for each proc to log before code generation\n"
+"  -gd <dot_file>   : Generate a dotty graph of the program's CFG\n"
+"  -gc              : Generate a call graph to callgraph.dot\n"
+"  -gs              : Generate a symbol file (symbols.h)\n"
+"  -iw              : Write indirect call report to output/indirect.txt\n"
+"\n"
+"Misc.\n"
+"  -i [<file>]      : Interactive mode; execute commands from <file>, if present\n"
+"  -P <path>        : Path to Boomerang files, defaults to the path to the Boomerang executable\n"
+"  -X               : activate eXperimental code; errors likely\n"
+"  --               : No effect (used for testing)\n"
+"\n"
+"Debug\n"
+"  -dc              : Debug Switch/Case Analysis\n"
+"  -dd              : Debug Instruction Decoder\n"
+"  -dg              : Debug Dode Generation\n"
+"  -dl              : Debug SSA Liveness Analysis\n"
+"  -dp              : Debug Proof Engine\n"
+"  -ds              : Stop at debug points for keypress\n"
+"  -dt              : Debug Type Analysis\n"
+"  -du              : Debug removal of unused statements etc.\n"
+"\n"
+"Restrictions\n"
+"  -nc              : Do not decode callees of functions\n"
+"  -nd              : No (reduced) Dataflow Analysis\n"
+"  -ng              : Do not create global variables from expressions\n"
+"  -nl              : Do not create local variables\n"
+"  -nn              : Do not remove unused or tautological statements\n"
+"  -np              : Do not replace expressions with Parameter names\n"
+"  -nP              : No promotion of signatures (other than main/WinMain/DriverMain)\n"
+"  -nr              : Do not remove unneeded labels\n"
+"  -nR              : Do not remove unused return values\n"
+"  -nT              : No Type Analysis\n"
+"  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n"
+"  -p <num>         : Only do <num> propagations\n";
+    // clang-format on
 }
 
 
@@ -104,8 +109,13 @@ static void help()
  */
 static void usage()
 {
-    std::cout << "Usage: boomerang-cli [ switches ] <program>\n"
-                 "Use boomerang-cli -h for switch help\n";
+    // clang-format off
+    std::cout <<
+"Usage:\n"
+"  boomerang-cli [ switches ] [ -- ] program\n"
+"  boomerang-cli -i [ command_file ]\n"
+"  boomerang-cli ( -h | --help | --version )\n";
+    // clang-format on
 }
 
 
@@ -174,18 +184,6 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
 
         case 't': m_project->getSettings()->traceDecoder = true; break;
 
-        case 'T':
-            if (arg[2] == 'c') {
-                LOG_WARN("Constraint-based type analysis is no longer supported. "
-                         "Falling back to Data-Flow based type analysis.");
-                m_project->getSettings()->dfaTypeAnalysis = true;
-            }
-            else if (arg[2] == 'd') {
-                m_project->getSettings()->dfaTypeAnalysis = true;
-            }
-
-            break;
-
         case 'g':
 
             if (arg[2] == 'd') {
@@ -221,6 +219,10 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
                 help();
                 return 1;
             }
+            else if (arg == "--decode-only") {
+                m_project->getSettings()->stopBeforeDecompile = true;
+                break;
+            }
             break;
 
         case 'i':
@@ -232,16 +234,14 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
                 // unknown command
                 break;
             }
+            else { // -i
+                interactiveMode = true;
 
-            /* fallthrough */
-
-        case 'k': {
-            interactiveMode = true;
-
-            if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
-                m_project->getSettings()->replayFile = args[++i];
+                if ((i + 1 < args.size()) && !args[i + 1].startsWith("-")) {
+                    m_project->getSettings()->replayFile = args[++i];
+                }
             }
-        } break;
+            break;
 
         case 'P': {
             QDir wd(args[++i] + "/");
@@ -263,13 +263,14 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             switch (arg[2].toLatin1()) {
             case 'c': m_project->getSettings()->decodeChildren = false; break;
             case 'd': m_project->getSettings()->useDataflow = false; break;
+            case 'g': m_project->getSettings()->useGlobals = false; break;
             case 'l': m_project->getSettings()->useLocals = false; break;
             case 'n': m_project->getSettings()->removeNull = false; break;
-            case 'P': m_project->getSettings()->usePromotion = false; break;
             case 'p': m_project->getSettings()->nameParameters = false; break;
+            case 'P': m_project->getSettings()->usePromotion = false; break;
             case 'r': m_project->getSettings()->removeLabels = false; break;
             case 'R': m_project->getSettings()->removeReturns = false; break;
-            case 'g': m_project->getSettings()->useGlobals = false; break;
+            case 'T': m_project->getSettings()->useTypeAnalysis = false; break;
             default: help();
             }
 

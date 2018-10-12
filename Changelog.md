@@ -41,10 +41,13 @@
 - Feature: Added 'print use-graph' console command to write the Use Graph of a function to a file.
 - Feature: Added C++ API.
 - Feature: Added option to build shared or static libraries.
+- Feature: Added '--decode-only' switch to only decode a binary.
+- Feature: Added '-nT' switch to disable Type Analysis.
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
-- Changed: Added '-i' command line option for interactive (command) mode. Deprecated '-k' switch kept for backwards compatibility.
 - Changed: Split old regression test suite into "real" regression tests and smoke tests (that only check for crashes or failures).
+- Changed: Replaced '-k' command line option for interactive mode by '-i'.
+- Changed: Replaced old '-Tc' and '-Td' switches by single '-nT' switch to disable Type Analysis.
 - Removed: Constraint-based type analysis.
 - Removed: Ability to read/write XML files, to be replaced by new save format.
 - Performance: Slightly increased performance of code generation.
