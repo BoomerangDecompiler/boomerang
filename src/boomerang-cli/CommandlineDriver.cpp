@@ -39,9 +39,8 @@ CommandlineDriver::CommandlineDriver(QObject *_parent)
  */
 static void help()
 {
+    // clang-format off
     std::cout <<
-
-// clang-format off
 "Usage:\n"
 "  boomerang-cli [ switches ] [ -- ] program\n"
 "  boomerang-cli -i [ command_file ]\n"
@@ -101,7 +100,7 @@ static void help()
 "  -nT              : No Type Analysis\n"
 "  -l <depth>       : Limit multi-propagations to expressions with depth <depth>\n"
 "  -p <num>         : Only do <num> propagations\n";
-// clang-format on
+    // clang-format on
 }
 
 
@@ -110,14 +109,13 @@ static void help()
  */
 static void usage()
 {
+    // clang-format off
     std::cout <<
-
-// clang-format off
 "Usage:\n"
 "  boomerang-cli [ switches ] [ -- ] program\n"
 "  boomerang-cli -i [ command_file ]\n"
 "  boomerang-cli ( -h | --help | --version )\n";
-// clang-format on
+    // clang-format on
 }
 
 

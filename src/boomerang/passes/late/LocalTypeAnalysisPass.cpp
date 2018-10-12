@@ -45,5 +45,4 @@ bool LocalTypeAnalysisPass::execute(UserProc *proc)
     else {
         return false;
     }
-
 }
