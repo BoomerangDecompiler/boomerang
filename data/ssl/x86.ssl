@@ -918,6 +918,11 @@ BTC.reg32.reg32 dest, bit
     *32* dest := dest ^ (1 << bit)
 ;
 
+BTC.rm32.reg32 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *32* dest := dest ^ (1 << bit)
+;
+
 
 # BTR
 BTR.reg16.imm16 dest, bit
@@ -962,6 +967,11 @@ BTR.rm32.reg32 dest, bit
 
 
 # BTS
+BTS.reg16.imm16 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest | (1 << bit)
+;
+
 BTS.reg16.reg16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
@@ -1310,6 +1320,20 @@ DEC.rm64 val
 
 
 # DIV (unsigned divide)
+DIV.rm8 divisor
+    *16* tmpdividend := %ax
+    *8*  %al := tmpdividend / divisor
+    *8*  %ah := tmpdividend % divisor
+    undefineflags()
+;
+
+DIV.reg16 divisor
+    *32* tmpdividend := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
+    *8*  %al := tmpdividend / divisor
+    *8*  %ah := tmpdividend % divisor
+    undefineflags()
+;
+
 DIV.reg32 divisor
     *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
     *32* %eax := tmp1 / divisor
@@ -1741,6 +1765,20 @@ FXCH.reg80 i
 
 
 # IDIV
+IDIV.reg8 divisor
+    *16* tmph := %ax
+    *8* %al := tmph /! divisor{8}
+    *8* %ah := tmph %! divisor{8}
+    undefineflags()
+;
+
+IDIV.reg16 divisor
+    *32* tmpd := (%dx << 16) | %ax
+    *16* %ax := tmpd /! divisor{16}
+    *16* %dx := tmpd %! divisor{16}
+    undefineflags()
+;
+
 IDIV.reg32 divisor
     *64* tmp1 := (%edx << 32) | %eax
     *32* %eax := tmp1 /! tmp2
@@ -1771,6 +1809,12 @@ IDIV.rm32 divisor
 
 
 # IMUL
+IMUL.reg8 val
+    *16* tmpresult := %al *! val
+    *16* %ax := tmpresult
+    IMULTFLAGS8(tmpresult)
+;
+
 IMUL.reg16.reg16 dest, src
     *16* dest := dest *! src
     IMULTFLAGS16(dest)
@@ -2214,6 +2258,18 @@ NEG.reg64 val
     SUBFLAGS64(0, tmpval, val)
 ;
 
+NEG.rm8 val
+    *8* tmpval := val
+    *8* val := 0 - val
+    SUBFLAGS8(0, tmpval, val)
+;
+
+NEG.rm16 val
+    *16* tmpval := val
+    *16* val := 0 - val
+    SUBFLAGS16(0, tmpval, val)
+;
+
 NEG.rm32 val
     *32* tmpval := val
     *32* val := 0 - val
@@ -2223,6 +2279,14 @@ NEG.rm32 val
 
 # NOP
 NOP
+    _
+;
+
+NOP.rm16 dummy
+    _
+;
+
+NOP.rm32 dummy
     _
 ;
 
@@ -2244,8 +2308,12 @@ NOT.reg64 reg
     *64* reg := ~reg{64}
 ;
 
+NOT.rm8 dest
+    *8* dest := ~dest{8}
+;
+
 NOT.rm16 dest
-    *16* dest := ~dest{32}
+    *16* dest := ~dest{16}
 ;
 
 NOT.rm32 dest
@@ -2498,6 +2566,18 @@ PUSHFD
 
 
 # RCL
+RCL.reg8.imm8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest{8} rlc src
+    ROLFLAGS8(dest, tmpb, src)
+;
+
+RCL.reg8.reg8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest{8} rlc src
+    ROLFLAGS8(dest, tmpb, src)
+;
+
 RCL.reg16.imm16 dest, src
     *16* tmph := dest
     *16* dest := dest{16} rlc src
@@ -2505,6 +2585,24 @@ RCL.reg16.imm16 dest, src
 ;
 
 RCL.reg32.imm32 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest{32} rlc src
+    ROLFLAGS32(dest, tmp1, src)
+;
+
+RCL.rm8.imm8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest{8} rlc src
+    ROLFLAGS8(dest, tmpb, src)
+;
+
+RCL.rm8.reg8 dest, src
+    *8* tmpb := dest
+    *8* dest := dest{8} rlc src
+    ROLFLAGS8(dest, tmpb, src)
+;
+
+RCL.rm32.imm32 dest, src
     *32* tmp1 := dest
     *32* dest := dest{32} rlc src
     ROLFLAGS32(dest, tmp1, src)
