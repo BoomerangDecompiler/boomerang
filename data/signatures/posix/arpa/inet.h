@@ -1,5 +1,5 @@
 
-typedef struct _in_addr_t in_addr_t;
+typedef unsigned int in_addr_t;
 
 in_addr_t      inet_addr(const char *cp);
 in_addr_t      inet_lnaof(struct in_addr in);
