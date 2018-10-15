@@ -30,6 +30,7 @@ posix/locale.h
 posix/monetary.h
 posix/mqueue.h
 posix/ndbm.h
+posix/netdb.h
 posix/unistd.h
 
 glu.h
