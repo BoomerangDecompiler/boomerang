@@ -21,6 +21,8 @@ posix/fcntl.h
 posix/fmtmsg.h
 posix/fnmatch.h
 posix/ftw.h
+posix/glob.h
+posix/grp.h
 posix/unistd.h
 
 glu.h
@@ -39,3 +41,4 @@ signal.h
 netdb.h
 socket.h
 termios.h
+main.h
