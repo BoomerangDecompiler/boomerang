@@ -38,6 +38,7 @@ posix/pthread.h
 posix/pwd.h
 posix/re_comp.h
 posix/unistd.h
+posix/regex.h
 
 glu.h
 glut.h
