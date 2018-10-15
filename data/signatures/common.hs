@@ -36,6 +36,7 @@ posix/nl_types.h
 posix/poll.h
 posix/pthread.h
 posix/pwd.h
+posix/re_comp.h
 posix/unistd.h
 
 glu.h
