@@ -39,6 +39,7 @@ posix/pwd.h
 posix/re_comp.h
 posix/regex.h
 posix/regexp.h
+posix/sched.h
 posix/unistd.h
 
 glu.h
