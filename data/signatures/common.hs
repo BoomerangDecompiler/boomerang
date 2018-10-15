@@ -29,6 +29,7 @@ posix/libgen.h
 posix/locale.h
 posix/monetary.h
 posix/mqueue.h
+posix/ndbm.h
 posix/unistd.h
 
 glu.h
