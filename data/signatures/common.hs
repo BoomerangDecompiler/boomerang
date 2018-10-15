@@ -34,6 +34,7 @@ posix/netdb.h
 posix/netinet/in.h
 posix/nl_types.h
 posix/poll.h
+posix/pthread.h
 posix/unistd.h
 
 glu.h
