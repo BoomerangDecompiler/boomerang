@@ -27,6 +27,7 @@ posix/iconv.h
 posix/langinfo.h
 posix/libgen.h
 posix/locale.h
+posix/monetary.h
 posix/unistd.h
 
 glu.h
