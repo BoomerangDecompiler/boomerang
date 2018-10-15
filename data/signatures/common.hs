@@ -17,6 +17,7 @@ posix/aio.h
 posix/arpa/inet.h
 posix/dirent.h
 posix/dlfcn.h
+posix/fcntl.h
 posix/unistd.h
 
 glu.h
