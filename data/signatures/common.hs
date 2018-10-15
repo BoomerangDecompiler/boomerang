@@ -25,6 +25,7 @@ posix/glob.h
 posix/grp.h
 posix/iconv.h
 posix/langinfo.h
+posix/libgen.h
 posix/unistd.h
 
 glu.h
