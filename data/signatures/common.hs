@@ -31,6 +31,7 @@ posix/monetary.h
 posix/mqueue.h
 posix/ndbm.h
 posix/netdb.h
+posix/netinet/in.h
 posix/unistd.h
 
 glu.h
