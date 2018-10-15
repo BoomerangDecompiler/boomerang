@@ -19,6 +19,7 @@ posix/dirent.h
 posix/dlfcn.h
 posix/fcntl.h
 posix/fmtmsg.h
+posix/fnmatch.h
 posix/unistd.h
 
 glu.h
