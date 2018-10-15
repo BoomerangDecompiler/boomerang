@@ -15,6 +15,7 @@ stdlib/wctype.h
 
 posix/aio.h
 posix/arpa/inet.h
+posix/dirent.h
 posix/unistd.h
 
 glu.h
