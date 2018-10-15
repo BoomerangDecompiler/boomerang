@@ -23,6 +23,7 @@ posix/fnmatch.h
 posix/ftw.h
 posix/glob.h
 posix/grp.h
+posix/iconv.h
 posix/unistd.h
 
 glu.h
