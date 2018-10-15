@@ -14,6 +14,7 @@ stdlib/wchar.h
 stdlib/wctype.h
 
 posix/aio.h
+posix/arpa/inet.h
 posix/unistd.h
 
 glu.h
