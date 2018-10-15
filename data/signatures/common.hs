@@ -33,6 +33,7 @@ posix/ndbm.h
 posix/netdb.h
 posix/netinet/in.h
 posix/nl_types.h
+posix/poll.h
 posix/unistd.h
 
 glu.h
