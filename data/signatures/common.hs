@@ -13,6 +13,7 @@ stdlib/uchar.h
 stdlib/wchar.h
 stdlib/wctype.h
 
+posix/aio.h
 posix/unistd.h
 
 glu.h
