@@ -42,6 +42,7 @@ posix/regexp.h
 posix/sched.h
 posix/search.h
 posix/semaphore.h
+posix/signal.h
 posix/unistd.h
 
 glu.h
