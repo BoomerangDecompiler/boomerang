@@ -43,6 +43,7 @@ posix/sched.h
 posix/search.h
 posix/semaphore.h
 posix/signal.h
+posix/strings.h
 posix/unistd.h
 
 glu.h
