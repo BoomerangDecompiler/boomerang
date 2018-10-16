@@ -44,6 +44,7 @@ posix/search.h
 posix/semaphore.h
 posix/signal.h
 posix/strings.h
+posix/stropts.h
 posix/unistd.h
 
 glu.h
@@ -62,4 +63,5 @@ signal.h
 netdb.h
 socket.h
 termios.h
-main.h
+
+misc.h

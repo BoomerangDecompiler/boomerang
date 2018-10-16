@@ -46,6 +46,7 @@ void *realloc(void *ptr, size_t size);
 // environment
 void abort(void);
 void atexit(atexitfunc func);
+int __cxa_atexit(atexitfunc func, void *arg, void *dso_handle);
 int at_quick_exit(atquickexitfunc func);
 void exit(int status);
 char *getenv(const char *name);
