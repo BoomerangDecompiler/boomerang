@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-__size32 proc1(int param1, int param2, union { char[] *; __size32; } param3);
+__size32 proc1(int param1, int param2, union { char *; __size32; } param3);
 
 /** address: 0x080483cf */
 int main(int argc, char *argv[])
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x0804835c */
-__size32 proc1(int param1, int param2, union { char[] *; __size32; } param3)
+__size32 proc1(int param1, int param2, union { char *; __size32; } param3)
 {
     int eax; 		// r24
     int eax_1; 		// r24{6}

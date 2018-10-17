@@ -13,8 +13,8 @@ int main(int argc, char *argv[])
     do {
         g9_1 = local0;
         printf("%d ", g9_1 + 1);
-        g9_4 = g9_1 + 1;
-        local0 = g9_4;
+        g9_2 = g9_1 + 1;
+        local0 = g9_2;
     } while (g9_1 + 1 <= 9);
     printf("a is %d, x is %d\n", g9_1 + 1, g9_1 + 1);
     return 0;
