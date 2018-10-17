@@ -341,7 +341,10 @@ Machine Prog::getMachine() const
 
 void Prog::readDefaultLibraryCatalogues()
 {
-    QDir dataDir = m_project->getSettings()->getDataDirectory();
+    LOG_MSG("Reading library signatures...");
+
+    const QDir dataDir = m_project->getSettings()->getDataDirectory();
+    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
 
     QString libCatalogName;
     switch (getMachine()) {
@@ -353,8 +356,6 @@ void Prog::readDefaultLibraryCatalogues()
     case Machine::MIPS: libCatalogName = "signatures/mips.hs"; break;
     default: libCatalogName = ""; break;
     }
-
-    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
 
     if (!libCatalogName.isEmpty()) {
         m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
