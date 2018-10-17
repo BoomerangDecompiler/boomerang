@@ -49,6 +49,7 @@ posix/syslog.h
 posix/sys/ipc.h
 posix/sys/mman.h
 posix/sys/msg.h
+posix/sys/resource.h
 posix/unistd.h
 
 glu.h
