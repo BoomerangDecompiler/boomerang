@@ -119,8 +119,6 @@ public:
     /// Returns 32 (the default register size) if the register was not found.
     int getRegSizeByID(int regID) const;
 
-    void setEndian(Endian endian);
-
 private:
     /// Reset the object to "undo" a readSSLFile()
     void reset();
@@ -160,17 +158,6 @@ private:
      */
     void addRegister(const QString &name, int id, int size, bool flt);
 
-    /**
-     * Scan the Exp* pointed to by exp; if its top level operator indicates even a partial type,
-     * then set the expression's type, and return true \note This version only inspects one
-     * expression
-     *
-     * \param  exp - points to a Exp* to be scanned
-     * \param  ty - ref to a Type object to put the partial type into
-     * \returns true if a partial type is found
-     */
-    bool partialType(Exp *exp, Type &ty);
-
 private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
     bool m_verboseOutput;
@@ -180,6 +167,8 @@ private:
 
     /// A map from the symbolic representation of a register (e.g. "%g0")
     /// to its index within an array of registers.
+    /// This map contains both normal and special (-> -1) registers,
+    /// therefore this map contains all registers.
     std::map<QString, int> m_regIDs;
 
     /// Stores info about a register such as its size, its addresss etc

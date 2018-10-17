@@ -163,22 +163,6 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
 }
 
 
-bool RTLInstDict::partialType(Exp *exp, Type &ty)
-{
-    if (exp->isSizeCast()) {
-        ty = *IntegerType::get(exp->access<Const, 1>()->getInt());
-        return true;
-    }
-
-    if (exp->isFltConst()) {
-        ty = *FloatType::get(64);
-        return true;
-    }
-
-    return false;
-}
-
-
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address natPC,
                                                  const std::vector<SharedExp> &actuals)
 {
@@ -228,11 +212,6 @@ int RTLInstDict::getRegSizeByID(int regID) const
     return iter != m_regInfo.end() ? iter->second.getSize() : 32;
 }
 
-
-void RTLInstDict::setEndian(Endian endian)
-{
-    m_endianness = endian;
-}
 
 
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
