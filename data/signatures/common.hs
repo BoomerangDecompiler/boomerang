@@ -52,6 +52,7 @@ posix/sys/msg.h
 posix/sys/resource.h
 posix/sys/sem.h
 posix/sys/shm.h
+posix/sys/socket.h
 posix/unistd.h
 
 glu.h
