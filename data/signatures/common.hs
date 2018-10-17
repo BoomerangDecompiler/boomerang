@@ -46,6 +46,7 @@ posix/signal.h
 posix/strings.h
 posix/stropts.h
 posix/unistd.h
+posix/syslog.h
 
 glu.h
 glut.h
