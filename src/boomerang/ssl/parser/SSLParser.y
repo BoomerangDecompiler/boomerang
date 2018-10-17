@@ -241,7 +241,6 @@ parts:
                 instr
 
         |    FETCHEXEC rt_list {
-                        Dict.fetchExecCycle = $2;
                 }
 
                 // Name := value

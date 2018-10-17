@@ -314,6 +314,12 @@ int RTLInstDict::getRegSizeByID(int regID) const
 }
 
 
+void RTLInstDict::setEndian(Endian endian)
+{
+    m_bigEndian = endian;
+}
+
+
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
                                                  std::list<QString> &params,
                                                  const std::vector<SharedExp> &actuals)
@@ -514,8 +520,6 @@ void RTLInstDict::reset()
     DetParamMap.clear();
     FlagFuncs.clear();
     DefMap.clear();
-    AliasMap.clear();
     fastMap.clear();
     idict.clear();
-    fetchExecCycle = nullptr;
 }

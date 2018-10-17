@@ -148,6 +148,8 @@ public:
     /// Returns 32 (the default register size) if the register was not found.
     int getRegSizeByID(int regID) const;
 
+    void setEndian(Endian endian);
+
 private:
     /// Reset the object to "undo" a readSSLFile()
     void reset();
@@ -228,9 +230,6 @@ private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
     bool m_verboseOutput;
 
-    /// An RTL describing the machine's basic fetch-execute cycle
-    SharedRTL fetchExecCycle;
-
     /// A map from the symbolic representation of a register (e.g. "%g0") to its index within an
     /// array of registers.
     std::map<QString, int, std::less<QString>> RegMap;
@@ -239,6 +238,9 @@ private:
     /// (see register.h).
     std::map<int, Register, std::less<int>> DetRegMap;
 
+    /// A map from symbolic representation of a special (non-addressable) register
+    /// to a Register object
+    std::map<QString, Register, std::less<QString>> SpecialRegMap;
 
     /// A set of parameter names, to make sure they are declared (?).
     /// Was map from string to SemTable index
@@ -255,13 +257,7 @@ private:
 
     Endian m_bigEndian; // True if this source is big endian
 
-    /// A map from symbolic representation of a special (non-addressable) register to a Register
-    /// object
-    std::map<QString, Register, std::less<QString>> SpecialRegMap;
-
     std::map<QString, std::pair<int, void *> *> DefMap;
-
-    std::map<int, SharedExp> AliasMap;
 
     /// The actual dictionary.
     std::map<QString, TableEntry, std::less<QString>> idict;
