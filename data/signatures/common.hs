@@ -58,6 +58,7 @@ posix/sys/statvfs.h
 posix/sys/time.h
 posix/sys/timeb.h
 posix/sys/times.h
+posix/sys/uio.h
 posix/unistd.h
 
 glu.h
