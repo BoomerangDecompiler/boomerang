@@ -61,13 +61,13 @@ public:
     void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
                              DecodeResult &result);
 
-    /// \copydoc IInstructionTranslator::getRegName
+    /// \copydoc IDecoder::getRegName
     QString getRegName(int idx) const override;
 
-    /// \copydoc IInstructionTranslator::getRegSize
+    /// \copydoc IDecoder::getRegSize
     int getRegSize(int idx) const override;
 
-    /// \copydoc IInstructionTranslator::getRegIdx
+    /// \copydoc IDecoder::getRegIdx
     int getRegIdx(const QString &name) const override;
 
 protected:

@@ -288,6 +288,32 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
 }
 
 
+QString RTLInstDict::getRegNameByID(int regID) const
+{
+    for (const std::pair<QString, int> &elem : RegMap) {
+        if (elem.second == regID) {
+            return elem.first;
+        }
+    }
+
+    return QString("");
+}
+
+
+int RTLInstDict::getRegIDByName(const QString& regName) const
+{
+    const auto iter = RegMap.find(regName);
+    return iter != RegMap.end() ? iter->second : -1;
+}
+
+
+int RTLInstDict::getRegSizeByID(int regID) const
+{
+    const auto iter = DetRegMap.find(regID);
+    return iter != DetRegMap.end() ? iter->second.getSize() : 32;
+}
+
+
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
                                                  std::list<QString> &params,
                                                  const std::vector<SharedExp> &actuals)

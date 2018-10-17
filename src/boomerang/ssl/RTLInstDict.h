@@ -102,7 +102,6 @@ protected:
 class BOOMERANG_API RTLInstDict
 {
     friend class SSLParser;
-    friend class NJMCDecoder;
 
 public:
     RTLInstDict(bool verboseOutput = false);
@@ -136,6 +135,18 @@ public:
      */
     std::unique_ptr<RTL> instantiateRTL(const QString &name, Address pc,
                                         const std::vector<SharedExp> &actuals);
+
+    /// Get the name of the register by its index.
+    /// Returns the empty string when \p regID == -1 or the register was not found.
+    QString getRegNameByID(int regID) const;
+
+    /// Get the index of a named register by its name.
+    /// Returns -1 if the register was not found.
+    int getRegIDByName(const QString &regName) const;
+
+    /// Get the size in bits of a register by its index.
+    /// Returns 32 (the default register size) if the register was not found.
+    int getRegSizeByID(int regID) const;
 
 private:
     /// Reset the object to "undo" a readSSLFile()

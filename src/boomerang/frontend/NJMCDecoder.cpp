@@ -140,36 +140,17 @@ void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest
 
 QString NJMCDecoder::getRegName(int idx) const
 {
-    for (const std::pair<QString, int> &elem : m_rtlDict.RegMap) {
-        if (elem.second == idx) {
-            return elem.first;
-        }
-    }
-
-    return QString("");
+    return m_rtlDict.getRegNameByID(idx);
 }
 
 
 int NJMCDecoder::getRegSize(int idx) const
 {
-    auto iter = m_rtlDict.DetRegMap.find(idx);
-
-    if (iter == m_rtlDict.DetRegMap.end()) {
-        return 32;
-    }
-
-    return iter->second.getSize();
+    return m_rtlDict.getRegSizeByID(idx);
 }
 
 
 int NJMCDecoder::getRegIdx(const QString &name) const
 {
-    auto iter = m_rtlDict.RegMap.find(name);
-
-    if (iter == m_rtlDict.RegMap.end()) {
-        assert(!"Failed to find named register");
-        return -1;
-    }
-
-    return iter->second;
+    return m_rtlDict.getRegIDByName(name);
 }
