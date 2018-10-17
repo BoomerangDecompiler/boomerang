@@ -1,3 +1,4 @@
+
 char *textdomain(const char *domainname);
 char *bindtextdomain(const char *domainname, const char *dirname);
 char *gettext(const char *msgid);
