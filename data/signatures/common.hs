@@ -69,6 +69,7 @@ posix/ulimit.h
 posix/unctrl.h
 posix/unistd.h
 posix/utime.h
+posix/utmpx.h
 
 glu.h
 glut.h
