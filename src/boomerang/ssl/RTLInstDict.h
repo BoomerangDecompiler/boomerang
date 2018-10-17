@@ -220,11 +220,9 @@ private:
     /// Was map from string to SemTable index
     std::set<QString> ParamSet;
 
-    /// Parameter (instruction operand, more like addressing mode) details (where given)
-    QMap<QString, ParamEntry> DetParamMap;
-
     /// The maps which summarise the semantics (.ssl) file
     std::map<QString, SharedExp> FlagFuncs;
+
     /// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as
     /// exact) switch
     std::map<QString, QString> fastMap;

@@ -898,29 +898,9 @@ SSLParser::
         break;
     }
     case 17: {
-        // Note: the below copies the list of strings!
-        Dict.DetParamMap[yyvsp[-4].str].m_params = *yyvsp[-1].parmlist;
-        Dict.DetParamMap[yyvsp[-4].str].m_kind   = ParamKind::VARIANT;
-        delete yyvsp[-1].parmlist;
-        // delete $4;
-        ;
         break;
     }
     case 18: {
-        std::map<QString, InsNameElem *> m;
-        ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
-        Statement *asgn   = new Assign(yyvsp[-1].typ, Terminal::get(opNil), yyvsp[0].exp);
-        // Note: The below 2 copy lists of strings (to be deleted below!)
-        param.m_params     = *yyvsp[-3].parmlist;
-        param.m_funcParams = *yyvsp[-2].parmlist;
-        param.m_asgn       = asgn;
-        param.m_kind       = ParamKind::ASGN;
-
-        if (param.m_funcParams.size() != 0)
-            param.m_kind = ParamKind::LAMBDA;
-        delete yyvsp[-2].parmlist;
-        delete yyvsp[-3].parmlist;
-        ;
         break;
     }
     case 19: {
@@ -1587,33 +1567,6 @@ SSLParser::
         break;
     }
     case 109: {
-        std::ostringstream o;
-        if (Dict.ParamSet.find(yyvsp[-2].str) != Dict.ParamSet.end()) {
-            if (Dict.DetParamMap.find(yyvsp[-2].str) != Dict.DetParamMap.end()) {
-                ParamEntry &param = Dict.DetParamMap[yyvsp[-2].str];
-                if (yyvsp[-1].explist->size() != param.m_funcParams.size()) {
-                    yyerror(qPrintable(QString("%1 requires %2  parameters, but received %3\n")
-                                           .arg(yyvsp[-2].str)
-                                           .arg(param.m_funcParams.size())
-                                           .arg(yyvsp[-1].explist->size())));
-                }
-                else {
-                    // Everything checks out. *phew*
-                    // Note: the below may not be right! (MVE)
-                    yyval.exp = Binary::get(opFlagDef, Const::get(yyvsp[-2].str),
-                                            listExpToExp(yyvsp[-1].explist));
-                    // delete $2;            // Delete the list of char*s
-                }
-            }
-            else {
-                yyerror(qPrintable(
-                    QString("%1 is not defined as a OPERAND function.\n").arg(yyvsp[-2].str)));
-            }
-        }
-        else {
-            yyerror(
-                qPrintable(QString("Unrecognized name %1 in lambda call.\n").arg(yyvsp[-2].str)));
-        };
         break;
     }
     case 110: {

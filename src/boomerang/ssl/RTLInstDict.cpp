@@ -284,7 +284,6 @@ void RTLInstDict::reset()
     DetRegMap.clear();
     SpecialRegMap.clear();
     ParamSet.clear();
-    DetParamMap.clear();
     FlagFuncs.clear();
     DefMap.clear();
     fastMap.clear();

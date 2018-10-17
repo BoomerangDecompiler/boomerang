@@ -799,7 +799,8 @@ list_parameter:
         ;
 
 param:    NAME {
-                        Dict.ParamSet.insert($1);        // MVE: Likely wrong. Likely supposed to be OPERAND params only
+// MVE: Likely wrong. Likely supposed to be OPERAND params only
+                        Dict.ParamSet.insert($1);
                         $$ = $1;
                 }
 
@@ -931,29 +932,6 @@ exp_term:
                 // $1 is the "function" name, and $2 is a list of Exp* for the actual params.
                 // I believe only PA/RISC uses these so far.
         |    NAME_CALL list_actualparameter ')' {
-                std::ostringstream o;
-                if (Dict.ParamSet.find($1) != Dict.ParamSet.end() ) {
-                        if (Dict.DetParamMap.find($1) != Dict.DetParamMap.end()) {
-                                ParamEntry& param = Dict.DetParamMap[$1];
-                                if ($2->size() != param.funcParams.size() ) {
-                                        o << $1 << " requires " << param.funcParams.size() << " parameters, but received " << $2->size()
-                                                << ".\n";
-                                        yyerror(STR(o));
-                                } else {
-                                        // Everything checks out. *phew*
-                                        // Note: the below may not be right! (MVE)
-                                        $$ = new Binary(opFlagDef,
-                                                        new Const($1),
-                                                        listExpToExp($2));
-                                        //delete $2;            // Delete the list of char*s
-                                }
-                        } else {
-                                o << $1 << " is not defined as a OPERAND function.\n";
-                                yyerror(STR(o));
-                        }
-                } else {
-                        o << "Unrecognized name " << $1 << " in lambda call.\n";
-                }
         }
 
         |        SUCCESSOR exp ')' {
@@ -1109,7 +1087,6 @@ location:
 
                 // This indicates a post-instruction marker (var tick)
         |       location '\'' {
-                        $$ = new Unary(opPostVar, $1);
                 }
         |        SUCCESSOR exp ')' {
                         $$ = makeSuccessor($2);
