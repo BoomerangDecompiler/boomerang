@@ -50,6 +50,7 @@ posix/sys/ipc.h
 posix/sys/mman.h
 posix/sys/msg.h
 posix/sys/resource.h
+posix/sys/sem.h
 posix/unistd.h
 
 glu.h
