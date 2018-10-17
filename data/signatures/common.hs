@@ -48,8 +48,8 @@ posix/stropts.h
 posix/syslog.h
 posix/sys/ipc.h
 posix/sys/mman.h
+posix/sys/msg.h
 posix/unistd.h
-
 
 glu.h
 glut.h
