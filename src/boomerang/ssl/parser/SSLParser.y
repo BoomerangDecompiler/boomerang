@@ -1155,6 +1155,5 @@ fastentries:
 
 fastentry:
                 NAME INDEX NAME {
-                        Dict.fastMap[std::string($1)] = std::string($3);
                 }
 %%

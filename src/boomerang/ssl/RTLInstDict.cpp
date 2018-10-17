@@ -47,7 +47,7 @@ int TableEntry::appendRTL(const std::list<QString> &params, const RTL &rtl)
 
 RTLInstDict::RTLInstDict(bool verboseOutput)
     : m_verboseOutput(verboseOutput)
-    , m_bigEndian(Endian::Little)
+    , m_endianness(Endian::Little)
 {
 }
 
@@ -58,11 +58,11 @@ int RTLInstDict::insert(const QString &name, std::list<QString> &params, const R
 
     opcode.remove(".");
 
-    if (idict.find(opcode) == idict.end()) {
-        idict.emplace(opcode, TableEntry(params, rtl));
+    if (m_instructions.find(opcode) == m_instructions.end()) {
+        m_instructions.emplace(opcode, TableEntry(params, rtl));
     }
     else {
-        return idict[opcode].appendRTL(params, rtl);
+        return m_instructions[opcode].appendRTL(params, rtl);
     }
 
     return 0;
@@ -72,7 +72,7 @@ int RTLInstDict::insert(const QString &name, std::list<QString> &params, const R
 bool RTLInstDict::readSSLFile(const QString &SSLFileName)
 {
     // emptying the rtl dictionary
-    idict.clear();
+    m_instructions.clear();
 
     // Clear all state
     reset();
@@ -105,20 +105,20 @@ bool RTLInstDict::readSSLFile(const QString &SSLFileName)
 
 void RTLInstDict::addRegister(const QString &name, int id, int size, bool flt)
 {
-    RegMap[name] = id;
+    m_regIDs[name] = id;
 
     if (id == -1) {
-        SpecialRegMap.insert(std::make_pair(name, Register(name, size, flt)));
+        m_specialRegInfo.insert(std::make_pair(name, Register(name, size, flt)));
     }
     else {
-        DetRegMap.insert(std::make_pair(id, Register(name, size, flt)));
+        m_regInfo.insert(std::make_pair(id, Register(name, size, flt)));
     }
 }
 
 
 void RTLInstDict::print(OStream &os /*= std::cout*/)
 {
-    for (auto &elem : idict) {
+    for (auto &elem : m_instructions) {
         // print the instruction name
         os << (elem).first << "  ";
 
@@ -147,13 +147,13 @@ std::pair<QString, unsigned> RTLInstDict::getSignature(const char *name)
 
     hlpr = hlpr.replace(".", "").toUpper();
     // Look up the dictionary
-    std::map<QString, TableEntry>::iterator it = idict.find(hlpr);
+    std::map<QString, TableEntry>::iterator it = m_instructions.find(hlpr);
 
-    if (it == idict.end()) {
+    if (it == m_instructions.end()) {
         LOG_ERROR("No entry for '%1' in RTL dictionary", name);
-        it = idict.find("NOP");
+        it = m_instructions.find("NOP");
 
-        if (it == idict.end()) {
+        if (it == m_instructions.end()) {
             LOG_ERROR("No entry for 'NOP' in RTL dictionary");
             return { hlpr, 0 }; // At least, don't cause segfault
         }
@@ -184,8 +184,8 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
 {
     // TODO try to retrieve fast instruction mappings
     // before trying the verbose instructions
-    auto dict_entry = idict.find(name);
-    if (dict_entry == idict.end()) {
+    auto dict_entry = m_instructions.find(name);
+    if (dict_entry == m_instructions.end()) {
         return nullptr; // instruction not found
     }
 
@@ -205,33 +205,33 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
 
 QString RTLInstDict::getRegNameByID(int regID) const
 {
-    for (const std::pair<QString, int> &elem : RegMap) {
-        if (elem.second == regID) {
-            return elem.first;
+    for (auto &[name, id] : m_regIDs) {
+        if (id == regID) {
+            return name;
         }
     }
 
-    return QString("");
+    return "";
 }
 
 
-int RTLInstDict::getRegIDByName(const QString& regName) const
+int RTLInstDict::getRegIDByName(const QString &regName) const
 {
-    const auto iter = RegMap.find(regName);
-    return iter != RegMap.end() ? iter->second : -1;
+    const auto iter = m_regIDs.find(regName);
+    return iter != m_regIDs.end() ? iter->second : -1;
 }
 
 
 int RTLInstDict::getRegSizeByID(int regID) const
 {
-    const auto iter = DetRegMap.find(regID);
-    return iter != DetRegMap.end() ? iter->second.getSize() : 32;
+    const auto iter = m_regInfo.find(regID);
+    return iter != m_regInfo.end() ? iter->second.getSize() : 32;
 }
 
 
 void RTLInstDict::setEndian(Endian endian)
 {
-    m_bigEndian = endian;
+    m_endianness = endian;
 }
 
 
@@ -280,12 +280,10 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC
 
 void RTLInstDict::reset()
 {
-    RegMap.clear();
-    DetRegMap.clear();
-    SpecialRegMap.clear();
-    ParamSet.clear();
-    FlagFuncs.clear();
-    DefMap.clear();
-    fastMap.clear();
-    idict.clear();
+    m_regIDs.clear();
+    m_regInfo.clear();
+    m_specialRegInfo.clear();
+    m_definedParams.clear();
+    m_flagFuncs.clear();
+    m_instructions.clear();
 }

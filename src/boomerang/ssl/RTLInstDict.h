@@ -63,35 +63,6 @@ public:
 };
 
 
-enum class ParamKind
-{
-    SIMPLE,
-    ASGN,
-    LAMBDA,
-    VARIANT
-};
-
-
-/**
- * The ParamEntry struct represents the details of a single parameter.
- */
-struct BOOMERANG_API ParamEntry
-{
-public:
-    std::list<QString> m_params;     ///< PARAM_VARIANT & PARAM_ASGN only */
-    std::list<QString> m_funcParams; ///< PARAM_LAMBDA - late bound params */
-    Statement *m_asgn = nullptr;     ///< PARAM_ASGN only */
-    bool m_lhs        = false; ///< True if this param ever appears on the LHS of an expression */
-    ParamKind m_kind  = ParamKind::SIMPLE;
-    SharedType m_regType;   ///< Type of r[this], if any (void otherwise)
-    std::set<int> m_regIdx; ///< Values this param can take as an r[param]
-    int m_mark = 0;         ///< Traversal mark. (free temporary use, basically)
-
-protected:
-    SharedType m_type;
-};
-
-
 /**
  * The RTLInstDict represents a dictionary that maps instruction names to the
  * parameters they take and a template for the Exp list describing their
@@ -204,33 +175,28 @@ private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
     bool m_verboseOutput;
 
-    /// A map from the symbolic representation of a register (e.g. "%g0") to its index within an
-    /// array of registers.
-    std::map<QString, int, std::less<QString>> RegMap;
+    /// Endianness of the source machine
+    Endian m_endianness;
 
-    /// Similar to r_map but stores more info about a register such as its size, its addresss etc
+    /// A map from the symbolic representation of a register (e.g. "%g0")
+    /// to its index within an array of registers.
+    std::map<QString, int> m_regIDs;
+
+    /// Stores info about a register such as its size, its addresss etc
     /// (see register.h).
-    std::map<int, Register, std::less<int>> DetRegMap;
+    std::map<int, Register> m_regInfo;
 
     /// A map from symbolic representation of a special (non-addressable) register
     /// to a Register object
-    std::map<QString, Register, std::less<QString>> SpecialRegMap;
+    std::map<QString, Register> m_specialRegInfo;
 
-    /// A set of parameter names, to make sure they are declared (?).
-    /// Was map from string to SemTable index
-    std::set<QString> ParamSet;
+    /// FIXME this set contains all parameters of every flag function ever defined,
+    /// not only those from the current flag function
+    std::set<QString> m_definedParams;
 
-    /// The maps which summarise the semantics (.ssl) file
-    std::map<QString, SharedExp> FlagFuncs;
-
-    /// Map from ordinary instruction to fast pseudo instruction, for use with -f (fast but not as
-    /// exact) switch
-    std::map<QString, QString> fastMap;
-
-    Endian m_bigEndian; // True if this source is big endian
-
-    std::map<QString, std::pair<int, void *> *> DefMap;
+    /// All names of defined flag functions
+    std::set<QString> m_flagFuncs;
 
     /// The actual dictionary.
-    std::map<QString, TableEntry, std::less<QString>> idict;
+    std::map<QString, TableEntry> m_instructions;
 };
