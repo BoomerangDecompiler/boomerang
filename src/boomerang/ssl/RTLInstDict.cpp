@@ -90,12 +90,7 @@ bool RTLInstDict::readSSLFile(const QString &SSLFileName)
         return false;
     }
 
-    addRegister("%CTI", -1, 1, false);
-    addRegister("%NEXT", -1, 32, false);
-
     theParser.yyparse(*this);
-
-    fixupParams();
 
     if (m_verboseOutput) {
         OStream q_cout(stdout);
@@ -142,86 +137,6 @@ void RTLInstDict::print(OStream &os /*= std::cout*/)
         rtlist.print(os);
         os << "\n";
     }
-}
-
-
-void RTLInstDict::fixupParams()
-{
-    for (ParamEntry &param : DetParamMap) {
-        param.m_mark = 0;
-    }
-
-    int mark = 1;
-
-    for (auto iter = DetParamMap.begin(); iter != DetParamMap.end(); ++iter) {
-        if (iter.value().m_kind == PARAM_VARIANT) {
-            std::list<QString> funcParams;
-            bool haveCount = false;
-            fixupParamsSub(iter.key(), funcParams, haveCount, mark++);
-        }
-    }
-}
-
-
-void RTLInstDict::fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount,
-                                 int mark)
-{
-    ParamEntry &param = DetParamMap[s];
-
-    if (param.m_params.empty()) {
-        LOG_ERROR("Error in SSL File: Variant operand %1 has no branches. "
-                  "Well that's really useful...",
-                  s);
-        return;
-    }
-
-    if (param.m_mark == mark) {
-        return; /* Already seen this round. May indicate a cycle, but may not */
-    }
-
-    param.m_mark = mark;
-
-    for (const QString &name : param.m_params) {
-        ParamEntry &sub = DetParamMap[name];
-
-        if (sub.m_kind == PARAM_VARIANT) {
-            fixupParamsSub(name, funcParams, haveCount, mark);
-
-            if (!haveCount) { /* Empty branch? */
-                continue;
-            }
-        }
-        else if (!haveCount) {
-            haveCount = true;
-            char buf[10];
-
-            for (unsigned int i = 1; i <= sub.m_funcParams.size(); i++) {
-                sprintf(buf, "__lp%u", i);
-                funcParams.push_back(buf);
-            }
-        }
-
-        if (funcParams.size() != sub.m_funcParams.size()) {
-            LOG_ERROR("Error in SSL File: Variant operand %1 does not have a fixed number of "
-                      "functional parameters:",
-                      s);
-            LOG_ERROR("Expected %1 parameters, but branch %2 has %3 parameters.", funcParams.size(),
-                      name, sub.m_funcParams.size());
-        }
-        else if ((funcParams != sub.m_funcParams) && (sub.m_asgn != nullptr)) {
-            /* Rename so all the parameter names match */
-            for (auto i = funcParams.begin(), j = sub.m_funcParams.begin(); i != funcParams.end();
-                 i++, j++) {
-                Location paramLoc(opParam, Const::get(*j), nullptr); // Location::param(j->c_str())
-                SharedExp replace = Location::param(*i);
-                sub.m_asgn->searchAndReplace(paramLoc, replace);
-            }
-
-            sub.m_funcParams = funcParams;
-        }
-    }
-
-    param.m_funcParams = funcParams;
 }
 
 

@@ -200,15 +200,6 @@ private:
      */
     bool partialType(Exp *exp, Type &ty);
 
-    /**
-     * Runs after the ssl file is parsed to fix up variant params
-     * where the arms are lambdas.
-     */
-    void fixupParams();
-
-    void fixupParamsSub(const QString &s, std::list<QString> &funcParams, bool &haveCount,
-                        int mark);
-
 private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
     bool m_verboseOutput;
