@@ -43,6 +43,7 @@ posix/sched.h
 posix/search.h
 posix/semaphore.h
 posix/signal.h
+posix/stdio.h
 posix/string.h
 posix/strings.h
 posix/stropts.h
