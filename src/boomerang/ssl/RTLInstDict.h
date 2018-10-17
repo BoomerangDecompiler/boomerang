@@ -63,13 +63,13 @@ public:
 };
 
 
-typedef enum
+enum class ParamKind
 {
-    PARAM_SIMPLE,
-    PARAM_ASGN,
-    PARAM_LAMBDA,
-    PARAM_VARIANT
-} ParamKind;
+    SIMPLE,
+    ASGN,
+    LAMBDA,
+    VARIANT
+};
 
 
 /**
@@ -82,7 +82,7 @@ public:
     std::list<QString> m_funcParams; ///< PARAM_LAMBDA - late bound params */
     Statement *m_asgn = nullptr;     ///< PARAM_ASGN only */
     bool m_lhs        = false; ///< True if this param ever appears on the LHS of an expression */
-    ParamKind m_kind  = PARAM_SIMPLE;
+    ParamKind m_kind  = ParamKind::SIMPLE;
     SharedType m_regType;   ///< Type of r[this], if any (void otherwise)
     std::set<int> m_regIdx; ///< Values this param can take as an r[param]
     int m_mark = 0;         ///< Traversal mark. (free temporary use, basically)

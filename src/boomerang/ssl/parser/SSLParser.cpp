@@ -900,7 +900,7 @@ SSLParser::
     case 17: {
         // Note: the below copies the list of strings!
         Dict.DetParamMap[yyvsp[-4].str].m_params = *yyvsp[-1].parmlist;
-        Dict.DetParamMap[yyvsp[-4].str].m_kind   = PARAM_VARIANT;
+        Dict.DetParamMap[yyvsp[-4].str].m_kind   = ParamKind::VARIANT;
         delete yyvsp[-1].parmlist;
         // delete $4;
         ;
@@ -914,10 +914,10 @@ SSLParser::
         param.m_params     = *yyvsp[-3].parmlist;
         param.m_funcParams = *yyvsp[-2].parmlist;
         param.m_asgn       = asgn;
-        param.m_kind       = PARAM_ASGN;
+        param.m_kind       = ParamKind::ASGN;
 
         if (param.m_funcParams.size() != 0)
-            param.m_kind = PARAM_LAMBDA;
+            param.m_kind = ParamKind::LAMBDA;
         delete yyvsp[-2].parmlist;
         delete yyvsp[-3].parmlist;
         ;
