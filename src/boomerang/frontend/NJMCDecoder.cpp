@@ -87,58 +87,6 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
 }
 
 
-SharedExp NJMCDecoder::instantiateNamedParam(char *name,
-                                             const std::initializer_list<SharedExp> &args)
-{
-    if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_MSG("No entry for named parameter '%1'", name);
-        return nullptr;
-    }
-
-    assert(m_rtlDict.DetParamMap.find(name) != m_rtlDict.DetParamMap.end());
-    ParamEntry &ent = m_rtlDict.DetParamMap[name];
-
-    if ((ent.m_kind != PARAM_ASGN) && (ent.m_kind != PARAM_LAMBDA)) {
-        LOG_MSG("Attempt to instantiate expressionless parameter '%1'", name);
-        return nullptr;
-    }
-
-    // Start with the RHS
-    assert(ent.m_asgn->getKind() == StmtType::Assign);
-    SharedExp result = static_cast<Assign *>(ent.m_asgn)->getRight()->clone();
-    auto arg_iter    = args.begin();
-
-    for (auto &elem : ent.m_params) {
-        Location formal(opParam, Const::get(elem), nullptr);
-        SharedExp actual = *arg_iter++;
-        bool change;
-        result = result->searchReplaceAll(formal, actual, change);
-    }
-
-    return result;
-}
-
-
-void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp,
-                                     const std::initializer_list<SharedExp> &args)
-{
-    if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_VERBOSE("No entry for named parameter '%1'", name);
-        return;
-    }
-
-    ParamEntry &ent = m_rtlDict.DetParamMap[name];
-    auto arg_iter   = args.begin();
-
-    for (auto &elem : ent.m_funcParams) {
-        Location formal(opParam, Const::get(elem), nullptr);
-        SharedExp actual = *arg_iter++;
-        bool change;
-        *exp = (*exp)->searchReplaceAll(formal, actual, change);
-    }
-}
-
-
 SharedExp NJMCDecoder::dis_Reg(int regNum)
 {
     return Location::regOf(regNum);
