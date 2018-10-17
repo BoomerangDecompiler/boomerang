@@ -56,6 +56,7 @@ posix/sys/socket.h
 posix/sys/stat.h
 posix/sys/statvfs.h
 posix/sys/time.h
+posix/sys/timeb.h
 posix/unistd.h
 
 glu.h
