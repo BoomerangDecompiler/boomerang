@@ -53,6 +53,7 @@ posix/sys/resource.h
 posix/sys/sem.h
 posix/sys/shm.h
 posix/sys/socket.h
+posix/sys/stat.h
 posix/unistd.h
 
 glu.h
