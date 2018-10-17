@@ -60,6 +60,7 @@ posix/sys/timeb.h
 posix/sys/times.h
 posix/sys/uio.h
 posix/sys/utsname.h
+posix/sys/wait.h
 posix/unistd.h
 
 glu.h
