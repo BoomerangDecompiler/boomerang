@@ -64,6 +64,7 @@ posix/sys/wait.h
 posix/term.h
 posix/termios.h
 posix/time.h
+posix/ucontext.h
 posix/unistd.h
 
 glu.h
