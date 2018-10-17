@@ -33,7 +33,11 @@ NJMCDecoder::NJMCDecoder(Prog *prog, const QString &sslFilePath)
     , m_prog(prog)
 {
     QDir dataDir = prog->getProject()->getSettings()->getDataDirectory();
-    m_rtlDict.readSSLFile(dataDir.absoluteFilePath(sslFilePath));
+
+    if (!m_rtlDict.readSSLFile(dataDir.absoluteFilePath(sslFilePath))) {
+        LOG_ERROR("Cannot read SSL file '%1'", sslFilePath);
+        throw std::runtime_error("Failed to read SSL file");
+    }
 }
 
 

@@ -69,16 +69,17 @@ int RTLInstDict::insert(const QString &name, std::list<QString> &params, const R
 }
 
 
-bool RTLInstDict::readSSLFile(const QString &SSLFileName)
+bool RTLInstDict::readSSLFile(const QString &sslFileName)
 {
+    LOG_MSG("Loading machine specifications from '%1'...", sslFileName);
     // emptying the rtl dictionary
     m_instructions.clear();
 
     // Clear all state
     reset();
 
-    // Attempt to Parse the SSL file
-    SSLParser theParser(qPrintable(SSLFileName),
+    // Attempt to parse the SSL file
+    SSLParser theParser(qPrintable(sslFileName),
 #ifdef DEBUG_SSLPARSER
                         true
 #else
@@ -86,11 +87,9 @@ bool RTLInstDict::readSSLFile(const QString &SSLFileName)
 #endif
     );
 
-    if (theParser.theScanner == nullptr) {
+    if (!theParser.theScanner || theParser.yyparse(*this) != 0) {
         return false;
     }
-
-    theParser.yyparse(*this);
 
     if (m_verboseOutput) {
         OStream q_cout(stdout);
@@ -211,7 +210,6 @@ int RTLInstDict::getRegSizeByID(int regID) const
     const auto iter = m_regInfo.find(regID);
     return iter != m_regInfo.end() ? iter->second.getSize() : 32;
 }
-
 
 
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,

@@ -254,16 +254,21 @@ IFrontEnd *Project::createFrontEnd()
     BinaryFile *binaryFile = getLoadedBinaryFile();
     Prog *prog             = m_prog.get();
 
-    switch (getLoadedBinaryFile()->getMachine()) {
-    case Machine::PENTIUM: return new PentiumFrontEnd(binaryFile, prog);
-    case Machine::SPARC: return new SPARCFrontEnd(binaryFile, prog);
-    case Machine::PPC: return new PPCFrontEnd(binaryFile, prog);
-    case Machine::MIPS: return new MIPSFrontEnd(binaryFile, prog);
-    case Machine::ST20: return new ST20FrontEnd(binaryFile, prog);
-    case Machine::HPRISC: LOG_WARN("No frontend for HP RISC"); break;
-    case Machine::PALM: LOG_WARN("No frontend for PALM"); break;
-    case Machine::M68K: LOG_WARN("No frontend for M68K"); break;
-    default: LOG_ERROR("Machine architecture not supported!"); break;
+    try {
+        switch (getLoadedBinaryFile()->getMachine()) {
+        case Machine::PENTIUM: return new PentiumFrontEnd(binaryFile, prog);
+        case Machine::SPARC: return new SPARCFrontEnd(binaryFile, prog);
+        case Machine::PPC: return new PPCFrontEnd(binaryFile, prog);
+        case Machine::MIPS: return new MIPSFrontEnd(binaryFile, prog);
+        case Machine::ST20: return new ST20FrontEnd(binaryFile, prog);
+        case Machine::HPRISC: LOG_WARN("No frontend for HP RISC"); break;
+        case Machine::PALM: LOG_WARN("No frontend for PALM"); break;
+        case Machine::M68K: LOG_WARN("No frontend for M68K"); break;
+        default: LOG_ERROR("Machine architecture not supported!"); break;
+        }
+    }
+    catch (const std::runtime_error &err) {
+        LOG_ERROR("Cannot create frontend: %1", err.what());
     }
 
     return nullptr;
