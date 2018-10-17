@@ -45,8 +45,11 @@ posix/semaphore.h
 posix/signal.h
 posix/strings.h
 posix/stropts.h
-posix/unistd.h
 posix/syslog.h
+posix/sys/ipc.h
+posix/sys/mman.h
+posix/unistd.h
+
 
 glu.h
 glut.h
