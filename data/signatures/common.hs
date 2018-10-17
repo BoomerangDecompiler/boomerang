@@ -44,6 +44,7 @@ posix/search.h
 posix/semaphore.h
 posix/signal.h
 posix/stdio.h
+posix/stdlib.h
 posix/string.h
 posix/strings.h
 posix/stropts.h
