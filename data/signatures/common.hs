@@ -62,6 +62,7 @@ posix/sys/uio.h
 posix/sys/utsname.h
 posix/sys/wait.h
 posix/term.h
+posix/termios.h
 posix/unistd.h
 
 glu.h
