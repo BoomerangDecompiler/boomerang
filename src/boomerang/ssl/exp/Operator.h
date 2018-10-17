@@ -115,8 +115,6 @@ enum OPER
     opArrayIndex,   ///< [] in C
     opTemp,         ///< Temp register name
     opSize,         ///< Size specifier
-    opPostVar,      ///< Post-instruction variable marker (unary with any subexpression).
-                    ///< Can arise in some SSL files when ticked variables are used
     opMachFtr,      ///< A Unary with Const(string) representing a machine specific feature
                     ///< (register, instruction or whatever); the analysis better understand it
                     ///< and transform it away)

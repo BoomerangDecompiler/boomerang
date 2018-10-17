@@ -262,7 +262,7 @@ parts:
         |    flag_fnc
 
                 // Addressing modes (or instruction operands) (optional)
-        |    OPERAND operandlist { Dict.fixupParams(); }
+        |    OPERAND operandlist { }
 
         ;
 

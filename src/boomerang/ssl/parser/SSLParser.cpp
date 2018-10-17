@@ -894,7 +894,6 @@ SSLParser::
         break;
     }
     case 14: {
-        Dict.fixupParams();
         ;
         break;
     }
@@ -1782,7 +1781,6 @@ SSLParser::
         break;
     }
     case 130: {
-        yyval.exp = Unary::get(opPostVar, yyvsp[-1].exp);
         ;
         break;
     }

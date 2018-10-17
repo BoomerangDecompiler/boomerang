@@ -178,23 +178,6 @@ private:
      */
     int insert(const QString &name, std::list<QString> &parameters, const RTL &rtl);
 
-    /**
-     * Transform an RTL to eliminate any uses of post-variables by either
-     * adding temporaries or just removing them where possible.
-     *
-     * Note that the algorithm used expects to deal with simple expressions
-     * as post vars, ie r[22], m[r[1]], generally things which aren't parameterized
-     * at a higher level. This is OK for the translator (we do substitution
-     * first anyway), but may miss some optimizations for the emulator.
-     * For the emulator, if parameters are detected within a postvar,
-     * we just force the temporary, which is always safe to do. (The parameter
-     * \p optimize is set to false for the emulator to achieve this).
-     *
-     * \param rts the list of statements
-     * \param optimize - try to remove temporary registers
-     */
-    void transformPostVars(RTL &rts, bool optimize);
-
     /// Print a textual representation of the dictionary.
     void print(OStream &os);
 
