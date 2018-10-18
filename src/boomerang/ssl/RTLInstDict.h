@@ -64,7 +64,7 @@ public:
     std::pair<QString, DWord> getSignature(const QString &instructionName) const;
 
     /**
-     * Returns an RTL containing the semantics of the instruction with name \p name.
+     * Returns a new RTL containing the semantics of the instruction with name \p name.
      *
      * \param name    the name of the instruction (must correspond to one defined in the SSL file).
      * \param pc      address at which the named instruction is located
