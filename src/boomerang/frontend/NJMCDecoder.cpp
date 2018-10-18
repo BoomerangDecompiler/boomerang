@@ -33,7 +33,11 @@ NJMCDecoder::NJMCDecoder(Prog *prog, const QString &sslFilePath)
     , m_prog(prog)
 {
     QDir dataDir = prog->getProject()->getSettings()->getDataDirectory();
-    m_rtlDict.readSSLFile(dataDir.absoluteFilePath(sslFilePath));
+
+    if (!m_rtlDict.readSSLFile(dataDir.absoluteFilePath(sslFilePath))) {
+        LOG_ERROR("Cannot read SSL file '%1'", sslFilePath);
+        throw std::runtime_error("Failed to read SSL file");
+    }
 }
 
 
@@ -84,58 +88,6 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
     }
 
     return m_rtlDict.instantiateRTL(opcode, pc, actuals);
-}
-
-
-SharedExp NJMCDecoder::instantiateNamedParam(char *name,
-                                             const std::initializer_list<SharedExp> &args)
-{
-    if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_MSG("No entry for named parameter '%1'", name);
-        return nullptr;
-    }
-
-    assert(m_rtlDict.DetParamMap.find(name) != m_rtlDict.DetParamMap.end());
-    ParamEntry &ent = m_rtlDict.DetParamMap[name];
-
-    if ((ent.m_kind != PARAM_ASGN) && (ent.m_kind != PARAM_LAMBDA)) {
-        LOG_MSG("Attempt to instantiate expressionless parameter '%1'", name);
-        return nullptr;
-    }
-
-    // Start with the RHS
-    assert(ent.m_asgn->getKind() == StmtType::Assign);
-    SharedExp result = static_cast<Assign *>(ent.m_asgn)->getRight()->clone();
-    auto arg_iter    = args.begin();
-
-    for (auto &elem : ent.m_params) {
-        Location formal(opParam, Const::get(elem), nullptr);
-        SharedExp actual = *arg_iter++;
-        bool change;
-        result = result->searchReplaceAll(formal, actual, change);
-    }
-
-    return result;
-}
-
-
-void NJMCDecoder::substituteCallArgs(char *name, SharedExp *exp,
-                                     const std::initializer_list<SharedExp> &args)
-{
-    if (m_rtlDict.ParamSet.find(name) == m_rtlDict.ParamSet.end()) {
-        LOG_VERBOSE("No entry for named parameter '%1'", name);
-        return;
-    }
-
-    ParamEntry &ent = m_rtlDict.DetParamMap[name];
-    auto arg_iter   = args.begin();
-
-    for (auto &elem : ent.m_funcParams) {
-        Location formal(opParam, Const::get(elem), nullptr);
-        SharedExp actual = *arg_iter++;
-        bool change;
-        *exp = (*exp)->searchReplaceAll(formal, actual, change);
-    }
 }
 
 
@@ -192,36 +144,17 @@ void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest
 
 QString NJMCDecoder::getRegName(int idx) const
 {
-    for (const std::pair<QString, int> &elem : m_rtlDict.RegMap) {
-        if (elem.second == idx) {
-            return elem.first;
-        }
-    }
-
-    return QString("");
+    return m_rtlDict.getRegNameByID(idx);
 }
 
 
 int NJMCDecoder::getRegSize(int idx) const
 {
-    auto iter = m_rtlDict.DetRegMap.find(idx);
-
-    if (iter == m_rtlDict.DetRegMap.end()) {
-        return 32;
-    }
-
-    return iter->second.getSize();
+    return m_rtlDict.getRegSizeByID(idx);
 }
 
 
 int NJMCDecoder::getRegIdx(const QString &name) const
 {
-    auto iter = m_rtlDict.RegMap.find(name);
-
-    if (iter == m_rtlDict.RegMap.end()) {
-        assert(!"Failed to find named register");
-        return -1;
-    }
-
-    return iter->second;
+    return m_rtlDict.getRegIDByName(name);
 }

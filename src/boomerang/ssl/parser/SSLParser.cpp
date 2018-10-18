@@ -890,39 +890,17 @@ SSLParser::
         break;
     }
     case 7: {
-        Dict.fetchExecCycle = yyvsp[0].rtlist;
         ;
         break;
     }
     case 14: {
-        Dict.fixupParams();
         ;
         break;
     }
     case 17: {
-        // Note: the below copies the list of strings!
-        Dict.DetParamMap[yyvsp[-4].str].m_params = *yyvsp[-1].parmlist;
-        Dict.DetParamMap[yyvsp[-4].str].m_kind   = PARAM_VARIANT;
-        delete yyvsp[-1].parmlist;
-        // delete $4;
-        ;
         break;
     }
     case 18: {
-        std::map<QString, InsNameElem *> m;
-        ParamEntry &param = Dict.DetParamMap[yyvsp[-4].str];
-        Statement *asgn   = new Assign(yyvsp[-1].typ, Terminal::get(opNil), yyvsp[0].exp);
-        // Note: The below 2 copy lists of strings (to be deleted below!)
-        param.m_params     = *yyvsp[-3].parmlist;
-        param.m_funcParams = *yyvsp[-2].parmlist;
-        param.m_asgn       = asgn;
-        param.m_kind       = PARAM_ASGN;
-
-        if (param.m_funcParams.size() != 0)
-            param.m_kind = PARAM_LAMBDA;
-        delete yyvsp[-2].parmlist;
-        delete yyvsp[-3].parmlist;
-        ;
         break;
     }
     case 19: {
@@ -946,40 +924,40 @@ SSLParser::
         break;
     }
     case 27: {
-        if (Dict.RegMap.find(yyvsp[-2].str) != Dict.RegMap.end())
+        if (Dict.m_regIDs.find(yyvsp[-2].str) != Dict.m_regIDs.end())
             yyerror("Name reglist decared twice\n");
-        Dict.RegMap[yyvsp[-2].str] = yyvsp[0].num;
+        Dict.m_regIDs[yyvsp[-2].str] = yyvsp[0].num;
         ;
         break;
     }
     case 28: {
-        if (Dict.RegMap.find(yyvsp[-5].str) != Dict.RegMap.end())
+        if (Dict.m_regIDs.find(yyvsp[-5].str) != Dict.m_regIDs.end())
             yyerror("Name reglist declared twice\n");
         Dict.addRegister(yyvsp[-5].str, yyvsp[0].num, yyvsp[-3].num, floatRegister);
         ;
         break;
     }
     case 29: {
-        if (Dict.RegMap.find(yyvsp[-9].str) != Dict.RegMap.end())
+        if (Dict.m_regIDs.find(yyvsp[-9].str) != Dict.m_regIDs.end())
             yyerror("Name reglist declared twice\n");
-        Dict.RegMap[yyvsp[-9].str] = yyvsp[-4].num;
+        Dict.m_regIDs[yyvsp[-9].str] = yyvsp[-4].num;
         // Now for detailed Reg information
-        if (Dict.DetRegMap.find(yyvsp[-4].num) != Dict.DetRegMap.end())
+        if (Dict.m_regInfo.find(yyvsp[-4].num) != Dict.m_regInfo.end())
             yyerror("Index used for more than one register\n");
-        Dict.DetRegMap[yyvsp[-4].num].setName(yyvsp[-9].str);
-        Dict.DetRegMap[yyvsp[-4].num].setSize(yyvsp[-7].num);
+        Dict.m_regInfo[yyvsp[-4].num].setName(yyvsp[-9].str);
+        Dict.m_regInfo[yyvsp[-4].num].setSize(yyvsp[-7].num);
         // check range is legitimate for size. 8,10
-        if ((Dict.RegMap.find(yyvsp[-2].str) == Dict.RegMap.end()) ||
-            (Dict.RegMap.find(yyvsp[0].str) == Dict.RegMap.end()))
+        if ((Dict.m_regIDs.find(yyvsp[-2].str) == Dict.m_regIDs.end()) ||
+            (Dict.m_regIDs.find(yyvsp[0].str) == Dict.m_regIDs.end()))
             yyerror("Undefined range\n");
         else {
-            int bitsize = Dict.DetRegMap[Dict.RegMap[yyvsp[0].str]].getSize();
-            for (int i = Dict.RegMap[yyvsp[-2].str]; i != Dict.RegMap[yyvsp[0].str]; i++) {
-                if (Dict.DetRegMap.find(i) == Dict.DetRegMap.end()) {
+            int bitsize = Dict.m_regInfo[Dict.m_regIDs[yyvsp[0].str]].getSize();
+            for (int i = Dict.m_regIDs[yyvsp[-2].str]; i != Dict.m_regIDs[yyvsp[0].str]; i++) {
+                if (Dict.m_regInfo.find(i) == Dict.m_regInfo.end()) {
                     yyerror("Not all registers in range defined\n");
                     break;
                 }
-                bitsize += Dict.DetRegMap[i].getSize();
+                bitsize += Dict.m_regInfo[i].getSize();
                 if (bitsize > yyvsp[-7].num) {
                     yyerror("Range exceeds size of register\n");
                     break;
@@ -989,33 +967,33 @@ SSLParser::
                 yyerror("Register size is exceeds registers in range\n");
             // copy information
         }
-        Dict.DetRegMap[yyvsp[-4].num].setMappedIndex(Dict.RegMap[yyvsp[-2].str]);
-        Dict.DetRegMap[yyvsp[-4].num].setMappedOffset(0);
-        Dict.DetRegMap[yyvsp[-4].num].setIsFloat(floatRegister);
+        Dict.m_regInfo[yyvsp[-4].num].setMappedIndex(Dict.m_regIDs[yyvsp[-2].str]);
+        Dict.m_regInfo[yyvsp[-4].num].setMappedOffset(0);
+        Dict.m_regInfo[yyvsp[-4].num].setIsFloat(floatRegister);
         ;
         break;
     }
     case 30: {
-        if (Dict.RegMap.find(yyvsp[-13].str) != Dict.RegMap.end())
+        if (Dict.m_regIDs.find(yyvsp[-13].str) != Dict.m_regIDs.end())
             yyerror("Name reglist declared twice\n");
-        Dict.RegMap[yyvsp[-13].str] = yyvsp[-8].num;
+        Dict.m_regIDs[yyvsp[-13].str] = yyvsp[-8].num;
         // Now for detailed Reg information
-        if (Dict.DetRegMap.find(yyvsp[-8].num) != Dict.DetRegMap.end())
+        if (Dict.m_regInfo.find(yyvsp[-8].num) != Dict.m_regInfo.end())
             yyerror("Index used for more than one register\n");
-        Dict.DetRegMap[yyvsp[-8].num].setName(yyvsp[-13].str);
-        Dict.DetRegMap[yyvsp[-8].num].setSize(yyvsp[-11].num);
+        Dict.m_regInfo[yyvsp[-8].num].setName(yyvsp[-13].str);
+        Dict.m_regInfo[yyvsp[-8].num].setSize(yyvsp[-11].num);
         // Do checks
         if (yyvsp[-11].num != (yyvsp[-1].num - yyvsp[-3].num) + 1)
             yyerror("Size does not equal range\n");
-        if (Dict.RegMap.find(yyvsp[-6].str) != Dict.RegMap.end()) {
-            if (yyvsp[-1].num >= Dict.DetRegMap[Dict.RegMap[yyvsp[-6].str]].getSize())
+        if (Dict.m_regIDs.find(yyvsp[-6].str) != Dict.m_regIDs.end()) {
+            if (yyvsp[-1].num >= Dict.m_regInfo[Dict.m_regIDs[yyvsp[-6].str]].getSize())
                 yyerror("Range extends over target register\n");
         }
         else
             yyerror("Shared index not yet defined\n");
-        Dict.DetRegMap[yyvsp[-8].num].setMappedIndex(Dict.RegMap[yyvsp[-6].str]);
-        Dict.DetRegMap[yyvsp[-8].num].setMappedOffset(yyvsp[-3].num);
-        Dict.DetRegMap[yyvsp[-8].num].setIsFloat(floatRegister);
+        Dict.m_regInfo[yyvsp[-8].num].setMappedIndex(Dict.m_regIDs[yyvsp[-6].str]);
+        Dict.m_regInfo[yyvsp[-8].num].setMappedOffset(yyvsp[-3].num);
+        Dict.m_regInfo[yyvsp[-8].num].setIsFloat(floatRegister);
         ;
         break;
     }
@@ -1027,7 +1005,7 @@ SSLParser::
         else {
             std::list<QString>::iterator loc = yyvsp[-8].strlist->begin();
             for (int x = yyvsp[-2].num; x <= yyvsp[0].num; x++, loc++) {
-                if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
+                if (Dict.m_regIDs.find(*loc) != Dict.m_regIDs.end())
                     yyerror("Name reglist declared twice\n");
                 Dict.addRegister(*loc, x, yyvsp[-5].num, floatRegister);
             }
@@ -1038,7 +1016,7 @@ SSLParser::
     case 32: {
         std::list<QString>::iterator loc = yyvsp[-6].strlist->begin();
         for (; loc != yyvsp[-6].strlist->end(); loc++) {
-            if (Dict.RegMap.find(*loc) != Dict.RegMap.end())
+            if (Dict.m_regIDs.find(*loc) != Dict.m_regIDs.end())
                 yyerror("Name reglist declared twice\n");
             Dict.addRegister(*loc, yyvsp[0].num, yyvsp[-3].num, floatRegister);
         }
@@ -1060,8 +1038,7 @@ SSLParser::
     }
     case 35: {
         // Note: $2 is a list of strings
-        Dict.FlagFuncs[yyvsp[-5].str] = std::make_shared<FlagDef>(listStrToExp(yyvsp[-4].parmlist),
-                                                                  yyvsp[-1].rtlist);
+        Dict.m_flagFuncs.insert(yyvsp[-5].str);
         delete yyvsp[-4].parmlist;
         ;
         break;
@@ -1380,7 +1357,7 @@ SSLParser::
     }
     case 78: {
         std::ostringstream o;
-        if (Dict.FlagFuncs.find(yyvsp[-2].str) != Dict.FlagFuncs.end()) {
+        if (Dict.m_flagFuncs.find(yyvsp[-2].str) != Dict.m_flagFuncs.end()) {
             // Note: SETFFLAGS assigns to the floating point flags. All others to the integer flags
             const bool isFloatOp = yyvsp[-2].str == "SETFFLAGS";
             OPER op              = isFloatOp ? opFflags : opFlags;
@@ -1450,7 +1427,7 @@ SSLParser::
         break;
     }
     case 87: {
-        Dict.ParamSet.insert(
+        Dict.m_definedParams.insert(
             yyvsp[0].str); // MVE: Likely wrong. Likely supposed to be OPERAND params only
         yyval.str = yyvsp[0].str;
         ;
@@ -1589,33 +1566,6 @@ SSLParser::
         break;
     }
     case 109: {
-        std::ostringstream o;
-        if (Dict.ParamSet.find(yyvsp[-2].str) != Dict.ParamSet.end()) {
-            if (Dict.DetParamMap.find(yyvsp[-2].str) != Dict.DetParamMap.end()) {
-                ParamEntry &param = Dict.DetParamMap[yyvsp[-2].str];
-                if (yyvsp[-1].explist->size() != param.m_funcParams.size()) {
-                    yyerror(qPrintable(QString("%1 requires %2  parameters, but received %3\n")
-                                           .arg(yyvsp[-2].str)
-                                           .arg(param.m_funcParams.size())
-                                           .arg(yyvsp[-1].explist->size())));
-                }
-                else {
-                    // Everything checks out. *phew*
-                    // Note: the below may not be right! (MVE)
-                    yyval.exp = Binary::get(opFlagDef, Const::get(yyvsp[-2].str),
-                                            listExpToExp(yyvsp[-1].explist));
-                    // delete $2;            // Delete the list of char*s
-                }
-            }
-            else {
-                yyerror(qPrintable(
-                    QString("%1 is not defined as a OPERAND function.\n").arg(yyvsp[-2].str)));
-            }
-        }
-        else {
-            yyerror(
-                qPrintable(QString("Unrecognized name %1 in lambda call.\n").arg(yyvsp[-2].str)));
-        };
         break;
     }
     case 110: {
@@ -1710,8 +1660,8 @@ SSLParser::
     }
     case 123: {
         bool isFlag                               = yyvsp[0].str.contains("flags");
-        std::map<QString, int>::const_iterator it = Dict.RegMap.find(yyvsp[0].str);
-        if (it == Dict.RegMap.end() && !isFlag) {
+        std::map<QString, int>::const_iterator it = Dict.m_regIDs.find(yyvsp[0].str);
+        if (it == Dict.m_regIDs.end() && !isFlag) {
             std::ostringstream ost;
             yyerror(qPrintable(QString("register `%1' is undefined\n").arg(yyvsp[0].str)));
         }
@@ -1754,8 +1704,8 @@ SSLParser::
     case 127: {
         // This is a mixture of the param: PARM {} match and the value_op: NAME {} match
         SharedExp s;
-        std::set<QString>::iterator it = Dict.ParamSet.find(yyvsp[0].str);
-        if (it != Dict.ParamSet.end()) {
+        std::set<QString>::iterator it = Dict.m_definedParams.find(yyvsp[0].str);
+        if (it != Dict.m_definedParams.end()) {
             s = Location::get(opParam, Const::get(yyvsp[0].str), nullptr);
         }
         else if (ConstTable.find(yyvsp[0].str) != ConstTable.end()) {
@@ -1783,7 +1733,6 @@ SSLParser::
         break;
     }
     case 130: {
-        yyval.exp = Unary::get(opPostVar, yyvsp[-1].exp);
         ;
         break;
     }
@@ -1799,13 +1748,13 @@ SSLParser::
     }
     case 133: {
         if (yyvsp[0].str.compare("BIG", Qt::CaseInsensitive) == 0) {
-            Dict.m_bigEndian = Endian::Big;
+            Dict.m_endianness = Endian::Big;
         }
         else if (yyvsp[0].str.compare("LITTLE", Qt::CaseInsensitive) == 0) {
-            Dict.m_bigEndian = Endian::Little;
+            Dict.m_endianness = Endian::Little;
         }
         else {
-            Dict.m_bigEndian = Endian::Invalid;
+            Dict.m_endianness = Endian::Invalid;
         };
         break;
     }
@@ -1847,8 +1796,6 @@ SSLParser::
         break;
     }
     case 140: {
-        Dict.fastMap[yyvsp[-2].str] = QString(yyvsp[0].str);
-        ;
         break;
     }
     }

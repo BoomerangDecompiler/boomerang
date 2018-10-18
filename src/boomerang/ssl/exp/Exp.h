@@ -159,8 +159,6 @@ public:
     {
         return m_oper == opIntConst || m_oper == opFltConst || m_oper == opStrConst;
     }
-    /// True if is a post-var expression (var_op' in SSL file)
-    bool isPostVar() const { return m_oper == opPostVar; }
     /// True if this is an opSize (size case; deprecated)
     bool isSizeCast() const { return m_oper == opSize; }
     /// True if this is a subscripted expression (SSA)

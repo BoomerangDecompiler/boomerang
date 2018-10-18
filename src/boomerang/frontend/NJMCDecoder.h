@@ -61,13 +61,13 @@ public:
     void processComputedCall(const char *name, int size, SharedExp dest, Address pc,
                              DecodeResult &result);
 
-    /// \copydoc IInstructionTranslator::getRegName
+    /// \copydoc IDecoder::getRegName
     QString getRegName(int idx) const override;
 
-    /// \copydoc IInstructionTranslator::getRegSize
+    /// \copydoc IDecoder::getRegSize
     int getRegSize(int idx) const override;
 
-    /// \copydoc IInstructionTranslator::getRegIdx
+    /// \copydoc IDecoder::getRegIdx
     int getRegIdx(const QString &name) const override;
 
 protected:
@@ -86,33 +86,6 @@ protected:
      */
     std::unique_ptr<RTL> instantiate(Address pc, const char *name,
                                      const std::initializer_list<SharedExp> &args = {});
-
-    /**
-     * Similarly to \ref NJMCDecoder::instantiate, given a parameter name
-     * and a list of Exp*'s representing sub-parameters, return
-     * a fully substituted Exp for the whole expression
-     *
-     * \param   name  parameter name
-     *          ...   Exp* representing actual operands
-     * \returns an instantiated list of Exps
-     */
-    SharedExp instantiateNamedParam(char *name, const std::initializer_list<SharedExp> &args);
-
-    /**
-     * In the event that it's necessary to synthesize the call of a
-     * named parameter generated with \ref instantiateNamedParam, this
-     * \ref substituteCallArgs will substitute the arguments that follow into
-     * the expression.
-     *
-     * \note    Should only be used after instantiateNamedParam(name, ..);
-     * \note    exp (the pointer) could be changed
-     *
-     * \param   name  parameter name
-     * \param   exp   expression to instantiate into
-     * \param   args Exp* representing actual operands
-     */
-    void substituteCallArgs(char *name, SharedExp *exp,
-                            const std::initializer_list<SharedExp> &args);
 
     /**
      * Process an unconditional jump instruction

@@ -26,10 +26,7 @@ typedef std::shared_ptr<Type> SharedType;
 
 /**
  * Summarises one line of the \@REGISTERS section of an SSL
- * file. This class is used extensively in sslparser.y, and there is a public
- * member of RTLInstDict called DetRegMap which gives a Register object from
- * a register index (register indices may not always be sequential, hence it's
- * not just an array of Register objects).
+ * file. This class is used extensively in sslparser.y.
  */
 class BOOMERANG_API Register
 {

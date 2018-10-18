@@ -14,10 +14,10 @@
 # --------------------------------------------------------------------------
 # SPARC RTL
 # --------------------------------------------------------------------------
- 
+
 # $Revision$
 # Jun-Dec 97 - Shane: Created
-# 30 Apr 01 - Nathan: Minor clean-up to trap instructions, changed logicals to 
+# 30 Apr 01 - Nathan: Minor clean-up to trap instructions, changed logicals to
 #                   use 0- rather than !
 # 21 Jun 01 - Nathan: Fixed precedence problem in LDD & STD
 # 26 Nov 02 - Mike: Added RETURN (V9) instruction
@@ -40,11 +40,11 @@ ENDIANNESS BIG;
 # special register maps to -1
 
 INTEGER
-[ %g0, %g1, %g2, %g3, %g4, %g5, %g6, %g7, 
+[ %g0, %g1, %g2, %g3, %g4, %g5, %g6, %g7,
   %o0, %o1, %o2, %o3, %o4, %o5, %o6, %o7,
   %l0, %l1, %l2, %l3, %l4, %l5, %l6, %l7,
   %i0, %i1, %i2, %i3, %i4, %i5, %i6, %i7 ][32] -> 0..31,
-  
+
   %sp[32] -> 14,  # Aliases
   %fp[32] -> 30;
 
@@ -84,6 +84,7 @@ INTEGER
 [ %CF, %ZF, %NF, %OF, %AF ][1] -> -1,  # Standard flags
 [ %FZF,%FLF,%FGF ][1] -> -1;           # Floating point flags
 
+INTEGER %CTI[1] -> -1;
 
 #@EXCEPTIONS
 # Priority name -> id
@@ -119,7 +120,7 @@ LOGICALFLAGS(op1)   {
         *1*  %OF := 0
         *1*  %CF := 0
 };
-ADDFLAGS(op1, op2, result)  {   
+ADDFLAGS(op1, op2, result)  {
         *1*  %NF := result@[31:31]
         *1*  %ZF := [result = 0 ? 1 : 0]
         *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) |
@@ -137,20 +138,20 @@ TADDFLAGS(op1, op2, result) {
 SUBFLAGS(op1, op2, result)  {
         *1*  %NF := result@[31:31]
         *1*  %ZF := [result = 0 ? 1 : 0]
-        *1*  %OF := ((op1@[31:31]) & ~(op2@[31:31]) & ~(result@[31:31])) | 
+        *1*  %OF := ((op1@[31:31]) & ~(op2@[31:31]) & ~(result@[31:31])) |
                 (~(op1@[31:31]) & (op2@[31:31]) & (result@[31:31]))
-        *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) | 
+        *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) |
                 ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
 };
 TSUBFLAGS(op1, op2, result) {
         *1*  %NF := result@[31:31]
         *1*  %ZF := [result = 0 ? 1 : 0]
 #       *1*  %OF := temp_v
-        *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) | 
+        *1*  %CF := (~(op1@[31:31]) & (op2@[31:31])) |
                 ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
 };
 # MVE: These are correct only for a 32 but result; usually result is 64 bits
-MULTFLAGS(op1, op2, result) {       
+MULTFLAGS(op1, op2, result) {
         *1*  %NF := result@[31:31]
         *1*  %ZF := [result = 0 ? 1 : 0]
         *1*  %OF := 0
@@ -159,9 +160,9 @@ MULTFLAGS(op1, op2, result) {
 MULTSFLAGS(op1, op2, result){
         *1*  %NF := result@[31:31]
         *1*  %ZF := [result = 0 ? 1 : 0]
-        *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) | 
+        *1*  %OF := ((op1@[31:31]) & (op2@[31:31]) & ~(result@[31:31])) |
                 (~(op1@[31:31]) & ~(op2@[31:31]) & (result@[31:31]))
-        *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) | 
+        *1*  %CF := ((op1@[31:31]) & (op2@[31:31])) |
                 (~(result@[31:31]) & ((op1@[31:31]) | (op2@[31:31])))
 };
 DIVFLAGS(op1, op2, result)  {
@@ -223,21 +224,21 @@ FETCHEXEC           *32* %g0 := 0
 
 
 # Load double instruction-  the 1st reg. of double load must be even
-# the 2nd reg. of double load must be the next reg. after 1st, hence odd. 
+# the 2nd reg. of double load must be the next reg. after 1st, hence odd.
 #LOADD := { LDD_, LDDA_ }
 LDD      eaddr, rd                      *32*            rd := m[eaddr]
-                                        *32* succ(rd) := m[eaddr + WORD]; 
+                                        *32* succ(rd) := m[eaddr + WORD];
 # Note: the above offset (WORD) is now in bytes!
 
 #LOADU := { LD_, LDA_ }
 LD       eaddr, rd                      *32* rd := m[eaddr]{32};
-                                              
+
 #LOADUH := { LDUH_, LDUHA_ }
 LDUH     eaddr, rd                      *32* rd := zfill(16, 32, m[eaddr]);
-                                              
+
 #LOADUB := { LDUB_, LDUBA_ }
 LDUB     eaddr, rd                      *32* rd := zfill(8, 32, m[eaddr]);
-                                              
+
 #LOADSH := { LDSH_, LDSHA_ }
 LDSH     eaddr, rd                      *32* rd := sgnex(16, 32, m[eaddr]);
 
@@ -248,7 +249,7 @@ LDSB     eaddr, rd                      *32* rd := sgnex(8, 32, m[eaddr]);
 # Store double instruction- the 1st reg. of double op. must be even
 # the 2nd reg. of double op. must be the next reg. after 1st, hence odd
 #STOD := { STD_, STDA_ }
-STD      rd, eaddr                      *32* m[eaddr] := rd  
+STD      rd, eaddr                      *32* m[eaddr] := rd
                                         *32* m[eaddr + WORD] := succ(rd);
 
 #STW := { ST_, STA_}
@@ -261,8 +262,8 @@ STH      rd, eaddr                      *16* m[eaddr] := truncs(32, 16, rd);
 STB      rd, eaddr                      *8*  m[eaddr] := truncs(32, 8, rd);
 
 
-# LOad STore Unsigned Byte  
-# the byte number given by address offset 
+# LOad STore Unsigned Byte
+# the byte number given by address offset
 # (1st 2 bytes of addr.) is selected by a shift
 # the copied byte (in the source addr.) is replaced with 1's
 #LDSTUNBYTE := { LDSTUB_, LDSTUBA_ }
@@ -272,10 +273,10 @@ LDSTUB   eaddr, rd                      *32*  rd := zfill(8,32,m[eaddr])
 # Swap using temp register
 #SWAPS := { SWAP_, SWAPA_ }
 SWAP     eaddr, rd                      *32* tmp1 := rd
-                                        *32* rd := m[eaddr] 
+                                        *32* rd := m[eaddr]
                                         *32* m[eaddr] := tmp1;
 
-# Logical operators - use OP1 (table) to map the correct operator. 
+# Logical operators - use OP1 (table) to map the correct operator.
 
 LOG_N   := { "AND","OR","XOR","ANDCC","ORCC","XORCC" };
 OP1     := {  "&",  "|", "^",   "&",    "|",   "^" };
@@ -297,7 +298,7 @@ NOP                                    _;
 FLUSH  eaddr                            _; # icache flush
 STBAR                                   _; # store barrier
 
-# Shift operators- again uses OP2 table for correct operator. 
+# Shift operators- again uses OP2 table for correct operator.
 
 SHIFTS  := { "SLL", "SRL", "SRA" };
 OP2     := { "<<",  ">>",  ">>A" };
@@ -305,7 +306,7 @@ SHIFTS[IDX]     rs1, reg_or_imm, rd
                                 *32* rd := rs1 OP2[IDX] reg_or_imm;
 
 
-# Arithmetic operators- uses OP3 table for correct operator. 
+# Arithmetic operators- uses OP3 table for correct operator.
 # NOTE: The format of these (number of RTLs, etc) must agree with the
 # isCompare function in rtl/ctisparc.cc.
 
@@ -358,9 +359,9 @@ MULSCC      rs1, reg_or_imm, rd
                 *32* %Y := %Y >> 1 | (rs1 << 31)
                 *32* rd := tmp + tmp2
                 ADDFLAGS( tmp, tmp2, rd);
-    
 
-# Signed Multiplication - uses the Y register to store top 32 bits treats  Y 
+
+# Signed Multiplication - uses the Y register to store top 32 bits treats  Y
 # and rd as 64 bit register
 SMULT   := { "SMUL", "SMULCC" };
 SMULT[idx]  rs1, reg_or_imm, rd
@@ -417,7 +418,7 @@ SDIVS := { "SDIV", "SDIVCC" };
 SDIVS[idx]  rs1, reg_or_imm, rd
                 *64* tmpl := (zfill(32, 64, %Y) << 32) | zfill(32, 64, rs1)
                 *32* rd := truncs(64, 32, tmpl /! sgnex(32, 64, reg_or_imm)) ;
-#   *32* rd := [((tmp@[32:63] = 0) or (tmp@[32:63] = MAX32BIT)) ? 
+#   *32* rd := [((tmp@[32:63] = 0) or (tmp@[32:63] = MAX32BIT)) ?
 #   tmp : [tmp > 0 ? MAXSIGN32 : SIGN_32_NEG]]! ;
 
 SDIVSQ := { "SDIVQ", "SDIVCCQ" };
@@ -427,9 +428,9 @@ SDIVCCQ     rs1, reg_or_imm, rd
                 DIVFLAGS(rs1, reg_or_imm, rd);
 
 # Save instruction is machine-dependant (register windows)
-# Note that these versions of save and restore are one possible implementation 
+# Note that these versions of save and restore are one possible implementation
 # of the sparc spec (essentially number of windows = 1 & assume the window traps
-# do what they're supposed to do). 
+# do what they're supposed to do).
 SAVE  rs1, reg_or_imm, rd
                         *32* tmp := rs1 + reg_or_imm
                         *32* m[%sp+0]  := %l0
@@ -458,7 +459,7 @@ SAVE  rs1, reg_or_imm, rd
                         *32* %i7 := %o7
                         *32* rd := tmp;
 
-# Restore instruction is machine-dependent (register windows) 
+# Restore instruction is machine-dependent (register windows)
 RESTORE  rs1, reg_or_imm, rd
                         *32* tmp := rs1 + reg_or_imm
                         *32* %o0 := %i0
@@ -514,7 +515,7 @@ RETURN  addr
                         *32* %i6 := m[%sp+56]
                         *32* %i7 := m[%sp+60];
 
-# Jump instructions- uses COND table for correct boolean expression. 
+# Jump instructions- uses COND table for correct boolean expression.
 # Always executes delay instr. on branch
 
 JUMPS := { "BA", "BN", "BNE", "BE", "BG", "BLE", "BGE", "BL",
@@ -528,12 +529,12 @@ COND := { "1", "0", "~%ZF", "%ZF", "~(%ZF | (%NF ^ %OF))", "%ZF | (%NF ^ %OF)",
         "~(%NF ^ %OF)", "%NF ^ %OF", "~(%CF | %ZF)", "%CF | %ZF", "~%CF", "%CF",
         "~%NF", "%NF", "~%OF", "%OF" };
 
-JUMPS[idx]  reloc 
+JUMPS[idx]  reloc
                 *32* %pc := %npc
                 *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
                 *1* %CTI := 1;
 
-PJUMPS[idx]  reloc 
+PJUMPS[idx]  reloc
                 *32* %pc := %npc
                 *32* %npc := [(COND[idx] = 0) ? %npc+4 : reloc]
                 *1* %CTI := 1;
@@ -570,7 +571,7 @@ JUMPSA_C[idx] reloc   # Conditional branches
 # Call instruction- always executes delay instruction
 # PC relative transfer of control
 CALL__ reloc
-                *32* r[15] := %pc  
+                *32* r[15] := %pc
                 *32* %pc := %npc
                 *32* %npc := reloc
                 *1* %CTI := 1;
@@ -612,11 +613,11 @@ WRTBR  rs1, reg_or_imm
                 *32* %TBR := %TBR | ((rs1 ^ reg_or_imm) << 12);
 
 ## Float Instructions
-# NB all instructions assume that we have registers up to 128 bits and that 
+# NB all instructions assume that we have registers up to 128 bits and that
 # the 4 sparc registers used as such are automagically determined.
-# FMOVs is used to move the word content of a floating point register to a 
+# FMOVs is used to move the word content of a floating point register to a
 # destination floating point register.
-# NB: This means that 2 FMOVs statements are required to move a double and 
+# NB: This means that 2 FMOVs statements are required to move a double and
 # 4 to move a quad.
 
 FMOVs      fs2s, fds
@@ -731,7 +732,7 @@ COND2_C   := { "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
             "~(%FGF | %FLF)", "~(%FZF | %FGF)", "(%FGF | %FZF)",
             "%FLF", "(%FGF | %FLF)", "~(%FZF | %FLF)", "~%FGF",
             "~%FLF", "~(%FZF | %FGF | %FLF)", "(%FZF | %FGF | %FLF)" };
-            
+
 COND2     := { "1", "0", "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
             "~(%FGF | %FLF)", "~(%FZF | %FGF)", "(%FGF | %FZF)",
             "%FLF", "(%FGF | %FLF)", "~(%FZF | %FLF)", "~%FGF",
@@ -742,7 +743,7 @@ JUMPS2_C  := { "FBNE", "FBE", "FBG", "FBLE", "FBUE",
             "FBUGE", "FBU", "FBO" };
 JUMPS2 := { "FBA", "FBN", JUMPS2_C };
 
-JUMPS2[idx]  reloc 
+JUMPS2[idx]  reloc
             *32* %pc := %npc
             *32* %npc := [(COND2[idx] = 0) ? %npc+4 : reloc]
             *1* %CTI := 1;
@@ -802,7 +803,7 @@ TRAPS[idx]  eaddr
 RET_REG_VAL rs1, rs2         *32* %o0 := rs1 + rs2;
 RET_IMM_VAL rs1, imm         *32* %o0 := rs1 + imm;
 
-# A restore in the delay slot of a call. 
+# A restore in the delay slot of a call.
 # The temp is needed because the sources are in the old register window, and
 # and the destination is in the new window. Consider foo(1, 2) implemented as:
 # mov 1, %i0

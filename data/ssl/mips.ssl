@@ -4,15 +4,15 @@
 #
 #   \file mips.ssl
 #
-# PURPOSE 
+# PURPOSE
 #
 #   Semantic description of the MIPS R3000 (32-bit) and later CPUs.
 #
-# AUTHOR 
+# AUTHOR
 #
 #   \author Markus Gothe, nietzsche@lysator.liu.se
 #
-# REVISION 
+# REVISION
 #
 #   $Id$
 #
@@ -30,7 +30,7 @@ MAXSIGN32   := 2**31 - 1;    # all bits except sign bit are set
 SIGN_32_NEG := -2**31;
 WORD        := 4;            # size of word in bytes (for now)
 
-ENDIANESS BIG;
+ENDIANNESS BIG;
 
 # register mapping
 # normal registers have a mapping to a Cardinal
@@ -41,7 +41,7 @@ INTEGER
   %t0 , %t1 , %t2, %t3, %t4, %t5, %t6, %t7,
   %s0 , %s01, %s2, %s3, %s4, %s5, %s6, %s7,
   %t8, %t9, %k0, %k1, %gp, %sp, %fp, %ra ][32] -> 0..31,
-  
+
   %s8[32] -> 30;          #saved register if not frame pointer
 
 FLOAT
@@ -51,16 +51,20 @@ FLOAT
   %f24, %f25, %f26, %f27, %f28, %f29, %f30, %f31 ][64] -> 32..63;
 
 INTEGER
-[ %pc][32] -> -1, # Program Counter
-[ %HI, %LO] [32] -> -1;   #HI and LO special registers.
+[ %pc, %npc ][32] -> -1,  # Program Counter
+[ %HI, %LO  ][32] -> -1;  # HI and LO special registers.
 
 #SP := 29;
 
 NOP
-                _ ;
+    _
+;
 
-J   dst 
-            *32* %pc := dst;
+J   dst
+    *32* %pc := dst
+;
 
 JR  dst
-            *32* %pc := 'r[dst];
+    *32* %pc  := %npc
+    *32* %npc := r[dst]
+;
