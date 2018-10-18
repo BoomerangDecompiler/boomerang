@@ -10,17 +10,11 @@
 #pragma once
 
 
-#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
-#include "boomerang/util/Address.h"
+#include "boomerang/ssl/TableEntry.h"
 #include "boomerang/util/ByteUtil.h"
 
-#include <QMap>
-#include <QString>
-
-#include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <vector>
 
@@ -28,39 +22,10 @@
 class Exp;
 class Statement;
 class Type;
-
 class OStream;
 
 
 using SharedExp = std::shared_ptr<Exp>;
-using SharedRTL = std::shared_ptr<RTL>;
-
-
-/**
- * The TableEntry class represents a single instruction - a string/RTL pair.
- */
-class BOOMERANG_API TableEntry
-{
-public:
-    TableEntry();
-    TableEntry(const std::list<QString> &params, const RTL &rtl);
-
-public:
-    /**
-     * Appends the statements in \p rtl to the RTL in this TableEntry,
-     * if the parameters match.
-     *
-     * \param params parameters of the instruction
-     * \param rtl Statements of this RTL are appended.
-     *
-     * \returns Zero on success, non-zero on failure.
-     */
-    int appendRTL(const std::list<QString> &params, const RTL &rtl);
-
-public:
-    std::list<QString> m_params;
-    RTL m_rtl;
-};
 
 
 /**

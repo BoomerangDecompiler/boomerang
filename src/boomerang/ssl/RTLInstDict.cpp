@@ -21,30 +21,6 @@
 #include "boomerang/util/log/Log.h"
 
 
-TableEntry::TableEntry()
-    : m_rtl(Address::INVALID)
-{
-}
-
-
-TableEntry::TableEntry(const std::list<QString> &params, const RTL &rtl)
-    : m_rtl(rtl)
-{
-    std::copy(params.begin(), params.end(), std::back_inserter(m_params));
-}
-
-
-int TableEntry::appendRTL(const std::list<QString> &params, const RTL &rtl)
-{
-    if (!std::equal(m_params.begin(), m_params.end(), params.begin())) {
-        return -1;
-    }
-
-    m_rtl.append(rtl.getStatements());
-    return 0;
-}
-
-
 RTLInstDict::RTLInstDict(bool verboseOutput)
     : m_verboseOutput(verboseOutput)
     , m_endianness(Endian::Little)

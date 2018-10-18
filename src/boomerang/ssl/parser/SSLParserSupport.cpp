@@ -22,6 +22,8 @@
 #include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
 
+#include <QMap>
+
 #include <cassert>
 #include <cstring>
 #include <fstream>
