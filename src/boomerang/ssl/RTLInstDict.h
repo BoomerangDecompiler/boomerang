@@ -59,8 +59,9 @@ public:
      */
     bool readSSLFile(const QString &sslFileName);
 
-    /// \returns the name and the number of operands of the instruction wwith name \p name
-    std::pair<QString, DWord> getSignature(const char *name);
+    /// \returns the name and the number of operands of the instruction
+    /// with name \p instructionName
+    std::pair<QString, DWord> getSignature(const QString &instructionName) const;
 
     /**
      * Returns an RTL containing the semantics of the instruction with name \p name.
