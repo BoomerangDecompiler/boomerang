@@ -68,9 +68,3 @@ void StmtPartModifier::visit(ReturnStatement *, bool &visitChildren)
 {
     visitChildren = true;
 }
-
-
-void StmtPartModifier::visit(ImpRefStatement *, bool &visitChildren)
-{
-    visitChildren = true;
-}

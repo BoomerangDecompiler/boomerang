@@ -42,7 +42,6 @@ list(APPEND boomerang-ssl-sources
     ssl/statements/CaseStatement
     ssl/statements/GotoStatement
     ssl/statements/ImplicitAssign
-    ssl/statements/ImpRefStatement
     ssl/statements/PhiAssign
     ssl/statements/ReturnStatement
     ssl/statements/Statement

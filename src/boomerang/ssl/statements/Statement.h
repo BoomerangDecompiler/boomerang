@@ -50,8 +50,7 @@ enum class StmtType : uint8_t
     Ret, ///< Return
     Branch,
     Goto,
-    Case, ///< switch statement
-    ImpRef
+    Case ///< switch statement
 };
 
 /**
@@ -88,8 +87,8 @@ enum class BranchType : uint8_t
  *                  __/   |   \________
  *                 /      |            \
  *     GotoStatement  TypingStatement@  ReturnStatement
- * BranchStatement_/     /          \
- * CaseStatement__/  Assignment@   ImpRefStatement
+ * BranchStatement_/     /
+ * CaseStatement__/  Assignment@
  * CallStatement_/  /   /    \ \________
  *       PhiAssign_/ Assign  BoolAssign \_ImplicitAssign
  */
@@ -163,9 +162,6 @@ public:
 
     /// \returns true if this statment is a flags assignment
     bool isFlagAssign() const;
-
-    /// \returns true if this statement is an implicit reference
-    bool isImpRef() const { return m_kind == StmtType::ImpRef; }
 
     virtual bool isGoto() { return m_kind == StmtType::Goto; }
     virtual bool isBranch() { return m_kind == StmtType::Branch; }
