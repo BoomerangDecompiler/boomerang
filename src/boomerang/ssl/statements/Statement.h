@@ -163,8 +163,8 @@ public:
     /// \returns true if this statment is a flags assignment
     bool isFlagAssign() const;
 
-    virtual bool isGoto() { return m_kind == StmtType::Goto; }
-    virtual bool isBranch() { return m_kind == StmtType::Branch; }
+    bool isGoto() const { return m_kind == StmtType::Goto; }
+    bool isBranch() const { return m_kind == StmtType::Branch; }
 
     /// \returns true if this statement is a call
     bool isCall() const { return m_kind == StmtType::Call; }
@@ -179,7 +179,7 @@ public:
     /// \note for now, it only represents decoded indirect jump instructions
     bool isHL_ICT() const { return m_kind == StmtType::Case; }
 
-    bool isCase() { return m_kind == StmtType::Case; }
+    bool isCase() const { return m_kind == StmtType::Case; }
 
     /// \returns true if this is a fpush/fpop
     bool isFpush() const;
@@ -225,9 +225,9 @@ public:
      * \param replace the expression with which to replace it
      * \param cc      Set to true to change collectors as well.
      * \returns True if any change
+     * \todo consider constness
      */
-    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace,
-                                  bool cc = false) = 0; // TODO: consider constness
+    virtual bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) = 0;
 
     /**
      * \returns true if can propagate to \p exp (must be a RefExp to return true)
@@ -275,9 +275,8 @@ public:
     // Only Assign overrides at present
     virtual void fixSuccessor() {}
 
-    // Data flow based type analysis
-    SharedType meetWithFor(const SharedType &ty, const SharedExp &e,
-                           bool &changed); // Meet the type associated with e with ty
+    /// Meet the type associated with \p e with \p ty
+    SharedType meetWithFor(const SharedType &ty, const SharedExp &e, bool &changed);
 
 public:
     /**
