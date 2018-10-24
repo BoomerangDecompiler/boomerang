@@ -5,7 +5,7 @@ __size32 fib(int param1);
 int main(int argc, char *argv[])
 {
     int g3; 		// r3
-    int g3_2; 		// r3{0}
+    int g3_2; 		// r3{12}
     int g5; 		// r5
     int local0; 		// m[g1 - 24]
 
@@ -36,14 +36,14 @@ __size32 fib(int param1)
     __size32 g11; 		// r11
     __size32 g12; 		// r12
     int g3; 		// r3
-    int g3_2; 		// r3{0}
-    int g3_4; 		// r3{0}
+    int g3_2; 		// r3{11}
+    int g3_4; 		// r3{25}
     __size32 g5; 		// r5
     __size32 g6; 		// r6
     __size32 g7; 		// r7
     __size32 g8; 		// r8
-    int local3; 		// g3{0}
-    __size32 local4; 		// CR1{0}
+    int local3; 		// g3{14}
+    __size32 local4; 		// CR1{23}
 
     local4 = CR1;
     if (param1 > 1) {

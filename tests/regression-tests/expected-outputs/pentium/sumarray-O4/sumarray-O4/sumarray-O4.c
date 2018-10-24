@@ -5,11 +5,11 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int eax; 		// r24
-    int eax_1; 		// r24{0}
-    int eax_4; 		// r24{0}
+    int eax_1; 		// r24{3}
+    int eax_4; 		// r24{6}
     int edx; 		// r26
-    int edx_1; 		// r26{0}
-    int local2; 		// eax_1{0}
+    int edx_1; 		// r26{4}
+    int local2; 		// eax_1{3}
 
     edx = 0;
     eax = 0;

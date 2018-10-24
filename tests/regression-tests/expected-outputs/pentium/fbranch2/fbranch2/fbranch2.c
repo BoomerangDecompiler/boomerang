@@ -5,7 +5,6 @@ int main(int argc, char *argv[])
 {
     float local0; 		// m[esp - 12]
     double local1; 		// m[esp - 68]
-    double st7; 		// r39
 
     scanf("%f", &local0);
     printf("a is %f, b is %f\n", 5., local1);
@@ -24,7 +23,6 @@ int main(int argc, char *argv[])
     if (5. >= local0) {
         puts("Greater or Equal");
     }
-    st7 = local0;
     if (local0 > 5.) {
         puts("Less");
     }

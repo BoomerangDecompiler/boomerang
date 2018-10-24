@@ -3,7 +3,6 @@ int main(int argc, char *argv[]);
 /** address: 0x00001be4 */
 int main(int argc, char *argv[])
 {
-    union { double; __size64; } f0; 		// r32
     union { double; __size32; } f31; 		// r63
     __size32 g3; 		// r3
     float local0; 		// m[g1 - 48]
@@ -26,7 +25,6 @@ int main(int argc, char *argv[])
     if (f31 == local0) {
         g3 = puts(/* machine specific */ (int) LR + 996);
     }
-    f0 = local0;
     if (f31 < local0) {
         g3 = puts(/* machine specific */ (int) LR + 1016);
     }

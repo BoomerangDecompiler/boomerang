@@ -5,8 +5,8 @@ __size32 getDevice(__size32 param1);
 int main(int argc, char *argv[])
 {
     int eax; 		// r24
-    union { pciVideoRec *; __size32; } *eax_1; 		// r24{0}
-    int eax_2; 		// r24{0}
+    union { pciVideoRec *; __size32; } *eax_1; 		// r24{1}
+    int eax_2; 		// r24{3}
 
     eax_1 = xf86GetPciVideoInfo();
     eax = *eax_1;
