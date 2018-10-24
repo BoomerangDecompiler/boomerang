@@ -368,7 +368,7 @@ void UserProc::setParamType(int idx, SharedType ty)
     Assignment *a = static_cast<Assignment *>(*it);
     a->setType(ty);
     // Sometimes the signature isn't up to date with the latest parameters
-    m_signature->setParamType(a->getLeft(), ty);
+    m_signature->setParamType(idx, ty);
 }
 
 

@@ -241,7 +241,7 @@ void Signature::setParamType(const SharedExp &e, SharedType ty)
     int idx = findParam(e);
 
     if (idx == -1) {
-        LOG_WARN("Could not set type for unknown parameter expression %1", e);
+        LOG_WARN("Could not set type for unknown parameter expression '%1' of '%2'", e, getName());
         return;
     }
 

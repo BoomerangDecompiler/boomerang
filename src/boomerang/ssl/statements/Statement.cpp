@@ -599,8 +599,8 @@ void Statement::insertCasts()
     // First we postvisit expressions using a StmtModifier and an ExpCastInserter
     ExpCastInserter eci;
     StmtModifier sm(&eci, true); // True to ignore collectors
-
     accept(&sm);
+
     // Now handle the LHS of assigns that happen to be m[...], using a StmtCastInserter
     StmtCastInserter sci;
     accept(&sci);
