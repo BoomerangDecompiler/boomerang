@@ -108,14 +108,14 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
                 ++rr; // Yes, in signature; OK
             }
             else {
-                // This return is not in the signature. Remove it
-                rr          = proc->getRetStmt()->erase(rr);
-                removedRets = true;
-
                 if (m_prog->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a,
                             proc->getName());
                 }
+
+                // This return is not in the signature. Remove it
+                rr          = proc->getRetStmt()->erase(rr);
+                removedRets = true;
             }
         }
 
