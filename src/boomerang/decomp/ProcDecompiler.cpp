@@ -474,16 +474,17 @@ void ProcDecompiler::middleDecompile(UserProc *proc)
                 }
 
                 PassManager::get()->executePass(PassID::PreservationAnalysis, proc);
-                PassManager::get()->executePass(
-                    PassID::CallDefineUpdate,
-                    proc); // Returns have uses which affect call defines (if childless)
+
+                // Returns have uses which affect call defines (if childless)
+                PassManager::get()->executePass(PassID::CallDefineUpdate, proc);
                 PassManager::get()->executePass(PassID::CallAndPhiFix, proc);
-                PassManager::get()->executePass(PassID::PreservationAnalysis,
-                                                proc); // Preserveds subtract from returns
+
+                // Preserveds subtract from returns
+                PassManager::get()->executePass(PassID::PreservationAnalysis, proc);
             }
 
             if (project->getSettings()->verboseOutput) {
-                proc->debugPrintAll("SSA (after updating returns");
+                proc->debugPrintAll("SSA (after updating returns)");
             }
         }
 

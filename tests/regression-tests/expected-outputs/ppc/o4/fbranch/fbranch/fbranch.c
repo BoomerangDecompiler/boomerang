@@ -4,13 +4,11 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     union { double; __size64; } f0; 		// r32
-    union { double; __size32; } f1; 		// r33
     int g3; 		// r3
     float local0; 		// m[g1 - 24]
 
     scanf("%f", &local0);
     printf("a is %f, b is %f\n", 2.5250868e-29, 2.5243549e-29);
-    f1 = local0;
     if (5. == local0) {
         g3 = puts("Equal");
         if (5. != local0) {
@@ -37,7 +35,6 @@ bb0x10000568:
             goto bb0x10000568;
         }
     }
-    f0 = local0;
     if (5. < local0) {
         g3 = puts("Less");
     }

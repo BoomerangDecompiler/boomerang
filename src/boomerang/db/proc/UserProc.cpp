@@ -1182,7 +1182,8 @@ bool UserProc::proveEqual(const SharedExp &queryLeft, const SharedExp &queryRigh
     }
 
     if (m_prog->getProject()->getSettings()->debugProof) {
-        LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query, getName());
+        LOG_MSG("Prove returns %1 for %2 in %3", (result ? "true" : "false"), query,
+                this->getName());
     }
 
     if (result && !conditional) {

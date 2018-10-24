@@ -30,8 +30,6 @@ void rux_encrypt(__size32 param1)
     unsigned char bl_1; 		// r11{8}
     unsigned char bl_4; 		// r11{11}
     unsigned char cl; 		// r9
-    unsigned int eax; 		// r24
-    unsigned int ecx; 		// r25
     __size32 esp; 		// r28
     unsigned int local0; 		// m[esp - 6]
 
@@ -42,8 +40,6 @@ void rux_encrypt(__size32 param1)
         cl = (cl & 0xf ^ *((local0) + 0x8049644));
         bl_4 = *((cl) + esp - 40);
         *(unsigned char*)((local0) + param1) = bl_4;
-        eax = (local0);
-        ecx = (local0);
         bl = (bl_1 >> 4 ^ *((local0) + 0x8049648));
         bl = *((bl) + esp - 24);
         bl = (bl << 4 ^ *((local0) + param1));

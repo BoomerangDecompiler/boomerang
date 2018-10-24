@@ -42,7 +42,7 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
         auto equation = Binary::get(opEquals, lhs, lhs);
 
         if (proc->getProg()->getProject()->getSettings()->debugProof) {
-            LOG_MSG("attempting to prove %1 is preserved by %2", equation, getName());
+            LOG_MSG("Attempting to prove %1 is preserved by %2", equation, proc->getName());
         }
 
         if (proc->preservesExp(lhs)) {
@@ -51,13 +51,13 @@ bool PreservationAnalysisPass::execute(UserProc *proc)
     }
 
     if (proc->getProg()->getProject()->getSettings()->debugProof) {
-        LOG_MSG("### proven true for procedure %1:", getName());
+        LOG_MSG("### Proven true for procedure %1:", proc->getName());
 
         for (auto &elem : proc->getProvenTrue()) {
             LOG_MSG("  %1 = %2", elem.first, elem.second);
         }
 
-        LOG_MSG("### End proven true for procedure %1", getName());
+        LOG_MSG("### End proven true for procedure %1", proc->getName());
     }
 
     // Remove the preserved locations from the modifieds and the returns

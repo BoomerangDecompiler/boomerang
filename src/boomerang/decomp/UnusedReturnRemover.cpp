@@ -53,6 +53,9 @@ bool UnusedReturnRemover::removeUnusedReturns()
             // Removing returns changes the uses of the callee.
             // So we have to do type analyis to update the use information.
             PassManager::get()->executePass(PassID::LocalTypeAnalysis, *it);
+
+            // type analysis might propagate statements that could not be propagated before
+            PassManager::get()->executePass(PassID::UnusedStatementRemoval, *it);
         }
         change |= removedReturns;
 
@@ -105,14 +108,14 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
                 ++rr; // Yes, in signature; OK
             }
             else {
-                // This return is not in the signature. Remove it
-                rr          = proc->getRetStmt()->erase(rr);
-                removedRets = true;
-
                 if (m_prog->getProject()->getSettings()->debugUnused) {
                     LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a,
                             proc->getName());
                 }
+
+                // This return is not in the signature. Remove it
+                rr          = proc->getRetStmt()->erase(rr);
+                removedRets = true;
             }
         }
 
@@ -192,7 +195,6 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
 
     if (removedParams || removedRets) {
         // Update the statements that call us
-
         for (CallStatement *call : proc->getCallers()) {
             PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
             updateSet.insert(call->getProc());      // Make sure we redo the dataflow
@@ -267,8 +269,7 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
         PassManager::get()->executePass(PassID::PhiPlacement, proc);
 
         PassManager::get()->executePass(PassID::BlockVarRename, proc); // Rename the locals
-        PassManager::get()->executePass(PassID::StatementPropagation,
-                                        proc); // Surely need propagation too
+        PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
         if (m_prog->getProject()->getSettings()->verboseOutput) {
             proc->debugPrintAll("after propagating locals");

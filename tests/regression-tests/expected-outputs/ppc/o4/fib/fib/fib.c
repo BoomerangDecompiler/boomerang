@@ -5,7 +5,7 @@ __size32 fib(int param1);
 int main(int argc, char *argv[])
 {
     int g3; 		// r3
-    __size32 g3_2; 		// r3{0}
+    __size32 g3_2; 		// r3{1}
 
     g3_2 = fib(9);
     g3 = fib(8);
@@ -18,7 +18,7 @@ __size32 fib(int param1)
 {
     int g29; 		// r29
     int g3; 		// r3
-    int g3_1; 		// r3{0}
+    int g3_1; 		// r3{5}
     __size32 g4; 		// r4
 
     g4 = /* machine specific */ (int) LR;

@@ -23,9 +23,6 @@ void passem(__size32 param1, __size32 param2, __size32 param3, __size32 param4)
 /** address: 0x08048924 */
 void addem(__size32 param1, __size32 param2, __size32 param3, union { __size32 *; __size32; } param4)
 {
-    __size32 eax; 		// r24
-
-    eax = param1 + param2 + param3;
     *(__size32*)param4 = param1 + param2 + param3;
     return;
 }
