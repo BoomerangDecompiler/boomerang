@@ -53,6 +53,9 @@ bool UnusedReturnRemover::removeUnusedReturns()
             // Removing returns changes the uses of the callee.
             // So we have to do type analyis to update the use information.
             PassManager::get()->executePass(PassID::LocalTypeAnalysis, *it);
+
+            // type analysis might propagate statements that could not be propagated before
+            PassManager::get()->executePass(PassID::UnusedStatementRemoval, *it);
         }
         change |= removedReturns;
 
