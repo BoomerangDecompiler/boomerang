@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
 void test(int param1)
 {
     int local0; 		// m[esp + 4]
-    int local3; 		// param1{0}
-    int local4; 		// local0{0}
+    int local3; 		// param1{5}
+    int local4; 		// local0{8}
 
     local3 = param1;
     if (param1 < -2) {

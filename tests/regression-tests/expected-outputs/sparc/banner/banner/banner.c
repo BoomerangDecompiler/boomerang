@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     __size32 local5; 		// m[o6 - 24]
     int local6; 		// m[o6 - 40]
     int local7; 		// m[o6 - 28]
-    __size32 local8; 		// m[o6 - 20]{0}
+    __size32 local8; 		// m[o6 - 20]{10}
     int o0; 		// r8
     int o1; 		// r9
     int o2; 		// r10

@@ -5,11 +5,11 @@ int main(int argc, char *argv[])
 {
     __size32 i0; 		// r24
     __size32 i1; 		// r25
-    __size32 local0; 		// o0_2{0}
+    __size32 local0; 		// o0_2{10}
     int o0; 		// r8
-    __size32 o0_1; 		// r8{0}
-    __size32 o0_2; 		// r8{0}
-    __size32 o0_3; 		// r8{0}
+    __size32 o0_1; 		// r8{5}
+    __size32 o0_2; 		// r8{10}
+    __size32 o0_3; 		// r8{7}
     int o1; 		// r9
     int o2; 		// r10
     int o3; 		// r11

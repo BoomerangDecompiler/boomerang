@@ -4,10 +4,10 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int local0; 		// m[esp + 4]
-    int local1; 		// m[esp + 4]{0}
-    int local2; 		// m[esp + 4]{0}
-    int local3; 		// local2{0}
-    int local4; 		// local0{0}
+    int local1; 		// m[esp + 4]{2}
+    int local2; 		// m[esp + 4]{2}
+    int local3; 		// local2{12}
+    int local4; 		// local0{20}
 
     local3 = argc;
     if (argc == 5) {

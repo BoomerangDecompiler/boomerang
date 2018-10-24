@@ -4,7 +4,7 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int g9; 		// r9
-    __size32 g9_1; 		// r9{0}
+    __size32 g9_1; 		// r9{2}
 
     g9 = 0;
     do {

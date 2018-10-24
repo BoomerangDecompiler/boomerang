@@ -19,7 +19,7 @@ __size32 fib(int param1)
 {
     int g0; 		// r0
     int o2; 		// r10
-    __size32 o2_1; 		// r10{0}
+    __size32 o2_1; 		// r10{4}
 
     g0 = param1 - 1;
     if (param1 <= 1) {

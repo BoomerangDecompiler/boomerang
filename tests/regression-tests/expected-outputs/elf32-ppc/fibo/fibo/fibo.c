@@ -5,7 +5,7 @@ __size32 fib(int param1);
 int main(int argc, char *argv[])
 {
     int g3; 		// r3
-    __size32 g3_2; 		// r3{0}
+    __size32 g3_2; 		// r3{8}
     int local0; 		// m[g1 - 24]
 
     printf("Input number: ");
@@ -26,7 +26,7 @@ __size32 fib(int param1)
 {
     __size32 g0; 		// r0
     int g3; 		// r3
-    __size32 g3_1; 		// r3{0}
+    __size32 g3_1; 		// r3{8}
 
     g0 = /* machine specific */ (int) LR;
     if (param1 > 1) {

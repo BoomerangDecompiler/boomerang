@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
 {
     int local0; 		// m[o6 - 20]
     int o0; 		// r8
-    __size32 o0_2; 		// r8{0}
+    __size32 o0_2; 		// r8{7}
     int o2; 		// r10
 
     printf("Input number: ");
@@ -26,7 +26,7 @@ __size32 fib(int param1)
 {
     int i0; 		// r24
     int o0; 		// r8
-    int o0_1; 		// r8{0}
+    int o0_1; 		// r8{4}
 
     i0 = param1;
     if (param1 > 1) {

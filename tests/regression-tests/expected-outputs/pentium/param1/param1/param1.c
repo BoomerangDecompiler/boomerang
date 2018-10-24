@@ -16,7 +16,7 @@ __size32 cparam(int param1, __size32 param2)
 {
     __size32 eax; 		// r24
     __size32 local0; 		// m[esp + 8]
-    __size32 local1; 		// param2{0}
+    __size32 local1; 		// param2{6}
 
     local1 = param2;
     if (param1 < 0) {

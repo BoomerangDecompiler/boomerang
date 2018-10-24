@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 __size32 fib2(int param1)
 {
     int g3; 		// r3
-    __size32 g3_1; 		// r3{0}
+    __size32 g3_1; 		// r3{8}
     __size32 g4; 		// r4
 
     g4 = /* machine specific */ (int) LR;

@@ -12,7 +12,7 @@ int main(int argc, union { char *[] *; int; } argv)
     int CR6; 		// r70
     __size32 CR7; 		// r71
     unsigned int g0; 		// r0
-    unsigned int g0_1; 		// r0{0}
+    unsigned int g0_1; 		// r0{45}
     int g3; 		// r3
     int g5; 		// r5
     int local6; 		// m[g1 - 28]
