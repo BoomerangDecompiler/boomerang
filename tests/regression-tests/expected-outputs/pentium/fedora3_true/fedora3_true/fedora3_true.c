@@ -96,7 +96,7 @@ void proc_0x08049ccd(__size32 param1, __size32 param2)
 void proc_0x08048b68(int param1)
 {
     __size32 eax; 		// r24
-    char *eax_1; 		// r24{0}
+    char *eax_1; 		// r24{4}
     __size32 ebx; 		// r27
     int edx; 		// r26
     union { __size32; __size32 *; } esi; 		// r30

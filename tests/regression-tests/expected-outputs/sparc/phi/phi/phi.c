@@ -19,7 +19,7 @@ __size32 fib(int param1)
 {
     int local1; 		// m[o6 - 20]
     int o0; 		// r8
-    int o0_1; 		// r8{0}
+    int o0_1; 		// r8{4}
 
     if (param1 <= 1) {
         if (param1 != 1) {

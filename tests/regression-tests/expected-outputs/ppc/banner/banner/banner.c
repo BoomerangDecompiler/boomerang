@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     __size32 local5; 		// m[g1 - 132]
     int local6; 		// m[g1 - 116]
     int local7; 		// m[g1 - 128]
-    __size32 local8; 		// m[g1 - 136]{0}
+    __size32 local8; 		// m[g1 - 136]{14}
 
     g3 = malloc(12);
     *(__size32*)(g3 + 4) = 0x10001df4;

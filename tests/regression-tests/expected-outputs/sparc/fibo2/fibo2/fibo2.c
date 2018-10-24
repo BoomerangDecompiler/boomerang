@@ -23,16 +23,16 @@ int main(int argc, union { __size32; char *[] *; } argv)
     int local0; 		// m[o6 - 20]
     int o1; 		// r9
     int o2; 		// r10
-    int o2_1; 		// r10{0}
+    int o2_1; 		// r10{10}
     int o3; 		// r11
-    int o3_1; 		// r11{0}
+    int o3_1; 		// r11{10}
     int o4; 		// r12
-    int o4_1; 		// r12{0}
+    int o4_1; 		// r12{10}
     int o5; 		// r13
-    int o5_1; 		// r13{0}
+    int o5_1; 		// r13{10}
     int o6; 		// r14
     int o7; 		// r15
-    int o7_1; 		// r15{0}
+    int o7_1; 		// r15{10}
 
     printf("Input number: ");
     o1 = scanf("%d", &local0); /* Warning: also results in o2_1, o3_1, o4_1, o5_1, o7_1 */

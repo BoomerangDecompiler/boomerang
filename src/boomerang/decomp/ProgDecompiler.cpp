@@ -204,6 +204,7 @@ void ProgDecompiler::fromSSAForm()
             }
 
             UserProc *proc = static_cast<UserProc *>(pp);
+            proc->numberStatements();
             PassManager::get()->executePass(PassID::FromSSAForm, proc);
         }
     }

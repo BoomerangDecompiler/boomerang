@@ -21,8 +21,8 @@ __size32 fib(int param1, int param2)
     int g1; 		// r1
     int i4; 		// r28
     int local2; 		// m[o6 - 20]
-    int o0_1; 		// r8{0}
-    int o0_4; 		// r8{0}
+    int o0_1; 		// r8{6}
+    int o0_4; 		// r8{7}
     int o4; 		// r12
 
     i4 = param2;

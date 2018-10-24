@@ -32,7 +32,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
     __size32 l5; 		// r21
     __size32 l6; 		// r22
     __size32 l7; 		// r23
-    __size32 l7_1; 		// r23{0}
+    __size32 l7_1; 		// r23{9}
     __size32 o2; 		// r10
     __size32 o3; 		// r11
     __size32 o4; 		// r12
@@ -79,7 +79,7 @@ void proc_0x00000980(__size32 param1, __size32 param2, __size32 param3, __size32
     __size32 l5; 		// r21
     __size32 l6; 		// r22
     __size32 l7; 		// r23
-    __size32 l7_1; 		// r23{0}
+    __size32 l7_1; 		// r23{9}
     __size32 o6; 		// r14
 
     l7_1 = proc_0x00000960(param7, 0x11644);

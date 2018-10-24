@@ -4,9 +4,9 @@ int main(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int g9; 		// r9
-    __size32 g9_1; 		// r9{0}
-    __size32 g9_2; 		// r9{0}
-    __size32 local0; 		// g9_1{0}
+    __size32 g9_1; 		// r9{2}
+    __size32 g9_2; 		// r9{4}
+    __size32 local0; 		// g9_1{2}
 
     g9 = 0;
     local0 = g9;

@@ -32,72 +32,72 @@ int main(int argc, char *argv[])
     __size32 local12; 		// m[o6 + 52]
     __size32 local13; 		// m[o6 + 56]
     __size32 local14; 		// m[o6 + 60]
-    int local15; 		// m[o6 + 4]{0}
-    int local16; 		// m[o6 + 4]{0}
-    int local17; 		// m[o6 + 4]{0}
-    int local18; 		// m[o6 + 4]{0}
-    int local19; 		// m[o6 + 8]{0}
+    int local15; 		// m[o6 + 4]{22}
+    int local16; 		// m[o6 + 4]{25}
+    int local17; 		// m[o6 + 4]{28}
+    int local18; 		// m[o6 + 4]{33}
+    int local19; 		// m[o6 + 8]{22}
     __size32 local2; 		// m[o6 + 12]
-    int local20; 		// m[o6 + 8]{0}
-    int local21; 		// m[o6 + 8]{0}
-    int local22; 		// m[o6 + 8]{0}
-    int local23; 		// m[o6 + 12]{0}
-    int local24; 		// m[o6 + 12]{0}
-    int local25; 		// m[o6 + 12]{0}
-    int local26; 		// m[o6 + 12]{0}
-    int local27; 		// m[o6 + 16]{0}
-    int local28; 		// m[o6 + 16]{0}
-    int local29; 		// m[o6 + 16]{0}
+    int local20; 		// m[o6 + 8]{25}
+    int local21; 		// m[o6 + 8]{28}
+    int local22; 		// m[o6 + 8]{33}
+    int local23; 		// m[o6 + 12]{22}
+    int local24; 		// m[o6 + 12]{25}
+    int local25; 		// m[o6 + 12]{28}
+    int local26; 		// m[o6 + 12]{33}
+    int local27; 		// m[o6 + 16]{22}
+    int local28; 		// m[o6 + 16]{25}
+    int local29; 		// m[o6 + 16]{28}
     __size32 local3; 		// m[o6 + 16]
-    int local30; 		// m[o6 + 16]{0}
-    int local31; 		// m[o6 + 20]{0}
-    int local32; 		// m[o6 + 20]{0}
-    int local33; 		// m[o6 + 20]{0}
-    int local34; 		// m[o6 + 20]{0}
-    int local35; 		// m[o6 + 24]{0}
-    int local36; 		// m[o6 + 24]{0}
-    int local37; 		// m[o6 + 24]{0}
-    int local38; 		// m[o6 + 24]{0}
-    int local39; 		// m[o6 + 28]{0}
+    int local30; 		// m[o6 + 16]{33}
+    int local31; 		// m[o6 + 20]{22}
+    int local32; 		// m[o6 + 20]{25}
+    int local33; 		// m[o6 + 20]{28}
+    int local34; 		// m[o6 + 20]{33}
+    int local35; 		// m[o6 + 24]{22}
+    int local36; 		// m[o6 + 24]{25}
+    int local37; 		// m[o6 + 24]{28}
+    int local38; 		// m[o6 + 24]{33}
+    int local39; 		// m[o6 + 28]{22}
     __size32 local4; 		// m[o6 + 20]
-    int local40; 		// m[o6 + 28]{0}
-    int local41; 		// m[o6 + 28]{0}
-    int local42; 		// m[o6 + 28]{0}
-    int local43; 		// m[o6 + 32]{0}
-    int local44; 		// m[o6 + 32]{0}
-    int local45; 		// m[o6 + 32]{0}
-    int local46; 		// m[o6 + 32]{0}
-    int local47; 		// m[o6 + 36]{0}
-    int local48; 		// m[o6 + 36]{0}
-    int local49; 		// m[o6 + 36]{0}
+    int local40; 		// m[o6 + 28]{25}
+    int local41; 		// m[o6 + 28]{28}
+    int local42; 		// m[o6 + 28]{33}
+    int local43; 		// m[o6 + 32]{22}
+    int local44; 		// m[o6 + 32]{25}
+    int local45; 		// m[o6 + 32]{28}
+    int local46; 		// m[o6 + 32]{33}
+    int local47; 		// m[o6 + 36]{22}
+    int local48; 		// m[o6 + 36]{25}
+    int local49; 		// m[o6 + 36]{28}
     __size32 local5; 		// m[o6 + 24]
-    int local50; 		// m[o6 + 36]{0}
-    int local51; 		// m[o6 + 40]{0}
-    int local52; 		// m[o6 + 40]{0}
-    int local53; 		// m[o6 + 40]{0}
-    int local54; 		// m[o6 + 40]{0}
-    int local55; 		// m[o6 + 44]{0}
-    int local56; 		// m[o6 + 44]{0}
-    int local57; 		// m[o6 + 44]{0}
-    int local58; 		// m[o6 + 44]{0}
-    int local59; 		// m[o6 + 48]{0}
+    int local50; 		// m[o6 + 36]{33}
+    int local51; 		// m[o6 + 40]{22}
+    int local52; 		// m[o6 + 40]{25}
+    int local53; 		// m[o6 + 40]{28}
+    int local54; 		// m[o6 + 40]{33}
+    int local55; 		// m[o6 + 44]{22}
+    int local56; 		// m[o6 + 44]{25}
+    int local57; 		// m[o6 + 44]{28}
+    int local58; 		// m[o6 + 44]{33}
+    int local59; 		// m[o6 + 48]{22}
     __size32 local6; 		// m[o6 + 28]
-    int local60; 		// m[o6 + 48]{0}
-    int local61; 		// m[o6 + 48]{0}
-    int local62; 		// m[o6 + 48]{0}
-    int local63; 		// m[o6 + 52]{0}
-    int local64; 		// m[o6 + 52]{0}
-    int local65; 		// m[o6 + 52]{0}
-    int local66; 		// m[o6 + 52]{0}
-    int local67; 		// m[o6 + 56]{0}
-    int local68; 		// m[o6 + 56]{0}
-    int local69; 		// m[o6 + 56]{0}
+    int local60; 		// m[o6 + 48]{25}
+    int local61; 		// m[o6 + 48]{28}
+    int local62; 		// m[o6 + 48]{33}
+    int local63; 		// m[o6 + 52]{22}
+    int local64; 		// m[o6 + 52]{25}
+    int local65; 		// m[o6 + 52]{28}
+    int local66; 		// m[o6 + 52]{33}
+    int local67; 		// m[o6 + 56]{22}
+    int local68; 		// m[o6 + 56]{25}
+    int local69; 		// m[o6 + 56]{28}
     __size32 local7; 		// m[o6 + 32]
-    int local70; 		// m[o6 + 56]{0}
-    int local71; 		// m[o6 + 60]{0}
-    int local72; 		// m[o6 + 60]{0}
-    int local73; 		// m[o6 + 60]{0}
-    int local74; 		// m[o6 + 60]{0}
+    int local70; 		// m[o6 + 56]{33}
+    int local71; 		// m[o6 + 60]{22}
+    int local72; 		// m[o6 + 60]{25}
+    int local73; 		// m[o6 + 60]{28}
+    int local74; 		// m[o6 + 60]{33}
     __size32 local8; 		// m[o6 + 36]
     __size32 local9; 		// m[o6 + 40]
     int o0; 		// r8
@@ -105,14 +105,14 @@ int main(int argc, char *argv[])
     int o1; 		// r9
     int o2; 		// r10
     int o3; 		// r11
-    int o3_1; 		// r11{0}
+    int o3_1; 		// r11{8}
     int o4; 		// r12
     int o5; 		// r13
     int o6; 		// r14
     int o7; 		// r15
-    int o7_1; 		// r15{0}
-    int o7_2; 		// r15{0}
-    int o7_3; 		// r15{0}
+    int o7_1; 		// r15{13}
+    int o7_2; 		// r15{13}
+    int o7_3; 		// r15{13}
     __size32 o7_4; 		// r15{0}
     __size32 o7_5; 		// r15{0}
 

@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     __size32 local5; 		// m[g1 - 124]
     int local6; 		// m[g1 - 108]
     int local7; 		// m[g1 - 120]
-    __size32 local8; 		// m[g1 - 128]{0}
+    __size32 local8; 		// m[g1 - 128]{14}
 
     g3 = malloc(12);
     *(__size32*)(g3 + 4) = /* machine specific */ (int) LR + 0x1864;

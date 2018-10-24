@@ -17,11 +17,11 @@ int main(int argc, union { __size32; char *[] *; } argv)
 void proc1(int param1, union { __size32; char[] *; } param2, int param3)
 {
     int g3; 		// r3
-    int g3_2; 		// r3{0}
-    int g3_5; 		// r3{0}
+    int g3_2; 		// r3{6}
+    int g3_5; 		// r3{8}
     int local0; 		// m[g1 - 40]
     int local1; 		// m[g1 - 32]
-    int local2; 		// param3{0}
+    int local2; 		// param3{14}
 
     local2 = param3;
     if (param1 <= 2) {

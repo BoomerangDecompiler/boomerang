@@ -4,7 +4,7 @@ void rux_encrypt(__size32 param1);
 /** address: 0x08048460 */
 int main(int argc, char *argv[])
 {
-    size_t eax_1; 		// r24{0}
+    size_t eax_1; 		// r24{3}
     int esp; 		// r28
     int local0; 		// m[esp - 8]
 
@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
 void rux_encrypt(__size32 param1)
 {
     unsigned char bl; 		// r11
-    unsigned char bl_1; 		// r11{0}
-    unsigned char bl_4; 		// r11{0}
+    unsigned char bl_1; 		// r11{8}
+    unsigned char bl_4; 		// r11{11}
     unsigned char cl; 		// r9
     unsigned int eax; 		// r24
     unsigned int ecx; 		// r25

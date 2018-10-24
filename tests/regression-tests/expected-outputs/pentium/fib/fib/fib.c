@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 __size32 fib(int param1)
 {
     int eax; 		// r24
-    int eax_1; 		// r24{0}
+    int eax_1; 		// r24{4}
     int local4; 		// m[esp - 12]
 
     if (param1 <= 1) {

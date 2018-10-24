@@ -29,7 +29,7 @@ __size32 fib1()
 __size32 fib2(int param1)
 {
     int g3; 		// r3
-    int g3_1; 		// r3{0}
+    int g3_1; 		// r3{5}
     __size32 g9; 		// r9
     int local5; 		// m[g1 - 20]
 

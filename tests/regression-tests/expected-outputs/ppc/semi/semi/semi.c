@@ -4,13 +4,13 @@ int main(int argc, union { __size32; char *[] *; } argv);
 int main(int argc, union { __size32; char *[] *; } argv)
 {
     int g3; 		// r3
-    int g3_2; 		// r3{0}
-    int g3_3; 		// r3{0}
+    int g3_2; 		// r3{31}
+    int g3_3; 		// r3{12}
     int g4; 		// r4
-    int local0; 		// g3_3{0}
-    union { __size32; char *[] *; } local1; 		// argv{0}
-    int local2; 		// g3_2{0}
-    union { __size32; char *[] *; } local3; 		// g4{0}
+    int local0; 		// g3_3{12}
+    union { __size32; char *[] *; } local1; 		// argv{13}
+    int local2; 		// g3_2{31}
+    union { __size32; char *[] *; } local3; 		// g4{32}
 
     local0 = argc;
     local1 = argv;

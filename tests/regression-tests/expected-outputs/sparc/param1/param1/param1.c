@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 /** address: 0x00010688 */
 __size32 cparam(int param1, __size32 param2)
 {
-    __size32 local0; 		// param2{0}
+    __size32 local0; 		// param2{5}
     __size32 o1; 		// r9
 
     local0 = param2;

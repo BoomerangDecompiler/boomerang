@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
 __size32 proc1(int param1, int param2, union { char[] *; __size32; } param3)
 {
     int eax; 		// r24
-    int eax_1; 		// r24{0}
-    int eax_4; 		// r24{0}
+    int eax_1; 		// r24{6}
+    int eax_4; 		// r24{8}
     int local1; 		// m[esp + 4]
     int local2; 		// m[esp - 8]
-    int local5; 		// param1{0}
+    int local5; 		// param1{15}
 
     local5 = param1;
     if (param2 <= 2) {
