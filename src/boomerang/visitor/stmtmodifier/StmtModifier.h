@@ -23,7 +23,6 @@ class BranchStatement;
 class CaseStatement;
 class CallStatement;
 class ReturnStatement;
-class ImpRefStatement;
 
 
 /**
@@ -75,9 +74,6 @@ public:
 
     /// \copydoc StmtModifier::visit
     virtual void visit(ReturnStatement *stmt, bool &visitChildren);
-
-    /// \copydoc StmtModifier::visit
-    virtual void visit(ImpRefStatement *stmt, bool &visitChildren);
 
 public:
     ExpModifier *m_mod; ///< The expression modifier object

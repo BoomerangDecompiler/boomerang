@@ -27,7 +27,6 @@
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
-#include "boomerang/ssl/statements/ImpRefStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/PhiAssign.h"
 #include "boomerang/util/Util.h"

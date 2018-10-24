@@ -694,7 +694,6 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 case StmtType::Assign:
                 case StmtType::PhiAssign:
                 case StmtType::ImpAssign:
-                case StmtType::ImpRef:
                     // Do nothing
                     break;
                 case StmtType::INVALID: assert(false); break;

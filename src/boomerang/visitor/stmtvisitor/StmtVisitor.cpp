@@ -68,9 +68,3 @@ bool StmtVisitor::visit(const ReturnStatement *)
 {
     return true;
 }
-
-
-bool StmtVisitor::visit(const ImpRefStatement *)
-{
-    return true;
-}

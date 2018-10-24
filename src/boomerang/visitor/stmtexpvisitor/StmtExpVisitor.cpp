@@ -78,10 +78,3 @@ bool StmtExpVisitor::visit(ReturnStatement *, bool &visitChildren)
     visitChildren = true;
     return true;
 }
-
-
-bool StmtExpVisitor::visit(ImpRefStatement *, bool &visitChildren)
-{
-    visitChildren = true;
-    return true;
-}

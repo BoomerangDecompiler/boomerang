@@ -26,7 +26,6 @@
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/GotoStatement.h"
-#include "boomerang/ssl/statements/ImpRefStatement.h"
 #include "boomerang/ssl/statements/ImplicitAssign.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
 #include "boomerang/ssl/type/ArrayType.h"
@@ -464,36 +463,12 @@ void DFATypeRecovery::dfaTypeAnalysis(UserProc *proc)
             SharedExp addrExp  = nullptr;
             SharedType typeExp = nullptr;
 
-            if (s->isAssignment()) {
-                SharedExp lhs = static_cast<Assignment *>(s)->getLeft();
+            assert(s->isAssignment());
+            SharedExp lhs = static_cast<Assignment *>(s)->getLeft();
 
-                if (lhs->isMemOf()) {
-                    addrExp = lhs->getSubExp1();
-                    typeExp = static_cast<Assignment *>(s)->getType();
-                }
-            }
-            else {
-                // Assume an implicit reference
-                addrExp = static_cast<ImpRefStatement *>(s)->getAddressExp();
-
-                if (addrExp->isTypedExp() &&
-                    addrExp->access<TypedExp>()->getType()->resolvesToPointer()) {
-                    addrExp = addrExp->getSubExp1();
-                }
-
-                typeExp = static_cast<ImpRefStatement *>(s)->getType();
-
-                // typeExp should be a pointer expression, or a union of pointer types
-                if (typeExp->resolvesToUnion()) {
-                    typeExp = typeExp->as<UnionType>()->dereferenceUnion();
-                }
-                else if (typeExp->resolvesToPointer()) {
-                    typeExp = typeExp->as<PointerType>()->getPointsTo();
-                }
-                else {
-                    assert(false);
-                    return;
-                }
+            if (lhs->isMemOf()) {
+                addrExp = lhs->getSubExp1();
+                typeExp = static_cast<Assignment *>(s)->getType();
             }
 
             const int spIndex = Util::getStackRegisterIndex(_prog);

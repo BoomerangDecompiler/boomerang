@@ -23,7 +23,6 @@ class BranchStatement;
 class CaseStatement;
 class CallStatement;
 class ReturnStatement;
-class ImpRefStatement;
 
 
 /**
@@ -67,9 +66,6 @@ public:
 
     /// \copydoc StmtExpVisitor::visit
     virtual bool visit(ReturnStatement *stmt, bool &visitChildren);
-
-    /// \copydoc StmtExpVisitor::visit
-    virtual bool visit(ImpRefStatement *stmt, bool &visitChildren);
 
     bool isIgnoreCol() const { return m_ignoreCol; }
 

@@ -71,9 +71,3 @@ void StmtModifier::visit(ReturnStatement *, bool &visitChildren)
 {
     visitChildren = true;
 }
-
-
-void StmtModifier::visit(ImpRefStatement *, bool &visitChildren)
-{
-    visitChildren = true;
-}
