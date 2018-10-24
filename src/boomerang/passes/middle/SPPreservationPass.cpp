@@ -38,7 +38,7 @@ bool SPPreservationPass::execute(UserProc *proc)
         // RISC machines generally preserve the stack pointer (so no special case required)
         for (int p = 0; !stdsp && p < 8; p++) {
             if (proc->getProg()->getProject()->getSettings()->debugProof) {
-                LOG_MSG("Attempting to prove sp = sp + %1 for %2", p * 4, getName());
+                LOG_MSG("Attempting to prove sp = sp + %1 for %2", p * 4, proc->getName());
             }
 
             stdsp = proc->preservesExpWithOffset(Location::regOf(sp), p * 4);
@@ -46,7 +46,7 @@ bool SPPreservationPass::execute(UserProc *proc)
     }
 
     if (proc->getProg()->getProject()->getSettings()->debugProof) {
-        LOG_MSG("Proven for %1:", getName());
+        LOG_MSG("Proven for %1:", proc->getName());
 
         for (auto &elem : proc->getProvenTrue()) {
             LOG_MSG("    %1 = %2", elem.first, elem.second);

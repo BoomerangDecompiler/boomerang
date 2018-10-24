@@ -83,13 +83,13 @@ void UnusedStatementRemovalPass::updateRefCounts(UserProc *proc, RefCounter &ref
     }
 
     if (proc->getProg()->getProject()->getSettings()->debugUnused) {
-        LOG_MSG("### Reference counts for %1:", getName());
+        LOG_MSG("### Reference counts for %1:", proc->getName());
 
         for (RefCounter::iterator rr = refCounts.begin(); rr != refCounts.end(); ++rr) {
             LOG_MSG("  %1: %2", rr->first->getNumber(), rr->second);
         }
 
-        LOG_MSG("### end reference counts");
+        LOG_MSG("### End reference counts");
     }
 }
 

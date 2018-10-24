@@ -192,7 +192,6 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
 
     if (removedParams || removedRets) {
         // Update the statements that call us
-
         for (CallStatement *call : proc->getCallers()) {
             PassManager::get()->executePass(PassID::CallArgumentUpdate, proc);
             updateSet.insert(call->getProc());      // Make sure we redo the dataflow
@@ -267,8 +266,7 @@ void UnusedReturnRemover::updateForUseChange(UserProc *proc)
         PassManager::get()->executePass(PassID::PhiPlacement, proc);
 
         PassManager::get()->executePass(PassID::BlockVarRename, proc); // Rename the locals
-        PassManager::get()->executePass(PassID::StatementPropagation,
-                                        proc); // Surely need propagation too
+        PassManager::get()->executePass(PassID::StatementPropagation, proc);
 
         if (m_prog->getProject()->getSettings()->verboseOutput) {
             proc->debugPrintAll("after propagating locals");
