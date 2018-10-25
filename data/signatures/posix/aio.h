@@ -1,5 +1,6 @@
 
 typedef struct _aiocb aiocb;
+typedef int ssize_t;
 
 int      aio_cancel(int fildes, aiocb *aiocbp);
 int      aio_error(const aiocb *aiocbp);

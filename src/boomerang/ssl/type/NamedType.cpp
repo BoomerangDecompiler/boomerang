@@ -38,7 +38,7 @@ size_t NamedType::getSize() const
         return ty->getSize();
     }
 
-    LOG_WARN("Unknown size for named type %1", name);
+    LOG_WARN("Unknown size for named type '%1'", name);
     return 0; // don't know
 }
 
