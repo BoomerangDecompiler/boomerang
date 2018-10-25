@@ -90,10 +90,11 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
         // Respect the forced signature, but use it to remove returns if necessary
         bool removedRets = false;
 
-        for (ReturnStatement::iterator rr = proc->getRetStmt()->begin();
-             rr != proc->getRetStmt()->end();) {
-            Assign *a     = static_cast<Assign *>(*rr);
-            SharedExp lhs = a->getLeft();
+        for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
+            assert(*retIt != nullptr && (*retIt)->isAssign());
+            Assign *retDef = static_cast<Assign *>(*retIt);
+            SharedExp lhs  = retDef->getLeft();
+
             // For each location in the returns, check if in the signature
             bool found = false;
 
@@ -105,16 +106,16 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
             }
 
             if (found) {
-                ++rr; // Yes, in signature; OK
+                ++retIt; // Yes, in signature; OK
             }
             else {
                 if (m_prog->getProject()->getSettings()->debugUnused) {
-                    LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)", a,
-                            proc->getName());
+                    LOG_MSG("%%%  removing unused return %1 from proc %2 (forced signature)",
+                            retDef, proc->getName());
                 }
 
                 // This return is not in the signature. Remove it
-                rr          = proc->getRetStmt()->erase(rr);
+                retIt       = proc->getRetStmt()->erase(retIt);
                 removedRets = true;
             }
         }
@@ -160,22 +161,23 @@ bool UnusedReturnRemover::removeUnusedParamsAndReturns(UserProc *proc)
     // Intersect with the current returns
     bool removedRets = false;
 
-    for (auto rr = proc->getRetStmt()->begin(); rr != proc->getRetStmt()->end();) {
-        Assign *a = static_cast<Assign *>(*rr);
+    for (auto retIt = proc->getRetStmt()->begin(); retIt != proc->getRetStmt()->end();) {
+        Assign *retDef = static_cast<Assign *>(*retIt);
 
-        if (unionOfCallerLiveLocs.contains(a->getLeft())) {
-            ++rr;
+        // Check if the location defined by the return is actually used by any callee.
+        if (unionOfCallerLiveLocs.contains(retDef->getLeft())) {
+            ++retIt;
             continue;
         }
 
         if (m_prog->getProject()->getSettings()->debugUnused) {
-            LOG_MSG("%%%  removing unused return %1 from proc %2", a, proc->getName());
+            LOG_MSG("%%%  removing unused return %1 from proc %2", retDef, proc->getName());
         }
 
         // If a component of the RHS referenced a call statement, the liveness used to be killed
         // here. This was wrong; you need to notice the liveness changing inside
         // updateForUseChange() to correctly recurse to callee
-        rr          = proc->getRetStmt()->erase(rr);
+        retIt       = proc->getRetStmt()->erase(retIt);
         removedRets = true;
     }
 
