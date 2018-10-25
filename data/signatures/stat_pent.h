@@ -9,11 +9,12 @@ typedef int                  blksize_t;
 typedef int                  blkcnt_t;
 
 typedef long                 time_t;
-struct timespec
+struct _timespec
 {
 	time_t tv_sec;
 	long   tv_nsec;
 };
+typedef struct _timespec timespec;
 
 struct stat
 {

@@ -6,7 +6,7 @@ int main(int argc, char *argv[])
     int g4; 		// r4
 
     puts("Figure 19.2");
-    putchar();
+    putchar('1');
     g4 = 0;
     if (argc <= 3) {
         g4 = argc;

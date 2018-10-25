@@ -1,0 +1,26 @@
+
+char      *asctime(const struct tm *timeptr);
+char      *asctime_r(const struct tm *tm, char *buf);
+clock_t    clock(void);
+int        clock_getres(clockid_t clock_id, struct timespec *res);
+int        clock_gettime(clockid_t clock_id, struct timespec *tp);
+int        clock_settime(clockid_t clock_id, const struct timespec *tp);
+char      *ctime(const time_t *clock);
+char      *ctime_r(const time_t *clock, char *buf);
+double     difftime(time_t time1, time_t time0);
+struct tm *getdate(const char *string);
+struct tm *gmtime(const time_t *timer);
+struct tm *gmtime_r(const time_t *clock, struct tm *result);
+struct tm *localtime(const time_t *timer);
+struct tm *localtime_r(const time_t *clock, struct tm *result);
+time_t     mktime(struct tm *timeptr);
+int        nanosleep(const struct timespec *rqtp, struct timespec *rmtp);
+size_t     strftime(char *s, size_t maxsize, const char *format, const struct tm *timptr);
+char      *strptime(const char *buf, const char *format, struct tm *tm);
+time_t     time(time_t *tloc);
+int        timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid);
+int        timer_delete(timer_t timerid);
+int        timer_gettime(timer_t timerid, struct itimerspec *value);
+int        timer_getoverrun(timer_t timerid);
+int        timer_settime(timer_t timerid, int flags, const struct itimerspec *value, struct itimerspec *ovalue);
+void       tzset(void);

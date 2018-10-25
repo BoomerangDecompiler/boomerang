@@ -12,7 +12,7 @@ int main(int argc, union { char *[] *; int; } argv)
     int CR6; 		// r70
     __size32 CR7; 		// r71
     unsigned int g0; 		// r0
-    unsigned int g0_1; 		// r0{45}
+    unsigned int g0_1; 		// r0{46}
     int g3; 		// r3
     int g5; 		// r5
     int local6; 		// m[g1 - 28]
@@ -52,7 +52,8 @@ bb0x100006e8:
                         local6 = g3;
                     }
                     else {
-                        g3 = putchar();
+                        g0 = *(unsigned char*)(g5 + 31);
+                        g3 = putchar(ROTL(g0) & 0xff);
                         local6 = g3;
                     }
                 }

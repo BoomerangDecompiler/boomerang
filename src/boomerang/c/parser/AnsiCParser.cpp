@@ -72,8 +72,8 @@ class SymbolMods;
 /* section apres lecture def, avant lecture grammaire S2 */
 
 /* prefix */
-AnsiCParser::AnsiCParser(const char *file, bool trace)
-    : in(new std::ifstream(file))
+AnsiCParser::AnsiCParser(const QString &file, bool trace)
+    : in(new std::ifstream(file.toStdString()))
     , fileName(file)
 {
     if (!in->good()) {
@@ -96,7 +96,7 @@ AnsiCParser::AnsiCParser(const char *file, bool trace)
 
 AnsiCParser::AnsiCParser(std::istream *is, bool trace)
     : in(is)
-    , fileName(nullptr)
+    , fileName("")
 {
     if (!in->good()) {
         throw "Error";
@@ -1449,8 +1449,8 @@ int AnsiCParser::yylex()
 
 void AnsiCParser::yyerror(const char *s)
 {
-    if (fileName) {
-        LOG_ERROR("Error when parsing file '%1:", fileName);
+    if (!fileName.isEmpty()) {
+        LOG_ERROR("Error when parsing file '%1':", fileName);
     }
 
     LOG_ERROR("Error on line %1 column %2: %3", theScanner->theLine, theScanner->column, s);

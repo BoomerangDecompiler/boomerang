@@ -4,19 +4,19 @@ void rux_encrypt(__size32 param1);
 /** address: 0x08048460 */
 int main(int argc, char *argv[])
 {
-    size_t eax_1; 		// r24{3}
+    ssize_t eax; 		// r24
     int esp; 		// r28
     int local0; 		// m[esp - 8]
 
     for(;;) {
-        eax_1 = read(0, &local0, 4);
-        if (eax_1 == 4) {
+        eax = read(0, &local0, 4);
+        if (eax == 4) {
             rux_encrypt(esp - 8);
             write(1, &local0, 4);
         }
     }
-    if (eax_1 != 0) {
-        memset(esp + eax_1 - 8, 0, 4 - eax_1);
+    if (eax != 0) {
+        memset(esp + eax - 8, 0, 4 - eax);
         rux_encrypt(esp - 8);
         write(1, &local0, 4);
     }

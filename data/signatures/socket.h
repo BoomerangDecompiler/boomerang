@@ -1,4 +1,3 @@
-typedef int sa_family_t;
 
 typedef struct
 {
