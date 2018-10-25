@@ -2506,7 +2506,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
             }
 
             for (Statement *st : *rtl) {
-                st->generateCode(this, bb);
+                st->generateCode(this);
             }
         }
     }

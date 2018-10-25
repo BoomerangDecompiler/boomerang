@@ -253,7 +253,7 @@ public:
     bool propagateFlagsTo(Settings *settings);
 
     /// Generate code for this statement
-    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) = 0;
+    virtual void generateCode(ICodeGenerator *gen) = 0;
 
     /// simpify internal expressions
     virtual void simplify() = 0;

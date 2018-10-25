@@ -118,7 +118,7 @@ bool CaseStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void CaseStatement::generateCode(ICodeGenerator *, const BasicBlock *)
+void CaseStatement::generateCode(ICodeGenerator *)
 {
     // don't generate any code for switches, they will be handled by the bb
 }

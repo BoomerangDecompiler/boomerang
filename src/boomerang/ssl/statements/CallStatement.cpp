@@ -593,7 +593,7 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
+void CallStatement::generateCode(ICodeGenerator *gen)
 {
     Function *dest = getDestProc();
 

@@ -85,7 +85,7 @@ public:
     virtual void printCompact(OStream &os) const override;
 
     /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
+    virtual void generateCode(ICodeGenerator *gen) override;
 
     /// \copydoc Statement::simplify
     virtual void simplify() override;

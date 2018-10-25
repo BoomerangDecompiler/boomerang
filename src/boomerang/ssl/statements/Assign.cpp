@@ -187,7 +187,7 @@ bool Assign::searchAndReplace(const Exp &pattern, SharedExp replace, bool /*cc*/
 }
 
 
-void Assign::generateCode(ICodeGenerator *gen, const BasicBlock *)
+void Assign::generateCode(ICodeGenerator *gen)
 {
     gen->addAssignmentStatement(this);
 }
