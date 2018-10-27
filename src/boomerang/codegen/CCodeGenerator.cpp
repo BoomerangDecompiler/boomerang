@@ -1237,14 +1237,14 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
     case opNot:
         openParen(str, curPrec, OpPrec::Unary);
-        str << " ~";
+        str << "~";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
 
     case opLNot:
         openParen(str, curPrec, OpPrec::Unary);
-        str << " !";
+        str << "!";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
@@ -1252,7 +1252,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opNeg:
     case opFNeg:
         openParen(str, curPrec, OpPrec::Unary);
-        str << " -";
+        str << "-";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
