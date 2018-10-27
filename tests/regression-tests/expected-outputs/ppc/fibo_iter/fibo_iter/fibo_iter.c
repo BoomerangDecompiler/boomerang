@@ -28,14 +28,14 @@ __size32 fib(int param1)
     if (param1 > 1) {
         local1 = 2;
         local2 = 1;
-        local3 = 1;
         local9 = local2;
+        local3 = 1;
         local4 = local9;
         while (local1 < param1) {
             local5 = local4 + local3;
+            local9 = local5;
             local3 = local4;
             local1++;
-            local9 = local5;
             local4 = local9;
         }
         local0 = local4;

@@ -34,8 +34,8 @@ __size32 proc1(int param1, int param2, union { char *; __size32; } param3)
         local1 = eax_1;
         eax_4 = strlen(param3);
         local2 = eax_4;
-        printf("%d", eax_4 + eax_1);
         local5 = local2;
+        printf("%d", eax_4 + eax_1);
     }
     param1 = local5;
     printf("%d, %d", local1, param1);

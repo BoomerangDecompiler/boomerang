@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
                 do {
                 } while (ZF);
             }
-            if ( ~flags) {
+            if (!flags) {
                 *(__size32*)(%esp + 20) = 0;
                 *(__size32*)(%esp + 16) = %eax;
                 *(__size32*)(%esp + 12) = %eax;
