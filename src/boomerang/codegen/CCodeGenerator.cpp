@@ -2252,7 +2252,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
         }
 
         if (m_analyzer.getCondType(bb) == CondType::IfElse) {
-            cond = Unary::get(opNot, cond->clone());
+            cond = Unary::get(opLNot, cond->clone());
             cond = cond->simplify();
         }
 
