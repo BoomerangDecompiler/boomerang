@@ -222,38 +222,51 @@ bool UserProc::removeStatement(Statement *stmt)
 
 Assign *UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 {
-    RTL::iterator it;
-    RTL *stmts;
     BasicBlock *bb = nullptr;
+    Assign *as = new Assign(left, right);
 
     if (s == nullptr) {
-        // This means right is supposed to be a parameter. We can insert the assignment at the start
-        // of the entryBB
-        bb            = m_cfg->getEntryBB();
-        RTLList *rtls = bb->getRTLs();
-        assert(!rtls->empty()); // Entry BB should have at least 1 RTL
-        stmts = rtls->front().get();
-        it    = stmts->begin();
+        // This means right is supposed to be a parameter.
+        // We can insert the assignment at the start of the entryBB
+        bb = m_cfg->getEntryBB();
     }
     else {
-        // An ordinary definition; put the assignment at the end of s's BB
-        bb            = s->getBB(); // Get the enclosing BB for s
-        RTLList *rtls = bb->getRTLs();
-        assert(!rtls->empty()); // If s is defined here, there should be at least 1 RTL
-        stmts = rtls->back().get();
-        it    = stmts->end(); // Insert before the end
+        // An ordinary definition; put the assignment right after s
+        bb = s->getBB();
     }
 
-    Assign *as = new Assign(left, right);
-    stmts->insert(it, as);
     as->setProc(this);
     as->setBB(bb);
+
+    if (s) {
+        // Insert the new assignment directly after s,
+        // or near the end of the existing BB if s has been removed already.
+        for (auto &rtl : *bb->getRTLs()) {
+            for (auto it = rtl->begin(); it != rtl->end(); ++it) {
+                if (*it == s) {
+                    rtl->insert(++it, as);
+                    return as;
+                }
+            }
+        }
+    }
+
+    auto &lastRTL = bb->getRTLs()->back();
+    if (lastRTL->empty() || lastRTL->back()->isAssignment()) {
+        lastRTL->append(as);
+    }
+    else {
+        // do not insert after a Branch statement etc.
+        lastRTL->insert(std::prev(lastRTL->end()), as);
+    }
     return as;
 }
 
 
 bool UserProc::insertStatementAfter(Statement *afterThis, Statement *stmt)
 {
+    assert(!afterThis->isBranch());
+
     for (BasicBlock *bb : *m_cfg) {
         RTLList *rtls = bb->getRTLs();
 

@@ -201,3 +201,9 @@ Statement *RTL::getHlStmt() const
 
     return nullptr;
 }
+
+
+void RTL::insert(RTL::iterator where, const RTL::value_type& val)
+{
+    m_stmts.insert(where, val);
+}

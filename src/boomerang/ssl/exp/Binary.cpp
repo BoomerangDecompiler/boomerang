@@ -390,6 +390,7 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
     return ta->clone();
 }
 
+
 void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
 {
     if (m_oper == opFlagCall) {
