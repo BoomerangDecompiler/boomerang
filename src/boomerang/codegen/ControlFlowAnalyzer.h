@@ -282,10 +282,12 @@ private:
 private:
     ProcCFG *m_cfg = nullptr;
 
-    /// Ordering of BBs for control flow structuring
+    /// Post Ordering according to a DFS starting at the entry BB.
     std::vector<const BasicBlock *> m_postOrdering;
 
-    /// Ordering of BBs for control flow structuring
+    /// Post Ordering according to a DFS starting at the exit BB (usually the return BB).
+    /// Note that this is not the reverse of m_postOrdering
+    /// for functions containing calls to noreturn functions or infinite loops.
     std::vector<const BasicBlock *> m_revPostOrdering;
 
 private:
