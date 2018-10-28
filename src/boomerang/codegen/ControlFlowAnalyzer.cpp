@@ -45,13 +45,13 @@ void ControlFlowAnalyzer::setTimeStamps()
     int time = 1;
     m_postOrdering.clear();
 
-    updateLoopStamps(m_cfg->getEntryBB(), time);
+    updateLoopStamps(findEntryBB(), time);
 
     // set the reverse parenthesis for the nodes
     time = 1;
-    updateRevLoopStamps(m_cfg->getEntryBB(), time);
+    updateRevLoopStamps(findEntryBB(), time);
 
-    BasicBlock *retNode = m_cfg->findRetNode();
+    BasicBlock *retNode = findExitBB();
     assert(retNode);
     m_revPostOrdering.clear();
     updateRevOrder(retNode);
@@ -731,4 +731,16 @@ void ControlFlowAnalyzer::unTraverse()
     for (auto &elem : m_info) {
         elem.second.m_travType = TravType::Untraversed;
     }
+}
+
+
+BasicBlock *ControlFlowAnalyzer::findEntryBB() const
+{
+    return m_cfg->getEntryBB();
+}
+
+
+BasicBlock *ControlFlowAnalyzer::findExitBB() const
+{
+    return m_cfg->findRetNode();
 }

@@ -279,6 +279,9 @@ private:
     /// \post the nodes within the loop have been tagged
     void tagNodesInLoop(const BasicBlock *header, bool *&loopNodes);
 
+    BasicBlock *findEntryBB() const;
+    BasicBlock *findExitBB() const;
+
 private:
     ProcCFG *m_cfg = nullptr;
 
