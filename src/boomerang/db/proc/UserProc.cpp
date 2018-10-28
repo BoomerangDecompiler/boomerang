@@ -223,7 +223,7 @@ bool UserProc::removeStatement(Statement *stmt)
 Assign *UserProc::insertAssignAfter(Statement *s, SharedExp left, SharedExp right)
 {
     BasicBlock *bb = nullptr;
-    Assign *as = new Assign(left, right);
+    Assign *as     = new Assign(left, right);
 
     if (s == nullptr) {
         // This means right is supposed to be a parameter.

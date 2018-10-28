@@ -203,7 +203,7 @@ Statement *RTL::getHlStmt() const
 }
 
 
-void RTL::insert(RTL::iterator where, const RTL::value_type& val)
+void RTL::insert(RTL::iterator where, const RTL::value_type &val)
 {
     m_stmts.insert(where, val);
 }
