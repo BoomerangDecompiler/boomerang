@@ -66,7 +66,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
 
         for (BasicBlock *succ : bb->getSuccessors()) {
             if (getRevOrd(succ) > getRevOrd(bb)) {
-                setImmPDom(bb, commonPDom(getImmPDom(bb), succ));
+                setImmPDom(bb, findCommonPDom(getImmPDom(bb), succ));
             }
         }
     }
@@ -79,7 +79,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
 
         for (auto &succ : bb->getSuccessors()) {
             BasicBlock *succNode = succ;
-            setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
+            setImmPDom(bb, findCommonPDom(getImmPDom(bb), succNode));
         }
     }
 
@@ -92,10 +92,10 @@ void ControlFlowAnalyzer::updateImmedPDom()
                 if (isBackEdge(bb, succNode) && (bb->getNumSuccessors() > 1) &&
                     getImmPDom(succNode) &&
                     (getPostOrdering(getImmPDom(succ)) < getPostOrdering(getImmPDom(bb)))) {
-                    setImmPDom(bb, commonPDom(getImmPDom(succNode), getImmPDom(bb)));
+                    setImmPDom(bb, findCommonPDom(getImmPDom(succNode), getImmPDom(bb)));
                 }
                 else {
-                    setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
+                    setImmPDom(bb, findCommonPDom(getImmPDom(bb), succNode));
                 }
             }
         }
@@ -103,8 +103,8 @@ void ControlFlowAnalyzer::updateImmedPDom()
 }
 
 
-const BasicBlock *ControlFlowAnalyzer::commonPDom(const BasicBlock *currImmPDom,
-                                                  const BasicBlock *succImmPDom)
+const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmPDom,
+                                                      const BasicBlock *succImmPDom)
 {
     if (!currImmPDom) {
         return succImmPDom;

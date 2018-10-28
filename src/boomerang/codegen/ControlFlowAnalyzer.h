@@ -264,7 +264,7 @@ private:
 
     /// Finds the common post dominator of the current immediate post dominator and its successor's
     /// immediate post dominator
-    const BasicBlock *commonPDom(const BasicBlock *curImmPDom, const BasicBlock *succImmPDom);
+    const BasicBlock *findCommonPDom(const BasicBlock *curImmPDom, const BasicBlock *succImmPDom);
 
     /// \pre  The loop induced by (head,latch) has already had all its member nodes tagged
     /// \post The type of loop has been deduced
