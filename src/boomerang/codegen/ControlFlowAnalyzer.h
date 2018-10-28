@@ -29,7 +29,7 @@ enum class StructType : int8_t
 };
 
 
-/// an type for the class of unstructured conditional jumps
+/// an enumerated type for the class of unstructured conditional jumps
 enum class UnstructType : int8_t
 {
     Invalid = -1,
