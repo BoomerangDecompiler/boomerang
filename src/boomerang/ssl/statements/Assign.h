@@ -80,7 +80,7 @@ public:
     virtual int getMemDepth() const;
 
     /// \copydoc Assignment::generateCode
-    virtual void generateCode(ICodeGenerator *gen) override;
+    virtual void generateCode(ICodeGenerator *gen) const override;
 
     /// \copydoc Assignment::simplify
     virtual void simplify() override;

@@ -171,7 +171,7 @@ bool GotoStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void GotoStatement::generateCode(ICodeGenerator *)
+void GotoStatement::generateCode(ICodeGenerator *) const
 {
     // don't generate any code for jumps, they will be handled by the BB
 }

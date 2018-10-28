@@ -73,7 +73,7 @@ public:
     virtual SharedExp getRight() const = 0;
 
     /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *) override {}
+    virtual void generateCode(ICodeGenerator *) const override {}
 
     /// \copydoc Statement::simplifyAddr
     virtual void simplifyAddr() override;

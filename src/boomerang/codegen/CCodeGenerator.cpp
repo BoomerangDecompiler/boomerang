@@ -124,7 +124,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 }
 
 
-void CCodeGenerator::addAssignmentStatement(Assign *asgn)
+void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
 {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
     if (asgn->getLeft()->getOper() == opPC) {
@@ -236,7 +236,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
 }
 
 
-void CCodeGenerator::addCallStatement(Function *proc, const QString &name,
+void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
                                       const StatementList &args, const StatementList &results)
 {
     QString tgt;
