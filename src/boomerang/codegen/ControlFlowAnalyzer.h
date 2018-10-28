@@ -19,9 +19,9 @@ class BasicBlock;
 
 
 /// an enumerated type for the class of stucture determined for a node
-enum class StructType : uint8_t
+enum class StructType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     Loop,     // Header of a loop only
     Cond,     // Header of a conditional only (if-then-else or switch)
     LoopCond, // Header of a loop and a conditional
@@ -30,9 +30,9 @@ enum class StructType : uint8_t
 
 
 /// an type for the class of unstructured conditional jumps
-enum class UnstructType : uint8_t
+enum class UnstructType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     Structured,
     JumpInOutLoop,
     JumpIntoCase
@@ -40,9 +40,9 @@ enum class UnstructType : uint8_t
 
 
 /// an enumerated type for the type of loop headers
-enum class LoopType : uint8_t
+enum class LoopType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     PreTested,  ///< Header of a while loop
     PostTested, ///< Header of a do..while loop
     Endless     ///< Header of an endless loop
@@ -50,9 +50,9 @@ enum class LoopType : uint8_t
 
 
 /// an enumerated type for the type of conditional headers
-enum class CondType : uint8_t
+enum class CondType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     IfThen,     ///< conditional with only a then clause
     IfThenElse, ///< conditional with a then and an else clause
     IfElse,     ///< conditional with only an else clause
