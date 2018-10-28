@@ -25,8 +25,10 @@
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Potential crash due to wrong decode of anulled branches (e.g. BG,a) when decoding SPARC binaries.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
-- Fixed: Generation of -= and -- operators in addition to += and ++ operators in high level code.
+- Fixed: Missing -= and -- operators in addition to += and ++ operators in high level code.
 - Fixed: Empty conditional blocks in high level code in some cases.
+- Fixed: Generation of bitwise not operators instead of logical not operators for boolean expressions.
+- Fixed: Generation of assignments after branch statements in some cases.
 - Fixed: Goto statements instead of break statements in high level code in some cases.
 - Fixed: Wrong assignments to overlapped registers on x86.
 - Fixed: A large number of memory leaks.
