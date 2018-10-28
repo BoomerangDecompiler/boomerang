@@ -45,7 +45,7 @@ void ControlFlowAnalyzer::setTimeStamps()
     int time = 1;
     m_postOrdering.clear();
 
-    setLoopStamps(m_cfg->getEntryBB(), time, m_postOrdering);
+    updateLoopStamps(m_cfg->getEntryBB(), time);
 
     // set the reverse parenthesis for the nodes
     time = 1;
@@ -516,8 +516,7 @@ bool ControlFlowAnalyzer::isAncestorOf(const BasicBlock *bb, const BasicBlock *o
 }
 
 
-void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int &time,
-                                        std::vector<const BasicBlock *> &postOrder)
+void ControlFlowAnalyzer::updateLoopStamps(const BasicBlock *bb, int &time)
 {
     // timestamp the current node with the current time
     // and set its traversed flag
@@ -532,7 +531,7 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int &time,
 
         // recurse on this child if it hasn't already been visited
         if (getTravType(succ) != TravType::DFS_LNum) {
-            setLoopStamps(succ, ++time, postOrder);
+            updateLoopStamps(succ, ++time);
         }
     }
 
@@ -540,8 +539,8 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int &time,
     m_info[bb].m_postOrderID = ++time;
 
     // add this node to the ordering structure as well as recording its position within the ordering
-    m_info[bb].m_postOrderIndex = static_cast<int>(postOrder.size());
-    postOrder.push_back(bb);
+    m_info[bb].m_postOrderIndex = static_cast<int>(m_postOrdering.size());
+    m_postOrdering.push_back(bb);
 }
 
 

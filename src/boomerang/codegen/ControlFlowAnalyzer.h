@@ -191,7 +191,7 @@ public:
     bool isCaseOption(const BasicBlock *bb) const;
 
 private:
-    void setLoopStamps(const BasicBlock *bb, int &time, std::vector<const BasicBlock *> &order);
+    void updateLoopStamps(const BasicBlock *bb, int &time);
     void setRevLoopStamps(const BasicBlock *bb, int &time);
     void setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order);
 
