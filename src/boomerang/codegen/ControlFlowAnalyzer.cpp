@@ -49,7 +49,7 @@ void ControlFlowAnalyzer::setTimeStamps()
 
     // set the reverse parenthesis for the nodes
     time = 1;
-    setRevLoopStamps(m_cfg->getEntryBB(), time);
+    updateRevLoopStamps(m_cfg->getEntryBB(), time);
 
     BasicBlock *retNode = m_cfg->findRetNode();
     assert(retNode);
@@ -544,7 +544,7 @@ void ControlFlowAnalyzer::updateLoopStamps(const BasicBlock *bb, int &time)
 }
 
 
-void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int &time)
+void ControlFlowAnalyzer::updateRevLoopStamps(const BasicBlock *bb, int &time)
 {
     // timestamp the current node with the current time and set its traversed flag
     setTravType(bb, TravType::DFS_RNum);
@@ -554,7 +554,7 @@ void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int &time)
     for (int i = bb->getNumSuccessors() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
         if (getTravType(bb->getSuccessor(i)) != TravType::DFS_RNum) {
-            setRevLoopStamps(bb->getSuccessor(i), ++time);
+            updateRevLoopStamps(bb->getSuccessor(i), ++time);
         }
     }
 

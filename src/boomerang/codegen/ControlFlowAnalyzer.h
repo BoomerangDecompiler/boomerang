@@ -192,7 +192,7 @@ public:
 
 private:
     void updateLoopStamps(const BasicBlock *bb, int &time);
-    void setRevLoopStamps(const BasicBlock *bb, int &time);
+    void updateRevLoopStamps(const BasicBlock *bb, int &time);
     void setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order);
 
     void setLoopHead(const BasicBlock *bb, const BasicBlock *head) { m_info[bb].m_loopHead = head; }
