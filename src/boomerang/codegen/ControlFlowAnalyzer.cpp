@@ -54,7 +54,7 @@ void ControlFlowAnalyzer::setTimeStamps()
     BasicBlock *retNode = m_cfg->findRetNode();
     assert(retNode);
     m_revPostOrdering.clear();
-    setRevOrder(retNode, m_revPostOrdering);
+    updateRevOrder(retNode);
 }
 
 
@@ -562,7 +562,7 @@ void ControlFlowAnalyzer::updateRevLoopStamps(const BasicBlock *bb, int &time)
 }
 
 
-void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order)
+void ControlFlowAnalyzer::updateRevOrder(const BasicBlock *bb)
 {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
     setTravType(bb, TravType::DFS_PDom);
@@ -570,14 +570,14 @@ void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const Ba
     // recurse on unvisited children
     for (const BasicBlock *pred : bb->getPredecessors()) {
         if (getTravType(pred) != TravType::DFS_PDom) {
-            setRevOrder(pred, order);
+            updateRevOrder(pred);
         }
     }
 
     // add this node to the ordering structure and record the post dom. order of this node as its
     // index within this ordering structure
-    m_info[bb].m_revPostOrderIndex = static_cast<int>(order.size());
-    order.push_back(bb);
+    m_info[bb].m_revPostOrderIndex = static_cast<int>(m_revPostOrdering.size());
+    m_revPostOrdering.push_back(bb);
 }
 
 

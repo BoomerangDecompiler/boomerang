@@ -193,7 +193,7 @@ public:
 private:
     void updateLoopStamps(const BasicBlock *bb, int &time);
     void updateRevLoopStamps(const BasicBlock *bb, int &time);
-    void setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order);
+    void updateRevOrder(const BasicBlock *bb);
 
     void setLoopHead(const BasicBlock *bb, const BasicBlock *head) { m_info[bb].m_loopHead = head; }
     void setLatchNode(const BasicBlock *bb, const BasicBlock *latch)
