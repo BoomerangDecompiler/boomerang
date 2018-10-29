@@ -60,7 +60,7 @@ public:
     // sequential statements
 
     /// Add an assignment statement at the current position.
-    virtual void addAssignmentStatement(Assign *s) = 0;
+    virtual void addAssignmentStatement(const Assign *s) = 0;
 
     /**
      * Adds a call to the function \p proc.
@@ -73,14 +73,14 @@ public:
      * \todo                Remove the \p name parameter and use Proc::getName()
      * \todo                Add assignment for when the function returns a struct.
      */
-    virtual void addCallStatement(Function *dest, const QString &name, const StatementList &args,
-                                  const StatementList &results) = 0;
+    virtual void addCallStatement(const Function *dest, const QString &name,
+                                  const StatementList &args, const StatementList &results) = 0;
 
     /**
      * Adds an indirect call to \p exp.
      * \param results UNUSED
      *
-     * \sa AddCallStatement
+     * \sa addCallStatement
      * \todo Add the use of \p results like AddCallStatement.
      */
     virtual void addIndCallStatement(const SharedExp &exp, const StatementList &args,

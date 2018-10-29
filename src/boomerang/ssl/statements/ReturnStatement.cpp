@@ -84,7 +84,7 @@ bool ReturnStatement::accept(StmtVisitor *visitor) const
 }
 
 
-void ReturnStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
+void ReturnStatement::generateCode(ICodeGenerator *gen) const
 {
     gen->addReturnStatement(&getReturns());
 }

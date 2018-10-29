@@ -666,7 +666,7 @@ ImplicitAssign *BasicBlock::addImplicitAssign(const SharedExp &lhs)
     newImplicit->setBB(this);
     newImplicit->setProc(static_cast<UserProc *>(m_function));
 
-    m_listOfRTLs->front()->push_back(newImplicit);
+    m_listOfRTLs->front()->append(newImplicit);
     return newImplicit;
 }
 
@@ -702,7 +702,7 @@ PhiAssign *BasicBlock::addPhi(const SharedExp &usedExp)
     phi->setBB(this);
     phi->setProc(static_cast<UserProc *>(m_function));
 
-    m_listOfRTLs->front()->push_back(phi);
+    m_listOfRTLs->front()->append(phi);
     return phi;
 }
 

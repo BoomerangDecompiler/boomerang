@@ -94,11 +94,11 @@ public:
 
 public:
     /// \copydoc ICodeGenerator::addAssignmentStatement
-    virtual void addAssignmentStatement(Assign *assign) override;
+    virtual void addAssignmentStatement(const Assign *assign) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
-    virtual void addCallStatement(Function *func, const QString &name, const StatementList &args,
-                                  const StatementList &results) override;
+    virtual void addCallStatement(const Function *func, const QString &name,
+                                  const StatementList &args, const StatementList &results) override;
 
     /// \copydoc ICodeGenerator::addCallStatement
     virtual void addIndCallStatement(const SharedExp &exp, const StatementList &args,

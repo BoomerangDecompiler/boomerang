@@ -59,7 +59,7 @@ public:
     void print(OStream &os) const;
 
     /// \returns true if \p e is in the collection
-    inline bool exists(SharedExp e) { return m_locs.contains(e); }
+    inline bool exists(SharedExp e) const { return m_locs.contains(e); }
     LocationSet &getLocSet() { return m_locs; }
 
 public:

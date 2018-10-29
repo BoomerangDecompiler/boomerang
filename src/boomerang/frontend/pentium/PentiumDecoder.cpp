@@ -13573,7 +13573,7 @@ bool PentiumDecoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult
                                 CallStatement *call = new CallStatement;
                                 // Set the destination
                                 call->setDest(nativeDest);
-                                result.rtl->push_back(call);
+                                result.rtl->append(call);
                                 Function *destProc = m_prog->getOrCreateFunction(nativeDest);
 
                                 if (destProc == reinterpret_cast<Function *>(-1)) {
@@ -47077,32 +47077,32 @@ void PentiumDecoder::genBSFR(Address pc, SharedExp dest, SharedExp modrm, int in
     switch (BSFRstate) {
     case 0:
         s = new Assign(IntegerType::get(1), Terminal::get(opZF), Const::get(1));
-        result.rtl->push_back(s);
+        result.rtl->append(s);
         b = new BranchStatement;
         b->setDest(pc + numBytes);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(opEquals, modrm->clone(), Const::get(0)));
-        result.rtl->push_back(b);
+        result.rtl->append(b);
         break;
 
     case 1:
         s = new Assign(IntegerType::get(1), Terminal::get(opZF), Const::get(0));
-        result.rtl->push_back(s);
+        result.rtl->append(s);
         s = new Assign(IntegerType::get(size), dest->clone(), Const::get(init));
-        result.rtl->push_back(s);
+        result.rtl->append(s);
         break;
 
     case 2:
         s = new Assign(IntegerType::get(size), dest->clone(),
                        Binary::get(incdec, dest->clone(), Const::get(1)));
-        result.rtl->push_back(s);
+        result.rtl->append(s);
         b = new BranchStatement;
         b->setDest(pc + 2);
         b->setCondType(BranchType::JE);
         b->setCondExpr(Binary::get(
             opEquals, std::make_shared<Ternary>(opAt, modrm->clone(), dest->clone(), dest->clone()),
             Const::get(0)));
-        result.rtl->push_back(b);
+        result.rtl->append(b);
         break;
 
     default:

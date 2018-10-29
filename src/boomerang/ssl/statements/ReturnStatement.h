@@ -47,8 +47,8 @@ public:
 
     iterator erase(iterator it);
 
-    const StatementList &getModifieds() { return m_modifieds; }
-    const StatementList &getReturns() { return m_returns; }
+    const StatementList &getModifieds() const { return m_modifieds; }
+    const StatementList &getReturns() const { return m_returns; }
 
     size_t getNumReturns() const { return m_returns.size(); }
 
@@ -113,7 +113,7 @@ public:
     virtual bool definesLoc(SharedExp loc) const override;
 
     /// \copydoc Statement::generateCode
-    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
+    virtual void generateCode(ICodeGenerator *gen) const override;
 
     /// \returns pointer to the collector object
     DefCollector *getCollector() { return &m_col; }

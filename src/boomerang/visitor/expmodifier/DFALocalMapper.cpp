@@ -28,8 +28,8 @@ DfaLocalMapper::DfaLocalMapper(UserProc *proc)
 
 bool DfaLocalMapper::processExp(const SharedExp &exp)
 {
-    if (m_proc->isLocalOrParamPattern(
-            exp)) { // Check if this is an appropriate pattern for local variables
+    // Check if this is an appropriate pattern for local variables
+    if (m_proc->isLocalOrParamPattern(exp)) {
         const int spIndex = Util::getStackRegisterIndex(m_prog);
         if (m_sig->isStackLocal(spIndex, exp)) {
             change = true; // We've made a mapping

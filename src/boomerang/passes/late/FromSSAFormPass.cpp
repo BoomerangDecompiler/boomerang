@@ -163,7 +163,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
     }
 
     // Implement part of the Phi Unites list, where renamings or parameters have broken them, by
-    // renaming The rest of them will be done as phis are removed The idea is that where l1 and l2
+    // renaming. The rest of them will be done as phis are removed The idea is that where l1 and l2
     // have to unite, and exactly one of them already has a local/name, you can implement the
     // unification by giving the unnamed one the same name as the named one, as long as they don't
     // interfere

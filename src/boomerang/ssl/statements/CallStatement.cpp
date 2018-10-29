@@ -593,9 +593,9 @@ void CallStatement::setDestProc(Function *dest)
 }
 
 
-void CallStatement::generateCode(ICodeGenerator *gen, const BasicBlock *)
+void CallStatement::generateCode(ICodeGenerator *gen) const
 {
-    Function *dest = getDestProc();
+    const Function *dest = getDestProc();
 
     if ((dest == nullptr) && isComputed()) {
         gen->addIndCallStatement(m_dest, m_arguments, *calcResults());
@@ -1377,7 +1377,7 @@ void CallStatement::updateArguments(bool experimental)
 }
 
 
-std::unique_ptr<StatementList> CallStatement::calcResults()
+std::unique_ptr<StatementList> CallStatement::calcResults() const
 {
     std::unique_ptr<StatementList> result(new StatementList);
 

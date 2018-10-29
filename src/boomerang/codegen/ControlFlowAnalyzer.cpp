@@ -45,16 +45,16 @@ void ControlFlowAnalyzer::setTimeStamps()
     int time = 1;
     m_postOrdering.clear();
 
-    setLoopStamps(m_cfg->getEntryBB(), time, m_postOrdering);
+    updateLoopStamps(findEntryBB(), time);
 
     // set the reverse parenthesis for the nodes
     time = 1;
-    setRevLoopStamps(m_cfg->getEntryBB(), time);
+    updateRevLoopStamps(findEntryBB(), time);
 
-    BasicBlock *retNode = m_cfg->findRetNode();
+    BasicBlock *retNode = findExitBB();
     assert(retNode);
     m_revPostOrdering.clear();
-    setRevOrder(retNode, m_revPostOrdering);
+    updateRevOrder(retNode);
 }
 
 
@@ -66,7 +66,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
 
         for (BasicBlock *succ : bb->getSuccessors()) {
             if (getRevOrd(succ) > getRevOrd(bb)) {
-                setImmPDom(bb, commonPDom(getImmPDom(bb), succ));
+                setImmPDom(bb, findCommonPDom(getImmPDom(bb), succ));
             }
         }
     }
@@ -79,7 +79,7 @@ void ControlFlowAnalyzer::updateImmedPDom()
 
         for (auto &succ : bb->getSuccessors()) {
             BasicBlock *succNode = succ;
-            setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
+            setImmPDom(bb, findCommonPDom(getImmPDom(bb), succNode));
         }
     }
 
@@ -92,10 +92,10 @@ void ControlFlowAnalyzer::updateImmedPDom()
                 if (isBackEdge(bb, succNode) && (bb->getNumSuccessors() > 1) &&
                     getImmPDom(succNode) &&
                     (getPostOrdering(getImmPDom(succ)) < getPostOrdering(getImmPDom(bb)))) {
-                    setImmPDom(bb, commonPDom(getImmPDom(succNode), getImmPDom(bb)));
+                    setImmPDom(bb, findCommonPDom(getImmPDom(succNode), getImmPDom(bb)));
                 }
                 else {
-                    setImmPDom(bb, commonPDom(getImmPDom(bb), succNode));
+                    setImmPDom(bb, findCommonPDom(getImmPDom(bb), succNode));
                 }
             }
         }
@@ -103,8 +103,8 @@ void ControlFlowAnalyzer::updateImmedPDom()
 }
 
 
-const BasicBlock *ControlFlowAnalyzer::commonPDom(const BasicBlock *currImmPDom,
-                                                  const BasicBlock *succImmPDom)
+const BasicBlock *ControlFlowAnalyzer::findCommonPDom(const BasicBlock *currImmPDom,
+                                                      const BasicBlock *succImmPDom)
 {
     if (!currImmPDom) {
         return succImmPDom;
@@ -516,8 +516,7 @@ bool ControlFlowAnalyzer::isAncestorOf(const BasicBlock *bb, const BasicBlock *o
 }
 
 
-void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int &time,
-                                        std::vector<const BasicBlock *> &postOrder)
+void ControlFlowAnalyzer::updateLoopStamps(const BasicBlock *bb, int &time)
 {
     // timestamp the current node with the current time
     // and set its traversed flag
@@ -532,7 +531,7 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int &time,
 
         // recurse on this child if it hasn't already been visited
         if (getTravType(succ) != TravType::DFS_LNum) {
-            setLoopStamps(succ, ++time, postOrder);
+            updateLoopStamps(succ, ++time);
         }
     }
 
@@ -540,12 +539,12 @@ void ControlFlowAnalyzer::setLoopStamps(const BasicBlock *bb, int &time,
     m_info[bb].m_postOrderID = ++time;
 
     // add this node to the ordering structure as well as recording its position within the ordering
-    m_info[bb].m_postOrderIndex = static_cast<int>(postOrder.size());
-    postOrder.push_back(bb);
+    m_info[bb].m_postOrderIndex = static_cast<int>(m_postOrdering.size());
+    m_postOrdering.push_back(bb);
 }
 
 
-void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int &time)
+void ControlFlowAnalyzer::updateRevLoopStamps(const BasicBlock *bb, int &time)
 {
     // timestamp the current node with the current time and set its traversed flag
     setTravType(bb, TravType::DFS_RNum);
@@ -555,7 +554,7 @@ void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int &time)
     for (int i = bb->getNumSuccessors() - 1; i >= 0; i--) {
         // recurse on this child if it hasn't already been visited
         if (getTravType(bb->getSuccessor(i)) != TravType::DFS_RNum) {
-            setRevLoopStamps(bb->getSuccessor(i), ++time);
+            updateRevLoopStamps(bb->getSuccessor(i), ++time);
         }
     }
 
@@ -563,7 +562,7 @@ void ControlFlowAnalyzer::setRevLoopStamps(const BasicBlock *bb, int &time)
 }
 
 
-void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order)
+void ControlFlowAnalyzer::updateRevOrder(const BasicBlock *bb)
 {
     // Set this node as having been traversed during the post domimator DFS ordering traversal
     setTravType(bb, TravType::DFS_PDom);
@@ -571,14 +570,14 @@ void ControlFlowAnalyzer::setRevOrder(const BasicBlock *bb, std::vector<const Ba
     // recurse on unvisited children
     for (const BasicBlock *pred : bb->getPredecessors()) {
         if (getTravType(pred) != TravType::DFS_PDom) {
-            setRevOrder(pred, order);
+            updateRevOrder(pred);
         }
     }
 
     // add this node to the ordering structure and record the post dom. order of this node as its
     // index within this ordering structure
-    m_info[bb].m_revPostOrderIndex = static_cast<int>(order.size());
-    order.push_back(bb);
+    m_info[bb].m_revPostOrderIndex = static_cast<int>(m_revPostOrdering.size());
+    m_revPostOrdering.push_back(bb);
 }
 
 
@@ -732,4 +731,16 @@ void ControlFlowAnalyzer::unTraverse()
     for (auto &elem : m_info) {
         elem.second.m_travType = TravType::Untraversed;
     }
+}
+
+
+BasicBlock *ControlFlowAnalyzer::findEntryBB() const
+{
+    return m_cfg->getEntryBB();
+}
+
+
+BasicBlock *ControlFlowAnalyzer::findExitBB() const
+{
+    return m_cfg->findRetNode();
 }

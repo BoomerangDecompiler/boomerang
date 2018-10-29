@@ -19,9 +19,9 @@ class BasicBlock;
 
 
 /// an enumerated type for the class of stucture determined for a node
-enum class StructType : uint8_t
+enum class StructType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     Loop,     // Header of a loop only
     Cond,     // Header of a conditional only (if-then-else or switch)
     LoopCond, // Header of a loop and a conditional
@@ -29,10 +29,10 @@ enum class StructType : uint8_t
 };
 
 
-/// an type for the class of unstructured conditional jumps
-enum class UnstructType : uint8_t
+/// an enumerated type for the class of unstructured conditional jumps
+enum class UnstructType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     Structured,
     JumpInOutLoop,
     JumpIntoCase
@@ -40,9 +40,9 @@ enum class UnstructType : uint8_t
 
 
 /// an enumerated type for the type of loop headers
-enum class LoopType : uint8_t
+enum class LoopType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     PreTested,  ///< Header of a while loop
     PostTested, ///< Header of a do..while loop
     Endless     ///< Header of an endless loop
@@ -50,9 +50,9 @@ enum class LoopType : uint8_t
 
 
 /// an enumerated type for the type of conditional headers
-enum class CondType : uint8_t
+enum class CondType : int8_t
 {
-    Invalid,
+    Invalid = -1,
     IfThen,     ///< conditional with only a then clause
     IfThenElse, ///< conditional with a then and an else clause
     IfElse,     ///< conditional with only an else clause
@@ -143,95 +143,6 @@ public:
     /// establish if \p source has a back edge to \p dest
     bool isBackEdge(const BasicBlock *source, const BasicBlock *dest) const;
 
-private:
-    void setTimeStamps();
-
-    /**
-     * Finds the immediate post dominator of each node in the CFG.
-     *
-     * Adapted version of the dominators algorithm by Hecht and Ullman;
-     * finds immediate post dominators only.
-     * \note graph should be reducible
-     */
-    void updateImmedPDom();
-
-    /// Structures all conditional headers (i.e. nodes with more than one outedge)
-    void structConds();
-
-    /// \pre The graph for curProc has been built.
-    /// \post Each node is tagged with the header of the most nested loop of which it is a member
-    /// (possibly none). The header of each loop stores information on the latching node as well as
-    /// the type of loop it heads.
-    void structLoops();
-
-    /// This routine is called after all the other structuring has been done. It detects
-    /// conditionals that are in fact the head of a jump into/outof a loop or into a case body. Only
-    /// forward jumps are considered as unstructured backward jumps will always be generated nicely.
-    void checkConds();
-
-    /// Finds the common post dominator of the current immediate post dominator and its successor's
-    /// immediate post dominator
-    const BasicBlock *commonPDom(const BasicBlock *curImmPDom, const BasicBlock *succImmPDom);
-
-    /// \pre  The loop induced by (head,latch) has already had all its member nodes tagged
-    /// \post The type of loop has been deduced
-    void determineLoopType(const BasicBlock *header, bool *&loopNodes);
-
-    /// \pre  The loop headed by header has been induced and all it's member nodes have been tagged
-    /// \post The follow of the loop has been determined.
-    void findLoopFollow(const BasicBlock *header, bool *&loopNodes);
-
-    /// \pre header has been detected as a loop header and has the details of the
-    ///        latching node
-    /// \post the nodes within the loop have been tagged
-    void tagNodesInLoop(const BasicBlock *header, bool *&loopNodes);
-
-public:
-    void setLoopStamps(const BasicBlock *bb, int &time, std::vector<const BasicBlock *> &order);
-    void setRevLoopStamps(const BasicBlock *bb, int &time);
-    void setRevOrder(const BasicBlock *bb, std::vector<const BasicBlock *> &order);
-
-    void setLoopHead(const BasicBlock *bb, const BasicBlock *head) { m_info[bb].m_loopHead = head; }
-    void setLatchNode(const BasicBlock *bb, const BasicBlock *latch)
-    {
-        m_info[bb].m_latchNode = latch;
-    }
-
-    void setCaseHead(const BasicBlock *bb, const BasicBlock *head, const BasicBlock *follow);
-
-    void setUnstructType(const BasicBlock *bb, UnstructType unstructType);
-    void setLoopType(const BasicBlock *bb, LoopType loopType);
-    void setCondType(const BasicBlock *bb, CondType condType);
-
-    void setLoopFollow(const BasicBlock *bb, const BasicBlock *follow)
-    {
-        m_info[bb].m_loopFollow = follow;
-    }
-
-    void setCondFollow(const BasicBlock *bb, const BasicBlock *follow)
-    {
-        m_info[bb].m_condFollow = follow;
-    }
-
-    /// establish if this bb has any back edges leading FROM it
-    bool hasBackEdge(const BasicBlock *bb) const;
-
-    /// establish if this bb is an ancestor of another BB
-    bool isAncestorOf(const BasicBlock *bb, const BasicBlock *other) const;
-    bool isBBInLoop(const BasicBlock *bb, const BasicBlock *header, const BasicBlock *latch) const;
-
-    int getPostOrdering(const BasicBlock *bb) const { return m_info[bb].m_postOrderIndex; }
-    int getRevOrd(const BasicBlock *bb) const { return m_info[bb].m_revPostOrderIndex; }
-
-    const BasicBlock *getImmPDom(const BasicBlock *bb) const { return m_info[bb].m_immPDom; }
-
-    void setImmPDom(const BasicBlock *bb, const BasicBlock *immPDom)
-    {
-        m_info[bb].m_immPDom = immPDom;
-    }
-
-    void unTraverse();
-
 public:
     inline bool isLatchNode(const BasicBlock *bb) const
     {
@@ -280,12 +191,106 @@ public:
     bool isCaseOption(const BasicBlock *bb) const;
 
 private:
+    void updateLoopStamps(const BasicBlock *bb, int &time);
+    void updateRevLoopStamps(const BasicBlock *bb, int &time);
+    void updateRevOrder(const BasicBlock *bb);
+
+    void setLoopHead(const BasicBlock *bb, const BasicBlock *head) { m_info[bb].m_loopHead = head; }
+    void setLatchNode(const BasicBlock *bb, const BasicBlock *latch)
+    {
+        m_info[bb].m_latchNode = latch;
+    }
+
+    void setCaseHead(const BasicBlock *bb, const BasicBlock *head, const BasicBlock *follow);
+
+    void setUnstructType(const BasicBlock *bb, UnstructType unstructType);
+    void setLoopType(const BasicBlock *bb, LoopType loopType);
+    void setCondType(const BasicBlock *bb, CondType condType);
+
+    void setLoopFollow(const BasicBlock *bb, const BasicBlock *follow)
+    {
+        m_info[bb].m_loopFollow = follow;
+    }
+
+    void setCondFollow(const BasicBlock *bb, const BasicBlock *follow)
+    {
+        m_info[bb].m_condFollow = follow;
+    }
+
+    /// establish if this bb has any back edges leading FROM it
+    bool hasBackEdge(const BasicBlock *bb) const;
+
+    /// establish if this bb is an ancestor of another BB
+    bool isAncestorOf(const BasicBlock *bb, const BasicBlock *other) const;
+    bool isBBInLoop(const BasicBlock *bb, const BasicBlock *header, const BasicBlock *latch) const;
+
+    int getPostOrdering(const BasicBlock *bb) const { return m_info[bb].m_postOrderIndex; }
+    int getRevOrd(const BasicBlock *bb) const { return m_info[bb].m_revPostOrderIndex; }
+
+    const BasicBlock *getImmPDom(const BasicBlock *bb) const { return m_info[bb].m_immPDom; }
+
+    void setImmPDom(const BasicBlock *bb, const BasicBlock *immPDom)
+    {
+        m_info[bb].m_immPDom = immPDom;
+    }
+
+    void unTraverse();
+
+private:
+    void setTimeStamps();
+
+    /**
+     * Finds the immediate post dominator of each node in the CFG.
+     *
+     * Adapted version of the dominators algorithm by Hecht and Ullman;
+     * finds immediate post dominators only.
+     * \note graph should be reducible
+     */
+    void updateImmedPDom();
+
+    /// Structures all conditional headers (i.e. nodes with more than one outedge)
+    void structConds();
+
+    /// \pre The graph for curProc has been built.
+    /// \post Each node is tagged with the header of the most nested loop of which it is a member
+    /// (possibly none). The header of each loop stores information on the latching node as well as
+    /// the type of loop it heads.
+    void structLoops();
+
+    /// This routine is called after all the other structuring has been done. It detects
+    /// conditionals that are in fact the head of a jump into/outof a loop or into a case body. Only
+    /// forward jumps are considered as unstructured backward jumps will always be generated nicely.
+    void checkConds();
+
+    /// Finds the common post dominator of the current immediate post dominator and its successor's
+    /// immediate post dominator
+    const BasicBlock *findCommonPDom(const BasicBlock *curImmPDom, const BasicBlock *succImmPDom);
+
+    /// \pre  The loop induced by (head,latch) has already had all its member nodes tagged
+    /// \post The type of loop has been deduced
+    void determineLoopType(const BasicBlock *header, bool *&loopNodes);
+
+    /// \pre  The loop headed by header has been induced and all it's member nodes have been tagged
+    /// \post The follow of the loop has been determined.
+    void findLoopFollow(const BasicBlock *header, bool *&loopNodes);
+
+    /// \pre header has been detected as a loop header and has the details of the
+    ///        latching node
+    /// \post the nodes within the loop have been tagged
+    void tagNodesInLoop(const BasicBlock *header, bool *&loopNodes);
+
+    BasicBlock *findEntryBB() const;
+    BasicBlock *findExitBB() const;
+
+private:
     ProcCFG *m_cfg = nullptr;
 
-    /// Ordering of BBs for control flow structuring
+    /// Post Ordering according to a DFS starting at the entry BB.
     std::vector<const BasicBlock *> m_postOrdering;
 
-    /// Ordering of BBs for control flow structuring
+    /// Post Ordering according to a DFS starting at the exit BB (usually the return BB).
+    /// Note that this is not the reverse of m_postOrdering
+    /// for functions containing calls to noreturn functions or infinite loops.
     std::vector<const BasicBlock *> m_revPostOrdering;
 
 private:

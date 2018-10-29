@@ -124,7 +124,7 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
 }
 
 
-void CCodeGenerator::addAssignmentStatement(Assign *asgn)
+void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
 {
     // Gerard: shouldn't these  3 types of statements be removed earlier?
     if (asgn->getLeft()->getOper() == opPC) {
@@ -236,7 +236,7 @@ void CCodeGenerator::addAssignmentStatement(Assign *asgn)
 }
 
 
-void CCodeGenerator::addCallStatement(Function *proc, const QString &name,
+void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
                                       const StatementList &args, const StatementList &results)
 {
     QString tgt;
@@ -1237,14 +1237,14 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
 
     case opNot:
         openParen(str, curPrec, OpPrec::Unary);
-        str << " ~";
+        str << "~";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
 
     case opLNot:
         openParen(str, curPrec, OpPrec::Unary);
-        str << " !";
+        str << "!";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
@@ -1252,7 +1252,7 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opNeg:
     case opFNeg:
         openParen(str, curPrec, OpPrec::Unary);
-        str << " -";
+        str << "-";
         appendExp(str, *unaryExp.getSubExp1(), OpPrec::Unary);
         closeParen(str, curPrec, OpPrec::Unary);
         break;
@@ -2252,7 +2252,7 @@ void CCodeGenerator::generateCode_Branch(const BasicBlock *bb,
         }
 
         if (m_analyzer.getCondType(bb) == CondType::IfElse) {
-            cond = Unary::get(opNot, cond->clone());
+            cond = Unary::get(opLNot, cond->clone());
             cond = cond->simplify();
         }
 
@@ -2506,7 +2506,7 @@ void CCodeGenerator::writeBB(const BasicBlock *bb)
             }
 
             for (Statement *st : *rtl) {
-                st->generateCode(this, bb);
+                st->generateCode(this);
             }
         }
     }

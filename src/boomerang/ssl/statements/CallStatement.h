@@ -83,7 +83,7 @@ public:
     // Calculate results(this) = defines(this) intersect live(this)
     // Note: could use a LocationList for this, but then there is nowhere to store the types (for
     // DFA based TA) So the RHS is just ignored
-    std::unique_ptr<StatementList> calcResults(); // Calculate defines(this) isect live(this)
+    std::unique_ptr<StatementList> calcResults() const; // Calculate defines(this) isect live(this)
 
     ReturnStatement *getCalleeReturn() { return m_calleeReturn; }
     void setCalleeReturn(ReturnStatement *ret) { m_calleeReturn = ret; }
@@ -163,7 +163,7 @@ public:
     const Function *getDestProc() const;
 
     /// \copydoc GotoStatement::generateCode
-    virtual void generateCode(ICodeGenerator *gen, const BasicBlock *parentBB) override;
+    virtual void generateCode(ICodeGenerator *gen) const override;
 
     /// \copydoc GotoStatement::usesExp
     virtual bool usesExp(const Exp &exp) const override;

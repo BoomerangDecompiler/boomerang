@@ -101,9 +101,8 @@ public:
     /// \copydoc Statement::searchAndReplace
     virtual bool searchAndReplace(const Exp &pattern, SharedExp replace, bool cc = false) override;
 
-
     // code generation
-    virtual void generateCode(ICodeGenerator *, const BasicBlock *) override;
+    virtual void generateCode(ICodeGenerator *) const override;
 
     // simplify all the uses/defs in this Statement
     virtual void simplify() override;
