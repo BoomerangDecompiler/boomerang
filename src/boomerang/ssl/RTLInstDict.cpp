@@ -115,7 +115,8 @@ void RTLInstDict::print(OStream &os /*= std::cout*/)
 }
 
 
-std::pair<QString, DWord> RTLInstDict::getSignature(const QString &instructionName, bool *found) const
+std::pair<QString, DWord> RTLInstDict::getSignature(const QString &instructionName,
+                                                    bool *found) const
 {
     // Take the argument, convert it to upper case and remove any .'s
     const QString sanitizedName = QString(instructionName).remove(".").toUpper();

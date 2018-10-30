@@ -258,7 +258,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             CallStatement *call = new CallStatement;
             // Set the destination
             call->setDest(callDest);
-            rtl->push_back(call);
+            rtl->append(call);
 
             if (callDest->isConst()) {
                 Function *destProc = m_prog->getOrCreateFunction(
@@ -372,8 +372,9 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
         }
 
         rtl->clear();
-        rtl->push_back(bas);
+        rtl->append(bas);
     }
+
     return rtl;
 }
 
