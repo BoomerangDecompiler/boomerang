@@ -1363,6 +1363,22 @@ DIV.rm32 divisor
 ;
 
 
+# ENTER
+ENTER.imm32.imm32 allocSz, nstLevel
+    *32* %esp := %esp - 4
+    *32* m[%esp] := %ebp
+    *32* tmpframe := %esp
+
+    # Note: Boomerang does not support for loops at present so we assume 0 <= nstLevel <= 1
+    # if (nstLevel > 1) for (i=1 to nstLvel - 1) { %ebp -= 4; PUSH m[%ebp]; }
+    *32* nstLevel>=1 => %esp := %esp - 4
+    *32* nstLevel>=1 => m[%esp] := tmpframe
+
+    *32* %ebp := tmpframe
+    *32* %esp := %esp - allocSz
+;
+
+
 # FABS
 FABS
     *f80* %st := fabs(%st)
