@@ -48,3 +48,5 @@ add_subdirectory(docs)
 add_subdirectory(src)
 
 include(boomerang-tests)
+include(boomerang-pack)
+
