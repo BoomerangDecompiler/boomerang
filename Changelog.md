@@ -45,7 +45,6 @@
 - Feature: Added C++ API.
 - Feature: Added option to build shared or static libraries.
 - Feature: Added '--decode-only' switch to only decode a binary.
-- Feature: Added '-nT' switch to disable Type Analysis.
 - Changed: GUI update. Added settings wrt. decoding and decompilation to Settings Dialog.
 - Changed: Renamed 'print-*' console command to a single 'print' command with arguments.
 - Changed: Split old regression test suite into "real" regression tests and smoke tests (that only check for crashes or failures).
@@ -62,4 +61,5 @@
 - Technical: Removed unused files from the repository.
 - Technical: Split project into libboomerang (core library), boomerang-cli (command line interface) and boomerang-gui (GUI frontend).
 - Technical: Upgraded code base to C++17.
+- Technical: Added support for installer and/or binary package generation using CPack.
 - Numerous other small changes and fixes.
