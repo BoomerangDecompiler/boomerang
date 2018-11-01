@@ -48,4 +48,3 @@ build_script:
 test_script:
     - cmake --build . --target RUN_TESTS
 
-test: off
