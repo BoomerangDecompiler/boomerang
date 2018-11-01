@@ -22,7 +22,7 @@ configuration:
 init:
   - cmd: cmake --version
   - cmd: msbuild /version
-  
+
 clone_folder: C:\projects\boomerang
 
 branches:
@@ -43,6 +43,9 @@ matrix:
 
 build_script:
     - cmake --build .
+    - cmake --build . --target PACKAGE
+
+test_script:
     - cmake --build . --target RUN_TESTS
 
 test: off
