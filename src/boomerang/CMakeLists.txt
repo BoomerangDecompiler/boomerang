@@ -48,6 +48,7 @@ if (BOOMERANG_INSTALL_DEV OR BUILD_SHARED_LIBS)
     install(TARGETS boomerang
         ARCHIVE DESTINATION lib/boomerang
         LIBRARY DESTINATION lib/boomerang
+        RUNTIME DESTINATION bin
     )
 endif ()
 
