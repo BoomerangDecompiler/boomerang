@@ -1,4 +1,3 @@
-shallow_clone: true
 version: "Build {build}"
 
 os:
