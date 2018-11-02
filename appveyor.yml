@@ -40,8 +40,7 @@ before_build:
   - ps: ..\scripts\appveyor-generate.ps1
 
 build_script:
-  - cmake --build .
-  - cmake --build . --target PACKAGE
+  - cmake --build . --target PACKAGE # this includes ALL
 
 test_script:
   - cmake --build . --target RUN_TESTS
