@@ -48,7 +48,7 @@ if (MSVC)
     )
 
     BOOMERANG_ADD_COMPILE_FLAGS(/W4 /WX)
-    BOOMERANG_ADD_COMPILE_FLAGS(/EHsc /MP)
+    BOOMERANG_ADD_COMPILE_FLAGS(/EHsc /MP /nologo)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4267) # conversion from size_t to int
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4091) # 'typedef ': ignored on left of '' when no variable is declared
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
