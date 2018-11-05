@@ -418,12 +418,12 @@ void ControlFlowAnalyzer::checkConds()
                     // does the then branch goto the loop latch?
                     if (isBackEdge(bbThen, myLoopLatch)) {
                         setUnstructType(currNode, UnstructType::JumpInOutLoop);
-                        setCondType(currNode, CondType::IfElse);
+                        setCondType(currNode, CondType::IfThen);
                     }
                     // does the else branch goto the loop latch?
                     else if (isBackEdge(bbElse, myLoopLatch)) {
                         setUnstructType(currNode, UnstructType::JumpInOutLoop);
-                        setCondType(currNode, CondType::IfThen);
+                        setCondType(currNode, CondType::IfElse);
                     }
                 }
 

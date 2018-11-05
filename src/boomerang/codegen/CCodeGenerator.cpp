@@ -2129,10 +2129,17 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
                 writeBB(m_analyzer.getLatchNode(bb));
             }
 
-            // addPosttestedLoopEnd(getCond());
-            // MVE: the above seems to fail when there is a call in the middle of the loop (so loop
-            // is 2 BBs) Just a wild stab:
-            addPostTestedLoopEnd(m_analyzer.getLatchNode(bb)->getCond());
+            const BasicBlock *myLatch = m_analyzer.getLatchNode(bb);
+            const BasicBlock *myHead  = m_analyzer.getLoopHead(myLatch);
+            assert(myLatch->isType(BBType::Twoway));
+
+            SharedExp cond = myLatch->getCond();
+            if (myLatch->getSuccessor(BELSE) == myHead) {
+                addPostTestedLoopEnd(Unary::get(opLNot, cond)->simplify());
+            }
+            else {
+                addPostTestedLoopEnd(cond->simplify());
+            }
         }
         else {
             assert(m_analyzer.getLoopType(bb) == LoopType::Endless);
