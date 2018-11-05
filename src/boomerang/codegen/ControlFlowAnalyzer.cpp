@@ -150,26 +150,28 @@ void ControlFlowAnalyzer::structConds()
 {
     // Process the nodes in order
     for (const BasicBlock *currNode : m_postOrdering) {
-        // does the current node have more than one out edge?
-        if (currNode->getNumSuccessors() > 1) {
-            // if the current conditional header is a two way node and has a back edge, then it
-            // won't have a follow
-            if (hasBackEdge(currNode) && (currNode->getType() == BBType::Twoway)) {
-                setStructType(currNode, StructType::Cond);
-                continue;
-            }
+        if (currNode->getNumSuccessors() <= 1) {
+            // not an if/case condition
+            continue;
+        }
 
-            // set the follow of a node to be its immediate post dominator
-            setCondFollow(currNode, getImmPDom(currNode));
-
-            // set the structured type of this node
+        // if the current conditional header is a two way node and has a back edge, then it
+        // won't have a follow
+        if (hasBackEdge(currNode) && (currNode->getType() == BBType::Twoway)) {
             setStructType(currNode, StructType::Cond);
+            continue;
+        }
 
-            // if this is an nway header, then we have to tag each of the nodes within the body of
-            // the nway subgraph
-            if (getCondType(currNode) == CondType::Case) {
-                setCaseHead(currNode, currNode, getCondFollow(currNode));
-            }
+        // set the follow of a node to be its immediate post dominator
+        setCondFollow(currNode, getImmPDom(currNode));
+
+        // set the structured type of this node
+        setStructType(currNode, StructType::Cond);
+
+        // if this is an nway header, then we have to tag each of the nodes within the body of
+        // the nway subgraph
+        if (getCondType(currNode) == CondType::Case) {
+            setCaseHead(currNode, currNode, getCondFollow(currNode));
         }
     }
 }
@@ -189,7 +191,6 @@ void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *&loo
             setStructType(header, StructType::LoopCond);
         }
     }
-
     // otherwise it is either a pretested or endless loop
     else if (header->getType() == BBType::Twoway) {
         // if the header is a two way node then it must have a conditional follow (since it can't
@@ -205,8 +206,8 @@ void ControlFlowAnalyzer::determineLoopType(const BasicBlock *header, bool *&loo
             setLoopType(header, LoopType::PreTested);
         }
     }
-    // both the header and latch node are one way nodes so this must be an endless loop
     else {
+        // both the header and latch node are one way nodes so this must be an endless loop
         setLoopType(header, LoopType::Endless);
     }
 }
@@ -356,37 +357,39 @@ void ControlFlowAnalyzer::structLoops()
         }
 
         // if a latching node was found for the current node then it is a loop header.
-        if (latch) {
-            // define the map that maps each node to whether or not it is within the current loop
-            bool *loopNodes = new bool[m_postOrdering.size()];
-
-            for (unsigned int j = 0; j < m_postOrdering.size(); j++) {
-                loopNodes[j] = false;
-            }
-
-            setLatchNode(currNode, latch);
-
-            // the latching node may already have been structured as a conditional header. If it is
-            // not also the loop header (i.e. the loop is over more than one block) then reset it to
-            // be a sequential node otherwise it will be correctly set as a loop header only later
-            if ((latch != currNode) && (getStructType(latch) == StructType::Cond)) {
-                setStructType(latch, StructType::Seq);
-            }
-
-            // set the structured type of this node
-            setStructType(currNode, StructType::Loop);
-
-            // tag the members of this loop
-            tagNodesInLoop(currNode, loopNodes);
-
-            // calculate the type of this loop
-            determineLoopType(currNode, loopNodes);
-
-            // calculate the follow node of this loop
-            findLoopFollow(currNode, loopNodes);
-
-            delete[] loopNodes;
+        if (!latch) {
+            continue;
         }
+
+        // define the map that maps each node to whether or not it is within the current loop
+        bool *loopNodes = new bool[m_postOrdering.size()];
+
+        for (unsigned int j = 0; j < m_postOrdering.size(); j++) {
+            loopNodes[j] = false;
+        }
+
+        setLatchNode(currNode, latch);
+
+        // the latching node may already have been structured as a conditional header. If it is
+        // not also the loop header (i.e. the loop is over more than one block) then reset it to
+        // be a sequential node otherwise it will be correctly set as a loop header only later
+        if ((latch != currNode) && (getStructType(latch) == StructType::Cond)) {
+            setStructType(latch, StructType::Seq);
+        }
+
+        // set the structured type of this node
+        setStructType(currNode, StructType::Loop);
+
+        // tag the members of this loop
+        tagNodesInLoop(currNode, loopNodes);
+
+        // calculate the type of this loop
+        determineLoopType(currNode, loopNodes);
+
+        // calculate the follow node of this loop
+        findLoopFollow(currNode, loopNodes);
+
+        delete[] loopNodes;
     }
 }
 
@@ -624,10 +627,10 @@ void ControlFlowAnalyzer::setStructType(const BasicBlock *bb, StructType structT
         if (bb->isType(BBType::Nway)) {
             m_info[bb].m_conditionHeaderType = CondType::Case;
         }
-        else if (bb->getSuccessor(BELSE) == getCondFollow(bb)) {
+        else if (getCondFollow(bb) == bb->getSuccessor(BELSE)) {
             m_info[bb].m_conditionHeaderType = CondType::IfThen;
         }
-        else if (bb->getSuccessor(BTHEN) == getCondFollow(bb)) {
+        else if (getCondFollow(bb) == bb->getSuccessor(BTHEN)) {
             m_info[bb].m_conditionHeaderType = CondType::IfElse;
         }
         else {
