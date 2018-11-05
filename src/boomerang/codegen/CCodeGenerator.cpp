@@ -2399,15 +2399,15 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
         return;
     }
 
-    const BasicBlock *child = bb->getSuccessor(0);
+    const BasicBlock *succ = bb->getSuccessor(0);
 
     if (bb->getNumSuccessors() > 1) {
         const BasicBlock *other = bb->getSuccessor(1);
         LOG_MSG("Found seq with more than one outedge!");
         std::shared_ptr<Const> constDest = std::static_pointer_cast<Const>(bb->getDest());
 
-        if (constDest && constDest->isIntConst() && (constDest->getAddr() == child->getLowAddr())) {
-            std::swap(other, child);
+        if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
+            std::swap(other, succ);
             LOG_MSG("Taken branch is first out edge");
         }
 
@@ -2436,32 +2436,32 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
     //  - is not the latch for the current most enclosing loop.
     // The only exception for generating it when it is not in
     // the same loop is when it is only reached from this node
-    if (isGenerated(child)) {
-        emitGotoAndLabel(bb, child);
+    if (isGenerated(succ)) {
+        emitGotoAndLabel(bb, succ);
     }
-    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) &&
-             (!isAllParentsGenerated(child) || Util::isContained(followSet, child))) {
-        emitGotoAndLabel(bb, child);
+    else if (m_analyzer.getLoopHead(succ) != m_analyzer.getLoopHead(bb) &&
+             (!isAllParentsGenerated(succ) || Util::isContained(followSet, succ))) {
+        emitGotoAndLabel(bb, succ);
     }
     else if (latch && m_analyzer.getLoopHead(latch) &&
-             (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
-        emitGotoAndLabel(bb, child);
+             (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == succ)) {
+        emitGotoAndLabel(bb, succ);
     }
-    else if (m_analyzer.getCaseHead(child) && m_analyzer.getCaseHead(bb) &&
-             m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
+    else if (m_analyzer.getCaseHead(succ) && m_analyzer.getCaseHead(bb) &&
+             m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(succ) &&
              m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb))) {
-        emitGotoAndLabel(bb, child);
+        emitGotoAndLabel(bb, succ);
     }
     else {
         if (m_analyzer.getCaseHead(bb) &&
-            (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+            (succ == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
             // generate the 'break' statement
             addCaseCondOptionEnd();
         }
         else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
-                 (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
-                 !m_analyzer.isCaseOption(child)) {
-            generateCode(child, latch, followSet, gotoSet, proc);
+                 (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(succ)) ||
+                 !m_analyzer.isCaseOption(succ)) {
+            generateCode(succ, latch, followSet, gotoSet, proc);
         }
     }
 }
