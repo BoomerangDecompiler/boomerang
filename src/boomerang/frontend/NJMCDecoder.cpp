@@ -50,8 +50,9 @@ std::unique_ptr<RTL> NJMCDecoder::instantiate(Address pc, const char *name,
     int numOperands             = sig.second;
 
     if (numOperands == -1) {
-        throw std::runtime_error(
-            QString("No entry for '%1' in RTL dictionary").arg(name).toStdString());
+        LOG_ERROR("Could not find semantics for instruction '%1', treating instruction as NOP",
+                  name);
+        return m_rtlDict.instantiateRTL("NOP", pc, {});
     }
     else if (numOperands != (int)args.size()) {
         QString msg = QString("Disassembled instruction '%1' has %2 arguments, "
