@@ -223,21 +223,21 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
     if (loopType == LoopType::PreTested) {
         // if the 'while' loop's true child is within the loop, then its false child is the loop
         // follow
-        if (loopNodes[getPostOrdering(header->getSuccessor(0))]) {
-            setLoopFollow(header, header->getSuccessor(1));
+        if (loopNodes[getPostOrdering(header->getSuccessor(BTHEN))]) {
+            setLoopFollow(header, header->getSuccessor(BELSE));
         }
         else {
-            setLoopFollow(header, header->getSuccessor(0));
+            setLoopFollow(header, header->getSuccessor(BTHEN));
         }
     }
     else if (loopType == LoopType::PostTested) {
         // the follow of a post tested ('repeat') loop is the node on the end of the non-back edge
         // from the latch node
-        if (latch->getSuccessor(0) == header) {
-            setLoopFollow(header, latch->getSuccessor(1));
+        if (latch->getSuccessor(BELSE) == header) {
+            setLoopFollow(header, latch->getSuccessor(BTHEN));
         }
         else {
-            setLoopFollow(header, latch->getSuccessor(0));
+            setLoopFollow(header, latch->getSuccessor(BELSE));
         }
     }
     else {
@@ -274,11 +274,11 @@ void ControlFlowAnalyzer::findLoopFollow(const BasicBlock *header, bool *&loopNo
                 else {
                     // otherwise find the child (if any) of the conditional header that isn't inside
                     // the same loop
-                    const BasicBlock *succ = desc->getSuccessor(0);
+                    const BasicBlock *succ = desc->getSuccessor(BTHEN);
 
                     if (loopNodes[getPostOrdering(succ)]) {
-                        if (!loopNodes[getPostOrdering(desc->getSuccessor(1))]) {
-                            succ = desc->getSuccessor(1);
+                        if (!loopNodes[getPostOrdering(desc->getSuccessor(BELSE))]) {
+                            succ = desc->getSuccessor(BELSE);
                         }
                         else {
                             succ = nullptr;

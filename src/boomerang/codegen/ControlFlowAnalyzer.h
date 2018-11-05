@@ -220,7 +220,7 @@ private:
     /// establish if this bb has any back edges leading FROM it
     bool hasBackEdge(const BasicBlock *bb) const;
 
-    /// establish if this bb is an ancestor of another BB
+    /// \returns true if \p bb is an ancestor of \p other
     bool isAncestorOf(const BasicBlock *bb, const BasicBlock *other) const;
     bool isBBInLoop(const BasicBlock *bb, const BasicBlock *header, const BasicBlock *latch) const;
 
