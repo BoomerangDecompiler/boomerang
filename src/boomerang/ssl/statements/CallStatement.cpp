@@ -721,9 +721,8 @@ bool CallStatement::convertToDirect()
     Address gloAddr = prog->getGlobalAddrByName(name);
     Address dest    = Address(prog->readNative4(gloAddr));
 
-    // We'd better do some limit checking on the value.
-    // This does not guarantee that it's a valid proc pointer,
-    // but it may help
+    // Note: If gloAddr is in BSS, dest will be 0 (since we do not track
+    // assignments to global variables yet), which is usually outside of text limits.
     if (!Util::inRange(dest, prog->getLimitTextLow(), prog->getLimitTextHigh())) {
         return false; // Not a valid proc pointer
     }

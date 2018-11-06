@@ -62,6 +62,9 @@ SWord BinaryImage::readNative2(Address addr) const
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
         return 0x0000;
     }
+    else if (si->isAddressBss(addr)) {
+        return 0x0000;
+    }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return Util::readWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
@@ -80,6 +83,9 @@ DWord BinaryImage::readNative4(Address addr) const
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
         return 0x00000000;
     }
+    else if (si->isAddressBss(addr)) {
+        return 0x00000000;
+    }
 
     HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     return Util::readDWord(reinterpret_cast<const Byte *>(host.value()), si->getEndian());
@@ -96,6 +102,9 @@ QWord BinaryImage::readNative8(Address addr) const
     }
     else if (addr + 8 > si->getSourceAddr() + si->getSize()) {
         LOG_WARN("Invalid read at address %1: Read extends past section boundary", addr);
+        return 0x0000000000000000;
+    }
+    else if (si->isAddressBss(addr)) {
         return 0x0000000000000000;
     }
 
