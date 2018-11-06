@@ -22,6 +22,8 @@
 - Fixed: Crash when analyzing specific kinds of switch statements.
 - Fixed: Crash when trying to find main for binaries compiled with recent GCCs.
 - Fixed: Crash when attempting decompilation using a malformed SSL specification file.
+- Fixed: Crash when trying to read values of function pointers from BSS.
+- Fixed: Crash when emitting high level code for function calls with member function pointers as arguments.
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Potential crash due to wrong decode of anulled branches (e.g. BG,a) when decoding SPARC binaries.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
