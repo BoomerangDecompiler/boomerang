@@ -154,7 +154,7 @@ bool BinaryImage::readNativeFloat8(Address addr, double &value) const
 
 bool BinaryImage::writeNative4(Address addr, uint32_t value)
 {
-    const BinarySection *si = getSectionByAddr(addr);
+    BinarySection *si = getSectionByAddr(addr);
 
     if (si == nullptr || si->getHostAddr() == HostAddress::INVALID) {
         LOG_WARN("Ignoring write at address %1: Address is outside any writable section");
@@ -162,11 +162,12 @@ bool BinaryImage::writeNative4(Address addr, uint32_t value)
     }
     else if (addr + 4 > si->getSourceAddr() + si->getSize()) {
         LOG_WARN("Invalid write at address %1: Write extends past section boundary", addr);
-        return 0.0f;
+        return false;
     }
 
-    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
+    si->addDefinedArea(addr, addr + 4);
 
+    HostAddress host = si->getHostAddr() - si->getSourceAddr() + addr;
     Util::writeDWord(reinterpret_cast<void *>(host.value()), value, si->getEndian());
     return true;
 }
