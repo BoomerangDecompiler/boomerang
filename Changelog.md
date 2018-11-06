@@ -30,6 +30,8 @@
 - Fixed: Generation of bitwise not operators instead of logical not operators for boolean expressions.
 - Fixed: Generation of assignments after branch statements in some cases.
 - Fixed: Goto statements instead of break statements in high level code in some cases.
+- Fixed: Wrong high level code output for loops containing break statements.
+- Fixed: Wrong high level code output for post-tested loops where the false branch goes to the beginning of the loop.
 - Fixed: Wrong assignments to overlapped registers on x86.
 - Fixed: A large number of memory leaks.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.
