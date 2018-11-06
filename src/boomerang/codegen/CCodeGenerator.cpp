@@ -263,17 +263,16 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
             s << ", ";
         }
 
-        Assignment *arg_assign = dynamic_cast<Assignment *>(*ss);
-        assert(arg_assign != nullptr);
-        SharedType t   = arg_assign->getType();
-        auto as_arg    = arg_assign->getRight();
-        auto const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
-        bool ok        = true;
+        assert((*ss)->isAssignment() && dynamic_cast<Assignment *>(*ss) != nullptr);
 
-        if (t && t->isPointer() &&
-            std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() &&
-            const_arg->isIntConst()) {
-            Function *p = proc->getProg()->getFunctionByAddr(const_arg->getAddr());
+        Assignment *arg_assign = static_cast<Assignment *>(*ss);
+        SharedType t           = arg_assign->getType();
+        SharedExp as_arg       = arg_assign->getRight();
+        bool ok                = true;
+
+        if (as_arg->isIntConst() && t && t->isPointer() &&
+            t->as<PointerType>()->getPointsTo()->isFunc()) {
+            Function *p = proc->getProg()->getFunctionByAddr(as_arg->access<Const>()->getAddr());
 
             if (p) {
                 s << p->getName();
