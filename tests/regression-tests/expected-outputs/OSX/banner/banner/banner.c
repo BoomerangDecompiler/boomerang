@@ -60,11 +60,10 @@ bb0x2874:
             local2 = (ROTL(local6) & ~0x7) - 1;
             while (local2 >= 0) {
                 g0 = *(unsigned char*)(g1 + local2 - 96);
-                if ((int) g0 != 32) {
-                    break;
+                if ((int) g0 == 32) {
+                    *(__size8*)(g1 + local2 - 96) = 0;
+                    local2--;
                 }
-                *(__size8*)(g1 + local2 - 96) = 0;
-                local2--;
             }
             g10 = puts(&local3); /* Warning: also results in g11 */
             local7++;
