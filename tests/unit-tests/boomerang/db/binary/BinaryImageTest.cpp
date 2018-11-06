@@ -161,6 +161,8 @@ void BinaryImageTest::testRead()
 
     // section mapped to data. Verify correct read
     sect1->setHostAddr(HostAddress(sectionData));
+    sect1->addDefinedArea(Address(0x1000), Address(0x1000) + sizeof(sectionData));
+
     QCOMPARE(img.readNative1(Address(0x1000)), static_cast<Byte>(0x00));
     QCOMPARE(img.readNative2(Address(0x1000)), static_cast<SWord>(0x1100));
     QCOMPARE(img.readNative4(Address(0x1000)), static_cast<DWord>(0x33221100));
