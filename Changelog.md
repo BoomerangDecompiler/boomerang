@@ -22,6 +22,8 @@
 - Fixed: Crash when analyzing specific kinds of switch statements.
 - Fixed: Crash when trying to find main for binaries compiled with recent GCCs.
 - Fixed: Crash when attempting decompilation using a malformed SSL specification file.
+- Fixed: Crash when trying to read values of function pointers from BSS.
+- Fixed: Crash when emitting high level code for function calls with member function pointers as arguments.
 - Fixed: Potential crash after removing unused global variables.
 - Fixed: Potential crash due to wrong decode of anulled branches (e.g. BG,a) when decoding SPARC binaries.
 - Fixed: Disabled direct editing of file selection combobox in boomerang-gui.
@@ -30,6 +32,8 @@
 - Fixed: Generation of bitwise not operators instead of logical not operators for boolean expressions.
 - Fixed: Generation of assignments after branch statements in some cases.
 - Fixed: Goto statements instead of break statements in high level code in some cases.
+- Fixed: Wrong high level code output for loops containing break statements.
+- Fixed: Wrong high level code output for post-tested loops where the false branch goes to the beginning of the loop.
 - Fixed: Wrong assignments to overlapped registers on x86.
 - Fixed: A large number of memory leaks.
 - Improved: The x86 decoder now recognizes the 2-byte INT (0xCD) instruction.

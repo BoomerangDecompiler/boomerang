@@ -263,17 +263,16 @@ void CCodeGenerator::addCallStatement(const Function *proc, const QString &name,
             s << ", ";
         }
 
-        Assignment *arg_assign = dynamic_cast<Assignment *>(*ss);
-        assert(arg_assign != nullptr);
-        SharedType t   = arg_assign->getType();
-        auto as_arg    = arg_assign->getRight();
-        auto const_arg = std::dynamic_pointer_cast<const Const>(as_arg);
-        bool ok        = true;
+        assert((*ss)->isAssignment() && dynamic_cast<Assignment *>(*ss) != nullptr);
 
-        if (t && t->isPointer() &&
-            std::static_pointer_cast<PointerType>(t)->getPointsTo()->isFunc() &&
-            const_arg->isIntConst()) {
-            Function *p = proc->getProg()->getFunctionByAddr(const_arg->getAddr());
+        Assignment *arg_assign = static_cast<Assignment *>(*ss);
+        SharedType t           = arg_assign->getType();
+        SharedExp as_arg       = arg_assign->getRight();
+        bool ok                = true;
+
+        if (as_arg->isIntConst() && t && t->isPointer() &&
+            t->as<PointerType>()->getPointsTo()->isFunc()) {
+            Function *p = proc->getProg()->getFunctionByAddr(as_arg->access<Const>()->getAddr());
 
             if (p) {
                 s << p->getName();
@@ -2129,10 +2128,17 @@ void CCodeGenerator::generateCode_Loop(const BasicBlock *bb, std::list<const Bas
                 writeBB(m_analyzer.getLatchNode(bb));
             }
 
-            // addPosttestedLoopEnd(getCond());
-            // MVE: the above seems to fail when there is a call in the middle of the loop (so loop
-            // is 2 BBs) Just a wild stab:
-            addPostTestedLoopEnd(m_analyzer.getLatchNode(bb)->getCond());
+            const BasicBlock *myLatch = m_analyzer.getLatchNode(bb);
+            const BasicBlock *myHead  = m_analyzer.getLoopHead(myLatch);
+            assert(myLatch->isType(BBType::Twoway));
+
+            SharedExp cond = myLatch->getCond();
+            if (myLatch->getSuccessor(BELSE) == myHead) {
+                addPostTestedLoopEnd(Unary::get(opLNot, cond)->simplify());
+            }
+            else {
+                addPostTestedLoopEnd(cond->simplify());
+            }
         }
         else {
             assert(m_analyzer.getLoopType(bb) == LoopType::Endless);
@@ -2399,15 +2405,15 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
         return;
     }
 
-    const BasicBlock *child = bb->getSuccessor(0);
+    const BasicBlock *succ = bb->getSuccessor(0);
 
     if (bb->getNumSuccessors() > 1) {
         const BasicBlock *other = bb->getSuccessor(1);
         LOG_MSG("Found seq with more than one outedge!");
         std::shared_ptr<Const> constDest = std::static_pointer_cast<Const>(bb->getDest());
 
-        if (constDest && constDest->isIntConst() && (constDest->getAddr() == child->getLowAddr())) {
-            std::swap(other, child);
+        if (constDest && constDest->isIntConst() && (constDest->getAddr() == succ->getLowAddr())) {
+            std::swap(other, succ);
             LOG_MSG("Taken branch is first out edge");
         }
 
@@ -2436,32 +2442,32 @@ void CCodeGenerator::generateCode_Seq(const BasicBlock *bb, std::list<const Basi
     //  - is not the latch for the current most enclosing loop.
     // The only exception for generating it when it is not in
     // the same loop is when it is only reached from this node
-    if (isGenerated(child)) {
-        emitGotoAndLabel(bb, child);
+    if (isGenerated(succ)) {
+        emitGotoAndLabel(bb, succ);
     }
-    else if (m_analyzer.getLoopHead(child) != m_analyzer.getLoopHead(bb) &&
-             (!isAllParentsGenerated(child) || Util::isContained(followSet, child))) {
-        emitGotoAndLabel(bb, child);
+    else if (m_analyzer.getLoopHead(succ) != m_analyzer.getLoopHead(bb) &&
+             (!isAllParentsGenerated(succ) || Util::isContained(followSet, succ))) {
+        emitGotoAndLabel(bb, succ);
     }
     else if (latch && m_analyzer.getLoopHead(latch) &&
-             (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == child)) {
-        emitGotoAndLabel(bb, child);
+             (m_analyzer.getLoopFollow(m_analyzer.getLoopHead(latch)) == succ)) {
+        emitGotoAndLabel(bb, succ);
     }
-    else if (m_analyzer.getCaseHead(child) && m_analyzer.getCaseHead(bb) &&
-             m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child) &&
+    else if (m_analyzer.getCaseHead(succ) && m_analyzer.getCaseHead(bb) &&
+             m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(succ) &&
              m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb))) {
-        emitGotoAndLabel(bb, child);
+        emitGotoAndLabel(bb, succ);
     }
     else {
         if (m_analyzer.getCaseHead(bb) &&
-            (child == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
+            (succ == m_analyzer.getCondFollow(m_analyzer.getCaseHead(bb)))) {
             // generate the 'break' statement
             addCaseCondOptionEnd();
         }
         else if ((m_analyzer.getCaseHead(bb) == nullptr) ||
-                 (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(child)) ||
-                 !m_analyzer.isCaseOption(child)) {
-            generateCode(child, latch, followSet, gotoSet, proc);
+                 (m_analyzer.getCaseHead(bb) != m_analyzer.getCaseHead(succ)) ||
+                 !m_analyzer.isCaseOption(succ)) {
+            generateCode(succ, latch, followSet, gotoSet, proc);
         }
     }
 }
