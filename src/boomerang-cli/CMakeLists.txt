@@ -42,3 +42,7 @@ install(TARGETS boomerang-cli
     RUNTIME DESTINATION bin/
 )
 
+if (WIN32 AND NOT UNIX)
+    include(boomerang-windeployqt)
+    BOOMERANG_WINDEPLOYQT(boomerang-cli bin/)
+endif ()
