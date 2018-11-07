@@ -24,12 +24,3 @@ endif (BOOMERANG_BUILD_GUI)
 if (BOOMERANG_INSTALL_SAMPLES)
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/samples/" DESTINATION "share/boomerang/samples")
 endif (BOOMERANG_INSTALL_SAMPLES)
-
-
-# Windows specific build steps
-if (WIN32 AND NOT UNIX)
-    # Run winddeployqt if it can be found
-    find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
-    COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:${TARGET_NAME}>)
-endif()

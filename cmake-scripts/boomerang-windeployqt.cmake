@@ -37,18 +37,19 @@ function(BOOMERANG_WINDEPLOYQT target directory)
 
     # Run windeployqt immediately after build
     add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND "${CMAKE_COMMAND}" -E
+        COMMAND "${CMAKE_COMMAND}" ARGS -E
             env PATH="${_qt_bin_dir}" "${WINDEPLOYQT_EXECUTABLE}"
                 --verbose 0
                 --no-compiler-runtime
                 --no-angle
                 --no-opengl-sw
                 \"$<TARGET_FILE:${target}>\"
+        COMMENT "Deploying Qt..."
     )
 
     # install(CODE ...) doesn't support generator expressions, but
     # file(GENERATE ...) does - store the path in a file
-    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}_path"
+    file(GENERATE OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${target}"
         CONTENT "$<TARGET_FILE:${target}>"
     )
 
@@ -56,7 +57,7 @@ function(BOOMERANG_WINDEPLOYQT target directory)
     # runtime files to the appropriate directory for installation
     install(CODE
         "
-        file(READ \"${CMAKE_CURRENT_BINARY_DIR}/${target}_path\" _file)
+        file(READ \"${CMAKE_CURRENT_BINARY_DIR}/${target}\" _file)
         execute_process(
             COMMAND \"${CMAKE_COMMAND}\" -E
                 env PATH=\"${_qt_bin_dir}\" \"${WINDEPLOYQT_EXECUTABLE}\"
@@ -64,6 +65,11 @@ function(BOOMERANG_WINDEPLOYQT target directory)
                     --no-compiler-runtime
                     --no-angle
                     --no-opengl-sw
+                    --no-quick-import
+                    --no-translations
+                    --no-system-d3d-compiler
+                    --no-compiler-runtime
+                    --no-webkit2
                     --list mapping
                     \${_file}
             OUTPUT_VARIABLE _output
@@ -73,9 +79,15 @@ function(BOOMERANG_WINDEPLOYQT target directory)
         while(_files)
             list(GET _files 0 _src)
             list(GET _files 1 _dest)
+            get_filename_component(_path \${_dest} DIRECTORY)
             execute_process(
                 COMMAND \"${CMAKE_COMMAND}\" -E
-                    copy \${_src} \"\${CMAKE_INSTALL_PREFIX}/${directory}/\${_dest}\"
+                    make_directory \"\${CMAKE_INSTALL_PREFIX}/${directory}/\${_path}\"
+            )
+
+            execute_process(
+                COMMAND \"${CMAKE_COMMAND}\" -E
+                    copy \${_src} \"\${CMAKE_INSTALL_PREFIX}/${directory}/\${_path}\"
             )
             list(REMOVE_AT _files 0 1)
         endwhile()
@@ -84,13 +96,16 @@ function(BOOMERANG_WINDEPLOYQT target directory)
 
     # windeployqt doesn't work correctly with the system runtime libraries,
     # so we fall back to one of CMake's own modules for copying them over
-    set(CMAKE_INSTALL_UCRT_LIBRARIES TRUE)
+
+    # Install the runtime libraries and copy them to the output directory
+    # after build
     include(InstallRequiredSystemLibraries)
     foreach(lib ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS})
         get_filename_component(filename "${lib}" NAME)
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E
                 copy_if_different "${lib}" \"$<TARGET_FILE_DIR:${target}>\"
+            COMMENT "Copying ${filename}...\n"
         )
     endforeach()
 
