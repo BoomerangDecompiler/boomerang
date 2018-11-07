@@ -8,6 +8,7 @@
 
 include(InstallRequiredSystemLibraries)
 
+set(CPACK_GENERATOR "ZIP;NSIS")
 set(BOOMERANG_PKG_NAME "boomerang")
 
 if (WIN32 AND NOT UNIX)
