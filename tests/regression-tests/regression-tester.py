@@ -456,8 +456,8 @@ def perform_smoke_tests(base_dir, test_input_base, test_list):
 
 def main():
     print("")
-    print("Boomerang 0.4.0 Regression Tester")
-    print("=================================")
+    print("Boomerang Regression Tester")
+    print("===========================")
     print("")
 
     # ${CMAKE_BINARY_DIR}/tests/regression-tests
