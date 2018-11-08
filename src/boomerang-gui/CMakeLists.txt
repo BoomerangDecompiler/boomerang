@@ -47,12 +47,12 @@ target_link_libraries(boomerang-gui
     Qt5::Widgets
 )
 
-include(boomerang-utils)
-BOOMERANG_COPY_IMPORTED_DLL(boomerang-gui Qt5::Core)
-BOOMERANG_COPY_IMPORTED_DLL(boomerang-gui Qt5::Widgets)
-BOOMERANG_COPY_IMPORTED_DLL(boomerang-gui Qt5::Gui)
-
 # installation
 install(TARGETS boomerang-gui
     RUNTIME DESTINATION bin/
 )
+
+if (WIN32 AND NOT UNIX)
+    include(boomerang-windeployqt)
+    BOOMERANG_WINDEPLOYQT(boomerang-gui bin/)
+endif ()

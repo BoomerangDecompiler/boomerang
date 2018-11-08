@@ -45,11 +45,18 @@ endif (BUILD_SHARED_LIBS)
 option(BOOMERANG_INSTALL_DEV "Install header files for development." OFF)
 
 if (BOOMERANG_INSTALL_DEV OR BUILD_SHARED_LIBS)
-    install(TARGETS boomerang
-        ARCHIVE DESTINATION lib/boomerang
-        LIBRARY DESTINATION lib/boomerang
-        RUNTIME DESTINATION bin
-    )
+    if (WIN32 AND NOT UNIX AND NOT BOOMERANG_INSTALL_DEV)
+        # do not install boomerang.lib
+        install(TARGETS boomerang
+            RUNTIME DESTINATION bin
+        )
+    else ()
+        install(TARGETS boomerang
+            ARCHIVE DESTINATION lib/boomerang
+            LIBRARY DESTINATION lib/boomerang
+            RUNTIME DESTINATION bin
+        )
+    endif ()
 endif ()
 
 if (BOOMERANG_INSTALL_DEV)

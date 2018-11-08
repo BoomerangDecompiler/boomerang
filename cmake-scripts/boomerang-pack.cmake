@@ -8,6 +8,12 @@
 
 include(InstallRequiredSystemLibraries)
 
+if (WIN32 AND NOT UNIX)
+    set(CPACK_GENERATOR "ZIP;NSIS")
+else ()
+    set(CPACK_GENERATOR "ZIP;TGZ;DEB")
+endif()
+
 set(BOOMERANG_PKG_NAME "boomerang")
 
 if (WIN32 AND NOT UNIX)
@@ -22,7 +28,7 @@ math(EXPR BOOMERANG_PKG_BITNESS "${CMAKE_SIZEOF_VOID_P} * 8")
 set(CPACK_PACKAGE_NAME ${BOOMERANG_PKG_NAME})
 set(CPACK_PACKAGE_VERSION "${BOOMERANG_VERSION}")
 set(CPACK_PACKAGE_VENDOR "Boomerang Developers")
-
+set(CPACK_PACKAGE_CONTACT "https://github.com/BoomerangDecompiler/boomerang/issues")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Boomerang - a generic, retargetable machine code decompiler")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/Readme.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE.TERMS")
