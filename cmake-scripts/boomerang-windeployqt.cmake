@@ -43,6 +43,10 @@ function(BOOMERANG_WINDEPLOYQT target directory)
                 --no-compiler-runtime
                 --no-angle
                 --no-opengl-sw
+                --no-quick-import
+                --no-translations
+                --no-system-d3d-compiler
+                --no-webkit2
                 \"$<TARGET_FILE:${target}>\"
         COMMENT "Deploying Qt..."
     )
@@ -62,13 +66,11 @@ function(BOOMERANG_WINDEPLOYQT target directory)
             COMMAND \"${CMAKE_COMMAND}\" -E
                 env PATH=\"${_qt_bin_dir}\" \"${WINDEPLOYQT_EXECUTABLE}\"
                     --dry-run
-                    --no-compiler-runtime
                     --no-angle
                     --no-opengl-sw
                     --no-quick-import
                     --no-translations
                     --no-system-d3d-compiler
-                    --no-compiler-runtime
                     --no-webkit2
                     --list mapping
                     \${_file}
