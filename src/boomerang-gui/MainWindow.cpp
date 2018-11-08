@@ -1029,7 +1029,7 @@ void MainWindow::on_edtStructName_returnPressed()
 
 void MainWindow::on_actBoomerangWebsite_triggered()
 {
-    QDesktopServices::openUrl(QUrl("http://boomerang.sourceforge.net"));
+    QDesktopServices::openUrl(QUrl("https://github.com/BoomerangDecompiler/boomerang"));
 }
 
 
