@@ -8,7 +8,7 @@
 
 
 set(CMAKE_AUTOMOC ON)
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Widgets REQUIRED HINTS $ENV{QTDIR})
 if (Qt5Widgets_FOUND)
     mark_as_advanced(Qt5Widgets_DIR Qt5Gui_DIR)
 endif(Qt5Widgets_FOUND)
