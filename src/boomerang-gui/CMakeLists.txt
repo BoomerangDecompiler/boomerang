@@ -37,6 +37,14 @@ SET(boomerang_SRC
 qt5_add_resources(resources_SRC Boomerang.qrc)
 add_executable(boomerang-gui ${boomerang_SRC} ${gui_UI_H} ${resources_SRC})
 
+set_property(SOURCE
+        "${CMAKE_CURRENT_BINARY_DIR}/ui_About.h"
+        "${CMAKE_CURRENT_BINARY_DIR}/ui_SettingsDlg.h"
+        "${CMAKE_CURRENT_BINARY_DIR}/ui_MainWindow.h"
+        "${CMAKE_CURRENT_BINARY_DIR}/qrc_Boomerang.cpp"
+    PROPERTY SKIP_AUTOMOC ON
+)
+
 target_link_libraries(boomerang-gui
     boomerang
     ${GC_LIBS}
