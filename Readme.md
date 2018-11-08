@@ -1,15 +1,16 @@
 # Boomerang Decompiler
 
 This is a fork of the [Boomerang Decompiler](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
-Right now, there are no pre-compiled binaries available, so you'll have to compile from source yourself.
+Although there are pre-compiled packages available for release versions (`master`),
+it is currently recomended to build the development version (`develop`) of the decompiler from source yourself.
 
 
 ## Building
 
 | **Build status** | Linux | Windows | Test Coverage |
 |------------------|-------|---------|---------------|
-|    **develop**   | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=develop)](https://travis-ci.com/BoomerangDecompiler/boomerang) | [![Appveyor](https://ci.appveyor.com/api/projects/status/9ftcn56cys23784j/branch/develop?svg=true)](https://ci.appveyor.com/project/nemerle/boomerang/branch/develop) | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
-|    **master**    | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=master)](https://travis-ci.com/BoomerangDecompiler/boomerang)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/9ftcn56cys23784j/branch/master?svg=true)](https://ci.appveyor.com/project/nemerle/boomerang/branch/master)   | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
+|    **develop**   | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=develop)](https://travis-ci.com/BoomerangDecompiler/boomerang/branches) | [![Appveyor](https://ci.appveyor.com/api/projects/status/pg2bw7kxse1t7cx8/branch/develop?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/develop) | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/develop) |
+|    **master**    | [![Travis CI](https://api.travis-ci.com/BoomerangDecompiler/boomerang.svg?branch=master)](https://travis-ci.com/BoomerangDecompiler/boomerang/branches)  | [![Appveyor](https://ci.appveyor.com/api/projects/status/pg2bw7kxse1t7cx8/branch/master?svg=true)](https://ci.appveyor.com/project/ceeac/boomerang/branch/master)   | [![codecov](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master/graph/badge.svg)](https://codecov.io/gh/BoomerangDecompiler/boomerang/branch/master)   |
 
 
 ### Building prerequisites
@@ -38,12 +39,25 @@ cmake .. && make && make install
 
 ### Building on Windows
 
-To compile on Windows, it should be enough to run cmake-gui and fill in the paths to missing libraries if CMake does not find them.
+To compile on Windows using Visual Studio, you can follow the following guide. Note that the build procedure
+for other IDEs or compilers (e.g. MinGW) is not covered in this guide.
+
+- Install Visual Studio 2017 (e.g the free [Community Edition](https://visualstudio.microsoft.com/vs/community/)).
+- Install [Git for Windows](https://github.com/git-for-windows/git/releases/latest).
+- Install [CMake](https://cmake.org/download/).
+- Download and install [Qt5](https://www.qt.io/download-open-source/). Please make sure to install the 64-bit Windows version for Visual Studio 2017.
+- Set the QTDIR environment variable. For example, if you have installed Qt 5.10.0 into C:\Qt, set QTDIR to "C:\Qt\5.10.0\msvc2017_64\" (without the quotes).
+- Clone Boomerang using Git for Windows. Let's call the directory of the cloned repository $BOOMERANG_DIR.
+- Open cmake-gui and enter $BOOMERANG_DIR and $BOOMERANG_DIR/build into the "Where is the source code" and "Where to build the binaries" fields, respectively.
+- "Configure" Boomerang in cmake-gui. Make sure to select the "Visual Studio 15 2017 Win64" (i.e. 64-bit) generator.
+- "Generate" and "Open Project" in cmake-gui.
+- To build the command line tool, build the `boomerang-cli` target; to build the GUI, build the `boomerang-gui` target.
+- Done!
 
 
 ### Building on macOS
 
-Building on macOS is currently not supported. However, patches or pull requests on this matter are welcome. See also issue #39.
+Building on macOS is currently not officially supported. However, pull requests on this matter are welcome. See also [Issue #39](https://github.com/BoomerangDecompiler/boomerang/issues/39).
 
 
 ## Testing
