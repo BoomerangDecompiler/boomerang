@@ -3,10 +3,10 @@
  * \section Introduction
  *
  * Welcome to the Doxygen generated documentation for the
- * %Boomerang decompiler. Not all classes and functions have been documented
+ * %Boomerang Decompiler. Not all classes and functions have been documented
  * yet, but eventually they will. If you have figured out what a function is doing
- * please update the documentation and submit it as a patch.
+ * please update the documentation and submit it as a pull request.
  *
- * More information on the %Boomerang decompiler can be found at
+ * More information on the original %Boomerang Decompiler can be found at
  * http://boomerang.sourceforge.net.
  */

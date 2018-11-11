@@ -1,5 +1,5 @@
-0.4.0 (in development)
-----------------------
+v0.4.0-alpha (2018-11-11)
+-------------------------
 - Fixed: Crashes when decompiling SPARC binaries.
 - Fixed: Crashes when decompiling Win32 binaries.
 - Fixed: Crashes when loading corrupted ELF binaries.
