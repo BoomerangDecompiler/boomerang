@@ -2,7 +2,7 @@
 
 This is a fork of the [Boomerang Decompiler](http://boomerang.sourceforge.net/), a general, open source (BSD licensed) machine code decompiler.
 Although there are pre-compiled packages available for release versions (`master`),
-it is currently recomended to build the development version (`develop`) of the decompiler from source yourself.
+it is currently recommended to build the development version (`develop`) of the decompiler from source yourself.
 
 
 ## Building
