@@ -1,3 +1,0 @@
-decompiling entry point main
-terminate called after throwing an instance of 'Signature::StackRegisterNotDefinedException'
-  what():  std::exception

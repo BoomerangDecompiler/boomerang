@@ -1,177 +1,52 @@
-PROJECT(Boomerang)
-###############################################################################
-# Settings related to build system, and target directories
-###############################################################################
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
-LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_scripts)
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
 
-SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/out)
-IF(WIN32)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/out)
-SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/out)
-add_definitions(-D__USE_MINGW_ANSI_STDIO=1)
-ENDIF()
-###############################################################################
-# Options section
-###############################################################################
-OPTION(BUILD_TESTING "Build the testing tree." OFF)
-IF(BUILD_TESTING)
-    ENABLE_TESTING()
-ENDIF(BUILD_TESTING)
-###############################################################################
-# Compiler specific flags section
-###############################################################################
+cmake_minimum_required(VERSION 3.8)
 
-IF(CMAKE_CXX_COMPILER MATCHES cl.exe)
-    message(SEND_ERROR "This is a c++11 build of boomerang it's highly likely it will fail under VisualStudio")
-    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_SCL_SECURE_NO_WARNINGS)
-ELSE()
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++0x" )
-    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall" )
-    add_definitions(-D_GLIBCXX_DEBUG -D__STDC_FORMAT_MACROS)
-ENDIF()
-###############################################################################
-# Defines section
-###############################################################################
-SET(VERSION "0.3.1")
-SET(MAIN_INCLUDE_DIRECTORY ${PROJECT_SOURCE_DIR}/include)
+if (CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
+    message(FATAL_ERROR "Building in-source is not supported! Create a build dir and remove ${CMAKE_SOURCE_DIR}/CMakeCache.txt")
+endif(CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR)
 
-INCLUDE(CheckIncludeFiles)
-INCLUDE(CheckLibraryExists)
-INCLUDE(CheckTypeSize)
-INCLUDE(TestBigEndian)
+set(CMAKE_WARN_DEPRECATED ON)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-scripts")
+find_package(CCache)
 
-MACRO(SET_01 A B)
-    IF(${B})
-        SET(${A} 1)
-    ELSE(${B})
-        SET(${A} 0)
-    ENDIF(${B})
-ENDMACRO(SET_01 A B)
+if (CCache_FOUND)
+    option(BOOMERANG_ENABLE_CCACHE "Enable CCache build cache" ON)
+    if (BOOMERANG_ENABLE_CCACHE)
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCache_EXECUTABLE}")
+        set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK    "${CCache_EXECUTABLE}")
+    endif (BOOMERANG_ENABLE_CCACHE)
+endif (CCache_FOUND)
 
-MACRO(SET_01_2 A B C)
-    IF(${B} AND ${C})
-        SET(${A} 1)
-    ELSE(${B} AND ${C})
-        SET(${A} 0)
-    ENDIF(${B} AND ${C})
-ENDMACRO(SET_01_2 A B C)
 
-# -ldl (dlopen)
-CHECK_INCLUDE_FILES(dlfcn.h            DL_H)
-CHECK_LIBRARY_EXISTS(dl dlopen ""      DL_L)
-SET_01_2(DL_FOUND DL_H DL_L)
+project(Boomerang LANGUAGES C CXX)
 
-IF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-        SET(DL_LIBS -ldl)
-ELSE(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-        SET(DL_LIBS)
-ENDIF(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
 
-# CppUnit
-FIND_PROGRAM(CPPUNIT_CONFIG_EXECUTABLE NAMES cppunit-config PATHS /usr/local/bin)
-IF(CPPUNIT_CONFIG_EXECUTABLE)
-        EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --cflags OUTPUT_VARIABLE CPPUNIT_CFLAGS)
-        EXEC_PROGRAM(${CPPUNIT_CONFIG_EXECUTABLE} ARGS --libs OUTPUT_VARIABLE CPPUNIT_LIBS)
-        SET(CPPUNIT_FOUND 1)
-ENDIF(CPPUNIT_CONFIG_EXECUTABLE)
+# CMake does not fill in CMAKE_BUILD_TYPE automatically.
+if (NOT MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL "")
+        set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Build type. Valid values are Debug Release MinSizeRel RelWithDebInfo" FORCE)
+    endif ()
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release MinSizeRel RelWithDebInfo)
+endif (NOT MSVC)
 
-# GC
-CHECK_INCLUDE_FILES(gc.h               GC_H)
-CHECK_LIBRARY_EXISTS(gc GC_malloc ""   GC_L)
-SET_01_2(GC_FOUND GC_H GC_L)
-IF(GC_FOUND)
-    SET(GC_LIBS -lgc)
-ENDIF()
-# Expat
-FIND_PACKAGE(EXPAT)
 
-#set variables to expand in config.h.cmake
-SET_01(HAVE_LIBCPPUNIT    CPPUNIT_FOUND)
-SET_01(HAVE_LIBDL         DL_FOUND)
-SET_01(HAVE_LIBEXPAT      EXPAT_FOUND)
-SET_01(HAVE_LIBGC         GC_FOUND)
-CHECK_INCLUDE_FILES(inttypes.h    HAVE_INTTYPES_H)
-CHECK_INCLUDE_FILES(memory.h      HAVE_MEMORY_H)
-CHECK_INCLUDE_FILES(stdint.h      HAVE_STDINT_H)
-CHECK_INCLUDE_FILES(stdlib.h      HAVE_STDLIB_H)
-CHECK_INCLUDE_FILES(strings.h     HAVE_STRINGS_H)
-CHECK_INCLUDE_FILES(string.h      HAVE_STRING_H)
-CHECK_INCLUDE_FILES(sys/stat.h    HAVE_SYS_STAT_H)
-CHECK_INCLUDE_FILES(sys/types.h   HAVE_SYS_TYPES_H)
-CHECK_INCLUDE_FILES(unistd.h      HAVE_UNISTD_H)
-IF("${CMAKE_SYSTEM_NAME}" STREQUAL "MacOS")
-        SET(HOST_OSX 1)
-ENDIF("${CMAKE_SYSTEM_NAME}" STREQUAL "MacOS")
-SET(PACKAGE_BUGREPORT "http://boomerang.sourceforge.net")
-SET(PACKAGE_NAME      "boomerang")
-SET(PACKAGE_STRING    "boomerang")
-SET(PACKAGE_TARNAME   "boomerang")
-SET(PACKAGE_VERSION   "0.3.99")
-CHECK_TYPE_SIZE("char"      SIZEOF_CHAR)
-CHECK_TYPE_SIZE("double"    SIZEOF_DOUBLE)
-CHECK_TYPE_SIZE("float"     SIZEOF_FLOAT)
-CHECK_TYPE_SIZE("int"       SIZEOF_INT)
-CHECK_TYPE_SIZE("int*"      SIZEOF_INT_P)
-CHECK_TYPE_SIZE("long"      SIZEOF_LONG)
-CHECK_TYPE_SIZE("long long" SIZEOF_LONG_LONG)
-CHECK_TYPE_SIZE("short"     SIZEOF_SHORT)
-TEST_BIG_ENDIAN(BIG_ENDIAN)
-SET_01(WORDS_BIGENDIAN BIG_ENDIAN)
+include(boomerang-install)
+include(boomerang-version)      # get project version
+include(boomerang-dependencies) # library dependencies
+include(boomerang-configure)    # boomerang configuration (options)
+include(boomerang-flags)        # find required compiler flags
+include(boomerang-output)       # compiler output directories
 
-# generate config.h
-CONFIGURE_FILE(include/config.h.cmake include/config.h)
+add_subdirectory(docs)
+add_subdirectory(src)
 
-INCLUDE_DIRECTORIES("${CMAKE_CURRENT_SOURCE_DIR}/include")
-INCLUDE_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/include")
-IF(EXPAT_FOUND)
-    INCLUDE_DIRECTORIES("${EXPAT_INCLUDE_DIRS}")
-ENDIF()
-IF(WIN32)
-    LINK_DIRECTORIES("3rd_party/lib")
-ENDIF()
-LINK_DIRECTORIES("${CMAKE_CURRENT_BINARY_DIR}/loader")
+include(boomerang-tests)
+include(boomerang-pack)
 
-MACRO(ADDCFLAG SRCFILE FLAG)
-        GET_SOURCE_FILE_PROPERTY(loc_flags "${SRCFILE}" COMPILE_FLAGS)
-        IF(loc_flags)
-                SET_SOURCE_FILES_PROPERTIES("${SRCFILE}" PROPERTIES   COMPILE_FLAGS "${loc_flags} ${FLAG}")
-        ELSE(loc_flags)
-                SET_SOURCE_FILES_PROPERTIES("${SRCFILE}" PROPERTIES   COMPILE_FLAGS "${FLAG}")
-        ENDIF(loc_flags)
-        SET(loc_flags)
-ENDMACRO(ADDCFLAG SRCFILE FLAG)
-
-ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/codegen")
-ADDCFLAG(db/prog.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
-ADDCFLAG(frontend/frontend.cpp "-I${CMAKE_CURRENT_SOURCE_DIR}/c")
-ADDCFLAG(frontend/pentiumdecoder.cpp -fno-exceptions)
-
-ADD_SUBDIRECTORY(util)
-ADD_SUBDIRECTORY(c)
-ADD_SUBDIRECTORY(codegen)
-ADD_SUBDIRECTORY(db)
-ADD_SUBDIRECTORY(frontend)
-ADD_SUBDIRECTORY(type)
-ADD_SUBDIRECTORY(transform)
-
-SET(boomerang_SRC
-        boomerang.cpp
-        driver.cpp
-        log.cpp
-        loader/BinaryFileFactory.cpp
-)
-SET(LINKED_LIBRARIES ${DL_LIBS} ${GC_LIBS})
-
-IF(EXPAT_FOUND)
-    SET(LINKED_LIBRARIES ${LINKED_LIBRARIES} "${EXPAT_LIBRARIES}")
-ENDIF()
-
-IF(MSVC)
-    SET(DEBUG_LIB Dbghelp.lib )
-ENDIF()
-ADD_EXECUTABLE(boomerang ${boomerang_SRC})
-
-TARGET_LINK_LIBRARIES(boomerang ${DL_LIBS} ${GC_LIBS} ${DEBUG_LIB} "${EXPAT_LIBRARIES}" frontend db type boomerang_DSLs codegen util BinaryFile)
-
-ADD_SUBDIRECTORY(loader)

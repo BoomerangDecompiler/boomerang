@@ -1,8 +1,0 @@
-main function not found
-decompiling entry point _start
-rptrWARNING: no out edge for this BB in _start:
-Invalid BB:
-in edges: 40100d 
-out edges: 
-0040100f
-

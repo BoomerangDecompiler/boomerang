@@ -1,5 +1,3 @@
-boomerang.kdev4
 build
-out
-tests/outputs/*
-*.user
+*.kdev4
+*.i64

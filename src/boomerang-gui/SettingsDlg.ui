@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SettingsDlg</class>
+ <widget class="QDialog" name="SettingsDlg">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>477</width>
+    <height>675</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Boomerang Settings</string>
+  </property>
+  <layout class="QVBoxLayout" name="vLayout_1">
+   <item>
+    <layout class="QVBoxLayout" name="vLayout_Settings">
+     <item>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tabLogging">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <attribute name="title">
+         <string>Logging</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="vLayout_2">
+         <item>
+          <layout class="QVBoxLayout" name="vLayout_tabLogging">
+           <item>
+            <layout class="QHBoxLayout" name="hLayout_logLevel">
+             <item>
+              <widget class="QLabel" name="lbLogLevel">
+               <property name="text">
+                <string>Log Level</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cbLogLevel"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkVerbose">
+             <property name="text">
+              <string>Extra verbose logging</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugSwitch">
+             <property name="text">
+              <string>Debug switch detection</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugLiveness">
+             <property name="text">
+              <string>Debug liveness analysis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugTA">
+             <property name="text">
+              <string>Debug type analysis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugDecoder">
+             <property name="text">
+              <string>Debug decoder</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkTraceDecoder">
+             <property name="text">
+              <string>Trace decoder</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugProof">
+             <property name="text">
+              <string>Debug proof system</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugUnused">
+             <property name="text">
+              <string>Debug removal of unused statements</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDebugGenerator">
+             <property name="text">
+              <string>Debug code generator</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="vSpacer_1">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabDecode">
+        <attribute name="title">
+         <string>Decode</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="vLayout_3">
+         <item>
+          <layout class="QVBoxLayout" name="vLayout_tabDecode">
+           <item>
+            <widget class="QCheckBox" name="chkDecodeMain">
+             <property name="text">
+              <string>Decode main</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDecodeChildren">
+             <property name="text">
+              <string>Decode functions called by main</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkDecodeThruIndirectCall">
+             <property name="text">
+              <string>Decode indirect (computed) calls</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkGenCallGraph">
+             <property name="text">
+              <string>Generate call graph</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="vSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabDecompile">
+        <attribute name="title">
+         <string>Decompile</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="vLayout_4">
+         <item>
+          <layout class="QVBoxLayout" name="vLayout_tabDecompile">
+           <item>
+            <widget class="QCheckBox" name="chkStopAtDebugPoints">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Activate debugger at debug points</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkUseDataflow">
+             <property name="text">
+              <string>Use basic data-flow analysis</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hLayout_typeRecoveryEngine">
+             <item>
+              <widget class="QLabel" name="lbTypeRecoveryEngine">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>Type Recovery Engine</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cbTypeRecoveryEngine"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkRemoveNull">
+             <property name="text">
+              <string>Remove null statements</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkRemoveLabels">
+             <property name="text">
+              <string>Remove labels</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkRemoveReturns">
+             <property name="text">
+              <string>Remove returns</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkUseProof">
+             <property name="text">
+              <string>Use proof system</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkUseLocals">
+             <property name="text">
+              <string>Use local variables</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkUseGlobals">
+             <property name="text">
+              <string>Use global variables</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkUsePromotion">
+             <property name="text">
+              <string>Use signature promotion</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkChangeSignatures">
+             <property name="text">
+              <string>Change function signatures</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkAssumeABI">
+             <property name="text">
+              <string>Assume ABI compilance</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkNameParameters">
+             <property name="text">
+              <string>Name signature parameters</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkPropOnlyToAll">
+             <property name="text">
+              <string>Propagate only to all</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hLayout_numToPropagate">
+             <item>
+              <widget class="QLabel" name="lbNumToPropagate">
+               <property name="text">
+                <string>numToPropagate</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spbNumToPropagate"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hLayout_propMaxDepth">
+             <item>
+              <widget class="QLabel" name="lbPropMaxDepth">
+               <property name="text">
+                <string>Propagation max depth</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="spbPropMaxDepth"/>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkGenSymbols">
+             <property name="text">
+              <string>Generate symbol header file</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="hLayout_dotFile">
+             <item>
+              <widget class="QLabel" name="lbDotFile">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="text">
+                <string>dotFile</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cbDotFile">
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="chkExperimental">
+             <property name="text">
+              <string>Activate experimental code</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="vSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="hLayout_buttons">
+     <item>
+      <spacer name="hSpacer_buttons">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOk">
+       <property name="text">
+        <string>Ok</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnApply">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>btnCancel</sender>
+   <signal>clicked()</signal>
+   <receiver>SettingsDlg</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>253</x>
+     <y>156</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>262</x>
+     <y>296</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

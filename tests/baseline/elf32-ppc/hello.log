@@ -1,4 +1,0 @@
-after removing matching assigns (%pc).
-in proc main adding addrExp r1{0} - 16 to local table
-in proc main adding addrExp r1{0} + 4 to local table
-local g3 has type char * that doesn't agree with type of define void of a library, why?
