@@ -7,12 +7,12 @@
 #
 
 
-find_package(Qt5Core REQUIRED)
+find_package(Qt5Core REQUIRED HINTS $ENV{QTDIR})
 if (Qt5Core_FOUND)
     mark_as_advanced(Qt5Core_DIR)
 endif (Qt5Core_FOUND)
 
-find_package(Qt5Xml REQUIRED)
+find_package(Qt5Xml REQUIRED HINTS $ENV{QTDIR})
 if (Qt5Xml_FOUND)
     mark_as_advanced(Qt5Xml_DIR)
 endif (Qt5Xml_FOUND)

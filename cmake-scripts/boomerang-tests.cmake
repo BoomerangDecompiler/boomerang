@@ -9,7 +9,7 @@
 
 if (BOOMERANG_BUILD_UNIT_TESTS)
     enable_testing()
-    find_package(Qt5Test REQUIRED)
+    find_package(Qt5Test REQUIRED HINTS $ENV{QTDIR})
     if (Qt5Test_FOUND)
         mark_as_advanced(Qt5Test_DIR)
     endif (Qt5Test_FOUND)

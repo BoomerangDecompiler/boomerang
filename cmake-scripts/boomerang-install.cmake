@@ -14,8 +14,9 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/boomerang")
 
 
 # always install those
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/signatures/"      DESTINATION "share/boomerang/signatures")
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/ssl/"             DESTINATION "share/boomerang/ssl")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/signatures/" DESTINATION "share/boomerang/signatures")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/ssl/"        DESTINATION "share/boomerang/ssl")
+install(FILES     "${CMAKE_SOURCE_DIR}/LICENSE.TERMS"    DESTINATION "share/boomerang")
 
 if (BOOMERANG_BUILD_GUI)
     install(DIRECTORY "${CMAKE_SOURCE_DIR}/data/images/" DESTINATION "share/boomerang/images")
