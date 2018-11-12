@@ -13,11 +13,13 @@
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/statements/BoolAssign.h"
 #include "boomerang/ssl/statements/BranchStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
+#include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
 
 
@@ -140,6 +142,13 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
     result.valid = numInstructions > 0;
     if (!result.valid) {
         return false;
+    }
+    else if (decodedInstruction->id == cs::X86_INS_BSF ||
+             decodedInstruction->id == cs::X86_INS_BSR) {
+        // special hack to give BSF/BSR the correct semantics since SSL does not support loops yet
+        const bool ok = genBSFR(pc, decodedInstruction, result);
+        cs_free(decodedInstruction, numInstructions);
+        return ok;
     }
 
     result.type         = ICLASS::NOP; // ICLASS is irrelevant for x86
@@ -409,4 +418,94 @@ std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(Address pc, const char *
     else {
         return nullptr;
     }
+}
+
+
+bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, DecodeResult &result)
+{
+    // Note the horrible hack needed here. We need initialisation code, and an extra branch, so the
+    // %SKIP/%RPT won't work. We need to emit 6 statements, but these need to be in 3 RTLs, since
+    // the destination of a branch has to be to the start of an RTL.  So we use a state machine, and
+    // set numBytes to 0 for the first two times. That way, this instruction ends up emitting three
+    // RTLs, each with the semantics we need. Note: we don't use pentium.ssl for these.
+    //
+    // BSFR1:
+    //    pc+0:    *1* zf := 1
+    //    pc+0:    goto exit if src = 0
+    // BSFR2:
+    //    pc+1:    *1* zf := 0
+    //    pc+1:    dest := 0 if BSF else dest := opsize - 1
+    // BSFR3:
+    //    pc+2:    dest := dest op 1
+    //    pc+2:    goto pc+2 if src@[dest:dest]=0
+    // exit:
+    //
+
+    BranchStatement *b = nullptr;
+    result.rtl         = std::unique_ptr<RTL>(new RTL(pc + m_bsfrState));
+
+    const cs::cs_x86_op &dstOp = instruction->detail->x86.operands[0];
+    const cs::cs_x86_op &srcOp = instruction->detail->x86.operands[1];
+
+    assert(dstOp.size == srcOp.size);
+    const SharedExp dest = operandToExp(dstOp);
+    const SharedExp src  = operandToExp(srcOp);
+    const int size       = dstOp.size * 8;
+    const int init       = instruction->id == cs::X86_INS_BSF ? 0 : size - 1;
+    const OPER incdec    = instruction->id == cs::X86_INS_BSF ? opPlus : opMinus;
+
+    switch (m_bsfrState) {
+    case 0:
+        result.rtl->append(new Assign(IntegerType::get(1), Terminal::get(opZF), Const::get(1)));
+        b = new BranchStatement;
+        b->setDest(pc + instruction->size);
+        b->setCondType(BranchType::JE);
+        b->setCondExpr(Binary::get(opEquals, src->clone(), Const::get(0)));
+        result.rtl->append(b);
+        break;
+
+    case 1:
+        result.rtl->append(new Assign(IntegerType::get(1), Terminal::get(opZF), Const::get(0)));
+        result.rtl->append(new Assign(IntegerType::get(size), dest->clone(), Const::get(init)));
+        break;
+
+    case 2:
+        result.rtl->append(new Assign(IntegerType::get(size), dest->clone(),
+                                      Binary::get(incdec, dest->clone(), Const::get(1))));
+        b = new BranchStatement;
+        b->setDest(pc + 2);
+        b->setCondType(BranchType::JE);
+        b->setCondExpr(Binary::get(opEquals,
+                                   Ternary::get(opAt, src->clone(), dest->clone(), dest->clone()),
+                                   Const::get(0)));
+        result.rtl->append(b);
+        break;
+
+    default:
+        // Should never happen
+        LOG_FATAL("Unknown BSFR state %1", m_bsfrState);
+    }
+
+    // Keep numBytes == 0 until the last state, so we re-decode this instruction 3 times
+    if (m_bsfrState != 3 - 1) {
+        // Let the number of bytes be 1. This is important at least for setting the fallthrough
+        // address for the branch (in the first RTL), which should point to the next RTL
+        result.numBytes = 1;
+        result.reDecode = true; // Decode this instuction again
+    }
+    else {
+        result.numBytes = instruction->size;
+        result.reDecode = false;
+    }
+
+    if (m_debugMode) {
+        LOG_MSG("%1: BS%2%3%4", pc + m_bsfrState, (init == -1 ? "F" : "R"),
+                (size == 32 ? ".od" : ".ow"), m_bsfrState + 1);
+    }
+
+    if (++m_bsfrState == 3) {
+        m_bsfrState = 0; // Ready for next time
+    }
+
+    return true;
 }
