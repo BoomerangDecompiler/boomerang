@@ -1028,6 +1028,12 @@ CALL.rm32 dest
 ;
 
 
+# CBW
+CBW
+    *16* %ax := sgnex(8, 16, %al)
+;
+
+
 # CDQ
 CDQ
     *32* %edx := [%edx@[31:31] = 0 ? 0:0xFFFFFFFF]
@@ -1320,6 +1326,13 @@ DEC.rm64 val
 
 
 # DIV (unsigned divide)
+DIV.reg8 divisor
+    *16* tmpdividend := %ax
+    *8*  %al := tmpdividend / divisor
+    *8*  %ah := tmpdividend % divisor
+    undefineflags()
+;
+
 DIV.rm8 divisor
     *16* tmpdividend := %ax
     *8*  %al := tmpdividend / divisor
@@ -1398,6 +1411,10 @@ FADD.rm64 val
     *f80* %st := %st +f fsize(64, 80, val)
 ;
 
+FADD.reg80.reg80 dest, src
+    *f80* dest := dest +f src
+;
+
 
 # FADDP
 FADDP
@@ -1415,6 +1432,18 @@ FADDP.reg80 val
 FCHS
     *f80* %st := 0 -f %st
 ;
+
+
+# FCMOVcc
+# Note the flags (C[0-3]) are modified, but we don't model this yet.
+FCMOVB.reg80.reg80   dest, src  *f80*   %CF = 1      =>  dest := src;
+FCMOVBE.reg80.reg80  dest, src  *f80*   %CF | %ZF    =>  dest := src;
+FCMOVE.reg80.reg80   dest, src  *f80*   %ZF = 1      =>  dest := src;
+FCMOVU.reg80.reg80   dest, src  *f80*   %PF = 1      =>  dest := src;
+FCMOVNB.reg80.reg80  dest, src  *f80*   %CF = 0      =>  dest := src;
+FCMOVNBE.reg80.reg80 dest, src  *f80*   ~(%CF & %ZF) =>  dest := src;
+FCMOVNE.reg80.reg80  dest, src  *f80*   %ZF = 0      =>  dest := src;
+FCMOVNU.reg80.reg80  dest, src  *f80*   %PF = 0      =>  dest := src;
 
 
 # FCOMP
@@ -1516,7 +1545,28 @@ FILD.rm64 val
 ;
 
 
+# FIMUL
+FIMUL.rm32 val
+    *f80* %st := itof(32, 80, val)
+;
+
+
+# FIST
+FIST.rm16 dest
+    *16* dest := ftoi(80, 16, %st)
+;
+
+FIST.rm32 val
+    *32* dest := ftoi(80, 32, %st)
+;
+
+
 # FISTP
+FISTP.rm16 dest
+    *16* dest := ftoi(80, 16, %st)
+    FPOP
+;
+
 FISTP.rm32 dest
     *32* dest := ftoi(80, 32, %st)
     FPOP
@@ -1595,6 +1645,10 @@ FMUL.reg80 val
     *f80* %st := %st *f val
 ;
 
+FMUL.reg80.reg80 dest, src
+    *f80* dest := dest *f src
+;
+
 FMUL.rm32 val
     *f80* %st := %st *f fsize(32, 80, val)
 ;
@@ -1646,6 +1700,18 @@ FRNDINT
 ;
 
 
+# FSIN
+FSIN
+    *f80* %st := sin(%st)
+;
+
+
+# FSQRT
+FSQRT
+    *f80* %st := sqrt(%st)
+;
+
+
 # FST
 FST.rm32 dest
     *32* dest := fsize(80, 32, %st)
@@ -1672,7 +1738,7 @@ FSTP.rm64 dest
     FPOP
 ;
 
-FSTP.reg80 dest
+FSTP.rm80 dest
     *f80* dest := %st
     FPOP
 ;
@@ -1706,6 +1772,14 @@ FSUB.reg80.reg80 dest, src
     *f80* dest := dest -f src
 ;
 
+FSUB.rm32 val
+    *f80* %st := %st -f fsize(32, 80, val)
+;
+
+FSUB.rm64 val
+    *f80* %st := %st -f fsize(64, 80, val)
+;
+
 
 # FSUBP
 FSUBP.reg80 val
@@ -1716,11 +1790,19 @@ FSUBP.reg80 val
 
 # FSUBR
 FSUBR.reg80 val
-    *f80* val := val -f %st
+    *f80* %st := val -f %st
 ;
 
 FSUBR.reg80.reg80 dest, src
-    *f80* val := src -f dest
+    *f80* dest := src -f dest
+;
+
+FSUBR.rm32 val
+    *f80* %st := fsize(32, 80, val) -f %st
+;
+
+FSUBR.rm64 val
+    *f80* %st := fsize(64, 80, val) -f %st
 ;
 
 
@@ -1740,6 +1822,12 @@ FUCOM
 FUCOM.reg80 val
     *f80* tmpD := %st -f val
     SETFFLAGS(%st, val)
+;
+
+
+# FUCOMI
+FUCOMI.reg80 reg
+    SUBFLAGSFL(%st, reg)
 ;
 
 
@@ -3307,6 +3395,32 @@ UD2
 # WAIT
 WAIT
     _
+;
+
+
+# XADD
+XADD.rm8.reg8 dest, src
+    *8* tmpb := src + dest
+    *8* src := dest
+    *8* dest := tmpb
+;
+
+XADD.rm16.reg16 dest, src
+    *16* tmph := src + dest
+    *16* src := dest
+    *16* dest := tmph
+;
+
+XADD.rm32.reg32 dest, src
+    *8* tmp1 := src + dest
+    *8* src := dest
+    *8* dest := tmp1
+;
+
+XADD.rm64.reg64 dest, src
+    *8* tmp1 := src + dest
+    *8* src := dest
+    *8* dest := tmp1
 ;
 
 
