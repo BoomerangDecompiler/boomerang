@@ -26,10 +26,6 @@ Const::Const(uint32_t i)
     , m_type(VoidType::get())
 {
     m_value.i = i;
-
-    if (m_value.i == 0x080484a0) {
-        puts("test");
-    }
 }
 
 
@@ -38,10 +34,6 @@ Const::Const(int i)
     , m_type(VoidType::get())
 {
     m_value.i = i;
-
-    if (m_value.i == 0x080484a0) {
-        puts("test");
-    }
 }
 
 
@@ -50,10 +42,6 @@ Const::Const(QWord ll)
     , m_type(VoidType::get())
 {
     m_value.ll = ll;
-
-    if (m_value.i == 0x080484a0) {
-        puts("test");
-    }
 }
 
 
@@ -208,10 +196,6 @@ SharedType Const::ascendType()
 void Const::descendType(SharedType parentType, bool &changed, Statement *)
 {
     bool thisCh = false;
-
-    if (m_value.i == 0x080484a0) {
-        puts("test");
-    }
 
     m_type = m_type->meetWith(parentType, thisCh);
     changed |= thisCh;
