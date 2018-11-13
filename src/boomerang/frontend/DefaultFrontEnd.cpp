@@ -632,8 +632,7 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
 
                         if (!procName.isEmpty() && isNoReturnCallDest(procName)) {
                             // Make sure it has a return appended (so there is only one exit
-                            // from the function) call->setReturnAfterCall(true);        // I
-                            // think only the SPARC frontend cares Create the new basic block
+                            // from the function)
                             currentBB = cfg->createBB(BBType::Call, std::move(BB_rtls));
                             appendSyntheticReturn(currentBB, proc, rtl);
 

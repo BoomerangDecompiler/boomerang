@@ -462,7 +462,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             const QString destSym = m_program->getSymbolNameByAddr(dest);
 
             if (destSym == "__libc_start_main") {
-                // This is a gcc 3 pattern. The first parameter
+                // This is a gcc 3 pattern. The first parameter will be a pointer to main.
                 // Assume it's the 5 byte push immediately preceeding this instruction.
                 // For newer GCCs, this is not the case. Make sure the code only fails
                 // instead of crashing.
