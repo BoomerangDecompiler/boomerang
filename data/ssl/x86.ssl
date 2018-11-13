@@ -344,9 +344,9 @@ SETFFLAGS(op1, op2)  {
 #
 
 # The string instructions
-REPS := {"REP", "REPNE"};                       # Repeat prefixes
-OREPS := { REPS, ""};                           # Optional repeat prefixes
-ALLSZ := {"Brm8rm8", "Wrm16rm16", "Drm32rm32"}; # All size suffixes
+REPS  := { "REP", "REPNE" };                      # Repeat prefixes
+OREPS := { REPS, "" };                            # Optional repeat prefixes
+ALLSZ := { "Brm8rm8", "Wrm16rm16", "Drm32rm32" }; # All size suffixes
 
 # String instructions, not repeated
 STRS := { "CMPS", "LODS", "MOVS", "SCAS", "STOS" };
@@ -357,8 +357,8 @@ STRS_R := REPS STRS;
 # String instructions, optionally repeated
 STRS_OR := OREPS STRS;
 
-STRFL :=       { "CMPS", "SCAS"};                   # Update flags
-STRNF :=       { "LODS", "MOVS", "STOS"};           # No update flags
+STRFL :=       { "CMPS", "SCAS" };                  # Update flags
+STRNF :=       { "LODS", "MOVS", "STOS" };          # No update flags
 STRSI := OREPS { "CMPS", "LODS", "MOVS" };          # Update esi
 STRDI := OREPS { "CMPS", "MOVS", "SCAS", "STOS" };  # Update edi
 STRFL_OR := OREPS STRFL;                            # Optionally repeated; flags
@@ -370,8 +370,7 @@ SCAS_OR := OREPS SCAS;      # Scan with optional repeat
 STOS_OR := OREPS STOS;      # Store with optional repeat
 
 # All repeated string instructions
-STRS_R[X]ALLSZ[Y] dest, src
-            *1* %SKIP := (%ecx = 0);
+STRS_R[X]ALLSZ[Y] dest, src                 *1* %SKIP := (%ecx = 0);
 
 CMPS_OR[X].B.rm8.rm8 dest, src              *8*  tmpb := dest{8}  - src{8};
 CMPS_OR[X].W.rm16.rm16 dest, src            *16* tmph := dest{16} - src{16};
