@@ -476,35 +476,46 @@ REPALL[X]ALLSZ[Y]  dest, src                *1* %RPT := 1;
 
 # AAA
 AAA
-    *1* tmpadjust := %AF = 1 and ((%al & 0x0F) > 9)
-    *8* %al := %al + 6 * tmpadjust
-    *8* %ah := %ah + tmpadjust
-    *1* %AF := tmpadjust
-    *1* %CF := tmpadjust
-    *8* %al := %al & 0x0F
+    *1* tmpadjust := ((%al & 0x0F) > 9) | %AF
+    *16* %ax := %ax + 0x0106 * tmpadjust
+    *1*  %AF := tmpadjust
+    *1*  %CF := tmpadjust
+    *8*  %al := %al & 0x0F
 ;
 
 
 # AAD
 AAD
-    *8* %al := %al + ((%ah * 0x0A) & 0xFF)
+    *8* %al := (%al + (%ah * 0x0A)) & 0xFF
     *8* %ah := 0
 ;
 
 AAD.imm8 imm8
-    *8* %al := %al + ((%ah * imm8) & 0xFF)
+    *8* %al := (%al + (%ah * imm8)) & 0xFF
     *8* %ah := 0
+;
+
+
+# AAM
+AAM
+    *8* %ah := %al / 0x0A
+    *8* %al := %al % 0x0A
+;
+
+AAM.imm8 imm8
+    *8* %ah := %al / imm8
+    *8* %al := %al % imm8
 ;
 
 
 # AAS
 AAS
-    *1* tmpadjust := %AF = 1 and ((%al & 0x0F) > 9)
-    *8* %al := %al - 6 * tmpadjust
-    *8* %ah := %ah - tmpadjust
-    *1* %AF := tmpadjust
-    *1* %CF := tmpadjust
-    *8* %al := %al & 0x0F
+    *1* tmpadjust := %AF | ((%al & 0x0F) > 9)
+    *16* %ax := %ax - 6 * tmpadjust
+    *8*  %ah := %ah - tmpadjust
+    *1*  %AF := tmpadjust
+    *1*  %CF := tmpadjust
+    *8*  %al := %al & 0x0F
 ;
 
 
@@ -878,6 +889,7 @@ AND.rm64.reg64 dest, src
     LOGICALFLAGS64(dest)
 ;
 
+# BSF / BSR not handled here - the semantics are hard-coded
 
 # BSWAP
 BSWAP.reg16 dest
@@ -1076,7 +1088,7 @@ CBW
 
 # CDQ
 CDQ
-    *32* %edx := [%edx@[31:31] = 0 ? 0:0xFFFFFFFF]
+    *32* %edx := [%eax@[31:31] = 0 ? 0:0xFFFFFFFF]
 ;
 
 
@@ -1202,8 +1214,8 @@ CMP.reg8.reg8 lhs, rhs
 ;
 
 CMP.reg8.rm8 lhs, rhs
-    *8* tmp1 := lhs - rhs
-    SUBFLAGS8(lhs, rhs, tmp1)
+    *8* tmpb := lhs - rhs
+    SUBFLAGS8(lhs, rhs, tmpb)
 ;
 
 CMP.reg16.imm16 lhs, rhs
@@ -1269,8 +1281,8 @@ CMP.rm16.imm16 lhs, rhs
 ;
 
 CMP.rm16.reg16 lhs, rhs
-    *16* tmp1 := lhs - rhs
-    SUBFLAGS16(lhs, rhs, tmp1)
+    *16* tmph := lhs - rhs
+    SUBFLAGS16(lhs, rhs, tmph)
 ;
 
 CMP.rm32.imm8 lhs, rhs
@@ -1312,6 +1324,12 @@ CMPXCHG.rm32.reg32 dest, src
     *1* %ZF := %eax = dest
     *32* %ZF = 1 => dest := src
     *32* %ZF = 0 => %eax := dest
+;
+
+
+# CWD
+CWD
+    *16* %dx := [%ax@[15:15] = 0 ? 0:0xFFFF]
 ;
 
 
@@ -1367,23 +1385,23 @@ DEC.rm64 val
 
 # DIV (unsigned divide)
 DIV.reg8 divisor
-    *16* tmpdividend := %ax
-    *8*  %al := tmpdividend / divisor
-    *8*  %ah := tmpdividend % divisor
+    *16* tmph := %ax
+    *8*  %al := tmph / divisor
+    *8*  %ah := tmph % divisor
     undefineflags()
 ;
 
 DIV.rm8 divisor
-    *16* tmpdividend := %ax
-    *8*  %al := tmpdividend / divisor
-    *8*  %ah := tmpdividend % divisor
+    *16* tmph := %ax
+    *8*  %al := tmph / divisor
+    *8*  %ah := tmph % divisor
     undefineflags()
 ;
 
 DIV.reg16 divisor
-    *32* tmpdividend := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
-    *8*  %al := tmpdividend / divisor
-    *8*  %ah := tmpdividend % divisor
+    *32* tmp1 := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
+    *16*  %ax := tmp1 / divisor
+    *16*  %dx := tmp1 % divisor
     undefineflags()
 ;
 
@@ -1395,16 +1413,16 @@ DIV.reg32 divisor
 ;
 
 DIV.rm8 divisor
-    *16* tmpdividend := %ax
-    *8*  %al := tmpdividend / divisor
-    *8*  %ah := tmpdividend % divisor
+    *16* tmph := %ax
+    *8*  %al := tmph / divisor
+    *8*  %ah := tmph % divisor
     undefineflags()
 ;
 
 DIV.rm16 divisor
-    *32* tmpdividend := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
-    *8*  %al := tmpdividend / divisor
-    *8*  %ah := tmpdividend % divisor
+    *32* tmp1 := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
+    *16*  %ax := tmp1 / divisor
+    *16*  %dx := tmp1 % divisor
     undefineflags()
 ;
 
@@ -1434,11 +1452,17 @@ ENTER.imm32.imm32 allocSz, nstLevel
 
 # FABS
 FABS
+    *1* %C1 := 0
     *f80* %st := fabs(%st)
 ;
 
 
 # FADD
+FADD
+    *f80* %st1 := st1 +f %st
+    FPOP
+;
+
 FADD.reg80 val
     *f80* %st := %st +f val
 ;
@@ -1471,6 +1495,7 @@ FADDP.reg80 val
 # FCHS
 FCHS
     *f80* %st := 0 -f %st
+    *1* %C1 := 0
 ;
 
 
@@ -1510,6 +1535,7 @@ FCOMPP
 # FDECSTP
 FDECSTP
     FPOP
+    *1* %C1 := 0
 ;
 
 
@@ -1533,7 +1559,7 @@ FDIV.rm64 val
 
 # FDIVP
 FDIVP.reg80 val
-    *f80* val := %st /f val
+    *f80* val := val /f %st
     FPOP
 ;
 
