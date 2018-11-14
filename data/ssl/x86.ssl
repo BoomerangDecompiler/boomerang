@@ -1542,8 +1542,46 @@ FCMOVNBE.reg80.reg80 dest, src  *f80*   ~(%CF & %ZF) =>  dest := src;
 FCMOVNE.reg80.reg80  dest, src  *f80*   %ZF = 0      =>  dest := src;
 FCMOVNU.reg80.reg80  dest, src  *f80*   %PF = 0      =>  dest := src;
 
+# FCOM
+FCOM
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := %st1
+    *f80* tmpD := %st -f %st1
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
+FCOM.rm32 val
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := fsize(32, 80, val)
+    *f80* tmpD  := %st -f fsize(32, 80, val)
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
+FCOM.rm64 val
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := fsize(64, 80, val)
+    *f80* tmpD  := %st -f fsize(64, 80, val)
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
 
 # FCOMP
+FCOMP
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := %st1
+    *f80* tmpD := %st -f %st1
+    FPOP
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
+FCOMP.rm32 val
+    *f80* tmpD1 := %st
+    *f80* tmpD2 := fsize(32, 80, val)
+    *f80* tmpD  := %st -f fsize(32, 80, val)
+    FPOP
+    SETFFLAGS(tmpD1, tmpD2)
+;
+
 FCOMP.rm64 val
     *f80* tmpD1 := %st
     *f80* tmpD2 := fsize(64, 80, val)
