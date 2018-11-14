@@ -3441,6 +3441,12 @@ STD
 ;
 
 
+# STI
+STI
+    *1* %IF := 1
+;
+
+
 # SUB
 SUB.reg8.imm8 dest, src
     *8* tmp1 := dest
