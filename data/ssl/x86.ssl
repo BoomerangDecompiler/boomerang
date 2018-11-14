@@ -1564,6 +1564,12 @@ FCOMPP
 ;
 
 
+# FCOS
+FCOS
+    *f80* %st := cos(%st)
+;
+
+
 # FDECSTP
 FDECSTP
     FPOP
@@ -1833,6 +1839,14 @@ FRNDINT
 # FSIN
 FSIN
     *f80* %st := sin(%st)
+;
+
+
+# FSINCOS
+FSINCOS
+    FPUSH
+    *f80* %st  := cos(%st1)
+    *f80* %st1 := sin(%st1)
 ;
 
 
