@@ -1491,7 +1491,7 @@ FABS
 
 # FADD
 FADD
-    *f80* %st1 := st1 +f %st
+    *f80* %st1 := %st1 +f %st
     FPOP
 ;
 
