@@ -2325,6 +2325,20 @@ LOOP.imm32 dest
 ;
 
 
+# LOOPE
+LOOPE.imm32 dest
+    *32* %ecx := %ecx - 1
+    *32* %ecx ~= 0 and %ZF = 1 => %pc := dest
+;
+
+
+# LOOPNE
+LOOPNE.imm32 dest
+    *32* %ecx := %ecx - 1
+    *32* %ecx ~= 0 and %ZF = 0 => %pc := dest
+;
+
+
 # MOV
 MOV.reg8.imm8 dest, src
     *8* dest := src
