@@ -1644,8 +1644,23 @@ FILD.rm64 val
 
 
 # FIMUL
+FIMUL.rm16 val
+    *f80* %st := %st *f itof(16, 80, val)
+;
+
 FIMUL.rm32 val
-    *f80* %st := itof(32, 80, val)
+    *f80* %st := %st *f itof(32, 80, val)
+;
+
+
+# FINT
+FINIT
+    %fcw := 0x037F
+    %fsw := 0
+    %C0 := 0
+    %C1 := 0
+    %C2 := 0
+    %C3 := 0
 ;
 
 
@@ -1767,6 +1782,23 @@ FMULP.reg80 val
 FNCLEX
     *8* %fsw@[0:7] := 0
     *1* %fsw@[15:15] := 0
+;
+
+
+# FNINIT
+FNINIT
+    %fcw := 0x037F
+    %fsw := 0
+    %C0 := 0
+    %C1 := 0
+    %C2 := 0
+    %C3 := 0
+;
+
+
+# FNOP
+FNOP
+    _
 ;
 
 
