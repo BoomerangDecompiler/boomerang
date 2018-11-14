@@ -2899,6 +2899,12 @@ ROR.rm32.imm32 dest, src
     RORFLAGS32(dest, tmp1, src)
 ;
 
+ROR.rm32.reg8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest rr src
+    RORFLAGS32(dest, tmp1, src)
+;
+
 
 # SAHF
 SAHF

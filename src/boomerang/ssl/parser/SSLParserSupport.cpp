@@ -304,19 +304,19 @@ OPER strToTerm(const QString &s)
 {
     // clang-format off
     static const QMap<QString, OPER> mapping = {
-        { "%pc",     opPC  },
-        { "%afp",    opAFP },
-        { "%agp",    opAGP },
-        { "%CF",     opCF  },
-        { "%ZF",     opZF  },
-        { "%OF",     opOF  },
-        { "%NF",     opNF  },
-        { "%DF",     opDF  },
-        { "%SF",     opNF  },
-        { "%flags",  opFlags },
-        { "%fflags",    opFflags    },
-        { "%C3",     opFZF },
-        { "%C0",     opFLF }
+        { "%pc",        opPC     },
+        { "%afp",       opAFP    },
+        { "%agp",       opAGP    },
+        { "%CF",        opCF     },
+        { "%ZF",        opZF     },
+        { "%OF",        opOF     },
+        { "%NF",        opNF     },
+        { "%DF",        opDF     },
+        { "%SF",        opNF     },
+        { "%flags",     opFlags  },
+        { "%fflags",    opFflags },
+        { "%C3",        opFZF    },
+        { "%C0",        opFLF    }
     };
     // clang-format on
 
