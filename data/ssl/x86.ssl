@@ -179,6 +179,38 @@ SUBFLAGSFL(op1, op2) {
     *1* %ZF := op1 = op2
 };
 
+INCDECFLAGS8(result) {
+    *1* %OF := 0
+    *1* %ZF := (result = 0)
+    *1* %SF := result@[7:7]
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
+#   *1* %AF := ??
+};
+
+INCDECFLAGS16(result)  {
+    *1* %OF := 0
+    *1* %ZF := (result = 0)
+    *1* %SF := result@[15:15]
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
+#   *1* %AF := ??
+};
+
+INCDECFLAGS32(result)  {
+    *1* %OF := 0
+    *1* %ZF := (result = 0)
+    *1* %SF := result@[31:31]
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
+#   *1* %AF := ??
+};
+
+INCDECFLAGS64(result)  {
+    *1* %OF := 0
+    *1* %ZF := (result = 0)
+    *1* %SF := result@[63:63]
+    *1* %PF := ((result@[7:7] ^ result@[6:6]) ^ (result@[5:5] ^ result@[4:4])) ^ ((result@[3:3] ^ result@[2:2]) ^ (result@[1:1] ^ result@[0:0]))
+#   *1* %AF := ??
+};
+
 LOGICALFLAGS8(result)  {
     *1* %CF := 0
     *1* %OF := 0
@@ -1343,43 +1375,43 @@ CWDE
 DEC.reg8 val
     *8* tmpb := val
     *8* val := val - 1
-    LOGICALFLAGS8(val)
+    INCDECFLAGS8(val)
 ;
 
 DEC.reg16 val
     *16* tmph := val
     *16* val := val - 1
-    LOGICALFLAGS16(val)
+    INCDECFLAGS16(val)
 ;
 
 DEC.reg32 val
     *32* tmp1 := val
     *32* val := val - 1
-    LOGICALFLAGS32(val)
+    INCDECFLAGS32(val)
 ;
 
 DEC.rm8 val
     *8* tmpb := val
     *8* val := val - 1
-    LOGICALFLAGS8(val)
+    INCDECFLAGS8(val)
 ;
 
 DEC.rm16 val
     *16* tmph := val
     *16* val := val - 1
-    LOGICALFLAGS16(val)
+    INCDECFLAGS16(val)
 ;
 
 DEC.rm32 val
     *32* tmp1 := val
     *32* val := val - 1
-    LOGICALFLAGS32(val)
+    INCDECFLAGS32(val)
 ;
 
 DEC.rm64 val
     *64* tmp1 := val
     *64* val := val - 1
-    LOGICALFLAGS64(val)
+    INCDECFLAGS64(val)
 ;
 
 
@@ -2067,43 +2099,43 @@ IMUL.rm32 val
 INC.reg8 val
     *8* tmpb := val
     *8* val := val + 1
-    LOGICALFLAGS8(val)
+    INCDECFLAGS8(val)
 ;
 
 INC.reg16 val
     *16* tmph := val
     *16* val := val + 1
-    LOGICALFLAGS16(val)
+    INCDECFLAGS16(val)
 ;
 
 INC.reg32 val
     *32* tmp1 := val
     *32* val := val + 1
-    LOGICALFLAGS32(val)
+    INCDECFLAGS32(val)
 ;
 
 INC.rm8 val
     *8* tmpb := val
     *8* val := val + 1
-    LOGICALFLAGS8(val)
+    INCDECFLAGS8(val)
 ;
 
 INC.rm16 val
     *16* tmph := val
     *16* val := val + 1
-    LOGICALFLAGS16(val)
+    INCDECFLAGS16(val)
 ;
 
 INC.rm32 val
     *32* tmp1 := val
     *32* val := val + 1
-    LOGICALFLAGS32(val)
+    INCDECFLAGS32(val)
 ;
 
 INC.rm64 val
     *64* tmp1 := val
     *64* val := val + 1
-    LOGICALFLAGS64(val)
+    INCDECFLAGS64(val)
 ;
 
 

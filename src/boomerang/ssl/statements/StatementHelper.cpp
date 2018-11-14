@@ -118,8 +118,9 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                                   condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone()); // P2
         }
     }
-    else if ((condOp == opFlagCall) &&
-             condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS")) {
+    else if (condOp == opFlagCall &&
+             (condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS") ||
+              condExp->access<Const, 1>()->getStr().startsWith("INCDECFLAGS"))) {
         OPER op = opWild;
 
         switch (jtCond) {
@@ -145,10 +146,11 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
         // These next few seem to fluke working fine on architectures like X86, SPARC, and 68K which
         // clear the carry on all logical operations.
         case BranchType::JUL:
+            // NOTE: this is equivalent to never branching, since nothing
+            // can be unsigned less than zero
             op = opLessUns;
-            break; // NOTE: this is equivalent to never branching, since nothing
+            break;
 
-        // can be unsigned less than zero
         case BranchType::JULE: op = opLessEqUns; break;
 
         case BranchType::JUGE:
