@@ -280,88 +280,88 @@ MULTFLAGS32(result)  {
 };
 
 ROLFLAGS8(result, op1, count)  {
-    *1* %OF := [count = 1?(op1@[7:7])! = %CF:-1]
-    *1* %CF := result@[7:7]
+    *1*              %CF := op1@[(8-count):(8-count)]
+    *1* count=1  =>  %OF := result@[7:7] ^ %CF
 };
 
 ROLFLAGS16(result, op1, count)  {
-    *1* %OF := [count = 1?(op1@[15:15])! = %CF:-1]
-    *1* %CF := result@[15:15]
+    *1*              %CF := op1@[(16-count):(16-count)]
+    *1* count=1  =>  %OF := result@[15:15] ^ %CF
 };
 
 ROLFLAGS32(result, op1, count)  {
-    *1* %OF := [count = 1?(op1@[31:31])! = %CF:-1]
-    *1* %CF := result@[31:31]
+    *1*              %CF := op1@[(32-count):(32-count)]
+    *1* count=1  =>  %OF := result@[31:31] ^ %CF
 };
 
 RORFLAGS8(result, op1, count)  {
-    *1* %CF := result@[7:7]
-    *1* %OF := [count = 1?(op1@[7:7])! = (op1@[6:6]):-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := result@[7:7] ^ result@[6:6]
 };
 
 RORFLAGS16(result, op1, count)  {
-    *1* %CF := result@[15:15]
-    *1* %OF := [count = 1?(op1@[15:15])! = (op1@[14:14]):-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := result@[15:15] ^ result@[14:14]
 };
 
 RORFLAGS32(result, op1, count)  {
-    *1* %CF := result@[31:31]
-    *1* %OF := [count = 1?(op1@[31:31])! = (op1@[30:30]):-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := result@[31:31] ^ result@[30:30]
 };
 
 SALFLAGS8(result, op1, count)  {
-    *1* %CF := op1@[(8 - count):(9 - count)]
-    *1* %OF := [count = 1?(result@[7:7])! = %CF:-1]
+    *1*              %CF := op1@[(8 - count):(8 - count)]
+    *1* count=1  =>  %OF := result@[7:7] ^ %CF
 };
 
 SALFLAGS16(result, op1, count)  {
-    *1* %CF := op1@[(16 - count):(17 - count)]
-    *1* %OF := [count = 1?(result@[15:15])! = %CF:-1]
+    *1*              %CF := op1@[(16 - count):(16 - count)]
+    *1* count=1  =>  %OF := result@[15:15] ^ %CF
 };
 
 SALFLAGS32(result, op1, count)  {
-    *1* %CF := op1@[(32 - count):(33 - count)]
-    *1* %OF := [count = 1?(result@[31:31])! = %CF:-1]
+    *1*              %CF := op1@[(32 - count):(32 - count)]
+    *1* count=1  =>  %OF := result@[31:31] ^ %CF
 };
 
 SARFLAGS(result, op1, count)  {
-    *1* %CF := op1@[(count - 1):count]
-    *1* %OF := [count = 1?0:-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := 0
 };
 
 SHRFLAGS8(result, op1, count)  {
-    *1* %CF := op1@[(count - 1):count]
-    *1* %OF := [count = 1?(result@[7:7])! = %CF:-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := result@[7:7] ^ %CF
 };
 
 SHRFLAGS16(result, op1, count)  {
-    *1* %CF := op1@[(count - 1):count]
-    *1* %OF := [count = 1?(result@[15:15])! = %CF:-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := result@[15:15] ^ %CF
 };
 
 SHRFLAGS32(result, op1, count)  {
-    *1* %CF := op1@[(count - 1):count]
-    *1* %OF := [count = 1?(result@[31:31])! = %CF:-1]
+    *1*              %CF := op1@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := result@[31:31] ^ %CF
 };
 
 SHLDFLAGS32(result, combine, count)  {
-    *1* %CF := combine@[(32 - count):(33 - count)]
-    *1* %OF := [count = 1?(result@[31:31])! = %CF:-1]
+    *1* count>0  =>  %CF := combine@[(32 - count):(32 - count)]
+    *1* count=1  =>  %OF := result@[31:31] ^ %CF
 };
 
 SHLDFLAGS64(result, combine, count)  {
-    *1* %CF := combine@[(64 - count):(65 - count)]
-    *1* %OF := [count = 1?(result@[63:64])! = %CF:-1]
+    *1* count>0  =>  %CF := combine@[(64 - count):(64 - count)]
+    *1* count=1  =>  %OF := result@[63:63] ^ %CF
 };
 
 SHRDFLAGS32(result, combine, count)  {
-    *1* %CF := combine@[(count - 1):count]
-    *1* %OF := [count = 1?(result@[31:31])! = %CF:-1]
+    *1* count>0  =>  %CF := combine@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := combine@[31:31] ^ result@[31:31]
 };
 
 SHRDFLAGS64(result, combine, count)  {
-    *1* %CF := combine@[(count - 1):count]
-    *1* %OF := [count = 1?(result@[63:64])! = %CF:-1]
+    *1* count>0  =>  %CF := combine@[(count - 1):(count - 1)]
+    *1* count=1  =>  %OF := combine@[63:63] ^ result@[63:63]
 };
 
 SETFFLAGS(op1, op2)  {
