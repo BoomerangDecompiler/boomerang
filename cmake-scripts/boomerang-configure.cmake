@@ -98,3 +98,4 @@ add_definitions(-DV9_ONLY=0)
 if (NOT BUILD_SHARED_LIBS)
     add_definitions(-DBOOMERANG_BUILD_STATIC=1)
 endif ()
+

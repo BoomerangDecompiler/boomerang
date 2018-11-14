@@ -18,12 +18,7 @@
 // Return true if this is now a floating point Branch
 bool condToRelational(SharedExp &condExp, BranchType jtCond)
 {
-    condExp = condExp->simplifyArith()->simplify();
-
-    QString tgt;
-    OStream os(&tgt);
-    condExp->print(os);
-
+    condExp     = condExp->simplifyArith()->simplify();
     OPER condOp = condExp->getOper();
 
     if ((condOp == opFlagCall) && condExp->access<Const, 1>()->getStr().startsWith("SUBFLAGS")) {
@@ -123,8 +118,9 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                                   condExp->getSubExp2()->getSubExp2()->getSubExp1()->clone()); // P2
         }
     }
-    else if ((condOp == opFlagCall) &&
-             condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS")) {
+    else if (condOp == opFlagCall &&
+             (condExp->access<Const, 1>()->getStr().startsWith("LOGICALFLAGS") ||
+              condExp->access<Const, 1>()->getStr().startsWith("INCDECFLAGS"))) {
         OPER op = opWild;
 
         switch (jtCond) {
@@ -150,10 +146,11 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
         // These next few seem to fluke working fine on architectures like X86, SPARC, and 68K which
         // clear the carry on all logical operations.
         case BranchType::JUL:
+            // NOTE: this is equivalent to never branching, since nothing
+            // can be unsigned less than zero
             op = opLessUns;
-            break; // NOTE: this is equivalent to never branching, since nothing
+            break;
 
-        // can be unsigned less than zero
         case BranchType::JULE: op = opLessEqUns; break;
 
         case BranchType::JUGE:
@@ -203,6 +200,11 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
             }
 
             SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
+            if (!at_opFlagsCall_List) {
+                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                return false;
+            }
+
             // Sometimes the mask includes the 0x4 bit, but we expect that to be off all the time.
             // So effectively the branch is for any one of the (one or two) bits being on. For
             // example, if the mask is 0x41, we are branching of less (0x1) or equal (0x41).

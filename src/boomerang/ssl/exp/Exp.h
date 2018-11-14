@@ -149,6 +149,8 @@ public:
 
     /// True if is int const
     bool isIntConst() const { return m_oper == opIntConst; }
+    /// True if is long (address) const
+    bool isLongConst() const { return m_oper == opLongConst; }
     /// True if is string const
     bool isStrConst() const { return m_oper == opStrConst; }
 

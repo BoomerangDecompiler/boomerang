@@ -60,8 +60,7 @@ public:
     bool readSSLFile(const QString &sslFileName);
 
     /// \returns the name and the number of operands of the instruction
-    /// with name \p instructionName
-    std::pair<QString, int> getSignature(const QString &instructionName) const;
+    std::pair<QString, DWord> getSignature(const QString &name, bool *found = nullptr) const;
 
     /**
      * Returns a new RTL containing the semantics of the instruction with name \p name.
@@ -72,6 +71,11 @@ public:
      */
     std::unique_ptr<RTL> instantiateRTL(const QString &name, Address pc,
                                         const std::vector<SharedExp> &actuals);
+
+    int getRegID(const QString &regName) const;
+    QString getRegName(int regID) const;
+
+    int getRegSize(int regID) const;
 
     /// Get the name of the register by its index.
     /// Returns the empty string when \p regID == -1 or the register was not found.

@@ -30,9 +30,8 @@ foreach (src ${boomerang-sources})
     endif ()
 endforeach ()
 
-# Make sure to build PentiumDecoder first to keep compile times down
-add_library(boomerang frontend/pentium/PentiumDecoder.cpp ${boomerang-sources} ${boomerang-headers})
-target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core ${DEBUG_LIB})
+add_library(boomerang ${boomerang-sources} ${boomerang-headers})
+target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core Capstone::Capstone ${DEBUG_LIB})
 
 
 if (BUILD_SHARED_LIBS)

@@ -66,7 +66,7 @@ SharedExp ExpArithSimplifier::postModify(const std::shared_ptr<Binary> &exp)
                 sum = -sum;
             }
 
-            return Binary::get(_op, Exp::accumulate(positives), Const::get(sum));
+            return Binary::get(_op, Exp::accumulate(positives), Const::get(Address(sum)));
         }
     }
 

@@ -28,6 +28,7 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
     proc->getStatements(stmts);
 
     const BinaryImage *image = proc->getProg()->getBinaryFile()->getImage();
+    bool changed             = false;
 
     for (Statement *st : stmts) {
         Assign *assgn = dynamic_cast<Assign *>(st);
@@ -44,22 +45,21 @@ bool GlobalConstReplacePass::execute(UserProc *proc)
             continue;
         }
 
-        Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
-        LOG_VERBOSE("Assign %1");
-
+        const Address addr = assgn->getRight()->access<Const, 1>()->getAddr();
         if (proc->getProg()->isReadOnly(addr)) {
-            LOG_VERBOSE("is readonly");
-            int val = 0;
-
             switch (assgn->getType()->getSize()) {
-            case 8: val = image->readNative1(addr); break;
-            case 16: val = image->readNative2(addr); break;
-            case 32: val = image->readNative4(addr); break;
+            case 8: assgn->setRight(Const::get(image->readNative1(addr))); break;
+            case 16: assgn->setRight(Const::get(image->readNative2(addr))); break;
+            case 32: assgn->setRight(Const::get(image->readNative4(addr))); break;
+            case 64: assgn->setRight(Const::get(image->readNative8(addr))); break;
+            case 80: continue; // can't replace float constants just yet
             default: assert(false);
             }
 
-            assgn->setRight(Const::get(val));
+            LOG_VERBOSE("Replaced global constant in assign; now %1", assgn);
+            changed = true;
         }
     }
-    return true;
+
+    return changed;
 }

@@ -17,7 +17,7 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/PentiumDecoder.h"
+#include "boomerang/frontend/pentium/CapstoneX86Decoder.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -378,7 +378,7 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
     : DefaultFrontEnd(binaryFile, prog)
 {
-    m_decoder.reset(new PentiumDecoder(prog));
+    m_decoder.reset(new CapstoneX86Decoder(prog));
 }
 
 
@@ -422,17 +422,17 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             break;
         }
 
-        const CallStatement *cs = nullptr;
+        const CallStatement *call = nullptr;
 
         if (!inst.rtl->empty()) {
-            cs = (inst.rtl->back()->getKind() == StmtType::Call)
-                     ? static_cast<CallStatement *>(inst.rtl->back())
-                     : nullptr;
+            call = (inst.rtl->back()->getKind() == StmtType::Call)
+                       ? static_cast<CallStatement *>(inst.rtl->back())
+                       : nullptr;
         }
 
-        const BinarySymbol *sym = (cs && cs->isCallToMemOffset())
+        const BinarySymbol *sym = (call && call->isCallToMemOffset())
                                       ? symbols->findSymbolByAddress(
-                                            cs->getDest()->access<Const, 1>()->getAddr())
+                                            call->getDest()->access<Const, 1>()->getAddr())
                                       : nullptr;
 
         if (sym && sym->isImportedFunction() && (sym->getName() == "GetModuleHandleA")) {
@@ -458,7 +458,7 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
             }
         }
 
-        if (cs && (dest = cs->getFixedDest()) != Address::INVALID) {
+        if (call && ((dest = (call->getFixedDest())) != Address::INVALID)) {
             const QString destSym = m_program->getSymbolNameByAddr(dest);
 
             if (destSym == "__libc_start_main") {
@@ -483,10 +483,10 @@ Address PentiumFrontEnd::findMainEntryPoint(bool &gotMain)
 
         prevAddr = addr;
 
-        const GotoStatement *gs = static_cast<const GotoStatement *>(cs);
+        const GotoStatement *gs = static_cast<const GotoStatement *>(call);
         if (gs && (gs->getKind() == StmtType::Goto)) {
-            // Example: Borland often starts with a branch around some debug
-            // info
+            // Example: Borland often starts with a branch
+            // around some debug info
             addr = gs->getFixedDest();
         }
         else {
@@ -742,79 +742,6 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
 
     // set a flag for every BB we've processed so we don't do them again
     m_overlappedRegsProcessed.insert(bbs.begin(), bbs.end());
-}
-
-
-bool PentiumFrontEnd::decodeSpecial_out(Address pc, DecodeResult &r)
-{
-    // out dx, al
-    r.reset();
-    r.numBytes = 1;
-    r.valid    = true;
-    r.type     = NCT;
-    r.reDecode = false;
-    r.rtl.reset(new RTL(pc));
-
-    SharedExp dx = Location::regOf(m_decoder->getRegIdx("%dx"));
-    SharedExp al = Location::regOf(m_decoder->getRegIdx("%al"));
-
-    CallStatement *call = new CallStatement();
-
-    LibProc *outp = m_program->getOrCreateLibraryProc("outp");
-
-    call->setDestProc(outp);
-    call->setNumArguments(2);
-    call->setArgumentExp(0, dx);
-    call->setArgumentExp(1, al);
-    r.rtl->append(call);
-
-    return true;
-}
-
-
-bool PentiumFrontEnd::decodeSpecial_invalid(Address pc, DecodeResult &r)
-{
-    Byte n = m_program->getBinaryFile()->getImage()->readNative1(pc + 1);
-
-    if (n != 0x0b) {
-        return false;
-    }
-
-    r.reset();
-    r.numBytes = 2;
-    r.valid    = true;
-    r.type     = NCT;
-    r.reDecode = false;
-    r.rtl.reset(new RTL(pc));
-
-    CallStatement *call = new CallStatement();
-    call->setDestProc(m_program->getOrCreateLibraryProc("invalid_opcode"));
-    r.rtl->append(call);
-    return true;
-}
-
-
-bool PentiumFrontEnd::decodeSpecial(Address pc, DecodeResult &r)
-{
-    Byte n = m_program->getBinaryFile()->getImage()->readNative1(pc);
-
-    switch (n) {
-    case 0xee: return decodeSpecial_out(pc, r);
-
-    case 0x0f: return decodeSpecial_invalid(pc, r);
-    }
-
-    return false;
-}
-
-
-bool PentiumFrontEnd::decodeSingleInstruction(Address pc, DecodeResult &result)
-{
-    if (decodeSpecial(pc, result)) {
-        return true;
-    }
-
-    return DefaultFrontEnd::decodeSingleInstruction(pc, result);
 }
 
 

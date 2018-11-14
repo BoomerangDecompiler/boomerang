@@ -115,18 +115,25 @@ void RTLInstDict::print(OStream &os /*= std::cout*/)
 }
 
 
-std::pair<QString, int> RTLInstDict::getSignature(const QString &instructionName) const
+std::pair<QString, DWord> RTLInstDict::getSignature(const QString &instructionName,
+                                                    bool *found) const
 {
     // Take the argument, convert it to upper case and remove any .'s
     const QString sanitizedName = QString(instructionName).remove(".").toUpper();
 
     // Look up the dictionary
     const auto it = m_instructions.find(sanitizedName);
-    if (it == m_instructions.end()) {
-        return { sanitizedName, -1 }; // At least, don't cause segfault
+    if (it != m_instructions.end()) {
+        if (found) {
+            *found = true;
+        }
+        return { sanitizedName, (it->second).m_params.size() };
+    }
+    else if (found) {
+        *found = false;
     }
 
-    return { sanitizedName, (it->second).m_params.size() };
+    return { sanitizedName, (DWord)-1 };
 }
 
 
@@ -231,4 +238,25 @@ void RTLInstDict::reset()
     m_definedParams.clear();
     m_flagFuncs.clear();
     m_instructions.clear();
+}
+
+
+int RTLInstDict::getRegID(const QString &regName) const
+{
+    auto it = m_regIDs.find(regName);
+    return (it != m_regIDs.end()) ? it->second : -1;
+}
+
+
+QString RTLInstDict::getRegName(int regID) const
+{
+    auto it = m_regInfo.find(regID);
+    return (it != m_regInfo.end()) ? it->second.getName() : QString();
+}
+
+
+int RTLInstDict::getRegSize(int regID) const
+{
+    auto it = m_regInfo.find(regID);
+    return (it != m_regInfo.end()) ? it->second.getSize() : 0;
 }

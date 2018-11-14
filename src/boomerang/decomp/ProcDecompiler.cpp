@@ -245,6 +245,9 @@ ProcStatus ProcDecompiler::tryDecompileRecursive(UserProc *proc)
         printCallStack();
     }
 
+    if (project->getSettings()->verboseOutput) {
+        printCallStack();
+    }
     return proc->getStatus();
 }
 

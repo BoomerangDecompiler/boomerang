@@ -90,5 +90,6 @@ signal.h
 netdb.h
 socket.h
 termios.h
+fortran.h
 
 misc.h

@@ -92,7 +92,9 @@ SharedType Terminal::ascendType()
     switch (m_oper) {
     case opPC: return IntegerType::get(STD_SIZE, Sign::Unsigned);
     case opCF:
-    case opZF: return BooleanType::get();
+    case opZF:
+    case opFZF:
+    case opFLF: return BooleanType::get();
     case opDefineAll: return VoidType::get();
     case opFlags: return IntegerType::get(STD_SIZE, Sign::Unsigned);
     default: LOG_WARN("Unknown type %1", shared_from_this()); return VoidType::get();

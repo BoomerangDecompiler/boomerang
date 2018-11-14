@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     int edx; 		// r26
     int esp; 		// r28
 
-    f_setarg();
+    f_setarg(argc, argv);
     f_setsig();
     f_init();
     eax = atexit(0x8048584); /* Warning: also results in ecx, edx */
@@ -36,13 +36,13 @@ __size32 atexit(union { atexitfunc; __size32; } param1)
 /** address: 0x080486cc */
 void MAIN__(__size32 param1)
 {
-    int local0; 		// m[esp - 16]
+    int local4; 		// m[esp - 16]
 
     s_wsle();
-    do_lio();
+    do_lio(0x80489ac, 0x80489a8, 0x804897c, 10);
     e_wsle();
     s_rsle();
-    do_lio();
+    do_lio(0x80489b0, 0x80489a8, &param1, 4);
     e_rsle();
     if (param1 != 2) {
 bb0x8048741:

@@ -19,6 +19,7 @@ it is currently recommended to build the development version (`develop`) of the 
  - A C++ compiler compatible with C++17 (GCC 7+, Clang 5+, MSVC 2017+ are known to work)
  - [CMake 3.8.0 or newer](https://cmake.org/download/)
  - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.9+ is known to work, earlier versions should also work)
+ - [Capstone 3.0.5 or newer](http://www.capstone-engine.org/)
  - [Doxygen 1.8.13 or newer](http://www.doxygen.nl/) (optional, for documentation)
  - [Python 3](https://www.python.org/downloads/) (optional, for regression tests)
 
@@ -29,7 +30,7 @@ On a Linux system you can build and install Boomerang with the usual cmake-make-
 On a Debian-compatible system (e.g. Ubuntu) these commands will clone, build and install Boomerang:
 
 ```bash
-sudo apt-get install git build-essential cmake qt5-default
+sudo apt-get install git build-essential cmake qt5-default libcapstone-dev
 cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
 git clone https://github.com/BoomerangDecompiler/boomerang.git
 cd boomerang && mkdir build && cd build
