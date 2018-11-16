@@ -593,11 +593,10 @@ exprstr_array:
 instr_def:
     instr_name {
         $1->getRefMap(drv.indexrefmap);
-    } paramlist {
+    } paramlist rtl {
         drv.m_dict->m_definedParams.insert($3->begin(), $3->end());
-    } rtl {
         // This function expands the tables and saves the expanded RTLs to the dictionary
-        drv.expandTables($1, $3, $5, drv.m_dict);
+        drv.expandTables($1, $3, $4, drv.m_dict);
     }
   ;
 
