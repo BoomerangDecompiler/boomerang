@@ -18,16 +18,16 @@ int main(int argc, char *argv[])
 __size32 fib(int param1)
 {
     int eax; 		// r24
-    int eax_1; 		// r24{4}
+    int eax_1; 		// r24{5}
     int local2; 		// m[esp - 12]
 
     if (param1 <= 1) {
         local2 = param1;
     }
     else {
-        eax_1 = fib(param1 - 1);
-        eax = fib(param1 - 2);
-        local2 = eax_1 + eax;
+        eax = fib(param1 - 1);
+        eax_1 = fib(param1 - 2);
+        local2 = eax + eax_1;
     }
     return local2;
 }

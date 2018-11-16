@@ -5,7 +5,7 @@ __size32 fib(int param1);
 int main(int argc, char *argv[])
 {
     int eax; 		// r24
-    __size32 eax_1; 		// r24{6}
+    __size32 eax_1; 		// r24{7}
     int local0; 		// m[esp - 8]
 
     printf("Input number: ");
@@ -14,9 +14,9 @@ int main(int argc, char *argv[])
         eax = local0;
     }
     else {
-        eax_1 = fib(local0 - 1);
-        eax = fib(local0 - 2);
-        eax += eax_1;
+        eax = fib(local0 - 1);
+        eax_1 = fib(local0 - 2);
+        eax = eax_1 + eax;
     }
     printf("fibonacci(%d) = %d\n", local0, eax);
     return 0;
