@@ -30,6 +30,10 @@ CapstoneDecoder::CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode,
 
     m_dict.readSSLFile(
         prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath(sslFileName));
+    // check that all required registers are present
+    if (m_dict.getRegNameByID(REG_PENT_ESP).isEmpty()) {
+        throw std::runtime_error("Required register #28 (%esp) not present");
+    }
 }
 
 
