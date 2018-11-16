@@ -257,8 +257,11 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                 LOG_WARN(message);
                 assert(!inst.valid);
             }
-            else if (inst.rtl->empty()) {
+            else if (!inst.rtl || inst.rtl->empty()) {
                 LOG_VERBOSE("Instruction at address %1 is a no-op!", addr);
+                if (!inst.rtl) {
+                    inst.rtl.reset(new RTL(addr));
+                }
             }
 
             // Need to construct a new list of RTLs if a basic block has just been finished but
