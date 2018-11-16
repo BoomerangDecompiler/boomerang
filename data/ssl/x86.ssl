@@ -390,7 +390,7 @@ SETFFLAGS(op1, op2)  {
 
 # The string instructions
 REPS  := { "REP", "REPNE" };                      # Repeat prefixes
-OREPS := { REPS, "" };                            # Optional repeat prefixes
+OREPS := { "REP", "REPNE", "" };                  # Optional repeat prefixes
 ALLSZ := { "Breg8rm8",   "Brm8reg8",   "Brm8rm8",
            "Wreg16rm16", "Wrm16reg16", "Wrm16rm16",
            "Dreg32rm32", "Drm32reg32", "Drm32rm32" }; # All size suffixes
