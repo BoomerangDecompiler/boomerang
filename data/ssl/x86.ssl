@@ -62,31 +62,66 @@ INTEGER %pc[32] -> -1;
 INTEGER %eflags[32] -> 100;
 INTEGER %flags[16]  -> 101 SHARES %eflags@[0..15];
 
-INTEGER
-[ %NF, %ZF, %AF, %PF, %SF,
-  %CF, %OF, %DF, %IF,
-  %FP, %SKIP, %RPT,
-  %C0, %C1, %C2, %C3 ][1] -> -1;
+INTEGER %CF[1]   -> -1 SHARES %flags@[0..0];
+INTEGER %PF[1]   -> -1 SHARES %flags@[2..2];
+INTEGER %AF[1]   -> -1 SHARES %flags@[4..4];
+INTEGER %ZF[1]   -> -1 SHARES %flags@[6..6];
+INTEGER %SF[1]   -> -1 SHARES %flags@[7..7]; # Negative sign flag
+INTEGER %TF[1]   -> -1 SHARES %flags@[8..8];
+INTEGER %IF[1]   -> -1 SHARES %flags@[9..9];
+INTEGER %DF[1]   -> -1 SHARES %flags@[10..10];
+INTEGER %OF[1]   -> -1 SHARES %flags@[11..11];
+INTEGER %IOPL[2] -> -1 SHARES %flags@[12..13];
+INTEGER %NT[1]   -> -1 SHARES %flags@[14..14];
+# Bit 15 is reserved.
+INTEGER %RF[1]   -> -1 SHARES %eflags@[16..16];
+INTEGER %VM[1]   -> -1 SHARES %eflags@[17..17];
+INTEGER %AC[1]   -> -1 SHARES %eflags@[18..18];
+INTEGER %VIF[1]  -> -1 SHARES %eflags@[19..19];
+INTEGER %VIP[1]  -> -1 SHARES %eflags@[20..20];
+INTEGER %ID[1]   -> -1 SHARES %eflags@[21..21];
 
-FLOAT
-[ %st, %st1,        # stack head, stack neck
-  %st2, %st3, %st4, %st5, %st6, %st7 ][80] -> 32..39;
+# FP related
+FLOAT %st[80] -> 32;
+FLOAT %st1[80] -> 33;
+FLOAT %st2[80] -> 34;
+FLOAT %st3[80] -> 35;
+FLOAT %st4[80] -> 36;
+FLOAT %st5[80] -> 37;
+FLOAT %st6[80] -> 38;
+FLOAT %st7[80] -> 39;
 
-INTEGER
-# Note: for boomerang, we use the abstract floating point flags %fflags now
-%fsw[16] -> 40, #Float status word(16 Bit register Containing information about
-                #The state of the FPU.  stores the top of stack pointer
-                #information aswell as the exception flags and stack fault
-                #information)
+INTEGER %fcw[16] -> 50;
+INTEGER %IM[1] -> 51 SHARES %fcw@[0..0];
+INTEGER %DM[1] -> 52 SHARES %fcw@[1..1];
+INTEGER %ZM[1] -> 53 SHARES %fcw@[2..2];
+INTEGER %OM[1] -> 54 SHARES %fcw@[3..3];
+INTEGER %UM[1] -> 55 SHARES %fcw@[4..4];
+INTEGER %PM[1] -> 56 SHARES %fcw@[5..5];
+INTEGER %FPC[2] -> 57 SHARES %fcw@[8..9];   # FP precision control
+INTEGER %FRC[2] -> 58 SHARES %fcw@[10..11]; # FP rounding control
+INTEGER %X[1] -> 59 SHARES %fcw@[12..12];   # FP infty control
 
-%fstp[8] -> 41, #Floating point stack pointer.  Holds the top of stack pointer.
-                #NB is bits 11->13 inclusive of the fsw(defined above).
+INTEGER %fsw[16] -> 60;
+INTEGER %IE[1] -> 61 SHARES %fsw@[0..0];    # Invalid Operand
+INTEGER %DE[1] -> 62 SHARES %fsw@[1..1];    # Denormal operand
+INTEGER %ZE[1] -> 63 SHARES %fsw@[2..2];    # Div by zero
+INTEGER %OE[1] -> 64 SHARES %fsw@[3..3];    # Overflow
+INTEGER %UE[1] -> 65 SHARES %fsw@[4..4];    # Underflow
+INTEGER %PE[1] -> 66 SHARES %fsw@[5..5];    # Precision
+INTEGER %FSF[1] -> 67 SHARES %fsw@[6..6];   # FP stack fault
+INTEGER %ES[1] -> 68 SHARES %fsw@[7..7];    # Error summary status
+INTEGER %C0[1] -> 69 SHARES %fsw@[8..8];
+INTEGER %C1[1] -> 70 SHARES %fsw@[9..9];
+INTEGER %C2[1] -> 71 SHARES %fsw@[10..10];
+INTEGER %TOP[3] -> 72 SHARES %fsw@[11..13]; # Top of stack
+INTEGER %C3[1] -> 73 SHARES %fsw@[14..14];
+INTEGER %B[1]  -> 74 SHARES %fsw@[15..15];  # FP busy
 
-%fcw[16] -> 42; #Floating point Control Word (16 bit register holding
-                #information such as the infinity control, rounding control,
-                #precision control and exception masks.
 
-
+# pseudo registers (only to work around IR limitations)
+INTEGER %SKIP[1] -> -1;
+INTEGER %RPT[1] -> -1;
 
 
 #
