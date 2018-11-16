@@ -53,6 +53,7 @@ static void help()
 "\n"
 "Decoding/decompilation options\n"
 "  --decode-only    : Decode only, do not decompile\n"
+"  --ssl <file>     : Use <file> as SSL specification file\n"
 "  -e <addr>        : Decode or decompile the procedure beginning at addr, and callees\n"
 "  -E <addr>        : Equivalent to -nc -e <addr>\n"
 "  -ic              : Decode through type 0 Indirect Calls\n"
@@ -221,6 +222,10 @@ int CommandlineDriver::applyCommandline(const QStringList &args)
             }
             else if (arg == "--decode-only") {
                 m_project->getSettings()->stopBeforeDecompile = true;
+                break;
+            }
+            else if (arg == "--ssl") {
+                m_project->getSettings()->sslFileName = args[++i];
                 break;
             }
             break;

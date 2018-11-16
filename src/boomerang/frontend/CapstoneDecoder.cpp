@@ -17,6 +17,7 @@
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/statements/CaseStatement.h"
+#include "boomerang/util/log/Log.h"
 
 
 CapstoneDecoder::CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode,
@@ -28,8 +29,21 @@ CapstoneDecoder::CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode,
     cs::cs_open(arch, mode, &m_handle);
     cs::cs_option(m_handle, cs::CS_OPT_DETAIL, cs::CS_OPT_ON);
 
-    m_dict.readSSLFile(
-        prog->getProject()->getSettings()->getDataDirectory().absoluteFilePath(sslFileName));
+    const Settings *settings = prog->getProject()->getSettings();
+    QString realSSLFileName;
+
+    if (!settings->sslFileName.isEmpty()) {
+        realSSLFileName = settings->getWorkingDirectory().absoluteFilePath(settings->sslFileName);
+    }
+    else {
+        realSSLFileName = settings->getDataDirectory().absoluteFilePath(sslFileName);
+    }
+
+    if (!m_dict.readSSLFile(realSSLFileName)) {
+        LOG_ERROR("Cannot read SSL file '%1'", realSSLFileName);
+        throw std::runtime_error("Cannot read SSL file");
+    }
+
     // check that all required registers are present
     if (m_dict.getRegNameByID(REG_PENT_ESP).isEmpty()) {
         throw std::runtime_error("Required register #28 (%esp) not present");

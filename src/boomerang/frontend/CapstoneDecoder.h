@@ -34,6 +34,7 @@ public:
      *             of the derived class.
      * \param sslFileName Path to the ssl file holding the instruction semantics,
      *                    relative to the data directory.
+     *                    If settings.sslFile is not empty, \p sslFileName is ignored.
      */
     CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode, const QString &sslFileName);
     virtual ~CapstoneDecoder();
