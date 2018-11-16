@@ -1438,49 +1438,42 @@ DIV.reg8 divisor
     *16* tmph := %ax
     *8*  %al := tmph / divisor
     *8*  %ah := tmph % divisor
-    undefineflags()
 ;
 
 DIV.rm8 divisor
     *16* tmph := %ax
     *8*  %al := tmph / divisor
     *8*  %ah := tmph % divisor
-    undefineflags()
 ;
 
 DIV.reg16 divisor
     *32* tmp1 := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
     *16*  %ax := tmp1 / divisor
     *16*  %dx := tmp1 % divisor
-    undefineflags()
 ;
 
 DIV.reg32 divisor
     *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
     *32* %eax := tmp1 / divisor
     *32* %edx := tmp1 % divisor
-    undefineflags()
 ;
 
 DIV.rm8 divisor
     *16* tmph := %ax
     *8*  %al := tmph / divisor
     *8*  %ah := tmph % divisor
-    undefineflags()
 ;
 
 DIV.rm16 divisor
     *32* tmp1 := (zfill(16, 32, %dx) << 16) | zfill(16, 32, %ax)
     *16*  %ax := tmp1 / divisor
     *16*  %dx := tmp1 % divisor
-    undefineflags()
 ;
 
 DIV.rm32 divisor
     *64* tmp1 := (zfill(32, 64, %edx) << 32) | zfill(32, 64, %eax)
     *32* %eax := tmp1 / divisor
     *32* %edx := tmp1 % divisor
-    undefineflags()
 ;
 
 
@@ -2073,42 +2066,36 @@ IDIV.reg8 divisor
     *16* tmph := %ax
     *8* %al := tmph /! divisor{8}
     *8* %ah := tmph %! divisor{8}
-    undefineflags()
 ;
 
 IDIV.reg16 divisor
     *32* tmpd := (%dx << 16) | %ax
     *16* %ax := tmpd /! divisor{16}
     *16* %dx := tmpd %! divisor{16}
-    undefineflags()
 ;
 
 IDIV.reg32 divisor
     *64* tmp1 := (%edx << 32) | %eax
     *32* %eax := tmp1 /! divisor
     *32* %edx := tmp1 %! divisor
-    undefineflags()
 ;
 
 IDIV.rm8 divisor
     *16* tmph := %ax
     *8* %al := tmph /! divisor{8}
     *8* %ah := tmph %! divisor{8}
-    undefineflags()
 ;
 
 IDIV.rm16 divisor
     *32* tmpd := (%dx << 16) | %ax
     *16* %ax := tmpd /! divisor{16}
     *16* %dx := tmpd %! divisor{16}
-    undefineflags()
 ;
 
 IDIV.rm32 divisor
     *64* tmp1 := (%edx << 32) | %eax
     *32* %eax := tmp1 /! divisor
     *32* %edx := tmp1 %! divisor
-    undefineflags()
 ;
 
 
