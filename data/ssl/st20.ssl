@@ -34,7 +34,7 @@ adc        val      # add constant
     *32* %Areg := %Areg + val;
 add              # add
     *32* %Areg := %Breg + %Areg
-    
+
     *32* %Breg := %Creg;
 addc             # add with carry
     _ ;
@@ -42,14 +42,14 @@ ajw        val      # adjust work space
     *32* %sp := %sp + (4*val);
 andq         # and
     *32* %Areg := %Breg & %Areg
-    
+
     *32* %Breg := %Creg;
 arot             # anti-rotate stack
     _ ;
 ashr             # arithmetic shift right
     #OP2(">>");
     *32* %Areg := %Breg >>A %Areg
-    
+
     *32* %Breg := %Creg;
 biquad           # biquad IIR filter step
     _ ;
@@ -77,7 +77,7 @@ dequeue          # dequeue a process
 divstep          # divide step
     _ ;
 dup              # duplicate
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := %Areg;
@@ -98,12 +98,12 @@ gajw             # general adjust workspace
 gt               # greater than
     #OP2C(">");
     *32* %Areg := [%Breg > %Areg?1:0]
-    
+
     *32* %Breg := %Creg;
 gtu              # greater than unsigned
     #OP2C(">");
     *32* %Areg := [%Breg >u %Areg?1:0]
-    
+
     *32* %Breg := %Creg;
 io               # input/output
     _ ;
@@ -115,17 +115,17 @@ jab              # jump absolute
 lbinc            # load byte and increment
     _ ;
 ldc        val      # load constant
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := val;
 ldl        val      # load local
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := m[%sp + (val*4)]{32};
 ldlp       val      # load local pointer
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := %sp + (val*4);
@@ -150,7 +150,7 @@ mac              # multiply accumulate
 mul              # multiply
     #OP2("*");
     *32* %Areg := %Breg * %Areg
-    
+
     *32* %Breg := %Creg;
 nfix       val      # negative prefix
     _ ;
@@ -163,7 +163,7 @@ opr        val      # operate
 orq               # or
     #OP2("|");
     *32* %Areg := %Breg | %Areg
-    
+
     *32* %Breg := %Creg;
 order            # order
     _ ;
@@ -188,12 +188,12 @@ sbinc            # store byte and increment
 shl              # shift left
     #OP2("<<");
     *32* %Areg := %Breg << %Areg
-    
+
     *32* %Breg := %Creg;
 shr              # shift right
     #OP2(">>");
     *32* %Areg := %Breg >> %Areg
-    
+
     *32* %Breg := %Creg;
 signal           # signal
     _ ;
@@ -213,15 +213,15 @@ statustst        # test status register
     _ ;
 stl        val      # store local
     *32* m[%sp + (val * 4)] := %Areg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
 stnl       val      # store non-local
     *32* m[%Areg + (val * 4) ] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
 stop             # stop process
@@ -229,7 +229,7 @@ stop             # stop process
 sub              # subtract
     #OP2("-");
     *32* %Areg := %Breg - %Areg
-    
+
     *32* %Breg := %Creg;
 subc             # subtract with carry
     _ ;
@@ -248,14 +248,14 @@ wait             # wait
 wsub             # word subscript
     #OP2("*4 +");
     *32* %Areg := (%Breg * 4) + %Areg
-    
+
     *32* %Breg := %Creg;
 xbword           # sign extend byte to word
     *32* %Areg := sgnex(8,32,%Areg{8});
 xor              # exclusive or
     #OP2("^");
     *32* %Areg := %Breg ^ %Areg
-    
+
     *32* %Breg := %Creg;
 
 xsword           # sign extend sixteen to word
@@ -280,7 +280,7 @@ bitrevword          # reverse bits in word
 bsub                # byte subscript
     #OP2("+");
     *32* %Areg := %Breg + %Areg
-    
+
     *32* %Breg := %Creg;
 call    val         # call
     *32* %sp := %sp - 16
@@ -360,32 +360,32 @@ devmove             # device move
     _ ;
 devsb               # device store byte
     *8* m[%Areg] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
 devss               # device store sixteen
     *16* m[%Areg] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
 devsw               # device store word
     *32* m[%Areg] := %Breg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
 diff                # difference
     #OP2("-");
     *32* %Areg := %Breg - %Areg
-    
+
     *32* %Breg := %Creg;
 disc                # disable channel
     _ ;
@@ -396,7 +396,7 @@ dist                # disable timer
 div                 # divide
     #OP2("/");
     *32* %Areg := %Breg / %Areg
-    
+
     *32* %Breg := %Creg;
 enbc                # enable channel
     _ ;
@@ -450,7 +450,7 @@ ldiff               # long diff
     *32* %Breg := tmp@[32:32]
     *32* %Creg := -1;
 ldinf               # load infinity
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := INF;
@@ -467,7 +467,7 @@ ldpri               # load current priority
 ldshadow            # load shadow registers
     _ ;
 ldtimer             # load timer
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := 0;
@@ -487,12 +487,12 @@ ls                  # load sixteen
 lshl                # long shift left
     #OP2("<<");
     *32* %Areg := %Breg >> %Areg
-    
+
     *32* %Breg := %Creg;
 lshr                # long shift right
     #OP2(">>");
     *32* %Areg := %Breg >> %Areg
-    
+
     *32* %Breg := %Creg;
 lsub                # long subtract
     _ ;
@@ -501,7 +501,7 @@ lsum                # long sum
 lsx                 # load sixteen and sign extend
     *32* %Areg := m[%Areg]{16};
 mint                # minimum integer
-    
+
     *32* %Creg := %Breg
     *32* %Breg := %Areg
     *32* %Areg := SIGN_32_NEG;
@@ -524,7 +524,7 @@ outbyte             # output byte
 outword             # output word
     _ ;
 pop                 # pop processor stack
-    
+
     *32* %Areg := %Breg
     *32* %Breg := %Creg;
 postnormsn          # post-normalize correction of single length fp number
@@ -532,14 +532,14 @@ postnormsn          # post-normalize correction of single length fp number
 prod                # product
     #OP2("*");
     *32* %Areg := %Breg * %Areg
-    
+
     *32* %Breg := %Creg;
 reboot              # reboot
     _ ;
 rem                 # remainder
     #OP2("%");
     *32* %Areg := %Breg % %Areg
-    
+
     *32* %Breg := %Creg;
 resetch             # reset channel
     _ ;
@@ -579,7 +579,7 @@ ss                  # store sixteen
 ssub                # sixteen subscript
     #OP2("*2 +");
     *32* %Areg := (%Breg *2) + %Areg
-    
+
     *32* %Breg := %Creg;
 startp              # start process
     _ ;
@@ -638,7 +638,7 @@ wcnt                # word count
 wsubdb              # form double word subscript
     #OP2("*8 +");
     *32* %Areg := (%Breg *8) + %Areg
-    
+
     *32* %Breg := %Creg;
 xdble               # extend to double
     *32* %Creg := %Breg
