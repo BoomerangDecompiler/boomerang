@@ -64,6 +64,8 @@ list(APPEND boomerang-ssl-sources
     ssl/type/VoidType
 )
 
+add_subdirectory(parser/ssl2)
+
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-ssl-sources ".cpp")
 
 set(boomerang-sources "${boomerang-sources};${boomerang-ssl-sources}" PARENT_SCOPE)

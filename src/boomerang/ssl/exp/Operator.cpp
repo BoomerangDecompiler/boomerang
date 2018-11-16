@@ -59,7 +59,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opGtrEqUns);
         HANDLE_OPER(opNot);
         HANDLE_OPER(opLNot);
-        HANDLE_OPER(opSignExt);
         HANDLE_OPER(opBitAnd);
         HANDLE_OPER(opBitOr);
         HANDLE_OPER(opBitXor);

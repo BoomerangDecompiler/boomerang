@@ -92,6 +92,7 @@ else () # GCC / Clang
         )
     endif ()
 
+    BOOMERANG_ADD_COMPILE_FLAGS(-Wno-error=zero-as-null-pointer-constant)
 
     # Other warnings
 #    BOOMERANG_ADD_COMPILE_FLAGS(-Wcast-qual)

@@ -434,25 +434,25 @@ ALLSZ := { "Breg8rm8",   "Brm8reg8",   "Brm8rm8",
 STRS := { "CMPS", "LODS", "MOVS", "SCAS", "STOS" };
 
 # String instructions, repeated
-STRS_R := REPS STRS;
+STRS_R := REPS . STRS;
 
 # String instructions, optionally repeated
-STRS_OR := OREPS STRS;
+STRS_OR := OREPS . STRS;
 
-STRFL :=       { "CMPS", "SCAS" };                  # Update flags
-STRNF :=       { "LODS", "MOVS", "STOS" };          # No update flags
-STRSI := OREPS { "CMPS", "LODS", "MOVS" };          # Update esi
-STRDI := OREPS { "CMPS", "MOVS", "SCAS", "STOS" };  # Update edi
-STRFL_OR := OREPS STRFL;                            # Optionally repeated; flags
+STRFL    :=         { "CMPS", "SCAS" };                  # Update flags
+STRNF    :=         { "LODS", "MOVS", "STOS" };          # No update flags
+STRSI    := OREPS . { "CMPS", "LODS", "MOVS" };          # Update esi
+STRDI    := OREPS . { "CMPS", "MOVS", "SCAS", "STOS" };  # Update edi
+STRFL_OR := OREPS . STRFL;                               # Optionally repeated; flags
 
-CMPS_OR := OREPS CMPS;      # Compare with optional repeat
-LODS_OR := OREPS LODS;      # Load with optional repeat
-MOVS_OR := OREPS MOVS;      # Move with optional repeat
-SCAS_OR := OREPS SCAS;      # Scan with optional repeat
-STOS_OR := OREPS STOS;      # Store with optional repeat
+CMPS_OR := OREPS . CMPS;      # Compare with optional repeat
+LODS_OR := OREPS . LODS;      # Load with optional repeat
+MOVS_OR := OREPS . MOVS;      # Move with optional repeat
+SCAS_OR := OREPS . SCAS;      # Scan with optional repeat
+STOS_OR := OREPS . STOS;      # Store with optional repeat
 
 # All repeated string instructions
-STRS_R[X]ALLSZ[Y] dest, src                 *1* %SKIP := (%ecx = 0);
+STRS_R[X] . ALLSZ[Y] dest, src              *1* %SKIP := (%ecx = 0);
 
 CMPS_OR[X].B.reg8.rm8 dest, src             *8*  tmpb := dest{8}  - src{8};
 CMPS_OR[X].B.rm8.reg8 dest, src             *8*  tmpb := dest{8}  - src{8};
@@ -538,16 +538,16 @@ STRDI[IDX].D.rm32.reg32 dest, src           *32* %edi := %edi + [%DF = 0?4:-4];
 STRDI[IDX].D.rm32.rm32 dest, src            *32* %edi := %edi + [%DF = 0?4:-4];
 
 # All repeated instructions decrement %ecx
-STRS_R[X]ALLSZ[Y] dest, src                 *32* %ecx := %ecx - 1;
+STRS_R[X] . ALLSZ[Y] dest, src              *32* %ecx := %ecx - 1;
 
 # Do the repeat logic
-REPIFZ := REP STRFL;
-REPIFNZ := REPNE STRFL;
-REPALL := REPS STRNF;
+REPIFZ  := REP   . STRFL;
+REPIFNZ := REPNE . STRFL;
+REPALL  := REPS  . STRNF;
 
-REPIFZ[X]ALLSZ[Y]  dest, src                *1* %RPT := %ZF;
-REPIFNZ[X]ALLSZ[Y] dest, src                *1* %RPT := ~%ZF;
-REPALL[X]ALLSZ[Y]  dest, src                *1* %RPT := 1;
+REPIFZ[X]  . ALLSZ[Y] dest, src             *1* %RPT := %ZF;
+REPIFNZ[X] . ALLSZ[Y] dest, src             *1* %RPT := ~%ZF;
+REPALL[X]  . ALLSZ[Y] dest, src             *1* %RPT := 1;
 
 
 #

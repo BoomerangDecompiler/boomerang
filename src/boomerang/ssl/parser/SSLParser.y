@@ -941,7 +941,6 @@ exp_term:
 
 exp:
                 exp S_E {
-                        $$ = new Unary(opSignExt, $1);
                 }
 
                 // "%prec CAST_OP" just says that this operator has the precedence of the dummy terminal CAST_OP

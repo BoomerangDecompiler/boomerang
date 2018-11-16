@@ -63,7 +63,6 @@ enum OPER
     opGtrEqUns,   ///< Logical >= (unsigned)
     opNot,        ///< Bitwise inversion
     opLNot,       ///< Logical not
-    opSignExt,    ///< Sign extend
     opBitAnd,     ///< Bitwise and
     opBitOr,      ///< Bitwise or
     opBitXor,     ///< Bitwise xor

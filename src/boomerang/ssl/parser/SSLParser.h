@@ -180,7 +180,7 @@ protected:
     /*
      * maps index names to instruction name-elements
      */
-    std::map<QString, InsNameElem *> indexrefmap;
+    std::map<QString, std::shared_ptr<InsNameElem>> indexrefmap;
 
     /*
      * Maps table names to Table's.

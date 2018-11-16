@@ -1574,8 +1574,6 @@ SSLParser::
         break;
     }
     case 111: {
-        yyval.exp = Unary::get(opSignExt, yyvsp[-1].exp);
-        ;
         break;
     }
     case 112: {
