@@ -169,9 +169,9 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
              *                                Const        opList
              *                      "LOGICALFLAGS8"        /    \
              *                                      opBitAnd    opNil
-             *                                           /        \
-             *                                 opFlagCall        opIntConst
-             *                                  /        \            mask
+             *                                        /     \
+             *                                 opFlagCall  opIntConst
+             *                                  /        \         mask
              *                              Const        opList
              *                          "SETFFLAGS"      /    \
              *                                          P1    opList
@@ -199,8 +199,15 @@ bool condToRelational(SharedExp &condExp, BranchType jtCond)
                 }
             }
 
-            SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
-            if (!at_opFlagsCall_List) {
+            if (!flagsParam->getSubExp1() || !flagsParam->getSubExp2() || (mask & ~0x41) != 0) {
+                LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
+                return false;
+            }
+
+            const SharedExp at_opFlagsCall_List = flagsParam->getSubExp1()->getSubExp2();
+            if (!at_opFlagsCall_List || !at_opFlagsCall_List->getSubExp1() ||
+                !at_opFlagsCall_List->getSubExp2() ||
+                !at_opFlagsCall_List->getSubExp2()->getSubExp1()) {
                 LOG_WARN("Unhandled pentium branch if parity with condExp = %1", condExp);
                 return false;
             }
