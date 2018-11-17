@@ -205,7 +205,7 @@ exp:
   | exp RRC exp         { $$ = Binary::get(opRotateRC,  $1, $3); }
   | exp BIT_OR exp      { $$ = Binary::get(opBitOr,     $1, $3); }
   | exp BIT_AND exp     { $$ = Binary::get(opBitAnd,    $1, $3); }
-  | exp XOR exp         { $$ = Binary::get(opBitOr,     $1, $3); }
+  | exp XOR exp         { $$ = Binary::get(opBitXor,    $1, $3); }
   | exp EQUAL exp       { $$ = Binary::get(opEquals,    $1, $3); }
   | exp NEQ exp         { $$ = Binary::get(opNotEqual,  $1, $3); }
   | exp LESS exp        { $$ = Binary::get(opLess,      $1, $3); }
