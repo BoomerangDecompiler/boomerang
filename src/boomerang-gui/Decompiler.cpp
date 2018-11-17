@@ -81,7 +81,6 @@ void Decompiler::loadInputFile(const QString &inputFile, const QString &outputPa
     case Machine::PALM: emit machineTypeChanged("palm"); break;
     case Machine::PPC: emit machineTypeChanged("ppc"); break;
     case Machine::ST20: emit machineTypeChanged("st20"); break;
-    case Machine::MIPS: emit machineTypeChanged("mips"); break;
     case Machine::M68K: emit machineTypeChanged("m68k"); break;
     case Machine::UNKNOWN:
     case Machine::INVALID: emit machineTypeChanged("UNKNOWN"); break;

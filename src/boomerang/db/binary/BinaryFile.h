@@ -48,7 +48,6 @@ enum class Machine : uint8_t
     PALM,
     PPC,
     ST20,
-    MIPS,
     M68K
 };
 

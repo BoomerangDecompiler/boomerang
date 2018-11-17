@@ -11,8 +11,6 @@ list(APPEND boomerang-frontend-sources
     frontend/CapstoneDecoder
     frontend/DecodeResult
     frontend/DefaultFrontEnd
-    frontend/mips/MIPSDecoder
-    frontend/mips/MIPSFrontEnd
     frontend/NJMCDecoder
     frontend/pentium/CapstoneX86Decoder
     frontend/pentium/PentiumFrontEnd
