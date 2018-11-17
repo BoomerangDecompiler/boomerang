@@ -112,6 +112,25 @@ extern SharedExp listStrToExp(std::list<std::string>* ls); // Convert a STL list
 
 %printer { yyoutput << $$; } <*>;
 %printer { yyoutput << $$.toStdString(); } <QString>;
+%printer { yyoutput << $$->toString().toStdString(); } <SharedExp>;
+%printer { yyoutput << $$->prints().toStdString(); } <Statement *>;
+%printer { yyoutput << $$->prints().toStdString(); } <Assign *>;
+%printer {
+    yyoutput << "{ ";
+    bool first = true;
+
+    for (auto &elem : *$$) {
+        if (first) {
+            first = false;
+        }
+        else {
+            yyoutput << ", ";
+        }
+        yyoutput << elem.toStdString();
+    }
+    yyoutput << " }";
+} <std::shared_ptr<std::deque<QString>>>
+
 
 %%
 %start specorasgn;
