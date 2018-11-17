@@ -1,6 +1,7 @@
 v0.5.0 (in development)
 -----------------------
 - Fixed: Crash when decoding instructions with multiple instruction prefixes in some cases.
+- Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
 - Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
 - Improved: Performance of decoding x86 instructions.
