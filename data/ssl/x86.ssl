@@ -1759,7 +1759,7 @@ FIST.rm16 dest
     *16* dest := ftoi(80, 16, %st)
 ;
 
-FIST.rm32 val
+FIST.rm32 dest
     *32* dest := ftoi(80, 32, %st)
 ;
 

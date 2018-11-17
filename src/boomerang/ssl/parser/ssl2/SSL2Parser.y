@@ -388,11 +388,14 @@ a_reglist:
   ;
 
 flagfunc_def:
-    NAME_CALL LPAREN paramlist RPAREN { drv.m_dict->m_definedParams.insert($3->begin(), $3->end()); } LBRACE rtl RBRACE {
+    NAME_CALL LPAREN paramlist RPAREN {
+        drv.m_dict->m_definedParams.insert($3->begin(), $3->end());
+    } LBRACE rtl RBRACE {
         if (drv.m_dict->m_flagFuncs.find($1) != drv.m_dict->m_flagFuncs.end()) {
             throw yy::parser::syntax_error(drv.location, "Flag function already defined.");
         }
         drv.m_dict->m_flagFuncs.insert($1);
+        drv.m_dict->m_definedParams.clear();
     }
   ;
 
@@ -593,10 +596,12 @@ exprstr_array:
 instr_def:
     instr_name {
         $1->getRefMap(drv.indexrefmap);
-    } paramlist rtl {
+    } paramlist {
         drv.m_dict->m_definedParams.insert($3->begin(), $3->end());
+    } rtl {
         // This function expands the tables and saves the expanded RTLs to the dictionary
-        drv.expandTables($1, $3, $4, drv.m_dict);
+        drv.expandTables($1, $3, $5, drv.m_dict);
+        drv.m_dict->m_definedParams.clear();
     }
   ;
 
