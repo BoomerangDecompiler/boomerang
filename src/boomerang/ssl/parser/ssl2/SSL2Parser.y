@@ -324,7 +324,7 @@ a_reglist:
         else if (drv.m_dict->m_regIDs.find($1) != drv.m_dict->m_regIDs.end()) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if (drv.m_dict->m_regInfo.find($6) != drv.m_dict->m_regInfo.end()) {
+        else if ($6 != -1 && drv.m_dict->m_regInfo.find($6) != drv.m_dict->m_regInfo.end()) {
             throw yy::parser::syntax_error(drv.location, "Register index already defined.");
         }
         else if (drv.m_dict->m_regIDs.find($8)  == drv.m_dict->m_regIDs.end() ||
@@ -349,11 +349,13 @@ a_reglist:
         }
 
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
-        drv.m_dict->m_regInfo[$6].setName($1);
-        drv.m_dict->m_regInfo[$6].setSize($3);
-        drv.m_dict->m_regInfo[$6].setMappedIndex(drv.m_dict->getRegIDByName($8));
-        drv.m_dict->m_regInfo[$6].setMappedOffset(0);
-        drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
+        if ($6 != -1) {
+            drv.m_dict->m_regInfo[$6].setName($1);
+            drv.m_dict->m_regInfo[$6].setSize($3);
+            drv.m_dict->m_regInfo[$6].setMappedIndex(drv.m_dict->getRegIDByName($8));
+            drv.m_dict->m_regInfo[$6].setMappedOffset(0);
+            drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
+        }
     }
   | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL SHARES REG_IDENT AT LBRACKET INT_LITERAL TO INT_LITERAL RBRACKET {
         if ($3 <= 0) {
@@ -362,7 +364,7 @@ a_reglist:
         else if (drv.m_dict->m_regIDs.find($1) != drv.m_dict->m_regIDs.end()) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if (drv.m_dict->m_regInfo.find($6) != drv.m_dict->m_regInfo.end()) {
+        else if ($6 != -1 && drv.m_dict->m_regInfo.find($6) != drv.m_dict->m_regInfo.end()) {
             throw yy::parser::syntax_error(drv.location, "Register index already defined.");
         }
         else if (drv.m_dict->getRegIDByName($8) == -1) {
@@ -379,11 +381,13 @@ a_reglist:
         }
 
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
-        drv.m_dict->m_regInfo[$6].setName($1);
-        drv.m_dict->m_regInfo[$6].setSize($3);
-        drv.m_dict->m_regInfo[$6].setMappedIndex(drv.m_dict->getRegIDByName($8));
-        drv.m_dict->m_regInfo[$6].setMappedOffset($11);
-        drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
+        if ($6 != -1) {
+            drv.m_dict->m_regInfo[$6].setName($1);
+            drv.m_dict->m_regInfo[$6].setSize($3);
+            drv.m_dict->m_regInfo[$6].setMappedIndex(drv.m_dict->getRegIDByName($8));
+            drv.m_dict->m_regInfo[$6].setMappedOffset($11);
+            drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
+        }
     }
   ;
 
