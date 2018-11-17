@@ -333,6 +333,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
             case cs::X86_INS_JNO: bt = BranchType::JNOF; break;
             case cs::X86_INS_JP: bt = BranchType::JPAR; break;
             case cs::X86_INS_JNP: bt = BranchType::JNPAR; break;
+            case cs::X86_INS_JCXZ: bt = BranchType::JE; break;
             case cs::X86_INS_JECXZ: bt = BranchType::JE; break; // because jmp condition is %ecx = 0
             case cs::X86_INS_LOOP: bt = BranchType::JNE; break;
             case cs::X86_INS_LOOPE: bt = BranchType::JE; break;
