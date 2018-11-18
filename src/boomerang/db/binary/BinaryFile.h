@@ -29,11 +29,9 @@ enum class LoadFmt : uint8_t
     INVALID = 0xFF,
     ELF     = 0,
     PE,
-    PAR,
     EXE,
     MACHO,
-    LX,
-    COFF
+    LX
 };
 
 /// determines which instruction set to use
