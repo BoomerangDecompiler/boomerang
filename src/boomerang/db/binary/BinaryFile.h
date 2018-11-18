@@ -45,8 +45,7 @@ enum class Machine : uint8_t
     SPARC,
     HPRISC,
     PPC,
-    ST20,
-    M68K
+    ST20
 };
 
 
