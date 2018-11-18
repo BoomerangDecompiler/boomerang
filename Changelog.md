@@ -7,6 +7,11 @@ v0.5.0 (in development)
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
+- Removed: HP SOM binary file loader.
+- Removed: Palm OS binary loader.
+- Removed: Broken MIPS support.
+- Removed: Broken M68k support.
+- Removed: Broken HP PA/RISC support.
 - Technical: Improved compilation times and memory usage while compiling.
 
 v0.4.0-alpha (2018-11-11)
