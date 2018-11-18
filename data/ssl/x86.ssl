@@ -2791,6 +2791,20 @@ POPAL
 ;
 
 
+# POPAW
+POPAW
+    *16* %ax := m[%sp + 14]
+    *16* %cx := m[%sp + 12]
+    *16* %dx := m[%sp + 10]
+    *16* %bx := m[%sp +  8]
+    # throw away sp
+    *16* %bp := m[%sp +  4]
+    *16* %si := m[%sp +  2]
+    *16* %di := m[%sp +  0]
+    *16* %sp := %sp + 16
+;
+
+
 # POPFD
 POPFD
     *32* %eflags := m[%esp + 0]
@@ -2860,6 +2874,20 @@ PUSHAL
     *16* m[%sp - 28] := %esi
     *16* m[%sp - 32] := %edi
     *16* %esp := %esp - 32
+;
+
+
+# PUSHAW
+PUSHAW
+    *16* m[%sp -  2] := %ax
+    *16* m[%sp -  4] := %cx
+    *16* m[%sp -  6] := %dx
+    *16* m[%sp -  8] := %bx
+    *16* m[%sp - 10] := %sp
+    *16* m[%sp - 12] := %bp
+    *16* m[%sp - 14] := %si
+    *16* m[%sp - 16] := %di
+    *16* %sp := %sp - 16
 ;
 
 
