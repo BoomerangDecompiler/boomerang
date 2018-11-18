@@ -77,7 +77,6 @@ void Decompiler::loadInputFile(const QString &inputFile, const QString &outputPa
     switch (m_project.getLoadedBinaryFile()->getMachine()) {
     case Machine::PENTIUM: emit machineTypeChanged("pentium"); break;
     case Machine::SPARC: emit machineTypeChanged("sparc"); break;
-    case Machine::HPRISC: emit machineTypeChanged("hprisc"); break;
     case Machine::PPC: emit machineTypeChanged("ppc"); break;
     case Machine::ST20: emit machineTypeChanged("st20"); break;
     case Machine::UNKNOWN:

@@ -33,11 +33,6 @@ BOOMERANG_ADD_LOADER(
 )
 
 BOOMERANG_ADD_LOADER(
-    NAME HpSom
-    SOURCES ${IFC_SOURCES} hpsom/HpSomBinaryLoader.cpp hpsom/HpSomBinaryLoader.h
-)
-
-BOOMERANG_ADD_LOADER(
     NAME MachO
     SOURCES ${IFC_SOURCES} machO/MachOBinaryLoader.cpp machO/MachOBinaryLoader.h machO/MachOBinaryLoader.cpp machO/macho-apple.h
 )

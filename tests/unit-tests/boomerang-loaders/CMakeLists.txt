@@ -10,7 +10,6 @@
 include(boomerang-utils)
 
 set(TESTS
-    HpSomBinaryLoaderTest
     MicroX86DisTest
 )
 

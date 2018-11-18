@@ -22,10 +22,10 @@ if (BOOMERANG_BUILD_REGRESSION_TESTS)
     )
 
     add_dependencies(check
+        boomerang-cli
         boomerang-DOS4GWLoader
         boomerang-ElfLoader
         boomerang-ExeLoader
-        boomerang-HpSomLoader
         boomerang-MachOLoader
         boomerang-Win32Loader
     )

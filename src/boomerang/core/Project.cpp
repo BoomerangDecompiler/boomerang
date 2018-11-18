@@ -259,7 +259,6 @@ IFrontEnd *Project::createFrontEnd()
         case Machine::SPARC: return new SPARCFrontEnd(binaryFile, prog);
         case Machine::PPC: return new PPCFrontEnd(binaryFile, prog);
         case Machine::ST20: return new ST20FrontEnd(binaryFile, prog);
-        case Machine::HPRISC: LOG_WARN("No frontend for HP RISC"); break;
         default: LOG_ERROR("Machine architecture not supported!"); break;
         }
     }

@@ -43,7 +43,6 @@ enum class Machine : uint8_t
     UNKNOWN = 0,
     PENTIUM,
     SPARC,
-    HPRISC,
     PPC,
     ST20
 };
