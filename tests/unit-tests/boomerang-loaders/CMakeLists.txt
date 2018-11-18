@@ -23,10 +23,6 @@ set(TESTS_WITH_WIN32
     Win32BinaryLoaderTest
 )
 
-set(TESTS_WITH_PALM
-    PalmBinaryLoaderTest
-)
-
 
 foreach(t ${TESTS})
 	BOOMERANG_ADD_TEST(
@@ -64,16 +60,3 @@ if (BOOMERANG_BUILD_LOADER_Win32)
         )
     endforeach()
 endif (BOOMERANG_BUILD_LOADER_Win32)
-
-if (BOOMERANG_BUILD_LOADER_Palm)
-    foreach(t ${TESTS_WITH_PALM})
-        BOOMERANG_ADD_TEST(
-            NAME ${t}
-            SOURCES ${t}.h ${t}.cpp
-            LIBRARIES
-                ${DEBUG_LIB}
-                boomerang
-                ${CMAKE_THREAD_LIBS_INIT}
-        )
-    endforeach()
-endif (BOOMERANG_BUILD_LOADER_Palm)

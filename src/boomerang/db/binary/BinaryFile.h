@@ -29,7 +29,6 @@ enum class LoadFmt : uint8_t
     INVALID = 0xFF,
     ELF     = 0,
     PE,
-    PALM,
     PAR,
     EXE,
     MACHO,
@@ -45,7 +44,6 @@ enum class Machine : uint8_t
     PENTIUM,
     SPARC,
     HPRISC,
-    PALM,
     PPC,
     ST20,
     M68K

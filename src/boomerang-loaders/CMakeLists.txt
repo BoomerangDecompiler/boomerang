@@ -38,11 +38,6 @@ BOOMERANG_ADD_LOADER(
 )
 
 BOOMERANG_ADD_LOADER(
-    NAME Palm
-    SOURCES ${IFC_SOURCES} palm/PalmBinaryLoader.cpp palm/PalmBinaryLoader.h palm/palmsystraps.h
-)
-
-BOOMERANG_ADD_LOADER(
     NAME MachO
     SOURCES ${IFC_SOURCES} machO/MachOBinaryLoader.cpp machO/MachOBinaryLoader.h machO/MachOBinaryLoader.cpp machO/macho-apple.h
 )

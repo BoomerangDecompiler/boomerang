@@ -734,9 +734,6 @@ Machine ElfBinaryLoader::getMachine() const
     else if (elfMachine == EM_PA_RISC) {
         return Machine::HPRISC;
     }
-    else if (elfMachine == EM_68K) {
-        return Machine::PALM; // Unlikely
-    }
     else if (elfMachine == EM_PPC) {
         return Machine::PPC;
     }

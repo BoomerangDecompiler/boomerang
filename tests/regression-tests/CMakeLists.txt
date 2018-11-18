@@ -27,7 +27,6 @@ if (BOOMERANG_BUILD_REGRESSION_TESTS)
         boomerang-ExeLoader
         boomerang-HpSomLoader
         boomerang-MachOLoader
-        boomerang-PalmLoader
         boomerang-Win32Loader
     )
 endif (BOOMERANG_BUILD_REGRESSION_TESTS)
