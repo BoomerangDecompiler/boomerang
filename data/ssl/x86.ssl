@@ -977,6 +977,11 @@ BT.rm64.reg64 src, bit
 
 
 # BTC
+BTC.reg16.imm16 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest ^ (1 << bit)
+;
+
 BTC.reg16.reg16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
