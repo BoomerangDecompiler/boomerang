@@ -350,10 +350,8 @@ void Prog::readDefaultLibraryCatalogues()
     switch (getMachine()) {
     case Machine::PENTIUM: libCatalogName = "signatures/pentium.hs"; break;
     case Machine::SPARC: libCatalogName = "signatures/sparc.hs"; break;
-    case Machine::HPRISC: libCatalogName = "signatures/parisc.hs"; break;
     case Machine::PPC: libCatalogName = "signatures/ppc.hs"; break;
     case Machine::ST20: libCatalogName = "signatures/st20.hs"; break;
-    case Machine::MIPS: libCatalogName = "signatures/mips.hs"; break;
     default: libCatalogName = ""; break;
     }
 

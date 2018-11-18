@@ -633,19 +633,6 @@ BOOMERANG_API OStream &operator<<(OStream &os, const SharedConstExp &exp);
 #define REG_SPARC_F0TO1 (64)
 #define REG_SPARC_F28TO31 (87)
 
-// mips
-#define REG_MIPS_ZERO (0)
-#define REG_MIPS_AT (1)
-#define REG_MIPS_V0 (2)
-#define REG_MIPS_V1 (3)
-
-#define REG_MIPS_T0 (8)
-
-#define REG_MIPS_SP (29)
-#define REG_MIPS_FP (30)
-#define REG_MIPS_RA (31)
-#define REG_MIPS_F0 (32)
-
 
 // PPC
 #define REG_PPC_SP (1)

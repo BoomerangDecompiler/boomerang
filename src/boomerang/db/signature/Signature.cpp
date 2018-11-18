@@ -12,7 +12,6 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/signature/MIPSSignature.h"
 #include "boomerang/db/signature/PPCSignature.h"
 #include "boomerang/db/signature/PentiumSignature.h"
 #include "boomerang/db/signature/SPARCSignature.h"
@@ -410,8 +409,6 @@ std::shared_ptr<Signature> Signature::instantiate(Machine machine, CallConv cc, 
     case Machine::PPC: return std::make_shared<CallingConvention::StdC::PPCSignature>(name);
 
     case Machine::ST20: return std::make_shared<CallingConvention::StdC::ST20Signature>(name);
-
-    case Machine::MIPS: return std::make_shared<CallingConvention::StdC::MIPSSignature>(name);
 
     // insert other conventions here
     default:

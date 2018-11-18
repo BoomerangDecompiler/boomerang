@@ -24,12 +24,6 @@ regression_tests = [
     "elf32-ppc/minmax",
     "elf32-ppc/switch",
     "elf/hello-clang4-dynamic",
-    "mips/bcd",
-    "mipsel/bcd",
-    "mipsel/rain",
-    "mipsel/worms",
-    "mips/rain",
-    "mips/worms",
     "OSX/banner",
     "OSX/branch",
     "OSX/condcodexform",
@@ -296,10 +290,6 @@ smoke_tests = [
 # These files are disabled explicitly because decompilation fails for them.
 disabled_tests = [
     "elf/hello-clang4-static",
-    "hppa/hello",
-    "m68k/bcd",
-    "m68k/rain",
-    "m68k/worms",
     "mc68328/Starter.prc",
     "OSX/o4/banner",
     "OSX/o4/condcodexform",

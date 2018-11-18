@@ -731,20 +731,11 @@ Machine ElfBinaryLoader::getMachine() const
     else if (elfMachine == EM_386) {
         return Machine::PENTIUM;
     }
-    else if (elfMachine == EM_PA_RISC) {
-        return Machine::HPRISC;
-    }
-    else if (elfMachine == EM_68K) {
-        return Machine::PALM; // Unlikely
-    }
     else if (elfMachine == EM_PPC) {
         return Machine::PPC;
     }
     else if (elfMachine == EM_ST20) {
         return Machine::ST20;
-    }
-    else if (elfMachine == EM_MIPS) {
-        return Machine::MIPS;
     }
     else if (elfMachine == EM_AMD64) {
         LOG_ERROR("The AMD x86-64 architecture is not supported yet.");

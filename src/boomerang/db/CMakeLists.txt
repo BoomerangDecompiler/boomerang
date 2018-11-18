@@ -32,7 +32,6 @@ list(APPEND boomerang-db-sources
     db/proc/UserProc
 
     db/signature/CustomSignature
-    db/signature/MIPSSignature
     db/signature/Signature
     db/signature/Parameter
     db/signature/Return

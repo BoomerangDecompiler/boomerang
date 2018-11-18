@@ -29,12 +29,9 @@ enum class LoadFmt : uint8_t
     INVALID = 0xFF,
     ELF     = 0,
     PE,
-    PALM,
-    PAR,
     EXE,
     MACHO,
-    LX,
-    COFF
+    LX
 };
 
 /// determines which instruction set to use
@@ -44,12 +41,8 @@ enum class Machine : uint8_t
     UNKNOWN = 0,
     PENTIUM,
     SPARC,
-    HPRISC,
-    PALM,
     PPC,
-    ST20,
-    MIPS,
-    M68K
+    ST20
 };
 
 
