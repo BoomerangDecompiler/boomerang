@@ -49,10 +49,13 @@ INTEGER %ch[8]  -> 13 SHARES %cx@[8..15];
 INTEGER %dh[8]  -> 14 SHARES %dx@[8..15];
 INTEGER %bh[8]  -> 15 SHARES %bx@[8..15];
 
-INTEGER %es[8]  -> 16;
-INTEGER %cs[8]  -> 17;
-INTEGER %ss[8]  -> 18;
-INTEGER %ds[8]  -> 19;
+INTEGER %ss[16] -> 16;
+INTEGER %cs[16] -> 17;
+INTEGER %ds[16] -> 18;
+INTEGER %es[16] -> 19;
+INTEGER %fs[16] -> 20;
+INTEGER %gs[16] -> 21;
+
 INTEGER %pc[32] -> -1;
 
 # flags
@@ -2311,6 +2314,18 @@ LAHF
 ;
 
 
+# LDS
+LDS.reg16.rm32 dest, src
+    *16* %ds  := src@[16:31]
+    *16* dest := src@[0:15]
+;
+
+LDS.reg32.rm32 dest, src
+    *16* %ds  := src@[32:47]
+    *32* dest := src@[0:31]
+;
+
+
 # LEA
 LEA.reg16.rm16 dest, src
     *32* tmpaddr := addr(dest)
@@ -2334,6 +2349,42 @@ LEAVE
 ;
 
 
+# LES
+LES.reg16.rm32 dest, src
+    *16* %es  := src@[16:31]
+    *16* dest := src@[0:15]
+;
+
+LES.reg32.rm32 dest, src
+    *16* %es  := src@[32:47]
+    *32* dest := src@[0:31]
+;
+
+
+# LFS
+LFS.reg16.rm32 dest, src
+    *16* %fs  := src@[16:31]
+    *16* dest := src@[0:15]
+;
+
+LFS.reg32.rm32 dest, src
+    *16* %fs  := src@[32:47]
+    *32* dest := src@[0:31]
+;
+
+
+# LGS
+LGS.reg16.rm32 dest, src
+    *16* %gs  := src@[16:31]
+    *16* dest := src@[0:15]
+;
+
+LGS.reg32.rm32 dest, src
+    *16* %gs  := src@[32:47]
+    *32* dest := src@[0:31]
+;
+
+
 # LOOP
 LOOP.imm32 dest
     *32* %ecx := %ecx - 1
@@ -2352,6 +2403,18 @@ LOOPE.imm32 dest
 LOOPNE.imm32 dest
     *32* %ecx := %ecx - 1
     *32* %ecx ~= 0 and %ZF = 0 => %pc := dest
+;
+
+
+# LSS
+LSS.reg16.rm32 dest, src
+    *16* %ss  := src@[16:31]
+    *16* dest := src@[0:15]
+;
+
+LSS.reg32.rm32 dest, src
+    *16* %ss  := src@[32:47]
+    *32* dest := src@[0:31]
 ;
 
 
@@ -2819,7 +2882,7 @@ POPAW
 # POPF
 POPF
     *16* %flags := m[%esp + 0]
-    *32* %esp := esp + 2
+    *32* %esp := %esp + 2
 ;
 
 
