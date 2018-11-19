@@ -564,8 +564,8 @@ opstr_expr:
   ;
 
 opstr_array:
-    DQUOTE bin_oper DQUOTE            { $$.reset(new std::deque<QString>({ $2 })); }
-  | opstr_array COMMA bin_oper DQUOTE { $1->push_back($3); }
+    DQUOTE bin_oper DQUOTE                   { $$.reset(new std::deque<QString>({ $2 })); }
+  | opstr_array COMMA DQUOTE bin_oper DQUOTE { $1->push_back($4); $$ = std::move($1); }
   ;
 
 bin_oper:
