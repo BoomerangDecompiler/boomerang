@@ -3220,85 +3220,85 @@ SAHF
 # SAR
 SAR.reg8.imm8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >>A src
+    *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
 ;
 
 SAR.reg8.reg8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >>A src
+    *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
 ;
 
 SAR.reg16.imm16 dest, src
     *16* tmph := dest
-    *16* dest := dest >>A src
+    *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
 ;
 
 SAR.reg16.reg8 dest, src
     *16* tmph := dest
-    *16* dest := dest >>A src
+    *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
 ;
 
 SAR.reg32.imm32 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >>A src
+    *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
 ;
 
 SAR.reg32.reg8 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >>A src
+    *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
 ;
 
 SAR.rm8.imm8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >>A src
+    *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
 ;
 
 SAR.rm8.reg8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >>A src
+    *8* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmpb, src)
 ;
 
 SAR.rm16.imm8 dest, src
     *16* tmph := dest
-    *16* dest := dest >>A src
+    *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
 ;
 
 SAR.rm16.imm16 dest, src
     *16* tmph := dest
-    *16* dest := dest >>A src
+    *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
 ;
 
 SAR.rm16.reg8 dest, src
     *16* tmph := dest
-    *16* dest := dest >>A src
+    *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
 ;
 
 SAR.rm32.imm8 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >>A src
+    *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
 ;
 
 SAR.rm32.imm32 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >>A src
+    *32* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
 ;
 
 SAR.rm64.imm8 dest, src
     *64* tmp1 := dest
-    *64* dest := dest >>A src
+    *64* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmp1, src)
 ;
 
@@ -3469,73 +3469,73 @@ SETO.rm8   dest         *8* dest := %OF;
 # SHL
 SHL.reg8.imm8 dest, src
     *8* tmpb := dest
-    *8* dest := dest << src
+    *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
 ;
 
 SHL.reg8.reg8 dest, src
     *8* tmpb := dest
-    *8* dest := dest << src
+    *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
 ;
 
 SHL.reg16.reg8 dest, src
     *16* tmph := dest
-    *16* dest := dest << src
+    *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
 ;
 
 SHL.reg16.imm16 dest, src
     *16* tmph := dest
-    *16* dest := dest << src
+    *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
 ;
 
 SHL.reg32.imm32 dest, src
     *32* tmp1 := dest
-    *32* dest := dest << src
+    *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
 ;
 
 SHL.reg32.reg8 dest, src
     *32* tmp1 := dest
-    *32* dest := dest << src
+    *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
 ;
 
 SHL.rm8.imm8 dest, src
     *8* tmpb := dest
-    *8* dest := dest << src
+    *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
 ;
 
 SHL.rm8.reg8 dest, src
     *8* tmpb := dest
-    *8* dest := dest << src
+    *8* dest := dest << (src & 0x1F)
     SALFLAGS8(dest, tmpb, src)
 ;
 
 SHL.rm16.reg8 dest, src
     *16* tmph := dest
-    *16* dest := dest << src
+    *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
 ;
 
 SHL.rm16.imm16 dest, src
     *16* tmph := dest
-    *16* dest := dest << src
+    *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
 ;
 
 SHL.rm32.reg8 dest, src
     *32* tmp1 := dest
-    *32* dest := dest << src
+    *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
 ;
 
 SHL.rm32.imm32 dest, src
     *32* tmp1 := dest
-    *32* dest := dest << src
+    *32* dest := dest << (src & 0x1F)
     SALFLAGS32(dest, tmp1, src)
 ;
 
@@ -3569,67 +3569,67 @@ SHLD.reg32.reg32.reg8 dest, src, count
 # SHR
 SHR.reg8.imm8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
 ;
 
 SHR.reg8.reg8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
 ;
 
 SHR.reg16.imm16 dest, src
     *8* tmph := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
 ;
 
 SHR.reg16.reg8 dest, src
     *8* tmph := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
 ;
 
 SHR.reg32.imm32 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >> src
+    *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
 ;
 
 SHR.reg32.reg8 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >> src
+    *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
 ;
 
 SHR.rm8.imm8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
 ;
 
 SHR.rm8.reg8 dest, src
     *8* tmpb := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS8(dest, tmpb, src)
 ;
 
 SHR.rm16.imm16 dest, src
     *8* tmph := dest
-    *8* dest := dest >> src
+    *8* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
 ;
 
 SHR.rm32.reg8 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >> src
+    *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
 ;
 
 SHR.rm32.imm32 dest, src
     *32* tmp1 := dest
-    *32* dest := dest >> src
+    *32* dest := dest >> (src & 0x1F)
     SHRFLAGS32(dest, tmp1, src)
 ;
 
