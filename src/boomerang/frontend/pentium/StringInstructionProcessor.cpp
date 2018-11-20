@@ -157,6 +157,7 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
         succ->removePredecessor(bb);
     }
 
+    const bool entryBBNeedsUpdate = !haveA && bb == m_proc->getCFG()->getEntryBB();
     m_proc->getCFG()->removeBB(bb);
 
     BasicBlock *skipBB = m_proc->getCFG()->createBB(BBType::Twoway, std::move(skipBBRTLs));
@@ -185,6 +186,10 @@ BasicBlock *StringInstructionProcessor::splitForBranch(BasicBlock *bb, RTL *stri
     m_proc->getCFG()->addEdge(skipBB, rptBB);
     m_proc->getCFG()->addEdge(rptBB, bBB);
     m_proc->getCFG()->addEdge(rptBB, rptBB);
+
+    if (entryBBNeedsUpdate) {
+        m_proc->getCFG()->setEntryAndExitBB(skipBB);
+    }
 
     return haveB ? bBB : rptBB;
 }
