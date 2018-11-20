@@ -138,6 +138,12 @@ private:
     /// Returns nullptr on failure.
     UserProc *createFunctionForEntryPoint(Address entryAddr, const QString &functionType);
 
+    /**
+     * Get the address of the destination of a library thunk.
+     * Returns Address::INVALID if the call is not a library thunk or an error occurred.
+     */
+    Address getAddrOfLibraryThunk(CallStatement *call, UserProc *proc);
+
 protected:
     std::unique_ptr<IDecoder> m_decoder;
     BinaryFile *m_binaryFile;

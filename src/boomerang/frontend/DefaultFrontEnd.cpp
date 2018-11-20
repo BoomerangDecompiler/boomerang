@@ -499,66 +499,28 @@ bool DefaultFrontEnd::processProc(UserProc *proc, Address addr)
                         }
                     }
 
-                    // Is the called function a thunk calling a library function?
-                    // A "thunk" is a function which only consists of: "GOTO library_function"
-                    if (call && (call->getFixedDest() != Address::INVALID)) {
-                        // Get the address of the called function.
-                        Address callAddr = call->getFixedDest();
+                    Address functionAddr = getAddrOfLibraryThunk(call, proc);
+                    if (functionAddr != Address::INVALID) {
+                        // Yes, it's a library function. Look up its name.
+                        QString name = m_program->getBinaryFile()
+                                           ->getSymbols()
+                                           ->findSymbolByAddress(functionAddr)
+                                           ->getName();
 
-                        // It should not be in the PLT either, but getLimitTextHigh() takes this
-                        // into account
-                        if (Util::inRange(
-                                callAddr, m_program->getBinaryFile()->getImage()->getLimitTextLow(),
-                                m_program->getBinaryFile()->getImage()->getLimitTextHigh())) {
-                            DecodeResult decoded;
+                        // Assign the proc to the call
+                        Function *p = proc->getProg()->getOrCreateLibraryProc(name);
 
-                            // Decode it.
-                            if (decodeSingleInstruction(callAddr, decoded) &&
-                                !decoded.rtl->empty()) {
-                                // Decoded successfully. Create a Statement from it.
-                                Statement *firstStmt = decoded.rtl->front();
+                        if (call->getDestProc()) {
+                            // prevent unnecessary __imp procs
+                            m_program->removeFunction(call->getDestProc()->getName());
+                        }
 
-                                if (firstStmt) {
-                                    firstStmt->setProc(proc);
-                                    firstStmt->simplify();
+                        call->setDestProc(p);
+                        call->setIsComputed(false);
+                        call->setDest(Location::memOf(Const::get(functionAddr)));
 
-                                    GotoStatement *jmpStatement = dynamic_cast<GotoStatement *>(
-                                        firstStmt);
-
-                                    // This is a direct jump (x86 opcode FF 25)
-                                    // The imported function is at the jump destination.
-                                    if (jmpStatement &&
-                                        refersToImportedFunction(jmpStatement->getDest())) {
-                                        // Yes, it's a library function. Look up it's name.
-                                        Address functionAddr = jmpStatement->getDest()
-                                                                   ->access<Const, 1>()
-                                                                   ->getAddr();
-
-                                        QString name = m_program->getBinaryFile()
-                                                           ->getSymbols()
-                                                           ->findSymbolByAddress(functionAddr)
-                                                           ->getName();
-                                        // Assign the proc to the call
-                                        Function *p = proc->getProg()->getOrCreateLibraryProc(name);
-
-                                        if (call->getDestProc()) {
-                                            // prevent unnecessary __imp procs
-                                            m_program->removeFunction(
-                                                call->getDestProc()->getName());
-                                        }
-
-                                        call->setDestProc(p);
-                                        call->setIsComputed(false);
-                                        call->setDest(Location::memOf(Const::get(functionAddr)));
-
-                                        if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
-                                            sequentialDecode = false;
-                                        }
-                                    }
-                                }
-                            }
-
-                            decoded.rtl.reset();
+                        if (p->isNoReturn() || isNoReturnCallDest(p->getName())) {
+                            sequentialDecode = false;
                         }
                     }
 
@@ -1056,4 +1018,55 @@ UserProc *DefaultFrontEnd::createFunctionForEntryPoint(Address entryAddr,
     sig->setForced(true);
     func->setSignature(sig);
     return static_cast<UserProc *>(func);
+}
+
+
+Address DefaultFrontEnd::getAddrOfLibraryThunk(CallStatement *call, UserProc *proc)
+{
+    if (!call || call->getFixedDest() == Address::INVALID) {
+        return Address::INVALID;
+    }
+
+    Address callAddr         = call->getFixedDest();
+    const BinaryImage *image = m_program->getBinaryFile()->getImage();
+    if (!Util::inRange(callAddr, image->getLimitTextLow(), image->getLimitTextHigh())) {
+        return Address::INVALID;
+    }
+
+    DecodeResult decoded;
+    if (!decodeSingleInstruction(callAddr, decoded)) {
+        return Address::INVALID;
+    }
+
+    // Make sure to re-decode the instruction as often as necessary, but throw away the results.
+    // Otherwise this will cause problems e.g. with functions beginning with BSF/BSR.
+    if (decoded.reDecode) {
+        DecodeResult dummy;
+        do {
+            decodeSingleInstruction(callAddr, dummy);
+            dummy.rtl.reset();
+        } while (dummy.reDecode);
+    }
+
+    if (decoded.rtl->empty()) {
+        decoded.rtl.reset();
+        return Address::INVALID;
+    }
+
+    Statement *firstStmt = decoded.rtl->front();
+    if (!firstStmt) {
+        decoded.rtl.reset();
+        return Address::INVALID;
+    }
+
+    firstStmt->setProc(proc);
+    firstStmt->simplify();
+
+    GotoStatement *jmpStmt = dynamic_cast<GotoStatement *>(firstStmt);
+    if (!jmpStmt || !refersToImportedFunction(jmpStmt->getDest())) {
+        decoded.rtl.reset();
+        return Address::INVALID;
+    }
+
+    return jmpStmt->getDest()->access<Const, 1>()->getAddr();
 }
