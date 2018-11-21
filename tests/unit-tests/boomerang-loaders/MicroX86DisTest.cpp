@@ -15,7 +15,7 @@
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang-loaders/microX86dis.c"
+#include "boomerang-plugins/loader/microX86dis.c"
 
 
 // The below lengths were derived from a quick and dirty program (called

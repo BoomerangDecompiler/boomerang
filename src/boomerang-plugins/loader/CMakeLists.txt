@@ -24,12 +24,12 @@ BOOMERANG_ADD_LOADER(
 
 BOOMERANG_ADD_LOADER(
     NAME Exe
-    SOURCES ${IFC_SOURCES} exe/dos/ExeBinaryLoader.cpp exe/dos/ExeBinaryLoader.h
+    SOURCES ${IFC_SOURCES} exe/ExeBinaryLoader.cpp exe/ExeBinaryLoader.h
 )
 
 BOOMERANG_ADD_LOADER(
     NAME DOS4GW
-    SOURCES ${IFC_SOURCES} exe/dos4gw/DOS4GWBinaryLoader.cpp exe/dos4gw/DOS4GWBinaryLoader.h microX86dis.c
+    SOURCES ${IFC_SOURCES} dos4gw/DOS4GWBinaryLoader.cpp dos4gw/DOS4GWBinaryLoader.h microX86dis.c
 )
 
 BOOMERANG_ADD_LOADER(
@@ -40,13 +40,13 @@ BOOMERANG_ADD_LOADER(
 if (MSVC)
     BOOMERANG_ADD_LOADER(
         NAME Win32
-        SOURCES ${IFC_SOURCES} exe/pe/Win32BinaryLoader.cpp exe/pe/Win32BinaryLoader.h microX86dis.c
+        SOURCES ${IFC_SOURCES} pe/Win32BinaryLoader.cpp pe/Win32BinaryLoader.h microX86dis.c
         LIBRARIES Dbghelp.lib
     )
 else ()
     BOOMERANG_ADD_LOADER(
         NAME Win32
-        SOURCES ${IFC_SOURCES} exe/pe/Win32BinaryLoader.cpp exe/pe/Win32BinaryLoader.h microX86dis.c
+        SOURCES ${IFC_SOURCES} pe/Win32BinaryLoader.cpp pe/Win32BinaryLoader.h microX86dis.c
     )
 endif (MSVC)
 
