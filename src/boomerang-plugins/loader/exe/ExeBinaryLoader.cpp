@@ -287,4 +287,4 @@ int ExeBinaryLoader::canLoad(QIODevice &fl) const
 
 
 BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, ExeBinaryLoader, "DOS Exe loader plugin",
-                        BOOMERANG_VERSION, "Boomerang developers");
+                        BOOMERANG_VERSION, "Boomerang developers")

@@ -41,7 +41,7 @@ bool PluginManager::loadPlugin(const QString &path)
 }
 
 
-bool PluginManager::loadPluginsFromDir(const QString &dir)
+bool PluginManager::loadPluginsFromDir(const QString &dir, int depth)
 {
     QDir pluginsDir(dir);
     if (!pluginsDir.exists()) {
@@ -59,14 +59,11 @@ bool PluginManager::loadPluginsFromDir(const QString &dir)
         loadPlugin(sofilename);
     }
 
-    if (getPluginsByType(PluginType::FileLoader).empty()) {
-        LOG_ERROR("No loader plugins found, unable to load any binaries.");
-    }
-    else {
-        LOG_MSG("Loaded plugins:");
-        for (const Plugin *plugin : getPluginsByType(PluginType::FileLoader)) {
-            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
-                    plugin->getInfo()->author);
+    if (depth == -1 || depth-- != 0) {
+        for (QString subdir : pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+            if (!loadPluginsFromDir(pluginsDir.absoluteFilePath(subdir))) {
+                return false;
+            }
         }
     }
 

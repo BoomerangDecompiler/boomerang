@@ -10,8 +10,9 @@
 #pragma once
 
 
-#include "boomerang/codegen/CodeWriter.h"
-#include "boomerang/codegen/ControlFlowAnalyzer.h"
+#include "CodeWriter.h"
+#include "ControlFlowAnalyzer.h"
+
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Address.h"

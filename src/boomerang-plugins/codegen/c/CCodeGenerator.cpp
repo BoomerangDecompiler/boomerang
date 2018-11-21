@@ -16,7 +16,6 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
@@ -115,8 +114,6 @@ void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *p
             if (!all_procedures && (proc != _proc)) {
                 continue;
             }
-
-            CFGCompressor().compressCFG(_proc->getCFG());
 
             generateCode(_proc);
             print(module.get());
@@ -2545,3 +2542,6 @@ bool CCodeGenerator::isGenerated(const BasicBlock *bb) const
 {
     return m_generatedBBs.find(bb) != m_generatedBBs.end();
 }
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::CodeGenerator, CCodeGenerator, "C Code Generator plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

@@ -23,5 +23,5 @@ if (BOOMERANG_BUILD_GUI)
 endif (BOOMERANG_BUILD_GUI)
 
 # plugins
+add_subdirectory(boomerang-plugins/codegen)
 add_subdirectory(boomerang-plugins/loader)
-

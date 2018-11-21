@@ -20,7 +20,12 @@ public:
 
 public:
     bool loadPlugin(const QString &path);
-    bool loadPluginsFromDir(const QString &dir);
+
+    /// \param depth
+    ///     < 0: recurse infinitely
+    ///       0: only this directory
+    ///     > 0: only this number of subdirectory levels
+    bool loadPluginsFromDir(const QString &dir, int depth = 0);
 
     void unloadPlugins();
 

@@ -9,13 +9,13 @@
 #pragma endregion License
 #include "MicroX86DisTest.h"
 
-
-#include <QDebug>
+#include "boomerang-plugins/loader/microX86dis.c"
 
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang-plugins/loader/microX86dis.c"
+
+#include <QDebug>
 
 
 // The below lengths were derived from a quick and dirty program (called

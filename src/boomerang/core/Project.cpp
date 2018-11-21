@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Project.h"
 
-#include "boomerang/codegen/CCodeGenerator.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/core/Watcher.h"
 #include "boomerang/db/Prog.h"
@@ -29,7 +28,6 @@ Project::Project()
     : m_settings(new Settings())
     , m_pluginManager(new PluginManager())
     , m_typeRecovery(new DFATypeRecovery())
-    , m_codeGenerator(new CCodeGenerator())
 {
 }
 
@@ -225,7 +223,11 @@ bool Project::generateCode(Module *module)
     }
 
     LOG_MSG("Generating code...");
-    m_codeGenerator->generateCode(getProg(), module);
+    for (auto &plugin : m_pluginManager->getPluginsByType(PluginType::CodeGenerator)) {
+        ICodeGenerator *gen = plugin->getIfc<ICodeGenerator>();
+        gen->generateCode(getProg(), module);
+    }
+
     return true;
 }
 
@@ -322,12 +324,27 @@ void Project::loadPlugins()
     LOG_MSG("Loading plugins...");
 
     QDir pluginsDir = getSettings()->getPluginDirectory();
-    if (!pluginsDir.exists() || !pluginsDir.cd("loader")) {
+    if (!pluginsDir.exists()) {
         LOG_ERROR("Cannot open loader plugin directory '%1'!", pluginsDir.absolutePath());
         return;
     }
 
-    m_pluginManager->loadPluginsFromDir(pluginsDir.absolutePath());
+    m_pluginManager->loadPluginsFromDir(pluginsDir.absolutePath(), 1);
+
+    if (m_pluginManager->getPluginsByType(PluginType::FileLoader).empty()) {
+        LOG_ERROR("No loader plugins found, unable to load any binaries.");
+    }
+    else {
+        LOG_MSG("Loaded plugins:");
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::FileLoader)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::CodeGenerator)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+    }
 }
 
 
