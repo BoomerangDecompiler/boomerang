@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "DOS4GWBinaryLoader.h"
 
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -425,5 +426,5 @@ DWord DOS4GWBinaryLoader::getDelta()
 }
 
 
-BOOMERANG_LOADER_PLUGIN(DOS4GWBinaryLoader, "DOS4GW loader plugin", BOOMERANG_VERSION,
-                        "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, DOS4GWBinaryLoader, "DOS4GW loader plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

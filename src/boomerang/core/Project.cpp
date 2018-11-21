@@ -27,6 +27,7 @@
 
 Project::Project()
     : m_settings(new Settings())
+    , m_pluginManager(new PluginManager())
     , m_typeRecovery(new DFATypeRecovery())
     , m_codeGenerator(new CCodeGenerator())
 {
@@ -326,33 +327,7 @@ void Project::loadPlugins()
         return;
     }
 
-    for (QString fileName : pluginsDir.entryList(QDir::Files)) {
-        const QString sofilename = pluginsDir.absoluteFilePath(fileName);
-
-#ifdef _WIN32
-        if (!sofilename.endsWith(".dll")) {
-            continue;
-        }
-#endif
-        try {
-            std::unique_ptr<LoaderPlugin> loaderPlugin(new LoaderPlugin(sofilename));
-            m_loaderPlugins.push_back(std::move(loaderPlugin));
-        }
-        catch (const char *errmsg) {
-            LOG_WARN("Unable to load plugin: %1", errmsg);
-        }
-    }
-
-    if (m_loaderPlugins.empty()) {
-        LOG_ERROR("No loader plugins found, unable to load any binaries.");
-    }
-    else {
-        LOG_MSG("Loaded plugins:");
-        for (const auto &plugin : m_loaderPlugins) {
-            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
-                    plugin->getInfo()->author);
-        }
-    }
+    m_pluginManager->loadPluginsFromDir(pluginsDir.absolutePath());
 }
 
 
@@ -495,9 +470,9 @@ IFileLoader *Project::getBestLoader(const QString &filePath) const
     int bestScore           = 0;
 
     // get the best plugin for loading this file
-    for (const std::unique_ptr<LoaderPlugin> &p : m_loaderPlugins) {
+    for (Plugin *p : m_pluginManager->getPluginsByType(PluginType::FileLoader)) {
         inputBinary.seek(0); // reset the file offset for the next plugin
-        IFileLoader *loader = p->get();
+        IFileLoader *loader = p->getIfc<IFileLoader>();
 
         int score = loader->canLoad(inputBinary);
 

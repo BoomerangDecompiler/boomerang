@@ -11,6 +11,7 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/core/plugin/PluginManager.h"
 #include "boomerang/ifc/IFileLoader.h"
 #include "boomerang/util/Address.h"
 
@@ -20,11 +21,11 @@
 
 
 class BinaryFile;
+class Function;
 class ICodeGenerator;
 class IFrontEnd;
 class ITypeRecovery;
 class IWatcher;
-class Function;
 class Module;
 class Prog;
 class Settings;
@@ -206,8 +207,7 @@ private:
     /// The watchers which are interested in this decompilation.
     std::set<IWatcher *> m_watchers;
 
-    // Plugins
-    std::vector<std::unique_ptr<LoaderPlugin>> m_loaderPlugins;
+    std::unique_ptr<PluginManager> m_pluginManager;
 
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;

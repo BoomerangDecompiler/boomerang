@@ -10,16 +10,12 @@
 #pragma once
 
 
+#include "boomerang/core/plugin/PluginHandle.h"
+#include "boomerang/core/plugin/PluginType.h"
+
 #include <QString>
 
 #include <cassert>
-
-
-enum class PluginType
-{
-    Invalid = 0,
-    Loader  = 1
-};
 
 
 struct PluginInfo
@@ -32,39 +28,7 @@ struct PluginInfo
 
 
 /**
- * Wrapper class for platform specific handles to dynamic libraries.
- */
-class PluginHandle
-{
-public:
-    typedef void *Symbol;
-
-public:
-    PluginHandle(const QString &filePath);
-    PluginHandle(const PluginHandle &other) = delete;
-    PluginHandle(PluginHandle &&other)      = default;
-
-    ~PluginHandle();
-
-    PluginHandle &operator=(const PluginHandle &other) = delete;
-    PluginHandle &operator=(PluginHandle &&other) = default;
-
-public:
-    Symbol getSymbol(const char *name) const;
-
-private:
-    void *m_handle;
-};
-
-
-/**
  * Class for managing an interface plugin.
- * Interface plugins are defined by the interface \p IFC
- *
- * General notes on creating plugins:
- *  - The main plugin class must derive from the interface class IFC.
- *    Currently supported interfaces are:
- *    - \ref IFileLoader (loader pluins)
  *
  * - The plugin must define the following functions (with extern "C" linkage):
  *   - IFC* initPlugin(): to initialize the plugin class and allocate resources etc.
@@ -73,84 +37,47 @@ private:
  *   - const PluginInfo* getInfo(): To get information about the plugin.
  *     May be called before initPlugin().
  */
-template<typename IFC, PluginType ty = PluginType::Invalid>
 class Plugin
 {
-    using PluginInitFunction   = IFC *(*)();
+    using PluginInitFunction   = void *(*)();
     using PluginDeinitFunction = void (*)();
     using PluginInfoFunction   = const PluginInfo *(*)();
 
 public:
     /// Create a plugin from a dynamic library file.
     /// \param pluginPath path to the library file.
-    explicit Plugin(const QString &pluginPath)
-        : m_pluginHandle(pluginPath)
-        , m_ifc(nullptr)
-    {
-        if (!init()) {
-            throw "Plugin initialization function not found!";
-        }
-    }
+    explicit Plugin(const QString &pluginPath);
 
     Plugin(const Plugin &other) = delete;
     Plugin(Plugin &&other)      = default;
 
-    ~Plugin()
-    {
-        deinit();
-        // library is automatically unloaded
-    }
+    ~Plugin();
 
     Plugin &operator=(const Plugin &other) = delete;
     Plugin &operator=(Plugin &&other) = default;
 
 public:
     /// Get information about the plugin.
-    const PluginInfo *getInfo() const
+    const PluginInfo *getInfo() const;
+
+    template<typename IFC>
+    IFC *getIfc()
     {
-        PluginInfoFunction infoFunction = getFunction<PluginInfoFunction>("getInfo");
-        if (!infoFunction) {
-            return nullptr;
-        }
-        else {
-            return infoFunction();
-        }
+        return static_cast<IFC *>(m_ifc);
     }
 
-    /// Get the interface pointer for this plugin.
-    inline const IFC *get() const { return m_ifc; }
-    inline IFC *get() { return m_ifc; }
-
-    inline const IFC *operator->() const { return this->get(); }
-    inline IFC *operator->() { return this->get(); }
+    template<typename IFC>
+    const IFC *getIfc() const
+    {
+        return static_cast<const IFC *>(m_ifc);
+    }
 
 private:
     /// Initialize the plugin.
-    bool init()
-    {
-        assert(m_ifc == nullptr);
-        PluginInitFunction initFunction = getFunction<PluginInitFunction>("initPlugin");
-        if (!initFunction) {
-            return false;
-        }
-
-        m_ifc = initFunction();
-        return m_ifc != nullptr;
-    }
+    bool init();
 
     /// De-initialize the plugin.
-    bool deinit()
-    {
-        assert(m_ifc != nullptr);
-        PluginDeinitFunction deinitFunction = getFunction<PluginDeinitFunction>("deinitPlugin");
-        if (!deinitFunction) {
-            return false;
-        }
-
-        deinitFunction();
-        m_ifc = nullptr;
-        return true;
-    }
+    bool deinit();
 
     /// Given a non-mangled function name (e.g. initPlugin),
     /// get the function pointer for the function exported by this plugin.
@@ -169,15 +96,23 @@ private:
 
 private:
     PluginHandle m_pluginHandle; ///< handle to the dynamic library
-    IFC *m_ifc;                  ///< Interface pointer
+    void *m_ifc;                 ///< Interface pointer (e.g. IDecoder * for decoder plugins)
 };
 
 
-/// Do not use this macro directly. Use the BOOMERANG_*_PLUGIN macros below instead.
-#define DEFINE_PLUGIN(Type, Interface, Classname, PName, PVersion, PAuthor)                        \
+/**
+ * Usage:
+ *   BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, TestLoader,
+ *                           "TestLoader Plugin", "3.1.4", "test");
+ */
+#define BOOMERANG_DEFINE_PLUGIN(Type, Classname, PName, PVersion, PAuthor)                         \
     static Classname *g_pluginInstance = nullptr;                                                  \
     extern "C"                                                                                     \
     {                                                                                              \
+        typedef PluginIfcTraits<Type>::IFC Interface;                                              \
+        static_assert(std::is_base_of<Interface, Classname>::value,                                \
+                      #Classname " must be derived from the correct plugin interface!");           \
+                                                                                                   \
         Q_DECL_EXPORT Interface *initPlugin()                                                      \
         {                                                                                          \
             if (!g_pluginInstance) {                                                               \
@@ -202,13 +137,3 @@ private:
             return &info;                                                                          \
         }                                                                                          \
     }
-
-
-/**
- * Define a plugin.
- * Usage:
- *   BOOMERANG_LOADER_PLUGIN(TestLoader, "TestLoader Plugin", "3.1.4", "test");
- */
-#define BOOMERANG_LOADER_PLUGIN(Classname, PluginName, PluginVersion, PluginAuthor)                \
-    DEFINE_PLUGIN(PluginType::Loader, IFileLoader, Classname, PluginName, PluginVersion,           \
-                  PluginAuthor)

@@ -45,7 +45,7 @@ struct objc_symtab
     uint32_t       defs[1]; /* variable size */
 };
 
-typedef struct objc_module *Module;
+// typedef struct objc_module *Module;
 
 struct objc_module
 {

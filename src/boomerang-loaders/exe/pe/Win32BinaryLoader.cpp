@@ -33,6 +33,7 @@ namespace dbghelp
 
 #include "Win32BinaryLoader.h"
 
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -1182,5 +1183,5 @@ bool Win32BinaryLoader::isLibrary() const
 }
 
 
-BOOMERANG_LOADER_PLUGIN(Win32BinaryLoader, "Win32 PE loader plugin", BOOMERANG_VERSION,
-                        "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, Win32BinaryLoader, "Win32 PE loader plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

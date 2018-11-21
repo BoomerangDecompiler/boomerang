@@ -11,6 +11,7 @@
 
 #include "ElfTypes.h"
 
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -1144,5 +1145,5 @@ int ElfBinaryLoader::canLoad(QIODevice &fl) const
 }
 
 
-BOOMERANG_LOADER_PLUGIN(ElfBinaryLoader, "ELF32 loader plugin", BOOMERANG_VERSION,
-                        "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, ElfBinaryLoader, "ELF32 loader plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

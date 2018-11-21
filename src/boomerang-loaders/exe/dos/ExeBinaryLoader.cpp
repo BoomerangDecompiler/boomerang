@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "ExeBinaryLoader.h"
 
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/ifc/IFileLoader.h"
@@ -285,5 +286,5 @@ int ExeBinaryLoader::canLoad(QIODevice &fl) const
 }
 
 
-BOOMERANG_LOADER_PLUGIN(ExeBinaryLoader, "DOS Exe loader plugin", BOOMERANG_VERSION,
-                        "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, ExeBinaryLoader, "DOS Exe loader plugin",
+                        BOOMERANG_VERSION, "Boomerang developers");

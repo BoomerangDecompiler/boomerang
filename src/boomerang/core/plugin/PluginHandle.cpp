@@ -7,7 +7,9 @@
  * WARRANTIES.
  */
 #pragma endregion License
-#include "Plugin.h"
+#include "PluginHandle.h"
+
+#include <QString>
 
 #include <cassert>
 

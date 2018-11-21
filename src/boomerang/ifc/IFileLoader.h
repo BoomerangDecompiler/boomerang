@@ -10,7 +10,6 @@
 #pragma once
 
 
-#include "boomerang/core/Plugin.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 
@@ -91,5 +90,3 @@ public:
     }
     virtual bool hasDebugInfo() const { return false; }
 };
-
-typedef Plugin<IFileLoader, PluginType::Loader> LoaderPlugin;

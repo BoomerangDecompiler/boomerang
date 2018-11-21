@@ -14,6 +14,7 @@
 #include "objc/objc-class.h"
 #include "objc/objc-runtime.h"
 
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/binary/BinaryImage.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
@@ -554,5 +555,5 @@ DWord MachOBinaryLoader::getDelta()
     return (HostAddress(base) - loaded_addr).value();
 }
 
-BOOMERANG_LOADER_PLUGIN(MachOBinaryLoader, "Mach-O executable loader plugin", BOOMERANG_VERSION,
-                        "Boomerang developers")
+BOOMERANG_DEFINE_PLUGIN(PluginType::FileLoader, MachOBinaryLoader, "Mach-O loader plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")
