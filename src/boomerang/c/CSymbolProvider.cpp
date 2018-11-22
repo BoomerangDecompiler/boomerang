@@ -23,13 +23,12 @@
 #include <QTextStream>
 
 
-CSymbolProvider::CSymbolProvider(Prog *prog)
-    : m_prog(prog)
+CSymbolProvider::CSymbolProvider()
 {
 }
 
 
-bool CSymbolProvider::readLibraryCatalog(const QString &filePath)
+bool CSymbolProvider::readLibraryCatalog(const Prog *prog, const QString &filePath)
 {
     // TODO: this is a work for generic semantics provider plugin : HeaderReader
     QFile file(filePath);
@@ -65,7 +64,7 @@ bool CSymbolProvider::readLibraryCatalog(const QString &filePath)
         }
 
         const QString sig_path = QFileInfo(filePath).absoluteDir().absoluteFilePath(sigFilePath);
-        if (!readLibrarySignatures(qPrintable(sig_path), cc)) {
+        if (!readLibrarySignatures(qPrintable(sig_path), prog, cc)) {
             return false;
         }
     }
@@ -74,10 +73,11 @@ bool CSymbolProvider::readLibraryCatalog(const QString &filePath)
 }
 
 
-bool CSymbolProvider::readLibrarySignatures(const QString &signatureFile, CallConv cc)
+bool CSymbolProvider::readLibrarySignatures(const QString &signatureFile, const Prog *prog,
+                                            CallConv cc)
 {
     AnsiCParserDriver driver;
-    if (driver.parse(signatureFile, m_prog->getMachine(), cc) != 0) {
+    if (driver.parse(signatureFile, prog->getMachine(), cc) != 0) {
         LOG_ERROR("Cannot read library signature file '%1'", signatureFile);
         return false;
     }
@@ -91,23 +91,23 @@ bool CSymbolProvider::readLibrarySignatures(const QString &signatureFile, CallCo
 }
 
 
-bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
+bool CSymbolProvider::addSymbolsFromSymbolFile(Prog *prog, const QString &fname)
 {
     AnsiCParserDriver driver;
-    const CallConv cc = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
+    const CallConv cc = prog->isWin32() ? CallConv::Pascal : CallConv::C;
 
-    if (driver.parse(fname, m_prog->getMachine(), cc) != 0) {
+    if (driver.parse(fname, prog->getMachine(), cc) != 0) {
         LOG_ERROR("Cannot read symbol file '%1': %2", fname);
         return false;
     }
 
-    Module *targetModule = m_prog->getRootModule();
+    Module *targetModule = prog->getRootModule();
 
     for (std::shared_ptr<Symbol> &sym : driver.symbols) {
         if (sym->sig) {
-            QString name = sym->sig->getName();
-            targetModule = m_prog->getOrInsertModuleForSymbol(name);
-            auto bin_sym = m_prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
+            QString name     = sym->sig->getName();
+            targetModule     = prog->getOrInsertModuleForSymbol(name);
+            auto bin_sym     = prog->getBinaryFile()->getSymbols()->findSymbolByAddress(sym->addr);
             const bool isLib = (bin_sym && bin_sym->isImportedFunction()) ||
                                // NODECODE isn't really the right modifier; perhaps we should have a
                                // LIB modifier, to specifically specify that this function obeys
@@ -124,12 +124,12 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
             QString name  = sym->name;
             SharedType ty = sym->ty;
 
-            m_prog->createGlobal(sym->addr, sym->ty, sym->name);
+            prog->createGlobal(sym->addr, sym->ty, sym->name);
         }
     }
 
     for (std::shared_ptr<SymbolRef> &ref : driver.refs) {
-        m_prog->getFrontEnd()->addRefHint(ref->addr, ref->name);
+        prog->getFrontEnd()->addRefHint(ref->addr, ref->name);
     }
 
     return true;

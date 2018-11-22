@@ -52,7 +52,7 @@
 
 Prog::Prog(const QString &name, Project *project)
     : m_name(name)
-    , m_symbolProvider(new CSymbolProvider(this))
+    , m_symbolProvider(new CSymbolProvider())
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
@@ -343,7 +343,7 @@ void Prog::readDefaultLibraryCatalogues()
     LOG_MSG("Reading library signatures...");
 
     const QDir dataDir = m_project->getSettings()->getDataDirectory();
-    m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/common.hs"));
+    m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/common.hs"));
 
     QString libCatalogName;
     switch (getMachine()) {
@@ -355,23 +355,23 @@ void Prog::readDefaultLibraryCatalogues()
     }
 
     if (!libCatalogName.isEmpty()) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath(libCatalogName));
+        m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath(libCatalogName));
     }
 
     if (isWin32()) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/win32.hs"));
+        m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/win32.hs"));
     }
 
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        m_symbolProvider->readLibraryCatalog(dataDir.absoluteFilePath("signatures/objc.hs"));
+        m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/objc.hs"));
     }
 }
 
 
 bool Prog::addSymbolsFromSymbolFile(const QString &fname)
 {
-    return m_symbolProvider->addSymbolsFromSymbolFile(fname);
+    return m_symbolProvider->addSymbolsFromSymbolFile(this, fname);
 }
 
 

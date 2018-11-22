@@ -22,23 +22,22 @@ class Prog;
 class CSymbolProvider final : public ISymbolProvider
 {
 public:
-    CSymbolProvider(Prog *prog);
+    CSymbolProvider();
     virtual ~CSymbolProvider() = default;
 
 public:
     /// \copydoc ISymbolProvider::readLibraryCatalog
-    bool readLibraryCatalog(const QString &fileName) override;
+    bool readLibraryCatalog(const Prog *prog, const QString &fileName) override;
 
     /// \copydoc ISymbolProvider::addSymbolsFromSymbolFile
-    bool addSymbolsFromSymbolFile(const QString &fileName) override;
+    bool addSymbolsFromSymbolFile(Prog *prog, const QString &fileName) override;
 
     /// \copydoc ISymbolProvider::getSignatureByName
     std::shared_ptr<Signature> getSignatureByName(const QString &functionName) const override;
 
 private:
-    bool readLibrarySignatures(const QString &signatureFile, CallConv cc);
+    bool readLibrarySignatures(const QString &signatureFile, const Prog *prog, CallConv cc);
 
 private:
-    Prog *m_prog;
     QMap<QString, std::shared_ptr<Signature>> m_librarySignatures;
 };
