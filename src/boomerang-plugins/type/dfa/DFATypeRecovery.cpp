@@ -9,6 +9,8 @@
 #pragma endregion License
 #include "DFATypeRecovery.h"
 
+#include "DFATypeAnalyzer.h"
+
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
@@ -39,7 +41,6 @@
 #include "boomerang/ssl/type/SizeType.h"
 #include "boomerang/ssl/type/UnionType.h"
 #include "boomerang/ssl/type/VoidType.h"
-#include "boomerang/type/dfa/DFATypeAnalyzer.h"
 #include "boomerang/util/Util.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/expvisitor/ExpVisitor.h"
@@ -561,3 +562,6 @@ bool DFATypeRecovery::doEllipsisProcessing(UserProc *proc)
 
     return ch;
 }
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::TypeRecovery, DFATypeRecovery, "DFA Type Recovery plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

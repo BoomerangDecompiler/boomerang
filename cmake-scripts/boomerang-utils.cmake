@@ -116,6 +116,43 @@ endfunction()
 
 
 #
+# Usage: BOOMERANG_ADD_TYPERECOVERY(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_TYPERECOVERY)
+    cmake_parse_arguments(TYPERECOVERY "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_TYPERECOVERY_${TYPERECOVERY_NAME} "Build the ${TYPERECOVERY_NAME} type recovery engine." ON)
+
+    if (BOOMERANG_BUILD_TYPERECOVERY_${TYPERECOVERY_NAME})
+        set(target_name "boomerang-${TYPERECOVERY_NAME}TypeRecovery")
+        add_library(${target_name} SHARED ${TYPERECOVERY_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${TYPERECOVERY_LIBRARIES})
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/type/
+            RUNTIME DESTINATION lib/boomerang/plugins/type/
+        )
+    endif (BOOMERANG_BUILD_TYPERECOVERY_${TYPERECOVERY_NAME})
+endfunction()
+
+
+#
 # Usage: BOOMERANG_ADD_FRONTEND(NAME <name> [ SOURCES <source files> ] [ LIBRARIES <additional libs> ])
 #
 # Note: There must be a <name>decoder.h/.cpp and a <name>frontend.h/.cpp present

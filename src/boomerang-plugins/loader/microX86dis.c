@@ -10,87 +10,87 @@
 
 
 /* clang-format off */
-#define MODRM      0x10 /*< instruction size is dependent on modrm byte */
-#define OPSIZE     0x20 /*< Add current operand size to instruction size */
-#define INVALID    0x40 /*< Invalid / not recognized instruction */
+#define INS_MODRM      0x10 /*< instruction size is dependent on modrm byte */
+#define INS_OPSIZE     0x20 /*< Add current operand size to instruction size */
+#define INS_INVALID    0x40 /*< Invalid / not recognized instruction */
 
 static const unsigned char opmap[256] =
 {
     /* Note that for X86-64, 0x40-0x47 are special escapes! */
 
-    /*          0               1                   2               3               4                   5                   6                   7 */
-    /* 00-07 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 08-0F */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  0,
-    /* 10-17 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 18-1F */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 20-27 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 28-2F */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 30-37 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 38-3F */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      2,                  OPSIZE + 1,         1,                  1,
-    /* 40-47 */ 1,              1,                  1,              1,              1,                  1,                  1,                  1,
-    /* 48-4F */ 1,              1,                  1,              1,              1,                  1,                  1,                  1,
-    /* 50-57 */ 1,              1,                  1,              1,              1,                  1,                  1,                  1,
-    /* 58-5F */ 1,              1,                  1,              1,              1,                  1,                  1,                  1,
-    /* 60-67 */ 1,              1,                  MODRM + 1,      MODRM + 1,      1,                  1,                  0,                  INVALID,
-    /* 68-6F */ OPSIZE + 1,     MODRM + OPSIZE + 1, 2,              MODRM + 2,      1 + 1,              OPSIZE + 1,         1 + 1,              OPSIZE + 1,
-    /* 70-77 */ 2,              2,                  2,              2,              2,                  2,                  2,                  2,
-    /* 78-7F */ 2,              2,                  2,              2,              2,                  2,                  2,                  2,
-    /* 80-87 */ MODRM + 1 + 1,  MODRM + OPSIZE + 1, 1 + 1,          MODRM + 1 + 1,  MODRM + 1,          MODRM + 1,          MODRM + 1,          MODRM + 1,
-    /* 88-8F */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      MODRM + 1,          MODRM + 1,          MODRM + 1,          MODRM + 1,
-    /* 90-97 */ 1,              1,                  1,              1,              1,                  1,                  1,                  1,
-    /* 98-9F */ 1,              1,                  OPSIZE + 3,     1,              1,                  1,                  1,                  1,
-    /* A0-A7 */ 2,              OPSIZE + 1,         2,              OPSIZE + 1,     1,                  1,                  1,                  1,
-    /* A8-AF */ 2,              OPSIZE + 1,         1,              1,              1,                  1,                  1,                  1,
-    /* B0-B7 */ 2,              2,                  2,              2,              2,                  2,                  2,                  2,
-    /* B8-BF */ OPSIZE + 1,     OPSIZE + 1,         OPSIZE + 1,     OPSIZE + 1,     OPSIZE + 1,         OPSIZE + 1,         OPSIZE + 1,         OPSIZE + 1,
-    /* C0-C7 */ MODRM + 2,      MODRM + 2,          3,              1,              MODRM + OPSIZE + 3, MODRM + OPSIZE + 3, MODRM + 2,          MODRM + OPSIZE + 1,
-    /* C8-CF */ 4,              1,                  3,              1,              1,                  2,                  1,                  1,
-    /* D0-D7 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      1,                  1,                  INVALID,            1,
+    /*          0                   1                           2                   3                   4                           5                           6                   7 */
+    /* 00-07 */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 08-0F */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  0,
+    /* 10-17 */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 18-1F */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 20-27 */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 28-2F */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 30-37 */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 38-3F */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      2,                          INS_OPSIZE + 1,             1,                  1,
+    /* 40-47 */ 1,                  1,                          1,                  1,                  1,                          1,                          1,                  1,
+    /* 48-4F */ 1,                  1,                          1,                  1,                  1,                          1,                          1,                  1,
+    /* 50-57 */ 1,                  1,                          1,                  1,                  1,                          1,                          1,                  1,
+    /* 58-5F */ 1,                  1,                          1,                  1,                  1,                          1,                          1,                  1,
+    /* 60-67 */ 1,                  1,                          INS_MODRM + 1,      INS_MODRM + 1,      1,                          1,                          0,                  INS_INVALID,
+    /* 68-6F */ INS_OPSIZE + 1,     INS_MODRM + INS_OPSIZE + 1, 2,                  INS_MODRM + 2,      1 + 1,                      INS_OPSIZE + 1,             1 + 1,              INS_OPSIZE + 1,
+    /* 70-77 */ 2,                  2,                          2,                  2,                  2,                          2,                          2,                  2,
+    /* 78-7F */ 2,                  2,                          2,                  2,                  2,                          2,                          2,                  2,
+    /* 80-87 */ INS_MODRM + 1 + 1,  INS_MODRM + INS_OPSIZE + 1, 1 + 1,              INS_MODRM + 1 + 1,  INS_MODRM + 1,              INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,
+    /* 88-8F */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,
+    /* 90-97 */ 1,                  1,                          1,                  1,                  1,                          1,                          1,                  1,
+    /* 98-9F */ 1,                  1,                          INS_OPSIZE + 3,     1,                  1,                          1,                          1,                  1,
+    /* A0-A7 */ 2,                  INS_OPSIZE + 1,             2,                  INS_OPSIZE + 1,     1,                          1,                          1,                  1,
+    /* A8-AF */ 2,                  INS_OPSIZE + 1,             1,                  1,                  1,                          1,                          1,                  1,
+    /* B0-B7 */ 2,                  2,                          2,                  2,                  2,                          2,                          2,                  2,
+    /* B8-BF */ INS_OPSIZE + 1,     INS_OPSIZE + 1,             INS_OPSIZE + 1,     INS_OPSIZE + 1,     INS_OPSIZE + 1,             INS_OPSIZE + 1,             INS_OPSIZE + 1,     INS_OPSIZE + 1,
+    /* C0-C7 */ INS_MODRM + 2,      INS_MODRM + 2,              3,                  1,                  INS_MODRM + INS_OPSIZE + 3, INS_MODRM + INS_OPSIZE + 3, INS_MODRM + 2,      INS_MODRM + INS_OPSIZE + 1,
+    /* C8-CF */ 4,                  1,                          3,                  1,                  1,                          2,                          1,                  1,
+    /* D0-D7 */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      1,                          1,                          INS_INVALID,        1,
 
     /* FP instructions */
-    /* D8-DF */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      MODRM + 1,          MODRM + 1,          MODRM + 1,          MODRM + 1,
-    /* E0-E7 */ 2,              2,                  2,              2,              2,                  2,                  2,                  2,
-    /* E8-EF */ OPSIZE + 1,     OPSIZE + 1,         OPSIZE + 3,     2,              1,                  1,                  1,                  1,
-    /* F0-F7 */ 1,              INVALID,            1,              1,              1,                  1,                  MODRM + 1,          MODRM + 1,
-    /* F8-FF */ 1,              1,                  1,              1,              1,                  1,                  MODRM + 1,          MODRM + 1
+    /* D8-DF */ INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,      INS_MODRM + 1,              INS_MODRM + 1,              INS_MODRM + 1,      INS_MODRM + 1,
+    /* E0-E7 */ 2,                  2,                          2,                  2,                  2,                          2,                          2,                  2,
+    /* E8-EF */ INS_OPSIZE + 1,     INS_OPSIZE + 1,             INS_OPSIZE + 3,     2,                  1,                          1,                          1,                  1,
+    /* F0-F7 */ 1,                  INS_INVALID,                1,                  1,                  1,                          1,                          INS_MODRM + 1,      INS_MODRM + 1,
+    /* F8-FF */ 1,                  1,                          1,                  1,                  1,                          1,                          INS_MODRM + 1,      INS_MODRM + 1
 };
 
 /* Secondary map for when first opcode is 0F */
 static const unsigned char op0Fmap[256] =
 {
-    /*          0               1                   2               3               4                   5                   6                   7 */
-    /* 00-07 */ MODRM + 1,      MODRM + 1,          MODRM + 1,      MODRM + 1,      INVALID,            INVALID,            2,                  INVALID,
-    /* 08-0F */ 2,              2,                  INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 10-17 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 18-1F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 20-27 */ 2,              2,                  2,              2,              2,                  INVALID,            2,                  INVALID,
-    /* 28-2F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 30-37 */ 2,              2,                  2,              INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 38-3F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 40-47 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 48-4F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 50-57 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 58-5F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 60-67 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 68-6F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 70-77 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 78-7F */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* 80-87 */ OPSIZE + 2,     OPSIZE + 2,         OPSIZE + 2,     OPSIZE + 2,     OPSIZE + 2,         OPSIZE + 2,         OPSIZE + 2,         OPSIZE + 2,
-    /* 88-8F */ OPSIZE + 2,     OPSIZE + 2,         OPSIZE + 2,     OPSIZE + 2,     OPSIZE + 2,         OPSIZE + 2,         OPSIZE + 2,         OPSIZE + 2,
-    /* 90-97 */ MODRM + 2,      MODRM + 2,          MODRM + 2,      MODRM + 2,      MODRM + 2,          MODRM + 2,          MODRM + 2,          MODRM + 2,
-    /* 98-9F */ MODRM + 2,      MODRM + 2,          MODRM + 2,      MODRM + 2,      MODRM + 2,          MODRM + 2,          MODRM + 2,          MODRM + 2,
-    /* A0-A7 */ 2,              2,                  2,              MODRM + 2,      MODRM + 3,          MODRM + 2,          INVALID,            INVALID,
-    /* A8-AF */ 2,              2,                  2,              MODRM + 2,      MODRM + 3,          MODRM + 2,          INVALID,            MODRM + 2,
-    /* B0-B7 */ MODRM + 2,      MODRM + 2,          MODRM + OPSIZE + 2, MODRM + 2,  MODRM + OPSIZE + 2, MODRM + OPSIZE + 2, MODRM + 2,          MODRM + 2,
-    /* B8-BF */ INVALID,        INVALID,            MODRM + 3,      MODRM + 2,      MODRM + 2,          MODRM + 2,          MODRM + 2,          MODRM + 2,
-    /* C0-C7 */ MODRM + 2,      MODRM + 2,          INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* C8-CF */ 2,              2,                  2,              2,              2,                  2,                  2,                  2,
-    /* D0-D7 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* D8-DF */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* E0-E7 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* E8-EF */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* F0-F7 */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID,
-    /* F8-FF */ INVALID,        INVALID,            INVALID,        INVALID,        INVALID,            INVALID,            INVALID,            INVALID
+    /*          0               1               2                           3               4                           5                           6                       7 */
+    /* 00-07 */ INS_MODRM + 1,  INS_MODRM + 1,  INS_MODRM + 1,              INS_MODRM + 1,  INS_INVALID,                INS_INVALID,                2,                      INS_INVALID,
+    /* 08-0F */ 2,              2,              INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 10-17 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 18-1F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 20-27 */ 2,              2,              2,                          2,              2,                          INS_INVALID,                2,                      INS_INVALID,
+    /* 28-2F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 30-37 */ 2,              2,              2,                          INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 38-3F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 40-47 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 48-4F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 50-57 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 58-5F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 60-67 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 68-6F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 70-77 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 78-7F */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* 80-87 */ INS_OPSIZE + 2, INS_OPSIZE + 2, INS_OPSIZE + 2,             INS_OPSIZE + 2, INS_OPSIZE + 2,             INS_OPSIZE + 2,             INS_OPSIZE + 2,         INS_OPSIZE + 2,
+    /* 88-8F */ INS_OPSIZE + 2, INS_OPSIZE + 2, INS_OPSIZE + 2,             INS_OPSIZE + 2, INS_OPSIZE + 2,             INS_OPSIZE + 2,             INS_OPSIZE + 2,         INS_OPSIZE + 2,
+    /* 90-97 */ INS_MODRM + 2,  INS_MODRM + 2,  INS_MODRM + 2,              INS_MODRM + 2,  INS_MODRM + 2,              INS_MODRM + 2,              INS_MODRM + 2,          INS_MODRM + 2,
+    /* 98-9F */ INS_MODRM + 2,  INS_MODRM + 2,  INS_MODRM + 2,              INS_MODRM + 2,  INS_MODRM + 2,              INS_MODRM + 2,              INS_MODRM + 2,          INS_MODRM + 2,
+    /* A0-A7 */ 2,              2,              2,                          INS_MODRM + 2,  INS_MODRM + 3,              INS_MODRM + 2,              INS_INVALID,            INS_INVALID,
+    /* A8-AF */ 2,              2,              2,                          INS_MODRM + 2,  INS_MODRM + 3,              INS_MODRM + 2,              INS_INVALID,            INS_MODRM + 2,
+    /* B0-B7 */ INS_MODRM + 2,  INS_MODRM + 2,  INS_MODRM + INS_OPSIZE + 2, INS_MODRM + 2,  INS_MODRM + INS_OPSIZE + 2, INS_MODRM + INS_OPSIZE + 2, INS_MODRM + 2,          INS_MODRM + 2,
+    /* B8-BF */ INS_INVALID,    INS_INVALID,    INS_MODRM + 3,              INS_MODRM + 2,  INS_MODRM + 2,              INS_MODRM + 2,              INS_MODRM + 2,          INS_MODRM + 2,
+    /* C0-C7 */ INS_MODRM + 2,  INS_MODRM + 2,  INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* C8-CF */ 2,              2,              2,                          2,              2,                          2,                          2,                      2,
+    /* D0-D7 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* D8-DF */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* E0-E7 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* E8-EF */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* F0-F7 */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID,
+    /* F8-FF */ INS_INVALID,    INS_INVALID,    INS_INVALID,                INS_INVALID,    INS_INVALID,                INS_INVALID,                INS_INVALID,            INS_INVALID
 };
 /* clang-format on */
 
@@ -150,9 +150,9 @@ int microX86Dis(const unsigned char *instruction)
         size += opmap[op];
     }
 
-    if (size & MODRM) {
-        size &= ~MODRM; /* Remove flag from size */
-        size++;         /* Count the mod/rm itself */
+    if (size & INS_MODRM) {
+        size &= ~INS_MODRM; /* Remove flag from size */
+        size++;             /* Count the mod/rm itself */
         modrm             = *p++;
         unsigned char mod = modrm >> 6;
 
@@ -184,9 +184,9 @@ int microX86Dis(const unsigned char *instruction)
         modrm = 0;
     }
 
-    if (size & OPSIZE) {
+    if (size & INS_OPSIZE) {
         /* This means add on the current op size */
-        size &= ~OPSIZE;
+        size &= ~INS_OPSIZE;
         size += opsize;
     }
 

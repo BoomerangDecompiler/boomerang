@@ -18,7 +18,6 @@
 #include "boomerang/frontend/ppc/PPCFrontEnd.h"
 #include "boomerang/frontend/sparc/SPARCFrontEnd.h"
 #include "boomerang/frontend/st20/ST20FrontEnd.h"
-#include "boomerang/type/dfa/DFATypeRecovery.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/ProgSymbolWriter.h"
 #include "boomerang/util/log/Log.h"
@@ -27,7 +26,6 @@
 Project::Project()
     : m_settings(new Settings())
     , m_pluginManager(new PluginManager())
-    , m_typeRecovery(new DFATypeRecovery())
 {
 }
 
@@ -75,13 +73,15 @@ const Prog *Project::getProg() const
 
 ITypeRecovery *Project::getTypeRecoveryEngine()
 {
-    return m_typeRecovery.get();
+    const auto &plugins = m_pluginManager->getPluginsByType(PluginType::TypeRecovery);
+    return !plugins.empty() ? plugins.front()->getIfc<ITypeRecovery>() : nullptr;
 }
 
 
 const ITypeRecovery *Project::getTypeRecoveryEngine() const
 {
-    return m_typeRecovery.get();
+    const auto &plugins = m_pluginManager->getPluginsByType(PluginType::TypeRecovery);
+    return !plugins.empty() ? plugins.front()->getIfc<ITypeRecovery>() : nullptr;
 }
 
 
@@ -336,11 +336,27 @@ void Project::loadPlugins()
     }
     else {
         LOG_MSG("Loaded plugins:");
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::CodeGenerator)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::Decoder)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
         for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::FileLoader)) {
             LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
                     plugin->getInfo()->author);
         }
-        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::CodeGenerator)) {
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::LogSink)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::SymbolProvider)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::TypeRecovery)) {
             LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
                     plugin->getInfo()->author);
         }

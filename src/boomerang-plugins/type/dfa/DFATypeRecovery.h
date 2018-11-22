@@ -10,7 +10,7 @@
 #pragma once
 
 
-#include "boomerang/type/TypeRecovery.h"
+#include "TypeRecovery.h"
 
 
 class ProcCFG;

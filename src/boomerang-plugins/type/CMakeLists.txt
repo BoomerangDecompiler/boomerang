@@ -12,13 +12,14 @@ include_directories(
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-BOOMERANG_ADD_CODEGEN(
-    NAME "C"
+BOOMERANG_ADD_TYPERECOVERY(
+    NAME "DFA"
     SOURCES
-        c/CCodeGenerator.cpp
-        c/CCodeGenerator.h
-        c/CodeWriter.cpp
-        c/CodeWriter.h
-        c/ControlFlowAnalyzer.cpp
-        c/ControlFlowAnalyzer.h
+        dfa/DFATypeAnalyzer.cpp
+        dfa/DFATypeAnalyzer.h
+        dfa/DFATypeRecovery.cpp
+        dfa/DFATypeRecovery.h
+        dfa/TypeRecovery.cpp
+        dfa/TypeRecovery.h
 )
+

@@ -10,6 +10,7 @@ v0.5.0 (in development)
 - Fixed: Memory leaks in parsers.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
 - Feature: Added support for Code Generator plugins.
+- Feature: Added support for Type Recovery plugins.
 - Improved: Performance of decoding x86 instructions.
 - Improved: General processing of overlapped registers (not just hard-coded ones).
 - Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.

@@ -212,7 +212,5 @@ private:
     std::unique_ptr<BinaryFile> m_loadedBinary;
     std::unique_ptr<Prog> m_prog;
 
-    std::unique_ptr<IFrontEnd> m_fe;                 ///< front end
-    std::unique_ptr<ITypeRecovery> m_typeRecovery;   ///< middle end
-    std::unique_ptr<ICodeGenerator> m_codeGenerator; ///< back end
+    std::unique_ptr<IFrontEnd> m_fe; ///< front end
 };
