@@ -31,6 +31,7 @@ public:
 
     const std::vector<Plugin *> &getPluginsByType(PluginType ptype);
 
+    Plugin *getPluginByName(const QString &name);
     const Plugin *getPluginByName(const QString &name) const;
 
 private:

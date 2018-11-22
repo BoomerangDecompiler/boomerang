@@ -9,7 +9,9 @@
 #pragma endregion License
 #include "CSymbolProvider.h"
 
-#include "boomerang/c/parser/AnsiCParserDriver.h"
+#include "parser/AnsiCParserDriver.h"
+
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -141,3 +143,7 @@ std::shared_ptr<Signature> CSymbolProvider::getSignatureByName(const QString &fu
     auto it = m_librarySignatures.find(functionName);
     return it != m_librarySignatures.end() ? it.value() : nullptr;
 }
+
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::SymbolProvider, CSymbolProvider, "C Symbol Provider plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

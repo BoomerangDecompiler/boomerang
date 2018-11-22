@@ -249,7 +249,6 @@ public:
 
 private:
     QString m_name; ///< name of the program
-    std::unique_ptr<ISymbolProvider> m_symbolProvider;
     Project *m_project       = nullptr;
     BinaryFile *m_binaryFile = nullptr;
     IFrontEnd *m_fe          = nullptr; ///< Pointer to the FrontEnd object for the project

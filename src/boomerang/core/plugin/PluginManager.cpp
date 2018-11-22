@@ -83,8 +83,14 @@ const std::vector<Plugin *> &PluginManager::getPluginsByType(PluginType ptype)
 }
 
 
+Plugin *PluginManager::getPluginByName(const QString &name)
+{
+    const auto it = m_plugins.find(name);
+    return (it != m_plugins.end()) ? it->second.get() : nullptr;
+}
+
 const Plugin *PluginManager::getPluginByName(const QString &name) const
 {
-    auto it = m_plugins.find(name);
+    const auto it = m_plugins.find(name);
     return (it != m_plugins.end()) ? it->second.get() : nullptr;
 }

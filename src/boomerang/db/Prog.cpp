@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "Prog.h"
 
-#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/DebugInfo.h"
@@ -52,7 +51,6 @@
 
 Prog::Prog(const QString &name, Project *project)
     : m_name(name)
-    , m_symbolProvider(new CSymbolProvider())
     , m_project(project)
     , m_binaryFile(project ? project->getLoadedBinaryFile() : nullptr)
     , m_fe(nullptr)
@@ -343,7 +341,14 @@ void Prog::readDefaultLibraryCatalogues()
     LOG_MSG("Reading library signatures...");
 
     const QDir dataDir = m_project->getSettings()->getDataDirectory();
-    m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/common.hs"));
+    Plugin *plugin     = m_project->getPluginManager()->getPluginByName("C Symbol Provider plugin");
+    if (!plugin) {
+        LOG_ERROR("Symbol provider plugin not found!");
+        return;
+    }
+
+    ISymbolProvider *prov = plugin->getIfc<ISymbolProvider>();
+    prov->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/common.hs"));
 
     QString libCatalogName;
     switch (getMachine()) {
@@ -355,31 +360,40 @@ void Prog::readDefaultLibraryCatalogues()
     }
 
     if (!libCatalogName.isEmpty()) {
-        m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath(libCatalogName));
+        prov->readLibraryCatalog(this, dataDir.absoluteFilePath(libCatalogName));
     }
 
     if (isWin32()) {
-        m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/win32.hs"));
+        prov->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/win32.hs"));
     }
 
     // TODO: change this to BinaryLayer query ("FILE_FORMAT","MACHO")
     if (m_binaryFile->getFormat() == LoadFmt::MACHO) {
-        m_symbolProvider->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/objc.hs"));
+        prov->readLibraryCatalog(this, dataDir.absoluteFilePath("signatures/objc.hs"));
     }
 }
 
 
 bool Prog::addSymbolsFromSymbolFile(const QString &fname)
 {
-    return m_symbolProvider->addSymbolsFromSymbolFile(this, fname);
+    Plugin *plugin = m_project->getPluginManager()->getPluginByName("C Symbol Provider plugin");
+    if (!plugin) {
+        return false;
+    }
+
+    ISymbolProvider *prov = plugin->getIfc<ISymbolProvider>();
+    return prov->addSymbolsFromSymbolFile(this, fname);
 }
 
 
 std::shared_ptr<Signature> Prog::getLibSignature(const QString &name)
 {
-    std::shared_ptr<Signature> signature = m_symbolProvider
-                                               ? m_symbolProvider->getSignatureByName(name)
-                                               : nullptr;
+    Plugin *plugin = m_project->getPluginManager()->getPluginByName("C Symbol Provider plugin");
+    std::shared_ptr<Signature> signature = nullptr;
+
+    if (plugin) {
+        signature = plugin->getIfc<ISymbolProvider>()->getSignatureByName(name);
+    }
 
     if (signature) {
         signature->setUnknown(false);

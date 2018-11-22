@@ -9,7 +9,6 @@
 
 set(boomerang-sources "")
 
-add_subdirectory(c)
 add_subdirectory(core)
 add_subdirectory(db)
 add_subdirectory(decomp)

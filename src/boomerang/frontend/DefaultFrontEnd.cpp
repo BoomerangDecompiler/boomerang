@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DefaultFrontEnd.h"
 
-#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"

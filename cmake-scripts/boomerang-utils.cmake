@@ -153,6 +153,43 @@ endfunction()
 
 
 #
+# Usage: BOOMERANG_ADD_SYMBOLPROVIDER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_SYMBOLPROVIDER)
+    cmake_parse_arguments(SYMBOLPROVIDER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_SYMBOLPROVIDER_${SYMBOLPROVIDER_NAME} "Build the ${SYMBOLPROVIDER_NAME} symbol provider." ON)
+
+    if (BOOMERANG_BUILD_SYMBOLPROVIDER_${SYMBOLPROVIDER_NAME})
+        set(target_name "boomerang-${SYMBOLPROVIDER_NAME}SymbolProvider")
+        add_library(${target_name} SHARED ${SYMBOLPROVIDER_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${SYMBOLPROVIDER_LIBRARIES})
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/symbol/
+            RUNTIME DESTINATION lib/boomerang/plugins/symbol/
+        )
+    endif (BOOMERANG_BUILD_SYMBOLPROVIDER_${SYMBOLPROVIDER_NAME})
+endfunction()
+
+
+#
 # Usage: BOOMERANG_ADD_FRONTEND(NAME <name> [ SOURCES <source files> ] [ LIBRARIES <additional libs> ])
 #
 # Note: There must be a <name>decoder.h/.cpp and a <name>frontend.h/.cpp present

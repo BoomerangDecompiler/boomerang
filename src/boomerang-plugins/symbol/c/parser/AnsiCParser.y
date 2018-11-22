@@ -88,7 +88,8 @@ struct Bound
 %define parse.error verbose
 %code {
 
-#include "boomerang/c/parser/AnsiCParserDriver.h"
+#include "AnsiCParserDriver.h"
+
 #include "boomerang/db/signature/CustomSignature.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"

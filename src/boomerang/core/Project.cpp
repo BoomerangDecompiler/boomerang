@@ -85,6 +85,18 @@ const ITypeRecovery *Project::getTypeRecoveryEngine() const
 }
 
 
+PluginManager *Project::getPluginManager()
+{
+    return m_pluginManager.get();
+}
+
+
+const PluginManager *Project::getPluginManager() const
+{
+    return m_pluginManager.get();
+}
+
+
 const char *Project::getVersionStr() const
 {
     return BOOMERANG_VERSION;

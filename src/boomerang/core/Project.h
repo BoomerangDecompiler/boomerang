@@ -60,6 +60,9 @@ public:
     ITypeRecovery *getTypeRecoveryEngine();
     const ITypeRecovery *getTypeRecoveryEngine() const;
 
+    PluginManager *getPluginManager();
+    const PluginManager *getPluginManager() const;
+
 public:
     /// \returns the library version string
     const char *getVersionStr() const;
