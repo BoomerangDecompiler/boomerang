@@ -357,10 +357,6 @@ void Project::loadPlugins()
             LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
                     plugin->getInfo()->author);
         }
-        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::LogSink)) {
-            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
-                    plugin->getInfo()->author);
-        }
         for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::SymbolProvider)) {
             LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
                     plugin->getInfo()->author);

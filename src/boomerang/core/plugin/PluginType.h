@@ -26,7 +26,6 @@ enum class PluginType
     Decoder,
     FileLoader,
     FrontEnd,
-    LogSink,
     SymbolProvider,
     TypeRecovery
 };
@@ -45,6 +44,5 @@ DECLARE_PLUGIN_IFC_TRAIT(PluginType::CodeGenerator, ICodeGenerator);
 DECLARE_PLUGIN_IFC_TRAIT(PluginType::Decoder, IDecoder);
 DECLARE_PLUGIN_IFC_TRAIT(PluginType::FileLoader, IFileLoader);
 DECLARE_PLUGIN_IFC_TRAIT(PluginType::FrontEnd, IFrontEnd);
-DECLARE_PLUGIN_IFC_TRAIT(PluginType::LogSink, ILogSink);
 DECLARE_PLUGIN_IFC_TRAIT(PluginType::SymbolProvider, ISymbolProvider);
 DECLARE_PLUGIN_IFC_TRAIT(PluginType::TypeRecovery, ITypeRecovery);
