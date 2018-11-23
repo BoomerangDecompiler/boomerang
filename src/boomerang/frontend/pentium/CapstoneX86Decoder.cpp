@@ -125,8 +125,8 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
 }
 
 
-CapstoneX86Decoder::CapstoneX86Decoder(Prog *prog)
-    : CapstoneDecoder(prog, cs::CS_ARCH_X86, cs::CS_MODE_32, "ssl/x86.ssl")
+CapstoneX86Decoder::CapstoneX86Decoder(Project *project)
+    : CapstoneDecoder(project, cs::CS_ARCH_X86, cs::CS_MODE_32, "ssl/x86.ssl")
 {
 }
 

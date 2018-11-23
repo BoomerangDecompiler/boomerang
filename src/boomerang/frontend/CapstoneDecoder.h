@@ -27,7 +27,7 @@ class CapstoneDecoder : public IDecoder
 {
 public:
     /**
-     * \param prog the program being decompiled.
+     * \param project the project that holds the program being decompiled.
      * \param arch Capstone architecture. Usually this is set in the constructor
      *             of the derived class.
      * \param mode Capstone dsassembly mode. Usually this is set in the constructor
@@ -36,7 +36,8 @@ public:
      *                    relative to the data directory.
      *                    If settings.sslFile is not empty, \p sslFileName is ignored.
      */
-    CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode, const QString &sslFileName);
+    CapstoneDecoder(Project *project, cs::cs_arch arch, cs::cs_mode mode,
+                    const QString &sslFileName);
     virtual ~CapstoneDecoder();
 
 public:

@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "PentiumFrontEnd.h"
 
+#include "boomerang/core/Project.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinaryImage.h"
@@ -138,10 +139,10 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 }
 
 
-PentiumFrontEnd::PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : DefaultFrontEnd(binaryFile, prog)
+PentiumFrontEnd::PentiumFrontEnd(Project *project)
+    : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new CapstoneX86Decoder(prog));
+    m_decoder.reset(new CapstoneX86Decoder(project));
 }
 
 

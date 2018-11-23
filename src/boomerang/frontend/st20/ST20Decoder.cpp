@@ -571,7 +571,7 @@ DWord ST20Decoder::getDword(intptr_t lc)
 }
 
 
-ST20Decoder::ST20Decoder(Prog *prog_)
-    : NJMCDecoder(prog_, "ssl/st20.ssl")
+ST20Decoder::ST20Decoder(Project *project)
+    : NJMCDecoder(project, "ssl/st20.ssl")
 {
 }

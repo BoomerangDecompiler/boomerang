@@ -34,7 +34,7 @@ class SPARCDecoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
-    SPARCDecoder(Prog *prog);
+    SPARCDecoder(Project *project);
     SPARCDecoder(const SPARCDecoder &other) = delete;
     SPARCDecoder(SPARCDecoder &&other)      = default;
 

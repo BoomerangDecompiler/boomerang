@@ -44,7 +44,8 @@
 // #define DEBUG_MACHO_LOADER
 // #define DEBUG_MACHO_LOADER_OBJC
 
-MachOBinaryLoader::MachOBinaryLoader()
+MachOBinaryLoader::MachOBinaryLoader(Project *project)
+    : IFileLoader(project)
 {
     machine    = Machine::PPC;
     swap_bytes = false;

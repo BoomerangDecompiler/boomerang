@@ -16,6 +16,7 @@
 class QString;
 class Signature;
 class Prog;
+class Project;
 
 
 /**
@@ -24,7 +25,7 @@ class Prog;
 class ISymbolProvider
 {
 public:
-    ISymbolProvider()          = default;
+    ISymbolProvider(Project *) {}
     virtual ~ISymbolProvider() = default;
 
 public:

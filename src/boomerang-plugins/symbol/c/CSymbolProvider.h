@@ -22,7 +22,7 @@ class Prog;
 class CSymbolProvider final : public ISymbolProvider
 {
 public:
-    CSymbolProvider();
+    CSymbolProvider(Project *project);
     virtual ~CSymbolProvider() = default;
 
 public:

@@ -33,7 +33,7 @@ class ElfBinaryLoader : public IFileLoader
     typedef std::map<Address, QString, std::less<Address>> RelocMap;
 
 public:
-    ElfBinaryLoader();
+    ElfBinaryLoader(Project *project);
     virtual ~ElfBinaryLoader() override;
 
     /// \copydoc IFileLoader::initialize

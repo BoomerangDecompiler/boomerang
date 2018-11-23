@@ -41,7 +41,7 @@ class QString;
 class BOOMERANG_API DefaultFrontEnd : public IFrontEnd
 {
 public:
-    DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    DefaultFrontEnd(Project *project);
     DefaultFrontEnd(const DefaultFrontEnd &) = delete;
     DefaultFrontEnd(DefaultFrontEnd &&)      = default;
 

@@ -117,7 +117,7 @@ typedef struct
 class DOS4GWBinaryLoader : public IFileLoader
 {
 public:
-    DOS4GWBinaryLoader();
+    DOS4GWBinaryLoader(Project *project);
     virtual ~DOS4GWBinaryLoader();
 
     /// \copydoc IFileLoader::initialize

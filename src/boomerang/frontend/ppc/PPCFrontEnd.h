@@ -20,7 +20,7 @@ class PPCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PPCFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    PPCFrontEnd(Project *project);
     PPCFrontEnd(const PPCFrontEnd &other) = delete;
     PPCFrontEnd(PPCFrontEnd &&other)      = default;
 

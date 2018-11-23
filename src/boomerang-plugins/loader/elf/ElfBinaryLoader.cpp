@@ -53,8 +53,9 @@ struct Translated_ElfSym
 typedef std::map<QString, int, std::less<QString>> StrIntMap;
 
 
-ElfBinaryLoader::ElfBinaryLoader()
-    : m_nextExtern(Address::ZERO)
+ElfBinaryLoader::ElfBinaryLoader(Project *project)
+    : IFileLoader(project)
+    , m_nextExtern(Address::ZERO)
 {
     init(); // Initialise all the common stuff
 }

@@ -26,7 +26,7 @@ class BOOMERANG_API SPARCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    SPARCFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    SPARCFrontEnd(Project *project);
     SPARCFrontEnd(const SPARCFrontEnd &other) = delete;
     SPARCFrontEnd(SPARCFrontEnd &&other)      = default;
 

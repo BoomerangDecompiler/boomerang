@@ -153,7 +153,7 @@ typedef struct
 class Win32BinaryLoader : public IFileLoader
 {
 public:
-    Win32BinaryLoader();
+    Win32BinaryLoader(Project *project);
     virtual ~Win32BinaryLoader();
 
 public:

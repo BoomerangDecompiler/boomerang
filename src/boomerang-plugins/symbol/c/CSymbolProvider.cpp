@@ -25,7 +25,8 @@
 #include <QTextStream>
 
 
-CSymbolProvider::CSymbolProvider()
+CSymbolProvider::CSymbolProvider(Project *project)
+    : ISymbolProvider(project)
 {
 }
 

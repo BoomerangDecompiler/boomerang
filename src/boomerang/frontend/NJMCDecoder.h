@@ -29,7 +29,7 @@ public:
      * \param sslFilePath Path to the ssl file, relative to the data directory.
      *                    If settings.sslFile is not empty, \p sslFilePath is ignored.
      */
-    NJMCDecoder(Prog *prog, const QString &sslFilePath);
+    NJMCDecoder(Project *project, const QString &sslFilePath);
     NJMCDecoder(const NJMCDecoder &other) = delete;
     NJMCDecoder(NJMCDecoder &&other)      = default;
 

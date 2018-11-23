@@ -9083,8 +9083,8 @@ DWord PPCDecoder::getDword(HostAddress lc)
 }
 
 
-PPCDecoder::PPCDecoder(Prog *_prog)
-    : NJMCDecoder(_prog, "ssl/ppc.ssl")
+PPCDecoder::PPCDecoder(Project *project)
+    : NJMCDecoder(project, "ssl/ppc.ssl")
 {
 }
 

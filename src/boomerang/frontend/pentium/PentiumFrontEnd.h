@@ -23,7 +23,7 @@ class BOOMERANG_API PentiumFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    PentiumFrontEnd(BinaryFile *binaryFile, Prog *prog);
+    PentiumFrontEnd(Project *project);
     PentiumFrontEnd(const PentiumFrontEnd &other) = delete;
     PentiumFrontEnd(PentiumFrontEnd &&other)      = default;
 

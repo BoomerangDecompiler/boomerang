@@ -265,15 +265,12 @@ Prog *Project::createProg(BinaryFile *file, const QString &name)
 
 IFrontEnd *Project::createFrontEnd()
 {
-    BinaryFile *binaryFile = getLoadedBinaryFile();
-    Prog *prog             = m_prog.get();
-
     try {
         switch (getLoadedBinaryFile()->getMachine()) {
-        case Machine::PENTIUM: return new PentiumFrontEnd(binaryFile, prog);
-        case Machine::SPARC: return new SPARCFrontEnd(binaryFile, prog);
-        case Machine::PPC: return new PPCFrontEnd(binaryFile, prog);
-        case Machine::ST20: return new ST20FrontEnd(binaryFile, prog);
+        case Machine::PENTIUM: return new PentiumFrontEnd(this);
+        case Machine::SPARC: return new SPARCFrontEnd(this);
+        case Machine::PPC: return new PPCFrontEnd(this);
+        case Machine::ST20: return new ST20FrontEnd(this);
         default: LOG_ERROR("Machine architecture not supported!"); break;
         }
     }

@@ -17,6 +17,7 @@
 class Exp;
 class RTL;
 class Prog;
+class Project;
 class RTLInstDict;
 
 
@@ -27,6 +28,7 @@ class RTLInstDict;
 class IDecoder
 {
 public:
+    IDecoder(Project *) {}
     virtual ~IDecoder() = default;
 
     /**

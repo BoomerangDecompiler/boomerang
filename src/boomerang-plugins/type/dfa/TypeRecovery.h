@@ -18,7 +18,7 @@
 class TypeRecoveryCommon : public ITypeRecovery
 {
 public:
-    TypeRecoveryCommon(const QString &name);
+    TypeRecoveryCommon(Project *project, const QString &name);
 
 public:
     /// \copydoc ITypeRecovery::getName

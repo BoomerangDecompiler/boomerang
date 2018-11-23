@@ -22,7 +22,8 @@
 #include <cassert>
 
 
-ExeBinaryLoader::ExeBinaryLoader()
+ExeBinaryLoader::ExeBinaryLoader(Project *project)
+    : IFileLoader(project)
 {
 }
 

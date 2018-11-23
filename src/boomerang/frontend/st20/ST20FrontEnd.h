@@ -22,7 +22,7 @@ class ST20FrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd
-    ST20FrontEnd(BinaryFile *binaryFile, Prog *prog);
+    ST20FrontEnd(Project *project);
     ST20FrontEnd(const ST20FrontEnd &other) = delete;
     ST20FrontEnd(ST20FrontEnd &&other)      = default;
 

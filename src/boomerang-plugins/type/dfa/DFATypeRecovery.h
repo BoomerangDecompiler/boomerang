@@ -36,7 +36,7 @@ class UserProc;
 class DFATypeRecovery : public TypeRecoveryCommon
 {
 public:
-    DFATypeRecovery();
+    DFATypeRecovery(Project *project);
     virtual ~DFATypeRecovery() = default;
 
 public:

@@ -46,7 +46,7 @@ void ProgTest::testFrontend()
     m_project.getProg()->createModule("foo");
     QVERIFY(m_project.getProg()->getModuleList().size() == 2);
 
-    m_project.getProg()->setFrontEnd(new PentiumFrontEnd(nullptr, m_project.getProg()));
+    m_project.getProg()->setFrontEnd(new PentiumFrontEnd(&m_project));
     QVERIFY(m_project.getProg()->getFrontEnd() != nullptr);
     QVERIFY(m_project.getProg()->getModuleList().size() == 1);
     QVERIFY(m_project.getProg()->getRootModule() != nullptr);

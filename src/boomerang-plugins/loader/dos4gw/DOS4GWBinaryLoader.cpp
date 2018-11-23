@@ -35,7 +35,8 @@ struct SectionParam
 
 extern "C" int microX86Dis(void *p); // From microX86dis.c
 
-DOS4GWBinaryLoader::DOS4GWBinaryLoader()
+DOS4GWBinaryLoader::DOS4GWBinaryLoader(Project *project)
+    : IFileLoader(project)
 {
 }
 

@@ -17,8 +17,9 @@
 #include "boomerang/util/log/Log.h"
 
 
-TypeRecoveryCommon::TypeRecoveryCommon(const QString &name)
-    : m_name(name)
+TypeRecoveryCommon::TypeRecoveryCommon(Project *project, const QString &name)
+    : ITypeRecovery(project)
+    , m_name(name)
 {
 }
 

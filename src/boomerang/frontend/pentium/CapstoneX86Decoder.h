@@ -21,7 +21,7 @@
 class CapstoneX86Decoder : public CapstoneDecoder
 {
 public:
-    CapstoneX86Decoder(Prog *prog);
+    CapstoneX86Decoder(Project *project);
 
 public:
     /// \copydoc IDecoder::decodeInstruction

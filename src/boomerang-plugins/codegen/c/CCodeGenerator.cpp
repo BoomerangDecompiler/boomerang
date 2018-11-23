@@ -54,6 +54,13 @@ bool isBareMemof(const Exp &exp, UserProc *)
 #endif
 }
 
+
+CCodeGenerator::CCodeGenerator(Project *project)
+    : ICodeGenerator(project)
+{
+}
+
+
 void CCodeGenerator::generateCode(const Prog *prog, Module *cluster, UserProc *proc,
                                   bool /*intermixRTL*/)
 {

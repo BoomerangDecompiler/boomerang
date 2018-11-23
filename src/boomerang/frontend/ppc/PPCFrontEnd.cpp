@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "PPCFrontEnd.h"
 
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -24,10 +25,10 @@
 #include <sstream>
 
 
-PPCFrontEnd::PPCFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : DefaultFrontEnd(binaryFile, prog)
+PPCFrontEnd::PPCFrontEnd(Project *project)
+    : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new PPCDecoder(prog));
+    m_decoder.reset(new PPCDecoder(project));
 }
 
 

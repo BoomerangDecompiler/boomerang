@@ -720,7 +720,7 @@ void StatementTest::testRecursion()
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     Prog *prog = m_project.getProg();
 
-    IFrontEnd *fe = new PentiumFrontEnd(m_project.getLoadedBinaryFile(), prog);
+    IFrontEnd *fe = new PentiumFrontEnd(&m_project);
     prog->setFrontEnd(fe);
 
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
@@ -1253,7 +1253,7 @@ void StatementTest::testBypass()
     QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(m_project.getLoadedBinaryFile(), prog);
+    IFrontEnd *fe = new PentiumFrontEnd(&m_project);
 
     Type::clearNamedTypes();
     prog->setFrontEnd(fe);

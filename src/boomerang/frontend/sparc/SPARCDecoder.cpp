@@ -2297,8 +2297,8 @@ DWord SPARCDecoder::getDword(HostAddress lc)
 }
 
 
-SPARCDecoder::SPARCDecoder(Prog *_prog)
-    : NJMCDecoder(_prog, "ssl/sparc.ssl")
+SPARCDecoder::SPARCDecoder(Project *project)
+    : NJMCDecoder(project, "ssl/sparc.ssl")
     , machine(new SPARCMachine)
 {
 }

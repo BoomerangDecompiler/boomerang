@@ -70,7 +70,7 @@ struct ExeHeader
 class ExeBinaryLoader : public IFileLoader
 {
 public:
-    ExeBinaryLoader();
+    ExeBinaryLoader(Project *project);
 
     /// \copydoc IFileLoader::initialize
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;

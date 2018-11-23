@@ -20,7 +20,7 @@ class ST20Decoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
-    ST20Decoder(Prog *prog);
+    ST20Decoder(Project *project);
     ST20Decoder(const ST20Decoder &other) = delete;
     ST20Decoder(ST20Decoder &&other)      = default;
 

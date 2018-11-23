@@ -74,8 +74,9 @@ struct SectionParam
 // clang-format on
 
 
-Win32BinaryLoader::Win32BinaryLoader()
-    : m_image(nullptr)
+Win32BinaryLoader::Win32BinaryLoader(Project *project)
+    : IFileLoader(project)
+    , m_image(nullptr)
     , m_imageSize(0)
     , m_header(nullptr)
     , m_peHeader(nullptr)

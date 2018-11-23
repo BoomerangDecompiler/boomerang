@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "ST20FrontEnd.h"
 
+#include "boomerang/core/Project.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
@@ -20,10 +21,10 @@
 #include "boomerang/util/log/Log.h"
 
 
-ST20FrontEnd::ST20FrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : DefaultFrontEnd(binaryFile, prog)
+ST20FrontEnd::ST20FrontEnd(Project *project)
+    : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new ST20Decoder(prog));
+    m_decoder.reset(new ST20Decoder(project));
 }
 
 

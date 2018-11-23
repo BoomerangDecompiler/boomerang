@@ -14,6 +14,8 @@
 #include "boomerang/db/binary/BinaryImage.h"
 
 
+class Project;
+
 class QIODevice;
 
 
@@ -25,7 +27,7 @@ class QIODevice;
 class IFileLoader
 {
 public:
-    IFileLoader()          = default;
+    IFileLoader(Project *) {}
     virtual ~IFileLoader() = default;
 
 public:

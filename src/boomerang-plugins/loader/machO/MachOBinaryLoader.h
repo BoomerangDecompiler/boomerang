@@ -69,7 +69,7 @@ public:
 class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:
-    MachOBinaryLoader();
+    MachOBinaryLoader(Project *project);
     virtual ~MachOBinaryLoader() override;
 
 public:

@@ -26,7 +26,7 @@ class PPCDecoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder
-    PPCDecoder(Prog *prog);
+    PPCDecoder(Project *project);
     PPCDecoder(const PPCDecoder &other) = delete;
     PPCDecoder(PPCDecoder &&other)      = default;
 

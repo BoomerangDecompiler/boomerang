@@ -28,11 +28,12 @@
 #include <cstring>
 
 
-NJMCDecoder::NJMCDecoder(Prog *prog, const QString &sslFileName)
-    : m_rtlDict(prog->getProject()->getSettings()->debugDecoder)
-    , m_prog(prog)
+NJMCDecoder::NJMCDecoder(Project *project, const QString &sslFileName)
+    : IDecoder(project)
+    , m_rtlDict(project->getSettings()->debugDecoder)
+    , m_prog(project->getProg())
 {
-    const Settings *settings = prog->getProject()->getSettings();
+    const Settings *settings = project->getSettings();
     QString realSSLFileName;
 
     if (!settings->sslFileName.isEmpty()) {

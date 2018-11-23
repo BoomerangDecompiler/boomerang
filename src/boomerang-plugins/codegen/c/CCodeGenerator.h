@@ -85,7 +85,7 @@ enum class OpPrec : uint8_t
 class CCodeGenerator : public ICodeGenerator
 {
 public:
-    CCodeGenerator()                   = default;
+    CCodeGenerator(Project *project);
     virtual ~CCodeGenerator() override = default;
 
 public:

@@ -1272,10 +1272,11 @@ bool SPARCFrontEnd::helperFuncLong(Address dest, Address addr, RTLList &lrtl, QS
 }
 
 
-SPARCFrontEnd::SPARCFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : DefaultFrontEnd(binaryFile, prog)
+SPARCFrontEnd::SPARCFrontEnd(Project *project)
+    : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new SPARCDecoder(prog));
+    m_decoder.reset(new SPARCDecoder(project));
+
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;
     nop_inst.valid    = true;

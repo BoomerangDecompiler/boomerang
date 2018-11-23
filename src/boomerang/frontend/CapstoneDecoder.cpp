@@ -20,16 +20,17 @@
 #include "boomerang/util/log/Log.h"
 
 
-CapstoneDecoder::CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode,
+CapstoneDecoder::CapstoneDecoder(Project *project, cs::cs_arch arch, cs::cs_mode mode,
                                  const QString &sslFileName)
-    : m_prog(prog)
-    , m_dict(prog->getProject()->getSettings()->debugDecoder)
-    , m_debugMode(prog->getProject()->getSettings()->debugDecoder)
+    : IDecoder(project)
+    , m_prog(project->getProg())
+    , m_dict(project->getSettings()->debugDecoder)
+    , m_debugMode(project->getSettings()->debugDecoder)
 {
     cs::cs_open(arch, mode, &m_handle);
     cs::cs_option(m_handle, cs::CS_OPT_DETAIL, cs::CS_OPT_ON);
 
-    const Settings *settings = prog->getProject()->getSettings();
+    const Settings *settings = project->getSettings();
     QString realSSLFileName;
 
     if (!settings->sslFileName.isEmpty()) {

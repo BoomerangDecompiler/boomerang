@@ -16,12 +16,13 @@
 class Assign;
 class Function;
 class Module;
+class OStream;
 class Prog;
+class Project;
 class StatementList;
 class UserProc;
 
 class QString;
-class OStream;
 
 
 /**
@@ -36,7 +37,7 @@ class OStream;
 class ICodeGenerator
 {
 public:
-    ICodeGenerator()          = default;
+    ICodeGenerator(Project *) {}
     virtual ~ICodeGenerator() = default;
 
 public:

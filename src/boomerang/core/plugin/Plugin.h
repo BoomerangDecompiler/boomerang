@@ -113,10 +113,10 @@ private:
         static_assert(std::is_base_of<Interface, Classname>::value,                                \
                       #Classname " must be derived from the correct plugin interface!");           \
                                                                                                    \
-        Q_DECL_EXPORT Interface *initPlugin()                                                      \
+        Q_DECL_EXPORT Interface *initPlugin(Project *project)                                      \
         {                                                                                          \
             if (!g_pluginInstance) {                                                               \
-                g_pluginInstance = new Classname();                                                \
+                g_pluginInstance = new Classname(project);                                         \
             }                                                                                      \
             return g_pluginInstance;                                                               \
         }                                                                                          \
