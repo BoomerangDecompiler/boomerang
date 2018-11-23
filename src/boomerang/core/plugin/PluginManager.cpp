@@ -60,9 +60,13 @@ bool PluginManager::loadPluginsFromDir(const QString &dir, int depth)
         loadPlugin(sofilename);
     }
 
-    if (depth == -1 || depth-- != 0) {
+    if (depth != 0) {
+        if (depth > 0) {
+            --depth;
+        }
+
         for (QString subdir : pluginsDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot)) {
-            if (!loadPluginsFromDir(pluginsDir.absoluteFilePath(subdir))) {
+            if (!loadPluginsFromDir(pluginsDir.absoluteFilePath(subdir), depth)) {
                 return false;
             }
         }
