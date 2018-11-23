@@ -10,11 +10,11 @@
 #include "Plugin.h"
 
 
-Plugin::Plugin(const QString &pluginPath)
+Plugin::Plugin(Project *project, const QString &pluginPath)
     : m_pluginHandle(pluginPath)
     , m_ifc(nullptr)
 {
-    if (!init()) {
+    if (!init(project)) {
         throw "Plugin initialization function not found!";
     }
 }
@@ -39,7 +39,7 @@ const PluginInfo *Plugin::getInfo() const
 }
 
 
-bool Plugin::init()
+bool Plugin::init(Project *project)
 {
     const PluginInfo *info = getInfo();
     if (!info) {
@@ -52,7 +52,7 @@ bool Plugin::init()
         return false;
     }
 
-    m_ifc = initFunction();
+    m_ifc = initFunction(project);
     return m_ifc != nullptr;
 }
 

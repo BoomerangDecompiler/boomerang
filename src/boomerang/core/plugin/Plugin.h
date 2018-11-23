@@ -39,14 +39,14 @@ struct PluginInfo
  */
 class Plugin
 {
-    using PluginInitFunction   = void *(*)();
+    using PluginInitFunction   = void *(*)(Project *);
     using PluginDeinitFunction = void (*)();
     using PluginInfoFunction   = const PluginInfo *(*)();
 
 public:
     /// Create a plugin from a dynamic library file.
     /// \param pluginPath path to the library file.
-    explicit Plugin(const QString &pluginPath);
+    explicit Plugin(Project *project, const QString &pluginPath);
 
     Plugin(const Plugin &other) = delete;
     Plugin(Plugin &&other)      = default;
@@ -74,7 +74,7 @@ public:
 
 private:
     /// Initialize the plugin.
-    bool init();
+    bool init(Project *project);
 
     /// De-initialize the plugin.
     bool deinit();

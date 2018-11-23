@@ -14,7 +14,6 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/ppc/PPCDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -28,7 +27,13 @@
 PPCFrontEnd::PPCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new PPCDecoder(project));
+    Plugin *plugin = project->getPluginManager()->getPluginByName("PPC decoder plugin");
+    if (!plugin) {
+        throw "Decoder plugin not found";
+    }
+
+    m_decoder = plugin->getIfc<IDecoder>();
+    m_decoder->initialize(project);
 }
 
 

@@ -575,3 +575,7 @@ ST20Decoder::ST20Decoder(Project *project)
     : NJMCDecoder(project, "ssl/st20.ssl")
 {
 }
+
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, ST20Decoder, "ST20 decoder plugin", BOOMERANG_VERSION,
+                        "Boomerang developers")

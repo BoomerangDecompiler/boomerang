@@ -52,8 +52,8 @@ public:
 
 public:
     /// \copydoc IFrontEnd::getDecoder
-    IDecoder *getDecoder() override { return m_decoder.get(); }
-    const IDecoder *getDecoder() const override { return m_decoder.get(); }
+    IDecoder *getDecoder() override { return m_decoder; }
+    const IDecoder *getDecoder() const override { return m_decoder; }
 
     /// \copydoc IFrontEnd::decodeEntryPointsRecursive
     bool decodeEntryPointsRecursive(bool decodeMain = true) override;
@@ -145,7 +145,7 @@ private:
     Address getAddrOfLibraryThunk(CallStatement *call, UserProc *proc);
 
 protected:
-    std::unique_ptr<IDecoder> m_decoder;
+    IDecoder *m_decoder;
     BinaryFile *m_binaryFile;
     Prog *m_program;
 

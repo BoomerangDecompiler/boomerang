@@ -44,11 +44,13 @@ public:
     const RTLInstDict *getDict() const override { return &m_dict; }
 
 protected:
+    bool initialize(Project *project) override;
+
     bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
 
 protected:
     cs::csh m_handle;
-    Prog *m_prog;
+    Prog *m_prog = nullptr;
     RTLInstDict m_dict;
-    bool m_debugMode;
+    bool m_debugMode = false;
 };

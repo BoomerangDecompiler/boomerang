@@ -31,7 +31,6 @@
 NJMCDecoder::NJMCDecoder(Project *project, const QString &sslFileName)
     : IDecoder(project)
     , m_rtlDict(project->getSettings()->debugDecoder)
-    , m_prog(project->getProg())
 {
     const Settings *settings = project->getSettings();
     QString realSSLFileName;
@@ -47,6 +46,13 @@ NJMCDecoder::NJMCDecoder(Project *project, const QString &sslFileName)
         LOG_ERROR("Cannot read SSL file '%1'", realSSLFileName);
         throw std::runtime_error("Cannot read SSL file");
     }
+}
+
+
+bool NJMCDecoder::initialize(Project *project)
+{
+    m_prog = project->getProg();
+    return true;
 }
 
 
@@ -171,4 +177,10 @@ int NJMCDecoder::getRegSizeByNum(RegNum regNum) const
 RegNum NJMCDecoder::getRegNumByName(const QString &name) const
 {
     return m_rtlDict.getRegDB()->getRegNumByName(name);
+}
+
+
+bool NJMCDecoder::isRestore(HostAddress)
+{
+    return false;
 }

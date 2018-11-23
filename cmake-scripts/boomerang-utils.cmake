@@ -190,25 +190,40 @@ endfunction()
 
 
 #
-# Usage: BOOMERANG_ADD_FRONTEND(NAME <name> [ SOURCES <source files> ] [ LIBRARIES <additional libs> ])
+# Usage: BOOMERANG_ADD_DECODER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
-# Note: There must be a <name>decoder.h/.cpp and a <name>frontend.h/.cpp present
-# in the same directory as the CMakeLists.txt where this function is invoked.
-#
-function(BOOMERANG_ADD_FRONTEND)
-    cmake_parse_arguments(FRONTEND "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+function(BOOMERANG_ADD_DECODER)
+    cmake_parse_arguments(DECODER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-    # add the frontend as a static library
-    add_library(boomerang-${FRONTEND_NAME}Frontend STATIC
-        ${FRONTEND_NAME}decoder.h
-        ${FRONTEND_NAME}decoder.cpp
-        ${FRONTEND_NAME}frontend.h
-        ${FRONTEND_NAME}frontend.cpp
-        ${FRONTEND_SOURCES}
-    )
+    option(BOOMERANG_BUILD_DECODER_${DECODER_NAME} "Build the ${DECODER_NAME} decoder." ON)
 
-    target_link_libraries(${FRONTEND_NAME} Qt5::Core ${FRONTEND_LIBRARIES})
-endfunction(BOOMERANG_ADD_FRONTEND)
+    if (BOOMERANG_BUILD_DECODER_${DECODER_NAME})
+        set(target_name "boomerang-${DECODER_NAME}Decoder")
+        add_library(${target_name} SHARED ${DECODER_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${DECODER_LIBRARIES})
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/decoder/
+            RUNTIME DESTINATION lib/boomerang/plugins/decoder/
+        )
+    endif (BOOMERANG_BUILD_DECODER_${DECODER_NAME})
+endfunction()
 
 
 #

@@ -31,6 +31,9 @@ public:
     IDecoder(Project *) {}
     virtual ~IDecoder() = default;
 
+public:
+    virtual bool initialize(Project *project) = 0;
+
     /**
      * Decodes the machine instruction at \p pc.
      * The decode result is stored into \p result, if the decode was successful.

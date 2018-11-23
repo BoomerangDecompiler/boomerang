@@ -9099,3 +9099,6 @@ SharedExp crBit(int bitNum)
     return std::make_shared<Ternary>(opAt, Location::regOf(REG_PPC_CR0 + crNum), Const::get(bitNum),
                                      Const::get(bitNum));
 }
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, PPCDecoder, "PPC decoder plugin", BOOMERANG_VERSION,
+                        "Boomerang developers")

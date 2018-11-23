@@ -9,6 +9,7 @@
 #pragma endregion License
 #include "CapstoneX86Decoder.h"
 
+#include "boomerang/core/plugin/Plugin.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
@@ -511,3 +512,7 @@ bool CapstoneX86Decoder::genBSFR(Address pc, const cs::cs_insn *instruction, Dec
 
     return true;
 }
+
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, CapstoneX86Decoder, "Capstone x86 decoder plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

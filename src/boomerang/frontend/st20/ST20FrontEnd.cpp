@@ -14,7 +14,6 @@
 #include "boomerang/db/proc/ProcCFG.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/st20/ST20Decoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -24,7 +23,13 @@
 ST20FrontEnd::ST20FrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new ST20Decoder(project));
+    Plugin *plugin = project->getPluginManager()->getPluginByName("ST20 decoder plugin");
+    if (!plugin) {
+        throw "Decoder plugin not found";
+    }
+
+    m_decoder = plugin->getIfc<IDecoder>();
+    m_decoder->initialize(project);
 }
 
 

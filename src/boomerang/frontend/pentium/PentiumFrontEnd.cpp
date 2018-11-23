@@ -18,9 +18,9 @@
 #include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/CapstoneX86Decoder.h"
 #include "boomerang/frontend/pentium/StringInstructionProcessor.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/RTLInstDict.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
@@ -142,7 +142,13 @@ bool PentiumFrontEnd::isHelperFunc(Address dest, Address addr, RTLList &lrtl)
 PentiumFrontEnd::PentiumFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new CapstoneX86Decoder(project));
+    Plugin *plugin = project->getPluginManager()->getPluginByName("Capstone x86 decoder plugin");
+    if (!plugin) {
+        throw "Decoder plugin not found";
+    }
+
+    m_decoder = plugin->getIfc<IDecoder>();
+    m_decoder->initialize(project);
 }
 
 

@@ -53,7 +53,7 @@ public:
      * \param      hostPC pointer to the code in question (host address)
      * \returns    True if a match found
      */
-    bool isRestore(HostAddress hostPC);
+    bool isRestore(HostAddress hostPC) override;
 
 private:
     /*

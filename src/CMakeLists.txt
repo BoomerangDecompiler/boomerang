@@ -24,6 +24,7 @@ endif (BOOMERANG_BUILD_GUI)
 
 # plugins
 add_subdirectory(boomerang-plugins/codegen)
+add_subdirectory(boomerang-plugins/decoder)
 add_subdirectory(boomerang-plugins/loader)
 add_subdirectory(boomerang-plugins/symbol)
 add_subdirectory(boomerang-plugins/type)

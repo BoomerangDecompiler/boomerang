@@ -14,7 +14,8 @@
 #include <QDir>
 
 
-PluginManager::PluginManager()
+PluginManager::PluginManager(Project *project)
+    : m_project(project)
 {
 }
 
@@ -22,7 +23,7 @@ PluginManager::PluginManager()
 bool PluginManager::loadPlugin(const QString &path)
 {
     try {
-        std::unique_ptr<Plugin> newPlugin = std::make_unique<Plugin>(path);
+        std::unique_ptr<Plugin> newPlugin = std::make_unique<Plugin>(m_project, path);
 
         const QString pluginName = newPlugin->getInfo()->name;
         if (m_plugins.find(pluginName) != m_plugins.end()) {

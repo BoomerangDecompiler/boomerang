@@ -2302,3 +2302,7 @@ SPARCDecoder::SPARCDecoder(Project *project)
     , machine(new SPARCMachine)
 {
 }
+
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::Decoder, SPARCDecoder, "SPARC decoder plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

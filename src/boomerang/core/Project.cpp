@@ -25,7 +25,7 @@
 
 Project::Project()
     : m_settings(new Settings())
-    , m_pluginManager(new PluginManager())
+    , m_pluginManager(new PluginManager(this))
 {
 }
 

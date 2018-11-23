@@ -16,7 +16,7 @@
 class PluginManager
 {
 public:
-    PluginManager();
+    PluginManager(Project *project);
 
 public:
     bool loadPlugin(const QString &path);
@@ -35,6 +35,8 @@ public:
     const Plugin *getPluginByName(const QString &name) const;
 
 private:
+    Project *m_project;
+
     std::map<QString, std::unique_ptr<Plugin>> m_plugins;
     std::map<PluginType, std::vector<Plugin *>> m_pluginsByType;
 };

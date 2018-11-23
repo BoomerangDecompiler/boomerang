@@ -8,19 +8,14 @@
 
 
 list(APPEND boomerang-frontend-sources
-    frontend/CapstoneDecoder
     frontend/DecodeResult
     frontend/DefaultFrontEnd
     frontend/NJMCDecoder
-    frontend/pentium/CapstoneX86Decoder
     frontend/pentium/PentiumFrontEnd
     frontend/pentium/StringInstructionProcessor
-    frontend/ppc/PPCDecoder
     frontend/ppc/PPCFrontEnd
     frontend/SigEnum
-    frontend/sparc/SPARCDecoder
     frontend/sparc/SPARCFrontEnd
-    frontend/st20/ST20Decoder
     frontend/st20/ST20FrontEnd
     frontend/TargetQueue
 )

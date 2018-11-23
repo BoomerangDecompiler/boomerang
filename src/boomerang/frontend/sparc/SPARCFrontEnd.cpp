@@ -21,7 +21,7 @@
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
 #include "boomerang/decomp/IndirectJumpAnalyzer.h"
-#include "boomerang/frontend/sparc/SPARCDecoder.h"
+#include "boomerang/frontend/NJMCDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Binary.h"
@@ -731,10 +731,9 @@ bool SPARCFrontEnd::processProc(UserProc *proc, Address pc)
                     // instruction is a restore, e.g.
                     // 142c8:  40 00 5b 91          call exit
                     // 142cc:  91 e8 3f ff          restore %g0, -1, %o0
-                    if (static_cast<SPARCDecoder *>(m_decoder.get())
-                            ->isRestore(HostAddress(
-                                pc.value() + inst.numBytes +
-                                m_program->getBinaryFile()->getImage()->getTextDelta()))) {
+                    if (static_cast<NJMCDecoder *>(m_decoder)->isRestore(
+                            HostAddress(pc.value() + inst.numBytes +
+                                        m_program->getBinaryFile()->getImage()->getTextDelta()))) {
                         // Give the address of the call; I think that this is actually important, if
                         // faintly annoying
                         delayInst.rtl->setAddress(pc);
@@ -1275,7 +1274,13 @@ bool SPARCFrontEnd::helperFuncLong(Address dest, Address addr, RTLList &lrtl, QS
 SPARCFrontEnd::SPARCFrontEnd(Project *project)
     : DefaultFrontEnd(project)
 {
-    m_decoder.reset(new SPARCDecoder(project));
+    Plugin *plugin = project->getPluginManager()->getPluginByName("SPARC decoder plugin");
+    if (!plugin) {
+        throw "Decoder plugin not found";
+    }
+
+    m_decoder = plugin->getIfc<IDecoder>();
+    m_decoder->initialize(project);
 
     nop_inst.numBytes = 0; // So won't disturb coverage
     nop_inst.type     = NOP;

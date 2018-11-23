@@ -23,7 +23,6 @@
 CapstoneDecoder::CapstoneDecoder(Project *project, cs::cs_arch arch, cs::cs_mode mode,
                                  const QString &sslFileName)
     : IDecoder(project)
-    , m_prog(project->getProg())
     , m_dict(project->getSettings()->debugDecoder)
     , m_debugMode(project->getSettings()->debugDecoder)
 {
@@ -55,6 +54,13 @@ CapstoneDecoder::CapstoneDecoder(Project *project, cs::cs_arch arch, cs::cs_mode
 CapstoneDecoder::~CapstoneDecoder()
 {
     cs::cs_close(&m_handle);
+}
+
+
+bool CapstoneDecoder::initialize(Project *project)
+{
+    m_prog = project->getProg();
+    return true;
 }
 
 

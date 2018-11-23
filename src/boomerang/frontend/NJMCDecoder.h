@@ -22,7 +22,7 @@ class BinaryImage;
 /**
  * The NJMCDecoder class is a class that contains NJMC generated decoding methods.
  */
-class NJMCDecoder : public IDecoder
+class BOOMERANG_API NJMCDecoder : public IDecoder
 {
 public:
     /**
@@ -40,7 +40,11 @@ public:
     NJMCDecoder &operator=(NJMCDecoder &&other) = default;
 
 public:
+    bool initialize(Project *project) override;
+
+
     const RTLInstDict *getDict() const override { return &m_rtlDict; }
+
 
     /**
      * Process an indirect jump instruction.
@@ -73,6 +77,9 @@ public:
 
     /// \copydoc IDecoder::getRegNumByName
     RegNum getRegNumByName(const QString &name) const override;
+
+    // only implemented for SPARC
+    virtual bool isRestore(HostAddress hostPC);
 
 protected:
     /**
