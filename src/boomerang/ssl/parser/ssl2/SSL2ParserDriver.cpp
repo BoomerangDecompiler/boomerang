@@ -1,11 +1,12 @@
 
 
 #include "SSL2ParserDriver.h"
+
 #include "SSL2Parser.hpp"
 
 #include "boomerang/ssl/RTLInstDict.h"
-#include "boomerang/util/log/Log.h"
 #include "boomerang/ssl/exp/Terminal.h"
+#include "boomerang/util/log/Log.h"
 
 #include <QMap>
 
@@ -40,11 +41,11 @@ int SSL2ParserDriver::parse(const std::string &f)
 
 Statement *SSL2ParserDriver::parseExp(const char *str, bool verboseOutput)
 {
-//     std::istringstream ss(str);
-//     SSLParser p(ss, false); // Second arg true for debugging
-//     RTLInstDict d(verboseOutput);
-//     p.yyparse(d);
-//     return p.the_asgn;
+    //     std::istringstream ss(str);
+    //     SSLParser p(ss, false); // Second arg true for debugging
+    //     RTLInstDict d(verboseOutput);
+    //     p.yyparse(d);
+    //     return p.the_asgn;
     Q_UNUSED(str);
     Q_UNUSED(verboseOutput);
     return nullptr;
@@ -284,7 +285,7 @@ bool SSL2ParserDriver::expandTables(const std::shared_ptr<InsNameElem> &iname,
                     QString tbl    = (e)->access<Const, 1>()->getStr();
                     QString idx    = (e)->access<Const, 2>()->getStr();
                     SharedExp repl = std::static_pointer_cast<ExprTable>(TableDict[tbl])
-                        ->expressions[indexrefmap[idx]->getValue()];
+                                         ->expressions[indexrefmap[idx]->getValue()];
                     s->searchAndReplace(*e, repl);
                 }
             }
@@ -315,7 +316,7 @@ bool SSL2ParserDriver::expandTables(const std::shared_ptr<InsNameElem> &iname,
                 assert(b->getOper() == opList);
                 e2          = e2->getSubExp1();
                 QString ops = std::static_pointer_cast<OpTable>(TableDict[tbl])
-                    ->getRecords()[indexrefmap[idx]->getValue()];
+                                  ->getRecords()[indexrefmap[idx]->getValue()];
                 SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
                 s->searchAndReplace(*res, repl);
             }
@@ -323,7 +324,7 @@ bool SSL2ParserDriver::expandTables(const std::shared_ptr<InsNameElem> &iname,
 
         if (dict->insert(name, *params, rtl) != 0) {
             LOG_ERROR("Pattern %1 conflics with an earlier declaration of %2.",
-                iname->getInsPattern(), name);
+                      iname->getInsPattern(), name);
             return false;
         }
     }

@@ -10,15 +10,14 @@
 #pragma once
 
 
-# include "SSL2Parser.hpp"
+#include "SSL2Parser.hpp"
 
-# include <map>
-# include <string>
+#include <map>
+#include <string>
 
 
 // Tell Flex the lexer's prototype ...
-# define YY_DECL \
-yy::parser::symbol_type yylex (SSL2ParserDriver& drv)
+#define YY_DECL yy::parser::symbol_type yylex(SSL2ParserDriver &drv)
 // ... and declare it for the parser's sake.
 YY_DECL;
 
@@ -52,8 +51,8 @@ public:
 
     SharedExp makeSuccessor(SharedExp e);
     bool expandTables(const std::shared_ptr<InsNameElem> &iname,
-                      const std::shared_ptr<std::list<QString>> &params,
-                      SharedRTL o_rtlist, RTLInstDict *dict);
+                      const std::shared_ptr<std::list<QString>> &params, SharedRTL o_rtlist,
+                      RTLInstDict *dict);
 
     /// Result for parsing an assignment.
     Statement *the_asgn;
@@ -76,7 +75,7 @@ private:
     void scanEnd();
 
 private:
-    std::string file;     ///< The name of the file being parsed.
-    bool trace_parsing;   ///< Whether to generate parser debug traces.
-    bool trace_scanning;  ///< Whether to generate scanner debug traces.
+    std::string file;    ///< The name of the file being parsed.
+    bool trace_parsing;  ///< Whether to generate parser debug traces.
+    bool trace_scanning; ///< Whether to generate scanner debug traces.
 };
