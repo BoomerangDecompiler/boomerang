@@ -72,7 +72,6 @@ void BasicBlockTest::testAssign()
     QCOMPARE(bb4.prints(), bb3.prints());
 
     BasicBlock bb5 = bb2;
-    bb5 = bb5;
 
     QVERIFY(bb5.getLowAddr() == Address(0x1000));
     QVERIFY(bb5.getFunction() == &proc);
