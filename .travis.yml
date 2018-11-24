@@ -53,7 +53,7 @@ before_script:
 
 
 script:
-  - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make test && make package"
+  - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && (make test || ctest -V --rerun-failed) && make package"
 
 
 notifications:
