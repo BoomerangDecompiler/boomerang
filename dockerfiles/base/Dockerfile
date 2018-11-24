@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:cosmic
 
 RUN useradd -m boomerang
 WORKDIR /home/boomerang/
@@ -11,7 +11,9 @@ RUN apt-get -y update && \
     ccache \
     qt5-default \
     git \
-    libcapstone-dev
+    libcapstone-dev \
+    bison \
+    flex
 
 
 COPY . boomerang

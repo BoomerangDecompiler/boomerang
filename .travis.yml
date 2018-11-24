@@ -21,9 +21,9 @@ matrix:
       script:
         - docker exec -t build-env bash -c "cd boomerang && ./scripts/run-clang-format.py -r src/ -e */machO/objc/*"
     - env:
-        - TARGET="clang5-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
+        - TARGET="clang6-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
-        - TARGET="clang6-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="ON"
+        - TARGET="clang7-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="ON"
     - env:
         - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:

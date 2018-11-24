@@ -16,9 +16,9 @@ it is currently recommended to build the development version (`develop`) of the 
 ### Building prerequisites
 
  - A 64 bit operating system (32 bit might or might not work, but it is not supported.)
- - A C++ compiler compatible with C++17 (GCC 7+, Clang 5+, MSVC 2017+ are known to work)
+ - A C++ compiler compatible with C++17 (GCC 7+, Clang 6+, MSVC 2017+ are known to work)
  - [CMake 3.8.0 or newer](https://cmake.org/download/)
- - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.9+ is known to work, earlier versions should also work)
+ - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.11+ is known to work, earlier versions should also work)
  - [Capstone 3.0.5 or newer](http://www.capstone-engine.org/)
  - [Doxygen 1.8.13 or newer](http://www.doxygen.nl/) (optional, for documentation)
  - [Python 3](https://www.python.org/downloads/) (optional, for regression tests)
