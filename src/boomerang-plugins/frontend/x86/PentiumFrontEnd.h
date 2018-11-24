@@ -34,6 +34,8 @@ public:
     PentiumFrontEnd &operator=(PentiumFrontEnd &&other) = default;
 
 public:
+    bool initialize(Project *project) override;
+
     /// \copydoc IFrontEnd::processProc
     virtual bool processProc(UserProc *proc, Address addr) override;
 

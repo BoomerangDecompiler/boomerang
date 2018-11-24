@@ -14,10 +14,6 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/decomp/ProgDecompiler.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
-#include "boomerang/frontend/ppc/PPCFrontEnd.h"
-#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
-#include "boomerang/frontend/st20/ST20FrontEnd.h"
 #include "boomerang/util/CallGraphDotWriter.h"
 #include "boomerang/util/ProgSymbolWriter.h"
 #include "boomerang/util/log/Log.h"
@@ -252,13 +248,13 @@ Prog *Project::createProg(BinaryFile *file, const QString &name)
     }
 
     // unload old Prog before creating a new one
-    m_fe.reset();
+    m_fe = nullptr;
     m_prog.reset();
 
     m_prog.reset(new Prog(name, this));
-    m_fe.reset(createFrontEnd());
+    m_fe = createFrontEnd();
+    m_prog->setFrontEnd(m_fe);
 
-    m_prog->setFrontEnd(m_fe.get());
     return m_prog.get();
 }
 
@@ -266,13 +262,29 @@ Prog *Project::createProg(BinaryFile *file, const QString &name)
 IFrontEnd *Project::createFrontEnd()
 {
     try {
+        Plugin *plugin = nullptr;
+
         switch (getLoadedBinaryFile()->getMachine()) {
-        case Machine::PENTIUM: return new PentiumFrontEnd(this);
-        case Machine::SPARC: return new SPARCFrontEnd(this);
-        case Machine::PPC: return new PPCFrontEnd(this);
-        case Machine::ST20: return new ST20FrontEnd(this);
+        case Machine::PENTIUM:
+            plugin = m_pluginManager->getPluginByName("X86 FrontEnd plugin");
+            break;
+        case Machine::SPARC:
+            plugin = m_pluginManager->getPluginByName("SPARC FrontEnd plugin");
+            break;
+        case Machine::PPC: plugin = m_pluginManager->getPluginByName("PPC FrontEnd plugin"); break;
+        case Machine::ST20:
+            plugin = m_pluginManager->getPluginByName("ST20 FrontEnd plugin");
+            break;
         default: LOG_ERROR("Machine architecture not supported!"); break;
         }
+
+        if (!plugin) {
+            throw std::runtime_error("Plugin not found.");
+        }
+
+        IFrontEnd *fe = plugin->getIfc<IFrontEnd>();
+        fe->initialize(this);
+        return fe;
     }
     catch (const std::runtime_error &err) {
         LOG_ERROR("Cannot create frontend: %1", err.what());
@@ -354,6 +366,10 @@ void Project::loadPlugins()
                     plugin->getInfo()->author);
         }
         for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::FileLoader)) {
+            LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
+                    plugin->getInfo()->author);
+        }
+        for (const Plugin *plugin : m_pluginManager->getPluginsByType(PluginType::FrontEnd)) {
             LOG_MSG("  %1 %2 (by '%3')", plugin->getInfo()->name, plugin->getInfo()->version,
                     plugin->getInfo()->author);
         }

@@ -9,20 +9,20 @@
 #pragma endregion License
 #include "DataFlowTest.h"
 
+#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
 
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
 #include "boomerang/db/DataFlow.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
+#include "boomerang/db/proc/UserProc.h"
+#include "boomerang/passes/PassManager.h"
+#include "boomerang/ssl/RTL.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/db/proc/UserProc.h"
-#include "boomerang/db/Prog.h"
-#include "boomerang/ssl/RTL.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/type/VoidType.h"
 #include "boomerang/util/log/Log.h"
-#include "boomerang/passes/PassManager.h"
 
 #include <QDebug>
 

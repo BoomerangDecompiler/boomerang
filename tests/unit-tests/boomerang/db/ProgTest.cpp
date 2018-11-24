@@ -9,17 +9,17 @@
 #pragma endregion License
 #include "ProgTest.h"
 
+#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
 
 #include "boomerang/core/Settings.h"
-#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySection.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
-#include "boomerang/db/proc/LibProc.h"
-#include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"
+#include "boomerang/db/proc/LibProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
+#include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CharType.h"
 #include "boomerang/ssl/type/FloatType.h"

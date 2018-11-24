@@ -23,8 +23,6 @@
 #include "boomerang/ssl/statements/CaseStatement.h"
 #include "boomerang/ssl/statements/CallStatement.h"
 #include "boomerang/ssl/statements/ReturnStatement.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
-#include "boomerang/frontend/sparc/SPARCFrontEnd.h"
 #include "boomerang/ssl/type/IntegerType.h"
 #include "boomerang/util/log/Log.h"
 #include "boomerang/visitor/stmtvisitor/StmtVisitor.h"

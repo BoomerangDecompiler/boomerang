@@ -10,6 +10,9 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
+
+
 class BasicBlock;
 class UserProc;
 
@@ -18,7 +21,7 @@ class UserProc;
  * Analyzes indirect jumps and calls.
  * This includes virtual calls and switch statements.
  */
-class IndirectJumpAnalyzer
+class BOOMERANG_API IndirectJumpAnalyzer
 {
 public:
     /// Find indirect jumps and calls

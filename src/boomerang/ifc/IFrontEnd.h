@@ -46,8 +46,9 @@ public:
     IFrontEnd(Project *) {}
     virtual ~IFrontEnd() = default;
 
-    // decoding related
 public:
+    virtual bool initialize(Project *project) = 0;
+
     virtual IDecoder *getDecoder()             = 0;
     virtual const IDecoder *getDecoder() const = 0;
 

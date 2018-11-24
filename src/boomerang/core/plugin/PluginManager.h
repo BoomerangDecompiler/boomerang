@@ -10,10 +10,11 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/core/plugin/Plugin.h"
 
 
-class PluginManager
+class BOOMERANG_API PluginManager
 {
 public:
     PluginManager(Project *project);

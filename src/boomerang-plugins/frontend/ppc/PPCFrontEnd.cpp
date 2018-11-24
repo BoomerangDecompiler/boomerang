@@ -70,3 +70,7 @@ bool PPCFrontEnd::processProc(UserProc *proc, Address entryAddr)
 
     return true;
 }
+
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, PPCFrontEnd, "PPC FrontEnd plugin", BOOMERANG_VERSION,
+                        "Boomerang developers")

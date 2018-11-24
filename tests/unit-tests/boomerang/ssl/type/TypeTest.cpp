@@ -14,7 +14,6 @@
 #include "boomerang/db/module/Module.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/db/signature/Signature.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/type/ArrayType.h"
 #include "boomerang/ssl/type/CompoundType.h"
 #include "boomerang/ssl/type/IntegerType.h"

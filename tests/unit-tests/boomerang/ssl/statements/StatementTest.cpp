@@ -18,7 +18,6 @@
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
 #include "boomerang/decomp/ProgDecompiler.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -720,9 +719,6 @@ void StatementTest::testRecursion()
     QVERIFY(m_project.loadBinaryFile(HELLO_PENTIUM));
     Prog *prog = m_project.getProg();
 
-    IFrontEnd *fe = new PentiumFrontEnd(&m_project);
-    prog->setFrontEnd(fe);
-
     UserProc *proc = new UserProc(Address::ZERO, "test", prog->getOrInsertModule("test"));
     ProcCFG *cfg   = proc->getCFG();
 
@@ -1253,7 +1249,7 @@ void StatementTest::testBypass()
     QVERIFY(m_project.loadBinaryFile(GLOBAL1_PENTIUM));
 
     Prog *prog = m_project.getProg();
-    IFrontEnd *fe = new PentiumFrontEnd(&m_project);
+    IFrontEnd *fe = prog->getFrontEnd();
 
     Type::clearNamedTypes();
     prog->setFrontEnd(fe);

@@ -51,6 +51,8 @@ public:
     DefaultFrontEnd &operator=(DefaultFrontEnd &&) = default;
 
 public:
+    virtual bool initialize(Project *project) override;
+
     /// \copydoc IFrontEnd::getDecoder
     IDecoder *getDecoder() override { return m_decoder; }
     const IDecoder *getDecoder() const override { return m_decoder; }

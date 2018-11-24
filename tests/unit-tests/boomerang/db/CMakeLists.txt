@@ -53,3 +53,7 @@ if (BOOMERANG_BUILD_LOADER_Elf)
         )
     endforeach()
 endif (BOOMERANG_BUILD_LOADER_Elf)
+
+target_link_libraries(ProgTest
+    boomerang-X86FrontEnd
+)

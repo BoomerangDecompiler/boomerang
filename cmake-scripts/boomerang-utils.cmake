@@ -227,6 +227,43 @@ endfunction()
 
 
 #
+# Usage: BOOMERANG_ADD_FRONTEND(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_FRONTEND)
+    cmake_parse_arguments(FRONTEND "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_FRONTEND_${FRONTEND_NAME} "Build the ${FRONTEND_NAME} front end." ON)
+
+    if (BOOMERANG_BUILD_FRONTEND_${FRONTEND_NAME})
+        set(target_name "boomerang-${FRONTEND_NAME}FrontEnd")
+        add_library(${target_name} SHARED ${FRONTEND_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${FRONTEND_LIBRARIES})
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/frontend/
+            RUNTIME DESTINATION lib/boomerang/plugins/frontend/
+        )
+    endif (BOOMERANG_BUILD_FRONTEND_${FRONTEND_NAME})
+endfunction()
+
+
+#
 # Usage: BOOMERANG_ADD_TEST(NAME <name> SOURCES <souce files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_TEST)

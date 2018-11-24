@@ -11,12 +11,7 @@ list(APPEND boomerang-frontend-sources
     frontend/DecodeResult
     frontend/DefaultFrontEnd
     frontend/NJMCDecoder
-    frontend/pentium/PentiumFrontEnd
-    frontend/pentium/StringInstructionProcessor
-    frontend/ppc/PPCFrontEnd
     frontend/SigEnum
-    frontend/sparc/SPARCFrontEnd
-    frontend/st20/ST20FrontEnd
     frontend/TargetQueue
 )
 

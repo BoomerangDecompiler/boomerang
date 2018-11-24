@@ -47,6 +47,15 @@ DefaultFrontEnd::~DefaultFrontEnd()
 }
 
 
+bool DefaultFrontEnd::initialize(Project *project)
+{
+    m_program    = project->getProg();
+    m_binaryFile = project->getLoadedBinaryFile();
+
+    return m_decoder->initialize(project);
+}
+
+
 bool DefaultFrontEnd::decodeEntryPointsRecursive(bool decodeMain)
 {
     if (!decodeMain) {

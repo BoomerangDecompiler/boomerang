@@ -66,3 +66,6 @@ bool ST20FrontEnd::processProc(UserProc *proc, Address entryAddr)
 
     return true;
 }
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, ST20FrontEnd, "ST20 FrontEnd plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")

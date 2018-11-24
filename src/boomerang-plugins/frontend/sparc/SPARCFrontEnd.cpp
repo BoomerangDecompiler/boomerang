@@ -1327,3 +1327,6 @@ void SPARCFrontEnd::warnInvalidInstruction(Address pc)
 
     LOG_WARN(message);
 }
+
+BOOMERANG_DEFINE_PLUGIN(PluginType::FrontEnd, SPARCFrontEnd, "SPARC FrontEnd plugin",
+                        BOOMERANG_VERSION, "Boomerang developers")
