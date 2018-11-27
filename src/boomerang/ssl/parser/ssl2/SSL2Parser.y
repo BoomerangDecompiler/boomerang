@@ -230,7 +230,7 @@ exp:
         }
     }
 //  | exp NAME_LOOKUP LBRACKET IDENT RBRACKET exp_term %prec LOOKUP_RDC
-  | exp_term
+  | exp_term { $$ = std::move($1); }
   ;
 
 cast:
