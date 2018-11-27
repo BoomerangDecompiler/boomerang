@@ -10,8 +10,7 @@ addons:
 
 
 install:
-  - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-$TARGET:latest tail -f /dev/null
-
+  - docker run -d --name build-env -v $(pwd):/home/boomerang/boomerang/ -v /home/travis/.ccache/:/home/boomerang/.ccache ceeac/boomerang-build-env:$TARGET tail -f /dev/null
 
 matrix:
   include:
