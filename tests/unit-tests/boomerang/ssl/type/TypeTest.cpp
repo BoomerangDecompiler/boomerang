@@ -114,11 +114,12 @@ void TypeTest::testCompound()
     prog->readDefaultLibraryCatalogues();
 
     std::shared_ptr<Signature> paintSig = prog->getLibSignature("BeginPaint");
-    SharedType paramType = paintSig->getParamType(1);
+    const SharedType paramType = paintSig->getParamType(1);
 
     QVERIFY(paramType != nullptr);
-    QCOMPARE(paintSig->getParamType(1)->getCtype(), QString("LPPAINTSTRUCT"));
-    SharedType paintStructType = paramType->as<PointerType>()->getPointsTo();
+    QCOMPARE(paramType->getCtype(), QString("LPPAINTSTRUCT"));
+
+    const SharedType paintStructType = paramType->as<PointerType>()->getPointsTo();
     QVERIFY(paintStructType != nullptr);
     QCOMPARE(paintStructType->getCtype(), QString("PAINTSTRUCT"));
 
