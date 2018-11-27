@@ -183,16 +183,16 @@ _?[A-Za-z][A-Za-z0-9_]* {
                 return yy::parser::make_FLOAT_LITERAL(atof(yytext), loc);
 }
 -?[0-9]+ {
-                return yy::parser::make_INT_LITERAL(strtol(yytext, 0, 10), loc);
+                return yy::parser::make_INT_LITERAL(strtol(yytext, nullptr, 10), loc);
 }
 0x[A-F0-9]+ {
-                return yy::parser::make_INT_LITERAL(strtol(yytext, 0, 16), loc);
+                return yy::parser::make_INT_LITERAL(strtol(yytext, nullptr, 16), loc);
 }
 -?"2**"[0-9]+    {
                 // a power of two
                 const int sign = (yytext[0] == '-' ? -1 : 1);
                 const char *start = yytext + (sign == -1 ? 4:3);
-                return yy::parser::make_INT_LITERAL((1 << strtol(start, 0, 10)) * sign, loc);
+                return yy::parser::make_INT_LITERAL((1 << strtol(start, nullptr, 10)) * sign, loc);
 }
 
 {blank}+   loc.step();
