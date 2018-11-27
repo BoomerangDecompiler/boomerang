@@ -20,17 +20,23 @@ matrix:
       script:
         - docker exec -t build-env bash -c "cd boomerang && ./scripts/run-clang-format.py -r src/ -e */machO/objc/*"
     - env:
-        - TARGET="clang6-debug"    BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
+        - TARGET="clang6-debug"     BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
-        - TARGET="clang7-release"  BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="ON"
+        - TARGET="clang7-release"   BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="ON"
     - env:
-        - TARGET="gcc7-release"    BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
+        - TARGET="gcc7-release"     BUILD_TYPE="Release"        UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="OFF" SHARED_LIBS="OFF"
     - env:
-        - TARGET="gcc8-regression" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"  COVERAGE="OFF" SHARED_LIBS="ON"
+        - TARGET="gcc8-regress-cov" BUILD_TYPE="RelWithDebInfo" UNIT_TESTS="OFF" REGRESSION_TESTS="ON"  COVERAGE="ON"  SHARED_LIBS="ON"
       script:
         - docker exec -t build-env bash -c "cd boomerang/build && make -j$(nproc) && make check"
+      after_success:
+        - echo "Building CodeCov reports" && docker exec -t build-env bash -c "cd boomerang/build &&
+            lcov --directory . --capture --output-file coverage.info &&
+            lcov -r coverage.info '*.l' '/usr/*' '*/tests/unit-tests/*' --output-file coverage.info &&
+            lcov --list coverage.info"
+        - echo "Uploading CodeCov reports" && bash <(curl -s https://codecov.io/bash) -X gcov -X coveragepy -X xcode -F unittests -s "$(pwd)/build" || echo \"CodeCov coverage report generation failed!\"
     - env:
-        - TARGET="gcc7-debug-cov"  BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"  SHARED_LIBS="ON"
+        - TARGET="gcc8-debug-cov"   BUILD_TYPE="Debug"          UNIT_TESTS="ON"  REGRESSION_TESTS="OFF" COVERAGE="ON"  SHARED_LIBS="ON"
       after_success:
         - echo "Building CodeCov reports" && docker exec -t build-env bash -c "cd boomerang/build &&
             lcov --directory . --capture --output-file coverage.info &&
