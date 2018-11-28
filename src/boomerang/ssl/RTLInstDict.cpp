@@ -61,6 +61,12 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
 
     if (drv.parse(sslFileName.toStdString()) != 0) {
         LOG_WARN("Parsing SSL file failed, falling back to legacy parser");
+        m_definedParams.clear();
+        m_flagFuncs.clear();
+        m_instructions.clear();
+        m_regIDs.clear();
+        m_regInfo.clear();
+        m_specialRegInfo.clear();
 
         SSLParser theParser(qPrintable(sslFileName),
 #ifdef DEBUG_SSLPARSER
