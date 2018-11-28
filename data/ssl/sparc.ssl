@@ -185,7 +185,7 @@ TSUBFLAGS(op1, op2, result) {
             ((result@[31:31]) & (~(op1@[31:31]) | (op2@[31:31])))
 };
 
-# MVE: These are correct only for a 32 but result; usually result is 64 bits
+# MVE: These are correct only for a 32 bit result; usually result is 64 bits
 MULTFLAGS(op1, op2, result) {
     *1*  %NF := result@[31:31]
     *1*  %ZF := [result = 0 ? 1 : 0]
