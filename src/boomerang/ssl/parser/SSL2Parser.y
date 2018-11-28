@@ -1,3 +1,11 @@
+/*
+ * This file is part of the Boomerang Decompiler.
+ *
+ * See the file "LICENSE.TERMS" for information on usage and
+ * redistribution of this file, and for a DISCLAIMER OF ALL
+ * WARRANTIES.
+ */
+
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "3.0"
 %defines
@@ -7,13 +15,14 @@
 
 %code requires {
 
+#include "InsNameElem.h"
+
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Ternary.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/RTL.h"
 
-#include "boomerang/ssl/parser/InsNameElem.h"
 
 class SSL2ParserDriver;
 
