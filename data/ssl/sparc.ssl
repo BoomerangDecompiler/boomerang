@@ -265,19 +265,21 @@ SWAP    eaddr, rd       *32* tmp1 := rd
                         *32* m[eaddr] := tmp1
 ;
 
-# Logical operators - use OP1 (table) to map the correct operator.
 
-LOG_N   := { "AND",   "OR",     "XOR",  "ANDCC",  "ORCC",  "XORCC"  };
-OP1     := { "&",     "|",      "^",    "&",      "|",     "^"      };
-LOG_NOT := { "ANDN",  "ORN",    "XNOR", "ANDNCC", "ORNCC", "XNORCC" };
-LOG_CC  := { "ANDCC", "ANDNCC", "ORCC", "ORNCC",  "XORCC", "XNORCC" };
+AND     rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm;
+ANDCC   rs1, reg_or_imm, rd *32* rd := rs1 & reg_or_imm     LOGICALFLAGS(rd);
+OR      rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm;
+ORCC    rs1, reg_or_imm, rd *32* rd := rs1 | reg_or_imm     LOGICALFLAGS(rd);
+XOR     rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm;
+XORCC   rs1, reg_or_imm, rd *32* rd := rs1 ^ reg_or_imm     LOGICALFLAGS(rd);
 
-LOG_N[IDX]   rs1, reg_or_imm, rd
-                    *32* rd := rs1 OP1[IDX] reg_or_imm;
-LOG_NOT[IDX] rs1, reg_or_imm, rd
-                    *32* rd := rs1 OP1[IDX] (~reg_or_imm);    # ~ has weird precedence
-LOG_CC[IDX]  rs1, reg_or_imm, rd
-                    LOGICALFLAGS(rd);
+ANDN    rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm);
+ANDNCC  rs1, reg_or_imm, rd *32* rd := rs1 & (~reg_or_imm)  LOGICALFLAGS(rd);
+ORN     rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm);
+ORNCC   rs1, reg_or_imm, rd *32* rd := rs1 | (~reg_or_imm)  LOGICALFLAGS(rd);
+XNOR    rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm);
+XNORCC  rs1, reg_or_imm, rd *32* rd := rs1 ^ (~reg_or_imm)  LOGICALFLAGS(rd);
+
 
 # sethi instruction- puts the immediate into the top 22 bits
 SETHI val, rd           *32* rd := val;
@@ -287,43 +289,28 @@ NOP                     _;
 FLUSH  eaddr            _; # icache flush
 STBAR                   _; # store barrier
 
-# Shift operators- again uses OP2 table for correct operator.
-
-SHIFTS  := { "SLL", "SRL", "SRA" };
-OP2     := { "<<",  ">>",  ">>A" };
-SHIFTS[IDX] rs1, reg_or_imm, rd      *32* rd := rs1 OP2[IDX] reg_or_imm;
+SLL     rs1, reg_or_imm, rd     *32* rd := rs1 <<  reg_or_imm;
+SRL     rs1, reg_or_imm, rd     *32* rd := rs1 >>  reg_or_imm;
+SRA     rs1, reg_or_imm, rd     *32* rd := rs1 >>A reg_or_imm;
 
 
-# Arithmetic operators- uses OP3 table for correct operator.
 # NOTE: The format of these (number of RTLs, etc) must agree with the
 # isCompare function in rtl/ctisparc.cc.
+ADD     rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm;
+ADDCC   rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     ADDFLAGS(tmp, reg_or_imm, rd);
+SUB     rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm;
+SUBCC   rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     SUBFLAGS(tmp, reg_or_imm, rd);
+TADDCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm     TADDFLAGS(tmp, reg_or_imm, rd);
+TSUBCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 - reg_or_imm     TSUBFLAGS(tmp, reg_or_imm, rd);
 
-ARITH   := { "ADD", "SUB", "ADDCC", "SUBCC", "TADDCC", "TSUBCC" };
-OP3     := {  "+",  "-",   "+",     "-",     "+",      "-"      };
+ADDX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF);
+ADDXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   ADDFLAGS(tmp, reg_or_imm, rd);
+SUBX    rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF);
+SUBXCC  rs1, reg_or_imm, rd     *32* tmp := rs1     *32* rd := rs1 + reg_or_imm + zfill(1,32,%CF)   SUBFLAGS(tmp, reg_or_imm, rd);
 
-ARITH[IDX] rs1, reg_or_imm, rd
-    *32* tmp := rs1
-    *32* rd  := rs1 OP3[IDX] reg_or_imm
-;
 
-ADDCC  rs1, reg_or_imm, rd  ADDFLAGS(tmp, reg_or_imm, rd);
-SUBCC  rs1, reg_or_imm, rd  SUBFLAGS(tmp, reg_or_imm, rd);
-TADDCC rs1, reg_or_imm, rd  TADDFLAGS(tmp, reg_or_imm, rd);
-TSUBCC rs1, reg_or_imm, rd  TSUBFLAGS(tmp, reg_or_imm, rd);
-
-ARITH_C := { "ADDX", "SUBX", "ADDXCC", "SUBXCC" };
-OP4     := { "+",    "-",    "+",      "-"      };
-
-ARITH_C[idx] rs1, reg_or_imm, rd
-    *32* tmp := rs1
-    *32* rd  := rs1 OP4[idx] reg_or_imm OP4[idx] zfill(1,32,%CF)
-;
-
-ADDXCC rs1, reg_or_imm, rd  ADDFLAGS(tmp, reg_or_imm, rd);
-SUBXCC rs1, reg_or_imm, rd  SUBFLAGS(tmp, reg_or_imm, rd);
-
-# Unsigned Multiplication - uses the Y register to store top 32 bits treats  Y
-#  and rd as 64 bit register
+# Unsigned Multiplication - uses the Y register to store top 32 bits
+# treats Y and rd as 64 bit register
 UMULT   := { "UMUL", "UMULCC" };
 
 UMULT[idx]  rs1, reg_or_imm, rd
@@ -631,26 +618,29 @@ FABSs      fs2s, fds        *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ];
 # added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
 
 # Shamelessly borrowed from integers
+FADDs  fs1, fs2, fd  *32*  fd := fs1 +f fs2;
+FSUBs  fs1, fs2, fd  *32*  fd := fs1 -f fs2;
+FDIVs  fs1, fs2, fd  *32*  fd := fs1 /f fs2;
+FMULs  fs1, fs2, fd  *32*  fd := fs1 *f fs2;
 
-OPS5    := { "+f",    "-f",    "/f",    "*f" };
-FARITHS := { "FADDs", "FSUBs", "FDIVs", "FMULs" };
+FADDd  fs1, fs2, fd  *64*  fd := fs1 +f fs2;
+FSUBd  fs1, fs2, fd  *64*  fd := fs1 -f fs2;
+FDIVd  fs1, fs2, fd  *64*  fd := fs1 /f fs2;
+FMULd  fs1, fs2, fd  *64*  fd := fs1 *f fs2;
+FsMULd fs1, fs2, fd  *64*  fd := fs1 *f fs2;
 
-OPD5    := { "+f",    "-f",    "/f",    "*f",    "*f" };
-FARITHD := { "FADDd", "FSUBd", "FDIVd", "FMULd", "FsMULd" };
+FADDq  fs1, fs2, fd  *128* fd := fs1 +f fs2;
+FSUBq  fs1, fs2, fd  *128* fd := fs1 -f fs2;
+FDIVQ  fs1, fs2, fd  *128* fd := fs1 /f fs2;
+FMULq  fs1, fs2, fd  *128* fd := fs1 *f fs2;
+FdMULq fs1, fs2, fd  *128* fd := fs1 *f fs2;
 
-OPQ5    := { "+f",    "-f",    "/f",    "*f",    "*f" };
-FARITHQ := { "FADDq", "FSUBq", "FDIVq", "FMULq", "FdMULq" };
-
-# Note: FsMULd and FdMULq probably read from the wrong registers!
-FARITHS[idx] fs1s, fs2s, fds  *32* fds := fs1s OPS5[idx] fs2s ;
-FARITHD[idx] fs1d, fs2d, fdd  *64* fdd := fs1d OPD5[idx] fs2d ;
-FARITHQ[idx] fs1q, fs2q, fdq *128* fdq := fs1q OPQ5[idx] fs2q ;
 
 # FSQRTx_ assumes that SQRT can operate on a register of any size
+FSQRTs     fs2s, fds  *32*  fds := sqrt(fs2s);
+FSQRTd     fs2d, fdd  *64*  fdd := sqrt(fs2d);
+FSQRTq     fs2q, fdq  *128* fdq := sqrt(fs2q);
 
-FSQRTs     fs2s, fds      *32* fds := sqrt(fs2s);
-FSQRTd     fs2d, fdd      *64* fdd := sqrt(fs2d);
-FSQRTq     fs2q, fdq     *128* fdq := sqrt(fs2q);
 
 # FiTOf etc are no longer their own unique unary operators
 FiTOs      fs2s, fds     *32* fds := itof(32, 32,  fs2s);
@@ -712,7 +702,9 @@ COND2     := { "1", "0", "~%FZF", "%FZF", "%FGF", "(%FZF | %FLF)",
 JUMPS2_C  := { "FBNE", "FBE", "FBG", "FBLE", "FBUE",
             "FBUL", "FBGE", "FBL", "FBLG", "FBUG", "FBULE",
             "FBUGE", "FBU", "FBO" };
-JUMPS2 := { "FBA", "FBN", JUMPS2_C };
+JUMPS2 := { "FBA", "FBN", "FBNE", "FBE", "FBG", "FBLE", "FBUE",
+            "FBUL", "FBGE", "FBL", "FBLG", "FBUG", "FBULE",
+            "FBUGE", "FBU", "FBO" };
 
 JUMPS2[idx]  reloc
     *32* %pc := %npc
@@ -732,7 +724,7 @@ FBNA    reloc
     *1* %CTI := 1
 ;
 
-JUMPS2_C[idx]"A"   reloc
+JUMPS2_C[idx] . A  reloc
     *32* %pc := [(COND2_C[idx] = 0) ? %npc+4 : %npc ]
     *32* %npc := [(COND2_C[idx] = 0) ? %npc+8 : reloc]
     *1* %CTI := 1

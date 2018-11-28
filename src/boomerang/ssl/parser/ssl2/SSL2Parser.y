@@ -229,7 +229,6 @@ exp:
             $$ = Binary::get(opSize, Const::get($2), $1);
         }
     }
-//  | exp NAME_LOOKUP LBRACKET IDENT RBRACKET exp_term %prec LOOKUP_RDC
   | exp_term { $$ = std::move($1); }
   ;
 
