@@ -1,52 +1,110 @@
 #
-# Copyright (C) 2004, The University of Queensland
+# This file is part of the Boomerang Decompiler.
 #
 # See the file "LICENSE.TERMS" for information on usage and
 # redistribution of this file, and for a DISCLAIMER OF ALL
 # WARRANTIES.
 #
 
-# File: ppc.ssl
-# Desc: This file contains a semantic description of the PPC processor.
-
-# 26/Sep/05 - Mike: Added STWX/STHX/STBX, EXTSB/EXTSBq
-
-# --------------------------------------------------------------------------
-# PPC RTL
-# --------------------------------------------------------------------------
-
-
-MAX_BYTE    := 2**8  - 1;    # a byte of all 1's
-MAX32BIT    := 0xFFFFFFFF;    # a word of all 1's
-MAXSIGN32   := 0x7FFFFFFF;    # all bits except sign bit are set
+MAX_BYTE    := 0xFF;       # a byte of all 1's
+MAX32BIT    := 0xFFFFFFFF; # a word of all 1's
+MAXSIGN32   := 0x7FFFFFFF; # all bits except sign bit are set
 SIGN_32_NEG := -2**31;
-WORD        := 4;            # size of word in bytes (for now)
+WORD        := 4;          # size of word in bytes (for now)
 
 ENDIANNESS BIG;
+
 
 # register mapping
 # normal registers have a mapping to a Cardinal
 # special register maps to -1
 
-INTEGER
-[ %g0 , %g1 , %g2 , %g3 , %g4 , %g5 , %g6 , %g7,
-  %g8 , %g9 , %g10, %g11, %g12, %g13, %g14, %g15,
-  %g16, %g17, %g18, %g19, %g20, %g21, %g22, %g23,
-  %g24, %g25, %g26, %g27, %g28, %g29, %g30, %g31 ][32] -> 0..31;
+INTEGER %g0[32] -> 0;
+INTEGER %g1[32] -> 1;
+INTEGER %g2[32] -> 2;
+INTEGER %g3[32] -> 3;
+INTEGER %g4[32] -> 4;
+INTEGER %g5[32] -> 5;
+INTEGER %g6[32] -> 6;
+INTEGER %g7[32] -> 7;
+INTEGER %g8[32] -> 8;
+INTEGER %g9[32] -> 9;
+INTEGER %g10[32] -> 10;
+INTEGER %g11[32] -> 11;
+INTEGER %g12[32] -> 12;
+INTEGER %g13[32] -> 13;
+INTEGER %g14[32] -> 14;
+INTEGER %g15[32] -> 15;
+INTEGER %g16[32] -> 16;
+INTEGER %g17[32] -> 17;
+INTEGER %g18[32] -> 18;
+INTEGER %g19[32] -> 19;
+INTEGER %g20[32] -> 20;
+INTEGER %g21[32] -> 21;
+INTEGER %g22[32] -> 22;
+INTEGER %g23[32] -> 23;
+INTEGER %g24[32] -> 24;
+INTEGER %g25[32] -> 25;
+INTEGER %g26[32] -> 26;
+INTEGER %g27[32] -> 27;
+INTEGER %g28[32] -> 28;
+INTEGER %g29[32] -> 29;
+INTEGER %g30[32] -> 30;
+INTEGER %g31[32] -> 31;
 
-FLOAT
-[ %f0 , %f1 , %f2 , %f3 , %f4 , %f5 , %f6 , %f7,
-  %f8 , %f9 , %f10, %f11, %f12, %f13, %f14, %f15,
-  %f16, %f17, %f18, %f19, %f20, %f21, %f22, %f23,
-  %f24, %f25, %f26, %f27, %f28, %f29, %f30, %f31 ][64] -> 32..63;
+# FP registers
+FLOAT %f0[64] -> 32;
+FLOAT %f1[64] -> 33;
+FLOAT %f2[64] -> 34;
+FLOAT %f3[64] -> 35;
+FLOAT %f4[64] -> 36;
+FLOAT %f5[64] -> 37;
+FLOAT %f6[64] -> 38;
+FLOAT %f7[64] -> 39;
+FLOAT %f8[64] -> 40;
+FLOAT %f9[64] -> 41;
+FLOAT %f10[64] -> 42;
+FLOAT %f11[64] -> 43;
+FLOAT %f12[64] -> 44;
+FLOAT %f13[64] -> 45;
+FLOAT %f14[64] -> 46;
+FLOAT %f15[64] -> 47;
+FLOAT %f16[64] -> 48;
+FLOAT %f17[64] -> 49;
+FLOAT %f18[64] -> 50;
+FLOAT %f19[64] -> 51;
+FLOAT %f20[64] -> 52;
+FLOAT %f21[64] -> 53;
+FLOAT %f22[64] -> 54;
+FLOAT %f23[64] -> 55;
+FLOAT %f24[64] -> 56;
+FLOAT %f25[64] -> 57;
+FLOAT %f26[64] -> 58;
+FLOAT %f27[64] -> 59;
+FLOAT %f28[64] -> 60;
+FLOAT %f29[64] -> 61;
+FLOAT %f30[64] -> 62;
+FLOAT %f31[64] -> 63;
 
-INTEGER [%CR0, %CR1, %CR2, %CR3, %CR4, %CR5, %CR6, %CR7] [32] -> 64..71;         #condition registers (contains %CR0 to %CR7)
+# Condition Registers (contains %CR0 to %CR7)
+INTEGER %CR0[32] -> 64;
+INTEGER %CR1[32] -> 65;
+INTEGER %CR2[32] -> 66;
+INTEGER %CR3[32] -> 67;
+INTEGER %CR4[32] -> 68;
+INTEGER %CR5[32] -> 69;
+INTEGER %CR6[32] -> 70;
+INTEGER %CR7[32] -> 71;
 
-
-INTEGER
-[ %pc][32] -> -1, # control regs
-[ %XERSO, %XEROV, %XERCA] [1] -> -1,   #XER flags mapped out, most likely wrong but leave till figure out right way
-[ %LR, %CTR, %XER] [32] -> -1;   #link register, counter register
+# Control Registers
+# XER flags mapped out, most likely wrong but leave till figure out right way
+INTEGER %pc[32] -> -1;
+INTEGER %XERSO[1] -> -1;
+INTEGER %XEROV[1] -> -1;
+INTEGER %XERCA[1] -> -1;
+INTEGER %LR[32] -> -1;
+INTEGER %CTR[32] -> -1;
+INTEGER %XER[32] -> -1; # link register, counter register
 
 
 SETXER(value) {
