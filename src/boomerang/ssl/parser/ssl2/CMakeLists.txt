@@ -27,6 +27,10 @@ add_library(boomerang-ssl2-parser STATIC
     SSL2Scanner.cpp
 )
 
+if (CMAKE_COMPILER_IS_GNUCXX)
+    set_source_files_properties(SSL2Parser.cpp PROPERTIES COMPILE_OPTIONS -Wno-error=null-dereference)
+endif (CMAKE_COMPILER_IS_GNUCXX)
+
 target_link_libraries(boomerang-ssl2-parser Qt5::Core)
 
 add_dependencies(boomerang-ssl2-parser SSL2ParserGen)
