@@ -69,7 +69,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opRotateR);
         HANDLE_OPER(opRotateLC);
         HANDLE_OPER(opRotateRC);
-        HANDLE_OPER(opTargetInst);
         HANDLE_OPER(opTypedExp);
         HANDLE_OPER(opNamedExp);
         HANDLE_OPER(opGuard);

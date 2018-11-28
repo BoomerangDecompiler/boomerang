@@ -73,8 +73,6 @@ enum OPER
     opRotateR,    ///< Rotate right
     opRotateLC,   ///< Rotate left through carry
     opRotateRC,   ///< Rotate right through carry
-    opTargetInst, ///< Target specific instruction (Unary)
-                  ///< See frontend.cc for details
     opTypedExp,   ///< Typed expression
     opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,      ///< Guarded expression (should be assignment)
