@@ -43,191 +43,28 @@ OPER SSL2ParserDriver::strToOper(const QString &s)
 {
     // clang-format off
     static QMap<QString, OPER> opMap{
-        { "*",      opMult      },
-        { "*!",     opMults     },
-        { "*f",     opFMult     },
-        { "*fsd",   opFMultsd   },
-        { "*fdq",   opFMultdq   },
-        { "/",      opDiv       },
-        { "/!",     opDivs      },
-        { "/f",     opFDiv      },
-        { "/fs",    opFDiv      },
-        { "/fd",    opFDivd     },
-        { "/fq",    opFDivq     },
-        { "%",      opMod       },
-        { "%!",     opMods      }, // no FMod ?
-        { "+",      opPlus      },
-        { "+f",     opFPlus     },
-        { "+fs",    opFPlus     },
-        { "+fd",    opFPlusd    },
-        { "+fq",    opFPlusq    },
-        { "-",      opMinus     },
-        { "-f",     opFMinus    },
-        { "-fs",    opFMinus    },
-        { "-fd",    opFMinusd   },
-        { "-fq",    opFMinusq   },
-        { "<",      opLess      },
-        { "<u",     opLessUns   },
-        { "<=",     opLessEq    },
-        { "<=u",    opLessEqUns },
-        { "<<",     opShiftL    },
-        { ">",      opGtr       },
-        { ">u",     opGtrUns    },
-        { ">=",     opGtrEq     },
-        { ">=u",    opGtrEqUns  },
-        { ">>",     opShiftR    },
-        { ">>A",    opShiftRA   },
-        { "rlc",    opRotateLC  },
-        { "rrc",    opRotateRC  },
-        { "rl",     opRotateL   },
-        { "rr",     opRotateR   }
+        { "fsize",   opFsize     },
+        { "itof",    opItof      },
+        { "ftoi",    opFtoi      },
+        { "fround",  opFround    },
+        { "truncu",  opTruncu    },
+        { "truncs",  opTruncs    },
+        { "zfill",   opZfill     },
+        { "sgnex",   opSgnEx     },
+        { "sin",     opSin       },
+        { "cos",     opCos       },
+        { "tan",     opTan       },
+        { "arctan",  opArcTan    },
+        { "log2",    opLog2      },
+        { "loge",    opLoge      },
+        { "log10",   opLog10     },
+        { "execute", opExecute   },
+        { "sqrt",    opSqrt      }
     };
     // clang-format on
 
-    // Could be *, *!, *f, *fsd, *fdq, *f[sdq]
     if (opMap.contains(s)) {
         return opMap[s];
-    }
-
-    //
-    switch (s[0].toLatin1()) {
-    case 'a':
-        // and, arctan, addr
-        if (s[1].toLatin1() == 'n') {
-            return opAnd;
-        }
-
-        if (s[1].toLatin1() == 'r') {
-            return opArcTan;
-        }
-
-        if (s[1].toLatin1() == 'd') {
-            return opAddrOf;
-        }
-
-        break;
-
-    case 'c':
-        // cos
-        return opCos;
-
-    case 'e':
-        // execute
-        return opExecute;
-
-    case 'f':
-
-        // fsize, ftoi, fround NOTE: ftrunc handled separately because it is a unary
-        if (s[1].toLatin1() == 's') {
-            return opFsize;
-        }
-
-        if (s[1].toLatin1() == 't') {
-            return opFtoi;
-        }
-
-        if (s[1].toLatin1() == 'r') {
-            return opFround;
-        }
-
-        break;
-
-    case 'i':
-        // itof
-        return opItof;
-
-    case 'l':
-
-        // log2, log10, loge
-        if (s[3].toLatin1() == '2') {
-            return opLog2;
-        }
-
-        if (s[3].toLatin1() == '1') {
-            return opLog10;
-        }
-
-        if (s[3].toLatin1() == 'e') {
-            return opLoge;
-        }
-
-        break;
-
-    case 'o':
-        // or
-        return opOr;
-
-    case 'p':
-        // pow
-        return opPow;
-
-    case 's':
-
-        // sgnex, sin, sqrt
-        if (s[1].toLatin1() == 'g') {
-            return opSgnEx;
-        }
-
-        if (s[1].toLatin1() == 'i') {
-            return opSin;
-        }
-
-        if (s[1].toLatin1() == 'q') {
-            return opSqrt;
-        }
-
-        break;
-
-    case 't':
-
-        // truncu, truncs, tan
-        // 012345
-        if (s[1].toLatin1() == 'a') {
-            return opTan;
-        }
-
-        if (s[5].toLatin1() == 'u') {
-            return opTruncu;
-        }
-
-        if (s[5].toLatin1() == 's') {
-            return opTruncs;
-        }
-
-        break;
-
-    case 'z':
-        // zfill
-        return opZfill;
-
-    case '=':
-        // =
-        return opEquals;
-
-    case '!':
-        // !
-        return opSgnEx;
-
-        break;
-
-    case '~':
-
-        // ~=, ~
-        if (s[1].toLatin1() == '=') {
-            return opNotEqual;
-        }
-
-        return opNot; // Bit inversion
-
-    case '@': return opAt;
-
-    case '&': return opBitAnd;
-
-    case '|': return opBitOr;
-
-    case '^': return opBitXor;
-
-    default: break;
     }
 
     LOG_ERROR("Unknown operator %1", s);
