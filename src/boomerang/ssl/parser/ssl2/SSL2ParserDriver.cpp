@@ -291,8 +291,6 @@ SharedExp listExpToExp(std::list<SharedExp> *le)
 
 
 static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
-static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild),
-                      Terminal::get(opWild));
 
 
 /**
@@ -331,37 +329,6 @@ bool SSL2ParserDriver::expandTables(const std::shared_ptr<InsNameElem> &iname,
                                          ->expressions[indexrefmap[idx]->getValue()];
                     s->searchAndReplace(*e, repl);
                 }
-            }
-
-            // Operator tables
-            SharedExp res;
-
-            while (s->search(srchOp, res)) {
-                std::shared_ptr<Ternary> t;
-
-                if (res->getOper() == opTypedExp) {
-                    t = res->access<Ternary, 1>();
-                }
-                else {
-                    t = res->access<Ternary>();
-                }
-
-                assert(t->getOper() == opOpTable);
-                // The ternary opOpTable has a table and index name as strings, then a list of 2
-                // expressions (and we want to replace it with e1 OP e2)
-                QString tbl = t->access<Const, 1>()->getStr();
-                QString idx = t->access<Const, 2>()->getStr();
-                // The expressions to operate on are in the list
-                auto b = t->access<Binary, 3>();
-                assert(b->getOper() == opList);
-                SharedExp e1 = b->getSubExp1();
-                SharedExp e2 = b->getSubExp2(); // This should be an opList too
-                assert(b->getOper() == opList);
-                e2          = e2->getSubExp1();
-                QString ops = std::static_pointer_cast<OpTable>(TableDict[tbl])
-                                  ->getRecords()[indexrefmap[idx]->getValue()];
-                SharedExp repl = Binary::get(strToOper(ops), e1->clone(), e2->clone()); // FIXME!
-                s->searchAndReplace(*res, repl);
             }
         }
 

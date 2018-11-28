@@ -88,13 +88,6 @@ enum OPER
     // TableDict object
     opExpTable, ///< A table of expressions
 
-    /// A table of operators
-    /// Actually, opOptable needs 4 subexpressions (table, index, and two
-    /// expressions to operate on), so it's actually a Ternary with table,
-    /// index, and a list of expressions to operate on. This actually allows
-    /// more generality, e.g. unary or ternary operators int the table
-    opOpTable,
-
     opSuccessor,    ///< Get the successor register of this parameter
     opTern,         ///< Ternary (i.e. ? : )
     opAt,           ///< Bit extraction (expr@first:last in that order)

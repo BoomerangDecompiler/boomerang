@@ -77,7 +77,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFlagDef);
         HANDLE_OPER(opList);
         HANDLE_OPER(opExpTable);
-        HANDLE_OPER(opOpTable);
         HANDLE_OPER(opSuccessor);
         HANDLE_OPER(opTern);
         HANDLE_OPER(opAt);

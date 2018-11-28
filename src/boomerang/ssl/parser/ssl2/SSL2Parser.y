@@ -100,10 +100,10 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %type <SharedType>   assigntype
 %type <int>          cast
 %type <SharedRTL>    rtl nonempty_rtl
-%type <QString>      bin_oper str
+%type <QString>      str
 %type <std::shared_ptr<Table>> table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
-%type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array opstr_expr opstr_array
+%type <std::shared_ptr<std::deque<QString>>> str_list strtable_expr str_array
 %type <std::shared_ptr<std::deque<SharedExp>>> exprstr_expr exprstr_array
 %type <std::shared_ptr<std::list<QString>>> paramlist nonempty_paramlist
 %type <std::shared_ptr<std::list<SharedExp>>> arglist nonempty_arglist
@@ -503,7 +503,6 @@ table_assign:
 
 table_expr:
     strtable_expr   { $$.reset(new Table(*$1)); }
-  | opstr_expr      { $$.reset(new OpTable(*$1)); }
   | exprstr_expr    { $$.reset(new ExprTable(*$1)); }
   ;
 
@@ -549,49 +548,6 @@ str_array:
 str:
     DQUOTE DQUOTE       { $$ = QString(); }
   | DQUOTE IDENT DQUOTE { $$ = std::move($2); }
-  ;
-
-opstr_expr:
-    LBRACE opstr_array RBRACE { $$ = std::move($2); }
-  ;
-
-opstr_array:
-    DQUOTE bin_oper DQUOTE                   { $$.reset(new std::deque<QString>({ $2 })); }
-  | opstr_array COMMA DQUOTE bin_oper DQUOTE { $1->push_back($4); $$ = std::move($1); }
-  ;
-
-bin_oper:
-    RLC     { $$ = "rlc"; }
-  | RRC     { $$ = "rrc"; }
-  | ROL     { $$ = "rl";  }
-  | ROR     { $$ = "ror"; }
-  | SHR     { $$ = ">>";  }
-  | SAR     { $$ = ">>A"; }
-  | SHL     { $$ = "<<";  }
-  | BIT_OR  { $$ = "|"; }
-  | BIT_AND { $$ = "&"; }
-  | XOR     { $$ = "^"; }
-  | MOD     { $$ = "%"; }
-  | MULT    { $$ = "*"; }
-  | DIV     { $$ = "/"; }
-  | SMULT   { $$ = "*!"; }
-  | SDIV    { $$ = "/!"; }
-  | SMOD    { $$ = "%!"; }
-  | PLUS    { $$ = "+"; }
-  | MINUS   { $$ = "-"; }
-  | FMUL    { $$ = "*f"; }
-  | FDMUL   { $$ = "*fd"; }
-  | FQMUL   { $$ = "*fq"; }
-  | FDIV    { $$ = "/f"; }
-  | FDDIV   { $$ = "/fd"; }
-  | FQDIV   { $$ = "/fq"; }
-  | FPLUS   { $$ = "+f";  }
-  | FDPLUS  { $$ = "+fd"; }
-  | FQPLUS  { $$ = "+fq"; }
-  | FMINUS  { $$ = "-f"; }
-  | FDMINUS { $$ = "-fd"; }
-  | FQMINUS { $$ = "-fq"; }
-  | POW     { $$ = "pow"; }
   ;
 
 exprstr_expr:

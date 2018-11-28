@@ -74,7 +74,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opRotateLC,       { "",           " rlc ",    "",         ""      } },
     { opRotateRC,       { "",           " rrc ",    "",         ""      } },
     { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
-    { opOpTable,        { "optable(",   ", ",       ", ",       ")"     } },
     { opSuccessor,      { "succ(",      "",         "",         ")"     } },
     { opTern,           { "",           " ? ",      " : ",      "",     } },
     { opAt,             { "",           "@",        ":",        ""      } },
@@ -320,8 +319,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         case opItof:
         case opFtoi:
         case opFround:
-        case opFtrunc:
-        case opOpTable: return false;
+        case opFtrunc: return false;
         default: return true;
         }
     }
@@ -336,8 +334,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         case opItof:
         case opFtoi:
         case opFround:
-        case opFtrunc:
-        case opOpTable: return false;
+        case opFtrunc: return false;
         default: return true;
         }
     }

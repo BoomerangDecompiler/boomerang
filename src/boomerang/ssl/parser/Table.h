@@ -23,7 +23,6 @@ using SharedExp = std::shared_ptr<Exp>;
 enum TABLE_TYPE
 {
     NAMETABLE,
-    OPTABLE,
     EXPRTABLE
 };
 
@@ -54,13 +53,6 @@ public:
 private:
     TABLE_TYPE TableType;
     StringQueue Records;
-};
-
-
-class OpTable : public Table
-{
-public:
-    OpTable(const std::deque<QString> &ops);
 };
 
 
