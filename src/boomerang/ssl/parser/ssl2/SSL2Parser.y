@@ -132,13 +132,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 
 
 %%
-%start specorasgn;
-
-specorasgn:
-    specification
-  | assignment { drv.the_asgn = $1; }
-  | exp { drv.the_asgn = new Assign(Terminal::get(opNil), $1); }
-  ;
+%start specification;
 
 specification:
     specification parts SEMICOLON

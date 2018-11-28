@@ -39,18 +39,6 @@ int SSL2ParserDriver::parse(const std::string &f)
 }
 
 
-Statement *SSL2ParserDriver::parseExp(const char *str, bool verboseOutput)
-{
-    //     std::istringstream ss(str);
-    //     SSLParser p(ss, false); // Second arg true for debugging
-    //     RTLInstDict d(verboseOutput);
-    //     p.yyparse(d);
-    //     return p.the_asgn;
-    Q_UNUSED(str);
-    Q_UNUSED(verboseOutput);
-    return nullptr;
-}
-
 OPER SSL2ParserDriver::strToOper(const QString &s)
 {
     // clang-format off

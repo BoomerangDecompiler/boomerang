@@ -36,11 +36,8 @@ public:
     /// Parse the file with name eturn 0 on success.
     int parse(const std::string &fileName);
 
-    static BOOMERANG_API Statement *parseExp(const char *str, bool verboseOutput);
-
 public:
     OPER strToOper(const QString &s);
-
 
 public:
     RTLInstDict *m_dict;
@@ -53,9 +50,6 @@ public:
     bool expandTables(const std::shared_ptr<InsNameElem> &iname,
                       const std::shared_ptr<std::list<QString>> &params, SharedRTL o_rtlist,
                       RTLInstDict *dict);
-
-    /// Result for parsing an assignment.
-    Statement *the_asgn;
 
     /// Maps SSL constants to their values.
     std::map<QString, int> ConstTable;
