@@ -285,48 +285,41 @@ SUBFCQ      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd);
 SUBFCO      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);  # Also supposed to set overflow bits
 SUBFCOQ     rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd, rb, ra); # Also supposed to set overflow bits
 
-NOP                                            _;
+NOP                             _;
 
 
 # Logical ops
+NEG         rd, ra              *32* rd := 0 - ra;
+NEGq        rd, ra              *32* rd := 0 - ra               SETFLAGS0(rd);
 
-NEG             rd, ra                            *32* rd := 0 - ra;
+AND         rd, ra, rb          *32* rd := ra & rb;
+OR          rd, ra, rb          *32* rd := ra | rb;
+XOR         rd, ra, rb          *32* rd := ra ^ rb;
+ANDq        rd, ra, rb          *32* rd := ra & rb              SETFLAGS0(rd);
+ORq         rd, ra, rb          *32* rd := ra | rb              SETFLAGS0(rd);
+XORq        rd, ra, rb          *32* rd := ra ^ rb              SETFLAGS0(rd);
 
-NEGq         rd, ra                            *32* rd := 0 - ra
-                                            SETFLAGS0(rd);
+ANDIq       rd, rs, uimm        *32* rd := rs & uimm            SETFLAGS0(rd);  # Only ANDIq sets flags
+ORI         rd, rs, uimm        *32* rd := rs | uimm;
+XORI        rd, rs, uimm        *32* rd := rs ^ uimm;
 
-LOGDOT    := {"ANDq",        "ORq",        "XORq"};            # Logicals that set flags as well
-LOG        := {"AND",        "OR",        "XOR",    LOGDOT};    # All logicals with uncomplemented operands
-LOGI    := {            "ORI",        "XORI"};            # Immediate, NO dot (Note: ANDIq, but ORI, XORI)
-LOGIS    := {            "ORIS",        "XORIS"};            # Immediate with operand B shifted left 16 bits, NO dot
-NLOGDOT    := {"NANDq",    "NORq",        "EQVq"};            # Negated logicals that set flags
-                                                        # Note: NXOR is called EQV
-NLOG    := {"NAND",        "NOR",        "EQV", NLOGDOT};    # All negated logicals
-LOGOP    := {  "&","|", "^",    "&", "|", "^"};
-LOGC    := {"ANDC",    "ORC", "ANDCq","ORCq"};                # Note: no XORCR
-LOGCOP    := {  "&",     "|",     "&",      "|"};
-LOGCDOT    := {"ANDCq","ORCq"};                            # Note: no XORCRq
-LOGIDOTOP:={"|", "^"};                                    # Note: no ANDI or ANDIS (ANDIq and ANDISq instead)
+ANDISq      rd, rs, uimm        *32* rd := rs & (uimm << 16)    SETFLAGS0(rd);  # Only ANDISq sets flags
+ORIS        rd, rs, uimm        *32* rd := rs | (uimm << 16);
+XORIS       rd, rs, uimm        *32* rd := rs ^ (uimm << 16);
 
+NAND        rd, ra, rb          *32* rd := ~(ra & rb);
+NOR         rd, ra, rb          *32* rd := ~(ra | rb);
+EQV         rd, ra, rb          *32* rd := ~(ra ^ rb);
+NANDq       rd, ra, rb          *32* rd := ~(ra & rb)           SETFLAGS0(rd);
+NORq        rd, ra, rb          *32* rd := ~(ra | rb)           SETFLAGS0(rd);
+EQVq        rd, ra, rb          *32* rd := ~(ra ^ rb)           SETFLAGS0(rd);
 
-LOG[IDX]        rd, ra, rb                *32* rd := ra LOGOP[IDX] rb;
-LOGDOT[IDX]        rd, ra, rb                SETFLAGS0(rd);
-
-LOGI[IDX]        rd, rs, uimm            *32* rd := rs LOGIDOTOP[IDX] uimm;
-
-ANDIq            rd, rs, uimm            *32* rd := rs & uimm
-                                        SETFLAGS0(rd);                # Only ANDIq sets flags
-
-LOGIS[IDX]        rd, rs, uimm            *32* rd := rs LOGIDOTOP[IDX] (uimm << 16);
-
-ANDISq            rd, rs, uimm            *32* rd := rs & (uimm << 16)
-                                        SETFLAGS0(rd);                # Only ANDISq sets flags
-
-NLOG[IDX]        rd, ra, rb                *32* rd := ~(ra LOGOP[IDX] rb);
-NLOGDOT[IDX]    rd, ra, rb                SETFLAGS0(rd);
-
-LOGC[IDX]        rd, ra, rb                *32* rd := ra LOGCOP[IDX] (~rb);
-LOGCDOT[IDX]    rd, ra, rb                SETFLAGS0(rd);
+# Note: no ANDI or ANDIS (ANDIq and ANDISq instead)
+# Note: no XORCR/XORCRq
+ANDC        rd, ra, rb          *32* rd := ra & (~rb);
+ORC         rd, ra, rb          *32* rd := ra | (~rb);
+ANDCq       rd, ra, rb          *32* rd := ra & (~rb)           SETFLAGS0(rd);
+ORCq        rd, ra, rb          *32* rd := ra | (~rb)           SETFLAGS0(rd);
 
 
 # Shifts
