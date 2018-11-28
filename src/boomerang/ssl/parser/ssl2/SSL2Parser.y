@@ -37,7 +37,6 @@ class SSL2ParserDriver;
 
 extern OPER strToTerm(const QString &name);                // Convert string to a Terminal (if possible)
 extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list of Exp* to opList
-extern SharedExp listStrToExp(std::list<std::string>* ls); // Convert a STL list of strings to opList
 
 }
 

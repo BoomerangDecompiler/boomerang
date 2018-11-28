@@ -247,6 +247,61 @@ OPER SSL2ParserDriver::strToOper(const QString &s)
 }
 
 
+OPER strToTerm(const QString &s)
+{
+    // clang-format off
+    static const QMap<QString, OPER> mapping = {
+        { "%pc",        opPC     },
+        { "%afp",       opAFP    },
+        { "%agp",       opAGP    },
+        { "%CF",        opCF     },
+        { "%ZF",        opZF     },
+        { "%OF",        opOF     },
+        { "%NF",        opNF     },
+        { "%DF",        opDF     },
+        { "%SF",        opNF     },
+        { "%flags",     opFlags  },
+        { "%fflags",    opFflags },
+        { "%C3",        opFZF    },
+        { "%C0",        opFLF    }
+    };
+    // clang-format on
+
+    if (mapping.contains(s)) {
+        return mapping[s];
+    }
+
+    return (OPER)0;
+}
+
+
+/**
+ * Convert a list of actual parameters in the form of a STL list of Exps
+ * into one expression (using opList)
+ * \note The expressions in the list are not cloned;
+ *       they are simply copied to the new opList
+ *
+ * \param le  the list of expressions
+ * \returns The opList Expression
+ */
+SharedExp listExpToExp(std::list<SharedExp> *le)
+{
+    SharedExp e;
+    SharedExp *cur = &e;
+    SharedExp end  = Terminal::get(opNil); // Terminate the chain
+
+    for (auto &elem : *le) {
+        *cur = Binary::get(opList, elem, end);
+        // cur becomes the address of the address of the second subexpression
+        // In other words, cur becomes a reference to the second subexp ptr
+        // Note that declaring cur as a reference doesn't work (remains a reference to e)
+        cur = &(*cur)->refSubExp2();
+    }
+
+    return e;
+}
+
+
 static Binary srchExpr(opExpTable, Terminal::get(opWild), Terminal::get(opWild));
 static Ternary srchOp(opOpTable, Terminal::get(opWild), Terminal::get(opWild),
                       Terminal::get(opWild));

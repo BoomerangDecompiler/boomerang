@@ -28,9 +28,6 @@ list(APPEND boomerang-ssl-sources
     ssl/exp/Operator
 
     ssl/parser/InsNameElem
-    ssl/parser/SSLParser
-    ssl/parser/SSLParserSupport
-    ssl/parser/SSLScanner
     ssl/parser/Table
 
     # statement handling

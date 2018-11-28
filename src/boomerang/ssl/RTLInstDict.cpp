@@ -14,7 +14,6 @@
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/Terminal.h"
-#include "boomerang/ssl/parser/SSLParser.h"
 #include "boomerang/ssl/parser/ssl2/SSL2ParserDriver.h"
 #include "boomerang/ssl/statements/Assign.h"
 #include "boomerang/ssl/type/FloatType.h"
@@ -56,29 +55,14 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
     reset();
 
     SSL2ParserDriver drv(this);
-    //     drv.trace_parsing = true;
-    //     drv.trace_scanning = true;
+
+#if defined(DEBUG_SSLPARSER) && DEBUG_SSLPARSER != 0
+    drv.trace_parsing = true;
+    drv.trace_scanning = true;
+#endif
 
     if (drv.parse(sslFileName.toStdString()) != 0) {
-        LOG_WARN("Parsing SSL file failed, falling back to legacy parser");
-        m_definedParams.clear();
-        m_flagFuncs.clear();
-        m_instructions.clear();
-        m_regIDs.clear();
-        m_regInfo.clear();
-        m_specialRegInfo.clear();
-
-        SSLParser theParser(qPrintable(sslFileName),
-#ifdef DEBUG_SSLPARSER
-                            true
-#else
-                            false
-#endif
-        );
-
-        if (!theParser.theScanner || theParser.yyparse(*this) != 0) {
-            return false;
-        }
+        return false;
     }
 
     if (m_verboseOutput) {
