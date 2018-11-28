@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
 __size32 proc1(int param1, int param2, union { char *; __size32; } param3)
 {
     int eax; 		// r24
-    int eax_1; 		// r24{8}
-    int eax_4; 		// r24{6}
+    int eax_1; 		// r24{6}
+    int eax_4; 		// r24{8}
     int local1; 		// m[esp + 4]
     int local2; 		// m[esp - 8]
     int local5; 		// param1{15}
@@ -30,12 +30,12 @@ __size32 proc1(int param1, int param2, union { char *; __size32; } param3)
         local1 = eax;
     }
     else {
-        eax_4 = strlen(param3);
-        local1 = eax_4;
         eax_1 = strlen(param3);
-        local2 = eax_1;
+        local1 = eax_1;
+        eax_4 = strlen(param3);
+        local2 = eax_4;
         local5 = local2;
-        printf("%d", eax_1 + eax_4);
+        printf("%d", eax_4 + eax_1);
     }
     param1 = local5;
     printf("%d, %d", local1, param1);
