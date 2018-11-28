@@ -47,9 +47,9 @@ bb0x2810:
 bb0x2874:
                 if (local1 <= 6) {
                     g10 = (ROTL(local2) & ~0x7) + g1 + local1 - 96;
-                    g11 = (ROTL((rs * 7 + local7)) & ~0x3) + /* machine specific */ (int) LR + 0x1890;
+                    g11 = (ROTL((((local0 >> 3) + /* machine specific */ (int) XERCA) * 7 + local7)) & ~0x3) + /* machine specific */ (int) LR + 0x1890;
                     g0 = *g11;
-                    g0 = *(unsigned char*)(rs * 7 + local1 + g0);
+                    g0 = *(unsigned char*)((local0 - (ROTL(((local0 >> 3) + /* machine specific */ (int) XERCA)) & ~0x7)) * 7 + local1 + g0);
                     *(__size8*)g10 = (char) g0;
                     local1++;
                     goto bb0x2874;

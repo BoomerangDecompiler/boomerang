@@ -245,81 +245,50 @@ SETFFLAGSN(op1, op2, crfd) {
 
 #Arithmetic operations
 
-ADD             rd, ra, rb                        *32* rd := ra + rb;
+ADD         rd, ra, rb          *32* rd := ra + rb;
+ADDq        rd, ra, rb          *32* rd := ra + rb              SETFLAGS0(rd);
 
-ADDq         rd, ra, rb                        *32* rd := ra + rb
-                                            SETFLAGS0(rd);
+ADDE        rd, ra, rb          *32* rd := ra + rb + %XERCA;
+ADDEq       rd, ra, rb          *32* rd := ra + rb + %XERCA     SETFLAGS0(rd);
 
-ADDE         rd, ra, rb                        *32* rd := ra + rb + %XERCA;
+ADDI        rd, rs, simm        *32* rd := rs + simm;
+ADDIC       rd, rs, simm        *32* rd := rs + simm            ADDFLAGSX(rd, rs, simm);    # Set carry
+ADDICq      rd, rs, simm        *32* rd := rs + simm            ADDFLAGSX0(rd, rs, simm);   # Set carry and CR0
+ADDIS       rd, rs, simm        *32* rd := rs + (simm << 16);
 
-ADDEq         rd, ra, rb                        *32* rd := ra + rb + %XERCA
-                                            SETFLAGS0(rd);
+ADDME       rd, ra              *32* rd := ra + %XERCA - 1;
+ADDMEq      rd, ra              *32* rd := ra + %XERCA - 1      SETFLAGS0(rd);
 
-ADDI         rd, rs, simm                    *32* rd := rs + simm;
+ADDZE       rd, ra              *32* rd := ra + %XERCA;
+ADDZEq      rd, ra              *32* rd := ra + %XERCA          SETFLAGS0(rd);
 
-ADDIC         rd, rs, simm                    *32* rd := rs + simm
-                                            ADDFLAGSX(rd, rs, simm);    # Set carry
+DIVW        rd, ra, rb          *32* rd := ra / rb;
+DIVWq       rd, ra, rb          *32* rd := ra / rb              SETFLAGS0(rd);
 
-ADDICq         rd, rs, simm                    *32* rd := rs + simm
-                                            ADDFLAGSX0(rd, rs, simm);    # Set carry and CR0
+DIVWU       rd, ra, rb          *32* rd := ra / rb;
+DIVWUq      rd, ra, rb          *32* rd := ra / rb              SETFLAGS0(rd);
 
-ADDIS         rd, rs, simm                    *32* rd := rs + (simm << 16);
+EXTSB       rd, ra              *32* rd := sgnex(8, 32, ra);
+EXTSBq      rd, ra              *32* rd := sgnex(8, 32, ra)     SETFLAGS0(rd);
 
-ADDME         rd, ra                             *32* rd := ra + %XERCA - 1;
+MULLI       rd, ra, simm        *32* rd := ra * sgnex(16, 32, simm);
+MULLW       rd, ra, rb          *32* rd := ra * rb;
+MULLWq      rd, ra, rb          *32* rd := ra * rb              SETFLAGS0(rd);
 
-ADDMEq         rd, ra                             *32* rd := ra + %XERCA - 1
-                                            SETFLAGS0(rd);
+SUBF        rd, ra, rb          *32* rd := rb - ra;
+SUBFE       rd, ra, rb          *32* rd := rb + %XERCA - ra;
 
-ADDZE         rd, ra                            *32* rd:= ra + %XERCA;
+SUBFIC      rd, ra, simm        *32* rd := simm - ra            SUBFLAGSX(rd, simm, ra);
+SUBFC       rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);
 
-ADDZEq         rd, ra                            *32* rd:= ra + %XERCA
-                                            SETFLAGS0(rd);
-
-DIVW          rd, ra, rb                        *32* rd := ra / rb;
-
-DIVWq          rd, ra, rb                        *32* rd := ra / rb
-                                            SETFLAGS0(rd);
-
-DIVWU          rd, ra, rb                        *32* rd := ra / rb;
-
-DIVWUq          rd, ra, rb                        *32* rd := ra / rb
-                                            SETFLAGS0(rd);
-
-EXTSB        rd, ra                            *32* rd := sgnex(8, 32, ra);
-
-EXTSBq        rd, ra                            *32* rd := sgnex(8, 32, ra)
-                                            SETFLAGS0(rd);
-
-MULLI        rd, ra, simm                    *32* rd := rs * sgnex(16,32,simm);
-
-MULLW         rd, ra, rb                        *32* rd := ra * rb;
-
-MULLWq         rd, ra, rb                        *32* rd := ra * rb
-                                            SETFLAGS0(rd);
-
-SUBF         rd, ra, rb                        *32* rd := rb - ra;
-
-SUBFE         rd, ra, rb                        *32* rd := rb + %XERCA - ra;
-
-SUBFIC        rd, ra, simm                    *32* rd := simm - ra
-                                            SUBFLAGSX(rd, simm, ra);
-
-SUBFC        rd, ra, rb                        *32* rd := rb - ra
-                                            SUBFLAGSX(rd, rb, ra);
-
-SUBFCQ        rd, ra, rb                        *32* rd := rb - ra
-                                            SUBFLAGSX0(rd);
-
-SUBFCO        rd, ra, rb                        *32* rd := rb - ra
-                                            SUBFLAGSX(rd, rb, ra);        # Also supposed to set overflow bits
-
-SUBFCOQ        rd, ra, rb                        *32* rd := rb - ra
-                                            SUBFLAGSX0(rd, rb, ra);        # Also supposed to set overflow bits
+SUBFCQ      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd);
+SUBFCO      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);  # Also supposed to set overflow bits
+SUBFCOQ     rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd, rb, ra); # Also supposed to set overflow bits
 
 NOP                                            _;
 
 
-#Logical ops
+# Logical ops
 
 NEG             rd, ra                            *32* rd := 0 - ra;
 
