@@ -162,28 +162,28 @@ SUBFLAGSNL(op1, op2, crfd) {
     # Set flags in Logical (unsigned) fashion
    *32* crfd = 0 => %CR0@[3:3] := op1 <u op2
    *32* crfd = 0 => %CR0@[2:2] := op1 >u op2
-   *32* crfd = 0 => %CR0@[1:1] := op1 = op2
+   *32* crfd = 0 => %CR0@[1:1] := op1 =  op2
    *32* crfd = 1 => %CR1@[3:3] := op1 <u op2
    *32* crfd = 1 => %CR1@[2:2] := op1 >u op2
-   *32* crfd = 1 => %CR1@[1:1] := op1 = op2
+   *32* crfd = 1 => %CR1@[1:1] := op1 =  op2
    *32* crfd = 2 => %CR2@[3:3] := op1 <u op2
    *32* crfd = 2 => %CR2@[2:2] := op1 >u op2
-   *32* crfd = 2 => %CR2@[1:1] := op1 = op2
+   *32* crfd = 2 => %CR2@[1:1] := op1 =  op2
    *32* crfd = 3 => %CR3@[3:3] := op1 <u op2
    *32* crfd = 3 => %CR3@[2:2] := op1 >u op2
-   *32* crfd = 3 => %CR3@[1:1] := op1 = op2
+   *32* crfd = 3 => %CR3@[1:1] := op1 =  op2
    *32* crfd = 4 => %CR4@[3:3] := op1 <u op2
    *32* crfd = 4 => %CR4@[2:2] := op1 >u op2
-   *32* crfd = 4 => %CR4@[1:1] := op1 = op2
+   *32* crfd = 4 => %CR4@[1:1] := op1 =  op2
    *32* crfd = 5 => %CR5@[3:3] := op1 <u op2
    *32* crfd = 5 => %CR5@[2:2] := op1 >u op2
-   *32* crfd = 5 => %CR5@[1:1] := op1 = op2
+   *32* crfd = 5 => %CR5@[1:1] := op1 =  op2
    *32* crfd = 6 => %CR6@[3:3] := op1 <u op2
    *32* crfd = 6 => %CR6@[2:2] := op1 >u op2
-   *32* crfd = 6 => %CR6@[1:1] := op1 = op2
+   *32* crfd = 6 => %CR6@[1:1] := op1 =  op2
    *32* crfd = 7 => %CR7@[3:3] := op1 <u op2
    *32* crfd = 7 => %CR7@[2:2] := op1 >u op2
-   *32* crfd = 7 => %CR7@[1:1] := op1 = op2
+   *32* crfd = 7 => %CR7@[1:1] := op1 =  op2
 };
 
 SUBFLAGSNS(op1, op2, crfd) {
