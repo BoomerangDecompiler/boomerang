@@ -27,9 +27,6 @@ list(APPEND boomerang-ssl-sources
     ssl/exp/Unary
     ssl/exp/Operator
 
-    ssl/parser/InsNameElem
-    ssl/parser/Table
-
     # statement handling
     ssl/statements/Assign
     ssl/statements/Assignment
@@ -61,7 +58,7 @@ list(APPEND boomerang-ssl-sources
     ssl/type/VoidType
 )
 
-add_subdirectory(parser/ssl2)
+add_subdirectory(parser)
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-ssl-sources ".cpp")
 

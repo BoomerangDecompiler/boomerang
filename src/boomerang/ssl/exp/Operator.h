@@ -21,65 +21,65 @@
 enum OPER
 {
     // Operators
-    opWild = -1,  ///< Wildcard (Terminal for search Exps only)
-    opPlus,       ///< Binary addition
-    opMinus,      ///< Binary subtraction
-    opMult,       ///< Multiplication
-    opDiv,        ///< Integer division
-    opFPlus,      ///< Binary addition(single floats)
-    opFMinus,     ///< Binary subtraction(single floats)
-    opFMult,      ///< Multiplication(single floats)
-    opFDiv,       ///< (single floats)
-    opFNeg,       ///< Floating point negate
-    opFPlusd,     ///< addition(double floats)
-    opFMinusd,    ///< subtraction(double floats)
-    opFMultd,     ///< Multiplication(double floats)
-    opFDivd,      ///< Integer division(double floats)
-    opFPlusq,     ///< addition(quad floats)
-    opFMinusq,    ///< subtraction(quad floats)
-    opFMultq,     ///< Multiplication(quad floats)
-    opFDivq,      ///< division(quad floats)
-    opFMultsd,    ///< Multiplication(single floats--> double floats)
-    opFMultdq,    ///< Multiplication(single floats--> double floats)
-    opSQRTs,      ///< sqrt of a single
-    opSQRTd,      ///< sqrt of a double
-    opSQRTq,      ///< sqrt of a quad
-    opMults,      ///< Multiply signed
-    opDivs,       ///< Divide signed
-    opMod,        ///< Remainder of integer division
-    opMods,       ///< Remainder of signed integer division
-    opNeg,        ///< Unary minus
-    opAnd,        ///< Logical and
-    opOr,         ///< Logical or
-    opEquals,     ///< Equality (logical)
-    opNotEqual,   ///< Logical !=
-    opLess,       ///< Logical less than (signed)
-    opGtr,        ///< Logical greater than (signed)
-    opLessEq,     ///< Logical <= (signed)
-    opGtrEq,      ///< Logical >= (signed)
-    opLessUns,    ///< Logical less than (unsigned)
-    opGtrUns,     ///< Logical greater than (unsigned)
-    opLessEqUns,  ///< Logical <= (unsigned)
-    opGtrEqUns,   ///< Logical >= (unsigned)
-    opNot,        ///< Bitwise inversion
-    opLNot,       ///< Logical not
-    opBitAnd,     ///< Bitwise and
-    opBitOr,      ///< Bitwise or
-    opBitXor,     ///< Bitwise xor
-    opShiftL,     ///< Left shift
-    opShiftR,     ///< Right shift
-    opShiftRA,    ///< Right shift arithmetic
-    opRotateL,    ///< Rotate left
-    opRotateR,    ///< Rotate right
-    opRotateLC,   ///< Rotate left through carry
-    opRotateRC,   ///< Rotate right through carry
-    opTypedExp,   ///< Typed expression
-    opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
-    opGuard,      ///< Guarded expression (should be assignment)
-    opFlagCall,   ///< A flag call (Binary with string and params)
-    opFlagDef,    ///< A flag function definition (class FlagDef)
-    opList,       ///< A binary, with expression (1) and next element
-                  ///< in chain (2). Last element in chain is opNil
+    opWild = -1, ///< Wildcard (Terminal for search Exps only)
+    opPlus,      ///< Binary addition
+    opMinus,     ///< Binary subtraction
+    opMult,      ///< Multiplication
+    opDiv,       ///< Integer division
+    opFPlus,     ///< Binary addition(single floats)
+    opFMinus,    ///< Binary subtraction(single floats)
+    opFMult,     ///< Multiplication(single floats)
+    opFDiv,      ///< (single floats)
+    opFNeg,      ///< Floating point negate
+    opFPlusd,    ///< addition(double floats)
+    opFMinusd,   ///< subtraction(double floats)
+    opFMultd,    ///< Multiplication(double floats)
+    opFDivd,     ///< Integer division(double floats)
+    opFPlusq,    ///< addition(quad floats)
+    opFMinusq,   ///< subtraction(quad floats)
+    opFMultq,    ///< Multiplication(quad floats)
+    opFDivq,     ///< division(quad floats)
+    opFMultsd,   ///< Multiplication(single floats--> double floats)
+    opFMultdq,   ///< Multiplication(single floats--> double floats)
+    opSQRTs,     ///< sqrt of a single
+    opSQRTd,     ///< sqrt of a double
+    opSQRTq,     ///< sqrt of a quad
+    opMults,     ///< Multiply signed
+    opDivs,      ///< Divide signed
+    opMod,       ///< Remainder of integer division
+    opMods,      ///< Remainder of signed integer division
+    opNeg,       ///< Unary minus
+    opAnd,       ///< Logical and
+    opOr,        ///< Logical or
+    opEquals,    ///< Equality (logical)
+    opNotEqual,  ///< Logical !=
+    opLess,      ///< Logical less than (signed)
+    opGtr,       ///< Logical greater than (signed)
+    opLessEq,    ///< Logical <= (signed)
+    opGtrEq,     ///< Logical >= (signed)
+    opLessUns,   ///< Logical less than (unsigned)
+    opGtrUns,    ///< Logical greater than (unsigned)
+    opLessEqUns, ///< Logical <= (unsigned)
+    opGtrEqUns,  ///< Logical >= (unsigned)
+    opNot,       ///< Bitwise inversion
+    opLNot,      ///< Logical not
+    opBitAnd,    ///< Bitwise and
+    opBitOr,     ///< Bitwise or
+    opBitXor,    ///< Bitwise xor
+    opShiftL,    ///< Left shift
+    opShiftR,    ///< Right shift
+    opShiftRA,   ///< Right shift arithmetic
+    opRotateL,   ///< Rotate left
+    opRotateR,   ///< Rotate right
+    opRotateLC,  ///< Rotate left through carry
+    opRotateRC,  ///< Rotate right through carry
+    opTypedExp,  ///< Typed expression
+    opNamedExp,  ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
+    opGuard,     ///< Guarded expression (should be assignment)
+    opFlagCall,  ///< A flag call (Binary with string and params)
+    opFlagDef,   ///< A flag function definition (class FlagDef)
+    opList,      ///< A binary, with expression (1) and next element
+                 ///< in chain (2). Last element in chain is opNil
 
     // Next two are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the

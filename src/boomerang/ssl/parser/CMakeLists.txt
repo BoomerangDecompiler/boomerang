@@ -25,6 +25,10 @@ add_library(boomerang-ssl2-parser STATIC
     SSL2Parser.cpp
     SSL2Parser.hpp
     SSL2Scanner.cpp
+    InsNameElem.cpp
+    InsNameElem.h
+    Table.cpp
+    Table.h
 )
 
 if (CMAKE_COMPILER_IS_GNUCXX)

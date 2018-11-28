@@ -12,7 +12,7 @@
 
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/TableEntry.h"
-#include "boomerang/ssl/parser/ssl2/SSL2Parser.hpp"
+#include "boomerang/ssl/parser/SSL2Parser.hpp"
 #include "boomerang/util/ByteUtil.h"
 
 #include <map>

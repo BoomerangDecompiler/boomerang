@@ -29,7 +29,6 @@ TABLE_TYPE Table::getType() const
 }
 
 
-
 ExprTable::ExprTable(const std::deque<SharedExp> &exprs)
     : Table(EXPRTABLE)
     , expressions(exprs)
