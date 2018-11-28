@@ -596,19 +596,20 @@ CMPL        crfd, ra, rb                SUBFLAGSNL(ra, rb, crfd);
 FCMPO        crfd, fa, fb                SETFFLAGSN(fa, fb,crfd);    # Difference between O and U forms is
 FCMPU        crfd, fa, fb                SETFFLAGSN(fa, fb,crfd);    # in exception handling
 
-#condition register manipulation
 
-CRLOG    := {"CRAND",    "CROR",        "CRXOR"};
-CRNLOG    := {"CRNAND",    "CRNOR",    "CREQV"};            # Note: CRNXOR called CREQV
-CRLOGC    := {"CRANDC",    "CRORC"};                        # Note: no CRXORC
-CR_OP    := {  "&",          "|",        "^"};
+# condition register manipulation
+CRAND           d, a, b             *1* d := a & b;
+CROR            d, a, b             *1* d := a | b;
+CRXOR           d, a, b             *1* d := a ^ b;
+CRNAND          d, a, b             *1* d := ~(a & b);
+CRNOR           d, a, b             *1* d := ~(a | b);
+CREQV           d, a, b             *1* d := ~(a ^ b);
+CRANDC          d, a, b             *1* d := a & (~b);
+CRORC           d, a, b             *1* d := a | (~b);
+# Note: no CRXORC
 
-CRLOG[IDX]    d, a, b            *1* d :=   a CR_OP[IDX]  b;
-CRNLOG[IDX]    d, a, b            *1* d := ~(a CR_OP[IDX]  b);
-CRLOGC[IDX]    d, a, b            *1* d :=   a CR_OP[IDX] (~b);
 
 # Floating point operations
-
 FMR            fd, fb            *64* fd := fb;
 FMRq        fd, fb            *64* fd := fb;
 
