@@ -8,8 +8,10 @@ if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq "Visual Studio 2017") {
 
 $env:QTDIR = "$QT_BASE_DIR"
 
-# install libcapstone via vcpkg
+# install dependencies via vcpkg
 vcpkg install capstone:x64-windows
+vcpkg install bison
+vcpkg install flex
 
 
 # Build Visual Studio solution
