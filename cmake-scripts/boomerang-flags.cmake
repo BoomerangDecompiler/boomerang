@@ -54,6 +54,8 @@ if (MSVC)
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4702) # Unreachable code
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4127) # conditional expression is constant
     BOOMERANG_ADD_COMPILE_FLAGS(/wd4251) # Class needs to have DLL interface to be used by clients
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4005) # Macro redifinition
+    BOOMERANG_ADD_COMPILE_FLAGS(/wd4065) # switch statement only contains default but no case labels
 
     set(DEBUG_LIB dbghelp.lib)
 
@@ -118,4 +120,3 @@ if (NOT MSVC)
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fprofile-arcs")
     endif (BOOMERANG_ENABLE_COVERAGE)
 endif (NOT MSVC)
-

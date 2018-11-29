@@ -7,10 +7,19 @@
 #
 
 
-FLEX_TARGET(SSL2Scanner
-            ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
-            ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
-)
+if (WIN32)
+    FLEX_TARGET(SSL2Scanner
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
+                COMPILE_FLAGS --wincompat
+    )
+else (WIN32)
+    FLEX_TARGET(SSL2Scanner
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
+    )
+endif (WIN32)
+
 
 if (NOT FLEX_SSL2Scanner_DEFINED)
     message(FATAL_ERROR "Could not generate SSL2 scanner")
