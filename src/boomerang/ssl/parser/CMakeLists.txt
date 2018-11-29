@@ -6,32 +6,34 @@
 # WARRANTIES.
 #
 
-add_custom_target(SSL2ParserGen
-    DEPENDS
-        ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.cpp
+
+FLEX_TARGET(SSL2Scanner
+            ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
+            ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
 )
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
-    COMMAND flex ARGS -o ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
-    MAIN_DEPENDENCY SSL2Scanner.l
-    VERBATIM
+if (NOT FLEX_SSL2Scanner_DEFINED)
+    message(FATAL_ERROR "Could not generate SSL2 scanner")
+endif (NOT FLEX_SSL2Scanner_DEFINED)
+
+
+BISON_TARGET(SSL2Parser
+             ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.y
+             ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.cpp
 )
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.cpp
-    COMMAND bison ARGS -o${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.cpp ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.y
-    MAIN_DEPENDENCY SSL2Parser.y
-    BYPRODUCTS location.hh SSL2Parser.hpp
-    VERBATIM
-)
+if (NOT BISON_SSL2Parser_DEFINED)
+    message(FATAL_ERROR "Could not generate SSL2 parser")
+endif (NOT BISON_SSL2Parser_DEFINED)
+
+
+ADD_FLEX_BISON_DEPENDENCY(SSL2Scanner SSL2Parser)
 
 add_library(boomerang-ssl2-parser STATIC
-    location.hh
+    ${BISON_SSL2Parser_OUTPUTS}
+    ${FLEX_SSL2Scanner_OUTPUTS}
     SSL2ParserDriver.cpp
     SSL2ParserDriver.h
-    SSL2Parser.cpp
-    SSL2Parser.hpp
-    SSL2Scanner.cpp
     InsNameElem.cpp
     InsNameElem.h
     Table.cpp
@@ -43,5 +45,3 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif (CMAKE_COMPILER_IS_GNUCXX)
 
 target_link_libraries(boomerang-ssl2-parser Qt5::Core)
-
-add_dependencies(boomerang-ssl2-parser SSL2ParserGen)
