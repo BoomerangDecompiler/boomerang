@@ -23,8 +23,13 @@
 
 SSL2ParserDriver::SSL2ParserDriver(RTLInstDict *dict)
     : m_dict(dict)
+#if defined(DEBUG_SSLPARSER) && DEBUG_SSLPARSER != 0
+    , trace_parsing(true)
+    , trace_scanning(true)
+#else
     , trace_parsing(false)
     , trace_scanning(false)
+#endif
 {
 }
 

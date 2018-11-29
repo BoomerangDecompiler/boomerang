@@ -56,11 +56,6 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
 
     SSL2ParserDriver drv(this);
 
-#if defined(DEBUG_SSLPARSER) && DEBUG_SSLPARSER != 0
-    drv.trace_parsing  = true;
-    drv.trace_scanning = true;
-#endif
-
     if (drv.parse(sslFileName.toStdString()) != 0) {
         return false;
     }
