@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "SSL2ParserDriver.h"
 
-
 #include "SSL2Parser.hpp"
 
 #include "boomerang/ssl/RTLInstDict.h"
