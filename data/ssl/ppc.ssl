@@ -79,14 +79,15 @@ FLOAT %f30[64] -> 62;
 FLOAT %f31[64] -> 63;
 
 # Condition Registers (contains %CR0 to %CR7)
-INTEGER %CR0[32] -> 64;
-INTEGER %CR1[32] -> 65;
-INTEGER %CR2[32] -> 66;
-INTEGER %CR3[32] -> 67;
-INTEGER %CR4[32] -> 68;
-INTEGER %CR5[32] -> 69;
-INTEGER %CR6[32] -> 70;
-INTEGER %CR7[32] -> 71;
+INTEGER %CR[32] -> 100;
+INTEGER %CR0[4] -> 64 SHARES %CR@[0..3];
+INTEGER %CR1[4] -> 65 SHARES %CR@[4..7];
+INTEGER %CR2[4] -> 66 SHARES %CR@[8..11];
+INTEGER %CR3[4] -> 67 SHARES %CR@[12..15];
+INTEGER %CR4[4] -> 68 SHARES %CR@[16..19];
+INTEGER %CR5[4] -> 69 SHARES %CR@[20..23];
+INTEGER %CR6[4] -> 70 SHARES %CR@[24..27];
+INTEGER %CR7[4] -> 71 SHARES %CR@[28..31];
 
 # Control Registers
 # XER flags mapped out, most likely wrong but leave till figure out right way
