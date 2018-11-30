@@ -49,6 +49,9 @@ else (WIN32 AND NOT UNIX)
     set(CPACK_PACKAGE_INSTALL_DIRECTORY "")
     set(CPACK_STRIP_FILES "bin/boomerang-cli")
     set(CPACK_SOURCE_STRIP_FILES "")
+
+    # deb specific
+    string(REGEX REPLACE "^v" "" CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
 endif (WIN32 AND NOT UNIX)
 
 
