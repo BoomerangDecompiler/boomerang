@@ -89,15 +89,17 @@ INTEGER %CR5[4] -> 69 SHARES %CR@[20..23];
 INTEGER %CR6[4] -> 70 SHARES %CR@[24..27];
 INTEGER %CR7[4] -> 71 SHARES %CR@[28..31];
 
-# Control Registers
-# XER flags mapped out, most likely wrong but leave till figure out right way
+
+INTEGER %LR[32]  -> -1;     # Link Register
+INTEGER %CTR[32] -> -1;     # Count Register
+
+INTEGER %XER[32] -> 200; # Fixed point exeption register
+INTEGER %XERSO[1] -> 201 SHARES %XER@[31..31];
+INTEGER %XEROV[1] -> 202 SHARES %XER@[30..30];
+INTEGER %XERCA[1] -> 203 SHARES %XER@[29..29];
+
 INTEGER %pc[32] -> -1;
-INTEGER %XERSO[1] -> -1;
-INTEGER %XEROV[1] -> -1;
-INTEGER %XERCA[1] -> -1;
-INTEGER %LR[32] -> -1;
-INTEGER %CTR[32] -> -1;
-INTEGER %XER[32] -> -1; # link register, counter register
+
 
 
 SETXER(value) {

@@ -3,6 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x00002778 */
 int main(int argc, char *argv[])
 {
+    int XERCA; 		// r203
     union { unsigned int; char; } g0; 		// r0
     int g1; 		// r1
     int g10; 		// r10
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
     __size32 local5; 		// m[g1 - 124]
     int local6; 		// m[g1 - 108]
     int local7; 		// m[g1 - 120]
-    __size32 local8; 		// m[g1 - 128]{14}
+    __size32 local8; 		// m[g1 - 128]{15}
 
     g3 = malloc(12);
     *(__size32*)(g3 + 4) = /* machine specific */ (int) LR + 0x1864;
@@ -47,9 +48,9 @@ bb0x2810:
 bb0x2874:
                 if (local1 <= 6) {
                     g10 = (ROTL(local2) & ~0x7) + g1 + local1 - 96;
-                    g11 = (ROTL((((local0 >> 3) + /* machine specific */ (int) XERCA) * 7 + local7)) & ~0x3) + /* machine specific */ (int) LR + 0x1890;
+                    g11 = (ROTL((((local0 >> 3) + XERCA) * 7 + local7)) & ~0x3) + /* machine specific */ (int) LR + 0x1890;
                     g0 = *g11;
-                    g0 = *(unsigned char*)((local0 - (ROTL(((local0 >> 3) + /* machine specific */ (int) XERCA)) & ~0x7)) * 7 + local1 + g0);
+                    g0 = *(unsigned char*)((local0 - (ROTL(((local0 >> 3) + XERCA)) & ~0x7)) * 7 + local1 + g0);
                     *(__size8*)g10 = (char) g0;
                     local1++;
                     goto bb0x2874;
