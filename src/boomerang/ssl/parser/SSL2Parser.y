@@ -594,24 +594,13 @@ instr_name_elem:
     IDENT {
         $$.reset(new InsNameElem($1));
     }
-  | NAME_LOOKUP LBRACKET INT_LITERAL RBRACKET {
-        if (drv.TableDict.find($1) == drv.TableDict.end()) {
-            throw yy::parser::syntax_error(drv.location, "Table has not been declared.");
-        }
-        else if (!Util::inRange($3, 0, (int)drv.TableDict[$1]->getRecords().size())) {
-            throw yy::parser::syntax_error(drv.location, "Can't get element of table.");
-        }
-        else {
-            $$.reset(new InsNameElem(drv.TableDict[$1]->getRecords()[$3]));
-        }
-    }
+    // example: FOO[IDX] where FOO is some kind of pre-defined string table
   | NAME_LOOKUP LBRACKET IDENT RBRACKET {
         if (drv.TableDict.find($1) == drv.TableDict.end()) {
             throw yy::parser::syntax_error(drv.location, "Table has not been declared.");
         }
-        else {
-            $$.reset(new InsListElem($3, drv.TableDict[$1], $3));
-        }
+
+        $$.reset(new InsListElem($3, drv.TableDict[$1], $3));
     }
   ;
 
