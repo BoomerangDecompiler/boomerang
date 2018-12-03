@@ -31,11 +31,10 @@ using SharedExp = std::shared_ptr<Exp>;
 
 
 /**
- * The RTLInstDict represents a dictionary that maps instruction names to the
- * parameters they take and a template for the Exp list describing their
- * semantics. It handles both the parsing of the SSL file that fills in
- * the dictionary entries as well as instantiation of an Exp list for a given
- * instruction name and list of actual parameters.
+ * The RTLInstDict represents a dictionary that maps unique instruction names to the
+ * parameters they take and a template of their semantics (as an RTL).
+ * These instruction semantics templates are populated by \ref readSSLFile;
+ * concrete instruction semantics are instantiated via \ref instantiateRTL.
  */
 class BOOMERANG_API RTLInstDict
 {
