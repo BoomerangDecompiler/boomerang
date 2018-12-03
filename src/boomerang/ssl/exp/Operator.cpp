@@ -89,8 +89,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFround);
         HANDLE_OPER(opFtrunc);
         HANDLE_OPER(opFabs);
-        HANDLE_OPER(opFpush);
-        HANDLE_OPER(opFpop);
         HANDLE_OPER(opSin);
         HANDLE_OPER(opCos);
         HANDLE_OPER(opTan);

@@ -505,26 +505,6 @@ bool Statement::isNullStatement() const
 }
 
 
-bool Statement::isFpush() const
-{
-    if (m_kind != StmtType::Assign) {
-        return false;
-    }
-
-    return static_cast<const Assign *>(this)->getRight()->getOper() == opFpush;
-}
-
-
-bool Statement::isFpop() const
-{
-    if (m_kind != StmtType::Assign) {
-        return false;
-    }
-
-    return static_cast<const Assign *>(this)->getRight()->getOper() == opFpop;
-}
-
-
 void Statement::stripSizes()
 {
     SizeStripper ss;

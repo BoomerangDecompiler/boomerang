@@ -1523,8 +1523,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
         break;
 
-    case opFpush:
-    case opFpop:
     case opLoge:
     case opAFP:
     case opAGP:

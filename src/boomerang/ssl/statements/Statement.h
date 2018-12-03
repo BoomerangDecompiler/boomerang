@@ -181,10 +181,6 @@ public:
 
     bool isCase() const { return m_kind == StmtType::Case; }
 
-    /// \returns true if this is a fpush/fpop
-    bool isFpush() const;
-    bool isFpop() const;
-
     /// Classes with no definitions (e.g. GotoStatement and children) don't override this
     /// returns a set of locations defined by this statement in a LocationSet argument.
     virtual void getDefinitions(LocationSet & /*def*/, bool /*assumeABICompliance*/) const {}

@@ -108,7 +108,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %type <Assign *>     assignment
 %type <SharedType>   assigntype
 %type <int>          cast
-%type <SharedRTL>    rtl nonempty_rtl
+%type <SharedRTL>    rtl nonempty_rtl rtl_part
 %type <QString>      str
 %type <std::shared_ptr<Table>> table_expr
 %type <std::shared_ptr<InsNameElem>> instr_name instr_name_elem
@@ -433,7 +433,38 @@ rtl:
 
 nonempty_rtl:
     statement               { $$.reset(new RTL(Address::ZERO, { $1 })); }
+  | rtl_part                { $$ = std::move($1); }
   | nonempty_rtl statement  { $1->append($2); $$ = std::move($1); }
+  | nonempty_rtl rtl_part   { $1->append($2->getStatements()); $$ = std::move($1); }
+  ;
+
+rtl_part:
+    FPUSH {
+        $$.reset(new RTL(Address::ZERO, {
+            new Assign(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST7)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::regOf(REG_PENT_ST6)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST5)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST4)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST3)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST2)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST1)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST0)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))))
+        }));
+    }
+  | FPOP {
+        $$.reset(new RTL(Address::ZERO, {
+            new Assign(FloatType::get(80), Location::tempOf(Const::get(const_cast<char *>("tmpD9"))), Location::regOf(REG_PENT_ST0)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST0), Location::regOf(REG_PENT_ST1)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST1), Location::regOf(REG_PENT_ST2)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST2), Location::regOf(REG_PENT_ST3)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST3), Location::regOf(REG_PENT_ST4)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST4), Location::regOf(REG_PENT_ST5)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST5), Location::regOf(REG_PENT_ST6)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST6), Location::regOf(REG_PENT_ST7)),
+            new Assign(FloatType::get(80), Location::regOf(REG_PENT_ST7), Location::tempOf(Const::get(const_cast<char *>("tmpD9")))),
+        }));
+    }
   ;
 
 statement:
@@ -447,8 +478,6 @@ statement:
         $$ = new Assign(Terminal::get(isFloat ? opFflags : opFlags),
                         Binary::get(opFlagCall, Const::get($1), listExpToExp($3.get())));
     }
-  | FPUSH   { $$ = new Assign(Terminal::get(opNil), Terminal::get(opFpush)); }
-  | FPOP    { $$ = new Assign(Terminal::get(opNil), Terminal::get(opFpop)); }
   ;
 
 assignment:
