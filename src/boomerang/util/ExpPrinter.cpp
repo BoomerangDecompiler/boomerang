@@ -63,7 +63,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opGtrEqUns,       { "",           " >=u ",    "",         ""      } },
     { opNot,            { "~",          "",         "",         ""      } },
     { opLNot,           { "L~",         "",         "",         ""      } },
-    { opSignExt,        { "",           "",         "",         "! "    } },
     { opBitAnd,         { "",           " & ",      "",         ""      } },
     { opBitOr,          { "",           " | ",      "",         ""      } },
     { opBitXor,         { "",           " ^ ",      "",         ""      } },
@@ -75,7 +74,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opRotateLC,       { "",           " rlc ",    "",         ""      } },
     { opRotateRC,       { "",           " rrc ",    "",         ""      } },
     { opExpTable,       { "exptable(",  ", ",       "",         ")"     } },
-    { opOpTable,        { "optable(",   ", ",       ", ",       ")"     } },
     { opSuccessor,      { "succ(",      "",         "",         ")"     } },
     { opTern,           { "",           " ? ",      " : ",      "",     } },
     { opAt,             { "",           "@",        ":",        ""      } },
@@ -86,7 +84,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opWildRegOf,      { "r[wild]",    "",         "",         ""      } },
     { opWildAddrOf,     { "a[wild]",    "",         "",         ""      } },
     { opDefineAll,      { "<all>",      "",         "",         ""      } },
-    { opPhi,            { "phi(",       "",         "",         ")"     } },
     { opArrayIndex,     { "",           "[",        "",         "]"     } },
     { opMachFtr,        { "machine(",   "",         "",         ")"     } },
     { opTruncu,         { "truncu(",    ", ",       ", ",       ")"     } },
@@ -111,7 +108,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opLoge,           { "loge(",      "",         "",         ")"     } },
     { opPow,            { "",           " pow ",    "",         ")"     } },
     { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
-    { opExecute,        { "execute(",   "",         "",         ")"     } },
     { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
     { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
     { opPC,             { "%pc",        "",         "",         ""      } },
@@ -120,7 +116,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opNil,            { "",           "",         "",         ""      } },
     { opFlags,          { "%flags",     "",         "",         ""      } },
     { opFflags,         { "%fflags",    "",         "",         ""      } },
-    { opAnull,          { "%anul",      "",         "",         ""      } },
     { opTrue,           { "true",       "",         "",         ""      } },
     { opFalse,          { "false",      "",         "",         ""      } },
     { opTypeOf,         { "T[",         "",         "",         "]"     } },
@@ -321,8 +316,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         case opItof:
         case opFtoi:
         case opFround:
-        case opFtrunc:
-        case opOpTable: return false;
+        case opFtrunc: return false;
         default: return true;
         }
     }
@@ -337,8 +331,7 @@ bool ExpPrinter::childNeedsParentheses(const SharedConstExp &exp, const SharedCo
         case opItof:
         case opFtoi:
         case opFround:
-        case opFtrunc:
-        case opOpTable: return false;
+        case opFtrunc: return false;
         default: return true;
         }
     }

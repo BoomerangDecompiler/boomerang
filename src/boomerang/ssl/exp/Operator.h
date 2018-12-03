@@ -21,84 +21,69 @@
 enum OPER
 {
     // Operators
-    opWild = -1,  ///< Wildcard (Terminal for search Exps only)
-    opPlus,       ///< Binary addition
-    opMinus,      ///< Binary subtraction
-    opMult,       ///< Multiplication
-    opDiv,        ///< Integer division
-    opFPlus,      ///< Binary addition(single floats)
-    opFMinus,     ///< Binary subtraction(single floats)
-    opFMult,      ///< Multiplication(single floats)
-    opFDiv,       ///< (single floats)
-    opFNeg,       ///< Floating point negate
-    opFPlusd,     ///< addition(double floats)
-    opFMinusd,    ///< subtraction(double floats)
-    opFMultd,     ///< Multiplication(double floats)
-    opFDivd,      ///< Integer division(double floats)
-    opFPlusq,     ///< addition(quad floats)
-    opFMinusq,    ///< subtraction(quad floats)
-    opFMultq,     ///< Multiplication(quad floats)
-    opFDivq,      ///< division(quad floats)
-    opFMultsd,    ///< Multiplication(single floats--> double floats)
-    opFMultdq,    ///< Multiplication(single floats--> double floats)
-    opSQRTs,      ///< sqrt of a single
-    opSQRTd,      ///< sqrt of a double
-    opSQRTq,      ///< sqrt of a quad
-    opMults,      ///< Multiply signed
-    opDivs,       ///< Divide signed
-    opMod,        ///< Remainder of integer division
-    opMods,       ///< Remainder of signed integer division
-    opNeg,        ///< Unary minus
-    opAnd,        ///< Logical and
-    opOr,         ///< Logical or
-    opEquals,     ///< Equality (logical)
-    opNotEqual,   ///< Logical !=
-    opLess,       ///< Logical less than (signed)
-    opGtr,        ///< Logical greater than (signed)
-    opLessEq,     ///< Logical <= (signed)
-    opGtrEq,      ///< Logical >= (signed)
-    opLessUns,    ///< Logical less than (unsigned)
-    opGtrUns,     ///< Logical greater than (unsigned)
-    opLessEqUns,  ///< Logical <= (unsigned)
-    opGtrEqUns,   ///< Logical >= (unsigned)
-    opNot,        ///< Bitwise inversion
-    opLNot,       ///< Logical not
-    opSignExt,    ///< Sign extend
-    opBitAnd,     ///< Bitwise and
-    opBitOr,      ///< Bitwise or
-    opBitXor,     ///< Bitwise xor
-    opShiftL,     ///< Left shift
-    opShiftR,     ///< Right shift
-    opShiftRA,    ///< Right shift arithmetic
-    opRotateL,    ///< Rotate left
-    opRotateR,    ///< Rotate right
-    opRotateLC,   ///< Rotate left through carry
-    opRotateRC,   ///< Rotate right through carry
-    opTargetInst, ///< Target specific instruction (Unary)
-                  ///< See frontend.cc for details
-    opTypedExp,   ///< Typed expression
-    opNamedExp,   ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
-    opGuard,      ///< Guarded expression (should be assignment)
-    opFlagCall,   ///< A flag call (Binary with string and params)
-    opFlagDef,    ///< A flag function definition (class FlagDef)
-    opList,       ///< A binary, with expression (1) and next element
-                  ///< in chain (2). Last element in chain is opNil
+    opWild    = -1, ///< Wildcard (Terminal for search Exps only)
+    opInvalid = 0,  ///< Invalid operator
+
+    // Integer operations
+    opPlus,  ///< Binary addition
+    opMinus, ///< Binary subtraction
+    opMult,  ///< Multiplication
+    opMults, ///< Multiply signed
+    opDiv,   ///< Integer division
+    opDivs,  ///< Divide signed
+    opMod,   ///< Remainder of integer division
+    opMods,  ///< Remainder of signed integer division
+    opNeg,   ///< Unary minus
+
+    // float operations
+    opFPlus,  ///< Float addition
+    opFMinus, ///< Float subtraction
+    opFMult,  ///< Float multiply
+    opFDiv,   ///< Float divide
+    opFNeg,   ///< Floating point negate
+
+    // logical operations
+    opAnd,       ///< Logical and
+    opOr,        ///< Logical or
+    opEquals,    ///< Equality (logical)
+    opNotEqual,  ///< Logical !=
+    opLess,      ///< Logical less than (signed)
+    opGtr,       ///< Logical greater than (signed)
+    opLessEq,    ///< Logical <= (signed)
+    opGtrEq,     ///< Logical >= (signed)
+    opLessUns,   ///< Logical less than (unsigned)
+    opGtrUns,    ///< Logical greater than (unsigned)
+    opLessEqUns, ///< Logical <= (unsigned)
+    opGtrEqUns,  ///< Logical >= (unsigned)
+    opLNot,      ///< Logical not
+
+    // bit manipulation operations
+    opNot,      ///< Bitwise inversion
+    opBitAnd,   ///< Bitwise and
+    opBitOr,    ///< Bitwise or
+    opBitXor,   ///< Bitwise xor
+    opShiftL,   ///< Left shift
+    opShiftR,   ///< Right shift
+    opShiftRA,  ///< Right shift arithmetic
+    opRotateL,  ///< Rotate left
+    opRotateR,  ///< Rotate right
+    opRotateLC, ///< Rotate left through carry
+    opRotateRC, ///< Rotate right through carry
+
+    // other operations
+    opTypedExp, ///< Typed expression
+    opFlagCall, ///< A flag call (Binary with string and params)
+    opList,     ///< A binary, with expression (1) and next element
+                ///< in chain (2). Last element in chain is opNil
 
     // Next two are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the
     // TableDict object
     opExpTable, ///< A table of expressions
 
-    /// A table of operators
-    /// Actually, opOptable needs 4 subexpressions (table, index, and two
-    /// expressions to operate on), so it's actually a Ternary with table,
-    /// index, and a list of expressions to operate on. This actually allows
-    /// more generality, e.g. unary or ternary operators int the table
-    opOpTable,
-
     opSuccessor,    ///< Get the successor register of this parameter
     opTern,         ///< Ternary (i.e. ? : )
-    opAt,           ///< Bit extraction (expr@first:last in that order)
+    opAt,           ///< Bit extraction (expr@[first:last] in that order)
     opRegOf,        ///< Represents r[]
     opMemOf,        ///< Represents m[]
     opAddrOf,       ///< Represents a[]
@@ -106,7 +91,6 @@ enum OPER
     opWildRegOf,    ///< r[wild],
     opWildAddrOf,   ///< a[wild],
     opDefineAll,    ///< A wild definition
-    opPhi,          ///< Represents phi(a1, a2, a3) .. ie SSA form merging
     opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
     opParam,        ///< SSL parameter param`'
     opLocal,        ///< used to represent a local, takes a string
@@ -139,7 +123,6 @@ enum OPER
     opLoge,         ///< logarithm to base e
     opPow,          ///< raise to a power
     opSqrt,         ///< square root
-    opExecute,      ///< Execute instruction at(addr)
 
     // constants
     opIntConst,     ///< integer constant TODO: differentiate IntConst by adding AddressConst ?
@@ -158,8 +141,6 @@ enum OPER
     opNil,    ///< This is a "nil list" terminal (e.g. no parameters)
     opFlags,  ///< This is the abstracted integer flags register terminal
     opFflags, ///< This is the abstracted floating point flags terminal
-    opAnull,  ///< This is an abstract boolean that if true causes the following instruction to be
-              ///< anulled
 
     opTrue,
     opFalse,
@@ -169,16 +150,13 @@ enum OPER
     // All id's greater or equal to idMachSpec are assumed to be source machine
     // specific. If any of these are left by the time the back end is called,
     // then these need to have local variables assigned for them
-    opZF,   ///< zero flag
-    opCF,   ///< carry flag
-    opNF,   ///< negative flag
-    opOF,   ///< overflow flag
-    opDF,   ///< Pentium Direction (=Down) flag
-    opFZF,  ///< floating point zero flag
-    opFLF,  ///< floating point less flag
-    opFGF,  ///< floating point greater flag
-    opCTI,  ///< Control transfer instruction (boolean)
-    opNEXT, ///< Next PC pseudo-register
+    opZF,  ///< zero flag
+    opCF,  ///< carry flag
+    opNF,  ///< negative flag
+    opOF,  ///< overflow flag
+    opDF,  ///< Pentium Direction (=Down) flag
+    opFZF, ///< floating point zero flag
+    opFLF, ///< floating point less flag
 
     // ALWAYS LAST!
     opNumOf ///< Special index: MUST BE LAST!

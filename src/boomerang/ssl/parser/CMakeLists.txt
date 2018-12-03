@@ -1,0 +1,56 @@
+#
+# This file is part of the Boomerang Decompiler.
+#
+# See the file "LICENSE.TERMS" for information on usage and
+# redistribution of this file, and for a DISCLAIMER OF ALL
+# WARRANTIES.
+#
+
+
+if (WIN32)
+    FLEX_TARGET(SSL2Scanner
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
+                COMPILE_FLAGS --wincompat
+    )
+else (WIN32)
+    FLEX_TARGET(SSL2Scanner
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.l
+                ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Scanner.cpp
+    )
+endif (WIN32)
+
+
+if (NOT FLEX_SSL2Scanner_DEFINED)
+    message(FATAL_ERROR "Could not generate SSL2 scanner")
+endif (NOT FLEX_SSL2Scanner_DEFINED)
+
+
+BISON_TARGET(SSL2Parser
+             ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.y
+             ${CMAKE_CURRENT_SOURCE_DIR}/SSL2Parser.cpp
+)
+
+if (NOT BISON_SSL2Parser_DEFINED)
+    message(FATAL_ERROR "Could not generate SSL2 parser")
+endif (NOT BISON_SSL2Parser_DEFINED)
+
+
+ADD_FLEX_BISON_DEPENDENCY(SSL2Scanner SSL2Parser)
+
+add_library(boomerang-ssl2-parser STATIC
+    ${BISON_SSL2Parser_OUTPUTS}
+    ${FLEX_SSL2Scanner_OUTPUTS}
+    SSL2ParserDriver.cpp
+    SSL2ParserDriver.h
+    InsNameElem.cpp
+    InsNameElem.h
+    Table.cpp
+    Table.h
+)
+
+if (CMAKE_COMPILER_IS_GNUCXX)
+    set_source_files_properties(SSL2Parser.cpp PROPERTIES COMPILE_OPTIONS -Wno-error=null-dereference)
+endif (CMAKE_COMPILER_IS_GNUCXX)
+
+target_link_libraries(boomerang-ssl2-parser Qt5::Core)

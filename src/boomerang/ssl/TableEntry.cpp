@@ -25,7 +25,7 @@ TableEntry::TableEntry(const std::list<QString> &params, const RTL &rtl)
 
 int TableEntry::appendRTL(const std::list<QString> &params, const RTL &rtl)
 {
-    if (!std::equal(m_params.begin(), m_params.end(), params.begin())) {
+    if (!std::equal(m_params.begin(), m_params.end(), params.begin(), params.end())) {
         return -1;
     }
 

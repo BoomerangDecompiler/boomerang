@@ -29,12 +29,6 @@ TABLE_TYPE Table::getType() const
 }
 
 
-OpTable::OpTable(const std::deque<QString> &ops)
-    : Table(ops, OPTABLE)
-{
-}
-
-
 ExprTable::ExprTable(const std::deque<SharedExp> &exprs)
     : Table(EXPRTABLE)
     , expressions(exprs)

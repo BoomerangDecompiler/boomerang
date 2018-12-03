@@ -19,7 +19,6 @@ class Unary;
 class Binary;
 class Ternary;
 class TypedExp;
-class FlagDef;
 class RefExp;
 class Location;
 class Const;
@@ -54,8 +53,6 @@ public:
     /// \copydoc ExpVisitor::preVisit
     virtual bool preVisit(const std::shared_ptr<TypedExp> &exp, bool &visitChildren);
     /// \copydoc ExpVisitor::preVisit
-    virtual bool preVisit(const std::shared_ptr<FlagDef> &exp, bool &visitChildren);
-    /// \copydoc ExpVisitor::preVisit
     virtual bool preVisit(const std::shared_ptr<RefExp> &exp, bool &visitChildren);
     /// \copydoc ExpVisitor::preVisit
     virtual bool preVisit(const std::shared_ptr<Location> &exp, bool &visitChildren);
@@ -73,8 +70,6 @@ public:
     virtual bool postVisit(const std::shared_ptr<Ternary> &exp);
     /// \copydoc ExpVisitor::postVisit
     virtual bool postVisit(const std::shared_ptr<TypedExp> &exp);
-    /// \copydoc ExpVisitor::postVisit
-    virtual bool postVisit(const std::shared_ptr<FlagDef> &exp);
     /// \copydoc ExpVisitor::postVisit
     virtual bool postVisit(const std::shared_ptr<RefExp> &exp);
     /// \copydoc ExpVisitor::postVisit

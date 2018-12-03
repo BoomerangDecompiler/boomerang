@@ -12,6 +12,7 @@
 
 #include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/TableEntry.h"
+#include "boomerang/ssl/parser/SSL2Parser.hpp"
 #include "boomerang/util/ByteUtil.h"
 
 #include <map>
@@ -38,6 +39,8 @@ using SharedExp = std::shared_ptr<Exp>;
 class BOOMERANG_API RTLInstDict
 {
     friend class SSLParser;
+    friend class SSL2ParserDriver;
+    friend class yy::parser;
 
 public:
     RTLInstDict(bool verboseOutput = false);

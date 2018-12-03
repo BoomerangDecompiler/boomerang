@@ -16,10 +16,12 @@ it is currently recommended to build the development version (`develop`) of the 
 ### Building prerequisites
 
  - A 64 bit operating system (32 bit might or might not work, but it is not supported.)
- - A C++ compiler compatible with C++17 (GCC 7+, Clang 6+, MSVC 2017+ are known to work)
+ - A C++17 compiler (GCC 7+, Clang 6+, MSVC 2017+ are known to work)
  - [CMake 3.8.0 or newer](https://cmake.org/download/)
  - [Qt5](https://www.qt.io/download-open-source/) (Qt 5.11+ is known to work, earlier versions should also work)
  - [Capstone 3.0.5 or newer](http://www.capstone-engine.org/)
+ - [GNU bison 3.0 or newer](https://www.gnu.org/software/bison/)
+ - [GNU flex 2.6 or newer](https://github.com/westes/flex)
  - [Doxygen 1.8.13 or newer](http://www.doxygen.nl/) (optional, for documentation)
  - [Python 3](https://www.python.org/downloads/) (optional, for regression tests)
 
@@ -30,11 +32,11 @@ On a Linux system you can build and install Boomerang with the usual cmake-make-
 On a Debian-compatible system (e.g. Ubuntu) these commands will clone, build and install Boomerang:
 
 ```bash
-sudo apt-get install git build-essential cmake qt5-default libcapstone-dev
+sudo apt-get install git build-essential cmake qt5-default libcapstone-dev flex bison
 cd YOUR_FAVOURITE_DEVELOPMENT_DIRECTORY
 git clone https://github.com/BoomerangDecompiler/boomerang.git
 cd boomerang && mkdir build && cd build
-cmake .. && make && make install
+cmake .. && make && sudo make install
 ```
 
 
@@ -46,6 +48,7 @@ for other IDEs or compilers (e.g. MinGW) is not covered in this guide.
 - Install Visual Studio 2017 (e.g the free [Community Edition](https://visualstudio.microsoft.com/vs/community/)).
 - Install [Git for Windows](https://github.com/git-for-windows/git/releases/latest).
 - Install [CMake](https://cmake.org/download/).
+- Install flex+bison via [winflexbison](https://github.com/lexxmark/winflexbison).
 - Download and install [Qt5](https://www.qt.io/download-open-source/). Please make sure to install the 64-bit Windows version for Visual Studio 2017.
 - Set the QTDIR environment variable. For example, if you have installed Qt 5.10.0 into C:\Qt, set QTDIR to "C:\Qt\5.10.0\msvc2017_64\" (without the quotes).
 - Clone Boomerang using Git for Windows. Let's call the directory of the cloned repository $BOOMERANG_DIR.

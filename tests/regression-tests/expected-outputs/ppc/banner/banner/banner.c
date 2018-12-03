@@ -3,6 +3,7 @@ int main(int argc, char *argv[]);
 /** address: 0x10000468 */
 int main(int argc, char *argv[])
 {
+    int XERCA; 		// r203
     unsigned int g0; 		// r0
     int g1; 		// r1
     int g10; 		// r10
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
     __size32 local5; 		// m[g1 - 132]
     int local6; 		// m[g1 - 116]
     int local7; 		// m[g1 - 128]
-    __size32 local8; 		// m[g1 - 136]{14}
+    __size32 local8; 		// m[g1 - 136]{15}
 
     g3 = malloc(12);
     *(__size32*)(g3 + 4) = 0x10001df4;
@@ -48,9 +49,9 @@ bb0x10000500:
 bb0x10000564:
                 if (local1 <= 6) {
                     g10 = (ROTL(local2) & ~0x7) + g1 + local1 - 96;
-                    g11 = (ROTL((rs * 7 + local7)) & ~0x3) + 0x100120f4;
+                    g11 = (ROTL((((local0 >> 3) + XERCA) * 7 + local7)) & ~0x3) + 0x100120f4;
                     g0 = *g11;
-                    g0 = *(unsigned char*)(rs * 7 + local1 + g0);
+                    g0 = *(unsigned char*)((local0 - (ROTL(((local0 >> 3) + XERCA)) & ~0x7)) * 7 + local1 + g0);
                     *(__size8*)g10 = (char) g0;
                     local1++;
                     goto bb0x10000564;

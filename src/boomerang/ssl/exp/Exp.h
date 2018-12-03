@@ -55,8 +55,8 @@ typedef std::shared_ptr<const Type> SharedConstType;
  *                   /       |      \
  *                Unary     Const   Terminal
  *   TypedExp____/  |   \
- *    FlagDef___/ Binary Location
- *     RefExp__/    |
+ *    RefExp____/ Binary Location
+ *                  |
  *               Ternary
  */
 class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>
@@ -137,8 +137,6 @@ public:
     /// True if this is a temporary. Note some old code still has r[tmp]
     bool isTemp() const;
 
-    /// True if this is the anull Terminal (anulls next instruction)
-    bool isAnull() const { return m_oper == opAnull; }
     /// True if this is the Nil Terminal (terminates lists; "NOP" expression)
     bool isNil() const { return m_oper == opNil; }
     /// True if this is %pc
@@ -165,8 +163,6 @@ public:
     bool isSizeCast() const { return m_oper == opSize; }
     /// True if this is a subscripted expression (SSA)
     bool isSubscript() const { return m_oper == opSubscript; }
-    // True if this is a phi assignmnet (SSA)
-    //        bool        isPhi() {return op == opPhi;}
     /// True if this is a local variable
     bool isLocal() const { return m_oper == opLocal; }
     /// True if this is a global variable
@@ -367,10 +363,6 @@ public:
 
     // Get memory depth. Add one for each m[]
     int getMemDepth();
-
-    /// \returns a ptr to the guard expression, or 0 if none
-    SharedExp getGuard();
-
 
     // These simplifying functions don't really belong in class Exp,
     // but they know too much about how Exps work

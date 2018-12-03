@@ -28,15 +28,23 @@
 #include <cstring>
 
 
-NJMCDecoder::NJMCDecoder(Prog *prog, const QString &sslFilePath)
+NJMCDecoder::NJMCDecoder(Prog *prog, const QString &sslFileName)
     : m_rtlDict(prog->getProject()->getSettings()->debugDecoder)
     , m_prog(prog)
 {
-    QDir dataDir = prog->getProject()->getSettings()->getDataDirectory();
+    const Settings *settings = prog->getProject()->getSettings();
+    QString realSSLFileName;
 
-    if (!m_rtlDict.readSSLFile(dataDir.absoluteFilePath(sslFilePath))) {
-        LOG_ERROR("Cannot read SSL file '%1'", sslFilePath);
-        throw std::runtime_error("Failed to read SSL file");
+    if (!settings->sslFileName.isEmpty()) {
+        realSSLFileName = settings->getWorkingDirectory().absoluteFilePath(settings->sslFileName);
+    }
+    else {
+        realSSLFileName = settings->getDataDirectory().absoluteFilePath(sslFileName);
+    }
+
+    if (!m_rtlDict.readSSLFile(realSSLFileName)) {
+        LOG_ERROR("Cannot read SSL file '%1'", realSSLFileName);
+        throw std::runtime_error("Cannot read SSL file");
     }
 }
 

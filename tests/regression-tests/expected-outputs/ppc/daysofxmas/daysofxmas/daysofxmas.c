@@ -10,7 +10,7 @@ int main(int argc, union { char *[] *; int; } argv)
     int CR4; 		// r68
     int CR5; 		// r69
     int CR6; 		// r70
-    __size32 CR7; 		// r71
+    __size4 CR7; 		// r71
     unsigned int g0; 		// r0
     unsigned int g0_1; 		// r0{46}
     int g3; 		// r3

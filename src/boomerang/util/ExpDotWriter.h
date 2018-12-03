@@ -36,9 +36,6 @@ private:
     bool postVisit(const std::shared_ptr<TypedExp> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit
-    bool postVisit(const std::shared_ptr<FlagDef> &exp) override;
-
-    /// \copydoc ExpVisitor::postVisit
     bool postVisit(const std::shared_ptr<RefExp> &exp) override;
 
     /// \copydoc ExpVisitor::postVisit

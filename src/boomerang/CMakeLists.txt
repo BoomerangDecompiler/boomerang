@@ -31,8 +31,7 @@ foreach (src ${boomerang-sources})
 endforeach ()
 
 add_library(boomerang ${boomerang-sources} ${boomerang-headers})
-target_link_libraries(boomerang ${CMAKE_DL_LIBS} Qt5::Core Capstone::Capstone ${DEBUG_LIB})
-
+target_link_libraries(boomerang ${CMAKE_DL_LIBS} boomerang-ssl2-parser Capstone::Capstone ${DEBUG_LIB})
 
 if (BUILD_SHARED_LIBS)
     target_compile_definitions(boomerang PRIVATE BOOMERANG_BUILD_SHARED=1)

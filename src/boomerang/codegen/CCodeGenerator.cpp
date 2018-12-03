@@ -1427,8 +1427,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opFPlus:
-    case opFPlusd:
-    case opFPlusq:
         openParen(str, curPrec, OpPrec::Add);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::Add);
         str << " + ";
@@ -1437,8 +1435,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opFMinus:
-    case opFMinusd:
-    case opFMinusq:
         openParen(str, curPrec, OpPrec::Add);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::Add);
         str << " - ";
@@ -1447,8 +1443,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opFMult:
-    case opFMultd:
-    case opFMultq:
         openParen(str, curPrec, OpPrec::Mult);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
         str << " * ";
@@ -1457,8 +1451,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         break;
 
     case opFDiv:
-    case opFDivd:
-    case opFDivq:
         openParen(str, curPrec, OpPrec::Mult);
         appendExp(str, *binaryExp.getSubExp1(), OpPrec::Mult);
         str << " / ";
@@ -1524,19 +1516,9 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         appendExp(str, *binaryExp.getSubExp2(), OpPrec::Unary);
         break;
 
-    case opFMultsd:
-    case opFMultdq:
-    case opSQRTs:
-    case opSQRTd:
-    case opSQRTq:
-    case opSignExt:
-    case opTargetInst:
-    case opNamedExp:
-    case opGuard:
     case opFpush:
     case opFpop:
     case opLoge:
-    case opExecute:
     case opAFP:
     case opAGP:
         // not implemented

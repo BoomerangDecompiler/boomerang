@@ -264,6 +264,7 @@ std::unique_ptr<RTL> CapstoneX86Decoder::createRTLForInstruction(Address pc,
                     asgn->setRight(Binary::get(opPlus, Terminal::get(opPC), Const::get(delta)));
                 }
             }
+
             CallStatement *call = new CallStatement;
             // Set the destination
             call->setDest(callDest);

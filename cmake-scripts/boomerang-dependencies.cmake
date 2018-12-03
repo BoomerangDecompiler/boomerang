@@ -17,4 +17,7 @@ if (Qt5Xml_FOUND)
 endif (Qt5Xml_FOUND)
 
 find_package(Threads)
-find_package(Capstone REQUIRED)
+find_package(Capstone 3.0 REQUIRED)
+
+find_package(FLEX  2.6 REQUIRED)
+find_package(BISON 3.0 REQUIRED)
