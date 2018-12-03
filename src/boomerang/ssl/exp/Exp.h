@@ -368,8 +368,6 @@ public:
     // Get memory depth. Add one for each m[]
     int getMemDepth();
 
-    /// \returns a ptr to the guard expression, or 0 if none
-    SharedExp getGuard();
 
 
     // These simplifying functions don't really belong in class Exp,

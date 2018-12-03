@@ -123,22 +123,10 @@ bool Exp::isAfpTerm()
 }
 
 
-SharedExp Exp::getGuard()
-{
-    if (m_oper == opGuard) {
-        return getSubExp1();
-    }
-
-    return nullptr;
-}
-
-
 void Exp::doSearch(const Exp &pattern, SharedExp &toSearch, std::list<SharedExp *> &matches,
                    bool once)
 {
-    bool compare;
-
-    compare = (pattern == *toSearch);
+    const bool compare = (pattern == *toSearch);
 
     if (compare) {
         matches.push_back(&toSearch); // Success

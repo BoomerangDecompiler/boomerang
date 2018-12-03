@@ -57,8 +57,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opRotateLC);
         HANDLE_OPER(opRotateRC);
         HANDLE_OPER(opTypedExp);
-        HANDLE_OPER(opNamedExp);
-        HANDLE_OPER(opGuard);
         HANDLE_OPER(opFlagCall);
         HANDLE_OPER(opFlagDef);
         HANDLE_OPER(opList);

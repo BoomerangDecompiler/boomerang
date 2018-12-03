@@ -72,8 +72,6 @@ enum OPER
 
     // other operations
     opTypedExp,  ///< Typed expression
-    opNamedExp,  ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
-    opGuard,     ///< Guarded expression (should be assignment)
     opFlagCall,  ///< A flag call (Binary with string and params)
     opFlagDef,   ///< A flag function definition (class FlagDef)
     opList,      ///< A binary, with expression (1) and next element
