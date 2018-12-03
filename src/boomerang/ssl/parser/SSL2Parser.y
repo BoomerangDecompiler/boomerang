@@ -151,7 +151,7 @@ specification:
 parts:
     endianness_def
   | constant_def
-  | reglist
+  | reg_def
   | flagfunc_def
   | table_assign
   | instr_def
@@ -322,12 +322,13 @@ nonempty_arglist:
   | nonempty_arglist COMMA exp  { $1->push_back($3); $$ = std::move($1); }
   ;
 
-reglist:
-    TOK_INTEGER { drv.bFloat = false; } a_reglist
-  | TOK_FLOAT   { drv.bFloat = true;  } a_reglist
+reg_def:
+    TOK_INTEGER { drv.bFloat = false; } reg_def_part
+  | TOK_FLOAT   { drv.bFloat = true;  } reg_def_part
   ;
 
-a_reglist:
+reg_def_part:
+    // example: %eax[32] -> 24
     REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL {
         if ($3 <= 0) {
             throw yy::parser::syntax_error(drv.location, "Register size must be positive.");
@@ -337,6 +338,7 @@ a_reglist:
         }
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
     }
+    // example: %foo[32] -> 10 COVERS %bar..%baz
   | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL COVERS REG_IDENT TO REG_IDENT {
         if ($3 <= 0) {
             throw yy::parser::syntax_error(drv.location, "Register size must be positive.");
@@ -377,6 +379,7 @@ a_reglist:
             drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
         }
     }
+    // example: %ah[8] -> 10 SHARES %ax@[8..15]
   | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL SHARES REG_IDENT AT LBRACKET INT_LITERAL TO INT_LITERAL RBRACKET {
         if ($3 <= 0) {
             throw yy::parser::syntax_error(drv.location, "Register size must be positive.");
@@ -412,6 +415,7 @@ a_reglist:
   ;
 
 flagfunc_def:
+    // example: *def* of ADDFLAGS(...) { ... }
     NAME_CALL LPAREN paramlist RPAREN {
         drv.m_dict->m_definedParams.insert($3->begin(), $3->end());
     } LBRACE rtl RBRACE {
@@ -423,12 +427,12 @@ flagfunc_def:
     }
   ;
 
-paramlist:
+paramlist: // comma separated list of identifiers
     %empty              { $$.reset(new std::list<QString>()); }
   | nonempty_paramlist  { $$ = std::move($1); }
   ;
 
-nonempty_paramlist: /* comma separated list of identifiers */
+nonempty_paramlist:
     IDENT                           {
         $$.reset(new std::list<QString>({ $1 }));
     }
@@ -439,7 +443,8 @@ nonempty_paramlist: /* comma separated list of identifiers */
   ;
 
 rtl:
-    UNDERSCORE { /* I think %empty should do too */
+    // I think %empty should do too, but this is more explicit
+    UNDERSCORE {
         $$.reset(new RTL(Address::ZERO));
     }
   | nonempty_rtl { $$ = std::move($1); }
@@ -452,7 +457,8 @@ nonempty_rtl:
 
 statement:
     assignment { $$ = $1; }
-  | NAME_CALL LPAREN arglist RPAREN { /* example: ADDFLAGS(...) */
+    // example: *use* of ADDFLAGS(...)
+  | NAME_CALL LPAREN arglist RPAREN {
         if (drv.m_dict->m_flagFuncs.find($1) == drv.m_dict->m_flagFuncs.end()) {
             throw yy::parser::syntax_error(drv.location, "Flag function not defined.");
         }
@@ -465,9 +471,11 @@ statement:
   ;
 
 assignment:
+    // example *32* %eax := 0
     assigntype location ASSIGN exp {
         $$ = new Assign($1, $2, $4);
     }
+    // exampe *32* %CF=0 => %eax := %ecx
   | assigntype exp THEN location ASSIGN exp {
         $$ = new Assign($1, $4, $6);
         $$->setGuard($2);
@@ -475,6 +483,7 @@ assignment:
   ;
 
 assigntype:
+    // example: *i32*
     ASSIGNTYPE {
         const QString typeStr = $1.mid(1, $1.length()-2);
         // we know this is not empty because of lexer rules
@@ -585,6 +594,7 @@ instr_def:
     }
   ;
 
+// example: PUSH.reg32
 instr_name:
     instr_name_elem                { $$ = std::move($1); }
   | instr_name DOT instr_name_elem { $1->append($3); $$ = std::move($1); }
