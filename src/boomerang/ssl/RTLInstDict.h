@@ -69,10 +69,10 @@ public:
      *
      * \param name    the name of the instruction (must correspond to one defined in the SSL file).
      * \param pc      address at which the named instruction is located
-     * \param actuals the actual values of the instruction parameters
+     * \param args    the actual values of the instruction parameters
      */
     std::unique_ptr<RTL> instantiateRTL(const QString &name, Address pc,
-                                        const std::vector<SharedExp> &actuals);
+                                        const std::vector<SharedExp> &args);
 
     RegDB *getRegDB();
     const RegDB *getRegDB() const;
@@ -83,16 +83,16 @@ private:
 
     /**
      * Returns an instance of a register transfer list for the parameterized rtlist with the given
-     * formals replaced with the actuals given as the third parameter.
+     * formals replaced with the arguments given as the third parameter.
      *
      * \param   rtls    a register transfer list
      * \param   pc      address at which the named instruction is located
      * \param   params  a list of formal parameters
-     * \param   actuals the actual parameter values
+     * \param   args    the actual parameter values
      * \returns the instantiated list of Exps
      */
     std::unique_ptr<RTL> instantiateRTL(RTL &rtls, Address pc, std::list<QString> &params,
-                                        const std::vector<SharedExp> &actuals);
+                                        const std::vector<SharedExp> &args);
 
     /**
      * Appends one RTL to the dictionary, or adds it to idict if an

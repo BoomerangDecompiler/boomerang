@@ -123,7 +123,7 @@ std::pair<QString, DWord> RTLInstDict::getSignature(const QString &instructionNa
 
 
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address natPC,
-                                                 const std::vector<SharedExp> &actuals)
+                                                 const std::vector<SharedExp> &args)
 {
     // TODO try to retrieve fast instruction mappings
     // before trying the verbose instructions
@@ -133,14 +133,14 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
     }
 
     TableEntry &entry(dict_entry->second);
-    std::unique_ptr<RTL> rtl = instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
+    std::unique_ptr<RTL> rtl = instantiateRTL(entry.m_rtl, natPC, entry.m_params, args);
     if (rtl) {
         return rtl;
     }
     else {
         LOG_ERROR("Cannot instantiate instruction '%1' at address %2: "
                   "Instruction has %3 parameters, but got %4 arguments",
-                  name, natPC, entry.m_params.size(), actuals.size());
+                  name, natPC, entry.m_params.size(), args.size());
         return nullptr;
     }
 }
@@ -148,9 +148,9 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
 
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
                                                  std::list<QString> &params,
-                                                 const std::vector<SharedExp> &actuals)
+                                                 const std::vector<SharedExp> &args)
 {
-    if (params.size() != actuals.size()) {
+    if (params.size() != args.size()) {
         return nullptr;
     }
 
@@ -160,18 +160,16 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC
 
     // Iterate through each Statement of the new list of stmts
     for (Statement *ss : *newList) {
-        // Search for the formals and replace them with the actuals
-        auto param                                    = params.begin();
-        std::vector<SharedExp>::const_iterator actual = actuals.begin();
+        // Search for the formals and replace them with the actual arguments
+        auto arg = args.begin();
 
-        for (; param != params.end(); ++param, ++actual) {
+        for (QString paramName : params) {
             /* Simple parameter - just construct the formal to search for */
-            Location formal(opParam, Const::get(*param),
-                            nullptr); // Location::param(param->c_str());
-            ss->searchAndReplace(formal, *actual);
-            // delete formal;
+            Location param(opParam, Const::get(paramName), nullptr);
+            ss->searchAndReplace(param, *arg);
+            ++arg;
         }
-
+        assert(arg == args.end());
         ss->fixSuccessor();
 
         if (m_verboseOutput) {
