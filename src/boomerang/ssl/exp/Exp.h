@@ -165,8 +165,6 @@ public:
     bool isSizeCast() const { return m_oper == opSize; }
     /// True if this is a subscripted expression (SSA)
     bool isSubscript() const { return m_oper == opSubscript; }
-    // True if this is a phi assignmnet (SSA)
-    //        bool        isPhi() {return op == opPhi;}
     /// True if this is a local variable
     bool isLocal() const { return m_oper == opLocal; }
     /// True if this is a global variable

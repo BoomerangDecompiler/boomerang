@@ -70,7 +70,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opWildRegOf);
         HANDLE_OPER(opWildAddrOf);
         HANDLE_OPER(opDefineAll);
-        HANDLE_OPER(opPhi);
         HANDLE_OPER(opSubscript);
         HANDLE_OPER(opParam);
         HANDLE_OPER(opLocal);

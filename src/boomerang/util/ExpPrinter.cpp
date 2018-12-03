@@ -84,7 +84,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opWildRegOf,      { "r[wild]",    "",         "",         ""      } },
     { opWildAddrOf,     { "a[wild]",    "",         "",         ""      } },
     { opDefineAll,      { "<all>",      "",         "",         ""      } },
-    { opPhi,            { "phi(",       "",         "",         ")"     } },
     { opArrayIndex,     { "",           "[",        "",         "]"     } },
     { opMachFtr,        { "machine(",   "",         "",         ")"     } },
     { opTruncu,         { "truncu(",    ", ",       ", ",       ")"     } },

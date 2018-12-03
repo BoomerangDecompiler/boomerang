@@ -83,7 +83,7 @@ enum OPER
 
     opSuccessor,    ///< Get the successor register of this parameter
     opTern,         ///< Ternary (i.e. ? : )
-    opAt,           ///< Bit extraction (expr@first:last in that order)
+    opAt,           ///< Bit extraction (expr@[first:last] in that order)
     opRegOf,        ///< Represents r[]
     opMemOf,        ///< Represents m[]
     opAddrOf,       ///< Represents a[]
@@ -91,7 +91,6 @@ enum OPER
     opWildRegOf,    ///< r[wild],
     opWildAddrOf,   ///< a[wild],
     opDefineAll,    ///< A wild definition
-    opPhi,          ///< Represents phi(a1, a2, a3) .. ie SSA form merging
     opSubscript,    ///< Represents subscript(e, n) .. ie SSA renaming
     opParam,        ///< SSL parameter param`'
     opLocal,        ///< used to represent a local, takes a string
