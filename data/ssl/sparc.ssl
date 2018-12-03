@@ -579,43 +579,9 @@ WRTBR  rs1, reg_or_imm  *32* %TBR := %TBR | ((rs1 ^ reg_or_imm) << 12);
 # destination floating point register.
 # NB: This means that 2 FMOVs statements are required to move a double and
 # 4 to move a quad.
-
 FMOVs      fs2s, fds        *32* fds := fs2s;
 FNEGs      fs2s, fds        *32* fds := 0.0 -f fs2s;
 FABSs      fs2s, fds        *32* fds := [ fs2s < 0.0 ? 0.0 -f fs2s : fs2s ];
-
-# FMUL requires primitives
-#   *f      (multiply 2 32 bit floats and store the result in
-#           a 32 bit float)
-#   *fd     (multiply 2 64 bit floats and store the result in
-#           a 64 bit float)
-#   *fq     (multiply 2 128 bit floats and store the result
-#           in a 128 bit float)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-
-#FxMULy Requires primitives:
-#   *fsd    (multiply 2 32 bit floats to produce a 64 bit float)
-#   *fdq    (multiply 2 64 bit floats to produce a 128 bit float)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-
-# FADD requires primitives
-#   +f  (add two 32 bit floats)
-#   +fd (add two 64 bit floats)
-#   +fq (add two 128 bit floats)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-
-# FSUB requires primitives
-#   -f  (subtract a 32 bit float from another 32 bit float)
-#   -fd (subtract a 64 bit float from another 64 bit float)
-#   -fq (subtract a 128 bit float from another 128 bit float)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
-# Note MVE: I want to use just -f now
-
-# FDIV requires primitives
-#   /f  (divides 2 32 bit floats)
-#   /fd (divides 2 64 bit floats)
-#   /fq (divides 2 128 bit floats)
-# added to scanner.m, parser.y ss.cc ss.h as at 14/12/1998
 
 # Shamelessly borrowed from integers
 FADDs  fs1, fs2, fd  *32*  fd := fs1 +f fs2;
