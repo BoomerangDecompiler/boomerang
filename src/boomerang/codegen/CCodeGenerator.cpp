@@ -168,12 +168,19 @@ void CCodeGenerator::addAssignmentStatement(const Assign *asgn)
         int m          = lhs->access<Const, 3>()->getInt();
         appendExp(ost, *exp1, OpPrec::Assign);
         ost << " = ";
-        int mask = ~(((1 << (m - n + 1)) - 1)
-                     << m); // MSVC winges without most of these parentheses
-        rhs      = Binary::get(
-            opBitAnd, exp1,
-            Binary::get(opBitOr, Const::get(mask), Binary::get(opShiftL, rhs, Const::get(m))));
+
+        // MSVC winges without most of these parentheses
+        int mask = ~(((1 << (m - n + 1)) - 1) << m);
+
+        // clang-format off
+        rhs = Binary::get(opBitAnd,
+                          exp1,
+                          Binary::get(opBitOr,
+                                      Const::get(mask),
+                                      Binary::get(opShiftL, rhs, Const::get(m))));
+        // clang-format on
         rhs = rhs->simplify();
+
         appendExp(ost, *rhs, OpPrec::Assign);
         ost << ";";
         appendLine(tgt);
