@@ -21,26 +21,26 @@
 enum OPER
 {
     // Operators
-    opWild = -1,   ///< Wildcard (Terminal for search Exps only)
-    opInvalid = 0, ///< Invalid operator
+    opWild    = -1, ///< Wildcard (Terminal for search Exps only)
+    opInvalid = 0,  ///< Invalid operator
 
     // Integer operations
-    opPlus,      ///< Binary addition
-    opMinus,     ///< Binary subtraction
-    opMult,      ///< Multiplication
-    opMults,     ///< Multiply signed
-    opDiv,       ///< Integer division
-    opDivs,      ///< Divide signed
-    opMod,       ///< Remainder of integer division
-    opMods,      ///< Remainder of signed integer division
-    opNeg,       ///< Unary minus
+    opPlus,  ///< Binary addition
+    opMinus, ///< Binary subtraction
+    opMult,  ///< Multiplication
+    opMults, ///< Multiply signed
+    opDiv,   ///< Integer division
+    opDivs,  ///< Divide signed
+    opMod,   ///< Remainder of integer division
+    opMods,  ///< Remainder of signed integer division
+    opNeg,   ///< Unary minus
 
     // float operations
-    opFPlus,     ///< Float addition
-    opFMinus,    ///< Float subtraction
-    opFMult,     ///< Float multiply
-    opFDiv,      ///< Float divide
-    opFNeg,      ///< Floating point negate
+    opFPlus,  ///< Float addition
+    opFMinus, ///< Float subtraction
+    opFMult,  ///< Float multiply
+    opFDiv,   ///< Float divide
+    opFNeg,   ///< Floating point negate
 
     // logical operations
     opAnd,       ///< Logical and
@@ -58,28 +58,28 @@ enum OPER
     opLNot,      ///< Logical not
 
     // bit manipulation operations
-    opNot,       ///< Bitwise inversion
-    opBitAnd,    ///< Bitwise and
-    opBitOr,     ///< Bitwise or
-    opBitXor,    ///< Bitwise xor
-    opShiftL,    ///< Left shift
-    opShiftR,    ///< Right shift
-    opShiftRA,   ///< Right shift arithmetic
-    opRotateL,   ///< Rotate left
-    opRotateR,   ///< Rotate right
-    opRotateLC,  ///< Rotate left through carry
-    opRotateRC,  ///< Rotate right through carry
+    opNot,      ///< Bitwise inversion
+    opBitAnd,   ///< Bitwise and
+    opBitOr,    ///< Bitwise or
+    opBitXor,   ///< Bitwise xor
+    opShiftL,   ///< Left shift
+    opShiftR,   ///< Right shift
+    opShiftRA,  ///< Right shift arithmetic
+    opRotateL,  ///< Rotate left
+    opRotateR,  ///< Rotate right
+    opRotateLC, ///< Rotate left through carry
+    opRotateRC, ///< Rotate right through carry
 
     // other operations
-    opTypedExp,  ///< Typed expression
-    opFlagCall,  ///< A flag call (Binary with string and params)
-    opList,      ///< A binary, with expression (1) and next element
-                 ///< in chain (2). Last element in chain is opNil
+    opTypedExp, ///< Typed expression
+    opFlagCall, ///< A flag call (Binary with string and params)
+    opList,     ///< A binary, with expression (1) and next element
+                ///< in chain (2). Last element in chain is opNil
 
     // Next two are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the
     // TableDict object
-    opExpTable,     ///< A table of expressions
+    opExpTable, ///< A table of expressions
 
     opSuccessor,    ///< Get the successor register of this parameter
     opTern,         ///< Ternary (i.e. ? : )
@@ -150,13 +150,13 @@ enum OPER
     // All id's greater or equal to idMachSpec are assumed to be source machine
     // specific. If any of these are left by the time the back end is called,
     // then these need to have local variables assigned for them
-    opZF,   ///< zero flag
-    opCF,   ///< carry flag
-    opNF,   ///< negative flag
-    opOF,   ///< overflow flag
-    opDF,   ///< Pentium Direction (=Down) flag
-    opFZF,  ///< floating point zero flag
-    opFLF,  ///< floating point less flag
+    opZF,  ///< zero flag
+    opCF,  ///< carry flag
+    opNF,  ///< negative flag
+    opOF,  ///< overflow flag
+    opDF,  ///< Pentium Direction (=Down) flag
+    opFZF, ///< floating point zero flag
+    opFLF, ///< floating point less flag
 
     // ALWAYS LAST!
     opNumOf ///< Special index: MUST BE LAST!

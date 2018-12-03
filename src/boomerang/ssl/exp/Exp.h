@@ -364,8 +364,6 @@ public:
     // Get memory depth. Add one for each m[]
     int getMemDepth();
 
-
-
     // These simplifying functions don't really belong in class Exp,
     // but they know too much about how Exps work
 
