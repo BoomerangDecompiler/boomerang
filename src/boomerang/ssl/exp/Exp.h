@@ -137,8 +137,6 @@ public:
     /// True if this is a temporary. Note some old code still has r[tmp]
     bool isTemp() const;
 
-    /// True if this is the anull Terminal (anulls next instruction)
-    bool isAnull() const { return m_oper == opAnull; }
     /// True if this is the Nil Terminal (terminates lists; "NOP" expression)
     bool isNil() const { return m_oper == opNil; }
     /// True if this is %pc

@@ -141,8 +141,6 @@ enum OPER
     opNil,    ///< This is a "nil list" terminal (e.g. no parameters)
     opFlags,  ///< This is the abstracted integer flags register terminal
     opFflags, ///< This is the abstracted floating point flags terminal
-    opAnull,  ///< This is an abstract boolean that if true causes the following instruction to be
-              ///< anulled
 
     opTrue,
     opFalse,
