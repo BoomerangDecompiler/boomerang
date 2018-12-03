@@ -1,5 +1,6 @@
 v0.5.0 (in development)
 -----------------------
+- Fixed: Crashes when reading malformed SSL specification files.
 - Fixed: Crash when decoding instructions with multiple instruction prefixes in some cases.
 - Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
@@ -10,6 +11,7 @@ v0.5.0 (in development)
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
+- Changed: Replaced old SSL parser by new GNU flex+bison parser.
 - Removed: HP SOM binary file loader.
 - Removed: Palm OS binary loader.
 - Removed: Broken MIPS support.
