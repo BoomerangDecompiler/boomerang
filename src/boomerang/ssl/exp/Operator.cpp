@@ -27,19 +27,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opFMult);
         HANDLE_OPER(opFDiv);
         HANDLE_OPER(opFNeg);
-        HANDLE_OPER(opFPlusd);
-        HANDLE_OPER(opFMinusd);
-        HANDLE_OPER(opFMultd);
-        HANDLE_OPER(opFDivd);
-        HANDLE_OPER(opFPlusq);
-        HANDLE_OPER(opFMinusq);
-        HANDLE_OPER(opFMultq);
-        HANDLE_OPER(opFDivq);
-        HANDLE_OPER(opFMultsd);
-        HANDLE_OPER(opFMultdq);
-        HANDLE_OPER(opSQRTs);
-        HANDLE_OPER(opSQRTd);
-        HANDLE_OPER(opSQRTq);
         HANDLE_OPER(opMults);
         HANDLE_OPER(opDivs);
         HANDLE_OPER(opMod);
@@ -146,6 +133,7 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opCTI);
         HANDLE_OPER(opNEXT);
 
+    case opInvalid: break;
     case opNumOf: break;
     }
 

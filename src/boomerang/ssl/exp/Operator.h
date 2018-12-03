@@ -21,34 +21,28 @@
 enum OPER
 {
     // Operators
-    opWild = -1, ///< Wildcard (Terminal for search Exps only)
+    opWild = -1,   ///< Wildcard (Terminal for search Exps only)
+    opInvalid = 0, ///< Invalid operator
+
+    // Integer operations
     opPlus,      ///< Binary addition
     opMinus,     ///< Binary subtraction
     opMult,      ///< Multiplication
-    opDiv,       ///< Integer division
-    opFPlus,     ///< Binary addition(single floats)
-    opFMinus,    ///< Binary subtraction(single floats)
-    opFMult,     ///< Multiplication(single floats)
-    opFDiv,      ///< (single floats)
-    opFNeg,      ///< Floating point negate
-    opFPlusd,    ///< addition(double floats)
-    opFMinusd,   ///< subtraction(double floats)
-    opFMultd,    ///< Multiplication(double floats)
-    opFDivd,     ///< Integer division(double floats)
-    opFPlusq,    ///< addition(quad floats)
-    opFMinusq,   ///< subtraction(quad floats)
-    opFMultq,    ///< Multiplication(quad floats)
-    opFDivq,     ///< division(quad floats)
-    opFMultsd,   ///< Multiplication(single floats--> double floats)
-    opFMultdq,   ///< Multiplication(single floats--> double floats)
-    opSQRTs,     ///< sqrt of a single
-    opSQRTd,     ///< sqrt of a double
-    opSQRTq,     ///< sqrt of a quad
     opMults,     ///< Multiply signed
+    opDiv,       ///< Integer division
     opDivs,      ///< Divide signed
     opMod,       ///< Remainder of integer division
     opMods,      ///< Remainder of signed integer division
     opNeg,       ///< Unary minus
+
+    // float operations
+    opFPlus,     ///< Float addition
+    opFMinus,    ///< Float subtraction
+    opFMult,     ///< Float multiply
+    opFDiv,      ///< Float divide
+    opFNeg,      ///< Floating point negate
+
+    // logical operations
     opAnd,       ///< Logical and
     opOr,        ///< Logical or
     opEquals,    ///< Equality (logical)
@@ -61,8 +55,10 @@ enum OPER
     opGtrUns,    ///< Logical greater than (unsigned)
     opLessEqUns, ///< Logical <= (unsigned)
     opGtrEqUns,  ///< Logical >= (unsigned)
-    opNot,       ///< Bitwise inversion
     opLNot,      ///< Logical not
+
+    // bit manipulation operations
+    opNot,       ///< Bitwise inversion
     opBitAnd,    ///< Bitwise and
     opBitOr,     ///< Bitwise or
     opBitXor,    ///< Bitwise xor
@@ -73,6 +69,8 @@ enum OPER
     opRotateR,   ///< Rotate right
     opRotateLC,  ///< Rotate left through carry
     opRotateRC,  ///< Rotate right through carry
+
+    // other operations
     opTypedExp,  ///< Typed expression
     opNamedExp,  ///< Named expression (binary, subExp1 = Const("name"), subExp2 = exp)
     opGuard,     ///< Guarded expression (should be assignment)
@@ -84,7 +82,7 @@ enum OPER
     // Next two are for parser use only. Binary with name of table and name
     // of string as Const string subexpressions. Actual table info held in the
     // TableDict object
-    opExpTable, ///< A table of expressions
+    opExpTable,     ///< A table of expressions
 
     opSuccessor,    ///< Get the successor register of this parameter
     opTern,         ///< Ternary (i.e. ? : )

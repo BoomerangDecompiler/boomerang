@@ -71,8 +71,8 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token AND OR NOT LNOT FNEG
 %token SHL SHR SAR ROL ROR RLC RRC
 %token PLUS MINUS MOD MULT DIV SMOD SMULT SDIV POW
-%token FMUL FDMUL FQMUL FDIV FDDIV FQDIV
-%token FPLUS FDPLUS FQPLUS FMINUS FDMINUS FQMINUS
+%token FMUL FDIV
+%token FPLUS FMINUS
 
 // function calls
 %token ADDROF SUCCESSOR
@@ -97,8 +97,8 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %left EQUAL NEQ
 %left LESS GTR LESSEQ GTREQ ULESS UGTR ULESSEQ UGTREQ
 %left SHL SHR SAR ROL ROR RLC RRC
-%left PLUS FPLUS FDPLUS FQPLUS MINUS FMINUS FDMINUS FQMINUS
-%left MULT DIV MOD SMULT SDIV SMOD FMUL FDMUL FQMUL FDIV FDDIV FQDIV
+%left PLUS MINUS FPLUS FMINUS
+%left MULT DIV MOD SMULT SDIV SMOD FMUL FDIV
 %right NOT LNOT
 %right CAST_OP
 %nonassoc AT
@@ -174,17 +174,9 @@ constant_def:
 
 exp:
     exp FMUL exp        { $$ = Binary::get(opFMult,     $1, $3); }
-  | exp FDMUL exp       { $$ = Binary::get(opFMultd,    $1, $3); }
-  | exp FQMUL exp       { $$ = Binary::get(opFMultq,    $1, $3); }
   | exp FDIV  exp       { $$ = Binary::get(opFDiv,      $1, $3); }
-  | exp FDDIV exp       { $$ = Binary::get(opFDivd,     $1, $3); }
-  | exp FQDIV exp       { $$ = Binary::get(opFDivq,     $1, $3); }
   | exp FPLUS exp       { $$ = Binary::get(opFPlus,     $1, $3); }
-  | exp FDPLUS exp      { $$ = Binary::get(opFPlusd,    $1, $3); }
-  | exp FQPLUS exp      { $$ = Binary::get(opFPlusq,    $1, $3); }
   | exp FMINUS exp      { $$ = Binary::get(opFMinus,    $1, $3); }
-  | exp FDMINUS exp     { $$ = Binary::get(opFMinusd,   $1, $3); }
-  | exp FQMINUS exp     { $$ = Binary::get(opFMinusq,   $1, $3); }
   | exp POW exp         { $$ = Binary::get(opPow,       $1, $3); }
   | exp MOD exp         { $$ = Binary::get(opMod,       $1, $3); }
   | exp MULT exp        { $$ = Binary::get(opMult,      $1, $3); }
