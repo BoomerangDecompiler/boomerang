@@ -167,10 +167,6 @@ constant_def:
         if (drv.ConstTable.find($1) != drv.ConstTable.end()) {
             throw yy::parser::syntax_error(drv.location, "Constant already defined.");
         }
-/*        SharedExp rhs = $3->simplify();
-        if (!rhs->isIntConst()) {
-            throw yy::parser::syntax_error(drv.location, "Cannot assign a non-constant value to a constant.");
-        }*/
 
         drv.ConstTable[$1] = $3;
     }
@@ -433,7 +429,7 @@ paramlist: // comma separated list of identifiers
   ;
 
 nonempty_paramlist:
-    IDENT                           {
+    IDENT {
         $$.reset(new std::list<QString>({ $1 }));
     }
   | nonempty_paramlist COMMA IDENT  {
