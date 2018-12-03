@@ -123,9 +123,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opDF);
         HANDLE_OPER(opFZF);
         HANDLE_OPER(opFLF);
-        HANDLE_OPER(opFGF);
-        HANDLE_OPER(opCTI);
-        HANDLE_OPER(opNEXT);
 
     case opInvalid: break;
     case opNumOf: break;

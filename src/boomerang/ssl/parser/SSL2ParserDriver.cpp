@@ -107,7 +107,7 @@ OPER strToTerm(const QString &s)
         return mapping[s];
     }
 
-    return (OPER)0;
+    return opInvalid;
 }
 
 

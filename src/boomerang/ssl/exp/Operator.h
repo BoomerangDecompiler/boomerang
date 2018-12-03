@@ -157,9 +157,6 @@ enum OPER
     opDF,   ///< Pentium Direction (=Down) flag
     opFZF,  ///< floating point zero flag
     opFLF,  ///< floating point less flag
-    opFGF,  ///< floating point greater flag
-    opCTI,  ///< Control transfer instruction (boolean)
-    opNEXT, ///< Next PC pseudo-register
 
     // ALWAYS LAST!
     opNumOf ///< Special index: MUST BE LAST!
