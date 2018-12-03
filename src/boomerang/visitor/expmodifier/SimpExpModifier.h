@@ -36,8 +36,6 @@ public:
     /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<TypedExp> &exp, bool &visitChildren) override;
 
-    /// \copydoc ExpModifier::preModify
-    SharedExp preModify(const std::shared_ptr<FlagDef> &exp, bool &visitChildren) override;
 
     /// \copydoc ExpModifier::preModify
     SharedExp preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren) override;
@@ -58,14 +56,10 @@ public:
     SharedExp postModify(const std::shared_ptr<TypedExp> &exp) override;
 
     /// \copydoc ExpModifier::postModify
-    SharedExp postModify(const std::shared_ptr<FlagDef> &exp) override;
-
-    /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<RefExp> &exp) override;
 
     /// \copydoc ExpModifier::postModify
     SharedExp postModify(const std::shared_ptr<Location> &exp) override;
-
 
     /// \copydoc ExpModifier::modify
     SharedExp postModify(const std::shared_ptr<Const> &exp) override;

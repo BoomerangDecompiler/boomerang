@@ -18,7 +18,6 @@ list(APPEND boomerang-ssl-sources
     ssl/exp/Const
     ssl/exp/Exp
     ssl/exp/ExpHelp
-    ssl/exp/FlagDef
     ssl/exp/Location
     ssl/exp/RefExp
     ssl/exp/Terminal

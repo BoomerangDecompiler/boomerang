@@ -55,8 +55,8 @@ typedef std::shared_ptr<const Type> SharedConstType;
  *                   /       |      \
  *                Unary     Const   Terminal
  *   TypedExp____/  |   \
- *    FlagDef___/ Binary Location
- *     RefExp__/    |
+ *    RefExp____/ Binary Location
+ *                  |
  *               Ternary
  */
 class BOOMERANG_API Exp : public std::enable_shared_from_this<Exp>

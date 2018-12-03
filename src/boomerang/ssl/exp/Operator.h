@@ -73,7 +73,6 @@ enum OPER
     // other operations
     opTypedExp,  ///< Typed expression
     opFlagCall,  ///< A flag call (Binary with string and params)
-    opFlagDef,   ///< A flag function definition (class FlagDef)
     opList,      ///< A binary, with expression (1) and next element
                  ///< in chain (2). Last element in chain is opNil
 

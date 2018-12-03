@@ -20,7 +20,6 @@ class Unary;
 class Binary;
 class Ternary;
 class TypedExp;
-class FlagDef;
 class RefExp;
 class Location;
 class Const;
@@ -70,9 +69,6 @@ public:
     virtual SharedExp preModify(const std::shared_ptr<TypedExp> &exp, bool &visitChildren);
 
     /// \copydoc ExpModifier::preModify
-    virtual SharedExp preModify(const std::shared_ptr<FlagDef> &exp, bool &visitChildren);
-
-    /// \copydoc ExpModifier::preModify
     virtual SharedExp preModify(const std::shared_ptr<RefExp> &exp, bool &visitChildren);
 
     /// \copydoc ExpModifier::preModify
@@ -97,9 +93,6 @@ public:
 
     /// \copydoc ExpModifier::postModify
     virtual SharedExp postModify(const std::shared_ptr<TypedExp> &exp);
-
-    /// \copydoc ExpModifier::postModify
-    virtual SharedExp postModify(const std::shared_ptr<FlagDef> &exp);
 
     /// \copydoc ExpModifier::postModify
     virtual SharedExp postModify(const std::shared_ptr<RefExp> &exp);
