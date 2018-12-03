@@ -100,7 +100,6 @@ const char *operToString(OPER oper)
         HANDLE_OPER(opLoge);
         HANDLE_OPER(opPow);
         HANDLE_OPER(opSqrt);
-        HANDLE_OPER(opExecute);
         HANDLE_OPER(opIntConst);
         HANDLE_OPER(opLongConst);
         HANDLE_OPER(opFltConst);

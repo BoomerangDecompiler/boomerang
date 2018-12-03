@@ -108,7 +108,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opLoge,           { "loge(",      "",         "",         ")"     } },
     { opPow,            { "",           " pow ",    "",         ")"     } },
     { opSqrt,           { "sqrt(",      "",         "",         ")"     } },
-    { opExecute,        { "execute(",   "",         "",         ")"     } },
     { opWildIntConst,   { "WILDINT",    "",         "",         ""      } },
     { opWildStrConst,   { "WILDSTR",    "",         "",         ""      } },
     { opPC,             { "%pc",        "",         "",         ""      } },

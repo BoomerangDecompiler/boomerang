@@ -123,7 +123,6 @@ enum OPER
     opLoge,         ///< logarithm to base e
     opPow,          ///< raise to a power
     opSqrt,         ///< square root
-    opExecute,      ///< Execute instruction at(addr)
 
     // constants
     opIntConst,     ///< integer constant TODO: differentiate IntConst by adding AddressConst ?

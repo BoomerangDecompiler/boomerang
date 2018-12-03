@@ -70,7 +70,6 @@ OPER SSL2ParserDriver::strToOper(const QString &s)
         { "log2",    opLog2      },
         { "loge",    opLoge      },
         { "log10",   opLog10     },
-        { "execute", opExecute   },
         { "sqrt",    opSqrt      }
     };
     // clang-format on

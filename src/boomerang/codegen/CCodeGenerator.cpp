@@ -1519,7 +1519,6 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
     case opFpush:
     case opFpop:
     case opLoge:
-    case opExecute:
     case opAFP:
     case opAGP:
         // not implemented
