@@ -146,8 +146,8 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
 }
 
 
-std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
-                                                 std::list<QString> &params,
+std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const RTL &existingRTL, Address natPC,
+                                                 const std::list<QString> &params,
                                                  const std::vector<SharedExp> &args)
 {
     if (params.size() != args.size()) {
