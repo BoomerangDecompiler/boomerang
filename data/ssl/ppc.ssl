@@ -228,7 +228,7 @@ SUBFE       rd, ra, rb          *32* rd := rb + %XERCA - ra;
 SUBFIC      rd, ra, simm        *32* rd := simm - ra            SUBFLAGSX(rd, simm, ra);
 SUBFC       rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);
 
-SUBFCQ      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd);
+SUBFCQ      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd, rb, ra);
 SUBFCO      rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX(rd, rb, ra);  # Also supposed to set overflow bits
 SUBFCOQ     rd, ra, rb          *32* rd := rb - ra              SUBFLAGSX0(rd, rb, ra); # Also supposed to set overflow bits
 
