@@ -122,6 +122,7 @@ INTEGER %B[1]  -> 74 SHARES %fsw@[15..15];  # FP busy
 # pseudo registers (only to work around IR limitations)
 INTEGER %SKIP[1] -> -1;
 INTEGER %RPT[1] -> -1;
+INTEGER %fflags[8] -> -1; # TODO: remove this
 
 
 #

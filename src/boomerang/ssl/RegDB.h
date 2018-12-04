@@ -29,6 +29,7 @@ public:
     bool isRegIdxDefined(RegID regID) const;
 
     Register *getRegByID(RegID regID);
+    Register *getRegByName(const QString &name);
 
     /// Get the index of a named register by its name.
     /// Returns -1 if the register was not found.

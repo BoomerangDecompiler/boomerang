@@ -58,11 +58,11 @@ public:
     const QString &getName() const;
     uint16_t getSize() const;
 
-    /// \returns the type of this register
+    /// \returns the type of the content of this register
     SharedType getType() const;
 
-    /// \returns true if this is a floating point register
-    bool isFloat() const { return m_regType == RegType::Float; }
+    /// \returns the type of the register(int, float, flags)
+    RegType getRegType() const { return m_regType; }
 
     /// Get the mapped offset (see above)
     int getMappedOffset() const { return m_mappedOffset; }

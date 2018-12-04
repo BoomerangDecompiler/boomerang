@@ -261,14 +261,14 @@ exp_term:
 
 location:
     REG_IDENT {
-        const bool isFlag = $1.contains("flags");
-        if (!drv.m_dict->getRegDB()->isRegDefined($1) && !isFlag) {
+        if (!drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register is undefined.");
         }
-        else if (isFlag || drv.m_dict->getRegDB()->getRegIDByName($1) == -1) {
-            // A special register, e.g. %npc or %CF. Return a Terminal for it
+
+        const RegID regID = drv.m_dict->getRegDB()->getRegIDByName($1);
+        if (regID == RegIDSpecial) {
             const OPER op = strToTerm($1);
-            if (op) {
+            if (op != opInvalid) {
                 $$ = Terminal::get(op);
             }
             else {
@@ -277,7 +277,7 @@ location:
             }
         }
         else {
-            $$ = Location::regOf(drv.m_dict->getRegDB()->getRegIDByName($1));
+            $$ = Location::regOf(regID);
         }
     }
   | REGOF LBRACKET exp RBRACKET { $$ = Location::regOf($3); }
