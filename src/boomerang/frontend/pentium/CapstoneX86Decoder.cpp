@@ -178,13 +178,13 @@ int CapstoneX86Decoder::getRegIdx(const QString &name) const
 
 QString CapstoneX86Decoder::getRegName(int idx) const
 {
-    return m_dict.getRegName(idx);
+    return m_dict.getRegNameByID(idx);
 }
 
 
 int CapstoneX86Decoder::getRegSize(int idx) const
 {
-    return m_dict.getRegSize(idx);
+    return m_dict.getRegSizeByID(idx);
 }
 
 

@@ -154,32 +154,6 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
 }
 
 
-QString RTLInstDict::getRegNameByID(int regID) const
-{
-    for (auto &[name, id] : m_regIDs) {
-        if (id == regID) {
-            return name;
-        }
-    }
-
-    return "";
-}
-
-
-int RTLInstDict::getRegIDByName(const QString &regName) const
-{
-    const auto iter = m_regIDs.find(regName);
-    return iter != m_regIDs.end() ? iter->second : -1;
-}
-
-
-int RTLInstDict::getRegSizeByID(int regID) const
-{
-    const auto iter = m_regInfo.find(regID);
-    return iter != m_regInfo.end() ? iter->second.getSize() : 32;
-}
-
-
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
                                                  std::list<QString> &params,
                                                  const std::vector<SharedExp> &actuals)
@@ -234,22 +208,22 @@ void RTLInstDict::reset()
 }
 
 
-int RTLInstDict::getRegID(const QString &regName) const
+QString RTLInstDict::getRegNameByID(int regID) const
 {
-    auto it = m_regIDs.find(regName);
-    return (it != m_regIDs.end()) ? it->second : -1;
+    const auto it = m_regInfo.find(regID);
+    return it != m_regInfo.end() ? it->second.getName() : "";
 }
 
 
-QString RTLInstDict::getRegName(int regID) const
+int RTLInstDict::getRegIDByName(const QString &regName) const
 {
-    auto it = m_regInfo.find(regID);
-    return (it != m_regInfo.end()) ? it->second.getName() : QString();
+    const auto iter = m_regIDs.find(regName);
+    return iter != m_regIDs.end() ? iter->second : -1;
 }
 
 
-int RTLInstDict::getRegSize(int regID) const
+int RTLInstDict::getRegSizeByID(int regID) const
 {
-    auto it = m_regInfo.find(regID);
-    return (it != m_regInfo.end()) ? it->second.getSize() : 0;
+    const auto iter = m_regInfo.find(regID);
+    return iter != m_regInfo.end() ? iter->second.getSize() : 32;
 }
