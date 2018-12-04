@@ -28,6 +28,11 @@ RTLInstDict::RTLInstDict(bool verboseOutput)
 }
 
 
+RTLInstDict::~RTLInstDict()
+{
+}
+
+
 int RTLInstDict::insert(const QString &name, std::list<QString> &params, const RTL &rtl)
 {
     QString opcode = name.toUpper();
@@ -73,14 +78,7 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
 
 void RTLInstDict::addRegister(const QString &name, int id, int size, bool flt)
 {
-    m_regIDs[name] = id;
-
-    if (id == -1) {
-        m_specialRegInfo.insert(std::make_pair(name, Register(name, size, flt)));
-    }
-    else {
-        m_regInfo.insert(std::make_pair(id, Register(name, size, flt)));
-    }
+    m_regDB.addRegister(name, id, size, flt);
 }
 
 
@@ -199,31 +197,21 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC
 
 void RTLInstDict::reset()
 {
-    m_regIDs.clear();
-    m_regInfo.clear();
-    m_specialRegInfo.clear();
+    m_regDB.clear();
+
     m_definedParams.clear();
     m_flagFuncs.clear();
     m_instructions.clear();
 }
 
 
-QString RTLInstDict::getRegNameByID(int regID) const
+RegDB *RTLInstDict::getRegDB()
 {
-    const auto it = m_regInfo.find(regID);
-    return it != m_regInfo.end() ? it->second.getName() : "";
+    return &m_regDB;
 }
 
 
-int RTLInstDict::getRegIDByName(const QString &regName) const
+const RegDB *RTLInstDict::getRegDB() const
 {
-    const auto iter = m_regIDs.find(regName);
-    return iter != m_regIDs.end() ? iter->second : -1;
-}
-
-
-int RTLInstDict::getRegSizeByID(int regID) const
-{
-    const auto iter = m_regInfo.find(regID);
-    return iter != m_regInfo.end() ? iter->second.getSize() : 32;
+    return &m_regDB;
 }

@@ -262,11 +262,10 @@ exp_term:
 location:
     REG_IDENT {
         const bool isFlag = $1.contains("flags");
-        auto it = drv.m_dict->m_regIDs.find($1);
-        if (it == drv.m_dict->m_regIDs.end() && !isFlag) {
+        if (!drv.m_dict->getRegDB()->isRegDefined($1) && !isFlag) {
             throw yy::parser::syntax_error(drv.location, "Register is undefined.");
         }
-        else if (isFlag || it->second == -1) {
+        else if (isFlag || drv.m_dict->getRegDB()->getRegIDByName($1) == -1) {
             // A special register, e.g. %npc or %CF. Return a Terminal for it
             const OPER op = strToTerm($1);
             if (op) {
@@ -278,7 +277,7 @@ location:
             }
         }
         else {
-            $$ = Location::regOf(it->second);
+            $$ = Location::regOf(drv.m_dict->getRegDB()->getRegIDByName($1));
         }
     }
   | REGOF LBRACKET exp RBRACKET { $$ = Location::regOf($3); }
@@ -321,7 +320,7 @@ reg_def_part:
         if ($3 <= 0) {
             throw yy::parser::syntax_error(drv.location, "Register size must be positive.");
         }
-        else if (drv.m_dict->m_regIDs.find($1) != drv.m_dict->m_regIDs.end()) {
+        else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
@@ -331,27 +330,27 @@ reg_def_part:
         if ($3 <= 0) {
             throw yy::parser::syntax_error(drv.location, "Register size must be positive.");
         }
-        else if (drv.m_dict->m_regIDs.find($1) != drv.m_dict->m_regIDs.end()) {
+        else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if ($6 != -1 && drv.m_dict->m_regInfo.find($6) != drv.m_dict->m_regInfo.end()) {
+        else if ($6 != -1 && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
             throw yy::parser::syntax_error(drv.location, "Register index already defined.");
         }
-        else if (drv.m_dict->m_regIDs.find($8)  == drv.m_dict->m_regIDs.end() ||
-                 drv.m_dict->m_regIDs.find($10) == drv.m_dict->m_regIDs.end()) {
+        else if (!drv.m_dict->getRegDB()->isRegDefined($8) ||
+                 !drv.m_dict->getRegDB()->isRegDefined($10)) {
             throw yy::parser::syntax_error(drv.location, "Undefined COVERS range.");
         }
 
         int bitSum = 0; // sum of all bits of all covered registers
-        const int rangeStart = drv.m_dict->m_regIDs[$8];
-        const int rangeEnd   = drv.m_dict->m_regIDs[$10];
+        const int rangeStart = drv.m_dict->getRegDB()->getRegIDByName($8);
+        const int rangeEnd   = drv.m_dict->getRegDB()->getRegIDByName($10);
 
         // range inclusive!
         for (int i = rangeStart; i <= rangeEnd; i++) {
-            if (drv.m_dict->getRegNameByID(i) == "") {
+            if (drv.m_dict->getRegDB()->getRegNameByID(i) == "") {
                 throw yy::parser::syntax_error(drv.location, "Not all registers in range defined.");
             }
-            bitSum += drv.m_dict->getRegSizeByID(i);
+            bitSum += drv.m_dict->getRegDB()->getRegSizeByID(i);
         }
 
         if (bitSum != $3) {
@@ -360,11 +359,11 @@ reg_def_part:
 
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
         if ($6 != -1) {
-            drv.m_dict->m_regInfo[$6].setName($1);
-            drv.m_dict->m_regInfo[$6].setSize($3);
-            drv.m_dict->m_regInfo[$6].setMappedIndex(drv.m_dict->getRegIDByName($8));
-            drv.m_dict->m_regInfo[$6].setMappedOffset(0);
-            drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
+            drv.m_dict->getRegDB()->getRegByID($6)->setName($1);
+            drv.m_dict->getRegDB()->getRegByID($6)->setSize($3);
+            drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
+            drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset(0);
+            drv.m_dict->getRegDB()->getRegByID($6)->setIsFloat(drv.bFloat);
         }
     }
     // example: %ah[8] -> 10 SHARES %ax@[8..15]
@@ -372,13 +371,13 @@ reg_def_part:
         if ($3 <= 0) {
             throw yy::parser::syntax_error(drv.location, "Register size must be positive.");
         }
-        else if (drv.m_dict->m_regIDs.find($1) != drv.m_dict->m_regIDs.end()) {
+        else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if ($6 != -1 && drv.m_dict->m_regInfo.find($6) != drv.m_dict->m_regInfo.end()) {
+        else if ($6 != -1 && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
             throw yy::parser::syntax_error(drv.location, "Register index already defined.");
         }
-        else if (drv.m_dict->getRegIDByName($8) == -1) {
+        else if (drv.m_dict->getRegDB()->getRegIDByName($8) == -1) {
             QString msg = QString("Shared register '%1' not defined.").arg($8);
             throw yy::parser::syntax_error(drv.location, msg.toStdString());
         }
@@ -386,18 +385,18 @@ reg_def_part:
             throw yy::parser::syntax_error(drv.location, "Register size does not equal shared range");
         }
 
-        const int tgtRegSize = drv.m_dict->getRegSizeByID(drv.m_dict->getRegIDByName($8));
+        const int tgtRegSize = drv.m_dict->getRegDB()->getRegSizeByID(drv.m_dict->getRegDB()->getRegIDByName($8));
         if ($11 < 0 || $13 >= tgtRegSize) {
             throw yy::parser::syntax_error(drv.location, "Range extends over target register.");
         }
 
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
         if ($6 != -1) {
-            drv.m_dict->m_regInfo[$6].setName($1);
-            drv.m_dict->m_regInfo[$6].setSize($3);
-            drv.m_dict->m_regInfo[$6].setMappedIndex(drv.m_dict->getRegIDByName($8));
-            drv.m_dict->m_regInfo[$6].setMappedOffset($11);
-            drv.m_dict->m_regInfo[$6].setIsFloat(drv.bFloat);
+            drv.m_dict->getRegDB()->getRegByID($6)->setName($1);
+            drv.m_dict->getRegDB()->getRegByID($6)->setSize($3);
+            drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
+            drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset($11);
+            drv.m_dict->getRegDB()->getRegByID($6)->setIsFloat(drv.bFloat);
         }
     }
   ;

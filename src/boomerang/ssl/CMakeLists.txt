@@ -9,6 +9,7 @@
 
 list(APPEND boomerang-ssl-sources
     ssl/Register
+    ssl/RegDB
     ssl/RTLInstDict
     ssl/RTL
     ssl/TableEntry

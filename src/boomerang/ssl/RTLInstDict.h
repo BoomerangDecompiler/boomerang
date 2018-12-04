@@ -11,6 +11,7 @@
 
 
 #include "boomerang/ssl/Register.h"
+#include "boomerang/ssl/RegDB.h"
 #include "boomerang/ssl/TableEntry.h"
 #include "boomerang/ssl/parser/SSL2Parser.hpp"
 #include "boomerang/util/ByteUtil.h"
@@ -47,7 +48,7 @@ public:
     RTLInstDict(const RTLInstDict &) = delete;
     RTLInstDict(RTLInstDict &&)      = default;
 
-    ~RTLInstDict() = default;
+    ~RTLInstDict();
 
     RTLInstDict &operator=(const RTLInstDict &) = delete;
     RTLInstDict &operator=(RTLInstDict &&) = default;
@@ -75,17 +76,8 @@ public:
     std::unique_ptr<RTL> instantiateRTL(const QString &name, Address pc,
                                         const std::vector<SharedExp> &actuals);
 
-    /// Get the name of the register by its index.
-    /// Returns the empty string when \p regID == -1 or the register was not found.
-    QString getRegNameByID(int regID) const;
-
-    /// Get the index of a named register by its name.
-    /// Returns -1 if the register was not found.
-    int getRegIDByName(const QString &regName) const;
-
-    /// Get the size in bits of a register by its index.
-    /// Returns 32 (the default register size) if the register was not found.
-    int getRegSizeByID(int regID) const;
+    RegDB *getRegDB();
+    const RegDB *getRegDB() const;
 
 private:
     /// Reset the object to "undo" a readSSLFile()
@@ -108,9 +100,9 @@ private:
      * Appends one RTL to the dictionary, or adds it to idict if an
      * entry does not already exist.
      *
-     * \param name name of the instruction to add to
+     * \param name       name of the instruction to add to
      * \param parameters list of formal parameters (as strings) for the RTL to add
-     * \param rtl reference to the RTL to add
+     * \param rtl        reference to the RTL to add
      * \returns zero for success, non-zero for failure
      */
     int insert(const QString &name, std::list<QString> &parameters, const RTL &rtl);
@@ -121,8 +113,8 @@ private:
     /**
      * Add a new register definition to the dictionary
      * \param name register's name
-     * \param size - register size in bits
-     * \param flt  - is float register?
+     * \param size register size in bits
+     * \param flt  is float register?
      */
     void addRegister(const QString &name, int id, int size, bool flt);
 
@@ -133,19 +125,7 @@ private:
     /// Endianness of the source machine
     Endian m_endianness;
 
-    /// A map from the symbolic representation of a register (e.g. "%g0")
-    /// to its index within an array of registers.
-    /// This map contains both normal and special (-> -1) registers,
-    /// therefore this map contains all registers.
-    std::map<QString, int> m_regIDs;
-
-    /// Stores info about a register such as its size, its addresss etc
-    /// (see register.h).
-    std::map<int, Register> m_regInfo;
-
-    /// A map from symbolic representation of a special (non-addressable) register
-    /// to a Register object
-    std::map<QString, Register> m_specialRegInfo;
+    RegDB m_regDB;
 
     /// FIXME this set contains all parameters of every flag function ever defined,
     /// not only those from the current flag function
