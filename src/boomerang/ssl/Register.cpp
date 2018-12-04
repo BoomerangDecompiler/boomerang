@@ -9,18 +9,20 @@
 #pragma endregion License
 #include "Register.h"
 
+#include "boomerang/ssl/type/BooleanType.h"
 #include "boomerang/ssl/type/FloatType.h"
 #include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/VoidType.h"
 
 #include <cassert>
 #include <cstring>
 #include <string>
 
 
-Register::Register(const QString &name, uint16_t sizeInBits, bool isFloatReg)
+Register::Register(RegType type, const QString& name, uint16_t sizeInBits)
     : m_name(name)
     , m_size(sizeInBits)
-    , m_fltRegister(isFloatReg)
+    , m_regType(type)
     , m_mappedIndex(-1)
     , m_mappedOffset(-1)
 {
@@ -29,7 +31,7 @@ Register::Register(const QString &name, uint16_t sizeInBits, bool isFloatReg)
 
 Register::Register(const Register &r)
     : m_size(r.m_size)
-    , m_fltRegister(r.m_fltRegister)
+    , m_regType(r.m_regType)
     , m_mappedIndex(r.m_mappedIndex)
     , m_mappedOffset(r.m_mappedOffset)
 {
@@ -47,7 +49,7 @@ Register &Register::operator=(const Register &r2)
 
     m_name         = r2.m_name;
     m_size         = r2.m_size;
-    m_fltRegister  = r2.m_fltRegister;
+    m_regType      = r2.m_regType;
     m_mappedIndex  = r2.m_mappedIndex;
     m_mappedOffset = r2.m_mappedOffset;
 
@@ -65,16 +67,9 @@ bool Register::operator==(const Register &r2) const
 
 bool Register::operator<(const Register &r2) const
 {
-    assert(!m_name.isEmpty() && !r2.m_name.isEmpty());
     // compare on name
+    assert(!m_name.isEmpty() && !r2.m_name.isEmpty());
     return m_name < r2.m_name;
-}
-
-
-void Register::setName(const QString &s)
-{
-    assert(!s.isEmpty());
-    m_name = s;
 }
 
 
@@ -86,12 +81,21 @@ const QString &Register::getName() const
 
 SharedType Register::getType() const
 {
-    if (m_fltRegister) {
+    switch (m_regType) {
+    case RegType::Flags:
+        if (m_size == 1) {
+            return BooleanType::get();
+        }
+        [[fallthrough]];
+    case RegType::Int:
+        return IntegerType::get(m_size, Sign::Unknown);
+    case RegType::Float:
         return FloatType::get(m_size);
+    case RegType::Invalid:
+        return VoidType::get();
     }
-    else {
-        return IntegerType::get(m_size);
-    }
+
+    return VoidType::get();
 }
 
 

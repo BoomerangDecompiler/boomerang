@@ -110,14 +110,6 @@ private:
     /// Print a textual representation of the dictionary.
     void print(OStream &os);
 
-    /**
-     * Add a new register definition to the dictionary
-     * \param name register's name
-     * \param size register size in bits
-     * \param flt  is float register?
-     */
-    void addRegister(const QString &name, int id, int size, bool flt);
-
 private:
     /// Print messages when reading an SSL file or when instantiaing an instruction
     bool m_verboseOutput;

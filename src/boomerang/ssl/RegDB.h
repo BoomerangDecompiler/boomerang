@@ -43,7 +43,7 @@ public:
     int getRegSizeByID(RegID regID) const;
 
 public:
-    void addRegister(const QString &name, RegID id, int size, bool flt);
+    void createRegister(RegType regType, RegID id, const QString &name, int size);
 
 private:
     /// A map from the symbolic representation of a register (e.g. "%g0")

@@ -26,6 +26,14 @@ typedef std::shared_ptr<Type> SharedType;
 typedef int RegID;
 static constexpr const RegID RegIDSpecial = -1;
 
+enum class RegType
+{
+    Invalid = 0,
+    Int     = 1,
+    Float   = 2,
+    Flags   = 3
+};
+
 
 /**
  * Summarises one line of the \@REGISTERS section of an SSL
@@ -34,7 +42,7 @@ static constexpr const RegID RegIDSpecial = -1;
 class BOOMERANG_API Register
 {
 public:
-    Register(const QString &name = "", uint16_t sizeInBits = 0, bool isFloatReg = false);
+    Register(RegType type, const QString &name, uint16_t sizeInBits);
     Register(const Register &);
     Register(Register &&) = default;
 
@@ -48,26 +56,19 @@ public:
     bool operator<(const Register &other) const;
 
     const QString &getName() const;
-
     uint16_t getSize() const;
-
-    /// \returns true if this is a floating point register
-    bool isFloat() const { return m_fltRegister; }
 
     /// \returns the type of this register
     SharedType getType() const;
+
+    /// \returns true if this is a floating point register
+    bool isFloat() const { return m_regType == RegType::Float; }
 
     /// Get the mapped offset (see above)
     int getMappedOffset() const { return m_mappedOffset; }
 
     /// Get the mapped index (see above)
     RegID getMappedIndex() const { return m_mappedIndex; }
-
-    void setName(const QString &name);
-
-    void setSize(uint16_t newSize) { m_size = newSize; }
-
-    void setIsFloat(bool isFloatReg) { m_fltRegister = isFloatReg; }
 
     /**
      * Set the mapped offset. This is the bit number where this register starts,
@@ -87,7 +88,7 @@ public:
 private:
     QString m_name;
     uint16_t m_size;
-    bool m_fltRegister; ///< True if this is a floating point register
+    RegType m_regType;
     RegID m_mappedIndex;
     int m_mappedOffset;
 };

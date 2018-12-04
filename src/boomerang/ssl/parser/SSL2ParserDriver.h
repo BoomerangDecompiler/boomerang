@@ -12,6 +12,8 @@
 
 #include "SSL2Parser.hpp"
 
+#include "boomerang/ssl/Register.h"
+
 #include <map>
 #include <string>
 
@@ -60,8 +62,7 @@ public:
     /// Maps table names to Tables.
     std::map<QString, std::shared_ptr<Table>> TableDict;
 
-    /// True when FLOAT keyword seen; false when INTEGER keyword seen (in @REGISTER section)
-    bool bFloat;
+    RegType m_regType = RegType::Invalid; ///< Type of the last/current register encountered
 
 private:
     // Handling the scanner.

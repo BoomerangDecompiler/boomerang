@@ -76,12 +76,6 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
 }
 
 
-void RTLInstDict::addRegister(const QString &name, int id, int size, bool flt)
-{
-    m_regDB.addRegister(name, id, size, flt);
-}
-
-
 void RTLInstDict::print(OStream &os /*= std::cout*/)
 {
     for (auto &elem : m_instructions) {

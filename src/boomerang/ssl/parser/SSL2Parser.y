@@ -310,8 +310,8 @@ nonempty_arglist:
   ;
 
 reg_def:
-    TOK_INTEGER { drv.bFloat = false; } reg_def_part
-  | TOK_FLOAT   { drv.bFloat = true;  } reg_def_part
+    TOK_INTEGER { drv.m_regType = RegType::Int;   } reg_def_part
+  | TOK_FLOAT   { drv.m_regType = RegType::Float; } reg_def_part
   ;
 
 reg_def_part:
@@ -323,7 +323,7 @@ reg_def_part:
         else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
+        drv.m_dict->getRegDB()->createRegister(drv.m_regType, $6, $1, $3);
     }
     // example: %foo[32] -> 10 COVERS %bar..%baz
   | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL COVERS REG_IDENT TO REG_IDENT {
@@ -357,13 +357,10 @@ reg_def_part:
             throw yy::parser::syntax_error(drv.location, "Register size does not match size of covered registers.");
         }
 
-        drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
+        drv.m_dict->getRegDB()->createRegister(drv.m_regType, $6, $1, $3);
         if ($6 != RegIDSpecial) {
-            drv.m_dict->getRegDB()->getRegByID($6)->setName($1);
-            drv.m_dict->getRegDB()->getRegByID($6)->setSize($3);
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset(0);
-            drv.m_dict->getRegDB()->getRegByID($6)->setIsFloat(drv.bFloat);
         }
     }
     // example: %ah[8] -> 10 SHARES %ax@[8..15]
@@ -390,13 +387,10 @@ reg_def_part:
             throw yy::parser::syntax_error(drv.location, "Range extends over target register.");
         }
 
-        drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
+        drv.m_dict->getRegDB()->createRegister(drv.m_regType, $6, $1, $3);
         if ($6 != RegIDSpecial) {
-            drv.m_dict->getRegDB()->getRegByID($6)->setName($1);
-            drv.m_dict->getRegDB()->getRegByID($6)->setSize($3);
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset($11);
-            drv.m_dict->getRegDB()->getRegByID($6)->setIsFloat(drv.bFloat);
         }
     }
   ;

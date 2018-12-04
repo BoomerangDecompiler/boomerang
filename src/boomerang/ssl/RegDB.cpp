@@ -68,14 +68,14 @@ int RegDB::getRegSizeByID(RegID regID) const
 }
 
 
-void RegDB::addRegister(const QString& name, RegID id, int size, bool flt)
+void RegDB::createRegister(RegType regType, RegID id, const QString& name, int size)
 {
     m_regIDs[name] = id;
 
     if (id == RegIDSpecial) {
-        m_specialRegInfo.insert(std::make_pair(name, Register(name, size, flt)));
+        m_specialRegInfo.insert(std::make_pair(name, Register(regType, name, size)));
     }
     else {
-        m_regInfo.insert(std::make_pair(id, Register(name, size, flt)));
+        m_regInfo.insert(std::make_pair(id, Register(regType, name, size)));
     }
 }
