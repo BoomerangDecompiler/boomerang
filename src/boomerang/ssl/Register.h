@@ -23,6 +23,9 @@ class Type;
 
 typedef std::shared_ptr<Type> SharedType;
 
+typedef int RegID;
+static constexpr const RegID RegIDSpecial = -1;
+
 
 /**
  * Summarises one line of the \@REGISTERS section of an SSL
@@ -58,7 +61,7 @@ public:
     int getMappedOffset() const { return m_mappedOffset; }
 
     /// Get the mapped index (see above)
-    int getMappedIndex() const { return m_mappedIndex; }
+    RegID getMappedIndex() const { return m_mappedIndex; }
 
     void setName(const QString &name);
 
@@ -79,12 +82,12 @@ public:
      * For SHARES registers, this is the "parent" register, e.g. if the current
      * register is %al, the parent is %ax (note: not %eax)
      */
-    void setMappedIndex(int i) { m_mappedIndex = i; }
+    void setMappedIndex(RegID i) { m_mappedIndex = i; }
 
 private:
     QString m_name;
     uint16_t m_size;
     bool m_fltRegister; ///< True if this is a floating point register
-    int m_mappedIndex;
+    RegID m_mappedIndex;
     int m_mappedOffset;
 };

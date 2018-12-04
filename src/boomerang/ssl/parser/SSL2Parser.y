@@ -333,7 +333,7 @@ reg_def_part:
         else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if ($6 != -1 && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
+        else if ($6 != RegIDSpecial && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
             throw yy::parser::syntax_error(drv.location, "Register index already defined.");
         }
         else if (!drv.m_dict->getRegDB()->isRegDefined($8) ||
@@ -358,7 +358,7 @@ reg_def_part:
         }
 
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
-        if ($6 != -1) {
+        if ($6 != RegIDSpecial) {
             drv.m_dict->getRegDB()->getRegByID($6)->setName($1);
             drv.m_dict->getRegDB()->getRegByID($6)->setSize($3);
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
@@ -374,7 +374,7 @@ reg_def_part:
         else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if ($6 != -1 && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
+        else if ($6 != RegIDSpecial && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
             throw yy::parser::syntax_error(drv.location, "Register index already defined.");
         }
         else if (drv.m_dict->getRegDB()->getRegIDByName($8) == -1) {
@@ -391,7 +391,7 @@ reg_def_part:
         }
 
         drv.m_dict->addRegister($1, $6, $3, drv.bFloat);
-        if ($6 != -1) {
+        if ($6 != RegIDSpecial) {
             drv.m_dict->getRegDB()->getRegByID($6)->setName($1);
             drv.m_dict->getRegDB()->getRegByID($6)->setSize($3);
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));

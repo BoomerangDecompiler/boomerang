@@ -18,3 +18,64 @@ RegDB::RegDB()
 RegDB::~RegDB()
 {
 }
+
+
+void RegDB::clear()
+{
+    m_regIDs.clear();
+    m_regInfo.clear();
+    m_specialRegInfo.clear();
+}
+
+
+bool RegDB::isRegDefined(const QString& regName) const
+{
+    return m_regIDs.find(regName) != m_regIDs.end();
+}
+
+
+bool RegDB::isRegIdxDefined(int regID) const
+{
+    return m_regInfo.find(regID) != m_regInfo.end();
+}
+
+
+Register *RegDB::getRegByID(int regID)
+{
+    const auto it = m_regInfo.find(regID);
+    return it != m_regInfo.end() ? &it->second : nullptr;
+}
+
+
+RegID RegDB::getRegIDByName(const QString& name) const
+{
+    const auto it = m_regIDs.find(name);
+    return it != m_regIDs.end() ? it->second : -1;
+}
+
+
+QString RegDB::getRegNameByID(RegID regID) const
+{
+    const auto it = m_regInfo.find(regID);
+    return it != m_regInfo.end() ? it->second.getName() : "";
+}
+
+
+int RegDB::getRegSizeByID(RegID regID) const
+{
+    const auto iter = m_regInfo.find(regID);
+    return iter != m_regInfo.end() ? iter->second.getSize() : 32;
+}
+
+
+void RegDB::addRegister(const QString& name, RegID id, int size, bool flt)
+{
+    m_regIDs[name] = id;
+
+    if (id == RegIDSpecial) {
+        m_specialRegInfo.insert(std::make_pair(name, Register(name, size, flt)));
+    }
+    else {
+        m_regInfo.insert(std::make_pair(id, Register(name, size, flt)));
+    }
+}
