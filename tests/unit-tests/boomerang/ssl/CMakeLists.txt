@@ -13,6 +13,7 @@ set(TESTS
     exp/ExpTest
     parser/ParserTest
     type/MeetTest
+    RegDBTest
     RTLTest
 )
 

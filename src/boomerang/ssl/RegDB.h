@@ -15,7 +15,7 @@
 #include <map>
 
 
-class RegDB
+class BOOMERANG_API RegDB
 {
 public:
     RegDB();
@@ -25,8 +25,8 @@ public:
     void clear();
 
 public:
-    bool isRegDefined(const QString &regName) const;
     bool isRegIdxDefined(RegID regID) const;
+    bool isRegDefined(const QString &regName) const;
 
     Register *getRegByID(RegID regID);
     Register *getRegByName(const QString &name);
@@ -44,7 +44,8 @@ public:
     int getRegSizeByID(RegID regID) const;
 
 public:
-    void createRegister(RegType regType, RegID id, const QString &name, int size);
+    bool createReg(RegType regType, RegID id, const QString &name, int size);
+    bool createRegRelation(const QString &parent, const QString &child, int offsetInParent);
 
 private:
     /// A map from the symbolic representation of a register (e.g. "%g0")
@@ -60,4 +61,9 @@ private:
     /// A map from symbolic representation of a special (non-addressable) register
     /// to a Register object
     std::map<QString, Register> m_specialRegInfo;
+
+    /// Register coverage information
+    std::map<QString, QString> m_parent;
+    std::map<QString, int>   m_offsetInParent;
+    std::map<QString, std::map<int, QString>> m_children;
 };

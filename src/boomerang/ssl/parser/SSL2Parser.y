@@ -323,7 +323,9 @@ reg_def_part:
         else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw yy::parser::syntax_error(drv.location, "Register already defined.");
         }
-        drv.m_dict->getRegDB()->createRegister(drv.m_regType, $6, $1, $3);
+        else if (!drv.m_dict->getRegDB()->createReg(drv.m_regType, $6, $1, $3)) {
+            throw yy::parser::syntax_error(drv.location, "Cannot create register.");
+        }
     }
     // example: %foo[32] -> 10 COVERS %bar..%baz
   | REG_IDENT LBRACKET INT_LITERAL RBRACKET INDEX INT_LITERAL COVERS REG_IDENT TO REG_IDENT {
@@ -357,7 +359,10 @@ reg_def_part:
             throw yy::parser::syntax_error(drv.location, "Register size does not match size of covered registers.");
         }
 
-        drv.m_dict->getRegDB()->createRegister(drv.m_regType, $6, $1, $3);
+        if (!drv.m_dict->getRegDB()->createReg(drv.m_regType, $6, $1, $3)) {
+            throw yy::parser::syntax_error(drv.location, "Cannot create register.");
+        }
+
         if ($6 != RegIDSpecial) {
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
             drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset(0);
@@ -386,11 +391,11 @@ reg_def_part:
         if ($11 < 0 || $13 >= tgtRegSize) {
             throw yy::parser::syntax_error(drv.location, "Range extends over target register.");
         }
-
-        drv.m_dict->getRegDB()->createRegister(drv.m_regType, $6, $1, $3);
-        if ($6 != RegIDSpecial) {
-            drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
-            drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset($11);
+        else if (!drv.m_dict->getRegDB()->createReg(drv.m_regType, $6, $1, $3)) {
+            throw yy::parser::syntax_error(drv.location, "Cannot create register.");
+        }
+        else if ($6 != RegIDSpecial) {
+            drv.m_dict->getRegDB()->createRegRelation($8, $1, $11);
         }
     }
   ;
