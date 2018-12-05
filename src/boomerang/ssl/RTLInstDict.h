@@ -10,8 +10,8 @@
 #pragma once
 
 
-#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/RegDB.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/TableEntry.h"
 #include "boomerang/ssl/parser/SSL2Parser.hpp"
 #include "boomerang/util/ByteUtil.h"

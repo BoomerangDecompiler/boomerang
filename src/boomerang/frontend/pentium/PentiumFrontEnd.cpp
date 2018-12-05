@@ -65,7 +65,6 @@ bool PentiumFrontEnd::processProc(UserProc *function, Address addr)
     function->setEntryBB();
 
 
-
     // Process away %rpt and %skip
     processStringInst(function);
 

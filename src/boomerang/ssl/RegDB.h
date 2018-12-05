@@ -64,6 +64,6 @@ private:
 
     /// Register coverage information
     std::map<QString, QString> m_parent;
-    std::map<QString, int>   m_offsetInParent;
+    std::map<QString, int> m_offsetInParent;
     std::map<QString, std::map<int, QString>> m_children;
 };

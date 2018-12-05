@@ -19,7 +19,7 @@
 #include <string>
 
 
-Register::Register(RegType type, const QString& name, uint16_t sizeInBits)
+Register::Register(RegType type, const QString &name, uint16_t sizeInBits)
     : m_name(name)
     , m_size(sizeInBits)
     , m_regType(type)
@@ -87,12 +87,9 @@ SharedType Register::getType() const
             return BooleanType::get();
         }
         [[fallthrough]];
-    case RegType::Int:
-        return IntegerType::get(m_size, Sign::Unknown);
-    case RegType::Float:
-        return FloatType::get(m_size);
-    case RegType::Invalid:
-        return VoidType::get();
+    case RegType::Int: return IntegerType::get(m_size, Sign::Unknown);
+    case RegType::Float: return FloatType::get(m_size);
+    case RegType::Invalid: return VoidType::get();
     }
 
     return VoidType::get();

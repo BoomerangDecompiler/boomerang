@@ -28,7 +28,7 @@ void RegDB::clear()
 }
 
 
-bool RegDB::isRegDefined(const QString& regName) const
+bool RegDB::isRegDefined(const QString &regName) const
 {
     return m_regIDs.find(regName) != m_regIDs.end();
 }
@@ -60,7 +60,7 @@ Register *RegDB::getRegByName(const QString &name)
 }
 
 
-RegID RegDB::getRegIDByName(const QString& name) const
+RegID RegDB::getRegIDByName(const QString &name) const
 {
     const auto it = m_regIDs.find(name);
     return it != m_regIDs.end() ? it->second : RegIDSpecial;
@@ -81,7 +81,7 @@ int RegDB::getRegSizeByID(RegID regID) const
 }
 
 
-bool RegDB::createReg(RegType regType, RegID id, const QString& name, int size)
+bool RegDB::createReg(RegType regType, RegID id, const QString &name, int size)
 {
     if (name.isEmpty() || size <= 0 || regType == RegType::Invalid) {
         return false;
@@ -137,8 +137,8 @@ bool RegDB::createRegRelation(const QString &parent, const QString &child, int o
         return false;
     }
 
-    m_parent[child] = parent;
-    m_offsetInParent[child] = offsetInParent;
+    m_parent[child]                    = parent;
+    m_offsetInParent[child]            = offsetInParent;
     m_children[parent][offsetInParent] = child;
     return true;
 }
