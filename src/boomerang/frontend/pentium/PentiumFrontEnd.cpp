@@ -293,31 +293,14 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
         s->addUsedLocs(locs);
 
         for (SharedExp l : locs) {
-            if (!l->isRegOfConst()) {
-                continue;
+            if (l->isRegOfConst()) {
+                usedRegs.insert(l->access<Const, 1>()->getInt());
             }
-
-            int n = l->access<Const, 1>()->getInt();
-            usedRegs.insert(n);
         }
     }
 
     std::set<BasicBlock *> bbs;
 
-    // For each statement, we are looking for assignments to registers in
-    //     these ranges:
-    //   eax - ebx (24-27) (eax, ecx, edx, ebx)
-    //    ax -  bx ( 0- 3) ( ax,    cx,     dx,  bx)
-    //    al -  bl ( 8-11) ( al,    cl,     dl,  bl)
-    //    ah -  bh (12-15) ( ah,    ch,     dh,  bh)
-    // if found we want to generate assignments to the overlapping registers,
-    // but only if they are used in this procedure.
-    //
-    // TMN: 2006-007-31. This code had been completely forgotten about:
-    // esi/si, edi/di and ebp/bp. For now, let's hope we never encounter esp/sp. :-)
-    // ebp (29)  bp (5)
-    // esi (30)  si (6)
-    // edi (31)  di (7)
     for (Statement *s : stmts) {
         if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
             continue;

@@ -82,10 +82,34 @@ public:
     /// \returns true on success, false on failure.
     bool createRegRelation(const QString &parent, const QString &child, int offsetInParent);
 
+    /// Process the effects of overlapped registers for \p stmt.
+    /// Example: (x86 register overlap)
+    ///   Suppose \p stmt is %ax := 0x1234, and %eax and %ah are used in the procedure that contains
+    ///   \p stmt. Then we need to generate two additional statements:
+    ///     *32* %eax := (%eax & 0xFFFF0000) | %ax, and
+    ///      *8* %ah  := %ax@[0..7]
+    ///   to model the effects of overlapped registers. This procedure returns the additional
+    ///   statements in a new RTL.
+    ///   We do not need to generate an assignment for %al, since %al is not used in the current
+    ///   procedure (This is indicated by \p usedRegs not containing %al).
+    /// \returns all additional statements
     std::unique_ptr<RTL> processOverlappedRegs(Assignment *stmt,
                                                const std::set<RegID> &usedRegs) const;
 
 private:
+    /// Emit a new statement assigning the content of \p rhs into \p lhs.
+    /// There are 2 cases:
+    ///  1. The LHS is larger. In this case, assign only the bits of \p lhs
+    ///     that also belong to \p rhs (e.g. %eax := (%eax & 0xFFFF00FF) | (%ah << 8))
+    ///     (Note: It might also be possible to emit %eax@[8:15] := %ah,
+    ///     but other code does not support this yet).
+    ///  2. The RHS is larger. In this case, use only the bits of the RHS
+    ///     that also belong to \p lhs. (e.g. %ah := %eax@[8..15])
+    ///
+    /// \param lhs The register that is assigned to
+    /// \param rhs The register that is assigned from
+    /// \param offsetInParent The offset in bits of the child register (for %eax -> %ah this is 8)
+    /// \returns the new register content mapping assignment.
     Assignment *emitOverlappedStmt(const Register *lhs, const Register *rhs,
                                    int offsetInParent) const;
 
