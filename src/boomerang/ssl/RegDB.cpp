@@ -88,6 +88,8 @@ bool RegDB::createReg(RegType regType, RegID id, const QString &name, int size)
     }
 
     const auto &[_, inserted] = m_regIDs.insert({ name, id });
+    Q_UNUSED(_);
+
     if (!inserted) {
         // a register with the same name (or alias) already exists
         return false;
