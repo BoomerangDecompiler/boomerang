@@ -10,9 +10,14 @@
 #pragma once
 
 
-#include "Register.h"
+#include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/Register.h"
 
 #include <map>
+#include <set>
+
+
+class Assignment;
 
 
 /**
@@ -38,11 +43,11 @@ public:
 
     /// \returns the register information of a normal register. Returns nullptr
     /// if the register does not exist or is a special register.
-    Register *getRegByID(RegID regID);
+    const Register *getRegByID(RegID regID) const;
 
     /// \returns the register information of a normal or special register.
     /// Returns 0 if the register does not exist.
-    Register *getRegByName(const QString &name);
+    const Register *getRegByName(const QString &name) const;
 
     /// Get the index of a named register by its name.
     /// Returns -1 if the register was not found.
@@ -76,6 +81,13 @@ public:
     /// \param offsetInParent Offset (in bits) of the child register.
     /// \returns true on success, false on failure.
     bool createRegRelation(const QString &parent, const QString &child, int offsetInParent);
+
+    std::unique_ptr<RTL> processOverlappedRegs(Assignment *stmt,
+                                               const std::set<RegID> &usedRegs) const;
+
+private:
+    Assignment *emitOverlappedStmt(const Register *lhs, const Register *rhs,
+                                   int offsetInParent) const;
 
 private:
     /// A map from the symbolic representation of a register (e.g. "%g0")

@@ -40,7 +40,7 @@ public:
     NJMCDecoder &operator=(NJMCDecoder &&other) = default;
 
 public:
-    RTLInstDict &getRTLDict() { return m_rtlDict; }
+    const RTLInstDict *getDict() const override { return &m_rtlDict; }
 
     /**
      * Process an indirect jump instruction.

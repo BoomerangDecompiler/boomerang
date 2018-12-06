@@ -117,13 +117,13 @@ private:
 
     RegDB m_regDB;
 
-    /// FIXME this set contains all parameters of every flag function ever defined,
-    /// not only those from the current flag function
+    /// During parsing, this contains the parameters of the currently parsed
+    /// flag function or instruction.
     std::set<QString> m_definedParams;
 
     /// All names of defined flag functions
     std::set<QString> m_flagFuncs;
 
-    /// The actual dictionary.
+    /// The actual instruction dictionary.
     std::map<QString, TableEntry> m_instructions;
 };

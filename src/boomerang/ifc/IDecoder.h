@@ -16,6 +16,7 @@
 class Exp;
 class RTL;
 class Prog;
+class RTLInstDict;
 
 
 /**
@@ -46,4 +47,6 @@ public:
 
     /// \returns the size of the register with name \p name, in bits
     int getRegSize(const QString &name) const { return getRegSize(getRegIdx(name)); }
+
+    virtual const RTLInstDict *getDict() const = 0;
 };

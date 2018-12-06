@@ -39,6 +39,9 @@ public:
     CapstoneDecoder(Prog *prog, cs::cs_arch arch, cs::cs_mode mode, const QString &sslFileName);
     virtual ~CapstoneDecoder();
 
+public:
+    const RTLInstDict *getDict() const override { return &m_dict; }
+
 protected:
     bool isInstructionInGroup(const cs::cs_insn *instruction, uint8_t group);
 
