@@ -106,12 +106,13 @@ private:
     ///  2. The RHS is larger. In this case, use only the bits of the RHS
     ///     that also belong to \p lhs. (e.g. %ah := %eax@[8..15])
     ///
+    /// \param original The orignal assignment
     /// \param lhs The register that is assigned to
     /// \param rhs The register that is assigned from
     /// \param offsetInParent The offset in bits of the child register (for %eax -> %ah this is 8)
     /// \returns the new register content mapping assignment.
-    Assignment *emitOverlappedStmt(const Register *lhs, const Register *rhs,
-                                   int offsetInParent) const;
+    Assignment *emitOverlappedStmt(const Assignment *original, const Register *lhs,
+                                   const Register *rhs, int offsetInParent) const;
 
 private:
     /// A map from the symbolic representation of a register (e.g. "%g0")

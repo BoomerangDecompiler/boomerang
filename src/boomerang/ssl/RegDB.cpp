@@ -194,7 +194,8 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
 
                 // is the parent actually used? if not, then skip
                 if (usedRegs.find(parentID) != usedRegs.end()) {
-                    Assignment *overlapAsgn = emitOverlappedStmt(parent, base, offsetInParent);
+                    Assignment *overlapAsgn = emitOverlappedStmt(stmt, parent, base,
+                                                                 offsetInParent);
                     if (overlapAsgn) {
                         result->append(overlapAsgn);
                     }
@@ -219,7 +220,8 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
                     if (m_offsetInParent.find(current->getName()) != m_offsetInParent.end()) {
                         // is the parent actually used? if not, then skip
                         if (usedRegs.find(currentID) != usedRegs.end()) {
-                            Assignment *overlapAsgn = emitOverlappedStmt(current, base, offset);
+                            Assignment *overlapAsgn = emitOverlappedStmt(stmt, current, base,
+                                                                         offset);
                             if (overlapAsgn) {
                                 result->append(overlapAsgn);
                             }
@@ -244,8 +246,8 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
 }
 
 
-Assignment *RegDB::emitOverlappedStmt(const Register *lhs, const Register *rhs,
-                                      int offsetInParent) const
+Assignment *RegDB::emitOverlappedStmt(const Assignment *original, const Register *lhs,
+                                      const Register *rhs, int offsetInParent) const
 {
     const RegID lhsID = getRegIDByName(lhs->getName());
     const RegID rhsID = getRegIDByName(rhs->getName());
@@ -274,6 +276,10 @@ Assignment *RegDB::emitOverlappedStmt(const Register *lhs, const Register *rhs,
                             Ternary::get(opZfill, Const::get(rhs->getSize()),
                                          Const::get(lhs->getSize()), Location::regOf(rhsID)),
                             Const::get(offsetInParent))));
+    }
+
+    if (original->isAssign() && static_cast<const Assign *>(original)->getGuard()) {
+        result->setGuard(static_cast<const Assign *>(original)->getGuard()->clone());
     }
 
     result->simplify();

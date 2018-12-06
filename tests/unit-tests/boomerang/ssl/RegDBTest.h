@@ -29,5 +29,5 @@ private slots:
     void testGetRegSizeByID();
     void testCreateReg();
     void testCreateRegRelation();
-//     void testProcessOverlappedRegs();
+    void testProcessOverlappedRegs();
 };
