@@ -96,8 +96,6 @@ static const QMap<OPER, FixSyntax> g_syntaxTable = {
     { opFround,         { "fround(",    ", ",       ", ",       ")"     } },
     { opFtrunc,         { "ftrunc(",    ", ",       ", ",       ")"     } },
     { opFabs,           { "fabs(",      "",         "",         ")"     } },
-    { opFpush,          { "FPUSH",      "",         "",         ""      } },
-    { opFpop,           { "FPOP",       "",         "",         ""      } },
     { opSin,            { "sin(",       "",         "",         ")"     } },
     { opCos,            { "cos(",       "",         "",         ")"     } },
     { opTan,            { "tan(",       "",         "",         ")"     } },

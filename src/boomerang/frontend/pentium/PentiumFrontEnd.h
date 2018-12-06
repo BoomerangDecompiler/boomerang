@@ -47,26 +47,6 @@ protected:
     virtual void extraProcessCall(CallStatement *call, const RTLList &BB_rtls) override;
 
 private:
-    /// Little simpler, just replaces FPUSH and FPOP with more complex semantics.
-    void processFloatCode(ProcCFG *cfg);
-
-    /**
-     * Process a basic block, and all its successors, for floating point code.
-     * Remove FPUSH/FPOP, instead decrementing or incrementing respectively the tos value to be used
-     * from here down.
-     *
-     * \note tos has to be a parameter, not a global, to get the right value at any point in
-     * the call tree
-     *
-     * \param bb pointer to the current BB
-     * \param tos reference to the value of the "top of stack" pointer currently. Starts at zero,
-     *            and is decremented to 7 with the first load, so r[39] should be used first,
-     *            then r[38] etc. However, it is reset to 0 for calls, so that if a function
-     *            returns a float, then it will always appear in r[32]
-     * \param cfg passed to processFloatCode
-     */
-    void processFloatCode(BasicBlock *bb, int &tos, ProcCFG *cfg);
-
     /**
      * Process away %rpt and %skip in string instructions
      */

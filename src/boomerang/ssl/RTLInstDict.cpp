@@ -28,6 +28,11 @@ RTLInstDict::RTLInstDict(bool verboseOutput)
 }
 
 
+RTLInstDict::~RTLInstDict()
+{
+}
+
+
 int RTLInstDict::insert(const QString &name, std::list<QString> &params, const RTL &rtl)
 {
     QString opcode = name.toUpper();
@@ -68,19 +73,6 @@ bool RTLInstDict::readSSLFile(const QString &sslFileName)
     }
 
     return true;
-}
-
-
-void RTLInstDict::addRegister(const QString &name, int id, int size, bool flt)
-{
-    m_regIDs[name] = id;
-
-    if (id == -1) {
-        m_specialRegInfo.insert(std::make_pair(name, Register(name, size, flt)));
-    }
-    else {
-        m_regInfo.insert(std::make_pair(id, Register(name, size, flt)));
-    }
 }
 
 
@@ -131,7 +123,7 @@ std::pair<QString, DWord> RTLInstDict::getSignature(const QString &instructionNa
 
 
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address natPC,
-                                                 const std::vector<SharedExp> &actuals)
+                                                 const std::vector<SharedExp> &args)
 {
     // TODO try to retrieve fast instruction mappings
     // before trying the verbose instructions
@@ -141,50 +133,24 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(const QString &name, Address na
     }
 
     TableEntry &entry(dict_entry->second);
-    std::unique_ptr<RTL> rtl = instantiateRTL(entry.m_rtl, natPC, entry.m_params, actuals);
+    std::unique_ptr<RTL> rtl = instantiateRTL(entry.m_rtl, natPC, entry.m_params, args);
     if (rtl) {
         return rtl;
     }
     else {
         LOG_ERROR("Cannot instantiate instruction '%1' at address %2: "
                   "Instruction has %3 parameters, but got %4 arguments",
-                  name, natPC, entry.m_params.size(), actuals.size());
+                  name, natPC, entry.m_params.size(), args.size());
         return nullptr;
     }
 }
 
 
-QString RTLInstDict::getRegNameByID(int regID) const
-{
-    for (auto &[name, id] : m_regIDs) {
-        if (id == regID) {
-            return name;
-        }
-    }
-
-    return "";
-}
-
-
-int RTLInstDict::getRegIDByName(const QString &regName) const
-{
-    const auto iter = m_regIDs.find(regName);
-    return iter != m_regIDs.end() ? iter->second : -1;
-}
-
-
-int RTLInstDict::getRegSizeByID(int regID) const
-{
-    const auto iter = m_regInfo.find(regID);
-    return iter != m_regInfo.end() ? iter->second.getSize() : 32;
-}
-
-
 std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC,
                                                  std::list<QString> &params,
-                                                 const std::vector<SharedExp> &actuals)
+                                                 const std::vector<SharedExp> &args)
 {
-    if (params.size() != actuals.size()) {
+    if (params.size() != args.size()) {
         return nullptr;
     }
 
@@ -194,18 +160,16 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC
 
     // Iterate through each Statement of the new list of stmts
     for (Statement *ss : *newList) {
-        // Search for the formals and replace them with the actuals
-        auto param                                    = params.begin();
-        std::vector<SharedExp>::const_iterator actual = actuals.begin();
+        // Search for the formals and replace them with the actual arguments
+        auto arg = args.begin();
 
-        for (; param != params.end(); ++param, ++actual) {
+        for (QString paramName : params) {
             /* Simple parameter - just construct the formal to search for */
-            Location formal(opParam, Const::get(*param),
-                            nullptr); // Location::param(param->c_str());
-            ss->searchAndReplace(formal, *actual);
-            // delete formal;
+            Location param(opParam, Const::get(paramName), nullptr);
+            ss->searchAndReplace(param, *arg);
+            ++arg;
         }
-
+        assert(arg == args.end());
         ss->fixSuccessor();
 
         if (m_verboseOutput) {
@@ -225,31 +189,21 @@ std::unique_ptr<RTL> RTLInstDict::instantiateRTL(RTL &existingRTL, Address natPC
 
 void RTLInstDict::reset()
 {
-    m_regIDs.clear();
-    m_regInfo.clear();
-    m_specialRegInfo.clear();
+    m_regDB.clear();
+
     m_definedParams.clear();
     m_flagFuncs.clear();
     m_instructions.clear();
 }
 
 
-int RTLInstDict::getRegID(const QString &regName) const
+RegDB *RTLInstDict::getRegDB()
 {
-    auto it = m_regIDs.find(regName);
-    return (it != m_regIDs.end()) ? it->second : -1;
+    return &m_regDB;
 }
 
 
-QString RTLInstDict::getRegName(int regID) const
+const RegDB *RTLInstDict::getRegDB() const
 {
-    auto it = m_regInfo.find(regID);
-    return (it != m_regInfo.end()) ? it->second.getName() : QString();
-}
-
-
-int RTLInstDict::getRegSize(int regID) const
-{
-    auto it = m_regInfo.find(regID);
-    return (it != m_regInfo.end()) ? it->second.getSize() : 0;
+    return &m_regDB;
 }

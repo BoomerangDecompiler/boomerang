@@ -237,7 +237,7 @@ bool Statement::propagateTo(bool &convert, Settings *settings,
         change = false; // True if changed this iteration of the do/while loop
 
         // Example: m[r24{10}] := r25{20} + m[r26{30}]
-        // exps has r24{10}, r25{30}, m[r26{30}], r26{30}
+        // exps has r24{10}, r25{20}, m[r26{30}], r26{30}
         for (SharedExp e : exps) {
             if (!canPropagateToExp(*e)) {
                 continue;
@@ -429,15 +429,16 @@ bool Statement::replaceRef(SharedExp e, Assignment *def, bool &convert)
             /* When the carry flag is used bare, and was defined in a subtract of the form lhs -
              * rhs, then CF has the value (lhs <u rhs).  lhs and rhs are the first and second
              * parameters of the flagcall. Note: the flagcall is a binary, with a Const (the name)
-             * and a list of expressions: defRhs
-             *      /      \
-             * Const       opList
-             * "SUBFLAGS"    /    \
-             *           P1    opList
+             * and a list of expressions:
+             *          defRhs
              *         /     \
-             *       P2    opList
-             *    /     \
-             *  P3     opNil
+             *     Const    opList
+             * "SUBFLAGS"   /    \
+             *             P1   opList
+             *                  /    \
+             *                 P2   opList
+             *                      /    \
+             *                     P3   opNil
              */
             SharedExp relExp = Binary::get(opLessUns, rhs->getSubExp2()->getSubExp1(),
                                            rhs->getSubExp2()->getSubExp2()->getSubExp1());
@@ -501,26 +502,6 @@ bool Statement::isNullStatement() const
         // Null if left == right
         return *static_cast<const Assign *>(this)->getLeft() == *right;
     }
-}
-
-
-bool Statement::isFpush() const
-{
-    if (m_kind != StmtType::Assign) {
-        return false;
-    }
-
-    return static_cast<const Assign *>(this)->getRight()->getOper() == opFpush;
-}
-
-
-bool Statement::isFpop() const
-{
-    if (m_kind != StmtType::Assign) {
-        return false;
-    }
-
-    return static_cast<const Assign *>(this)->getRight()->getOper() == opFpop;
 }
 
 

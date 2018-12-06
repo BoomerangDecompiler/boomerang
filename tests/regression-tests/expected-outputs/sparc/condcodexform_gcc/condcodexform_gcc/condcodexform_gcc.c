@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     *(__size32*)(%o6 + 44) = %i3;
     *(__size32*)(%o6 + 48) = %i4;
     *(__size32*)(%o6 + 52) = %i5;
-    *(__size32*)(%o6 + 56) = %fp;
+    *(__size32*)(%o6 + 56) = %i6;
     *(__size32*)(%o6 + 60) = %i7;
     if (flags) {
     }

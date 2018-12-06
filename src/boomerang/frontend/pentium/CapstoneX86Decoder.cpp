@@ -178,13 +178,13 @@ int CapstoneX86Decoder::getRegIdx(const QString &name) const
 
 QString CapstoneX86Decoder::getRegName(int idx) const
 {
-    return m_dict.getRegName(idx);
+    return m_dict.getRegDB()->getRegNameByID(idx);
 }
 
 
 int CapstoneX86Decoder::getRegSize(int idx) const
 {
-    return m_dict.getRegSize(idx);
+    return m_dict.getRegDB()->getRegSizeByID(idx);
 }
 
 
@@ -394,28 +394,28 @@ std::unique_ptr<RTL> CapstoneX86Decoder::instantiateRTL(Address pc, const char *
                                                         int numOperands,
                                                         const cs::cs_x86_op *operands)
 {
-    std::vector<SharedExp> actuals(numOperands);
+    std::vector<SharedExp> args(numOperands);
     for (int i = 0; i < numOperands; i++) {
-        actuals[i] = operandToExp(operands[i]);
+        args[i] = operandToExp(operands[i]);
     }
 
     if (m_debugMode) {
-        QString args;
+        QString argNames;
         for (int i = 0; i < numOperands; i++) {
             if (i != 0) {
-                args += " ";
+                argNames += " ";
             }
-            args += actuals[i]->toString();
+            argNames += args[i]->toString();
         }
 
-        LOG_MSG("Instantiating RTL at %1: %2 %3", pc, instructionID, args);
+        LOG_MSG("Instantiating RTL at %1: %2 %3", pc, instructionID, argNames);
     }
 
     bool found;
     const std::pair<QString, DWord> &signature = m_dict.getSignature(instructionID, &found);
 
     if (found) {
-        return m_dict.instantiateRTL(signature.first, pc, actuals);
+        return m_dict.instantiateRTL(signature.first, pc, args);
     }
     else {
         return nullptr;

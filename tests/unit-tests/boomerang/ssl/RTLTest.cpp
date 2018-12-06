@@ -9,8 +9,6 @@
 #pragma endregion License
 #include "RTLTest.h"
 
-
-
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/module/Module.h"

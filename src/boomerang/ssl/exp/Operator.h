@@ -112,8 +112,6 @@ enum OPER
     opFround,       ///< Floating point to nearest float conversion
     opFtrunc,       ///< chop float to int, e.g. 3.99 -> 3.00
     opFabs,         ///< floating point absolute function
-    opFpush,        ///< Floating point stack push
-    opFpop,         ///< Floating point stack pop
     opSin,          ///< sine
     opCos,          ///< cosine
     opTan,          ///< tangent
