@@ -15,6 +15,9 @@
 #include <map>
 
 
+/**
+ * Manages and provides access to register information of a single architecture.
+ */
 class BOOMERANG_API RegDB
 {
 public:
@@ -22,13 +25,23 @@ public:
     ~RegDB();
 
 public:
+    /// Removes all registers and their relations from this db.
     void clear();
 
 public:
+    /// \param regID must be >= 0
+    /// \returns true iff \p regID is the index of a normal register.
     bool isRegIdxDefined(RegID regID) const;
+
+    /// \returns true iff \p regName is the name of a register (normal or special).
     bool isRegDefined(const QString &regName) const;
 
+    /// \returns the register information of a normal register. Returns nullptr
+    /// if the register does not exist or is a special register.
     Register *getRegByID(RegID regID);
+
+    /// \returns the register information of a normal or special register.
+    /// Returns 0 if the register does not exist.
     Register *getRegByName(const QString &name);
 
     /// Get the index of a named register by its name.
@@ -44,7 +57,24 @@ public:
     int getRegSizeByID(RegID regID) const;
 
 public:
+    /// Creates a new register.
+    /// \param regType Type of the register (Int, Float, Flags)
+    /// \param id A unique nonnegative number, or RegIDSpecial for a special register.
+    ///           If \p id is not RegIDSpecial and \p id already exists, a register alias
+    ///           is created in which case \p regType and \p size must match the existing register.
+    /// \param name A unique name. Will fail if the name already exists.
+    /// \param size The size in bits of the new register. Must be > 0.
+    /// \returns true on success, false on failure.
     bool createReg(RegType regType, RegID id, const QString &name, int size);
+
+    /// Creates a register relation of two existing registers
+    /// (e.g. for SHARES or COVERS constructs).
+    /// \param parent name of the parent (larger) register. The RegID of \p parent
+    ///               must not be RegIDSpecial.
+    /// \param child  Name of the child (smaller) register. The RegID of \p child
+    ///               may be RegIDSpecial (but should be >= 0).
+    /// \param offsetInParent Offset (in bits) of the child register.
+    /// \returns true on success, false on failure.
     bool createRegRelation(const QString &parent, const QString &child, int offsetInParent);
 
 private:
@@ -63,7 +93,7 @@ private:
     std::map<QString, Register> m_specialRegInfo;
 
     /// Register coverage information
-    std::map<QString, QString> m_parent;
-    std::map<QString, int> m_offsetInParent;
-    std::map<QString, std::map<int, QString>> m_children;
+    std::map<QString, QString> m_parent;                  ///< child -> parent
+    std::map<QString, int> m_offsetInParent;              ///< child -> offset (if parent exists)
+    std::map<QString, std::map<int, QString>> m_children; ///< parent -> (offset -> child)
 };
