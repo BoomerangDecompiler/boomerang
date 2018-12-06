@@ -240,7 +240,6 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
         assert(false);
     }
 
-    LOG_MSG("Overlap result: %1", result->prints());
     return result;
 }
 
