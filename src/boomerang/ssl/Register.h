@@ -23,8 +23,9 @@ class Type;
 
 typedef std::shared_ptr<Type> SharedType;
 
-typedef int RegID;
-static constexpr const RegID RegIDSpecial = -1;
+typedef int RegNum;
+static constexpr const RegNum RegNumSpecial = -1;
+
 
 enum class RegType
 {

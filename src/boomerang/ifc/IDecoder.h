@@ -11,6 +11,7 @@
 
 
 #include "boomerang/frontend/DecodeResult.h"
+#include "boomerang/ssl/Register.h"
 
 
 class Exp;
@@ -37,16 +38,19 @@ public:
     virtual bool decodeInstruction(Address pc, ptrdiff_t delta, DecodeResult &result) = 0;
 
     /// \returns machine-specific register name given its index
-    virtual QString getRegName(int regID) const = 0;
+    virtual QString getRegNameByNum(RegNum regNum) const = 0;
 
     /// \returns index of the named register
-    virtual int getRegIdx(const QString &name) const = 0;
+    virtual RegNum getRegNumByName(const QString &name) const = 0;
 
     /// \returns size of register in bits
-    virtual int getRegSize(int regID) const = 0;
+    virtual int getRegSizeByNum(RegNum regNum) const = 0;
 
     /// \returns the size of the register with name \p name, in bits
-    int getRegSize(const QString &name) const { return getRegSize(getRegIdx(name)); }
+    int getRegSizeByName(const QString &name) const
+    {
+        return getRegSizeByNum(getRegNumByName(name));
+    }
 
     virtual const RTLInstDict *getDict() const = 0;
 };

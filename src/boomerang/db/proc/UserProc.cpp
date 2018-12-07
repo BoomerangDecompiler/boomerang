@@ -1057,8 +1057,8 @@ QString UserProc::getRegName(SharedExp r)
 
     // assert(r->getSubExp1()->isConst());
     if (r->getSubExp1()->isConst()) {
-        int regNum = r->access<Const, 1>()->getInt();
-        const QString &regName(m_prog->getRegName(regNum));
+        RegNum regNum = r->access<Const, 1>()->getInt();
+        const QString &regName(m_prog->getRegNameByNum(regNum));
         assert(!regName.isEmpty());
 
         if (regName[0] == '%') {

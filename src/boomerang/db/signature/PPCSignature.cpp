@@ -11,6 +11,7 @@
 
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/proc/UserProc.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Binary.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
@@ -103,16 +104,16 @@ SharedExp PPCSignature::getProven(SharedExp left) const
         return nullptr;
     }
 
-    const int regIdx = left->access<Const, 1>()->getInt();
-    return (regIdx == REG_PPC_G1) ? left : nullptr;
+    const RegNum regNum = left->access<Const, 1>()->getInt();
+    return (regNum == REG_PPC_G1) ? left : nullptr;
 }
 
 
 bool PPCSignature::isPreserved(SharedExp e) const
 {
     if (e->isRegOfConst()) {
-        const int regIdx = e->access<Const, 1>()->getInt();
-        if (regIdx == REG_PPC_G1) {
+        const RegNum regNum = e->access<Const, 1>()->getInt();
+        if (regNum == REG_PPC_G1) {
             return true;
         }
     }

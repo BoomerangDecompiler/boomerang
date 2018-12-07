@@ -32,7 +32,7 @@ RegDB::~RegDB()
 
 void RegDB::clear()
 {
-    m_regIDs.clear();
+    m_regNums.clear();
     m_regInfo.clear();
     m_specialRegInfo.clear();
 }
@@ -40,64 +40,64 @@ void RegDB::clear()
 
 bool RegDB::isRegDefined(const QString &regName) const
 {
-    return m_regIDs.find(regName) != m_regIDs.end();
+    return m_regNums.find(regName) != m_regNums.end();
 }
 
 
-bool RegDB::isRegIdxDefined(int regID) const
+bool RegDB::isRegNumDefined(RegNum regNum) const
 {
-    return m_regInfo.find(regID) != m_regInfo.end();
+    return m_regInfo.find(regNum) != m_regInfo.end();
 }
 
 
-const Register *RegDB::getRegByID(int regID) const
+const Register *RegDB::getRegByNum(RegNum regNum) const
 {
-    const auto it = m_regInfo.find(regID);
+    const auto it = m_regInfo.find(regNum);
     return it != m_regInfo.end() ? &it->second : nullptr;
 }
 
 
 const Register *RegDB::getRegByName(const QString &name) const
 {
-    const RegID id = getRegIDByName(name);
-    if (id == RegIDSpecial) {
+    const RegNum id = getRegNumByName(name);
+    if (id == RegNumSpecial) {
         const auto it = m_specialRegInfo.find(name);
         return it != m_specialRegInfo.end() ? &it->second : nullptr;
     }
     else {
-        return getRegByID(id);
+        return getRegByNum(id);
     }
 }
 
 
-RegID RegDB::getRegIDByName(const QString &name) const
+RegNum RegDB::getRegNumByName(const QString &name) const
 {
-    const auto it = m_regIDs.find(name);
-    return it != m_regIDs.end() ? it->second : RegIDSpecial;
+    const auto it = m_regNums.find(name);
+    return it != m_regNums.end() ? it->second : RegNumSpecial;
 }
 
 
-QString RegDB::getRegNameByID(RegID regID) const
+QString RegDB::getRegNameByNum(RegNum regNum) const
 {
-    const auto it = m_regInfo.find(regID);
+    const auto it = m_regInfo.find(regNum);
     return it != m_regInfo.end() ? it->second.getName() : "";
 }
 
 
-int RegDB::getRegSizeByID(RegID regID) const
+int RegDB::getRegSizeByNum(RegNum regNum) const
 {
-    const auto iter = m_regInfo.find(regID);
+    const auto iter = m_regInfo.find(regNum);
     return iter != m_regInfo.end() ? iter->second.getSize() : 32;
 }
 
 
-bool RegDB::createReg(RegType regType, RegID id, const QString &name, int size)
+bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int size)
 {
     if (name.isEmpty() || size <= 0 || regType == RegType::Invalid) {
         return false;
     }
 
-    const auto &[_, inserted] = m_regIDs.insert({ name, id });
+    const auto &[_, inserted] = m_regNums.insert({ name, regNum });
     Q_UNUSED(_);
 
     if (!inserted) {
@@ -105,24 +105,24 @@ bool RegDB::createReg(RegType regType, RegID id, const QString &name, int size)
         return false;
     }
 
-    if (id == RegIDSpecial) {
+    if (regNum == RegNumSpecial) {
         // otherwise would have been caught above
         assert(m_specialRegInfo.find(name) == m_specialRegInfo.end());
         m_specialRegInfo.insert({ name, Register(regType, name, size) });
         return true;
     }
 
-    const auto it = m_regInfo.find(id);
+    const auto it = m_regInfo.find(regNum);
     if (it != m_regInfo.end()) {
         // register alias: only name can be different
         const Register &reg = it->second;
         if (regType != reg.getRegType() || size != reg.getSize()) {
-            m_regIDs.erase(name);
+            m_regNums.erase(name);
             return false;
         }
     }
     else {
-        m_regInfo.insert({ id, Register(regType, name, size) });
+        m_regInfo.insert({ regNum, Register(regType, name, size) });
     }
 
     return true;
@@ -137,7 +137,7 @@ bool RegDB::createRegRelation(const QString &parent, const QString &child, int o
     else if (!isRegDefined(parent) || !isRegDefined(child)) {
         return false;
     }
-    else if (getRegIDByName(parent) == RegIDSpecial) {
+    else if (getRegNumByName(parent) == RegNumSpecial) {
         // parent is a special register -> fail
         return false;
     }
@@ -157,7 +157,7 @@ bool RegDB::createRegRelation(const QString &parent, const QString &child, int o
 
 
 std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
-                                                  const std::set<RegID> &usedRegs) const
+                                                  const std::set<RegNum> &usedRegs) const
 {
     assert(stmt != nullptr);
     SharedConstExp lhs = stmt->getLeft();
@@ -166,8 +166,8 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
         return nullptr;
     }
 
-    const RegID myID = lhs->access<Const, 1>()->getInt();
-    if (myID == RegIDSpecial || !isRegIdxDefined(myID)) {
+    const RegNum myNum = lhs->access<Const, 1>()->getInt();
+    if (myNum == RegNumSpecial || !isRegNumDefined(myNum)) {
         return nullptr;
     }
 
@@ -177,7 +177,7 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
         // first process the effects of assignment "up" the register forest
         // e.g. the effects on %eax when assigning to %ah
         {
-            const Register *base  = getRegByID(myID);
+            const Register *base  = getRegByNum(myNum);
             const Register *child = base;
             int offsetInParent    = 0;
 
@@ -190,7 +190,7 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
                 assert(parent != nullptr);
 
                 offsetInParent += m_offsetInParent.at(child->getName());
-                const RegID parentID = getRegIDByName(parent->getName());
+                const RegNum parentID = getRegNumByName(parent->getName());
 
                 // is the parent actually used? if not, then skip
                 if (usedRegs.find(parentID) != usedRegs.end()) {
@@ -207,7 +207,7 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
         // now process the effects of assignment "down" the register tree
         // e.g. the effects on %ah when assigning to %eax
         {
-            const Register *base = getRegByID(myID);
+            const Register *base = getRegByNum(myNum);
             std::stack<std::pair<const Register *, int>> toVisit({ { base, 0 } });
 
             while (!toVisit.empty()) {
@@ -215,7 +215,7 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
                 toVisit.pop();
 
                 if (current != base) {
-                    const RegID currentID = getRegIDByName(current->getName());
+                    const RegNum currentID = getRegNumByName(current->getName());
 
                     if (m_offsetInParent.find(current->getName()) != m_offsetInParent.end()) {
                         // is the parent actually used? if not, then skip
@@ -249,10 +249,10 @@ std::unique_ptr<RTL> RegDB::processOverlappedRegs(Assignment *stmt,
 Assignment *RegDB::emitOverlappedStmt(const Assignment *original, const Register *lhs,
                                       const Register *rhs, int offsetInParent) const
 {
-    const RegID lhsID = getRegIDByName(lhs->getName());
-    const RegID rhsID = getRegIDByName(rhs->getName());
+    const RegNum lhsID = getRegNumByName(lhs->getName());
+    const RegNum rhsID = getRegNumByName(rhs->getName());
 
-    if (lhsID == RegIDSpecial || rhsID == RegIDSpecial) {
+    if (lhsID == RegNumSpecial || rhsID == RegNumSpecial) {
         return nullptr;
     }
     assert(lhsID != rhsID);

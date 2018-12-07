@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Unary.h"
 
 
@@ -36,7 +37,7 @@ public:
 
     static SharedExp get(OPER op, SharedExp childExp, UserProc *proc);
 
-    static SharedExp regOf(int regID);
+    static SharedExp regOf(RegNum regNum);
     static SharedExp regOf(SharedExp exp);
     static SharedExp memOf(SharedExp exp, UserProc *proc = nullptr);
 

@@ -72,9 +72,9 @@ SharedExp Location::get(OPER op, SharedExp childExp, UserProc *proc)
 }
 
 
-SharedExp Location::regOf(int regID)
+SharedExp Location::regOf(RegNum regNum)
 {
-    return get(opRegOf, Const::get(regID), nullptr);
+    return get(opRegOf, Const::get(regNum), nullptr);
 }
 
 
