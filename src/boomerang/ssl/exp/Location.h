@@ -55,8 +55,6 @@ public:
     const UserProc *getProc() const { return m_proc; }
     UserProc *getProc() { return m_proc; }
 
-    void getDefinitions(LocationSet &defs);
-
 public:
     /// \copydoc Unary::acceptVisitor
     virtual bool acceptVisitor(ExpVisitor *v) override;
