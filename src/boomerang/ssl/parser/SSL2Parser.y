@@ -60,7 +60,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token ENDIANNESS BIG LITTLE
 %token COVERS SHARES
 %token FPUSH FPOP
-%token TOK_FLOAT TOK_INTEGER
+%token TOK_FLOAT TOK_INTEGER KW_FLAGS
 
 // identifiers
 %token <QString> IDENT REG_IDENT TEMP
@@ -314,6 +314,7 @@ nonempty_arglist:
 reg_def:
     TOK_INTEGER { drv.m_regType = RegType::Int;   } reg_def_part
   | TOK_FLOAT   { drv.m_regType = RegType::Float; } reg_def_part
+  | KW_FLAGS    { drv.m_regType = RegType::Flags; } reg_def_part
   ;
 
 reg_def_part:
