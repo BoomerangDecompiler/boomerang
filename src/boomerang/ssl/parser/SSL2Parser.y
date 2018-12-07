@@ -364,8 +364,12 @@ reg_def_part:
         }
 
         if ($6 != RegIDSpecial) {
-            drv.m_dict->getRegDB()->getRegByID($6)->setMappedIndex(drv.m_dict->getRegDB()->getRegIDByName($8));
-            drv.m_dict->getRegDB()->getRegByID($6)->setMappedOffset(0);
+            bitSum = 0;
+            for (int i = rangeStart; i <= rangeEnd; i++) {
+                drv.m_dict->getRegDB()->createRegRelation($1,
+                    drv.m_dict->getRegDB()->getRegNameByID(i), bitSum);
+                bitSum += drv.m_dict->getRegDB()->getRegSizeByID(i);
+            }
         }
     }
     // example: %ah[8] -> 10 SHARES %ax@[8..15]

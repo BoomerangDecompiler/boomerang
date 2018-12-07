@@ -293,31 +293,14 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
         s->addUsedLocs(locs);
 
         for (SharedExp l : locs) {
-            if (!l->isRegOfConst()) {
-                continue;
+            if (l->isRegOfConst()) {
+                usedRegs.insert(l->access<Const, 1>()->getInt());
             }
-
-            int n = l->access<Const, 1>()->getInt();
-            usedRegs.insert(n);
         }
     }
 
     std::set<BasicBlock *> bbs;
 
-    // For each statement, we are looking for assignments to registers in
-    //     these ranges:
-    //   eax - ebx (24-27) (eax, ecx, edx, ebx)
-    //    ax -  bx ( 0- 3) ( ax,    cx,     dx,  bx)
-    //    al -  bl ( 8-11) ( al,    cl,     dl,  bl)
-    //    ah -  bh (12-15) ( ah,    ch,     dh,  bh)
-    // if found we want to generate assignments to the overlapping registers,
-    // but only if they are used in this procedure.
-    //
-    // TMN: 2006-007-31. This code had been completely forgotten about:
-    // esi/si, edi/di and ebp/bp. For now, let's hope we never encounter esp/sp. :-)
-    // ebp (29)  bp (5)
-    // esi (30)  si (6)
-    // edi (31)  di (7)
     for (Statement *s : stmts) {
         if (isOverlappedRegsProcessed(s->getBB())) { // never redo processing
             continue;
@@ -329,177 +312,14 @@ void PentiumFrontEnd::processOverlapped(UserProc *proc)
             continue;
         }
 
-        SharedExp lhs = static_cast<Assignment *>(s)->getLeft();
+        std::unique_ptr<RTL>
+            overlapResult = m_decoder->getDict()->getRegDB()->processOverlappedRegs(
+                static_cast<Assignment *>(s), usedRegs);
 
-        if (!lhs->isRegOf()) {
-            continue;
-        }
-
-        auto c = lhs->access<Const, 1>();
-        assert(c->isIntConst());
-        const int r        = c->getInt();
-        const int off      = r & 3; // Offset into the array of 4 registers
-        const int off_mod8 = r & 7; // Offset into the array of 8 registers; for ebp, esi, edi
-
-        switch (r) {
-        case REG_PENT_EAX:
-        case REG_PENT_ECX:
-        case REG_PENT_EDX:
-        case REG_PENT_EBX:
-            // Emit *16* r<off> := trunc(32, 16, r<24+off>)
-            if (usedRegs.find(REG_PENT_AX + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(16), Location::regOf(REG_PENT_AX + off),
-                                       Ternary::get(opTruncu, Const::get(32), Const::get(16),
-                                                    Location::regOf(REG_PENT_EAX + off)));
-                proc->insertStatementAfter(s, a);
+        if (overlapResult) {
+            for (Statement *res : *overlapResult) {
+                proc->insertStatementAfter(s, res->clone());
             }
-
-            // Emit *8* r<8+off> := trunc(32, 8, r<24+off>)
-            if (usedRegs.find(REG_PENT_AL + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AL + off),
-                                       Ternary::get(opTruncu, Const::get(32), Const::get(8),
-                                                    Location::regOf(REG_PENT_EAX + off)));
-                proc->insertStatementAfter(s, a);
-            }
-
-            // Emit *8* r<12+off> := r<24+off>@[15:8]
-            if (usedRegs.find(REG_PENT_AH + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AH + off),
-                                       Ternary::get(opAt, Location::regOf(REG_PENT_EAX + off),
-                                                    Const::get(15), Const::get(8)));
-                proc->insertStatementAfter(s, a);
-            }
-            break;
-
-        case REG_PENT_AX:
-        case REG_PENT_CX:
-        case REG_PENT_DX:
-        case REG_PENT_BX:
-            // Emit *32* r<24+off> := (r<24+off> & 0xFFFF0000) | zfill(16, 32, r<off>)
-            if (usedRegs.find(REG_PENT_EAX + off) != usedRegs.end()) {
-                Assign *a = new Assign(
-                    IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
-                    Binary::get(opBitOr,
-                                Binary::get(opBitAnd, Location::regOf(REG_PENT_EAX + off),
-                                            Const::get(0xFFFF0000)),
-                                Ternary::get(opZfill, Const::get(16), Const::get(32),
-                                             Location::regOf(REG_PENT_AX + off))));
-                proc->insertStatementAfter(s, a);
-            }
-
-            // Emit *8* r<8+off> := trunc(16, 8, r<off>)
-            if (usedRegs.find(REG_PENT_AL + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AL + off),
-                                       Ternary::get(opTruncu, Const::get(16), Const::get(8),
-                                                    Location::regOf(REG_PENT_EAX + off)));
-                proc->insertStatementAfter(s, a);
-            }
-
-            // Emit *8* r<12+off> := r<off>@[15:8]
-            if (usedRegs.find(REG_PENT_AH + off) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(8), Location::regOf(REG_PENT_AH + off),
-                                       Ternary::get(opAt, Location::regOf(REG_PENT_AX + off),
-                                                    Const::get(15), Const::get(8)));
-                proc->insertStatementAfter(s, a);
-            }
-
-            break;
-
-        case REG_PENT_AL:
-        case REG_PENT_CL:
-        case REG_PENT_DL:
-        case REG_PENT_BL:
-            // Emit *32* r<24+off> := (r<24+off> & 0xFFFFFF00) | zfill(8, 32, r<8+off>)
-            if (usedRegs.find(REG_PENT_EAX + off) != usedRegs.end()) {
-                Assign *a = new Assign(
-                    IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
-                    Binary::get(opBitOr,
-                                Binary::get(opBitAnd, Location::regOf(REG_PENT_EAX + off),
-                                            Const::get(0xFFFFFF00)),
-                                Ternary::get(opZfill, Const::get(8), Const::get(32),
-                                             Location::regOf(REG_PENT_AL + off))));
-                proc->insertStatementAfter(s, a);
-            }
-
-            // Emit *16* r<off> := (r<off> & 0xFF00) | zfill(8, 16, r<8+off>)
-            if (usedRegs.find(REG_PENT_AX + off) != usedRegs.end()) {
-                Assign *a = new Assign(
-                    IntegerType::get(16), Location::regOf(REG_PENT_AX + off),
-                    Binary::get(opBitOr,
-                                Binary::get(opBitAnd, Location::regOf(REG_PENT_AX + off),
-                                            Const::get(0xFF00)),
-                                Ternary::get(opZfill, Const::get(8), Const::get(16),
-                                             Location::regOf(REG_PENT_AL + off))));
-                proc->insertStatementAfter(s, a);
-            }
-
-            break;
-
-        case REG_PENT_AH:
-        case REG_PENT_CH:
-        case REG_PENT_DH:
-        case REG_PENT_BH:
-            // Emit *32* r<24+off> := (r<24+off> & 0xFFFF00FF) | (r<12+off> << 8)
-            if (usedRegs.find(REG_PENT_EAX + off) != usedRegs.end()) {
-                Assign *a = new Assign(
-                    IntegerType::get(32), Location::regOf(REG_PENT_EAX + off),
-                    Binary::get(
-                        opBitOr,
-                        Binary::get(opBitAnd, Location::regOf(REG_PENT_EAX + off),
-                                    Const::get(0xFFFF00FF)),
-                        Binary::get(opShiftL, Location::regOf(REG_PENT_AH + off), Const::get(8))));
-                proc->insertStatementAfter(s, a);
-            }
-
-            // Emit *16* r<off> := r<off> & 0x00FF
-            //      *16* r<off> := r<off> | r<12+off> << 8
-            if (usedRegs.find(REG_PENT_AX + off) != usedRegs.end()) {
-                Assign *a = new Assign(
-                    IntegerType::get(16), Location::regOf(REG_PENT_AX + off),
-                    Binary::get(
-                        opBitOr,
-                        Binary::get(opShiftL, Location::regOf(REG_PENT_AH + off), Const::get(8)),
-                        Ternary::get(opAt, Location::regOf(REG_PENT_AX + off), Const::get(7),
-                                     Const::get(0))));
-                proc->insertStatementAfter(s, a);
-            }
-            break;
-
-        case REG_PENT_BP:
-        case REG_PENT_SI:
-        case REG_PENT_DI:
-            // Emit *32* r<24+off_mod8> := (r<24+off_mod8>@[31:16] << 8) | zfill(16, 32,
-            // r<off_mod8>)
-            if (usedRegs.find(REG_PENT_EAX + off_mod8) != usedRegs.end()) {
-                Assign *a = new Assign(
-                    IntegerType::get(32), Location::regOf(REG_PENT_EAX + off_mod8),
-                    Binary::get(
-                        opBitOr,
-                        Binary::get(opShiftL,
-                                    Ternary::get(opAt, Location::regOf(REG_PENT_EAX + off_mod8),
-                                                 Const::get(31), Const::get(16)),
-                                    Const::get(8)),
-                        Ternary::get(opZfill, Const::get(16), Const::get(32),
-                                     Location::regOf(REG_PENT_AX + off_mod8))));
-                proc->insertStatementAfter(s, a);
-            }
-
-            break;
-
-        case REG_PENT_EBP:
-        case REG_PENT_ESI:
-        case REG_PENT_EDI:
-            //    ebp         esi      edi
-            // Emit *16* r<off_mod8> := trunc(32, 16, r<24+off_mod8>)
-            if (usedRegs.find(REG_PENT_AX + off_mod8) != usedRegs.end()) {
-                Assign *a = new Assign(IntegerType::get(16),
-                                       Location::regOf(REG_PENT_AX + off_mod8),
-                                       Ternary::get(opTruncu, Const::get(32), Const::get(16),
-                                                    Location::regOf(REG_PENT_EAX + off_mod8)));
-                proc->insertStatementAfter(s, a);
-            }
-
-            break;
         }
     }
 

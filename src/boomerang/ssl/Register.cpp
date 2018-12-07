@@ -23,8 +23,6 @@ Register::Register(RegType type, const QString &name, uint16_t sizeInBits)
     : m_name(name)
     , m_size(sizeInBits)
     , m_regType(type)
-    , m_mappedIndex(-1)
-    , m_mappedOffset(-1)
 {
 }
 
@@ -32,8 +30,6 @@ Register::Register(RegType type, const QString &name, uint16_t sizeInBits)
 Register::Register(const Register &r)
     : m_size(r.m_size)
     , m_regType(r.m_regType)
-    , m_mappedIndex(r.m_mappedIndex)
-    , m_mappedOffset(r.m_mappedOffset)
 {
     if (!r.m_name.isEmpty()) {
         m_name = r.m_name;
@@ -47,11 +43,9 @@ Register &Register::operator=(const Register &r2)
         return *this;
     }
 
-    m_name         = r2.m_name;
-    m_size         = r2.m_size;
-    m_regType      = r2.m_regType;
-    m_mappedIndex  = r2.m_mappedIndex;
-    m_mappedOffset = r2.m_mappedOffset;
+    m_name    = r2.m_name;
+    m_size    = r2.m_size;
+    m_regType = r2.m_regType;
 
     return *this;
 }
