@@ -5,9 +5,11 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is a string instruction.
+- Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
-- Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
 - Improved: Performance of decoding x86 instructions.
+- Improved: General processing of overlapped registers (not just hard-coded ones).
+- Improved: Better high level code output quality for x86 binaries due to more instructions being recognized.
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
