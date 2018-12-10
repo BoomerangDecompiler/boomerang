@@ -124,10 +124,10 @@ void TypeTest::testCompound()
     // Offset 8 should have a RECT
     SharedType subTy    = paintStructType->as<CompoundType>()->getMemberTypeByOffset(8 * 8);
     QString    expected = "struct { "
-                          "int left; "
-                          "int top; "
-                          "int right; "
-                          "int bottom; "
+                          "unsigned int left; "
+                          "unsigned int top; "
+                          "unsigned int right; "
+                          "unsigned int bottom; "
                           "}";
     QCOMPARE(subTy->getCtype(true), expected);
 

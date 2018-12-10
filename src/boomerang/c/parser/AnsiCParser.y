@@ -1,4 +1,3 @@
-#pragma region License
 /*
  * This file is part of the Boomerang Decompiler.
  *
@@ -6,72 +5,44 @@
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
  */
-#pragma endregion License
+
+%skeleton "lalr1.cc" /* -*- C++ -*- */
+%require "3.0"
+%defines
+%define api.token.constructor
+%define api.value.type variant
+%define parse.assert
+%define api.namespace {::AnsiC}
+%name-prefix "AnsiC"
+
+%code requires {
+
+#include "boomerang/ssl/type/Type.h"
+#include "boomerang/util/Address.h"
+#include "boomerang/db/signature/Signature.h"
+
+class AnsiCParserDriver;
 
 
-/**
- * \file ansi-c.y Parser for ANSI C.
- * 10 Apr 02 - Trent: Created
- * 03 Dec 02 - Trent: reduced to just parse types and signatures
- */
-
-%name AnsiCParser
-
-%define DEBUG 1
-
-%define PARSE_PARAM \
-    platform plat, callconv cc
-
-%define CONSTRUCTOR_PARAM \
-    std::istream &in, bool trace
-
-%define CONSTRUCTOR_INIT
-
-%define CONSTRUCTOR_CODE \
-    theScanner = new AnsiCScanner(in, trace); \
-    if (trace) yydebug = 1; else yydebug = 0;
-
-%define MEMBERS \
-private:        \
-    AnsiCScanner *theScanner; \
-public: \
-    std::list<Signature*> signatures; \
-    std::list<Symbol*> symbols; \
-    std::list<SymbolRef*> refs;\
-    virtual ~AnsiCParser();
-
-
-%header{
-  #include <list>
-  #include <string>
-  #include "type/type.h"
-  #include "db/cfg.h"
-  #include "db/proc.h"
-  #include "db/signature.h"
-  // For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-  #if defined(_MSC_VER) && _MSC_VER <= 1100
-  #include "db/rtl.h"
-  #endif
-
-  class AnsiCScanner;
 
   class TypeIdent {
   public:
-      Type *ty;
-      std::string name;
+      SharedType ty;
+      QString name;
   };
 
   class SymbolMods;
 
   class Symbol {
   public:
-      ADDRESS addr;
-      std::string name;
-      Type *ty;
-      Signature *sig;
+      Address addr;
+      QString name;
+      SharedType ty;
+      std::shared_ptr<Signature> sig;
       SymbolMods *mods;
 
-      Symbol(ADDRESS a) : addr(a), name(""), ty(NULL), sig(NULL),
+      Symbol(Address a)
+        : addr(a), name(""), ty(NULL), sig(NULL),
                           mods(NULL) { }
   };
 
@@ -85,7 +56,7 @@ public: \
 
   class CustomOptions {
   public:
-      Exp *exp;
+      SharedExp exp;
       int sp;
 
       CustomOptions() : exp(NULL), sp(0) { }
@@ -93,24 +64,53 @@ public: \
 
   class SymbolRef {
   public:
-      ADDRESS addr;
-      std::string name;
+      Address addr;
+      QString name;
 
-      SymbolRef(ADDRESS a, const char *_name) : addr(a), name(_name) { }
+      SymbolRef(Address a, const QString &_name) : addr(a), name(_name) { }
   };
 
   class Bound {
   public:
       int kind;
-      std::string name;
+      QString name;
 
-      Bound(int kind, const char *_name) : kind(kind), name(_name) { }
+      Bound(int kind, const QString &_name) : kind(kind), name(_name) { }
   };
 
-%}
+}
+
+// The parsing context.
+%param { AnsiCParserDriver& drv }
+%locations
+%define parse.trace
+%define parse.error verbose
+%code {
+
+#include "boomerang/c/parser/AnsiCParserDriver.h"
+#include "boomerang/db/signature/CustomSignature.h"
+#include "boomerang/ssl/exp/Binary.h"
+#include "boomerang/ssl/exp/Const.h"
+#include "boomerang/ssl/exp/Location.h"
+#include "boomerang/ssl/type/ArrayType.h"
+#include "boomerang/ssl/type/IntegerType.h"
+#include "boomerang/ssl/type/NamedType.h"
+#include "boomerang/ssl/type/PointerType.h"
+#include "boomerang/ssl/type/FuncType.h"
+#include "boomerang/ssl/type/CompoundType.h"
+#include "boomerang/ssl/type/CharType.h"
+#include "boomerang/ssl/type/FloatType.h"
+
+}
+
+%define api.token.prefix {TOK_}
+%token
+  END  0    "end of file"
+;
+
 %token PREINCLUDE PREDEFINE PREIF PREIFDEF PREENDIF PRELINE
-%token<str> IDENTIFIER STRING_LITERAL
-%token<ival> CONSTANT
+%token<QString> IDENTIFIER STRING_LITERAL
+%token<int> CONSTANT
 %token SIZEOF
 %token NODECODE
 %token INCOMPLETE
@@ -132,444 +132,344 @@ public: \
 
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 
-%union {
-   int ival;
-   char *str;
-   Type *type;
-   std::list<Parameter*> *param_list;
-   std::list<int> *num_list;
-   Parameter *param;
-   Exp *exp;
-   Signature *sig;
-   TypeIdent *type_ident;
-   Bound *bound;
-   std::list<TypeIdent*> *type_ident_list;
-   SymbolMods *mods;
-   CustomOptions *custom_options;
-   callconv cc;
-}
+%token SEMICOLON COMMA COLON ASSIGN_OP DOT AND NOT BIT_NOT MINUS PLUS STAR DIV MOD
+%token LESS GTR XOR BIT_OR QUESTION
+%token LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
 
-%{
-#include "ansi-c-scanner.h"
-%}
 
-%type<type> type
-%type<param> param
-%type<param> param_exp
-%type<exp> exp
-%type<bound> optional_bound;
-%type<custom_options> custom_options
-%type<param_list> param_list;
-%type<num_list> num_list;
-%type<type_ident> type_ident;
-%type<type_ident_list> type_ident_list;
-%type<sig> signature;
-%type<mods> symbol_mods;
-%type<type> array_modifier;
-%type<cc> convention;
+%type<SharedType> type
+%type<std::shared_ptr<Parameter>> param
+%type<std::shared_ptr<Parameter>> param_exp
+%type<SharedExp> exp
+%type<Bound *> optional_bound;
+%type<CustomOptions *> custom_options
+%type<std::list<std::shared_ptr<Parameter>> *> param_list;
+%type<std::list<int> *> num_list;
+%type<TypeIdent *> type_ident;
+%type<std::list<TypeIdent*> *> type_ident_list;
+%type<std::shared_ptr<Signature>> signature;
+%type<SymbolMods *> symbol_mods;
+%type<SharedType> array_modifier;
+%type<CallConv> convention;
 
 %start translation_unit
+
 %%
 
-translation_unit: decls
-        { }
-    ;
+translation_unit:
+    decls
+  ;
 
-decls: decl decls
-     { }
-     | /* empty */
-     { }
-     ;
+decls:
+    decl decls
+  | %empty
+  ;
 
-decl: type_decl
-    { }
-    | func_decl
-    { }
-    | symbol_decl
-    { }
-    | symbol_ref_decl
-    { }
-    ;
+decl:
+    type_decl
+  | func_decl
+  | symbol_decl
+  | symbol_ref_decl
+  ;
 
-convention:
-        CDECL
-        { $$ = CONV_C; }
-        | PASCAL
-        { $$ = CONV_PASCAL; }
-        | THISCALL
-        { $$ = CONV_THISCALL; }
-        ;
+type_decl:
+    TYPEDEF type_ident SEMICOLON {
+        Type::addNamedType($2->name, $2->ty);
+    }
+  | TYPEDEF type LPAREN STAR IDENTIFIER RPAREN LPAREN param_list RPAREN SEMICOLON {
+        std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, NULL);
+        sig->addReturn($2);
 
-num_list: CONSTANT ',' num_list
-        { $$ = $3;
-          $$->push_front($1);
+        for (std::shared_ptr<Parameter> &param : *$8) {
+            if (param->getName() != "...") {
+                sig->addParameter(param);
+            }
+            else {
+                sig->setHasEllipsis(true);
+            }
         }
-        | CONSTANT
-        { $$ = new std::list<int>();
-          $$->push_back($1);
+
+        delete $8;
+        Type::addNamedType($5, PointerType::get(FuncType::get(sig)));
+    }
+  | TYPEDEF type_ident LPAREN param_list RPAREN SEMICOLON  {
+        std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, $2->name);
+        sig->addReturn($2->ty);
+
+        for (std::shared_ptr<Parameter> &param : *$4) {
+            if (param->getName() != "...")
+                sig->addParameter(param);
+            else {
+                sig->setHasEllipsis(true);
+            }
         }
-        | /* empty */
-        { $$ = new std::list<int>();
+
+        delete $4;
+        Type::addNamedType($2->name, FuncType::get(sig));
+    }
+  | STRUCT IDENTIFIER LBRACE type_ident_list RBRACE SEMICOLON {
+        std::shared_ptr<CompoundType> ty = CompoundType::get();
+        for (TypeIdent *ti : *$4) {
+            ty->addMember(ti->ty, ti->name);
         }
-        ;
 
-param_list: param_exp ',' param_list
-          { $$ = $3;
-            $$->push_front($1);
-          }
-          | param_exp
-          { $$ = new std::list<Parameter*>();
-            $$->push_back($1);
-          }
-          | VOID
-          { $$ = new std::list<Parameter*>()}
-          | /* empty */
-          { $$ = new std::list<Parameter*>()}
-          ;
+        Type::addNamedType(QString("struct ") + $2, ty);
+    }
+  ;
 
-param_exp: exp ':' param
-    { $$ = $3;
-      $$->setExp($1);
+type_ident:
+    type IDENTIFIER {
+        $$ = new TypeIdent();
+        $$->ty = $1;
+        $$->name = $2;
     }
-    | param
-    { $$ = $1;
+  | type IDENTIFIER array_modifier {
+        $$ = new TypeIdent();
+        $3->as<ArrayType>()->fixBaseType($1);
+        $$->ty = $3;
+        $$->name = $2;
     }
-    ;
+  ;
 
-exp: REGOF CONSTANT ']'
-    { $$ = Location::regOf($2);
+type:
+    CHAR                { $$ = CharType::get(); }
+  | SHORT               { $$ = IntegerType::get(16, Sign::Signed);   }
+  | INT                 { $$ = IntegerType::get(32, Sign::Signed);   }
+  | UNSIGNED CHAR       { $$ = IntegerType::get( 8, Sign::Unsigned); }
+  | UNSIGNED SHORT      { $$ = IntegerType::get(16, Sign::Unsigned); }
+  | UNSIGNED INT        { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | UNSIGNED LONG       { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | UNSIGNED            { $$ = IntegerType::get(32, Sign::Unsigned); }
+  | LONG                { $$ = IntegerType::get(32, Sign::Signed);   }
+  | LONG LONG           { $$ = IntegerType::get(64, Sign::Signed);   }
+  | UNSIGNED LONG LONG  { $$ = IntegerType::get(64, Sign::Unsigned); }
+  | FLOAT               { $$ = FloatType::get(32); }
+  | DOUBLE              { $$ = FloatType::get(64); }
+  | VOID                { $$ = VoidType::get(); }
+  | type STAR           { $$ = PointerType::get($1); }
+  | type LBRACKET CONSTANT RBRACKET {
+        // This isn't C, but it makes defining pointers to arrays easier
+        $$ = ArrayType::get($1, $3);
     }
-    | MEMOF exp ']'
-    { $$ = Location::memOf($2);
+  | type LBRACKET RBRACKET {
+        // This isn't C, but it makes defining pointers to arrays easier
+        $$ = ArrayType::get($1);
     }
-    | exp '+' exp
-    { $$ = new Binary(opPlus, $1, $3);
-    }
-    | exp '-' exp
-    { $$ = new Binary(opMinus, $1, $3);
-    }
-    | CONSTANT
-    { $$ = new Const($1);
-    }
-    ;
+  | IDENTIFIER {
 
-optional_bound: MAXBOUND IDENTIFIER ')'
-    { $$ = new Bound(0, $2); }
-    | /* */
-    { }
-    ;
+        $$ = NamedType::get($1);
+    }
+  | CONST type { $$ = $2; }
+  | STRUCT IDENTIFIER {
+        $$ = NamedType::get(QString("struct ") + $2);
+    }
+  | STRUCT LBRACE type_ident_list RBRACE {
+        std::shared_ptr<CompoundType> ty = CompoundType::get();
+        for (TypeIdent *ti : *$3) {
+            ty->addMember(ti->ty, ti->name);
+        }
+        $$ = ty;
+    }
+  ;
 
-param: type_ident optional_bound
-     {    if ($1->ty->isArray() ||
-            ($1->ty->isNamed() &&
-             ((NamedType*)$1->ty)->resolvesTo() &&
-             ((NamedType*)$1->ty)->resolvesTo()->isArray())) {
+type_ident_list:
+    type_ident SEMICOLON type_ident_list  { $$ = $3; $$->push_front($1); }
+  | type_ident SEMICOLON                  { $$ = new std::list<TypeIdent *>(); $$->push_back($1); }
+  ;
+
+array_modifier:
+    LBRACKET CONSTANT RBRACKET                  { $$ = ArrayType::get(NULL, $2); }
+  | LBRACKET RBRACKET                           { $$ = ArrayType::get(NULL); }
+  | array_modifier LBRACKET CONSTANT RBRACKET   { $$ = ArrayType::get($1, $3); }
+  | array_modifier LBRACKET RBRACKET            { $$ = ArrayType::get($1); }
+  ;
+
+param_list:
+    param_exp COMMA param_list    { $$ = $3;  $$->push_front($1); }
+  | param_exp                     { $$ = new std::list<std::shared_ptr<Parameter>>(); $$->push_back($1); }
+  | VOID                          { $$ = new std::list<std::shared_ptr<Parameter>>(); }
+  | %empty                        { $$ = new std::list<std::shared_ptr<Parameter>>(); }
+  ;
+
+param_exp:
+    exp COLON param     { $$ = $3; $$->setExp($1); }
+  | param               { $$ = $1; }
+  ;
+
+exp:
+    REGOF CONSTANT RBRACE   { $$ = Location::regOf($2); }
+  | MEMOF exp RBRACE        { $$ = Location::memOf($2);  }
+  | exp PLUS exp            { $$ = Binary::get(opPlus, $1, $3); }
+  | exp MINUS exp           { $$ = Binary::get(opMinus, $1, $3); }
+  | CONSTANT                { $$ = Const::get($1); }
+  ;
+
+param:
+    type_ident optional_bound {
+        if ($1->ty->resolvesToArray()) {
             /* C has complex semantics for passing arrays.. seeing as
              * we're supposedly parsing C, then we should deal with this.
              * When you pass an array in C it is understood that you are
-             * passing that array "by reference".  As all parameters in
+             * passing that array "by reference". As all parameters in
              * our internal representation are passed "by value", we alter
              * the type here to be a pointer to an array.
              */
-            $1->ty = new PointerType($1->ty);
+            $1->ty = PointerType::get($1->ty);
         }
-        $$ = new Parameter($1->ty, $1->name.c_str());
+
+        $$.reset(new Parameter($1->ty, $1->name));
         if ($2) {
-           switch($2->kind) {
-             case 0: $$->setBoundMax($2->name.c_str());
-           }
+            switch($2->kind) {
+                case 0: $$->setBoundMax($2->name);
+            }
         }
      }
-     | type '(' '*' IDENTIFIER ')' '(' param_list ')'
-     { Signature *sig = Signature::instantiate(plat, cc, NULL);
-       sig->addReturn($1);
-       for (std::list<Parameter*>::iterator it = $7->begin();
-            it != $7->end(); it++)
-           if (std::string((*it)->getName()) != "...")
-               sig->addParameter(*it);
-           else {
-               sig->addEllipsis();
-               delete *it;
-           }
-       delete $7;
-       $$ = new Parameter(new PointerType(new FuncType(sig)), $4);
-     }
-     | ELLIPSIS
-     { $$ = new Parameter(new VoidType, "..."); }
-     ;
+  | type LPAREN STAR IDENTIFIER RPAREN LPAREN param_list RPAREN {
+        std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, NULL);
+        sig->addReturn($1);
 
-type_decl: TYPEDEF type_ident ';'
-         { Type::addNamedType($2->name.c_str(), $2->ty); }
-         | TYPEDEF type '(' '*' IDENTIFIER ')' '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(plat, cc, NULL);
-           sig->addReturn($2);
-           for (std::list<Parameter*>::iterator it = $8->begin();
-                it != $8->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete $8;
-           Type::addNamedType($5, new PointerType(new FuncType(sig)));
-         }
-         | TYPEDEF type_ident '(' param_list ')' ';'
-         { Signature *sig = Signature::instantiate(plat, cc, $2->name.c_str());
-           sig->addReturn($2->ty);
-           for (std::list<Parameter*>::iterator it = $4->begin();
-                it != $4->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete $4;
-           Type::addNamedType($2->name.c_str(), new FuncType(sig));
-         }
-         | STRUCT IDENTIFIER '{' type_ident_list '}' ';'
-         { CompoundType *t = new CompoundType();
-           for (std::list<TypeIdent*>::iterator it = $4->begin();
-                   it != $4->end(); it++) {
-              t->addType((*it)->ty, (*it)->name.c_str());
-           }
-           char tmp[1024];
-           sprintf(tmp, "struct %s", $2);
-           Type::addNamedType(tmp, t);
-         }
-         ;
-
-func_decl: signature ';'
-         {
-           signatures.push_back($1);
-         }
-         | signature PREFER type_ident '(' num_list ')' ';'
-         {
-           $1->setPreferedReturn($3->ty);
-           $1->setPreferedName($3->name.c_str());
-           for (std::list<int>::iterator it = $5->begin();
-                it != $5->end(); it++)
-               $1->addPreferedParameter(*it - 1);
-           delete $5;
-           signatures.push_back($1);
-         }
-         ;
-
-signature: type_ident '(' param_list ')'
-         {
-           /* Use the passed calling convention (cc) */
-           Signature *sig = Signature::instantiate(plat, cc, $1->name.c_str());
-           sig->addReturn($1->ty);
-           for (std::list<Parameter*>::iterator it = $3->begin();
-                it != $3->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete $3;
-           $$ = sig;
-         }
-         | convention type_ident '(' param_list ')'
-         { Signature *sig = Signature::instantiate(plat, $1,
-              $2->name.c_str());
-           sig->addReturn($2->ty);
-           for (std::list<Parameter*>::iterator it = $4->begin();
-                it != $4->end(); it++)
-               if (std::string((*it)->getName()) != "...")
-                   sig->addParameter(*it);
-               else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete $4;
-           $$ = sig;
-         }
-         | CUSTOM custom_options type_ident '(' param_list ')'
-         { CustomSignature *sig = new CustomSignature($3->name.c_str());
-           if ($2->exp)
-               sig->addReturn($3->ty, $2->exp);
-           if ($2->sp)
-               sig->setSP($2->sp);
-           for (std::list<Parameter*>::iterator it = $5->begin();
-                it != $5->end(); it++)
-               if (std::string((*it)->getName()) != "...") {
-                   sig->addParameter(*it);
-               } else {
-                   sig->addEllipsis();
-                   delete *it;
-               }
-           delete $5;
-           $$ = sig;
-         }
-         ;
-
-symbol_ref_decl: SYMBOLREF CONSTANT IDENTIFIER ';'
-            { SymbolRef *ref = new SymbolRef($2, $3);
-              refs.push_back(ref);
+        for (std::shared_ptr<Parameter> &param : *$7) {
+            if (param->getName() != "...") {
+                sig->addParameter(param);
             }
-            ;
+            else {
+                sig->setHasEllipsis(true);
+            }
+        }
 
-symbol_decl: CONSTANT type_ident ';'
-           { Symbol *sym = new Symbol($1);
-             sym->name = $2->name;
-             sym->ty = $2->ty;
-             symbols.push_back(sym);
-           }
-             /* Note: in practice, a function signature needs either a
-               "symbolmods" (__nodecode or __incomplete), or a calling
-               convention (__cdecl, __pascal, __thiscall, etc).
-               This is because of the one-symbol lookahead limitation;
-               the parser can't distinguish 123 int foo from 123 int foo() */
-           | CONSTANT symbol_mods signature ';'
-           { Symbol *sym = new Symbol($1);
-             sym->sig = $3;
-             sym->mods = $2;
-             symbols.push_back(sym);
-           }
-           ;
-
-symbol_mods: NODECODE symbol_mods
-           { $$ = $2;
-             $$->noDecode = true;
-           }
-           | INCOMPLETE symbol_mods
-           { $$ = $2;
-             $$->incomplete = true;
-           }
-           | /* empty */
-           { $$ = new SymbolMods(); }
-           ;
-
-custom_options: exp ':'
-           { $$ = new CustomOptions(); $$->exp = $1;
-           }
-           | WITHSTACK CONSTANT ')'
-           { $$ = new CustomOptions(); $$->sp = $2;
-           }
-           | /* */
-           { $$ = new CustomOptions(); }
-           ;
-
-array_modifier: '[' CONSTANT ']'
-          { $$ = new ArrayType(NULL, $2);
-          }
-          | '[' ']'
-          { $$ = new ArrayType(NULL);
-          }
-          | array_modifier '[' CONSTANT ']'
-          { $$ = new ArrayType($1, $3);
-          }
-          | array_modifier '[' ']'
-          { $$ = new ArrayType($1);
-          }
-          ;
-
-type_ident: type IDENTIFIER
-          { $$ = new TypeIdent();
-            $$->ty = $1;
-            $$->name = $2;
-          }
-          | type IDENTIFIER array_modifier
-          { $$ = new TypeIdent();
-            ((ArrayType*)$3)->fixBaseType($1);
-            $$->ty = $3;
-            $$->name = $2;
-          }
-          ;
-
-type_ident_list: type_ident ';' type_ident_list
-          { $$ = $3;
-            $$->push_front($1);
-          }
-          | type_ident ';'
-          { $$ = new std::list<TypeIdent*>();
-            $$->push_back($1);
-          }
-          ;
-
-type: CHAR
-    { $$ = new CharType(); }
-    | SHORT
-    { $$ = new IntegerType(16, 1); }
-    | INT
-    { $$ = new IntegerType(32, 1); }
-    | UNSIGNED CHAR
-    { $$ = new IntegerType(8, 0); }
-    | UNSIGNED SHORT
-    { $$ = new IntegerType(16, 0); }
-    | UNSIGNED INT
-    { $$ = new IntegerType(32, 0); }
-    | UNSIGNED LONG
-    { $$ = new IntegerType(32, 0); }
-    | UNSIGNED
-    { $$ = new IntegerType(32, 0); }
-    | LONG
-    { $$ = new IntegerType(32, 1); }
-    | LONG LONG
-    { $$ = new IntegerType(64, 1); }
-    | UNSIGNED LONG LONG
-    { $$ = new IntegerType(64, 0); }
-    | FLOAT
-    { $$ = new FloatType(32); }
-    | DOUBLE
-    { $$ = new FloatType(64); }
-    | VOID
-    { $$ = new VoidType(); }
-    | type '*'
-    { $$ = new PointerType($1); }
-    | type '[' CONSTANT ']'
-    { // This isn't C, but it makes defining pointers to arrays easier
-      $$ = new ArrayType($1, $3);
+        delete $7;
+        $$.reset(new Parameter(PointerType::get(FuncType::get(sig)), $4));
     }
-    | type '[' ']'
-    { // This isn't C, but it makes defining pointers to arrays easier
-      $$ = new ArrayType($1);
+  | ELLIPSIS { $$.reset(new Parameter(VoidType::get(), "...")); }
+  ;
+
+optional_bound:
+    MAXBOUND IDENTIFIER RPAREN  { $$ = new Bound(0, $2); }
+ |  %empty                      { $$ = nullptr; }
+ ;
+
+func_decl:
+    signature SEMICOLON {
+        drv.signatures.push_back($1);
     }
-    | IDENTIFIER
-    { //$$ = Type::getNamedType($1);
-      //if ($$ == NULL)
-      $$ = new NamedType($1);
+  | signature PREFER type_ident LPAREN num_list RPAREN SEMICOLON {
+        $1->setPreferredName($3->name);
+
+        delete $5;
+        drv.signatures.push_back($1);
     }
-    | CONST type
-    { $$ = $2; }
-    | STRUCT IDENTIFIER
-    {
-      char tmp[1024];
-      sprintf(tmp, "struct %s", $2);
-      $$ = new NamedType(tmp);
+  ;
+
+signature:
+    type_ident LPAREN param_list RPAREN {
+        /* Use the passed calling convention (cc) */
+        std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, $1->name);
+        sig->addReturn($1->ty);
+
+        for (std::shared_ptr<Parameter> &param : *$3) {
+            if (param->getName() != "...") {
+                sig->addParameter(param);
+            }
+            else {
+                sig->setHasEllipsis(true);
+            }
+        }
+
+        delete $3;
+        $$ = sig;
     }
-    | STRUCT '{' type_ident_list '}'
-    { CompoundType *t = new CompoundType();
-      for (std::list<TypeIdent*>::iterator it = $3->begin();
-           it != $3->end(); it++) {
-          t->addType((*it)->ty, (*it)->name.c_str());
-      }
-      $$ = t;
+  | convention type_ident LPAREN param_list RPAREN {
+        std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, $1, $2->name);
+        sig->addReturn($2->ty);
+
+        for (std::shared_ptr<Parameter> &param : *$4) {
+            if (param->getName() != "...")
+                sig->addParameter(param);
+            else {
+                sig->setHasEllipsis(true);
+            }
+        }
+
+        delete $4;
+        $$ = sig;
     }
-    ;
+  | CUSTOM custom_options type_ident LPAREN param_list RPAREN {
+        std::shared_ptr<CustomSignature> sig = std::make_shared<CustomSignature>($3->name);
+        if ($2->exp) {
+            sig->addReturn($3->ty, $2->exp);
+        }
+
+        if ($2->sp) {
+            sig->setSP($2->sp);
+        }
+
+        for (std::shared_ptr<Parameter> &param : *$5) {
+            if (param->getName() != "...") {
+                sig->addParameter(param);
+            }
+            else {
+                sig->setHasEllipsis(true);
+            }
+        }
+
+        delete $5;
+        $$ = sig;
+    }
+  ;
+
+convention:
+    CDECL       { $$ = CallConv::C; }
+  | PASCAL      { $$ = CallConv::Pascal; }
+  | THISCALL    { $$ = CallConv::ThisCall; }
+  ;
+
+num_list:
+    CONSTANT COMMA num_list   { $$ = $3;  $$->push_front($1); }
+  | CONSTANT                  { $$ = new std::list<int>(); $$->push_back($1); }
+  | %empty                    { $$ = new std::list<int>(); }
+  ;
+
+custom_options:
+    exp COLON                   { $$ = new CustomOptions(); $$->exp = $1; }
+  | WITHSTACK CONSTANT RPAREN   { $$ = new CustomOptions(); $$->sp = $2; }
+  | %empty                      { $$ = new CustomOptions(); }
+  ;
+
+symbol_decl:
+    CONSTANT type_ident SEMICOLON {
+        Symbol *sym = new Symbol(Address($1));
+        sym->name = $2->name;
+        sym->ty = $2->ty;
+        drv.symbols.push_back(sym);
+    }
+    // Note: in practice, a function signature needs either a "symbolmods"
+    // (__nodecode or __incomplete), or a calling convention
+    // (__cdecl, __pascal, __thiscall, etc). This is because of the one-symbol
+    // lookahead limitation; the parser can't distinguish 123 int foo from 123 int foo()
+  | CONSTANT symbol_mods signature SEMICOLON {
+        Symbol *sym = new Symbol(Address($1));
+        sym->sig = $3;
+        sym->mods = $2;
+        drv.symbols.push_back(sym);
+    }
+  ;
+
+symbol_mods:
+    NODECODE symbol_mods   { $$ = $2; $$->noDecode = true; }
+  | INCOMPLETE symbol_mods { $$ = $2; $$->incomplete = true; }
+  | %empty                 { $$ = new SymbolMods(); }
+  ;
+
+symbol_ref_decl:
+    SYMBOLREF CONSTANT IDENTIFIER SEMICOLON {
+        SymbolRef *ref = new SymbolRef(Address($2), $3);
+        drv.refs.push_back(ref);
+    }
+  ;
 
 %%
-#include <stdio.h>
 
-int AnsiCParser::yylex()
+void AnsiC::parser::error(const AnsiC::parser::location_type& l, const std::string& m)
 {
-    int token = theScanner->yylex(yylval);
-    return token;
+    std::cerr << l << ": " << m << '\n';
 }
-
-void AnsiCParser::yyerror(char *s)
-{
-    LOG_ERROR("%1", theScanner->lineBuf);
-    LOG_ERROR("%1, theScanner->column");
-    LOG_ERROR("%1 on line %2", "^", s, theScanner->theLine);
-}
-
-AnsiCParser::~AnsiCParser()
-{
-    // Suppress warnings from gcc about lack of virtual destructor
-}
-
-

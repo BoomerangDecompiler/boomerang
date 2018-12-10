@@ -9,7 +9,8 @@
 #pragma endregion License
 #include "CSymbolProvider.h"
 
-#include "boomerang/c/parser/AnsiCParser.h"
+#include "boomerang/c/parser/AnsiCParserDriver.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
@@ -75,19 +76,13 @@ bool CSymbolProvider::readLibraryCatalog(const QString &filePath)
 
 bool CSymbolProvider::readLibrarySignatures(const QString &signatureFile, CallConv cc)
 {
-    std::unique_ptr<AnsiCParser> p;
-
-    try {
-        p.reset(new AnsiCParser(qPrintable(signatureFile), false));
-    }
-    catch (const char *err) {
-        LOG_ERROR("Cannot read library signature file '%1': %2", signatureFile, err);
+    AnsiCParserDriver driver;
+    if (driver.parse(signatureFile, m_prog->getMachine(), cc) != 0) {
+        LOG_ERROR("Cannot read library signature file '%1'", signatureFile);
         return false;
     }
 
-    p->yyparse(m_prog->getMachine(), cc);
-
-    for (auto &signature : p->signatures) {
+    for (std::shared_ptr<Signature> &signature : driver.signatures) {
         m_librarySignatures[signature->getName()] = signature;
         signature->setSigFilePath(signatureFile);
     }
@@ -98,22 +93,19 @@ bool CSymbolProvider::readLibrarySignatures(const QString &signatureFile, CallCo
 
 bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
 {
-    std::unique_ptr<AnsiCParser> parser = nullptr;
+    AnsiCParserDriver driver;
+    const CallConv cc = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
 
-    try {
-        parser.reset(new AnsiCParser(qPrintable(fname), false));
-    }
-    catch (const char *msg) {
-        LOG_ERROR("Cannot read symbol file '%1': %2", fname, msg);
+    if (driver.parse(fname, m_prog->getMachine(), cc) != 0) {
+        LOG_ERROR("Cannot read symbol file '%1': %2", fname);
         return false;
     }
 
-    CallConv cc = m_prog->isWin32() ? CallConv::Pascal : CallConv::C;
-    parser->yyparse(m_prog->getMachine(), cc);
+//     parser->yyparse(m_prog->getMachine(), cc);
 
     Module *targetModule = m_prog->getRootModule();
 
-    for (Symbol *sym : parser->symbols) {
+    for (Symbol *sym : driver.symbols) {
         if (sym->sig) {
             QString name = sym->sig->getName();
             targetModule = m_prog->getOrInsertModuleForSymbol(name);
@@ -138,8 +130,8 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
         }
     }
 
-    for (SymbolRef *ref : parser->refs) {
-        m_prog->getFrontEnd()->addRefHint(ref->m_addr, ref->m_name);
+    for (SymbolRef *ref : driver.refs) {
+        m_prog->getFrontEnd()->addRefHint(ref->addr, ref->name);
     }
 
     return true;
