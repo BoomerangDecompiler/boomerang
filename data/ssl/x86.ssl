@@ -2301,7 +2301,7 @@ JB.imm32 dest       *32* %CF = 1                => %pc := dest;
 JBE.imm32 dest      *32* %CF | %ZF              => %pc := dest;
 JC.imm32 dest       *32* %CF = 1                => %pc := dest;
 JCXZ.imm32 dest     *32* %cx = 0                => %pc := dest;
-JE.imm32 dest       *32* %ZF = 0                => %pc := dest;
+JE.imm32 dest       *32* %ZF = 1                => %pc := dest;
 JECXZ.imm16 dest    *32* %ecx = 0               => %pc := dest;
 JECXZ.imm32 dest    *32* %ecx = 0               => %pc := dest;
 JG.imm32 dest       *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;
