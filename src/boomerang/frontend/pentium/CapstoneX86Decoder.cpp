@@ -163,7 +163,7 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
 }
 
 
-int CapstoneX86Decoder::getRegNumByName(const QString &name) const
+RegNum CapstoneX86Decoder::getRegNumByName(const QString &name) const
 {
     // todo: slow
     for (size_t i = cs::X86_REG_AH; i < cs::X86_REG_ENDING; i++) {

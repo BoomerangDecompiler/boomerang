@@ -11,10 +11,10 @@
 
 
 #include "boomerang/core/BoomerangAPI.h"
+#include "boomerang/util/Types.h"
 
 #include <QString>
 
-#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -23,8 +23,8 @@ class Type;
 
 typedef std::shared_ptr<Type> SharedType;
 
-typedef int RegNum;
-static constexpr const RegNum RegNumSpecial = -1;
+typedef uint16 RegNum;
+static constexpr const RegNum RegNumSpecial = 0xFFFF;
 
 
 enum class RegType

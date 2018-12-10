@@ -284,7 +284,7 @@ void PentiumFrontEnd::processStringInst(UserProc *proc)
 void PentiumFrontEnd::processOverlapped(UserProc *proc)
 {
     // first, lets look for any uses of the registers
-    std::set<int> usedRegs;
+    std::set<RegNum> usedRegs;
     StatementList stmts;
     proc->getStatements(stmts);
 

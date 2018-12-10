@@ -66,13 +66,13 @@ public:
                              DecodeResult &result);
 
     /// \copydoc IDecoder::getRegName
-    QString getRegNameByNum(int idx) const override;
+    QString getRegNameByNum(RegNum num) const override;
 
     /// \copydoc IDecoder::getRegSize
-    int getRegSizeByNum(int idx) const override;
+    int getRegSizeByNum(RegNum num) const override;
 
     /// \copydoc IDecoder::getRegNumByName
-    int getRegNumByName(const QString &name) const override;
+    RegNum getRegNumByName(const QString &name) const override;
 
 protected:
     /**
