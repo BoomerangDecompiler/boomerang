@@ -46,13 +46,13 @@ bool RegDB::isRegDefined(const QString &regName) const
 
 bool RegDB::isRegNumDefined(RegNum regNum) const
 {
-    return m_regInfo.find(regNum) != m_regInfo.end();
+    return m_regInfo.find(RegID(RegType::Invalid, regNum, 0)) != m_regInfo.end();
 }
 
 
 const Register *RegDB::getRegByNum(RegNum regNum) const
 {
-    const auto it = m_regInfo.find(regNum);
+    const auto it = m_regInfo.find(RegID(RegType::Invalid, regNum, 0));
     return it != m_regInfo.end() ? &it->second : nullptr;
 }
 
@@ -73,20 +73,20 @@ const Register *RegDB::getRegByName(const QString &name) const
 RegNum RegDB::getRegNumByName(const QString &name) const
 {
     const auto it = m_regNums.find(name);
-    return it != m_regNums.end() ? it->second : RegNumSpecial;
+    return it != m_regNums.end() ? it->second.getNum() : RegNumSpecial;
 }
 
 
 QString RegDB::getRegNameByNum(RegNum regNum) const
 {
-    const auto it = m_regInfo.find(regNum);
+    const auto it = m_regInfo.find(RegID(RegType::Invalid, regNum, 0));
     return it != m_regInfo.end() ? it->second.getName() : "";
 }
 
 
 int RegDB::getRegSizeByNum(RegNum regNum) const
 {
-    const auto iter = m_regInfo.find(regNum);
+    const auto iter = m_regInfo.find(RegID(RegType::Invalid, regNum, 0));
     return iter != m_regInfo.end() ? iter->second.getSize() : 32;
 }
 
@@ -97,7 +97,7 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
         return false;
     }
 
-    const auto &[_, inserted] = m_regNums.insert({ name, regNum });
+    const auto &[_, inserted] = m_regNums.insert({ name, RegID(regType, regNum, size) });
     Q_UNUSED(_);
 
     if (!inserted) {
@@ -112,7 +112,7 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
         return true;
     }
 
-    const auto it = m_regInfo.find(regNum);
+    const auto it = m_regInfo.find(RegID(regType, regNum, size));
     if (it != m_regInfo.end()) {
         // register alias: only name can be different
         const Register &reg = it->second;
@@ -122,7 +122,7 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
         }
     }
     else {
-        m_regInfo.insert({ regNum, Register(regType, name, size) });
+        m_regInfo.insert({ RegID(regType, regNum, size), Register(regType, name, size) });
     }
 
     return true;

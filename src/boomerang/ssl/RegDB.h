@@ -119,11 +119,11 @@ private:
     /// to its index within an array of registers.
     /// This map contains both normal and special (-> -1) registers,
     /// therefore this map contains all registers.
-    std::map<QString, RegNum> m_regNums;
+    std::map<QString, RegID> m_regNums;
 
     /// Stores info about a register such as its size, its addresss etc
     /// (see register.h).
-    std::map<RegNum, Register> m_regInfo;
+    std::map<RegID, Register> m_regInfo;
 
     /// A map from symbolic representation of a special (non-addressable) register
     /// to a Register object
