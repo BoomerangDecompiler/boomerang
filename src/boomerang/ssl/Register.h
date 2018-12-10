@@ -25,8 +25,6 @@ class Type;
 typedef std::shared_ptr<Type> SharedType;
 
 typedef uint16 RegNum;
-static constexpr const RegNum RegNumSpecial = 0xFFFF;
-
 
 enum class RegType
 {
@@ -40,7 +38,13 @@ enum class RegType
 class BOOMERANG_API RegID
 {
 public:
-    RegID(RegType regType, RegNum num, uint16 sizeInBits);
+    constexpr RegID(RegType regType, RegNum num, uint16 sizeInBits)
+        : m_num(num)
+        , m_regType((uint16)regType)
+        , m_size(sizeInBits)
+        , m_reserved(0)
+    {
+    }
 
     bool operator==(const RegID &rhs) const { return getNum() == rhs.getNum(); }
     bool operator!=(const RegID &rhs) const { return getNum() != rhs.getNum(); }
@@ -50,7 +54,7 @@ public:
 public:
     RegNum getNum() const { return m_num; }
     RegType getRegType() const { return (RegType)m_regType; }
-    int getSize() const { return m_size; }
+    uint16 getSize() const { return m_size; }
 
 public:
     uint16 m_num;
@@ -71,6 +75,10 @@ template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::
 bool operator!=(T lhs, const RegID &rhs) { return lhs != rhs.getNum(); }
 
 
+static constexpr const RegNum RegNumSpecial = 0xFFFF;
+static constexpr const RegID  RegIDSpecial = RegID(RegType::Invalid, RegNumSpecial, 0);
+
+
 /**
  * Summarises one line of the \@REGISTERS section of an SSL
  * file. This class is used extensively in sslparser.y.
@@ -78,7 +86,7 @@ bool operator!=(T lhs, const RegID &rhs) { return lhs != rhs.getNum(); }
 class BOOMERANG_API Register
 {
 public:
-    Register(RegType type, const QString &name, uint16_t sizeInBits);
+    Register(RegID id, const QString &name);
     Register(const Register &);
     Register(Register &&) = default;
 
@@ -92,16 +100,15 @@ public:
     bool operator<(const Register &other) const;
 
     const QString &getName() const;
-    uint16_t getSize() const;
+    uint16 getSize() const;
 
     /// \returns the type of the content of this register
     SharedType getType() const;
 
     /// \returns the type of the register(int, float, flags)
-    RegType getRegType() const { return m_regType; }
+    RegType getRegType() const { return m_id.getRegType(); }
 
 private:
+    RegID m_id;
     QString m_name;
-    uint16_t m_size;
-    RegType m_regType;
 };

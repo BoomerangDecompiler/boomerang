@@ -77,6 +77,13 @@ RegNum RegDB::getRegNumByName(const QString &name) const
 }
 
 
+RegID RegDB::getRegIDByName(const QString &name) const
+{
+    const auto it = m_regNums.find(name);
+    return it != m_regNums.end() ? it->second : RegID(RegType::Invalid, RegNumSpecial, 0);
+}
+
+
 QString RegDB::getRegNameByNum(RegNum regNum) const
 {
     const auto it = m_regInfo.find(RegID(RegType::Invalid, regNum, 0));
@@ -97,7 +104,8 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
         return false;
     }
 
-    const auto &[_, inserted] = m_regNums.insert({ name, RegID(regType, regNum, size) });
+    const RegID regID = RegID(regType, regNum, size);
+    const auto &[_, inserted] = m_regNums.insert({ name, regID });
     Q_UNUSED(_);
 
     if (!inserted) {
@@ -108,11 +116,11 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
     if (regNum == RegNumSpecial) {
         // otherwise would have been caught above
         assert(m_specialRegInfo.find(name) == m_specialRegInfo.end());
-        m_specialRegInfo.insert({ name, Register(regType, name, size) });
+        m_specialRegInfo.insert({ name, Register(regID, name) });
         return true;
     }
 
-    const auto it = m_regInfo.find(RegID(regType, regNum, size));
+    const auto it = m_regInfo.find(regID);
     if (it != m_regInfo.end()) {
         // register alias: only name can be different
         const Register &reg = it->second;
@@ -122,7 +130,7 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
         }
     }
     else {
-        m_regInfo.insert({ RegID(regType, regNum, size), Register(regType, name, size) });
+        m_regInfo.insert({ regID, Register(regID, name) });
     }
 
     return true;

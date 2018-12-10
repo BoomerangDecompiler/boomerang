@@ -53,6 +53,10 @@ public:
     /// Returns -1 if the register was not found.
     RegNum getRegNumByName(const QString &name) const;
 
+    /// Get the index of a named register by its name.
+    /// Returns -1 if the register was not found.
+    RegID getRegIDByName(const QString &name) const;
+
     /// Get the name of the register by its index.
     /// Returns the empty string when \p regNum == RegNumSpecial or the register was not found.
     QString getRegNameByNum(RegNum regNum) const;
