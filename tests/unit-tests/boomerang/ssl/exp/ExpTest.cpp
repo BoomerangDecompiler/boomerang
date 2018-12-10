@@ -572,13 +572,13 @@ void ExpTest::testList()
 
 void ExpTest::testParen()
 {
-    Assign a(Location::regOf(Location::get(opParam, Const::get("rd"), nullptr)),
+    Assign a(Location::regOf(Location::param("rd", nullptr)),
              Binary::get(opBitAnd,
-                         Location::regOf(Location::get(opParam, Const::get("rs1"), nullptr)),
+                         Location::regOf(Location::param("rs1", nullptr)),
                          Binary::get(opMinus,
                                      Binary::get(opMinus,
                                                  Const::get(0),
-                                                 Location::get(opParam, Const::get("reg_or_imm"), nullptr)),
+                                                 Location::param("reg_or_imm", nullptr)),
                                      Const::get(1))));
 
 

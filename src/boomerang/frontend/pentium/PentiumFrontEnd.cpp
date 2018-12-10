@@ -39,7 +39,7 @@ void PentiumFrontEnd::bumpRegisterAll(SharedExp e, int min, int max, int delta, 
     SharedExp exp = e;
     // Use doSearch, which is normally an internal method of Exp, to avoid problems of replacing the
     // wrong subexpression (in some odd cases)
-    Exp::doSearch(*Location::regOf(Terminal::get(opWild)), exp, li, false);
+    Exp::doSearch(*Terminal::get(opWildRegOf), exp, li, false);
 
     for (SharedExp *it : li) {
         int reg = (*it)->access<Const, 1>()->getInt();
