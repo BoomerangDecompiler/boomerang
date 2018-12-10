@@ -19,6 +19,15 @@
 #include <string>
 
 
+RegID::RegID(RegType regType, RegNum num, uint16 sizeInBits)
+    : m_num(num)
+    , m_regType((uint16)regType)
+    , m_size(sizeInBits)
+    , m_reserved(0)
+{
+}
+
+
 Register::Register(RegType type, const QString &name, uint16_t sizeInBits)
     : m_name(name)
     , m_size(sizeInBits)

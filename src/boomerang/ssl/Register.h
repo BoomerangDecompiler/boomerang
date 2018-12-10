@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 
 
 class Type;
@@ -34,6 +35,40 @@ enum class RegType
     Float   = 2,
     Flags   = 3
 };
+
+
+class BOOMERANG_API RegID
+{
+public:
+    RegID(RegType regType, RegNum num, uint16 sizeInBits);
+
+    bool operator==(const RegID &rhs) const { return getNum() == rhs.getNum(); }
+    bool operator!=(const RegID &rhs) const { return getNum() != rhs.getNum(); }
+
+    bool operator<(const RegID &rhs) const { return getNum() < rhs.getNum(); }
+
+public:
+    RegNum getNum() const { return m_num; }
+    RegType getRegType() const { return (RegType)m_regType; }
+    int getSize() const { return m_size; }
+
+public:
+    uint16 m_num;
+    uint16 m_regType : 3;
+    uint16 m_size : 10;
+    uint16 m_reserved : 3;
+};
+
+
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator==(const RegID &lhs, T rhs) { return lhs.getNum() == rhs; }
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator!=(const RegID &lhs, T rhs) { return lhs.getNum() != rhs; }
+
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator==(T lhs, const RegID &rhs) { return lhs == rhs.getNum(); }
+template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
+bool operator!=(T lhs, const RegID &rhs) { return lhs != rhs.getNum(); }
 
 
 /**
