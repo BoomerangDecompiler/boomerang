@@ -112,10 +112,10 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
                                // NODECODE isn't really the right modifier; perhaps we should have a
                                // LIB modifier, to specifically specify that this function obeys
                                // library calling conventions
-                               sym->mods->noDecode;
+                               sym->mods.noDecode;
             Function *p = targetModule->createFunction(name, sym->addr, isLib);
 
-            if (!sym->mods->incomplete) {
+            if (!sym->mods.incomplete) {
                 p->setSignature(sym->sig->clone());
                 p->getSignature()->setForced(true);
             }

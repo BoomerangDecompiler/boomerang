@@ -11,8 +11,7 @@
 #include "AnsiCParserDriver.h"
 #include "AnsiCParser.hpp"
 
- #include "boomerang/util/log/Log.h"
-
+#include "boomerang/util/log/Log.h"
 
 // Work around an incompatibility in flex (at least versions
 // 2.5.31 through 2.5.33): it generates code that does

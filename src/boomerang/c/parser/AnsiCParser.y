@@ -8,6 +8,7 @@
 
 %skeleton "lalr1.cc" /* -*- C++ -*- */
 %require "3.0"
+
 %defines
 %define api.token.constructor
 %define api.value.type variant
@@ -23,28 +24,10 @@
 
 class AnsiCParserDriver;
 
-
-
 struct TypeIdent
 {
     SharedType ty;
     QString name;
-};
-
-struct SymbolMods;
-
-struct Symbol
-{
-    Address addr;
-    QString name;
-    SharedType ty = nullptr;
-    std::shared_ptr<Signature> sig = nullptr;
-    std::shared_ptr<SymbolMods> mods = nullptr;
-
-    Symbol(Address a)
-        : addr(a)
-        , name("")
-    {}
 };
 
 struct SymbolMods
@@ -53,6 +36,20 @@ struct SymbolMods
     bool incomplete = false;
 };
 
+struct Symbol
+{
+    Address addr;
+    QString name;
+    SharedType ty = nullptr;
+    std::shared_ptr<Signature> sig = nullptr;
+
+    SymbolMods mods;
+
+    Symbol(Address a)
+        : addr(a)
+        , name("")
+    {}
+};
 
 struct CustomOptions
 {
@@ -120,8 +117,7 @@ struct Bound
 %token INCOMPLETE
 %token SYMBOLREF
 %token CDECL PASCAL THISCALL
-%token REGOF
-%token MEMOF
+%token REGOF MEMOF
 %token MAXBOUND
 %token CUSTOM PREFER
 %token WITHSTACK
@@ -151,7 +147,7 @@ struct Bound
 %type<std::shared_ptr<TypeIdent>> type_ident;
 %type<std::shared_ptr<std::list<std::shared_ptr<TypeIdent>>>> type_ident_list;
 %type<std::shared_ptr<Signature>> signature;
-%type<std::shared_ptr<SymbolMods>> symbol_mods;
+%type<SymbolMods> symbol_mods;
 %type<SharedType> array_modifier;
 %type<CallConv> convention;
 
@@ -327,7 +323,7 @@ param:
                 case 0: $$->setBoundMax($2->name);
             }
         }
-     }
+    }
   | type LPAREN STAR IDENTIFIER RPAREN LPAREN param_list RPAREN {
         std::shared_ptr<Signature> sig = Signature::instantiate(drv.plat, drv.cc, NULL);
         sig->addReturn($1);
@@ -383,8 +379,9 @@ signature:
         sig->addReturn($2->ty);
 
         for (std::shared_ptr<Parameter> &param : *$4) {
-            if (param->getName() != "...")
+            if (param->getName() != "...") {
                 sig->addParameter(param);
+            }
             else {
                 sig->setHasEllipsis(true);
             }
@@ -453,9 +450,9 @@ symbol_decl:
   ;
 
 symbol_mods:
-    NODECODE symbol_mods   { $$ = $2; $$->noDecode = true; }
-  | INCOMPLETE symbol_mods { $$ = $2; $$->incomplete = true; }
-  | %empty                 { $$.reset(new SymbolMods()); }
+    NODECODE symbol_mods   { $$ = $2; $$.noDecode = true; }
+  | INCOMPLETE symbol_mods { $$ = $2; $$.incomplete = true; }
+  | %empty                 { }
   ;
 
 symbol_ref_decl:
