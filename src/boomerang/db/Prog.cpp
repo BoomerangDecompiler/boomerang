@@ -10,7 +10,6 @@
 #include "Prog.h"
 
 #include "boomerang/c/CSymbolProvider.h"
-#include "boomerang/c/parser/AnsiCParser.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/DebugInfo.h"

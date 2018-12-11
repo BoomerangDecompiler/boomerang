@@ -1,4 +1,3 @@
-#pragma region License
 /*
  * This file is part of the Boomerang Decompiler.
  *
@@ -6,247 +5,201 @@
  * redistribution of this file, and for a DISCLAIMER OF ALL
  * WARRANTIES.
  */
-#pragma endregion License
 
+%{ /* -*- C++ -*- */
 
-/**
- * \file ansi-c.l Scanner for ANSI C.
- * 10 Apr 02 - Trent: Created
- */
+#include "AnsiCParserDriver.h"
+#include "AnsiCParser.hpp"
 
-%name AnsiCScanner
+#include "boomerang/util/log/Log.h"
 
+// Work around an incompatibility in flex (at least versions
+// 2.5.31 through 2.5.33): it generates code that does
+// not conform to C89.  See Debian bug 333231
+// <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=333231>.
+#undef yywrap
+#define yywrap() 1
 
-D            [0-9]
-/* ALlow ? and @ in identifiers, so we can use mangled names */
-L            [a-zA-Z_?@]
-H            [a-fA-F0-9]
-E            [Ee][+-]?{D}+
-FS            (f|F|l|L)
-IS            (u|U|l|L)*
-
-%header{
-#include <stdio.h>
-#include "ansi-c-parser.h"
-// For some reason, MSVC 5.00 complains about use of undefined type RTL a lot
-#if defined(_MSC_VER) && _MSC_VER <= 1100
-#include "db/signature.h"        // For MSVC 5.00
-#include "db/rtl.h"
+// Pacify warnings in yy_init_buffer (observed with Flex 2.6.4)
+// and GCC 7.3.0.
+#if defined __GNUC__ && 7 <= __GNUC__
+# pragma GCC diagnostic ignored "-Wnull-dereference"
 #endif
-#define MAX_LINE 1024      // the longest line
 %}
 
-%define CONSTRUCTOR_PARAM std::istream &ins, bool trace
-%define CONSTRUCTOR_INIT : theLine(1), traceLines(trace), in(ins), column(0)
-%define CONSTRUCTOR_CODE { *lineBuf = 0; }
-%define INPUT_CODE if (in.eof()) {  \
-    result = 0; \
-} else { \
-    in.read(buffer, max_size); \
-    result=in.gcount(); \
-} \
-return result;
-%define MEMBERS \
-public: \
-    int theLine;        /* the current line number */\
-    char lineBuf[MAX_LINE]; /* the current line */ \
-    bool traceLines;    /* echo each lines as it is scanned */ \
-    std::istream &in; \
-    int column; \
-private: \
-    void count(); \
-    void comment(); \
-    void commentEOL(); \
-    int check_type();
+%option noyywrap nounput batch debug noinput
+%option prefix="AnsiC"
 
-%define LEX_PARAM YY_AnsiCParser_STYPE &yylval
+D           [0-9]
+/* Allow ? and @ in identifiers, so we can use mangled names */
+L           [a-zA-Z_?@]
+H           [a-fA-F0-9]
+E           [Ee][+-]?{D}+
+FS          (f|F|l|L)
+IS          (u|U|l|L)*
+
+%x C_COMMENT
+
+%{
+// Code run each time a pattern is matched.
+#define YY_USER_ACTION  loc.columns(yyleng);
+%}
 
 %%
 
-^#include               { count(); return AnsiCParser::PREINCLUDE; }
-^#define                { count(); return AnsiCParser::PREDEFINE; }
-^#if                    { count(); return AnsiCParser::PREIF; }
-^#ifdef                 { count(); return AnsiCParser::PREIFDEF; }
-^#endif                 { count(); return AnsiCParser::PREENDIF; }
-^#line                  { count(); return AnsiCParser::PRELINE; }
+%{
+// A handy shortcut to the location held by the driver.
+AnsiC::location& loc = drv.location;
+// Code run each time yylex is called.
+loc.step();
 
-"/*"            { comment(); }
-"//"            { commentEOL(); }
+%}
 
-"auto"            { count(); return AnsiCParser::AUTO; }
-"break"            { count(); return AnsiCParser::BREAK; }
-"case"            { count(); return AnsiCParser::CASE; }
-"char"            { count(); return AnsiCParser::CHAR; }
-"const"            { count(); return AnsiCParser::CONST; }
-"continue"        { count(); return AnsiCParser::CONTINUE; }
-"default"        { count(); return AnsiCParser::DEFAULT; }
-"do"            { count(); return AnsiCParser::DO; }
-"double"        { count(); return AnsiCParser::DOUBLE; }
-"else"            { count(); return AnsiCParser::ELSE; }
-"enum"            { count(); return AnsiCParser::ENUM; }
-"extern"        { count(); return AnsiCParser::EXTERN; }
-"float"            { count(); return AnsiCParser::FLOAT; }
-"for"            { count(); return AnsiCParser::FOR; }
-"goto"            { count(); return AnsiCParser::GOTO; }
-"if"            { count(); return AnsiCParser::IF; }
-"int"            { count(); return AnsiCParser::INT; }
-"long"            { count(); return AnsiCParser::LONG; }
-"register"        { count(); return AnsiCParser::REGISTER; }
-"return"        { count(); return AnsiCParser::RETURN; }
-"short"            { count(); return AnsiCParser::SHORT; }
-"signed"        { count(); return AnsiCParser::SIGNED; }
-"sizeof"        { count(); return AnsiCParser::SIZEOF; }
-"__nodecode"    { count(); return AnsiCParser::NODECODE; }
-"__incomplete"    { count(); return AnsiCParser::INCOMPLETE; }
-"__cdecl"       { count(); return AnsiCParser::CDECL; }
-"__pascal"      { count(); return AnsiCParser::PASCAL; }
-"__stdcall"     { count(); return AnsiCParser::PASCAL; }
-"__custom"      { count(); return AnsiCParser::CUSTOM; }
-"__thiscall"    { count(); return AnsiCParser::THISCALL;}
-"PREFER"        { count(); return AnsiCParser::PREFER; }
-"__withstack("  { count(); return AnsiCParser::WITHSTACK; }
-"__symref"      { count(); return AnsiCParser::SYMBOLREF; }
-"static"        { count(); return AnsiCParser::STATIC; }
-"struct"        { count(); return AnsiCParser::STRUCT; }
-"switch"        { count(); return AnsiCParser::SWITCH; }
-"typedef"        { count(); return AnsiCParser::TYPEDEF; }
-"union"            { count(); return AnsiCParser::UNION; }
-"unsigned"        { count(); return AnsiCParser::UNSIGNED; }
-"void"            { count(); return AnsiCParser::VOID; }
-"volatile"        { count(); return AnsiCParser::VOLATILE; }
-"while"            { count(); return AnsiCParser::WHILE; }
-"r["                    { count(); return AnsiCParser::REGOF; }
-"m["                    { count(); return AnsiCParser::MEMOF; }
-"@max("            { count(); return AnsiCParser::MAXBOUND; }
+^#include           { return AnsiC::parser::make_PREINCLUDE(loc); }
+^#define            { return AnsiC::parser::make_PREDEFINE(loc); }
+^#if                { return AnsiC::parser::make_PREIF(loc); }
+^#ifdef             { return AnsiC::parser::make_PREIFDEF(loc); }
+^#endif             { return AnsiC::parser::make_PREENDIF(loc); }
+^#line              { return AnsiC::parser::make_PRELINE(loc); }
 
-{L}({L}|{D})*        { count(); yylval.str = strdup(yytext); return check_type(); }
+"auto"              { return AnsiC::parser::make_AUTO(loc); }
+"break"             { return AnsiC::parser::make_BREAK(loc); }
+"case"              { return AnsiC::parser::make_CASE(loc); }
+"char"              { return AnsiC::parser::make_CHAR(loc); }
+"const"             { return AnsiC::parser::make_CONST(loc); }
+"continue"          { return AnsiC::parser::make_CONTINUE(loc); }
+"default"           { return AnsiC::parser::make_DEFAULT(loc); }
+"do"                { return AnsiC::parser::make_DO(loc); }
+"double"            { return AnsiC::parser::make_DOUBLE(loc); }
+"else"              { return AnsiC::parser::make_ELSE(loc); }
+"enum"              { return AnsiC::parser::make_ENUM(loc); }
+"extern"            { return AnsiC::parser::make_EXTERN(loc); }
+"float"             { return AnsiC::parser::make_FLOAT(loc); }
+"for"               { return AnsiC::parser::make_FOR(loc); }
+"goto"              { return AnsiC::parser::make_GOTO(loc); }
+"if"                { return AnsiC::parser::make_IF(loc); }
+"int"               { return AnsiC::parser::make_INT(loc); }
+"long"              { return AnsiC::parser::make_LONG(loc); }
+"register"          { return AnsiC::parser::make_REGISTER(loc); }
+"return"            { return AnsiC::parser::make_RETURN(loc); }
+"short"             { return AnsiC::parser::make_SHORT(loc); }
+"signed"            { return AnsiC::parser::make_SIGNED(loc); }
+"sizeof"            { return AnsiC::parser::make_SIZEOF(loc); }
+"static"            { return AnsiC::parser::make_STATIC(loc); }
+"struct"            { return AnsiC::parser::make_STRUCT(loc); }
+"switch"            { return AnsiC::parser::make_SWITCH(loc); }
+"typedef"           { return AnsiC::parser::make_TYPEDEF(loc); }
+"union"             { return AnsiC::parser::make_UNION(loc); }
+"unsigned"          { return AnsiC::parser::make_UNSIGNED(loc); }
+"void"              { return AnsiC::parser::make_VOID(loc); }
+"volatile"          { return AnsiC::parser::make_VOLATILE(loc); }
+"while"             { return AnsiC::parser::make_WHILE(loc); }
 
-0[xX]{H}+{IS}?        { count(); sscanf(yytext, "0x%p", &yylval.ival); return AnsiCParser::CONSTANT; }
-0{D}+{IS}?        { count(); return AnsiCParser::CONSTANT; }
-{D}+{IS}?        { count(); sscanf(yytext, "%d", &yylval.ival); return AnsiCParser::CONSTANT; }
-L?'(\\.|[^\\'])+'    { count(); return AnsiCParser::CONSTANT; }
+"__nodecode"        { return AnsiC::parser::make_NODECODE(loc); }
+"__incomplete"      { return AnsiC::parser::make_INCOMPLETE(loc); }
+"__cdecl"           { return AnsiC::parser::make_CDECL(loc); }
+"__pascal"          { return AnsiC::parser::make_PASCAL(loc); }
+"__stdcall"         { return AnsiC::parser::make_PASCAL(loc); }
+"__custom"          { return AnsiC::parser::make_CUSTOM(loc); }
+"__thiscall"        { return AnsiC::parser::make_THISCALL(loc);}
+"PREFER"            { return AnsiC::parser::make_PREFER(loc); }
+"__withstack("      { return AnsiC::parser::make_WITHSTACK(loc); }
+"__symref"          { return AnsiC::parser::make_SYMBOLREF(loc); }
+"r["                { return AnsiC::parser::make_REGOF(loc); }
+"m["                { return AnsiC::parser::make_MEMOF(loc); }
+"@max("             { return AnsiC::parser::make_MAXBOUND(loc); }
 
-{D}+{E}{FS}?        { count(); return AnsiCParser::CONSTANT; }
-{D}*"."{D}+({E})?{FS}?    { count(); return AnsiCParser::CONSTANT; }
-{D}+"."{D}*({E})?{FS}?    { count(); return AnsiCParser::CONSTANT; }
+"..."           { return AnsiC::parser::make_ELLIPSIS(loc); }
+">>="           { return AnsiC::parser::make_RIGHT_ASSIGN(loc); }
+"<<="           { return AnsiC::parser::make_LEFT_ASSIGN(loc); }
+"+="            { return AnsiC::parser::make_ADD_ASSIGN(loc); }
+"-="            { return AnsiC::parser::make_SUB_ASSIGN(loc); }
+"*="            { return AnsiC::parser::make_MUL_ASSIGN(loc); }
+"/="            { return AnsiC::parser::make_DIV_ASSIGN(loc); }
+"%="            { return AnsiC::parser::make_MOD_ASSIGN(loc); }
+"&="            { return AnsiC::parser::make_AND_ASSIGN(loc); }
+"^="            { return AnsiC::parser::make_XOR_ASSIGN(loc); }
+"|="            { return AnsiC::parser::make_OR_ASSIGN(loc); }
+">>"            { return AnsiC::parser::make_RIGHT_OP(loc); }
+"<<"            { return AnsiC::parser::make_LEFT_OP(loc); }
+"++"            { return AnsiC::parser::make_INC_OP(loc); }
+"--"            { return AnsiC::parser::make_DEC_OP(loc); }
+"->"            { return AnsiC::parser::make_PTR_OP(loc); }
+"&&"            { return AnsiC::parser::make_AND_OP(loc); }
+"||"            { return AnsiC::parser::make_OR_OP(loc); }
+"<="            { return AnsiC::parser::make_LE_OP(loc); }
+">="            { return AnsiC::parser::make_GE_OP(loc); }
+"=="            { return AnsiC::parser::make_EQ_OP(loc); }
+"!="            { return AnsiC::parser::make_NE_OP(loc); }
+";"             { return AnsiC::parser::make_SEMICOLON(loc); }
+"{"             { return AnsiC::parser::make_LBRACE(loc); }
+"}"             { return AnsiC::parser::make_RBRACE(loc); }
+","             { return AnsiC::parser::make_COMMA(loc); }
+":"             { return AnsiC::parser::make_COLON(loc); }
+"="             { return AnsiC::parser::make_ASSIGN_OP(loc); }
+"("             { return AnsiC::parser::make_LPAREN(loc); }
+")"             { return AnsiC::parser::make_RPAREN(loc); }
+"["             { return AnsiC::parser::make_LBRACKET(loc); }
+"]"             { return AnsiC::parser::make_RBRACKET(loc); }
+"."             { return AnsiC::parser::make_DOT(loc); }
+"&"             { return AnsiC::parser::make_AND(loc); }
+"!"             { return AnsiC::parser::make_NOT(loc); }
+"~"             { return AnsiC::parser::make_BIT_NOT(loc); }
+"-"             { return AnsiC::parser::make_MINUS(loc); }
+"+"             { return AnsiC::parser::make_PLUS(loc); }
+"*"             { return AnsiC::parser::make_STAR(loc); }
+"/"             { return AnsiC::parser::make_DIV(loc); }
+"%"             { return AnsiC::parser::make_MOD(loc); }
+"<"             { return AnsiC::parser::make_LESS(loc); }
+">"             { return AnsiC::parser::make_GTR(loc); }
+"^"             { return AnsiC::parser::make_XOR(loc); }
+"|"             { return AnsiC::parser::make_BIT_OR(loc); }
+"?"             { return AnsiC::parser::make_QUESTION(loc); }
 
-L?\"(\\.|[^\\"])*\"    { count(); yylval.str = strdup(yytext); return AnsiCParser::STRING_LITERAL; }
 
-"..."            { count(); return AnsiCParser::ELLIPSIS; }
-">>="            { count(); return AnsiCParser::RIGHT_ASSIGN; }
-"<<="            { count(); return AnsiCParser::LEFT_ASSIGN; }
-"+="            { count(); return AnsiCParser::ADD_ASSIGN; }
-"-="            { count(); return AnsiCParser::SUB_ASSIGN; }
-"*="            { count(); return AnsiCParser::MUL_ASSIGN; }
-"/="            { count(); return AnsiCParser::DIV_ASSIGN; }
-"%="            { count(); return AnsiCParser::MOD_ASSIGN; }
-"&="            { count(); return AnsiCParser::AND_ASSIGN; }
-"^="            { count(); return AnsiCParser::XOR_ASSIGN; }
-"|="            { count(); return AnsiCParser::OR_ASSIGN; }
-">>"            { count(); return AnsiCParser::RIGHT_OP; }
-"<<"            { count(); return AnsiCParser::LEFT_OP; }
-"++"            { count(); return AnsiCParser::INC_OP; }
-"--"            { count(); return AnsiCParser::DEC_OP; }
-"->"            { count(); return AnsiCParser::PTR_OP; }
-"&&"            { count(); return AnsiCParser::AND_OP; }
-"||"            { count(); return AnsiCParser::OR_OP; }
-"<="            { count(); return AnsiCParser::LE_OP; }
-">="            { count(); return AnsiCParser::GE_OP; }
-"=="            { count(); return AnsiCParser::EQ_OP; }
-"!="            { count(); return AnsiCParser::NE_OP; }
-";"            { count(); return ';'; }
-"{"                { count(); return '{'; }
-"}"                { count(); return '}'; }
-","            { count(); return ','; }
-":"            { count(); return ':'; }
-"="            { count(); return '='; }
-"("            { count(); return '('; }
-")"            { count(); return ')'; }
-"["                { count(); return '['; }
-"]"                { count(); return ']'; }
-"."            { count(); return '.'; }
-"&"            { count(); return '&'; }
-"!"            { count(); return '!'; }
-"~"            { count(); return '~'; }
-"-"            { count(); return '-'; }
-"+"            { count(); return '+'; }
-"*"            { count(); return '*'; }
-"/"            { count(); return '/'; }
-"%"            { count(); return '%'; }
-"<"            { count(); return '<'; }
-">"            { count(); return '>'; }
-"^"            { count(); return '^'; }
-"|"            { count(); return '|'; }
-"?"            { count(); return '?'; }
+{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
+"0"[xX]{H}+{IS}?    { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
+"0"{D}+{IS}?        { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc); }
+{D}+{IS}?           { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
+"L"?"'"(\\.|[^\\'])+"'" { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
+{D}+{E}{FS}?            { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
+{D}*"."{D}+({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
+{D}+"."{D}*({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
+"L"?\"(.|[^\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
 
-[ \t\v\n\f]        { count(); }
-.            { /* ignore bad characters */ }
+
+"/*"            { loc.step(); BEGIN(C_COMMENT); }
+<C_COMMENT>"*/" { loc.step(); BEGIN(INITIAL); }
+<C_COMMENT>\n   { loc.lines(yyleng); loc.step(); }
+<C_COMMENT>.    { loc.step(); }
+"//".*          { loc.step(); }
+[\n]+           { loc.lines(yyleng); loc.step(); }
+[ \t\v\f]+      { loc.step(); }
+
+<<EOF>>         { return AnsiC::parser::make_END(loc); }
+
+. {
+    throw AnsiC::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
+}
 
 %%
 
-void AnsiCScanner::comment()
+bool AnsiCParserDriver::scanBegin()
 {
-        char c, c1;
+    AnsiC_flex_debug = trace_scanning;
+    if (file.empty()) {
+        return false;
+    }
+    else if (!(AnsiCin = fopen(file.c_str(), "r"))) {
+        LOG_ERROR("Cannot open SSL file: %1", strerror(errno));
+        return false;
+    }
 
-loop:
-        while ((c = input()) != '*' && c != 0)
-                /*putchar(c)*/;
-
-        if ((c1 = input()) != '/' && c != 0)
-        {
-                /*unput(c1);*/
-                goto loop;
-        }
-
-        if (c != 0)
-                /*putchar(c1)*/;
-}
-
-void AnsiCScanner::commentEOL()
-{
-    char c;
-    while ((c = input()) != '\n')
-        ;
-}
-
-void AnsiCScanner::count()
-{
-        int i;
-
-        for (i = 0; yytext[i] != '\0'; i++)
-                if (yytext[i] == '\n')
-                        column = 0;
-                else if (yytext[i] == '\t')
-                        column += 8 - (column % 8);
-                else
-                        column++;
-
-        strcat(lineBuf, yytext);
-        if (strchr(lineBuf, '\n')) {
-            char buf[MAX_LINE];
-            strcpy(buf, lineBuf);
-            strcpy(lineBuf, strchr(buf, '\n')+1);
-            theLine++;
-        }
+    return true;
 }
 
 
-int AnsiCScanner::check_type()
+void AnsiCParserDriver::scanEnd()
 {
-/*
-* pseudo code --- this is what it should check
-*
-*    if (yytext == type_name)
-*        return AnsiCParser::TYPE_NAME;
-*
-*    return AnsiCParser::IDENTIFIER;
-*/
-
-/*
-*    it actually will only return IDENTIFIER
-*/
-        return AnsiCParser::IDENTIFIER;
+    fclose(AnsiCin);
 }
-
-
-

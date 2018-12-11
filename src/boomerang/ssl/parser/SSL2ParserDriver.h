@@ -19,7 +19,7 @@
 
 
 // Tell Flex the lexer's prototype ...
-#define YY_DECL yy::parser::symbol_type yylex(SSL2ParserDriver &drv)
+#define YY_DECL SSL2::parser::symbol_type SSL2lex(SSL2ParserDriver &drv)
 // ... and declare it for the parser's sake.
 YY_DECL;
 
@@ -46,7 +46,7 @@ public:
     SharedExp result;
 
     // The token's location used by the scanner.
-    yy::location location;
+    SSL2::location location;
 
     SharedExp makeSuccessor(SharedExp e);
     bool expandTables(const std::shared_ptr<InsNameElem> &iname,

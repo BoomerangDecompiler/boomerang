@@ -42,7 +42,7 @@ int SSL2ParserDriver::parse(const std::string &f)
         return false;
     }
 
-    yy::parser parser(*this);
+    SSL2::parser parser(*this);
     parser.set_debug_level(trace_parsing);
 
     const int res = parser.parse();

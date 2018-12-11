@@ -39,7 +39,7 @@ using SharedExp = std::shared_ptr<Exp>;
 class BOOMERANG_API RTLInstDict
 {
     friend class SSL2ParserDriver;
-    friend class yy::parser;
+    friend class SSL2::parser;
 
 public:
     RTLInstDict(bool verboseOutput = false);

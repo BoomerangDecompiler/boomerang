@@ -36,6 +36,7 @@
 %}
 
 %option noyywrap nounput batch debug noinput
+%option prefix="SSL2"
 
 identifier      [a-zA-Z][a-zA-Z_0-9]*
 reg_id          %[a-zA-Z][a-zA-Z_0-9]*
@@ -60,149 +61,149 @@ asgntype        \*[ijufc]?[1-9][0-9]*\*
 #define NULL nullptr
 
 // A handy shortcut to the location held by the driver.
-yy::location& loc = drv.location;
+SSL2::location& loc = drv.location;
 // Code run each time yylex is called.
 loc.step();
 
 %}
 
 
-"INTEGER"       return yy::parser::make_TOK_INTEGER(loc);
-"FLOAT"         return yy::parser::make_TOK_FLOAT(loc);
-"ENDIANNESS"    return yy::parser::make_ENDIANNESS(loc);
-"BIG"           return yy::parser::make_BIG(loc);
-"LITTLE"        return yy::parser::make_LITTLE(loc);
-"COVERS"        return yy::parser::make_COVERS(loc);
-"SHARES"        return yy::parser::make_SHARES(loc);
-"FPUSH"         return yy::parser::make_FPUSH(loc);
-"FPOP"          return yy::parser::make_FPOP(loc);
-"|"|"or"        return yy::parser::make_BIT_OR(loc);
-"&"|"and"       return yy::parser::make_BIT_AND(loc);
-"^"|"xor"       return yy::parser::make_XOR(loc);
-"="             return yy::parser::make_EQUAL(loc);
-"~="            return yy::parser::make_NEQ(loc);
-"<"             return yy::parser::make_LESS(loc);
-">"             return yy::parser::make_GTR(loc);
-"<="            return yy::parser::make_LESSEQ(loc);
-">="            return yy::parser::make_GTREQ(loc);
-"<u"            return yy::parser::make_ULESS(loc);
-">u"            return yy::parser::make_UGTR(loc);
-"<=u"           return yy::parser::make_ULESSEQ(loc);
-">=u"           return yy::parser::make_UGTREQ(loc);
-"<<"            return yy::parser::make_SHL(loc);
-">>"            return yy::parser::make_SHR(loc);
-">>A"           return yy::parser::make_SAR(loc);
-"rl"            return yy::parser::make_ROL(loc);
-"rr"            return yy::parser::make_ROR(loc);
-"rlc"           return yy::parser::make_RLC(loc);
-"rrc"           return yy::parser::make_RRC(loc);
-"%"             return yy::parser::make_MOD(loc);
-"*"             return yy::parser::make_MULT(loc);
-"/"             return yy::parser::make_DIV(loc);
-"%!"            return yy::parser::make_SMOD(loc);
-"*!"            return yy::parser::make_SMULT(loc);
-"/!"            return yy::parser::make_SDIV(loc);
-"*f"            return yy::parser::make_FMUL(loc);
-"/f"            return yy::parser::make_FDIV(loc);
-"+f"            return yy::parser::make_FPLUS(loc);
-"-f"            return yy::parser::make_FMINUS(loc);
-"pow"           return yy::parser::make_POW(loc);
-"+"             return yy::parser::make_PLUS(loc);
-"-"             return yy::parser::make_MINUS(loc);
-"~"             return yy::parser::make_NOT(loc);
-"L~"            return yy::parser::make_LNOT(loc);
-"~f"            return yy::parser::make_FNEG(loc);
-"=>"            return yy::parser::make_THEN(loc);
-"->"            return yy::parser::make_INDEX(loc);
-":="            return yy::parser::make_ASSIGN(loc);
-".."            return yy::parser::make_TO(loc);
-"."             return yy::parser::make_DOT(loc);
-":"             return yy::parser::make_COLON(loc);
-"@"             return yy::parser::make_AT(loc);
-"_"             return yy::parser::make_UNDERSCORE(loc);
-"?"             return yy::parser::make_QUESTION(loc);
-","             return yy::parser::make_COMMA(loc);
-"("             return yy::parser::make_LPAREN(loc);
-")"             return yy::parser::make_RPAREN(loc);
-"["             return yy::parser::make_LBRACKET(loc);
-"]"             return yy::parser::make_RBRACKET(loc);
-"{"             return yy::parser::make_LBRACE(loc);
-"}"             return yy::parser::make_RBRACE(loc);
-";"             return yy::parser::make_SEMICOLON(loc);
-"$"             return yy::parser::make_DOLLAR(loc);
-"'"             return yy::parser::make_QUOTE(loc);
-"\""            return yy::parser::make_DQUOTE(loc);
-"addr"/"("      return yy::parser::make_ADDROF(loc);
-"succ"/"("      return yy::parser::make_SUCCESSOR(loc);
-"m"/"["         return yy::parser::make_MEMOF(loc);
-"r"/"["         return yy::parser::make_REGOF(loc);
+"INTEGER"       return SSL2::parser::make_TOK_INTEGER(loc);
+"FLOAT"         return SSL2::parser::make_TOK_FLOAT(loc);
+"ENDIANNESS"    return SSL2::parser::make_ENDIANNESS(loc);
+"BIG"           return SSL2::parser::make_BIG(loc);
+"LITTLE"        return SSL2::parser::make_LITTLE(loc);
+"COVERS"        return SSL2::parser::make_COVERS(loc);
+"SHARES"        return SSL2::parser::make_SHARES(loc);
+"FPUSH"         return SSL2::parser::make_FPUSH(loc);
+"FPOP"          return SSL2::parser::make_FPOP(loc);
+"|"|"or"        return SSL2::parser::make_BIT_OR(loc);
+"&"|"and"       return SSL2::parser::make_BIT_AND(loc);
+"^"|"xor"       return SSL2::parser::make_XOR(loc);
+"="             return SSL2::parser::make_EQUAL(loc);
+"~="            return SSL2::parser::make_NEQ(loc);
+"<"             return SSL2::parser::make_LESS(loc);
+">"             return SSL2::parser::make_GTR(loc);
+"<="            return SSL2::parser::make_LESSEQ(loc);
+">="            return SSL2::parser::make_GTREQ(loc);
+"<u"            return SSL2::parser::make_ULESS(loc);
+">u"            return SSL2::parser::make_UGTR(loc);
+"<=u"           return SSL2::parser::make_ULESSEQ(loc);
+">=u"           return SSL2::parser::make_UGTREQ(loc);
+"<<"            return SSL2::parser::make_SHL(loc);
+">>"            return SSL2::parser::make_SHR(loc);
+">>A"           return SSL2::parser::make_SAR(loc);
+"rl"            return SSL2::parser::make_ROL(loc);
+"rr"            return SSL2::parser::make_ROR(loc);
+"rlc"           return SSL2::parser::make_RLC(loc);
+"rrc"           return SSL2::parser::make_RRC(loc);
+"%"             return SSL2::parser::make_MOD(loc);
+"*"             return SSL2::parser::make_MULT(loc);
+"/"             return SSL2::parser::make_DIV(loc);
+"%!"            return SSL2::parser::make_SMOD(loc);
+"*!"            return SSL2::parser::make_SMULT(loc);
+"/!"            return SSL2::parser::make_SDIV(loc);
+"*f"            return SSL2::parser::make_FMUL(loc);
+"/f"            return SSL2::parser::make_FDIV(loc);
+"+f"            return SSL2::parser::make_FPLUS(loc);
+"-f"            return SSL2::parser::make_FMINUS(loc);
+"pow"           return SSL2::parser::make_POW(loc);
+"+"             return SSL2::parser::make_PLUS(loc);
+"-"             return SSL2::parser::make_MINUS(loc);
+"~"             return SSL2::parser::make_NOT(loc);
+"L~"            return SSL2::parser::make_LNOT(loc);
+"~f"            return SSL2::parser::make_FNEG(loc);
+"=>"            return SSL2::parser::make_THEN(loc);
+"->"            return SSL2::parser::make_INDEX(loc);
+":="            return SSL2::parser::make_ASSIGN(loc);
+".."            return SSL2::parser::make_TO(loc);
+"."             return SSL2::parser::make_DOT(loc);
+":"             return SSL2::parser::make_COLON(loc);
+"@"             return SSL2::parser::make_AT(loc);
+"_"             return SSL2::parser::make_UNDERSCORE(loc);
+"?"             return SSL2::parser::make_QUESTION(loc);
+","             return SSL2::parser::make_COMMA(loc);
+"("             return SSL2::parser::make_LPAREN(loc);
+")"             return SSL2::parser::make_RPAREN(loc);
+"["             return SSL2::parser::make_LBRACKET(loc);
+"]"             return SSL2::parser::make_RBRACKET(loc);
+"{"             return SSL2::parser::make_LBRACE(loc);
+"}"             return SSL2::parser::make_RBRACE(loc);
+";"             return SSL2::parser::make_SEMICOLON(loc);
+"$"             return SSL2::parser::make_DOLLAR(loc);
+"'"             return SSL2::parser::make_QUOTE(loc);
+"\""            return SSL2::parser::make_DQUOTE(loc);
+"addr"/"("      return SSL2::parser::make_ADDROF(loc);
+"succ"/"("      return SSL2::parser::make_SUCCESSOR(loc);
+"m"/"["         return SSL2::parser::make_MEMOF(loc);
+"r"/"["         return SSL2::parser::make_REGOF(loc);
 "r"[0-9]+ {
-                return yy::parser::make_REG_NUM(strtol(yytext+1, nullptr, 10), loc);
+                return SSL2::parser::make_REG_NUM(strtol(yytext+1, nullptr, 10), loc);
 }
 {asgntype} {
                 const char *result = yytext;
-                return yy::parser::make_ASSIGNTYPE(result, loc);
+                return SSL2::parser::make_ASSIGNTYPE(result, loc);
 }
 ("fsize"|"itof"|"ftoi"|"fround"|"truncu"|"truncs"|"zfill"|"sgnex")/"(" {
                 const char *result = yytext;
-                return yy::parser::make_CONV_FUNC(result, loc);
+                return SSL2::parser::make_CONV_FUNC(result, loc);
 }
 "ftrunc"/"(" {
                 const char *result = yytext;
-                return yy::parser::make_TRUNC_FUNC(result, loc);
+                return SSL2::parser::make_TRUNC_FUNC(result, loc);
 }
 "fabs"/"(" {
                 const char *result = yytext;
-                return yy::parser::make_FABS_FUNC(result, loc);
+                return SSL2::parser::make_FABS_FUNC(result, loc);
 }
 ("sin"|"cos"|"tan"|"arctan"|"log2"|"loge"|"log10"|"execute"|"sqrt")/"(" {
                 const char *result = yytext;
-                return yy::parser::make_TRANSCEND(result, loc);
+                return SSL2::parser::make_TRANSCEND(result, loc);
 }
 "tmp"[a-zA-Z0-9_]* {
                 const char *result = yytext;
-                return yy::parser::make_TEMP(result, loc);
+                return SSL2::parser::make_TEMP(result, loc);
 }
 "%"[A-Za-z][A-Za-z0-9]* {
                 const char *result = yytext;
-                return yy::parser::make_REG_IDENT(result, loc);
+                return SSL2::parser::make_REG_IDENT(result, loc);
 }
 (_?[A-Za-z][A-Za-z0-9_]*)/"(" {
                 const char *result = yytext;
-                return yy::parser::make_NAME_CALL(result, loc);
+                return SSL2::parser::make_NAME_CALL(result, loc);
 }
 (_?[A-Za-z][A-Za-z0-9_]*)/"[" {
                 const char *result = yytext;
-                return yy::parser::make_NAME_LOOKUP(result, loc);
+                return SSL2::parser::make_NAME_LOOKUP(result, loc);
 }
 _?[A-Za-z][A-Za-z0-9_]* {
                 const char *result = yytext;
-                return yy::parser::make_IDENT(result, loc);
+                return SSL2::parser::make_IDENT(result, loc);
 }
 -?[0-9]+"."[0-9]+ {
-                return yy::parser::make_FLOAT_LITERAL(atof(yytext), loc);
+                return SSL2::parser::make_FLOAT_LITERAL(atof(yytext), loc);
 }
 -?[0-9]+ {
-                return yy::parser::make_INT_LITERAL(strtol(yytext, nullptr, 10), loc);
+                return SSL2::parser::make_INT_LITERAL(strtol(yytext, nullptr, 10), loc);
 }
 0x[A-F0-9]+ {
-                return yy::parser::make_INT_LITERAL(strtol(yytext, nullptr, 16), loc);
+                return SSL2::parser::make_INT_LITERAL(strtol(yytext, nullptr, 16), loc);
 }
 -?"2**"[0-9]+    {
                 // a power of two
                 const int sign = (yytext[0] == '-' ? -1 : 1);
                 const char *start = yytext + (sign == -1 ? 4:3);
-                return yy::parser::make_INT_LITERAL((1 << strtol(start, nullptr, 10)) * sign, loc);
+                return SSL2::parser::make_INT_LITERAL((1 << strtol(start, nullptr, 10)) * sign, loc);
 }
 
 {blank}+   loc.step();
 {comment}  loc.step();
 [\n]+      loc.lines(yyleng); loc.step();
 
-<<EOF>>    return yy::parser::make_END(loc);
+<<EOF>>    return SSL2::parser::make_END(loc);
 
 . {
-    throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
+    throw SSL2::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
 }
 
 %%

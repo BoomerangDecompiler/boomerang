@@ -8,11 +8,11 @@
 
 
 list(APPEND boomerang-c-sources
-    c/parser/AnsiCParser
-    c/parser/AnsiCScanner
     c/CSymbolProvider
 )
 
 BOOMERANG_LIST_APPEND_FOREACH(boomerang-c-sources ".cpp")
 
 set(boomerang-sources "${boomerang-sources};${boomerang-c-sources}" PARENT_SCOPE)
+
+add_subdirectory(parser)
