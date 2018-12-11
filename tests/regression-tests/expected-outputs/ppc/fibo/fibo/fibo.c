@@ -8,7 +8,7 @@ int main(int argc, char *argv[])
     int local0; 		// m[g1 - 24]
 
     printf("Input number: ");
-    %g9 = scanf("%d", &local0);
+    scanf("%d", &local0);
     g3 = fib(local0);
     printf("fibonacci(%d) = %d\n", local0, g3);
     return 0;
