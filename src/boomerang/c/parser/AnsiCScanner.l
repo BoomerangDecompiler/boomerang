@@ -56,12 +56,12 @@ loc.step();
 
 %}
 
-^[ \t]*#include     { return AnsiC::parser::make_PREINCLUDE(loc); }
-^[ \t]*#define      { return AnsiC::parser::make_PREDEFINE(loc); }
-^[ \t]*#if          { return AnsiC::parser::make_PREIF(loc); }
-^[ \t]*#ifdef       { return AnsiC::parser::make_PREIFDEF(loc); }
-^[ \t]*#endif       { return AnsiC::parser::make_PREENDIF(loc); }
-^[ \t]*#line        { return AnsiC::parser::make_PRELINE(loc); }
+^#include           { return AnsiC::parser::make_PREINCLUDE(loc); }
+^#define            { return AnsiC::parser::make_PREDEFINE(loc); }
+^#if                { return AnsiC::parser::make_PREIF(loc); }
+^#ifdef             { return AnsiC::parser::make_PREIFDEF(loc); }
+^#endif             { return AnsiC::parser::make_PREENDIF(loc); }
+^#line              { return AnsiC::parser::make_PRELINE(loc); }
 
 "auto"              { return AnsiC::parser::make_AUTO(loc); }
 "break"             { return AnsiC::parser::make_BREAK(loc); }
@@ -86,6 +86,16 @@ loc.step();
 "short"             { return AnsiC::parser::make_SHORT(loc); }
 "signed"            { return AnsiC::parser::make_SIGNED(loc); }
 "sizeof"            { return AnsiC::parser::make_SIZEOF(loc); }
+"static"            { return AnsiC::parser::make_STATIC(loc); }
+"struct"            { return AnsiC::parser::make_STRUCT(loc); }
+"switch"            { return AnsiC::parser::make_SWITCH(loc); }
+"typedef"           { return AnsiC::parser::make_TYPEDEF(loc); }
+"union"             { return AnsiC::parser::make_UNION(loc); }
+"unsigned"          { return AnsiC::parser::make_UNSIGNED(loc); }
+"void"              { return AnsiC::parser::make_VOID(loc); }
+"volatile"          { return AnsiC::parser::make_VOLATILE(loc); }
+"while"             { return AnsiC::parser::make_WHILE(loc); }
+
 "__nodecode"        { return AnsiC::parser::make_NODECODE(loc); }
 "__incomplete"      { return AnsiC::parser::make_INCOMPLETE(loc); }
 "__cdecl"           { return AnsiC::parser::make_CDECL(loc); }
@@ -96,31 +106,9 @@ loc.step();
 "PREFER"            { return AnsiC::parser::make_PREFER(loc); }
 "__withstack("      { return AnsiC::parser::make_WITHSTACK(loc); }
 "__symref"          { return AnsiC::parser::make_SYMBOLREF(loc); }
-"static"            { return AnsiC::parser::make_STATIC(loc); }
-"struct"            { return AnsiC::parser::make_STRUCT(loc); }
-"switch"            { return AnsiC::parser::make_SWITCH(loc); }
-"typedef"           { return AnsiC::parser::make_TYPEDEF(loc); }
-"union"             { return AnsiC::parser::make_UNION(loc); }
-"unsigned"          { return AnsiC::parser::make_UNSIGNED(loc); }
-"void"              { return AnsiC::parser::make_VOID(loc); }
-"volatile"          { return AnsiC::parser::make_VOLATILE(loc); }
-"while"             { return AnsiC::parser::make_WHILE(loc); }
 "r["                { return AnsiC::parser::make_REGOF(loc); }
 "m["                { return AnsiC::parser::make_MEMOF(loc); }
 "@max("             { return AnsiC::parser::make_MAXBOUND(loc); }
-
-{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
-
-0[xX]{H}+{IS}?      { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
-0{D}+{IS}?          { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc); }
-{D}+{IS}?           { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-L?'(\\.|[^\\'])+'   { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
-
-{D}+{E}{FS}?            { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-{D}*"."{D}+({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
-{D}+"."{D}*({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
-
-L?\"(\\.|[^\\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
 
 "..."           { return AnsiC::parser::make_ELLIPSIS(loc); }
 ">>="           { return AnsiC::parser::make_RIGHT_ASSIGN(loc); }
@@ -169,17 +157,31 @@ L?\"(\\.|[^\\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc);
 "|"             { return AnsiC::parser::make_BIT_OR(loc); }
 "?"             { return AnsiC::parser::make_QUESTION(loc); }
 
-"/*"            { BEGIN(C_COMMENT); }
-<C_COMMENT>"*/" { BEGIN(INITIAL); }
-<C_COMMENT>\n   { }
-<C_COMMENT>.    { }
 
-"//".*$         { }
+{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
+"0"[xX]{H}+{IS}?    { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
+"0"{D}+{IS}?        { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc); }
+{D}+{IS}?           { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
+"L"?"'"(\\.|[^\\'])+"'" { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
+{D}+{E}{FS}?            { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
+{D}*"."{D}+({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
+{D}+"."{D}*({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
+"L"?\"(.|[^\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
 
-[ \t\v\n\f]     { }
-.               { /* ignore bad characters */ }
+
+"/*"            { loc.step(); BEGIN(C_COMMENT); }
+<C_COMMENT>"*/" { loc.step(); BEGIN(INITIAL); }
+<C_COMMENT>\n   { loc.lines(yyleng); loc.step(); }
+<C_COMMENT>.    { loc.step(); }
+"//".*          { loc.step(); }
+[\n]+           { loc.lines(yyleng); loc.step(); }
+[ \t\v\f]+      { loc.step(); }
 
 <<EOF>>         { return AnsiC::parser::make_END(loc); }
+
+. {
+    throw AnsiC::parser::syntax_error(loc, "invalid character: " + std::string(yytext));
+}
 
 %%
 
