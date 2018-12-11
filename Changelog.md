@@ -6,6 +6,8 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is a string instruction.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
+- Fixed: Unsigned integral types mistaken for signed integral types when parsing signature or symbol information.
+- Fixed: Memory leaks in parsers.
 - Feature: The x86 decoder now recognizes a larger subset of the x86 instruction set.
 - Improved: Performance of decoding x86 instructions.
 - Improved: General processing of overlapped registers (not just hard-coded ones).
@@ -13,7 +15,8 @@ v0.5.0 (in development)
 - Improved: Unit test coverage.
 - Improved: Regression test coverage.
 - Changed: Replaced old pentium (x86) decoder by x86 decoder using libcapstone for decoding instructions.
-- Changed: Replaced old SSL parser by new GNU flex+bison parser.
+- Changed: Replaced old SSL parser by new GNU flex+bison SSL2 parser.
+- Changed: Replaced old C signature parser by new GNU flex+bison C signature parser.
 - Removed: HP SOM binary file loader.
 - Removed: Palm OS binary loader.
 - Removed: Broken MIPS support.
