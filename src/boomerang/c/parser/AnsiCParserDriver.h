@@ -39,8 +39,8 @@ public:
     CallConv cc;
 
     std::list<std::shared_ptr<Signature>> signatures;
-    std::list<Symbol *> symbols;
-    std::list<SymbolRef *> refs;
+    std::list<std::shared_ptr<Symbol>> symbols;
+    std::list<std::shared_ptr<SymbolRef>> refs;
 
 private:
     // Handling the scanner.

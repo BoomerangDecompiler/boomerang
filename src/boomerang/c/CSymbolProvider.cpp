@@ -101,11 +101,9 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
         return false;
     }
 
-//     parser->yyparse(m_prog->getMachine(), cc);
-
     Module *targetModule = m_prog->getRootModule();
 
-    for (Symbol *sym : driver.symbols) {
+    for (std::shared_ptr<Symbol> &sym : driver.symbols) {
         if (sym->sig) {
             QString name = sym->sig->getName();
             targetModule = m_prog->getOrInsertModuleForSymbol(name);
@@ -130,7 +128,7 @@ bool CSymbolProvider::addSymbolsFromSymbolFile(const QString &fname)
         }
     }
 
-    for (SymbolRef *ref : driver.refs) {
+    for (std::shared_ptr<SymbolRef> &ref : driver.refs) {
         m_prog->getFrontEnd()->addRefHint(ref->addr, ref->name);
     }
 

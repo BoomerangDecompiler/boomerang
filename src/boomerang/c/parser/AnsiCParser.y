@@ -25,58 +25,62 @@ class AnsiCParserDriver;
 
 
 
-  class TypeIdent {
-  public:
-      SharedType ty;
-      QString name;
-  };
+struct TypeIdent
+{
+    SharedType ty;
+    QString name;
+};
 
-  class SymbolMods;
+struct SymbolMods;
 
-  class Symbol {
-  public:
-      Address addr;
-      QString name;
-      SharedType ty;
-      std::shared_ptr<Signature> sig;
-      SymbolMods *mods;
+struct Symbol
+{
+    Address addr;
+    QString name;
+    SharedType ty = nullptr;
+    std::shared_ptr<Signature> sig = nullptr;
+    std::shared_ptr<SymbolMods> mods = nullptr;
 
-      Symbol(Address a)
-        : addr(a), name(""), ty(NULL), sig(NULL),
-                          mods(NULL) { }
-  };
+    Symbol(Address a)
+        : addr(a)
+        , name("")
+    {}
+};
 
-  class SymbolMods {
-  public:
-      bool noDecode;
-      bool incomplete;
+struct SymbolMods
+{
+    bool noDecode = false;
+    bool incomplete = false;
+};
 
-      SymbolMods() : noDecode(false), incomplete(false) { }
-  };
 
-  class CustomOptions {
-  public:
-      SharedExp exp;
-      int sp;
+struct CustomOptions
+{
+    SharedExp exp = nullptr;
+    int sp = 0;
+};
 
-      CustomOptions() : exp(NULL), sp(0) { }
-  };
+struct SymbolRef
+{
+    Address addr;
+    QString name;
 
-  class SymbolRef {
-  public:
-      Address addr;
-      QString name;
+    SymbolRef(Address a, const QString &_name)
+        : addr(a)
+        , name(_name)
+    {}
+};
 
-      SymbolRef(Address a, const QString &_name) : addr(a), name(_name) { }
-  };
+struct Bound
+{
+    int kind;
+    QString name;
 
-  class Bound {
-  public:
-      int kind;
-      QString name;
-
-      Bound(int kind, const QString &_name) : kind(kind), name(_name) { }
-  };
+    Bound(int kind, const QString &_name)
+        : kind(kind)
+        , name(_name)
+    {}
+};
 
 }
 
@@ -138,17 +142,16 @@ class AnsiCParserDriver;
 
 
 %type<SharedType> type
-%type<std::shared_ptr<Parameter>> param
-%type<std::shared_ptr<Parameter>> param_exp
+%type<std::shared_ptr<Parameter>> param param_exp
 %type<SharedExp> exp
-%type<Bound *> optional_bound;
-%type<CustomOptions *> custom_options
-%type<std::list<std::shared_ptr<Parameter>> *> param_list;
-%type<std::list<int> *> num_list;
-%type<TypeIdent *> type_ident;
-%type<std::list<TypeIdent*> *> type_ident_list;
+%type<std::shared_ptr<Bound>> optional_bound;
+%type<std::shared_ptr<CustomOptions>> custom_options
+%type<std::shared_ptr<std::list<std::shared_ptr<Parameter>>>> param_list;
+%type<std::shared_ptr<std::list<int>>> num_list;
+%type<std::shared_ptr<TypeIdent>> type_ident;
+%type<std::shared_ptr<std::list<std::shared_ptr<TypeIdent>>>> type_ident_list;
 %type<std::shared_ptr<Signature>> signature;
-%type<SymbolMods *> symbol_mods;
+%type<std::shared_ptr<SymbolMods>> symbol_mods;
 %type<SharedType> array_modifier;
 %type<CallConv> convention;
 
@@ -189,7 +192,6 @@ type_decl:
             }
         }
 
-        delete $8;
         Type::addNamedType($5, PointerType::get(FuncType::get(sig)));
     }
   | TYPEDEF type_ident LPAREN param_list RPAREN SEMICOLON  {
@@ -204,12 +206,11 @@ type_decl:
             }
         }
 
-        delete $4;
         Type::addNamedType($2->name, FuncType::get(sig));
     }
   | STRUCT IDENTIFIER LBRACE type_ident_list RBRACE SEMICOLON {
         std::shared_ptr<CompoundType> ty = CompoundType::get();
-        for (TypeIdent *ti : *$4) {
+        for (std::shared_ptr<TypeIdent> &ti : *$4) {
             ty->addMember(ti->ty, ti->name);
         }
 
@@ -219,12 +220,12 @@ type_decl:
 
 type_ident:
     type IDENTIFIER {
-        $$ = new TypeIdent();
+        $$.reset(new TypeIdent);
         $$->ty = $1;
         $$->name = $2;
     }
   | type IDENTIFIER array_modifier {
-        $$ = new TypeIdent();
+        $$.reset(new TypeIdent);
         $3->as<ArrayType>()->fixBaseType($1);
         $$->ty = $3;
         $$->name = $2;
@@ -265,7 +266,7 @@ type:
     }
   | STRUCT LBRACE type_ident_list RBRACE {
         std::shared_ptr<CompoundType> ty = CompoundType::get();
-        for (TypeIdent *ti : *$3) {
+        for (std::shared_ptr<TypeIdent> &ti : *$3) {
             ty->addMember(ti->ty, ti->name);
         }
         $$ = ty;
@@ -274,7 +275,10 @@ type:
 
 type_ident_list:
     type_ident SEMICOLON type_ident_list  { $$ = $3; $$->push_front($1); }
-  | type_ident SEMICOLON                  { $$ = new std::list<TypeIdent *>(); $$->push_back($1); }
+  | type_ident SEMICOLON {
+        $$.reset(new std::list<std::shared_ptr<TypeIdent>>());
+        $$->push_back($1);
+    }
   ;
 
 array_modifier:
@@ -286,9 +290,9 @@ array_modifier:
 
 param_list:
     param_exp COMMA param_list    { $$ = $3;  $$->push_front($1); }
-  | param_exp                     { $$ = new std::list<std::shared_ptr<Parameter>>(); $$->push_back($1); }
-  | VOID                          { $$ = new std::list<std::shared_ptr<Parameter>>(); }
-  | %empty                        { $$ = new std::list<std::shared_ptr<Parameter>>(); }
+  | param_exp                     { $$.reset(new std::list<std::shared_ptr<Parameter>>()); $$->push_back($1); }
+  | VOID                          { $$.reset(new std::list<std::shared_ptr<Parameter>>()); }
+  | %empty                        { $$.reset(new std::list<std::shared_ptr<Parameter>>()); }
   ;
 
 param_exp:
@@ -337,14 +341,13 @@ param:
             }
         }
 
-        delete $7;
         $$.reset(new Parameter(PointerType::get(FuncType::get(sig)), $4));
     }
   | ELLIPSIS { $$.reset(new Parameter(VoidType::get(), "...")); }
   ;
 
 optional_bound:
-    MAXBOUND IDENTIFIER RPAREN  { $$ = new Bound(0, $2); }
+    MAXBOUND IDENTIFIER RPAREN  { $$.reset(new Bound(0, $2)); }
  |  %empty                      { $$ = nullptr; }
  ;
 
@@ -354,8 +357,6 @@ func_decl:
     }
   | signature PREFER type_ident LPAREN num_list RPAREN SEMICOLON {
         $1->setPreferredName($3->name);
-
-        delete $5;
         drv.signatures.push_back($1);
     }
   ;
@@ -375,7 +376,6 @@ signature:
             }
         }
 
-        delete $3;
         $$ = sig;
     }
   | convention type_ident LPAREN param_list RPAREN {
@@ -390,7 +390,6 @@ signature:
             }
         }
 
-        delete $4;
         $$ = sig;
     }
   | CUSTOM custom_options type_ident LPAREN param_list RPAREN {
@@ -412,7 +411,6 @@ signature:
             }
         }
 
-        delete $5;
         $$ = sig;
     }
   ;
@@ -425,19 +423,19 @@ convention:
 
 num_list:
     CONSTANT COMMA num_list   { $$ = $3;  $$->push_front($1); }
-  | CONSTANT                  { $$ = new std::list<int>(); $$->push_back($1); }
-  | %empty                    { $$ = new std::list<int>(); }
+  | CONSTANT                  { $$.reset(new std::list<int>()); $$->push_back($1); }
+  | %empty                    { $$.reset(new std::list<int>()); }
   ;
 
 custom_options:
-    exp COLON                   { $$ = new CustomOptions(); $$->exp = $1; }
-  | WITHSTACK CONSTANT RPAREN   { $$ = new CustomOptions(); $$->sp = $2; }
-  | %empty                      { $$ = new CustomOptions(); }
+    exp COLON                   { $$.reset(new CustomOptions()); $$->exp = $1; }
+  | WITHSTACK CONSTANT RPAREN   { $$.reset(new CustomOptions()); $$->sp = $2; }
+  | %empty                      { $$.reset(new CustomOptions()); }
   ;
 
 symbol_decl:
     CONSTANT type_ident SEMICOLON {
-        Symbol *sym = new Symbol(Address($1));
+        std::shared_ptr<Symbol> sym(new Symbol(Address($1)));
         sym->name = $2->name;
         sym->ty = $2->ty;
         drv.symbols.push_back(sym);
@@ -447,7 +445,7 @@ symbol_decl:
     // (__cdecl, __pascal, __thiscall, etc). This is because of the one-symbol
     // lookahead limitation; the parser can't distinguish 123 int foo from 123 int foo()
   | CONSTANT symbol_mods signature SEMICOLON {
-        Symbol *sym = new Symbol(Address($1));
+        std::shared_ptr<Symbol> sym(new Symbol(Address($1)));
         sym->sig = $3;
         sym->mods = $2;
         drv.symbols.push_back(sym);
@@ -457,12 +455,12 @@ symbol_decl:
 symbol_mods:
     NODECODE symbol_mods   { $$ = $2; $$->noDecode = true; }
   | INCOMPLETE symbol_mods { $$ = $2; $$->incomplete = true; }
-  | %empty                 { $$ = new SymbolMods(); }
+  | %empty                 { $$.reset(new SymbolMods()); }
   ;
 
 symbol_ref_decl:
     SYMBOLREF CONSTANT IDENTIFIER SEMICOLON {
-        SymbolRef *ref = new SymbolRef(Address($2), $3);
+        std::shared_ptr<SymbolRef> ref(new SymbolRef(Address($2), $3));
         drv.refs.push_back(ref);
     }
   ;
