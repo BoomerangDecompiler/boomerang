@@ -109,18 +109,18 @@ loc.step();
 "m["                { return AnsiC::parser::make_MEMOF(loc); }
 "@max("             { return AnsiC::parser::make_MAXBOUND(loc); }
 
-{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(strdup(yytext), loc); }
+{L}({L}|{D})*       { return AnsiC::parser::make_IDENTIFIER(yytext, loc); }
 
 0[xX]{H}+{IS}?      { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 16), loc); }
 0{D}+{IS}?          { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr,  8), loc); }
 {D}+{IS}?           { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
-L?'(\\.|[^\\'])+'   { return AnsiC::parser::make_STRING_LITERAL(strdup(yytext), loc); }
+L?'(\\.|[^\\'])+'   { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
 
 {D}+{E}{FS}?            { return AnsiC::parser::make_CONSTANT(strtol(yytext, nullptr, 10), loc); }
 {D}*"."{D}+({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
 {D}+"."{D}*({E})?{FS}?  { return AnsiC::parser::make_CONSTANT(strtof(yytext, nullptr), loc); }
 
-L?\"(\\.|[^\\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(strdup(yytext), loc); }
+L?\"(\\.|[^\\"])*\"    { return AnsiC::parser::make_STRING_LITERAL(yytext, loc); }
 
 "..."           { return AnsiC::parser::make_ELLIPSIS(loc); }
 ">>="           { return AnsiC::parser::make_RIGHT_ASSIGN(loc); }
