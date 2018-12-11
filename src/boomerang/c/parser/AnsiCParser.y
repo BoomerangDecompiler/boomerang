@@ -76,8 +76,8 @@ struct Bound
     int kind;
     QString name;
 
-    Bound(int kind, const QString &_name)
-        : kind(kind)
+    Bound(int _kind, const QString &_name)
+        : kind(_kind)
         , name(_name)
     {}
 };
