@@ -10,11 +10,11 @@
 #include "CSymbolProvider.h"
 
 #include "boomerang/c/parser/AnsiCParserDriver.h"
-#include "boomerang/db/proc/Proc.h"
 #include "boomerang/db/Prog.h"
 #include "boomerang/db/binary/BinarySymbol.h"
 #include "boomerang/db/binary/BinarySymbolTable.h"
 #include "boomerang/db/module/Module.h"
+#include "boomerang/db/proc/Proc.h"
 #include "boomerang/ifc/IFrontEnd.h"
 #include "boomerang/util/log/Log.h"
 

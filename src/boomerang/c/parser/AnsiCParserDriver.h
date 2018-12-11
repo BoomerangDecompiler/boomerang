@@ -10,8 +10,9 @@
 #pragma once
 
 
-#include "boomerang/core/BoomerangAPI.h"
 #include "AnsiCParser.hpp"
+
+#include "boomerang/core/BoomerangAPI.h"
 
 
 // Tell Flex the lexer's prototype ...

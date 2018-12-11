@@ -21,10 +21,10 @@ AnsiCParserDriver::AnsiCParserDriver()
 }
 
 
-int AnsiCParserDriver::parse(const QString& fileName, Machine machine, CallConv _cc)
+int AnsiCParserDriver::parse(const QString &fileName, Machine machine, CallConv _cc)
 {
     this->plat = machine;
-    this->cc = _cc;
+    this->cc   = _cc;
 
     file = fileName.toStdString();
     location.initialize(&file);
