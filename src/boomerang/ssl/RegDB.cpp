@@ -104,7 +104,7 @@ bool RegDB::createReg(RegType regType, RegNum regNum, const QString &name, int s
         return false;
     }
 
-    const RegID regID = RegID(regType, regNum, size);
+    const RegID regID         = RegID(regType, regNum, size);
     const auto &[_, inserted] = m_regNums.insert({ name, regID });
     Q_UNUSED(_);
 

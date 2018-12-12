@@ -64,6 +64,7 @@ public:
 };
 
 
+// clang-format off
 template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
 bool operator==(const RegID &lhs, T rhs) { return lhs.getNum() == rhs; }
 template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
@@ -73,10 +74,11 @@ template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::
 bool operator==(T lhs, const RegID &rhs) { return lhs == rhs.getNum(); }
 template<typename T, typename Enabler = std::enable_if<!std::is_same<T, RegID>::value>>
 bool operator!=(T lhs, const RegID &rhs) { return lhs != rhs.getNum(); }
+// clang-format on
 
 
 static constexpr const RegNum RegNumSpecial = 0xFFFF;
-static constexpr const RegID  RegIDSpecial = RegID(RegType::Invalid, RegNumSpecial, 0);
+static constexpr const RegID RegIDSpecial   = RegID(RegType::Invalid, RegNumSpecial, 0);
 
 
 /**

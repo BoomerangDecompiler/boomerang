@@ -36,8 +36,8 @@ Register::Register(const Register &r)
 Register &Register::operator=(const Register &other)
 {
     if (this != &other) {
-        m_id      = other.m_id;
-        m_name    = other.m_name;
+        m_id   = other.m_id;
+        m_name = other.m_name;
     }
 
     return *this;
