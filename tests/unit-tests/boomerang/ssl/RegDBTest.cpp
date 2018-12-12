@@ -20,66 +20,64 @@ void RegDBTest::testClear()
     RegDB db;
     db.clear(); // Verify it does not crash
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
     db.clear();
-    QVERIFY(!db.isRegDefined("%foo"));
-    QVERIFY(!db.isRegNumDefined(0));
+    QVERIFY(!db.isRegDefined("%ax"));
+    QVERIFY(!db.isRegNumDefined(REG_PENT_AX));
 }
 
 
 void RegDBTest::testIsRegDefined()
 {
     RegDB db;
-    QVERIFY(!db.isRegDefined("%foo"));
+    QVERIFY(!db.isRegDefined("%ax"));
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
-    QVERIFY(db.isRegDefined("%foo"));
-    QVERIFY(!db.isRegDefined("%bar"));
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    QVERIFY(db.isRegDefined("%ax"));
+    QVERIFY(!db.isRegDefined("%foo"));
 }
 
 
 void RegDBTest::testIsRegNumDefined()
 {
     RegDB db;
-    QVERIFY(!db.isRegNumDefined(0));
+    QVERIFY(!db.isRegNumDefined(REG_PENT_AX));
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
-    QVERIFY(db.isRegNumDefined(0));
-    QVERIFY(!db.isRegNumDefined(32));
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    QVERIFY(db.isRegNumDefined(REG_PENT_AX));
+    QVERIFY(!db.isRegNumDefined(REG_PENT_SS));
 }
 
 
 void RegDBTest::testGetRegByNum()
 {
     RegDB db;
-    QVERIFY(db.getRegByNum(0) == nullptr);
+    QVERIFY(db.getRegByNum(REG_PENT_AX) == nullptr);
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
-    const Register *reg = db.getRegByNum(0);
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    const Register *reg = db.getRegByNum(REG_PENT_AX);
     QVERIFY(reg != nullptr);
-    QVERIFY(reg->getName() == "%foo");
+    QVERIFY(reg->getName() == "%ax");
     QVERIFY(reg->getRegType() == RegType::Int);
-    QVERIFY(reg->getSize() == 32);
+    QVERIFY(reg->getSize() == 16);
 
-    reg = db.getRegByNum(32);
-    QVERIFY(reg == nullptr);
+    QVERIFY(db.getRegByNum(REG_PENT_SS) == nullptr);
 }
 
 
 void RegDBTest::testGetRegByName()
 {
     RegDB db;
-    QVERIFY(db.getRegByName("%foo") == nullptr);
+    QVERIFY(db.getRegByName("%ax") == nullptr);
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
-    const Register *reg = db.getRegByName("%foo");
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    const Register *reg = db.getRegByName("%ax");
     QVERIFY(reg != nullptr);
-    QVERIFY(reg->getName() == "%foo");
+    QVERIFY(reg->getName() == "%ax");
     QVERIFY(reg->getRegType() == RegType::Int);
-    QVERIFY(reg->getSize() == 32);
+    QVERIFY(reg->getSize() == 16);
 
-    reg = db.getRegByName("%bar");
-    QVERIFY(reg == nullptr);
+    QVERIFY(db.getRegByName("%foo") == nullptr);
 }
 
 
@@ -87,24 +85,24 @@ void RegDBTest::testGetRegNumByName()
 {
     RegDB db;
 
-    QVERIFY(db.getRegNumByName("%foo") == RegNumSpecial); // not found
+    QVERIFY(db.getRegNumByName("%ax") == RegNumSpecial); // not found
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
-    QVERIFY(db.getRegNumByName("%foo") == 0);
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    QVERIFY(db.getRegNumByName("%ax") == REG_PENT_AX);
 
-    QVERIFY(db.createReg(RegType::Int, RegNumSpecial, "%bar", 32));
-    QVERIFY(db.getRegNumByName("%bar") == RegNumSpecial);
+    QVERIFY(db.createReg(RegType::Int, RegNumSpecial, "%foo", 16));
+    QVERIFY(db.getRegNumByName("%foo") == RegNumSpecial);
 }
 
 
 void RegDBTest::testGetRegNameByNum()
 {
     RegDB db;
-    QVERIFY(db.getRegNameByNum(0) == "");
+    QVERIFY(db.getRegNameByNum(REG_PENT_AX) == "");
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
-    QVERIFY(db.getRegNameByNum(0) == "%foo");
-    QVERIFY(db.getRegNameByNum(32) == "");
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    QVERIFY(db.getRegNameByNum(REG_PENT_AX) == "%ax");
+    QVERIFY(db.getRegNameByNum(REG_PENT_SS) == "");
 
     QVERIFY(db.getRegNameByNum(RegNumSpecial) == "");
     QVERIFY(db.createReg(RegType::Int, RegNumSpecial, "%bar", 32));
@@ -115,11 +113,11 @@ void RegDBTest::testGetRegNameByNum()
 void RegDBTest::testGetRegSizeByNum()
 {
     RegDB db;
-    QVERIFY(db.getRegSizeByNum(0) == 32);
+    QVERIFY(db.getRegSizeByNum(REG_PENT_AX) == 32);
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 16));
-    QVERIFY(db.getRegSizeByNum(0) == 16);
-    QVERIFY(db.getRegSizeByNum(16) == 32);
+    QVERIFY(db.createReg(RegType::Int, REG_PENT_AX, "%ax", 16));
+    QVERIFY(db.getRegSizeByNum(REG_PENT_AX) == 16);
+    QVERIFY(db.getRegSizeByNum(REG_PENT_SS) == 32);
 
     QVERIFY(db.getRegSizeByNum(RegNumSpecial) == 32);
     QVERIFY(db.createReg(RegType::Int, RegNumSpecial, "%bar", 8));
@@ -130,16 +128,16 @@ void RegDBTest::testGetRegSizeByNum()
 void RegDBTest::testCreateReg()
 {
     RegDB db;
-    QVERIFY(!db.createReg(RegType::Invalid, 10, "%foo", 10));
-    QVERIFY(!db.createReg(RegType::Int,     10, "",     10));
-    QVERIFY(!db.createReg(RegType::Int,     10, "%foo",  0));
-    QVERIFY(!db.createReg(RegType::Int,     10, "%foo", -1));
+    QVERIFY(!db.createReg(RegType::Invalid, RegNum(10), "%foo", 10));
+    QVERIFY(!db.createReg(RegType::Int, RegNum(10), "", 10));
+    QVERIFY(!db.createReg(RegType::Int, RegNum(10), "%foo", 0));
+    QVERIFY(!db.createReg(RegType::Int, RegNum(10), "%foo", -1));
 
-    QVERIFY( db.createReg(RegType::Int,   0, "%foo",  16));
-    QVERIFY(!db.createReg(RegType::Int,   0, "%foo",  16)); // same name -> should fail
-    QVERIFY(!db.createReg(RegType::Float, 0, "%foo2", 16)); // Must be same type
-    QVERIFY(!db.createReg(RegType::Int,   0, "%foo2", 20)); // Must be same size
-    QVERIFY( db.createReg(RegType::Int,   0, "%foo2", 16)); // foo2 is an alias for foo
+    QVERIFY(db.createReg(RegType::Int, RegNum(0), "%foo", 16));
+    QVERIFY(!db.createReg(RegType::Int, RegNum(0), "%foo", 16));    // same name -> should fail
+    QVERIFY(!db.createReg(RegType::Float, RegNum(0), "%foo2", 16)); // Must be same type
+    QVERIFY(!db.createReg(RegType::Int, RegNum(0), "%foo2", 20));   // Must be same size
+    QVERIFY(db.createReg(RegType::Int, RegNum(0), "%foo2", 16));    // foo2 is an alias for foo
 
     QVERIFY(db.createReg(RegType::Float, RegNumSpecial, "%foo3", 16));
     QVERIFY(db.createReg(RegType::Float, RegNumSpecial, "%foo4", 16));
@@ -155,27 +153,26 @@ void RegDBTest::testCreateRegRelation()
 
     QVERIFY(!db.createRegRelation("%foo", "%bar", 0));
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo", 32));
+    QVERIFY(db.createReg(RegType::Int, RegNum(0), "%foo", 32));
     QVERIFY(!db.createRegRelation("%foo", "%bar", 0));
     QVERIFY(!db.createRegRelation("%foo", "%foo", 0));
 
-    QVERIFY(db.createReg(RegType::Int, 0, "%foo2", 32));        // alias
+    QVERIFY(db.createReg(RegType::Int, RegNum(0), "%foo2", 32)); // alias
     QVERIFY(!db.createRegRelation("%foo", "%bar", 0));
 
-    QVERIFY(db.createReg(RegType::Float, 1, "%bar", 32));       // same size
+    QVERIFY(db.createReg(RegType::Float, RegNum(1), "%bar", 32)); // same size
     QVERIFY( db.createRegRelation("%foo", "%bar", 0));
 
-    QVERIFY(db.createReg(RegType::Float, 2, "%bar_lo", 16));    // different size
-    QVERIFY(db.createReg(RegType::Float, 3, "%bar_hi", 16));    // different size
+    QVERIFY(db.createReg(RegType::Float, RegNum(2), "%bar_lo", 16)); // different size
+    QVERIFY(db.createReg(RegType::Float, RegNum(3), "%bar_hi", 16)); // different size
     QVERIFY( db.createRegRelation("%bar", "%bar_lo", 0));
     QVERIFY( db.createRegRelation("%bar", "%bar_hi", 16));      // non-zero offset
     QVERIFY(!db.createRegRelation("%bar", "%bar_hi", 16));      // cannot have same relation twice
 
-
-    QVERIFY(db.createReg(RegType::Int, 10, "%eip",  32));
-    QVERIFY(db.createReg(RegType::Int, 11, "%ip",  16));
-    QVERIFY(db.createReg(RegType::Int, -1, "%eip_1", 32));
-    QVERIFY(db.createReg(RegType::Int, -1, "%ip_1",  16));
+    QVERIFY(db.createReg(RegType::Int, RegNum(10), "%eip", 32));
+    QVERIFY(db.createReg(RegType::Int, RegNum(11), "%ip", 16));
+    QVERIFY(db.createReg(RegType::Int, RegNum(-1), "%eip_1", 32));
+    QVERIFY(db.createReg(RegType::Int, RegNum(-1), "%ip_1", 16));
 
     QVERIFY(!db.createRegRelation("%eip_1", "%ip_1", 0));
     QVERIFY(!db.createRegRelation("%eip_1", "%ip", 0));
