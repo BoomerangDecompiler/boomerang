@@ -20,9 +20,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 PPCSignature::PPCSignature(const QString &name)
     : Signature(name)
@@ -148,5 +146,5 @@ bool PPCSignature::qualified(UserProc *p, Signature & /*candidate*/)
 
     return true;
 }
-}
+
 }

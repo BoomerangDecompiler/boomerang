@@ -13,9 +13,7 @@
 #include "boomerang/db/signature/Signature.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 class BOOMERANG_API PentiumSignature : public Signature
 {
@@ -50,7 +48,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
 
     /// \copydoc Signature::getStackRegister
-    virtual int getStackRegister() const override;
+    virtual RegNum getStackRegister() const override;
 
     /// \copydoc Signature::getProven
     virtual SharedExp getProven(SharedExp left) const override;
@@ -73,5 +71,5 @@ public:
     /// \copydoc Signature::argumentCompare
     virtual bool argumentCompare(const Assignment &a, const Assignment &b) const override;
 };
-}
+
 }

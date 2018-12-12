@@ -20,9 +20,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 PentiumSignature::PentiumSignature(const QString &name)
     : Signature(name)
@@ -110,7 +108,7 @@ bool PentiumSignature::qualified(UserProc *p, Signature & /*candidate*/)
 }
 
 
-int PentiumSignature::getStackRegister() const
+RegNum PentiumSignature::getStackRegister() const
 {
     return REG_PENT_ESP;
 }
@@ -279,5 +277,5 @@ bool CallingConvention::StdC::PentiumSignature::argumentCompare(const Assignment
     // Else don't care about the order
     return *la < *lb;
 }
-}
+
 }
