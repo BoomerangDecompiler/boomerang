@@ -10,9 +10,12 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 
+
 class QFile;
+
 
 #pragma pack(push, 1)
 struct PSP
@@ -67,7 +70,7 @@ struct ExeHeader
  * and these may be implemented in the future. The debug info may
  * even be exposed as another pseudo section.
  */
-class ExeBinaryLoader : public IFileLoader
+class BOOMERANG_PLUGIN_API ExeBinaryLoader : public IFileLoader
 {
 public:
     ExeBinaryLoader(Project *project);

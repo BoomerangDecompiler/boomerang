@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/DefaultFrontEnd.h"
 
 #include <unordered_set>
@@ -19,7 +20,7 @@
  * Class PentiumFrontEnd: derived from FrontEnd, with source machine specific
  * behaviour
  */
-class BOOMERANG_API PentiumFrontEnd : public DefaultFrontEnd
+class BOOMERANG_PLUGIN_API PentiumFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

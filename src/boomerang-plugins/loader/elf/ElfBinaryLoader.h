@@ -10,8 +10,10 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 #include "boomerang/util/ByteUtil.h"
+
 
 struct Elf32_Ehdr;
 struct Elf32_Phdr;
@@ -28,7 +30,7 @@ class BinarySection;
 /**
  * File loader for loading 32 bit binary ELF files.
  */
-class ElfBinaryLoader : public IFileLoader
+class BOOMERANG_PLUGIN_API ElfBinaryLoader : public IFileLoader
 {
     typedef std::map<Address, QString, std::less<Address>> RelocMap;
 

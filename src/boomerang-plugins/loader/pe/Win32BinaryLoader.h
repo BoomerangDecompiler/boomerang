@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 
 #include <string>
@@ -150,7 +151,7 @@ typedef struct
 /**
  * Class for loading Win32 binary ".exe" files
  */
-class Win32BinaryLoader : public IFileLoader
+class BOOMERANG_PLUGIN_API Win32BinaryLoader : public IFileLoader
 {
 public:
     Win32BinaryLoader(Project *project);

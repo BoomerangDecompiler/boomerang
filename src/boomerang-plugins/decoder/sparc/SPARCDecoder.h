@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/NJMCDecoder.h"
 
 
@@ -30,7 +31,7 @@ public:
 /**
  * The implementation of the instruction decoder for SPARC.
  */
-class SPARCDecoder : public NJMCDecoder
+class BOOMERANG_PLUGIN_API SPARCDecoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder

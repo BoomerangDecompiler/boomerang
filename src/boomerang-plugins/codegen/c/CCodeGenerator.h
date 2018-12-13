@@ -13,6 +13,7 @@
 #include "CodeWriter.h"
 #include "ControlFlowAnalyzer.h"
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/ICodeGenerator.h"
 #include "boomerang/ssl/type/Type.h"
 #include "boomerang/util/Address.h"
@@ -82,7 +83,7 @@ enum class OpPrec : uint8_t
  * This class provides methods which are specific for the C language binding.
  * I guess this will be the most popular output language unless we do C++.
  */
-class CCodeGenerator : public ICodeGenerator
+class BOOMERANG_PLUGIN_API CCodeGenerator : public ICodeGenerator
 {
 public:
     CCodeGenerator(Project *project);

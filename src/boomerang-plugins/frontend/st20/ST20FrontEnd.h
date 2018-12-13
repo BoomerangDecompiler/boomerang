@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/DefaultFrontEnd.h"
 
 
@@ -18,7 +19,7 @@
  * instructions and the instantiation to RTLs, removing st20
  * dependent features such as delay slots in the process.
  */
-class ST20FrontEnd : public DefaultFrontEnd
+class BOOMERANG_PLUGIN_API ST20FrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

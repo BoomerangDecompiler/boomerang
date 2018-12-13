@@ -12,6 +12,8 @@
 
 #include "TypeRecovery.h"
 
+#include "boomerang/core/BoomerangAPI.h"
+
 
 class ProcCFG;
 class Signature;
@@ -33,7 +35,7 @@ class UserProc;
  *   e) size, no signedness
  *   f) broad type, size, and (for integer broad type), signedness
  */
-class DFATypeRecovery : public TypeRecoveryCommon
+class BOOMERANG_PLUGIN_API DFATypeRecovery : public TypeRecoveryCommon
 {
 public:
     DFATypeRecovery(Project *project);

@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/SigEnum.h"
 #include "boomerang/ifc/ISymbolProvider.h"
 
@@ -19,7 +20,7 @@
 class Prog;
 
 
-class CSymbolProvider final : public ISymbolProvider
+class BOOMERANG_PLUGIN_API CSymbolProvider : public ISymbolProvider
 {
 public:
     CSymbolProvider(Project *project);

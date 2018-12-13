@@ -69,6 +69,7 @@ function(BOOMERANG_ADD_LOADER)
         endif (MSVC)
 
         target_link_libraries(${target_name} Qt5::Core boomerang ${LOADER_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
         install(TARGETS ${target_name}
             LIBRARY DESTINATION lib/boomerang/plugins/loader/
@@ -106,6 +107,7 @@ function(BOOMERANG_ADD_CODEGEN)
         endif (MSVC)
 
         target_link_libraries(${target_name} Qt5::Core boomerang ${CODEGEN_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
         install(TARGETS ${target_name}
             LIBRARY DESTINATION lib/boomerang/plugins/codegen/
@@ -143,6 +145,7 @@ function(BOOMERANG_ADD_TYPERECOVERY)
         endif (MSVC)
 
         target_link_libraries(${target_name} Qt5::Core boomerang ${TYPERECOVERY_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
         install(TARGETS ${target_name}
             LIBRARY DESTINATION lib/boomerang/plugins/type/
@@ -180,6 +183,7 @@ function(BOOMERANG_ADD_SYMBOLPROVIDER)
         endif (MSVC)
 
         target_link_libraries(${target_name} Qt5::Core boomerang ${SYMBOLPROVIDER_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
         install(TARGETS ${target_name}
             LIBRARY DESTINATION lib/boomerang/plugins/symbol/
@@ -217,6 +221,7 @@ function(BOOMERANG_ADD_DECODER)
         endif (MSVC)
 
         target_link_libraries(${target_name} Qt5::Core boomerang ${DECODER_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
         install(TARGETS ${target_name}
             LIBRARY DESTINATION lib/boomerang/plugins/decoder/
@@ -254,6 +259,7 @@ function(BOOMERANG_ADD_FRONTEND)
         endif (MSVC)
 
         target_link_libraries(${target_name} Qt5::Core boomerang ${FRONTEND_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
         install(TARGETS ${target_name}
             LIBRARY DESTINATION lib/boomerang/plugins/frontend/

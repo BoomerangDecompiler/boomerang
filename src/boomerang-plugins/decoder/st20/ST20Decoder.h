@@ -10,13 +10,14 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/NJMCDecoder.h"
 
 
 /**
  * The definition of the instruction decoder for ST20.
  */
-class ST20Decoder : public NJMCDecoder
+class BOOMERANG_PLUGIN_API ST20Decoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder

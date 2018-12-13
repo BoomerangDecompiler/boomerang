@@ -10,13 +10,14 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/DefaultFrontEnd.h"
 
 
 /**
  * Contains routines to manage the decoding of PPC binaries.
  */
-class PPCFrontEnd : public DefaultFrontEnd
+class BOOMERANG_PLUGIN_API PPCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

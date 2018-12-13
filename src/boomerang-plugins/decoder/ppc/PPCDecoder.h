@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/NJMCDecoder.h"
 
 #include <cstdlib>
@@ -22,7 +23,7 @@ class Prog;
 /**
  * The implementation of the instruction decoder for PPC.
  */
-class PPCDecoder : public NJMCDecoder
+class BOOMERANG_PLUGIN_API PPCDecoder : public NJMCDecoder
 {
 public:
     /// \copydoc NJMCDecoder::NJMCDecoder

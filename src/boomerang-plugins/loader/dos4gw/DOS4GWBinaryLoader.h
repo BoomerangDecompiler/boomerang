@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 
 #include <string>
@@ -114,12 +115,13 @@ typedef struct
  * Win9x VxD files or, of course, OS2 binaries, but you're probably better off
  * making a specific loader for each of these.
  */
-class DOS4GWBinaryLoader : public IFileLoader
+class BOOMERANG_PLUGIN_API DOS4GWBinaryLoader : public IFileLoader
 {
 public:
     DOS4GWBinaryLoader(Project *project);
     virtual ~DOS4GWBinaryLoader();
 
+public:
     /// \copydoc IFileLoader::initialize
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 

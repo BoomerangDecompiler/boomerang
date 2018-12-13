@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/frontend/DefaultFrontEnd.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/exp/Operator.h"
@@ -22,7 +23,7 @@
  * and the instantiation to RTLs, removing SPARC dependent features
  * such as delay slots in the process.
  */
-class BOOMERANG_API SPARCFrontEnd : public DefaultFrontEnd
+class BOOMERANG_PLUGIN_API SPARCFrontEnd : public DefaultFrontEnd
 {
 public:
     /// \copydoc IFrontEnd::IFrontEnd

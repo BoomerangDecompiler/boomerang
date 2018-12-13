@@ -12,6 +12,7 @@
 
 #include "CapstoneDecoder.h"
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ssl/exp/Operator.h"
 
 
@@ -19,7 +20,7 @@
  * Instruction decoder using Capstone to decode
  * x86_32 instructions into SSL RTLs.
  */
-class CapstoneX86Decoder : public CapstoneDecoder
+class BOOMERANG_PLUGIN_API CapstoneX86Decoder : public CapstoneDecoder
 {
 public:
     CapstoneX86Decoder(Project *project);

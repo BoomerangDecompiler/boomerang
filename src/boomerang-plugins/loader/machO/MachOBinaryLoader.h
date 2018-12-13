@@ -10,6 +10,7 @@
 #pragma once
 
 
+#include "boomerang/core/BoomerangAPI.h"
 #include "boomerang/ifc/IFileLoader.h"
 
 #include <string>
@@ -66,7 +67,7 @@ public:
  * Contains the implementation of the class MachOBinaryFile.
  * This is my bare bones implementation of a Mac OS-X binary loader.
  */
-class MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
+class BOOMERANG_PLUGIN_API MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:
     MachOBinaryLoader(Project *project);
