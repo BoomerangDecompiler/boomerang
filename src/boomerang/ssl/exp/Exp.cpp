@@ -391,7 +391,7 @@ void Exp::descendType(SharedType, bool &, Statement *)
 SharedExp Exp::fixSuccessor()
 {
     SharedExp result;
-    UniqExp search_expression(new Unary(opSuccessor, Location::regOf(Terminal::get(opWild))));
+    UniqExp search_expression(new Unary(opSuccessor, Terminal::get(opWildRegOf)));
 
     // Assume only one successor function in any 1 expression
     if (search(*search_expression, result)) {

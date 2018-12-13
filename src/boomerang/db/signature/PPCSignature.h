@@ -11,11 +11,10 @@
 
 
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 class BOOMERANG_API PPCSignature : public Signature
 {
@@ -42,7 +41,7 @@ public:
                               const QString &boundMax = "") override;
 
     /// \copydoc Signature::getStackRegister
-    virtual int getStackRegister() const override { return 1; }
+    virtual RegNum getStackRegister() const override { return REG_PPC_G1; }
 
     /// \copydoc Signature::getProven
     virtual SharedExp getProven(SharedExp left) const override;
@@ -69,5 +68,5 @@ public:
         return shared_from_this();
     }
 };
-}
+
 }

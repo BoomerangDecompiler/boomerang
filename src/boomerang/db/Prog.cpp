@@ -320,15 +320,15 @@ bool Prog::isWin32() const
 }
 
 
-QString Prog::getRegName(int idx) const
+QString Prog::getRegNameByNum(RegNum regNum) const
 {
-    return m_fe->getDecoder()->getRegName(idx);
+    return m_fe->getDecoder()->getRegNameByNum(regNum);
 }
 
 
-int Prog::getRegSize(int idx) const
+int Prog::getRegSizeByNum(RegNum regNum) const
 {
-    return m_fe->getDecoder()->getRegSize(idx);
+    return m_fe->getDecoder()->getRegSizeByNum(regNum);
 }
 
 

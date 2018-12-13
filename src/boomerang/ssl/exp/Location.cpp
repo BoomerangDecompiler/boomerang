@@ -72,9 +72,9 @@ SharedExp Location::get(OPER op, SharedExp childExp, UserProc *proc)
 }
 
 
-SharedExp Location::regOf(int regID)
+SharedExp Location::regOf(RegNum regNum)
 {
-    return get(opRegOf, Const::get(regID), nullptr);
+    return get(opRegOf, Const::get(regNum), nullptr);
 }
 
 
@@ -117,17 +117,6 @@ SharedExp Location::param(const char *name, UserProc *proc)
 SharedExp Location::param(const QString &name, UserProc *proc)
 {
     return get(opParam, Const::get(name), proc);
-}
-
-
-void Location::getDefinitions(LocationSet &defs)
-{
-    // This is a hack to fix aliasing (replace with something general)
-    // FIXME! This is x86 specific too. Use -O for overlapped registers!
-    if ((m_oper == opRegOf) &&
-        (std::static_pointer_cast<const Const>(subExp1)->getInt() == REG_PENT_EAX)) {
-        defs.insert(Location::regOf(REG_PENT_AX));
-    }
 }
 
 

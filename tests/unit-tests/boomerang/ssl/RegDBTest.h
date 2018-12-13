@@ -20,13 +20,13 @@ class RegDBTest : public BoomerangTest
 
 private slots:
     void testClear();
-    void testIsRegIdxDefined();
+    void testIsRegNumDefined();
     void testIsRegDefined();
-    void testGetRegByID();
+    void testGetRegByNum();
     void testGetRegByName();
-    void testGetRegIDByName();
-    void testGetRegNameByID();
-    void testGetRegSizeByID();
+    void testGetRegNumByName();
+    void testGetRegNameByNum();
+    void testGetRegSizeByNum();
     void testCreateReg();
     void testCreateRegRelation();
     void testProcessOverlappedRegs();

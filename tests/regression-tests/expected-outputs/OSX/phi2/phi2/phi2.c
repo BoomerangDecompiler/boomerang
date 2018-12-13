@@ -1,5 +1,5 @@
 int main(int argc, union { __size32; char *[] *; } argv);
-__size32 proc1(__size32 param1, int param2, union { __size32; char *; } param3);
+int proc1(__size32 param1, int param2, union { __size32; char *; } param3);
 
 /** address: 0x00001d18 */
 int main(int argc, union { __size32; char *[] *; } argv)
@@ -14,7 +14,7 @@ int main(int argc, union { __size32; char *[] *; } argv)
 }
 
 /** address: 0x00001c74 */
-__size32 proc1(__size32 param1, int param2, union { __size32; char *; } param3)
+int proc1(__size32 param1, int param2, union { __size32; char *; } param3)
 {
     if (param2 <= 2) {
         strlen(param3);

@@ -34,16 +34,16 @@ public:
     void clear();
 
 public:
-    /// \param regID must be >= 0
-    /// \returns true iff \p regID is the index of a normal register.
-    bool isRegIdxDefined(RegID regID) const;
+    /// \param regNum must be >= 0
+    /// \returns true iff \p regNum is the index of a normal register.
+    bool isRegNumDefined(RegNum regNum) const;
 
     /// \returns true iff \p regName is the name of a register (normal or special).
     bool isRegDefined(const QString &regName) const;
 
     /// \returns the register information of a normal register. Returns nullptr
     /// if the register does not exist or is a special register.
-    const Register *getRegByID(RegID regID) const;
+    const Register *getRegByNum(RegNum regNum) const;
 
     /// \returns the register information of a normal or special register.
     /// Returns 0 if the register does not exist.
@@ -51,33 +51,37 @@ public:
 
     /// Get the index of a named register by its name.
     /// Returns -1 if the register was not found.
+    RegNum getRegNumByName(const QString &name) const;
+
+    /// Get the index of a named register by its name.
+    /// Returns -1 if the register was not found.
     RegID getRegIDByName(const QString &name) const;
 
     /// Get the name of the register by its index.
-    /// Returns the empty string when \p regID == -1 or the register was not found.
-    QString getRegNameByID(RegID regID) const;
+    /// Returns the empty string when \p regNum == RegNumSpecial or the register was not found.
+    QString getRegNameByNum(RegNum regNum) const;
 
     /// Get the size in bits of a register by its index.
     /// Returns 32 (the default register size) if the register was not found.
-    int getRegSizeByID(RegID regID) const;
+    int getRegSizeByNum(RegNum regNum) const;
 
 public:
     /// Creates a new register.
     /// \param regType Type of the register (Int, Float, Flags)
-    /// \param id A unique nonnegative number, or RegIDSpecial for a special register.
-    ///           If \p id is not RegIDSpecial and \p id already exists, a register alias
+    /// \param regNum A unique nonnegative number, or RegNumSpecial for a special register.
+    ///           If \p regNum is not RegNumSpecial and \p regNum already exists, a register alias
     ///           is created in which case \p regType and \p size must match the existing register.
     /// \param name A unique name. Will fail if the name already exists.
     /// \param size The size in bits of the new register. Must be > 0.
     /// \returns true on success, false on failure.
-    bool createReg(RegType regType, RegID id, const QString &name, int size);
+    bool createReg(RegType regType, RegNum regNum, const QString &name, int size);
 
     /// Creates a register relation of two existing registers
     /// (e.g. for SHARES or COVERS constructs).
-    /// \param parent name of the parent (larger) register. The RegID of \p parent
-    ///               must not be RegIDSpecial.
-    /// \param child  Name of the child (smaller) register. The RegID of \p child
-    ///               may be RegIDSpecial (but should be >= 0).
+    /// \param parent name of the parent (larger) register. The RegNum of \p parent
+    ///               must not be RegNumSpecial.
+    /// \param child  Name of the child (smaller) register. The RegNum of \p child
+    ///               may be RegNumSpecial (but should be >= 0).
     /// \param offsetInParent Offset (in bits) of the child register.
     /// \returns true on success, false on failure.
     bool createRegRelation(const QString &parent, const QString &child, int offsetInParent);
@@ -94,7 +98,7 @@ public:
     ///   procedure (This is indicated by \p usedRegs not containing %al).
     /// \returns all additional statements
     std::unique_ptr<RTL> processOverlappedRegs(Assignment *stmt,
-                                               const std::set<RegID> &usedRegs) const;
+                                               const std::set<RegNum> &usedRegs) const;
 
 private:
     /// Emit a new statement assigning the content of \p rhs into \p lhs.
@@ -119,7 +123,7 @@ private:
     /// to its index within an array of registers.
     /// This map contains both normal and special (-> -1) registers,
     /// therefore this map contains all registers.
-    std::map<QString, RegID> m_regIDs;
+    std::map<QString, RegID> m_regNums;
 
     /// Stores info about a register such as its size, its addresss etc
     /// (see register.h).

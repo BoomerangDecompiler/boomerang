@@ -60,7 +60,7 @@ extern SharedExp listExpToExp(std::list<SharedExp>* le);   // Convert a STL list
 %token ENDIANNESS BIG LITTLE
 %token COVERS SHARES
 %token FPUSH FPOP
-%token TOK_FLOAT TOK_INTEGER
+%token TOK_FLOAT TOK_INTEGER KW_FLAGS
 
 // identifiers
 %token <QString> IDENT REG_IDENT TEMP
@@ -267,8 +267,8 @@ location:
             throw SSL2::parser::syntax_error(drv.location, "Register is undefined.");
         }
 
-        const RegID regID = drv.m_dict->getRegDB()->getRegIDByName($1);
-        if (regID == RegIDSpecial) {
+        const RegNum regNum = drv.m_dict->getRegDB()->getRegNumByName($1);
+        if (regNum == RegNumSpecial) {
             const OPER op = strToTerm($1);
             if (op != opInvalid) {
                 $$ = Terminal::get(op);
@@ -279,7 +279,7 @@ location:
             }
         }
         else {
-            $$ = Location::regOf(regID);
+            $$ = Location::regOf(regNum);
         }
     }
   | REGOF LBRACKET exp RBRACKET { $$ = Location::regOf($3); }
@@ -314,6 +314,7 @@ nonempty_arglist:
 reg_def:
     TOK_INTEGER { drv.m_regType = RegType::Int;   } reg_def_part
   | TOK_FLOAT   { drv.m_regType = RegType::Float; } reg_def_part
+  | KW_FLAGS    { drv.m_regType = RegType::Flags; } reg_def_part
   ;
 
 reg_def_part:
@@ -337,7 +338,7 @@ reg_def_part:
         else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw SSL2::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if ($6 != RegIDSpecial && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
+        else if ($6 != RegNumSpecial && drv.m_dict->getRegDB()->isRegNumDefined($6)) {
             throw SSL2::parser::syntax_error(drv.location, "Register index already defined.");
         }
         else if (!drv.m_dict->getRegDB()->isRegDefined($8) ||
@@ -346,15 +347,15 @@ reg_def_part:
         }
 
         int bitSum = 0; // sum of all bits of all covered registers
-        const int rangeStart = drv.m_dict->getRegDB()->getRegIDByName($8);
-        const int rangeEnd   = drv.m_dict->getRegDB()->getRegIDByName($10);
+        const RegNum rangeStart = drv.m_dict->getRegDB()->getRegNumByName($8);
+        const RegNum rangeEnd   = drv.m_dict->getRegDB()->getRegNumByName($10);
 
         // range inclusive!
-        for (int i = rangeStart; i <= rangeEnd; i++) {
-            if (drv.m_dict->getRegDB()->getRegNameByID(i) == "") {
+        for (RegNum i = rangeStart; i <= rangeEnd; i++) {
+            if (drv.m_dict->getRegDB()->getRegNameByNum(i) == "") {
                 throw SSL2::parser::syntax_error(drv.location, "Not all registers in range defined.");
             }
-            bitSum += drv.m_dict->getRegDB()->getRegSizeByID(i);
+            bitSum += drv.m_dict->getRegDB()->getRegSizeByNum(i);
         }
 
         if (bitSum != $3) {
@@ -365,12 +366,12 @@ reg_def_part:
             throw SSL2::parser::syntax_error(drv.location, "Cannot create register.");
         }
 
-        if ($6 != RegIDSpecial) {
+        if ($6 != RegNumSpecial) {
             bitSum = 0;
             for (int i = rangeStart; i <= rangeEnd; i++) {
                 drv.m_dict->getRegDB()->createRegRelation($1,
-                    drv.m_dict->getRegDB()->getRegNameByID(i), bitSum);
-                bitSum += drv.m_dict->getRegDB()->getRegSizeByID(i);
+                    drv.m_dict->getRegDB()->getRegNameByNum(i), bitSum);
+                bitSum += drv.m_dict->getRegDB()->getRegSizeByNum(i);
             }
         }
     }
@@ -382,10 +383,10 @@ reg_def_part:
         else if (drv.m_dict->getRegDB()->isRegDefined($1)) {
             throw SSL2::parser::syntax_error(drv.location, "Register already defined.");
         }
-        else if ($6 != RegIDSpecial && drv.m_dict->getRegDB()->isRegIdxDefined($6)) {
+        else if ($6 != RegNumSpecial && drv.m_dict->getRegDB()->isRegNumDefined($6)) {
             throw SSL2::parser::syntax_error(drv.location, "Register index already defined.");
         }
-        else if (drv.m_dict->getRegDB()->getRegIDByName($8) == -1) {
+        else if (drv.m_dict->getRegDB()->getRegNumByName($8) == RegNumSpecial) {
             QString msg = QString("Shared register '%1' not defined.").arg($8);
             throw SSL2::parser::syntax_error(drv.location, msg.toStdString());
         }
@@ -393,14 +394,14 @@ reg_def_part:
             throw SSL2::parser::syntax_error(drv.location, "Register size does not equal shared range");
         }
 
-        const int tgtRegSize = drv.m_dict->getRegDB()->getRegSizeByID(drv.m_dict->getRegDB()->getRegIDByName($8));
+        const int tgtRegSize = drv.m_dict->getRegDB()->getRegSizeByNum(drv.m_dict->getRegDB()->getRegNumByName($8));
         if ($11 < 0 || $13 >= tgtRegSize) {
             throw SSL2::parser::syntax_error(drv.location, "Range extends over target register.");
         }
         else if (!drv.m_dict->getRegDB()->createReg(drv.m_regType, $6, $1, $3)) {
             throw SSL2::parser::syntax_error(drv.location, "Cannot create register.");
         }
-        else if ($6 != RegIDSpecial) {
+        else if ($6 != RegNumSpecial) {
             drv.m_dict->getRegDB()->createRegRelation($8, $1, $11);
         }
     }

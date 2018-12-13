@@ -59,27 +59,27 @@ INTEGER %gs[16] -> 21;
 INTEGER %pc[32] -> -1;
 
 # flags
-INTEGER %eflags[32] -> 100;
-INTEGER %flags[16]  -> 101 SHARES %eflags@[0..15];
+FLAGS %eflags[32] -> 100;
+FLAGS %flags[16]  -> 101 SHARES %eflags@[0..15];
 
-INTEGER %CF[1]   -> -1 SHARES %flags@[0..0];
-INTEGER %PF[1]   -> -1 SHARES %flags@[2..2];
-INTEGER %AF[1]   -> -1 SHARES %flags@[4..4];
-INTEGER %ZF[1]   -> -1 SHARES %flags@[6..6];
-INTEGER %SF[1]   -> -1 SHARES %flags@[7..7]; # Negative sign flag
-INTEGER %TF[1]   -> -1 SHARES %flags@[8..8];
-INTEGER %IF[1]   -> -1 SHARES %flags@[9..9];
-INTEGER %DF[1]   -> -1 SHARES %flags@[10..10];
-INTEGER %OF[1]   -> -1 SHARES %flags@[11..11];
-INTEGER %IOPL[2] -> -1 SHARES %flags@[12..13];
-INTEGER %NT[1]   -> -1 SHARES %flags@[14..14];
+FLAGS %CF[1]   -> -1 SHARES %flags@[0..0];
+FLAGS %PF[1]   -> -1 SHARES %flags@[2..2];
+FLAGS %AF[1]   -> -1 SHARES %flags@[4..4];
+FLAGS %ZF[1]   -> -1 SHARES %flags@[6..6];
+FLAGS %SF[1]   -> -1 SHARES %flags@[7..7]; # Negative sign flag
+FLAGS %TF[1]   -> -1 SHARES %flags@[8..8];
+FLAGS %IF[1]   -> -1 SHARES %flags@[9..9];
+FLAGS %DF[1]   -> -1 SHARES %flags@[10..10];
+FLAGS %OF[1]   -> -1 SHARES %flags@[11..11];
+FLAGS %IOPL[2] -> -1 SHARES %flags@[12..13];
+FLAGS %NT[1]   -> -1 SHARES %flags@[14..14];
 # Bit 15 is reserved.
-INTEGER %RF[1]   -> -1 SHARES %eflags@[16..16];
-INTEGER %VM[1]   -> -1 SHARES %eflags@[17..17];
-INTEGER %AC[1]   -> -1 SHARES %eflags@[18..18];
-INTEGER %VIF[1]  -> -1 SHARES %eflags@[19..19];
-INTEGER %VIP[1]  -> -1 SHARES %eflags@[20..20];
-INTEGER %ID[1]   -> -1 SHARES %eflags@[21..21];
+FLAGS %RF[1]   -> -1 SHARES %eflags@[16..16];
+FLAGS %VM[1]   -> -1 SHARES %eflags@[17..17];
+FLAGS %AC[1]   -> -1 SHARES %eflags@[18..18];
+FLAGS %VIF[1]  -> -1 SHARES %eflags@[19..19];
+FLAGS %VIP[1]  -> -1 SHARES %eflags@[20..20];
+FLAGS %ID[1]   -> -1 SHARES %eflags@[21..21];
 
 # FP related
 FLOAT %st[80] -> 32;
@@ -91,38 +91,38 @@ FLOAT %st5[80] -> 37;
 FLOAT %st6[80] -> 38;
 FLOAT %st7[80] -> 39;
 
-INTEGER %fcw[16] -> 50;
-INTEGER %IM[1] -> 51 SHARES %fcw@[0..0];
-INTEGER %DM[1] -> 52 SHARES %fcw@[1..1];
-INTEGER %ZM[1] -> 53 SHARES %fcw@[2..2];
-INTEGER %OM[1] -> 54 SHARES %fcw@[3..3];
-INTEGER %UM[1] -> 55 SHARES %fcw@[4..4];
-INTEGER %PM[1] -> 56 SHARES %fcw@[5..5];
-INTEGER %FPC[2] -> 57 SHARES %fcw@[8..9];   # FP precision control
-INTEGER %FRC[2] -> 58 SHARES %fcw@[10..11]; # FP rounding control
-INTEGER %X[1] -> 59 SHARES %fcw@[12..12];   # FP infty control
+FLAGS %fcw[16] -> 50;
+FLAGS %IM[1] -> 51 SHARES %fcw@[0..0];
+FLAGS %DM[1] -> 52 SHARES %fcw@[1..1];
+FLAGS %ZM[1] -> 53 SHARES %fcw@[2..2];
+FLAGS %OM[1] -> 54 SHARES %fcw@[3..3];
+FLAGS %UM[1] -> 55 SHARES %fcw@[4..4];
+FLAGS %PM[1] -> 56 SHARES %fcw@[5..5];
+FLAGS %FPC[2] -> 57 SHARES %fcw@[8..9];   # FP precision control
+FLAGS %FRC[2] -> 58 SHARES %fcw@[10..11]; # FP rounding control
+FLAGS %X[1] -> 59 SHARES %fcw@[12..12];   # FP infty control
 
-INTEGER %fsw[16] -> 60;
-INTEGER %IE[1] -> 61 SHARES %fsw@[0..0];    # Invalid Operand
-INTEGER %DE[1] -> 62 SHARES %fsw@[1..1];    # Denormal operand
-INTEGER %ZE[1] -> 63 SHARES %fsw@[2..2];    # Div by zero
-INTEGER %OE[1] -> 64 SHARES %fsw@[3..3];    # Overflow
-INTEGER %UE[1] -> 65 SHARES %fsw@[4..4];    # Underflow
-INTEGER %PE[1] -> 66 SHARES %fsw@[5..5];    # Precision
-INTEGER %FSF[1] -> 67 SHARES %fsw@[6..6];   # FP stack fault
-INTEGER %ES[1] -> 68 SHARES %fsw@[7..7];    # Error summary status
-INTEGER %C0[1] -> 69 SHARES %fsw@[8..8];
-INTEGER %C1[1] -> 70 SHARES %fsw@[9..9];
-INTEGER %C2[1] -> 71 SHARES %fsw@[10..10];
-INTEGER %TOP[3] -> 72 SHARES %fsw@[11..13]; # Top of stack
-INTEGER %C3[1] -> 73 SHARES %fsw@[14..14];
-INTEGER %B[1]  -> 74 SHARES %fsw@[15..15];  # FP busy
+FLAGS %fsw[16] -> 60;
+FLAGS %IE[1] -> 61 SHARES %fsw@[0..0];    # Invalid Operand
+FLAGS %DE[1] -> 62 SHARES %fsw@[1..1];    # Denormal operand
+FLAGS %ZE[1] -> 63 SHARES %fsw@[2..2];    # Div by zero
+FLAGS %OE[1] -> 64 SHARES %fsw@[3..3];    # Overflow
+FLAGS %UE[1] -> 65 SHARES %fsw@[4..4];    # Underflow
+FLAGS %PE[1] -> 66 SHARES %fsw@[5..5];    # Precision
+FLAGS %FSF[1] -> 67 SHARES %fsw@[6..6];   # FP stack fault
+FLAGS %ES[1] -> 68 SHARES %fsw@[7..7];    # Error summary status
+FLAGS %C0[1] -> 69 SHARES %fsw@[8..8];
+FLAGS %C1[1] -> 70 SHARES %fsw@[9..9];
+FLAGS %C2[1] -> 71 SHARES %fsw@[10..10];
+FLAGS %TOP[3] -> 72 SHARES %fsw@[11..13]; # Top of stack
+FLAGS %C3[1] -> 73 SHARES %fsw@[14..14];
+FLAGS %B[1]  -> 74 SHARES %fsw@[15..15];  # FP busy
 
 
 # pseudo registers (only to work around IR limitations)
-INTEGER %SKIP[1] -> -1;
-INTEGER %RPT[1] -> -1;
-INTEGER %fflags[8] -> -1; # TODO: remove this
+FLAGS %SKIP[1] -> -1;
+FLAGS %RPT[1] -> -1;
+FLAGS %fflags[8] -> -1; # TODO: remove this
 
 
 #
@@ -2301,7 +2301,7 @@ JB.imm32 dest       *32* %CF = 1                => %pc := dest;
 JBE.imm32 dest      *32* %CF | %ZF              => %pc := dest;
 JC.imm32 dest       *32* %CF = 1                => %pc := dest;
 JCXZ.imm32 dest     *32* %cx = 0                => %pc := dest;
-JE.imm32 dest       *32* %ZF = 0                => %pc := dest;
+JE.imm32 dest       *32* %ZF = 1                => %pc := dest;
 JECXZ.imm16 dest    *32* %ecx = 0               => %pc := dest;
 JECXZ.imm32 dest    *32* %ecx = 0               => %pc := dest;
 JG.imm32 dest       *32* ~%ZF & ~(%SF ^ %OF)    => %pc := dest;

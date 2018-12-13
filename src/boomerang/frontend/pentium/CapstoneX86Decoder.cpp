@@ -29,8 +29,8 @@
 // only map those registers that are mapped to a number
 // different from -1 in the SSL file.
 // not all registers supported by capstone
-static std::map<cs::x86_reg, int> oldRegMap = {
-    { cs::X86_REG_INVALID, -1 },
+static std::map<cs::x86_reg, RegNum> oldRegMap = {
+    { cs::X86_REG_INVALID, RegNumSpecial },
     { cs::X86_REG_EAX, REG_PENT_EAX },
     { cs::X86_REG_ECX, REG_PENT_ECX },
     { cs::X86_REG_EDX, REG_PENT_EDX },
@@ -59,7 +59,7 @@ static std::map<cs::x86_reg, int> oldRegMap = {
     { cs::X86_REG_CS, REG_PENT_CS },
     { cs::X86_REG_SS, REG_PENT_SS },
     { cs::X86_REG_DS, REG_PENT_DS },
-    { cs::X86_REG_IP, -1 },
+    { cs::X86_REG_IP, RegNumSpecial },
     { cs::X86_REG_ST0, REG_PENT_ST0 },
     { cs::X86_REG_ST1, REG_PENT_ST1 },
     { cs::X86_REG_ST2, REG_PENT_ST2 },
@@ -74,12 +74,12 @@ static std::map<cs::x86_reg, int> oldRegMap = {
 
 /**
  * Translates Capstone register IDs to Boomerang internal register IDs.
- * \returns -1 if register not found.
+ * \returns RegNumSpecial if register not found.
  */
-int fixRegID(int csRegID)
+RegNum fixRegNum(int csRegID)
 {
     auto it = oldRegMap.find((cs::x86_reg)csRegID);
-    return (it != oldRegMap.end()) ? it->second : -1;
+    return (it != oldRegMap.end()) ? it->second : RegNumSpecial;
 }
 
 
@@ -92,10 +92,10 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
     switch (operand.type) {
     case cs::X86_OP_MEM: {
         SharedExp base = (operand.mem.base != cs::X86_REG_INVALID)
-                             ? Location::regOf(fixRegID(operand.mem.base))
+                             ? Location::regOf(fixRegNum(operand.mem.base))
                              : Const::get(0);
         SharedExp index = (operand.mem.index != cs::X86_REG_INVALID)
-                              ? Location::regOf(fixRegID(operand.mem.index))
+                              ? Location::regOf(fixRegNum(operand.mem.index))
                               : Const::get(0);
         SharedExp scale = Const::get(operand.mem.scale);
 
@@ -114,7 +114,7 @@ SharedExp operandToExp(const cs::cs_x86_op &operand)
         return Location::memOf(addrExp)->simplify();
     }
     case cs::X86_OP_REG: {
-        return Location::regOf(fixRegID(operand.reg));
+        return Location::regOf(fixRegNum(operand.reg));
     }
     case cs::X86_OP_IMM: {
         return Const::get(Address(operand.imm));
@@ -163,12 +163,12 @@ bool CapstoneX86Decoder::decodeInstruction(Address pc, ptrdiff_t delta, DecodeRe
 }
 
 
-int CapstoneX86Decoder::getRegIdx(const QString &name) const
+RegNum CapstoneX86Decoder::getRegNumByName(const QString &name) const
 {
     // todo: slow
     for (size_t i = cs::X86_REG_AH; i < cs::X86_REG_ENDING; i++) {
         if (name == cs::cs_reg_name(m_handle, i)) {
-            return fixRegID(i);
+            return fixRegNum(i);
         }
     }
 
@@ -176,15 +176,15 @@ int CapstoneX86Decoder::getRegIdx(const QString &name) const
 }
 
 
-QString CapstoneX86Decoder::getRegName(int idx) const
+QString CapstoneX86Decoder::getRegNameByNum(RegNum regNum) const
 {
-    return m_dict.getRegDB()->getRegNameByID(idx);
+    return m_dict.getRegDB()->getRegNameByNum(regNum);
 }
 
 
-int CapstoneX86Decoder::getRegSize(int idx) const
+int CapstoneX86Decoder::getRegSizeByNum(RegNum regNum) const
 {
-    return m_dict.getRegDB()->getRegSizeByID(idx);
+    return m_dict.getRegDB()->getRegSizeByNum(regNum);
 }
 
 

@@ -28,11 +28,11 @@ Assignment::Assignment(SharedExp lhs)
     : TypingStatement(VoidType::get())
     , m_lhs(lhs)
 {
-    if (lhs && lhs->isRegOf()) {
-        int n = lhs->access<Const, 1>()->getInt();
-
+    if (lhs && lhs->isRegOfConst()) {
         if (lhs->access<Location>()->getProc()) {
-            m_type = SizeType::get(lhs->access<Location>()->getProc()->getProg()->getRegSize(n));
+            const RegNum n = lhs->access<Const, 1>()->getInt();
+            m_type         = SizeType::get(
+                lhs->access<Location>()->getProc()->getProg()->getRegSizeByNum(n));
         }
     }
 }

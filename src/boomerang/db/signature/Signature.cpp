@@ -504,13 +504,13 @@ bool Signature::getABIDefines(Machine machine, StatementList &defs)
 }
 
 
-int Signature::getStackRegister() const
+RegNum Signature::getStackRegister() const
 {
-    return -1;
+    return RegNumSpecial;
 }
 
 
-bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
+bool Signature::isStackLocal(RegNum spIndex, SharedConstExp e) const
 {
     // e must be m[...]
     if (e->isSubscript()) {
@@ -524,7 +524,7 @@ bool Signature::isStackLocal(int spIndex, SharedConstExp e) const
 }
 
 
-bool Signature::isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const
+bool Signature::isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const
 {
     OPER op = e->getOper();
 

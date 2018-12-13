@@ -19,6 +19,7 @@
 #include "boomerang/decomp/CFGCompressor.h"
 #include "boomerang/passes/PassManager.h"
 #include "boomerang/ssl/RTL.h"
+#include "boomerang/ssl/Register.h"
 #include "boomerang/ssl/exp/Const.h"
 #include "boomerang/ssl/exp/Location.h"
 #include "boomerang/ssl/exp/RefExp.h"
@@ -1323,8 +1324,8 @@ void CCodeGenerator::appendExp(OStream &str, const Exp &exp, OpPrec curPrec, boo
         }
 
         assert(unaryExp.getSubExp1()->isIntConst());
-        const int regID = unaryExp.access<const Const, 1>()->getInt();
-        QString regName = m_proc->getProg()->getRegName(regID);
+        const RegNum regNum = unaryExp.access<const Const, 1>()->getInt();
+        QString regName     = m_proc->getProg()->getRegNameByNum(regNum);
 
         if (!regName.isEmpty()) {
             str << regName;

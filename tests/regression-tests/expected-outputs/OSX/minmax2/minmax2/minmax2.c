@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-__size32 test(__size32 param1, int param2);
+int test(__size32 param1, int param2);
 
 /** address: 0x00001d44 */
 int main(int argc, char *argv[])
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x00001cd0 */
-__size32 test(__size32 param1, int param2)
+int test(__size32 param1, int param2)
 {
     __size32 g1; 		// r1
     int local0; 		// m[g1 + 24]

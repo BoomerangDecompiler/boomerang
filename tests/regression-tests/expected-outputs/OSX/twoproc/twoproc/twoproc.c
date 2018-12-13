@@ -1,5 +1,5 @@
 int main(int argc, char *argv[]);
-__size32 proc1(__size32 param1, __size32 param2, __size32 param3);
+int proc1(__size32 param1, __size32 param2, __size32 param3);
 
 /** address: 0x00001d80 */
 int main(int argc, char *argv[])
@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
 }
 
 /** address: 0x00001d50 */
-__size32 proc1(__size32 param1, __size32 param2, __size32 param3)
+int proc1(__size32 param1, __size32 param2, __size32 param3)
 {
     return param1; /* WARNING: Also returning: g3 := param2 - param3, g31 := param1 */
 }

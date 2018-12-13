@@ -20,9 +20,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 SPARCSignature::SPARCSignature(const QString &name)
     : Signature(name)
@@ -227,7 +225,7 @@ bool SPARCSignature::qualified(UserProc *p, Signature & /*candidate*/)
 }
 
 
-bool SPARCSignature::isAddrOfStackLocal(int spIndex, const SharedConstExp &e) const
+bool SPARCSignature::isAddrOfStackLocal(RegNum spIndex, const SharedConstExp &e) const
 {
     if (!Signature::isAddrOfStackLocal(spIndex, e)) {
         return false;
@@ -347,5 +345,5 @@ bool SPARCSignature::argumentCompare(const Assignment &a, const Assignment &b) c
 
     return *la < *lb; // Else order arbitrarily
 }
-}
+
 }

@@ -70,6 +70,7 @@ loc.step();
 
 "INTEGER"       return SSL2::parser::make_TOK_INTEGER(loc);
 "FLOAT"         return SSL2::parser::make_TOK_FLOAT(loc);
+"FLAGS"         return SSL2::parser::make_KW_FLAGS(loc);
 "ENDIANNESS"    return SSL2::parser::make_ENDIANNESS(loc);
 "BIG"           return SSL2::parser::make_BIG(loc);
 "LITTLE"        return SSL2::parser::make_LITTLE(loc);

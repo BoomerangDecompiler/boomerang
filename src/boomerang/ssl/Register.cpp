@@ -19,33 +19,26 @@
 #include <string>
 
 
-Register::Register(RegType type, const QString &name, uint16_t sizeInBits)
-    : m_name(name)
-    , m_size(sizeInBits)
-    , m_regType(type)
+Register::Register(RegID id, const QString &name)
+    : m_id(id)
+    , m_name(name)
 {
 }
 
 
 Register::Register(const Register &r)
-    : m_size(r.m_size)
-    , m_regType(r.m_regType)
+    : m_id(r.m_id)
+    , m_name(r.m_name)
 {
-    if (!r.m_name.isEmpty()) {
-        m_name = r.m_name;
-    }
 }
 
 
-Register &Register::operator=(const Register &r2)
+Register &Register::operator=(const Register &other)
 {
-    if (this == &r2) {
-        return *this;
+    if (this != &other) {
+        m_id   = other.m_id;
+        m_name = other.m_name;
     }
-
-    m_name    = r2.m_name;
-    m_size    = r2.m_size;
-    m_regType = r2.m_regType;
 
     return *this;
 }
@@ -75,14 +68,14 @@ const QString &Register::getName() const
 
 SharedType Register::getType() const
 {
-    switch (m_regType) {
+    switch (m_id.getRegType()) {
     case RegType::Flags:
-        if (m_size == 1) {
+        if (m_id.getSize() == 1) {
             return BooleanType::get();
         }
         [[fallthrough]];
-    case RegType::Int: return IntegerType::get(m_size, Sign::Unknown);
-    case RegType::Float: return FloatType::get(m_size);
+    case RegType::Int: return IntegerType::get(m_id.getSize(), Sign::Unknown);
+    case RegType::Float: return FloatType::get(m_id.getSize());
     case RegType::Invalid: return VoidType::get();
     }
 
@@ -92,5 +85,5 @@ SharedType Register::getType() const
 
 uint16_t Register::getSize() const
 {
-    return m_size;
+    return m_id.getSize();
 }

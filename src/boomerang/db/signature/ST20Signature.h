@@ -11,11 +11,10 @@
 
 
 #include "boomerang/db/signature/Signature.h"
+#include "boomerang/ssl/exp/Exp.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 class BOOMERANG_API ST20Signature : public Signature
 {
@@ -47,7 +46,7 @@ public:
     virtual std::shared_ptr<Signature> promote(UserProc *) override;
 
     /// \copydoc Signature::getStackRegister
-    virtual int getStackRegister() const override { return 3; }
+    virtual RegNum getStackRegister() const override { return REG_ST20_SP; }
 
     /// \copydoc Signature::getProven
     virtual SharedExp getProven(SharedExp left) const override;
@@ -58,5 +57,5 @@ public:
     /// \copydoc Signature::getConvention
     virtual CallConv getConvention() const override { return CallConv::C; }
 };
-} // namespace StdC
-} // namespace CallingConvention
+
+}

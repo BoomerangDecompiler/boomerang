@@ -91,7 +91,8 @@ private:
      * \param   args    the actual parameter values
      * \returns the instantiated list of Exps
      */
-    std::unique_ptr<RTL> instantiateRTL(RTL &rtls, Address pc, std::list<QString> &params,
+    std::unique_ptr<RTL> instantiateRTL(const RTL &rtls, Address pc,
+                                        const std::list<QString> &params,
                                         const std::vector<SharedExp> &args);
 
     /**

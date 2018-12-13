@@ -543,7 +543,7 @@ JUMPSA_C[idx] reloc   # Conditional branches
 # Call instruction- always executes delay instruction
 # PC relative transfer of control
 CALL__ reloc
-    *32* r[15] := %pc
+    *32* %o7 := %pc
     *32* %pc := %npc
     *32* %npc := reloc
     *1* %CTI := 1;

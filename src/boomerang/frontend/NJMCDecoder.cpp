@@ -155,19 +155,19 @@ void NJMCDecoder::processComputedCall(const char *name, int size, SharedExp dest
 }
 
 
-QString NJMCDecoder::getRegName(int idx) const
+QString NJMCDecoder::getRegNameByNum(RegNum regNum) const
 {
-    return m_rtlDict.getRegDB()->getRegNameByID(idx);
+    return m_rtlDict.getRegDB()->getRegNameByNum(regNum);
 }
 
 
-int NJMCDecoder::getRegSize(int idx) const
+int NJMCDecoder::getRegSizeByNum(RegNum regNum) const
 {
-    return m_rtlDict.getRegDB()->getRegSizeByID(idx);
+    return m_rtlDict.getRegDB()->getRegSizeByNum(regNum);
 }
 
 
-int NJMCDecoder::getRegIdx(const QString &name) const
+RegNum NJMCDecoder::getRegNumByName(const QString &name) const
 {
-    return m_rtlDict.getRegDB()->getRegIDByName(name);
+    return m_rtlDict.getRegDB()->getRegNumByName(name);
 }

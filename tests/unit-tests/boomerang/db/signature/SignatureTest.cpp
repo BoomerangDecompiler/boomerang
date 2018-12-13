@@ -303,7 +303,7 @@ void SignatureTest::testPromote()
 void SignatureTest::testGetStackRegister()
 {
     Signature sig("test");
-    QCOMPARE(sig.getStackRegister(), -1);
+    QCOMPARE(sig.getStackRegister(), RegNumSpecial);
 }
 
 

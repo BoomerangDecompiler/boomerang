@@ -18,9 +18,7 @@
 #include "boomerang/util/log/Log.h"
 
 
-namespace CallingConvention
-{
-namespace StdC
+namespace CallingConvention::StdC
 {
 ST20Signature::ST20Signature(const QString &name)
     : Signature(name)
@@ -133,5 +131,5 @@ bool ST20Signature::qualified(UserProc *p, Signature & /*candidate*/)
 
     return true;
 }
-}
+
 }
