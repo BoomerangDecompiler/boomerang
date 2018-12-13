@@ -27,6 +27,7 @@ v0.5.0 (in development)
 - Removed: Broken MIPS support.
 - Removed: Broken M68k support.
 - Removed: Broken HP PA/RISC support.
+- Removed: Ability to build libboomerang as a static library.
 - Technical: Improved compilation times and memory usage while compiling.
 
 v0.4.0-alpha (2018-11-11)
