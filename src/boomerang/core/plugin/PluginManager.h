@@ -19,6 +19,12 @@ class BOOMERANG_API PluginManager
 public:
     PluginManager(Project *project);
 
+    PluginManager(const PluginManager &) = delete;
+    PluginManager(PluginManager &&)      = default;
+
+    PluginManager &operator=(const PluginManager &) = delete;
+    PluginManager &operator=(PluginManager &&) = default;
+
 public:
     bool loadPlugin(const QString &path);
 
