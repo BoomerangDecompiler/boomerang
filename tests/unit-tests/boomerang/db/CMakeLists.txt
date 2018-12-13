@@ -20,7 +20,6 @@ set(TESTS
     signature/SignatureTest
     BasicBlockTest
     GlobalTest
-    ProgTest
 )
 
 # These tests require the ELF loader
@@ -30,16 +29,25 @@ set(TESTS_WITH_ELF
 
 foreach(t ${TESTS})
     string(REGEX REPLACE ".*/" "" TEST_NAME ${t})
-	BOOMERANG_ADD_TEST(
-		NAME ${TEST_NAME}
-		SOURCES ${t}.h ${t}.cpp
-		LIBRARIES
-			${DEBUG_LIB}
-			boomerang
-			${CMAKE_THREAD_LIBS_INIT}
-	)
+    BOOMERANG_ADD_TEST(
+        NAME ${TEST_NAME}
+        SOURCES ${t}.h ${t}.cpp
+        LIBRARIES
+            ${DEBUG_LIB}
+            boomerang
+            ${CMAKE_THREAD_LIBS_INIT}
+    )
 endforeach()
 
+BOOMERANG_ADD_TEST(
+    NAME ProgTest
+    SOURCES ProgTest.h ProgTest.cpp
+    LIBRARIES
+        ${DEBUG_LIB}
+        boomerang
+        boomerang-X86FrontEnd
+        ${CMAKE_THREAD_LIBS_INIT}
+)
 
 if (BOOMERANG_BUILD_LOADER_Elf)
     foreach(t ${TESTS_WITH_ELF})
