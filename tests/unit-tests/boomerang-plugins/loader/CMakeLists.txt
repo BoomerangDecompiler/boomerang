@@ -14,12 +14,12 @@ set(TESTS
 )
 
 set(TESTS_WITH_ELF
-    ElfBinaryLoaderTest
-    SparcBinaryLoaderTest
+    elf/ElfBinaryLoaderTest
+    sparc/SparcBinaryLoaderTest
 )
 
 set(TESTS_WITH_WIN32
-    Win32BinaryLoaderTest
+    pe/Win32BinaryLoaderTest
 )
 
 
