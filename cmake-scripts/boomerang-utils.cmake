@@ -45,91 +45,246 @@ endfunction(BOOMERANG_COPY_IMPORTED_DLL)
 # Usage: BOOMERANG_ADD_LOADER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_LOADER)
-	cmake_parse_arguments(LOADER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+    cmake_parse_arguments(LOADER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-	option(BOOMERANG_BUILD_LOADER_${LOADER_NAME} "Build the ${LOADER_NAME} loader." ON)
+    option(BOOMERANG_BUILD_LOADER_${LOADER_NAME} "Build the ${LOADER_NAME} loader." ON)
 
-	if (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
-		set(target_name "boomerang-${LOADER_NAME}Loader")
-		add_library(${target_name} SHARED ${LOADER_SOURCES})
+    if (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
+        set(target_name "boomerang-${LOADER_NAME}Loader")
+        add_library(${target_name} SHARED ${LOADER_SOURCES})
 
-		set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-		set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
 
         if (MSVC)
             # Visual Studio generates lib files for import in addition to dll files.
-			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
             set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-			set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
-		endif (MSVC)
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/loader/")
+        endif (MSVC)
 
-		target_link_libraries(${target_name} Qt5::Core boomerang ${LOADER_LIBRARIES})
+        target_link_libraries(${target_name} Qt5::Core boomerang ${LOADER_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
 
-		install(TARGETS ${target_name}
-			LIBRARY DESTINATION lib/boomerang/plugins/loader/
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/loader/
             RUNTIME DESTINATION lib/boomerang/plugins/loader/
-		)
-	endif (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
+        )
+    endif (BOOMERANG_BUILD_LOADER_${LOADER_NAME})
 endfunction()
-
-
-#
-# Usage: BOOMERANG_ADD_FRONTEND(NAME <name> [ SOURCES <source files> ] [ LIBRARIES <additional libs> ])
-#
-# Note: There must be a <name>decoder.h/.cpp and a <name>frontend.h/.cpp present
-# in the same directory as the CMakeLists.txt where this function is invoked.
-#
-function(BOOMERANG_ADD_FRONTEND)
-	cmake_parse_arguments(FRONTEND "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
-
-	# add the frontend as a static library
-	add_library(boomerang-${FRONTEND_NAME}Frontend STATIC
-		${FRONTEND_NAME}decoder.h
-		${FRONTEND_NAME}decoder.cpp
-		${FRONTEND_NAME}frontend.h
-		${FRONTEND_NAME}frontend.cpp
-		${FRONTEND_SOURCES}
-	)
-
-	target_link_libraries(${FRONTEND_NAME} Qt5::Core ${FRONTEND_LIBRARIES})
-endfunction(BOOMERANG_ADD_FRONTEND)
 
 
 #
 # Usage: BOOMERANG_ADD_CODEGEN(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_CODEGEN)
-	cmake_parse_arguments(CODEGEN "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+    cmake_parse_arguments(CODEGEN "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-	add_library(boomerang-${CODEGEN_NAME}Codegen STATIC
-		${CODEGEN_SOURCES}
-	)
+    option(BOOMERANG_BUILD_CODEGEN_${CODEGEN_NAME} "Build the ${CODEGEN_NAME} code generator." ON)
 
-	target_link_libraries(boomerang-${CODEGEN_NAME}Codegen Qt5::Core ${CODEGEN_LIBRARIES})
-endfunction(BOOMERANG_ADD_CODEGEN)
+    if (BOOMERANG_BUILD_CODEGEN_${CODEGEN_NAME})
+        set(target_name "boomerang-${CODEGEN_NAME}Codegen")
+        add_library(${target_name} SHARED ${CODEGEN_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/codegen/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${CODEGEN_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/codegen/
+            RUNTIME DESTINATION lib/boomerang/plugins/codegen/
+        )
+    endif (BOOMERANG_BUILD_CODEGEN_${CODEGEN_NAME})
+endfunction()
+
+
+#
+# Usage: BOOMERANG_ADD_TYPERECOVERY(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_TYPERECOVERY)
+    cmake_parse_arguments(TYPERECOVERY "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_TYPERECOVERY_${TYPERECOVERY_NAME} "Build the ${TYPERECOVERY_NAME} type recovery engine." ON)
+
+    if (BOOMERANG_BUILD_TYPERECOVERY_${TYPERECOVERY_NAME})
+        set(target_name "boomerang-${TYPERECOVERY_NAME}TypeRecovery")
+        add_library(${target_name} SHARED ${TYPERECOVERY_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/type/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${TYPERECOVERY_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/type/
+            RUNTIME DESTINATION lib/boomerang/plugins/type/
+        )
+    endif (BOOMERANG_BUILD_TYPERECOVERY_${TYPERECOVERY_NAME})
+endfunction()
+
+
+#
+# Usage: BOOMERANG_ADD_SYMBOLPROVIDER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_SYMBOLPROVIDER)
+    cmake_parse_arguments(SYMBOLPROVIDER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_SYMBOLPROVIDER_${SYMBOLPROVIDER_NAME} "Build the ${SYMBOLPROVIDER_NAME} symbol provider." ON)
+
+    if (BOOMERANG_BUILD_SYMBOLPROVIDER_${SYMBOLPROVIDER_NAME})
+        set(target_name "boomerang-${SYMBOLPROVIDER_NAME}SymbolProvider")
+        add_library(${target_name} SHARED ${SYMBOLPROVIDER_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/symbol/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${SYMBOLPROVIDER_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/symbol/
+            RUNTIME DESTINATION lib/boomerang/plugins/symbol/
+        )
+    endif (BOOMERANG_BUILD_SYMBOLPROVIDER_${SYMBOLPROVIDER_NAME})
+endfunction()
+
+
+#
+# Usage: BOOMERANG_ADD_DECODER(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_DECODER)
+    cmake_parse_arguments(DECODER "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_DECODER_${DECODER_NAME} "Build the ${DECODER_NAME} decoder." ON)
+
+    if (BOOMERANG_BUILD_DECODER_${DECODER_NAME})
+        set(target_name "boomerang-${DECODER_NAME}Decoder")
+        add_library(${target_name} SHARED ${DECODER_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/decoder/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${DECODER_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/decoder/
+            RUNTIME DESTINATION lib/boomerang/plugins/decoder/
+        )
+    endif (BOOMERANG_BUILD_DECODER_${DECODER_NAME})
+endfunction()
+
+
+#
+# Usage: BOOMERANG_ADD_FRONTEND(NAME <name> SOURCES <source files> [ LIBRARIES <additional libs> ])
+#
+function(BOOMERANG_ADD_FRONTEND)
+    cmake_parse_arguments(FRONTEND "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+
+    option(BOOMERANG_BUILD_FRONTEND_${FRONTEND_NAME} "Build the ${FRONTEND_NAME} front end." ON)
+
+    if (BOOMERANG_BUILD_FRONTEND_${FRONTEND_NAME})
+        set(target_name "boomerang-${FRONTEND_NAME}FrontEnd")
+        add_library(${target_name} SHARED ${FRONTEND_SOURCES})
+
+        set_target_properties(${target_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+        set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+
+        if (MSVC)
+            # Visual Studio generates lib files for import in addition to dll files.
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES ARCHIVE_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+            set_target_properties(${target_name} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${BOOMERANG_OUTPUT_DIR}/lib/boomerang/plugins/frontend/")
+        endif (MSVC)
+
+        target_link_libraries(${target_name} Qt5::Core boomerang ${FRONTEND_LIBRARIES})
+        target_compile_definitions(${target_name} PRIVATE BOOMERANG_BUILD_PLUGIN=1)
+
+        install(TARGETS ${target_name}
+            LIBRARY DESTINATION lib/boomerang/plugins/frontend/
+            RUNTIME DESTINATION lib/boomerang/plugins/frontend/
+        )
+    endif (BOOMERANG_BUILD_FRONTEND_${FRONTEND_NAME})
+endfunction()
 
 
 #
 # Usage: BOOMERANG_ADD_TEST(NAME <name> SOURCES <souce files> [ LIBRARIES <additional libs> ])
 #
 function(BOOMERANG_ADD_TEST)
-	cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
+    cmake_parse_arguments(TEST "" "NAME" "SOURCES;LIBRARIES" ${ARGN})
 
-	get_filename_component(exename "${TEST_NAME}" NAME)
+    get_filename_component(exename "${TEST_NAME}" NAME)
 
-	add_executable(${exename} ${TEST_SOURCES})
+    add_executable(${exename} ${TEST_SOURCES})
 
-	target_link_libraries(${exename}
-		boomerang-test-utils
-		${TEST_LIBRARIES})
+    target_link_libraries(${exename}
+        boomerang-test-utils
+        ${TEST_LIBRARIES})
 
-	add_test(NAME ${exename} COMMAND $<TARGET_FILE:${exename}>)
-	set_property(TEST ${exename} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
+    add_test(NAME ${exename} COMMAND $<TARGET_FILE:${exename}>)
+    set_property(TEST ${exename} APPEND PROPERTY ENVIRONMENT BOOMERANG_TEST_BASE=${BOOMERANG_OUTPUT_DIR})
     BOOMERANG_COPY_IMPORTED_DLL(${exename} Qt5::Test)
 endfunction(BOOMERANG_ADD_TEST)
 

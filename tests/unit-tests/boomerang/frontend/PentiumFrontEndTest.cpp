@@ -9,9 +9,9 @@
 #pragma endregion License
 #include "PentiumFrontEndTest.h"
 
+#include "boomerang-plugins/frontend/x86/PentiumFrontEnd.h"
 
 #include "boomerang/db/Prog.h"
-#include "boomerang/frontend/pentium/PentiumFrontEnd.h"
 #include "boomerang/ifc/IDecoder.h"
 #include "boomerang/ssl/RTL.h"
 #include "boomerang/util/Types.h"

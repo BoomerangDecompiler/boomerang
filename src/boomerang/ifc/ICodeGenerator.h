@@ -16,27 +16,22 @@
 class Assign;
 class Function;
 class Module;
+class OStream;
 class Prog;
+class Project;
 class StatementList;
 class UserProc;
 
 class QString;
-class OStream;
 
 
-/**
- * Base class for generating high-level code from statements.
- *
- * This class is provides methods which are generic of procedural
- * languages like C, Pascal, Fortran etc. Included in the base class
- * is the follow and goto sets which are used during code generation.
- * Concrete implementations of this class provide specific language
- * bindings for a single procedure in the program.
- */
+/// Base class for generating high-level code from SSL statements.
+/// Concrete implementations of this class provide specific language
+/// bindings.
 class ICodeGenerator
 {
 public:
-    ICodeGenerator()          = default;
+    ICodeGenerator(Project *) {}
     virtual ~ICodeGenerator() = default;
 
 public:

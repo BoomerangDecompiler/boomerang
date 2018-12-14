@@ -10,10 +10,11 @@
 #pragma once
 
 
-#include "boomerang/core/Plugin.h"
 #include "boomerang/db/binary/BinaryFile.h"
 #include "boomerang/db/binary/BinaryImage.h"
 
+
+class Project;
 
 class QIODevice;
 
@@ -26,7 +27,7 @@ class QIODevice;
 class IFileLoader
 {
 public:
-    IFileLoader()          = default;
+    IFileLoader(Project *) {}
     virtual ~IFileLoader() = default;
 
 public:
@@ -91,5 +92,3 @@ public:
     }
     virtual bool hasDebugInfo() const { return false; }
 };
-
-typedef Plugin<IFileLoader, PluginType::Loader> LoaderPlugin;

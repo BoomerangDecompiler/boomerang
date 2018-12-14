@@ -12,6 +12,7 @@
 
 class Function;
 class Prog;
+class Project;
 
 class QString;
 
@@ -22,7 +23,7 @@ class QString;
 class ITypeRecovery
 {
 public:
-    ITypeRecovery() = default;
+    ITypeRecovery(Project *) {}
 
     ITypeRecovery(const ITypeRecovery &other) = delete;
     ITypeRecovery(ITypeRecovery &&other)      = default;

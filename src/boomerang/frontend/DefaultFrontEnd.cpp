@@ -9,7 +9,6 @@
 #pragma endregion License
 #include "DefaultFrontEnd.h"
 
-#include "boomerang/c/CSymbolProvider.h"
 #include "boomerang/core/Project.h"
 #include "boomerang/core/Settings.h"
 #include "boomerang/db/BasicBlock.h"
@@ -34,16 +33,26 @@
 #include "boomerang/util/log/Log.h"
 
 
-DefaultFrontEnd::DefaultFrontEnd(BinaryFile *binaryFile, Prog *prog)
-    : m_binaryFile(binaryFile)
-    , m_program(prog)
-    , m_targetQueue(prog->getProject()->getSettings()->traceDecoder)
+DefaultFrontEnd::DefaultFrontEnd(Project *project)
+    : IFrontEnd(project)
+    , m_binaryFile(project->getLoadedBinaryFile())
+    , m_program(project->getProg())
+    , m_targetQueue(project->getSettings()->traceDecoder)
 {
 }
 
 
 DefaultFrontEnd::~DefaultFrontEnd()
 {
+}
+
+
+bool DefaultFrontEnd::initialize(Project *project)
+{
+    m_program    = project->getProg();
+    m_binaryFile = project->getLoadedBinaryFile();
+
+    return m_decoder->initialize(project);
 }
 
 

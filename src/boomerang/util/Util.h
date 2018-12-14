@@ -75,5 +75,5 @@ int getStackOffset(SharedConstExp e, int sp);
  * Return the internal index of the stack register
  * of an architecture, or -1 if the architecture does not have a stack register.
  */
-int getStackRegisterIndex(const Prog *prog);
+BOOMERANG_API int getStackRegisterIndex(const Prog *prog);
 }
