@@ -56,14 +56,10 @@ SharedType UnionType::clone() const
 
 size_t UnionType::getSize() const
 {
-    int max = 0;
+    size_t max = 0;
 
     for (const UnionElement &elem : li) {
-        int sz = elem.type->getSize();
-
-        if (sz > max) {
-            max = sz;
-        }
+        max = std::max(max, elem.type->getSize());
     }
 
     return max;
