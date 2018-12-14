@@ -218,10 +218,6 @@ public:
                                 bool useHighestPtr = false) const = 0;
 
 
-    /// Dereference this type. For most cases, return null unless you are a pointer type. But for a
-    /// union of pointers, return a new union with the dereference of all members. In dfa.cpp
-    SharedType dereference();
-
 protected:
     TypeClass id;
 };

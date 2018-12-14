@@ -97,9 +97,6 @@ public:
     }
     virtual bool isCompatible(const Type &other, bool all) const override;
 
-    // if this is a union of pointer types, get the union of things they point to. In dfa.cpp
-    SharedType dereferenceUnion();
-
 private:
     // Note: list, not vector, as it is occasionally desirable to insert elements without affecting
     // iterators (e.g. meetWith(another Union))

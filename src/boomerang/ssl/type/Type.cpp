@@ -344,17 +344,3 @@ bool Type::isSubTypeOrEqual(SharedType other)
     // Not really sure here
     return false;
 }
-
-
-SharedType Type::dereference()
-{
-    if (resolvesToPointer()) {
-        return as<PointerType>()->getPointsTo();
-    }
-
-    if (resolvesToUnion()) {
-        return as<UnionType>()->dereferenceUnion();
-    }
-
-    return VoidType::get(); // Can't dereference this type. Note: should probably be bottom
-}
