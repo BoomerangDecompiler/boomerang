@@ -84,6 +84,7 @@ public:
     // virtual bool        operator-=(const Type& other) const;
     virtual bool operator<(const Type &other) const override;
 
+    /// \returns the size in bits of this union
     virtual size_t getSize() const override;
 
     virtual QString getCtype(bool final = false) const override;
@@ -98,7 +99,5 @@ public:
     virtual bool isCompatible(const Type &other, bool all) const override;
 
 private:
-    // Note: list, not vector, as it is occasionally desirable to insert elements without affecting
-    // iterators (e.g. meetWith(another Union))
     UnionEntrySet li;
 };

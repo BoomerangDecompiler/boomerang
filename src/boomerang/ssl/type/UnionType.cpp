@@ -110,9 +110,9 @@ bool UnionType::hasType(SharedType ty)
 void UnionType::addType(SharedType newType, const QString &name)
 {
     if (newType->resolvesToUnion()) {
-        auto utp = std::static_pointer_cast<UnionType>(newType);
+        auto unionTy = std::static_pointer_cast<UnionType>(newType);
         // Note: need to check for name clashes eventually
-        li.insert(utp->li.begin(), utp->li.end());
+        li.insert(unionTy->li.begin(), unionTy->li.end());
     }
     else {
         if (newType->isPointer() && newType->as<PointerType>()->getPointsTo()->resolvesToUnion()) {
@@ -175,7 +175,9 @@ SharedType UnionType::meetWith(SharedType other, bool &changed, bool useHighestP
         *result = *this;
 
         for (UnionElement elem : otherUnion->li) {
-            result = result->meetWith(elem.type, changed, useHighestPtr)->as<UnionType>();
+            bool thisChanged = false;
+            result = result->meetWith(elem.type, thisChanged, useHighestPtr)->as<UnionType>();
+            changed |= thisChanged;
         }
 
         return result;
