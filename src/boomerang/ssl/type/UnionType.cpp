@@ -98,7 +98,7 @@ bool UnionType::operator<(const Type &other) const
 }
 
 
-bool UnionType::findType(SharedType ty)
+bool UnionType::hasType(SharedType ty)
 {
     UnionElement ue;
 

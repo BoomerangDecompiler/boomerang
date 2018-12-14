@@ -70,7 +70,7 @@ public:
 
     // Return true if this type is already in the union. Note: linear search, but number of types is
     // usually small
-    bool findType(SharedType ty); // Return true if ty is already in the union
+    bool hasType(SharedType ty); // Return true if ty is already in the union
 
     ilUnionElement begin() { return li.begin(); }
     ilUnionElement end() { return li.end(); }
