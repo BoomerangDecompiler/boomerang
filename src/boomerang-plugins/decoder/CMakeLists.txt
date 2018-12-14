@@ -19,7 +19,19 @@ BOOMERANG_ADD_DECODER(
         csx86/CapstoneX86Decoder.h
         csx86/CapstoneDecoder.cpp
         csx86/CapstoneDecoder.h
+    LIBRARIES
+        Capstone::Capstone
 )
+
+if (BOOMERANG_BUILD_DECODER_CapstoneX86)
+    add_custom_command(TARGET boomerang-CapstoneX86Decoder POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        ARGS
+            -E copy_if_different
+            "${Capstone_DLL}"
+            "${BOOMERANG_OUTPUT_DIR}/bin/"
+    )
+endif ()
 
 BOOMERANG_ADD_DECODER(
     NAME "PPC"

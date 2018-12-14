@@ -20,6 +20,7 @@ set(TESTS
     signature/SignatureTest
     BasicBlockTest
     GlobalTest
+    ProgTest
 )
 
 # These tests require the ELF loader
@@ -39,14 +40,16 @@ foreach(t ${TESTS})
     )
 endforeach()
 
-BOOMERANG_ADD_TEST(
-    NAME ProgTest
-    SOURCES ProgTest.h ProgTest.cpp
-    LIBRARIES
-        ${DEBUG_LIB}
-        boomerang
-        boomerang-X86FrontEnd
-        ${CMAKE_THREAD_LIBS_INIT}
+target_link_libraries(ProgTest
+    boomerang-X86FrontEnd
+)
+
+add_custom_command(TARGET ProgTest POST_BUILD
+    COMMAND "${CMAKE_COMMAND}"
+    ARGS
+        -E copy_if_different
+        "$<TARGET_FILE:boomerang-X86FrontEnd>"
+        "${BOOMERANG_OUTPUT_DIR}/bin/"
 )
 
 if (BOOMERANG_BUILD_LOADER_Elf)
@@ -61,7 +64,3 @@ if (BOOMERANG_BUILD_LOADER_Elf)
         )
     endforeach()
 endif (BOOMERANG_BUILD_LOADER_Elf)
-
-target_link_libraries(ProgTest
-    boomerang-X86FrontEnd
-)

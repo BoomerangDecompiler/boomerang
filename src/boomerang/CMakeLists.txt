@@ -36,7 +36,6 @@ target_link_libraries(boomerang
     ${CMAKE_DL_LIBS}
     boomerang-ssl2-parser
     boomerang-ansic-parser
-    Capstone::Capstone
     ${DEBUG_LIB}
 )
 
