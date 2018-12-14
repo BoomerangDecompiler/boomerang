@@ -24,6 +24,8 @@ class UserProc;
 
 /**
  * Data-flow based type recovery.
+ *
+ * \internal
  * This is the core of the data-flow-based type analysis algorithm: implementing the meet operator.
  * In classic lattice-based terms, the TOP type is void; there is no BOTTOM type since we handle
  * overconstraints with unions. Consider various pieces of knowledge about the types. There could

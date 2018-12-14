@@ -61,8 +61,7 @@ struct ExeHeader
 
 
 /**
- * Contains the definition of the class ExeBinaryLoader,
- * a loader for DOS executable files.
+ * A loader for DOS executable files.
  *
  * At present, there is no support for a symbol table. Exe files do
  * not use dynamic linking, but it is possible that some files may
@@ -75,6 +74,7 @@ class BOOMERANG_PLUGIN_API ExeBinaryLoader : public IFileLoader
 public:
     ExeBinaryLoader(Project *project);
 
+public:
     /// \copydoc IFileLoader::initialize
     void initialize(BinaryImage *image, BinarySymbolTable *symbols) override;
 

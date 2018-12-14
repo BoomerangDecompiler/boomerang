@@ -20,6 +20,8 @@
 class Prog;
 
 
+/// Symbol provider for reading signatures and symbols from C-like headers.
+/// (cf. also the files in data/signature/)
 class BOOMERANG_PLUGIN_API CSymbolProvider : public ISymbolProvider
 {
 public:

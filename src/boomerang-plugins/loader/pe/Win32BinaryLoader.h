@@ -148,9 +148,7 @@ typedef struct
 #pragma pack(pop)
 
 
-/**
- * Class for loading Win32 binary ".exe" files
- */
+/// Class for loading Win32 PE ".exe" files.
 class BOOMERANG_PLUGIN_API Win32BinaryLoader : public IFileLoader
 {
 public:

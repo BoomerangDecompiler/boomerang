@@ -63,10 +63,7 @@ public:
 };
 
 
-/**
- * Contains the implementation of the class MachOBinaryFile.
- * This is my bare bones implementation of a Mac OS-X binary loader.
- */
+/// Loader for Mach-O binary files.
 class BOOMERANG_PLUGIN_API MachOBinaryLoader : public IFileLoader, public ObjcAccessInterface
 {
 public:
