@@ -62,7 +62,7 @@ size_t UnionType::getSize() const
         max = std::max(max, elem.type->getSize());
     }
 
-    return max;
+    return std::max(max, (size_t)1);
 }
 
 
@@ -109,8 +109,10 @@ bool UnionType::hasType(SharedType ty)
 
 void UnionType::addType(SharedType newType, const QString &name)
 {
+    assert(newType != nullptr);
+
     if (newType->resolvesToUnion()) {
-        auto unionTy = std::static_pointer_cast<UnionType>(newType);
+        auto unionTy = newType->as<UnionType>();
         // Note: need to check for name clashes eventually
         li.insert(unionTy->li.begin(), unionTy->li.end());
     }
@@ -132,6 +134,7 @@ void UnionType::addType(SharedType newType, const QString &name)
         ue.type = newType;
         ue.name = name;
         li.insert(ue);
+        // TODO: update name if not inserted because of type clash
     }
 }
 
