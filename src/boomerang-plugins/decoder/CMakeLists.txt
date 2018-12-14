@@ -23,7 +23,7 @@ BOOMERANG_ADD_DECODER(
         Capstone::Capstone
 )
 
-if (BOOMERANG_BUILD_DECODER_CapstoneX86)
+if (MSVC AND BOOMERANG_BUILD_DECODER_CapstoneX86)
     add_custom_command(TARGET boomerang-CapstoneX86Decoder POST_BUILD
         COMMAND "${CMAKE_COMMAND}"
         ARGS

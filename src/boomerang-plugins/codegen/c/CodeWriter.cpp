@@ -31,6 +31,11 @@ CodeWriter::CodeWriter::WriteDest::~WriteDest()
 }
 
 
+CodeWriter::CodeWriter()
+{
+}
+
+
 bool CodeWriter::writeCode(const Module *module, const QStringList &lines)
 {
     WriteDestMap::iterator it = m_dests.find(module);

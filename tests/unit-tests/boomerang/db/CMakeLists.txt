@@ -44,13 +44,16 @@ target_link_libraries(ProgTest
     boomerang-X86FrontEnd
 )
 
-add_custom_command(TARGET ProgTest POST_BUILD
-    COMMAND "${CMAKE_COMMAND}"
-    ARGS
-        -E copy_if_different
-        "$<TARGET_FILE:boomerang-X86FrontEnd>"
-        "${BOOMERANG_OUTPUT_DIR}/bin/"
-)
+if (MSVC)
+    add_custom_command(TARGET ProgTest POST_BUILD
+        COMMAND "${CMAKE_COMMAND}"
+        ARGS
+            -E copy_if_different
+            "$<TARGET_FILE:boomerang-X86FrontEnd>"
+            "${BOOMERANG_OUTPUT_DIR}/bin/"
+    )
+endif (MSVC)
+
 
 if (BOOMERANG_BUILD_LOADER_Elf)
     foreach(t ${TESTS_WITH_ELF})

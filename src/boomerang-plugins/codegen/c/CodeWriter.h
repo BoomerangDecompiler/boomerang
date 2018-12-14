@@ -41,9 +41,9 @@ class CodeWriter
     typedef std::map<const Module *, WriteDest> WriteDestMap;
 
 public:
-    CodeWriter() {};
+    CodeWriter();
     CodeWriter(const CodeWriter &) = delete;
-    CodeWriter(CodeWriter &&) = default;
+    CodeWriter(CodeWriter &&)      = default;
 
     ~CodeWriter() = default;
 
