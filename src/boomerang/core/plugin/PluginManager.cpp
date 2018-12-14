@@ -31,18 +31,18 @@ bool PluginManager::loadPlugin(const QString &path)
     try {
         std::unique_ptr<Plugin> newPlugin = std::make_unique<Plugin>(m_project, path);
 
-        const QString pluginName = newPlugin->getInfo()->name;
+        const QString pluginName{ newPlugin->getInfo()->name };
         if (m_plugins.find(pluginName) != m_plugins.end()) {
-            throw "A plugin with the same name already exists";
+            throw std::runtime_error("A plugin with the same name already exists");
         }
 
-        Plugin *loadedPlugin  = newPlugin.get();
+        m_pluginsByType[newPlugin->getInfo()->type].push_back(newPlugin.get());
         m_plugins[pluginName] = std::move(newPlugin);
-        m_pluginsByType[loadedPlugin->getInfo()->type].push_back(loadedPlugin);
+
         return true;
     }
-    catch (const char *errmsg) {
-        LOG_WARN("Unable to load plugin: %1", errmsg);
+    catch (const std::runtime_error &err) {
+        LOG_WARN("Unable to load plugin: %1", err.what());
         return false;
     }
 }
@@ -100,6 +100,7 @@ Plugin *PluginManager::getPluginByName(const QString &name)
     const auto it = m_plugins.find(name);
     return (it != m_plugins.end()) ? it->second.get() : nullptr;
 }
+
 
 const Plugin *PluginManager::getPluginByName(const QString &name) const
 {
