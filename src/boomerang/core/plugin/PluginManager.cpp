@@ -20,6 +20,12 @@ PluginManager::PluginManager(Project *project)
 }
 
 
+PluginManager::~PluginManager()
+{
+    unloadPlugins();
+}
+
+
 bool PluginManager::loadPlugin(const QString &path)
 {
     try {
@@ -79,6 +85,7 @@ bool PluginManager::loadPluginsFromDir(const QString &dir, int depth)
 void PluginManager::unloadPlugins()
 {
     m_pluginsByType.clear();
+    m_plugins.clear();
 }
 
 
