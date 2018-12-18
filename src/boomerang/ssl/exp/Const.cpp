@@ -281,8 +281,7 @@ void Const::descendType(SharedType parentType, bool &changed, Statement *)
                 m_oper  = opFltConst;
                 m_type  = FloatType::get(64);
                 int i   = getInt();
-                float f = *reinterpret_cast<float *>(&i);
-                m_value = static_cast<double>(f);
+                m_value = *reinterpret_cast<float *>(&i);
             }
             else if (m_oper == opLongConst) {
                 m_oper  = opFltConst;
