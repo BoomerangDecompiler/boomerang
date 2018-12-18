@@ -9,6 +9,7 @@ v0.5.0 (in development)
 - Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
 - Fixed: Unsigned integral types mistaken for signed integral types when parsing signature or symbol information.
+- Fixed: Signature promotion ignored '-nP' switch.
 - Fixed: Wrong decompilation of "Pass by pointer/reference" values (e.g. `foo(&local0)` was emitted as `foo(esp-32)`).
 - Fixed: Wrong decompilation of parameter types in function signatures in some cases.
 - Fixed: Unnecessary union types in high-level code due to non-symmetric type meet operator.

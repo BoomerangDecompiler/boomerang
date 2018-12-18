@@ -366,23 +366,23 @@ std::shared_ptr<Signature> Signature::promote(UserProc *p)
 {
     // FIXME: the whole promotion idea needs a redesign...
     if (CallingConvention::Win32Signature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::Win32Signature(*this));
+        return std::make_shared<CallingConvention::Win32Signature>(*this);
     }
 
     if (CallingConvention::StdC::PentiumSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PentiumSignature(*this));
+        return std::make_shared<CallingConvention::StdC::PentiumSignature>(*this);
     }
 
     if (CallingConvention::StdC::SPARCSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::SPARCSignature(*this));
+        return std::make_shared<CallingConvention::StdC::SPARCSignature>(*this);
     }
 
     if (CallingConvention::StdC::PPCSignature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::PPCSignature(*this));
+        return std::make_shared<CallingConvention::StdC::PPCSignature>(*this);
     }
 
     if (CallingConvention::StdC::ST20Signature::qualified(p, *this)) {
-        return std::shared_ptr<Signature>(new CallingConvention::StdC::ST20Signature(*this));
+        return std::make_shared<CallingConvention::StdC::ST20Signature>(*this);
     }
 
     return shared_from_this();
