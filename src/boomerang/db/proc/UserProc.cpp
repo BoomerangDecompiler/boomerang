@@ -406,6 +406,9 @@ bool UserProc::filterParams(SharedExp e)
     case opPC: return true;
     case opTemp: return true;
     case opRegOf: {
+        if (!e->isRegOfConst()) {
+            return false;
+        }
         const int sp = Util::getStackRegisterIndex(m_prog);
         return e->access<Const, 1>()->getInt() == sp;
     }

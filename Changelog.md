@@ -5,6 +5,7 @@ v0.5.0 (in development)
 - Fixed: Crash when decompiling x86 binaries that contain specific variants of the JP or JNP instructions.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is BSF or BSR.
 - Fixed: Crash when decompiling x86 binaries that contain functions where the first instruction is a string instruction.
+- Fixed: Potential crash when decompiling non-constant register expressions.
 - Fixed: Missing guard expressions when processing overlapped registers for assignments with guards.
 - Fixed: Unsigned integral types mistaken for signed integral types when parsing signature or symbol information.
 - Fixed: Memory leaks in parsers.
