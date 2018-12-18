@@ -391,33 +391,35 @@ SharedType deltaSubtrahend(SharedType tc, SharedType ta)
 }
 
 
-void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
+bool Binary::descendType(SharedType newType)
 {
     if (m_oper == opFlagCall) {
-        return;
+        return false;
     }
 
     SharedType ta = subExp1->ascendType();
     SharedType tb = subExp2->ascendType();
     SharedType nt; // "New" type for certain operators
+    bool changed = false;
+
     // The following is an idea of Mike's that is not yet implemented well. It is designed to handle
     // the situation where the only reference to a local is where its address is taken. In the
     // current implementation, it incorrectly triggers with every ordinary local reference, causing
     // esp to appear used in the final program
-
     switch (m_oper) {
-    case opPlus:
-        ta = ta->meetWith(sigmaAddend(parentType, tb), changed);
-        subExp1->descendType(ta, changed, s);
-        tb = tb->meetWith(sigmaAddend(parentType, ta), changed);
-        subExp2->descendType(tb, changed, s);
+    case opPlus: {
+        ta = ta->meetWith(sigmaAddend(newType, tb), changed);
+        tb = tb->meetWith(sigmaAddend(newType, ta), changed);
+        changed |= subExp1->descendType(ta);
+        changed |= subExp2->descendType(tb);
         break;
+    }
 
     case opMinus:
-        ta = ta->meetWith(deltaMinuend(parentType, tb), changed);
-        subExp1->descendType(ta, changed, s);
-        tb = tb->meetWith(deltaSubtrahend(parentType, ta), changed);
-        subExp2->descendType(tb, changed, s);
+        ta = ta->meetWith(deltaMinuend(newType, tb), changed);
+        tb = tb->meetWith(deltaSubtrahend(newType, ta), changed);
+        changed |= subExp1->descendType(ta);
+        changed |= subExp2->descendType(tb);
         break;
 
     case opGtrUns:
@@ -427,8 +429,8 @@ void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
         nt = IntegerType::get(ta->getSize(), Sign::Unsigned); // Used as unsigned
         ta = ta->meetWith(nt, changed);
         tb = tb->meetWith(nt, changed);
-        subExp1->descendType(ta, changed, s);
-        subExp2->descendType(tb, changed, s);
+        changed |= subExp1->descendType(ta);
+        changed |= subExp2->descendType(tb);
         break;
 
     case opGtr:
@@ -438,8 +440,8 @@ void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
         nt = IntegerType::get(ta->getSize(), Sign::Signed); // Used as signed
         ta = ta->meetWith(nt, changed);
         tb = tb->meetWith(nt, changed);
-        subExp1->descendType(ta, changed, s);
-        subExp2->descendType(tb, changed, s);
+        changed |= subExp1->descendType(ta);
+        changed |= subExp2->descendType(tb);
         break;
 
     case opBitAnd:
@@ -471,9 +473,9 @@ void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
         default: signedness = Sign::Unknown; break; // Unknown signedness
         }
 
-        int parentSize = parentType->getSize();
+        int parentSize = newType->getSize();
         ta             = ta->meetWith(IntegerType::get(parentSize, signedness), changed);
-        subExp1->descendType(ta, changed, s);
+        changed |= subExp1->descendType(ta);
 
         if ((m_oper == opShiftL) || (m_oper == opShiftR) || (m_oper == opShiftRA)) {
             // These operators are not symmetric; doesn't force a signedness on the second operand
@@ -483,7 +485,7 @@ void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
         }
 
         tb = tb->meetWith(IntegerType::get(parentSize, signedness), changed);
-        subExp2->descendType(tb, changed, s);
+        changed |= subExp2->descendType(tb);
         break;
     }
 
@@ -491,6 +493,8 @@ void Binary::descendType(SharedType parentType, bool &changed, Statement *s)
         // Many more cases to implement
         break;
     }
+
+    return changed;
 }
 
 

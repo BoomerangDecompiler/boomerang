@@ -382,12 +382,6 @@ SharedType Exp::ascendType()
 }
 
 
-void Exp::descendType(SharedType, bool &, Statement *)
-{
-    assert(false);
-}
-
-
 SharedExp Exp::fixSuccessor()
 {
     SharedExp result;

@@ -13,6 +13,8 @@
 #include "boomerang/ssl/exp/Exp.h"
 #include "boomerang/util/Address.h"
 
+#include <variant>
+
 
 class Function;
 
@@ -24,16 +26,13 @@ class Function;
 class BOOMERANG_API Const : public Exp
 {
 private:
-    union Data
-    {
-        int i;        ///< Integer
-        QWord ll = 0; ///< 64 bit integer / address / pointer
-        double d;     ///< Double precision float
-
-        /// Don't store string: function could be renamed
-        Function *pp; ///< Pointer to function (e.g. global function pointers)
-    };
-    static_assert(sizeof(Data) == 8, "Const data must be 64 bits");
+    typedef std::variant<int,        ///< Integer
+                         QWord,      ///< 64 bit integer / address / pointer
+                         double,     ///< Double precision float
+                         Function *, ///< Pointer to function (e.g. global function pointers)
+                         QString     ///< The string value of this constant
+                         >
+        Data;
 
 public:
     // Special constructors overloaded for the various constants
@@ -85,19 +84,19 @@ public:
     virtual bool operator*=(const Exp &o) const override;
 
     // Get the constant
-    int getInt() const { return m_value.i; }
-    QWord getLong() const { return m_value.ll; }
-    double getFlt() const { return m_value.d; }
-    QString getStr() const { return m_string; }
-    Address getAddr() const { return Address(static_cast<Address::value_type>(m_value.ll)); }
+    int getInt() const;
+    QWord getLong() const;
+    double getFlt() const;
+    QString getStr() const;
+    Address getAddr() const;
     QString getFuncName() const;
 
     // Set the constant
-    void setInt(int i) { m_value.i = i; }
-    void setLong(QWord ll) { m_value.ll = ll; }
-    void setFlt(double d) { m_value.d = d; }
-    void setStr(const QString &p) { m_string = p; }
-    void setAddr(Address a) { m_value.ll = a.value(); }
+    void setInt(int i);
+    void setLong(QWord ll);
+    void setFlt(double d);
+    void setStr(const QString &p);
+    void setAddr(Address a);
 
     /// \returns the type of the constant
     SharedType getType() { return m_type; }
@@ -113,7 +112,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
@@ -128,6 +127,5 @@ protected:
 
 private:
     Data m_value;      ///< The value of this constant
-    QString m_string;  ///< The string value of this constant
     SharedType m_type; ///< Constants need types during type analysis
 };

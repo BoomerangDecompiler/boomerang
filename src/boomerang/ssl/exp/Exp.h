@@ -492,8 +492,10 @@ public:
     // Pull type information up the expression tree
     virtual SharedType ascendType();
 
-    /// Push type information down the expression tree
-    virtual void descendType(SharedType /*parentType*/, bool & /*ch*/, Statement * /*s*/);
+    /// Push type information down the expression tree.
+    /// \param newType new type of the expression.
+    /// \returns true if any change.
+    virtual bool descendType(SharedType newType) = 0;
 
 public:
     /// Accept an expression visitor to visit this expression.

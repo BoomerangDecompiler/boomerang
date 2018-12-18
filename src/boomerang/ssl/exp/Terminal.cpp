@@ -102,9 +102,9 @@ SharedType Terminal::ascendType()
 }
 
 
-void Terminal::descendType(SharedType, bool &changed, Statement *)
+bool Terminal::descendType(SharedType)
 {
-    changed = false;
+    return false;
 }
 
 

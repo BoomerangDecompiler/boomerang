@@ -52,7 +52,7 @@ public:
     SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor
