@@ -231,9 +231,10 @@ bool match_l1_K(SharedExp in, std::vector<SharedExp> &matches)
 }
 
 
-void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
+bool Unary::descendType(SharedType newType)
 {
     std::vector<SharedExp> matches;
+    bool changed = false;
 
     switch (m_oper) {
     case opMemOf: {
@@ -247,21 +248,21 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
             // We would expect the stride to be the same size as the base type
             size_t stride = leftOfPlus->access<Const, 2>()->getInt();
 
-            if (stride * 8 != parentType->getSize()) {
+            if (stride * 8 != newType->getSize()) {
                 LOG_VERBOSE("Type WARNING: apparent array reference at %1 has stride %2 bits, but "
                             "parent type %3 has size %4",
-                            shared_from_this(), stride * 8, parentType->getCtype(),
-                            parentType->getSize());
+                            shared_from_this(), stride * 8, newType->getCtype(),
+                            newType->getSize());
             }
 
             // The index is integer type
             SharedExp x = leftOfPlus->getSubExp1();
-            x->descendType(IntegerType::get(parentType->getSize(), Sign::Unknown), changed, s);
+            changed |= x->descendType(IntegerType::get(newType->getSize(), Sign::Unknown));
 
             // K2 is of type <array of parentType>
             std::shared_ptr<Const> K2 = access<Const, 1, 2>();
             Prog *prog                = this->access<Location>()->getProc()->getProg();
-            K2->descendType(prog->makeArrayType(K2->getAddr(), parentType), changed, s);
+            changed |= K2->descendType(prog->makeArrayType(K2->getAddr(), newType));
         }
         else if (match_l1_K(shared_from_this(), matches)) {
             // m[l1 + K]
@@ -278,7 +279,7 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
                     auto ct = st->as<CompoundType>();
 
                     if (ct->isGeneric()) {
-                        ct->updateGenericMember(K, parentType, changed);
+                        ct->updateGenericMember(K, newType, changed);
                     }
                     else {
                         // would like to force a simplify here; I guess it will happen soon enough
@@ -287,7 +288,7 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
                 else {
                     // Need to create a generic stuct with a least one member at offset K
                     auto ct = CompoundType::get(true);
-                    ct->updateGenericMember(K, parentType, changed);
+                    ct->updateGenericMember(K, newType, changed);
                 }
             }
             else {
@@ -298,15 +299,15 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
             // FIXME: many other cases
         }
         else {
-            subExp1->descendType(PointerType::get(parentType), changed, s);
+            changed |= subExp1->descendType(PointerType::get(newType));
         }
 
         break;
     }
 
     case opAddrOf:
-        if (parentType->resolvesToPointer()) {
-            subExp1->descendType(parentType->as<PointerType>()->getPointsTo(), changed, s);
+        if (newType->resolvesToPointer()) {
+            changed |= subExp1->descendType(newType->as<PointerType>()->getPointsTo());
         }
 
         break;
@@ -317,7 +318,7 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
         SharedType ty = _prog->getGlobalType(name);
 
         if (ty) {
-            ty = ty->meetWith(parentType, changed);
+            ty = ty->meetWith(newType, changed);
 
             if (changed) {
                 _prog->setGlobalType(name, ty);
@@ -329,6 +330,8 @@ void Unary::descendType(SharedType parentType, bool &changed, Statement *s)
 
     default: break;
     }
+
+    return changed;
 }
 
 

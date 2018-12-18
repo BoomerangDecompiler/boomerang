@@ -169,7 +169,7 @@ SharedType RefExp::ascendType()
 }
 
 
-void RefExp::descendType(SharedType parentType, bool &changed, Statement *s)
+bool RefExp::descendType(SharedType newType)
 {
     assert(getSubExp1());
 
@@ -177,13 +177,13 @@ void RefExp::descendType(SharedType parentType, bool &changed, Statement *s)
         LOG_ERROR(
             "Cannot descendType of expression '%1' since it does not have a defining statement!",
             getSubExp1());
-        changed = false;
-        return;
+        return false;
     }
 
-    SharedType newType = m_def->meetWithFor(parentType, subExp1, changed);
+    bool thisChanged = false;
+    newType          = m_def->meetWithFor(newType, subExp1, thisChanged);
     // In case subExp1 is a m[...]
-    subExp1->descendType(newType, changed, s);
+    return subExp1->descendType(newType);
 }
 
 

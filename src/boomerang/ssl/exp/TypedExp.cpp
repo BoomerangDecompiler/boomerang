@@ -145,8 +145,9 @@ SharedType TypedExp::ascendType()
 }
 
 
-void TypedExp::descendType(SharedType, bool &, Statement *)
+bool TypedExp::descendType(SharedType)
 {
+    return false;
 }
 
 

@@ -65,8 +65,7 @@ void DFATypeAnalyzer::visitAssignment(Assignment *stmt, bool &visitChildren)
         }
 
         // Push down the fact that the memof operand is a pointer to the assignment type
-        addrType = PointerType::get(stmt->getType());
-        addr->descendType(addrType, ch, stmt);
+        m_changed |= addr->descendType(PointerType::get(stmt->getType()));
     }
 
     visitChildren = false;
@@ -132,23 +131,22 @@ void DFATypeAnalyzer::visit(Assign *stmt, bool &visitChildren)
 {
     SharedType tr = stmt->getRight()->ascendType();
 
-    bool changed = false;
+    bool thisChanged = false;
 
     // Note: useHighestPtr is set true, since the lhs could have a greater type
     // (more possibilities) than the rhs.
     // Example:
     //   Employee *employee = mananger
-    SharedType newType = stmt->getType()->meetWith(tr, changed, true);
-    if (changed) {
+    SharedType newType = stmt->getType()->meetWith(tr, thisChanged, true);
+    if (thisChanged) {
         stmt->setType(newType);
     }
 
     // This will effect rhs = rhs MEET lhs
-    stmt->getRight()->descendType(stmt->getType(), changed, stmt);
+    thisChanged = stmt->getRight()->descendType(stmt->getType());
+    m_changed |= thisChanged;
 
-    m_changed |= changed;
-
-    visitAssignment(stmt, changed); // Handle the LHS wrt m[] operands
+    visitAssignment(stmt, thisChanged); // Handle the LHS wrt m[] operands
     visitChildren = false;
 }
 
@@ -163,9 +161,7 @@ void DFATypeAnalyzer::visit(BoolAssign *stmt, bool &visitChildren)
 void DFATypeAnalyzer::visit(BranchStatement *stmt, bool &visitChildren)
 {
     if (stmt->getCondExpr()) {
-        bool ch = false;
-        stmt->getCondExpr()->descendType(BooleanType::get(), ch, stmt);
-        m_changed |= ch;
+        m_changed |= stmt->getCondExpr()->descendType(BooleanType::get());
     }
 
     // Not fully implemented yet?
@@ -173,14 +169,14 @@ void DFATypeAnalyzer::visit(BranchStatement *stmt, bool &visitChildren)
 }
 
 
-void DFATypeAnalyzer::visit(CallStatement *stmt, bool &visitChildren)
+void DFATypeAnalyzer::visit(CallStatement *callStmt, bool &visitChildren)
 {
     // Iterate through the arguments
     int n = 0;
 
-    Function *callee = stmt->getDestProc();
+    Function *callee = callStmt->getDestProc();
 
-    for (Statement *aa : stmt->getArguments()) {
+    for (Statement *aa : callStmt->getArguments()) {
         assert(aa->isAssign());
         Assign *boundArg = static_cast<Assign *>(aa);
 
@@ -189,12 +185,12 @@ void DFATypeAnalyzer::visit(CallStatement *stmt, bool &visitChildren)
         // In this case, we set the max length of both dst and src to 5
         if (callee && !callee->getSignature()->getParamBoundMax(n).isEmpty() &&
             boundArg->getRight()->isIntConst()) {
-            const QString boundmax = stmt->getDestProc()->getSignature()->getParamBoundMax(n);
+            const QString boundmax = callStmt->getDestProc()->getSignature()->getParamBoundMax(n);
             assert(boundArg->getType()->resolvesToInteger());
 
             int nt = 0;
-            for (const Statement *arrayArg : stmt->getArguments()) {
-                if (boundmax == stmt->getDestProc()->getSignature()->getParamName(nt++)) {
+            for (const Statement *arrayArg : callStmt->getArguments()) {
+                if (boundmax == callStmt->getDestProc()->getSignature()->getParamName(nt++)) {
                     SharedType tyt = static_cast<const Assign *>(arrayArg)->getType();
 
                     if (tyt->resolvesToPointer() &&
@@ -217,15 +213,14 @@ void DFATypeAnalyzer::visit(CallStatement *stmt, bool &visitChildren)
     }
 
     // The destination is a pointer to a function with this function's signature (if any)
-    if (stmt->getDest()) {
-        bool ch = false;
-        if (stmt->getSignature()) {
-            stmt->getDest()->descendType(FuncType::get(stmt->getSignature()), ch, stmt);
+    if (callStmt->getDest()) {
+        if (callStmt->getSignature()) {
+            m_changed |= callStmt->getDest()->descendType(FuncType::get(callStmt->getSignature()));
         }
-        else if (stmt->getDestProc()) {
-            stmt->getDest()->descendType(FuncType::get(stmt->getSignature()), ch, stmt);
+        else if (callStmt->getDestProc()) {
+            m_changed |= callStmt->getDest()->descendType(
+                FuncType::get(callStmt->getDestProc()->getSignature()));
         }
-        m_changed |= ch;
     }
 
     visitChildren = false;

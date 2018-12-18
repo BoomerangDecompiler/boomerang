@@ -70,7 +70,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Unary::ascendType
-    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Unary::acceptVisitor

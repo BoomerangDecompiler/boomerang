@@ -112,7 +112,7 @@ public:
     virtual SharedType ascendType() override;
 
     /// \copydoc Exp::descendType
-    virtual void descendType(SharedType parentType, bool &changed, Statement *s) override;
+    virtual bool descendType(SharedType newType) override;
 
 public:
     /// \copydoc Exp::acceptVisitor

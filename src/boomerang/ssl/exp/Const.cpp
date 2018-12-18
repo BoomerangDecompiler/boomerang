@@ -267,14 +267,12 @@ SharedType Const::ascendType()
 }
 
 
-void Const::descendType(SharedType parentType, bool &changed, Statement *)
+bool Const::descendType(SharedType newType)
 {
-    bool thisCh = false;
+    bool changed = false;
+    m_type       = m_type->meetWith(newType, changed);
 
-    m_type = m_type->meetWith(parentType, thisCh);
-    changed |= thisCh;
-
-    if (thisCh) {
+    if (changed) {
         // May need to change the representation
         if (m_type->resolvesToFloat()) {
             if (m_oper == opIntConst) {
@@ -293,6 +291,8 @@ void Const::descendType(SharedType parentType, bool &changed, Statement *)
 
         // May be other cases
     }
+
+    return changed;
 }
 
 
