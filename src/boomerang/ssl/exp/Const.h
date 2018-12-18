@@ -26,10 +26,11 @@ class Function;
 class BOOMERANG_API Const : public Exp
 {
 private:
-    typedef std::variant<int,       ///< Integer
-                         QWord,     ///< 64 bit integer / address / pointer
-                         double,    ///< Double precision float
-                         Function * ///< Pointer to function (e.g. global function pointers)
+    typedef std::variant<int,        ///< Integer
+                         QWord,      ///< 64 bit integer / address / pointer
+                         double,     ///< Double precision float
+                         Function *, ///< Pointer to function (e.g. global function pointers)
+                         QString     ///< The string value of this constant
                          >
         Data;
 
@@ -126,6 +127,5 @@ protected:
 
 private:
     Data m_value;      ///< The value of this constant
-    QString m_string;  ///< The string value of this constant
     SharedType m_type; ///< Constants need types during type analysis
 };

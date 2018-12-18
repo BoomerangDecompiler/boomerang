@@ -57,7 +57,7 @@ Const::Const(const QString &p)
     : Exp(opStrConst)
     , m_type(VoidType::get())
 {
-    m_string = p;
+    m_value = p;
 }
 
 
@@ -80,7 +80,6 @@ Const::Const(Address addr)
 Const::Const(const Const &other)
     : Exp(other.m_oper)
     , m_value(other.m_value)
-    , m_string(other.m_string)
     , m_type(other.m_type)
 {
 }
@@ -98,7 +97,7 @@ bool Const::operator<(const Exp &o) const
     case opIntConst: return getInt() < otherConst.getInt();
     case opLongConst: return getLong() < otherConst.getLong();
     case opFltConst: return getFlt() < otherConst.getFlt();
-    case opStrConst: return m_string < otherConst.m_string;
+    case opStrConst: return getStr() < otherConst.getStr();
 
     default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
@@ -147,7 +146,7 @@ double Const::getFlt() const
 
 QString Const::getStr() const
 {
-    return m_string;
+    return std::get<QString>(m_value);
 }
 
 
@@ -188,7 +187,7 @@ void Const::setFlt(double value)
 
 void Const::setStr(const QString &value)
 {
-    m_string = value;
+    m_value = value;
 }
 
 
@@ -208,7 +207,7 @@ SharedExp Const::clone() const
 void Const::printNoQuotes(OStream &os) const
 {
     if (m_oper == opStrConst) {
-        os << m_string;
+        os << getStr();
     }
     else {
         print(os);
@@ -241,7 +240,7 @@ bool Const::operator==(const Exp &other) const
     case opIntConst: return getInt() == otherConst.getInt();
     case opLongConst: return getLong() == otherConst.getLong();
     case opFltConst: return getFlt() == otherConst.getFlt();
-    case opStrConst: return m_string == otherConst.m_string;
+    case opStrConst: return getStr() == otherConst.getStr();
     default: LOG_FATAL("Invalid operator %1", operToString(m_oper));
     }
 
