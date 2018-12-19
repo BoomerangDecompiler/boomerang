@@ -28,7 +28,7 @@ UnionType::UnionType()
 }
 
 
-UnionType::UnionType::UnionType(const std::initializer_list<SharedType> &members)
+UnionType::UnionType(const std::initializer_list<SharedType> &members)
     : Type(TypeClass::Union)
 {
     for (SharedType member : members) {
@@ -44,10 +44,10 @@ UnionType::~UnionType()
 
 SharedType UnionType::clone() const
 {
-    auto u = std::make_shared<UnionType>();
+    std::shared_ptr<UnionType> u = std::make_shared<UnionType>();
 
-    for (UnionElement el : li) {
-        u->addType(el.type, el.name);
+    for (auto &[ty, name] : li) {
+        u->addType(ty, name);
     }
 
     return u;

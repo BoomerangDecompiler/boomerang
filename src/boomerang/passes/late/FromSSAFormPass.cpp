@@ -142,9 +142,7 @@ bool FromSSAFormPass::execute(UserProc *proc)
         }
 
         if (rename == nullptr) {
-            Statement *def2 = ref2->getDef();
-
-            if (def2->isPhi()) { // Prefer the destinations of phis
+            if (ref2->getDef()->isPhi()) { // Prefer the destinations of phis
                 rename = ref2;
             }
             else {
@@ -218,11 +216,11 @@ bool FromSSAFormPass::execute(UserProc *proc)
         }
     }
 
-    /*    *    *    *    *    *    *    *    *    *    *    *    *    *    *\
-    *                                                        *
-    *     IR gets changed with hard locals and params here    *
-    *                                                        *
-    \*    *    *    *    *    *    *    *    *    *    *    *    *    *    */
+    /*   *   *   *   *   *   *   *   *   *   *   *   *   *   *\
+     *                                                       *
+     *     IR gets changed with hard locals and params here  *
+     *                                                       *
+    \*   *   *   *   *   *   *   *   *   *   *   *   *   *   */
 
     // First rename the variables (including phi's, but don't remove).
     // NOTE: it is not possible to postpone renaming these locals till the back end, since the same
