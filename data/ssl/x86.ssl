@@ -988,11 +988,19 @@ BSWAP.reg32 dest
 
 
 # BT
+BT.reg16.imm8 src, bit
+    *1* %CF := src@[bit:bit]
+;
+
 BT.reg16.imm16 src, bit
     *1* %CF := src@[bit:bit]
 ;
 
 BT.reg16.reg16 src, bit
+    *1* %CF := src@[bit:bit]
+;
+
+BT.reg32.imm8 src, bit
     *1* %CF := src@[bit:bit]
 ;
 
@@ -1026,6 +1034,11 @@ BT.rm64.reg64 src, bit
 
 
 # BTC
+BTC.reg16.imm8 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest ^ (1 << bit)
+;
+
 BTC.reg16.imm16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest ^ (1 << bit)
@@ -1036,14 +1049,9 @@ BTC.reg16.reg16 dest, bit
     *16* dest := dest ^ (1 << bit)
 ;
 
-BTC.rm16.imm16 dest, bit
+BTC.reg32.imm8 dest, bit
     *1* %CF := dest@[bit:bit]
-    *16* dest := dest ^ (1 << bit)
-;
-
-BTC.rm16.reg16 dest, bit
-    *1* %CF := dest@[bit:bit]
-    *16* dest := dest ^ (1 << bit)
+    *32* dest := dest ^ (1 << bit)
 ;
 
 BTC.reg32.imm32 dest, bit
@@ -1056,6 +1064,17 @@ BTC.reg32.reg32 dest, bit
     *32* dest := dest ^ (1 << bit)
 ;
 
+BTC.rm16.imm16 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest ^ (1 << bit)
+;
+
+BTC.rm16.reg16 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest ^ (1 << bit)
+;
+
+
 BTC.rm32.reg32 dest, bit
     *1* %CF := dest@[bit:bit]
     *32* dest := dest ^ (1 << bit)
@@ -1063,6 +1082,11 @@ BTC.rm32.reg32 dest, bit
 
 
 # BTR
+BTR.reg16.imm8 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest & ~(1 << bit)
+;
+
 BTR.reg16.imm16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
@@ -1071,6 +1095,11 @@ BTR.reg16.imm16 dest, bit
 BTR.reg16.reg16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest & ~(1 << bit)
+;
+
+BTR.reg32.imm8 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *32* dest := dest & ~(1 << bit)
 ;
 
 BTR.reg32.imm32 dest, bit
@@ -1105,6 +1134,11 @@ BTR.rm32.reg32 dest, bit
 
 
 # BTS
+BTS.reg16.imm8 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *16* dest := dest | (1 << bit)
+;
+
 BTS.reg16.imm16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
@@ -1113,6 +1147,11 @@ BTS.reg16.imm16 dest, bit
 BTS.reg16.reg16 dest, bit
     *1* %CF := dest@[bit:bit]
     *16* dest := dest | (1 << bit)
+;
+
+BTS.reg32.imm8 dest, bit
+    *1* %CF := dest@[bit:bit]
+    *32* dest := dest | (1 << bit)
 ;
 
 BTS.reg32.imm32 dest, bit
@@ -3022,6 +3061,12 @@ RCL.reg8.reg8 dest, src
     ROLFLAGS8(dest, tmpb, src)
 ;
 
+RCL.reg16.imm8 dest, src
+    *16* tmph := dest
+    *16* dest := dest{16} rlc src
+    ROLFLAGS16(dest, tmph, src)
+;
+
 RCL.reg16.imm16 dest, src
     *16* tmph := dest
     *16* dest := dest{16} rlc src
@@ -3032,6 +3077,12 @@ RCL.reg16.reg8 dest, src
     *16* tmph := dest
     *16* dest := dest{16} rlc src
     ROLFLAGS16(dest, tmph, src)
+;
+
+RCL.reg32.imm8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest{32} rlc src
+    ROLFLAGS32(dest, tmp1, src)
 ;
 
 RCL.reg32.reg8 dest, src
@@ -3078,6 +3129,12 @@ RCR.reg8.reg8 dest, src
     RORFLAGS8(dest, tmp1, src)
 ;
 
+RCR.reg16.imm8 dest, src
+    *16* tmp1 := dest
+    *16* dest := dest{16} rrc src
+    RORFLAGS16(dest, tmp1, src)
+;
+
 RCR.reg16.imm16 dest, src
     *16* tmp1 := dest
     *16* dest := dest{16} rrc src
@@ -3091,6 +3148,12 @@ RCR.reg16.reg8 dest, src
 ;
 
 RCR.reg32.reg8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest{32} rrc src
+    RORFLAGS32(dest, tmp1, src)
+;
+
+RCR.reg32.imm8 dest, src
     *32* tmp1 := dest
     *32* dest := dest{32} rrc src
     RORFLAGS32(dest, tmp1, src)
@@ -3155,6 +3218,12 @@ ROL.reg8.reg8 dest, src
     ROLFLAGS8(dest, tmpb, src)
 ;
 
+ROL.reg16.imm8 dest, src
+    *16* tmp1 := dest
+    *16* dest := dest rl src
+    ROLFLAGS16(dest, tmp1, src)
+;
+
 ROL.reg16.imm16 dest, src
     *16* tmp1 := dest
     *16* dest := dest rl src
@@ -3165,6 +3234,12 @@ ROL.reg16.reg8 dest, src
     *16* tmp1 := dest
     *16* dest := dest rl src
     ROLFLAGS16(dest, tmp1, src)
+;
+
+ROL.reg32.imm8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest rl src
+    ROLFLAGS32(dest, tmp1, src)
 ;
 
 ROL.reg32.reg8 dest, src
@@ -3193,6 +3268,12 @@ ROR.reg8.reg8 dest, src
     RORFLAGS8(dest, tmpb, src)
 ;
 
+ROR.reg16.imm8 dest, src
+    *16* tmp1 := dest
+    *16* dest := dest rr src
+    RORFLAGS16(dest, tmp1, src)
+;
+
 ROR.reg16.imm16 dest, src
     *16* tmp1 := dest
     *16* dest := dest rr src
@@ -3206,6 +3287,12 @@ ROR.reg16.reg8 dest, src
 ;
 
 ROR.reg32.reg8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest rr src
+    RORFLAGS32(dest, tmp1, src)
+;
+
+ROR.reg32.imm8 dest, src
     *32* tmp1 := dest
     *32* dest := dest rr src
     RORFLAGS32(dest, tmp1, src)
@@ -3253,6 +3340,12 @@ SAR.reg8.reg8 dest, src
     SARFLAGS(dest, tmpb, src)
 ;
 
+SAR.reg16.imm8 dest, src
+    *16* tmph := dest
+    *16* dest := dest >>A (src & 0x1F)
+    SARFLAGS(dest, tmph, src)
+;
+
 SAR.reg16.imm16 dest, src
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
@@ -3263,6 +3356,12 @@ SAR.reg16.reg8 dest, src
     *16* tmph := dest
     *16* dest := dest >>A (src & 0x1F)
     SARFLAGS(dest, tmph, src)
+;
+
+SAR.reg32.imm8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest >>A (src & 0x1F)
+    SARFLAGS(dest, tmp1, src)
 ;
 
 SAR.reg32.imm32 dest, src
@@ -3502,6 +3601,12 @@ SHL.reg8.reg8 dest, src
     SALFLAGS8(dest, tmpb, src)
 ;
 
+SHL.reg16.imm8 dest, src
+    *16* tmph := dest
+    *16* dest := dest << (src & 0x1F)
+    SALFLAGS16(dest, tmph, src)
+;
+
 SHL.reg16.reg8 dest, src
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
@@ -3512,6 +3617,12 @@ SHL.reg16.imm16 dest, src
     *16* tmph := dest
     *16* dest := dest << (src & 0x1F)
     SALFLAGS16(dest, tmph, src)
+;
+
+SHL.reg32.imm8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest << (src & 0x1F)
+    SALFLAGS32(dest, tmp1, src)
 ;
 
 SHL.reg32.imm32 dest, src
@@ -3564,6 +3675,12 @@ SHL.rm32.imm32 dest, src
 
 
 # SHLD
+SHLD.reg16.reg16.imm8 dest, src, count
+    *32* tmp1 := dest{32} << 32 | src
+    *16* dest := (tmp1 << count) >> 16
+    SHLDFLAGS16(dest, tmp1, count)
+;
+
 SHLD.reg16.reg16.imm16 dest, src, count
     *32* tmp1 := dest{32} << 32 | src
     *16* dest := (tmp1 << count) >> 16
@@ -3574,6 +3691,12 @@ SHLD.reg16.reg16.reg8 dest, src, count
     *32* tmp1 := dest{32} << 32 | src
     *16* dest := (tmp1 << count) >> 16
     SHLDFLAGS16(dest, tmp1, count)
+;
+
+SHLD.reg32.reg32.imm8 dest, src, count
+    *64* tmp1 := dest{64} << 32 | src
+    *32* dest := (tmp1 << count) >> 32
+    SHLDFLAGS32(dest, tmp1, count)
 ;
 
 SHLD.reg32.reg32.imm32 dest, src, count
@@ -3602,16 +3725,28 @@ SHR.reg8.reg8 dest, src
     SHRFLAGS8(dest, tmpb, src)
 ;
 
+SHR.reg16.imm8 dest, src
+    *16* tmph := dest
+    *16* dest := dest >> (src & 0x1F)
+    SHRFLAGS16(dest, tmph, src)
+;
+
 SHR.reg16.imm16 dest, src
-    *8* tmph := dest
-    *8* dest := dest >> (src & 0x1F)
+    *16* tmph := dest
+    *16* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
 ;
 
 SHR.reg16.reg8 dest, src
-    *8* tmph := dest
-    *8* dest := dest >> (src & 0x1F)
+    *16* tmph := dest
+    *16* dest := dest >> (src & 0x1F)
     SHRFLAGS16(dest, tmph, src)
+;
+
+SHR.reg32.imm8 dest, src
+    *32* tmp1 := dest
+    *32* dest := dest >> (src & 0x1F)
+    SHRFLAGS32(dest, tmp1, src)
 ;
 
 SHR.reg32.imm32 dest, src
@@ -3658,6 +3793,12 @@ SHR.rm32.imm32 dest, src
 
 
 # SHRD
+SHRD.reg16.reg16.imm8 dest, src, count
+    *32* tmp1 := src{32} << 16 | dest
+    *16* dest := tmp1 >> count
+    SHRDFLAGS16(dest, tmp1, count)
+;
+
 SHRD.reg16.reg16.imm16 dest, src, count
     *32* tmp1 := src{32} << 16 | dest
     *16* dest := tmp1 >> count
@@ -3668,6 +3809,12 @@ SHRD.reg16.reg16.reg8 dest, src, count
     *32* tmp1 := src{32} << 16 | dest
     *16* dest := tmp1 >> count
     SHRDFLAGS16(dest, tmp1, count)
+;
+
+SHRD.reg32.reg32.imm8 dest, src, count
+    *64* tmp1 := (src{64} << 32) | dest
+    *32* dest := tmp1 >> count
+    SHRDFLAGS32(dest, tmp1, count)
 ;
 
 SHRD.reg32.reg32.imm32 dest, src, count
